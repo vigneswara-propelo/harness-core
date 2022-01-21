@@ -82,10 +82,7 @@ public class SpawnChildrenRequestProcessor implements SdkResponseProcessor {
       }
 
       // Attach a Callback to the parent for the child
-      EngineResumeCallback callback = EngineResumeCallback.builder()
-                                          .nodeExecutionId(SdkResponseEventUtils.getNodeExecutionId(event))
-                                          .ambiance(ambiance)
-                                          .build();
+      EngineResumeCallback callback = EngineResumeCallback.builder().ambiance(ambiance).build();
       waitNotifyEngine.waitForAllOn(publisherName, callback, callbackIds.toArray(new String[0]));
 
       // Update the parent with executable response

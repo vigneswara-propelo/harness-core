@@ -58,10 +58,7 @@ public class SpawnChildRequestProcessor implements SdkResponseProcessor {
     log.info("For Child Executable starting Child NodeExecution with id: {}", childNodeExecution.getUuid());
 
     // Attach a Callback to the parent for the child
-    EngineResumeCallback callback = EngineResumeCallback.builder()
-                                        .nodeExecutionId(SdkResponseEventUtils.getNodeExecutionId(event))
-                                        .ambiance(event.getAmbiance())
-                                        .build();
+    EngineResumeCallback callback = EngineResumeCallback.builder().ambiance(event.getAmbiance()).build();
     waitNotifyEngine.waitForAllOn(publisherName, callback, childNodeExecution.getUuid());
 
     // Update the parent with executable response

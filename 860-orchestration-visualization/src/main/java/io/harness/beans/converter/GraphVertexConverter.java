@@ -14,8 +14,6 @@ import io.harness.beans.GraphVertex;
 import io.harness.data.structure.CollectionUtils;
 import io.harness.dto.GraphDelegateSelectionLogParams;
 import io.harness.execution.NodeExecution;
-import io.harness.plan.IdentityPlanNode;
-import io.harness.plan.NodeType;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.data.PmsOutcome;
 import io.harness.pms.data.stepdetails.PmsStepDetails;
@@ -39,11 +37,6 @@ public class GraphVertexConverter {
 
     Level level = Objects.requireNonNull(AmbianceUtils.obtainCurrentLevel(nodeExecution.getAmbiance()));
     String stepType = level.getStepType().getType();
-
-    // This will help UI to identify the type of node and according to it will display the icon to the user.
-    if (level.getNodeType().equals(NodeType.IDENTITY_PLAN_NODE.toString())) {
-      stepType = ((IdentityPlanNode) nodeExecution.getNode()).getOriginalStepType().getType();
-    }
 
     return GraphVertex.builder()
         .uuid(nodeExecution.getUuid())
@@ -77,15 +70,7 @@ public class GraphVertexConverter {
     List<GraphDelegateSelectionLogParams> graphDelegateSelectionLogParamsList =
         delegateInfoHelper.getDelegateInformationForGivenTask(nodeExecution.getExecutableResponses(),
             nodeExecution.getMode(), AmbianceUtils.getAccountId(nodeExecution.getAmbiance()));
-
     Level level = Objects.requireNonNull(AmbianceUtils.obtainCurrentLevel(nodeExecution.getAmbiance()));
-    String stepType = level.getStepType().getType();
-
-    // This will help UI to identify the type of node and according to it will display the icon to the user.
-    if (level.getNodeType().equals(NodeType.IDENTITY_PLAN_NODE.toString())) {
-      stepType = ((IdentityPlanNode) nodeExecution.getNode()).getOriginalStepType().getType();
-    }
-
     return GraphVertex.builder()
         .uuid(nodeExecution.getUuid())
         .ambiance(nodeExecution.getAmbiance())
@@ -96,7 +81,7 @@ public class GraphVertexConverter {
         .endTs(nodeExecution.getEndTs())
         .initialWaitDuration(nodeExecution.getInitialWaitDuration())
         .lastUpdatedAt(nodeExecution.getLastUpdatedAt())
-        .stepType(stepType)
+        .stepType(level.getStepType().getType())
         .status(nodeExecution.getStatus())
         .failureInfo(nodeExecution.getFailureInfo())
         .stepParameters(nodeExecution.getPmsStepParameters())

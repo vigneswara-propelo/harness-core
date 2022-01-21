@@ -14,6 +14,7 @@ import static io.harness.pms.PmsCommonConstants.AUTO_ABORT_PIPELINE_THROUGH_TRIG
 import static io.harness.pms.contracts.execution.Status.ABORTED;
 import static io.harness.pms.contracts.execution.Status.DISCONTINUING;
 import static io.harness.pms.contracts.execution.Status.ERRORED;
+import static io.harness.pms.contracts.execution.Status.SKIPPED;
 import static io.harness.springdata.SpringDataMongoUtils.returnNewOptions;
 
 import static org.springframework.data.domain.Sort.by;
@@ -134,13 +135,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   public Optional<NodeExecution> getByNodeIdentifier(String nodeIdentifier, String planExecutionId) {
     Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
                       .addCriteria(where(NodeExecutionKeys.planNodeIdentifier).in(nodeIdentifier));
-    Optional<NodeExecution> nodeExecution = Optional.ofNullable(mongoTemplate.findOne(query, NodeExecution.class));
-    if (!nodeExecution.isPresent()) {
-      query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
-                  .addCriteria(where(NodeExecutionKeys.nodeIdentifier).in(nodeIdentifier));
-      return Optional.ofNullable(mongoTemplate.findOne(query, NodeExecution.class));
-    }
-    return nodeExecution;
+    return Optional.ofNullable(mongoTemplate.findOne(query, NodeExecution.class));
   }
 
   @Override
@@ -582,30 +577,18 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
 
   @Override
   public List<NodeExecution> fetchStageExecutions(String planExecutionId) {
-    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId)
-                            .is(planExecutionId)
-                            .and(NodeExecutionKeys.status)
-                            .ne(Status.SKIPPED.name())
-                            .orOperator(Criteria.where(NodeExecutionKeys.stepCategory).is(StepCategory.STAGE),
-                                Criteria.where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE),
-                                Criteria.where(NodeExecutionKeys.IdentityNodeStepCategory).is(StepCategory.STAGE));
-
-    Query query = new Query().addCriteria(criteria);
+    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
+                      .addCriteria(where(NodeExecutionKeys.status).ne(Status.SKIPPED))
+                      .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE));
     query.with(by(NodeExecutionKeys.createdAt));
     return mongoTemplate.find(query, NodeExecution.class);
   }
 
   @Override
   public List<NodeExecution> fetchStageExecutionsWithEndTsAndStatusProjection(String planExecutionId) {
-    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId)
-                            .is(planExecutionId)
-                            .and(NodeExecutionKeys.status)
-                            .ne(Status.SKIPPED.name())
-                            .orOperator(Criteria.where(NodeExecutionKeys.stepCategory).is(StepCategory.STAGE),
-                                Criteria.where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE),
-                                Criteria.where(NodeExecutionKeys.IdentityNodeStepCategory).is(StepCategory.STAGE));
-
-    Query query = new Query().addCriteria(criteria);
+    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
+                      .addCriteria(where(NodeExecutionKeys.status).ne(SKIPPED))
+                      .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE));
     query.fields()
         .include(NodeExecutionKeys.uuid)
         .include(NodeExecutionKeys.status)
@@ -663,43 +646,27 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
 
   @Override
   public List<NodeExecution> getStageNodesFromPlanExecutionId(String planExecutionId) {
-    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId)
-                            .is(planExecutionId)
-                            .and(NodeExecutionKeys.status)
-                            .ne(Status.SKIPPED.name())
-                            .orOperator(Criteria.where(NodeExecutionKeys.stepCategory).is(StepCategory.STAGE),
-                                Criteria.where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE));
-
-    Query query = new Query().addCriteria(criteria);
+    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
+                      .addCriteria(where(NodeExecutionKeys.status).ne(Status.SKIPPED.name()))
+                      .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE));
     query.with(by(NodeExecutionKeys.createdAt));
     return mongoTemplate.find(query, NodeExecution.class);
   }
 
   @Override
   public NodeExecution getPipelineNodeFromPlanExecutionId(String planExecutionId) {
-    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId)
-                            .is(planExecutionId)
-                            .and(NodeExecutionKeys.status)
-                            .ne(Status.SKIPPED.name())
-                            .orOperator(Criteria.where(NodeExecutionKeys.stepCategory).is(StepCategory.PIPELINE),
-                                Criteria.where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.PIPELINE));
-
-    Query query = new Query().addCriteria(criteria);
+    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
+                      .addCriteria(where(NodeExecutionKeys.status).ne(Status.SKIPPED.name()))
+                      .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.PIPELINE));
     query.with(by(NodeExecutionKeys.createdAt));
-    return mongoTemplate.find(query, NodeExecution.class).get(0);
+    return mongoTemplate.findOne(query, NodeExecution.class);
   }
 
   @Override
   public List<String> fetchStageFqnFromStageIdentifiers(String planExecutionId, List<String> stageIdentifiers) {
-    // Adding IdentityNodeStepCategory, since this is required to retry the retried pipeline,
-    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId)
-                            .is(planExecutionId)
-                            .orOperator(Criteria.where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE),
-                                Criteria.where(NodeExecutionKeys.IdentityNodeStepCategory).is(StepCategory.STAGE))
-                            .and(NodeExecutionKeys.planNodeIdentifier)
-                            .in(stageIdentifiers);
-
-    Query query = new Query().addCriteria(criteria);
+    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
+                      .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE))
+                      .addCriteria(where(NodeExecutionKeys.planNodeIdentifier).in(stageIdentifiers));
 
     List<NodeExecution> nodeExecutions = mongoTemplate.find(query, NodeExecution.class);
 
