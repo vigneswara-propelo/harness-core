@@ -10,8 +10,14 @@ package io.harness.pms.sdk.core.adviser;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.pms.contracts.advisers.AdviserResponse;
+import io.harness.pms.contracts.execution.failure.FailureData;
+import io.harness.pms.contracts.execution.failure.FailureInfo;
+import io.harness.pms.contracts.execution.failure.FailureType;
 
+import java.util.Collections;
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 @OwnedBy(CDC)
@@ -19,4 +25,19 @@ public interface Adviser {
   @NotNull AdviserResponse onAdviseEvent(AdvisingEvent advisingEvent);
 
   boolean canAdvise(AdvisingEvent advisingEvent);
+
+  default List<FailureType> getAllFailureTypes(AdvisingEvent advisingEvent) {
+    FailureInfo failureInfo = advisingEvent.getFailureInfo();
+    if (failureInfo == null) {
+      return Collections.emptyList();
+    }
+    List<FailureType> failureTypesList = failureInfo.getFailureTypesList();
+    List<FailureData> failureDataList = failureInfo.getFailureDataList();
+    for (FailureData failureData : failureDataList) {
+      if (failureData != null && EmptyPredicate.isNotEmpty(failureData.getFailureTypesList())) {
+        failureTypesList.addAll(failureData.getFailureTypesList());
+      }
+    }
+    return failureTypesList;
+  }
 }
