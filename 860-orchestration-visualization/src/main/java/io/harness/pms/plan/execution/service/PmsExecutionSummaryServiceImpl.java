@@ -13,6 +13,7 @@ import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.utils.OrchestrationUtils;
 import io.harness.execution.NodeExecution;
 import io.harness.pms.execution.ExecutionStatus;
+import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.plan.execution.ExecutionSummaryUpdateUtils;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.repositories.executions.PmsExecutionSummaryRespository;
@@ -40,7 +41,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
     // This is done inorder to reduce the load while updating stageInfo. Here we will update only the status.
     for (NodeExecution nodeExecution : nodeExecutions) {
       update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.layoutNodeMap + "."
-              + nodeExecution.getNode().getUuid() + ".status",
+              + AmbianceUtils.obtainCurrentSetupId(nodeExecution.getAmbiance()) + ".status",
           ExecutionStatus.getExecutionStatus(nodeExecution.getStatus()));
       update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.layoutNodeMap + "."
               + nodeExecution.getNode().getUuid() + ".endTs",
@@ -76,7 +77,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
 
     // Update endTs at stage level
     if (OrchestrationUtils.isStageNode(nodeExecution)) {
-      String stageUuid = nodeExecution.getNode().getUuid();
+      String stageUuid = AmbianceUtils.obtainCurrentSetupId(nodeExecution.getAmbiance());
       if (nodeExecution.getEndTs() != null) {
         updated = true;
         update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.layoutNodeMap + "." + stageUuid + ".endTs",

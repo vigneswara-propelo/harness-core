@@ -25,9 +25,11 @@ import io.harness.OrchestrationTestBase;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.engine.utils.PmsLevelUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.execution.NodeExecution;
 import io.harness.plan.Node;
+import io.harness.plan.PlanNode;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.ExecutionMode;
 import io.harness.pms.contracts.execution.Status;
@@ -572,50 +574,67 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
     String parentId = generateUuid();
     String nodeUuid = generateUuid();
     String nodeExecutionUuid = generateUuid();
+    PlanNode planNode1 =
+        PlanNode.builder()
+            .uuid(nodeUuid)
+            .name("name")
+            .identifier(generateUuid())
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .serviceName("CD")
+            .build();
     NodeExecution nodeExecution1 =
         NodeExecution.builder()
             .uuid(nodeExecutionUuid)
             .parentId(parentId)
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(planExecutionUuid).build())
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid(nodeUuid)
-                      .setName("name")
-                      .setIdentifier(generateUuid())
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .build())
-            .status(Status.RUNNING)
-            .build();
-    String nodeUuid2 = generateUuid();
-    String nodeExecutionUuid2 = generateUuid();
-    NodeExecution nodeExecution2 =
-        NodeExecution.builder()
-            .uuid(nodeExecutionUuid2)
-            .parentId(parentId)
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(planExecutionUuid).build())
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid(nodeUuid2)
-                      .setName("name")
-                      .setIdentifier(generateUuid())
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .build())
+            .ambiance(Ambiance.newBuilder()
+                          .setPlanExecutionId(planExecutionUuid)
+                          .addLevels(PmsLevelUtils.buildLevelFromNode(nodeExecutionUuid, planNode1))
+                          .build())
+            .planNode(planNode1)
             .status(Status.RUNNING)
             .build();
 
+    String nodeUuid2 = generateUuid();
+    String nodeExecutionUuid2 = generateUuid();
+    PlanNode planNode2 =
+        PlanNode.builder()
+            .uuid(nodeUuid2)
+            .name("name")
+            .identifier(generateUuid())
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .serviceName("CD")
+            .build();
+    NodeExecution nodeExecution2 = NodeExecution.builder()
+                                       .uuid(nodeExecutionUuid2)
+                                       .parentId(parentId)
+                                       .ambiance(Ambiance.newBuilder()
+                                                     .setPlanExecutionId(planExecutionUuid)
+                                                     .addLevels(PmsLevelUtils.buildLevelFromNode(nodeUuid2, planNode2))
+                                                     .build())
+                                       .planNode(planNode2)
+                                       .status(Status.RUNNING)
+                                       .build();
+
     String nodeUuid3 = generateUuid();
     String nodeExecutionUuid3 = generateUuid();
-    NodeExecution nodeExecution3 =
-        NodeExecution.builder()
-            .uuid(nodeExecutionUuid3)
-            .parentId(parentId)
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(planExecutionUuid).build())
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid(nodeUuid3)
-                      .setName("name")
-                      .setIdentifier(generateUuid())
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .build())
-            .status(Status.RUNNING)
+    PlanNode planNode3 =
+        PlanNode.builder()
+            .uuid(nodeUuid3)
+            .name("name")
+            .identifier(generateUuid())
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .serviceName("CD")
             .build();
+    NodeExecution nodeExecution3 = NodeExecution.builder()
+                                       .uuid(nodeExecutionUuid3)
+                                       .parentId(parentId)
+                                       .ambiance(Ambiance.newBuilder()
+                                                     .setPlanExecutionId(planExecutionUuid)
+                                                     .addLevels(PmsLevelUtils.buildLevelFromNode(nodeUuid3, planNode3))
+                                                     .build())
+                                       .planNode(planNode3)
+                                       .status(Status.RUNNING)
+                                       .build();
     nodeExecutionService.save(nodeExecution1);
     nodeExecutionService.save(nodeExecution2);
     nodeExecutionService.save(nodeExecution3);

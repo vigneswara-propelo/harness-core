@@ -19,17 +19,19 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.pms.commons.events.PmsEventSender;
+import io.harness.engine.utils.PmsLevelUtils;
 import io.harness.execution.NodeExecution;
+import io.harness.plan.PlanNode;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.ExecutableResponse;
 import io.harness.pms.contracts.execution.ExecutionMode;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.TaskExecutableResponse;
 import io.harness.pms.contracts.execution.tasks.TaskCategory;
-import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.contracts.progress.ProgressEvent;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
+import io.harness.pms.data.stepparameters.PmsStepParameters;
 import io.harness.pms.events.base.PmsEventCategory;
 import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
@@ -64,18 +66,24 @@ public class RedisProgressEventPublisherTest extends OrchestrationTestBase {
   public void testIfStepParametersSentAreResolvedOne() {
     StepParameters sectionStepParams = TestStepParameters.builder().param("DummySection").build();
     StepParameters resolvedSectionStepParams = TestStepParameters.builder().param("ResolvedDummySection").build();
+    PlanNode planNode = PlanNode.builder()
+                            .uuid(generateUuid())
+                            .identifier("DUMMY")
+                            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+                            .stepParameters(PmsStepParameters.parse(RecastOrchestrationUtils.toJson(sectionStepParams)))
+                            .serviceName("DUMMY")
+                            .build();
+    String nodeExecutionId = generateUuid();
     NodeExecution nodeExecution =
         NodeExecution.builder()
-            .uuid(generateUuid())
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(generateUuid()).build())
+            .uuid(nodeExecutionId)
+            .ambiance(Ambiance.newBuilder()
+                          .setPlanExecutionId(generateUuid())
+                          .addLevels(PmsLevelUtils.buildLevelFromNode(nodeExecutionId, planNode))
+                          .build())
             .status(Status.RUNNING)
             .mode(ExecutionMode.ASYNC)
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid(generateUuid())
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .setStepParameters(RecastOrchestrationUtils.toJson(sectionStepParams))
-                      .setServiceName("DUMMY")
-                      .build())
+            .planNode(planNode)
             .executableResponse(ExecutableResponse.newBuilder()
                                     .setTask(TaskExecutableResponse.newBuilder()
                                                  .setTaskId(generateUuid())

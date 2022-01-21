@@ -20,7 +20,9 @@ import io.harness.beans.internal.EdgeListInternal;
 import io.harness.beans.internal.OrchestrationAdjacencyListInternal;
 import io.harness.category.element.UnitTests;
 import io.harness.engine.pms.data.PmsOutcomeService;
+import io.harness.engine.utils.PmsLevelUtils;
 import io.harness.execution.NodeExecution;
+import io.harness.plan.PlanNode;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.contracts.execution.ExecutionMode;
@@ -545,71 +547,89 @@ public class OrchestrationAdjacencyListDTOGeneratorTest extends OrchestrationVis
   @Category(UnitTests.class)
   public void shouldTestPopulateAdjacencyListForChain() {
     String dummyNode1Uuid = "dummyNode1 ";
+    PlanNode secChainNode =
+        PlanNode.builder()
+            .uuid("section_chain_plan_node")
+            .name("name_section_chain")
+            .identifier("name_section_chain")
+            .stepType(StepType.newBuilder().setType("SECTION_CHAIN").setStepCategory(StepCategory.STEP).build())
+            .build();
     NodeExecution sectionChainParentNode =
         NodeExecution.builder()
             .uuid("section_chain_start")
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(PLAN_EXECUTION_ID).build())
+            .ambiance(Ambiance.newBuilder()
+                          .setPlanExecutionId(PLAN_EXECUTION_ID)
+                          .addLevels(PmsLevelUtils.buildLevelFromNode("section_chain_start", secChainNode))
+                          .build())
             .mode(ExecutionMode.CHILD_CHAIN)
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid("section_chain_plan_node")
-                      .setName("name_section_chain")
-                      .setIdentifier("name_section_chain")
-                      .setStepType(
-                          StepType.newBuilder().setType("SECTION_CHAIN").setStepCategory(StepCategory.STEP).build())
-                      .build())
+            .planNode(secChainNode)
             .createdAt(System.currentTimeMillis())
             .lastUpdatedAt(System.currentTimeMillis())
             .build();
 
+    PlanNode secChainChild1 =
+        PlanNode.builder()
+            .uuid("section_chain_child1_plan_node")
+            .name("name_section_chain_child1_plan_node")
+            .identifier("name_section_chain_child1_plan_node")
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .build();
     NodeExecution sectionChain1 =
         NodeExecution.builder()
             .uuid("section_chain_child1")
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(PLAN_EXECUTION_ID).build())
+            .ambiance(Ambiance.newBuilder()
+                          .setPlanExecutionId(PLAN_EXECUTION_ID)
+                          .addLevels(PmsLevelUtils.buildLevelFromNode("section_chain_child1", secChainChild1))
+                          .build())
             .mode(ExecutionMode.TASK)
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid("section_chain_child1_plan_node")
-                      .setName("name_section_chain_child1_plan_node")
-                      .setIdentifier("name_section_chain_child1_plan_node")
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .build())
+            .planNode(secChainChild1)
             .createdAt(System.currentTimeMillis())
             .lastUpdatedAt(System.currentTimeMillis())
             .parentId(sectionChainParentNode.getUuid())
             .nextId(dummyNode1Uuid)
             .build();
 
+    PlanNode secChain2 =
+        PlanNode.builder()
+            .uuid("section_chain_child2_plan_node")
+            .name("name_section_chain_child2_plan_node")
+            .identifier("name_section_chain_child2_plan_node")
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .build();
     NodeExecution sectionChain2 =
         NodeExecution.builder()
             .uuid("section_chain_child2")
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(PLAN_EXECUTION_ID).build())
+            .ambiance(Ambiance.newBuilder()
+                          .setPlanExecutionId(PLAN_EXECUTION_ID)
+                          .addLevels(PmsLevelUtils.buildLevelFromNode("section_chain_child2", secChain2))
+                          .build())
             .mode(ExecutionMode.TASK)
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid("section_chain_child2_plan_node")
-                      .setName("name_section_chain_child2_plan_node")
-                      .setIdentifier("name_section_chain_child2_plan_node")
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .build())
+            .planNode(secChain2)
             .createdAt(System.currentTimeMillis())
             .lastUpdatedAt(System.currentTimeMillis())
             .parentId(sectionChainParentNode.getUuid())
             .build();
 
-    NodeExecution dummyNode1 =
-        NodeExecution.builder()
-            .uuid(dummyNode1Uuid)
-            .ambiance(Ambiance.newBuilder().setPlanExecutionId(PLAN_EXECUTION_ID).build())
-            .mode(ExecutionMode.SYNC)
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid("dummy_plan_node_1")
-                      .setName("name_dummy_node_1")
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .setIdentifier("name_dummy_node_1")
-                      .build())
-            .createdAt(System.currentTimeMillis())
-            .lastUpdatedAt(System.currentTimeMillis())
-            .parentId(sectionChainParentNode.getUuid())
-            .previousId(sectionChain1.getUuid())
+    PlanNode dummyNode =
+        PlanNode.builder()
+            .uuid("dummy_plan_node_1")
+            .name("name_dummy_node_1")
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .identifier("name_dummy_node_1")
             .build();
+    NodeExecution dummyNode1 = NodeExecution.builder()
+                                   .uuid(dummyNode1Uuid)
+                                   .ambiance(Ambiance.newBuilder()
+                                                 .setPlanExecutionId(PLAN_EXECUTION_ID)
+                                                 .addLevels(PmsLevelUtils.buildLevelFromNode(dummyNode1Uuid, dummyNode))
+                                                 .build())
+                                   .mode(ExecutionMode.SYNC)
+                                   .planNode(dummyNode)
+                                   .createdAt(System.currentTimeMillis())
+                                   .lastUpdatedAt(System.currentTimeMillis())
+                                   .parentId(sectionChainParentNode.getUuid())
+                                   .previousId(sectionChain1.getUuid())
+                                   .build();
 
     Map<String, GraphVertex> graphVertexMap = new HashMap<>();
     graphVertexMap.put(sectionChainParentNode.getUuid(), graphVertexConverter.convertFrom(sectionChainParentNode));
