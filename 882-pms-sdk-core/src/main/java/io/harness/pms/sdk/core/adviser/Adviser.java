@@ -16,8 +16,11 @@ import io.harness.pms.contracts.execution.failure.FailureData;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.failure.FailureType;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 @OwnedBy(CDC)
@@ -31,13 +34,13 @@ public interface Adviser {
     if (failureInfo == null) {
       return Collections.emptyList();
     }
-    List<FailureType> failureTypesList = failureInfo.getFailureTypesList();
+    Set<FailureType> failureTypesList = new HashSet<>(failureInfo.getFailureTypesList());
     List<FailureData> failureDataList = failureInfo.getFailureDataList();
     for (FailureData failureData : failureDataList) {
       if (failureData != null && EmptyPredicate.isNotEmpty(failureData.getFailureTypesList())) {
         failureTypesList.addAll(failureData.getFailureTypesList());
       }
     }
-    return failureTypesList;
+    return new ArrayList<>(failureTypesList);
   }
 }

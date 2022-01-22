@@ -17,11 +17,13 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
+import org.springframework.data.annotation.TypeAlias;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 @Value
 @Builder
 @FieldNameConstants(innerTypeName = "IdentityPlanNodeKeys")
+@TypeAlias("identityPlanNode")
 public class IdentityPlanNode implements Node {
   @NotNull String uuid;
   @NotNull String name;

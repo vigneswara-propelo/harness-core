@@ -7,6 +7,8 @@
 
 package io.harness.pms.plan.execution.service;
 
+import static io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.engine.executions.node.NodeExecutionService;
@@ -40,12 +42,10 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
 
     // This is done inorder to reduce the load while updating stageInfo. Here we will update only the status.
     for (NodeExecution nodeExecution : nodeExecutions) {
-      update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.layoutNodeMap + "."
-              + AmbianceUtils.obtainCurrentSetupId(nodeExecution.getAmbiance()) + ".status",
+      String nodeSetupId = AmbianceUtils.obtainCurrentSetupId(nodeExecution.getAmbiance());
+      update.set(PlanExecutionSummaryKeys.layoutNodeMap + "." + nodeSetupId + ".status",
           ExecutionStatus.getExecutionStatus(nodeExecution.getStatus()));
-      update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.layoutNodeMap + "."
-              + nodeExecution.getNode().getUuid() + ".endTs",
-          nodeExecution.getEndTs());
+      update.set(PlanExecutionSummaryKeys.layoutNodeMap + "." + nodeSetupId + ".endTs", nodeExecution.getEndTs());
     }
   }
 
@@ -56,8 +56,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
     for (NodeExecution nodeExecution : nodeExecutions) {
       ExecutionSummaryUpdateUtils.addStageUpdateCriteria(update, planExecutionId, nodeExecution);
     }
-    Criteria criteria =
-        Criteria.where(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
+    Criteria criteria = Criteria.where(PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
     Query query = new Query(criteria);
     pmsExecutionSummaryRepository.update(query, update);
   }
@@ -71,7 +70,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
     if (OrchestrationUtils.isPipelineNode(nodeExecution)) {
       if (nodeExecution.getEndTs() != null) {
         updated = true;
-        update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.endTs, nodeExecution.getEndTs());
+        update.set(PlanExecutionSummaryKeys.endTs, nodeExecution.getEndTs());
       }
     }
 
@@ -80,13 +79,11 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
       String stageUuid = AmbianceUtils.obtainCurrentSetupId(nodeExecution.getAmbiance());
       if (nodeExecution.getEndTs() != null) {
         updated = true;
-        update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.layoutNodeMap + "." + stageUuid + ".endTs",
-            nodeExecution.getEndTs());
+        update.set(PlanExecutionSummaryKeys.layoutNodeMap + "." + stageUuid + ".endTs", nodeExecution.getEndTs());
       }
     }
     if (updated) {
-      Criteria criteria =
-          Criteria.where(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
+      Criteria criteria = Criteria.where(PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
       Query query = new Query(criteria);
       pmsExecutionSummaryRepository.update(query, update);
     }
@@ -108,8 +105,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
     if (OrchestrationUtils.isPipelineNode(nodeExecution)) {
       Update update = new Update();
       ExecutionSummaryUpdateUtils.addPipelineUpdateCriteria(update, planExecutionId, nodeExecution);
-      Criteria criteria =
-          Criteria.where(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
+      Criteria criteria = Criteria.where(PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
       Query query = new Query(criteria);
       pmsExecutionSummaryRepository.update(query, update);
     }
@@ -117,8 +113,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
 
   @Override
   public void update(String planExecutionId, Update update) {
-    Criteria criteria =
-        Criteria.where(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
+    Criteria criteria = Criteria.where(PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
     Query query = new Query(criteria);
     pmsExecutionSummaryRepository.update(query, update);
   }
