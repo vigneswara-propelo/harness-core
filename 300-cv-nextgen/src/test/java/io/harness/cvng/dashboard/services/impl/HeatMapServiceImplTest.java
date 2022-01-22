@@ -124,7 +124,8 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     heatMapService.updateRiskScore(accountId, orgIdentifier, projectIdentifier, serviceIdentifier, envIdentifier,
         cvConfig, CVMonitoringCategory.PERFORMANCE, instant, 0.6, 10, 0);
     List<HeatMap> heatMaps = hPersistence.createQuery(HeatMap.class, excludeAuthority).asList();
-    Set<String> nullableFields = Sets.newHashSet(HeatMapKeys.serviceIdentifier, HeatMapKeys.envIdentifier);
+    Set<String> nullableFields = Sets.newHashSet(
+        HeatMapKeys.serviceIdentifier, HeatMapKeys.envIdentifier, HeatMapKeys.monitoredServiceIdentifier);
     heatMaps.forEach(heatMap -> {
       List<Field> fields = ReflectionUtils.getAllDeclaredAndInheritedFields(HeatMap.class);
       fields.stream().filter(field -> !nullableFields.contains(field.getName())).forEach(field -> {
