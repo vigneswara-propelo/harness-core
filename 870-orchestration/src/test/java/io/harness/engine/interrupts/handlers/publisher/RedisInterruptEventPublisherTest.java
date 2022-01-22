@@ -34,6 +34,7 @@ import io.harness.pms.contracts.interrupts.InterruptType;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.events.base.PmsEventCategory;
+import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
@@ -78,7 +79,7 @@ public class RedisInterruptEventPublisherTest extends OrchestrationTestBase {
                           .setPlanExecutionId(planExecutionId)
                           .addLevels(PmsLevelUtils.buildLevelFromNode(nodeExecutionId, planNode))
                           .build())
-            .resolvedStepParameters("{}")
+            .resolvedStepParameters(RecastOrchestrationUtils.fromJson("{}"))
             .build();
 
     when(nodeExecutionService.get(any())).thenReturn(nodeExecution);

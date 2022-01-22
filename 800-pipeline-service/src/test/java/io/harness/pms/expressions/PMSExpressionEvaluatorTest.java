@@ -56,6 +56,7 @@ import io.harness.rule.Owner;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 import org.joor.Reflect;
@@ -289,8 +290,8 @@ public class PMSExpressionEvaluatorTest extends PipelineServiceTestBase {
         .build();
   }
 
-  private StepParameters prepareStepParameters(String paramValue) {
-    return TestStepParameters.builder().param(paramValue).build();
+  private Map<String, Object> prepareStepParameters(String paramValue) {
+    return RecastOrchestrationUtils.toMap(TestStepParameters.builder().param(paramValue).build());
   }
 
   private EngineExpressionEvaluator prepareEngineExpressionEvaluator(Ambiance ambiance) {

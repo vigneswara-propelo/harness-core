@@ -39,7 +39,6 @@ import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.data.OrchestrationMap;
 import io.harness.pms.data.stepparameters.PmsStepParameters;
 import io.harness.pms.execution.utils.AmbianceUtils;
-import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
 import io.harness.pms.utils.OrchestrationMapBackwardCompatibilityUtils;
 import io.harness.timeout.TimeoutDetails;
@@ -134,6 +133,9 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
   List<String> adviserTimeoutInstanceIds;
   TimeoutDetails adviserTimeoutDetails;
 
+  // If this is a retry node then this field is populated
+  String originalNodeExecutionId;
+
   public ExecutableResponse obtainLatestExecutableResponse() {
     if (isEmpty(executableResponses)) {
       return null;
@@ -170,23 +172,6 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
 
     public static final String stageFqn = NodeExecutionKeys.planNode + "."
         + "stageFqn";
-  }
-
-  public static class NodeExecutionBuilder {
-    public NodeExecutionBuilder resolvedStepParameters(StepParameters stepParameters) {
-      this.resolvedStepParameters = RecastOrchestrationUtils.toMap(stepParameters);
-      return this;
-    }
-
-    public NodeExecutionBuilder resolvedStepParameters(String jsonString) {
-      this.resolvedStepParameters = RecastOrchestrationUtils.fromJson(jsonString);
-      return this;
-    }
-
-    public NodeExecutionBuilder node(PlanNodeProto planNodeProto) {
-      this.planNode = PlanNode.fromPlanNodeProto(planNodeProto);
-      return this;
-    }
   }
 
   public static List<MongoIndex> mongoIndexes() {
@@ -252,13 +237,13 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
 
   public ByteString getResolvedStepParametersBytes() {
     if (this.getNodeType().equals(NodeType.IDENTITY_PLAN_NODE)) {
-      IdentityStepParameters build =
-          IdentityStepParameters.builder()
-              .originalNodeExecutionId(((IdentityPlanNode) this.getNode()).getOriginalNodeExecutionId())
-              .build();
+      String originalExId = originalNodeExecutionId;
+      if (originalExId == null) {
+        originalExId = ((IdentityPlanNode) this.getNode()).getOriginalNodeExecutionId();
+      }
+      IdentityStepParameters build = IdentityStepParameters.builder().originalNodeExecutionId(originalExId).build();
       return ByteString.copyFromUtf8(emptyIfNull(RecastOrchestrationUtils.toJson(build)));
     }
-
     String resolvedStepParams = RecastOrchestrationUtils.toJson(this.getResolvedStepParameters());
     return ByteString.copyFromUtf8(emptyIfNull(resolvedStepParams));
   }

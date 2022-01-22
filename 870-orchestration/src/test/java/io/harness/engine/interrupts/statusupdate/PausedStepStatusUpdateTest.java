@@ -32,7 +32,6 @@ import io.harness.execution.PlanExecutionMetadata;
 import io.harness.plan.PlanNode;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
-import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.rule.Owner;
@@ -271,9 +270,6 @@ public class PausedStepStatusUpdateTest extends OrchestrationTestBase {
     planExecutionMetadataService.save(planExecutionMetadata);
     PlanExecution planExecution = PlanExecution.builder().uuid(planExecutionId).status(Status.RUNNING).build();
 
-    Ambiance ambiance = Ambiance.newBuilder().setPlanExecutionId(planExecutionId).build();
-    PlanNodeProto planNode = PlanNodeProto.newBuilder().build();
-
     Ambiance.Builder ambianceBuilder = Ambiance.newBuilder().setPlanExecutionId(planExecutionId);
 
     PlanNode pipelinePlanNode =
@@ -289,7 +285,7 @@ public class PausedStepStatusUpdateTest extends OrchestrationTestBase {
             .status(Status.RUNNING)
             .ambiance(
                 ambianceBuilder.addLevels(PmsLevelUtils.buildLevelFromNode(pipelineNodeId, pipelinePlanNode)).build())
-            .node(planNode)
+            .planNode(pipelinePlanNode)
             .build();
 
     PlanNode stagePlanNode =

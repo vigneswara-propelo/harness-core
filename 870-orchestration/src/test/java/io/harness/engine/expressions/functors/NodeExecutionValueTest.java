@@ -34,7 +34,6 @@ import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.data.stepparameters.PmsStepParameters;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.execution.utils.NodeProjectionUtils;
-import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
 import io.harness.rule.Owner;
 import io.harness.utils.AmbianceTestUtils;
@@ -42,6 +41,7 @@ import io.harness.utils.steps.TestStepParameters;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
+import java.util.Map;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.logging.impl.NoOpLog;
@@ -342,7 +342,7 @@ public class NodeExecutionValueTest extends OrchestrationTestBase {
         .build();
   }
 
-  private StepParameters prepareStepParameters(String paramValue) {
-    return TestStepParameters.builder().param(paramValue).build();
+  private Map<String, Object> prepareStepParameters(String paramValue) {
+    return RecastOrchestrationUtils.toMap(TestStepParameters.builder().param(paramValue).build());
   }
 }

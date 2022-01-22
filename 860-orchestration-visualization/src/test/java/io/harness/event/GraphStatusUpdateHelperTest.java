@@ -39,7 +39,6 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.contracts.execution.ExecutionMode;
 import io.harness.pms.contracts.execution.Status;
-import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.data.PmsOutcome;
@@ -114,12 +113,12 @@ public class GraphStatusUpdateHelperTest extends OrchestrationVisualizationTestB
             .uuid(generateUuid())
             .ambiance(Ambiance.newBuilder().setPlanExecutionId(planExecution.getUuid()).build())
             .mode(ExecutionMode.SYNC)
-            .node(PlanNodeProto.newBuilder()
-                      .setUuid(generateUuid())
-                      .setName("name")
-                      .setStepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
-                      .setIdentifier("identifier1")
-                      .build())
+            .planNode(PlanNode.builder()
+                          .uuid(generateUuid())
+                          .name("name")
+                          .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+                          .identifier("identifier1")
+                          .build())
             .status(Status.QUEUED)
             .build();
     nodeExecutionService.save(dummyStart);

@@ -33,7 +33,6 @@ import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.data.stepparameters.PmsStepParameters;
 import io.harness.pms.events.base.PmsEventCategory;
-import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
 import io.harness.rule.Owner;
 import io.harness.tasks.BinaryResponseData;
@@ -42,6 +41,7 @@ import io.harness.utils.steps.TestStepParameters;
 import com.google.protobuf.ByteString;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -64,8 +64,10 @@ public class RedisProgressEventPublisherTest extends OrchestrationTestBase {
   @Owner(developers = ARCHIT)
   @Category(UnitTests.class)
   public void testIfStepParametersSentAreResolvedOne() {
-    StepParameters sectionStepParams = TestStepParameters.builder().param("DummySection").build();
-    StepParameters resolvedSectionStepParams = TestStepParameters.builder().param("ResolvedDummySection").build();
+    Map<String, Object> sectionStepParams =
+        RecastOrchestrationUtils.toMap(TestStepParameters.builder().param("DummySection").build());
+    Map<String, Object> resolvedSectionStepParams =
+        RecastOrchestrationUtils.toMap(TestStepParameters.builder().param("ResolvedDummySection").build());
     PlanNode planNode = PlanNode.builder()
                             .uuid(generateUuid())
                             .identifier("DUMMY")

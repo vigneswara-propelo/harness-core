@@ -108,6 +108,7 @@ public class IdentityNodeExecutionStrategy
             .previousId(previousNodeExecution == null ? null : previousNodeExecution.getUuid())
             .unitProgresses(new ArrayList<>())
             .startTs(AmbianceUtils.getCurrentLevelStartTs(cloned))
+            .originalNodeExecutionId(node.getOriginalNodeExecutionId())
             .build();
     NodeExecution savedNodeExecution = nodeExecutionService.save(nodeExecution);
     // TODO: Should add to an execution queue rather than submitting straight to thread pool
