@@ -26,7 +26,6 @@ import io.harness.persistence.UuidAccess;
 import io.harness.plan.IdentityPlanNode;
 import io.harness.plan.Node;
 import io.harness.plan.NodeType;
-import io.harness.plan.PlanNode;
 import io.harness.pms.contracts.advisers.AdviserResponse;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.ExecutableResponse;
@@ -35,7 +34,6 @@ import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.run.NodeRunInfo;
 import io.harness.pms.contracts.execution.skip.SkipInfo;
-import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.data.OrchestrationMap;
 import io.harness.pms.data.stepparameters.PmsStepParameters;
 import io.harness.pms.execution.utils.AmbianceUtils;
@@ -82,7 +80,6 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
   // Immutable
   @Wither @Id @org.mongodb.morphia.annotations.Id String uuid;
   @NotNull Ambiance ambiance;
-  @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE) @NotNull @Deprecated PlanNodeProto node;
   @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE) Node planNode;
   @NotNull ExecutionMode mode;
   @Wither @FdIndex @CreatedDate Long createdAt;
@@ -241,6 +238,7 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
       if (originalExId == null) {
         originalExId = ((IdentityPlanNode) this.getNode()).getOriginalNodeExecutionId();
       }
+      // TODO: Remove this after one month
       IdentityStepParameters build = IdentityStepParameters.builder().originalNodeExecutionId(originalExId).build();
       return ByteString.copyFromUtf8(emptyIfNull(RecastOrchestrationUtils.toJson(build)));
     }
@@ -261,9 +259,6 @@ public class NodeExecution implements PersistentEntity, UuidAccess, PmsNodeExecu
   }
 
   public <T extends Node> T getNode() {
-    if (planNode != null) {
-      return (T) planNode;
-    }
-    return (T) PlanNode.fromPlanNodeProto(node);
+    return (T) planNode;
   }
 }
