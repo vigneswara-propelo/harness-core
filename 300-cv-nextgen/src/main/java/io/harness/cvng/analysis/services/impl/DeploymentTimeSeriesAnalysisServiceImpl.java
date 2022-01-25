@@ -239,7 +239,7 @@ public class DeploymentTimeSeriesAnalysisServiceImpl implements DeploymentTimeSe
           .filter(transactionMetricHostData
               -> filterAnomalousMetrics(transactionMetricHostData,
                   deploymentTimeSeriesAnalysisFilter.filterByHostNames(),
-                  deploymentTimeSeriesAnalysisFilter.isAnomalous()))
+                  deploymentTimeSeriesAnalysisFilter.isAnomalousMetricsOnly()))
           .forEach(transactionMetricHostData -> {
             Map<Risk, Integer> nodeCountByRiskStatusMap = new HashMap<>();
             SortedSet<DeploymentTimeSeriesAnalysisDTO.HostData> nodeDataSet = new TreeSet();
@@ -247,7 +247,9 @@ public class DeploymentTimeSeriesAnalysisServiceImpl implements DeploymentTimeSe
                 .stream()
                 .filter(hostData
                     -> filterHostData(hostData, deploymentTimeSeriesAnalysisFilter.getHostNames(),
-                        deploymentTimeSeriesAnalysisFilter.isAnomalous()))
+                        deploymentTimeSeriesAnalysisFilter.isAnomalousMetricsOnly()))
+                .filter(hostData
+                    -> filterAnomalousNodes(hostData, deploymentTimeSeriesAnalysisFilter.isAnomalousNodesOnly()))
                 .forEach(hostData -> {
                   nodeDataSet.add(hostData);
                   Risk risk = hostData.getRisk();
@@ -306,6 +308,13 @@ public class DeploymentTimeSeriesAnalysisServiceImpl implements DeploymentTimeSe
       return true; // need to filter at host data level.
     }
     return !anomalousMetricsOnly || transactionMetricHostData.isAnomalous();
+  }
+
+  private boolean filterAnomalousNodes(DeploymentTimeSeriesAnalysisDTO.HostData hostData, boolean anomalousNodesOnly) {
+    if (!anomalousNodesOnly || (anomalousNodesOnly && hostData.isAnomalous())) {
+      return true;
+    }
+    return false;
   }
 
   private TransactionMetricInfo.TransactionMetric createTransactionMetric(
