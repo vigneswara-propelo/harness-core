@@ -117,10 +117,15 @@ public class AuditRequestFilter implements ContainerRequestFilter {
 
     String accountId = getRequestParamFromContext("accountId", pathParameters, queryParameters);
 
-    if (isNotEmpty(accountId) && isNotEmpty(requestContext.getHeaderString("X-Api-Key"))) {
-      ApiKeyEntry apiKeyEntry = apiKeyService.getByKey(requestContext.getHeaderString("X-Api-Key"), accountId, true);
-      header.setApiKeyAuditDetails(
-          ApiKeyAuditDetails.builder().apiKeyName(apiKeyEntry.getName()).apiKeyId(apiKeyEntry.getUuid()).build());
+    if (isNotEmpty(requestContext.getHeaderString("X-Api-Key"))) {
+      if (isEmpty(accountId)) {
+        accountId = apiKeyService.getAccountIdFromApiKey(requestContext.getHeaderString("X-Api-Key"));
+      }
+      if (isNotEmpty(accountId)) {
+        ApiKeyEntry apiKeyEntry = apiKeyService.getByKey(requestContext.getHeaderString("X-Api-Key"), accountId, false);
+        header.setApiKeyAuditDetails(
+            ApiKeyAuditDetails.builder().apiKeyName(apiKeyEntry.getName()).apiKeyId(apiKeyEntry.getUuid()).build());
+      }
     }
 
     header = auditHelper.create(header);
