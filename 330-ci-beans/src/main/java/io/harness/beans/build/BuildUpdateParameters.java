@@ -5,14 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngpipeline.pipeline.executions.beans;
+package io.harness.beans.build;
 
-import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import io.harness.pms.sdk.core.steps.io.StepParameters;
 
-import io.harness.annotations.dev.OwnedBy;
-
-@OwnedBy(PIPELINE)
-public interface ArtifactSummary {
-  String getType();
-  String getDisplayName();
+public interface BuildUpdateParameters extends StepParameters {
+  BuildUpdateType getBuildUpdateType();
 }

@@ -5,10 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngpipeline.pipeline.executions.beans;
+package io.harness.cdng.artifact;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
-public interface WithArtifactSummary {
-  @JsonIgnore ArtifactSummary getArtifactSummary();
+import io.harness.annotations.dev.OwnedBy;
+
+@OwnedBy(PIPELINE)
+public interface ArtifactSummary {
+  String getType();
+  String getDisplayName();
 }

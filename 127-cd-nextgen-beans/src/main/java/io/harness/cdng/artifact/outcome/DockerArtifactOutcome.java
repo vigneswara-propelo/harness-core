@@ -5,14 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngpipeline.artifact.bean;
+package io.harness.cdng.artifact.outcome;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.ngpipeline.pipeline.executions.beans.ArtifactSummary;
-import io.harness.ngpipeline.pipeline.executions.beans.DockerArtifactSummary;
+import io.harness.cdng.artifact.ArtifactSummary;
+import io.harness.cdng.artifact.DockerArtifactSummary;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Builder;
@@ -26,9 +26,6 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("dockerArtifactOutcome")
 @JsonTypeName("dockerArtifactOutcome")
 @OwnedBy(CDC)
-// TODO : Create a shared Module b/w pipline and CD/CI where these entities can go to and eventually We need to
-// deprecate that module 878-pms-coupling
-// @TargetModule(878-pms-coupling)
 @RecasterAlias("io.harness.ngpipeline.artifact.bean.DockerArtifactOutcome")
 public class DockerArtifactOutcome implements ArtifactOutcome {
   /** Docker hub registry connector. */

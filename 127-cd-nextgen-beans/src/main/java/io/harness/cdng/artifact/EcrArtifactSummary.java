@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngpipeline.pipeline.executions.beans;
+package io.harness.cdng.artifact;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
@@ -19,8 +19,8 @@ import lombok.Data;
 @OwnedBy(PIPELINE)
 @Data
 @Builder
-@JsonTypeName(ArtifactSourceConstants.GCR_NAME)
-public class GcrArtifactSummary implements ArtifactSummary {
+@JsonTypeName(ArtifactSourceConstants.ECR_NAME)
+public class EcrArtifactSummary implements ArtifactSummary {
   String imagePath;
   String tag;
 
@@ -31,6 +31,6 @@ public class GcrArtifactSummary implements ArtifactSummary {
 
   @Override
   public String getType() {
-    return ArtifactSourceConstants.GCR_NAME;
+    return ArtifactSourceConstants.ECR_NAME;
   }
 }

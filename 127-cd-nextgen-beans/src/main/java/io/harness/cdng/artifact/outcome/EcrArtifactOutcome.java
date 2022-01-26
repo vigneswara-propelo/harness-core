@@ -5,14 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngpipeline.artifact.bean;
+package io.harness.cdng.artifact.outcome;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.ngpipeline.pipeline.executions.beans.ArtifactSummary;
-import io.harness.ngpipeline.pipeline.executions.beans.EcrArtifactSummary;
+import io.harness.cdng.artifact.ArtifactSummary;
+import io.harness.cdng.artifact.EcrArtifactSummary;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Builder;

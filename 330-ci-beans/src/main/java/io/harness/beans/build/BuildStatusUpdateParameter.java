@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngpipeline.status;
+package io.harness.beans.build;
 
 import io.harness.annotation.RecasterAlias;
 

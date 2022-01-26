@@ -5,10 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngpipeline.status;
+package io.harness.beans.build;
 
-import io.harness.pms.sdk.core.steps.io.StepParameters;
-
-public interface BuildUpdateParameters extends StepParameters {
-  BuildUpdateType getBuildUpdateType();
+public enum BuildUpdateType {
+  STATUS,
+  CHECKS;
 }
