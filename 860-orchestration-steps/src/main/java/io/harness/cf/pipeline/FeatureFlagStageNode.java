@@ -14,7 +14,7 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.plancreator.stages.stage.AbstractStageNode;
+import io.harness.plancreator.stages.PmsAbstractStageNode;
 import io.harness.plancreator.stages.stage.StageInfoConfig;
 import io.harness.steps.StepSpecTypeConstants;
 
@@ -35,7 +35,7 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("FeatureFlagStageNode")
 @OwnedBy(CDC)
 @RecasterAlias("io.harness.cf.pipeline.FeatureFlagStageNode")
-public class FeatureFlagStageNode extends AbstractStageNode {
+public class FeatureFlagStageNode extends PmsAbstractStageNode {
   @JsonProperty("type") @NotNull StepType type = StepType.FeatureFlag;
 
   @JsonProperty("spec")
