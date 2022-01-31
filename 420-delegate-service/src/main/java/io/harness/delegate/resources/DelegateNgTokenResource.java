@@ -44,8 +44,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
 
-@Api("/v2/delegate-token")
-@Path("/v2/delegate-token")
+@Api("/ng/delegate-token")
+@Path("/ng/delegate-token")
 @Produces("application/json")
 @Scope(DELEGATE)
 @Slf4j
