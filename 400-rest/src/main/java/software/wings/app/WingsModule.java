@@ -86,6 +86,7 @@ import io.harness.datahandler.services.AdminAccountService;
 import io.harness.datahandler.services.AdminAccountServiceImpl;
 import io.harness.datahandler.services.AdminFeatureFlagService;
 import io.harness.datahandler.services.AdminFeatureFlagServiceImpl;
+import io.harness.datahandler.services.AdminRingService;
 import io.harness.datahandler.services.AdminUserService;
 import io.harness.datahandler.services.AdminUserServiceImpl;
 import io.harness.datahandler.utils.AccountSummaryHelper;
@@ -999,6 +1000,7 @@ public class WingsModule extends AbstractModule implements ServersModule {
     bind(AdminAccountService.class).to(AdminAccountServiceImpl.class);
     bind(AdminUserService.class).to(AdminUserServiceImpl.class);
     bind(AdminFeatureFlagService.class).to(AdminFeatureFlagServiceImpl.class);
+    bind(AdminRingService.class);
     bind(AccountSummaryHelper.class).to(AccountSummaryHelperImpl.class);
     bind(PipelineService.class).to(PipelineServiceImpl.class);
     bind(NotificationSetupService.class).to(NotificationSetupServiceImpl.class);
