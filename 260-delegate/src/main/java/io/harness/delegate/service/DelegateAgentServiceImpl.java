@@ -417,6 +417,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   private final boolean multiVersion = DeployMode.KUBERNETES.name().equals(System.getenv().get(DeployMode.DEPLOY_MODE))
       || TRUE.toString().equals(System.getenv().get("MULTI_VERSION"));
+  private boolean isServer;
 
   public static Optional<String> getDelegateId() {
     return Optional.ofNullable(delegateId);
@@ -451,6 +452,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Override
   @SuppressWarnings("unchecked")
   public void run(final boolean watched, final boolean isServer) {
+    this.isServer = isServer;
     try {
       accountId = delegateConfiguration.getAccountId();
       if (perpetualTaskWorker != null) {
@@ -723,7 +725,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         }
       }
 
-      if (!isServer) {
+      if (!this.isServer) {
         synchronized (waiter) {
           while (waiter.get()) {
             waiter.wait();
@@ -2062,8 +2064,12 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     timeoutEnforcement.submit(() -> enforceDelegateTaskTimeout(delegateTaskPackage.getDelegateTaskId(), taskData));
 
     // Start task execution in same thread and measure duration.
-    metricRegistry.recordGaugeDuration(
-        TASK_EXECUTION_TIME, new String[] {DELEGATE_NAME, taskData.getTaskType()}, delegateRunnableTask);
+    if (isServer) {
+      metricRegistry.recordGaugeDuration(
+          TASK_EXECUTION_TIME, new String[] {DELEGATE_NAME, taskData.getTaskType()}, delegateRunnableTask);
+    } else {
+      delegateRunnableTask.run();
+    }
   }
 
   private ILogStreamingTaskClient getLogStreamingTaskClient(
