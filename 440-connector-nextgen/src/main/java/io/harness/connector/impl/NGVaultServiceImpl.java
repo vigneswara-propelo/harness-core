@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.beans.FeatureName.ENABLE_CERT_VALIDATION;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.INVALID_AZURE_VAULT_CONFIGURATION;
+import static io.harness.eraro.ErrorCode.INVALID_CREDENTIAL;
 import static io.harness.eraro.ErrorCode.SECRET_MANAGEMENT_ERROR;
 import static io.harness.eraro.ErrorCode.VAULT_OPERATION_ERROR;
 import static io.harness.exception.WingsException.USER;
@@ -58,6 +59,8 @@ import io.harness.encryption.SecretRefHelper;
 import io.harness.encryptors.DelegateTaskUtils;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.AzureServiceException;
+import io.harness.exception.DelegateServiceDriverException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.exception.SecretManagementDelegateException;
 import io.harness.exception.SecretManagementException;
 import io.harness.exception.WingsException;
@@ -170,11 +173,26 @@ public class NGVaultServiceImpl implements NGVaultService {
   public List<SecretEngineSummary> listSecretEngines(BaseVaultConfig baseVaultConfig) {
     List<SecretEngineSummary> secretEngineSummaries = new ArrayList<>();
     setCertValidation(baseVaultConfig.getAccountId(), baseVaultConfig);
-    for (SecretEngineSummary secretEngineSummary : listSecretEnginesInternal(baseVaultConfig)) {
-      if (secretEngineSummary.getType() != null && secretEngineSummary.getType().equals("kv")) {
-        secretEngineSummaries.add(secretEngineSummary);
+    try {
+      for (SecretEngineSummary secretEngineSummary : listSecretEnginesInternal(baseVaultConfig)) {
+        if (secretEngineSummary.getType() != null && secretEngineSummary.getType().equals("kv")) {
+          secretEngineSummaries.add(secretEngineSummary);
+        }
       }
+    } catch (WingsException wingsException) {
+      log.error("Listing secret engines failed for account Id {}", baseVaultConfig.getAccountId(), wingsException);
+      throw wingsException;
+    } catch (DelegateServiceDriverException ex) {
+      if (ex.getCause() != null) {
+        throw new WingsException(ex.getCause().getMessage(), ex);
+      } else {
+        throw new WingsException(ex);
+      }
+    } catch (Exception e) {
+      log.error("Listing vault engines failed for account Id {}", baseVaultConfig.getAccountId(), e);
+      throw new InvalidRequestException("Failed to list Vault engines", INVALID_CREDENTIAL, USER);
     }
+
     return secretEngineSummaries;
   }
 
@@ -467,6 +485,12 @@ public class NGVaultServiceImpl implements NGVaultService {
     } catch (WingsException wingsException) {
       log.error("Listing vaults failed for account Id {}", accountIdentifier, wingsException);
       throw wingsException; // for error handling framework
+    } catch (DelegateServiceDriverException ex) {
+      if (ex.getCause() != null) {
+        throw new WingsException(ex.getCause().getMessage(), ex);
+      } else {
+        throw new WingsException(ex);
+      }
     } catch (Exception e) {
       log.error("Listing vaults failed for account Id {}", accountIdentifier, e);
       throw new AzureServiceException("Failed to list vaults.", INVALID_AZURE_VAULT_CONFIGURATION, USER);
@@ -654,7 +678,7 @@ public class NGVaultServiceImpl implements NGVaultService {
         return ((NGVaultFetchEngineTaskResponse) delegateResponseData).getSecretEngineSummaryList();
       } catch (WingsException e) {
         failedAttempts++;
-        log.warn("Vault Decryption failed for list secret engines for Vault serverer {}. trial num: {}",
+        log.warn("Vault Decryption failed for list secret engines for Vault server {}. trial num: {}",
             vaultConfig.getName(), failedAttempts, e);
         if (failedAttempts == NUM_OF_RETRIES) {
           throw e;
