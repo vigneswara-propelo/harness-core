@@ -99,13 +99,7 @@ Official steps to install docker on mac: [docker.com](https://docs.docker.com/de
 
    (Optional) Follow https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
    to setup your SSH keys. You can then use SSH to interact with git
-
-3. Bazel install
-
-    Create a file `.bazelrc` in your harness-core repo root with the following content
-    ```
-    import bazelrc.local
-    ```
+   
     NOTE: If you have regular bazel installed, please uninstall bazel and install bazelisk. It allows us to use the git repo to synchronize everyone's installation of bazel.
 
 4. Setup the build purpose
