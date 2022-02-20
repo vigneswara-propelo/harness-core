@@ -93,8 +93,12 @@ public class HashicorpVaultEncryptor implements VaultEncryptor {
         failedAttempts++;
         log.warn("encryption failed. trial num: {}", failedAttempts, e);
         if (failedAttempts == NUM_OF_RETRIES) {
-          String message = "After " + NUM_OF_RETRIES + " tries, encryption for vault secret " + name + " failed.";
-          throw new SecretManagementDelegateException(VAULT_OPERATION_ERROR, message, e, USER);
+          if (e instanceof HashiCorpVaultRuntimeException) {
+            throw new HashiCorpVaultRuntimeException(e.getMessage());
+          } else {
+            String message = "After " + NUM_OF_RETRIES + " tries, encryption for vault secret " + name + " failed.";
+            throw new SecretManagementDelegateException(VAULT_OPERATION_ERROR, message, e, USER);
+          }
         }
         sleep(ofMillis(1000));
       }
