@@ -20,6 +20,7 @@ import io.harness.EntityType;
 import io.harness.ModuleType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.encryption.Scope;
 import io.harness.exception.InvalidYamlException;
 import io.harness.exception.JsonSchemaException;
@@ -53,6 +54,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,12 +88,14 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
   private final FeatureFlagYamlService featureFlagYamlService;
   private final SchemaFetcher schemaFetcher;
   private final ProjectClient projectClient;
+  Integer allowedParallelStages;
 
   @Inject
   public PMSYamlSchemaServiceImpl(YamlSchemaProvider yamlSchemaProvider, YamlSchemaGenerator yamlSchemaGenerator,
       YamlSchemaValidator yamlSchemaValidator, PmsSdkInstanceService pmsSdkInstanceService,
       PmsYamlSchemaHelper pmsYamlSchemaHelper, ApprovalYamlSchemaService approvalYamlSchemaService,
-      FeatureFlagYamlService featureFlagYamlService, SchemaFetcher schemaFetcher, ProjectClient projectClient) {
+      FeatureFlagYamlService featureFlagYamlService, SchemaFetcher schemaFetcher, ProjectClient projectClient,
+      @Named("allowedParallelStages") Integer allowedParallelStages) {
     this.yamlSchemaProvider = yamlSchemaProvider;
     this.yamlSchemaGenerator = yamlSchemaGenerator;
     this.yamlSchemaValidator = yamlSchemaValidator;
@@ -101,6 +105,7 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
     this.featureFlagYamlService = featureFlagYamlService;
     this.schemaFetcher = schemaFetcher;
     this.projectClient = projectClient;
+    this.allowedParallelStages = allowedParallelStages;
   }
 
   @Override
@@ -123,7 +128,9 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
     try {
       JsonNode schema = getPipelineYamlSchema(accountIdentifier, projectId, orgId, Scope.PROJECT);
       String schemaString = JsonPipelineUtils.writeJsonString(schema);
-      Set<String> errors = yamlSchemaValidator.validate(yaml, schemaString);
+      Set<String> errors = yamlSchemaValidator.validate(yaml, schemaString,
+          pmsYamlSchemaHelper.isFeatureFlagEnabled(FeatureName.DONT_RESTRICT_PARALLEL_STAGE_COUNT, accountIdentifier),
+          allowedParallelStages);
       if (!errors.isEmpty()) {
         throw new JsonSchemaValidationException(String.join("\n", errors));
       }
