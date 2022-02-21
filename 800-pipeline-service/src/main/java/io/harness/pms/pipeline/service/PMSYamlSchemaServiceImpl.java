@@ -57,10 +57,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -196,22 +195,18 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
 
     try {
       List<List<PartialSchemaDTO>> partialSchemaDTOList = completableFutures.allOf().get(2, TimeUnit.MINUTES);
-      Map<ModuleType, List<PartialSchemaDTO>> partialSchemaDtoMap = new HashMap<>();
 
-      for (List<PartialSchemaDTO> partialSchemaDTOList1 : partialSchemaDTOList) {
-        if (partialSchemaDTOList1 != null) {
-          partialSchemaDtoMap.put(partialSchemaDTOList1.get(0).getModuleType(), partialSchemaDTOList1);
-        }
-      }
-
-      partialSchemaDtoMap.values().forEach(partialSchemaDTOList1
-          -> partialSchemaDTOList1.forEach(partialSchemaDTO
-              -> pmsYamlSchemaHelper.processPartialStageSchema(
-                  finalMergedDefinitions, pipelineStepsDefinitions, stageElementConfig, partialSchemaDTO)));
+      partialSchemaDTOList.stream()
+          .filter(Objects::nonNull)
+          .forEach(partialSchemaDTOList1
+              -> partialSchemaDTOList1.forEach(partialSchemaDTO
+                  -> pmsYamlSchemaHelper.processPartialStageSchema(
+                      finalMergedDefinitions, pipelineStepsDefinitions, stageElementConfig, partialSchemaDTO)));
     } catch (Exception e) {
       log.error(format("[PMS] Exception while merging yaml schema: %s", e.getMessage()), e);
     }
 
+    log.info("[PMS] Merging all stages into pipeline schema");
     pmsYamlSchemaHelper.processStageSchema(schemaWithDetailsList, pipelineDefinitions);
     // Remove duplicate if then statements from stage element config. Keep references only to new ones we added above.
     removeDuplicateIfThenFromStageElementConfig(stageElementConfig);
