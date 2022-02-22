@@ -10,9 +10,7 @@ package io.harness.filters;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.walktree.visitor.utilities.VisitorParentPathUtils.PATH_CONNECTOR;
 
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.exception.InvalidRequestException;
@@ -25,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(PIPELINE)
-@TargetModule(HarnessModule._878_PIPELINE_SERVICE_UTILITIES)
 public class ConnectorRefExtractorHelper implements EntityReferenceExtractor {
   @Override
   public Object createDummyVisitableElement(Object originalElement) {

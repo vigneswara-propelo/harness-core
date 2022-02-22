@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-@TargetModule(HarnessModule._878_PIPELINE_SERVICE_UTILITIES)
+@TargetModule(HarnessModule._878_NG_COMMON_UTILITIES)
 public class VariableCreatorHelper {
   public void addVariablesForVariables(
       YamlField variablesField, Map<String, YamlProperties> yamlPropertiesMap, String fieldName) {
