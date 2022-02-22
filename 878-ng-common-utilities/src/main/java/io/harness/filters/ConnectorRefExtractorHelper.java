@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.walktree.visitor.utilities.VisitorParentPathUtils.PATH_CONNECTOR;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.common.NGExpressionUtils;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.exception.InvalidRequestException;
@@ -46,7 +47,7 @@ public class ConnectorRefExtractorHelper implements EntityReferenceExtractor {
         continue;
       }
 
-      if (!connectorRef.isExpression()) {
+      if (!connectorRef.isExpression() || NGExpressionUtils.matchesInputSetPattern(connectorRef.getExpressionValue())) {
         String fullQualifiedDomainName =
             VisitorParentPathUtils.getFullQualifiedDomainName(contextMap) + PATH_CONNECTOR + key;
         result.add(FilterCreatorHelper.convertToEntityDetailProtoDTO(accountIdentifier, orgIdentifier,
