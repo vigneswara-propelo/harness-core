@@ -680,9 +680,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         hPersistence.createQuery(MonitoredService.class)
             .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
             .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
-            .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier())
-            .field(MonitoredServiceKeys.identifier)
-            .in(identifiers);
+            .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier());
+    if (!identifiers.isEmpty()) {
+      query.field(MonitoredServiceKeys.identifier).in(identifiers);
+    }
 
     return query.asList();
   }
