@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -166,12 +167,23 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   @Override
   public List<NodeExecution> fetchNodeExecutionsWithoutOldRetriesAndStatusIn(
       String planExecutionId, EnumSet<Status> statuses, boolean shouldUseProjections, Set<String> fieldsToBeIncluded) {
+    return fetchNodeExecutionsWithoutOldRetriesAndStatusIn(
+        planExecutionId, statuses, shouldUseProjections, fieldsToBeIncluded, Collections.emptySet());
+  }
+
+  @Override
+  public List<NodeExecution> fetchNodeExecutionsWithoutOldRetriesAndStatusIn(String planExecutionId,
+      EnumSet<Status> statuses, boolean shouldUseProjections, Set<String> fieldsToBeIncluded,
+      Set<String> fieldsToBeExcluded) {
     Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
                       .addCriteria(where(NodeExecutionKeys.oldRetry).is(false));
     if (shouldUseProjections) {
       fieldsToBeIncluded.addAll(DEFAULT_FIELDS);
       for (String field : fieldsToBeIncluded) {
         query.fields().include(field);
+      }
+      for (String field : fieldsToBeExcluded) {
+        query.fields().exclude(field);
       }
     }
     if (isNotEmpty(statuses)) {
@@ -453,10 +465,10 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   @Override
   public List<NodeExecution> findAllChildrenWithStatusIn(String planExecutionId, String parentId,
       EnumSet<Status> flowingStatuses, boolean includeParent, boolean shouldUseProjections,
-      Set<String> fieldsToBeIncluded) {
+      Set<String> fieldsToBeIncluded, Set<String> fieldsToBeExcluded) {
     List<NodeExecution> finalList = new ArrayList<>();
-    List<NodeExecution> allExecutions =
-        fetchNodeExecutionsWithoutOldRetriesAndStatusIn(planExecutionId, flowingStatuses, true, fieldsToBeIncluded);
+    List<NodeExecution> allExecutions = fetchNodeExecutionsWithoutOldRetriesAndStatusIn(
+        planExecutionId, flowingStatuses, true, fieldsToBeIncluded, fieldsToBeExcluded);
     return extractChildExecutions(parentId, includeParent, finalList, allExecutions);
   }
 

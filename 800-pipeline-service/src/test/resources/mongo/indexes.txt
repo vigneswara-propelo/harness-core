@@ -108,6 +108,7 @@ nodeExecutions {"name": "planExecutionId_mode_status_oldRetry_idx", "background"
 nodeExecutions {"name": "planExecutionId_notifyId_idx", "background": true} {"ambiance.planExecutionId": 1, "notifyId": 1}
 nodeExecutions {"name": "planExecutionId_oldRetry_idx", "background": true} {"ambiance.planExecutionId": 1, "oldRetry": 1}
 nodeExecutions {"name": "planExecutionId_parentId_status_idx", "background": true} {"ambiance.planExecutionId": 1, "parentId": 1, "status": 1}
+nodeExecutions {"name": "planExecutionId_parentId_status_oldRetry_idx", "background": true} {"ambiance.planExecutionId": 1, "parentId": 1, "status": 1, "oldRetry": 1}
 nodeExecutions {"name": "planExecutionId_planNodeId_idx", "background": true} {"ambiance.planExecutionId": 1, "planNode.uuid": 1}
 nodeExecutions {"name": "planExecutionId_planNodeIdentifier_idx", "background": true} {"ambiance.planExecutionId": 1, "planNode.identifier": 1}
 nodeExecutions {"name": "planExecutionId_stageFqn_idx", "background": true} {"ambiance.planExecutionId": 1, "planNode.stageFqn": 1}
