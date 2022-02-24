@@ -53,6 +53,9 @@ public final class EventsFrameworkConstants {
   public static final String PIPELINE_SDK_RESPONSE_EVENT_TOPIC = "pipeline_sdk_response";
   public static final int PIPELINE_SDK_RESPONSE_EVENT_MAX_TOPIC_SIZE = 5000;
 
+  public static final String INITIATE_NODE_EVENT_TOPIC = "pipeline_initiate_node";
+  public static final int INITIATE_NODE_EVENT_MAX_TOPIC_SIZE = 5000;
+
   public static final String PIPELINE_PARTIAL_PLAN_RESPONSE = "pipeline_partial_plan_response";
   public static final int PIPELINE_PARTIAL_PLAN_RESPONSE_EVENT_MAX_TOPIC_SIZE = 5000;
 
