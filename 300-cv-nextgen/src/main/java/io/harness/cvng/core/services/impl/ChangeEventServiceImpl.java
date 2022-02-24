@@ -7,6 +7,8 @@
 
 package io.harness.cvng.core.services.impl;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.persistence.HQuery.QueryChecks.COUNT;
 
 import static org.mongodb.morphia.aggregation.Accumulator.accumulator;
@@ -38,7 +40,6 @@ import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.core.transformer.changeEvent.ChangeEventEntityAndDTOTransformer;
 import io.harness.cvng.dashboard.entities.HeatMap.HeatMapResolution;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
 import io.harness.persistence.HPersistence;
@@ -51,6 +52,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -118,10 +120,32 @@ public class ChangeEventServiceImpl implements ChangeEventService {
 
   @Override
   public PageResponse<ChangeEventDTO> getChangeEvents(ProjectParams projectParams, List<String> serviceIdentifiers,
+      List<String> environmentIdentifier, List<String> monitoredServiceIdentifiers, String searchText,
+      List<ChangeCategory> changeCategories, List<ChangeSourceType> changeSourceTypes, Instant startTime,
+      Instant endTime, PageRequest pageRequest) {
+    if (isNotEmpty(monitoredServiceIdentifiers)) {
+      Preconditions.checkState(isEmpty(serviceIdentifiers) && isEmpty(environmentIdentifier),
+          "serviceIdentifier, envIdentifier filter can not be used with monitoredServiceIdentifier filter");
+      return getChangeEvents(projectParams, monitoredServiceIdentifiers, searchText, changeCategories,
+          changeSourceTypes, startTime, endTime, pageRequest);
+    } else {
+      return getChangeEvents(projectParams, serviceIdentifiers, environmentIdentifier, searchText, changeCategories,
+          changeSourceTypes, startTime, endTime, pageRequest);
+    }
+  }
+
+  @Override
+  public PageResponse<ChangeEventDTO> getChangeEvents(ProjectParams projectParams, List<String> serviceIdentifiers,
       List<String> environmentIdentifier, String searchText, List<ChangeCategory> changeCategories,
       List<ChangeSourceType> changeSourceTypes, Instant startTime, Instant endTime, PageRequest pageRequest) {
     List<String> monitoredServiceIdentifiers = monitoredServiceService.getMonitoredServiceIdentifiers(
         projectParams, serviceIdentifiers, environmentIdentifier);
+    return getChangeEvents(projectParams, monitoredServiceIdentifiers, searchText, changeCategories, changeSourceTypes,
+        startTime, endTime, pageRequest);
+  }
+  private PageResponse<ChangeEventDTO> getChangeEvents(ProjectParams projectParams,
+      List<String> monitoredServiceIdentifiers, String searchText, List<ChangeCategory> changeCategories,
+      List<ChangeSourceType> changeSourceTypes, Instant startTime, Instant endTime, PageRequest pageRequest) {
     List<Activity> activities = createQuery(
         projectParams, startTime, endTime, monitoredServiceIdentifiers, searchText, changeCategories, changeSourceTypes)
                                     .order(Sort.descending(ActivityKeys.eventTime))
@@ -236,12 +260,29 @@ public class ChangeEventServiceImpl implements ChangeEventService {
 
   @Override
   public ChangeSummaryDTO getChangeSummary(ProjectParams projectParams, List<String> serviceIdentifiers,
-      List<String> environmentIdentifier, List<ChangeCategory> changeCategories,
+      List<String> environmentIdentifiers, List<ChangeCategory> changeCategories,
       List<ChangeSourceType> changeSourceTypes, Instant startTime, Instant endTime) {
+    List<String> monitoredServiceIdentifiers = monitoredServiceService.getMonitoredServiceIdentifiers(
+        projectParams, serviceIdentifiers, environmentIdentifiers);
+    return getChangeSummary(
+        projectParams, monitoredServiceIdentifiers, changeCategories, changeSourceTypes, startTime, endTime);
+  }
+
+  @Override
+  public ChangeSummaryDTO getChangeSummary(ProjectParams projectParams, String monitoredServiceIdentifier,
+      List<ChangeCategory> changeCategories, List<ChangeSourceType> changeSourceTypes, Instant startTime,
+      Instant endTime) {
+    return getChangeSummary(projectParams, Collections.singletonList(monitoredServiceIdentifier), changeCategories,
+        changeSourceTypes, startTime, endTime);
+  }
+
+  private ChangeSummaryDTO getChangeSummary(ProjectParams projectParams, List<String> monitoredServiceIdentifiers,
+      List<ChangeCategory> changeCategories, List<ChangeSourceType> changeSourceTypes, Instant startTime,
+      Instant endTime) {
     Map<ChangeCategory, Map<Integer, Integer>> changeCategoryToIndexToCount =
         Arrays.stream(ChangeCategory.values()).collect(Collectors.toMap(Function.identity(), c -> new HashMap<>()));
-    getTimelineObject(projectParams, serviceIdentifiers, environmentIdentifier, null, changeCategories,
-        changeSourceTypes, startTime.minus(Duration.between(startTime, endTime)), endTime, 2)
+    getTimelineObject(projectParams, monitoredServiceIdentifiers, null, changeCategories, changeSourceTypes,
+        startTime.minus(Duration.between(startTime, endTime)), endTime, 2)
         .forEachRemaining(timelineObject -> {
           ChangeCategory changeCategory = ChangeSourceType.ofActivityType(timelineObject.id.type).getChangeCategory();
           Map<Integer, Integer> indexToCountMap = changeCategoryToIndexToCount.get(changeCategory);
@@ -344,7 +385,7 @@ public class ChangeEventServiceImpl implements ChangeEventService {
     }
     query = query.field(ActivityKeys.type)
                 .in(changeSourceTypeStream.map(ChangeSourceType::getActivityType).collect(Collectors.toList()));
-    if (EmptyPredicate.isNotEmpty(monitoredServiceIdentifiers)) {
+    if (isNotEmpty(monitoredServiceIdentifiers)) {
       query.or(new Criteria[] {query.criteria(ActivityKeys.monitoredServiceIdentifier).in(monitoredServiceIdentifiers),
           query
               .criteria(KubernetesClusterActivityKeys.relatedAppServices + "."

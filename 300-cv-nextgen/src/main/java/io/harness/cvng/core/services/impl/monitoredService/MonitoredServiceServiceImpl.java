@@ -1049,23 +1049,6 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   @Override
-  public ChangeSummaryDTO getChangeSummary(
-      ProjectParams projectParams, String monitoredServiceIdentifier, Instant startTime, Instant endTime) {
-    MonitoredService monitoredService = getMonitoredService(projectParams, monitoredServiceIdentifier);
-    if (monitoredService == null) {
-      throw new InvalidRequestException(
-          String.format("Monitored Service not found for identifier %s", monitoredServiceIdentifier));
-    }
-    ServiceEnvironmentParams serviceEnvironmentParams =
-        builderWithProjectParams(projectParams)
-            .serviceIdentifier(monitoredService.getServiceIdentifier())
-            .environmentIdentifier(monitoredService.getEnvironmentIdentifier())
-            .build();
-    return changeSourceService.getChangeSummary(
-        serviceEnvironmentParams, monitoredService.getChangeSourceIdentifiers(), startTime, endTime);
-  }
-
-  @Override
   public AnomaliesSummaryDTO getAnomaliesSummary(
       ProjectParams projectParams, String monitoredServiceIdentifier, TimeRangeParams timeRangeParams) {
     MonitoredService monitoredService = getMonitoredService(projectParams, monitoredServiceIdentifier);

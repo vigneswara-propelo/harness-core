@@ -96,6 +96,7 @@ public class ChangeEventResource {
       @PathParam(CVNextGenConstants.PROJECT_IDENTIFIER_KEY) @NonNull String projectIdentifier,
       @QueryParam("serviceIdentifiers") List<String> serviceIdentifiers,
       @QueryParam("envIdentifiers") List<String> envIdentifiers,
+      @QueryParam("monitoredServiceIdentifiers") List<String> monitoredServiceIdentifiers,
       @QueryParam("changeCategories") List<ChangeCategory> changeCategories,
       @QueryParam("changeSourceTypes") List<ChangeSourceType> changeSourceTypes,
       @QueryParam("searchText") String searchText,
@@ -107,8 +108,8 @@ public class ChangeEventResource {
                                       .projectIdentifier(projectIdentifier)
                                       .build();
     return new RestResponse<>(changeEventService.getChangeEvents(projectParams, serviceIdentifiers, envIdentifiers,
-        searchText, changeCategories, changeSourceTypes, Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime),
-        pageRequest));
+        monitoredServiceIdentifiers, searchText, changeCategories, changeSourceTypes, Instant.ofEpochMilli(startTime),
+        Instant.ofEpochMilli(endTime), pageRequest));
   }
 
   @GET
@@ -133,6 +134,31 @@ public class ChangeEventResource {
                                       .projectIdentifier(projectIdentifier)
                                       .build();
     return new RestResponse<>(changeEventService.getChangeSummary(projectParams, serviceIdentifiers, envIdentifiers,
+        changeCategories, changeSourceTypes, Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime)));
+  }
+
+  @GET
+  @Timed
+  @NextGenManagerAuth
+  @Path("change-event/monitored-service-summary")
+  @ExceptionMetered
+  @ApiOperation(
+      value = "get ChangeEvent summary for monitored service", nickname = "getMonitoredServiceChangeEventSummary")
+  public RestResponse<ChangeSummaryDTO>
+  getSummary(@QueryParam("accountId") @NonNull String accountIdentifier,
+      @QueryParam(CVNextGenConstants.ORG_IDENTIFIER_KEY) @NonNull String orgIdentifier,
+      @QueryParam(CVNextGenConstants.PROJECT_IDENTIFIER_KEY) @NonNull String projectIdentifier,
+      @QueryParam("monitoredServiceIdentifier") @NonNull String monitoredServiceIdentifier,
+      @QueryParam("changeCategories") List<ChangeCategory> changeCategories,
+      @QueryParam("changeSourceTypes") List<ChangeSourceType> changeSourceTypes,
+      @ApiParam(required = true) @NotNull @QueryParam("startTime") long startTime,
+      @ApiParam(required = true) @NotNull @QueryParam("endTime") long endTime) {
+    ProjectParams projectParams = ProjectParams.builder()
+                                      .accountIdentifier(accountIdentifier)
+                                      .orgIdentifier(orgIdentifier)
+                                      .projectIdentifier(projectIdentifier)
+                                      .build();
+    return new RestResponse<>(changeEventService.getChangeSummary(projectParams, monitoredServiceIdentifier,
         changeCategories, changeSourceTypes, Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime)));
   }
 

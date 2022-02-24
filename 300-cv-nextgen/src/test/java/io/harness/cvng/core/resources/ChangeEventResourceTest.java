@@ -8,6 +8,7 @@
 package io.harness.cvng.core.resources;
 
 import static io.harness.rule.OwnerRule.ABHIJITH;
+import static io.harness.rule.OwnerRule.KAMAL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -105,6 +106,94 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
     assertThat(firstPage.getContent().size()).isEqualTo(2);
     assertThat(firstPage.getContent().get(0).getEventTime()).isEqualTo(300000);
     assertThat(firstPage.getContent().get(1).getEventTime()).isEqualTo(101000);
+  }
+
+  @Test
+  @Owner(developers = KAMAL)
+  @Category(UnitTests.class)
+  public void testGetPaginatedWithMonitoredServiceIdentifier() {
+    hPersistence.save(Arrays.asList(
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
+        builderFactory.getDeploymentActivityBuilder()
+            .serviceIdentifier("service2")
+            .environmentIdentifier("env2")
+            .monitoredServiceIdentifier("service_env2")
+            .eventTime(Instant.ofEpochSecond(200))
+            .build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(300)).build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(101)).build(),
+        builderFactory.getPagerDutyActivityBuilder().eventTime(Instant.ofEpochSecond(300)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder()
+            .eventTime(Instant.ofEpochSecond(300))
+            .build()));
+    Response response = RESOURCES.client()
+                            .target(getChangeEventPath(builderFactory.getContext().getProjectParams()))
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .queryParam("monitoredServiceIdentifiers",
+                                builderFactory.getContext().getMonitoredServiceParams().getMonitoredServiceIdentifier())
+                            .queryParam("changeCategories", "Deployment", "Alert")
+                            .queryParam("changeSourceTypes", "HarnessCDNextGen", "K8sCluster")
+                            .queryParam("startTime", 100000)
+                            .queryParam("endTime", 400000)
+                            .queryParam("pageIndex", 0)
+                            .queryParam("pageSize", 2)
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .get();
+
+    assertThat(response.getStatus()).isEqualTo(200);
+    PageResponse<ChangeEventDTO> firstPage =
+        response.readEntity(new GenericType<RestResponse<PageResponse<ChangeEventDTO>>>() {}).getResource();
+    assertThat(firstPage.getPageIndex()).isEqualTo(0);
+    assertThat(firstPage.getPageItemCount()).isEqualTo(2);
+    assertThat(firstPage.getTotalItems()).isEqualTo(3);
+    assertThat(firstPage.getTotalPages()).isEqualTo(2);
+    assertThat(firstPage.getPageItemCount()).isEqualTo(2);
+    assertThat(firstPage.getContent().size()).isEqualTo(2);
+    assertThat(firstPage.getContent().get(0).getEventTime()).isEqualTo(300000);
+    assertThat(firstPage.getContent().get(1).getEventTime()).isEqualTo(101000);
+  }
+
+  @Test
+  @Owner(developers = KAMAL)
+  @Category(UnitTests.class)
+  public void testGetPaginatedInvalidQueryParams() {
+    hPersistence.save(Arrays.asList(
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
+        builderFactory.getDeploymentActivityBuilder()
+            .serviceIdentifier("service2")
+            .environmentIdentifier("env2")
+            .monitoredServiceIdentifier("service_env2")
+            .eventTime(Instant.ofEpochSecond(200))
+            .build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(300)).build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(101)).build(),
+        builderFactory.getPagerDutyActivityBuilder().eventTime(Instant.ofEpochSecond(300)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder()
+            .eventTime(Instant.ofEpochSecond(300))
+            .build()));
+    Response response = RESOURCES.client()
+                            .target(getChangeEventPath(builderFactory.getContext().getProjectParams()))
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .queryParam("monitoredServiceIdentifiers",
+                                builderFactory.getContext().getMonitoredServiceParams().getMonitoredServiceIdentifier())
+                            .queryParam("serviceIdentifiers", builderFactory.getContext().getServiceIdentifier())
+                            .queryParam("changeCategories", "Deployment", "Alert")
+                            .queryParam("changeSourceTypes", "HarnessCDNextGen", "K8sCluster")
+                            .queryParam("startTime", 100000)
+                            .queryParam("endTime", 400000)
+                            .queryParam("pageIndex", 0)
+                            .queryParam("pageSize", 2)
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .get();
+
+    assertThat(response.getStatus()).isEqualTo(500);
+    assertThat(response.readEntity(String.class))
+        .contains(
+            "java.lang.IllegalStateException: serviceIdentifier, envIdentifier filter can not be used with monitoredServiceIdentifier filter");
   }
 
   @Test
@@ -256,7 +345,7 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
   }
 
   @Test
-  @Owner(developers = ABHIJITH)
+  @Owner(developers = KAMAL)
   @Category(UnitTests.class)
   public void testGetMonitoredServiceChangeTimeline_withMonitoredServiceFilter() {
     hPersistence.save(Arrays.asList(
@@ -304,6 +393,54 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
     assertThat(infrastructureChanges.get(0).getCount()).isEqualTo(1);
     assertThat(infrastructureChanges.get(0).getStartTime()).isEqualTo(0);
     assertThat(infrastructureChanges.get(0).getEndTime()).isEqualTo(300000);
+  }
+
+  @Test
+  @Owner(developers = KAMAL)
+  @Category(UnitTests.class)
+  public void testGetChangeSummaryForMonitoredService() {
+    hPersistence.save(Arrays.asList(
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
+        builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
+        builderFactory.getDeploymentActivityBuilder()
+            .serviceIdentifier("service2")
+            .environmentIdentifier("env2")
+            .monitoredServiceIdentifier("service_env2")
+            .eventTime(Instant.ofEpochSecond(200))
+            .build(),
+        builderFactory.getPagerDutyActivityBuilder().eventTime(Instant.ofEpochSecond(300)).build(),
+        builderFactory.getKubernetesClusterActivityForAppServiceBuilder()
+            .eventTime(Instant.ofEpochSecond(300))
+            .build()));
+
+    Response response = RESOURCES.client()
+                            .target("http://localhost:9998/change-event/monitored-service-summary")
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .queryParam("orgIdentifier", builderFactory.getContext().getOrgIdentifier())
+                            .queryParam("projectIdentifier", builderFactory.getContext().getProjectIdentifier())
+                            .queryParam("monitoredServiceIdentifier",
+                                builderFactory.getContext().getMonitoredServiceParams().getMonitoredServiceIdentifier())
+                            .queryParam("changeCategories", "Deployment", "Alert")
+                            .queryParam("changeSourceTypes", "HarnessCDNextGen", "K8sCluster")
+                            .queryParam("startTime", 100000)
+                            .queryParam("endTime", 400000)
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .get();
+
+    assertThat(response.getStatus()).isEqualTo(200);
+    ChangeSummaryDTO changeSummaryDTO =
+        response.readEntity(new GenericType<RestResponse<ChangeSummaryDTO>>() {}).getResource();
+
+    assertThat(changeSummaryDTO.getCategoryCountMap().get(ChangeCategory.DEPLOYMENT).getCount()).isEqualTo(1);
+    assertThat(changeSummaryDTO.getCategoryCountMap().get(ChangeCategory.DEPLOYMENT).getCountInPrecedingWindow())
+        .isEqualTo(1);
+    assertThat(changeSummaryDTO.getCategoryCountMap().get(ChangeCategory.ALERTS).getCount()).isEqualTo(0);
+    assertThat(changeSummaryDTO.getCategoryCountMap().get(ChangeCategory.ALERTS).getCountInPrecedingWindow())
+        .isEqualTo(0);
+    assertThat(changeSummaryDTO.getCategoryCountMap().get(ChangeCategory.INFRASTRUCTURE).getCount()).isEqualTo(0);
+    assertThat(changeSummaryDTO.getCategoryCountMap().get(ChangeCategory.INFRASTRUCTURE).getCountInPrecedingWindow())
+        .isEqualTo(0);
   }
 
   private String getChangeEventPath(ProjectParams projectParams) {
