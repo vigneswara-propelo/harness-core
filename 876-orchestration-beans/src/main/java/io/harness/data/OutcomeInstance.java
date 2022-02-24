@@ -16,6 +16,7 @@ import io.harness.data.validator.Trimmed;
 import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.mongo.index.MongoIndex;
+import io.harness.mongo.index.SortCompoundMongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.persistence.PersistentEntity;
 import io.harness.persistence.UuidAccess;
@@ -55,8 +56,8 @@ public class OutcomeInstance implements PersistentEntity, UuidAccess {
                  .name("unique_producedBySetupIdRuntimeIdIdx")
                  .unique(true)
                  .field(OutcomeInstanceKeys.planExecutionId)
-                 .field("producedBy.setupId")
-                 .field("producedBy.runtimeId")
+                 .field(OutcomeInstanceKeys.producedBySetupId)
+                 .field(OutcomeInstanceKeys.producedByRuntimeId)
                  .field(OutcomeInstanceKeys.name)
                  .build())
         .add(CompoundMongoIndex.builder()
@@ -69,6 +70,12 @@ public class OutcomeInstance implements PersistentEntity, UuidAccess {
         .add(CompoundMongoIndex.builder()
                  .name("producedByRuntimeIdIdx")
                  .field(OutcomeInstanceKeys.producedByRuntimeId)
+                 .build())
+        .add(SortCompoundMongoIndex.builder()
+                 .name("planExecutionIdProducedByRuntimeIdCreatedAtIdx")
+                 .field(OutcomeInstanceKeys.planExecutionId)
+                 .field(OutcomeInstanceKeys.producedByRuntimeId)
+                 .descRangeField(OutcomeInstanceKeys.createdAt)
                  .build())
         .build();
   }

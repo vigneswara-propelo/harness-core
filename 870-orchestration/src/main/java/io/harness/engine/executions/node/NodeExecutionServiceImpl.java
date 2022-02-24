@@ -672,15 +672,6 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   }
 
   @Override
-  public List<NodeExecution> getStageNodesFromPlanExecutionId(String planExecutionId) {
-    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
-                      .addCriteria(where(NodeExecutionKeys.status).ne(Status.SKIPPED.name()))
-                      .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE));
-    query.with(by(NodeExecutionKeys.createdAt));
-    return mongoTemplate.find(query, NodeExecution.class);
-  }
-
-  @Override
   public List<String> fetchStageFqnFromStageIdentifiers(String planExecutionId, List<String> stageIdentifiers) {
     Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
                       .addCriteria(where(NodeExecutionKeys.planNodeStepCategory).is(StepCategory.STAGE))

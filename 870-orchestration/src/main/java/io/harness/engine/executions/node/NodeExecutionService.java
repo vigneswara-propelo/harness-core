@@ -118,8 +118,6 @@ public interface NodeExecutionService {
   Map<String, String> fetchNodeExecutionFromNodeUuidsAndPlanExecutionId(
       List<String> identifierOfSkipStages, String previousExecutionId);
 
-  List<NodeExecution> getStageNodesFromPlanExecutionId(String planExecutionId);
-
   List<String> fetchStageFqnFromStageIdentifiers(String planExecutionId, List<String> stageIdentifiers);
 
   Map<String, Node> mapNodeExecutionIdWithPlanNodeForGivenStageFQN(String planExecutionId, List<String> stageFQNs);
