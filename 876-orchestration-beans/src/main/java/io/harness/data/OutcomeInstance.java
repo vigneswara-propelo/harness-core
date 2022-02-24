@@ -27,12 +27,10 @@ import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
 import lombok.experimental.Wither;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.mongodb.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -76,10 +74,11 @@ public class OutcomeInstance implements PersistentEntity, UuidAccess {
   }
 
   @Wither @Id @org.mongodb.morphia.annotations.Id String uuid;
-  @NonNull String planExecutionId;
+
+  String planExecutionId;
   String stageExecutionId;
   Level producedBy;
-  @NotEmpty @Trimmed String name;
+  @Trimmed String name;
   String levelRuntimeIdIdx;
   @Deprecated org.bson.Document outcome;
   PmsOutcome outcomeValue;
