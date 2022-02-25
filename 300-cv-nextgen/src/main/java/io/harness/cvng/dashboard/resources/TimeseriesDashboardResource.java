@@ -116,8 +116,8 @@ public class TimeseriesDashboardResource {
   @ExceptionMetered
   @ApiOperation(value = "get all time series data in a given time range", nickname = "getTimeSeriesMetricData")
   public RestResponse<PageResponse<TimeSeriesMetricDataDTO>> getTimeSeriesMetricData(
-      @BeanParam ProjectParams projectParams, @NotNull @QueryParam("serviceIdentifier") String serviceIdentifier,
-      @NotNull @QueryParam("environmentIdentifier") String environmentIdentifier,
+      @BeanParam ProjectParams projectParams, @QueryParam("serviceIdentifier") String serviceIdentifier,
+      @QueryParam("environmentIdentifier") String environmentIdentifier,
       @QueryParam("monitoredServiceIdentifier") String monitoredServiceIdentifier,
       @NotNull @QueryParam("startTime") Long startTimeMillis, @NotNull @QueryParam("endTime") Long endTimeMillis,
       @QueryParam("anomalous") @DefaultValue("false") boolean anomalous, @QueryParam("filter") String filter,

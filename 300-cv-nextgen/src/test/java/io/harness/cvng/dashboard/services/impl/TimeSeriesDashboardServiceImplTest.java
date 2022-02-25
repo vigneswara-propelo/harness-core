@@ -584,7 +584,6 @@ public class TimeSeriesDashboardServiceImplTest extends CvNextGenTestBase {
     AppDynamicsCVConfig cvConfig = new AppDynamicsCVConfig();
     cvConfig.setUuid(cvConfigId);
     when(cvConfigService.list((MonitoredServiceParams) any())).thenReturn(Arrays.asList(cvConfig));
-
     PageResponse<TimeSeriesMetricDataDTO> response = timeSeriesDashboardService.getTimeSeriesMetricData(
         monitoredServiceParams, timeRangeParams, TimeSeriesAnalysisFilter.builder().build(), pageParams);
 

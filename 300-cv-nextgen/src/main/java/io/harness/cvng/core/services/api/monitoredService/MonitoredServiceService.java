@@ -20,6 +20,7 @@ import io.harness.cvng.core.beans.monitoredService.MonitoredServiceListItemDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.HealthSourceDTO;
+import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
@@ -69,6 +70,8 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
   @Deprecated
   HistoricalTrend getOverAllHealthScore(
       ServiceEnvironmentParams serviceEnvironmentParams, DurationDTO duration, Instant endTime);
+
+  HealthScoreDTO getCurrentAndDependentServicesScore(MonitoredServiceParams monitoredServiceParams);
 
   HealthScoreDTO getCurrentAndDependentServicesScore(ServiceEnvironmentParams serviceEnvironmentParams);
 

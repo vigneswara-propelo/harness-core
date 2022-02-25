@@ -301,8 +301,7 @@ public class CVConfigServiceImpl implements CVConfigService {
 
   @Override
   public List<CVConfig> list(MonitoredServiceParams monitoredServiceParams) {
-    Query<CVConfig> query = createQuery(monitoredServiceParams);
-    return query.asList();
+    return createQuery(monitoredServiceParams).asList();
   }
 
   @Override
