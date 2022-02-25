@@ -102,7 +102,7 @@ public class NodeExecutionsCache {
   // index of NodeExecution collection
   public List<NodeExecution> findAllChildren(String parentId) {
     return nodeExecutionService.findAllChildren(ambiance.getPlanExecutionId(), parentId, false,
-        Sets.newHashSet(NodeExecutionKeys.parentId), Sets.newHashSet(NodeExecutionKeys.id));
+        Sets.newHashSet(NodeExecutionKeys.parentId, NodeExecutionKeys.status), Collections.emptySet());
   }
 
   public synchronized Node fetchNode(String nodeId) {

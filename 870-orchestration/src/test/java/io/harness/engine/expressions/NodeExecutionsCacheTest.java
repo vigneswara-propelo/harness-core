@@ -53,8 +53,8 @@ public class NodeExecutionsCacheTest extends CategoryTest {
   public void testFindAllChildrenUsingRequiredProjection() {
     doReturn(Collections.singletonList(NodeExecution.builder().identifier("test").build()))
         .when(nodeExecutionService)
-        .findAllChildren("PLAN_EXECUTION_ID", "PARENT_ID", false, Sets.newHashSet(NodeExecutionKeys.parentId),
-            Sets.newHashSet(NodeExecutionKeys.id));
+        .findAllChildren("PLAN_EXECUTION_ID", "PARENT_ID", false,
+            Sets.newHashSet(NodeExecutionKeys.parentId, NodeExecutionKeys.status), Collections.emptySet());
     List<NodeExecution> allChildren = nodeExecutionsCache.findAllChildren("PARENT_ID");
     assertThat(allChildren.size()).isEqualTo(1);
   }

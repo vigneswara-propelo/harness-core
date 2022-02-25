@@ -289,7 +289,7 @@ public class NodeExecutionValueTest extends OrchestrationTestBase {
             .build();
 
     when(nodeExecutionService.findAllChildren(planExecutionId, nodeExecution4.getUuid(), false,
-             Sets.newHashSet(NodeExecutionKeys.parentId), Sets.newHashSet(NodeExecutionKeys.id)))
+             Sets.newHashSet(NodeExecutionKeys.parentId, NodeExecutionKeys.status), Collections.emptySet()))
         .thenReturn(asList(nodeExecution8, nodeExecution7, nodeExecution6));
 
     Reflect.on(nodeExecution4).set(NodeExecutionKeys.status, Status.RUNNING);

@@ -199,12 +199,12 @@ public class PMSExpressionEvaluatorTest extends PipelineServiceTestBase {
 
     // pipeline children
     when(nodeExecutionService.findAllChildren(planExecutionId, nodeExecution1.getUuid(), false,
-             Sets.newHashSet(NodeExecutionKeys.parentId), Sets.newHashSet(NodeExecutionKeys.id)))
+             Sets.newHashSet(NodeExecutionKeys.parentId, NodeExecutionKeys.status), Collections.emptySet()))
         .thenReturn(Arrays.asList(nodeExecution2, nodeExecution3, nodeExecution4, nodeExecution5));
 
     // stage children
     when(nodeExecutionService.findAllChildren(planExecutionId, nodeExecution3.getUuid(), false,
-             Sets.newHashSet(NodeExecutionKeys.parentId), Sets.newHashSet(NodeExecutionKeys.id)))
+             Sets.newHashSet(NodeExecutionKeys.parentId, NodeExecutionKeys.status), Collections.emptySet()))
         .thenReturn(Arrays.asList(nodeExecution4, nodeExecution5));
   }
 

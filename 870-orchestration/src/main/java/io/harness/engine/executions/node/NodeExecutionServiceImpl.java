@@ -466,6 +466,16 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   public List<NodeExecution> findAllChildrenWithStatusIn(String planExecutionId, String parentId,
       EnumSet<Status> flowingStatuses, boolean includeParent, boolean shouldUseProjections,
       Set<String> fieldsToBeIncluded, Set<String> fieldsToBeExcluded) {
+    if (shouldUseProjections) {
+      if (!fieldsToBeIncluded.contains(NodeExecutionKeys.parentId)
+          || !fieldsToBeIncluded.contains(NodeExecutionKeys.status)) {
+        throw new InvalidRequestException(
+            "ParentId or Status fields are not included in projectionFields, which are necessary");
+      }
+      if (fieldsToBeExcluded.contains(NodeExecutionKeys.id)) {
+        throw new InvalidRequestException("Excluding nodeExecutionId is not allowed, as its a required field");
+      }
+    }
     List<NodeExecution> finalList = new ArrayList<>();
     List<NodeExecution> allExecutions = fetchNodeExecutionsWithoutOldRetriesAndStatusIn(
         planExecutionId, flowingStatuses, true, fieldsToBeIncluded, fieldsToBeExcluded);
