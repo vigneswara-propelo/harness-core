@@ -122,6 +122,9 @@ public class AwsECSClusterDataSyncTasklet implements Tasklet {
     JobParameters parameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
     String accountId = parameters.getString(CCMJobConstants.ACCOUNT_ID);
     List<CECluster> ceClusters = ceClusterDao.getCECluster(accountId);
+    if (CollectionUtils.isEmpty(ceClusters)) {
+      return null;
+    }
     Map<String, AwsCrossAccountAttributes> infraAccCrossArnMap = getCrossAccountAttributes(accountId);
 
     List<Callable<Void>> tasks = new ArrayList<>();
@@ -152,7 +155,6 @@ public class AwsECSClusterDataSyncTasklet implements Tasklet {
         throw new Exception("failed to sync ecs clusters", e);
       }
     }
-
     return null;
   }
 
