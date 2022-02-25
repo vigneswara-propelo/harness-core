@@ -29,7 +29,7 @@ public class NodeProjectionUtils {
   public static final Set<String> withAmbianceAndNode = Sets.newHashSet(NodeExecutionKeys.ambiance);
   public static final Set<String> fieldsForResume =
       Sets.newHashSet(NodeExecutionKeys.status, NodeExecutionKeys.ambiance, NodeExecutionKeys.executableResponses,
-          NodeExecutionKeys.mode, NodeExecutionKeys.resolvedParams);
+          NodeExecutionKeys.mode, NodeExecutionKeys.resolvedParams, NodeExecutionKeys.module);
   public static final Set<String> fieldsForExpressionEngine = Sets.newHashSet(NodeExecutionKeys.status,
       NodeExecutionKeys.ambiance, NodeExecutionKeys.mode, NodeExecutionKeys.startTs, NodeExecutionKeys.endTs,
       NodeExecutionKeys.parentId, NodeExecutionKeys.resolvedParams);
