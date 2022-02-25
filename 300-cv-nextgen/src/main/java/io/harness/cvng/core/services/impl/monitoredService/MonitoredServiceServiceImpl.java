@@ -1061,6 +1061,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .serviceIdentifier(monitoredService.getServiceIdentifier())
             .environmentIdentifier(monitoredService.getEnvironmentIdentifier())
             .build();
+    MonitoredServiceParams monitoredServiceParams =
+        MonitoredServiceParams.builderWithServiceEnvParams(serviceEnvironmentParams)
+            .monitoredServiceIdentifier(monitoredServiceIdentifier)
+            .build();
     PageParams pageParams = PageParams.builder().page(0).size(10).build();
     LiveMonitoringLogAnalysisFilter liveMonitoringLogAnalysisFilter =
         LiveMonitoringLogAnalysisFilter.builder()
@@ -1074,7 +1078,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         TimeSeriesAnalysisFilter.builder().anomalousMetricsOnly(true).build();
     long timeSeriesAnomalousCount =
         timeSeriesDashboardService
-            .getTimeSeriesMetricData(serviceEnvironmentParams, timeRangeParams, timeSeriesAnalysisFilter, pageParams)
+            .getTimeSeriesMetricData(monitoredServiceParams, timeRangeParams, timeSeriesAnalysisFilter, pageParams)
             .getTotalItems();
     return AnomaliesSummaryDTO.builder()
         .logsAnomalies(logAnomalousCount)
