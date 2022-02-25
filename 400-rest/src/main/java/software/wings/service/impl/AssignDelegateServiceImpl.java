@@ -166,6 +166,7 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
                   .project(DelegateKeys.status, true)
                   .project(DelegateKeys.delegateGroupName, true)
                   .project(DelegateKeys.delegateGroupId, true)
+                  .project(DelegateKeys.owner, true)
                   .project(DelegateKeys.ng, true)
                   .asList();
             }
