@@ -202,7 +202,8 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
       return false;
     }
 
-    boolean canAssignDelegateProfileScopes = canAssignDelegateProfileScopes(delegate, task.getSetupAbstractions());
+    boolean canAssignDelegateProfileScopes =
+        canAssignDelegateProfileScopes(delegate, task.getSetupAbstractions(), task.getUuid());
 
     if (!canAssignDelegateProfileScopes) {
       log.debug("can not assign canAssignDelegateProfileScopes {}", canAssignDelegateProfileScopes);
@@ -234,19 +235,6 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
     }
 
     return new ArrayList<>(selectors);
-  }
-
-  @Override
-  public boolean canAssign(String delegateId, String accountId, String appId, String envId, String infraMappingId,
-      TaskGroup taskGroup, List<ExecutionCapability> executionCapabilities, Map<String, String> taskSetupAbstractions) {
-    Delegate delegate = delegateCache.get(accountId, delegateId, false);
-    if (delegate == null) {
-      return false;
-    }
-    return canAssignCgNg(delegate, taskSetupAbstractions) && canAssignOwner(delegate, taskSetupAbstractions)
-        && canAssignDelegateScopes(delegate, appId, envId, infraMappingId, taskGroup)
-        && canAssignDelegateProfileScopes(delegate, taskSetupAbstractions)
-        && canAssignSelectors(delegate, executionCapabilities);
   }
 
   /**
@@ -322,7 +310,8 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
   }
 
   @VisibleForTesting
-  protected boolean canAssignDelegateProfileScopes(Delegate delegate, Map<String, String> taskSetupAbstractions) {
+  protected boolean canAssignDelegateProfileScopes(
+      Delegate delegate, Map<String, String> taskSetupAbstractions, String taskId) {
     DelegateProfile delegateProfile = persistence.get(DelegateProfile.class, delegate.getDelegateProfileId());
     if (delegateProfile == null) {
       log.warn(
@@ -346,8 +335,7 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
     for (Map.Entry<String, String> entity : taskSetupAbstractions.entrySet()) {
       taskSetupAbstractionsPrintable.append(entity.getKey() + ":" + entity.getValue() + "; ");
     }
-    // String logSequence = batch != null && isNotBlank(batch.getTaskId()) ? batch.getTaskId() : generateUuid();
-    String logSequence = generateUuid();
+    String logSequence = (taskId != null) ? taskId : generateUuid();
     log.debug("{} - Starting profile scoping rules match with task abstractions {}.", logSequence,
         taskSetupAbstractionsPrintable.toString());
 
@@ -910,7 +898,8 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
       return canAssignDelegateScopes;
     }
 
-    boolean canAssignDelegateProfileScopes = canAssignDelegateProfileScopes(delegate, task.getSetupAbstractions());
+    boolean canAssignDelegateProfileScopes =
+        canAssignDelegateProfileScopes(delegate, task.getSetupAbstractions(), task.getUuid());
 
     if (!canAssignDelegateProfileScopes) {
       nonAssignableDelegates.putIfAbsent(CAN_NOT_ASSIGN_PROFILE_SCOPE_GROUP, new ArrayList<>());
