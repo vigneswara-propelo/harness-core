@@ -185,6 +185,7 @@ Udham Singh 80256915+USB-05@users.noreply.github.com
 Ujjawal Prasad ujjawal.prasad@harness.io
 Utkarsh Gupta utkarsh.gupta@harness.io
 Utsav Krishnan utsav.krishnan@harness.io
+Vaibhav Kumar Singh vaibhav.kumar@harness.io
 Vaibhav Singhal vaibhav.si@harness.io
 Vaibhav Tulsyan vaibhav.tulsyan@harness.io
 Vardan Bansal vardan.bansal@harness.io
