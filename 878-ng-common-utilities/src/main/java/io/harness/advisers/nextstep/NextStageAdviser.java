@@ -28,12 +28,12 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
 @OwnedBy(PIPELINE)
-public class NextStepAdviser implements Adviser {
+public class NextStageAdviser implements Adviser {
   @Inject KryoSerializer kryoSerializer;
   @Inject ExecutionSweepingOutputService executionSweepingOutputService;
 
   public static final AdviserType ADVISER_TYPE =
-      AdviserType.newBuilder().setType(OrchestrationAdviserTypes.NEXT_STEP.name()).build();
+      AdviserType.newBuilder().setType(OrchestrationAdviserTypes.NEXT_STAGE.name()).build();
   @Override
   public AdviserResponse onAdviseEvent(AdvisingEvent advisingEvent) {
     NextStepAdviserParameters nextStepAdviserParameters = (NextStepAdviserParameters) Preconditions.checkNotNull(
@@ -49,12 +49,11 @@ public class NextStepAdviser implements Adviser {
     if (advisingEvent.getToStatus() == ABORTED) {
       return false;
     }
-    // Todo: Create a custom adviser for CD and stitch it with the planNode for cd
     // This is required so that the next stage does not run if the given stage is rolled back. If removed, the next step
     // would be marked as skipped, rather than NotStarted
     OptionalSweepingOutput optionalSweepingOutput =
         executionSweepingOutputService.resolveOptional(advisingEvent.getAmbiance(),
-            RefObjectUtils.getSweepingOutputRefObject(YAMLFieldNameConstants.STOP_STEPS_SEQUENCE));
+            RefObjectUtils.getSweepingOutputRefObject(YAMLFieldNameConstants.STOP_STAGE_SEQUENCE));
     return !optionalSweepingOutput.isFound();
   }
 }
