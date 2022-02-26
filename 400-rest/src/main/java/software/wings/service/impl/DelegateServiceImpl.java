@@ -885,6 +885,10 @@ public class DelegateServiceImpl implements DelegateService {
     setUnset(updateOperations, DelegateKeys.proxy, delegate.isProxy());
     setUnset(updateOperations, DelegateKeys.ceEnabled, delegate.isCeEnabled());
     setUnset(updateOperations, DelegateKeys.supportedTaskTypes, delegate.getSupportedTaskTypes());
+    String delegateTokenName = getDelegateTokenNameFromGlobalContext();
+    if (delegateTokenName != null) {
+      setUnset(updateOperations, DelegateKeys.delegateTokenName, delegateTokenName);
+    }
     return updateOperations;
   }
 
