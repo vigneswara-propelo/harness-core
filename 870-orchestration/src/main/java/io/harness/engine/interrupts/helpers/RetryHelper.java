@@ -149,6 +149,8 @@ public class RetryHelper {
         .identifier(nodeExecution.getIdentifier())
         .stepType(nodeExecution.getStepType())
         .nodeId(nodeExecution.getNodeId())
+        .stageFqn(nodeExecution.getStageFqn())
+        .group(nodeExecution.getGroup())
         .build();
   }
 }
