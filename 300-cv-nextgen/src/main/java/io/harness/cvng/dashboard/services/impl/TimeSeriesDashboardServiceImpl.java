@@ -71,6 +71,12 @@ public class TimeSeriesDashboardServiceImpl implements TimeSeriesDashboardServic
       List<MonitoredService> monitoredServices = monitoredServiceService.list(monitoredServiceParams,
           monitoredServiceParams.getServiceIdentifier(), monitoredServiceParams.getEnvironmentIdentifier());
       monitoredServiceParams.setMonitoredServiceIdentifier(monitoredServices.get(0).getIdentifier());
+    } else if (monitoredServiceParams.getServiceIdentifier() == null
+        || monitoredServiceParams.getEnvironmentIdentifier() == null) {
+      List<MonitoredService> monitoredServices = monitoredServiceService.list(
+          monitoredServiceParams, Arrays.asList(monitoredServiceParams.getMonitoredServiceIdentifier()));
+      monitoredServiceParams.setServiceIdentifier(monitoredServices.get(0).getServiceIdentifier());
+      monitoredServiceParams.setEnvironmentIdentifier(monitoredServices.get(0).getEnvironmentIdentifier());
     }
     if (timeSeriesAnalysisFilter.filterByHealthSourceIdentifiers()) {
       cvConfigs = cvConfigService.list(monitoredServiceParams, timeSeriesAnalysisFilter.getHealthSourceIdentifiers());

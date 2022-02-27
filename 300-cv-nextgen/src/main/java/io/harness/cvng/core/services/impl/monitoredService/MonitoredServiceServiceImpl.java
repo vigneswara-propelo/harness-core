@@ -684,13 +684,13 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   @Override
-  public List<MonitoredService> list(@NonNull ProjectParams projectParams, @NonNull List<String> identifiers) {
+  public List<MonitoredService> list(@NonNull ProjectParams projectParams, List<String> identifiers) {
     Query<MonitoredService> query =
         hPersistence.createQuery(MonitoredService.class)
             .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
             .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
             .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier());
-    if (!identifiers.isEmpty()) {
+    if (isNotEmpty(identifiers)) {
       query.field(MonitoredServiceKeys.identifier).in(identifiers);
     }
 

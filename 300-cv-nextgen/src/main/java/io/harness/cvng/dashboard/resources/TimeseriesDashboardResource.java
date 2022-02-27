@@ -13,7 +13,6 @@ import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
 import io.harness.cvng.core.beans.params.filterParams.TimeSeriesAnalysisFilter;
 import io.harness.cvng.dashboard.beans.TimeSeriesMetricDataDTO;
@@ -123,14 +122,14 @@ public class TimeseriesDashboardResource {
       @QueryParam("anomalous") @DefaultValue("false") boolean anomalous, @QueryParam("filter") String filter,
       @QueryParam("healthSources") List<String> healthSourceIdentifiers,
       @QueryParam("page") @DefaultValue("0") int page, @QueryParam("size") @DefaultValue("10") int size) {
-    ServiceEnvironmentParams serviceEnvironmentParams = ServiceEnvironmentParams.builderWithProjectParams(projectParams)
-                                                            .serviceIdentifier(serviceIdentifier)
-                                                            .environmentIdentifier(environmentIdentifier)
-                                                            .build();
-    MonitoredServiceParams monitoredServiceParams =
-        MonitoredServiceParams.builderWithServiceEnvParams(serviceEnvironmentParams)
-            .monitoredServiceIdentifier(monitoredServiceIdentifier)
-            .build();
+    MonitoredServiceParams monitoredServiceParams = MonitoredServiceParams.builder()
+                                                        .accountIdentifier(projectParams.getAccountIdentifier())
+                                                        .orgIdentifier(projectParams.getOrgIdentifier())
+                                                        .projectIdentifier(projectParams.getProjectIdentifier())
+                                                        .serviceIdentifier(serviceIdentifier)
+                                                        .environmentIdentifier(environmentIdentifier)
+                                                        .monitoredServiceIdentifier(monitoredServiceIdentifier)
+                                                        .build();
     TimeRangeParams timeRangeParams = TimeRangeParams.builder()
                                           .startTime(Instant.ofEpochMilli(startTimeMillis))
                                           .endTime(Instant.ofEpochMilli(endTimeMillis))
