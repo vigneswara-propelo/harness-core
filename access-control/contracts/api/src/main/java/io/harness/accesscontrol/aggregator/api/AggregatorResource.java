@@ -9,15 +9,12 @@ package io.harness.accesscontrol.aggregator.api;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
-import io.harness.aggregator.AggregatorService;
-import io.harness.aggregator.models.AggregatorSecondarySyncState;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.security.annotations.InternalApi;
 
-import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -52,14 +49,7 @@ import javax.ws.rs.Produces;
       @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class))
       , @Content(mediaType = "application/yaml", schema = @Schema(implementation = ErrorDTO.class))
     })
-public class AggregatorResource {
-  private final AggregatorService aggregatorService;
-
-  @Inject
-  public AggregatorResource(AggregatorService aggregatorResource) {
-    this.aggregatorService = aggregatorResource;
-  }
-
+public interface AggregatorResource {
   @POST
   @Path("request-secondary-sync")
   @ApiOperation(value = "Trigger Secondary Sync", nickname = "triggerSecondarySync", hidden = true)
@@ -71,11 +61,8 @@ public class AggregatorResource {
       },
       hidden = true)
   @InternalApi
-  public ResponseDTO<AggregatorSecondarySyncState>
-  triggerSecondarySync() {
-    AggregatorSecondarySyncState aggregatorSecondarySyncState = aggregatorService.requestSecondarySync();
-    return ResponseDTO.newResponse(aggregatorSecondarySyncState);
-  }
+  ResponseDTO<AggregatorSecondarySyncStateDTO>
+  triggerSecondarySync();
 
   @POST
   @Path("request-switch-to-primary")
@@ -89,9 +76,6 @@ public class AggregatorResource {
       },
       hidden = true)
   @InternalApi
-  public ResponseDTO<AggregatorSecondarySyncState>
-  switchToPrimary() {
-    AggregatorSecondarySyncState aggregatorSecondarySyncState = aggregatorService.requestSwitchToPrimary();
-    return ResponseDTO.newResponse(aggregatorSecondarySyncState);
-  }
+  ResponseDTO<AggregatorSecondarySyncStateDTO>
+  switchToPrimary();
 }
