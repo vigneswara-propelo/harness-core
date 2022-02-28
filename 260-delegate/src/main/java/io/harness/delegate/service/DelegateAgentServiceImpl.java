@@ -302,6 +302,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   // Marker string to indicate task events.
   private static final String TASK_EVENT_MARKER = "{\"eventType\":\"DelegateTaskEvent\"";
+  private static final String ABORT_EVENT_MARKER = "{\"eventType\":\"DelegateTaskAbortEvent\"";
 
   private static final String HOST_NAME = getLocalHostName();
   private static final String DELEGATE_NAME =
@@ -904,7 +905,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   private void handleMessageSubmit(String message) {
-    if (StringUtils.startsWith(message, TASK_EVENT_MARKER)) {
+    if (StringUtils.startsWith(message, TASK_EVENT_MARKER) || StringUtils.startsWith(message, ABORT_EVENT_MARKER)) {
       // For task events, continue in same thread. We will decode the task and assign it for execution.
       log.info("New Task event received: " + message);
       try {
@@ -921,6 +922,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       }
       return;
     }
+
     if (log.isDebugEnabled()) {
       log.debug("^^MSG: " + message);
     }
