@@ -804,7 +804,8 @@ public class DelegateModule extends AbstractModule {
   @Singleton
   @Named("taskExecutor")
   public ExecutorService taskExecutor() {
-    return ThreadPool.create(10, 400, 1, TimeUnit.SECONDS,
+    final int maxPoolSize = configuration.isDynamicHandlingOfRequestEnabled() ? Integer.MAX_VALUE : 400;
+    return ThreadPool.create(10, maxPoolSize, 1, TimeUnit.SECONDS,
         new ThreadFactoryBuilder().setNameFormat("task-exec-%d").setPriority(Thread.MIN_PRIORITY).build());
   }
 
