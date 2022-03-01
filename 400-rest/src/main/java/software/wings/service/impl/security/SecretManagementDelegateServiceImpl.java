@@ -105,9 +105,11 @@ public class SecretManagementDelegateServiceImpl implements SecretManagementDele
               .execute();
       log.info("[VaultSSH]: Signing response: {}", response);
       if (response.isSuccessful() && response.body().getSignedSSHVaultResult() != null) {
-        log.info(
-            "[VaultSSH]: Signed public key is : {}", response.body().getSignedSSHVaultResult().getSignedPublicKey());
-        hostConnectionAttributes.setSignedPublicKey(response.body().getSignedSSHVaultResult().getSignedPublicKey());
+        String signedPublicKey = response.body().getSignedSSHVaultResult().getSignedPublicKey();
+        log.info("[VaultSSH]: Signed public key is : {}", signedPublicKey);
+        if (isNotEmpty(signedPublicKey)) {
+          hostConnectionAttributes.setSignedPublicKey(signedPublicKey.trim());
+        }
       } else {
         log.info("[VaultSSH]: Error signing public key for request:{}", signedSSHVaultRequest);
         logAndThrowVaultError(sshVaultConfig, response, "sign public key with SSH secret engine");
