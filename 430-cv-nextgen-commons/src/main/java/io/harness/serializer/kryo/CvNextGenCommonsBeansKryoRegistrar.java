@@ -16,6 +16,7 @@ import io.harness.cvng.beans.AppdynamicsValidationResponse;
 import io.harness.cvng.beans.CVDataCollectionInfo;
 import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.CustomHealthDataCollectionInfo;
+import io.harness.cvng.beans.CustomHealthDataCollectionInfo.CustomHealthMetricInfo;
 import io.harness.cvng.beans.DataCollectionConnectorBundle;
 import io.harness.cvng.beans.DataCollectionInfo;
 import io.harness.cvng.beans.DataCollectionRequest;
@@ -29,6 +30,7 @@ import io.harness.cvng.beans.ErrorTrackingDataCollectionInfo;
 import io.harness.cvng.beans.K8ActivityDataCollectionInfo;
 import io.harness.cvng.beans.MetricPackDTO;
 import io.harness.cvng.beans.MetricPackDTO.MetricDefinitionDTO;
+import io.harness.cvng.beans.MetricResponseMappingDTO;
 import io.harness.cvng.beans.NewRelicDataCollectionInfo;
 import io.harness.cvng.beans.PrometheusDataCollectionInfo;
 import io.harness.cvng.beans.SplunkDataCollectionInfo;
@@ -197,5 +199,7 @@ public class CvNextGenCommonsBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(DynatraceSampleDataRequest.class, 9095);
     kryo.register(DynatraceMetricListRequest.class, 9096);
     kryo.register(DynatraceDataCollectionInfo.class, 9097);
+    kryo.register(CustomHealthMetricInfo.class, 9098);
+    kryo.register(MetricResponseMappingDTO.class, 9099);
   }
 }
