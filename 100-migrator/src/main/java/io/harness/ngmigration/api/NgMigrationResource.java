@@ -25,7 +25,6 @@ import software.wings.security.annotations.Scope;
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
-import io.swagger.annotations.Api;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -38,8 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(CDC)
 @Slf4j
-@Api("ng-migration")
-@Path("/ng-migration")
+@Path("/")
 @Consumes(APPLICATION_JSON)
 @Produces(APPLICATION_JSON)
 @Scope(ResourceType.APPLICATION)
