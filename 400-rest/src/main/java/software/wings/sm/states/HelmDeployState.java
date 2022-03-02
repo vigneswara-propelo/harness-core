@@ -152,6 +152,7 @@ import software.wings.service.intfc.ActivityService;
 import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.ApplicationManifestService;
 import software.wings.service.intfc.DelegateService;
+import software.wings.service.intfc.EnvironmentService;
 import software.wings.service.intfc.InfrastructureMappingService;
 import software.wings.service.intfc.LogService;
 import software.wings.service.intfc.ServiceResourceService;
@@ -233,6 +234,7 @@ public class HelmDeployState extends State {
   @Inject protected FeatureFlagService featureFlagService;
   @Inject private LogService logService;
   @Inject private SweepingOutputService sweepingOutputService;
+  @Inject private EnvironmentService environmentService;
 
   @DefaultValue("10") private int steadyStateTimeout; // Minutes
 
@@ -559,6 +561,11 @@ public class HelmDeployState extends State {
                       .build())
             .accountId(app.getAccountId())
             .description("Helm Release History")
+            .setupAbstraction(Cd1SetupFields.ENV_ID_FIELD, containerInfraMapping.getEnvId())
+            .setupAbstraction(Cd1SetupFields.ENV_TYPE_FIELD,
+                environmentService.get(containerInfraMapping.getAppId(), containerInfraMapping.getEnvId())
+                    .getEnvironmentType()
+                    .name())
             .setupAbstraction(Cd1SetupFields.APP_ID_FIELD, app.getUuid())
             .setupAbstraction(Cd1SetupFields.SERVICE_ID_FIELD, containerInfraMapping.getServiceId())
             .setupAbstraction(Cd1SetupFields.INFRASTRUCTURE_MAPPING_ID_FIELD, containerInfraMapping.getUuid())
