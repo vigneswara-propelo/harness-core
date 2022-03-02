@@ -10,8 +10,6 @@ package io.harness.ngmigration.service;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
-
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.network.Http;
@@ -20,7 +18,6 @@ import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
-import io.harness.remote.NGObjectMapperHelper;
 import io.harness.remote.client.ServiceHttpClientConfig;
 
 import software.wings.ngmigration.CgEntityId;
@@ -31,7 +28,6 @@ import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGYamlFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -41,6 +37,7 @@ import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.Factory;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
+import io.serializer.HObjectMapper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -130,13 +127,11 @@ public class DiscoveryService {
   }
 
   private static <T> T getRestClient(ServiceHttpClientConfig ngClientConfig, Class<T> clazz) {
-    ObjectMapper objectMapper = new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-    NGObjectMapperHelper.configureNGObjectMapper(objectMapper);
     OkHttpClient okHttpClient = Http.getOkHttpClient(ngClientConfig.getBaseUrl(), false);
     Retrofit retrofit = new Retrofit.Builder()
                             .client(okHttpClient)
                             .baseUrl(ngClientConfig.getBaseUrl())
-                            .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+                            .addConverterFactory(JacksonConverterFactory.create(HObjectMapper.NG_DEFAULT_OBJECT_MAPPER))
                             .build();
     return retrofit.create(clazz);
   }

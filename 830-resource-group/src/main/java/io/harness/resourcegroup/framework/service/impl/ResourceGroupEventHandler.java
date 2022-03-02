@@ -9,8 +9,8 @@ package io.harness.resourcegroup.framework.service.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.ng.core.utils.NGYamlUtils.getYamlString;
-import static io.harness.remote.NGObjectMapperHelper.NG_DEFAULT_OBJECT_MAPPER;
 
+import static io.serializer.HObjectMapper.NG_DEFAULT_OBJECT_MAPPER;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import io.harness.ModuleType;

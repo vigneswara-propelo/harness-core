@@ -13,11 +13,11 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.remote.NGObjectMapperHelper;
 import io.harness.resourcegroup.remote.dto.ResourceGroupV2DTO;
 import io.harness.rule.Owner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.serializer.HObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class ResourceGroupV2DTODeserializerTest extends CategoryTest {
   @Before
   public void setup() {
     objectMapper = new ObjectMapper();
-    NGObjectMapperHelper.configureNGObjectMapper(objectMapper);
+    HObjectMapper.configureObjectMapperForNG(objectMapper);
   }
 
   public static String readFileAsString(String file) {

@@ -33,7 +33,6 @@ import io.harness.eventsframework.entity_crud.EntityChangeDTO;
 import io.harness.eventsframework.entity_crud.organization.OrganizationEntityChangeDTO;
 import io.harness.eventsframework.entity_crud.resourcegroup.ResourceGroupEntityChangeDTO;
 import io.harness.ng.beans.PageRequest;
-import io.harness.remote.NGObjectMapperHelper;
 import io.harness.resourcegroup.ResourceGroupTestBase;
 import io.harness.resourcegroup.framework.remote.mapper.ResourceGroupMapper;
 import io.harness.resourcegroup.framework.service.Resource;
@@ -53,6 +52,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.StringValue;
+import io.serializer.HObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -284,7 +284,7 @@ public class ResourceGroupSyncConciliationJobTest extends ResourceGroupTestBase 
         .thenReturn(PageTestUtils.getPage(emptyList(), 0));
     resourceGroups.forEach(resourceGroupResponse -> {
       ResourceGroupDTO resourceGroupDTO =
-          (ResourceGroupDTO) NGObjectMapperHelper.clone(resourceGroupResponse.getResourceGroup());
+          (ResourceGroupDTO) HObjectMapper.clone(resourceGroupResponse.getResourceGroup());
       resourceGroupDTO.setResourceSelectors(singletonList(
           StaticResourceSelector.builder().resourceType(secretResourceType).identifiers(emptyList()).build()));
       resourceGroupDTO.setAllowedScopeLevels(emptySet());
@@ -298,7 +298,7 @@ public class ResourceGroupSyncConciliationJobTest extends ResourceGroupTestBase 
     verify(resourceGroupServiceMock, times(2)).list(any(), any());
     resourceGroups.forEach(resourceGroupResponse -> {
       ResourceGroupDTO resourceGroupDTO =
-          (ResourceGroupDTO) NGObjectMapperHelper.clone(resourceGroupResponse.getResourceGroup());
+          (ResourceGroupDTO) HObjectMapper.clone(resourceGroupResponse.getResourceGroup());
       resourceGroupDTO.setResourceSelectors(singletonList(
           StaticResourceSelector.builder().resourceType(secretResourceType).identifiers(emptyList()).build()));
       resourceGroupDTO.setAllowedScopeLevels(emptySet());
