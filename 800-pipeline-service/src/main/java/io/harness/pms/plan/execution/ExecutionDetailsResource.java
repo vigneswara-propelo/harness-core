@@ -223,7 +223,8 @@ public class ExecutionDetailsResource {
   @Path("/{planExecutionId}/inputset")
   @ApiOperation(value = "Gets  inputsetYaml", nickname = "getInputsetYaml")
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
-  @Operation(operationId = "getInputsetYaml", summary = "Get the Input Set YAML used for given Plan Execution",
+  @Operation(deprecated = true, operationId = "getInputsetYaml",
+      summary = "Get the Input Set YAML used for given Plan Execution",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
