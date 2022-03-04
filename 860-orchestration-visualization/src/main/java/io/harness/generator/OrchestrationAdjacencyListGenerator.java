@@ -61,15 +61,6 @@ public class OrchestrationAdjacencyListGenerator {
     return generateList(startingNodeExId, nodeExecutions, isOutcomePresent);
   }
 
-  public void populateAdjacencyList(
-      OrchestrationAdjacencyListInternal adjacencyListInternal, List<NodeExecution> nodeExecutions) {
-    nodeExecutions.sort(Comparator.comparing(NodeExecution::getCreatedAt));
-
-    for (NodeExecution nodeExecution : nodeExecutions) {
-      addVertex(adjacencyListInternal, nodeExecution);
-    }
-  }
-
   public void addVertex(OrchestrationAdjacencyListInternal adjacencyListInternal, NodeExecution nodeExecution) {
     Map<String, GraphVertex> graphVertexMap = adjacencyListInternal.getGraphVertexMap();
     Map<String, EdgeListInternal> adjacencyList = adjacencyListInternal.getAdjacencyMap();

@@ -188,6 +188,8 @@ public class ExecutionDetailsResource {
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
       @Parameter(description = PipelineResourceConstants.STAGE_NODE_ID_PARAM_MESSAGE) @QueryParam(
           "stageNodeId") String stageNodeId,
+      @Parameter(description = PipelineResourceConstants.GENERATE_FULL_GRAPH_PARAM_MESSAGE) @QueryParam(
+          "renderFullBottomGraph") Boolean renderFullBottomGraph,
       @Parameter(description = "Plan Execution Id for which we want to get the Execution details",
           required = true) @PathParam(NGCommonEntityConstants.PLAN_KEY) String planExecutionId) {
     PipelineExecutionSummaryEntity executionSummaryEntity =
@@ -203,7 +205,7 @@ public class ExecutionDetailsResource {
 
     accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountId, orgId, projectId),
         Resource.of("PIPELINE", executionSummaryEntity.getPipelineIdentifier()), PipelineRbacPermissions.PIPELINE_VIEW);
-    if (EmptyPredicate.isEmpty(stageNodeId)) {
+    if (EmptyPredicate.isEmpty(stageNodeId) && (renderFullBottomGraph == null || !renderFullBottomGraph)) {
       return ResponseDTO.newResponse(PipelineExecutionDetailDTO.builder()
                                          .pipelineExecutionSummary(PipelineExecutionSummaryDtoMapper.toDto(
                                              executionSummaryEntity, entityGitDetails))
