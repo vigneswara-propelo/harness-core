@@ -244,6 +244,14 @@ public class CIExecutionConfigService {
           image = ciExecutionServiceConfig.getStepConfig().getArtifactoryUploadConfig().getImage();
         }
         break;
+      case GIT_CLONE:
+        entrypoint = ciExecutionServiceConfig.getStepConfig().getGitCloneConfig().getEntrypoint();
+        if (existingConfig.isPresent()) {
+          image = existingConfig.get().getGitCloneImage();
+        } else {
+          image = ciExecutionServiceConfig.getStepConfig().getGitCloneConfig().getImage();
+        }
+        break;
       default:
         throw new IllegalStateException("Unexpected value: " + stepInfoType);
     }
