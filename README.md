@@ -116,8 +116,10 @@ Official steps to install docker on mac: [docker.com](https://docs.docker.com/de
    
 4. Go to `harness-core` directory and run
 
-    `scripts/bazel/generate_credentials.sh`
-    `bazel build //...` or `bazel build :all`
+    ```
+    scripts/bazel/generate_credentials.sh
+    bazel build //... or bazel build :all
+    ```
 
 5. If Global Search is not required:
 
