@@ -7,18 +7,4 @@
 
 package io.harness.ngmigration.beans;
 
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
-
-import java.util.List;
-import lombok.Data;
-
-/*
- * Input to discover multiple pipelines
- * */
-@OwnedBy(HarnessTeam.CDC)
-@Data
-public class DiscoveryInput {
-  private boolean exportImage;
-  private List<DiscoverEntityInput> entities;
-}
+public enum MigratorInputType { EXISTING, CREATE_NEW }
