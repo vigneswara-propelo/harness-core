@@ -5,18 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.yaml.core.failurestrategy.retry;
+package io.harness.yaml.core.failurestrategy;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.yaml.core.failurestrategy.FailureStrategyActionConfig;
 
-import lombok.Builder;
-import lombok.Value;
-
-@Value
-@Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-public class OnRetryFailureConfig {
-  FailureStrategyActionConfig action;
+public interface NGFailureActionTypeConstants {
+  String IGNORE = "Ignore";
+  String RETRY = "Retry";
+  String ABORT = "Abort";
+  String STAGE_ROLLBACK = "StageRollback";
+  String STEP_GROUP_ROLLBACK = "StepGroupRollback";
+  String MANUAL_INTERVENTION = "ManualIntervention";
+  String MARK_AS_SUCCESS = "MarkAsSuccess";
 }

@@ -9,6 +9,7 @@ package io.harness.plancreator.steps;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
+import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
 
@@ -28,9 +29,9 @@ import org.springframework.data.annotation.TypeAlias;
 @Builder
 @NoArgsConstructor
 @JsonTypeName("parallel")
-// TODO this should go to yaml commons
 @OwnedBy(PIPELINE)
 @TypeAlias("io.harness.yaml.core.parallelStepElementConfig")
+@RecasterAlias("io.harness.yaml.core.parallelStepElementConfig")
 public class ParallelStepElementConfig {
   @NotNull List<ExecutionWrapperConfig> sections;
 

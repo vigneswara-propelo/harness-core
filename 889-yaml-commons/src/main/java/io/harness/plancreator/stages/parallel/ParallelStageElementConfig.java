@@ -7,6 +7,10 @@
 
 package io.harness.plancreator.stages.parallel;
 
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+
+import io.harness.annotation.RecasterAlias;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.plancreator.stages.StageElementWrapperConfig;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,6 +23,8 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @Builder
 @TypeAlias("parallelStageElementConfig")
+@RecasterAlias("io.harness.plancreator.stages.parallel.ParallelStageElementConfig")
+@OwnedBy(PIPELINE)
 public class ParallelStageElementConfig {
   @NotNull List<StageElementWrapperConfig> sections;
 

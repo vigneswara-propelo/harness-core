@@ -5,10 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.yaml.core.failurestrategy.abort;
+package io.harness.yaml.core.failurestrategy.marksuccess;
 
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.ABORT;
+import static io.harness.yaml.core.failurestrategy.NGFailureActionTypeConstants.MARK_AS_SUCCESS;
 
+import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.yaml.core.failurestrategy.FailureStrategyActionConfig;
@@ -21,6 +22,7 @@ import lombok.Value;
 @Value
 @Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-public class AbortFailureActionConfig implements FailureStrategyActionConfig {
-  @ApiModelProperty(allowableValues = ABORT) NGFailureActionType type = NGFailureActionType.ABORT;
+@RecasterAlias("io.harness.yaml.core.failurestrategy.marksuccess.MarkAsSuccessFailureActionConfig")
+public class MarkAsSuccessFailureActionConfig implements FailureStrategyActionConfig {
+  @ApiModelProperty(allowableValues = MARK_AS_SUCCESS) NGFailureActionType type = NGFailureActionType.MARK_AS_SUCCESS;
 }

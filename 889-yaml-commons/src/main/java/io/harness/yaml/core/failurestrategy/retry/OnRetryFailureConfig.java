@@ -5,8 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.yaml.core.failurestrategy.manualintervention;
+package io.harness.yaml.core.failurestrategy.retry;
 
+import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.yaml.core.failurestrategy.FailureStrategyActionConfig;
@@ -17,6 +18,7 @@ import lombok.Value;
 @Value
 @Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-public class OnTimeoutConfig {
+@RecasterAlias("io.harness.yaml.core.failurestrategy.retry.OnRetryFailureConfig")
+public class OnRetryFailureConfig {
   FailureStrategyActionConfig action;
 }

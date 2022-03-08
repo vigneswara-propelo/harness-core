@@ -5,10 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.yaml.core.failurestrategy.ignore;
+package io.harness.yaml.core.failurestrategy.rollback;
 
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.IGNORE;
+import static io.harness.yaml.core.failurestrategy.NGFailureActionTypeConstants.STEP_GROUP_ROLLBACK;
 
+import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.yaml.core.failurestrategy.FailureStrategyActionConfig;
@@ -21,6 +22,8 @@ import lombok.Value;
 @Value
 @Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-public class IgnoreFailureActionConfig implements FailureStrategyActionConfig {
-  @ApiModelProperty(allowableValues = IGNORE) NGFailureActionType type = NGFailureActionType.IGNORE;
+@RecasterAlias("io.harness.yaml.core.failurestrategy.rollback.StepGroupFailureActionConfig")
+public class StepGroupFailureActionConfig implements FailureStrategyActionConfig {
+  @ApiModelProperty(allowableValues = STEP_GROUP_ROLLBACK)
+  NGFailureActionType type = NGFailureActionType.STEP_GROUP_ROLLBACK;
 }

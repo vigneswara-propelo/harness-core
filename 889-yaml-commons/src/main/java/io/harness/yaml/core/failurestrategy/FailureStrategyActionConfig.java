@@ -7,14 +7,6 @@
 
 package io.harness.yaml.core.failurestrategy;
 
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.ABORT;
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.IGNORE;
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.MANUAL_INTERVENTION;
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.MARK_AS_SUCCESS;
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.RETRY;
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.STAGE_ROLLBACK;
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.STEP_GROUP_ROLLBACK;
-
 import static com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
@@ -35,13 +27,14 @@ import javax.validation.constraints.NotNull;
 
 @JsonTypeInfo(use = NAME, property = "type", include = PROPERTY, visible = true)
 @JsonSubTypes({
-  @Type(value = AbortFailureActionConfig.class, name = ABORT)
-  , @Type(value = IgnoreFailureActionConfig.class, name = IGNORE),
-      @Type(value = ManualInterventionFailureActionConfig.class, name = MANUAL_INTERVENTION),
-      @Type(value = MarkAsSuccessFailureActionConfig.class, name = MARK_AS_SUCCESS),
-      @Type(value = RetryFailureActionConfig.class, name = RETRY),
-      @Type(value = StageRollbackFailureActionConfig.class, name = STAGE_ROLLBACK),
-      @Type(value = StepGroupFailureActionConfig.class, name = STEP_GROUP_ROLLBACK)
+  @Type(value = AbortFailureActionConfig.class, name = NGFailureActionTypeConstants.ABORT)
+  , @Type(value = IgnoreFailureActionConfig.class, name = NGFailureActionTypeConstants.IGNORE),
+      @Type(
+          value = ManualInterventionFailureActionConfig.class, name = NGFailureActionTypeConstants.MANUAL_INTERVENTION),
+      @Type(value = MarkAsSuccessFailureActionConfig.class, name = NGFailureActionTypeConstants.MARK_AS_SUCCESS),
+      @Type(value = RetryFailureActionConfig.class, name = NGFailureActionTypeConstants.RETRY),
+      @Type(value = StageRollbackFailureActionConfig.class, name = NGFailureActionTypeConstants.STAGE_ROLLBACK),
+      @Type(value = StepGroupFailureActionConfig.class, name = NGFailureActionTypeConstants.STEP_GROUP_ROLLBACK)
 })
 @OwnedBy(HarnessTeam.PIPELINE)
 public interface FailureStrategyActionConfig {

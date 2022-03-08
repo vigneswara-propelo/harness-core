@@ -7,6 +7,7 @@
 
 package io.harness.plancreator.execution;
 
+import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
@@ -20,6 +21,7 @@ import org.springframework.data.annotation.TypeAlias;
 @Value
 @Builder
 @TypeAlias("stepsExecutionConfig")
+@RecasterAlias("io.harness.plancreator.execution.StepsExecutionConfig")
 public class StepsExecutionConfig {
   List<ExecutionWrapperConfig> steps;
 

@@ -7,6 +7,7 @@
 
 package io.harness.plancreator.stages;
 
+import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
@@ -19,7 +20,7 @@ import org.springframework.data.annotation.TypeAlias;
 @Value
 @Builder
 @TypeAlias("stageElementWrapperConfig")
-// TODO (sahil) this needs to go to yaml commons right now as we have no module marking it for PMS commons
+@RecasterAlias("io.harness.plancreator.stages.StageElementWrapperConfig")
 @OwnedBy(HarnessTeam.PIPELINE)
 public class StageElementWrapperConfig {
   @ApiModelProperty(dataType = "io.harness.plancreator.stages.stage.StageElementConfig") JsonNode stage;

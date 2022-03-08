@@ -5,9 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.yaml.core.failurestrategy.marksuccess;
+package io.harness.yaml.core.failurestrategy.rollback;
 
-import static io.harness.beans.rollback.NGFailureActionTypeConstants.MARK_AS_SUCCESS;
+import static io.harness.yaml.core.failurestrategy.NGFailureActionTypeConstants.STAGE_ROLLBACK;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
@@ -22,7 +22,7 @@ import lombok.Value;
 @Value
 @Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-@RecasterAlias("io.harness.yaml.core.failurestrategy.marksuccess.MarkAsSuccessFailureActionConfig")
-public class MarkAsSuccessFailureActionConfig implements FailureStrategyActionConfig {
-  @ApiModelProperty(allowableValues = MARK_AS_SUCCESS) NGFailureActionType type = NGFailureActionType.MARK_AS_SUCCESS;
+@RecasterAlias("io.harness.yaml.core.failurestrategy.rollback.StageRollbackFailureActionConfig")
+public class StageRollbackFailureActionConfig implements FailureStrategyActionConfig {
+  @ApiModelProperty(allowableValues = STAGE_ROLLBACK) NGFailureActionType type = NGFailureActionType.STAGE_ROLLBACK;
 }

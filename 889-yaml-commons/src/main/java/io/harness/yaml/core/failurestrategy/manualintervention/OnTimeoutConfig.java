@@ -7,21 +7,18 @@
 
 package io.harness.yaml.core.failurestrategy.manualintervention;
 
+import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.SwaggerConstants;
-import io.harness.pms.yaml.ParameterField;
-import io.harness.yaml.core.timeout.Timeout;
+import io.harness.yaml.core.failurestrategy.FailureStrategyActionConfig;
 
-import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
 
 @Value
 @Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-public class ManualFailureSpecConfig {
-  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<Timeout> timeout;
-  @NotNull OnTimeoutConfig onTimeout;
+@RecasterAlias("io.harness.yaml.core.failurestrategy.manualintervention.OnTimeoutConfig")
+public class OnTimeoutConfig {
+  FailureStrategyActionConfig action;
 }

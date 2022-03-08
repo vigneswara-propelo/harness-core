@@ -9,7 +9,6 @@ package io.harness.yaml.core.failurestrategy;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.rollback.NGFailureActionTypeConstants;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
