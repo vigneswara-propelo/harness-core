@@ -342,18 +342,13 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     AccountLicenseDTO accountLicense = getAccountLicense(accountIdentifier);
     Map<ModuleType, List<ModuleLicenseDTO>> allModuleLicenses = accountLicense.getAllModuleLicenses();
 
-    long currentTime = Instant.now().toEpochMilli();
     Optional<ModuleLicenseDTO> highestEditionLicense =
-        allModuleLicenses.values()
-            .stream()
-            .flatMap(Collection::stream)
-            .filter(license -> license.getExpiryTime() > currentTime)
-            .reduce((compareLicense, currentLicense) -> {
-              if (compareLicense.getEdition().compareTo(currentLicense.getEdition()) < 0) {
-                return currentLicense;
-              }
-              return compareLicense;
-            });
+        allModuleLicenses.values().stream().flatMap(Collection::stream).reduce((compareLicense, currentLicense) -> {
+          if (compareLicense.getEdition().compareTo(currentLicense.getEdition()) < 0) {
+            return currentLicense;
+          }
+          return compareLicense;
+        });
 
     if (!highestEditionLicense.isPresent()) {
       return Edition.FREE;
