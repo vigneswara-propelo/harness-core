@@ -31,6 +31,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,13 +56,13 @@ public abstract class OASModule extends AbstractModule {
   public abstract Collection<Class<?>> getResourceClasses();
 
   public void testOASAdoption(Collection<Class<?>> classes) {
-    List<String> classWithoutTagNameOrDescription = new ArrayList<>();
-    List<String> endpointsWithoutAccountParam = new ArrayList<>();
-    List<String> dtoWithoutDescriptionToField = new ArrayList<>();
-    List<String> methodsWithoutDescriptionToParam = new ArrayList<>();
-    List<String> methodsHiddenFromSwaggerButNotOpenApi = new ArrayList<>();
-    List<String> methodsWithoutParameter = new ArrayList<>();
-    List<String> methodsWithoutFilledOperation = new ArrayList<>();
+    Set<String> classWithoutTagNameOrDescription = new HashSet<>();
+    Set<String> endpointsWithoutAccountParam = new HashSet<>();
+    Set<String> dtoWithoutDescriptionToField = new HashSet<>();
+    Set<String> methodsWithoutDescriptionToParam = new HashSet<>();
+    Set<String> methodsHiddenFromSwaggerButNotOpenApi = new HashSet<>();
+    Set<String> methodsWithoutParameter = new HashSet<>();
+    Set<String> methodsWithoutFilledOperation = new HashSet<>();
 
     if (classes == null) {
       return;
@@ -99,7 +100,7 @@ public abstract class OASModule extends AbstractModule {
         "All the methods with Operation Annotation should have filled fields, but found below : ");
   }
 
-  private void finalAssertion(List<String> listFromCheck, String exclusionType, String message) {
+  private void finalAssertion(Set<String> listFromCheck, String exclusionType, String message) {
     if (!listFromCheck.isEmpty()) {
       List<String> exclusionDtoList = new ArrayList<>();
       Map<String, Collection<String>> map = exclude(exclusionType).asMap();
@@ -113,7 +114,7 @@ public abstract class OASModule extends AbstractModule {
     }
   }
 
-  private String getDetails(List<String> endpointsWithoutAccountParam, String message) {
+  private String getDetails(Set<String> endpointsWithoutAccountParam, String message) {
     StringBuilder details = new StringBuilder(message);
     endpointsWithoutAccountParam.forEach(entry -> details.append("\n ").append(entry));
     return details.toString();

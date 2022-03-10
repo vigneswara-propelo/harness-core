@@ -1,13 +1,7 @@
-endpoint-exclusion: io.harness.ng.core.remote.NGSecretResourceV2.getEncryptionDetails
 endpoint-exclusion: io.harness.connector.apis.resource.ConnectorResource.getCEAwsTemplate
 endpoint-exclusion: io.harness.connector.apis.resource.ConnectorResource.getAllAllowedFieldValues
-endpoint-exclusion: io.harness.ng.core.invites.remote.InviteResource.completeInvite
 endpoint-exclusion: io.harness.ng.core.invites.remote.InviteResource.getInviteWithToken
 endpoint-exclusion: io.harness.ng.core.invites.remote.InviteResource.delete
-endpoint-exclusion: io.harness.gitsync.common.remote.GitSyncSettingsResource.update
-endpoint-exclusion: io.harness.gitsync.common.remote.GitSyncSettingsResource.create
-endpoint-exclusion: io.harness.ng.core.delegate.resources.DelegateConfigNgV2Resource.add
-endpoint-exclusion: io.harness.enforcement.resource.EnforcementResource.getAllFeatureRestrictionMetadata
 endpoint-exclusion: io.harness.ng.userprofile.resource.SourceCodeManagerResource.update
 endpoint-exclusion: io.harness.ng.userprofile.resource.SourceCodeManagerResource.save
 endpoint-exclusion: io.harness.ng.core.user.remote.UserResource.changeUserPassword
@@ -15,14 +9,12 @@ endpoint-exclusion: io.harness.ng.core.user.remote.UserResource.updateUserInfo
 endpoint-exclusion: io.harness.ng.core.user.remote.UserResource.getTwoFactorAuthSettingsInfo
 endpoint-exclusion: io.harness.ng.core.user.remote.UserResource.updateTwoFactorAuthInfo
 endpoint-exclusion: io.harness.ng.core.user.remote.UserResource.disableTFA
-endpoint-exclusion: io.harness.ng.core.user.remote.UserResource.getUserInfo
 endpoint-exclusion: io.harness.ng.core.remote.UserGroupResource.list
 endpoint-exclusion: io.harness.ng.core.remote.ApiKeyResource.createApiKey
 endpoint-exclusion: io.harness.ng.core.remote.ApiKeyResource.updateApiKey
 endpoint-exclusion: io.harness.ng.core.smtp.resources.SmtpNgResource.update
 endpoint-exclusion: io.harness.ng.core.smtp.resources.SmtpNgResource.delete
 endpoint-exclusion: io.harness.ng.core.smtp.resources.SmtpNgResource.save
-endpoint-exclusion: io.harness.gitsync.common.remote.ScmFacilitatorResource.isSaasGit
 endpoint-exclusion: io.harness.gitsync.common.remote.ScmFacilitatorResource.createPR
 endpoint-exclusion: io.harness.ng.core.remote.TokenResource.createToken
 endpoint-exclusion: io.harness.ng.core.remote.TokenResource.updateToken
@@ -30,7 +22,6 @@ dto-exclusion: io.harness.ng.authenticationsettings.dtos.mechanisms.OAuthSetting
 dto-exclusion: io.harness.ng.core.service.dto.ServiceRequestDTO
 dto-exclusion: io.harness.secretmanagerclient.dto.SecretManagerMetadataRequestDTO
 dto-exclusion: io.harness.ng.core.user.PasswordChangeDTO
-dto-exclusion: io.harness.delegate.filter.DelegateProfileFilterPropertiesDTO
 dto-exclusion: io.harness.ng.core.dto.UserGroupDTO
 dto-exclusion: io.harness.accesscontrol.scopes.ScopeDTO
 dto-exclusion: io.harness.ng.core.dto.NgSmtpDTO
