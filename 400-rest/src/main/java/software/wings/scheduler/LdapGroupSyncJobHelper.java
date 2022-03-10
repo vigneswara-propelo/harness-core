@@ -242,9 +242,14 @@ public class LdapGroupSyncJobHelper {
       Set<UserGroup> userGroups = entry.getValue();
 
       User user = userService.getUserByEmail(ldapUserResponse.getEmail());
+      log.info("LDAPIterator: user found from by email Id {} is {}", ldapUserResponse.getEmail(), user);
+
       if (featureFlagService.isEnabled(FeatureName.LDAP_SYNC_WITH_USERID, accountId)) {
         user = userService.getUserByUserId(ldapUserResponse.getUserId());
+        log.info("LDAPIterator: Fetching user with user Id {}", ldapUserResponse.getUserId());
       }
+      log.info("LDAPIterator: user found from system is {}", user);
+
       if (user != null && userService.isUserAssignedToAccount(user, accountId)) {
         log.info("LDAPIterator: user already assigned to account {}", accountId);
         userService.addUserToUserGroups(accountId, user, Lists.newArrayList(userGroups), true, true);
