@@ -471,7 +471,7 @@ public class MonitoredServiceResource {
   @ExceptionMetered
   @Path("{monitoredServiceIdentifier}/service-details")
   @ApiOperation(value = "get details of a monitored service present in the Service Dependency Graph",
-      nickname = "getMonitoredServiceDetails")
+      nickname = "getMonitoredServiceDetailsWithServiceId")
   public MonitoredServiceListItemDTO
   getMonitoredServiceDetails(@BeanParam ProjectParams projectParams,
       @PathParam("monitoredServiceIdentifier") String monitoredServiceIdentifier) {
