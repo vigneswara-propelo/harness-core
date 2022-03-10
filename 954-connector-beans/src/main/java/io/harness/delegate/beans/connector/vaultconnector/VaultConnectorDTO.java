@@ -42,6 +42,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,9 +64,11 @@ public class VaultConnectorDTO extends ConnectorConfigDTO implements DelegateSel
   @Schema(description = SecretManagerDescriptionConstants.AUTH_TOKEN)
   private SecretRefData authToken;
   @Schema(description = SecretManagerDescriptionConstants.BASE_PATH) private String basePath;
-  @Schema(description = SecretManagerDescriptionConstants.VAULT_URL) private String vaultUrl;
+  @NotNull @Schema(description = SecretManagerDescriptionConstants.VAULT_URL) private String vaultUrl;
   @Schema(description = SecretManagerDescriptionConstants.READ_ONLY) private boolean isReadOnly;
-  @Schema(description = SecretManagerDescriptionConstants.RENEWAL_INTERVAL_MINUTES) private long renewalIntervalMinutes;
+  @NotNull
+  @Schema(description = SecretManagerDescriptionConstants.RENEWAL_INTERVAL_MINUTES)
+  private long renewalIntervalMinutes;
   @Schema(description = SecretManagerDescriptionConstants.ENGINE_ENTERED_MANUALLY)
   private boolean secretEngineManuallyConfigured;
   @Schema(description = SecretManagerDescriptionConstants.SECRET_ENGINE_NAME) private String secretEngineName;
@@ -74,7 +77,7 @@ public class VaultConnectorDTO extends ConnectorConfigDTO implements DelegateSel
   @SecretReference
   @ApiModelProperty(dataType = "string")
   private SecretRefData secretId;
-  private boolean isDefault;
+  @Schema(description = SecretManagerDescriptionConstants.DEFAULT) private boolean isDefault;
   @Schema(description = SecretManagerDescriptionConstants.SECRET_ENGINE_VERSION) private int secretEngineVersion;
   @Schema(description = SecretManagerDescriptionConstants.DELEGATE_SELECTORS) private Set<String> delegateSelectors;
   @Schema(description = SecretManagerDescriptionConstants.NAMESPACE) private String namespace;
@@ -109,15 +112,36 @@ public class VaultConnectorDTO extends ConnectorConfigDTO implements DelegateSel
     try {
       new URL(vaultUrl);
     } catch (MalformedURLException malformedURLException) {
-      throw new InvalidRequestException("Please check the url and try again.", INVALID_REQUEST, USER);
+      throw new InvalidRequestException("Please check the Vault url and try again.", INVALID_REQUEST, USER);
+    }
+    if (isBlank(vaultUrl)) {
+      throw new InvalidRequestException(String.format("Invalid value for Vault URL"), INVALID_REQUEST, USER);
     }
     if (secretEngineVersion <= 0) {
       throw new InvalidRequestException(
           String.format("Invalid value for secret engine version: %s", secretEngineVersion), INVALID_REQUEST, USER);
     }
+
+    if (getAccessType() == AccessType.APP_ROLE) {
+      if (isBlank(appRoleId)) {
+        throw new InvalidRequestException(
+            "You must provide a App Role Id if you are using AppRole Authentication for Vault.", INVALID_REQUEST, USER);
+      }
+      if (null == secretId || isEmpty(secretId.getIdentifier())) {
+        throw new InvalidRequestException(
+            "You must provide the secretId if you are using AppRole Authentication for Vault", INVALID_REQUEST, USER);
+      }
+    }
+
+    if (getAccessType() == AccessType.TOKEN) {
+      if (authToken == null) {
+        throw new InvalidRequestException(
+            "You must provide a Auth Token if you are using Token Authentication for Vault", INVALID_REQUEST, USER);
+      }
+    }
+
     if (renewalIntervalMinutes <= 0) {
-      throw new InvalidRequestException(
-          String.format("Invalid value for renewal interval: %s", renewalIntervalMinutes), INVALID_REQUEST, USER);
+      throw new InvalidRequestException(String.format("Invalid value for renewal interval"), INVALID_REQUEST, USER);
     }
     if (isReadOnly && isDefault) {
       throw new InvalidRequestException("Read only secret manager cannot be set as default", INVALID_REQUEST, USER);
