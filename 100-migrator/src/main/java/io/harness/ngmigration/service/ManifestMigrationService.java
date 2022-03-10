@@ -31,6 +31,7 @@ import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.GitFileConfig;
 import software.wings.beans.appmanifest.AppManifestKind;
@@ -130,7 +131,7 @@ public class ManifestMigrationService implements NgMigrationService {
       BaseProvidedInput manifestInput = inputDTO.getInputs().get(manifestEntityId);
       ManifestProvidedEntitySpec entitySpec = null;
       if (manifestInput != null && manifestInput.getSpec() != null) {
-        entitySpec = (ManifestProvidedEntitySpec) manifestInput.getSpec();
+        entitySpec = JsonUtils.treeToValue(manifestInput.getSpec(), ManifestProvidedEntitySpec.class);
       }
 
       // TODO : move if-else logic to factory pattern
@@ -214,6 +215,8 @@ public class ManifestMigrationService implements NgMigrationService {
       } else {
         gitStoreBuilder.paths(ParameterField.createValueField(Collections.singletonList(gitFileConfig.getFilePath())));
       }
+    } else {
+      gitStoreBuilder.paths(ParameterField.createValueField(Collections.singletonList(gitFileConfig.getFilePath())));
     }
     return gitStoreBuilder.build();
   }
