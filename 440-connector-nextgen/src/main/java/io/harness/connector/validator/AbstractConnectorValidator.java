@@ -13,6 +13,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.beans.DelegateTaskRequest;
+import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorValidationResult;
 import io.harness.connector.heartbeat.ConnectorValidationParamsProvider;
@@ -72,7 +73,7 @@ public abstract class AbstractConnectorValidator implements ConnectionValidator 
     return responseData;
   }
 
-  public ConnectorValidationResult validateConnectorViaManager(
+  public ConnectorValidationResult validateConnectorViaManager(ConnectorConfigDTO connectorConfigDTO,
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier) {
     AtomicReference<ConnectorValidationHandler> connectorValidationHandler = new AtomicReference<>();
 
@@ -81,12 +82,14 @@ public abstract class AbstractConnectorValidator implements ConnectionValidator 
     final ConnectorValidationParams connectorValidationParams =
         connectorResponseDTO
             .map(connectorResponse -> {
-              ConnectorType connectorType = connectorResponse.getConnector().getConnectorType();
+              ConnectorInfoDTO connectorInfoDTO = connectorResponse.getConnector();
+              connectorInfoDTO.setConnectorConfig(connectorConfigDTO);
+              ConnectorType connectorType = connectorInfoDTO.getConnectorType();
               connectorValidationHandler.set(
                   connectorTypeToConnectorValidationHandlerMap.get(connectorType.getDisplayName()));
               return connectorValidationParamsProviderMap.get(connectorType.getDisplayName())
-                  .getConnectorValidationParams(connectorResponse.getConnector(),
-                      connectorResponse.getConnector().getName(), accountIdentifier, orgIdentifier, projectIdentifier);
+                  .getConnectorValidationParams(connectorInfoDTO, connectorInfoDTO.getName(), accountIdentifier,
+                      orgIdentifier, projectIdentifier);
             })
             .orElseThrow(()
                              -> new InvalidRequestException(String.format(
