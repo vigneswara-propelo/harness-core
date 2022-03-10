@@ -53,4 +53,12 @@ public class GitContextHelper {
     }
     return Boolean.TRUE.equals(gitEntityInfo.getIsFullSyncFlow());
   }
+
+  public String getBranchForRefEntityValidations() {
+    GitEntityInfo gitEntityInfo = getGitEntityInfo();
+    if (gitEntityInfo.isNewBranch()) {
+      return gitEntityInfo.getBaseBranch();
+    }
+    return gitEntityInfo.getBranch();
+  }
 }
