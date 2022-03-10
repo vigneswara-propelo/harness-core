@@ -8,17 +8,17 @@
 package io.harness;
 
 import static io.harness.AuthorizationServiceHeader.PIPELINE_SERVICE;
-import static io.harness.OrchestrationEventsFrameworkConstants.INITIATE_NODE_EVENT_BATCH_SIZE;
 import static io.harness.OrchestrationEventsFrameworkConstants.INITIATE_NODE_EVENT_CONSUMER;
 import static io.harness.OrchestrationEventsFrameworkConstants.INITIATE_NODE_EVENT_PRODUCER;
-import static io.harness.OrchestrationEventsFrameworkConstants.PARTIAL_PLAN_EVENT_BATCH_SIZE;
 import static io.harness.OrchestrationEventsFrameworkConstants.PARTIAL_PLAN_EVENT_CONSUMER;
-import static io.harness.OrchestrationEventsFrameworkConstants.SDK_RESPONSE_EVENT_BATCH_SIZE;
 import static io.harness.OrchestrationEventsFrameworkConstants.SDK_RESPONSE_EVENT_CONSUMER;
+import static io.harness.eventsframework.EventsFrameworkConstants.INITIATE_NODE_EVENT_BATCH_SIZE;
 import static io.harness.eventsframework.EventsFrameworkConstants.INITIATE_NODE_EVENT_MAX_TOPIC_SIZE;
 import static io.harness.eventsframework.EventsFrameworkConstants.INITIATE_NODE_EVENT_TOPIC;
+import static io.harness.eventsframework.EventsFrameworkConstants.PARTIAL_PLAN_EVENT_BATCH_SIZE;
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_PARTIAL_PLAN_RESPONSE;
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_RESPONSE_EVENT_TOPIC;
+import static io.harness.eventsframework.EventsFrameworkConstants.SDK_RESPONSE_EVENT_BATCH_SIZE;
 import static io.harness.pms.events.PmsEventFrameworkConstants.MAX_PROCESSING_TIME_SECONDS;
 
 import io.harness.events.PmsRedissonClientFactory;
