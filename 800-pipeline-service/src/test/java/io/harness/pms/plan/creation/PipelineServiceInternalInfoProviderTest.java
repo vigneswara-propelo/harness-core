@@ -30,7 +30,7 @@ import io.harness.plancreator.execution.ExecutionPmsPlanCreator;
 import io.harness.plancreator.pipeline.NGPipelinePlanCreator;
 import io.harness.plancreator.stages.StagesPlanCreator;
 import io.harness.plancreator.stages.parallel.ParallelPlanCreator;
-import io.harness.plancreator.steps.PipelineStepsPlanCreator;
+import io.harness.plancreator.steps.NGStageStepsPlanCreator;
 import io.harness.plancreator.steps.StepGroupPMSPlanCreator;
 import io.harness.plancreator.steps.barrier.BarrierStepPlanCreator;
 import io.harness.plancreator.steps.internal.FlagConfigurationStepPlanCreator;
@@ -109,7 +109,7 @@ public class PipelineServiceInternalInfoProviderTest extends CategoryTest {
     assertThat(planCreatorClasses.contains(HarnessApprovalStepPlanCreator.class)).isTrue();
     assertThat(planCreatorClasses.contains(BarrierStepPlanCreator.class)).isTrue();
     assertThat(planCreatorClasses.contains(FlagConfigurationStepPlanCreator.class)).isTrue();
-    assertThat(planCreatorClasses.contains(PipelineStepsPlanCreator.class)).isTrue();
+    assertThat(planCreatorClasses.contains(NGStageStepsPlanCreator.class)).isTrue();
     assertThat(planCreatorClasses.contains(PolicyStepPlanCreator.class)).isTrue();
     assertThat(planCreatorClasses.contains(ServiceNowCreateStepPlanCreator.class)).isTrue();
     assertThat(planCreatorClasses.contains(ServiceNowUpdateStepPlanCreator.class)).isTrue();

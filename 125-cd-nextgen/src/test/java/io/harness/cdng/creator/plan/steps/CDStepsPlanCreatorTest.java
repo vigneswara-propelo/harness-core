@@ -21,10 +21,10 @@ import io.harness.pms.plan.creation.PlanCreatorUtils;
 import io.harness.pms.sdk.core.plan.PlanNode;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
-import io.harness.steps.YamlTypes;
 import io.harness.steps.common.NGSectionStepParameters;
 
 import com.google.inject.Inject;
@@ -68,8 +68,8 @@ public class CDStepsPlanCreatorTest extends CDNGTestBase {
   @Category(UnitTests.class)
   public void testGetSupportedTypes() {
     Map<String, Set<String>> supportedTypes = stepsPlanCreator.getSupportedTypes();
-    assertThat(supportedTypes.containsKey(YamlTypes.STEPS)).isEqualTo(true);
-    assertThat(supportedTypes.get(YamlTypes.STEPS).contains(PlanCreatorUtils.ANY_TYPE)).isEqualTo(true);
+    assertThat(supportedTypes.containsKey(YAMLFieldNameConstants.STEPS)).isEqualTo(true);
+    assertThat(supportedTypes.get(YAMLFieldNameConstants.STEPS).contains(PlanCreatorUtils.ANY_TYPE)).isEqualTo(true);
   }
 
   @Test

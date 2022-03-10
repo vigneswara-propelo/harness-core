@@ -37,3 +37,9 @@ io.harness.plancreator.stages.stage.StageElementConfig
 io.harness.plancreator.stages.StageElementWrapperConfig
 io.harness.plancreator.execution.StepsExecutionConfig
 io.harness.yaml.core.parallelStepElementConfig
+io.harness.plancreator.steps.common.StageElementParameters
+io.harness.steps.section.chain.SectionChainPassThroughData
+io.harness.steps.section.chain.SectionChainStepParameters
+io.harness.steps.common.NGSectionStepParameters
+io.harness.steps.common.steps.stepgroup.StepGroupStepParameters
+io.harness.steps.fork.ForkStepParameters

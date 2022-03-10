@@ -22,7 +22,7 @@ import io.harness.plancreator.execution.ExecutionPmsPlanCreator;
 import io.harness.plancreator.pipeline.NGPipelinePlanCreator;
 import io.harness.plancreator.stages.StagesPlanCreator;
 import io.harness.plancreator.stages.parallel.ParallelPlanCreator;
-import io.harness.plancreator.steps.PipelineStepsPlanCreator;
+import io.harness.plancreator.steps.NGStageStepsPlanCreator;
 import io.harness.plancreator.steps.StepGroupPMSPlanCreator;
 import io.harness.plancreator.steps.barrier.BarrierStepPlanCreator;
 import io.harness.plancreator.steps.http.HttpStepPlanCreator;
@@ -80,7 +80,7 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     planCreators.add(new JiraCreateStepPlanCreator());
     planCreators.add(new JiraUpdateStepPlanCreator());
     planCreators.add(new ShellScriptStepPlanCreator());
-    planCreators.add(new PipelineStepsPlanCreator());
+    planCreators.add(new NGStageStepsPlanCreator());
     planCreators.add(new ApprovalStagePlanCreatorV2());
     planCreators.add(new ExecutionPmsPlanCreator());
     planCreators.add(new StepGroupPMSPlanCreator());

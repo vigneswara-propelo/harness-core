@@ -37,8 +37,6 @@ import io.harness.cdng.provision.terraform.TerraformApplyStep;
 import io.harness.cdng.provision.terraform.TerraformDestroyStep;
 import io.harness.cdng.provision.terraform.TerraformPlanStep;
 import io.harness.cdng.provision.terraform.steps.rolllback.TerraformRollbackStep;
-import io.harness.cdng.rollback.steps.CDNGExecutionStep;
-import io.harness.cdng.rollback.steps.CDStepsStep;
 import io.harness.cdng.rollback.steps.InfrastructureDefinitionStep;
 import io.harness.cdng.rollback.steps.InfrastructureProvisionerStep;
 import io.harness.cdng.rollback.steps.RollbackStepsStep;
@@ -49,7 +47,7 @@ import io.harness.cdng.service.steps.ServiceSpecStep;
 import io.harness.cdng.service.steps.ServiceStep;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.core.steps.Step;
-import io.harness.registrars.OrchestrationStepsModuleSdkStepRegistrar;
+import io.harness.registrar.NGCommonUtilStepsRegistrar;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -94,13 +92,11 @@ public class NgStepRegistrar {
     engineSteps.put(InfrastructureProvisionerStep.STEP_TYPE, InfrastructureProvisionerStep.class);
     engineSteps.put(RollbackStepsStep.STEP_TYPE, RollbackStepsStep.class);
     engineSteps.put(StepGroupRollbackStep.STEP_TYPE, RollbackStepsStep.class);
-    engineSteps.put(CDNGExecutionStep.STEP_TYPE, CDNGExecutionStep.class);
-    engineSteps.put(CDStepsStep.STEP_TYPE, CDStepsStep.class);
     engineSteps.put(EnvironmentStep.STEP_TYPE, EnvironmentStep.class);
     engineSteps.put(HelmDeployStep.STEP_TYPE, HelmDeployStep.class);
     engineSteps.put(HelmRollbackStep.STEP_TYPE, HelmRollbackStep.class);
 
-    engineSteps.putAll(OrchestrationStepsModuleSdkStepRegistrar.getEngineSteps());
+    engineSteps.putAll(NGCommonUtilStepsRegistrar.getEngineSteps());
     return engineSteps;
   }
 }
