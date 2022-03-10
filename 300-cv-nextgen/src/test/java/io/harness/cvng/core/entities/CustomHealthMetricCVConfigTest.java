@@ -13,6 +13,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
+import io.harness.cvng.beans.customhealth.TimestampInfo;
+import io.harness.cvng.core.beans.CustomHealthRequestDefinition;
 import io.harness.cvng.core.beans.HealthSourceQueryType;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricResponseMapping;
 import io.harness.delegate.beans.connector.customhealthconnector.CustomHealthMethod;
@@ -25,9 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-public class CustomHealthCVConfigTest extends CategoryTest {
-  List<CustomHealthCVConfig.MetricDefinition> metricDefinitions;
-  CustomHealthCVConfig customHealthCVConfig;
+public class CustomHealthMetricCVConfigTest extends CategoryTest {
+  List<CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition> metricDefinitions;
+  CustomHealthMetricCVConfig customHealthCVConfig;
   MetricResponseMapping responseMapping;
 
   @Before
@@ -38,19 +40,23 @@ public class CustomHealthCVConfigTest extends CategoryTest {
                           .timestampJsonPath("timeStringPath")
                           .build();
 
-    CustomHealthCVConfig.MetricDefinition metricDefinition =
-        CustomHealthCVConfig.MetricDefinition.builder()
-            .method(CustomHealthMethod.GET)
+    CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition metricDefinition =
+        CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition.builder()
+            .requestDefinition(CustomHealthRequestDefinition.builder()
+                                   .method(CustomHealthMethod.GET)
+                                   .urlPath("https://dd.com")
+                                   .startTimeInfo(TimestampInfo.builder().build())
+                                   .endTimeInfo(TimestampInfo.builder().build())
+                                   .build())
             .metricResponseMapping(responseMapping)
             .metricName("metric_1")
             .sli(AnalysisInfo.SLI.builder().enabled(true).build())
             .deploymentVerification(AnalysisInfo.DeploymentVerification.builder().enabled(false).build())
             .liveMonitoring(AnalysisInfo.LiveMonitoring.builder().enabled(true).build())
-            .urlPath("https://dd.com")
             .build();
 
     metricDefinitions.add(metricDefinition);
-    customHealthCVConfig = CustomHealthCVConfig.builder()
+    customHealthCVConfig = CustomHealthMetricCVConfig.builder()
                                .groupName("group1")
                                .queryType(HealthSourceQueryType.SERVICE_BASED)
                                .metricDefinitions(metricDefinitions)
@@ -77,7 +83,7 @@ public class CustomHealthCVConfigTest extends CategoryTest {
     metricDefinitions.get(0).setLiveMonitoring(AnalysisInfo.LiveMonitoring.builder().enabled(true).build());
     assertThatThrownBy(customHealthCVConfig::validateParams)
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage("Host based queries can only be used for deployment verification.");
+        .hasMessage("Host based queries can only be used for continuous verification.");
   }
 
   @Test
@@ -96,17 +102,22 @@ public class CustomHealthCVConfigTest extends CategoryTest {
   @Owner(developers = ANJAN)
   @Category(UnitTests.class)
   public void testValidateParams_whenThereAreDuplicateMetricDefinitions() {
-    CustomHealthCVConfig.MetricDefinition metricDefinition =
-        CustomHealthCVConfig.MetricDefinition.builder()
-            .method(CustomHealthMethod.GET)
+    CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition metricDefinition =
+        CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition.builder()
+            .requestDefinition(CustomHealthRequestDefinition.builder()
+                                   .method(CustomHealthMethod.GET)
+                                   .urlPath("https://dd.com")
+                                   .startTimeInfo(TimestampInfo.builder().build())
+                                   .endTimeInfo(TimestampInfo.builder().build())
+                                   .build())
             .metricResponseMapping(responseMapping)
             .metricName("metric_1")
             .deploymentVerification(AnalysisInfo.DeploymentVerification.builder().enabled(false).build())
             .sli(AnalysisInfo.SLI.builder().enabled(true).build())
             .liveMonitoring(AnalysisInfo.LiveMonitoring.builder().enabled(false).build())
-            .urlPath("https://dd.com")
             .build();
     metricDefinitions.add(metricDefinition);
+    customHealthCVConfig.setQueryType(HealthSourceQueryType.SERVICE_BASED);
 
     assertThatThrownBy(customHealthCVConfig::validateParams)
         .isInstanceOf(InvalidRequestException.class)

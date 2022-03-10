@@ -13,12 +13,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.beans.TimeSeriesMetricType;
-import io.harness.cvng.beans.customhealth.TimestampInfo;
+import io.harness.cvng.core.beans.CustomHealthRequestDefinition;
 import io.harness.cvng.core.beans.HealthSourceQueryType;
 import io.harness.cvng.core.beans.RiskProfile;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricResponseMapping;
 import io.harness.cvng.core.services.CVNextGenConstants;
-import io.harness.delegate.beans.connector.customhealthconnector.CustomHealthMethod;
 import io.harness.exception.InvalidRequestException;
 
 import java.util.ArrayList;
@@ -37,28 +36,23 @@ import org.mongodb.morphia.query.UpdateOperations;
 
 @Data
 @SuperBuilder
-@FieldNameConstants(innerTypeName = "CustomHealthCVConfigKeys")
+@FieldNameConstants(innerTypeName = "CustomHealthMetricCVConfigKeys")
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class CustomHealthCVConfig extends MetricCVConfig {
+public class CustomHealthMetricCVConfig extends MetricCVConfig {
   String groupName;
   HealthSourceQueryType queryType;
-  List<MetricDefinition> metricDefinitions;
+  List<CustomHealthCVConfigMetricDefinition> metricDefinitions;
 
   @Data
   @SuperBuilder
   @FieldDefaults(level = AccessLevel.PRIVATE)
-  @FieldNameConstants(innerTypeName = "CustomHealthMetricDefinitionKeys")
-  public static class MetricDefinition extends AnalysisInfo {
+  public static class CustomHealthCVConfigMetricDefinition extends AnalysisInfo {
+    CustomHealthRequestDefinition requestDefinition;
+    MetricResponseMapping metricResponseMapping;
     TimeSeriesMetricType metricType;
     String metricName;
-    String urlPath;
-    String requestBody;
-    CustomHealthMethod method;
-    TimestampInfo startTime;
-    TimestampInfo endTime;
-    MetricResponseMapping metricResponseMapping;
   }
 
   @Override
@@ -68,25 +62,23 @@ public class CustomHealthCVConfig extends MetricCVConfig {
 
   @Override
   public DataSourceType getType() {
-    return DataSourceType.CUSTOM_HEALTH;
+    return DataSourceType.CUSTOM_HEALTH_METRIC;
   }
 
   @Override
   protected void validateParams() {
-    checkNotNull(groupName, generateErrorMessageFromParam(CustomHealthCVConfigKeys.groupName));
-    checkNotNull(metricDefinitions, generateErrorMessageFromParam(CustomHealthCVConfigKeys.metricDefinitions));
+    checkNotNull(groupName, generateErrorMessageFromParam(CustomHealthMetricCVConfigKeys.groupName));
+    checkNotNull(metricDefinitions, generateErrorMessageFromParam(CustomHealthMetricCVConfigKeys.metricDefinitions));
+    checkNotNull(queryType, generateErrorMessageFromParam(CustomHealthMetricCVConfigKeys.queryType));
     Set<String> uniqueMetricDefinitionsNames = new HashSet<>();
 
     for (int metricDefinitionIndex = 0; metricDefinitionIndex < metricDefinitions.size(); metricDefinitionIndex++) {
-      MetricDefinition metricDefinition = metricDefinitions.get(metricDefinitionIndex);
+      CustomHealthCVConfigMetricDefinition metricDefinition = metricDefinitions.get(metricDefinitionIndex);
+      CustomHealthRequestDefinition requestDefinition = metricDefinition.getRequestDefinition();
+
       checkNotNull(metricDefinition.getMetricName(),
           generateErrorMessageFromParam("metricName") + " for index " + metricDefinitionIndex);
-      checkNotNull(metricDefinition.method,
-          generateErrorMessageFromParam(MetricDefinition.CustomHealthMetricDefinitionKeys.method) + " for index "
-              + metricDefinitionIndex);
-      checkNotNull(metricDefinition.urlPath,
-          generateErrorMessageFromParam(MetricDefinition.CustomHealthMetricDefinitionKeys.urlPath) + " for index "
-              + metricDefinitionIndex);
+      requestDefinition.validateParams();
 
       AnalysisInfo.SLI sliDTO = metricDefinition.getSli();
       AnalysisInfo.DeploymentVerification deploymentVerification = metricDefinition.getDeploymentVerification();
@@ -95,7 +87,7 @@ public class CustomHealthCVConfig extends MetricCVConfig {
       switch (queryType) {
         case HOST_BASED:
           if ((liveMonitoring != null && liveMonitoring.enabled) || (sliDTO != null && sliDTO.enabled)) {
-            throw new InvalidRequestException("Host based queries can only be used for deployment verification.");
+            throw new InvalidRequestException("Host based queries can only be used for continuous verification.");
           }
           break;
         case SERVICE_BASED:
@@ -125,8 +117,9 @@ public class CustomHealthCVConfig extends MetricCVConfig {
     MetricPack metricPack = MetricPack.builder()
                                 .category(riskProfile.getCategory())
                                 .accountId(getAccountId())
-                                .dataSourceType(DataSourceType.CUSTOM_HEALTH)
+                                .dataSourceType(DataSourceType.CUSTOM_HEALTH_METRIC)
                                 .projectIdentifier(getProjectIdentifier())
+                                .orgIdentifier(getOrgIdentifier())
                                 .identifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER)
                                 .build();
 
@@ -141,14 +134,15 @@ public class CustomHealthCVConfig extends MetricCVConfig {
     return metricPack;
   }
 
-  public static class CustomHealthCVConfigUpdatableEntity
-      extends MetricCVConfigUpdatableEntity<CustomHealthCVConfig, CustomHealthCVConfig> {
+  public static class CustomHealthMetricCVConfigUpdatableEntity
+      extends MetricCVConfigUpdatableEntity<CustomHealthMetricCVConfig, CustomHealthMetricCVConfig> {
     @Override
-    public void setUpdateOperations(
-        UpdateOperations<CustomHealthCVConfig> updateOperations, CustomHealthCVConfig customHealthCVConfig) {
+    public void setUpdateOperations(UpdateOperations<CustomHealthMetricCVConfig> updateOperations,
+        CustomHealthMetricCVConfig customHealthCVConfig) {
       setCommonOperations(updateOperations, customHealthCVConfig);
-      updateOperations.set(CustomHealthCVConfigKeys.groupName, customHealthCVConfig.getGroupName())
-          .set(CustomHealthCVConfigKeys.metricDefinitions, customHealthCVConfig.getMetricDefinitions());
+      updateOperations.set(CustomHealthMetricCVConfigKeys.groupName, customHealthCVConfig.getGroupName())
+          .set(CustomHealthMetricCVConfigKeys.metricDefinitions, customHealthCVConfig.getMetricDefinitions())
+          .set(CustomHealthMetricCVConfigKeys.queryType, customHealthCVConfig.getQueryType());
     }
   }
 

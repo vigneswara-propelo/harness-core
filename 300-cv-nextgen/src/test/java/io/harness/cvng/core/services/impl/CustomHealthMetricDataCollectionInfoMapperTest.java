@@ -15,10 +15,11 @@ import io.harness.CvNextGenTestBase;
 import io.harness.category.element.UnitTests;
 import io.harness.cvng.beans.CustomHealthDataCollectionInfo;
 import io.harness.cvng.beans.MetricResponseMappingDTO;
+import io.harness.cvng.core.beans.CustomHealthRequestDefinition;
 import io.harness.cvng.core.beans.HealthSourceQueryType;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricResponseMapping;
 import io.harness.cvng.core.entities.AnalysisInfo;
-import io.harness.cvng.core.entities.CustomHealthCVConfig;
+import io.harness.cvng.core.entities.CustomHealthMetricCVConfig;
 import io.harness.cvng.core.entities.MetricPack;
 import io.harness.cvng.core.entities.VerificationTask.TaskType;
 import io.harness.delegate.beans.connector.customhealthconnector.CustomHealthMethod;
@@ -31,9 +32,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-public class CustomHealthDataCollectionInfoMapperTest extends CvNextGenTestBase {
-  @Inject private CustomHealthDataCollectionInfoMapper customHealthMapper;
-  CustomHealthCVConfig customHealthCVConfig;
+public class CustomHealthMetricDataCollectionInfoMapperTest extends CvNextGenTestBase {
+  @Inject private CustomHealthMetricDataCollectionInfoMapper customHealthMapper;
+  CustomHealthMetricCVConfig customHealthCVConfig;
 
   String groupName = "group";
   String metricName = "metric";
@@ -49,49 +50,50 @@ public class CustomHealthDataCollectionInfoMapperTest extends CvNextGenTestBase 
 
   @Before
   public void setup() {
-    List<CustomHealthCVConfig.MetricDefinition> metricDefinitions = new ArrayList<>();
+    List<CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition> metricDefinitions = new ArrayList<>();
     MetricResponseMapping responseMapping = MetricResponseMapping.builder()
                                                 .metricValueJsonPath(metricValueJSONPath)
                                                 .timestampJsonPath(timestampJSONPath)
                                                 .build();
 
-    CustomHealthCVConfig.MetricDefinition metricDefinition =
-        CustomHealthCVConfig.MetricDefinition.builder()
-            .method(CustomHealthMethod.GET)
+    CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition cvMetricDefinition =
+        CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition.builder()
+            .requestDefinition(
+                CustomHealthRequestDefinition.builder().method(CustomHealthMethod.GET).urlPath(urlPath).build())
             .metricResponseMapping(responseMapping)
             .metricName(metricName)
             .sli(AnalysisInfo.SLI.builder().enabled(false).build())
             .deploymentVerification(AnalysisInfo.DeploymentVerification.builder().enabled(true).build())
             .liveMonitoring(AnalysisInfo.LiveMonitoring.builder().enabled(false).build())
-            .urlPath(urlPath)
             .build();
 
-    CustomHealthCVConfig.MetricDefinition metricDefinition2 =
-        CustomHealthCVConfig.MetricDefinition.builder()
-            .method(CustomHealthMethod.GET)
+    CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition sliMetricDefinition =
+        CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition.builder()
+            .requestDefinition(
+                CustomHealthRequestDefinition.builder().method(CustomHealthMethod.GET).urlPath(urlPath1).build())
             .metricResponseMapping(responseMapping)
             .metricName(metricName1)
-            .sli(AnalysisInfo.SLI.builder().enabled(false).build())
-            .deploymentVerification(AnalysisInfo.DeploymentVerification.builder().enabled(false).build())
-            .liveMonitoring(AnalysisInfo.LiveMonitoring.builder().enabled(true).build())
-            .urlPath(urlPath1)
-            .build();
-
-    CustomHealthCVConfig.MetricDefinition metricDefinition3 =
-        CustomHealthCVConfig.MetricDefinition.builder()
-            .method(CustomHealthMethod.GET)
-            .metricResponseMapping(responseMapping)
-            .metricName(metricName2)
             .sli(AnalysisInfo.SLI.builder().enabled(true).build())
             .deploymentVerification(AnalysisInfo.DeploymentVerification.builder().enabled(false).build())
             .liveMonitoring(AnalysisInfo.LiveMonitoring.builder().enabled(false).build())
-            .urlPath(urlPath2)
             .build();
 
-    metricDefinitions.add(metricDefinition);
-    metricDefinitions.add(metricDefinition2);
-    metricDefinitions.add(metricDefinition3);
-    customHealthCVConfig = CustomHealthCVConfig.builder()
+    CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition liveMonitoringMetricDefinition =
+        CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition.builder()
+            .requestDefinition(
+                CustomHealthRequestDefinition.builder().method(CustomHealthMethod.GET).urlPath(urlPath2).build())
+            .metricResponseMapping(responseMapping)
+            .metricName(metricName2)
+            .sli(AnalysisInfo.SLI.builder().enabled(false).build())
+            .deploymentVerification(AnalysisInfo.DeploymentVerification.builder().enabled(false).build())
+            .liveMonitoring(AnalysisInfo.LiveMonitoring.builder().enabled(true).build())
+            .build();
+
+    metricDefinitions.add(cvMetricDefinition);
+    metricDefinitions.add(sliMetricDefinition);
+    metricDefinitions.add(liveMonitoringMetricDefinition);
+
+    customHealthCVConfig = CustomHealthMetricCVConfig.builder()
                                .groupName(groupName)
                                .queryType(HealthSourceQueryType.HOST_BASED)
                                .metricDefinitions(metricDefinitions)
@@ -132,8 +134,8 @@ public class CustomHealthDataCollectionInfoMapperTest extends CvNextGenTestBase 
     assertThat(customHealthMetricInfo.size()).isEqualTo(1);
 
     CustomHealthDataCollectionInfo.CustomHealthMetricInfo customHealthMetricInfo1 = customHealthMetricInfo.get(0);
-    assertThat(customHealthMetricInfo1.getMetricName()).isEqualTo(metricName2);
-    assertThat(customHealthMetricInfo1.getUrlPath()).isEqualTo(urlPath2);
+    assertThat(customHealthMetricInfo1.getMetricName()).isEqualTo(metricName1);
+    assertThat(customHealthMetricInfo1.getUrlPath()).isEqualTo(urlPath1);
     assertThat(customHealthMetricInfo1.getResponseMapping())
         .isEqualTo(MetricResponseMappingDTO.builder()
                        .metricValueJsonPath(metricValueJSONPath)
@@ -153,8 +155,8 @@ public class CustomHealthDataCollectionInfoMapperTest extends CvNextGenTestBase 
     assertThat(customHealthMetricInfo.size()).isEqualTo(1);
 
     CustomHealthDataCollectionInfo.CustomHealthMetricInfo customHealthMetricInfo1 = customHealthMetricInfo.get(0);
-    assertThat(customHealthMetricInfo1.getMetricName()).isEqualTo(metricName1);
-    assertThat(customHealthMetricInfo1.getUrlPath()).isEqualTo(urlPath1);
+    assertThat(customHealthMetricInfo1.getMetricName()).isEqualTo(metricName2);
+    assertThat(customHealthMetricInfo1.getUrlPath()).isEqualTo(urlPath2);
     assertThat(customHealthMetricInfo1.getResponseMapping())
         .isEqualTo(MetricResponseMappingDTO.builder()
                        .metricValueJsonPath(metricValueJSONPath)

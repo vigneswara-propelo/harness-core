@@ -11,8 +11,9 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.cvng.beans.CustomHealthDataCollectionInfo;
 import io.harness.cvng.beans.MetricResponseMappingDTO;
+import io.harness.cvng.core.beans.CustomHealthRequestDefinition;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricResponseMapping;
-import io.harness.cvng.core.entities.CustomHealthCVConfig;
+import io.harness.cvng.core.entities.CustomHealthMetricCVConfig;
 import io.harness.cvng.core.entities.VerificationTask.TaskType;
 import io.harness.cvng.core.services.api.DataCollectionInfoMapper;
 import io.harness.cvng.core.services.api.DataCollectionSLIInfoMapper;
@@ -23,11 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CustomHealthDataCollectionInfoMapper
-    implements DataCollectionInfoMapper<CustomHealthDataCollectionInfo, CustomHealthCVConfig>,
-               DataCollectionSLIInfoMapper<CustomHealthDataCollectionInfo, CustomHealthCVConfig> {
+public class CustomHealthMetricDataCollectionInfoMapper
+    implements DataCollectionInfoMapper<CustomHealthDataCollectionInfo, CustomHealthMetricCVConfig>,
+               DataCollectionSLIInfoMapper<CustomHealthDataCollectionInfo, CustomHealthMetricCVConfig> {
   @Override
-  public CustomHealthDataCollectionInfo toDataCollectionInfo(CustomHealthCVConfig cvConfig, TaskType taskType) {
+  public CustomHealthDataCollectionInfo toDataCollectionInfo(CustomHealthMetricCVConfig cvConfig, TaskType taskType) {
     CustomHealthDataCollectionInfo customHealthDataCollectionInfo =
         CustomHealthDataCollectionInfo.builder()
             .groupName(cvConfig.getGroupName())
@@ -45,7 +46,7 @@ public class CustomHealthDataCollectionInfoMapper
 
   @Override
   public CustomHealthDataCollectionInfo toDataCollectionInfo(
-      List<CustomHealthCVConfig> cvConfigs, ServiceLevelIndicator serviceLevelIndicator) {
+      List<CustomHealthMetricCVConfig> cvConfigs, ServiceLevelIndicator serviceLevelIndicator) {
     if (isEmpty(cvConfigs) || serviceLevelIndicator == null) {
       return null;
     }
@@ -67,22 +68,23 @@ public class CustomHealthDataCollectionInfoMapper
   }
 
   private CustomHealthDataCollectionInfo.CustomHealthMetricInfo mapMetricDefinitionToMetricInfo(
-      CustomHealthCVConfig.MetricDefinition metricDefinition) {
+      CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition metricDefinition) {
     MetricResponseMapping metricResponseMapping = metricDefinition.getMetricResponseMapping();
+    CustomHealthRequestDefinition healthDefinition = metricDefinition.getRequestDefinition();
     return CustomHealthDataCollectionInfo.CustomHealthMetricInfo.builder()
         .metricName(metricDefinition.getMetricName())
         .metricIdentifier(metricDefinition.getIdentifier())
-        .endTime(metricDefinition.getEndTime())
+        .endTime(healthDefinition.getEndTimeInfo())
         .responseMapping(MetricResponseMappingDTO.builder()
                              .metricValueJsonPath(metricResponseMapping.getMetricValueJsonPath())
                              .serviceInstanceJsonPath(metricResponseMapping.getServiceInstanceJsonPath())
                              .timestampFormat(metricResponseMapping.getTimestampFormat())
                              .timestampJsonPath(metricResponseMapping.getTimestampJsonPath())
                              .build())
-        .body(metricDefinition.getRequestBody())
-        .method(metricDefinition.getMethod())
-        .startTime(metricDefinition.getStartTime())
-        .urlPath(metricDefinition.getUrlPath())
+        .body(healthDefinition.getRequestBody())
+        .method(healthDefinition.getMethod())
+        .startTime(healthDefinition.getStartTimeInfo())
+        .urlPath(healthDefinition.getUrlPath())
         .build();
   }
 }
