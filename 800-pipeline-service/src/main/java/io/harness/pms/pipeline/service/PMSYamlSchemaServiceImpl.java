@@ -249,9 +249,7 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
     for (YamlSchemaWithDetails yamlSchemaWithDetails : allYamlSchemaWithDetails) {
       if (yamlSchemaWithDetails.getYamlSchemaMetadata() != null
           && yamlSchemaWithDetails.getYamlSchemaMetadata().getModulesSupported() != null
-          && yamlSchemaWithDetails.getYamlSchemaMetadata().getModulesSupported().contains(moduleType)
-          // Don't send step to its owner module.
-          && yamlSchemaWithDetails.getModuleType() != moduleType) {
+          && yamlSchemaWithDetails.getYamlSchemaMetadata().getModulesSupported().contains(moduleType)) {
         moduleYamlSchemaDetails.add(yamlSchemaWithDetails);
       }
     }
