@@ -35,6 +35,7 @@ import io.harness.ngmigration.beans.MigratorInputType;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.expressions.MigratorExpressionUtils;
 import io.harness.plancreator.execution.ExecutionElementConfig;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
 import io.harness.plancreator.stages.StageElementWrapperConfig;
@@ -42,6 +43,10 @@ import io.harness.plancreator.stages.stage.StageElementConfig;
 import io.harness.plancreator.steps.StepElementConfig;
 import io.harness.plancreator.steps.StepGroupElementConfig;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.steps.shellscript.ShellScriptInlineSource;
+import io.harness.steps.shellscript.ShellScriptSourceWrapper;
+import io.harness.steps.shellscript.ShellScriptStepInfo;
+import io.harness.steps.shellscript.ShellType;
 import io.harness.yaml.core.failurestrategy.FailureStrategyConfig;
 import io.harness.yaml.core.failurestrategy.NGFailureType;
 import io.harness.yaml.core.failurestrategy.OnFailureConfig;
@@ -87,6 +92,7 @@ public class WorkflowMigrationService implements NgMigrationService {
   @Inject private WorkflowService workflowService;
   @Inject private RollingWorkflowYamlHandler rollingWorkflowYamlHandler;
   @Inject private ApplicationManifestService applicationManifestService;
+  @Inject private MigratorExpressionUtils migratorExpressionUtils;
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -167,6 +173,7 @@ public class WorkflowMigrationService implements NgMigrationService {
   public StageElementWrapperConfig getNgStage(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
     Workflow workflow = (Workflow) entities.get(entityId).getEntity();
+    migratorExpressionUtils.render(workflow);
     RollingWorkflowYaml rollingWorkflowYaml = rollingWorkflowYamlHandler.toYaml(workflow, workflow.getAppId());
     List<ExecutionWrapperConfig> steps = new ArrayList<>();
     List<ExecutionWrapperConfig> rollingSteps = new ArrayList<>();
@@ -277,6 +284,28 @@ public class WorkflowMigrationService implements NgMigrationService {
           .name(step.getName())
           .type(StepSpecTypeConstants.K8S_ROLLING_DEPLOY)
           .stepSpecType(K8sRollingStepInfo.infoBuilder().skipDryRun(ParameterField.createValueField(false)).build())
+          .timeout(ParameterField.createValueField(
+              Timeout.builder().timeoutString(properties.getOrDefault("stateTimeoutInMinutes", "10") + "m").build()))
+          .build();
+    } else if (step.getType().equals("SHELL_SCRIPT")) {
+      Map<String, Object> properties = CollectionUtils.emptyIfNull(step.getProperties());
+      return StepElementConfig.builder()
+          .identifier(MigratorUtility.generateIdentifier(step.getName()))
+          .name(step.getName())
+          .type(io.harness.steps.StepSpecTypeConstants.SHELL_SCRIPT)
+          .stepSpecType(
+              // TODO: add mappers for other fields in shell script
+              ShellScriptStepInfo.infoBuilder()
+                  .onDelegate(ParameterField.createValueField((boolean) properties.get("executeOnDelegate")))
+                  .shell(ShellType.Bash)
+                  .source(
+                      ShellScriptSourceWrapper.builder()
+                          .type("Inline")
+                          .spec(ShellScriptInlineSource.builder()
+                                    .script(ParameterField.createValueField((String) properties.get("scriptString")))
+                                    .build())
+                          .build())
+                  .build())
           .timeout(ParameterField.createValueField(
               Timeout.builder().timeoutString(properties.getOrDefault("stateTimeoutInMinutes", "10") + "m").build()))
           .build();

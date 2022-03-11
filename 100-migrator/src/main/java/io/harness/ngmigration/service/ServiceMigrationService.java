@@ -35,6 +35,7 @@ import io.harness.ngmigration.beans.MigratorInputType;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.expressions.MigratorExpressionUtils;
 import io.harness.pms.yaml.ParameterField;
 
 import software.wings.beans.Service;
@@ -63,6 +64,7 @@ public class ServiceMigrationService implements NgMigrationService {
   @Inject private ServiceResourceService serviceResourceService;
   @Inject private ArtifactStreamService artifactStreamService;
   @Inject private ManifestMigrationService manifestMigrationService;
+  @Inject private MigratorExpressionUtils migratorExpressionUtils;
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -115,6 +117,7 @@ public class ServiceMigrationService implements NgMigrationService {
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
       Set<CgEntityId> manifests) {
     Service service = (Service) entities.get(entityId).getEntity();
+    migratorExpressionUtils.render(service);
     PrimaryArtifact primaryArtifact = null;
     if (isNotEmpty(graph.get(entityId)) && graph.get(entityId).stream().anyMatch(e -> e.getType() == ARTIFACT_STREAM)) {
       CgEntityId artifactStreamId =
@@ -124,6 +127,7 @@ public class ServiceMigrationService implements NgMigrationService {
               .findFirst()
               .orElseThrow(() -> new UnsupportedOperationException("This should not be thrown"));
       ArtifactStream artifactStream = (ArtifactStream) entities.get(artifactStreamId).getEntity();
+      migratorExpressionUtils.render(artifactStream);
       primaryArtifact = getPrimaryArtifact(artifactStream, migratedEntities);
     }
 

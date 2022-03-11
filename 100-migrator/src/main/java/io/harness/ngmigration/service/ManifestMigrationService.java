@@ -30,6 +30,7 @@ import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.expressions.MigratorExpressionUtils;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.serializer.JsonUtils;
 
@@ -58,6 +59,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ManifestMigrationService implements NgMigrationService {
   @Inject private ApplicationManifestService applicationManifestService;
+  @Inject private MigratorExpressionUtils migratorExpressionUtils;
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -128,6 +130,7 @@ public class ManifestMigrationService implements NgMigrationService {
     for (CgEntityId manifestEntityId : manifestEntityIds) {
       CgEntityNode manifestNode = entities.get(manifestEntityId);
       ApplicationManifest applicationManifest = (ApplicationManifest) manifestNode.getEntity();
+      migratorExpressionUtils.render(applicationManifest);
       BaseProvidedInput manifestInput = inputDTO.getInputs().get(manifestEntityId);
       ManifestProvidedEntitySpec entitySpec = null;
       if (manifestInput != null && manifestInput.getSpec() != null) {
