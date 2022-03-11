@@ -17,7 +17,6 @@ import io.harness.common.EntityReference;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.helper.EncryptionHelper;
 import io.harness.connector.services.ConnectorService;
-import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
@@ -62,6 +61,7 @@ import io.harness.security.dto.UserPrincipal;
 import io.harness.tasks.DecryptGitApiAccessHelper;
 import io.harness.utils.IdentifierRefHelper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -325,18 +325,6 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
     final ScmConnector connectorConfig = (ScmConnector) connector.get().getConnector().getConnectorConfig();
     connectorConfig.setUrl(yamlGitConfig.getRepo());
 
-    // Incoming commit id could be a conflict resolved commit id for an entity
-    String lastCommitIdForFile = request.getCommitId() == null ? "" : request.getCommitId();
-    // Currently putting this BITBUCKET check to avoid a bug on GITHUB UpdateFile use-case
-    // https://harness.slack.com/archives/C029SDS22FN/p1645792247538309
-    // Once properly handled, this should be removed
-    if (connectorConfig.getConnectorType().equals(ConnectorType.BITBUCKET) && isEmpty(lastCommitIdForFile)
-        && request.getChangeType() != ChangeType.ADD) {
-      GitSyncEntityDTO gitSyncEntityDTO =
-          gitEntityService.get(entityDetailDTO.getEntityRef(), entityDetailDTO.getType(), request.getBranch());
-      lastCommitIdForFile = gitSyncEntityDTO.getLastCommitId();
-    }
-
     return InfoForGitPush.builder()
         .accountId(accountId)
         .orgIdentifier(entityDetailDTO.getEntityRef().getOrgIdentifier())
@@ -350,7 +338,21 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
         .oldFileSha(StringValueUtils.getStringFromStringValue(request.getOldFileSha()))
         .yaml(request.getYaml())
         .scmConnector(connectorConfig)
-        .commitId(lastCommitIdForFile)
+        .commitId(fetchLastCommitIdForFile(request, entityDetailDTO))
         .build();
+  }
+
+  @VisibleForTesting
+  protected String fetchLastCommitIdForFile(FileInfo request, EntityDetail entityDetailDTO) {
+    // Incoming commit id could be a conflict resolved commit id for an entity
+    String lastCommitIdForFile = request.getCommitId() == null ? "" : request.getCommitId();
+    if (isEmpty(lastCommitIdForFile) && request.getChangeType() != ChangeType.ADD) {
+      // If its saveToNewBranch use-case, then we choose base branch for existing entity commit
+      String branch = request.getIsNewBranch() ? request.getBaseBranch().getValue() : request.getBranch();
+      GitSyncEntityDTO gitSyncEntityDTO =
+          gitEntityService.get(entityDetailDTO.getEntityRef(), entityDetailDTO.getType(), branch);
+      lastCommitIdForFile = gitSyncEntityDTO.getLastCommitId();
+    }
+    return lastCommitIdForFile;
   }
 }
