@@ -201,13 +201,14 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
           processK8sPodsInstances(containerInfraMapping, perpetualTaskMetadata, emptyList(), deploymentSummaryMap,
               syncResponse.getK8sPodInfoList());
           return;
-        } else if (responseData instanceof ContainerSyncResponse) {
+
+        } else if (responseData instanceof ContainerSyncResponse && keepPTAfterDownScale) {
           ContainerSyncResponse syncResponse = (ContainerSyncResponse) responseData;
 
           // Current logic is to catch any exception and if there is no successful sync status during 7 days then delete
           // all infra perpetual tasks. We're exploiting this to handle the case when replica is scaled down to 0 and
           // after n time is scaled back, so we will delete perpetual task only if after 7 days there are no pods
-          if (keepPTAfterDownScale && isEmpty(syncResponse.getContainerInfoList())) {
+          if (isEmpty(syncResponse.getContainerInfoList())) {
             // In this case there is nothing to be processed since there is no instances in db that need to be removed
             log.info("Still there is no containers found for [app: {}, namespace: {}, release name: {}]", appId,
                 syncResponse.getNamespace(), syncResponse.getReleaseName());
@@ -878,7 +879,11 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
 
       syncNamespace = containerSyncResponse.getNamespace();
       syncReleaseName = containerSyncResponse.getReleaseName();
-      containerServiceName = containerSyncResponse.getControllerName();
+      // Ref: ContainerInstanceSyncPerpetualTaskClient#getPerpetualTaskData at 207. We're always setting empty string if
+      // controller name is null. These changes are behind FF KEEP_PT_AFTER_K8S_DOWNSCALE, we should revisit later
+      // if this transformation does make sense or it does make more sense to get first controller from instance info
+      containerServiceName =
+          isEmpty(containerSyncResponse.getControllerName()) ? null : containerSyncResponse.getControllerName();
     } else {
       return null;
     }

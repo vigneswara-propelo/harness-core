@@ -2104,6 +2104,26 @@ public class ContainerInstanceHandlerTest extends WingsBaseTest {
   @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
+  public void shouldUpdateInstancesFromPerpetualTaskResponseControllerNameIsEmpty() throws Exception {
+    List<Instance> instancesInDb =
+        Arrays.asList(createKubernetesContainerInstance("instance1", "releaseX", "namespaceX", null),
+            createKubernetesContainerInstance("instance2", "releaseX", "namespaceX", null),
+            createKubernetesContainerInstance("instance3", "releaseX", "namespaceY", null),
+            createKubernetesContainerInstance("instance4", "releaseY", "namespaceX", null),
+            createKubernetesContainerInstance("instance5", "releaseY", "namespaceY", null));
+
+    doReturn(true).when(featureFlagService).isEnabled(FeatureName.KEEP_PT_AFTER_K8S_DOWNSCALE, ACCOUNT_ID);
+
+    // Ref: ContainerInstanceSyncPerpetualTaskClient#getPerpetualTaskData at 207, controllerName will be always empty
+    // string when the actual value is null
+    ContainerSyncResponse instanceSyncResponse =
+        createContainerSyncResponseWith("releaseX", "namespaceX", "", "instance1", "instance2", "instance6");
+    assertSavedAndDeletedInstances(instancesInDb, instanceSyncResponse, singletonList("instance6"), emptyList());
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
   public void shouldUpdateInstancesFromPerpetualTaskResponseReleaseAndNamespaceAwareNoNewPods() throws Exception {
     List<Instance> instancesInDb = Arrays.asList(createK8sPodInstance("instance1", "releaseX", "namespaceX"),
         createK8sPodInstance("instance2", "releaseX", "namespaceX"),
@@ -2285,6 +2305,7 @@ public class ContainerInstanceHandlerTest extends WingsBaseTest {
   public void shouldAddInstancesFromContainerSyncEvenNoInstancesInDb() {
     ContainerSyncResponse syncResponse =
         createContainerSyncResponseWith("release-name", "default", "controller", "instance-1", "instance-2");
+    doReturn(true).when(featureFlagService).isEnabled(FeatureName.KEEP_PT_AFTER_K8S_DOWNSCALE, ACCOUNT_ID);
 
     assertSavedAndDeletedInstances(emptyList(), syncResponse, asList("instance-1", "instance-2"), emptyList());
   }
