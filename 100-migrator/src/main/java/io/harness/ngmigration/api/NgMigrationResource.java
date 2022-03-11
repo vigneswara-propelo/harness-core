@@ -13,6 +13,7 @@ import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.ngmigration.beans.DiscoveryInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigrationInputResult;
@@ -89,7 +90,13 @@ public class NgMigrationResource {
       @QueryParam("entityId") String entityId, @QueryParam("appId") String appId,
       @QueryParam("accountId") String accountId, @QueryParam("entityType") NGMigrationEntityType entityType,
       MigrationInputDTO inputDTO) {
-    DiscoveryResult result = discoveryService.discover(accountId, appId, entityId, entityType, false);
+    DiscoveryResult result;
+    if (EmptyPredicate.isNotEmpty(inputDTO.getEntities())) {
+      result = discoveryService.discoverMulti(
+          accountId, DiscoveryInput.builder().entities(inputDTO.getEntities()).exportImage(false).build());
+    } else {
+      result = discoveryService.discover(accountId, appId, entityId, entityType, false);
+    }
     return Response.ok(discoveryService.exportYamlFilesAsZip(inputDTO, result), MediaType.APPLICATION_OCTET_STREAM)
         .header("content-disposition", format("attachment; filename = %s_%s_%s.zip", accountId, entityId, entityType))
         .build();
