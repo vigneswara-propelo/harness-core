@@ -88,8 +88,6 @@ public class GraphStatusUpdateHelper {
   private void updateGraphVertex(
       Map<String, GraphVertex> graphVertexMap, NodeExecution nodeExecution, String planExecutionId) {
     String nodeExecutionId = nodeExecution.getUuid();
-    log.info("[PMS_GRAPH] Updating graph vertex for [{}] with status [{}]. PlanExecutionId: [{}]", nodeExecutionId,
-        nodeExecution.getStatus(), planExecutionId);
     graphVertexMap.computeIfPresent(nodeExecutionId, (key, prevValue) -> {
       GraphVertex newValue = convertFromNodeExecution(prevValue, nodeExecution);
       if (StatusUtils.isFinalStatus(newValue.getStatus())) {

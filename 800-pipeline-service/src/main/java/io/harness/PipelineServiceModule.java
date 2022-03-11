@@ -257,6 +257,7 @@ public class PipelineServiceModule extends AbstractModule {
             .expressionEvaluatorProvider(new PMSExpressionEvaluatorProvider())
             .withPMS(false)
             .isPipelineService(true)
+            .reduceOrchestrationLog(configuration.getReduceOrchestrationLog())
             .corePoolSize(configuration.getOrchestrationPoolConfig().getCorePoolSize())
             .maxPoolSize(configuration.getOrchestrationPoolConfig().getMaxPoolSize())
             .idleTimeInSecs(configuration.getOrchestrationPoolConfig().getIdleTime())

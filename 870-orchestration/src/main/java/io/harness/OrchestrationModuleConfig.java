@@ -44,4 +44,5 @@ public class OrchestrationModuleConfig {
   @Nullable String accountClientId;
   @Default
   OrchestrationRedisEventsConfig orchestrationRedisEventsConfig = OrchestrationRedisEventsConfig.builder().build();
+  boolean reduceOrchestrationLog;
 }

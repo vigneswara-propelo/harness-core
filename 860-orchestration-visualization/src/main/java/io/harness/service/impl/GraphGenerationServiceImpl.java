@@ -117,21 +117,16 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
   // This must always be called after acquiring the lock
   private boolean updateGraphUnderLock(String planExecutionId) {
     long startTs = System.currentTimeMillis();
-    Long lastUpdatedAt = mongoStore.getEntityUpdatedAt(
-        OrchestrationGraph.ALGORITHM_ID, OrchestrationGraph.STRUCTURE_HASH, planExecutionId, null);
-    if (lastUpdatedAt == null) {
-      return true;
-    }
-
-    List<OrchestrationEventLog> unprocessedEventLogs =
-        orchestrationEventLogRepository.findUnprocessedEvents(planExecutionId, lastUpdatedAt);
-    if (unprocessedEventLogs.isEmpty()) {
-      return true;
-    }
-
     OrchestrationGraph orchestrationGraph = getCachedOrchestrationGraph(planExecutionId);
     if (orchestrationGraph == null) {
       log.warn("[PMS_GRAPH] Graph not yet generated. Passing on to next iteration");
+      return true;
+    }
+    long lastUpdatedAt = orchestrationGraph.getLastUpdatedAt();
+    // Todo: Introduce batching over here.
+    List<OrchestrationEventLog> unprocessedEventLogs =
+        orchestrationEventLogRepository.findUnprocessedEvents(planExecutionId, lastUpdatedAt);
+    if (unprocessedEventLogs.isEmpty()) {
       return true;
     }
 

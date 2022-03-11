@@ -21,6 +21,7 @@ import static org.springframework.data.domain.Sort.by;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
+import io.harness.OrchestrationModuleConfig;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.engine.events.OrchestrationEventEmitter;
 import io.harness.engine.executions.plan.PlanExecutionMetadataService;
@@ -30,6 +31,7 @@ import io.harness.engine.observers.NodeStartInfo;
 import io.harness.engine.observers.NodeStatusUpdateObserver;
 import io.harness.engine.observers.NodeUpdateInfo;
 import io.harness.engine.observers.NodeUpdateObserver;
+import io.harness.event.OrchestrationLogPublisher;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
 import io.harness.execution.ExecutionModeUtils;
@@ -51,8 +53,10 @@ import io.harness.pms.execution.ExecutionStatus;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.execution.utils.NodeProjectionUtils;
 import io.harness.pms.execution.utils.StatusUtils;
+import io.harness.springdata.TransactionHelper;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
@@ -69,6 +73,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -80,9 +85,15 @@ import org.springframework.data.mongodb.core.query.Update;
 @Slf4j
 @OwnedBy(PIPELINE)
 public class NodeExecutionServiceImpl implements NodeExecutionService {
+  private static final Set<String> GRAPH_FIELDS = ImmutableSet.of(NodeExecutionKeys.progressData,
+      NodeExecutionKeys.unitProgresses, NodeExecutionKeys.executableResponses, NodeExecutionKeys.interruptHistories,
+      NodeExecutionKeys.retryIds, NodeExecutionKeys.oldRetry, NodeExecutionKeys.failureInfo, NodeExecutionKeys.endTs);
   @Inject private MongoTemplate mongoTemplate;
   @Inject private OrchestrationEventEmitter eventEmitter;
   @Inject private PlanExecutionMetadataService planExecutionMetadataService;
+  @Inject private TransactionHelper transactionHelper;
+  @Inject private OrchestrationLogPublisher orchestrationLogPublisher;
+  @Inject private OrchestrationModuleConfig orchestrationModuleConfig;
 
   @Getter private final Subject<NodeStatusUpdateObserver> stepStatusUpdateSubject = new Subject<>();
   @Getter private final Subject<NodeExecutionStartObserver> nodeExecutionStartSubject = new Subject<>();
@@ -238,15 +249,21 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
     Query query = query(where(NodeExecutionKeys.uuid).is(nodeExecutionId));
     Update updateOps = new Update().set(NodeExecutionKeys.lastUpdatedAt, System.currentTimeMillis());
     ops.accept(updateOps);
-    NodeExecution updated = mongoTemplate.findAndModify(query, updateOps, returnNewOptions, NodeExecution.class);
-    if (updated == null) {
-      throw new NodeExecutionUpdateFailedException(
-          "Node Execution Cannot be updated with provided operations" + nodeExecutionId);
-    }
-
+    boolean shouldLog = shouldLog(updateOps);
+    NodeExecution updatedNodeExecution = transactionHelper.performTransaction(() -> {
+      NodeExecution updated = mongoTemplate.findAndModify(query, updateOps, returnNewOptions, NodeExecution.class);
+      if (updated == null) {
+        throw new NodeExecutionUpdateFailedException(
+            "Node Execution Cannot be updated with provided operations" + nodeExecutionId);
+      }
+      if (shouldLog) {
+        orchestrationLogPublisher.onNodeUpdate(NodeUpdateInfo.builder().nodeExecution(updated).build());
+      }
+      return updated;
+    });
     nodeUpdateObserverSubject.fireInform(
-        NodeUpdateObserver::onNodeUpdate, NodeUpdateInfo.builder().nodeExecution(updated).build());
-    return updated;
+        NodeUpdateObserver::onNodeUpdate, NodeUpdateInfo.builder().nodeExecution(updatedNodeExecution).build());
+    return updatedNodeExecution;
   }
 
   @Override
@@ -259,14 +276,37 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
     }
     Update updateOps = new Update().set(NodeExecutionKeys.lastUpdatedAt, System.currentTimeMillis());
     ops.accept(updateOps);
-    NodeExecution updated = mongoTemplate.findAndModify(query, updateOps, returnNewOptions, NodeExecution.class);
-    if (updated == null) {
-      throw new NodeExecutionUpdateFailedException(
-          "Node Execution Cannot be updated with provided operations" + nodeExecutionId);
-    }
+    boolean shouldLog = shouldLog(updateOps);
+    NodeExecution updatedNodeExecution = transactionHelper.performTransaction(() -> {
+      NodeExecution updated = mongoTemplate.findAndModify(query, updateOps, returnNewOptions, NodeExecution.class);
+      if (updated == null) {
+        throw new NodeExecutionUpdateFailedException(
+            "Node Execution Cannot be updated with provided operations" + nodeExecutionId);
+      }
+      if (shouldLog) {
+        orchestrationLogPublisher.onNodeUpdate(NodeUpdateInfo.builder().nodeExecution(updated).build());
+      }
+      return updated;
+    });
     nodeUpdateObserverSubject.fireInform(
-        NodeUpdateObserver::onNodeUpdate, NodeUpdateInfo.builder().nodeExecution(updated).build());
-    return updated;
+        NodeUpdateObserver::onNodeUpdate, NodeUpdateInfo.builder().nodeExecution(updatedNodeExecution).build());
+    return updatedNodeExecution;
+  }
+
+  @VisibleForTesting
+  @Override
+  public boolean shouldLog(Update updateOps) {
+    if (!orchestrationModuleConfig.isReduceOrchestrationLog()) {
+      return false;
+    }
+    Set<String> fieldsUpdated = new HashSet<>();
+    if (updateOps.getUpdateObject().containsKey("$set")) {
+      fieldsUpdated.addAll(((Document) updateOps.getUpdateObject().get("$set")).keySet());
+    }
+    if (updateOps.getUpdateObject().containsKey("$addToSet")) {
+      fieldsUpdated.addAll(((Document) updateOps.getUpdateObject().get("$addToSet")).keySet());
+    }
+    return fieldsUpdated.stream().anyMatch(GRAPH_FIELDS::contains);
   }
 
   @Override
@@ -288,14 +328,21 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
         builder.setStepParameters(nodeExecution.getResolvedStepParametersBytes());
       }
       eventEmitter.emitEvent(builder.build());
-      NodeExecution nodeExecution1 = mongoTemplate.insert(nodeExecution);
+      NodeExecution savedNodeExecution = transactionHelper.performTransaction(() -> {
+        NodeExecution nodeExecution1 = mongoTemplate.insert(nodeExecution);
+        if (orchestrationModuleConfig.isReduceOrchestrationLog()) {
+          orchestrationLogPublisher.onNodeStart(NodeStartInfo.builder().nodeExecution(nodeExecution).build());
+        }
+        return nodeExecution1;
+      });
       nodeExecutionStartSubject.fireInform(
-          NodeExecutionStartObserver::onNodeStart, NodeStartInfo.builder().nodeExecution(nodeExecution).build());
-      return nodeExecution1;
+          NodeExecutionStartObserver::onNodeStart, NodeStartInfo.builder().nodeExecution(savedNodeExecution).build());
+      return savedNodeExecution;
     } else {
-      nodeExecutionStartSubject.fireInform(
-          NodeExecutionStartObserver::onNodeStart, NodeStartInfo.builder().nodeExecution(nodeExecution).build());
-      return mongoTemplate.save(nodeExecution);
+      return transactionHelper.performTransaction(() -> {
+        orchestrationLogPublisher.onNodeStart(NodeStartInfo.builder().nodeExecution(nodeExecution).build());
+        return mongoTemplate.save(nodeExecution);
+      });
     }
   }
 
@@ -348,15 +395,23 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
     }
     Update updateOps =
         ops.set(NodeExecutionKeys.status, status).set(NodeExecutionKeys.lastUpdatedAt, System.currentTimeMillis());
-    NodeExecution updated = mongoTemplate.findAndModify(query, updateOps, returnNewOptions, NodeExecution.class);
-    if (updated == null) {
-      log.warn("Cannot update execution status for the node {} with {}", nodeExecutionId, status);
-    } else {
-      emitEvent(updated, OrchestrationEventType.NODE_EXECUTION_STATUS_UPDATE);
-      stepStatusUpdateSubject.fireInform(
-          NodeStatusUpdateObserver::onNodeStatusUpdate, NodeUpdateInfo.builder().nodeExecution(updated).build());
+    NodeExecution updatedNodeExecution = transactionHelper.performTransaction(() -> {
+      NodeExecution updated = mongoTemplate.findAndModify(query, updateOps, returnNewOptions, NodeExecution.class);
+      if (updated == null) {
+        log.warn("Cannot update execution status for the node {} with {}", nodeExecutionId, status);
+      } else {
+        emitEvent(updated, OrchestrationEventType.NODE_EXECUTION_STATUS_UPDATE);
+        if (orchestrationModuleConfig.isReduceOrchestrationLog()) {
+          orchestrationLogPublisher.onNodeStatusUpdate(NodeUpdateInfo.builder().nodeExecution(updated).build());
+        }
+      }
+      return updated;
+    });
+    if (updatedNodeExecution != null) {
+      stepStatusUpdateSubject.fireInform(NodeStatusUpdateObserver::onNodeStatusUpdate,
+          NodeUpdateInfo.builder().nodeExecution(updatedNodeExecution).build());
     }
-    return updated;
+    return updatedNodeExecution;
   }
 
   @Override
@@ -416,8 +471,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
       log.error("Failed to mark node as retry");
       return false;
     }
-    nodeUpdateObserverSubject.fireInform(
-        NodeUpdateObserver::onNodeUpdate, NodeUpdateInfo.builder().nodeExecution(nodeExecution).build());
+    orchestrationLogPublisher.onNodeUpdate(NodeUpdateInfo.builder().nodeExecution(nodeExecution).build());
     return true;
   }
 
