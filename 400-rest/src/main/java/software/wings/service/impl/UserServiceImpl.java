@@ -1273,7 +1273,7 @@ public class UserServiceImpl implements UserService {
 
     for (String email : userInvite.getEmails()) {
       UserInvite userInviteClone = kryoSerializer.clone(userInvite);
-      userInviteClone.setEmail(email.trim());
+      userInviteClone.setEmail(email.trim().toLowerCase());
       inviteOperationResponses.add(
           inviteUser(userInviteClone, !autoInviteAcceptanceEnabled, autoInviteAcceptanceEnabled));
     }
