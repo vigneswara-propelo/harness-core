@@ -7,6 +7,8 @@
 
 package io.harness.gitsync.common.utils;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.annotations.dev.HarnessTeam;
@@ -32,12 +34,47 @@ public class GitSyncFilePathUtils {
     return GitEntityFilePath.builder().rootFolder(folderPath).filePath(filePath).build();
   }
 
+  public static String createFilePath(String folderPath, String filePath) {
+    if (isEmpty(folderPath)) {
+      throw new InvalidRequestException("Folder path cannot be empty");
+    }
+    if (isEmpty(filePath)) {
+      throw new InvalidRequestException("File path cannot be empty");
+    }
+    String updatedFolderPath = getGitFolderPath(folderPath);
+    String updatedFilePath = filePath.charAt(0) != '/' ? filePath : filePath.substring(1);
+    return updatedFolderPath + updatedFilePath;
+  }
+
+  public static String formatFilePath(String path) {
+    return addStartingSlashIfMissing(path);
+  }
+
   private static String getGitFolderPath(String folderPath) {
+    folderPath = addEndingSlashIfMissing(folderPath);
     String prefix = "";
     if (isBlank(folderPath) || folderPath.charAt(0) != '/') {
       prefix = "/";
     }
 
+    if (folderPath.endsWith(GitSyncConstants.FOLDER_PATH)) {
+      return prefix + folderPath;
+    }
+
     return prefix + folderPath + GitSyncConstants.FOLDER_PATH;
+  }
+
+  private static String addEndingSlashIfMissing(String path) {
+    if (!path.endsWith("/")) {
+      return path + "/";
+    }
+    return path;
+  }
+
+  private static String addStartingSlashIfMissing(String path) {
+    if (path.charAt(0) != '/') {
+      return "/" + path;
+    }
+    return path;
   }
 }

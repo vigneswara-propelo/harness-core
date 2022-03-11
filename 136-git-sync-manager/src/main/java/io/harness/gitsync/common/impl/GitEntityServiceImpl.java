@@ -27,6 +27,8 @@ import io.harness.gitsync.common.dtos.GitSyncRepoFilesDTO;
 import io.harness.gitsync.common.dtos.GitSyncRepoFilesListDTO;
 import io.harness.gitsync.common.dtos.RepoProviders;
 import io.harness.gitsync.common.service.GitEntityService;
+import io.harness.gitsync.common.utils.GitEntityFilePath;
+import io.harness.gitsync.common.utils.GitSyncFilePathUtils;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.EntityDetail;
 import io.harness.repositories.gitFileLocation.GitFileLocationRepository;
@@ -268,7 +270,7 @@ public class GitEntityServiceImpl implements GitEntityService {
     final Optional<GitFileLocation> gitFileLocation =
         gitFileLocationRepository.findByEntityGitPathAndGitSyncConfigIdAndAccountIdAndBranch(
             filePath, yamlGitConfig.getIdentifier(), accountId, branchName);
-    String completeFilePath = createFilePath(folderPath, filePath);
+    String completeFilePath = GitSyncFilePathUtils.createFilePath(folderPath, filePath);
     // todo(abhinav): changeisDefault to value which comes when
     final GitFileLocation fileLocation = GitFileLocation.builder()
                                              .accountId(accountId)
@@ -297,17 +299,21 @@ public class GitEntityServiceImpl implements GitEntityService {
 
   public void updateFilePath(
       String accountId, String prevFilePath, String repo, String branchName, String newFilePath) {
+    GitEntityFilePath gitEntityFilePath = GitSyncFilePathUtils.getRootFolderAndFilePath(newFilePath);
     Criteria criteria = Criteria.where(GitFileLocationKeys.accountId)
                             .is(accountId)
                             .and(GitFileLocationKeys.completeGitPath)
-                            .is(prevFilePath)
+                            .is(GitSyncFilePathUtils.formatFilePath(prevFilePath))
                             .and(GitFileLocationKeys.repo)
                             .is(repo)
                             .and(GitFileLocationKeys.branch)
                             .is(branchName);
 
     Update updateOperation = new Update();
-    updateOperation.set(GitFileLocationKeys.completeGitPath, newFilePath);
+    updateOperation.set(GitFileLocationKeys.completeGitPath, newFilePath)
+        .set(GitFileLocationKeys.folderPath, gitEntityFilePath.getRootFolder())
+        .set(GitFileLocationKeys.entityGitPath, gitEntityFilePath.getFilePath());
+
     gitFileLocationRepository.update(new Query(criteria), updateOperation);
   }
 }

@@ -28,14 +28,42 @@ public class GitSyncFilePathUtilsTest extends CategoryTest {
   @Owner(developers = MOHIT_GARG)
   @Category(UnitTests.class)
   public void testFilePath() {
-    String completePath = "testFolder/.harness/test.yaml";
+    String completePath = "testHarness/.harness/test.yaml";
     GitEntityFilePath gitEntityFilePath = GitSyncFilePathUtils.getRootFolderAndFilePath(completePath);
-    assertThat(gitEntityFilePath.getRootFolder()).isEqualTo("/testFolder/.harness/");
+    assertThat(gitEntityFilePath.getRootFolder()).isEqualTo("/testHarness/.harness/");
     assertThat(gitEntityFilePath.getFilePath()).isEqualTo("test.yaml");
 
     completePath = "testFolder/folder-temp/.harness/harness/test.yaml";
     gitEntityFilePath = GitSyncFilePathUtils.getRootFolderAndFilePath(completePath);
     assertThat(gitEntityFilePath.getRootFolder()).isEqualTo("/testFolder/folder-temp/.harness/");
     assertThat(gitEntityFilePath.getFilePath()).isEqualTo("harness/test.yaml");
+  }
+
+  @Test
+  @Owner(developers = MOHIT_GARG)
+  @Category(UnitTests.class)
+  public void testCreateFilePath() {
+    String folderPath = "testHarness/.harness";
+    String filePath = "testConnector.yaml";
+    String completeFilePath = GitSyncFilePathUtils.createFilePath(folderPath, filePath);
+    assertThat(completeFilePath).isEqualTo("/testHarness/.harness/testConnector.yaml");
+
+    folderPath = "testHarness/tests/.harness";
+    filePath = "tests/test-connector.yaml";
+    completeFilePath = GitSyncFilePathUtils.createFilePath(folderPath, filePath);
+    assertThat(completeFilePath).isEqualTo("/testHarness/tests/.harness/tests/test-connector.yaml");
+  }
+
+  @Test
+  @Owner(developers = MOHIT_GARG)
+  @Category(UnitTests.class)
+  public void testFormatFilePath() {
+    String filePath = "filePath";
+    String formattedFilePath = GitSyncFilePathUtils.formatFilePath(filePath);
+    assertThat(formattedFilePath).isEqualTo("/filePath");
+
+    filePath = "/filePath";
+    formattedFilePath = GitSyncFilePathUtils.formatFilePath(filePath);
+    assertThat(formattedFilePath).isEqualTo("/filePath");
   }
 }
