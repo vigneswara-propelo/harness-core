@@ -485,14 +485,17 @@ public abstract class TerraformProvisionState extends State {
 
     if (phaseElement != null && isNotEmpty(phaseElement.getInfraDefinitionId())
         && phaseElement.getServiceElement() != null && isNotEmpty(phaseElement.getServiceElement().getUuid())) {
-      sweepingOutputService.save(
-          context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
-              .name(String
-                        .format("%s_%s_%s", TerraformOutputVariables.SWEEPING_OUTPUT_NAME,
-                            phaseElement.getInfraDefinitionId(), phaseElement.getServiceElement().getUuid())
-                        .replaceAll("-", "_"))
-              .value(terraformOutputVariables)
-              .build());
+      String name = format("%s_%s_%s", TerraformOutputVariables.SWEEPING_OUTPUT_NAME,
+          phaseElement.getInfraDefinitionId(), phaseElement.getServiceElement().getUuid())
+                        .replaceAll("-", "_");
+      try {
+        sweepingOutputService.save(context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
+                                       .name(name)
+                                       .value(terraformOutputVariables)
+                                       .build());
+      } catch (Exception ex) {
+        log.error("Failed to save sweeping output against name {}", name);
+      }
     }
   }
 
