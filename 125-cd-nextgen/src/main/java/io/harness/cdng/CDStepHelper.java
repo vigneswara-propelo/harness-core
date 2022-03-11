@@ -570,7 +570,7 @@ public class CDStepHelper {
 
   public List<String> getValuesFileContents(Ambiance ambiance, List<String> valuesFileContents) {
     return valuesFileContents.stream()
-        .map(valuesFileContent -> engineExpressionService.renderExpression(ambiance, valuesFileContent))
+        .map(valuesFileContent -> engineExpressionService.renderExpression(ambiance, valuesFileContent, false))
         .collect(Collectors.toList());
   }
 

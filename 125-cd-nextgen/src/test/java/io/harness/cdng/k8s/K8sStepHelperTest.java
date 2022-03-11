@@ -506,8 +506,8 @@ public class K8sStepHelperTest extends CategoryTest {
     String valueFile2 = "file2";
     List<String> valuesFiles = asList(valueFile1, valueFile2);
 
-    doReturn(valueFile1).when(engineExpressionService).renderExpression(any(), eq(valueFile1));
-    doReturn(valueFile2).when(engineExpressionService).renderExpression(any(), eq(valueFile2));
+    doReturn(valueFile1).when(engineExpressionService).renderExpression(any(), eq(valueFile1), anyBoolean());
+    doReturn(valueFile2).when(engineExpressionService).renderExpression(any(), eq(valueFile2), anyBoolean());
 
     List<String> renderedValuesFiles = k8sStepHelper.renderValues(
         OpenshiftManifestOutcome.builder().build(), Ambiance.newBuilder().build(), valuesFiles);
