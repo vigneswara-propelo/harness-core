@@ -15,7 +15,6 @@ import io.harness.morphia.MorphiaRegistrarHelperPut;
 import io.harness.ng.accesscontrol.migrations.models.AccessControlMigration;
 import io.harness.ng.core.entities.ApiKey;
 import io.harness.ng.core.entities.Token;
-import io.harness.ng.core.envGroup.beans.EnvironmentGroupEntity;
 
 import java.util.Set;
 
@@ -26,7 +25,6 @@ public class NGMorphiaRegistrars implements MorphiaRegistrar {
     set.add(ApiKey.class);
     set.add(Token.class);
     set.add(AccessControlMigration.class);
-    set.add(EnvironmentGroupEntity.class);
   }
 
   @Override

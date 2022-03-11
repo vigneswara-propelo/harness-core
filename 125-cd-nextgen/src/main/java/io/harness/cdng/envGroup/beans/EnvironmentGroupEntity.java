@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ng.core.envGroup.beans;
+package io.harness.cdng.envGroup.beans;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
@@ -45,7 +45,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Entity(value = "environmentGroupNG", noClassnameStored = true)
 @FieldNameConstants(innerTypeName = "EnvironmentGroupKeys")
 @Document("environmentGroupNG")
-@TypeAlias("io.harness.ng.core.envGroup.beans.EnvironmentGroupEntity")
+@TypeAlias("io.harness.cdng.envGroup.beans.EnvironmentGroupEntity")
 public class EnvironmentGroupEntity implements PersistentEntity, GitSyncableEntity {
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()

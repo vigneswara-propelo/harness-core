@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.core.envGroup.beans;
+package io.harness.cdng.envGroup.beans;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
@@ -23,7 +23,7 @@ import lombok.Data;
 @OwnedBy(PIPELINE)
 @Data
 @Builder
-@RecasterAlias("io.harness.ng.core.envGroup.beans.EnvironmentGroupConfig")
+@RecasterAlias("io.harness.cdng.envGroup.beans.EnvironmentGroupConfig")
 public class EnvironmentGroupConfig implements YamlDTO {
   @EntityName String name;
   @EntityIdentifier String identifier;

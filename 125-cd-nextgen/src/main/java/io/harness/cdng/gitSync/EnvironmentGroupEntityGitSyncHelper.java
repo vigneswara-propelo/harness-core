@@ -5,9 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.core.gitSync;
+package io.harness.cdng.gitSync;
 
 import io.harness.EntityType;
+import io.harness.cdng.envGroup.beans.EnvironmentGroupConfig;
+import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
+import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKeys;
 import io.harness.common.EntityReference;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.git.model.ChangeType;
@@ -17,9 +20,6 @@ import io.harness.gitsync.ScopeDetails;
 import io.harness.gitsync.entityInfo.AbstractGitSdkEntityHandler;
 import io.harness.gitsync.sdk.EntityGitDetails;
 import io.harness.ng.core.EntityDetail;
-import io.harness.ng.core.envGroup.beans.EnvironmentGroupConfig;
-import io.harness.ng.core.envGroup.beans.EnvironmentGroupEntity;
-import io.harness.ng.core.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKeys;
 
 import java.util.List;
 import java.util.Optional;
