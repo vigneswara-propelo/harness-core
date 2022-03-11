@@ -5,9 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.utils;
-
-import static io.harness.data.structure.HarnessStringUtils.emptyIfNull;
+package io.harness.gitsync.common.utils;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -16,13 +14,14 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.interceptor.GitSyncConstants;
 
+import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.PL)
 @UtilityClass
-public class GitSyncSdkUtils {
-  public GitEntityFilePath getRootFolderAndFilePath(String completeFilePath) {
-    String[] pathSplited = emptyIfNull(completeFilePath).split(GitSyncConstants.FOLDER_PATH);
+public class GitSyncFilePathUtils {
+  public static GitEntityFilePath getRootFolderAndFilePath(String completeFilePath) {
+    String[] pathSplited = Pattern.compile("([.])(harness/)").split(completeFilePath);
     if (pathSplited.length != 2) {
       throw new InvalidRequestException(String.format(
           "The path %s doesn't contain the .harness folder, thus this file won't be processed", completeFilePath));
@@ -33,7 +32,7 @@ public class GitSyncSdkUtils {
     return GitEntityFilePath.builder().rootFolder(folderPath).filePath(filePath).build();
   }
 
-  private String getGitFolderPath(String folderPath) {
+  private static String getGitFolderPath(String folderPath) {
     String prefix = "";
     if (isBlank(folderPath) || folderPath.charAt(0) != '/') {
       prefix = "/";

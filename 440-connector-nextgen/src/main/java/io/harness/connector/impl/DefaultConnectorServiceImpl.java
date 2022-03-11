@@ -82,14 +82,14 @@ import io.harness.exception.ngexception.ConnectorValidationException;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.clients.YamlGitConfigClient;
 import io.harness.gitsync.common.dtos.GitSyncConfigDTO;
+import io.harness.gitsync.common.utils.GitEntityFilePath;
+import io.harness.gitsync.common.utils.GitSyncFilePathUtils;
 import io.harness.gitsync.helpers.GitContextHelper;
 import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.interceptor.GitSyncBranchContext;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.EntityObjectIdUtils;
 import io.harness.gitsync.sdk.EntityGitDetailsMapper;
-import io.harness.gitsync.utils.GitEntityFilePath;
-import io.harness.gitsync.utils.GitSyncSdkUtils;
 import io.harness.manage.GlobalContextManager;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.core.BaseNGAccess;
@@ -558,7 +558,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
                             .and(ConnectorKeys.identifier)
                             .is(connectorDTO.getConnectorInfo().getIdentifier());
 
-    GitEntityFilePath gitEntityFilePath = GitSyncSdkUtils.getRootFolderAndFilePath(newFilePath);
+    GitEntityFilePath gitEntityFilePath = GitSyncFilePathUtils.getRootFolderAndFilePath(newFilePath);
     Update update = new Update()
                         .set(ConnectorKeys.filePath, gitEntityFilePath.getFilePath())
                         .set(ConnectorKeys.rootFolder, gitEntityFilePath.getRootFolder());

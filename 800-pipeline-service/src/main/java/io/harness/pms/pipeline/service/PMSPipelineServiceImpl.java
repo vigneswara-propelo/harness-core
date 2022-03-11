@@ -32,11 +32,11 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.InvalidYamlException;
 import io.harness.exception.ScmException;
 import io.harness.git.model.ChangeType;
+import io.harness.gitsync.common.utils.GitEntityFilePath;
+import io.harness.gitsync.common.utils.GitSyncFilePathUtils;
 import io.harness.gitsync.helpers.GitContextHelper;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.EntityObjectIdUtils;
-import io.harness.gitsync.utils.GitEntityFilePath;
-import io.harness.gitsync.utils.GitSyncSdkUtils;
 import io.harness.grpc.utils.StringValueUtils;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.opaclient.model.OpaConstants;
@@ -585,7 +585,7 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
         pipelineEntity.getOrgIdentifier(), pipelineEntity.getProjectIdentifier(), pipelineEntity.getIdentifier(), false,
         null);
 
-    GitEntityFilePath gitEntityFilePath = GitSyncSdkUtils.getRootFolderAndFilePath(newFilePath);
+    GitEntityFilePath gitEntityFilePath = GitSyncFilePathUtils.getRootFolderAndFilePath(newFilePath);
     Update update = new Update()
                         .set(PipelineEntityKeys.filePath, gitEntityFilePath.getFilePath())
                         .set(PipelineEntityKeys.rootFolder, gitEntityFilePath.getRootFolder());

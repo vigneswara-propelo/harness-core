@@ -10,6 +10,7 @@ package io.harness.gitsync.common.impl.gittoharness;
 import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.gitsync.common.beans.GitToHarnessProcessingStepStatus.DONE;
 import static io.harness.gitsync.common.beans.GitToHarnessProcessingStepStatus.ERROR;
 import static io.harness.gitsync.common.beans.GitToHarnessProcessingStepStatus.IN_PROGRESS;
@@ -553,10 +554,12 @@ public class GitToHarnessProcessorServiceImpl implements GitToHarnessProcessorSe
 
   private Set<String> getFilePathsWithoutError(List<GitToHarnessProcessingResponse> gitToHarnessProcessingResponses) {
     List<FileProcessingResponseDTO> fileResponses = new ArrayList<>();
-    gitToHarnessProcessingResponses.stream()
-        .map(GitToHarnessProcessingResponse::getProcessingResponse)
-        .map(GitToHarnessProcessingResponseDTO::getFileResponses)
-        .forEach(fileProcessingResponseDTO -> fileResponses.addAll(fileProcessingResponseDTO));
+    for (GitToHarnessProcessingResponse gitToHarnessProcessingResponse : emptyIfNull(gitToHarnessProcessingResponses)) {
+      GitToHarnessProcessingResponseDTO processingResponse = gitToHarnessProcessingResponse.getProcessingResponse();
+      if (processingResponse != null && isNotEmpty(processingResponse.getFileResponses())) {
+        fileResponses.addAll(processingResponse.getFileResponses());
+      }
+    }
     return fileResponses.stream()
         .filter(fileResponse -> fileResponse.getFileProcessingStatus() == FileProcessingStatus.SUCCESS)
         .map(FileProcessingResponseDTO::getFilePath)
