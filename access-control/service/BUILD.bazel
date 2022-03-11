@@ -10,7 +10,7 @@ java_binary(
     resources = [
         "//access-control/service/src/main/resources:resource",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:private"],
     runtime_deps = [
         "@maven//:io_opencensus_opencensus_api",
         "@maven//:io_opencensus_opencensus_exporter_stats_stackdriver",
@@ -37,8 +37,8 @@ java_binary(
         "//980-commons:module",
         "//999-annotations:module",
         "//access-control/contracts:module",
-        "//access-control/libraries/80-aggregator:module",
-        "//access-control/libraries/90-core:module",
+        "//access-control/libs/aggregator:module",
+        "//access-control/libs/core:module",
         "//clients/access-control/sdk:module",
         "@maven//:ch_qos_logback_logback_access",
         "@maven//:ch_qos_logback_logback_classic",
@@ -100,7 +100,7 @@ java_library(
     name = "tests",
     testonly = True,
     srcs = glob(["src/test/**/*.java"]),
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:private"],
     deps = [
         ":module",
         "//:lombok",
@@ -116,7 +116,7 @@ java_library(
         "//990-commons-test:module",
         "//999-annotations:module",
         "//access-control/contracts:module",
-        "//access-control/libraries/90-core:module",
+        "//access-control/libs/core:module",
         "//clients/access-control/sdk:module",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",

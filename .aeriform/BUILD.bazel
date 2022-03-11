@@ -521,15 +521,3 @@ aeriform("//990-commons-test:tests")
 aeriform("//999-annotations:module")
 
 aeriform("//access-control/contracts:module")
-
-aeriform("//access-control/service:module")
-
-aeriform("//access-control/service:tests")
-
-aeriform("//access-control/libraries/80-aggregator:module")
-
-aeriform("//access-control/libraries/80-aggregator:tests")
-
-aeriform("//access-control/libraries/90-core:module")
-
-aeriform("//access-control/libraries/90-core:tests")

@@ -23,6 +23,7 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.logging.LoggingInitializer.initializeLogging;
 
 import static com.google.common.collect.ImmutableMap.of;
+import static io.serializer.HObjectMapper.configureObjectMapperForNG;
 import static java.util.stream.Collectors.toSet;
 
 import io.harness.Microservice;
@@ -147,6 +148,7 @@ public class AccessControlApplication extends Application<AccessControlConfigura
     // Enable variable substitution with environment variables
     bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
         bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+    configureObjectMapperForNG(bootstrap.getObjectMapper());
   }
 
   @Override
