@@ -12,6 +12,7 @@ import io.harness.cvng.beans.NewRelicDataCollectionInfo.NewRelicMetricInfoDTO;
 import io.harness.cvng.core.entities.NewRelicCVConfig;
 import io.harness.cvng.core.entities.NewRelicCVConfig.NewRelicMetricInfo;
 import io.harness.cvng.core.entities.VerificationTask.TaskType;
+import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.DataCollectionInfoMapper;
 import io.harness.cvng.core.services.api.DataCollectionSLIInfoMapper;
 import io.harness.cvng.core.utils.dataCollection.MetricDataCollectionUtils;
@@ -50,6 +51,12 @@ public class NewRelicDataCollectionInfoMapper
   @Override
   public NewRelicDataCollectionInfo toDataCollectionInfo(
       List<NewRelicCVConfig> cvConfigs, ServiceLevelIndicator serviceLevelIndicator) {
+    cvConfigs =
+        CollectionUtils.emptyIfNull(cvConfigs)
+            .stream()
+            .filter(
+                cvConfig -> cvConfig.getMetricPack().getIdentifier().equals(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER))
+            .collect(Collectors.toList());
     NewRelicCVConfig baseCVConfig = cvConfigs.get(0);
     NewRelicDataCollectionInfo newRelicDataCollectionInfo = NewRelicDataCollectionInfo.builder()
                                                                 .applicationId(baseCVConfig.getApplicationId())

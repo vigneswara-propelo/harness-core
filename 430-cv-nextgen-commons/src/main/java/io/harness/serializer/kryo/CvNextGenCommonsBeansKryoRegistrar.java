@@ -197,5 +197,9 @@ public class CvNextGenCommonsBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(DynatraceDataCollectionInfo.class, 9097);
     kryo.register(CustomHealthMetricInfo.class, 9098);
     kryo.register(MetricResponseMappingDTO.class, 9099);
+    kryo.register(NewRelicDataCollectionInfo.NewRelicMetricInfoDTO.class, 9100);
+    kryo.register(DatadogMetricsDataCollectionInfo.MetricCollectionInfo.class, 9101);
+    kryo.register(PrometheusDataCollectionInfo.MetricCollectionInfo.class, 9102);
+    kryo.register(DynatraceDataCollectionInfo.MetricCollectionInfo.class, 9104);
   }
 }

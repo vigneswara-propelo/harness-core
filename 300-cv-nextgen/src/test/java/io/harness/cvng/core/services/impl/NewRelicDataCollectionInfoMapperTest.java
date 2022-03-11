@@ -26,6 +26,7 @@ import io.harness.cvng.core.entities.MetricPack;
 import io.harness.cvng.core.entities.NewRelicCVConfig;
 import io.harness.cvng.core.entities.NewRelicCVConfig.NewRelicMetricInfo;
 import io.harness.cvng.core.entities.VerificationTask.TaskType;
+import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.rule.Owner;
 
@@ -130,8 +131,11 @@ public class NewRelicDataCollectionInfoMapperTest extends CvNextGenTestBase {
                                     .identifier("monService")
                                     .monitoringSourceName("monService")
                                     .build();
-    cvConfig.setMetricPack(
-        MetricPack.builder().dataCollectionDsl("metric-pack-dsl").category(CVMonitoringCategory.PERFORMANCE).build());
+    cvConfig.setMetricPack(MetricPack.builder()
+                               .dataCollectionDsl("metric-pack-dsl")
+                               .category(CVMonitoringCategory.PERFORMANCE)
+                               .identifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER)
+                               .build());
     cvConfig.setMetricInfos(Arrays.asList(
         NewRelicCVConfig.NewRelicMetricInfo.builder()
             .metricName("metric1")
