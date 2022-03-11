@@ -1288,7 +1288,7 @@ public class DelegateServiceImpl implements DelegateService {
       if (isNotBlank(templateParameters.getDelegateXmx())) {
         params.put("delegateXmx", templateParameters.getDelegateXmx());
       } else {
-        params.put("delegateXmx", "-Xmx1536m");
+        params.put("delegateXmx", "-Xmx4096m");
       }
 
       JreConfig jreConfig = getJreConfig(templateParameters.getAccountId());
@@ -1757,7 +1757,7 @@ public class DelegateServiceImpl implements DelegateService {
               .logStreamingServiceBaseUrl(mainConfiguration.getLogStreamingServiceConfig().getBaseUrl())
               .delegateTokenName(tokenName)
               .delegateCpu(1)
-              .delegateRam(4)
+              .delegateRam(8)
               .build(),
           false);
 
