@@ -713,7 +713,7 @@ public class DelegateServiceImpl implements DelegateService {
 
     return DelegateStatus.builder()
         .publishedVersions(delegateConfiguration.getDelegateVersions())
-        .delegates(buildInnerDelegates(delegates, perDelegateConnections, false))
+        .delegates(buildInnerDelegates(accountId, delegates, perDelegateConnections, false))
         .build();
   }
 
@@ -733,7 +733,7 @@ public class DelegateServiceImpl implements DelegateService {
                 ? Lists.newArrayList()
                 : delegateVersionListWithoutPatch(delegateConfiguration.getDelegateVersions()))
         .scalingGroups(scalingGroups)
-        .delegates(buildInnerDelegates(delegatesWithoutScalingGroup, activeDelegateConnections, false))
+        .delegates(buildInnerDelegates(accountId, delegatesWithoutScalingGroup, activeDelegateConnections, false))
         .build();
   }
 
@@ -762,7 +762,7 @@ public class DelegateServiceImpl implements DelegateService {
         .map(entry
             -> DelegateScalingGroup.builder()
                    .groupName(entry.getKey())
-                   .delegates(buildInnerDelegates(entry.getValue(), activeDelegateConnections, true))
+                   .delegates(buildInnerDelegates(accountId, entry.getValue(), activeDelegateConnections, true))
                    .build())
         .collect(toList());
   }
@@ -782,8 +782,16 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @NotNull
-  private List<DelegateStatus.DelegateInner> buildInnerDelegates(List<Delegate> delegates,
+  private List<DelegateStatus.DelegateInner> buildInnerDelegates(String accountId, List<Delegate> delegates,
       Map<String, List<DelegateConnectionDetails>> perDelegateConnections, boolean filterInactiveDelegates) {
+    List<String> delegateTokensNameList = new ArrayList<>();
+    delegates.stream()
+        .filter(delegate -> !filterInactiveDelegates || perDelegateConnections.containsKey(delegate.getUuid()))
+        .forEach(delegate -> delegateTokensNameList.add(delegate.getDelegateTokenName()));
+    // TODO: Arpit fetch the tokenStatus from cache instead of db.
+    Map<String, Boolean> delegateTokenStatusMap =
+        delegateNgTokenService.isDelegateTokenActive(accountId, delegateTokensNameList);
+
     return delegates.stream()
         .filter(delegate -> !filterInactiveDelegates || perDelegateConnections.containsKey(delegate.getUuid()))
         .map(delegate -> {
@@ -813,6 +821,8 @@ public class DelegateServiceImpl implements DelegateService {
               .implicitSelectors(delegateSetupService.retrieveDelegateImplicitSelectors(delegate))
               .sampleDelegate(delegate.isSampleDelegate())
               .connections(connections)
+              .tokenActive(delegate.getDelegateTokenName() == null
+                  || delegateTokenStatusMap.get(delegate.getDelegateTokenName()))
               .build();
         })
         .collect(toList());

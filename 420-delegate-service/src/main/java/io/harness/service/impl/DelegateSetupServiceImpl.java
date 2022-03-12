@@ -35,6 +35,9 @@ import io.harness.delegate.beans.DelegateInsightsDetails;
 import io.harness.delegate.beans.DelegateInstanceStatus;
 import io.harness.delegate.beans.DelegateProfile;
 import io.harness.delegate.beans.DelegateProfile.DelegateProfileKeys;
+import io.harness.delegate.beans.DelegateToken;
+import io.harness.delegate.beans.DelegateToken.DelegateTokenKeys;
+import io.harness.delegate.beans.DelegateTokenStatus;
 import io.harness.delegate.filter.DelegateFilterPropertiesDTO;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
 import io.harness.exception.InvalidRequestException;
@@ -51,13 +54,16 @@ import software.wings.service.impl.DelegateConnectionDao;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -389,6 +395,10 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
       groupDelegates = emptyList();
     }
 
+    List<String> delegateTokensNameList = new ArrayList<>();
+    groupDelegates.forEach(delegate -> delegateTokensNameList.add(delegate.getDelegateTokenName()));
+    Map<String, Boolean> delegateTokenStatusMap = isDelegateTokenActive(accountId, delegateTokensNameList);
+
     String delegateType = delegateGroup != null ? delegateGroup.getDelegateType() : null;
     String groupName = delegateGroup != null ? delegateGroup.getName() : null;
     String delegateDescription = delegateGroup != null ? delegateGroup.getDescription() : null;
@@ -398,18 +408,29 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
 
     long lastHeartBeat = groupDelegates.stream().mapToLong(Delegate::getLastHeartBeat).max().orElse(0);
     AtomicInteger countOfDelegatesConnected = new AtomicInteger();
+    AtomicBoolean isDelegateTokenActiveAtGroupLevel = new AtomicBoolean(true);
     List<DelegateGroupListing.DelegateInner> delegateInstanceDetails =
         groupDelegates.stream()
             .map(delegate -> {
               countOfDelegatesConnected.addAndGet(
                   (delegate.getLastHeartBeat() > System.currentTimeMillis() - HEARTBEAT_EXPIRY_TIME.toMillis()) ? 1
                                                                                                                 : 0);
+              String delegateTokenName = delegate.getDelegateTokenName();
+              // TODO: Arpit, fetch the tokenStatus from cache instead of db
+              boolean isTokenActive = true;
+              if (delegateTokenName != null) {
+                isTokenActive = delegateTokenStatusMap.get(delegateTokenName);
+              }
+              // if delegate token is not active, then token at group level will not be active
+              isDelegateTokenActiveAtGroupLevel.compareAndSet(!isTokenActive, false);
+
               return DelegateGroupListing.DelegateInner.builder()
                   .uuid(delegate.getUuid())
                   .lastHeartbeat(delegate.getLastHeartBeat())
                   .activelyConnected(
                       delegate.getLastHeartBeat() > System.currentTimeMillis() - HEARTBEAT_EXPIRY_TIME.toMillis())
                   .hostName(delegate.getHostName())
+                  .tokenActive(isTokenActive)
                   .build();
             })
             .collect(Collectors.toList());
@@ -434,6 +455,7 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
         .delegateInstanceDetails(delegateInstanceDetails)
         .connectivityStatus(connectivityStatus)
         .activelyConnected(!connectivityStatus.equals(GROUP_STATUS_DISCONNECTED))
+        .tokenActive(isDelegateTokenActiveAtGroupLevel.get())
         .build();
   }
 
@@ -546,5 +568,20 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
 
     log.info("Updating tags for delegate group: {} tags:{}", delegateGroupName, String.valueOf(tags.toString()));
     return updatedDelegateGroup;
+  }
+
+  private Map<String, Boolean> isDelegateTokenActive(String accountId, List<String> tokensNameList) {
+    Map<String, Boolean> delegateTokenStatusMap = new HashMap<>();
+    List<DelegateToken> delegateTokens = persistence.createQuery(DelegateToken.class)
+                                             .filter(DelegateTokenKeys.accountId, accountId)
+                                             .field(DelegateTokenKeys.name)
+                                             .in(tokensNameList)
+                                             .project(DelegateTokenKeys.name, true)
+                                             .project(DelegateTokenKeys.status, true)
+                                             .asList();
+    delegateTokens.forEach(delegateToken
+        -> delegateTokenStatusMap.put(
+            delegateToken.getName(), DelegateTokenStatus.ACTIVE.equals(delegateToken.getStatus())));
+    return delegateTokenStatusMap;
   }
 }

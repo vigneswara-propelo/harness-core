@@ -39,4 +39,5 @@ public class DelegateGroupDetails {
   private String connectivityStatus;
   private boolean activelyConnected;
   private List<DelegateGroupListing.DelegateInner> delegateInstanceDetails;
+  private boolean tokenActive;
 }
