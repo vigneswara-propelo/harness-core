@@ -34,6 +34,10 @@ public class SecretManagerDescriptionConstants {
   public static final String ENGINE_ENTERED_MANUALLY = "Manually entered Secret Engine.";
   public static final String AWS_CREDENTIAL =
       "This indicates AWS credential types, Manual Credential, Assume IAM Role, Assume STS Role.";
+  public static final String USE_K8s_AUTH = "Boolean value to indicate if K8s Auth is used for authentication.";
+  public static final String VAULT_K8S_AUTH_ROLE = "This is the role where K8s auth will happen.";
+  public static final String SERVICE_ACCOUNT_TOKEN_PATH =
+      "This is the SA token path where the token is mounted in the K8s Pod.";
   public static final String ACCESS_KEY = "Access Key for AWS authentication.";
   public static final String SECRET_KEY = "Secret Key for AWS authentication.";
   public static final String ROLE_ARN = "Role ARN for the Delegate with STS Role.";
