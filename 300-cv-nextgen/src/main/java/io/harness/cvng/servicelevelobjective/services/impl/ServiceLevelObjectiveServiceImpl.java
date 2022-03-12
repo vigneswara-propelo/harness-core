@@ -9,8 +9,12 @@ package io.harness.cvng.servicelevelobjective.services.impl;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
+import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.beans.params.logsFilterParams.SLILogsFilter;
+import io.harness.cvng.core.services.api.CVNGLogService;
+import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.core.utils.DateTimeUtils;
 import io.harness.cvng.servicelevelobjective.SLORiskCountResponse;
@@ -60,6 +64,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.ws.rs.NotFoundException;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +83,8 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
   @Inject private Map<SLOTargetType, SLOTargetTransformer> sloTargetTypeSLOTargetTransformerMap;
   @Inject private SLIRecordService sliRecordService;
   @Inject private SLOErrorBudgetResetService sloErrorBudgetResetService;
+  @Inject private VerificationTaskService verificationTaskService;
+  @Inject private CVNGLogService cvngLogService;
 
   @Override
   public ServiceLevelObjectiveResponse create(
@@ -238,9 +245,28 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
   public ServiceLevelObjectiveResponse get(ProjectParams projectParams, String identifier) {
     ServiceLevelObjective serviceLevelObjective = getEntity(projectParams, identifier);
     if (Objects.isNull(serviceLevelObjective)) {
-      return null;
+      throw new NotFoundException("SLO with identifier " + identifier + " not found.");
     }
     return sloEntityToSLOResponse(serviceLevelObjective);
+  }
+
+  @Override
+  public PageResponse<CVNGLogDTO> getCVNGLogs(
+      ProjectParams projectParams, String identifier, SLILogsFilter sliLogsFilter, PageParams pageParams) {
+    ServiceLevelObjective serviceLevelObjective = getEntity(projectParams, identifier);
+    if (Objects.isNull(serviceLevelObjective)) {
+      throw new NotFoundException("SLO with identifier " + identifier + " not found.");
+    }
+    List<String> sliIds =
+        serviceLevelIndicatorService.getEntities(projectParams, serviceLevelObjective.getServiceLevelIndicators())
+            .stream()
+            .map(ServiceLevelIndicator::getUuid)
+            .collect(Collectors.toList());
+    List<String> verificationTaskIds =
+        verificationTaskService.getSLIVerificationTaskIds(projectParams.getAccountIdentifier(), sliIds);
+
+    return cvngLogService.getCVNGLogs(
+        projectParams.getAccountIdentifier(), verificationTaskIds, sliLogsFilter, pageParams);
   }
 
   @Override

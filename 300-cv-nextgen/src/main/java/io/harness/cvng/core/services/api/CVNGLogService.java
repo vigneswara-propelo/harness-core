@@ -11,6 +11,7 @@ import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogType;
 import io.harness.cvng.core.beans.params.PageParams;
+import io.harness.cvng.core.beans.params.logsFilterParams.SLILogsFilter;
 import io.harness.cvng.core.entities.CVNGLog;
 import io.harness.ng.beans.PageResponse;
 
@@ -30,4 +31,6 @@ public interface CVNGLogService {
 
   PageResponse<CVNGLogDTO> getCVNGLogs(String accountId, String verificationJobInstanceId, CVNGLogType logType,
       List<String> healthSourceIdentifiers, boolean errorLogsOnly, PageParams pageParams);
+  PageResponse<CVNGLogDTO> getCVNGLogs(
+      String accountId, List<String> verificationTaskIds, SLILogsFilter sliLogsFilter, PageParams pageParams);
 }

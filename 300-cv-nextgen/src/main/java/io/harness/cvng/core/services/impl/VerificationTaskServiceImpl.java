@@ -229,6 +229,14 @@ public class VerificationTaskServiceImpl implements VerificationTaskService {
   }
 
   @Override
+  public List<String> getSLIVerificationTaskIds(String accountId, List<String> sliIds) {
+    List<VerificationTask> result = getSLITasks(accountId, sliIds);
+    Preconditions.checkNotNull(
+        result, "VerificationTask mapping does not exist for SLI Id %s. Please check sliId", sliIds);
+    return result.stream().map(VerificationTask::getUuid).collect(Collectors.toList());
+  }
+
+  @Override
   public List<String> getServiceGuardVerificationTaskIds(String accountId, List<String> cvConfigIds) {
     List<String> verificationTasksIds = new ArrayList<>();
     verificationTasksIds.addAll(
@@ -362,6 +370,15 @@ public class VerificationTaskServiceImpl implements VerificationTaskService {
         .filter(VerificationTaskKeys.taskInfo + "." + TaskInfo.TASK_TYPE_FIELD_NAME, TaskType.SLI)
         .filter(VerificationTaskKeys.taskInfo + "." + SLIInfoKeys.sliId, sliId)
         .get();
+  }
+
+  private List<VerificationTask> getSLITasks(String accountId, List<String> sliIds) {
+    return hPersistence.createQuery(VerificationTask.class, excludeValidate)
+        .filter(VerificationTaskKeys.accountId, accountId)
+        .filter(VerificationTaskKeys.taskInfo + "." + TaskInfo.TASK_TYPE_FIELD_NAME, TaskType.SLI)
+        .field(VerificationTaskKeys.taskInfo + "." + SLIInfoKeys.sliId)
+        .in(sliIds)
+        .asList();
   }
 
   private Query<VerificationTask> createQueryForLiveMonitoring(String accountId, String cvConfigId) {

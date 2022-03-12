@@ -18,7 +18,10 @@ import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.ExposeInternalException;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
+import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.beans.params.logsFilterParams.SLILogsFilter;
 import io.harness.cvng.servicelevelobjective.beans.SLOErrorBudgetResetDTO;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveDTO;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveFilter;
@@ -161,6 +164,19 @@ public class ServiceLevelObjectiveResource {
                                       .projectIdentifier(projectIdentifier)
                                       .build();
     return new RestResponse<>(serviceLevelObjectiveService.get(projectParams, identifier));
+  }
+
+  @GET
+  @Timed
+  @ExceptionMetered
+  @Path("{identifier}/logs")
+  @ApiOperation(value = "get service level objective data", nickname = "getServiceLevelObjectiveLogs")
+  @NGAccessControlCheck(resourceType = SLO, permission = VIEW_PERMISSION)
+  public RestResponse<PageResponse<CVNGLogDTO>> getServiceLevelObjectiveLogs(@BeanParam ProjectParams projectParams,
+      @ApiParam(required = true) @NotNull @PathParam("identifier") @ResourceIdentifier String identifier,
+      @BeanParam SLILogsFilter sliLogsFilter, @BeanParam PageParams pageParams) {
+    return new RestResponse<>(
+        serviceLevelObjectiveService.getCVNGLogs(projectParams, identifier, sliLogsFilter, pageParams));
   }
 
   @POST
