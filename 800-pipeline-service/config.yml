@@ -410,4 +410,7 @@ orchestrationRedisEventsConfig:
 
 allowedParallelStages: ${ALLOWED_PARALLEL_STAGES:-25}
 
-reduceOrchestrationLog: ${REDUCE_ORCHESTRATION_EVENT_LOG:-true}
+orchestrationLogConfiguration:
+  reduceOrchestrationLog: ${REDUCE_ORCHESTRATION_EVENT_LOG:-false}
+  shouldUseBatching: ${ORCHESTRATION_LOG_SHOULD_USE_BATCHING:-false}
+  orchestrationLogBatchSize: ${ORCHESTRATION_LOG_BATCH_SIZE:-5}

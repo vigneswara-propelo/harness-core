@@ -22,11 +22,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import io.harness.OrchestrationTestBase;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.event.OrchestrationLogConfiguration;
 import io.harness.exception.InvalidRequestException;
 import io.harness.execution.NodeExecution;
 import io.harness.execution.NodeExecution.NodeExecutionKeys;
@@ -51,10 +53,12 @@ import java.util.Optional;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
+  @Mock OrchestrationLogConfiguration orchestrationLogConfiguration;
   @Inject @InjectMocks private NodeExecutionService nodeExecutionService;
 
   @Test
@@ -752,6 +756,7 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
   public void testShouldLog() {
+    when(orchestrationLogConfiguration.isReduceOrchestrationLog()).thenReturn(true);
     Update update = new Update();
     update.addToSet(NodeExecutionKeys.executableResponses, null);
     update.set(NodeExecutionKeys.failureInfo, FailureInfo.newBuilder().build());
@@ -763,6 +768,7 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
   @Category(UnitTests.class)
   public void testShouldNotLog() {
     Update update = new Update();
+    when(orchestrationLogConfiguration.isReduceOrchestrationLog()).thenReturn(true);
     update.set(NodeExecutionKeys.nodeId, "test");
     assertThat(nodeExecutionService.shouldLog(update)).isFalse();
   }

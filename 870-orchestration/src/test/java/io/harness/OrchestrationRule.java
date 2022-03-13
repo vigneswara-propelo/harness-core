@@ -216,7 +216,6 @@ public class OrchestrationRule implements MethodRule, InjectorRuleMixin, MongoRu
                                             .serviceName("ORCHESTRATION_TEST")
                                             .expressionEvaluatorProvider(new AmbianceExpressionEvaluatorProvider())
                                             .isPipelineService(true)
-                                            .reduceOrchestrationLog(true)
                                             .build()));
     CacheConfigBuilder cacheConfigBuilder =
         CacheConfig.builder().disabledCaches(new HashSet<>()).cacheNamespace("harness-cache");

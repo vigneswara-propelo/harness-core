@@ -36,6 +36,7 @@ import com.google.inject.name.Named;
 import java.sql.Date;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import javax.cache.Cache;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 @Singleton
@@ -44,6 +45,8 @@ public class OrchestrationLogPublisher
                NodeExecutionStartObserver {
   @Inject private OrchestrationEventLogRepository orchestrationEventLogRepository;
   @Inject @Named(EventsFrameworkConstants.ORCHESTRATION_LOG) private Producer producer;
+  @Inject @Named("orchestrationLogCache") Cache<String, Long> orchestrationLogCache;
+  @Inject OrchestrationLogConfiguration orchestrationLogConfiguration;
 
   @Override
   public void onNodeStatusUpdate(NodeUpdateInfo nodeUpdateInfo) {
@@ -63,7 +66,6 @@ public class OrchestrationLogPublisher
         OrchestrationEventType.NODE_EXECUTION_UPDATE);
   }
 
-  // Todo: Introduce batching over here
   private void createAndHandleEventLog(
       String planExecutionId, String nodeExecutionId, OrchestrationEventType eventType) {
     orchestrationEventLogRepository.save(
@@ -74,16 +76,41 @@ public class OrchestrationLogPublisher
             .planExecutionId(planExecutionId)
             .validUntil(Date.from(OffsetDateTime.now().plus(Duration.ofDays(14)).toInstant()))
             .build());
+
+    if (orchestrationLogConfiguration.isShouldUseBatching()) {
+      batchAndSendLogEventIfRequired(planExecutionId);
+    } else {
+      OrchestrationLogEvent orchestrationLogEvent =
+          OrchestrationLogEvent.newBuilder().setPlanExecutionId(planExecutionId).build();
+      producer.send(Message.newBuilder()
+                        .putAllMetadata(ImmutableMap.of("nodeExecutionId", emptyIfNull(nodeExecutionId),
+                            "planExecutionId", planExecutionId, "eventType", eventType.name()))
+                        .setData(orchestrationLogEvent.toByteString())
+                        .build());
+    }
+  }
+
+  private void batchAndSendLogEventIfRequired(String planExecutionId) {
+    if (orchestrationLogCache.containsKey(planExecutionId)) {
+      if (orchestrationLogCache.get(planExecutionId) >= orchestrationLogConfiguration.getOrchestrationLogBatchSize()) {
+        sendLogEvent(planExecutionId);
+        orchestrationLogCache.put(planExecutionId, 1L);
+      } else {
+        orchestrationLogCache.put(planExecutionId, orchestrationLogCache.get(planExecutionId) + 1);
+      }
+    } else {
+      orchestrationLogCache.put(planExecutionId, 1L);
+    }
+  }
+
+  public void sendLogEvent(String planExecutionId) {
     OrchestrationLogEvent orchestrationLogEvent =
         OrchestrationLogEvent.newBuilder().setPlanExecutionId(planExecutionId).build();
-
     producer.send(Message.newBuilder()
-                      .putAllMetadata(ImmutableMap.of("nodeExecutionId", emptyIfNull(nodeExecutionId),
-                          "planExecutionId", planExecutionId, "eventType", eventType.name()))
+                      .putAllMetadata(ImmutableMap.of("planExecutionId", planExecutionId))
                       .setData(orchestrationLogEvent.toByteString())
                       .build());
   }
-
   @Override
   public void onNodeStart(NodeStartInfo nodeStartInfo) {
     createAndHandleEventLog(nodeStartInfo.getNodeExecution().getPlanExecutionId(),

@@ -472,7 +472,7 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     nodeExecutionService.getStepStatusUpdateSubject().register(
         injector.getInstance(Key.get(TimeoutInstanceRemover.class)));
 
-    if (!appConfig.getReduceOrchestrationLog()) {
+    if (!appConfig.getOrchestrationLogConfiguration().isReduceOrchestrationLog()) {
       nodeExecutionService.getNodeUpdateObserverSubject().register(
           injector.getInstance(Key.get(OrchestrationLogPublisher.class)));
       nodeExecutionService.getNodeExecutionStartSubject().register(

@@ -25,6 +25,7 @@ import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.executions.plan.PlanExecutionService;
 import io.harness.engine.utils.OrchestrationUtils;
 import io.harness.event.GraphStatusUpdateHelper;
+import io.harness.event.OrchestrationLogPublisher;
 import io.harness.event.PlanExecutionStatusUpdateEventHandler;
 import io.harness.event.StepDetailsUpdateEventHandler;
 import io.harness.exception.InvalidRequestException;
@@ -45,12 +46,14 @@ import io.harness.skip.service.VertexSkipperService;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.query.Update;
 
@@ -62,6 +65,7 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
   private static final String GRAPH_LOCK = "GRAPH_LOCK_";
 
   @Inject private PlanExecutionService planExecutionService;
+  @Inject @Named("orchestrationLogCache") Cache<String, Long> orchestrationLogCache;
   @Inject private NodeExecutionService nodeExecutionService;
   @Inject private SpringMongoStore mongoStore;
   @Inject private OrchestrationAdjacencyListGenerator orchestrationAdjacencyListGenerator;
@@ -72,6 +76,7 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
   @Inject private StepDetailsUpdateEventHandler stepDetailsUpdateEventHandler;
   @Inject private PmsExecutionSummaryService pmsExecutionSummaryService;
   @Inject private PersistentLocker persistentLocker;
+  @Inject private OrchestrationLogPublisher orchestrationLogPublisher;
 
   @Override
   public boolean updateGraph(String planExecutionId) {
@@ -116,14 +121,22 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
 
   // This must always be called after acquiring the lock
   private boolean updateGraphUnderLock(String planExecutionId) {
-    long startTs = System.currentTimeMillis();
     OrchestrationGraph orchestrationGraph = getCachedOrchestrationGraph(planExecutionId);
     if (orchestrationGraph == null) {
       log.warn("[PMS_GRAPH] Graph not yet generated. Passing on to next iteration");
       return true;
     }
+    return updateGraphUnderLock(orchestrationGraph);
+  }
+
+  // This must always be called after acquiring the lock
+  private boolean updateGraphUnderLock(OrchestrationGraph orchestrationGraph) {
+    if (orchestrationGraph == null) {
+      return false;
+    }
+    String planExecutionId = orchestrationGraph.getPlanExecutionId();
+    long startTs = System.currentTimeMillis();
     long lastUpdatedAt = orchestrationGraph.getLastUpdatedAt();
-    // Todo: Introduce batching over here.
     List<OrchestrationEventLog> unprocessedEventLogs =
         orchestrationEventLogRepository.findUnprocessedEvents(planExecutionId, lastUpdatedAt);
     if (unprocessedEventLogs.isEmpty()) {
@@ -197,6 +210,8 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
     OrchestrationGraph cachedOrchestrationGraph = getCachedOrchestrationGraph(planExecutionId);
     if (cachedOrchestrationGraph == null) {
       cachedOrchestrationGraph = buildOrchestrationGraph(planExecutionId);
+    } else {
+      sendUpdateEventIfAny(cachedOrchestrationGraph);
     }
     EphemeralOrchestrationGraph ephemeralOrchestrationGraph =
         EphemeralOrchestrationGraphConverter.convertFrom(cachedOrchestrationGraph);
@@ -210,11 +225,20 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
     OrchestrationGraph orchestrationGraph = getCachedOrchestrationGraph(planExecutionId);
     if (orchestrationGraph == null) {
       orchestrationGraph = buildOrchestrationGraph(planExecutionId);
+    } else {
+      sendUpdateEventIfAny(orchestrationGraph);
     }
-
     String startingNodeId =
         obtainStartingIdFromSetupNodeId(orchestrationGraph.getAdjacencyList().getGraphVertexMap(), startingSetupNodeId);
     return generatePartialGraph(startingNodeId, orchestrationGraph);
+  }
+
+  private void sendUpdateEventIfAny(OrchestrationGraph orchestrationGraph) {
+    String planExecutionId = orchestrationGraph.getPlanExecutionId();
+    if (orchestrationLogCache.containsKey(planExecutionId) && orchestrationLogCache.get(planExecutionId) > 0) {
+      orchestrationLogCache.put(planExecutionId, 0L);
+      orchestrationLogPublisher.sendLogEvent(planExecutionId);
+    }
   }
 
   public OrchestrationGraph buildOrchestrationGraph(String planExecutionId) {

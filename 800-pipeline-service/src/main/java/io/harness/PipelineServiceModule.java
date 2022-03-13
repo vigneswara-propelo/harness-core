@@ -257,7 +257,6 @@ public class PipelineServiceModule extends AbstractModule {
             .expressionEvaluatorProvider(new PMSExpressionEvaluatorProvider())
             .withPMS(false)
             .isPipelineService(true)
-            .reduceOrchestrationLog(configuration.getReduceOrchestrationLog())
             .corePoolSize(configuration.getOrchestrationPoolConfig().getCorePoolSize())
             .maxPoolSize(configuration.getOrchestrationPoolConfig().getMaxPoolSize())
             .idleTimeInSecs(configuration.getOrchestrationPoolConfig().getIdleTime())
@@ -267,6 +266,7 @@ public class PipelineServiceModule extends AbstractModule {
             .accountServiceSecret(configuration.getManagerServiceSecret())
             .useFeatureFlagService(true)
             .orchestrationRedisEventsConfig(configuration.getOrchestrationRedisEventsConfig())
+            .orchestrationLogConfiguration(configuration.getOrchestrationLogConfiguration())
             .build()));
     install(OrchestrationStepsModule.getInstance(configuration.getOrchestrationStepConfig()));
     install(OrchestrationVisualizationModule.getInstance(configuration.getEventsFrameworkConfiguration(),

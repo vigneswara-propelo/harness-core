@@ -43,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 @OwnedBy(HarnessTeam.PIPELINE)
@@ -54,15 +55,15 @@ public class OrchestrationLogPublisherTest extends OrchestrationTestBase {
 
   @Mock private OrchestrationEventLogRepository repository;
   @Mock private Producer producer;
-
-  private OrchestrationLogPublisher publisher;
+  @Mock private OrchestrationLogConfiguration orchestrationLogConfiguration;
+  @InjectMocks private OrchestrationLogPublisher publisher;
 
   @Before
   public void setUp() throws IllegalAccessException {
-    publisher = new OrchestrationLogPublisher();
     FieldUtils.writeField(publisher, "producer", producer, true);
     FieldUtils.writeField(publisher, "orchestrationEventLogRepository", repository, true);
 
+    when(orchestrationLogConfiguration.isShouldUseBatching()).thenReturn(false);
     when(producer.send(any())).thenReturn(null);
   }
 

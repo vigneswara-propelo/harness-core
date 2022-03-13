@@ -72,8 +72,6 @@ public class GraphStatusUpdateHelper {
           updateGraphVertex(graphVertexMap, nodeExecution, planExecutionId);
         }
       } else if (!nodeExecution.getOldRetry()) {
-        log.info("[PMS_GRAPH] Adding graph vertex with id [{}] and status [{}]. PlanExecutionId: [{}]", nodeExecutionId,
-            nodeExecution.getStatus(), planExecutionId);
         orchestrationAdjacencyListGenerator.addVertex(orchestrationGraph.getAdjacencyList(), nodeExecution);
       }
     } catch (Exception e) {
