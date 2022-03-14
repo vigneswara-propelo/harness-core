@@ -67,7 +67,7 @@ check_file_present $PROJFILE
 PROJECTS=$(<$PROJFILE)
 
 git log --remotes=origin/release/${PURPOSE}/* --pretty=oneline --abbrev-commit | grep -iE "\[(${PROJECTS})-[0-9]+]:" -o | sort | uniq > release.txt
-git log --remotes=origin/develop --pretty=oneline --abbrev-commit | grep -iE "\[(${PROJECTS})-[0-9]+]:" -o | sort | uniq > develop.txt
+git log --remotes=origin/[d]evelop --pretty=oneline --abbrev-commit | grep -iE "\[(${PROJECTS})-[0-9]+]:" -o | sort | uniq > develop.txt
 
 NOT_MERGED=`comm -23 release.txt develop.txt`
 
