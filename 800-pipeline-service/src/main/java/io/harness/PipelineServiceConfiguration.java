@@ -124,6 +124,7 @@ public class PipelineServiceConfiguration extends Configuration {
   @JsonProperty("allowedParallelStages") private int allowedParallelStages;
   @JsonProperty("debeziumConfig") private DebeziumConfig debeziumConfig;
   @JsonProperty("orchestrationLogConfiguration") private OrchestrationLogConfiguration orchestrationLogConfiguration;
+  @JsonProperty("planCreatorMergeServiceDependencyBatch") private Integer planCreatorMergeServiceDependencyBatch;
 
   private String managerServiceSecret;
   private String managerTarget;

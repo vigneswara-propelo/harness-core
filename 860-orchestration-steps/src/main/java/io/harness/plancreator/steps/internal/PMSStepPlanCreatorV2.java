@@ -79,7 +79,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 @OwnedBy(PIPELINE)
+@Slf4j
 public abstract class PMSStepPlanCreatorV2<T extends PmsAbstractStepNode> extends AbstractStepPlanCreator<T> {
   @Override
   public PlanCreationResponse createPlanForField(PlanCreationContext ctx, T stepElement) {

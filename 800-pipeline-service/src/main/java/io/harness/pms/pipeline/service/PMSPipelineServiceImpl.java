@@ -592,12 +592,16 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
     if (!pmsFeatureFlagService.isEnabled(accountId, FeatureName.OPA_PIPELINE_GOVERNANCE)) {
       return pipelineYaml;
     }
+    long start = System.currentTimeMillis();
     ExpansionRequestMetadata expansionRequestMetadata = getRequestMetadata(accountId, orgIdentifier, projectIdentifier);
 
     Set<ExpansionRequest> expansionRequests = expansionRequestsExtractor.fetchExpansionRequests(pipelineYaml);
     Set<ExpansionResponseBatch> expansionResponseBatches =
         jsonExpander.fetchExpansionResponses(expansionRequests, expansionRequestMetadata);
-    return ExpansionsMerger.mergeExpansions(pipelineYaml, expansionResponseBatches);
+    String mergeExpansions = ExpansionsMerger.mergeExpansions(pipelineYaml, expansionResponseBatches);
+    log.info("[PMS_GOVERNANCE] Pipeline Json Expansion took {}ms for projectId {}, orgId {}, accountId {}",
+        System.currentTimeMillis() - start, projectIdentifier, orgIdentifier, accountId);
+    return mergeExpansions;
   }
 
   @Override

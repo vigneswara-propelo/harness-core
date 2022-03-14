@@ -302,7 +302,6 @@ public class YamlUtils {
 
   public String getStageFqnPath(YamlNode yamlNode) {
     List<String> qualifiedNames = getQualifiedNameList(yamlNode, "pipeline");
-    StringBuilder response = new StringBuilder();
     if (qualifiedNames.size() <= 2) {
       return String.join(".", qualifiedNames);
     }

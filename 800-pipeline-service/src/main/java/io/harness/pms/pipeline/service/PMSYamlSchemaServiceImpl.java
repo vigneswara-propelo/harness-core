@@ -125,6 +125,7 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
 
   private void validateYamlSchemaInternal(String accountIdentifier, String orgId, String projectId, String yaml) {
     try {
+      long start = System.currentTimeMillis();
       JsonNode schema = getPipelineYamlSchema(accountIdentifier, projectId, orgId, Scope.PROJECT);
       String schemaString = JsonPipelineUtils.writeJsonString(schema);
       Set<String> errors = yamlSchemaValidator.validate(yaml, schemaString,
@@ -133,6 +134,7 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
       if (!errors.isEmpty()) {
         throw new JsonSchemaValidationException(String.join("\n", errors));
       }
+      log.info("[PMS_SCHEMA] Schema validation took total time {}ms", System.currentTimeMillis() - start);
     } catch (Exception ex) {
       log.error(ex.getMessage(), ex);
       throw new JsonSchemaValidationException(ex.getMessage(), ex);
