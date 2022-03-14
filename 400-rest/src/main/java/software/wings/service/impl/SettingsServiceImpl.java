@@ -1065,6 +1065,21 @@ public class SettingsServiceImpl implements SettingsService {
   }
 
   @Override
+  public SettingAttribute getWithRbac(String id) {
+    final SettingAttribute settingAttribute = getById(id);
+    if (settingAttribute == null) {
+      throw new InvalidRequestException(String.format("Entity with id %s does not exist.", id));
+    }
+    final List<SettingAttribute> filteredSettingAttributes =
+        getFilteredSettingAttributes(asList(settingAttribute), null, null, false);
+    if (isEmpty(filteredSettingAttributes)) {
+      throw new InvalidRequestException("Not authorized");
+    } else {
+      return filteredSettingAttributes.get(0);
+    }
+  }
+
+  @Override
   @Nullable
   public SettingAttribute getByAccount(String accountId, String varId) {
     SettingAttribute settingAttribute = get(varId);
