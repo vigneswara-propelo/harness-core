@@ -32,7 +32,6 @@ import io.harness.cvng.core.beans.change.ChangeTimeline.TimeRangeDetail;
 import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.ChangeEventService;
@@ -81,15 +80,15 @@ public class ChangeEventServiceImpl implements ChangeEventService {
 
   @Override
   public Boolean register(ChangeEventDTO changeEventDTO) {
-    ServiceEnvironmentParams serviceEnvironmentParams = ServiceEnvironmentParams.builder()
-                                                            .accountIdentifier(changeEventDTO.getAccountId())
-                                                            .orgIdentifier(changeEventDTO.getOrgIdentifier())
-                                                            .projectIdentifier(changeEventDTO.getProjectIdentifier())
-                                                            .serviceIdentifier(changeEventDTO.getServiceIdentifier())
-                                                            .environmentIdentifier(changeEventDTO.getEnvIdentifier())
-                                                            .build();
+    MonitoredServiceParams monitoredServiceParams =
+        MonitoredServiceParams.builder()
+            .accountIdentifier(changeEventDTO.getAccountId())
+            .orgIdentifier(changeEventDTO.getOrgIdentifier())
+            .projectIdentifier(changeEventDTO.getProjectIdentifier())
+            .monitoredServiceIdentifier(changeEventDTO.getMonitoredServiceIdentifier())
+            .build();
     Optional<ChangeSource> changeSourceOptional =
-        changeSourceService.getEntityByType(serviceEnvironmentParams, changeEventDTO.getType())
+        changeSourceService.getEntityByType(monitoredServiceParams, changeEventDTO.getType())
             .stream()
             .filter(source -> source.isEnabled())
             .findAny();

@@ -28,9 +28,9 @@ public class ChangeEventDTO {
   @NotNull String orgIdentifier;
   @NotNull String projectIdentifier;
 
-  @NotNull @Deprecated String serviceIdentifier;
+  @Deprecated String serviceIdentifier;
   String serviceName;
-  @NotNull @Deprecated String envIdentifier;
+  @Deprecated String envIdentifier;
   String environmentName;
 
   String name;

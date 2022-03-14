@@ -171,7 +171,8 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     appTierName = "tier";
     metricPackService.createDefaultMetricPackAndThresholds(accountId, orgIdentifier, projectIdentifier);
     monitoredServiceName = "monitoredServiceName";
-    monitoredServiceIdentifier = "monitoredServiceIdentifier";
+    monitoredServiceIdentifier =
+        builderFactory.getContext().getMonitoredServiceParams().getMonitoredServiceIdentifier();
     clock = Clock.fixed(Instant.parse("2020-04-22T10:02:06Z"), ZoneOffset.UTC);
     changeSourceIdentifier = "changeSourceIdentifier";
     tags = new HashMap<String, String>() {
@@ -354,12 +355,13 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(savedMonitoredServiceDTO).isEqualTo(monitoredServiceDTO);
     MonitoredService monitoredService = getMonitoredService(monitoredServiceDTO.getIdentifier());
     assertCommonMonitoredService(monitoredService, monitoredServiceDTO);
-    Set<ChangeSourceDTO> changeSources = changeSourceService.get(environmentParams,
-        savedMonitoredServiceDTO.getSources()
-            .getChangeSources()
-            .stream()
-            .map(changeSource -> changeSource.getIdentifier())
-            .collect(toList()));
+    Set<ChangeSourceDTO> changeSources =
+        changeSourceService.get(builderFactory.getContext().getMonitoredServiceParams(),
+            savedMonitoredServiceDTO.getSources()
+                .getChangeSources()
+                .stream()
+                .map(changeSource -> changeSource.getIdentifier())
+                .collect(toList()));
     assertThat(changeSources.size()).isEqualTo(1);
   }
 
@@ -393,12 +395,13 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(updatedMonitoredServiceDTO).isEqualTo(toUpdateMonitoredServiceDTO);
     MonitoredService monitoredService = getMonitoredService(monitoredServiceDTO.getIdentifier());
     assertCommonMonitoredService(monitoredService, toUpdateMonitoredServiceDTO);
-    Set<ChangeSourceDTO> changeSources = changeSourceService.get(environmentParams,
-        updatedMonitoredServiceDTO.getSources()
-            .getChangeSources()
-            .stream()
-            .map(changeSource -> changeSource.getIdentifier())
-            .collect(toList()));
+    Set<ChangeSourceDTO> changeSources =
+        changeSourceService.get(builderFactory.getContext().getMonitoredServiceParams(),
+            updatedMonitoredServiceDTO.getSources()
+                .getChangeSources()
+                .stream()
+                .map(changeSource -> changeSource.getIdentifier())
+                .collect(toList()));
     assertThat(changeSources.size()).isEqualTo(2);
   }
 
@@ -589,7 +592,9 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(monitoredService).isEqualTo(null);
     cvConfigs = cvConfigService.list(accountId, orgIdentifier, projectIdentifier,
         HealthSourceService.getNameSpacedIdentifier(monitoredServiceIdentifier, healthSourceIdentifier));
-    assertThat(changeSourceService.get(environmentParams, Arrays.asList(changeSourceIdentifier))).isEmpty();
+    assertThat(changeSourceService.get(
+                   builderFactory.getContext().getMonitoredServiceParams(), Arrays.asList(changeSourceIdentifier)))
+        .isEmpty();
     assertThat(cvConfigs.size()).isEqualTo(0);
   }
 
@@ -1086,6 +1091,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   @Category(UnitTests.class)
   public void testListOfMonitoredServices() {
     MonitoredServiceDTO monitoredServiceDTO = createMonitoredServiceDTO();
+    monitoredServiceDTO.setIdentifier("monitoredServiceIdentifier");
     monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
 
     String serviceRef1 = "delegate";
@@ -1114,6 +1120,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(pageResponse.getTotalItems()).isEqualTo(3);
 
     MonitoredServiceDTO dto1 = createMonitoredServiceDTO();
+    dto1.setIdentifier("monitoredServiceIdentifier");
 
     MonitoredServiceDTO dto2 = createMonitoredServiceDTO();
     dto2.setServiceRef(serviceRef1);

@@ -30,7 +30,6 @@ import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.logsFilterParams.SLILogsFilter;
 import io.harness.cvng.core.entities.CVNGLog;
 import io.harness.cvng.core.entities.CVNGLog.CVNGLogKeys;
-import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.CVNGLogService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.ng.beans.PageResponse;
@@ -40,7 +39,6 @@ import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
 import java.lang.reflect.Field;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -176,40 +174,6 @@ public class CVNGLogServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
-  @Owner(developers = KANHAIYA)
-  @Category(UnitTests.class)
-  public void testGetCVNGLogs() throws IllegalAccessException {
-    List<CVNGLogDTO> cvngLogRecordsDTO =
-        IntStream.range(0, 3).mapToObj(index -> createApiCallLogDTOVerification("200")).collect(Collectors.toList());
-    cvngLogService.save(cvngLogRecordsDTO);
-    List<String> traceableIds =
-        cvngLogRecordsDTO.stream().map(logRecord -> logRecord.getTraceableId()).collect(Collectors.toList());
-    VerificationTaskService verificationTaskService = mock(VerificationTaskServiceImpl.class);
-    CVConfigService cvConfigService = mock(CVConfigService.class);
-    FieldUtils.writeField(cvngLogService, "verificationTaskService", verificationTaskService, true);
-    FieldUtils.writeField(cvngLogService, "cvConfigService", cvConfigService, true);
-    when(verificationTaskService.getServiceGuardVerificationTaskIds(any(), any(List.class))).thenReturn(traceableIds);
-    PageResponse<CVNGLogDTO> cvngLogs =
-        cvngLogService.getCVNGLogs(accountId, "", "", null, null, startTime.minus(Duration.ofMillis(1)),
-            endTime.plus(Duration.ofMillis(1)), null, CVNGLogType.API_CALL_LOG, 0, 3);
-    assertThat(cvngLogs.getContent()).hasSize(3);
-    final int[] timeCounter = {0};
-    cvngLogs.getContent().sort(Comparator.comparing(log -> ((ApiCallLogDTO) log).getRequestTime()).reversed());
-    (cvngLogs.getContent()).forEach(logRecord -> {
-      assertThat(logRecord.getAccountId()).isEqualTo(accountId);
-      assertThat(logRecord.getTraceableId()).isEqualTo(traceableId);
-      assertThat(((ApiCallLogDTO) logRecord).getRequestTime())
-          .isEqualTo(requestTime.minusSeconds(timeCounter[0]).toEpochMilli());
-      assertThat(((ApiCallLogDTO) logRecord).getResponseTime())
-          .isEqualTo(responseTime.minusSeconds(timeCounter[0]).toEpochMilli());
-      assertThat(logRecord.getStartTime()).isEqualTo(startTime.toEpochMilli());
-      assertThat(logRecord.getEndTime()).isEqualTo(endTime.toEpochMilli());
-      assertThat(logRecord.getTraceableType()).isEqualTo(TraceableType.VERIFICATION_TASK);
-      timeCounter[0] += 10;
-    });
-  }
-
-  @Test
   @Owner(developers = KAPIL)
   @Category(UnitTests.class)
   public void testGetCVNGLogs_forAPICallLogWithNoFilters() throws IllegalAccessException {
@@ -219,9 +183,7 @@ public class CVNGLogServiceImplTest extends CvNextGenTestBase {
     Set<String> traceableIds =
         cvngLogDTOs.stream().map(cvngLogDTO -> cvngLogDTO.getTraceableId()).collect(Collectors.toSet());
     VerificationTaskService verificationTaskService = mock(VerificationTaskServiceImpl.class);
-    CVConfigService cvConfigService = mock(CVConfigService.class);
     FieldUtils.writeField(cvngLogService, "verificationTaskService", verificationTaskService, true);
-    FieldUtils.writeField(cvngLogService, "cvConfigService", cvConfigService, true);
     when(verificationTaskService.maybeGetVerificationTaskIds(any(), any())).thenReturn(traceableIds);
 
     PageResponse<CVNGLogDTO> cvngLogDTOResponse = cvngLogService.getCVNGLogs(accountId,
@@ -255,9 +217,7 @@ public class CVNGLogServiceImplTest extends CvNextGenTestBase {
     Set<String> traceableIds =
         cvngLogDTOs.stream().map(cvngLogDTO -> cvngLogDTO.getTraceableId()).collect(Collectors.toSet());
     VerificationTaskService verificationTaskService = mock(VerificationTaskServiceImpl.class);
-    CVConfigService cvConfigService = mock(CVConfigService.class);
     FieldUtils.writeField(cvngLogService, "verificationTaskService", verificationTaskService, true);
-    FieldUtils.writeField(cvngLogService, "cvConfigService", cvConfigService, true);
     when(verificationTaskService.maybeGetVerificationTaskIds(any(), any())).thenReturn(traceableIds);
 
     PageResponse<CVNGLogDTO> cvngLogDTOResponse = cvngLogService.getCVNGLogs(accountId,
@@ -292,9 +252,7 @@ public class CVNGLogServiceImplTest extends CvNextGenTestBase {
     Set<String> traceableIds =
         cvngLogDTOs.stream().map(cvngLogDTO -> cvngLogDTO.getTraceableId()).collect(Collectors.toSet());
     VerificationTaskService verificationTaskService = mock(VerificationTaskServiceImpl.class);
-    CVConfigService cvConfigService = mock(CVConfigService.class);
     FieldUtils.writeField(cvngLogService, "verificationTaskService", verificationTaskService, true);
-    FieldUtils.writeField(cvngLogService, "cvConfigService", cvConfigService, true);
     when(verificationTaskService.maybeGetVerificationTaskIds(any(), any())).thenReturn(traceableIds);
 
     PageResponse<CVNGLogDTO> cvngLogDTOResponse = cvngLogService.getCVNGLogs(accountId,
@@ -330,9 +288,7 @@ public class CVNGLogServiceImplTest extends CvNextGenTestBase {
     Set<String> traceableIds =
         cvngLogDTOs.stream().map(cvngLogDTO -> cvngLogDTO.getTraceableId()).collect(Collectors.toSet());
     VerificationTaskService verificationTaskService = mock(VerificationTaskServiceImpl.class);
-    CVConfigService cvConfigService = mock(CVConfigService.class);
     FieldUtils.writeField(cvngLogService, "verificationTaskService", verificationTaskService, true);
-    FieldUtils.writeField(cvngLogService, "cvConfigService", cvConfigService, true);
     when(verificationTaskService.maybeGetVerificationTaskIds(any(), any())).thenReturn(traceableIds);
 
     PageResponse<CVNGLogDTO> cvngLogDTOResponse = cvngLogService.getCVNGLogs(accountId,

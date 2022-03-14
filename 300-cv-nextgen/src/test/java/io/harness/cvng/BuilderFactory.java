@@ -565,8 +565,7 @@ public class BuilderFactory {
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier())
-        .envIdentifier(context.getEnvIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .enabled(true)
         .type(ChangeSourceType.HARNESS_CD);
   }
@@ -576,8 +575,7 @@ public class BuilderFactory {
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier())
-        .envIdentifier(context.getEnvIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .enabled(true)
         .connectorIdentifier(randomAlphabetic(20))
         .pagerDutyServiceId(randomAlphabetic(20))
@@ -588,10 +586,9 @@ public class BuilderFactory {
     return KubernetesChangeSource.builder()
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .enabled(true)
         .type(ChangeSourceType.KUBERNETES)
-        .envIdentifier(context.getEnvIdentifier())
         .connectorIdentifier(generateUuid())
         .identifier(generateUuid());
   }
@@ -601,8 +598,7 @@ public class BuilderFactory {
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier())
-        .envIdentifier(context.getEnvIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .enabled(true)
         .harnessApplicationId(randomAlphabetic(20))
         .harnessServiceId(randomAlphabetic(20))

@@ -238,7 +238,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     validate(monitoredServiceDTO);
 
     updateHealthSources(monitoredService, monitoredServiceDTO);
-    changeSourceService.update(MonitoredServiceParams.builderWithServiceEnvParams(environmentParams)
+    changeSourceService.update(MonitoredServiceParams.builderWithProjectParams(environmentParams)
                                    .monitoredServiceIdentifier(monitoredService.getIdentifier())
                                    .build(),
         monitoredServiceDTO.getSources().getChangeSources());
@@ -333,8 +333,11 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     healthSourceService.delete(projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
         projectParams.getProjectIdentifier(), monitoredService.getIdentifier(),
         monitoredService.getHealthSourceIdentifiers());
-    serviceDependencyService.deleteDependenciesForService(projectParams, monitoredService.getIdentifier());
-    changeSourceService.delete(environmentParams, monitoredService.getChangeSourceIdentifiers());
+    MonitoredServiceParams monitoredServiceParams = MonitoredServiceParams.builderWithProjectParams(projectParams)
+                                                        .monitoredServiceIdentifier(monitoredService.getIdentifier())
+                                                        .build();
+    serviceDependencyService.deleteDependenciesForService(monitoredServiceParams, monitoredService.getIdentifier());
+    changeSourceService.delete(monitoredServiceParams, monitoredService.getChangeSourceIdentifiers());
     boolean deleted = hPersistence.delete(monitoredService);
     if (deleted) {
       setupUsageEventService.sendDeleteEventsForMonitoredService(projectParams, identifier);
@@ -401,7 +404,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                         monitoredServiceEntity.getIdentifier(), monitoredServiceEntity.getHealthSourceIdentifiers()))
                     // TODO: Update this call to get by monitoredServiceIdentifier in the next PR
                     .changeSources(
-                        changeSourceService.get(environmentParams, monitoredServiceEntity.getChangeSourceIdentifiers()))
+                        changeSourceService.get(MonitoredServiceParams.builderWithProjectParams(environmentParams)
+                                                    .monitoredServiceIdentifier(monitoredServiceEntity.getIdentifier())
+                                                    .build(),
+                            monitoredServiceEntity.getChangeSourceIdentifiers()))
                     .build())
             // TODO: Figure out dependencies by refList instead of one env
             .dependencies(serviceDependencyService.getDependentServicesForMonitoredService(
@@ -478,7 +484,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                   monitoredServiceEntity.getProjectIdentifier(), monitoredServiceEntity.getIdentifier(),
                                   monitoredServiceEntity.getHealthSourceIdentifiers()))
                               .changeSources(changeSourceService.get(
-                                  environmentParams, monitoredServiceEntity.getChangeSourceIdentifiers()))
+                                  MonitoredServiceParams.builderWithProjectParams(environmentParams)
+                                      .monitoredServiceIdentifier(monitoredServiceEntity.getIdentifier())
+                                      .build(),
+                                  monitoredServiceEntity.getChangeSourceIdentifiers()))
                               .build())
                       .dependencies(serviceDependencyService.getDependentServicesForMonitoredService(
                           projectParams, monitoredServiceEntity.getIdentifier()))

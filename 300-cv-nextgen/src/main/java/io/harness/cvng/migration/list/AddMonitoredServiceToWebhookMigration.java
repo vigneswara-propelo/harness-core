@@ -7,9 +7,10 @@
 
 package io.harness.cvng.migration.list;
 
+import io.harness.cvng.activity.entities.Activity.ActivityKeys;
 import io.harness.cvng.core.entities.MonitoredService;
-import io.harness.cvng.core.entities.changeSource.ChangeSource;
-import io.harness.cvng.core.entities.changeSource.ChangeSource.ChangeSourceKeys;
+import io.harness.cvng.core.entities.Webhook;
+import io.harness.cvng.core.entities.Webhook.WebhookKeys;
 import io.harness.cvng.migration.CVNGMigration;
 import io.harness.cvng.migration.beans.ChecklistItem;
 import io.harness.persistence.HIterator;
@@ -21,28 +22,28 @@ import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateResults;
 
 @Slf4j
-public class AddMonitoredServiceToChangeSourceMigration implements CVNGMigration {
+public class AddMonitoredServiceToWebhookMigration implements CVNGMigration {
   @Inject private HPersistence hPersistence;
 
   @Override
   public void migrate() {
-    log.info("Begin migration for updating ChangeSource with monitoredServiceIdentifier");
+    log.info("Begin migration for updating Activity with monitoredServiceIdentifier");
     Query<MonitoredService> monitoredServiceQuery = hPersistence.createQuery(MonitoredService.class);
     try (HIterator<MonitoredService> iterator = new HIterator<>(monitoredServiceQuery.fetch())) {
       while (iterator.hasNext()) {
         MonitoredService monitoredService = iterator.next();
-        Query<ChangeSource> changeSourceQuery =
-            hPersistence.createQuery(ChangeSource.class)
-                .filter(ChangeSourceKeys.accountId, monitoredService.getAccountId())
-                .filter(ChangeSourceKeys.projectIdentifier, monitoredService.getProjectIdentifier())
-                .filter(ChangeSourceKeys.orgIdentifier, monitoredService.getOrgIdentifier())
+        Query<Webhook> webhookQuery =
+            hPersistence.createQuery(Webhook.class)
+                .filter(WebhookKeys.accountId, monitoredService.getAccountId())
+                .filter(WebhookKeys.projectIdentifier, monitoredService.getProjectIdentifier())
+                .filter(WebhookKeys.orgIdentifier, monitoredService.getOrgIdentifier())
                 .filter("serviceIdentifier", monitoredService.getServiceIdentifier())
-                .filter("envIdentifier", monitoredService.getEnvironmentIdentifier());
+                .filter("environmentIdentifier", monitoredService.getEnvironmentIdentifier());
 
-        UpdateResults updateResults = hPersistence.update(changeSourceQuery,
-            hPersistence.createUpdateOperations(ChangeSource.class)
-                .set(ChangeSourceKeys.monitoredServiceIdentifier, monitoredService.getIdentifier()));
-        log.info("Updated for monitored service {}, {} Update Results: {}", monitoredService.getProjectIdentifier(),
+        UpdateResults updateResults = hPersistence.update(webhookQuery,
+            hPersistence.createUpdateOperations(Webhook.class)
+                .set(ActivityKeys.monitoredServiceIdentifier, monitoredService.getIdentifier()));
+        log.info("Updated for Activity {}, {}, {}", monitoredService.getProjectIdentifier(),
             monitoredService.getIdentifier(), updateResults);
       }
     }

@@ -319,10 +319,15 @@ public abstract class Activity
       updateOperations.set(ActivityKeys.accountId, activity.getAccountId())
           .set(ActivityKeys.orgIdentifier, activity.getOrgIdentifier())
           .set(ActivityKeys.projectIdentifier, activity.getProjectIdentifier())
-          .set(ActivityKeys.serviceIdentifier, activity.getServiceIdentifier())
-          .set(ActivityKeys.environmentIdentifier, activity.getEnvironmentIdentifier())
           .set(ActivityKeys.activityStartTime, activity.getActivityStartTime())
           .set(ActivityKeys.type, activity.getType());
+
+      if (activity.getServiceIdentifier() != null) {
+        updateOperations.set(ActivityKeys.serviceIdentifier, activity.getServiceIdentifier());
+      }
+      if (activity.getEnvironmentIdentifier() != null) {
+        updateOperations.set(ActivityKeys.environmentIdentifier, activity.getEnvironmentIdentifier());
+      }
       if (activity.getEventTime() != null) {
         updateOperations.set(ActivityKeys.eventTime, activity.getEventTime());
       }

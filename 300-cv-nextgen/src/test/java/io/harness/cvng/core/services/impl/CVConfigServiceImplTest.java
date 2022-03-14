@@ -23,7 +23,6 @@ import io.harness.CvNextGenTestBase;
 import io.harness.category.element.UnitTests;
 import io.harness.cvng.BuilderFactory;
 import io.harness.cvng.beans.CVMonitoringCategory;
-import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.AppDynamicsCVConfig;
@@ -39,13 +38,11 @@ import io.harness.ng.core.service.dto.ServiceResponseDTO;
 import io.harness.rule.Owner;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -161,29 +158,6 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
     CVConfig updated = save(cvConfig);
     CVConfig saved = cvConfigService.get(updated.getUuid());
     assertCommons(saved, cvConfig);
-  }
-
-  @Test
-  @Owner(developers = KAMAL)
-  @Category(UnitTests.class)
-  public void testFind_filterByAccountAndDataSourceTypesIfExist() {
-    CVConfig cvConfig = createCVConfig();
-    CVConfig updated = save(cvConfig);
-    List<CVConfig> results = cvConfigService.find(
-        accountId, orgIdentifier, projectIdentifier, "service", "env", Lists.newArrayList(DataSourceType.SPLUNK));
-    assertThat(results).hasSize(1);
-    assertThat(results.get(0).getUuid()).isEqualTo(updated.getUuid());
-  }
-
-  @Test
-  @Owner(developers = KAMAL)
-  @Category(UnitTests.class)
-  public void testFind_filterByAccountAndDataSourceTypesIfDoesNotExist() {
-    CVConfig cvConfig = createCVConfig();
-    save(cvConfig);
-    List<CVConfig> results = cvConfigService.find(
-        accountId, orgIdentifier, projectIdentifier, "service", "env", Lists.newArrayList(DataSourceType.APP_DYNAMICS));
-    assertThat(results).hasSize(0);
   }
 
   @Test
@@ -381,31 +355,6 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
     save(cvConfigs);
     cvConfigService.deleteByIdentifier(accountId, orgIdentifier, projectIdentifier, groupName);
     cvConfigs.forEach(cvConfig -> assertThat(cvConfigService.get(cvConfig.getUuid())).isNull());
-  }
-
-  @Test
-  @Owner(developers = KAMAL)
-  @Category(UnitTests.class)
-  public void testGetAvailableCategories() {
-    CVConfig cvConfig = createCVConfig();
-    save(cvConfig);
-    Set<CVMonitoringCategory> categories =
-        cvConfigService.getAvailableCategories(accountId, orgIdentifier, projectIdentifier, null, null);
-    assertThat(categories).isEqualTo(Sets.newHashSet(CVMonitoringCategory.PERFORMANCE));
-    categories = cvConfigService.getAvailableCategories(accountId, orgIdentifier, projectIdentifier, "env", null);
-    assertThat(categories).isEqualTo(Sets.newHashSet(CVMonitoringCategory.PERFORMANCE));
-    categories =
-        cvConfigService.getAvailableCategories(accountId, orgIdentifier, projectIdentifier, generateUuid(), null);
-    assertThat(categories).isEmpty();
-
-    categories = cvConfigService.getAvailableCategories(accountId, orgIdentifier, projectIdentifier, null, "service");
-    assertThat(categories).isEqualTo(Sets.newHashSet(CVMonitoringCategory.PERFORMANCE));
-    categories =
-        cvConfigService.getAvailableCategories(accountId, orgIdentifier, projectIdentifier, null, generateUuid());
-    assertThat(categories).isEmpty();
-
-    categories = cvConfigService.getAvailableCategories(accountId, orgIdentifier, projectIdentifier, "env", "service");
-    assertThat(categories).isEqualTo(Sets.newHashSet(CVMonitoringCategory.PERFORMANCE));
   }
 
   @Test
@@ -709,49 +658,5 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
     assertThat(results).hasSize(2);
     assertThat(results.get(0).getUuid()).isEqualTo(updated.getUuid());
     assertThat(results.get(1).getUuid()).isEqualTo(updated2.getUuid());
-  }
-
-  @Test
-  @Owner(developers = KANHAIYA)
-  @Category(UnitTests.class)
-  public void testList_filteredWithIdentifiers() {
-    String identifierOne = "identifierOne";
-    String identifierTwo = "identifierTwo";
-    String identifierThree = "identifierThree";
-    List<String> healthSourceIds = Arrays.asList(identifierOne, identifierTwo);
-    save(builderFactory.appDynamicsCVConfigBuilder()
-             .identifier(identifierOne)
-             .serviceIdentifier(serviceInstanceIdentifier)
-             .envIdentifier(environmentIdentifier)
-             .build());
-    save(builderFactory.appDynamicsCVConfigBuilder()
-             .identifier(identifierThree)
-             .serviceIdentifier(serviceInstanceIdentifier)
-             .envIdentifier(environmentIdentifier)
-             .build());
-    List<CVConfig> cvConfigs = cvConfigService.list(serviceEnvironmentParams, healthSourceIds);
-    assertThat(cvConfigs).hasSize(1);
-    assertThat(cvConfigs.get(0).getIdentifier()).isEqualTo(identifierOne);
-  }
-
-  @Test
-  @Owner(developers = KANHAIYA)
-  @Category(UnitTests.class)
-  public void testList_fromServiceEnvironmentParams() {
-    String identifierOne = "identifierOne";
-    String identifierTwo = "identifierTwo";
-    List<String> healthSourceIds = Arrays.asList(identifierOne, identifierTwo);
-    save(builderFactory.appDynamicsCVConfigBuilder()
-             .identifier(identifierOne)
-             .serviceIdentifier(serviceInstanceIdentifier)
-             .envIdentifier(environmentIdentifier)
-             .build());
-    save(builderFactory.appDynamicsCVConfigBuilder()
-             .identifier(identifierTwo)
-             .serviceIdentifier(serviceInstanceIdentifier)
-             .envIdentifier(environmentIdentifier)
-             .build());
-    List<CVConfig> cvConfigs = cvConfigService.list(serviceEnvironmentParams);
-    assertThat(cvConfigs).hasSize(2);
   }
 }

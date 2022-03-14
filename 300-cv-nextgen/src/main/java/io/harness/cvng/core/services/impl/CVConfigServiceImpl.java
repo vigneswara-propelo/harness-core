@@ -18,7 +18,6 @@ import static java.util.stream.Collectors.toList;
 import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.client.NextGenService;
-import io.harness.cvng.core.beans.DatasourceTypeDTO;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
@@ -42,10 +41,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -80,22 +77,6 @@ public class CVConfigServiceImpl implements CVConfigService {
   @Override
   public CVConfig get(@NotNull String cvConfigId) {
     return hPersistence.get(CVConfig.class, cvConfigId);
-  }
-
-  @Override
-  public List<CVConfig> find(String accountId, String orgIdentifier, String projectIdentifier, String serviceIdentifier,
-      String envIdentifier, List<DataSourceType> dataSourceTypes) {
-    Preconditions.checkNotNull(accountId);
-    List<CVConfig> cvConfigs = hPersistence.createQuery(CVConfig.class, excludeAuthority)
-                                   .filter(CVConfigKeys.accountId, accountId)
-                                   .filter(CVConfigKeys.projectIdentifier, projectIdentifier)
-                                   .filter(CVConfigKeys.orgIdentifier, orgIdentifier)
-                                   .filter(CVConfigKeys.serviceIdentifier, serviceIdentifier)
-                                   .filter(CVConfigKeys.envIdentifier, envIdentifier)
-                                   .asList();
-    return cvConfigs.stream()
-        .filter(cvConfig -> dataSourceTypes.contains(cvConfig.getType()))
-        .collect(Collectors.toList());
   }
 
   @Override
@@ -184,20 +165,6 @@ public class CVConfigServiceImpl implements CVConfigService {
     return query.asList();
   }
 
-  @Override
-  public Map<String, Set<String>> getEnvToServicesMap(
-      String accountId, String orgIdentifier, String projectIdentifier) {
-    List<CVConfig> cvConfigs = listConfigsForProject(accountId, orgIdentifier, projectIdentifier);
-    Map<String, Set<String>> envToServicesMap = new HashMap<>();
-    cvConfigs.forEach(cvConfig -> {
-      if (!envToServicesMap.containsKey(cvConfig.getEnvIdentifier())) {
-        envToServicesMap.put(cvConfig.getEnvIdentifier(), new HashSet<>());
-      }
-      envToServicesMap.get(cvConfig.getEnvIdentifier()).add(cvConfig.getServiceIdentifier());
-    });
-    return envToServicesMap;
-  }
-
   private List<CVConfig> listConfigsForProject(String accountId, String orgIdentifier, String projectIdentifier) {
     return hPersistence.createQuery(CVConfig.class, excludeAuthority)
         .filter(CVConfigKeys.accountId, accountId)
@@ -220,18 +187,6 @@ public class CVConfigServiceImpl implements CVConfigService {
         .distinct()
         .sorted()
         .collect(toList());
-  }
-
-  @Override
-  public Set<CVMonitoringCategory> getAvailableCategories(String accountId, String orgIdentifier,
-      String projectIdentifier, String envIdentifier, String serviceIdentifier) {
-    BasicDBObject cvConfigQuery = getQueryWithAccountOrgProjectFiltersSet(
-        accountId, orgIdentifier, projectIdentifier, envIdentifier, serviceIdentifier);
-    Set<CVMonitoringCategory> cvMonitoringCategories = new HashSet<>();
-    hPersistence.getCollection(CVConfig.class)
-        .distinct(CVConfigKeys.category, cvConfigQuery)
-        .forEach(categoryName -> cvMonitoringCategories.add(CVMonitoringCategory.valueOf((String) categoryName)));
-    return cvMonitoringCategories;
   }
 
   private BasicDBObject getQueryWithAccountOrgProjectFiltersSet(String accountId, String orgIdentifier,
@@ -294,21 +249,8 @@ public class CVConfigServiceImpl implements CVConfigService {
   }
 
   @Override
-  public List<CVConfig> list(ServiceEnvironmentParams serviceEnvironmentParams) {
-    Query<CVConfig> query = createQuery(serviceEnvironmentParams);
-    return query.asList();
-  }
-
-  @Override
   public List<CVConfig> list(MonitoredServiceParams monitoredServiceParams) {
     return createQuery(monitoredServiceParams).asList();
-  }
-
-  @Override
-  public List<CVConfig> list(ServiceEnvironmentParams serviceEnvironmentParams, List<String> identifiers) {
-    Query<CVConfig> query = createQuery(serviceEnvironmentParams);
-    query.field(CVConfigKeys.identifier).in(identifiers);
-    return query.asList();
   }
 
   @Override
@@ -330,31 +272,11 @@ public class CVConfigServiceImpl implements CVConfigService {
   }
 
   @Override
-  public Map<String, DataSourceType> getDataSourceTypeForCVConfigs(
-      ServiceEnvironmentParams serviceEnvironmentParams, List<String> cvConfigIds) {
-    Map<String, DataSourceType> cvConfigIdDataSourceTypeMap = new HashMap<>();
-    Query<CVConfig> query = createQuery(serviceEnvironmentParams);
-    query.asList().forEach(cvConfig -> cvConfigIdDataSourceTypeMap.put(cvConfig.getUuid(), cvConfig.getType()));
-    return cvConfigIdDataSourceTypeMap;
-  }
-
-  @Override
   public Map<String, DataSourceType> getDataSourceTypeForCVConfigs(MonitoredServiceParams monitoredServiceParams) {
     Map<String, DataSourceType> cvConfigIdDataSourceTypeMap = new HashMap<>();
     Query<CVConfig> query = createQuery(monitoredServiceParams);
     query.asList().forEach(cvConfig -> cvConfigIdDataSourceTypeMap.put(cvConfig.getUuid(), cvConfig.getType()));
     return cvConfigIdDataSourceTypeMap;
-  }
-
-  @Override
-  public List<CVConfig> getCVConfigs(
-      String accountId, String orgIdentifier, String projectIdentifier, String serviceIdentifier) {
-    return hPersistence.createQuery(CVConfig.class, excludeAuthority)
-        .filter(CVConfigKeys.accountId, accountId)
-        .filter(CVConfigKeys.orgIdentifier, orgIdentifier)
-        .filter(CVConfigKeys.projectIdentifier, projectIdentifier)
-        .filter(CVConfigKeys.serviceIdentifier, serviceIdentifier)
-        .asList();
   }
 
   @Override
@@ -460,38 +382,6 @@ public class CVConfigServiceImpl implements CVConfigService {
   public void deleteByAccountIdentifier(Class<CVConfig> clazz, String accountId) {
     Preconditions.checkState(clazz.equals(CVConfig.class), "Class should be of type CVConfig");
     this.deleteConfigsForEntity(accountId, null, null);
-  }
-
-  @Override
-  public List<CVConfig> getExistingMappedConfigs(String accountId, String orgIdentifier, String projectIdentifier,
-      String identifier, DataSourceType dataSourceType) {
-    List<CVConfig> cvConfigList = hPersistence.createQuery(CVConfig.class, excludeAuthority)
-                                      .filter(CVConfigKeys.accountId, accountId)
-                                      .filter(CVConfigKeys.orgIdentifier, orgIdentifier)
-                                      .filter(CVConfigKeys.projectIdentifier, projectIdentifier)
-                                      .field(CVConfigKeys.identifier)
-                                      .notEqual(identifier)
-                                      .asList();
-    return cvConfigList.stream().filter(config -> config.getType().equals(dataSourceType)).collect(Collectors.toList());
-  }
-
-  @Override
-  public Set<DatasourceTypeDTO> getDataSourcetypes(String accountId, String projectIdentifier, String orgIdentifier,
-      String environmentIdentifier, String serviceIdentifier, CVMonitoringCategory monitoringCategory) {
-    List<CVConfig> cvConfigs = getConfigsOfProductionEnvironments(
-        accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceIdentifier, monitoringCategory);
-
-    if (isEmpty(cvConfigs)) {
-      return Collections.emptySet();
-    }
-
-    return cvConfigs.stream()
-        .map(config
-            -> DatasourceTypeDTO.builder()
-                   .dataSourceType(config.getType())
-                   .verificationType(config.getVerificationType())
-                   .build())
-        .collect(Collectors.toSet());
   }
 
   @Override
