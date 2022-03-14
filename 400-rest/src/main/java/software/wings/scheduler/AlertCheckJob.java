@@ -8,6 +8,7 @@
 package software.wings.scheduler;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.obfuscate.Obfuscator.obfuscate;
 
 import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
@@ -37,7 +38,9 @@ import com.google.inject.name.Named;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -139,17 +142,49 @@ public class AlertCheckJob implements Job {
 
   private void checkIfAnyDelegatesAreDown(String accountId, List<Delegate> delegates) {
     for (Delegate delegate : delegates) {
+      // for cg and ecs delegates
+      if (isNotEmpty(delegate.getDelegateGroupName())) {
+        continue;
+      }
       AlertData alertData = DelegatesDownAlert.builder()
                                 .accountId(accountId)
                                 .hostName(delegate.getHostName())
                                 .obfuscatedIpAddress(obfuscate(delegate.getIp()))
                                 .build();
 
-      if (!delegate.isNg() && System.currentTimeMillis() - delegate.getLastHeartBeat() <= MAX_HB_TIMEOUT) {
+      if (delegate.getLastHeartBeat() >= System.currentTimeMillis() - MAX_HB_TIMEOUT) {
         alertService.closeAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown, alertData);
-      } else if (!delegate.isNg() && (System.currentTimeMillis() - delegate.getLastHeartBeat() > MAX_HB_TIMEOUT)) {
+      } else {
         alertService.openAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown, alertData);
       }
+    }
+    // this is currently for ecs delegates only
+    processDelegateWhichBelongsToGroup(accountId, delegates);
+  }
+
+  @VisibleForTesting
+  protected void processDelegateWhichBelongsToGroup(String accountId, List<Delegate> delegates) {
+    Set<String> connectedScalingGroups = new HashSet<>();
+    Set<String> disconnectedScalingGroups = new HashSet<>();
+    for (Delegate delegate : delegates) {
+      if (delegate.isNg() || isEmpty(delegate.getDelegateGroupName())) {
+        continue;
+      }
+      if (delegate.getLastHeartBeat() >= System.currentTimeMillis() - MAX_HB_TIMEOUT) {
+        connectedScalingGroups.add(delegate.getDelegateGroupName());
+      } else {
+        disconnectedScalingGroups.add(delegate.getDelegateGroupName());
+      }
+    }
+    for (String disconnectedScalingGroup : disconnectedScalingGroups) {
+      AlertData alertData =
+          DelegatesDownAlert.builder().accountId(accountId).delegateGroupName(disconnectedScalingGroup).build();
+      alertService.openAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown, alertData);
+    }
+    for (String connectedScalingGroup : connectedScalingGroups) {
+      AlertData alertData =
+          DelegatesDownAlert.builder().accountId(accountId).delegateGroupName(connectedScalingGroup).build();
+      alertService.closeAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown, alertData);
     }
   }
 }
