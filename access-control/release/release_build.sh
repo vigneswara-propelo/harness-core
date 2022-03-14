@@ -13,5 +13,5 @@ export BUILD=`cat ${VERSION_FILE} | grep 'build.number=' | sed -e 's: *build.num
 export PATCH=`cat ${VERSION_FILE} | grep 'build.patch=' | sed -e 's: *build.patch=::g'`
 export VERSION=$BUILD-$PATCH
 
-chmod +x access-control/build/feature-build.sh
-access-control/build/feature-build.sh
+chmod +x access-control/build/feature_build.sh
+access-control/build/feature_build.sh
