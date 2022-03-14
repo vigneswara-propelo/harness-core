@@ -110,6 +110,20 @@ go_repository(
 )
 
 go_repository(
+    name = "com_github_dgrijalva_jwt_go",
+    importpath = "github.com/dgrijalva/jwt-go",
+    sum = "h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=",
+    version = "v3.2.0+incompatible",
+)
+
+go_repository(
+    name = "com_github_dgrijalva_jwt_go_v4",
+    importpath = "github.com/dgrijalva/jwt-go/v4",
+    sum = "h1:CaO/zOnF8VvUfEbhRatPcwKVWamvbYd8tQGRWacE9kU=",
+    version = "v4.0.0-preview1",
+)
+
+go_repository(
     name = "org_golang_google_grpc_cmd_protoc_gen_go_grpc",
     importpath = "google.golang.org/grpc/cmd/protoc-gen-go-grpc",
     sum = "h1:M1YKkFIboKNieVO5DLUEVzQfGwJD30Nv2jfUgzb5UcE=",
