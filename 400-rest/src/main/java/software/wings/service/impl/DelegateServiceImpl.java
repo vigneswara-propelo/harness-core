@@ -2061,6 +2061,7 @@ public class DelegateServiceImpl implements DelegateService {
                                     .project(DelegateKeys.ip, true)
                                     .project(DelegateKeys.hostName, true)
                                     .project(DelegateKeys.owner, true)
+                                    .project(DelegateKeys.delegateGroupName, true)
                                     .get();
 
     if (existingDelegate != null) {
@@ -2068,12 +2069,21 @@ public class DelegateServiceImpl implements DelegateService {
         throw new InvalidRequestException(format("Unable to delete delegate. Delegate %s is connected", delegateId));
       }
       // before deleting delegate, check if any alert is open for delegate, if yes, close it.
-      alertService.closeAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown,
-          DelegatesDownAlert.builder()
-              .accountId(accountId)
-              .obfuscatedIpAddress(obfuscate(existingDelegate.getIp()))
-              .hostName(existingDelegate.getHostName())
-              .build());
+      if (isEmpty(existingDelegate.getDelegateGroupName())) {
+        alertService.closeAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown,
+            DelegatesDownAlert.builder()
+                .accountId(accountId)
+                .obfuscatedIpAddress(obfuscate(existingDelegate.getIp()))
+                .hostName(existingDelegate.getHostName())
+                .build());
+      } else {
+        alertService.closeAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown,
+            DelegatesDownAlert.builder()
+                .accountId(accountId)
+                .delegateGroupName(existingDelegate.getDelegateGroupName())
+                .build());
+      }
+
     } else {
       throw new InvalidRequestException("Unable to fetch delegate with delegate id " + delegateId);
     }
