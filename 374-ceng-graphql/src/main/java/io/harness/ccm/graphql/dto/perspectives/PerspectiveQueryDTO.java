@@ -5,9 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ccm.commons.entities.anomaly;
+package io.harness.ccm.graphql.dto.perspectives;
+
+import io.harness.ccm.views.graphql.QLCEViewFilterWrapper;
+import io.harness.ccm.views.graphql.QLCEViewGroupBy;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Value;
@@ -16,22 +20,8 @@ import lombok.experimental.FieldDefaults;
 @Value
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Schema(name = "AnomalyData", description = "This object contains details of a cost anomaly")
-public class AnomalyData {
-  String id;
-  Long time;
-  String anomalyRelativeTime;
-  Double actualAmount;
-  Double expectedAmount;
-  Double trend;
-  String resourceName;
-  String resourceInfo;
-  EntityInfo entity;
-  String details;
-  String status;
-  String statusRelativeTime;
-  String comment;
-  String cloudProvider;
-  Double anomalyScore;
-  AnomalyFeedback userFeedback;
+@Schema(name = "PerspectiveQueryDTO", description = "The query object for perspective cost anomalies")
+public class PerspectiveQueryDTO {
+  @Schema(description = "The filters for perspective query") List<QLCEViewFilterWrapper> filters;
+  @Schema(description = "The group by clause for perspective query") List<QLCEViewGroupBy> groupBy;
 }

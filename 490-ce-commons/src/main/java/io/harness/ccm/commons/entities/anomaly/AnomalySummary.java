@@ -16,22 +16,12 @@ import lombok.experimental.FieldDefaults;
 @Value
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Schema(name = "AnomalyData", description = "This object contains details of a cost anomaly")
-public class AnomalyData {
-  String id;
-  Long time;
-  String anomalyRelativeTime;
-  Double actualAmount;
-  Double expectedAmount;
-  Double trend;
-  String resourceName;
-  String resourceInfo;
-  EntityInfo entity;
-  String details;
-  String status;
-  String statusRelativeTime;
-  String comment;
-  String cloudProvider;
-  Double anomalyScore;
-  AnomalyFeedback userFeedback;
+@Schema(name = "AnomalySummary", description = "This object details summary of an anomaly query result")
+public class AnomalySummary {
+  String name;
+  String description;
+  Double count;
+  Double actualCost;
+  Double expectedCost;
+  Double costImpact;
 }

@@ -5,6 +5,6 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ccm.commons.entities;
+package io.harness.ccm.commons.entities.anomaly;
 
-public enum CCMSortOrder { ASCENDING, DESCENDING }
+public enum AnomalyWidget { TOP_N_ANOMALIES, TOTAL_COST_IMPACT, ANOMALIES_BY_CLOUD_PROVIDERS, ANOMALIES_BY_STATUS }

@@ -16,15 +16,18 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EntityInfo {
+  String field;
   String clusterName;
   String clusterId;
   String namespace;
   String workloadName;
   String workloadType;
-  String gcpProject;
+  String gcpProjectId;
   String gcpProduct;
   String gcpSKUId;
   String gcpSKUDescription;
   String awsAccount;
   String awsService;
+  String awsInstancetype;
+  String awsUsageType;
 }

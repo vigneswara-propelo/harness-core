@@ -40,6 +40,7 @@ import io.harness.ccm.graphql.core.budget.BudgetServiceImpl;
 import io.harness.ccm.perpetualtask.K8sWatchTaskResourceClientModule;
 import io.harness.ccm.service.impl.AWSBucketPolicyHelperServiceImpl;
 import io.harness.ccm.service.impl.AWSOrganizationHelperServiceImpl;
+import io.harness.ccm.service.impl.AnomalyServiceImpl;
 import io.harness.ccm.service.impl.AwsEntityChangeEventServiceImpl;
 import io.harness.ccm.service.impl.CCMConnectorDetailsServiceImpl;
 import io.harness.ccm.service.impl.CEYamlServiceImpl;
@@ -47,6 +48,7 @@ import io.harness.ccm.service.impl.GCPEntityChangeEventServiceImpl;
 import io.harness.ccm.service.impl.LicenseUsageInterfaceImpl;
 import io.harness.ccm.service.intf.AWSBucketPolicyHelperService;
 import io.harness.ccm.service.intf.AWSOrganizationHelperService;
+import io.harness.ccm.service.intf.AnomalyService;
 import io.harness.ccm.service.intf.AwsEntityChangeEventService;
 import io.harness.ccm.service.intf.CCMConnectorDetailsService;
 import io.harness.ccm.service.intf.CEYamlService;
@@ -260,6 +262,7 @@ public class CENextGenModule extends AbstractModule {
     bind(BudgetCostService.class).to(BudgetCostServiceImpl.class);
     bind(EntityMetadataService.class).to(EntityMetadataServiceImpl.class);
     bind(CCMConnectorDetailsService.class).to(CCMConnectorDetailsServiceImpl.class);
+    bind(AnomalyService.class).to(AnomalyServiceImpl.class);
     bind(MetricService.class).to(MetricServiceImpl.class);
 
     registerEventsFrameworkMessageListeners();
