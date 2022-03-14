@@ -706,7 +706,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
     OpenAPI oas = new OpenAPI();
     Info info =
         new Info()
-            .title("CD NextGen API Reference")
+            .title("Harness NextGen Software Delivery Platform API Reference")
             .description(
                 "This is the Open Api Spec 3 for the NextGen Manager. This is under active development. Beware of the breaking change with respect to the generated code stub")
             .termsOfService("https://harness.io/terms-of-use/")
