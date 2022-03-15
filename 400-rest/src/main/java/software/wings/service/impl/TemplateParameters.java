@@ -40,4 +40,5 @@ public class TemplateParameters {
   private final String delegateTokenName;
   private final String delegateTags;
   private final K8sPermissionType k8sPermissionsType;
+  private final String delegateGroupName;
 }

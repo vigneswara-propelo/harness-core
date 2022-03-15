@@ -98,6 +98,8 @@ spec:
           value: ""
         - name: DELEGATE_PROFILE
           value: ""
+        - name: DELEGATE_GROUP_NAME
+          value: "harness-delegate"
         - name: CLIENT_TOOLS_DOWNLOAD_DISABLED
           value: "true"
         - name: LOG_STREAMING_SERVICE_URL

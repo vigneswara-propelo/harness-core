@@ -2506,8 +2506,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       return;
     }
 
-    builder.delegateGroupName(DELEGATE_GROUP_NAME);
-
     try {
       if (!FileIo.checkIfFileExist(DELEGATE_SEQUENCE_CONFIG_FILE)) {
         generateEcsDelegateSequenceConfigFile();

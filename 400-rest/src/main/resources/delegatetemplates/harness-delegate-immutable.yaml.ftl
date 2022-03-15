@@ -76,6 +76,7 @@ spec:
         env:
 <@delegateEnvironment.common />
 <@delegateEnvironment.cgSpecific />
+<@delegateEnvironment.cgImmutableSpecific />
 <@delegateEnvironment.immutable />
 
 <#if ciEnabled == "true">

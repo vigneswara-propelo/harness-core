@@ -64,6 +64,10 @@
         - name: DELEGATE_PROFILE
           value: "${delegateProfile}"
 </#macro>
+<#macro cgImmutableSpecific>
+        - name: DELEGATE_GROUP_NAME
+          value: "${delegateGroupName}"
+</#macro>
 <#macro ngSpecific>
         - name: DELEGATE_DESCRIPTION
           value: "${delegateDescription}"
