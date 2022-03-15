@@ -55,4 +55,6 @@ public interface GitSyncErrorService {
       String searchTerm, String repoId, String branch);
 
   void resolveConnectivityErrors(String accountIdentifier, String repoUrl);
+
+  void removeScope(String accountIdentifier, String orgIdentifier, String projectIdentifier);
 }

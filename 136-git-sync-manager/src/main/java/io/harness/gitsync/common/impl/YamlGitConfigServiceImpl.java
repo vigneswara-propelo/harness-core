@@ -435,6 +435,14 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
         status.getModifiedCount());
   }
 
+  @Override
+  public void deleteAllEntities(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+    List<YamlGitConfigDTO> yamlGitConfigDTOS = list(projectIdentifier, orgIdentifier, accountIdentifier);
+    deleteExistingSetupUsages(yamlGitConfigDTOS);
+    yamlGitConfigRepository.deleteByAccountIdAndOrgIdentifierAndProjectIdentifier(
+        accountIdentifier, orgIdentifier, projectIdentifier);
+  }
+
   public Optional<ConnectorInfoDTO> getGitConnector(IdentifierRef identifierRef) {
     Optional<ConnectorResponseDTO> connectorDTO = connectorService.get(identifierRef.getAccountIdentifier(),
         identifierRef.getOrgIdentifier(), identifierRef.getProjectIdentifier(), identifierRef.getIdentifier());

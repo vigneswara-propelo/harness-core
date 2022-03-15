@@ -43,4 +43,6 @@ public interface GitFullSyncEntityService {
 
   void updateStatus(
       String accountIdentifier, String uuid, GitFullSyncEntityInfo.SyncStatus status, String errorMessage);
+
+  void deleteAll(String accountIdentifier, String orgIdentifier, String projectIdentifier);
 }

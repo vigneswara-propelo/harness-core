@@ -36,6 +36,7 @@ public final class EventsFrameworkConstants {
   public static final String INSTANCE_STATS = "instance_stats";
   public static final String GIT_FULL_SYNC_STREAM = "full_sync_stream";
   public static final String OBSERVER_EVENT_CHANNEL = "observer_event_channel";
+  public static final String GIT_SYNC_ENTITY_STREAM = "git_sync_entity_stream";
 
   // created for git sdk, dont use outside sdk.
   public static final String GIT_CONFIG_STREAM = "git_config_stream";

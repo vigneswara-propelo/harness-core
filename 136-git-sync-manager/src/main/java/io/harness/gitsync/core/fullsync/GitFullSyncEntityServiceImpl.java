@@ -187,4 +187,15 @@ public class GitFullSyncEntityServiceImpl implements GitFullSyncEntityService {
     }
     gitFullSyncEntityRepository.update(criteria, update);
   }
+
+  @Override
+  public void deleteAll(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+    Criteria criteria = Criteria.where(GitFullSyncEntityInfoKeys.accountIdentifier)
+                            .is(accountIdentifier)
+                            .and(GitFullSyncEntityInfoKeys.orgIdentifier)
+                            .is(orgIdentifier)
+                            .and(GitFullSyncEntityInfoKeys.projectIdentifier)
+                            .is(projectIdentifier);
+    gitFullSyncEntityRepository.deleteAll(criteria);
+  }
 }

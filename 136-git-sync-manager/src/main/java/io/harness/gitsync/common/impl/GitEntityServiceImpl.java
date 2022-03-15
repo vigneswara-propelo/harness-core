@@ -316,4 +316,15 @@ public class GitEntityServiceImpl implements GitEntityService {
 
     gitFileLocationRepository.update(new Query(criteria), updateOperation);
   }
+
+  @Override
+  public void deleteAll(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+    Criteria criteria = Criteria.where(GitFileLocationKeys.accountId)
+                            .is(accountIdentifier)
+                            .and(GitFileLocationKeys.organizationId)
+                            .is(orgIdentifier)
+                            .and(GitFileLocationKeys.projectId)
+                            .is(projectIdentifier);
+    gitFileLocationRepository.deleteAll(new Query(criteria));
+  }
 }

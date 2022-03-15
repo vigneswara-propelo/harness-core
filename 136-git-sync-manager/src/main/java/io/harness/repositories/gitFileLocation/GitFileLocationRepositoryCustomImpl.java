@@ -126,6 +126,11 @@ public class GitFileLocationRepositoryCustomImpl implements GitFileLocationRepos
         query, update, new FindAndModifyOptions().returnNew(true), GitFileLocation.class);
   }
 
+  @Override
+  public List<GitFileLocation> deleteAll(Query query) {
+    return mongoTemplate.findAllAndRemove(query, GitFileLocation.class);
+  }
+
   private MatchOperation getMatchOperation(String projectIdentifier, String orgIdentifier, String accountIdentifier,
       String gitSyncConfigIdentifier, String branch, List<String> entityTypeList, String searchTerm) {
     Criteria criteria = Criteria.where(GitFileLocationKeys.entityType)

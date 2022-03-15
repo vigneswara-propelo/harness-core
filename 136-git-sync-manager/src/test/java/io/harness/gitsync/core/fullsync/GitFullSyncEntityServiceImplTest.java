@@ -8,6 +8,7 @@
 package io.harness.gitsync.core.fullsync;
 
 import static io.harness.rule.OwnerRule.BHAVYA;
+import static io.harness.rule.OwnerRule.MEET;
 import static io.harness.rule.OwnerRule.PHOENIKX;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
@@ -181,5 +182,15 @@ public class GitFullSyncEntityServiceImplTest extends GitSyncTestBase {
     assertThat(updateGitFullSyncEntityInfo.isPresent()).isEqualTo(true);
     assertThat(updateGitFullSyncEntityInfo.get().getSyncStatus()).isEqualTo(SyncStatus.FAILED.toString());
     assertThat(updateGitFullSyncEntityInfo.get().getErrorMessage()).isEqualTo(Collections.singletonList(ERROR_MSG));
+  }
+
+  @Test
+  @Owner(developers = MEET)
+  @Category(UnitTests.class)
+  public void testDeleteAll() {
+    createFullSyncFile(
+        ACCOUNT, ORG, PROJECT, FILE_PATH, EntityTypeProtoEnum.CONNECTORS, random(String.class), SyncStatus.QUEUED);
+    gitFullSyncEntityService.deleteAll(ACCOUNT, ORG, PROJECT);
+    assertThat(gitFullSyncEntityService.get(ACCOUNT, ORG, PROJECT, FILE_PATH).isPresent()).isFalse();
   }
 }

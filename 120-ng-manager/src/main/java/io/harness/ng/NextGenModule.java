@@ -83,6 +83,7 @@ import io.harness.file.NGFileServiceModule;
 import io.harness.gitsync.GitSyncConfigClientModule;
 import io.harness.gitsync.GitSyncModule;
 import io.harness.gitsync.common.events.FullSyncMessageListener;
+import io.harness.gitsync.common.events.GitSyncProjectCleanup;
 import io.harness.gitsync.core.webhook.createbranchevent.GitBranchHookEventStreamListener;
 import io.harness.gitsync.core.webhook.pushevent.GitPushEventStreamListener;
 import io.harness.govern.ProviderModule;
@@ -782,6 +783,9 @@ public class NextGenModule extends AbstractModule {
     bind(MessageListener.class)
         .annotatedWith(Names.named(EventsFrameworkConstants.GIT_FULL_SYNC_STREAM))
         .to(FullSyncMessageListener.class);
+    bind(MessageListener.class)
+        .annotatedWith(Names.named(EventsFrameworkConstants.GIT_SYNC_ENTITY_STREAM + ENTITY_CRUD))
+        .to(GitSyncProjectCleanup.class);
     bind(ServiceAccountService.class).to(ServiceAccountServiceImpl.class);
   }
 
