@@ -8,6 +8,7 @@
 package io.harness.cvng.statemachine.services.impl;
 
 import static io.harness.cvng.CVConstants.STATE_MACHINE_IGNORE_MINUTES;
+import static io.harness.cvng.CVConstants.STATE_MACHINE_IGNORE_MINUTES_DEFAULT;
 import static io.harness.cvng.CVConstants.STATE_MACHINE_IGNORE_MINUTES_FOR_DEMO;
 import static io.harness.cvng.CVConstants.STATE_MACHINE_IGNORE_MINUTES_FOR_SLI;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
@@ -297,6 +298,8 @@ public class AnalysisStateMachineServiceImpl implements AnalysisStateMachineServ
       }
       if (cvConfig.isDemo()) {
         stateMachine.setStateMachineIgnoreMinutes(STATE_MACHINE_IGNORE_MINUTES_FOR_DEMO);
+      } else {
+        stateMachine.setStateMachineIgnoreMinutes(STATE_MACHINE_IGNORE_MINUTES_DEFAULT);
       }
       firstState.setStatus(AnalysisStatus.CREATED);
       firstState.setInputs(inputForAnalysis);
@@ -310,6 +313,7 @@ public class AnalysisStateMachineServiceImpl implements AnalysisStateMachineServ
       Preconditions.checkNotNull(verificationJobInstance, "verificationJobInstance can not be null");
       Preconditions.checkNotNull(cvConfigForDeployment, "cvConfigForDeployment can not be null");
       stateMachine.setAccountId(verificationTask.getAccountId());
+      stateMachine.setStateMachineIgnoreMinutes(STATE_MACHINE_IGNORE_MINUTES_DEFAULT);
       if (verificationJobInstance.getResolvedJob().getType() == VerificationJobType.HEALTH) {
         createHealthAnalysisState(stateMachine, inputForAnalysis, verificationJobInstance);
       } else {

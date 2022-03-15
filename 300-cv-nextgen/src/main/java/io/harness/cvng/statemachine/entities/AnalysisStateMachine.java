@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -81,7 +82,7 @@ public final class AnalysisStateMachine implements PersistentEntity, UuidAware, 
 
   private long nextAttemptTime;
 
-  private Integer stateMachineIgnoreMinutes;
+  @NotNull private Integer stateMachineIgnoreMinutes;
 
   public Integer getStateMachineIgnoreMinutes() {
     if (stateMachineIgnoreMinutes == null) {
