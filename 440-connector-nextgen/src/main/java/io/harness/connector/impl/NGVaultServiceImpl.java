@@ -181,7 +181,7 @@ public class NGVaultServiceImpl implements NGVaultService {
         }
       }
     } catch (WingsException wingsException) {
-      log.error("Listing secret engines failed for account Id {}", baseVaultConfig.getAccountId(), wingsException);
+      log.error("Listing secret engines failed for account Id {}", baseVaultConfig.getAccountId());
       throw wingsException;
     } catch (DelegateServiceDriverException ex) {
       if (ex.getCause() != null) {
@@ -511,7 +511,7 @@ public class NGVaultServiceImpl implements NGVaultService {
     try {
       vaultNames = listVaultsInternal(accountIdentifier, azureVaultConfig);
     } catch (WingsException wingsException) {
-      log.error("Listing vaults failed for account Id {}", accountIdentifier, wingsException);
+      log.error("Listing vaults failed for account Id {}", accountIdentifier);
       throw wingsException; // for error handling framework
     } catch (DelegateServiceDriverException ex) {
       if (ex.getCause() != null) {
