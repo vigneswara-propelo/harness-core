@@ -18,7 +18,6 @@ import io.harness.accesscontrol.roleassignments.persistence.repositories.RoleAss
 import io.harness.accesscontrol.roles.persistence.RoleDBO;
 import io.harness.accesscontrol.roles.persistence.repositories.RoleRepository;
 import io.harness.aggregator.AggregatorConfiguration;
-import io.harness.aggregator.DebeziumConfig;
 import io.harness.aggregator.MongoOffsetBackingStore;
 import io.harness.aggregator.consumers.AccessControlDebeziumChangeConsumer;
 import io.harness.aggregator.consumers.ChangeConsumer;
@@ -32,6 +31,7 @@ import io.harness.aggregator.consumers.UserGroupCRUDEventHandler;
 import io.harness.aggregator.consumers.UserGroupChangeConsumerImpl;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.debezium.DebeziumConfig;
 import io.harness.lock.AcquiredLock;
 import io.harness.lock.PersistentLocker;
 

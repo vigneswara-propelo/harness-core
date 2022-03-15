@@ -1,0 +1,41 @@
+load("@rules_java//java:defs.bzl", "java_binary")
+load("//:tools/bazel/GenTestRules.bzl", "run_tests")
+load("//:tools/bazel/macros.bzl", "run_analysis")
+
+java_library(
+    name = "module",
+    srcs = glob(["src/main/java/**/*.java"]),
+    resource_jars = [
+        "//952-debezium-engine/src/main/proto:952_debezium_engine_java_proto",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:lombok",
+        "//952-debezium-engine/src/main/proto:952_debezium_engine_java_proto",
+        "//953-events-api:module",
+        "//959-debezium-beans:module",
+        "@maven//:io_debezium_debezium_api",
+        "@maven//:io_debezium_debezium_connector_mongodb",
+        "@maven//:io_debezium_debezium_core",
+        "@maven//:io_debezium_debezium_embedded",
+        "@maven//:org_apache_kafka_connect_api",
+        "@maven//:org_apache_kafka_connect_runtime",
+        "@maven//:org_apache_kafka_kafka_clients",
+    ],
+)
+
+java_library(
+    name = "tests",
+    testonly = True,
+    srcs = glob(["src/test/**/*.java"]),
+    resources = ["//952-debezium-engine/src/test/resources:resource"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":module",
+        "//990-commons-test:module",
+    ],
+)
+
+run_tests()
+
+run_analysis()
