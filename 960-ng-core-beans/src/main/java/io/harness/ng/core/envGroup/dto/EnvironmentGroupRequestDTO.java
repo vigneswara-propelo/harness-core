@@ -7,31 +7,37 @@
 
 package io.harness.ng.core.envGroup.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.validator.EntityIdentifier;
+import io.harness.data.validator.EntityName;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.experimental.FieldDefaults;
 
-@Data
+@OwnedBy(PIPELINE)
+@Value
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonInclude(NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Schema(name = "EnvironmentGroupResponse", description = "This is the Environment Group Entity defined in Harness")
-public class EnvironmentGroupResponseDTO {
-  String accountId;
+@Schema(name = "EnvironmentGroupRequest", description = "This is the EnvironmentGroupRequest entity defined in Harness")
+public class EnvironmentGroupRequestDTO {
+  // TODO: NEED TO ADD SCHEMA ANNOTATION FOR VARIABLES
   String orgIdentifier;
   String projectIdentifier;
-  String identifier;
-  String name;
+  @EntityIdentifier String identifier;
+  Map<String, String> tags;
+  @EntityName String name;
   String description;
   String color;
-  boolean deleted;
-  Map<String, String> tags;
-  @JsonIgnore Long version;
-  List<String> envIdentifiers;
 }

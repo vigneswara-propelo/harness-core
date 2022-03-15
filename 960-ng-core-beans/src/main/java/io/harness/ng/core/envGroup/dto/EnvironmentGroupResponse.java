@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EnvironmentGroupResponse {
+  // TODO: NEED TO ADD SCHEMA ANNOTATION FOR VARIABLES
   EnvironmentGroupResponseDTO envGroup;
   Long createdAt;
   Long lastModifiedAt;
