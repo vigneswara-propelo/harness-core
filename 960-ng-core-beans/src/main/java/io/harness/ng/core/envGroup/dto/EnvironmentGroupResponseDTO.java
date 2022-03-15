@@ -7,6 +7,9 @@
 
 package io.harness.ng.core.envGroup.dto;
 
+import io.harness.NGCommonEntityConstants;
+import io.harness.ng.core.envGroup.constant.EnvironmentGroupConstants;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,16 +26,15 @@ import lombok.experimental.FieldDefaults;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(name = "EnvironmentGroupResponse", description = "This is the Environment Group Entity defined in Harness")
 public class EnvironmentGroupResponseDTO {
-  // TODO: NEED TO ADD SCHEMA ANNOTATION FOR VARIABLES
-  String accountId;
-  String orgIdentifier;
-  String projectIdentifier;
-  String identifier;
-  String name;
-  String description;
-  String color;
-  boolean deleted;
-  Map<String, String> tags;
-  @JsonIgnore Long version;
-  List<String> envIdentifiers;
+  @Schema(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) String accountId;
+  @Schema(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) String orgIdentifier;
+  @Schema(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) String projectIdentifier;
+  @Schema(description = NGCommonEntityConstants.IDENTIFIER_PARAM_MESSAGE) String identifier;
+  @Schema(description = NGCommonEntityConstants.NAME_PARAM_MESSAGE) String name;
+  @Schema(description = NGCommonEntityConstants.DESCRIPTION) String description;
+  @Schema(description = NGCommonEntityConstants.COLOR_PARAM_MESSAGE) String color;
+  @Schema(description = NGCommonEntityConstants.DELETED_PARAM_MESSAGE) boolean deleted;
+  @Schema(description = NGCommonEntityConstants.TAGS) Map<String, String> tags;
+  @Schema(description = NGCommonEntityConstants.VERSION_PARAM_MESSAGE) @JsonIgnore Long version;
+  @Schema(description = EnvironmentGroupConstants.ENV_IDENTIFIERS_LIST_PARAM_MESSAGE) List<String> envIdentifiers;
 }

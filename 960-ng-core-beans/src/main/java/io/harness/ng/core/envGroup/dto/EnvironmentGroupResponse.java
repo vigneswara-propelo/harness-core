@@ -7,6 +7,9 @@
 
 package io.harness.ng.core.envGroup.dto;
 
+import io.harness.NGCommonEntityConstants;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +19,11 @@ import lombok.experimental.FieldDefaults;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Schema(name = "EnvironmentGroup", description = "This is the view of Environment Group Entity defined in Harness")
 public class EnvironmentGroupResponse {
-  // TODO: NEED TO ADD SCHEMA ANNOTATION FOR VARIABLES
-  EnvironmentGroupResponseDTO envGroup;
-  Long createdAt;
-  Long lastModifiedAt;
+  @Schema(description = "Environment Group Entity") EnvironmentGroupResponseDTO envGroup;
+  @Schema(description = NGCommonEntityConstants.CREATED_AT_MESSAGE) Long createdAt;
+  @Schema(description = NGCommonEntityConstants.UPDATED_AT_MESSAGE) Long lastModifiedAt;
 
   @Builder
   public EnvironmentGroupResponse(EnvironmentGroupResponseDTO environment, Long createdAt, Long lastModifiedAt) {
