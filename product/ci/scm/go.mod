@@ -15,7 +15,6 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.1
 	github.com/harness/harness-core/commons/go/lib v0.0.0-20220222141117-7659b7eca599
-	github.com/harness/harness-core/product/log-service v0.0.0-20210305084455-298bbd5bd1fd // indirect
 	github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32 // indirect
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.15.0
