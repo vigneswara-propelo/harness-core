@@ -58,8 +58,6 @@ import io.harness.outbox.api.OutboxEventHandler;
 import io.harness.persistence.HPersistence;
 import io.harness.persistence.NoopUserProvider;
 import io.harness.persistence.UserProvider;
-import io.harness.plancreator.steps.http.HttpStepNode;
-import io.harness.plancreator.steps.http.PmsAbstractStepNode;
 import io.harness.pms.Dashboard.PMSLandingDashboardService;
 import io.harness.pms.Dashboard.PMSLandingDashboardServiceImpl;
 import io.harness.pms.approval.ApprovalResourceService;
@@ -127,21 +125,11 @@ import io.harness.serializer.OrchestrationStepsModuleRegistrars;
 import io.harness.serializer.PipelineServiceModuleRegistrars;
 import io.harness.service.DelegateServiceDriverModule;
 import io.harness.steps.approval.ApprovalNotificationHandler;
-import io.harness.steps.approval.step.harness.HarnessApprovalStepNode;
 import io.harness.steps.approval.step.jira.JiraApprovalHelperService;
-import io.harness.steps.approval.step.jira.JiraApprovalStepNode;
 import io.harness.steps.approval.step.servicenow.ServiceNowApprovalHelperService;
-import io.harness.steps.approval.step.servicenow.ServiceNowApprovalStepNode;
 import io.harness.steps.jira.JiraStepHelperService;
-import io.harness.steps.jira.create.JiraCreateStepNode;
-import io.harness.steps.jira.update.JiraUpdateStepNode;
-import io.harness.steps.policy.PolicyStepNode;
-import io.harness.steps.servicenow.create.ServiceNowCreateStepNode;
-import io.harness.steps.servicenow.update.ServiceNowUpdateStepNode;
 import io.harness.steps.shellscript.ShellScriptHelperService;
 import io.harness.steps.shellscript.ShellScriptHelperServiceImpl;
-import io.harness.steps.shellscript.ShellScriptStepNode;
-import io.harness.steps.template.TemplateStepNode;
 import io.harness.telemetry.AbstractTelemetryModule;
 import io.harness.telemetry.TelemetryConfiguration;
 import io.harness.template.TemplateResourceClientModule;
@@ -202,21 +190,6 @@ public class PipelineServiceModule extends AbstractModule {
 
   private static PipelineServiceModule instance;
   // TODO: Take this from application.
-  public static Set<Class<?>> commonStepsMovedToNewSchema = new HashSet() {
-    {
-      add(HttpStepNode.class);
-      add(JiraCreateStepNode.class);
-      add(ShellScriptStepNode.class);
-      add(TemplateStepNode.class);
-      add(ServiceNowApprovalStepNode.class);
-      add(JiraUpdateStepNode.class);
-      add(JiraApprovalStepNode.class);
-      add(HarnessApprovalStepNode.class);
-      add(PolicyStepNode.class);
-      add(ServiceNowCreateStepNode.class);
-      add(ServiceNowUpdateStepNode.class);
-    }
-  };
 
   private PipelineServiceModule(PipelineServiceConfiguration configuration) {
     this.configuration = configuration;
@@ -553,13 +526,6 @@ public class PipelineServiceModule extends AbstractModule {
         HarnessReflections.get().getSubTypesOf(StepSpecType.class);
     Set<Class<?>> set = new HashSet<>(subTypesOfStepSpecType);
     return ImmutableMap.of(StepSpecType.class, set);
-  }
-
-  @Provides
-  @Named("new-yaml-schema-subtypes-pms")
-  @Singleton
-  public Map<Class<?>, Set<Class<?>>> newPmsYamlSchemaSubtypes() {
-    return ImmutableMap.of(PmsAbstractStepNode.class, commonStepsMovedToNewSchema);
   }
 
   @Provides
