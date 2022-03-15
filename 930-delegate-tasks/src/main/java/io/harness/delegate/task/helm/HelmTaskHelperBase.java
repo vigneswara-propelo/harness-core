@@ -484,6 +484,9 @@ public class HelmTaskHelperBase {
   }
 
   private boolean checkChartVersion(String chartVersion, String chartDirectory, String chartName) {
+    if (isEmpty(chartVersion)) {
+      return true;
+    }
     String chart = "";
     try {
       chart = new String(Files.readAllBytes(Paths.get(chartDirectory, chartName, "Chart.yaml")));
@@ -514,10 +517,11 @@ public class HelmTaskHelperBase {
     char[] password = getHttpHelmPassword(httpHelmConnector);
     addRepo(storeDelegateConfig.getRepoName(), storeDelegateConfig.getRepoDisplayName(),
         httpHelmConnector.getHelmRepoUrl(), username, password, destinationDirectory, manifest.getHelmVersion(),
-        timeoutInMillis, false, false);
+        timeoutInMillis, manifest.isUseRepoFlags(), manifest.isDeleteRepoCacheDir());
     fetchChartFromRepo(storeDelegateConfig.getRepoName(), storeDelegateConfig.getRepoDisplayName(),
         manifest.getChartName(), manifest.getChartVersion(), destinationDirectory, manifest.getHelmVersion(),
-        manifest.getHelmCommandFlag(), timeoutInMillis, false, false, false);
+        manifest.getHelmCommandFlag(), timeoutInMillis, manifest.isUseRepoFlags(),
+        manifest.isCheckIncorrectChartVersion(), manifest.isDeleteRepoCacheDir());
   }
 
   public void downloadChartFilesUsingChartMuseum(

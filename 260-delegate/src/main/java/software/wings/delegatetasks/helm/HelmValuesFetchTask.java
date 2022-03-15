@@ -136,7 +136,7 @@ public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
         helmPath = InstallUtils.getHelm3Path();
         break;
       case V380:
-        helmPath = InstallUtils.getNewHelm3Path();
+        helmPath = InstallUtils.getHelm380Path();
         break;
       default:
         helmPath = InstallUtils.getHelm2Path();

@@ -24,6 +24,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
@@ -49,6 +51,7 @@ import io.harness.delegate.beans.storeconfig.S3HelmStoreDelegateConfig;
 import io.harness.delegate.exception.TaskNGDataException;
 import io.harness.delegate.task.k8s.HelmChartManifestDelegateConfig;
 import io.harness.encryption.SecretRefData;
+import io.harness.k8s.model.HelmVersion;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
 import io.harness.security.encryption.SecretDecryptionService;
@@ -172,7 +175,7 @@ public class HelmValuesFetchTaskNGTest extends CategoryTest {
   @Test
   @Owner(developers = ACASIAN)
   @Category(UnitTests.class)
-  public void shouldExecuteHelmValueFetchFromHttp() throws Exception {
+  public void shouldExecuteHelmValueFetchFromHttpHelmV380() throws Exception {
     String valuesYaml = "values-file-content";
     HttpHelmConnectorDTO connectorDTO =
         HttpHelmConnectorDTO.builder()
@@ -191,6 +194,7 @@ public class HelmValuesFetchTaskNGTest extends CategoryTest {
                                      .encryptedDataDetails(Collections.emptyList())
                                      .httpHelmConnector(connectorDTO)
                                      .build())
+            .helmVersion(HelmVersion.V380)
             .build();
 
     doReturn(decryptableEntity).when(decryptionService).decrypt(any(), anyList());
@@ -205,6 +209,7 @@ public class HelmValuesFetchTaskNGTest extends CategoryTest {
                                          .build();
 
     HelmValuesFetchResponse response = (HelmValuesFetchResponse) helmValuesFetchTaskNG.run(request);
+    verify(helmValuesFetchTaskNG, times(1)).printHelmBinaryPathAndVersion(eq(HelmVersion.V380), any());
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(SUCCESS);
     assertThat(response.getValuesFileContent()).isEqualTo(valuesYaml);

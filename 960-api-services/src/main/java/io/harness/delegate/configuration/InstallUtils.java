@@ -182,7 +182,7 @@ public class InstallUtils {
     return helmPaths.get(helm3Version);
   }
 
-  public static String getNewHelm3Path() {
+  public static String getHelm380Path() {
     return helmPaths.get(helm3VersionNew);
   }
 
