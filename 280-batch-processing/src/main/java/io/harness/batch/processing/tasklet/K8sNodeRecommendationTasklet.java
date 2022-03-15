@@ -110,7 +110,7 @@ public class K8sNodeRecommendationTasklet implements Tasklet {
     log.info("RecommendationResponse: {}", recommendation);
 
     String mongoEntityId = k8sRecommendationDAO.insertNodeRecommendationResponse(
-        jobConstants, nodePoolId, request, serviceProvider, recommendation);
+        jobConstants, nodePoolId, request, serviceProvider, recommendation, totalResourceUsage);
 
     RecommendationOverviewStats stats = getMonthlyCostAndSaving(serviceProvider, recommendation);
     log.info("The monthly stat is: {}", stats);

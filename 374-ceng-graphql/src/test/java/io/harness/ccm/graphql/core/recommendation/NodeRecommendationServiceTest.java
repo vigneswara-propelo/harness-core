@@ -117,9 +117,11 @@ public class NodeRecommendationServiceTest extends CategoryTest {
                         .maxmemory(8D * 1024D)
                         .build());
 
-    RecommendClusterRequest request = nodeRecommendationService.constructRecommendationRequest(ACCOUNT_ID,
-        NodePoolId.builder().clusterid("cId").nodepoolname("npName").build(), OffsetDateTime.now(),
-        OffsetDateTime.now());
+    RecommendClusterRequest request = nodeRecommendationService
+                                          .constructRecommendationRequest(ACCOUNT_ID,
+                                              NodePoolId.builder().clusterid("cId").nodepoolname("npName").build(),
+                                              OffsetDateTime.now(), OffsetDateTime.now())
+                                          .getRecommendClusterRequest();
 
     assertThat(request).isNotNull();
 
@@ -143,9 +145,11 @@ public class NodeRecommendationServiceTest extends CategoryTest {
                         .build());
 
     assertThatThrownBy(()
-                           -> nodeRecommendationService.constructRecommendationRequest(ACCOUNT_ID,
-                               NodePoolId.builder().clusterid("cId").nodepoolname("npName").build(),
-                               OffsetDateTime.now(), OffsetDateTime.now()))
+                           -> nodeRecommendationService
+                                  .constructRecommendationRequest(ACCOUNT_ID,
+                                      NodePoolId.builder().clusterid("cId").nodepoolname("npName").build(),
+                                      OffsetDateTime.now(), OffsetDateTime.now())
+                                  .getRecommendClusterRequest())
         .isExactlyInstanceOf(InvalidRequestException.class);
   }
 }

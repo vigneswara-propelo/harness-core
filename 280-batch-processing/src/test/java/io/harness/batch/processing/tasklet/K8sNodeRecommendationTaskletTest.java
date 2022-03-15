@@ -124,7 +124,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
     when(k8sRecommendationDAO.getServiceProvider(any(), eq(nodePoolId))).thenReturn(k8sServiceProvider);
     when(clusterHelper.fetchClusterName(eq(CLUSTER_ID))).thenReturn(CLUSTER_NAME);
     when(k8sRecommendationDAO.insertNodeRecommendationResponse(
-             any(), eq(nodePoolId), eq(request), eq(k8sServiceProvider), eq(getRecommendationResponse())))
+             any(), eq(nodePoolId), eq(request), eq(k8sServiceProvider), eq(getRecommendationResponse()), any()))
         .thenReturn(entityUuid);
     doNothing()
         .when(recommendationCrudService)
@@ -161,7 +161,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
     // first time it's invoked at K8sNodeRecommendationTaskletTest#setUp, due to deep stub probably, so effectively 0
     // execution.
     verify(banzaiRecommenderClient, times(1)).getRecommendation(any(), any(), any(), any());
-    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any());
+    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any(), any());
     verify(recommendationCrudService, times(0)).upsertNodeRecommendation(any(), any(), any(), any(), any());
   }
 
@@ -179,7 +179,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
 
     // effectively 0 times
     verify(banzaiRecommenderClient, times(1)).getRecommendation(any(), any(), any(), any());
-    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any());
+    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -196,7 +196,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
     // effectively 1 times
     verify(banzaiRecommenderClient, times(2)).getRecommendation(any(), any(), any(), any());
     // detailed recommendation saved in mongo DB
-    verify(k8sRecommendationDAO, times(1)).insertNodeRecommendationResponse(any(), any(), any(), any(), any());
+    verify(k8sRecommendationDAO, times(1)).insertNodeRecommendationResponse(any(), any(), any(), any(), any(), any());
     // savings stats as 0 in timescaleDB
     ArgumentCaptor<RecommendationOverviewStats> statsCaptor =
         ArgumentCaptor.forClass(RecommendationOverviewStats.class);
@@ -223,7 +223,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
 
     // effectively 0 times
     verify(banzaiRecommenderClient, times(1)).getRecommendation(any(), any(), any(), any());
-    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any());
+    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -301,7 +301,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
     assertThat(tasklet.execute(null, chunkContext)).isNull();
 
     // shouldn't upsert recommendation
-    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any());
+    verify(k8sRecommendationDAO, times(0)).insertNodeRecommendationResponse(any(), any(), any(), any(), any(), any());
     verify(recommendationCrudService, times(0)).upsertNodeRecommendation(any(), any(), any(), any(), any());
   }
 
@@ -319,7 +319,8 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
     ArgumentCaptor<RecommendationResponse> captor = ArgumentCaptor.forClass(RecommendationResponse.class);
 
     verify(k8sRecommendationDAO, times(1))
-        .insertNodeRecommendationResponse(any(), any(), any(), serviceProviderCaptor.capture(), captor.capture());
+        .insertNodeRecommendationResponse(
+            any(), any(), any(), serviceProviderCaptor.capture(), captor.capture(), any());
 
     RecommendationResponse recommendation = captor.getValue();
 
@@ -364,7 +365,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
 
     ArgumentCaptor<K8sServiceProvider> serviceProviderCaptor = ArgumentCaptor.forClass(K8sServiceProvider.class);
     verify(k8sRecommendationDAO, times(1))
-        .insertNodeRecommendationResponse(any(), any(), any(), serviceProviderCaptor.capture(), any());
+        .insertNodeRecommendationResponse(any(), any(), any(), serviceProviderCaptor.capture(), any(), any());
 
     K8sServiceProvider serviceProvider = serviceProviderCaptor.getValue();
 
@@ -384,7 +385,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
 
     verify(k8sRecommendationDAO, times(1))
         .insertNodeRecommendationResponse(
-            any(), any(), any(), serviceProviderCaptor.capture(), recommendationCaptor.capture());
+            any(), any(), any(), serviceProviderCaptor.capture(), recommendationCaptor.capture(), any());
 
     RecommendationResponse recommendation = recommendationCaptor.getValue();
 
@@ -413,7 +414,7 @@ public class K8sNodeRecommendationTaskletTest extends BaseTaskletTest {
     // effectively 1 times
     verify(banzaiRecommenderClient, times(2)).getRecommendation(any(), any(), any(), captor.capture());
 
-    verify(k8sRecommendationDAO, times(1)).insertNodeRecommendationResponse(any(), any(), any(), any(), any());
+    verify(k8sRecommendationDAO, times(1)).insertNodeRecommendationResponse(any(), any(), any(), any(), any(), any());
 
     return captor.getAllValues().get(1);
   }
