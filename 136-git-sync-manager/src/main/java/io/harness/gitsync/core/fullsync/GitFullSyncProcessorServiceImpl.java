@@ -12,7 +12,10 @@ import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.gitsync.core.beans.GitFullSyncEntityInfo.SyncStatus.FAILED;
+import static io.harness.gitsync.core.fullsync.entity.GitFullSyncJob.SyncStatus.COMPLETED;
+import static io.harness.gitsync.core.fullsync.entity.GitFullSyncJob.SyncStatus.FAILED;
+import static io.harness.gitsync.core.fullsync.entity.GitFullSyncJob.SyncStatus.FAILED_WITH_RETRIES_LEFT;
+import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 
 import io.harness.EntityType;
 import io.harness.Microservice;
@@ -27,6 +30,7 @@ import io.harness.gitsync.FullSyncRequest;
 import io.harness.gitsync.FullSyncResponse;
 import io.harness.gitsync.FullSyncServiceGrpc;
 import io.harness.gitsync.common.helper.GitSyncGrpcClientUtils;
+import io.harness.gitsync.common.service.GitBranchSyncService;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
 import io.harness.gitsync.common.service.YamlGitConfigService;
 import io.harness.gitsync.core.beans.FullSyncMsvcProcessingResponse;
@@ -35,6 +39,8 @@ import io.harness.gitsync.core.fullsync.beans.FullSyncFilesGroupedByMsvc;
 import io.harness.gitsync.core.fullsync.entity.GitFullSyncJob;
 import io.harness.gitsync.core.fullsync.service.FullSyncJobService;
 import io.harness.gitsync.fullsync.utils.FullSyncLogContextHelper;
+import io.harness.gitsync.scm.ScmGitUtils;
+import io.harness.logging.AutoLogContext;
 import io.harness.ng.core.entitydetail.EntityDetailRestToProtoMapper;
 import io.harness.security.SecurityContextBuilder;
 import io.harness.security.dto.ServicePrincipal;
@@ -66,6 +72,7 @@ public class GitFullSyncProcessorServiceImpl implements io.harness.gitsync.core.
   FullSyncJobService fullSyncJobService;
   ScmOrchestratorService scmOrchestratorService;
   List<Microservice> microservicesProcessingOrder;
+  GitBranchSyncService gitBranchSyncService;
 
   private static int MAX_RETRY_COUNT = 2;
 
@@ -107,8 +114,8 @@ public class GitFullSyncProcessorServiceImpl implements io.harness.gitsync.core.
       errorMsg = fullSyncFileResponse.getErrorMsg();
       if (isNotEmpty(errorMsg)) {
         anyFilesFailed = true;
-        gitFullSyncEntityService.updateStatus(
-            fullSyncEntityInfo.getAccountIdentifier(), fullSyncEntityInfo.getUuid(), FAILED, errorMsg);
+        gitFullSyncEntityService.updateStatus(fullSyncEntityInfo.getAccountIdentifier(), fullSyncEntityInfo.getUuid(),
+            GitFullSyncEntityInfo.SyncStatus.FAILED, errorMsg);
       } else {
         gitFullSyncEntityService.markSuccessful(
             fullSyncEntityInfo.getUuid(), fullSyncEntityInfo.getAccountIdentifier());
@@ -159,47 +166,88 @@ public class GitFullSyncProcessorServiceImpl implements io.harness.gitsync.core.
 
   @Override
   public void performFullSync(GitFullSyncJob fullSyncJob) {
-    log.info("Started full sync for the job {} with message Id {}", fullSyncJob.getUuid(), fullSyncJob.getMessageId());
-    try {
-      SecurityContextBuilder.setContext(new ServicePrincipal(GIT_SYNC_SERVICE.getServiceId()));
-      UpdateResult updateResult =
-          fullSyncJobService.markJobAsRunning(fullSyncJob.getAccountIdentifier(), fullSyncJob.getUuid());
-      if (updateResult.getModifiedCount() == 0L) {
-        log.info("There is no job to run for the id {}, maybe the other thread is running it", fullSyncJob.getUuid());
-      }
-      List<GitFullSyncEntityInfo> allEntitiesToBeSynced = gitFullSyncEntityService.listEntitiesToBeSynced(
-          fullSyncJob.getAccountIdentifier(), fullSyncJob.getMessageId());
-      markTheGitFullSyncEntityAsQueued(allEntitiesToBeSynced);
-      boolean processingFailed = false;
-      final List<FullSyncFilesGroupedByMsvc> fullSyncFilesGroupedByMsvcs =
-          sortTheFilesInTheProcessingOrder(allEntitiesToBeSynced);
-      for (FullSyncFilesGroupedByMsvc fullSyncFilesGroupedByMsvc : fullSyncFilesGroupedByMsvcs) {
-        log.info("Number of files is {} for the microservice {}",
-            emptyIfNull(fullSyncFilesGroupedByMsvc.getGitFullSyncEntityInfoList()).size(),
-            fullSyncFilesGroupedByMsvc.getMicroservice());
-        FullSyncMsvcProcessingResponse fullSyncMsvcProcessingResponse = processFiles(
-            fullSyncFilesGroupedByMsvc.getMicroservice(), fullSyncFilesGroupedByMsvc.getGitFullSyncEntityInfoList());
-        processingFailed = fullSyncMsvcProcessingResponse.isSyncFailed();
-        if (fullSyncFilesGroupedByMsvc.getMicroservice() == Microservice.CORE) {
-          setTheRepoBranchForTheGitSyncConnector(fullSyncFilesGroupedByMsvc.getGitFullSyncEntityInfoList(),
-              fullSyncMsvcProcessingResponse.getFullSyncFileResponses());
+    Map<String, String> logContext = FullSyncLogContextHelper.getContext(fullSyncJob.getAccountIdentifier(),
+        fullSyncJob.getOrgIdentifier(), fullSyncJob.getProjectIdentifier(), fullSyncJob.getMessageId());
+    try (AutoLogContext ignore1 = new AutoLogContext(logContext, OVERRIDE_ERROR)) {
+      log.info("Started full sync for the job {}", fullSyncJob.getUuid());
+      List<GitFullSyncEntityInfo> allEntitiesToBeSynced = new ArrayList<>();
+      GitFullSyncJob.SyncStatus currentJobStatus = GitFullSyncJob.SyncStatus.QUEUED;
+      try {
+        SecurityContextBuilder.setContext(new ServicePrincipal(GIT_SYNC_SERVICE.getServiceId()));
+        UpdateResult updateResult =
+            fullSyncJobService.markJobAsRunning(fullSyncJob.getAccountIdentifier(), fullSyncJob.getUuid());
+        if (updateResult.getModifiedCount() == 0L) {
+          log.warn(
+              "There is no job to run for the id {}, maybe the other thread is running it or maybe the job has reached terminating state",
+              fullSyncJob.getUuid());
+          return;
         }
-      }
 
-      updateTheStatusOfJob(processingFailed, fullSyncJob);
-      if (!processingFailed && fullSyncJob.isCreatePullRequest()) {
-        createAPullRequest(fullSyncJob);
+        allEntitiesToBeSynced = gitFullSyncEntityService.listEntitiesToBeSynced(
+            fullSyncJob.getAccountIdentifier(), fullSyncJob.getMessageId());
+        markTheGitFullSyncEntityAsQueued(allEntitiesToBeSynced);
+        boolean processingFailed = false;
+        final List<FullSyncFilesGroupedByMsvc> fullSyncFilesGroupedByMsvcs =
+            sortTheFilesInTheProcessingOrder(allEntitiesToBeSynced);
+        for (FullSyncFilesGroupedByMsvc fullSyncFilesGroupedByMsvc : fullSyncFilesGroupedByMsvcs) {
+          log.info("Number of files is {} for the microservice {}",
+              emptyIfNull(fullSyncFilesGroupedByMsvc.getGitFullSyncEntityInfoList()).size(),
+              fullSyncFilesGroupedByMsvc.getMicroservice());
+          FullSyncMsvcProcessingResponse fullSyncMsvcProcessingResponse = processFiles(
+              fullSyncFilesGroupedByMsvc.getMicroservice(), fullSyncFilesGroupedByMsvc.getGitFullSyncEntityInfoList());
+          processingFailed = fullSyncMsvcProcessingResponse.isSyncFailed();
+          if (fullSyncFilesGroupedByMsvc.getMicroservice() == Microservice.CORE) {
+            setTheRepoBranchForTheGitSyncConnector(fullSyncFilesGroupedByMsvc.getGitFullSyncEntityInfoList(),
+                fullSyncMsvcProcessingResponse.getFullSyncFileResponses());
+          }
+        }
+
+        currentJobStatus = getTheCurrentStatusOfJob(processingFailed, fullSyncJob);
+        updateTheStatusOfJob(currentJobStatus, fullSyncJob);
+        if (fullSyncJob.isCreatePullRequest()) {
+          log.info("Started creating pull request");
+          createAPullRequest(fullSyncJob);
+        }
+        log.info("Completed full sync for the job");
+      } catch (Exception ex) {
+        log.error("Encountered error while doing full sync", ex);
+        currentJobStatus = getTheCurrentStatusOfJob(true, fullSyncJob);
+        try {
+          updateTheStatusOfJob(currentJobStatus, fullSyncJob);
+        } catch (Exception exception) {
+          log.error(
+              String.format("Attention! Not able to update the status of job {}", fullSyncJob.getUuid()), exception);
+        }
+      } finally {
+        SecurityContextBuilder.unsetCompleteContext();
       }
-    } catch (Exception ex) {
-      log.error("Encountered error while doing full sync", ex);
-    } finally {
-      SecurityContextBuilder.unsetCompleteContext();
+      if (FAILED.equals(currentJobStatus) || COMPLETED.equals(currentJobStatus)) {
+        log.info("Initialised branch sync event for branch {} and job status {}", fullSyncJob.getBranch(),
+            currentJobStatus.toString());
+        syncBranch(allEntitiesToBeSynced, fullSyncJob);
+      }
     }
-    log.info("Completed full sync for the job {}", fullSyncJob.getMessageId());
+  }
+
+  private void syncBranch(List<GitFullSyncEntityInfo> allEntitiesToBeSynced, GitFullSyncJob fullSyncJob) {
+    try {
+      YamlGitConfigDTO yamlGitConfigDTO = yamlGitConfigService.get(fullSyncJob.getProjectIdentifier(),
+          fullSyncJob.getOrgIdentifier(), fullSyncJob.getAccountIdentifier(), fullSyncJob.getYamlGitConfigIdentifier());
+      List<String> filePathsToBeExcluded = new ArrayList<>();
+      for (GitFullSyncEntityInfo entityToBeSynced : emptyIfNull(allEntitiesToBeSynced)) {
+        filePathsToBeExcluded.add(
+            ScmGitUtils.createFilePath(entityToBeSynced.getRootFolder(), entityToBeSynced.getFilePath()));
+      }
+      gitBranchSyncService.createBranchSyncEvent(fullSyncJob.getAccountIdentifier(), fullSyncJob.getOrgIdentifier(),
+          fullSyncJob.getProjectIdentifier(), fullSyncJob.getYamlGitConfigIdentifier(), yamlGitConfigDTO.getRepo(),
+          fullSyncJob.getBranch(), filePathsToBeExcluded);
+    } catch (Exception ex) {
+      log.error(String.format("Not able to perform branch sync for branch {}", fullSyncJob.getBranch()), ex);
+    }
   }
 
   private void markTheGitFullSyncEntityAsQueued(List<GitFullSyncEntityInfo> allEntitiesToBeSynced) {
-    for (GitFullSyncEntityInfo gitFullSyncEntityInfo : allEntitiesToBeSynced) {
+    for (GitFullSyncEntityInfo gitFullSyncEntityInfo : emptyIfNull(allEntitiesToBeSynced)) {
       gitFullSyncEntityService.updateStatus(gitFullSyncEntityInfo.getAccountIdentifier(),
           gitFullSyncEntityInfo.getUuid(), GitFullSyncEntityInfo.SyncStatus.QUEUED, null);
     }
@@ -359,17 +407,23 @@ public class GitFullSyncProcessorServiceImpl implements io.harness.gitsync.core.
     }
   }
 
-  private void updateTheStatusOfJob(boolean processingFailed, GitFullSyncJob fullSyncJob) {
+  private void updateTheStatusOfJob(GitFullSyncJob.SyncStatus status, GitFullSyncJob fullSyncJob) {
+    if (status.equals(FAILED) || status.equals(FAILED_WITH_RETRIES_LEFT)) {
+      fullSyncJobService.markFullSyncJobAsFailed(fullSyncJob.getAccountIdentifier(), fullSyncJob.getUuid(), status);
+    } else if (status.equals(COMPLETED)) {
+      fullSyncJobService.markFullSyncJobAsSuccess(fullSyncJob.getAccountIdentifier(), fullSyncJob.getUuid());
+    }
+  }
+
+  private GitFullSyncJob.SyncStatus getTheCurrentStatusOfJob(boolean processingFailed, GitFullSyncJob fullSyncJob) {
     if (processingFailed) {
       if (fullSyncJob.getRetryCount() >= MAX_RETRY_COUNT) {
-        fullSyncJobService.markFullSyncJobAsFailed(
-            fullSyncJob.getAccountIdentifier(), fullSyncJob.getUuid(), GitFullSyncJob.SyncStatus.FAILED);
+        return FAILED;
       } else {
-        fullSyncJobService.markFullSyncJobAsFailed(fullSyncJob.getAccountIdentifier(), fullSyncJob.getUuid(),
-            GitFullSyncJob.SyncStatus.FAILED_WITH_RETRIES_LEFT);
+        return FAILED_WITH_RETRIES_LEFT;
       }
     } else {
-      fullSyncJobService.markFullSyncJobAsSuccess(fullSyncJob.getAccountIdentifier(), fullSyncJob.getUuid());
+      return COMPLETED;
     }
   }
 }

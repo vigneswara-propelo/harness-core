@@ -36,6 +36,7 @@ import io.harness.gitsync.gitsyncerror.service.GitSyncErrorService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.Arrays;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,7 +95,7 @@ public class BranchSyncEventYamlChangeSetHandler implements YamlChangeSetHandler
       log.info("Starting branch sync for the branch [{}]", branch);
       GitToHarnessProcessMsvcStepResponse gitToHarnessProcessMsvcStepResponse =
           gitBranchSyncService.processBranchSyncEvent(yamlGitConfigDTOList.get(0), yamlChangeSetDTO.getBranch(),
-              yamlChangeSetDTO.getAccountId(), branchSyncMetadata.getFileToBeExcluded(),
+              yamlChangeSetDTO.getAccountId(), getFilesToBeExcluded(branchSyncMetadata),
               yamlChangeSetDTO.getChangesetId(), gitToHarnessProgressRecord.getUuid());
       if (gitToHarnessProcessMsvcStepResponse.getGitToHarnessProgressStatus().isSuccessStatus()) {
         gitBranchService.updateBranchSyncStatus(yamlChangeSetDTO.getAccountId(), repoURL, branch, SYNCED);
@@ -121,6 +122,13 @@ public class BranchSyncEventYamlChangeSetHandler implements YamlChangeSetHandler
           gitToHarnessProgressRecord.getUuid(), GitToHarnessProgressStatus.ERROR);
       return YamlChangeSetStatus.FAILED_WITH_RETRY;
     }
+  }
+
+  private List<String> getFilesToBeExcluded(BranchSyncMetadata branchSyncMetadata) {
+    if (isNotEmpty(branchSyncMetadata.getFileToBeExcluded())) {
+      return Arrays.asList(branchSyncMetadata.getFileToBeExcluded());
+    }
+    return branchSyncMetadata.getFilesToBeExcluded();
   }
 
   private void recordConnectivityErrors(String accountId, String repo, String errorMessage) {

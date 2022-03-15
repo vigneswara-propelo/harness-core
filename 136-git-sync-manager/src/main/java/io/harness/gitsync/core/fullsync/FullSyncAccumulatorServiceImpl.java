@@ -102,9 +102,6 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
     }
     if (fullSyncEventRequest.getIsNewBranch()) {
       createNewBranch(fullSyncEventRequest, yamlGitConfigDTO.getRepo());
-    } else {
-      gitBranchService.updateBranchSyncStatus(gitConfigScope.getAccountId(), yamlGitConfigDTO.getRepo(),
-          fullSyncEventRequest.getBranch(), BranchSyncStatus.SYNCED);
     }
     GitFullSyncJob gitFullSyncJob = saveTheFullSyncJob(fullSyncEventRequest, messageId);
     if (gitFullSyncJob == null) {
@@ -223,7 +220,7 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
     gitBranch = GitBranch.builder()
                     .accountIdentifier(gitConfigScope.getAccountId())
                     .branchName(fullSyncEventRequest.getBranch())
-                    .branchSyncStatus(BranchSyncStatus.SYNCED)
+                    .branchSyncStatus(BranchSyncStatus.UNSYNCED)
                     .repoURL(repoUrl)
                     .build();
     gitBranchService.save(gitBranch);

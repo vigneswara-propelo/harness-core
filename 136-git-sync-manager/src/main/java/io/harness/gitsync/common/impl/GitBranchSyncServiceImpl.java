@@ -61,7 +61,7 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
 
   @Override
   public void createBranchSyncEvent(String accountIdentifier, String orgIdentifier, String projectIdentifier,
-      String yamlGitConfigIdentifier, String repoURL, String branch, String filePathToBeExcluded) {
+      String yamlGitConfigIdentifier, String repoURL, String branch, List<String> filePathsToBeExcluded) {
     GitBranch gitBranch = gitBranchService.get(accountIdentifier, repoURL, branch);
     if (gitBranch == null) {
       log.info("No record found for the branch [{}] in the repo [{}]", repoURL, branch);
@@ -72,7 +72,7 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
       return;
     }
     final BranchSyncMetadata branchSyncMetadata = BranchSyncMetadata.builder()
-                                                      .fileToBeExcluded(filePathToBeExcluded)
+                                                      .filesToBeExcluded(filePathsToBeExcluded)
                                                       .orgIdentifier(orgIdentifier)
                                                       .projectIdentifier(projectIdentifier)
                                                       .yamlGitConfigId(yamlGitConfigIdentifier)
@@ -92,7 +92,8 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
 
   @Override
   public GitToHarnessProcessMsvcStepResponse processBranchSyncEvent(YamlGitConfigDTO yamlGitConfig, String branchName,
-      String accountIdentifier, String filePathToBeExcluded, String changeSetId, String gitToHarnessProgressRecordId) {
+      String accountIdentifier, List<String> filePathsToBeExcluded, String changeSetId,
+      String gitToHarnessProgressRecordId) {
     List<YamlGitConfigDTO> yamlGitConfigDTOS =
         yamlGitConfigService.getByAccountAndRepo(accountIdentifier, yamlGitConfig.getRepo());
     Set<String> foldersList = YamlGitConfigHelper.getRootFolderList(yamlGitConfigDTOS);
@@ -100,7 +101,7 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
         getFilesToBeProcessed(yamlGitConfigDTOS, accountIdentifier, foldersList, branchName);
     log.info("Received file paths: [{}] from git in harness folders.",
         emptyIfNull(harnessFilesOfBranch).stream().map(GitFileChangeDTO::getPath).collect(Collectors.toList()));
-    List<GitFileChangeDTO> filteredFileList = getFilteredFiles(harnessFilesOfBranch, filePathToBeExcluded);
+    List<GitFileChangeDTO> filteredFileList = getFilteredFiles(harnessFilesOfBranch, filePathsToBeExcluded);
     List<GitToHarnessFileProcessingRequest> gitToHarnessFilesToProcess =
         emptyIfNull(filteredFileList)
             .stream()
@@ -160,10 +161,15 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
         yamlGitConfig.getProjectIdentifier(), yamlGitConfig.getOrganizationIdentifier(), accountIdentifier);
   }
 
-  private List<GitFileChangeDTO> getFilteredFiles(List<GitFileChangeDTO> fileContents, String filePathToBeExcluded) {
+  @VisibleForTesting
+  protected List<GitFileChangeDTO> getFilteredFiles(
+      List<GitFileChangeDTO> fileContents, List<String> filePathsToBeExcluded) {
+    if (isEmpty(filePathsToBeExcluded)) {
+      return fileContents;
+    }
     List<GitFileChangeDTO> filteredFileContents = new ArrayList<>();
     for (GitFileChangeDTO fileContent : fileContents) {
-      if (fileContent.getPath().equals(filePathToBeExcluded)) {
+      if (filePathsToBeExcluded.contains(fileContent.getPath())) {
         continue;
       }
       filteredFileContents.add(fileContent);
