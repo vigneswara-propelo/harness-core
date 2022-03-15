@@ -29,6 +29,11 @@ echo "STEP 2: Setting Git Username and Password"
 git config --global user.name "${BOT_USER}"
 git config --global user.email "${BOT_EMAIL}"
 
+#BT-988: Merge Pre-QA validated changes to merge to master
+pre_qa_content=$(wget https://stress.harness.io/api/version -q -O -)
+gitCommit=$(echo "$pre_qa_content" | jq -r '.resource.versionInfo.gitCommit')
+git reset --hard $gitCommit
+
 echo "STEP 3: Checking out Master to local repo."
 git fetch origin refs/heads/master; git checkout master && git branch
 
