@@ -4351,7 +4351,7 @@ plain_artifacts = [
     "com.deftlabs:mongo-java-distributed-lock:0.1.7",
     "com.eclipsesource.j2v8:j2v8_macosx_x86_64:4.6.0",
     "com.esotericsoftware.yamlbeans:yamlbeans:1.13",
-    "com.esotericsoftware:kryo:4.0.0",
+    "com.esotericsoftware:kryo:4.0.2",
     "com.esotericsoftware:minlog:1.3.0",
     "com.esotericsoftware:reflectasm:1.11.3",
     "com.fasterxml.jackson.core:jackson-annotations:2.7.9",
