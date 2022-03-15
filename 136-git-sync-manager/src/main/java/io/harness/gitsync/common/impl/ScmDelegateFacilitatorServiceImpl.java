@@ -526,7 +526,6 @@ public class ScmDelegateFacilitatorServiceImpl extends AbstractScmClientFacilita
     ScmGitWebhookTaskResponseData scmGitWebhookTaskResponseData = (ScmGitWebhookTaskResponseData) delegateResponseData;
     try {
       return CreateWebhookResponse.parseFrom(scmGitWebhookTaskResponseData.getCreateWebhookResponse());
-
     } catch (InvalidProtocolBufferException e) {
       throw new UnexpectedException("Unexpected error occurred while doing scm operation", e);
     }

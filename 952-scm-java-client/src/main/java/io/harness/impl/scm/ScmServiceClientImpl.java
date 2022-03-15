@@ -642,7 +642,7 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     WebhookResponse existingWebhook = null;
     for (WebhookResponse webhookResponse : webhooksList) {
       if (isIdentical(webhookResponse, gitWebhookDetails, scmConnector)) {
-        return CreateWebhookResponse.newBuilder().build();
+        return CreateWebhookResponse.newBuilder().setWebhook(webhookResponse).setStatus(200).build();
       }
       if (isIdenticalTarget(webhookResponse, gitWebhookDetails)) {
         existingWebhook = webhookResponse;
@@ -653,7 +653,8 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     }
     CreateWebhookResponse createWebhookResponse =
         createWebhook(scmConnector, gitWebhookDetails, scmBlockingStub, existingWebhook);
-    ScmResponseStatusUtils.checkScmResponseStatusAndThrowException(createWebhookResponse.getStatus(), null);
+    ScmResponseStatusUtils.checkScmResponseStatusAndThrowException(
+        createWebhookResponse.getStatus(), createWebhookResponse.getError());
     return createWebhookResponse;
   }
 
