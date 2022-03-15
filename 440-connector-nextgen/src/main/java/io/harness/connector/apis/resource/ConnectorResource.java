@@ -546,8 +546,10 @@ public class ConnectorResource {
         ApiResponse(responseCode = "default", description = "Returns all settings for the Connector type")
       })
   public ResponseDTO<FieldValues>
-  getAllAllowedFieldValues(@Parameter(description = "Connector type") @NotNull @QueryParam(
-      NGCommonEntityConstants.CONNECTOR_TYPE) ConnectorType connectorType) {
+  getAllAllowedFieldValues(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotBlank @QueryParam(
+                               NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
+      @Parameter(description = "Connector type") @NotNull @QueryParam(
+          NGCommonEntityConstants.CONNECTOR_TYPE) ConnectorType connectorType) {
     return ResponseDTO.newResponse(ConnectorAllowedFieldValues.TYPE_TO_FIELDS.get(connectorType));
   }
 }
