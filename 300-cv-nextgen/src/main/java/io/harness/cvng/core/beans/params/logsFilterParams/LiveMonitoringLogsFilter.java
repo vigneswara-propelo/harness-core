@@ -7,10 +7,9 @@
 
 package io.harness.cvng.core.beans.params.logsFilterParams;
 
-import io.harness.cvng.beans.cvnglog.CVNGLogType;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import io.swagger.annotations.ApiParam;
-import javax.validation.constraints.NotNull;
+import java.util.List;
 import javax.ws.rs.QueryParam;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -22,11 +21,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Data
 @NoArgsConstructor
-public abstract class LogsFilter {
-  @ApiParam(required = true) @NotNull @QueryParam("logType") String logType;
-  @ApiParam(defaultValue = "false") @QueryParam("errorLogsOnly") boolean errorLogsOnly;
+public class LiveMonitoringLogsFilter extends TimeRangeLogsFilter {
+  @QueryParam("healthSources") List<String> healthSourceIdentifiers;
 
-  public CVNGLogType getCVNGLogType() {
-    return CVNGLogType.toCVNGLogType(logType);
+  public boolean filterByHealthSourceIdentifiers() {
+    return isNotEmpty(healthSourceIdentifiers);
   }
 }

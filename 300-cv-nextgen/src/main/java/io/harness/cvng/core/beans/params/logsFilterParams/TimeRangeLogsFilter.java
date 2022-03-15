@@ -7,9 +7,8 @@
 
 package io.harness.cvng.core.beans.params.logsFilterParams;
 
-import io.harness.cvng.beans.cvnglog.CVNGLogType;
-
 import io.swagger.annotations.ApiParam;
+import java.time.Instant;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.QueryParam;
 import lombok.AccessLevel;
@@ -22,11 +21,15 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Data
 @NoArgsConstructor
-public abstract class LogsFilter {
-  @ApiParam(required = true) @NotNull @QueryParam("logType") String logType;
-  @ApiParam(defaultValue = "false") @QueryParam("errorLogsOnly") boolean errorLogsOnly;
+public class TimeRangeLogsFilter extends LogsFilter {
+  @ApiParam(required = true) @NotNull @QueryParam("startTime") long startTime;
+  @ApiParam(required = true) @NotNull @QueryParam("endTime") long endTime;
 
-  public CVNGLogType getCVNGLogType() {
-    return CVNGLogType.toCVNGLogType(logType);
+  public Instant getStartTime() {
+    return Instant.ofEpochMilli(startTime);
+  }
+
+  public Instant getEndTime() {
+    return Instant.ofEpochMilli(endTime);
   }
 }

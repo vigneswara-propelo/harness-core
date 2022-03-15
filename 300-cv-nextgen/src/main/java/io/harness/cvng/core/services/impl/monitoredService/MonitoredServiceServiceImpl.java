@@ -15,6 +15,7 @@ import io.harness.cvng.analysis.beans.Risk;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.LogAnalysisTag;
 import io.harness.cvng.beans.MonitoredServiceType;
 import io.harness.cvng.beans.change.ChangeSourceType;
+import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.HealthMonitoringFlagResponse;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
@@ -45,10 +46,15 @@ import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
 import io.harness.cvng.core.beans.params.filterParams.LiveMonitoringLogAnalysisFilter;
 import io.harness.cvng.core.beans.params.filterParams.TimeSeriesAnalysisFilter;
+import io.harness.cvng.core.beans.params.logsFilterParams.LiveMonitoringLogsFilter;
+import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.MonitoredService;
 import io.harness.cvng.core.entities.MonitoredService.MonitoredServiceKeys;
 import io.harness.cvng.core.handler.monitoredService.BaseMonitoredServiceHandler;
+import io.harness.cvng.core.services.api.CVConfigService;
+import io.harness.cvng.core.services.api.CVNGLogService;
 import io.harness.cvng.core.services.api.SetupUsageEventService;
+import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.services.api.monitoredService.HealthSourceService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
@@ -124,6 +130,9 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Inject private LogDashboardService logDashboardService;
   @Inject private SLOHealthIndicatorService sloHealthIndicatorService;
   @Inject private Set<BaseMonitoredServiceHandler> monitoredServiceHandlers;
+  @Inject private CVConfigService cvConfigService;
+  @Inject private VerificationTaskService verificationTaskService;
+  @Inject private CVNGLogService cvngLogService;
 
   @Override
   public MonitoredServiceResponse create(String accountId, MonitoredServiceDTO monitoredServiceDTO) {
@@ -1259,5 +1268,21 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
       sloHealthIndicatorDTOMap.put(sloHealthIndicator.getMonitoredServiceIdentifier(), sloHealthIndicatorDTOList);
     }
     return sloHealthIndicatorDTOMap;
+  }
+
+  @Override
+  public PageResponse<CVNGLogDTO> getCVNGLogs(MonitoredServiceParams monitoredServiceParams,
+      LiveMonitoringLogsFilter liveMonitoringLogsFilter, PageParams pageParams) {
+    List<CVConfig> cvConfigs;
+    if (liveMonitoringLogsFilter.filterByHealthSourceIdentifiers()) {
+      cvConfigs = cvConfigService.list(monitoredServiceParams, liveMonitoringLogsFilter.getHealthSourceIdentifiers());
+    } else {
+      cvConfigs = cvConfigService.list(monitoredServiceParams);
+    }
+    List<String> cvConfigIds = cvConfigs.stream().map(CVConfig::getUuid).collect(Collectors.toList());
+    List<String> verificationTaskIds = verificationTaskService.getServiceGuardVerificationTaskIds(
+        monitoredServiceParams.getAccountIdentifier(), cvConfigIds);
+    return cvngLogService.getCVNGLogs(
+        monitoredServiceParams.getAccountIdentifier(), verificationTaskIds, liveMonitoringLogsFilter, pageParams);
   }
 }

@@ -21,6 +21,7 @@ import io.harness.annotations.ExposeInternalException;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.MonitoredServiceType;
+import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.core.beans.HealthMonitoringFlagResponse;
 import io.harness.cvng.core.beans.monitoredService.AnomaliesSummaryDTO;
 import io.harness.cvng.core.beans.monitoredService.CountServiceDTO;
@@ -34,9 +35,11 @@ import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.HealthSourceDTO;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
+import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
+import io.harness.cvng.core.beans.params.logsFilterParams.LiveMonitoringLogsFilter;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -491,5 +494,22 @@ public class MonitoredServiceResource {
   public MonitoredServiceListItemDTO
   getMonitoredServiceDetails(@BeanParam ServiceEnvironmentParams serviceEnvironmentParams) {
     return monitoredServiceService.getMonitoredServiceDetails(serviceEnvironmentParams);
+  }
+
+  @GET
+  @Timed
+  @ExceptionMetered
+  @Path("{monitoredServiceIdentifier}/logs")
+  @ApiOperation(value = "get monitored service logs", nickname = "getMonitoredServiceLogs")
+  @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = VIEW_PERMISSION)
+  public RestResponse<PageResponse<CVNGLogDTO>> getMonitoredServiceLogs(@BeanParam ProjectParams projectParams,
+      @ApiParam(required = true) @NotNull @PathParam(
+          "monitoredServiceIdentifier") @ResourceIdentifier String monitoredServiceIdentifier,
+      @BeanParam LiveMonitoringLogsFilter liveMonitoringLogsFilter, @BeanParam PageParams pageParams) {
+    return new RestResponse<>(
+        monitoredServiceService.getCVNGLogs(MonitoredServiceParams.builderWithProjectParams(projectParams)
+                                                .monitoredServiceIdentifier(monitoredServiceIdentifier)
+                                                .build(),
+            liveMonitoringLogsFilter, pageParams));
   }
 }

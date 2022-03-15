@@ -166,7 +166,7 @@ public class CVNGStepResource {
   @Path("/{verifyStepExecutionId}/logs")
   @Timed
   @ExceptionMetered
-  @ApiOperation(value = "get metrics for given activity", nickname = "getVerifyStepLogs")
+  @ApiOperation(value = "get verify step logs", nickname = "getVerifyStepLogs")
   public RestResponse<PageResponse<CVNGLogDTO>> getLogs(@NotEmpty @NotNull @QueryParam("accountId") String accountId,
       @NotEmpty @NotNull @PathParam("verifyStepExecutionId") String callBackId,
       @NotEmpty @NotNull @QueryParam("logType") String logType,

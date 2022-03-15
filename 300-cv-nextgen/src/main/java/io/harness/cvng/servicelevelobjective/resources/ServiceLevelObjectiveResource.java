@@ -170,7 +170,7 @@ public class ServiceLevelObjectiveResource {
   @Timed
   @ExceptionMetered
   @Path("{identifier}/logs")
-  @ApiOperation(value = "get service level objective data", nickname = "getServiceLevelObjectiveLogs")
+  @ApiOperation(value = "get service level objective logs", nickname = "getServiceLevelObjectiveLogs")
   @NGAccessControlCheck(resourceType = SLO, permission = VIEW_PERMISSION)
   public RestResponse<PageResponse<CVNGLogDTO>> getServiceLevelObjectiveLogs(@BeanParam ProjectParams projectParams,
       @ApiParam(required = true) @NotNull @PathParam("identifier") @ResourceIdentifier String identifier,

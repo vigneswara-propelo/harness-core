@@ -23,7 +23,7 @@ import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogType;
 import io.harness.cvng.beans.cvnglog.TraceableType;
 import io.harness.cvng.core.beans.params.PageParams;
-import io.harness.cvng.core.beans.params.logsFilterParams.SLILogsFilter;
+import io.harness.cvng.core.beans.params.logsFilterParams.TimeRangeLogsFilter;
 import io.harness.cvng.core.entities.CVNGLog;
 import io.harness.cvng.core.entities.CVNGLog.CVNGLogKeys;
 import io.harness.cvng.core.entities.VerificationTask;
@@ -146,16 +146,16 @@ public class CVNGLogServiceImpl implements CVNGLogService {
   }
 
   @Override
-  public PageResponse<CVNGLogDTO> getCVNGLogs(
-      String accountId, List<String> verificationTaskIds, SLILogsFilter sliLogsFilter, PageParams pageParams) {
-    List<CVNGLog> cvngLogs = getCVNGLogs(accountId, verificationTaskIds, sliLogsFilter);
+  public PageResponse<CVNGLogDTO> getCVNGLogs(String accountId, List<String> verificationTaskIds,
+      TimeRangeLogsFilter timeRangeLogsFilter, PageParams pageParams) {
+    List<CVNGLog> cvngLogs = getCVNGLogs(accountId, verificationTaskIds, timeRangeLogsFilter);
     List<CVNGLogDTO> cvngLogDTOs = new ArrayList<>();
     cvngLogs.forEach(cvngLog -> {
       Collections.sort(cvngLog.getLogRecords(), new CVNGLogRecordComparator());
       List<CVNGLogRecord> cvngLogRecords =
           cvngLog.getLogRecords()
               .stream()
-              .filter(cvngLogRecord -> !sliLogsFilter.isErrorLogsOnly() || cvngLogRecord.isErrorLog())
+              .filter(cvngLogRecord -> !timeRangeLogsFilter.isErrorLogsOnly() || cvngLogRecord.isErrorLog())
               .collect(Collectors.toList());
       cvngLog.setLogRecords(cvngLogRecords);
       cvngLogDTOs.addAll(cvngLog.toCVNGLogDTOs());
@@ -164,20 +164,21 @@ public class CVNGLogServiceImpl implements CVNGLogService {
     return PageUtils.offsetAndLimit(cvngLogDTOs, pageParams.getPage(), pageParams.getSize());
   }
 
-  private List<CVNGLog> getCVNGLogs(String accountId, List<String> verificationTaskIds, SLILogsFilter sliLogsFilter) {
+  private List<CVNGLog> getCVNGLogs(
+      String accountId, List<String> verificationTaskIds, TimeRangeLogsFilter timeRangeLogsFilter) {
     Preconditions.checkArgument(
-        Duration.between(sliLogsFilter.getStartTime(), sliLogsFilter.getEndTime()).toDays() <= 1,
+        Duration.between(timeRangeLogsFilter.getStartTime(), timeRangeLogsFilter.getEndTime()).toDays() <= 1,
         "Logs can be fetched for maximum 1 day");
     return hPersistence.createQuery(CVNGLog.class, excludeAuthority)
         .filter(CVNGLogKeys.accountId, accountId)
-        .filter(CVNGLogKeys.logType, sliLogsFilter.getCVNGLogType())
+        .filter(CVNGLogKeys.logType, timeRangeLogsFilter.getCVNGLogType())
         .filter(CVNGLogKeys.traceableType, VERIFICATION_TASK)
         .field(CVNGLogKeys.traceableId)
         .in(verificationTaskIds)
         .field(CVNGLogKeys.endTime)
-        .greaterThanOrEq(sliLogsFilter.getStartTime())
+        .greaterThanOrEq(timeRangeLogsFilter.getStartTime())
         .field(CVNGLogKeys.startTime)
-        .lessThan(sliLogsFilter.getEndTime())
+        .lessThan(timeRangeLogsFilter.getEndTime())
         .asList();
   }
 
