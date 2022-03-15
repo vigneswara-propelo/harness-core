@@ -384,7 +384,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   private MonitoredServiceResponse createMonitoredServiceDTOFromEntity(
-      MonitoredService monitoredServiceEntity, ServiceEnvironmentParams environmentParams) {
+      MonitoredService monitoredServiceEntity, ProjectParams environmentParams) {
     MonitoredServiceDTO monitoredServiceDTO =
         MonitoredServiceDTO.builder()
             .name(monitoredServiceEntity.getName())
@@ -547,6 +547,16 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     }
   }
   @Override
+  public MonitoredServiceDTO getMonitoredServiceDTO(MonitoredServiceParams monitoredServiceParams) {
+    MonitoredServiceResponse monitoredServiceResponse =
+        createMonitoredServiceDTOFromEntity(getMonitoredService(monitoredServiceParams), monitoredServiceParams);
+    if (monitoredServiceResponse == null) {
+      return null;
+    } else {
+      return monitoredServiceResponse.getMonitoredServiceDTO();
+    }
+  }
+  @Override
   public MonitoredService getMonitoredService(ProjectParams projectParams, String identifier) {
     return hPersistence.createQuery(MonitoredService.class)
         .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
@@ -578,8 +588,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .hasThisOne(serviceEnvironmentParams.getEnvironmentIdentifier())
         .get();
   }
-
-  private MonitoredService getMonitoredService(MonitoredServiceParams monitoredServiceParams) {
+  @Override
+  public MonitoredService getMonitoredService(MonitoredServiceParams monitoredServiceParams) {
     return hPersistence.createQuery(MonitoredService.class)
         .filter(MonitoredServiceKeys.accountId, monitoredServiceParams.getAccountIdentifier())
         .filter(MonitoredServiceKeys.orgIdentifier, monitoredServiceParams.getOrgIdentifier())

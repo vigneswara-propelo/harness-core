@@ -32,7 +32,6 @@ import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.beans.activity.ActivityVerificationStatus;
 import io.harness.cvng.beans.job.VerificationJobType;
 import io.harness.cvng.client.NextGenService;
-import io.harness.cvng.core.beans.DatasourceTypeDTO;
 import io.harness.cvng.core.beans.TimeRange;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.DataCollectionTask;
@@ -56,7 +55,6 @@ import io.harness.cvng.verificationjob.beans.AdditionalInfo;
 import io.harness.cvng.verificationjob.beans.TestVerificationBaselineExecutionDTO;
 import io.harness.cvng.verificationjob.entities.HealthVerificationJob;
 import io.harness.cvng.verificationjob.entities.VerificationJob;
-import io.harness.cvng.verificationjob.entities.VerificationJob.VerificationJobKeys;
 import io.harness.cvng.verificationjob.entities.VerificationJobInstance;
 import io.harness.cvng.verificationjob.entities.VerificationJobInstance.ExecutionStatus;
 import io.harness.cvng.verificationjob.entities.VerificationJobInstance.ProgressLog;
@@ -72,7 +70,6 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -162,17 +159,6 @@ public class VerificationJobInstanceServiceImpl implements VerificationJobInstan
         .asList();
   }
 
-  public List<VerificationJobInstance> getHealthVerificationJobInstances(List<String> verificationJobInstanceIds) {
-    if (isEmpty(verificationJobInstanceIds)) {
-      return Collections.emptyList();
-    }
-    return get(verificationJobInstanceIds)
-        .stream()
-        .filter(
-            verificationJobInstance -> verificationJobInstance.getResolvedJob().getType() == VerificationJobType.HEALTH)
-        .collect(Collectors.toList());
-  }
-
   @Override
   public VerificationJobInstance getVerificationJobInstance(String verificationJobInstanceId) {
     return hPersistence.get(VerificationJobInstance.class, verificationJobInstanceId);
@@ -241,22 +227,6 @@ public class VerificationJobInstanceServiceImpl implements VerificationJobInstan
   public CVConfig getEmbeddedCVConfig(String cvConfigId, String verificationJobInstanceId) {
     VerificationJobInstance verificationJobInstance = getVerificationJobInstance(verificationJobInstanceId);
     return verificationJobInstance.getCvConfigMap().get(cvConfigId);
-  }
-
-  @Override
-  public Set<DatasourceTypeDTO> getDataSourcetypes(List<String> verificationJobInstanceIds) {
-    Preconditions.checkNotNull(verificationJobInstanceIds);
-    List<VerificationJobInstance> verificationJobInstances = get(verificationJobInstanceIds);
-    Set<DatasourceTypeDTO> datasourceTypeDTOSet = new HashSet<>();
-    verificationJobInstances.forEach(verificationJobInstance -> {
-      verificationJobInstance.getCvConfigMap().values().forEach(cvConfig -> {
-        datasourceTypeDTOSet.add(DatasourceTypeDTO.builder()
-                                     .verificationType(cvConfig.getVerificationType())
-                                     .dataSourceType(cvConfig.getType())
-                                     .build());
-      });
-    });
-    return datasourceTypeDTOSet;
   }
 
   @Override
@@ -456,16 +426,6 @@ public class VerificationJobInstanceServiceImpl implements VerificationJobInstan
         }));
   }
 
-  private void addDeploymentVerificationJobInstanceSummaries(List<VerificationJobInstance> verificationJobInstances,
-      List<DeploymentVerificationJobInstanceSummary> deploymentVerificationJobInstanceSummaries) {
-    if (!isEmpty(verificationJobInstances)) {
-      verificationJobInstances.forEach(verificationJobInstance -> {
-        deploymentVerificationJobInstanceSummaries.add(
-            getDeploymentVerificationJobInstanceSummary(verificationJobInstance));
-      });
-    }
-  }
-
   //  TODO find the right place for this switch case
   private AdditionalInfo getAdditionalInfo(String accountId, VerificationJobInstance verificationJobInstance) {
     switch (verificationJobInstance.getResolvedJob().getType()) {
@@ -635,34 +595,6 @@ public class VerificationJobInstanceServiceImpl implements VerificationJobInstan
     // details in case of multiple verificationJobInstances.
     VerificationJobInstance verificationJobInstance = getVerificationJobInstance(verificationJobInstanceIds.get(0));
     return getDeploymentVerificationJobInstanceSummary(verificationJobInstance);
-  }
-
-  @Override
-  public List<VerificationJobInstance> getRunningOrQueuedJobInstances(String accountId, String orgIdentifier,
-      String projectIdentifier, String envIdentifier, String serviceIdentifier, VerificationJobType jobType,
-      Instant endTimeBefore) {
-    Preconditions.checkNotNull(orgIdentifier);
-    Preconditions.checkNotNull(projectIdentifier);
-    Preconditions.checkNotNull(envIdentifier);
-    Preconditions.checkNotNull(serviceIdentifier);
-
-    List<VerificationJobInstance> verificationJobInstances =
-        hPersistence.createQuery(VerificationJobInstance.class, excludeAuthority)
-            .filter(VerificationJobInstanceKeys.accountId, accountId)
-            .filter(VerificationJobInstanceKeys.resolvedJob + "." + VerificationJobKeys.orgIdentifier, orgIdentifier)
-            .filter(VerificationJobInstanceKeys.resolvedJob + "." + VerificationJobKeys.projectIdentifier,
-                projectIdentifier)
-            .filter(VerificationJobInstanceKeys.resolvedJob + "." + VerificationJobKeys.type, jobType)
-            .field(VerificationJobInstanceKeys.executionStatus)
-            .notIn(ExecutionStatus.finalStatuses())
-            .asList();
-
-    return verificationJobInstances.stream()
-        .filter(instance
-            -> instance.getResolvedJob().getServiceIdentifier().equals(serviceIdentifier)
-                && instance.getResolvedJob().getEnvIdentifier().equals(envIdentifier)
-                && instance.getEndTime().isAfter(endTimeBefore))
-        .collect(Collectors.toList());
   }
 
   private EnvironmentResponseDTO getEnvironment(VerificationJob verificationJob) {

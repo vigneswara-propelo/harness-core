@@ -18,7 +18,7 @@ import static org.mongodb.morphia.aggregation.Group.id;
 import io.harness.cvng.activity.entities.Activity;
 import io.harness.cvng.activity.entities.Activity.ActivityKeys;
 import io.harness.cvng.activity.entities.KubernetesClusterActivity.KubernetesClusterActivityKeys;
-import io.harness.cvng.activity.entities.KubernetesClusterActivity.ServiceEnvironment.ServiceEnvironmentKeys;
+import io.harness.cvng.activity.entities.KubernetesClusterActivity.RelatedAppMonitoredService.ServiceEnvironmentKeys;
 import io.harness.cvng.activity.services.api.ActivityService;
 import io.harness.cvng.beans.activity.ActivityType;
 import io.harness.cvng.beans.change.ChangeCategory;

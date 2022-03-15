@@ -14,7 +14,6 @@ import io.harness.cvng.core.beans.dependency.KubernetesDependencyMetadata;
 import io.harness.cvng.core.beans.dependency.ServiceDependencyMetadata;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceDTO;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
-import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.sidekick.DemoActivitySideKickData;
 import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.entities.changeSource.KubernetesChangeSource;
@@ -44,16 +43,14 @@ public class DemoActivitySideKickExecutor implements SideKickExecutor<DemoActivi
     log.info("SidekickInfo {}", sideKickInfo);
     DeploymentActivity deploymentActivity =
         (DeploymentActivity) activityService.get(sideKickInfo.getDeploymentActivityId());
-    ServiceEnvironmentParams serviceEnvironmentParams =
-        ServiceEnvironmentParams.builder()
+    MonitoredServiceParams serviceEnvironmentParams =
+        MonitoredServiceParams.builder()
             .accountIdentifier(deploymentActivity.getAccountId())
             .orgIdentifier(deploymentActivity.getOrgIdentifier())
             .projectIdentifier(deploymentActivity.getProjectIdentifier())
-            .serviceIdentifier(deploymentActivity.getServiceIdentifier())
-            .environmentIdentifier(deploymentActivity.getEnvironmentIdentifier())
+            .monitoredServiceIdentifier(deploymentActivity.getMonitoredServiceIdentifier())
             .build();
-    MonitoredServiceDTO monitoredService =
-        monitoredServiceService.get(serviceEnvironmentParams).getMonitoredServiceDTO();
+    MonitoredServiceDTO monitoredService = monitoredServiceService.getMonitoredServiceDTO(serviceEnvironmentParams);
     Optional<MonitoredServiceDTO.ServiceDependencyDTO> serviceDependencyDTO =
         monitoredService.getDependencies()
             .stream()

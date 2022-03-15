@@ -70,8 +70,6 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
         builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
         builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
         builderFactory.getDeploymentActivityBuilder()
-            .serviceIdentifier("service2")
-            .environmentIdentifier("env2")
             .monitoredServiceIdentifier("service_env2")
             .eventTime(Instant.ofEpochSecond(200))
             .build(),
@@ -117,8 +115,6 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
         builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
         builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
         builderFactory.getDeploymentActivityBuilder()
-            .serviceIdentifier("service2")
-            .environmentIdentifier("env2")
             .monitoredServiceIdentifier("service_env2")
             .eventTime(Instant.ofEpochSecond(200))
             .build(),
@@ -164,8 +160,6 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
         builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
         builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
         builderFactory.getDeploymentActivityBuilder()
-            .serviceIdentifier("service2")
-            .environmentIdentifier("env2")
             .monitoredServiceIdentifier("service_env2")
             .eventTime(Instant.ofEpochSecond(200))
             .build(),
@@ -205,8 +199,6 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
         builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
         builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
         builderFactory.getDeploymentActivityBuilder()
-            .serviceIdentifier("service2")
-            .environmentIdentifier("env2")
             .monitoredServiceIdentifier("service_env2")
             .eventTime(Instant.ofEpochSecond(200))
             .build(),
@@ -251,8 +243,6 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
         builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
         builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
         builderFactory.getDeploymentActivityBuilder()
-            .serviceIdentifier("service2")
-            .environmentIdentifier("env2")
             .monitoredServiceIdentifier("service_env2")
             .eventTime(Instant.ofEpochSecond(200))
             .build(),
@@ -302,8 +292,6 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
         builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
         builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
         builderFactory.getDeploymentActivityBuilder()
-            .serviceIdentifier("service2")
-            .environmentIdentifier("env2")
             .monitoredServiceIdentifier("service_env2")
             .eventTime(Instant.ofEpochSecond(500))
             .build(),
@@ -353,8 +341,6 @@ public class ChangeEventResourceTest extends CvNextGenTestBase {
         builderFactory.getKubernetesClusterActivityForAppServiceBuilder().eventTime(Instant.ofEpochSecond(50)).build(),
         builderFactory.getDeploymentActivityBuilder().eventTime(Instant.ofEpochSecond(100)).build(),
         builderFactory.getDeploymentActivityBuilder()
-            .serviceIdentifier("service2")
-            .environmentIdentifier("env2")
             .monitoredServiceIdentifier("service_env2")
             .eventTime(Instant.ofEpochSecond(200))
             .build(),

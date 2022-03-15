@@ -271,8 +271,7 @@ public class CVNGStep extends AsyncExecutableWithRollback {
     deploymentActivity.setOrgIdentifier(serviceEnvironmentParams.getOrgIdentifier());
     deploymentActivity.setAccountId(serviceEnvironmentParams.getAccountIdentifier());
     deploymentActivity.setProjectIdentifier(serviceEnvironmentParams.getProjectIdentifier());
-    deploymentActivity.setServiceIdentifier(stepParameters.getServiceIdentifier());
-    deploymentActivity.setEnvironmentIdentifier(stepParameters.getEnvIdentifier());
+    deploymentActivity.setMonitoredServiceIdentifier(monitoredService.getIdentifier());
     deploymentActivity.setActivityName(getActivityName(stepParameters));
     deploymentActivity.setType(ActivityType.DEPLOYMENT);
     return deploymentActivity;

@@ -17,7 +17,7 @@ import io.harness.cvng.beans.activity.ActivityVerificationStatus;
 import io.harness.cvng.core.beans.demo.DemoTemplate;
 import io.harness.cvng.core.beans.dependency.ServiceDependencyMetadata;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceDTO;
-import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
+import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.DataCollectionTask;
 import io.harness.cvng.core.entities.MonitoredService;
@@ -116,16 +116,16 @@ public class CVNGDemoPerpetualTaskServiceImpl implements CVNGDemoPerpetualTaskSe
   }
 
   private boolean isHighRiskTimeRange(CVConfig cvConfig, DataCollectionTask dataCollectionTask) {
-    ServiceEnvironmentParams serviceEnvironmentParams = ServiceEnvironmentParams.builder()
-                                                            .accountIdentifier(cvConfig.getAccountId())
-                                                            .orgIdentifier(cvConfig.getOrgIdentifier())
-                                                            .projectIdentifier(cvConfig.getProjectIdentifier())
-                                                            .serviceIdentifier(cvConfig.getServiceIdentifier())
-                                                            .environmentIdentifier(cvConfig.getEnvIdentifier())
-                                                            .build();
+    MonitoredServiceParams monitoredServiceParams =
+        MonitoredServiceParams.builder()
+            .accountIdentifier(cvConfig.getAccountId())
+            .orgIdentifier(cvConfig.getOrgIdentifier())
+            .projectIdentifier(cvConfig.getProjectIdentifier())
+            .monitoredServiceIdentifier(cvConfig.getMonitoredServiceIdentifier())
+            .build();
     boolean isHighRiskTimeRange =
         activityService
-            .getAnyDemoDeploymentEvent(serviceEnvironmentParams,
+            .getAnyDemoDeploymentEvent(monitoredServiceParams,
                 dataCollectionTask.getStartTime().minus(Duration.ofMinutes(15)), dataCollectionTask.getStartTime(),
                 ActivityVerificationStatus.VERIFICATION_FAILED)
             .isPresent();
@@ -133,22 +133,21 @@ public class CVNGDemoPerpetualTaskServiceImpl implements CVNGDemoPerpetualTaskSe
       return true;
     } else {
       Optional<MonitoredService> kubernetesMonitoredService =
-          getKubernetesDependentMonitoredService(serviceEnvironmentParams);
+          getKubernetesDependentMonitoredService(monitoredServiceParams);
       if (kubernetesMonitoredService.isPresent()) {
-        ServiceEnvironmentParams dependencyServiceEnvParams =
-            ServiceEnvironmentParams.builder()
+        MonitoredServiceParams dependencyServiceEnvParams =
+            MonitoredServiceParams.builder()
                 .accountIdentifier(kubernetesMonitoredService.get().getAccountId())
                 .orgIdentifier(kubernetesMonitoredService.get().getOrgIdentifier())
                 .projectIdentifier(kubernetesMonitoredService.get().getProjectIdentifier())
-                .serviceIdentifier(kubernetesMonitoredService.get().getServiceIdentifier())
-                .environmentIdentifier(kubernetesMonitoredService.get().getEnvironmentIdentifier())
+                .monitoredServiceIdentifier(kubernetesMonitoredService.get().getIdentifier())
                 .build();
         return activityService
             .getAnyKubernetesEvent(dependencyServiceEnvParams,
                 dataCollectionTask.getStartTime().minus(Duration.ofMinutes(15)), dataCollectionTask.getStartTime())
             .map(event
                 -> activityService
-                       .getAnyDemoDeploymentEvent(serviceEnvironmentParams,
+                       .getAnyDemoDeploymentEvent(monitoredServiceParams,
                            event.getEventTime().minus(Duration.ofMinutes(15)),
                            event.getEventTime().minus(Duration.ofMinutes(5)),
                            ActivityVerificationStatus.VERIFICATION_PASSED)
@@ -161,9 +160,8 @@ public class CVNGDemoPerpetualTaskServiceImpl implements CVNGDemoPerpetualTaskSe
   }
 
   private Optional<MonitoredService> getKubernetesDependentMonitoredService(
-      ServiceEnvironmentParams serviceEnvironmentParams) {
-    MonitoredServiceDTO monitoredService =
-        monitoredServiceService.get(serviceEnvironmentParams).getMonitoredServiceDTO();
+      MonitoredServiceParams monitoredServiceParams) {
+    MonitoredServiceDTO monitoredService = monitoredServiceService.getMonitoredServiceDTO(monitoredServiceParams);
     Optional<MonitoredServiceDTO.ServiceDependencyDTO> serviceDependencyDTO =
         monitoredService.getDependencies()
             .stream()
@@ -174,7 +172,7 @@ public class CVNGDemoPerpetualTaskServiceImpl implements CVNGDemoPerpetualTaskSe
             .findAny();
     if (serviceDependencyDTO.isPresent()) {
       MonitoredService kubernetesMonitoredService = monitoredServiceService.getMonitoredService(
-          serviceEnvironmentParams, serviceDependencyDTO.get().getMonitoredServiceIdentifier());
+          monitoredServiceParams, serviceDependencyDTO.get().getMonitoredServiceIdentifier());
       return Optional.of(kubernetesMonitoredService);
     }
     return Optional.empty();

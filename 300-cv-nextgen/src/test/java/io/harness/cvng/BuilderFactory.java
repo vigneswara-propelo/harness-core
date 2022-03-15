@@ -16,7 +16,7 @@ import io.harness.cvng.activity.entities.DeploymentActivity;
 import io.harness.cvng.activity.entities.DeploymentActivity.DeploymentActivityBuilder;
 import io.harness.cvng.activity.entities.KubernetesClusterActivity;
 import io.harness.cvng.activity.entities.KubernetesClusterActivity.KubernetesClusterActivityBuilder;
-import io.harness.cvng.activity.entities.KubernetesClusterActivity.ServiceEnvironment;
+import io.harness.cvng.activity.entities.KubernetesClusterActivity.RelatedAppMonitoredService;
 import io.harness.cvng.activity.entities.PagerDutyActivity;
 import io.harness.cvng.activity.entities.PagerDutyActivity.PagerDutyActivityBuilder;
 import io.harness.cvng.beans.CVMonitoringCategory;
@@ -637,8 +637,7 @@ public class BuilderFactory {
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier())
-        .environmentIdentifier(context.getEnvIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceParams().getMonitoredServiceIdentifier())
         .eventTime(clock.instant())
         .changeSourceIdentifier("changeSourceID")
         .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
@@ -663,8 +662,7 @@ public class BuilderFactory {
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier())
-        .environmentIdentifier(context.getEnvIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .eventTime(clock.instant())
         .changeSourceIdentifier("changeSourceID")
         .type(ChangeSourceType.KUBERNETES.getActivityType())
@@ -682,8 +680,7 @@ public class BuilderFactory {
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier())
-        .environmentIdentifier(context.getEnvIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .eventTime(clock.instant())
         .changeSourceIdentifier("changeSourceID")
         .type(ChangeSourceType.PAGER_DUTY.getActivityType())
@@ -698,17 +695,14 @@ public class BuilderFactory {
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
-        .serviceIdentifier(context.getServiceIdentifier() + "-infra")
-        .environmentIdentifier(context.getEnvIdentifier() + "-infra")
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .eventTime(clock.instant())
         .changeSourceIdentifier("changeSourceID")
         .type(ChangeSourceType.KUBERNETES.getActivityType())
         .activityStartTime(clock.instant())
         .activityName("K8 Activity")
         .resourceVersion("resource-version")
-        .relatedAppServices(Arrays.asList(ServiceEnvironment.builder()
-                                              .environmentIdentifier(context.getEnvIdentifier())
-                                              .serviceIdentifier(context.getServiceIdentifier())
+        .relatedAppServices(Arrays.asList(RelatedAppMonitoredService.builder()
                                               .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
                                               .build()));
   }

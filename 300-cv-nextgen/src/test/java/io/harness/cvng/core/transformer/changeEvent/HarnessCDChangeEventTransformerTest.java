@@ -10,42 +10,31 @@ package io.harness.cvng.core.transformer.changeEvent;
 import static io.harness.rule.OwnerRule.ABHIJITH;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
 
+import io.harness.CvNextGenTestBase;
 import io.harness.category.element.UnitTests;
 import io.harness.cvng.BuilderFactory;
 import io.harness.cvng.activity.entities.DeploymentActivity;
 import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.beans.change.HarnessCDEventMetadata;
-import io.harness.cvng.client.NextGenService;
-import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
-import io.harness.ng.core.service.dto.ServiceResponseDTO;
+import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.rule.Owner;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
+import com.google.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 
-public class HarnessCDChangeEventTransformerTest {
-  HarnessCDChangeEventTransformer harnessCDChangeEventTransformer;
+public class HarnessCDChangeEventTransformerTest extends CvNextGenTestBase {
+  @Inject HarnessCDChangeEventTransformer harnessCDChangeEventTransformer;
   BuilderFactory builderFactory;
-  NextGenService nextGenService;
-
-  private String serviceName = "ServiceName";
-  private String environmentName = "EnvironmentName";
+  @Inject private MonitoredServiceService monitoredServiceService;
 
   @Before
   public void setup() throws IllegalAccessException {
-    harnessCDChangeEventTransformer = new HarnessCDChangeEventTransformer();
-    nextGenService = Mockito.mock(NextGenService.class);
-    FieldUtils.writeField(harnessCDChangeEventTransformer, "nextGenService", nextGenService, true);
-    Mockito.when(nextGenService.getService(any(), any(), any(), any()))
-        .thenReturn(ServiceResponseDTO.builder().name(serviceName).build());
-    Mockito.when(nextGenService.getEnvironment(any(), any(), any(), any()))
-        .thenReturn(EnvironmentResponseDTO.builder().name(environmentName).build());
     builderFactory = BuilderFactory.getDefault();
+    monitoredServiceService.createDefault(builderFactory.getProjectParams(),
+        builderFactory.getContext().getServiceIdentifier(), builderFactory.getContext().getEnvIdentifier());
   }
 
   @Test
@@ -64,8 +53,8 @@ public class HarnessCDChangeEventTransformerTest {
     DeploymentActivity harnessCDActivity = builderFactory.getDeploymentActivityBuilder().build();
     ChangeEventDTO changeEventDTO = harnessCDChangeEventTransformer.getDTO(harnessCDActivity);
     verifyEqual(harnessCDActivity, changeEventDTO);
-    assertThat(changeEventDTO.getServiceName()).isEqualTo(serviceName);
-    assertThat(changeEventDTO.getEnvironmentName()).isEqualTo(environmentName);
+    assertThat(changeEventDTO.getServiceName()).isEqualTo("Mocked service name");
+    assertThat(changeEventDTO.getEnvironmentName()).isEqualTo("Mocked env name");
     assertThat(harnessCDActivity.getUuid()).isEqualTo(changeEventDTO.getId());
   }
 

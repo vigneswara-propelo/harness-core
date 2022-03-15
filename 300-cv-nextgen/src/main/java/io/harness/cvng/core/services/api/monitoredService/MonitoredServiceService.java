@@ -46,8 +46,10 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
       Integer offset, Integer pageSize, String filter);
   List<MonitoredServiceWithHealthSources> getAllWithTimeSeriesHealthSources(ProjectParams projectParams);
   MonitoredServiceDTO getApplicationMonitoredServiceDTO(ServiceEnvironmentParams serviceEnvironmentParams);
-
-  MonitoredService getMonitoredService(ProjectParams projectParams, String identifier);
+  MonitoredServiceDTO getMonitoredServiceDTO(MonitoredServiceParams monitoredServiceParams);
+  // use with MonitoredServiceParams instead
+  @Deprecated MonitoredService getMonitoredService(ProjectParams projectParams, String identifier);
+  MonitoredService getMonitoredService(MonitoredServiceParams monitoredServiceParams);
 
   MonitoredService getApplicationMonitoredService(ServiceEnvironmentParams serviceEnvironmentParams);
 
