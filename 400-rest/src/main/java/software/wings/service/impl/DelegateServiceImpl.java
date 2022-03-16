@@ -331,6 +331,8 @@ public class DelegateServiceImpl implements DelegateService {
   private static final String SAMPLE_DELEGATE_NAME = "harness-sample-k8s-delegate";
   private static final String deployVersion = System.getenv(DEPLOY_VERSION);
 
+  private static final long MAX_GRPC_HB_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
+
   static {
     templateConfiguration.setTemplateLoader(new ClassTemplateLoader(DelegateServiceImpl.class, "/delegatetemplates"));
   }
@@ -811,6 +813,8 @@ public class DelegateServiceImpl implements DelegateService {
               .tags(delegate.getTags())
               .profileExecutedAt(delegate.getProfileExecutedAt())
               .profileError(delegate.isProfileError())
+              .grpcActive(connections.stream().allMatch(
+                  connection -> connection.getLastGrpcHeartbeat() > System.currentTimeMillis() - MAX_GRPC_HB_TIMEOUT))
               .implicitSelectors(delegateSetupService.retrieveDelegateImplicitSelectors(delegate))
               .sampleDelegate(delegate.isSampleDelegate())
               .connections(connections)

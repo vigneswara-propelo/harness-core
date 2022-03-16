@@ -65,6 +65,7 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.executable.ValidateOnExecution;
@@ -84,6 +85,8 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
   @Inject private DelegateConnectionDao delegateConnectionDao;
   @Inject private FilterService filterService;
   private static final Duration HEARTBEAT_EXPIRY_TIME = ofMinutes(5);
+  // grpc heartbeat thread is scheduled at 5 mins, hence we are allowing a gap of 15 mins
+  private static final long MAX_GRPC_HB_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
 
   @Override
   public long getDelegateGroupCount(
@@ -406,34 +409,41 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
     String delegateGroupIdentifier = delegateGroup != null ? delegateGroup.getIdentifier() : null;
     Set<String> groupCustomSelectors = delegateGroup != null ? delegateGroup.getTags() : null;
 
+    // pick any connected delegateId to check whether grpc is active or not
+    AtomicReference<String> delegateId = new AtomicReference<>();
+
     long lastHeartBeat = groupDelegates.stream().mapToLong(Delegate::getLastHeartBeat).max().orElse(0);
     AtomicInteger countOfDelegatesConnected = new AtomicInteger();
     AtomicBoolean isDelegateTokenActiveAtGroupLevel = new AtomicBoolean(true);
     List<DelegateGroupListing.DelegateInner> delegateInstanceDetails =
         groupDelegates.stream()
             .map(delegate -> {
-              countOfDelegatesConnected.addAndGet(
-                  (delegate.getLastHeartBeat() > System.currentTimeMillis() - HEARTBEAT_EXPIRY_TIME.toMillis()) ? 1
-                                                                                                                : 0);
+              boolean isDelegateConnected =
+                  delegate.getLastHeartBeat() > System.currentTimeMillis() - HEARTBEAT_EXPIRY_TIME.toMillis();
+              countOfDelegatesConnected.addAndGet(isDelegateConnected ? 1 : 0);
+
               String delegateTokenName = delegate.getDelegateTokenName();
+
               // TODO: Arpit, fetch the tokenStatus from cache instead of db
               boolean isTokenActive = true;
-              if (delegateTokenName != null) {
+              if (delegateTokenName != null && delegateTokenStatusMap.containsKey(delegateTokenName)) {
                 isTokenActive = delegateTokenStatusMap.get(delegateTokenName);
               }
               // if delegate token is not active, then token at group level will not be active
               isDelegateTokenActiveAtGroupLevel.compareAndSet(!isTokenActive, false);
-
+              if (isDelegateConnected) {
+                delegateId.set(delegate.getUuid());
+              }
               return DelegateGroupListing.DelegateInner.builder()
                   .uuid(delegate.getUuid())
                   .lastHeartbeat(delegate.getLastHeartBeat())
-                  .activelyConnected(
-                      delegate.getLastHeartBeat() > System.currentTimeMillis() - HEARTBEAT_EXPIRY_TIME.toMillis())
+                  .activelyConnected(isDelegateConnected)
                   .hostName(delegate.getHostName())
                   .tokenActive(isTokenActive)
                   .build();
             })
             .collect(Collectors.toList());
+
     String connectivityStatus = GROUP_STATUS_PARTIALLY_CONNECTED;
     if (countOfDelegatesConnected.get() == 0) {
       connectivityStatus = GROUP_STATUS_DISCONNECTED;
@@ -454,9 +464,17 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
         .lastHeartBeat(lastHeartBeat)
         .delegateInstanceDetails(delegateInstanceDetails)
         .connectivityStatus(connectivityStatus)
+        .grpcActive(delegateId.get() == null || isGrpcActive(accountId, delegateId.get()))
         .activelyConnected(!connectivityStatus.equals(GROUP_STATUS_DISCONNECTED))
         .tokenActive(isDelegateTokenActiveAtGroupLevel.get())
         .build();
+  }
+
+  private boolean isGrpcActive(String accountId, String delegateId) {
+    return delegateConnectionDao.list(accountId, delegateId)
+        .stream()
+        .anyMatch(delegateConnection
+            -> delegateConnection.getLastGrpcHeartbeat() > System.currentTimeMillis() - MAX_GRPC_HB_TIMEOUT);
   }
 
   @Override
