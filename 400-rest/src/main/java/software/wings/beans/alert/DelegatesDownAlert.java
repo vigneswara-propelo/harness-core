@@ -37,7 +37,8 @@ public class DelegatesDownAlert implements AlertData {
   public boolean matches(AlertData alertData) {
     DelegatesDownAlert delegatesDownAlert = (DelegatesDownAlert) alertData;
     return StringUtils.equals(accountId, delegatesDownAlert.getAccountId())
-        && (StringUtils.equals(delegateGroupName, delegatesDownAlert.getDelegateGroupName())
+        && ((isNotEmpty(delegatesDownAlert.getDelegateGroupName())
+                && StringUtils.equals(delegateGroupName, delegatesDownAlert.getDelegateGroupName()))
             || (StringUtils.equals(hostName, delegatesDownAlert.getHostName())
                 && (hostName.contains(KubernetesConvention.getAccountIdentifier(accountId))
                     || StringUtils.equals(obfuscatedIpAddress, delegatesDownAlert.getObfuscatedIpAddress()))));
