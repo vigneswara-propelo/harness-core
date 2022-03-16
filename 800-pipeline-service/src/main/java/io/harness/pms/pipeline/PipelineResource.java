@@ -33,6 +33,7 @@ import io.harness.gitsync.interceptor.GitEntityUpdateInfoDTO;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.notification.bean.NotificationRules;
 import io.harness.plancreator.steps.http.PmsAbstractStepNode;
 import io.harness.pms.annotations.PipelineServiceAuth;
@@ -247,6 +248,10 @@ public class PipelineResource implements YamlSchemaResource {
         ()
             -> new InvalidRequestException(
                 String.format("Pipeline with the given ID: %s does not exist or has been deleted", pipelineId))));
+
+    TemplateMergeResponseDTO templateMergeResponseDTO =
+        pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity.get());
+    pipeline.setResolvedTemplatesPipelineYaml(templateMergeResponseDTO.getMergedPipelineYaml());
 
     return ResponseDTO.newResponse(version, pipeline);
   }
