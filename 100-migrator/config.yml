@@ -396,6 +396,7 @@ cg:
     analyticsEnabled: true
     connectionTimeout: 10000
     readTimeout: 30000
+    sleepInterval: 5000
 
   featureFlagConfig:
     featureFlagSystem: LOCAL
