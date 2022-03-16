@@ -90,6 +90,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.cache.Cache;
+import javax.cache.configuration.FactoryBuilder;
+import javax.cache.configuration.MutableCacheEntryListenerConfiguration;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.AccessedExpiryPolicy;
 import javax.cache.expiry.Duration;
@@ -219,13 +221,16 @@ public class OrchestrationModule extends AbstractModule implements ServersModule
   @Provides
   @Singleton
   @Named("orchestrationLogCache")
-  public Cache<String, Long> orchestrationLogCache(
-      HarnessCacheManager harnessCacheManager, VersionInfoManager versionInfoManager) {
+  public Cache<String, Long> orchestrationLogCache(HarnessCacheManager harnessCacheManager,
+      VersionInfoManager versionInfoManager, OrchestrationLogCacheListener orchestrationLogCacheListener) {
     Cache<String, Long> cache = harnessCacheManager.getCache("orchestrationLogCache", String.class, Long.class,
-        AccessedExpiryPolicy.factoryOf(new Duration(TimeUnit.MINUTES, 2)),
+        AccessedExpiryPolicy.factoryOf(new Duration(TimeUnit.HOURS, 1)),
         versionInfoManager.getVersionInfo().getBuildNo());
     MutableConfiguration<String, Long> config = new MutableConfiguration<>();
     config.setTypes(String.class, Long.class);
+    cache.registerCacheEntryListener(
+        new MutableCacheEntryListenerConfiguration(FactoryBuilder.factoryOf(orchestrationLogCacheListener),
+            FactoryBuilder.factoryOf(orchestrationLogCacheListener), false, false));
     return cache;
   }
 
