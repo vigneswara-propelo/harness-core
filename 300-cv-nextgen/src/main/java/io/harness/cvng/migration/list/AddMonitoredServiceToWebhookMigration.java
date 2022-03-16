@@ -7,6 +7,8 @@
 
 package io.harness.cvng.migration.list;
 
+import static io.harness.persistence.HQuery.excludeValidate;
+
 import io.harness.cvng.activity.entities.Activity.ActivityKeys;
 import io.harness.cvng.core.entities.MonitoredService;
 import io.harness.cvng.core.entities.Webhook;
@@ -33,7 +35,7 @@ public class AddMonitoredServiceToWebhookMigration implements CVNGMigration {
       while (iterator.hasNext()) {
         MonitoredService monitoredService = iterator.next();
         Query<Webhook> webhookQuery =
-            hPersistence.createQuery(Webhook.class)
+            hPersistence.createQuery(Webhook.class, excludeValidate)
                 .filter(WebhookKeys.accountId, monitoredService.getAccountId())
                 .filter(WebhookKeys.projectIdentifier, monitoredService.getProjectIdentifier())
                 .filter(WebhookKeys.orgIdentifier, monitoredService.getOrgIdentifier())
@@ -43,7 +45,7 @@ public class AddMonitoredServiceToWebhookMigration implements CVNGMigration {
         UpdateResults updateResults = hPersistence.update(webhookQuery,
             hPersistence.createUpdateOperations(Webhook.class)
                 .set(ActivityKeys.monitoredServiceIdentifier, monitoredService.getIdentifier()));
-        log.info("Updated for Activity {}, {}, {}", monitoredService.getProjectIdentifier(),
+        log.info("Updated for Webhook {}, {}, {}", monitoredService.getProjectIdentifier(),
             monitoredService.getIdentifier(), updateResults);
       }
     }

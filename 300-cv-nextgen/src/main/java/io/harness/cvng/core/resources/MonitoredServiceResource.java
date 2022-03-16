@@ -181,30 +181,6 @@ public class MonitoredServiceResource {
   @GET
   @Timed
   @ExceptionMetered
-  @Path("overall-health-score")
-  @ApiOperation(value = "get monitored service overall health score data using service and environment identifiers",
-      nickname = "getMonitoredServiceOverAllHealthScoreWithServiceAndEnv")
-  public ResponseDTO<HistoricalTrend>
-  getOverAllHealthScore(@NotNull @QueryParam("accountId") String accountId,
-      @NotNull @QueryParam("orgIdentifier") String orgIdentifier,
-      @NotNull @QueryParam("projectIdentifier") String projectIdentifier,
-      @NotNull @QueryParam("environmentIdentifier") String environmentIdentifier,
-      @NotNull @QueryParam("serviceIdentifier") String serviceIdentifier,
-      @NotNull @QueryParam("duration") DurationDTO durationDTO, @NotNull @QueryParam("endTime") Long endTime) {
-    ServiceEnvironmentParams serviceEnvironmentParams = ServiceEnvironmentParams.builder()
-                                                            .serviceIdentifier(serviceIdentifier)
-                                                            .environmentIdentifier(environmentIdentifier)
-                                                            .accountIdentifier(accountId)
-                                                            .orgIdentifier(orgIdentifier)
-                                                            .projectIdentifier(projectIdentifier)
-                                                            .build();
-    return ResponseDTO.newResponse(monitoredServiceService.getOverAllHealthScore(
-        serviceEnvironmentParams, durationDTO, Instant.ofEpochMilli(endTime)));
-  }
-
-  @GET
-  @Timed
-  @ExceptionMetered
   @ApiOperation(value = "list monitored service data ", nickname = "listMonitoredService")
   @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = VIEW_PERMISSION)
   public ResponseDTO<PageResponse<MonitoredServiceListItemDTO>> list(

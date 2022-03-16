@@ -1017,12 +1017,6 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   @Override
-  public HistoricalTrend getOverAllHealthScore(
-      ServiceEnvironmentParams serviceEnvironmentParams, DurationDTO duration, Instant endTime) {
-    MonitoredService monitoredService = getMonitoredService(serviceEnvironmentParams);
-    return getMonitoredServiceHistorialTrend(monitoredService, serviceEnvironmentParams, duration, endTime);
-  }
-  @Override
   public HealthScoreDTO getCurrentAndDependentServicesScore(MonitoredServiceParams monitoredServiceParams) {
     MonitoredService monitoredService = getMonitoredService(monitoredServiceParams);
     return getCurrentAndDependentServicesScore(monitoredServiceParams, monitoredService);
