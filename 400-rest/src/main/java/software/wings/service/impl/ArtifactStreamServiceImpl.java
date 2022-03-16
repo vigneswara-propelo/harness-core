@@ -818,7 +818,8 @@ public class ArtifactStreamServiceImpl implements ArtifactStreamService, DataPro
     }
     if (existingArtifactStream.artifactServerChanged(artifactStream)
         || existingArtifactStream.artifactSourceChanged(artifactStream)
-        || existingArtifactStream.artifactCollectionEnabledFromDisabled(artifactStream)) {
+        || existingArtifactStream.artifactCollectionEnabledFromDisabled(artifactStream)
+        || artifactStream.getCollectionStatus() == null) {
       artifactStream.setCollectionStatus(ArtifactStreamCollectionStatus.UNSTABLE.name());
       artifactStream.setFailedCronAttempts(0);
     }
