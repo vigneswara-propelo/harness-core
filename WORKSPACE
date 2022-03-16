@@ -5311,9 +5311,9 @@ filegroup(
         "make install",
         "ln -s bazel_install/bin/python3 python_bin",
     ],
-    sha256 = "991c3f8ac97992f3d308fefeb03a64db462574eadbff34ce8bc5bb583d9903ff",
-    strip_prefix = "Python-3.9.1",
-    urls = ["http://jfrogdev.dev.harness.io:80/artifactory/python-remote/3.9.1/Python-3.9.1.tar.xz"],
+    sha256 = "0a8fbfb5287ebc3a13e9baf3d54e08fa06778ffeccf6311aef821bb3a6586cc8",
+    strip_prefix = "Python-3.9.10",
+    urls = ["https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tar.xz"],
 )
 
 register_toolchains("//:py_toolchain")
