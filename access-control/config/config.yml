@@ -207,6 +207,12 @@ identityServiceSecret: ${IDENTITY_SERVICE_SECRET:-HVSKUYqD4e5Rxu12hFDdCJKGM64sxg
 
 enableAudit: ${ENABLE_AUDIT:-false}
 
+segmentConfiguration:
+  enabled: ${SEGMENT_ENABLED:-false}
+  url: ${SEGMENT_URL:-https://api.segment.io/v1/}
+  apiKey: ${SEGMENT_APIKEY:-""}
+  certValidationRequired: ${SEGMENT_VERIFY_CERT:-false}
+
 auditClientConfig:
   baseUrl: ${AUDIT_CLIENT_BASE_URL:-http://localhost:9005/api/}
   connectTimeOutSeconds: 15
