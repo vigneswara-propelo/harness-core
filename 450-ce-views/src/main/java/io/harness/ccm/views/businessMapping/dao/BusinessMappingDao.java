@@ -44,7 +44,8 @@ public class BusinessMappingDao {
             .set(BusinessMappingKeys.name, businessMapping.getName())
             .set(BusinessMappingKeys.accountId, businessMapping.getAccountId())
             .set(BusinessMappingKeys.costTargets, businessMapping.getCostTargets())
-            .set(BusinessMappingKeys.sharedCosts, businessMapping.getSharedCosts());
+            .set(BusinessMappingKeys.sharedCosts, businessMapping.getSharedCosts())
+            .set(BusinessMappingKeys.unallocatedCost, businessMapping.getUnallocatedCost());
 
     hPersistence.update(query, updateOperations);
     return (BusinessMapping) query.asList().get(0);
