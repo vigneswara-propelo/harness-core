@@ -11,6 +11,8 @@ import io.harness.morphia.MorphiaRegistrar;
 import io.harness.morphia.MorphiaRegistrarHelperPut;
 
 import software.wings.beans.AppDynamicsConfig;
+import software.wings.beans.DynaTraceConfig;
+import software.wings.beans.NewRelicConfig;
 import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.delegatetasks.validation.DelegateConnectionResult;
 import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
@@ -32,5 +34,7 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("service.impl.analysis.CustomLogDataCollectionInfo", CustomLogDataCollectionInfo.class);
     w.put("delegatetasks.cv.beans.CustomLogResponseMapper", CustomLogResponseMapper.class);
     w.put("beans.AppDynamicsConfig", AppDynamicsConfig.class);
+    w.put("beans.NewRelicConfig", NewRelicConfig.class);
+    w.put("beans.DynaTraceConfig", DynaTraceConfig.class);
   }
 }

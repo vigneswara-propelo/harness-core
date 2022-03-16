@@ -8,18 +8,20 @@
 package software.wings.beans;
 
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
+import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
 import io.harness.encryption.Encrypted;
 import io.harness.expression.ExpressionEvaluator;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.audit.ResourceType;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.jersey.JsonViews;
 import software.wings.security.UsageRestrictions;
-import software.wings.service.intfc.security.SecretManager;
+import software.wings.service.impl.newrelic.NewRelicUrlProvider;
 import software.wings.settings.SettingValue;
-import software.wings.sm.StateType;
-import software.wings.sm.states.APMVerificationState;
+import software.wings.stencils.DefaultValue;
+import software.wings.stencils.EnumData;
 import software.wings.yaml.setting.VerificationProviderYaml;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -27,9 +29,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -40,44 +40,56 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * Created by raghu on 8/28/17.
  */
-@JsonTypeName("DYNA_TRACE")
+@JsonTypeName("NEW_RELIC")
 @Data
 @Builder
-@ToString(exclude = "apiToken")
+@ToString(exclude = "apiKey")
 @EqualsAndHashCode(callSuper = false)
-public class DynaTraceConfig extends SettingValue implements EncryptableSetting {
-  @Attributes(title = "URL", required = true) private String dynaTraceUrl;
+public class NewRelicConfig extends SettingValue implements EncryptableSetting, ExecutionCapabilityDemander {
+  @EnumData(enumDataProvider = NewRelicUrlProvider.class)
+  @Attributes(title = "URL")
+  @NotEmpty
+  @DefaultValue("https://api.newrelic.com")
+  private String newRelicUrl = "https://api.newrelic.com";
 
-  @Attributes(title = "API Token", required = true) @Encrypted(fieldName = "api_token") private char[] apiToken;
+  @Attributes(title = "API key", required = true) @Encrypted(fieldName = "api_key") private char[] apiKey;
+
+  @Attributes(title = "NewRelic Account Id") private String newRelicAccountId;
 
   @SchemaIgnore @NotEmpty private String accountId;
 
-  @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedApiToken;
+  @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedApiKey;
 
-  public DynaTraceConfig() {
-    super(StateType.DYNA_TRACE.name());
+  /**
+   * Instantiates a new New Relic dynamics config.
+   */
+  public NewRelicConfig() {
+    super(DelegateStateType.NEW_RELIC.name());
   }
 
-  public DynaTraceConfig(String dynaTraceUrl, char[] apiToken, String accountId, String encryptedApiToken) {
+  public NewRelicConfig(
+      String newRelicUrl, char[] apiKey, String newRelicAccountId, String accountId, String encryptedApiKey) {
     this();
-    this.dynaTraceUrl = dynaTraceUrl;
-    this.apiToken = apiToken == null ? null : apiToken.clone();
+    this.newRelicUrl = newRelicUrl;
+    this.apiKey = apiKey == null ? null : apiKey.clone();
     this.accountId = accountId;
-    this.encryptedApiToken = encryptedApiToken;
+    this.newRelicAccountId = newRelicAccountId;
+    this.encryptedApiKey = encryptedApiKey;
+  }
+
+  public NewRelicConfig(String newRelicUrl, char[] apiKey, String accountId, String encryptedApiKey) {
+    this();
+    this.newRelicUrl = newRelicUrl;
+    this.apiKey = apiKey == null ? null : apiKey.clone();
+    this.accountId = accountId;
+    this.newRelicAccountId = "";
+    this.encryptedApiKey = encryptedApiKey;
   }
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
     return Arrays.asList(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
-        dynaTraceUrl, maskingEvaluator));
-  }
-
-  private Map<String, String> headerMap() {
-    Map<String, String> headerMap = new HashMap<>();
-    // check for apiKey. If not empty populate the value else populate default value.
-    headerMap.put("Authorization", apiToken != null ? "Api-Token " + new String(apiToken) : "Api-Token ${apiToken}");
-    headerMap.put("Accept", "application/json");
-    return headerMap;
+        newRelicUrl, maskingEvaluator));
   }
 
   @Override
@@ -85,28 +97,19 @@ public class DynaTraceConfig extends SettingValue implements EncryptableSetting 
     return ResourceType.VERIFICATION_PROVIDER.name();
   }
 
-  public APMValidateCollectorConfig createAPMValidateCollectorConfig(SecretManager secretManager) {
-    return APMValidateCollectorConfig.builder()
-        .baseUrl(dynaTraceUrl)
-        .collectionMethod(APMVerificationState.Method.GET)
-        .headers(headerMap())
-        .encryptedDataDetails(secretManager.getEncryptionDetails(this))
-        .build();
-  }
-
   @Data
   @NoArgsConstructor
   @EqualsAndHashCode(callSuper = true)
-  public static final class DynaTraceYaml extends VerificationProviderYaml {
-    private String apiToken;
-    private String dynaTraceUrl;
+  public static final class Yaml extends VerificationProviderYaml {
+    private String apiKey;
+    private String newRelicAccountId;
 
     @Builder
-    public DynaTraceYaml(String type, String harnessApiVersion, String dynaTraceUrl, String apiToken,
+    public Yaml(String type, String harnessApiVersion, String apiKey, String newRelicAccountId,
         UsageRestrictions.Yaml usageRestrictions) {
       super(type, harnessApiVersion, usageRestrictions);
-      this.dynaTraceUrl = dynaTraceUrl;
-      this.apiToken = apiToken;
+      this.apiKey = apiKey;
+      this.newRelicAccountId = newRelicAccountId;
     }
   }
 }

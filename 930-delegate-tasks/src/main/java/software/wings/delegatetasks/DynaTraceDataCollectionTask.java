@@ -9,11 +9,11 @@ package software.wings.delegatetasks;
 
 import static io.harness.threading.Morpheus.sleep;
 
-import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
-import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
+import static software.wings.delegatetasks.cv.CVConstants.CANARY_DAYS_TO_COLLECT;
+import static software.wings.delegatetasks.cv.CVConstants.DATA_COLLECTION_RETRY_SLEEP;
+import static software.wings.delegatetasks.cv.CVConstants.DURATION_TO_ASK_MINUTES;
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
 import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
-import static software.wings.sm.states.AbstractMetricAnalysisState.CANARY_DAYS_TO_COLLECT;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
@@ -28,6 +28,7 @@ import io.harness.time.Timestamp;
 
 import software.wings.beans.DynaTraceConfig;
 import software.wings.beans.TaskType;
+import software.wings.delegatetasks.cv.CVConstants;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
@@ -39,7 +40,6 @@ import software.wings.service.impl.dynatrace.DynaTraceTimeSeries;
 import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
 import software.wings.service.intfc.analysis.ClusterLevel;
 import software.wings.service.intfc.dynatrace.DynaTraceDelegateService;
-import software.wings.sm.states.DynatraceState;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.TreeBasedTable;
@@ -273,7 +273,7 @@ public class DynaTraceDataCollectionTask extends AbstractDelegateDataCollectionT
               DynaTraceMetricDataResponse metricDataResponse =
                   dynaTraceDelegateService.fetchMetricData(dynaTraceConfig, dataRequest, encryptionDetails,
                       ThirdPartyApiCallLog.fromDetails(createApiCallLog(dataCollectionInfo.getStateExecutionId())));
-              metricDataResponse.getResult().setHost(DynatraceState.TEST_HOST_NAME);
+              metricDataResponse.getResult().setHost(CVConstants.TEST_HOST_NAME);
               return metricDataResponse;
             });
           }
@@ -283,7 +283,7 @@ public class DynaTraceDataCollectionTask extends AbstractDelegateDataCollectionT
           final long endTime = collectionStartTime + TimeUnit.MINUTES.toMillis(2);
 
           for (int i = 0; i <= CANARY_DAYS_TO_COLLECT; i++) {
-            String hostName = i == 0 ? DynatraceState.TEST_HOST_NAME : DynatraceState.CONTROL_HOST_NAME + i;
+            String hostName = i == 0 ? CVConstants.TEST_HOST_NAME : CVConstants.CONTROL_HOST_NAME + i;
             long startTimeStamp = startTime - TimeUnit.DAYS.toMillis(i);
             long endTimeStamp = endTime - TimeUnit.DAYS.toMillis(i);
             hostStartTimeMap.put(hostName, startTimeStamp);

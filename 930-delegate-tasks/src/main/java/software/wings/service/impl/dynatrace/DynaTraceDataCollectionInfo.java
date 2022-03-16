@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.service.impl.newrelic;
+package software.wings.service.impl.dynatrace;
 
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
@@ -13,12 +13,12 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
 
-import software.wings.beans.NewRelicConfig;
-import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
-import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.beans.DynaTraceConfig;
+import software.wings.delegatetasks.utils.CapablityUtility;
+import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,27 +32,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class NewRelicDataCollectionInfo implements TaskParameters, ExecutionCapabilityDemander {
-  private NewRelicConfig newRelicConfig;
+public class DynaTraceDataCollectionInfo implements TaskParameters, ExecutionCapabilityDemander {
+  private DynaTraceConfig dynaTraceConfig;
   private String applicationId;
   private String stateExecutionId;
   private String workflowId;
   private String workflowExecutionId;
   private String serviceId;
+  private String cvConfigId;
   private long startTime;
   private int collectionTime;
-  private long newRelicAppId;
+  private List<DynaTraceTimeSeries> timeSeriesDefinitions;
+  private Set<String> dynatraceServiceIds;
+  private AnalysisComparisonStrategy analysisComparisonStrategy;
   private int dataCollectionMinute;
   List<EncryptedDataDetail> encryptedDataDetails;
-  private Map<String, String> hosts;
-  private String settingAttributeId;
-  private String deploymentMarker;
-  private TimeSeriesMlAnalysisType timeSeriesMlAnalysisType;
-  private String cvConfigId;
-  private boolean checkNotAllowedStrings;
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
-    return CapabilityHelper.generateDelegateCapabilities(newRelicConfig, encryptedDataDetails, maskingEvaluator);
+    return CapablityUtility.generateDelegateCapabilities(dynaTraceConfig, encryptedDataDetails, maskingEvaluator);
   }
 }

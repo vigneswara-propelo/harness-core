@@ -8,20 +8,16 @@
 package software.wings.beans;
 
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
-import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
 import io.harness.encryption.Encrypted;
 import io.harness.expression.ExpressionEvaluator;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.audit.ResourceType;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.jersey.JsonViews;
 import software.wings.security.UsageRestrictions;
-import software.wings.service.impl.newrelic.NewRelicUrlProvider;
 import software.wings.settings.SettingValue;
-import software.wings.sm.StateType;
-import software.wings.stencils.DefaultValue;
-import software.wings.stencils.EnumData;
 import software.wings.yaml.setting.VerificationProviderYaml;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -40,56 +36,36 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * Created by raghu on 8/28/17.
  */
-@JsonTypeName("NEW_RELIC")
+@JsonTypeName("DYNA_TRACE")
 @Data
 @Builder
-@ToString(exclude = "apiKey")
+@ToString(exclude = "apiToken")
 @EqualsAndHashCode(callSuper = false)
-public class NewRelicConfig extends SettingValue implements EncryptableSetting, ExecutionCapabilityDemander {
-  @EnumData(enumDataProvider = NewRelicUrlProvider.class)
-  @Attributes(title = "URL")
-  @NotEmpty
-  @DefaultValue("https://api.newrelic.com")
-  private String newRelicUrl = "https://api.newrelic.com";
+public class DynaTraceConfig extends SettingValue implements EncryptableSetting {
+  @Attributes(title = "URL", required = true) private String dynaTraceUrl;
 
-  @Attributes(title = "API key", required = true) @Encrypted(fieldName = "api_key") private char[] apiKey;
-
-  @Attributes(title = "NewRelic Account Id") private String newRelicAccountId;
+  @Attributes(title = "API Token", required = true) @Encrypted(fieldName = "api_token") private char[] apiToken;
 
   @SchemaIgnore @NotEmpty private String accountId;
 
-  @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedApiKey;
+  @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedApiToken;
 
-  /**
-   * Instantiates a new New Relic dynamics config.
-   */
-  public NewRelicConfig() {
-    super(StateType.NEW_RELIC.name());
+  public DynaTraceConfig() {
+    super(DelegateStateType.DYNA_TRACE.name());
   }
 
-  public NewRelicConfig(
-      String newRelicUrl, char[] apiKey, String newRelicAccountId, String accountId, String encryptedApiKey) {
+  public DynaTraceConfig(String dynaTraceUrl, char[] apiToken, String accountId, String encryptedApiToken) {
     this();
-    this.newRelicUrl = newRelicUrl;
-    this.apiKey = apiKey == null ? null : apiKey.clone();
+    this.dynaTraceUrl = dynaTraceUrl;
+    this.apiToken = apiToken == null ? null : apiToken.clone();
     this.accountId = accountId;
-    this.newRelicAccountId = newRelicAccountId;
-    this.encryptedApiKey = encryptedApiKey;
-  }
-
-  public NewRelicConfig(String newRelicUrl, char[] apiKey, String accountId, String encryptedApiKey) {
-    this();
-    this.newRelicUrl = newRelicUrl;
-    this.apiKey = apiKey == null ? null : apiKey.clone();
-    this.accountId = accountId;
-    this.newRelicAccountId = "";
-    this.encryptedApiKey = encryptedApiKey;
+    this.encryptedApiToken = encryptedApiToken;
   }
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
     return Arrays.asList(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
-        newRelicUrl, maskingEvaluator));
+        dynaTraceUrl, maskingEvaluator));
   }
 
   @Override
@@ -100,16 +76,16 @@ public class NewRelicConfig extends SettingValue implements EncryptableSetting, 
   @Data
   @NoArgsConstructor
   @EqualsAndHashCode(callSuper = true)
-  public static final class Yaml extends VerificationProviderYaml {
-    private String apiKey;
-    private String newRelicAccountId;
+  public static final class DynaTraceYaml extends VerificationProviderYaml {
+    private String apiToken;
+    private String dynaTraceUrl;
 
     @Builder
-    public Yaml(String type, String harnessApiVersion, String apiKey, String newRelicAccountId,
+    public DynaTraceYaml(String type, String harnessApiVersion, String dynaTraceUrl, String apiToken,
         UsageRestrictions.Yaml usageRestrictions) {
       super(type, harnessApiVersion, usageRestrictions);
-      this.apiKey = apiKey;
-      this.newRelicAccountId = newRelicAccountId;
+      this.dynaTraceUrl = dynaTraceUrl;
+      this.apiToken = apiToken;
     }
   }
 }

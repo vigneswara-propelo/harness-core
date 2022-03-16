@@ -14,12 +14,12 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.DynaTraceConfig;
 import software.wings.delegatetasks.DelegateLogService;
+import software.wings.delegatetasks.cv.CVConstants;
 import software.wings.delegatetasks.cv.RequestExecutor;
 import software.wings.helpers.ext.dynatrace.DynaTraceRestClient;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.intfc.dynatrace.DynaTraceDelegateService;
 import software.wings.service.intfc.security.EncryptionService;
-import software.wings.sm.states.DynatraceState;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -153,7 +153,7 @@ public class DynaTraceDelegateServiceImpl implements DynaTraceDelegateService {
 
         DynaTraceMetricDataResponse metricDataResponse =
             fetchMetricData(config, dataRequest, encryptionDetails, thirdPartyApiCallLog);
-        metricDataResponse.getResult().setHost(DynatraceState.TEST_HOST_NAME);
+        metricDataResponse.getResult().setHost(CVConstants.TEST_HOST_NAME);
         return metricDataResponse;
       });
     }
