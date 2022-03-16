@@ -281,4 +281,11 @@ public class PMSInputSetServiceImpl implements PMSInputSetService {
     return inputSetRepository.update(inputSetEntity.getAccountId(), inputSetEntity.getOrgIdentifier(),
         inputSetEntity.getProjectIdentifier(), criteria, update);
   }
+
+  @Override
+  public boolean checkForInputSetsForPipeline(
+      String accountId, String orgIdentifier, String projectIdentifier, String pipelineIdentifier) {
+    return inputSetRepository.existsByAccountIdAndOrgIdentifierAndProjectIdentifierAndPipelineIdentifierAndDeletedNot(
+        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, true);
+  }
 }

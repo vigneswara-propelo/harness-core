@@ -36,4 +36,6 @@ public class InputSetSchemaConstants {
   public static final String INPUT_SET_MODULES_MESSAGE = "Modules in which the Pipeline belongs";
   public static final String INPUT_SET_REPLACED_EXPRESSIONS_MESSAGE =
       "List of Expressions that need to be replaced for running selected Stages. Empty if the full Pipeline is being run or no expressions need to be replaced";
+  public static final String INPUT_SET_COUNT_MESSAGE =
+      "Tells whether there are any Input Sets for this Pipeline or not.";
 }

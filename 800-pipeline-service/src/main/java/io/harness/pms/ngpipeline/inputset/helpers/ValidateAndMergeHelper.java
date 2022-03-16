@@ -157,10 +157,15 @@ public class ValidateAndMergeHelper {
             new ArrayList<>(StagesExpressionExtractor.getNonLocalExpressions(pipelineYaml, stageIdentifiers));
         template = createTemplateFromPipelineForGivenStages(pipelineYaml, stageIdentifiers);
       }
+
+      boolean hasInputSets = pmsInputSetService.checkForInputSetsForPipeline(
+          accountId, orgIdentifier, projectIdentifier, pipelineIdentifier);
+
       return InputSetTemplateResponseDTOPMS.builder()
           .inputSetTemplateYaml(template)
           .replacedExpressions(replacedExpressions)
           .modules(optionalPipelineEntity.get().getFilters().keySet())
+          .hasInputSets(hasInputSets)
           .build();
     } else {
       throw new InvalidRequestException(PipelineCRUDErrorResponse.errorMessageForPipelineNotFound(

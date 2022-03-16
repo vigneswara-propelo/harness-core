@@ -37,4 +37,5 @@ public class InputSetTemplateResponseDTOPMS {
   @Schema(description = InputSetSchemaConstants.INPUT_SET_REPLACED_EXPRESSIONS_MESSAGE)
   List<String> replacedExpressions;
   @Schema(description = InputSetSchemaConstants.INPUT_SET_MODULES_MESSAGE) Set<String> modules;
+  @Schema(description = InputSetSchemaConstants.INPUT_SET_COUNT_MESSAGE) Boolean hasInputSets;
 }
