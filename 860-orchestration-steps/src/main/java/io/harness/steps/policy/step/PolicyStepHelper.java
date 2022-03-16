@@ -72,6 +72,10 @@ public class PolicyStepHelper {
                                   .addFailureTypes(failureType)
                                   .build();
     FailureInfo failureInfo = FailureInfo.newBuilder().addFailureData(failureData).setErrorMessage(message).build();
+    if (stepOutcome == null) {
+      // need a special if block so that an empty null element is not added to the overall step outcomes list later
+      return builder().status(Status.FAILED).failureInfo(failureInfo).build();
+    }
     return builder().status(Status.FAILED).failureInfo(failureInfo).stepOutcome(stepOutcome).build();
   }
 }
