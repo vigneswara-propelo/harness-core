@@ -12,8 +12,12 @@ import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.CategoryTest;
+import io.harness.EntityType;
+import io.harness.beans.IdentifierRef;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
+import io.harness.encryption.ScopeHelper;
+import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponseDTO;
 import io.harness.rule.Owner;
@@ -73,5 +77,39 @@ public class EnvironmentGroupMapperTest extends CategoryTest {
     assertThat(environmentGroupResponse.getLastModifiedAt()).isEqualTo(2L);
     assertThat(environmentGroupResponse.getEnvGroup().getIdentifier()).isEqualTo("id1");
     assertThat(environmentGroupResponse.getEnvGroup().getEnvIdentifiers().size()).isEqualTo(2);
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testGetEntityDetail() {
+    EnvironmentGroupEntity environmentGroupEntity = EnvironmentGroupEntity.builder()
+                                                        .accountId(ACC_ID)
+                                                        .orgIdentifier(ORG_ID)
+                                                        .projectIdentifier(PRO_ID)
+                                                        .identifier("id1")
+                                                        .name("envGroup")
+                                                        .envIdentifiers(Arrays.asList("env1", "env2"))
+                                                        .color("col")
+                                                        .createdAt(1L)
+                                                        .lastModifiedAt(2L)
+                                                        .yaml("yaml")
+                                                        .build();
+
+    IdentifierRef expectedIdentifierRef =
+        IdentifierRef.builder()
+            .accountIdentifier(environmentGroupEntity.getAccountIdentifier())
+            .orgIdentifier(environmentGroupEntity.getOrgIdentifier())
+            .projectIdentifier(environmentGroupEntity.getProjectIdentifier())
+            .scope(ScopeHelper.getScope(environmentGroupEntity.getAccountIdentifier(),
+                environmentGroupEntity.getOrgIdentifier(), environmentGroupEntity.getProjectIdentifier()))
+            .identifier(environmentGroupEntity.getIdentifier())
+            .build();
+
+    EntityDetail entityDetail = EnvironmentGroupMapper.getEntityDetail(environmentGroupEntity);
+
+    assertThat(entityDetail.getName()).isEqualTo(environmentGroupEntity.getName());
+    assertThat(entityDetail.getType()).isEqualTo(EntityType.ENVIRONMENT_GROUP);
+    assertThat(entityDetail.getEntityRef()).isEqualTo(expectedIdentifierRef);
   }
 }

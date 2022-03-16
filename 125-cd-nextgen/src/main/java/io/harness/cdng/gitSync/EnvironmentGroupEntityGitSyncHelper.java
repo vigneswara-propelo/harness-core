@@ -11,6 +11,7 @@ import io.harness.EntityType;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupConfig;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKeys;
+import io.harness.cdng.envGroup.mappers.EnvironmentGroupMapper;
 import io.harness.common.EntityReference;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.git.model.ChangeType;
@@ -64,7 +65,7 @@ public class EnvironmentGroupEntityGitSyncHelper
 
   @Override
   public EntityDetail getEntityDetail(EnvironmentGroupEntity entity) {
-    return null;
+    return EnvironmentGroupMapper.getEntityDetail(entity);
   }
 
   @Override

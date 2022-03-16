@@ -11,8 +11,12 @@ import static io.harness.NGConstants.HARNESS_BLUE;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.ng.core.mapper.TagMapper.convertToMap;
 
+import io.harness.EntityType;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.IdentifierRef;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
+import io.harness.encryption.ScopeHelper;
+import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponseDTO;
 
@@ -43,6 +47,21 @@ public class EnvironmentGroupMapper {
         .environment(writeDTO(envGroup))
         .createdAt(envGroup.getCreatedAt())
         .lastModifiedAt(envGroup.getLastModifiedAt())
+        .build();
+  }
+
+  public EntityDetail getEntityDetail(EnvironmentGroupEntity entity) {
+    return EntityDetail.builder()
+        .name(entity.getName())
+        .type(EntityType.ENVIRONMENT_GROUP)
+        .entityRef(IdentifierRef.builder()
+                       .accountIdentifier(entity.getAccountIdentifier())
+                       .orgIdentifier(entity.getOrgIdentifier())
+                       .projectIdentifier(entity.getProjectIdentifier())
+                       .scope(ScopeHelper.getScope(
+                           entity.getAccountIdentifier(), entity.getOrgIdentifier(), entity.getProjectIdentifier()))
+                       .identifier(entity.getIdentifier())
+                       .build())
         .build();
   }
 }

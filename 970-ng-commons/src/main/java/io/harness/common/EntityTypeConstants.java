@@ -81,4 +81,5 @@ public interface EntityTypeConstants {
   String POLICY_STEP = "Policy";
   String SERVICENOW_CREATE = "ServiceNowCreate";
   String SERVICENOW_UPDATE = "ServiceNowUpdate";
+  String ENVIRONMENT_GROUP = "EnvironmentGroup";
 }
