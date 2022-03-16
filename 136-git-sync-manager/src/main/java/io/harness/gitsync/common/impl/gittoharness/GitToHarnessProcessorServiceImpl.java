@@ -24,6 +24,7 @@ import io.harness.Microservice;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
+import io.harness.exception.InvalidRequestException;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.ChangeSet;
 import io.harness.gitsync.ChangeSets;
@@ -420,6 +421,10 @@ public class GitToHarnessProcessorServiceImpl implements GitToHarnessProcessorSe
 
   private void updateCommit(String commitId, String accountId, String branchName, String repoUrl,
       List<GitToHarnessProcessingResponse> gitToHarnessProcessingResponses, List<ChangeSet> invalidChangeSets) {
+    if (commitId == null) {
+      throw new InvalidRequestException(
+          String.format("Found null commitId while saving the commit for repo %s and branch %s", repoUrl, branchName));
+    }
     GitToHarnessProcessingStepStatus status = getStatus(gitToHarnessProcessingResponses);
     if (status == DONE) {
       GitCommitDTO gitCommitDTO = GitCommitDTO.builder()

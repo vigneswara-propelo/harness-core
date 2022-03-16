@@ -24,6 +24,7 @@ import io.harness.gitsync.common.beans.GitBranch;
 import io.harness.gitsync.common.beans.GitToHarnessFileProcessingRequest;
 import io.harness.gitsync.common.beans.GitToHarnessProgressStatus;
 import io.harness.gitsync.common.beans.YamlChangeSetEventType;
+import io.harness.gitsync.common.dtos.GetFileDetailsFromBranchResponse;
 import io.harness.gitsync.common.dtos.GitFileChangeDTO;
 import io.harness.gitsync.common.dtos.GitToHarnessProcessMsvcStepResponse;
 import io.harness.gitsync.common.helper.YamlGitConfigHelper;
@@ -97,8 +98,10 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
     List<YamlGitConfigDTO> yamlGitConfigDTOS =
         yamlGitConfigService.getByAccountAndRepo(accountIdentifier, yamlGitConfig.getRepo());
     Set<String> foldersList = YamlGitConfigHelper.getRootFolderList(yamlGitConfigDTOS);
-    List<GitFileChangeDTO> harnessFilesOfBranch =
+    GetFileDetailsFromBranchResponse getFilesResponseOfBranch =
         getFilesToBeProcessed(yamlGitConfigDTOS, accountIdentifier, foldersList, branchName);
+    String commitId = getFilesResponseOfBranch.getCommitId();
+    final List<GitFileChangeDTO> harnessFilesOfBranch = getFilesResponseOfBranch.getFilesInGit();
     log.info("Received file paths: [{}] from git in harness folders.",
         emptyIfNull(harnessFilesOfBranch).stream().map(GitFileChangeDTO::getPath).collect(Collectors.toList()));
     List<GitFileChangeDTO> filteredFileList = getFilteredFiles(harnessFilesOfBranch, filePathsToBeExcluded);
@@ -112,7 +115,6 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
                        .build())
             .collect(toList());
     gitToHarnessProgressService.updateFilesInProgressRecord(gitToHarnessProgressRecordId, gitToHarnessFilesToProcess);
-    String commitId = getCommitId(harnessFilesOfBranch);
     String commitMessage = getCommitMessage(yamlGitConfig, commitId, accountIdentifier);
     GitToHarnessProgressStatus gitToHarnessProgressStatus =
         gitToHarnessProcessorService.processFiles(accountIdentifier, gitToHarnessFilesToProcess, branchName,
@@ -121,7 +123,7 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
   }
 
   // todo deepak: if for loop is removed from here take care of branch push case
-  private List<GitFileChangeDTO> getFilesToBeProcessed(
+  private GetFileDetailsFromBranchResponse getFilesToBeProcessed(
       List<YamlGitConfigDTO> yamlGitConfigDTOs, String accountIdentifier, Set<String> foldersList, String branchName) {
     List<GitFileChangeDTO> filesInBranch = new ArrayList<>();
     int yamlGitConfigsCount = yamlGitConfigDTOs.size();
@@ -130,10 +132,14 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
       try {
         log.info("Trying to get files using the yaml git config with the identifier {} in project {}",
             yamlGitConfigDTO.getIdentifier(), yamlGitConfigDTO.getProjectIdentifier());
+        String commitId = getCommitId(filesInBranch);
+        if (commitId == null) {
+          commitId = getLatestCommitIdOfBranch(yamlGitConfigDTO, branchName);
+        }
         filesInBranch = getFilesBelongingToThisBranch(accountIdentifier, yamlGitConfigDTO, foldersList, branchName);
         log.info("Completed get files using the yaml git config with the identifier {} in project {}",
             yamlGitConfigDTO.getIdentifier(), yamlGitConfigDTO.getProjectIdentifier());
-        return filesInBranch;
+        return GetFileDetailsFromBranchResponse.builder().filesInGit(filesInBranch).commitId(commitId).build();
       } catch (Exception ex) {
         log.error("Error doing get files using the yaml git config with the identifier {} in project {}",
             yamlGitConfigDTO.getIdentifier(), yamlGitConfigDTO.getProjectIdentifier(), ex);
@@ -144,6 +150,13 @@ public class GitBranchSyncServiceImpl implements GitBranchSyncService {
       }
     }
     throw new UnexpectedException("Could not get the files to do git branch sync");
+  }
+
+  private String getLatestCommitIdOfBranch(YamlGitConfigDTO yamlGitConfigDTO, String branchName) {
+    return scmOrchestratorService.processScmRequest(scmClient
+        -> scmClient.getLatestCommit(yamlGitConfigDTO, branchName).getSha(),
+        yamlGitConfigDTO.getProjectIdentifier(), yamlGitConfigDTO.getOrganizationIdentifier(),
+        yamlGitConfigDTO.getAccountIdentifier());
   }
 
   private String getCommitId(List<GitFileChangeDTO> harnessFilesOfBranch) {
