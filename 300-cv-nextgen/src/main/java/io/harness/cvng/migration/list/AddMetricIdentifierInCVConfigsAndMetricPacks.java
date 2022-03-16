@@ -15,6 +15,7 @@ import io.harness.cvng.core.entities.MetricPack;
 import io.harness.cvng.core.entities.MetricPack.MetricPackKeys;
 import io.harness.cvng.migration.CVNGMigration;
 import io.harness.cvng.migration.beans.ChecklistItem;
+import io.harness.cvng.models.VerificationType;
 import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
 
@@ -57,23 +58,27 @@ public class AddMetricIdentifierInCVConfigsAndMetricPacks implements CVNGMigrati
     }
 
     log.info("Adding identifiers for metric pack in cvconfigs");
-    Query<MetricCVConfig> metricCVConfigQuery = hPersistence.createQuery(MetricCVConfig.class);
-    try (HIterator<MetricCVConfig> iterator = new HIterator<>(metricCVConfigQuery.fetch())) {
+    Query<CVConfig> cvConfigQuery = hPersistence.createQuery(CVConfig.class);
+    try (HIterator<CVConfig> iterator = new HIterator<>(cvConfigQuery.fetch())) {
       while (iterator.hasNext()) {
-        MetricCVConfig cvConfig = iterator.next();
+        CVConfig cvConfig = iterator.next();
+        if (cvConfig.getVerificationType().equals(VerificationType.TIME_SERIES)) {
+          MetricCVConfig metricCVConfig = (MetricCVConfig) cvConfig;
 
-        if (cvConfig.getMetricPack() != null && cvConfig.getMetricPack().getMetrics() != null) {
-          cvConfig.getMetricPack().getMetrics().forEach(metricDefinition -> {
-            if (metricDefinition != null && isEmpty(metricDefinition.getIdentifier())) {
-              String identifier = metricDefinition.getName().replaceAll(" ", "_");
-              identifier = identifier.replaceAll("\\(", "");
-              identifier = identifier.replaceAll("\\)", "");
-              metricDefinition.setIdentifier(identifier);
-            }
-          });
+          if (metricCVConfig.getMetricPack() != null && metricCVConfig.getMetricPack().getMetrics() != null) {
+            metricCVConfig.getMetricPack().getMetrics().forEach(metricDefinition -> {
+              if (metricDefinition != null && isEmpty(metricDefinition.getIdentifier())) {
+                String identifier = metricDefinition.getName().replaceAll(" ", "_");
+                identifier = identifier.replaceAll("\\(", "");
+                identifier = identifier.replaceAll("\\)", "");
+                metricDefinition.setIdentifier(identifier);
+              }
+            });
+
+            hPersistence.save(cvConfig);
+            log.info("Identifier updation for cvConfig {}, {}", cvConfig.getProjectIdentifier(), cvConfig.getUuid());
+          }
         }
-        hPersistence.save(cvConfig);
-        log.info("Identifier updation for cvConfig {}, {}", cvConfig.getProjectIdentifier(), cvConfig.getUuid());
       }
     }
   }
