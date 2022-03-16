@@ -23,6 +23,7 @@ import io.harness.ngmigration.beans.MigrationInputResult;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.utils.NGMigrationConstants;
 import io.harness.remote.client.ServiceHttpClientConfig;
 
 import software.wings.ngmigration.CgEntityId;
@@ -69,8 +70,6 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
 public class DiscoveryService {
-  private static final String DEFAULT_ZIP_DIRECTORY = "/tmp/zip-output";
-
   @Inject private NgMigrationFactory migrationFactory;
   @Inject private MigratorMappingService migratorMappingService;
   @Inject @Named("ngClientConfig") private ServiceHttpClientConfig ngClientConfig;
@@ -168,7 +167,7 @@ public class DiscoveryService {
   private void exportImg(Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph) {
     MutableGraph vizGraph = getGraphViz(entities, graph);
     try {
-      Graphviz.fromGraph(vizGraph).render(Format.PNG).toFile(new File("/tmp/viz-output/viz.png"));
+      Graphviz.fromGraph(vizGraph).render(Format.PNG).toFile(new File(NGMigrationConstants.DISCOVERY_IMAGE_PATH));
     } catch (IOException e) {
       log.warn("Unable to write visualization to file");
     }
@@ -194,7 +193,7 @@ public class DiscoveryService {
     exportZip(ngYamlFiles, folder);
     return output -> {
       try {
-        byte[] data = Files.readAllBytes(Paths.get(folder + "/yamls.zip"));
+        byte[] data = Files.readAllBytes(Paths.get(folder + NGMigrationConstants.ZIP_FILE_PATH));
         output.write(data);
         output.flush();
       } catch (Exception e) {
@@ -214,7 +213,7 @@ public class DiscoveryService {
   public List<NGYamlFile> migrateEntity(
       String auth, MigrationInputDTO inputDTO, DiscoveryResult discoveryResult, boolean dryRun) {
     List<NGYamlFile> ngYamlFiles = migrateEntity(inputDTO, discoveryResult);
-    exportZip(ngYamlFiles, DEFAULT_ZIP_DIRECTORY);
+    exportZip(ngYamlFiles, NGMigrationConstants.DEFAULT_ZIP_DIRECTORY);
     if (!dryRun) {
       createEntities(auth, inputDTO, ngYamlFiles);
     }
@@ -261,7 +260,7 @@ public class DiscoveryService {
     } catch (IOException e) {
       log.warn("Failed to clean output directory");
     }
-    File zipFile = new File(dirName + "/yamls.zip");
+    File zipFile = new File(dirName + NGMigrationConstants.ZIP_FILE_PATH);
     zipFile.getParentFile().mkdirs();
     try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile))) {
       for (NGYamlFile file : ngYamlFiles) {

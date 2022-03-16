@@ -7,10 +7,13 @@
 
 package io.harness.ngmigration.service;
 
+import static java.lang.String.format;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.MigratedEntityMapping;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
@@ -113,7 +116,11 @@ public class PipelineMigrationService implements NgMigrationService {
 
   @Override
   public DiscoveryNode discover(String accountId, String appId, String entityId) {
-    return discover(pipelineService.getPipeline(appId, entityId));
+    Pipeline pipeline = pipelineService.getPipeline(appId, entityId);
+    if (pipeline == null) {
+      throw new InvalidRequestException(format("Pipeline with id:[%s] doesn't exist", entityId));
+    }
+    return discover(pipeline);
   }
 
   @Override
