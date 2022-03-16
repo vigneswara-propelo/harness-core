@@ -7,6 +7,7 @@ package git
 
 import (
 	"context"
+	"net/url"
 	"strings"
 	"time"
 
@@ -200,12 +201,17 @@ func GetLatestCommit(ctx context.Context, request *pb.GetLatestCommitRequest, lo
 		return nil, err
 	}
 
-	ref, err := gitclient.GetValidRef(*request.Provider, request.GetRef(), request.GetBranch())
+	branch := request.GetBranch()
+	if client.Driver == scm.DriverGitlab {
+		branch = url.QueryEscape(branch)
+	}
+
+	ref, err := gitclient.GetValidRef(*request.Provider, request.GetRef(), branch)
 	if err != nil {
 		log.Errorw("GetLatestCommit failure, bad ref/branch", "provider", gitclient.GetProvider(*request.GetProvider()), "slug", request.GetSlug(), "ref", ref, "elapsed_time_ms", utils.TimeSince(start), zap.Error(err))
 		return nil, err
 	}
-	if request.GetBranch() != "" && strings.Contains(ref, "/") {
+	if branch != "" && strings.Contains(ref, "/") {
 		switch client.Driver {
 		case scm.DriverBitbucket,
 			scm.DriverStash:
