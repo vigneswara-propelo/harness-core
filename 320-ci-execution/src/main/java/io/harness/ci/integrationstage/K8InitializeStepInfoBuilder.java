@@ -27,6 +27,7 @@ import static io.harness.common.CIExecutionConstants.STEP_REQUEST_MEMORY_MIB;
 import static io.harness.common.CIExecutionConstants.STEP_REQUEST_MILLI_CPU;
 import static io.harness.common.CIExecutionConstants.STEP_VOLUME;
 import static io.harness.common.CIExecutionConstants.STEP_WORK_DIR;
+import static io.harness.common.CIExecutionConstants.VOLUME_PREFIX;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
@@ -45,7 +46,7 @@ import io.harness.beans.environment.pod.container.ContainerImageDetails;
 import io.harness.beans.executionargs.CIExecutionArgs;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
 import io.harness.beans.quantity.unit.DecimalQuantityUnit;
-import io.harness.beans.quantity.unit.MemoryQuantityUnit;
+import io.harness.beans.quantity.unit.StorageQuantityUnit;
 import io.harness.beans.serializer.RunTimeInputHandler;
 import io.harness.beans.stages.IntegrationStageConfig;
 import io.harness.beans.steps.CIStepInfo;
@@ -53,11 +54,20 @@ import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
 import io.harness.beans.steps.stepinfo.RunTestsStepInfo;
 import io.harness.beans.sweepingoutputs.StageInfraDetails.Type;
+import io.harness.beans.yaml.extended.volumes.CIVolume;
+import io.harness.beans.yaml.extended.volumes.EmptyDirYaml;
+import io.harness.beans.yaml.extended.volumes.HostPathYaml;
+import io.harness.beans.yaml.extended.volumes.PersistentVolumeClaimYaml;
 import io.harness.ci.utils.QuantityUtils;
 import io.harness.delegate.beans.ci.pod.CIContainerType;
 import io.harness.delegate.beans.ci.pod.ContainerResourceParams;
+import io.harness.delegate.beans.ci.pod.EmptyDirVolume;
+import io.harness.delegate.beans.ci.pod.EmptyDirVolume.EmptyDirVolumeBuilder;
 import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
+import io.harness.delegate.beans.ci.pod.HostPathVolume;
 import io.harness.delegate.beans.ci.pod.PVCParams;
+import io.harness.delegate.beans.ci.pod.PVCVolume;
+import io.harness.delegate.beans.ci.pod.PodVolume;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.execution.CIExecutionConfigService;
@@ -167,15 +177,15 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
     Integer stageCpuRequest = getStageCpuRequest(steps, accountId);
     List<String> serviceIdList = CIServiceBuilder.getServiceIdList(stageElementConfig);
     List<Integer> serviceGrpcPortList = CIServiceBuilder.getServiceGrpcPortList(stageElementConfig);
-
     IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageElementConfig);
+    List<PodVolume> volumes = convertVolumes(integrationStageConfig.getVolumes().getValue());
 
     if (integrationStageConfig.getSharedPaths().isExpression()) {
       ExceptionUtility.throwUnresolvedExpressionException(integrationStageConfig.getSharedPaths().getExpressionValue(),
           "sharedPath", "stage with identifier: " + stageElementConfig.getIdentifier());
     }
     Map<String, String> volumeToMountPath =
-        getVolumeToMountPath((List<String>) integrationStageConfig.getSharedPaths().fetchFinalValue());
+        getVolumeToMountPath((List<String>) integrationStageConfig.getSharedPaths().fetchFinalValue(), volumes);
     pods.add(PodSetupInfo.builder()
                  .podSetupParams(
                      PodSetupInfo.PodSetupParams.builder().containerDefinitionInfos(containerDefinitionInfos).build())
@@ -187,6 +197,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
                  .serviceIdList(serviceIdList)
                  .serviceGrpcPortList(serviceGrpcPortList)
                  .workDirPath(workDirPath)
+                 .volumes(volumes)
                  .build());
     return K8BuildJobEnvInfo.PodsSetupInfo.builder().podSetupInfoList(pods).build();
   }
@@ -207,13 +218,13 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
     return pvcParamsList;
   }
 
-  private Map<String, String> getVolumeToMountPath(List<String> sharedPaths) {
+  private Map<String, String> getVolumeToMountPath(List<String> sharedPaths, List<PodVolume> volumes) {
     Map<String, String> volumeToMountPath = new HashMap<>();
     volumeToMountPath.put(STEP_VOLUME, STEP_MOUNT_PATH);
     volumeToMountPath.put(ADDON_VOLUME, ADDON_VOL_MOUNT_PATH);
 
+    int index = 0;
     if (sharedPaths != null) {
-      int index = 0;
       for (String path : sharedPaths) {
         if (isEmpty(path)) {
           continue;
@@ -225,6 +236,21 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
         }
         volumeToMountPath.put(volumeName, path);
         index++;
+      }
+    }
+
+    if (isNotEmpty(volumes)) {
+      for (PodVolume volume : volumes) {
+        if (volume.getType() == PodVolume.Type.EMPTY_DIR) {
+          EmptyDirVolume emptyDirVolume = (EmptyDirVolume) volume;
+          volumeToMountPath.put(emptyDirVolume.getName(), emptyDirVolume.getMountPath());
+        } else if (volume.getType() == PodVolume.Type.HOST_PATH) {
+          HostPathVolume hostPathVolume = (HostPathVolume) volume;
+          volumeToMountPath.put(hostPathVolume.getName(), hostPathVolume.getMountPath());
+        } else if (volume.getType() == PodVolume.Type.PVC) {
+          PVCVolume pvcVolume = (PVCVolume) volume;
+          volumeToMountPath.put(pvcVolume.getName(), pvcVolume.getMountPath());
+        }
       }
     }
     return volumeToMountPath;
@@ -599,7 +625,7 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
       String memoryLimitMemoryQuantity =
           resolveStringParameter("memory", stepType, stepId, resource.getLimits().getMemory(), false);
       if (isNotEmpty(memoryLimitMemoryQuantity) && !UNRESOLVED_PARAMETER.equals(memoryLimitMemoryQuantity)) {
-        memoryLimit = QuantityUtils.getMemoryQuantityValueInUnit(memoryLimitMemoryQuantity, MemoryQuantityUnit.Mi);
+        memoryLimit = QuantityUtils.getStorageQuantityValueInUnit(memoryLimitMemoryQuantity, StorageQuantityUnit.Mi);
       }
     }
     return memoryLimit;
@@ -749,5 +775,56 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
       default:
         return zeroCpu;
     }
+  }
+
+  private List<PodVolume> convertVolumes(List<CIVolume> volumes) {
+    List<PodVolume> podVolumes = new ArrayList<>();
+    if (isEmpty(volumes)) {
+      return podVolumes;
+    }
+
+    int index = 0;
+    for (CIVolume volume : volumes) {
+      String volumeName = format("%s%d", VOLUME_PREFIX, index);
+      if (volume.getType() == CIVolume.Type.EMPTY_DIR) {
+        podVolumes.add(convertEmptyDir(volumeName, (EmptyDirYaml) volume));
+      } else if (volume.getType() == CIVolume.Type.HOST_PATH) {
+        podVolumes.add(convertHostPath(volumeName, (HostPathYaml) volume));
+      } else if (volume.getType() == CIVolume.Type.PERSISTENT_VOLUME_CLAIM) {
+        podVolumes.add(convertPVCVolume(volumeName, (PersistentVolumeClaimYaml) volume));
+      }
+
+      index++;
+    }
+    return podVolumes;
+  }
+
+  private EmptyDirVolume convertEmptyDir(String volumeName, EmptyDirYaml emptyDirYaml) {
+    EmptyDirVolumeBuilder emptyDirVolumeBuilder = EmptyDirVolume.builder()
+                                                      .name(volumeName)
+                                                      .mountPath(emptyDirYaml.getMountPath().getValue())
+                                                      .medium(emptyDirYaml.getSpec().getMedium().getValue());
+    String sizeStr = emptyDirYaml.getSpec().getSize().getValue();
+    if (isNotEmpty(sizeStr)) {
+      emptyDirVolumeBuilder.sizeMib(QuantityUtils.getStorageQuantityValueInUnit(sizeStr, StorageQuantityUnit.Mi));
+    }
+    return emptyDirVolumeBuilder.build();
+  }
+
+  private HostPathVolume convertHostPath(String volumeName, HostPathYaml hostPathYaml) {
+    return HostPathVolume.builder()
+        .name(volumeName)
+        .mountPath(hostPathYaml.getMountPath().getValue())
+        .path(hostPathYaml.getSpec().getPath().getValue())
+        .hostPathType(hostPathYaml.getSpec().getType().getValue())
+        .build();
+  }
+
+  private PVCVolume convertPVCVolume(String volumeName, PersistentVolumeClaimYaml pvcYaml) {
+    return PVCVolume.builder()
+        .name(volumeName)
+        .mountPath(pvcYaml.getMountPath().getValue())
+        .claimName(pvcYaml.getSpec().getClaimName().getValue())
+        .build();
   }
 }

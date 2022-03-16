@@ -11,7 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CI;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.quantity.unit.MemoryQuantityUnit;
+import io.harness.beans.quantity.unit.StorageQuantityUnit;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.yaml.extended.ci.validator.ResourceValidatorConstants;
 
@@ -26,30 +26,30 @@ import lombok.Data;
 @Data
 @Builder
 @OwnedBy(CI)
-public class MemoryQuantity {
+public class StorageQuantity {
   private String numericValue;
-  private MemoryQuantityUnit unit;
+  private StorageQuantityUnit unit;
 
   @JsonCreator
-  public static MemoryQuantity fromString(String quantity) {
+  public static StorageQuantity fromString(String quantity) {
     if (isEmpty(quantity)) {
       return null;
     }
 
-    Pattern r = Pattern.compile(ResourceValidatorConstants.MEMORY_PATTERN);
+    Pattern r = Pattern.compile(ResourceValidatorConstants.STORAGE_PATTERN);
     Matcher m = r.matcher(quantity);
     if (m.find()) {
       String numericValue = m.group(1);
       String suffix = m.group(3);
-      MemoryQuantityUnit unit = Stream.of(MemoryQuantityUnit.values())
-                                    .filter(quantityUnit -> quantityUnit.getSuffix().equals(suffix))
-                                    .findFirst()
-                                    .orElse(MemoryQuantityUnit.unitless);
+      StorageQuantityUnit unit = Stream.of(StorageQuantityUnit.values())
+                                     .filter(quantityUnit -> quantityUnit.getSuffix().equals(suffix))
+                                     .findFirst()
+                                     .orElse(StorageQuantityUnit.unitless);
 
-      return MemoryQuantity.builder().numericValue(numericValue).unit(unit).build();
+      return StorageQuantity.builder().numericValue(numericValue).unit(unit).build();
     } else {
-      throw new InvalidArgumentsException(String.format("Invalid memory format: %s. Memory should match regex: %s",
-          quantity, ResourceValidatorConstants.MEMORY_PATTERN));
+      throw new InvalidArgumentsException(String.format(
+          "Invalid format: %s. value should match regex: %s", quantity, ResourceValidatorConstants.STORAGE_PATTERN));
     }
   }
 

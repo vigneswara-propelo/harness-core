@@ -57,6 +57,7 @@ public class CIExecutionConstants {
   public static final String SERVICE_PREFIX = "service-";
   public static final String STEP_PREFIX = "step-";
   public static final String SHARED_VOLUME_PREFIX = "shared-";
+  public static final String VOLUME_PREFIX = "volume-";
 
   // Container constants for setting up addon binary
   public static final String SETUP_ADDON_CONTAINER_NAME = "setup-addon";

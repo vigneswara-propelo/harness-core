@@ -61,6 +61,12 @@ import io.harness.beans.yaml.extended.CustomVariable;
 import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
 import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml.K8sDirectInfraYamlSpec;
+import io.harness.beans.yaml.extended.volumes.EmptyDirYaml;
+import io.harness.beans.yaml.extended.volumes.EmptyDirYaml.EmptyDirYamlSpec;
+import io.harness.beans.yaml.extended.volumes.HostPathYaml;
+import io.harness.beans.yaml.extended.volumes.HostPathYaml.HostPathYamlSpec;
+import io.harness.beans.yaml.extended.volumes.PersistentVolumeClaimYaml;
+import io.harness.beans.yaml.extended.volumes.PersistentVolumeClaimYaml.PersistentVolumeClaimYamlSpec;
 import io.harness.ci.beans.entities.BuildNumberDetails;
 import io.harness.common.CIExecutionConstants;
 import io.harness.connector.ConnectorDTO;
@@ -69,9 +75,13 @@ import io.harness.delegate.beans.ci.pod.CIK8ContainerParams;
 import io.harness.delegate.beans.ci.pod.CIK8ContainerParams.CIK8ContainerParamsBuilder;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.pod.ContainerResourceParams;
+import io.harness.delegate.beans.ci.pod.EmptyDirVolume;
 import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
+import io.harness.delegate.beans.ci.pod.HostPathVolume;
 import io.harness.delegate.beans.ci.pod.ImageDetailsWithConnector;
 import io.harness.delegate.beans.ci.pod.PVCParams;
+import io.harness.delegate.beans.ci.pod.PVCVolume;
+import io.harness.delegate.beans.ci.pod.PodVolume;
 import io.harness.delegate.beans.ci.pod.SecretVariableDTO;
 import io.harness.delegate.beans.ci.pod.SecretVariableDetails;
 import io.harness.delegate.beans.connector.ConnectorType;
@@ -191,6 +201,10 @@ public class CIExecutionPlanTestHelper {
   private static final String GIT_CLONE_IMAGE = "drone/git";
 
   private final ImageDetails imageDetails = ImageDetails.builder().name("maven").tag("3.6.3-jdk-8").build();
+  private static final String mountPath1 = "/mnt1";
+  private static final String mountPath2 = "/mnt2";
+  private static final String mountPath3 = "/mnt3";
+  private static final String claimName = "test";
 
   public List<ScriptInfo> getBuildCommandSteps() {
     return singletonList(ScriptInfo.builder().scriptString(BUILD_SCRIPT).build());
@@ -316,6 +330,13 @@ public class CIExecutionPlanTestHelper {
     return map;
   }
 
+  private List<PodVolume> getVolumes() {
+    EmptyDirVolume vol1 = EmptyDirVolume.builder().name("volume-0").mountPath(mountPath1).build();
+    HostPathVolume vol2 = HostPathVolume.builder().name("volume-1").mountPath(mountPath2).path(mountPath2).build();
+    PVCVolume vol3 = PVCVolume.builder().name("volume-2").claimName(claimName).mountPath(mountPath3).build();
+    return Arrays.asList(vol1, vol2, vol3);
+  }
+
   public K8BuildJobEnvInfo.PodsSetupInfo getCIPodsSetupInfoOnFirstPod() {
     List<PodSetupInfo> pods = new ArrayList<>();
     Integer index = 1;
@@ -323,15 +344,39 @@ public class CIExecutionPlanTestHelper {
     volumeToMountPath.put(VOLUME_NAME, MOUNT_PATH);
     volumeToMountPath.put("shared-0", "share/");
     volumeToMountPath.put("addon", "/addon");
+    volumeToMountPath.put("volume-0", mountPath1);
+    volumeToMountPath.put("volume-1", mountPath2);
+    volumeToMountPath.put("volume-2", mountPath3);
     pods.add(PodSetupInfo.builder()
                  .name("")
                  .pvcParamsList(Arrays.asList(PVCParams.builder()
-                                                  .volumeName("shared-0")
+                                                  .volumeName("volume-0")
                                                   .claimName("")
                                                   .isPresent(false)
                                                   .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
                                                   .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
                                                   .build(),
+                     PVCParams.builder()
+                         .volumeName("volume-2")
+                         .claimName("")
+                         .isPresent(false)
+                         .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
+                         .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
+                         .build(),
+                     PVCParams.builder()
+                         .volumeName("shared-0")
+                         .claimName("")
+                         .isPresent(false)
+                         .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
+                         .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
+                         .build(),
+                     PVCParams.builder()
+                         .volumeName("volume-1")
+                         .claimName("")
+                         .isPresent(false)
+                         .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
+                         .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
+                         .build(),
                      PVCParams.builder()
                          .volumeName("addon")
                          .claimName("pod-addon")
@@ -357,6 +402,7 @@ public class CIExecutionPlanTestHelper {
                  .serviceGrpcPortList(Collections.singletonList(PORT_STARTING_RANGE))
                  .volumeToMountPath(volumeToMountPath)
                  .workDirPath(WORK_DIR)
+                 .volumes(getVolumes())
                  .build());
     return K8BuildJobEnvInfo.PodsSetupInfo.builder().podSetupInfoList(pods).build();
   }
@@ -369,16 +415,40 @@ public class CIExecutionPlanTestHelper {
     volumeToMountPath.put(VOLUME_NAME, MOUNT_PATH);
     volumeToMountPath.put("shared-0", "share/");
     volumeToMountPath.put("addon", "/addon");
+    volumeToMountPath.put("volume-0", mountPath1);
+    volumeToMountPath.put("volume-1", mountPath2);
+    volumeToMountPath.put("volume-2", mountPath3);
     Integer index = 1;
     pods.add(PodSetupInfo.builder()
                  .name("")
                  .pvcParamsList(Arrays.asList(PVCParams.builder()
-                                                  .volumeName("shared-0")
-                                                  .claimName("pod-2-shared-0")
+                                                  .volumeName("volume-0")
+                                                  .claimName("")
                                                   .isPresent(false)
                                                   .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
                                                   .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
                                                   .build(),
+                     PVCParams.builder()
+                         .volumeName("volume-2")
+                         .claimName("")
+                         .isPresent(false)
+                         .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
+                         .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
+                         .build(),
+                     PVCParams.builder()
+                         .volumeName("shared-0")
+                         .claimName("pod-2-shared-0")
+                         .isPresent(false)
+                         .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
+                         .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
+                         .build(),
+                     PVCParams.builder()
+                         .volumeName("volume-1")
+                         .claimName("")
+                         .isPresent(false)
+                         .sizeMib(PVC_DEFAULT_STORAGE_SIZE)
+                         .storageClass(CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS)
+                         .build(),
                      PVCParams.builder()
                          .volumeName("addon")
                          .claimName("pod-2-addon")
@@ -406,6 +476,7 @@ public class CIExecutionPlanTestHelper {
                  .serviceGrpcPortList(Collections.singletonList(PORT_STARTING_RANGE))
                  .volumeToMountPath(volumeToMountPath)
                  .workDirPath(WORK_DIR)
+                 .volumes(getVolumes())
                  .build());
     return K8BuildJobEnvInfo.PodsSetupInfo.builder().podSetupInfoList(pods).build();
   }
@@ -1205,11 +1276,34 @@ public class CIExecutionPlanTestHelper {
         .build();
   }
   public IntegrationStageConfig getIntegrationStageConfig() {
+    EmptyDirYaml emptyDirYaml = EmptyDirYaml.builder()
+                                    .mountPath(createValueField(mountPath1))
+                                    .spec(EmptyDirYamlSpec.builder()
+                                              .medium(ParameterField.createValueField(null))
+                                              .size(ParameterField.createValueField(null))
+                                              .build())
+                                    .build();
+    HostPathYaml hostPathYaml = HostPathYaml.builder()
+                                    .mountPath(createValueField(mountPath2))
+                                    .spec(HostPathYamlSpec.builder()
+                                              .path(ParameterField.createValueField(mountPath2))
+                                              .type(ParameterField.createValueField(null))
+                                              .build())
+                                    .build();
+    PersistentVolumeClaimYaml pvcYaml = PersistentVolumeClaimYaml.builder()
+                                            .mountPath(createValueField(mountPath3))
+                                            .spec(PersistentVolumeClaimYamlSpec.builder()
+                                                      .claimName(ParameterField.createValueField(claimName))
+                                                      .readOnly(ParameterField.createValueField(null))
+                                                      .build())
+                                            .build();
+
     return IntegrationStageConfig.builder()
         .execution(getExecutionElementConfig())
         .infrastructure(getInfrastructure())
         .sharedPaths(createValueField(newArrayList("share/")))
         .serviceDependencies(ParameterField.createValueField(Collections.singletonList(getServiceDependencyElement())))
+        .volumes(ParameterField.createValueField(Arrays.asList(emptyDirYaml, hostPathYaml, pvcYaml)))
         .build();
   }
 }

@@ -77,6 +77,7 @@ import io.harness.delegate.beans.ci.pod.ContainerSecrets;
 import io.harness.delegate.beans.ci.pod.ImageDetailsWithConnector;
 import io.harness.delegate.beans.ci.pod.PVCParams;
 import io.harness.delegate.beans.ci.pod.PodToleration;
+import io.harness.delegate.beans.ci.pod.PodVolume;
 import io.harness.delegate.beans.ci.pod.SecretVariableDetails;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ngexception.CIStageExecutionException;
@@ -173,7 +174,7 @@ public class K8BuildSetupUtils {
     ConnectorDetails k8sConnector = connectorUtils.getConnectorDetails(ngAccess, clusterName);
     CIK8PodParams<CIK8ContainerParams> podParams = getPodParams(ngAccess, k8PodDetails, initializeStepInfo, false,
         initializeStepInfo.getCiCodebase(), initializeStepInfo.isSkipGitClone(), logPrefix, ambiance, annotations,
-        labels, stageRunAsUser, serviceAccountName, nodeSelector, podTolerations);
+        labels, stageRunAsUser, serviceAccountName, nodeSelector, podTolerations, podSetupInfo.getVolumes());
 
     log.info("Created pod params for pod name [{}]", podSetupInfo.getName());
     return CIK8InitializeTaskParams.builder()
@@ -207,7 +208,7 @@ public class K8BuildSetupUtils {
       InitializeStepInfo initializeStepInfo, boolean usePVC, CodeBase ciCodebase, boolean skipGitClone,
       String logPrefix, Ambiance ambiance, Map<String, String> annotations, Map<String, String> labels,
       Integer stageRunAsUser, String serviceAccountName, Map<String, String> nodeSelector,
-      List<PodToleration> podTolerations) {
+      List<PodToleration> podTolerations, List<PodVolume> podVolumes) {
     PodSetupInfo podSetupInfo = getPodSetupInfo((K8BuildJobEnvInfo) initializeStepInfo.getBuildJobEnvInfo());
     ConnectorDetails harnessInternalImageConnector = null;
     if (isNotEmpty(ciExecutionServiceConfig.getDefaultInternalImageConnector())) {
@@ -283,6 +284,7 @@ public class K8BuildSetupUtils {
         .runAsUser(stageRunAsUser)
         .tolerations(podTolerations)
         .nodeSelector(nodeSelector)
+        .volumes(podVolumes)
         .build();
   }
 

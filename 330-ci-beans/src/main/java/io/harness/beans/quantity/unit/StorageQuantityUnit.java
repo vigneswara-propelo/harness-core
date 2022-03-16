@@ -15,7 +15,7 @@ import lombok.Getter;
 
 @Getter
 @OwnedBy(CI)
-public enum MemoryQuantityUnit {
+public enum StorageQuantityUnit {
   Mi(2, 20, "Mi"),
   Gi(2, 30, "Gi"),
   M(10, 6, "M"),
@@ -26,7 +26,7 @@ public enum MemoryQuantityUnit {
   private final long exponent;
   private final String suffix;
 
-  MemoryQuantityUnit(long base, long exponent, String suffix) {
+  StorageQuantityUnit(long base, long exponent, String suffix) {
     this.base = base;
     this.exponent = exponent;
     this.suffix = suffix;

@@ -79,6 +79,10 @@ import io.harness.beans.yaml.extended.infrastrucutre.VmInfraSpec;
 import io.harness.beans.yaml.extended.infrastrucutre.VmInfraYaml;
 import io.harness.beans.yaml.extended.infrastrucutre.VmPoolYaml;
 import io.harness.beans.yaml.extended.infrastrucutre.VmPoolYaml.VmPoolYamlSpec;
+import io.harness.beans.yaml.extended.volumes.CIVolume;
+import io.harness.beans.yaml.extended.volumes.EmptyDirYaml;
+import io.harness.beans.yaml.extended.volumes.HostPathYaml;
+import io.harness.beans.yaml.extended.volumes.PersistentVolumeClaimYaml;
 import io.harness.ci.beans.entities.BuildNumberDetails;
 import io.harness.ci.stdvars.BuildStandardVariables;
 import io.harness.ci.stdvars.GitVariables;
@@ -174,5 +178,10 @@ public class CIBeansKryoRegistrar implements KryoRegistrar {
 
     kryo.register(BuildUpdateType.class, 390003);
     kryo.register(BuildStatusUpdateParameter.class, 390004);
+
+    kryo.register(CIVolume.class, 390005);
+    kryo.register(EmptyDirYaml.class, 390006);
+    kryo.register(HostPathYaml.class, 390007);
+    kryo.register(PersistentVolumeClaimYaml.class, 390008);
   }
 }

@@ -43,7 +43,7 @@ public class ContainerResource {
   @TypeAlias("resource_limits")
   public static class Limits {
     @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
-    @Pattern(regexp = ResourceValidatorConstants.MEMORY_PATTERN)
+    @Pattern(regexp = ResourceValidatorConstants.STORAGE_PATTERN)
     private ParameterField<String> memory;
     @YamlSchemaTypes(value = {number})
     @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
