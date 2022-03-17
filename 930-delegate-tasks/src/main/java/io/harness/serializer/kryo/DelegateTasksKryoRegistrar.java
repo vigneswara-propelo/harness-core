@@ -15,6 +15,7 @@ import io.harness.serializer.KryoRegistrar;
 import software.wings.beans.AppDynamicsConfig;
 import software.wings.beans.DynaTraceConfig;
 import software.wings.beans.NewRelicConfig;
+import software.wings.beans.SumoConfig;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.beans.trigger.WebHookTriggerResponseData;
 import software.wings.beans.trigger.WebhookTriggerParameters;
@@ -37,6 +38,7 @@ import software.wings.service.impl.dynatrace.DynaTraceTimeSeries;
 import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
 import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
 import software.wings.service.impl.newrelic.NewRelicSetupTestNodeData;
+import software.wings.service.impl.sumo.SumoDataCollectionInfo;
 import software.wings.service.intfc.analysis.ClusterLevel;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -46,6 +48,8 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
   public void register(Kryo kryo) {
     kryo.register(ExecutionLogCallback.class, 5044);
     kryo.register(NewRelicDataCollectionInfo.class, 5171);
+    kryo.register(SumoDataCollectionInfo.class, 5173);
+    kryo.register(SumoConfig.class, 5178);
     kryo.register(NewRelicConfig.class, 5175);
     kryo.register(DynaTraceConfig.class, 5237);
     kryo.register(DynaTraceTimeSeries.class, 5239);

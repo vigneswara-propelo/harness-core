@@ -9,7 +9,7 @@ package software.wings.delegatetasks;
 
 import static io.harness.threading.Morpheus.sleep;
 
-import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
+import static software.wings.delegatetasks.cv.CVConstants.DATA_COLLECTION_RETRY_SLEEP;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 public class SumoDataCollectionTask extends AbstractDelegateDataCollectionTask {
   private SumoDataCollectionInfo dataCollectionInfo;
   private SumoLogicClient sumoClient;
-  public static final String DEFAULT_TIME_ZONE = "UTC";
 
   @Inject private LogAnalysisStoreService logAnalysisStoreService;
   @Inject private SumoDelegateServiceImpl sumoDelegateService;

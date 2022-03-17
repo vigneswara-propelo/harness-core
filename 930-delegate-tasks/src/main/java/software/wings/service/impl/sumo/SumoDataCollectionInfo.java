@@ -14,7 +14,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.SumoConfig;
 import software.wings.delegatetasks.DelegateStateType;
-import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
+import software.wings.delegatetasks.utils.CapablityUtility;
 import software.wings.service.impl.analysis.LogDataCollectionInfo;
 
 import java.util.List;
@@ -44,6 +44,6 @@ public class SumoDataCollectionInfo extends LogDataCollectionInfo implements Exe
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
-    return CapabilityHelper.generateDelegateCapabilities(sumoConfig, getEncryptedDataDetails(), maskingEvaluator);
+    return CapablityUtility.generateDelegateCapabilities(sumoConfig, getEncryptedDataDetails(), maskingEvaluator);
   }
 }

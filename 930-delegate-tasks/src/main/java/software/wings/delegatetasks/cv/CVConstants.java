@@ -26,4 +26,5 @@ public class CVConstants {
   public static final String TEST_HOST_NAME = "testNode";
   public static final String CONTROL_HOST_NAME = "controlNode";
   public static final int CANARY_DAYS_TO_COLLECT = 7;
+  public static final String DEFAULT_TIME_ZONE = "UTC";
 }
