@@ -346,6 +346,10 @@ public class MessageServiceImpl implements MessageService {
       if (channel.exists()) {
         FileUtils.write(channel, "", UTF_8);
       }
+      if (messageQueues.get(getMessageChannel(type, id)) != null) {
+        log.info("Clearing {} messages from channel.", messageQueues.get(getMessageChannel(type, id)).size());
+        messageQueues.get(getMessageChannel(type, id)).clear();
+      }
     } catch (Exception e) {
       log.error("Error clearing channel {} {}", type, id, e);
     }
