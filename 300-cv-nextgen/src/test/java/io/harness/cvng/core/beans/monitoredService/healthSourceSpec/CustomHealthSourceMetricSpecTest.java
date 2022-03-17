@@ -109,8 +109,8 @@ public class CustomHealthSourceMetricSpecTest extends CvNextGenTestBase {
                                      .build());
     addedConfigs.add(metricCVConfig);
 
-    assertThat(((CustomHealthMetricCVConfig) result.getAdded().get(0)).getMetricDefinitions())
-        .isEqualTo(addedConfigs.get(0).getMetricDefinitions());
+    assertThat(((CustomHealthMetricCVConfig) result.getAdded().get(0)).getMetricInfos())
+        .isEqualTo(addedConfigs.get(0).getMetricInfos());
   }
 
   @Test
@@ -171,8 +171,8 @@ public class CustomHealthSourceMetricSpecTest extends CvNextGenTestBase {
         groupName, HealthSourceQueryType.SERVICE_BASED, CustomHealthMethod.POST, CVMonitoringCategory.PERFORMANCE,
         "post body"));
 
-    assertThat(((CustomHealthMetricCVConfig) result.getUpdated().get(0)).getMetricDefinitions())
-        .isEqualTo(updatedConfigs.get(0).getMetricDefinitions());
+    assertThat(((CustomHealthMetricCVConfig) result.getUpdated().get(0)).getMetricInfos())
+        .isEqualTo(updatedConfigs.get(0).getMetricInfos());
   }
 
   @Test
@@ -305,12 +305,12 @@ public class CustomHealthSourceMetricSpecTest extends CvNextGenTestBase {
             .values()
             .stream()
             .collect(Collectors.toList());
-    if (configs.get(0).getMetricDefinitions().size() == 2) {
-      assertThat(configs.get(0).getMetricDefinitions()).isEqualTo(multipleMetricDefinitions.getMetricDefinitions());
-      assertThat(configs.get(1).getMetricDefinitions()).isEqualTo(singleMetricDefinition.getMetricDefinitions());
+    if (configs.get(0).getMetricInfos().size() == 2) {
+      assertThat(configs.get(0).getMetricInfos()).isEqualTo(multipleMetricDefinitions.getMetricInfos());
+      assertThat(configs.get(1).getMetricInfos()).isEqualTo(singleMetricDefinition.getMetricInfos());
     } else {
-      assertThat(configs.get(0).getMetricDefinitions()).isEqualTo(singleMetricDefinition.getMetricDefinitions());
-      assertThat(configs.get(1).getMetricDefinitions()).isEqualTo(multipleMetricDefinitions.getMetricDefinitions());
+      assertThat(configs.get(0).getMetricInfos()).isEqualTo(singleMetricDefinition.getMetricInfos());
+      assertThat(configs.get(1).getMetricInfos()).isEqualTo(multipleMetricDefinitions.getMetricInfos());
     }
   }
 }

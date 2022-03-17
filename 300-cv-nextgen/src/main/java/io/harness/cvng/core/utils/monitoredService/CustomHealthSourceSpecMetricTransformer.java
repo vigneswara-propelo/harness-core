@@ -31,7 +31,7 @@ public class CustomHealthSourceSpecMetricTransformer
             .build();
 
     cvConfigGroup.forEach(customHealthCVConfig -> {
-      customHealthCVConfig.getMetricDefinitions().forEach(cvMetricDefinition -> {
+      customHealthCVConfig.getMetricInfos().forEach(cvMetricDefinition -> {
         RiskProfile riskProfile = RiskProfile.builder()
                                       .category(customHealthCVConfig.getMetricPack().getCategory())
                                       .metricType(cvMetricDefinition.getMetricType())

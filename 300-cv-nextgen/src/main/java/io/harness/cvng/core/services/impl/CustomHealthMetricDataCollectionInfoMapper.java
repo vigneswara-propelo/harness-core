@@ -7,63 +7,28 @@
 
 package io.harness.cvng.core.services.impl;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-
 import io.harness.cvng.beans.CustomHealthDataCollectionInfo;
 import io.harness.cvng.beans.MetricResponseMappingDTO;
 import io.harness.cvng.core.beans.CustomHealthRequestDefinition;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricResponseMapping;
 import io.harness.cvng.core.entities.CustomHealthMetricCVConfig;
-import io.harness.cvng.core.entities.VerificationTask.TaskType;
-import io.harness.cvng.core.services.api.DataCollectionInfoMapper;
-import io.harness.cvng.core.services.api.DataCollectionSLIInfoMapper;
-import io.harness.cvng.core.utils.dataCollection.MetricDataCollectionUtils;
-import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
+import io.harness.cvng.core.services.api.MetricDataCollectionInfoMapper;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class CustomHealthMetricDataCollectionInfoMapper
-    implements DataCollectionInfoMapper<CustomHealthDataCollectionInfo, CustomHealthMetricCVConfig>,
-               DataCollectionSLIInfoMapper<CustomHealthDataCollectionInfo, CustomHealthMetricCVConfig> {
+    extends MetricDataCollectionInfoMapper<CustomHealthDataCollectionInfo, CustomHealthMetricCVConfig> {
   @Override
-  public CustomHealthDataCollectionInfo toDataCollectionInfo(CustomHealthMetricCVConfig cvConfig, TaskType taskType) {
+  protected CustomHealthDataCollectionInfo toDataCollectionInfo(CustomHealthMetricCVConfig baseCVConfig) {
     CustomHealthDataCollectionInfo customHealthDataCollectionInfo =
         CustomHealthDataCollectionInfo.builder()
-            .groupName(cvConfig.getGroupName())
-            .metricInfoList(
-                cvConfig.getMetricDefinitions()
-                    .stream()
-                    .filter(metricInfo
-                        -> MetricDataCollectionUtils.isMetricApplicableForDataCollection(metricInfo, taskType))
-                    .map(metricDefinition -> mapMetricDefinitionToMetricInfo(metricDefinition))
-                    .collect(Collectors.toList()))
+            .groupName(baseCVConfig.getGroupName())
+            .metricInfoList(baseCVConfig.getMetricInfos()
+                                .stream()
+                                .map(metricDefinition -> mapMetricDefinitionToMetricInfo(metricDefinition))
+                                .collect(Collectors.toList()))
             .build();
-    customHealthDataCollectionInfo.setDataCollectionDsl(cvConfig.getDataCollectionDsl());
-    return customHealthDataCollectionInfo;
-  }
-
-  @Override
-  public CustomHealthDataCollectionInfo toDataCollectionInfo(
-      List<CustomHealthMetricCVConfig> cvConfigs, ServiceLevelIndicator serviceLevelIndicator) {
-    if (isEmpty(cvConfigs) || serviceLevelIndicator == null) {
-      return null;
-    }
-
-    List<String> sliMetricNames = serviceLevelIndicator.getMetricNames();
-    List<CustomHealthDataCollectionInfo.CustomHealthMetricInfo> metricInfoList = new ArrayList<>();
-    cvConfigs.forEach(cvConfig -> cvConfig.getMetricDefinitions().forEach(metricInfo -> {
-      if (sliMetricNames.contains(metricInfo.getMetricName())) {
-        metricInfoList.add(mapMetricDefinitionToMetricInfo(metricInfo));
-      }
-    }));
-
-    CustomHealthDataCollectionInfo customHealthDataCollectionInfo = CustomHealthDataCollectionInfo.builder()
-                                                                        .groupName(cvConfigs.get(0).getGroupName())
-                                                                        .metricInfoList(metricInfoList)
-                                                                        .build();
-    customHealthDataCollectionInfo.setDataCollectionDsl(cvConfigs.get(0).getDataCollectionDsl());
+    customHealthDataCollectionInfo.setDataCollectionDsl(baseCVConfig.getDataCollectionDsl());
     return customHealthDataCollectionInfo;
   }
 

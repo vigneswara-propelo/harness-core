@@ -114,6 +114,10 @@ public abstract class CVConfig
     return identifier;
   }
 
+  public abstract boolean isSLIEnabled();
+  public abstract boolean isLiveMonitoringEnabled();
+  public abstract boolean isDeploymentVerificationEnabled();
+
   @FdIndex private Long createNextTaskIteration;
 
   @Override

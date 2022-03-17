@@ -333,6 +333,8 @@ public class BuilderFactory {
         .monitoringSourceName(generateUuid())
         .metricPack(
             MetricPack.builder().identifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER).dataCollectionDsl("dsl").build())
+        .metricInfos(
+            Arrays.asList(AppDynamicsCVConfig.MetricInfo.builder().identifier("identifier").metricName("name").build()))
         .applicationName(generateUuid())
         .tierName(generateUuid())
         .connectorIdentifier("AppDynamics Connector")

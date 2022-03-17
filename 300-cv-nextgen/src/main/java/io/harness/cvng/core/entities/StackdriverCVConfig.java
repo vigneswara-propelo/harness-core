@@ -17,6 +17,8 @@ import io.harness.cvng.beans.TimeSeriesMetricType;
 import io.harness.cvng.beans.stackdriver.StackDriverMetricDefinition;
 import io.harness.cvng.core.beans.StackdriverDefinition;
 import io.harness.cvng.core.entities.MetricPack.MetricDefinition;
+import io.harness.cvng.core.entities.StackdriverCVConfig.MetricInfo;
+import io.harness.cvng.core.utils.analysisinfo.AnalysisInfoUtility;
 import io.harness.cvng.core.utils.analysisinfo.DevelopmentVerificationTransformer;
 import io.harness.cvng.core.utils.analysisinfo.LiveMonitoringTransformer;
 import io.harness.cvng.core.utils.analysisinfo.SLIMetricTransformer;
@@ -43,16 +45,40 @@ import org.mongodb.morphia.query.UpdateOperations;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class StackdriverCVConfig extends MetricCVConfig {
+public class StackdriverCVConfig extends MetricCVConfig<MetricInfo> {
   private List<MetricInfo> metricInfoList;
   private String dashboardName;
   private String dashboardPath;
+
+  @Override
+  public boolean isSLIEnabled() {
+    return AnalysisInfoUtility.anySLIEnabled(metricInfoList);
+  }
+
+  @Override
+  public boolean isLiveMonitoringEnabled() {
+    return AnalysisInfoUtility.anyLiveMonitoringEnabled(metricInfoList);
+  }
+
+  @Override
+  public boolean isDeploymentVerificationEnabled() {
+    return AnalysisInfoUtility.anyDeploymentVerificationEnabled(metricInfoList);
+  }
+
+  @Override
+  public List<MetricInfo> getMetricInfos() {
+    return metricInfoList;
+  }
+
+  @Override
+  public void setMetricInfos(List<MetricInfo> metricInfos) {
+    metricInfoList = metricInfos;
+  }
 
   @Data
   @SuperBuilder
   @FieldNameConstants(innerTypeName = "MetricInfoKeys")
   public static class MetricInfo extends AnalysisInfo {
-    private String metricName;
     private String jsonMetricDefinition;
     private List<String> tags;
     private TimeSeriesMetricType metricType;

@@ -1169,6 +1169,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                    .build())
         .collect(Collectors.toList());
   }
+
   @Override
   public MonitoredServiceListItemDTO getMonitoredServiceDetails(MonitoredServiceParams monitoredServiceParams) {
     MonitoredService monitoredService = getMonitoredService(monitoredServiceParams);

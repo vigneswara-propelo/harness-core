@@ -40,8 +40,12 @@ import org.mongodb.morphia.query.UpdateOperations;
 @NoArgsConstructor
 @FieldNameConstants(innerTypeName = "MetricCVConfigKeys")
 @EqualsAndHashCode(callSuper = true)
-public abstract class MetricCVConfig extends CVConfig {
+public abstract class MetricCVConfig<I extends AnalysisInfo> extends CVConfig {
   private MetricPack metricPack;
+
+  public abstract List<I> getMetricInfos();
+  public abstract void setMetricInfos(List<I> metricInfos);
+
   public TimeRange getFirstTimeDataCollectionTimeRange() {
     Instant endTime = DateTimeUtils.roundDownTo5MinBoundary(getFirstTimeDataCollectionStartTime());
     return TimeRange.builder()

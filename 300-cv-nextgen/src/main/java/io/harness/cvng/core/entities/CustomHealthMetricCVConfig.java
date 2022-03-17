@@ -17,7 +17,9 @@ import io.harness.cvng.core.beans.CustomHealthRequestDefinition;
 import io.harness.cvng.core.beans.HealthSourceQueryType;
 import io.harness.cvng.core.beans.RiskProfile;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricResponseMapping;
+import io.harness.cvng.core.entities.CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition;
 import io.harness.cvng.core.services.CVNextGenConstants;
+import io.harness.cvng.core.utils.analysisinfo.AnalysisInfoUtility;
 import io.harness.exception.InvalidRequestException;
 
 import java.util.ArrayList;
@@ -40,10 +42,44 @@ import org.mongodb.morphia.query.UpdateOperations;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class CustomHealthMetricCVConfig extends MetricCVConfig {
+public class CustomHealthMetricCVConfig extends MetricCVConfig<CustomHealthCVConfigMetricDefinition> {
   String groupName;
   HealthSourceQueryType queryType;
   List<CustomHealthCVConfigMetricDefinition> metricDefinitions;
+
+  @Override
+  public boolean isSLIEnabled() {
+    if (!queryType.equals(HealthSourceQueryType.SERVICE_BASED)) {
+      return false;
+    }
+    return AnalysisInfoUtility.anySLIEnabled(metricDefinitions);
+  }
+
+  @Override
+  public boolean isLiveMonitoringEnabled() {
+    if (!queryType.equals(HealthSourceQueryType.SERVICE_BASED)) {
+      return false;
+    }
+    return AnalysisInfoUtility.anyLiveMonitoringEnabled(metricDefinitions);
+  }
+
+  @Override
+  public boolean isDeploymentVerificationEnabled() {
+    if (!queryType.equals(HealthSourceQueryType.HOST_BASED)) {
+      return false;
+    }
+    return AnalysisInfoUtility.anyDeploymentVerificationEnabled(metricDefinitions);
+  }
+
+  @Override
+  public List<CustomHealthCVConfigMetricDefinition> getMetricInfos() {
+    return metricDefinitions;
+  }
+
+  @Override
+  public void setMetricInfos(List<CustomHealthCVConfigMetricDefinition> metricInfos) {
+    this.metricDefinitions = metricInfos;
+  }
 
   @Data
   @SuperBuilder
@@ -52,7 +88,6 @@ public class CustomHealthMetricCVConfig extends MetricCVConfig {
     CustomHealthRequestDefinition requestDefinition;
     MetricResponseMapping metricResponseMapping;
     TimeSeriesMetricType metricType;
-    String metricName;
   }
 
   @Override
@@ -141,7 +176,7 @@ public class CustomHealthMetricCVConfig extends MetricCVConfig {
         CustomHealthMetricCVConfig customHealthCVConfig) {
       setCommonOperations(updateOperations, customHealthCVConfig);
       updateOperations.set(CustomHealthMetricCVConfigKeys.groupName, customHealthCVConfig.getGroupName())
-          .set(CustomHealthMetricCVConfigKeys.metricDefinitions, customHealthCVConfig.getMetricDefinitions())
+          .set(CustomHealthMetricCVConfigKeys.metricDefinitions, customHealthCVConfig.getMetricInfos())
           .set(CustomHealthMetricCVConfigKeys.queryType, customHealthCVConfig.getQueryType());
     }
   }

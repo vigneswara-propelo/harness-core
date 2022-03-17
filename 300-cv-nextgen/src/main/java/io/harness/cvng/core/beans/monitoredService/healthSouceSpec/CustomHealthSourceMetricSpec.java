@@ -114,9 +114,8 @@ public class CustomHealthSourceMetricSpec extends MetricHealthSourceSpec {
 
       CustomHealthMetricCVConfig existingCvConfig = cvConfigMap.get(cvConfigKey);
       List<CustomHealthMetricCVConfig.CustomHealthCVConfigMetricDefinition> cvConfigMetricDefinitions =
-          existingCvConfig != null && isNotEmpty(existingCvConfig.getMetricDefinitions())
-          ? existingCvConfig.getMetricDefinitions()
-          : new ArrayList<>();
+          existingCvConfig != null && isNotEmpty(existingCvConfig.getMetricInfos()) ? existingCvConfig.getMetricInfos()
+                                                                                    : new ArrayList<>();
 
       MetricResponseMapping metricResponseMapping = metricDefinition.getMetricResponseMapping();
       cvConfigMetricDefinitions.add(
