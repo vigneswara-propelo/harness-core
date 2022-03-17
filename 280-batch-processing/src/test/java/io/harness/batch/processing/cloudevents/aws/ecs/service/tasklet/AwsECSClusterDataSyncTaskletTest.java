@@ -32,6 +32,7 @@ import io.harness.batch.processing.cloudevents.aws.ecs.service.tasklet.support.E
 import io.harness.batch.processing.cloudevents.aws.ecs.service.tasklet.support.ng.NGConnectorHelper;
 import io.harness.batch.processing.cloudevents.aws.ecs.service.tasklet.support.response.EcsUtilizationData;
 import io.harness.batch.processing.cloudevents.aws.ecs.service.tasklet.support.response.MetricValue;
+import io.harness.batch.processing.dao.intfc.ECSServiceDao;
 import io.harness.batch.processing.dao.intfc.InstanceDataDao;
 import io.harness.batch.processing.service.intfc.InstanceDataService;
 import io.harness.batch.processing.service.intfc.InstanceResourceService;
@@ -93,6 +94,7 @@ public class AwsECSClusterDataSyncTaskletTest extends CategoryTest {
   @Mock private EcsMetricClient ecsMetricClient;
   @Mock private InstanceDataDao instanceDataDao;
   @Mock private CECloudAccountDao ceCloudAccountDao;
+  @Mock private ECSServiceDao ecsServiceDao;
   @Mock private AwsECSHelperService awsECSHelperService;
   @Mock private AwsEC2HelperService awsEC2HelperService;
   @Mock protected InstanceDataService instanceDataService;
