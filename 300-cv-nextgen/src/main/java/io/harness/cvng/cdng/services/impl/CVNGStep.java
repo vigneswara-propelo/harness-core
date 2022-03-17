@@ -68,6 +68,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -112,13 +113,13 @@ public class CVNGStep extends AsyncExecutableWithRollback {
                                                             .environmentIdentifier(envIdentifier)
                                                             .build();
 
-    MonitoredService monitoredService =
+    Optional<MonitoredService> monitoredService =
         monitoredServiceService.getApplicationMonitoredService(serviceEnvironmentParams);
     Instant deploymentStartTime = Instant.ofEpochMilli(
         AmbianceUtils.getStageLevelFromAmbiance(ambiance)
             .orElseThrow(() -> new IllegalStateException("verify step needs to be part of a stage."))
             .getStartTs());
-    if (monitoredService == null || monitoredService.getHealthSourceIdentifiers().isEmpty()) {
+    if (!monitoredService.isPresent() || monitoredService.get().getHealthSourceIdentifiers().isEmpty()) {
       CVNGStepTaskBuilder cvngStepTaskBuilder = CVNGStepTask.builder();
       cvngStepTaskBuilder.skip(true);
       cvngStepTaskBuilder.callbackId(UUID.randomUUID().toString());
@@ -135,14 +136,14 @@ public class CVNGStep extends AsyncExecutableWithRollback {
     } else {
       String verificationJobInstanceId;
       DeploymentActivity activity = getDeploymentActivity(
-          stepParameters, serviceEnvironmentParams, monitoredService, ambiance, deploymentStartTime);
+          stepParameters, serviceEnvironmentParams, monitoredService.get(), ambiance, deploymentStartTime);
       boolean isDemoEnabled = isDemoEnabled(accountId, ambiance);
       boolean shouldFailVerification = false;
       if (isDemoEnabled) {
         shouldFailVerification = shouldFailVerification(ambiance, stepParameters.getSensitivity());
         VerificationJobInstance verificationJobInstance =
             getVerificationJobInstanceForDemo(AmbianceUtils.obtainCurrentLevel(ambiance).getIdentifier(),
-                stepParameters, serviceEnvironmentParams, monitoredService, deploymentStartTime,
+                stepParameters, serviceEnvironmentParams, monitoredService.get(), deploymentStartTime,
                 shouldFailVerification(ambiance, stepParameters.getSensitivity())
                     ? ActivityVerificationStatus.VERIFICATION_FAILED
                     : ActivityVerificationStatus.VERIFICATION_PASSED);
@@ -152,7 +153,7 @@ public class CVNGStep extends AsyncExecutableWithRollback {
       } else {
         VerificationJobInstanceBuilder verificationJobInstanceBuilder =
             getVerificationJobInstanceBuilder(AmbianceUtils.obtainCurrentLevel(ambiance).getIdentifier(),
-                stepParameters, serviceEnvironmentParams, monitoredService, deploymentStartTime);
+                stepParameters, serviceEnvironmentParams, monitoredService.get(), deploymentStartTime);
         activity.fillInVerificationJobInstanceDetails(verificationJobInstanceBuilder);
         verificationJobInstanceId = verificationJobInstanceService.create(verificationJobInstanceBuilder.build());
       }

@@ -32,6 +32,8 @@ import io.harness.cvng.core.beans.change.ChangeTimeline.TimeRangeDetail;
 import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
+import io.harness.cvng.core.entities.MonitoredService;
 import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.ChangeEventService;
@@ -80,6 +82,23 @@ public class ChangeEventServiceImpl implements ChangeEventService {
 
   @Override
   public Boolean register(ChangeEventDTO changeEventDTO) {
+    if (isEmpty(changeEventDTO.getMonitoredServiceIdentifier())) {
+      Optional<MonitoredService> monitoredService = monitoredServiceService.getApplicationMonitoredService(
+          ServiceEnvironmentParams.builder()
+              .accountIdentifier(changeEventDTO.getAccountId())
+              .orgIdentifier(changeEventDTO.getOrgIdentifier())
+              .projectIdentifier(changeEventDTO.getProjectIdentifier())
+              .serviceIdentifier(changeEventDTO.getServiceIdentifier())
+              .environmentIdentifier(changeEventDTO.getEnvIdentifier())
+              .build());
+      if (monitoredService.isPresent()) {
+        changeEventDTO.setMonitoredServiceIdentifier(monitoredService.get().getIdentifier());
+      } else {
+        return false;
+      }
+    }
+    Preconditions.checkNotNull(
+        changeEventDTO.getMonitoredServiceIdentifier(), "Monitored service identifier should not be null");
     MonitoredServiceParams monitoredServiceParams =
         MonitoredServiceParams.builder()
             .accountIdentifier(changeEventDTO.getAccountId())
@@ -97,9 +116,6 @@ public class ChangeEventServiceImpl implements ChangeEventService {
     }
     if (StringUtils.isEmpty(changeEventDTO.getChangeSourceIdentifier())) {
       changeEventDTO.setChangeSourceIdentifier(changeSourceOptional.get().getIdentifier());
-    }
-    if (StringUtils.isEmpty(changeEventDTO.getMonitoredServiceIdentifier())) {
-      changeEventDTO.setMonitoredServiceIdentifier(changeSourceOptional.get().getMonitoredServiceIdentifier());
     }
     activityService.upsert(transformer.getEntity(changeEventDTO));
     return true;

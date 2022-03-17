@@ -31,7 +31,7 @@ public class ChangeEventDTO {
   String serviceIdentifier;
   String serviceName;
   // TODO: we need to add envIdentifiers
-  @Deprecated String envIdentifier;
+  String envIdentifier;
   String environmentName;
 
   String name;

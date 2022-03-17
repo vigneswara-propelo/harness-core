@@ -80,6 +80,23 @@ public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
+  @Owner(developers = KAMAL)
+  @Category(UnitTests.class)
+  public void testRegister_insertWithNoMonitoredService() {
+    changeSourceService.create(builderFactory.getContext().getMonitoredServiceParams(),
+        new HashSet<>(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())));
+    ChangeEventDTO changeEventDTO =
+        builderFactory.getHarnessCDChangeEventDTOBuilder().monitoredServiceIdentifier(null).build();
+
+    boolean saved = changeEventService.register(changeEventDTO);
+    assertThat(saved).isTrue();
+    Activity activityFromDb = hPersistence.createQuery(Activity.class).get();
+    Assertions.assertThat(activityFromDb).isNotNull();
+    assertThat(activityFromDb.getMonitoredServiceIdentifier())
+        .isEqualTo(builderFactory.getContext().getMonitoredServiceParams().getMonitoredServiceIdentifier());
+  }
+
+  @Test
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testRegister_update() {
