@@ -89,10 +89,11 @@ public class PmsSdkInstanceService extends PmsServiceImplBase {
         throw new InitializeSdkException("Could not acquire lock");
       }
       saveSdkInstance(request);
-
       schemaFetcher.invalidateAllCache();
+    } catch (Exception ex) {
+      log.error("Exception occurred while registering sdk with name: [{}]", request.getName());
+      throw new InitializeSdkException(ex.getMessage());
     }
-    // TODO: ADD ERROR HANDLING
     responseObserver.onNext(InitializeSdkResponse.newBuilder().build());
     responseObserver.onCompleted();
   }
@@ -131,14 +132,14 @@ public class PmsSdkInstanceService extends PmsServiceImplBase {
     transactionHelper.performTransaction(() -> {
       PmsSdkInstance instance = mongoTemplate.findAndModify(
           query, update, new FindAndModifyOptions().upsert(true).returnNew(true), PmsSdkInstance.class);
+      if (instance == null) {
+        throw new InitializeSdkException(
+            String.format("Update for PmsSdkInstance for module: [%s] Failed", request.getName()));
+      }
       if (shouldUseInstanceCache) {
-        if (instance != null) {
-          log.info("Updating sdkInstanceCache for module {}", request.getName());
-          instanceCache.put(request.getName(), instance);
-          log.info("Updated sdkInstanceCache for module {}", request.getName());
-        } else {
-          log.warn("Found instance as null for module {} . Fallback to database", request.getName());
-        }
+        log.info("Updating sdkInstanceCache for module {}", request.getName());
+        instanceCache.put(request.getName(), instance);
+        log.info("Updated sdkInstanceCache for module {}", request.getName());
       }
       return instance;
     });

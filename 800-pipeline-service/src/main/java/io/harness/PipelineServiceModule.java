@@ -590,8 +590,9 @@ public class PipelineServiceModule extends AbstractModule {
   @Named("pmsSdkInstanceCache")
   public Cache<String, PmsSdkInstance> sdkInstanceCache(
       HarnessCacheManager harnessCacheManager, VersionInfoManager versionInfoManager) {
-    return harnessCacheManager.getCache("pmsSdkInstanceCache", String.class, PmsSdkInstance.class,
-        AccessedExpiryPolicy.factoryOf(new Duration(TimeUnit.DAYS, 30)),
+    String cacheName = String.format("pmsSdkInstanceCache-%s", versionInfoManager.getVersionInfo().getBuildNo());
+    return harnessCacheManager.getCache(cacheName, String.class, PmsSdkInstance.class,
+        AccessedExpiryPolicy.factoryOf(new Duration(TimeUnit.DAYS, 5)),
         versionInfoManager.getVersionInfo().getBuildNo());
   }
 
