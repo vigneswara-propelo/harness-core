@@ -10,6 +10,7 @@ package io.harness.cvng.core.services.api;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogType;
 import io.harness.cvng.core.beans.params.PageParams;
+import io.harness.cvng.core.beans.params.logsFilterParams.DeploymentLogsFilter;
 import io.harness.cvng.core.beans.params.logsFilterParams.TimeRangeLogsFilter;
 import io.harness.cvng.core.entities.CVNGLog;
 import io.harness.ng.beans.PageResponse;
@@ -23,8 +24,8 @@ public interface CVNGLogService {
 
   List<CVNGLog> getCompleteCVNGLog(String accountId, String VerificationTaskId, CVNGLogType cvngLogType);
 
-  PageResponse<CVNGLogDTO> getCVNGLogs(String accountId, String verificationJobInstanceId, CVNGLogType logType,
-      List<String> healthSourceIdentifiers, boolean errorLogsOnly, PageParams pageParams);
+  PageResponse<CVNGLogDTO> getCVNGLogs(String accountId, String verificationJobInstanceId,
+      DeploymentLogsFilter deploymentLogsFilter, PageParams pageParams);
   PageResponse<CVNGLogDTO> getCVNGLogs(String accountId, List<String> verificationTaskIds,
       TimeRangeLogsFilter timeRangeLogsFilter, PageParams pageParams);
 }

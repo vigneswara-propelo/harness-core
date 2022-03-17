@@ -1011,7 +1011,7 @@ public class BuilderFactory {
     }
   }
 
-  public ExecutionLogDTOBuilder createExecutionLogDTOVerification() {
+  public ExecutionLogDTOBuilder executionLogDTOBuilder() {
     long createdAt = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant().toEpochMilli();
     Instant startTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant().minusSeconds(5);
     Instant endTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant();

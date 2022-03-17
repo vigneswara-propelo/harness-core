@@ -75,12 +75,11 @@ public class CVNGStepResourceTest extends CvNextGenTestBase {
     Set<String> verificationTaskIds = verificationTaskService.maybeGetVerificationTaskIds(
         builderFactory.getContext().getAccountId(), verificationJobInstanceId);
 
-    List<CVNGLogDTO> cvngLogDTOs = IntStream.range(0, 3)
-                                       .mapToObj(index
-                                           -> builderFactory.createExecutionLogDTOVerification()
-                                                  .traceableId(verificationTaskIds.iterator().next())
-                                                  .build())
-                                       .collect(Collectors.toList());
+    List<CVNGLogDTO> cvngLogDTOs =
+        IntStream.range(0, 3)
+            .mapToObj(index
+                -> builderFactory.executionLogDTOBuilder().traceableId(verificationTaskIds.iterator().next()).build())
+            .collect(Collectors.toList());
     cvngLogService.save(cvngLogDTOs);
 
     WebTarget webTarget = RESOURCES.client()
@@ -129,7 +128,7 @@ public class CVNGStepResourceTest extends CvNextGenTestBase {
                               .queryParam("pageSize", 10);
 
     Response response = webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
-    assertThat(response.getStatus()).isEqualTo(400);
-    assertThat(response.readEntity(String.class)).contains("\"field\":\"logType\",\"message\":\"may not be null\"");
+    assertThat(response.getStatus()).isEqualTo(500);
+    assertThat(response.readEntity(String.class)).contains("java.lang.NullPointerException");
   }
 }

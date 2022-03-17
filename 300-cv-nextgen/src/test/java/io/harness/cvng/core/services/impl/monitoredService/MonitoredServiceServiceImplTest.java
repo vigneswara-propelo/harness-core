@@ -1926,8 +1926,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         builderFactory.getContext().getAccountId(), cvConfigIds);
     List<CVNGLogDTO> cvngLogDTOs =
         IntStream.range(0, 3)
-            .mapToObj(index
-                -> builderFactory.createExecutionLogDTOVerification().traceableId(verificationTaskIds.get(0)).build())
+            .mapToObj(index -> builderFactory.executionLogDTOBuilder().traceableId(verificationTaskIds.get(0)).build())
             .collect(Collectors.toList());
     cvngLogService.save(cvngLogDTOs);
 
@@ -1971,8 +1970,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
 
     List<CVNGLogDTO> cvngLogDTOs =
         IntStream.range(0, 3)
-            .mapToObj(index
-                -> builderFactory.createExecutionLogDTOVerification().traceableId(verificationTaskIds.get(0)).build())
+            .mapToObj(index -> builderFactory.executionLogDTOBuilder().traceableId(verificationTaskIds.get(0)).build())
             .collect(Collectors.toList());
     cvngLogService.save(cvngLogDTOs);
 

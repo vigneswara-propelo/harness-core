@@ -13,12 +13,12 @@ import io.harness.cvng.analysis.beans.LogAnalysisClusterDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterWithCountDTO;
 import io.harness.cvng.analysis.beans.TransactionMetricInfoSummaryPageDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
-import io.harness.cvng.beans.cvnglog.CVNGLogType;
 import io.harness.cvng.cdng.entities.CVNGStepTask;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.HealthSourceDTO;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.filterParams.DeploymentLogAnalysisFilter;
 import io.harness.cvng.core.beans.params.filterParams.DeploymentTimeSeriesAnalysisFilter;
+import io.harness.cvng.core.beans.params.logsFilterParams.DeploymentLogsFilter;
 import io.harness.ng.beans.PageResponse;
 
 import java.util.List;
@@ -43,6 +43,6 @@ public interface CVNGStepTaskService {
   List<String> getNodeNames(String accountId, String callBackId);
 
   Object getExecutionLogs(String accountId, String callBackId);
-  PageResponse<CVNGLogDTO> getCVNGLogs(String accountId, String callBackId, CVNGLogType logType,
-      List<String> healthSourceIdentifiers, boolean errorLogsOnly, PageParams pageParams);
+  PageResponse<CVNGLogDTO> getCVNGLogs(
+      String accountId, String callBackId, DeploymentLogsFilter deploymentLogsFilter, PageParams pageParams);
 }
