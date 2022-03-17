@@ -397,6 +397,7 @@ cg:
     connectionTimeout: 10000
     readTimeout: 30000
     sleepInterval: 5000
+    retries: 6
 
   featureFlagConfig:
     featureFlagSystem: LOCAL
