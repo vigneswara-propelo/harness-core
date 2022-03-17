@@ -141,6 +141,15 @@ public class K8sDataFetcherHelper {
                 }
               });
             });
+
+            input.getManualClusterDetails().getValue().ifPresent(clusterDetails -> {
+              RequestField<QLUsageScope> usageRestrictions = clusterDetails.getUsageScope();
+              if (usageRestrictions != null && usageRestrictions.isPresent()) {
+                checkIfUsageScopeCanBeCreatedOrUpdated(configBuilder.build());
+                settingAttributeBuilder.withUsageRestrictions(usageScopeController.populateUsageRestrictions(
+                    usageRestrictions.getValue().orElse(null), accountId));
+              }
+            });
           }
           break;
         default:
@@ -265,6 +274,15 @@ public class K8sDataFetcherHelper {
                     throw new InvalidRequestException("Invalid manual cluster details type");
                 }
               });
+            });
+
+            input.getManualClusterDetails().getValue().ifPresent(clusterDetails -> {
+              RequestField<QLUsageScope> usageRestrictions = clusterDetails.getUsageScope();
+              if (usageRestrictions != null && usageRestrictions.isPresent()) {
+                checkIfUsageScopeCanBeCreatedOrUpdated(config);
+                settingAttribute.setUsageRestrictions(usageScopeController.populateUsageRestrictions(
+                    usageRestrictions.getValue().orElse(null), accountId));
+              }
             });
           }
           break;
