@@ -634,8 +634,13 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
     k8sTaskParameters.setUseLatestChartMuseumVersion(
         featureFlagService.isEnabled(USE_LATEST_CHARTMUSEUM_VERSION, context.getAccountId()));
 
-    k8sTaskParameters.setDelegateSelectors(getDelegateSelectors(
-        (applicationManifestMap == null) ? null : applicationManifestMap.get(K8sValuesLocation.Service), context));
+    boolean bindValueAndManifestTask =
+        featureFlagService.isEnabled(BIND_CUSTOM_VALUE_AND_MANIFEST_FETCH_TASK, context.getAccountId());
+    k8sTaskParameters.setDelegateSelectors(bindValueAndManifestTask
+            ? getRenderedAndTrimmedStateDelegateSelectors(context)
+            : getDelegateSelectors(
+                (applicationManifestMap == null) ? null : applicationManifestMap.get(K8sValuesLocation.Service),
+                context));
 
     long taskTimeoutInMillis = DEFAULT_ASYNC_CALL_TIMEOUT;
 
@@ -687,9 +692,11 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
             .cloudProvider(k8sTaskParameters.getK8sClusterConfig().getCloudProviderName())
             .releaseName(k8sTaskParameters.getReleaseName())
             .currentTaskType(TaskType.K8S_COMMAND_TASK)
-            .delegateSelectors(getDelegateSelectors(
-                (applicationManifestMap == null) ? null : applicationManifestMap.get(K8sValuesLocation.Service),
-                context))
+            .delegateSelectors(bindValueAndManifestTask
+                    ? getRenderedAndTrimmedStateDelegateSelectors(context)
+                    : getDelegateSelectors(
+                        (applicationManifestMap == null) ? null : applicationManifestMap.get(K8sValuesLocation.Service),
+                        context))
             .build();
 
     prepareDelegateTask(context, stateExecutionData, delegateTask, expressionFunctorToken);
@@ -1294,7 +1301,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
 
   private Set<String> getDelegateSelectors(ApplicationManifest applicationManifest, ExecutionContext context) {
     final Set<String> result = new HashSet<>();
-    result.addAll(getRenderedAndTrimmedSelectors(context));
+    result.addAll(getRenderedAndTrimmedStateDelegateSelectors(context));
 
     if (applicationManifest == null || applicationManifest.getCustomSourceConfig() == null) {
       return result;
@@ -1309,7 +1316,7 @@ public abstract class AbstractK8sState extends State implements K8sStateExecutor
 
   @Override public abstract void handleAbortEvent(ExecutionContext context);
 
-  protected Set<String> getRenderedAndTrimmedSelectors(ExecutionContext context) {
+  protected Set<String> getRenderedAndTrimmedStateDelegateSelectors(ExecutionContext context) {
     return k8sStateHelper.getRenderedAndTrimmedSelectors(context, getDelegateSelectors());
   }
 
