@@ -40,7 +40,7 @@ public class AddMonitoredServiceToWebhookMigration implements CVNGMigration {
                 .filter(WebhookKeys.projectIdentifier, monitoredService.getProjectIdentifier())
                 .filter(WebhookKeys.orgIdentifier, monitoredService.getOrgIdentifier())
                 .filter("serviceIdentifier", monitoredService.getServiceIdentifier())
-                .filter("environmentIdentifier", monitoredService.getEnvironmentIdentifier());
+                .filter("envIdentifier", monitoredService.getEnvironmentIdentifier());
 
         UpdateResults updateResults = hPersistence.update(webhookQuery,
             hPersistence.createUpdateOperations(Webhook.class)
