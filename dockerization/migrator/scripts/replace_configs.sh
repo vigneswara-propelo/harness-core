@@ -699,7 +699,7 @@ if [[ "" != "$REDIS_SENTINELS" ]]; then
 fi
 
 if [[ "" != "$REDIS_ENV_NAMESPACE" ]]; then
-    yq write -i $CONFIG_FILE cg.edisLockConfig.envNamespace "$REDIS_ENV_NAMESPACE"
+    yq write -i $CONFIG_FILE cg.redisLockConfig.envNamespace "$REDIS_ENV_NAMESPACE"
     yq write -i $CONFIG_FILE cg.redisAtmosphereConfig.envNamespace "$REDIS_ENV_NAMESPACE"
 fi
 
