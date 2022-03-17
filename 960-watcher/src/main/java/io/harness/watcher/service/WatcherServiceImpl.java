@@ -1197,7 +1197,7 @@ public class WatcherServiceImpl implements WatcherService {
             messageService.clearChannel(DELEGATE, newDelegateProcess);
           }
           newDelegate.getProcess().destroy();
-          newDelegate.getProcess().waitFor();
+          newDelegate.getProcess().waitFor(30, TimeUnit.SECONDS);
           oldDelegateProcesses.forEach(oldDelegateProcess -> {
             log.info("Sending old delegate process {} resume message", oldDelegateProcess);
             messageService.writeMessageToChannel(DELEGATE, oldDelegateProcess, DELEGATE_RESUME);
@@ -1213,16 +1213,16 @@ public class WatcherServiceImpl implements WatcherService {
           try {
             log.warn("Killing new delegate");
             newDelegate.getProcess().destroy();
-            newDelegate.getProcess().waitFor();
+            newDelegate.getProcess().waitFor(30, TimeUnit.SECONDS);
           } catch (Exception ex) {
-            // ignore
+            log.warn("Caught exception while waiting on new delegate process to shutdown {}", ex);
           }
           try {
             if (newDelegate.getProcess().isAlive()) {
               log.warn("Killing new delegate forcibly");
               newDelegate.getProcess().destroyForcibly();
               if (newDelegate.getProcess() != null) {
-                newDelegate.getProcess().waitFor();
+                newDelegate.getProcess().waitFor(30, TimeUnit.SECONDS);
               }
             }
           } catch (Exception ex) {
