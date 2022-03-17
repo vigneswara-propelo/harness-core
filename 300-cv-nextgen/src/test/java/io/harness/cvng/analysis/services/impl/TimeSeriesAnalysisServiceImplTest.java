@@ -12,6 +12,7 @@ import static io.harness.cvng.analysis.CVAnalysisConstants.TIMESERIES_SERVICE_GU
 import static io.harness.cvng.beans.DataSourceType.APP_DYNAMICS;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.KAMAL;
+import static io.harness.rule.OwnerRule.KANHAIYA;
 import static io.harness.rule.OwnerRule.PRAVEEN;
 import static io.harness.rule.OwnerRule.SOWMYA;
 
@@ -52,10 +53,15 @@ import io.harness.cvng.beans.job.TestVerificationJobDTO;
 import io.harness.cvng.beans.job.VerificationJobDTO;
 import io.harness.cvng.beans.job.VerificationJobType;
 import io.harness.cvng.client.NextGenService;
+import io.harness.cvng.core.beans.TimeSeriesMetricDefinition;
+import io.harness.cvng.core.entities.AppDynamicsCVConfig;
 import io.harness.cvng.core.entities.CVConfig;
+import io.harness.cvng.core.entities.MetricPack;
 import io.harness.cvng.core.entities.SplunkCVConfig;
 import io.harness.cvng.core.entities.TimeSeriesRecord;
+import io.harness.cvng.core.entities.VerificationTask;
 import io.harness.cvng.core.services.api.CVConfigService;
+import io.harness.cvng.core.services.api.MetricPackService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.dashboard.entities.HeatMap;
 import io.harness.cvng.dashboard.services.api.HeatMapService;
@@ -105,6 +111,7 @@ public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
   @Inject private VerificationJobInstanceService verificationJobInstanceService;
   @Inject private VerificationJobService verificationJobService;
   @Inject private HeatMapService heatMapService;
+  @Inject private MetricPackService metricPackService;
   @Mock private NextGenService nextGenService;
 
   private String cvConfigId;
@@ -497,6 +504,37 @@ public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
     assertThat(Duration.between(task.getAnalysisStartTime(), input.getStartTime())).isZero();
     assertThat(Duration.between(task.getAnalysisEndTime(), input.getEndTime())).isZero();
     assertThat(task.getAnalysisType().name()).isEqualTo(LearningEngineTaskType.TIME_SERIES_CANARY.name());
+  }
+
+  @Test
+  @Owner(developers = KANHAIYA)
+  @Category(UnitTests.class)
+  public void testGetMetricTemplate() {
+    AppDynamicsCVConfig cvConfig = builderFactory.appDynamicsCVConfigBuilder().build();
+    List<MetricPack> metricPacks = metricPackService.getMetricPacks(
+        cvConfig.getAccountId(), cvConfig.getOrgIdentifier(), cvConfig.getProjectIdentifier(), APP_DYNAMICS);
+    metricPacks.forEach(
+        metricPack -> metricPack.getMetrics().forEach(metricDefinition -> metricDefinition.setIncluded(true)));
+    metricPackService.saveMetricPacks(cvConfig.getAccountId(), cvConfig.getOrgIdentifier(),
+        cvConfig.getProjectIdentifier(), APP_DYNAMICS, metricPacks);
+    cvConfig.setMetricPack(metricPacks.get(0));
+    hPersistence.save(cvConfig);
+    VerificationJobInstance verificationJobInstance = builderFactory.verificationJobInstanceBuilder().build();
+    verificationJobInstance.setCvConfigMap(new HashMap<String, CVConfig>() {
+      { put(cvConfig.getUuid(), cvConfig); }
+    });
+    hPersistence.save(verificationJobInstance);
+    VerificationTask verificationTask = VerificationTask.builder()
+                                            .taskInfo(VerificationTask.DeploymentInfo.builder()
+                                                          .cvConfigId(cvConfig.getUuid())
+                                                          .verificationJobInstanceId(verificationJobInstance.getUuid())
+                                                          .build())
+                                            .build();
+    hPersistence.save(verificationTask);
+    hPersistence.delete(cvConfig);
+    List<TimeSeriesMetricDefinition> timeSeriesMetricDefinitions =
+        timeSeriesAnalysisService.getMetricTemplate(verificationTask.getUuid());
+    assertThat(timeSeriesMetricDefinitions.size()).isEqualTo(2);
   }
 
   @Test

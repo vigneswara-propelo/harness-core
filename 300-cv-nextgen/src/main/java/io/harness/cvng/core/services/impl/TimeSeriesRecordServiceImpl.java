@@ -307,7 +307,11 @@ public class TimeSeriesRecordServiceImpl implements TimeSeriesRecordService {
     Preconditions.checkNotNull(cvConfig, "could not find datasource with id ", cvConfigId);
 
     MetricCVConfig metricCVConfig = (MetricCVConfig) cvConfig;
+    return getTimeSeriesMetricDefinitions(metricCVConfig);
+  }
 
+  @Override
+  public List<TimeSeriesMetricDefinition> getTimeSeriesMetricDefinitions(MetricCVConfig metricCVConfig) {
     List<TimeSeriesMetricDefinition> timeSeriesMetricDefinitions = new ArrayList<>();
     // add project level thresholds
     List<TimeSeriesThreshold> metricPackThresholds = metricPackService.getMetricPackThresholds(

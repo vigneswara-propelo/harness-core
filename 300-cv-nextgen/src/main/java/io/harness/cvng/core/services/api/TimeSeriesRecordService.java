@@ -13,6 +13,7 @@ import io.harness.cvng.analysis.entities.TimeSeriesRiskSummary;
 import io.harness.cvng.beans.TimeSeriesDataCollectionRecord;
 import io.harness.cvng.core.beans.TimeSeriesMetricDefinition;
 import io.harness.cvng.core.beans.demo.DemoTemplate;
+import io.harness.cvng.core.entities.MetricCVConfig;
 import io.harness.cvng.core.entities.TimeSeriesRecord;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public interface TimeSeriesRecordService {
   boolean updateRiskScores(String verificationTaskId, TimeSeriesRiskSummary riskSummary);
 
   List<TimeSeriesMetricDefinition> getTimeSeriesMetricDefinitions(String cvConfigId);
+  List<TimeSeriesMetricDefinition> getTimeSeriesMetricDefinitions(MetricCVConfig metricCVConfig);
   TimeSeriesTestDataDTO getTxnMetricDataForRange(
       String verificationTaskId, Instant startTime, Instant endTime, String metricName, String txnName);
 

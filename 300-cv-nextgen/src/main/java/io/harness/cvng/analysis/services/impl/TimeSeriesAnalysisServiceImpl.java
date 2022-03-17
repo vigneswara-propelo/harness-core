@@ -45,6 +45,8 @@ import io.harness.cvng.analysis.services.api.TimeSeriesAnomalousPatternsService;
 import io.harness.cvng.core.beans.TimeRange;
 import io.harness.cvng.core.beans.TimeSeriesMetricDefinition;
 import io.harness.cvng.core.entities.CVConfig;
+import io.harness.cvng.core.entities.MetricCVConfig;
+import io.harness.cvng.core.entities.VerificationTask;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.TimeSeriesRecordService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
@@ -483,9 +485,19 @@ public class TimeSeriesAnalysisServiceImpl implements TimeSeriesAnalysisService 
 
   @Override
   public List<TimeSeriesMetricDefinition> getMetricTemplate(String verificationTaskId) {
-    Optional<String> cvConfig = verificationTaskService.maybeGetCVConfigId(verificationTaskId);
+    VerificationTask verificationTask = verificationTaskService.get(verificationTaskId);
+    MetricCVConfig cvConfig = null;
+    if (verificationTask.getTaskInfo().getTaskType().equals(VerificationTask.TaskType.DEPLOYMENT)) {
+      cvConfig = (MetricCVConfig) verificationJobInstanceService.getEmbeddedCVConfig(
+          ((VerificationTask.DeploymentInfo) verificationTask.getTaskInfo()).getCvConfigId(),
+          ((VerificationTask.DeploymentInfo) verificationTask.getTaskInfo()).getVerificationJobInstanceId());
+    } else {
+      cvConfig =
+          (MetricCVConfig) cvConfigService.get(verificationTaskService.maybeGetCVConfigId(verificationTaskId).get());
+    }
+
     List<TimeSeriesMetricDefinition> timeSeriesMetricDefinitions =
-        cvConfig.map(s -> timeSeriesRecordService.getTimeSeriesMetricDefinitions(s)).orElse(new ArrayList<>());
+        timeSeriesRecordService.getTimeSeriesMetricDefinitions(cvConfig);
     // in LE we pass metric identifier as the metric_name, as metric_name is the identifier for LE
     timeSeriesMetricDefinitions.forEach(timeSeriesMetricDefinition
         -> timeSeriesMetricDefinition.setMetricName(timeSeriesMetricDefinition.getMetricIdentifier()));
