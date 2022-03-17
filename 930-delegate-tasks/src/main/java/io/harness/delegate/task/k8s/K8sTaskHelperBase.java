@@ -131,6 +131,7 @@ import io.harness.k8s.kubectl.RolloutStatusCommand;
 import io.harness.k8s.kubectl.ScaleCommand;
 import io.harness.k8s.kubectl.Utils;
 import io.harness.k8s.manifest.ManifestHelper;
+import io.harness.k8s.manifest.VersionUtils;
 import io.harness.k8s.model.HarnessAnnotations;
 import io.harness.k8s.model.HarnessLabelValues;
 import io.harness.k8s.model.HarnessLabels;
@@ -272,6 +273,10 @@ public class K8sTaskHelperBase {
 
   public static final String ISTIO_DESTINATION_TEMPLATE = "host: $ISTIO_DESTINATION_HOST_NAME\n"
       + "subset: $ISTIO_DESTINATION_SUBSET_NAME";
+  private static final String INVALID_RESOURCE_SPEC_HINT =
+      "Please check if the rendered manifest is valid and does not contain invalid/missing values.";
+  private static final String INVALID_RESOURCE_SPEC_EXPLANATION =
+      "Failed to load resource spec as a Kubernetes object.";
 
   public static LogOutputStream getExecutionLogOutputStream(LogCallback executionLogCallback, LogLevel logLevel) {
     return new LogOutputStream() {
@@ -2862,5 +2867,14 @@ public class K8sTaskHelperBase {
     List<KubernetesResourceId> resourceIdsToBeDeleted =
         getResourcesToBePruned(resourcesFromLastSuccessfulRelease, currentResources);
     return arrangeResourceIdsInDeletionOrder(resourceIdsToBeDeleted);
+  }
+
+  public void addRevisionNumber(List<KubernetesResource> resources, int revision) {
+    try {
+      VersionUtils.addRevisionNumber(resources, revision);
+    } catch (KubernetesYamlException exception) {
+      throw NestedExceptionUtils.hintWithExplanationException(
+          INVALID_RESOURCE_SPEC_HINT, INVALID_RESOURCE_SPEC_EXPLANATION, exception);
+    }
   }
 }

@@ -33,6 +33,7 @@ import static io.harness.k8s.model.Kind.Deployment;
 import static io.harness.k8s.model.Kind.DeploymentConfig;
 import static io.harness.k8s.model.Kind.Job;
 import static io.harness.k8s.model.Kind.Namespace;
+import static io.harness.k8s.model.Kind.Secret;
 import static io.harness.k8s.model.Kind.Service;
 import static io.harness.logging.LogLevel.ERROR;
 import static io.harness.logging.LogLevel.INFO;
@@ -230,6 +231,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import junitparams.JUnitParamsRunner;
@@ -3416,5 +3418,21 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     fileContent.append(new String(randomBytes));
 
     FileUtils.writeStringToFile(new File(filePath), fileContent.toString(), StandardCharsets.UTF_8);
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testAddingRevisionNumberWithException() {
+    KubernetesResource resource = mock(KubernetesResource.class);
+    when(resource.transformName(any(UnaryOperator.class))).thenThrow(new KubernetesYamlException(DEFAULT));
+    when(resource.getResourceId()).thenReturn(KubernetesResourceId.builder().kind(Secret.name()).build());
+    when(resource.getMetadataAnnotationValue(anyString())).thenReturn(DEFAULT);
+    assertThatThrownBy(() -> k8sTaskHelperBase.addRevisionNumber(Collections.singletonList(resource), 1))
+        .isInstanceOf(HintException.class)
+        .getCause()
+        .isInstanceOf(ExplanationException.class)
+        .getCause()
+        .hasMessageContaining("KUBERNETES_YAML_ERROR");
   }
 }

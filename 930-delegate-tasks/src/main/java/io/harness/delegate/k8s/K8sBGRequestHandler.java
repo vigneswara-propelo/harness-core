@@ -22,7 +22,6 @@ import static io.harness.k8s.manifest.ManifestHelper.getPrimaryService;
 import static io.harness.k8s.manifest.ManifestHelper.getServices;
 import static io.harness.k8s.manifest.ManifestHelper.getStageService;
 import static io.harness.k8s.manifest.ManifestHelper.getWorkloadsForCanaryAndBG;
-import static io.harness.k8s.manifest.VersionUtils.addRevisionNumber;
 import static io.harness.k8s.manifest.VersionUtils.markVersionedResources;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.LogLevel.ERROR;
@@ -339,7 +338,7 @@ public class K8sBGRequestHandler extends K8sRequestHandler {
 
     if (!skipResourceVersioning) {
       executionLogCallback.saveExecutionLog("\nVersioning resources.");
-      addRevisionNumber(resources, currentRelease.getNumber());
+      k8sTaskHelperBase.addRevisionNumber(resources, currentRelease.getNumber());
     }
     managedWorkload = getManagedWorkload(resources);
     managedWorkload.appendSuffixInName('-' + stageColor);

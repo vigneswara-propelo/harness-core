@@ -493,32 +493,38 @@ public class KubernetesResource {
 
   @VisibleForTesting
   Object getK8sResource() {
-    Kind kind = Kind.valueOf(this.resourceId.getKind());
+    try {
+      Kind kind = Kind.valueOf(this.resourceId.getKind());
 
-    switch (kind) {
-      case Deployment:
-        return Yaml.loadAs(this.spec, V1Deployment.class);
-      case DaemonSet:
-        return Yaml.loadAs(this.spec, V1DaemonSet.class);
-      case StatefulSet:
-        return Yaml.loadAs(this.spec, V1StatefulSet.class);
-      case Job:
-        return Yaml.loadAs(this.spec, V1Job.class);
-      case Service:
-        return Yaml.loadAs(this.spec, V1Service.class);
-      case Secret:
-        return Yaml.loadAs(this.spec, V1Secret.class);
-      case ConfigMap:
-        return Yaml.loadAs(this.spec, V1ConfigMap.class);
-      case Pod:
-        return Yaml.loadAs(this.spec, V1Pod.class);
-      case DeploymentConfig:
-        return Yaml.loadAs(this.spec, DeploymentConfig.class);
-      case CronJob:
-        return Yaml.loadAs(this.spec, V1beta1CronJob.class);
-      default:
-        unhandled(this.resourceId.getKind());
-        throw new KubernetesYamlException("Unhandled Kubernetes resource " + this.resourceId.getKind());
+      switch (kind) {
+        case Deployment:
+          return Yaml.loadAs(this.spec, V1Deployment.class);
+        case DaemonSet:
+          return Yaml.loadAs(this.spec, V1DaemonSet.class);
+        case StatefulSet:
+          return Yaml.loadAs(this.spec, V1StatefulSet.class);
+        case Job:
+          return Yaml.loadAs(this.spec, V1Job.class);
+        case Service:
+          return Yaml.loadAs(this.spec, V1Service.class);
+        case Secret:
+          return Yaml.loadAs(this.spec, V1Secret.class);
+        case ConfigMap:
+          return Yaml.loadAs(this.spec, V1ConfigMap.class);
+        case Pod:
+          return Yaml.loadAs(this.spec, V1Pod.class);
+        case DeploymentConfig:
+          return Yaml.loadAs(this.spec, DeploymentConfig.class);
+        case CronJob:
+          return Yaml.loadAs(this.spec, V1beta1CronJob.class);
+        default:
+          unhandled(this.resourceId.getKind());
+          throw new KubernetesYamlException("Unhandled Kubernetes resource " + this.resourceId.getKind());
+      }
+    } catch (Exception ex) {
+      String exceptionMessage = format("Failed to load spec for resource kind: %s, name: %s %n%s",
+          this.resourceId.getKind(), this.resourceId.getName(), ex.getMessage());
+      throw new KubernetesYamlException(exceptionMessage);
     }
   }
 

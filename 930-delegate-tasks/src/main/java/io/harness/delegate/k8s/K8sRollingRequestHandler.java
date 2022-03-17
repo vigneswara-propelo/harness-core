@@ -20,7 +20,6 @@ import static io.harness.k8s.K8sCommandUnitConstants.WrapUp;
 import static io.harness.k8s.K8sConstants.MANIFEST_FILES_DIR;
 import static io.harness.k8s.manifest.ManifestHelper.getCustomResourceDefinitionWorkloads;
 import static io.harness.k8s.manifest.ManifestHelper.getWorkloads;
-import static io.harness.k8s.manifest.VersionUtils.addRevisionNumber;
 import static io.harness.k8s.manifest.VersionUtils.markVersionedResources;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.logging.LogLevel.INFO;
@@ -273,7 +272,7 @@ public class K8sRollingRequestHandler extends K8sRequestHandler {
 
       if (!skipResourceVersioning) {
         executionLogCallback.saveExecutionLog("\nVersioning resources.");
-        addRevisionNumber(resources, release.getNumber());
+        k8sTaskHelperBase.addRevisionNumber(resources, release.getNumber());
       }
 
       k8sRollingBaseHandler.addLabelsInManagedWorkloadPodSpec(inCanaryWorkflow, managedWorkloads, releaseName);
