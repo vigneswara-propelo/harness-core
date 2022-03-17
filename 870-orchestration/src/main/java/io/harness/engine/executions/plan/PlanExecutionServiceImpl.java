@@ -14,7 +14,6 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.engine.events.OrchestrationEventEmitter;
 import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.interrupts.statusupdate.NodeStatusUpdateHandlerFactory;
 import io.harness.engine.observers.NodeStatusUpdateHandler;
@@ -29,8 +28,6 @@ import io.harness.execution.PlanExecution.PlanExecutionKeys;
 import io.harness.observer.Subject;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
-import io.harness.pms.contracts.execution.events.OrchestrationEvent;
-import io.harness.pms.contracts.execution.events.OrchestrationEventType;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
 import io.harness.pms.execution.utils.StatusUtils;
 import io.harness.pms.plan.execution.SetupAbstractionKeys;
@@ -61,7 +58,6 @@ import org.springframework.data.mongodb.core.query.Update;
 public class PlanExecutionServiceImpl implements PlanExecutionService {
   @Inject private PlanExecutionRepository planExecutionRepository;
   @Inject private MongoTemplate mongoTemplate;
-  @Inject private OrchestrationEventEmitter eventEmitter;
   @Inject private NodeStatusUpdateHandlerFactory nodeStatusUpdateHandlerFactory;
   @Inject private NodeExecutionService nodeExecutionService;
 
@@ -185,11 +181,6 @@ public class PlanExecutionServiceImpl implements PlanExecutionService {
 
   private void emitEvent(PlanExecution planExecution) {
     Ambiance ambiance = buildFromPlanExecution(planExecution);
-    eventEmitter.emitEvent(OrchestrationEvent.newBuilder()
-                               .setAmbiance(ambiance)
-                               .setEventType(OrchestrationEventType.PLAN_EXECUTION_STATUS_UPDATE)
-                               .setStatus(planExecution.getStatus())
-                               .build());
     planStatusUpdateSubject.fireInform(PlanStatusUpdateObserver::onPlanStatusUpdate, ambiance);
   }
 

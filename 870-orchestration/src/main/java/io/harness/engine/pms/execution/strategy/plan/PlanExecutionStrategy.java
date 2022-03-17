@@ -37,7 +37,6 @@ import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.events.OrchestrationEvent;
 import io.harness.pms.contracts.execution.events.OrchestrationEventType;
 import io.harness.pms.contracts.governance.GovernanceMetadata;
-import io.harness.pms.contracts.triggers.TriggerPayload;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.plan.execution.SetupAbstractionKeys;
 import io.harness.springdata.TransactionHelper;
@@ -78,13 +77,6 @@ public class PlanExecutionStrategy implements NodeExecutionStrategy<Plan, PlanEx
           governanceService.evaluateGovernancePolicies(expandedPipelineJson, accountId, orgIdentifier,
               projectIdentifier, OpaConstants.OPA_EVALUATION_ACTION_PIPELINE_RUN, ambiance.getPlanExecutionId());
       PlanExecution planExecution = createPlanExecution(ambiance, metadata, governanceMetadata);
-      eventEmitter.emitEvent(
-          OrchestrationEvent.newBuilder()
-              .setAmbiance(ambiance)
-              .setEventType(OrchestrationEventType.ORCHESTRATION_START)
-              .setTriggerPayload(metadata.getTriggerPayload() != null ? metadata.getTriggerPayload()
-                                                                      : TriggerPayload.newBuilder().build())
-              .build());
 
       Node planNode = planService.fetchNode(plan.getUuid(), plan.getStartingNodeId());
       if (planNode == null) {

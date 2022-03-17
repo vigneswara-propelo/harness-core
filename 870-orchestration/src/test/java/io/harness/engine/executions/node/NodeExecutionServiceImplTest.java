@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -50,16 +51,23 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
   @Mock OrchestrationLogConfiguration orchestrationLogConfiguration;
-  @Inject @InjectMocks private NodeExecutionService nodeExecutionService;
+  @Inject @InjectMocks @Spy private NodeExecutionServiceImpl nodeExecutionService;
+
+  @Before
+  public void beforeTest() {
+    doNothing().when(nodeExecutionService).emitEvent(any(), any());
+  }
 
   @Test
   @Owner(developers = PRASHANT)
