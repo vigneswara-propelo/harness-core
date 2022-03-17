@@ -190,6 +190,11 @@ set +x
 if ! `grep accountSecret config-watcher.yml > /dev/null`; then
   echo "accountSecret: ${accountSecret}" >> config-watcher.yml
 fi
+<#if delegateToken??>
+if ! `grep delegateToken config-watcher.yml > /dev/null`; then
+echo "delegateToken: ${delegateToken}" >> config-watcher.yml
+fi
+</#if>
 set -x
 if ! `grep managerUrl config-watcher.yml > /dev/null`; then
   echo "managerUrl: ${managerHostAndPort}/api/" >> config-watcher.yml
