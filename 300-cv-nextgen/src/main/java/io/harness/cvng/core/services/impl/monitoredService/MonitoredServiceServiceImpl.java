@@ -94,6 +94,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import javax.ws.rs.NotFoundException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -1267,6 +1268,11 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public PageResponse<CVNGLogDTO> getCVNGLogs(MonitoredServiceParams monitoredServiceParams,
       LiveMonitoringLogsFilter liveMonitoringLogsFilter, PageParams pageParams) {
+    MonitoredService monitoredService = getMonitoredService(monitoredServiceParams);
+    if (Objects.isNull(monitoredService)) {
+      throw new NotFoundException("Monitored Service with identifier "
+          + monitoredServiceParams.getMonitoredServiceIdentifier() + " not found.");
+    }
     List<CVConfig> cvConfigs;
     if (liveMonitoringLogsFilter.filterByHealthSourceIdentifiers()) {
       cvConfigs = cvConfigService.list(monitoredServiceParams, liveMonitoringLogsFilter.getHealthSourceIdentifiers());

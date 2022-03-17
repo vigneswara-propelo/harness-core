@@ -24,14 +24,13 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.harness.CvNextGenTestBase;
 import io.harness.category.element.UnitTests;
 import io.harness.cvng.BuilderFactory;
+import io.harness.cvng.CVNGTestConstants;
 import io.harness.cvng.analysis.beans.Risk;
 import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.DataSourceType;
@@ -89,7 +88,6 @@ import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.services.api.monitoredService.HealthSourceService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.core.services.api.monitoredService.ServiceDependencyService;
-import io.harness.cvng.core.services.impl.VerificationTaskServiceImpl;
 import io.harness.cvng.dashboard.entities.HeatMap;
 import io.harness.cvng.dashboard.entities.HeatMap.HeatMapRisk;
 import io.harness.cvng.dashboard.services.api.HeatMapService;
@@ -144,6 +142,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   @Inject ServiceDependencyService serviceDependencyService;
   @Inject ServiceLevelIndicatorService serviceLevelIndicatorService;
   @Inject CVNGLogService cvngLogService;
+  @Inject VerificationTaskService verificationTaskService;
   @Mock NextGenService nextGenService;
   @Mock SetupUsageEventService setupUsageEventService;
   @Mock ChangeSourceService changeSourceServiceMock;
@@ -167,10 +166,6 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   ProjectParams projectParams;
   ServiceEnvironmentParams environmentParams;
   Map<String, String> tags;
-  private String traceableId;
-  private long createdAt;
-  private Instant startTime;
-  private Instant endTime;
 
   @Before
   public void setup() throws IllegalAccessException {
@@ -198,10 +193,6 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         put("tag2", "");
       }
     };
-    traceableId = generateUuid();
-    startTime = Instant.now().minusSeconds(5);
-    endTime = Instant.now();
-    createdAt = Instant.now().toEpochMilli();
     projectParams = ProjectParams.builder()
                         .accountIdentifier(accountId)
                         .orgIdentifier(orgIdentifier)
@@ -1920,35 +1911,31 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = KAPIL)
   @Category(UnitTests.class)
-  public void testGetCVNGLogs() throws IllegalAccessException {
+  public void testGetCVNGLogs() {
+    Instant startTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant().minusSeconds(5);
+    Instant endTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant();
+    MonitoredServiceDTO monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder().build();
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
     MonitoredServiceParams monitoredServiceParams =
         MonitoredServiceParams.builderWithProjectParams(builderFactory.getContext().getProjectParams())
-            .monitoredServiceIdentifier(monitoredServiceIdentifier)
+            .monitoredServiceIdentifier(monitoredServiceDTO.getIdentifier())
             .build();
+    List<String> cvConfigIds =
+        cvConfigService.list(monitoredServiceParams).stream().map(CVConfig::getUuid).collect(Collectors.toList());
+    List<String> verificationTaskIds = verificationTaskService.getServiceGuardVerificationTaskIds(
+        builderFactory.getContext().getAccountId(), cvConfigIds);
+    List<CVNGLogDTO> cvngLogDTOs =
+        IntStream.range(0, 3)
+            .mapToObj(index
+                -> builderFactory.createExecutionLogDTOVerification().traceableId(verificationTaskIds.get(0)).build())
+            .collect(Collectors.toList());
+    cvngLogService.save(cvngLogDTOs);
+
     LiveMonitoringLogsFilter liveMonitoringLogsFilter = LiveMonitoringLogsFilter.builder()
                                                             .logType("ExecutionLog")
                                                             .startTime(startTime.toEpochMilli())
                                                             .endTime(endTime.toEpochMilli())
                                                             .build();
-
-    MonitoredServiceDTO monitoredServiceDTO = createMonitoredServiceDTO();
-    MonitoredServiceDTO savedMonitoredServiceDTO =
-        monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO)
-            .getMonitoredServiceDTO();
-    assertThat(savedMonitoredServiceDTO).isEqualTo(monitoredServiceDTO);
-
-    List<CVNGLogDTO> cvngLogDTOs =
-        IntStream.range(0, 3)
-            .mapToObj(index -> createExecutionLogDTOVerification(ExecutionLogDTO.LogLevel.INFO))
-            .collect(Collectors.toList());
-    cvngLogService.save(cvngLogDTOs);
-    Set<String> traceableIds =
-        cvngLogDTOs.stream().map(cvngLogDTO -> cvngLogDTO.getTraceableId()).collect(Collectors.toSet());
-    VerificationTaskService verificationTaskService = mock(VerificationTaskServiceImpl.class);
-    FieldUtils.writeField(monitoredServiceService, "verificationTaskService", verificationTaskService, true);
-    when(verificationTaskService.getServiceGuardVerificationTaskIds(any(), anyList()))
-        .thenReturn(Arrays.asList(traceableIds.toArray()));
-
     PageResponse<CVNGLogDTO> cvngLogDTOResponse = monitoredServiceService.getCVNGLogs(
         monitoredServiceParams, liveMonitoringLogsFilter, PageParams.builder().page(0).size(10).build());
 
@@ -1958,7 +1945,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
 
     ExecutionLogDTO executionLogDTOS = (ExecutionLogDTO) cvngLogDTOResponse.getContent().get(0);
     assertThat(executionLogDTOS.getAccountId()).isEqualTo(accountId);
-    assertThat(executionLogDTOS.getTraceableId()).isEqualTo(traceableIds.iterator().next());
+    assertThat(executionLogDTOS.getTraceableId()).isEqualTo(verificationTaskIds.get(0));
     assertThat(executionLogDTOS.getTraceableType()).isEqualTo(TraceableType.VERIFICATION_TASK);
     assertThat(executionLogDTOS.getType()).isEqualTo(CVNGLogType.EXECUTION_LOG);
     assertThat(executionLogDTOS.getLogLevel()).isEqualTo(ExecutionLogDTO.LogLevel.INFO);
@@ -1968,37 +1955,34 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = KAPIL)
   @Category(UnitTests.class)
-  public void testGetCVNGLogs_withHealthSourceFilter() throws IllegalAccessException {
+  public void testGetCVNGLogs_withHealthSourceFilter() {
+    Instant startTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant().minusSeconds(5);
+    Instant endTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant();
+    MonitoredServiceDTO monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder().build();
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
     MonitoredServiceParams monitoredServiceParams =
         MonitoredServiceParams.builderWithProjectParams(builderFactory.getContext().getProjectParams())
-            .monitoredServiceIdentifier(monitoredServiceIdentifier)
+            .monitoredServiceIdentifier(monitoredServiceDTO.getIdentifier())
             .build();
+    List<CVConfig> cvConfigs = cvConfigService.list(monitoredServiceParams);
+    List<String> cvConfigIds = cvConfigs.stream().map(CVConfig::getUuid).collect(Collectors.toList());
+    List<String> verificationTaskIds = verificationTaskService.getServiceGuardVerificationTaskIds(
+        builderFactory.getContext().getAccountId(), cvConfigIds);
+
+    List<CVNGLogDTO> cvngLogDTOs =
+        IntStream.range(0, 3)
+            .mapToObj(index
+                -> builderFactory.createExecutionLogDTOVerification().traceableId(verificationTaskIds.get(0)).build())
+            .collect(Collectors.toList());
+    cvngLogService.save(cvngLogDTOs);
+
     LiveMonitoringLogsFilter liveMonitoringLogsFilter =
         LiveMonitoringLogsFilter.builder()
-            .healthSourceIdentifiers(Arrays.asList("monitoredServiceIdentifier/healthSourceIdentifier"))
+            .healthSourceIdentifiers(Arrays.asList(cvConfigs.get(0).getIdentifier()))
             .logType("ExecutionLog")
             .startTime(startTime.toEpochMilli())
             .endTime(endTime.toEpochMilli())
             .build();
-
-    MonitoredServiceDTO monitoredServiceDTO = createMonitoredServiceDTO();
-    MonitoredServiceDTO savedMonitoredServiceDTO =
-        monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO)
-            .getMonitoredServiceDTO();
-    assertThat(savedMonitoredServiceDTO).isEqualTo(monitoredServiceDTO);
-
-    List<CVNGLogDTO> cvngLogDTOs =
-        IntStream.range(0, 3)
-            .mapToObj(index -> createExecutionLogDTOVerification(ExecutionLogDTO.LogLevel.INFO))
-            .collect(Collectors.toList());
-    cvngLogService.save(cvngLogDTOs);
-    Set<String> traceableIds =
-        cvngLogDTOs.stream().map(cvngLogDTO -> cvngLogDTO.getTraceableId()).collect(Collectors.toSet());
-    VerificationTaskService verificationTaskService = mock(VerificationTaskServiceImpl.class);
-    FieldUtils.writeField(monitoredServiceService, "verificationTaskService", verificationTaskService, true);
-    when(verificationTaskService.getServiceGuardVerificationTaskIds(any(), anyList()))
-        .thenReturn(Arrays.asList(traceableIds.toArray()));
-
     PageResponse<CVNGLogDTO> cvngLogDTOResponse = monitoredServiceService.getCVNGLogs(
         monitoredServiceParams, liveMonitoringLogsFilter, PageParams.builder().page(0).size(10).build());
 
@@ -2008,24 +1992,11 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
 
     ExecutionLogDTO executionLogDTOS = (ExecutionLogDTO) cvngLogDTOResponse.getContent().get(0);
     assertThat(executionLogDTOS.getAccountId()).isEqualTo(accountId);
-    assertThat(executionLogDTOS.getTraceableId()).isEqualTo(traceableIds.iterator().next());
+    assertThat(executionLogDTOS.getTraceableId()).isEqualTo(verificationTaskIds.get(0));
     assertThat(executionLogDTOS.getTraceableType()).isEqualTo(TraceableType.VERIFICATION_TASK);
     assertThat(executionLogDTOS.getType()).isEqualTo(CVNGLogType.EXECUTION_LOG);
     assertThat(executionLogDTOS.getLogLevel()).isEqualTo(ExecutionLogDTO.LogLevel.INFO);
     assertThat(executionLogDTOS.getLog()).isEqualTo("Data Collection successfully completed.");
-  }
-
-  private CVNGLogDTO createExecutionLogDTOVerification(ExecutionLogDTO.LogLevel logLevel) {
-    return ExecutionLogDTO.builder()
-        .accountId(accountId)
-        .traceableId(traceableId)
-        .log("Data Collection successfully completed.")
-        .logLevel(logLevel)
-        .startTime(startTime.toEpochMilli())
-        .endTime(endTime.toEpochMilli())
-        .createdAt(createdAt)
-        .traceableType(TraceableType.VERIFICATION_TASK)
-        .build();
   }
 
   private void setStartTimeEndTimeAndRiskScoreWith5MinBucket(

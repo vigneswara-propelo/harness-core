@@ -31,6 +31,9 @@ import io.harness.cvng.beans.change.KubernetesChangeEventMetadata.Action;
 import io.harness.cvng.beans.change.KubernetesChangeEventMetadata.KubernetesResourceType;
 import io.harness.cvng.beans.change.PagerDutyEventMetaData;
 import io.harness.cvng.beans.customhealth.TimestampInfo;
+import io.harness.cvng.beans.cvnglog.ExecutionLogDTO;
+import io.harness.cvng.beans.cvnglog.ExecutionLogDTO.ExecutionLogDTOBuilder;
+import io.harness.cvng.beans.cvnglog.TraceableType;
 import io.harness.cvng.beans.job.Sensitivity;
 import io.harness.cvng.cdng.beans.CVNGStepInfo;
 import io.harness.cvng.cdng.beans.CVNGStepInfo.CVNGStepInfoBuilder;
@@ -1004,5 +1007,20 @@ public class BuilderFactory {
           .monitoredServiceIdentifier(getMonitoredServiceIdentifier())
           .build();
     }
+  }
+
+  public ExecutionLogDTOBuilder createExecutionLogDTOVerification() {
+    long createdAt = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant().toEpochMilli();
+    Instant startTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant().minusSeconds(5);
+    Instant endTime = CVNGTestConstants.FIXED_TIME_FOR_TESTS.instant();
+    return ExecutionLogDTO.builder()
+        .accountId(context.getAccountId())
+        .traceableId("traceableId")
+        .log("Data Collection successfully completed.")
+        .logLevel(ExecutionLogDTO.LogLevel.INFO)
+        .startTime(startTime.toEpochMilli())
+        .endTime(endTime.toEpochMilli())
+        .createdAt(createdAt)
+        .traceableType(TraceableType.VERIFICATION_TASK);
   }
 }
