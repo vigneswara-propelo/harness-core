@@ -136,6 +136,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.Before;
@@ -2310,6 +2311,69 @@ public class ContainerInstanceHandlerTest extends WingsBaseTest {
     assertSavedAndDeletedInstances(emptyList(), syncResponse, asList("instance-1", "instance-2"), emptyList());
   }
 
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void shouldUpdateExistingArtifactIdOnNewDeployment() throws Exception {
+    DeploymentSummary deploymentSummary =
+        DeploymentSummary.builder()
+            .artifactId("newArtifactId")
+            .artifactStreamId("artifactStreamId")
+            .workflowExecutionId("newWorkflow")
+            .workflowExecutionName("workflowName")
+            .appId(APP_ID)
+            .accountId(ACCOUNT_ID)
+            .infraMappingId(UUID)
+            .deploymentInfo(
+                K8sDeploymentInfo.builder().namespace("default").releaseName("releaseName").releaseNumber(2).build())
+            .build();
+
+    List<K8sPod> existingK8sPod =
+        asList(createK8sPod("pod-1", "releaseName", "default"), createK8sPod("pod-2", "releaseName", "default"));
+    List<Instance> instancesInDb =
+        asList(createK8sPodInstance("pod-1", "releaseName", "default", "oldArtifactId", "oldWorkflow"),
+            createK8sPodInstance("pod-2", "releaseName", "default", "newArtifactId", "newWorkflow"));
+
+    assertSavedAndDeletedInstancesOnNewDeployment(
+        deploymentSummary, instancesInDb, existingK8sPod, singletonList("pod-1"), emptyList(), null);
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void shouldNotUpdateExistingArtifactIdOnNewDeployment() throws Exception {
+    DeploymentSummary deploymentSummary =
+        DeploymentSummary.builder()
+            .artifactId("newArtifactId")
+            .artifactStreamId("artifactStreamId")
+            .workflowExecutionId("newWorkflow")
+            .workflowExecutionName("workflowName")
+            .appId(APP_ID)
+            .accountId(ACCOUNT_ID)
+            .infraMappingId(UUID)
+            .deploymentInfo(
+                K8sDeploymentInfo.builder().namespace("default").releaseName("releaseName").releaseNumber(2).build())
+            .build();
+
+    HashMap<String, String> metadata = new HashMap<>();
+    metadata.put("image", "test");
+    Artifact artifact = anArtifact()
+                            .withUuid("artifactId")
+                            .withArtifactStreamId("artifactStreamId")
+                            .withAppId(APP_ID)
+                            .withMetadata(metadata)
+                            .build();
+
+    List<K8sPod> existingK8sPod =
+        asList(createK8sPod("pod-1", "releaseName", "default"), createK8sPod("pod-2", "releaseName", "default"));
+    List<Instance> instancesInDb =
+        asList(createK8sPodInstance("pod-1", "releaseName", "default", "artifactId", "oldWorkflow"),
+            createK8sPodInstance("pod-2", "releaseName", "default", "newArtifactId", "newWorkflow"));
+
+    assertSavedAndDeletedInstancesOnNewDeployment(
+        deploymentSummary, instancesInDb, existingK8sPod, singletonList("pod-1"), emptyList(), artifact);
+  }
+
   private void assertSavedAndDeletedInstances(List<Instance> instancesInDb, K8sInstanceSyncResponse syncResponse,
       List<String> savedInstances, List<String> deletedInstances) throws Exception {
     ContainerInfrastructureMapping infrastructureMapping =
@@ -2330,6 +2394,61 @@ public class ContainerInstanceHandlerTest extends WingsBaseTest {
       thrownException = e;
     }
 
+    assertSavedAndDeletedInstances(actualSavedInstances
+        -> assertThat(actualSavedInstances.stream()
+                          .map(Instance::getInstanceInfo)
+                          .map(K8sPodInfo.class ::cast)
+                          .map(K8sPodInfo::getPodName))
+               .containsExactlyInAnyOrderElementsOf(savedInstances),
+        actualDeletedInstancesIds
+        -> assertThat(actualDeletedInstancesIds).containsExactlyInAnyOrderElementsOf(deletedInstances));
+
+    if (thrownException != null) {
+      throw thrownException;
+    }
+  }
+
+  private void assertSavedAndDeletedInstancesOnNewDeployment(DeploymentSummary deploymentSummary,
+      List<Instance> instancesInDb, List<K8sPod> podList, List<String> savedInstances, List<String> deletedInstances,
+      Artifact artifact) throws Exception {
+    List<DeploymentSummary> deploymentSummaries = singletonList(deploymentSummary);
+
+    ContainerInfrastructureMapping infrastructureMapping =
+        DirectKubernetesInfrastructureMapping.builder()
+            .appId(APP_ID)
+            .accountId(ACCOUNT_ID)
+            .infraMappingType(InfrastructureMappingType.DIRECT_KUBERNETES.name())
+            .namespace("default")
+            .build();
+    infrastructureMapping.setUuid(UUID);
+
+    doReturn(podList).when(k8sStateHelper).fetchPodList(infrastructureMapping, "default", "releaseName");
+
+    doReturn(instancesInDb).when(instanceService).getInstancesForAppAndInframapping(APP_ID, UUID);
+
+    doReturn(infrastructureMapping).when(infraMappingService).get(APP_ID, UUID);
+
+    if (artifact != null) {
+      persistence.save(artifact);
+    }
+
+    containerInstanceHandler.handleNewDeployment(deploymentSummaries, false, null);
+
+    assertSavedAndDeletedInstances(actualSavedInstances -> {
+      assertThat(actualSavedInstances.stream()
+                     .map(Instance::getInstanceInfo)
+                     .map(K8sPodInfo.class ::cast)
+                     .map(K8sPodInfo::getPodName))
+          .containsExactlyInAnyOrderElementsOf(savedInstances);
+      String expectedArtifactId = artifact != null ? artifact.getUuid() : deploymentSummary.getArtifactId();
+      assertThat(actualSavedInstances.stream().map(Instance::getLastArtifactId))
+          .containsExactlyInAnyOrderElementsOf(
+              savedInstances.stream().map(s -> expectedArtifactId).collect(Collectors.toList()));
+    }, actualDeletedInstances -> assertThat(deletedInstances).isEmpty());
+  }
+
+  private void assertSavedAndDeletedInstances(
+      Consumer<List<Instance>> savedInstancesHandler, Consumer<List<String>> deletedInstancesHandler) {
     ArgumentCaptor<Instance> savedInstancesCaptor = ArgumentCaptor.forClass(Instance.class);
     ArgumentCaptor<Set<String>> deletedInstancesCaptor =
         ArgumentCaptor.forClass((Class<Set<String>>) (Object) Set.class);
@@ -2338,18 +2457,9 @@ public class ContainerInstanceHandlerTest extends WingsBaseTest {
     verify(instanceService, atLeast(0)).saveOrUpdate(savedInstancesCaptor.capture());
     verify(instanceService, atLeast(0)).delete(deletedInstancesCaptor.capture());
 
-    assertThat(savedInstancesCaptor.getAllValues()
-                   .stream()
-                   .map(Instance::getInstanceInfo)
-                   .map(K8sPodInfo.class ::cast)
-                   .map(K8sPodInfo::getPodName))
-        .containsExactlyInAnyOrderElementsOf(savedInstances);
-    assertThat(deletedInstancesCaptor.getAllValues().stream().flatMap(Set::stream).collect(Collectors.toList()))
-        .containsExactlyInAnyOrderElementsOf(deletedInstances);
-
-    if (thrownException != null) {
-      throw thrownException;
-    }
+    savedInstancesHandler.accept(savedInstancesCaptor.getAllValues());
+    deletedInstancesHandler.accept(
+        deletedInstancesCaptor.getAllValues().stream().flatMap(Set::stream).collect(Collectors.toList()));
   }
 
   private void assertSavedAndDeletedInstances(List<Instance> instancesInDb, ContainerSyncResponse containerSyncResponse,
@@ -2385,6 +2495,11 @@ public class ContainerInstanceHandlerTest extends WingsBaseTest {
   }
 
   private Instance createK8sPodInstance(String id, String releaseName, String namespace) {
+    return createK8sPodInstance(id, releaseName, namespace, null, "1");
+  }
+
+  private Instance createK8sPodInstance(
+      String id, String releaseName, String namespace, String artifactId, String workflowExecutionId) {
     return Instance.builder()
         .uuid(id)
         .instanceType(KUBERNETES_CONTAINER_INSTANCE)
@@ -2396,7 +2511,9 @@ public class ContainerInstanceHandlerTest extends WingsBaseTest {
                           .releaseName(releaseName)
                           .containers(singletonList(K8sContainerInfo.builder().image("test").build()))
                           .build())
-        .lastWorkflowExecutionId("1")
+        .lastArtifactId(artifactId)
+        .lastWorkflowExecutionName("workflowName")
+        .lastWorkflowExecutionId(workflowExecutionId)
         .build();
   }
 

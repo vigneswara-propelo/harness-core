@@ -648,7 +648,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
           boolean updated = updateHelmChartInfoForExistingK8sPod(instanceToBeUpdated, k8sPod, deploymentSummary);
 
           if (!deploymentSummary.getWorkflowExecutionId().equals(instanceToBeUpdated.getLastWorkflowExecutionId())) {
-            updateInstanceBasedOnDeploymentSummary(instanceToBeUpdated, deploymentSummary);
+            updateInstanceBasedOnDeploymentSummary(instanceToBeUpdated, k8sPod, deploymentSummary);
             updated = true;
           }
 
@@ -661,7 +661,16 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
   }
 
   private void updateInstanceBasedOnDeploymentSummary(
-      Instance instanceToBeUpdated, DeploymentSummary deploymentSummary) {
+      Instance instanceToBeUpdated, K8sPod pod, DeploymentSummary deploymentSummary) {
+    // In case when there is no artifact matches in artifact collection we will use artifactId from deploymentSummary
+    // In case if pod is coming from auto scale and need to be updated, we need to ensure that artifact id is or from
+    // actual artifact from artifact collection or we should update it from deployment summary
+    Artifact artifact =
+        findArtifactBasedOnK8sPod(pod, deploymentSummary.getArtifactStreamId(), deploymentSummary.getAppId());
+    if (artifact == null) {
+      instanceToBeUpdated.setLastArtifactId(deploymentSummary.getArtifactId());
+    }
+
     // all the fields marked 'last' are updated except for artifact details
     instanceToBeUpdated.setLastDeployedById(deploymentSummary.getDeployedById());
     instanceToBeUpdated.setLastDeployedByName(deploymentSummary.getDeployedByName());
@@ -671,6 +680,20 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
     instanceToBeUpdated.setLastWorkflowExecutionName(deploymentSummary.getWorkflowExecutionName());
     instanceToBeUpdated.setLastPipelineExecutionId(deploymentSummary.getPipelineExecutionId());
     instanceToBeUpdated.setLastPipelineExecutionName(deploymentSummary.getPipelineExecutionName());
+  }
+
+  private Artifact findArtifactBasedOnK8sPod(K8sPod pod, String artifactStreamId, String appId) {
+    if (artifactStreamId != null) {
+      for (K8sContainer k8sContainer : pod.getContainerList()) {
+        Artifact artifact = findArtifactForImage(artifactStreamId, appId, k8sContainer.getImage());
+
+        if (artifact != null) {
+          return artifact;
+        }
+      }
+    }
+
+    return null;
   }
 
   private HelmChartInfo getK8sPodHelmChartInfo(
@@ -1181,12 +1204,9 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
     boolean instanceBuilderUpdated = false;
     if (deploymentSummary != null && deploymentSummary.getArtifactStreamId() != null) {
       for (K8sContainer k8sContainer : pod.getContainerList()) {
-        Artifact artifact = wingsPersistence.createQuery(Artifact.class)
-                                .filter(ArtifactKeys.artifactStreamId, deploymentSummary.getArtifactStreamId())
-                                .filter(ArtifactKeys.appId, infraMapping.getAppId())
-                                .filter("metadata.image", k8sContainer.getImage())
-                                .disableValidation()
-                                .get();
+        Artifact artifact = findArtifactForImage(
+            deploymentSummary.getArtifactStreamId(), infraMapping.getAppId(), k8sContainer.getImage());
+
         if (artifact != null) {
           builder.lastArtifactId(artifact.getUuid());
           updateInstanceWithArtifactSourceAndBuildNum(builder, k8sContainer);
@@ -1201,6 +1221,15 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
     }
 
     return builder.build();
+  }
+
+  private Artifact findArtifactForImage(String artifactStreamId, String appId, String image) {
+    return wingsPersistence.createQuery(Artifact.class)
+        .filter(ArtifactKeys.artifactStreamId, artifactStreamId)
+        .filter(ArtifactKeys.appId, appId)
+        .filter("metadata.image", image)
+        .disableValidation()
+        .get();
   }
 
   private void updateInstanceWithArtifactSourceAndBuildNum(InstanceBuilder builder, K8sContainer container) {
