@@ -7,9 +7,11 @@
 
 package io.harness.gitsync.common.impl;
 
+import static io.harness.rule.OwnerRule.MEET;
 import static io.harness.rule.OwnerRule.MOHIT_GARG;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,6 +20,9 @@ import static org.mockito.Mockito.when;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.eraro.ErrorCode;
+import io.harness.exception.HintException;
+import io.harness.exception.WingsException;
 import io.harness.gitsync.ChangeType;
 import io.harness.gitsync.FileInfo;
 import io.harness.gitsync.GitSyncTestBase;
@@ -25,6 +30,8 @@ import io.harness.gitsync.common.dtos.GitSyncEntityDTO;
 import io.harness.gitsync.common.service.GitEntityService;
 import io.harness.ng.core.EntityDetail;
 import io.harness.rule.Owner;
+import io.harness.security.Principal;
+import io.harness.security.UserPrincipal;
 
 import com.google.protobuf.StringValue;
 import org.junit.Test;
@@ -41,9 +48,13 @@ public class HarnessToGitHelperServiceImplTest extends GitSyncTestBase {
   @InjectMocks HarnessToGitHelperServiceImpl harnessToGitHelperService;
   @Mock GitEntityService gitEntityService;
 
+  String name = "name";
+  String userName = "userName";
+  String email = "email";
   String baseBranch = "baseBranch";
   String branch = "branch";
   String commitId = "commitId";
+  String errorMessage = "errorMessage";
 
   @Test
   @Owner(developers = MOHIT_GARG)
@@ -87,6 +98,23 @@ public class HarnessToGitHelperServiceImplTest extends GitSyncTestBase {
     verify(gitEntityService, times(1)).get(any(), any(), branchArgumentCaptor.capture());
     assertThat(branchArgumentCaptor.getValue()).isEqualTo(baseBranch);
     assertThat(lastCommitId).isEqualTo(commitId);
+  }
+
+  @Test
+  @Owner(developers = MEET)
+  @Category(UnitTests.class)
+  public void testProcessPushFileException() {
+    UserPrincipal userPrincipal = UserPrincipal.newBuilder()
+                                      .setUserId(StringValue.of(name))
+                                      .setUserName(StringValue.of(userName))
+                                      .setEmail(StringValue.of(email))
+                                      .build();
+    io.harness.security.Principal principal = Principal.newBuilder().setUserPrincipal(userPrincipal).build();
+    FileInfo fileInfo = FileInfo.newBuilder().setPrincipal(principal).build();
+    WingsException wingsException = WingsException.builder().code(ErrorCode.SCM_UNAUTHORIZED).build();
+    assertThatThrownBy(() -> harnessToGitHelperService.processPushFileException(fileInfo, wingsException))
+        .isInstanceOf(HintException.class)
+        .hasMessage("Please check your SCM credentials");
   }
 
   private FileInfo getFileInfoDefault(String commitId, ChangeType changeType) {

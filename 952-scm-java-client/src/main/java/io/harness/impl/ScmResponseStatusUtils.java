@@ -13,9 +13,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ExplanationException;
-import io.harness.exception.NestedExceptionUtils;
 import io.harness.exception.SCMExceptionExplanations;
-import io.harness.exception.SCMExceptionHints;
 import io.harness.exception.ScmException;
 import io.harness.exception.UnexpectedException;
 
@@ -34,7 +32,7 @@ public class ScmResponseStatusUtils {
         log.error("Encountered new status code: [{}] with message: [{}] from scm", statusCode, errorMsg);
         throw new UnexpectedException("Unexpected error occurred while doing scm operation");
       } else if (errorCode == ErrorCode.SCM_NOT_FOUND_ERROR) {
-        throw NestedExceptionUtils.hintWithExplanationException(SCMExceptionHints.INVALID_CREDENTIALS,
+        throw new ExplanationException(
             SCMExceptionExplanations.UNABLE_TO_PUSH_TO_REPO_WITH_USER_CREDENTIALS, new ScmException(errorCode));
       }
       if (isNotEmpty(errorMsg)) {
