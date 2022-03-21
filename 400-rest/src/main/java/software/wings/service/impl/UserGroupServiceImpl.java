@@ -653,16 +653,17 @@ public class UserGroupServiceImpl implements UserGroupService {
     }
   }
 
-  public void addParentsReference(String userGroupId, String accountId, String appId, String pipelineId) {
+  public void addParentsReference(
+      String userGroupId, String accountId, String appId, String entityId, String entityType) {
     UserGroup userGroup = Optional.ofNullable(mongoPersistence.get(UserGroup.class, userGroupId)).orElse(null);
     if (userGroup == null) {
       // log statement for userGroups which are deleted but are being referenced in a pipeline
-      log.error("UserGroup does not exist but pipeline with id {} and appId {} is referencing it", pipelineId, appId);
+      log.error("UserGroup does not exist but pipeline with id {} and appId {} is referencing it", entityId, appId);
       return;
     }
     userGroup.addParent(UserGroupEntityReference.builder()
-                            .entityType("PIPELINE")
-                            .id(pipelineId)
+                            .entityType(entityType)
+                            .id(entityId)
                             .appId(appId)
                             .accountId(accountId)
                             .build());
@@ -671,16 +672,17 @@ public class UserGroupServiceImpl implements UserGroupService {
     mongoPersistence.update(userGroup, ops);
   }
 
-  public void removeParentsReference(String userGroupId, String accountId, String appId, String pipelineId) {
+  public void removeParentsReference(
+      String userGroupId, String accountId, String appId, String entityId, String entityType) {
     UserGroup userGroup = Optional.ofNullable(mongoPersistence.get(UserGroup.class, userGroupId)).orElse(null);
     if (userGroup == null) {
       // log statement for userGroups which are deleted but are being referenced in a pipeline
-      log.error("UserGroup does not exist but pipeline with id {} and appId {} is referencing it", pipelineId, appId);
+      log.error("UserGroup does not exist but pipeline with id {} and appId {} is referencing it", entityId, appId);
       return;
     }
     userGroup.removeParent(UserGroupEntityReference.builder()
-                               .entityType("PIPELINE")
-                               .id(pipelineId)
+                               .entityType(entityType)
+                               .id(entityId)
                                .appId(appId)
                                .accountId(accountId)
                                .build());

@@ -106,6 +106,7 @@ import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.con
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructAmiWorkflow;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructAppDVerifyStep;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructAppdTemplateExpressions;
+import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructApprovalStep;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructAwsLambdaInfraDef;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructBasicDeploymentTemplateWorkflow;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructBasicWorkflow;
@@ -119,6 +120,8 @@ import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.con
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructBuildWorkflow;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructBuildWorkflowWithPhase;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructCanaryHttpAsPostDeploymentStep;
+import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructCanaryWithApprovalPhaseStep;
+import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructCanaryWithApprovalStep;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructCanaryWithHttpPhaseStep;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructCanaryWithHttpStep;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructCanaryWorkflow;
@@ -254,6 +257,7 @@ import static software.wings.utils.WingsTestConstants.SETTING_ID;
 import static software.wings.utils.WingsTestConstants.TARGET_APP_ID;
 import static software.wings.utils.WingsTestConstants.TARGET_SERVICE_ID;
 import static software.wings.utils.WingsTestConstants.TEMPLATE_ID;
+import static software.wings.utils.WingsTestConstants.USER_GROUP_ID;
 import static software.wings.utils.WingsTestConstants.USER_NAME;
 import static software.wings.utils.WingsTestConstants.UUID;
 import static software.wings.utils.WingsTestConstants.WORKFLOW_ID;
@@ -273,6 +277,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -5268,5 +5273,121 @@ public class WorkflowServiceTest extends WingsBaseTest {
         ((CanaryOrchestrationWorkflow) workflow2.getOrchestrationWorkflow()).getWorkflowPhases();
     // verify attach
     assertThat(workflowPhases2.size()).isEqualTo(2);
+  }
+
+  @Test
+  @Owner(developers = PRABU)
+  @Category(UnitTests.class)
+  public void shouldUpdateUserGroupsFromApprovalStep() {
+    when(serviceResourceService.getDeploymentType(any(), any(), any())).thenReturn(DeploymentType.SSH);
+    doNothing()
+        .when(userGroupService)
+        .addParentsReference(anyString(), anyString(), anyString(), anyString(), anyString());
+    Workflow workflow1 = constructCanaryWithApprovalStep();
+
+    Workflow workflow2 = workflowService.createWorkflow(workflow1);
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+
+    CanaryOrchestrationWorkflow orchestrationWorkflow =
+        (CanaryOrchestrationWorkflow) workflow2.getOrchestrationWorkflow();
+    orchestrationWorkflow.getPreDeploymentSteps().getSteps().add(
+        constructApprovalStep(asList(USER_GROUP_ID + 3, USER_GROUP_ID + 4)));
+    Workflow workflow3 = workflowService.updateWorkflow(workflow2, false);
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID + 3, ACCOUNT_ID, APP_ID, workflow2.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID + 4, ACCOUNT_ID, APP_ID, workflow2.getUuid(), WORKFLOW.name());
+
+    CanaryOrchestrationWorkflow orchestrationWorkflow2 =
+        (CanaryOrchestrationWorkflow) workflow3.getOrchestrationWorkflow();
+    orchestrationWorkflow2.getPreDeploymentSteps().getSteps().remove(1);
+    workflowService.updateWorkflow(workflow3, false);
+    verify(userGroupService)
+        .removeParentsReference(USER_GROUP_ID + 3, ACCOUNT_ID, APP_ID, workflow3.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .removeParentsReference(USER_GROUP_ID + 4, ACCOUNT_ID, APP_ID, workflow3.getUuid(), WORKFLOW.name());
+  }
+
+  @Test
+  @Owner(developers = PRABU)
+  @Category(UnitTests.class)
+  public void shouldUpdateUserGroupsFromPhaseApprovalStep() {
+    when(serviceResourceService.getDeploymentType(any(), any(), any())).thenReturn(DeploymentType.SSH);
+    doNothing()
+        .when(userGroupService)
+        .addParentsReference(anyString(), anyString(), anyString(), anyString(), anyString());
+    Workflow workflow1 = constructCanaryWithApprovalPhaseStep();
+
+    Workflow workflow2 = workflowService.createWorkflow(workflow1);
+
+    CanaryOrchestrationWorkflow orchestrationWorkflow =
+        (CanaryOrchestrationWorkflow) workflow2.getOrchestrationWorkflow();
+    orchestrationWorkflow.getPostDeploymentSteps().getSteps().add(
+        constructApprovalStep(asList(USER_GROUP_ID, USER_GROUP_ID + 2)));
+    workflowService.updateWorkflow(workflow2, false);
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+  }
+
+  @Test
+  @Owner(developers = PRABU)
+  @Category(UnitTests.class)
+  public void shouldRemoveUserGroupsFromPhaseApprovalStep() {
+    when(serviceResourceService.getDeploymentType(any(), any(), any())).thenReturn(DeploymentType.SSH);
+    doNothing()
+        .when(userGroupService)
+        .addParentsReference(anyString(), anyString(), anyString(), anyString(), anyString());
+    Workflow workflow1 = constructCanaryWithApprovalPhaseStep();
+
+    Workflow workflow2 = workflowService.createWorkflow(workflow1);
+
+    CanaryOrchestrationWorkflow orchestrationWorkflow =
+        (CanaryOrchestrationWorkflow) workflow2.getOrchestrationWorkflow();
+    orchestrationWorkflow.setWorkflowPhases(Collections.emptyList());
+    workflowService.updateWorkflow(workflow2, false);
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .removeParentsReference(USER_GROUP_ID, ACCOUNT_ID, APP_ID, workflow2.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .removeParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow2.getUuid(), WORKFLOW.name());
+  }
+
+  @Test
+  @Owner(developers = PRABU)
+  @Category(UnitTests.class)
+  public void shouldRemoveUserGroupsWhenWorkflowDeleted() {
+    when(serviceResourceService.getDeploymentType(any(), any(), any())).thenReturn(DeploymentType.SSH);
+    doNothing()
+        .when(userGroupService)
+        .addParentsReference(anyString(), anyString(), anyString(), anyString(), anyString());
+    Workflow workflow1 = constructCanaryWithApprovalPhaseStep();
+
+    Workflow workflow2 = workflowService.createWorkflow(workflow1);
+    Workflow clonedWorkflow = workflow2.cloneInternal();
+    clonedWorkflow.setName(workflow2.getName() + 2);
+
+    Workflow workflow3 = workflowService.cloneWorkflow(APP_ID, workflow2, clonedWorkflow);
+
+    workflowService.deleteWorkflow(APP_ID, workflow3.getUuid());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow1.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID, ACCOUNT_ID, APP_ID, workflow3.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .addParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow3.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .removeParentsReference(USER_GROUP_ID, ACCOUNT_ID, APP_ID, workflow3.getUuid(), WORKFLOW.name());
+    verify(userGroupService)
+        .removeParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow3.getUuid(), WORKFLOW.name());
   }
 }

@@ -221,7 +221,7 @@ public interface UserGroupService
 
   void maintainTemplatePermissions(UserGroup userGroup);
 
-  void addParentsReference(String userGroupId, String accountId, String appId, String pipelineId);
+  void addParentsReference(String userGroupId, String accountId, String appId, String entityId, String entityType);
 
-  void removeParentsReference(String userGroupId, String accountId, String appId, String pipelineId);
+  void removeParentsReference(String userGroupId, String accountId, String appId, String entityId, String entityType);
 }

@@ -103,6 +103,7 @@ import io.harness.rule.Owner;
 import software.wings.WingsBaseTest;
 import software.wings.beans.Account;
 import software.wings.beans.Account.Builder;
+import software.wings.beans.EntityType;
 import software.wings.beans.Event.Type;
 import software.wings.beans.LicenseInfo;
 import software.wings.beans.Role;
@@ -1382,7 +1383,7 @@ public class UserGroupServiceImplTest extends WingsBaseTest {
                                               .entityType("PIPELINE")
                                               .build();
 
-    userGroupService.addParentsReference("userGroupId", accountId, "appId3", "pipelineId3");
+    userGroupService.addParentsReference("userGroupId", accountId, "appId3", "pipelineId3", EntityType.PIPELINE.name());
     UserGroup updatedUserGroup = persistence.get(UserGroup.class, "userGroupId");
     assertThat(updatedUserGroup.getParents().size()).isEqualTo(3);
     assertThat(updatedUserGroup.getParents())
@@ -1404,7 +1405,7 @@ public class UserGroupServiceImplTest extends WingsBaseTest {
                                              .entityType("PIPELINE")
                                              .build();
 
-    userGroupService.addParentsReference("userGroupId", accountId, "appId", "pipelineId");
+    userGroupService.addParentsReference("userGroupId", accountId, "appId", "pipelineId", EntityType.PIPELINE.name());
     UserGroup updatedUserGroup = persistence.get(UserGroup.class, "userGroupId");
     assertThat(updatedUserGroup.getParents().size()).isEqualTo(1);
     assertThat(updatedUserGroup.getParents()).isEqualTo(new HashSet<>(Collections.singleton(reference)));
@@ -1430,7 +1431,8 @@ public class UserGroupServiceImplTest extends WingsBaseTest {
 
     persistence.save(userGroup);
 
-    userGroupService.removeParentsReference("userGroupId", accountId, "appId", "pipelineId");
+    userGroupService.removeParentsReference(
+        "userGroupId", accountId, "appId", "pipelineId", EntityType.PIPELINE.name());
     UserGroup updatedUserGroup = persistence.get(UserGroup.class, "userGroupId");
     assertThat(updatedUserGroup.getParents().size()).isEqualTo(0);
   }
@@ -1444,7 +1446,8 @@ public class UserGroupServiceImplTest extends WingsBaseTest {
 
     persistence.save(userGroup);
 
-    userGroupService.removeParentsReference("userGroupId", accountId, "appId", "pipelineId");
+    userGroupService.removeParentsReference(
+        "userGroupId", accountId, "appId", "pipelineId", EntityType.PIPELINE.name());
     UserGroup updatedUserGroup = persistence.get(UserGroup.class, "userGroupId");
     assertThat(updatedUserGroup.getParents().size()).isEqualTo(0);
   }
