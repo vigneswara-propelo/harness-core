@@ -131,7 +131,8 @@ public class ManifestMigrationService implements NgMigrationService {
       CgEntityNode manifestNode = entities.get(manifestEntityId);
       ApplicationManifest applicationManifest = (ApplicationManifest) manifestNode.getEntity();
       migratorExpressionUtils.render(applicationManifest);
-      BaseProvidedInput manifestInput = inputDTO.getInputs().get(manifestEntityId);
+      BaseProvidedInput manifestInput =
+          inputDTO.getInputs() == null ? null : inputDTO.getInputs().get(manifestEntityId);
       ManifestProvidedEntitySpec entitySpec = null;
       if (manifestInput != null && manifestInput.getSpec() != null) {
         entitySpec = JsonUtils.treeToValue(manifestInput.getSpec(), ManifestProvidedEntitySpec.class);

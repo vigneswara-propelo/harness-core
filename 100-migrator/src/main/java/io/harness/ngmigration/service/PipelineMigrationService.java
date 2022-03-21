@@ -118,7 +118,8 @@ public class PipelineMigrationService implements NgMigrationService {
   public DiscoveryNode discover(String accountId, String appId, String entityId) {
     Pipeline pipeline = pipelineService.getPipeline(appId, entityId);
     if (pipeline == null) {
-      throw new InvalidRequestException(format("Pipeline with id:[%s] doesn't exist", entityId));
+      throw new InvalidRequestException(
+          format("Pipeline with id:[%s] in application with id:[%s] doesn't exist", entityId, appId));
     }
     return discover(pipeline);
   }

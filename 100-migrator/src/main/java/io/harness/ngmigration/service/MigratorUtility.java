@@ -74,7 +74,7 @@ public class MigratorUtility {
       return "account." + identifier;
     }
     if (StringUtils.isNotBlank(projectId)) {
-      return "project." + identifier;
+      return identifier;
     }
     return "org." + identifier;
   }
