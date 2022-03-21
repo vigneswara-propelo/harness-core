@@ -27,6 +27,7 @@ public class SdkStepHelper {
   @Inject PmsSdkInstanceService pmsSdkInstanceService;
   @Inject CommonStepInfo commonStepInfo;
 
+  // Todo: Cache it in redis and store it
   public Set<String> getAllStepVisibleInUI() {
     Set<String> allSteps = new HashSet<>();
     for (Set<SdkStep> sdkSteps : pmsSdkInstanceService.getSdkSteps().values()) {

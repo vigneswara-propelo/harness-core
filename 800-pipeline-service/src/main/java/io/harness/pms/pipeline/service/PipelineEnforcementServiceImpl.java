@@ -147,6 +147,7 @@ public class PipelineEnforcementServiceImpl implements PipelineEnforcementServic
    */
   @Override
   public void validatePipelineExecutionRestriction(String accountId, Set<StepType> stepTypes) {
+    // Todo: Use SdkStepHelper over here
     Map<String, Set<SdkStep>> sdkSteps = pmsSdkInstanceService.getSdkSteps();
     Multimap<String, String> featureRestrictionToStepNamesMap =
         getFeatureRestrictionMapFromUsedSteps(sdkSteps, stepTypes);

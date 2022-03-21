@@ -58,7 +58,6 @@ public class PmsSdkHelper {
       return false;
     }
 
-    Map<String, Set<String>> supportedTypes = serviceInfo.getSupportedTypes();
     YamlField fullYamlField;
     try {
       fullYamlField = YamlUtils.readTree(dependencies.getYaml());
@@ -71,15 +70,7 @@ public class PmsSdkHelper {
     return dependencies.getDependenciesMap()
         .entrySet()
         .stream()
-        .filter(entry -> {
-          try {
-            YamlField field = fullYamlField.fromYamlPath(entry.getValue());
-            return PlanCreatorUtils.supportsField(supportedTypes, field);
-          } catch (Exception e) {
-            log.error("Invalid yaml field", e);
-            return false;
-          }
-        })
+        .filter(entry -> containsSupportedSingleDependencyByYamlPath(serviceInfo, fullYamlField, entry))
         .map(Map.Entry::getKey)
         .findFirst()
         .isPresent();
