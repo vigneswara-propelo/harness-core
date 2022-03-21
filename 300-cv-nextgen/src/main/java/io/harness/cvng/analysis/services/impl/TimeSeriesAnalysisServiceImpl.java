@@ -47,6 +47,7 @@ import io.harness.cvng.core.beans.TimeSeriesMetricDefinition;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.MetricCVConfig;
 import io.harness.cvng.core.entities.VerificationTask;
+import io.harness.cvng.core.entities.VerificationTask.TaskType;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.TimeSeriesRecordService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
@@ -487,17 +488,18 @@ public class TimeSeriesAnalysisServiceImpl implements TimeSeriesAnalysisService 
   public List<TimeSeriesMetricDefinition> getMetricTemplate(String verificationTaskId) {
     VerificationTask verificationTask = verificationTaskService.get(verificationTaskId);
     MetricCVConfig cvConfig = null;
-    if (verificationTask.getTaskInfo().getTaskType().equals(VerificationTask.TaskType.DEPLOYMENT)) {
+    if (verificationTask.getTaskInfo().getTaskType() == TaskType.DEPLOYMENT) {
       cvConfig = (MetricCVConfig) verificationJobInstanceService.getEmbeddedCVConfig(
           ((VerificationTask.DeploymentInfo) verificationTask.getTaskInfo()).getCvConfigId(),
           ((VerificationTask.DeploymentInfo) verificationTask.getTaskInfo()).getVerificationJobInstanceId());
-    } else {
-      cvConfig =
-          (MetricCVConfig) cvConfigService.get(verificationTaskService.maybeGetCVConfigId(verificationTaskId).get());
+    } else if (verificationTask.getTaskInfo().getTaskType() == TaskType.LIVE_MONITORING) {
+      cvConfig = (MetricCVConfig) cvConfigService.get(
+          ((VerificationTask.LiveMonitoringInfo) verificationTask.getTaskInfo()).getCvConfigId());
     }
-
-    List<TimeSeriesMetricDefinition> timeSeriesMetricDefinitions =
-        timeSeriesRecordService.getTimeSeriesMetricDefinitions(cvConfig);
+    List<TimeSeriesMetricDefinition> timeSeriesMetricDefinitions = new ArrayList<>();
+    if (cvConfig != null) {
+      timeSeriesMetricDefinitions = timeSeriesRecordService.getTimeSeriesMetricDefinitions(cvConfig);
+    }
     // in LE we pass metric identifier as the metric_name, as metric_name is the identifier for LE
     timeSeriesMetricDefinitions.forEach(timeSeriesMetricDefinition
         -> timeSeriesMetricDefinition.setMetricName(timeSeriesMetricDefinition.getMetricIdentifier()));

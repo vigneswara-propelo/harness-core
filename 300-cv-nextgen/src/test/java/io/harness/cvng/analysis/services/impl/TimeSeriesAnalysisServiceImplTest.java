@@ -59,7 +59,6 @@ import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.MetricPack;
 import io.harness.cvng.core.entities.SplunkCVConfig;
 import io.harness.cvng.core.entities.TimeSeriesRecord;
-import io.harness.cvng.core.entities.VerificationTask;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.MetricPackService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
@@ -524,17 +523,22 @@ public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
       { put(cvConfig.getUuid(), cvConfig); }
     });
     hPersistence.save(verificationJobInstance);
-    VerificationTask verificationTask = VerificationTask.builder()
-                                            .taskInfo(VerificationTask.DeploymentInfo.builder()
-                                                          .cvConfigId(cvConfig.getUuid())
-                                                          .verificationJobInstanceId(verificationJobInstance.getUuid())
-                                                          .build())
-                                            .build();
-    hPersistence.save(verificationTask);
+    String verificationTaskId = verificationTaskService.createDeploymentVerificationTask(
+        accountId, cvConfig.getUuid(), verificationJobInstance.getUuid(), APP_DYNAMICS);
     hPersistence.delete(cvConfig);
     List<TimeSeriesMetricDefinition> timeSeriesMetricDefinitions =
-        timeSeriesAnalysisService.getMetricTemplate(verificationTask.getUuid());
+        timeSeriesAnalysisService.getMetricTemplate(verificationTaskId);
     assertThat(timeSeriesMetricDefinitions.size()).isEqualTo(2);
+  }
+
+  @Test
+  @Owner(developers = KAMAL)
+  @Category(UnitTests.class)
+  public void testGetMetricTemplate_forSLI() {
+    String verificationTaskId = verificationTaskService.createSLIVerificationTask(accountId, generateUuid());
+    List<TimeSeriesMetricDefinition> timeSeriesMetricDefinitions =
+        timeSeriesAnalysisService.getMetricTemplate(verificationTaskId);
+    assertThat(timeSeriesMetricDefinitions).isEmpty();
   }
 
   @Test
