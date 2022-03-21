@@ -39,9 +39,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.NotImplementedException;
 
 @Slf4j
-public abstract class OASModule extends AbstractModule {
+public class OASModule extends AbstractModule {
   public static final String ACCOUNT_IDENTIFIER = "accountIdentifier";
   public static final String ACCOUNT_ID = "accountId";
   public static final String EXCLUSION_FILE = "/oas/exclusion-file";
@@ -53,7 +54,9 @@ public abstract class OASModule extends AbstractModule {
   public static final String PARAM_EXCLUSION = "param-exclusion";
   public static final String OPERATION_EXCLUSION = "operation-exclusion";
 
-  public abstract Collection<Class<?>> getResourceClasses();
+  public Collection<Class<?>> getResourceClasses() {
+    throw new NotImplementedException("getResourceClasses");
+  }
 
   public void testOASAdoption(Collection<Class<?>> classes) {
     Set<String> classWithoutTagNameOrDescription = new HashSet<>();
@@ -239,8 +242,8 @@ public abstract class OASModule extends AbstractModule {
       if (field.getType().isAnnotationPresent(Schema.class)) {
         dtoWithoutDescriptionToField.addAll(recursiveDtoFieldDescriptionCheck(field.getType()));
       } else {
-        if (!field.isAnnotationPresent(Schema.class)) {
-          if (!dtoWithoutDescriptionToField.contains(clazz.getName())) {
+        if (!field.isAnnotationPresent(Schema.class) && !field.isAnnotationPresent(Parameter.class)) {
+          if (!dtoWithoutDescriptionToField.contains(clazz.getName()) && !field.getName().startsWith("this$0")) {
             dtoWithoutDescriptionToField.add(clazz.getName());
           }
         } else {
@@ -249,6 +252,11 @@ public abstract class OASModule extends AbstractModule {
             if (annotation.annotationType() == Schema.class) {
               Schema schema = (Schema) annotation;
               if (schema.description().isEmpty()) {
+                dtoWithoutDescriptionToField.add(clazz.getName());
+              }
+            } else if (annotation.annotationType() == Parameter.class) {
+              Parameter parameter = (Parameter) annotation;
+              if (parameter.description().isEmpty()) {
                 dtoWithoutDescriptionToField.add(clazz.getName());
               }
             }
