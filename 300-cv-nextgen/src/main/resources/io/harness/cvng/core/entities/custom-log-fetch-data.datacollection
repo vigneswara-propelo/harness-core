@@ -1,44 +1,51 @@
-#TODO: not yet ready for review. This is not currently used
 Var one = 1
 Var nullObj = null
-Var dataCollectionURL = concat(Env:baseUrl, Var:urlPath)
+Var dataCollectionURL = concat(Env:baseUrl, Env:urlPath)
 Var logList = []
+Var requestBody = concat("",Env:body)
 
-if Var:startTimeFormat == "MILLISECONDS" {
+if Env:startTimeFormat == "MILLISECONDS" {
    Var startTimeStr = concat("", Env:startTimeMillis)
-   Var:dataCollectionURL.replaceAll(Env:startTimePlaceholder, Env:startTimeStr)
+   Var:dataCollectionURL.replaceAll(Env:startTimePlaceholder, Var:startTimeStr)
+   Var:requestBody.replaceAll(Env:startTimePlaceholder, Var:startTimeStr)
+
 }
 
-if Var:startTimeFormat == "SECONDS" {
+if Env:startTimeFormat == "SECONDS" {
    Var startTimeStr = concat("", Env:startTimeSeconds)
-   Var:dataCollectionURL.replaceAll(Env:startTimePlaceholder, Env:startTimeStr)
+   Var:dataCollectionURL.replaceAll(Env:startTimePlaceholder, Var:startTimeStr)
+   Var:requestBody.replaceAll(Env:startTimePlaceholder, Var:startTimeStr)
 }
 
-if Var:endTimeFormat == "MILLISECONDS" {
+if Env:endTimeFormat == "MILLISECONDS" {
    Var endTimeStr = concat("", Env:endTimeMillis)
-   Var:dataCollectionURL.replaceAll(Var:endTimePlaceholder, Env:endTimeStr)
+   Var:dataCollectionURL.replaceAll(Env:endTimePlaceholder, Var:endTimeStr)
+   Var:requestBody.replaceAll(Env:endTimePlaceholder, Var:endTimeStr)
 }
 
-if Var:endTimeFormat == "SECONDS" {
+if Env:endTimeFormat == "SECONDS" {
    Var endTimeStr = concat("", Env:endTimeSeconds)
-   Var:dataCollectionURL.replaceAll(Var:endTimePlaceholder, Env:endTimeStr)
+   Var:dataCollectionURL.replaceAll(Env:endTimePlaceholder, Var:endTimeStr)
+   Var:requestBody.replaceAll(Env:endTimePlaceholder, Var:endTimeStr)
 }
 
-Request request = new Request(url=Var:dataCollectionURL, header=Env:commonHeaders, options=Env:commonOptions, body=Env:body)
+Var jsonBody = Var:requestBody.jsonify()
+
+Request request = new Request(url=Var:dataCollectionURL, header=Env:commonHeaders, options=Env:commonOptions, body=Var:jsonBody)
 print Var:request
 Var response = sync-call(Var:request)
+print Var:response
 
-Var queryValArr = extract(Var:response,Var:queryValueJSONPath)
-Var timestampArr = extract(Var:response,Var:timestampValueJSONPath)
-Var serviceInstanceArr = []
-Var serviceInstance = null
-
-if Var:serviceInstanceJSONPath != Var:nullObj {
-   serviceInstanceArr = extract(Var:response,Var:serviceInstanceJSONPath)
-   serviceInstance = Var:serviceInstanceArr[Var:index]
+if Var:response == Var:nullObj {
+   return Var:logList
 }
 
-if Var:metricValArr != Var:nullObj  {
+Var queryValArr = extract(Var:response,Env:logMessageJSONPath)
+Var timestampArr = extract(Var:response,Env:timestampValueJSONPath)
+Var serviceInstanceArr = extract(Var:response,Env:serviceInstanceJSONPath)
+Var serviceInstance = null
+
+if Var:queryValArr != Var:nullObj  {
 
    Var totalQueryResults = Var:queryValArr.length()
    Var innerIndex = 0
@@ -46,8 +53,11 @@ if Var:metricValArr != Var:nullObj  {
    while Var:innerIndex != Var:totalQueryResults {
       Var queryVal = Var:queryValArr[Var:innerIndex]
       Var timestamp = Var:timestampArr[Var:innerIndex]
+      Var timeStampVal = string-to-time(Var:timestamp)
+      Var host = Var:serviceInstanceArr[Var:innerIndex]
+
       if Var:queryVal != Var:nullObj {
-         Var logRecord = new LogDataRecord(log=Var:queryVal, timestamp=Var:timestamp, host=Var:host)
+         Var logRecord = new LogDataRecord(log=Var:queryVal, timestamp=Var:timeStampVal, host=Var:host)
          Var:logList.append(Var:logRecord)
       }
       innerIndex = Var:innerIndex + Var:one

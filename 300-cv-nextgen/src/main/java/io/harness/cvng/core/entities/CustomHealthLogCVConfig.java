@@ -15,6 +15,9 @@ import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.core.beans.CustomHealthLogDefinition.CustomHealthLogDefinitionKeys;
 import io.harness.cvng.core.beans.CustomHealthRequestDefinition;
 
+import com.google.common.io.Resources;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,6 +40,7 @@ public class CustomHealthLogCVConfig extends LogCVConfig {
   String logMessageJsonPath;
   String timestampJsonPath;
   String serviceInstanceJsonPath;
+  static final String DATA_COLLECTION_DSL = readDSL("custom-log-fetch-data.datacollection");
 
   @Override
   protected void validateParams() {
@@ -57,12 +61,20 @@ public class CustomHealthLogCVConfig extends LogCVConfig {
 
   @Override
   public String getDataCollectionDsl() {
-    return null;
+    return DATA_COLLECTION_DSL;
   }
 
   @Override
   public String getHostCollectionDSL() {
-    throw new RuntimeException("Not implemented");
+    return DATA_COLLECTION_DSL;
+  }
+
+  private static String readDSL(String fileName) {
+    try {
+      return Resources.toString(SplunkCVConfig.class.getResource(fileName), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   public static class CustomHealthLogCVConfigUpdatableEntity
