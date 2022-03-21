@@ -690,7 +690,7 @@ iteratorsConfig:
   delegateTaskRebroadcastIteratorConfig:
     threadPoolSize: ${DELEGATE_TASK_REBROADCAST_ITERATOR_THREAD_COUNT:-5}
   failDelegateTaskIteratorConfig:
-      threadPoolSize: ${FAIL_DELEGATE_TASK_ITERATOR_THREAD_COUNT:-5}
+      threadPoolSize: ${FAIL_DELEGATE_TASK_ITERATOR_THREAD_COUNT:-2}
 
 disableDelegateMgmtInManager: false
 
