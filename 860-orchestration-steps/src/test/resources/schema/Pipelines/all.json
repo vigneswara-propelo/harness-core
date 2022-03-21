@@ -618,6 +618,9 @@
         },
         {
           "type": "object",
+          "required": [
+            "payload"
+          ],
           "properties": {
             "payload": {
               "type": "string"
@@ -1933,6 +1936,9 @@
         },
         {
           "type": "object",
+          "required": [
+            "policySets"
+          ],
           "properties": {
             "metadata": {
               "type": "string"

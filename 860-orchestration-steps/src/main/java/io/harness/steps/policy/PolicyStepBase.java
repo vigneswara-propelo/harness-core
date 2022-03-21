@@ -21,6 +21,7 @@ import io.harness.yaml.YamlSchemaTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,7 +35,7 @@ import org.springframework.data.annotation.TypeAlias;
 @OwnedBy(PIPELINE)
 public class PolicyStepBase {
   @YamlSchemaTypes(value = {runtime})
-  @NonNull
+  @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
   ParameterField<List<String>> policySets;
   @NonNull String type;
