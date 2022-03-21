@@ -120,7 +120,12 @@ public class RunTimeInputHandler {
     if (parameterField == null || parameterField.isExpression() || parameterField.getValue() == null) {
       return defaultValue;
     } else {
-      return (Integer) parameterField.fetchFinalValue();
+      try {
+        return Integer.parseInt(parameterField.fetchFinalValue().toString());
+      } catch (Exception exception) {
+        throw new CIStageExecutionUserException(
+            format("Invalid value %s, Value should be number", parameterField.fetchFinalValue().toString()));
+      }
     }
   }
 
