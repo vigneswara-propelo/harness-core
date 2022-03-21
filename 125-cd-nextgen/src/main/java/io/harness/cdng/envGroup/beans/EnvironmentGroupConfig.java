@@ -13,10 +13,12 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.validator.EntityIdentifier;
 import io.harness.data.validator.EntityName;
+import io.harness.data.validator.Trimmed;
 import io.harness.gitsync.beans.YamlDTO;
-import io.harness.ng.core.common.beans.NGTag;
 
 import java.util.List;
+import java.util.Map;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
@@ -28,12 +30,12 @@ public class EnvironmentGroupConfig implements YamlDTO {
   @EntityName String name;
   @EntityIdentifier String identifier;
 
-  String orgIdentifier;
-  String projectIdentifier;
+  @NotNull @Trimmed String orgIdentifier;
+  @NotNull @Trimmed String projectIdentifier;
 
   String description;
   String color;
-  List<NGTag> tags;
+  Map<String, String> tags;
 
   private List<String> envIdentifiers;
 }

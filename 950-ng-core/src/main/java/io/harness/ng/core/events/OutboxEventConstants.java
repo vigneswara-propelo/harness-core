@@ -20,4 +20,7 @@ public class OutboxEventConstants {
   public static final String ENVIRONMENT_UPDATED = "EnvironmentUpdated";
   public static final String ENVIRONMENT_DELETED = "EnvironmentDeleted";
   public static final String ENVIRONMENT_UPSERTED = "EnvironmentUpserted";
+
+  // EnvironmentGroup
+  public static final String ENVIRONMENT_GROUP_CREATED = "EnvironmentGroupCreated";
 }

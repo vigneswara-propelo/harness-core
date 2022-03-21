@@ -34,4 +34,9 @@ public class EnvironmentGroupServiceImpl implements EnvironmentGroupService {
     return environmentRepository.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifierAndDeletedNot(
         accountId, orgIdentifier, projectIdentifier, envGroupId, !deleted);
   }
+
+  @Override
+  public EnvironmentGroupEntity create(EnvironmentGroupEntity entity) {
+    return environmentRepository.create(entity);
+  }
 }

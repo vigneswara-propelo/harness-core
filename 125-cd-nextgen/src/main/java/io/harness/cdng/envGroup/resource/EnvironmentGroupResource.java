@@ -7,6 +7,8 @@
 
 package io.harness.cdng.envGroup.resource;
 
+import static io.harness.ng.core.utils.NGUtils.validate;
+
 import io.harness.NGCommonEntityConstants;
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.OrgIdentifier;
@@ -32,12 +34,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -108,5 +112,37 @@ public class EnvironmentGroupResource {
     Optional<EnvironmentGroupEntity> environmentGroupEntity =
         environmentGroupService.get(accountId, orgIdentifier, projectIdentifier, envGroupId, deleted);
     return ResponseDTO.newResponse(environmentGroupEntity.map(EnvironmentGroupMapper::toResponseWrapper).orElse(null));
+  }
+
+  // Api to create an Environment Group
+  @POST
+  @ApiOperation(value = "Create an Environment Group", nickname = "createEnvironmentGroup")
+  @Operation(operationId = "postEnvironmentGroup", summary = "Create an Environment Group",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
+            description =
+                "If the YAML is valid, returns created Environment Group. If not, it sends what is wrong with the YAML")
+      })
+  public ResponseDTO<EnvironmentGroupResponse>
+  create(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @Parameter(
+             description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) String accountId,
+      @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier @Parameter(
+          description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) String orgIdentifier,
+      @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier @Parameter(
+          description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) String projectIdentifier,
+      @RequestBody(required = true,
+          description =
+              "Environment Group YAML to be created. The Account, Org,  and Project identifiers inside the YAML should match the query parameters.")
+      @NotNull String yaml,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
+    // TODO(PRASHANTSHARMA): need to add rbac and also check the validity of env identifiers passed in yaml
+    EnvironmentGroupEntity entity =
+        EnvironmentGroupMapper.toEnvironmentEntity(accountId, orgIdentifier, projectIdentifier, yaml);
+    // Validate the fields of the Entity
+    validate(entity);
+    EnvironmentGroupEntity savedEntity = environmentGroupService.create(entity);
+
+    return ResponseDTO.newResponse(EnvironmentGroupMapper.toResponseWrapper(savedEntity));
   }
 }

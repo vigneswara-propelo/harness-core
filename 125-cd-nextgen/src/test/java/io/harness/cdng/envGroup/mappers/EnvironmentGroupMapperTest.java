@@ -10,6 +10,8 @@ package io.harness.cdng.envGroup.mappers;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.harness.CategoryTest;
 import io.harness.EntityType;
@@ -17,12 +19,20 @@ import io.harness.beans.IdentifierRef;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.encryption.ScopeHelper;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponseDTO;
+import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlNode;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -111,5 +121,67 @@ public class EnvironmentGroupMapperTest extends CategoryTest {
     assertThat(entityDetail.getName()).isEqualTo(environmentGroupEntity.getName());
     assertThat(entityDetail.getType()).isEqualTo(EntityType.ENVIRONMENT_GROUP);
     assertThat(entityDetail.getEntityRef()).isEqualTo(expectedIdentifierRef);
+  }
+
+  private String getYamlFieldFromGivenFileName(String file) throws IOException {
+    ClassLoader classLoader = this.getClass().getClassLoader();
+    InputStream yamlFile = classLoader.getResourceAsStream(file);
+    assertThat(yamlFile).isNotNull();
+
+    String yaml = new Scanner(yamlFile, "UTF-8").useDelimiter("\\A").next();
+    return yaml;
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testToEnvironmentEntity() throws IOException {
+    String yaml = getYamlFieldFromGivenFileName("cdng/envGroup/mappers/validEnvGroup.yml");
+    YamlField yamlField = YamlUtils.readTree(yaml);
+    String projectIdentifier = yamlField.getNode().getStringValue("projectIdentifier");
+    String orgIdentifier = yamlField.getNode().getStringValue("orgIdentifier");
+    String name = yamlField.getNode().getStringValue("name");
+    String identifier = yamlField.getNode().getStringValue("identifier");
+    List<YamlNode> envIdentifiers = yamlField.getNode().getField("envIdentifiers").getNode().asArray();
+    EnvironmentGroupEntity environmentGroupEntity =
+        EnvironmentGroupMapper.toEnvironmentEntity(ACC_ID, orgIdentifier, projectIdentifier, yaml);
+
+    assertThat(environmentGroupEntity.getIdentifier()).isEqualTo(identifier);
+    assertThat(environmentGroupEntity.getName()).isEqualTo(name);
+    assertThat(environmentGroupEntity.getAccountIdentifier()).isEqualTo(ACC_ID);
+    assertThat(environmentGroupEntity.getOrgIdentifier()).isEqualTo(orgIdentifier);
+    assertThat(environmentGroupEntity.getProjectIdentifier()).isEqualTo(projectIdentifier);
+    assertThat(environmentGroupEntity.getEnvIdentifiers().size()).isEqualTo(2);
+    assertThat(environmentGroupEntity.getEnvIdentifiers())
+        .containsExactly(envIdentifiers.get(0).asText(), envIdentifiers.get(1).asText());
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testThrowExceptionForIncorrectORGOrProId() throws IOException {
+    // To test org and project id passed in query param to be same as passed in yaml
+    String yaml = getYamlFieldFromGivenFileName("cdng/envGroup/mappers/validEnvGroup.yml");
+    YamlField yamlField = YamlUtils.readTree(yaml);
+    String projectIdentifier = yamlField.getNode().getStringValue("projectIdentifier");
+    String orgIdentifier = yamlField.getNode().getStringValue("orgIdentifier");
+
+    // Incorrect Org And ProjectId
+    assertThatThrownBy(() -> EnvironmentGroupMapper.toEnvironmentEntity(ACC_ID, ORG_ID, PRO_ID, yaml))
+        .isInstanceOf(InvalidRequestException.class);
+
+    // Incorrect Org and Correct project id
+    assertThatThrownBy(() -> EnvironmentGroupMapper.toEnvironmentEntity(ACC_ID, ORG_ID, projectIdentifier, yaml))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Organization Identifier passed in query param is not same as passed in yaml");
+
+    // Correct Org and Incorrect project id
+    assertThatThrownBy(() -> EnvironmentGroupMapper.toEnvironmentEntity(ACC_ID, orgIdentifier, PRO_ID, yaml))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Project Identifier passed in query param is not same as passed in yaml");
+
+    // Correct Org and Correct project id
+    assertThatCode(() -> EnvironmentGroupMapper.toEnvironmentEntity(ACC_ID, orgIdentifier, projectIdentifier, yaml))
+        .doesNotThrowAnyException();
   }
 }

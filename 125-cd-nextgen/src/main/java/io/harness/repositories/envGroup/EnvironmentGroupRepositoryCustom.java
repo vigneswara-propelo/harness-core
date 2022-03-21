@@ -14,4 +14,6 @@ import java.util.Optional;
 public interface EnvironmentGroupRepositoryCustom {
   Optional<EnvironmentGroupEntity> findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifierAndDeletedNot(
       String accountId, String orgIdentifier, String projectIdentifier, String envGroupId, boolean notDeleted);
+
+  EnvironmentGroupEntity create(EnvironmentGroupEntity environmentGroupEntity);
 }

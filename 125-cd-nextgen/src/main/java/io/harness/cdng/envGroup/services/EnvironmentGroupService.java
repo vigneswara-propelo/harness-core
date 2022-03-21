@@ -14,4 +14,6 @@ import java.util.Optional;
 public interface EnvironmentGroupService {
   Optional<EnvironmentGroupEntity> get(
       String accountId, String orgIdentifier, String projectIdentifier, String envGroupIdentifier, boolean deleted);
+
+  EnvironmentGroupEntity create(EnvironmentGroupEntity entity);
 }

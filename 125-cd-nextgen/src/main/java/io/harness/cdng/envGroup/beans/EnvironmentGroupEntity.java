@@ -69,7 +69,7 @@ public class EnvironmentGroupEntity implements PersistentEntity, GitSyncableEnti
   @Trimmed private String projectIdentifier;
 
   @NotEmpty @EntityIdentifier private String identifier;
-  @EntityName private String name;
+  @Trimmed @EntityName private String name;
   @Size(max = 1024) String description;
   @Size(max = 100) String color;
   @Wither @Singular @Size(max = 128) private List<NGTag> tags;
