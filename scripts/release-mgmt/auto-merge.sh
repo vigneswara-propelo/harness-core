@@ -37,7 +37,7 @@ if [ -z "${MANUAL_TRIGGER}" ] ; then
 fi
 
 echo "STEP 3: Checking out Master to local repo."
-git fetch origin refs/heads/master; git checkout master && git branch
+git fetch --unshallow; git checkout master && git branch
 
 echo "STEP 4: Checking if Master branch is ahead of Develop branch"
 MASTER_TO_DEVELOP=$($GIT_COMMAND develop..master)
