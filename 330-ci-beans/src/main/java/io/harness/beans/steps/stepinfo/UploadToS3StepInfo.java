@@ -68,7 +68,7 @@ public class UploadToS3StepInfo implements PluginCompatibleStep, WithConnectorRe
 
   // plugin settings
   @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> endpoint;
-  @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> region;
+  @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> region;
   @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> bucket;
   @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> sourcePath;
   @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> target;
