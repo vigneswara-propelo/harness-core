@@ -105,8 +105,9 @@ public class PolicyStep implements SyncExecutable<StepElementParameters> {
                                   .build();
 
     if (opaEvaluationResponseHolder.getStatus().equals(OpaConstants.OPA_STATUS_ERROR)) {
-      return PolicyStepHelper.buildFailureStepResponse(ErrorCode.POLICY_EVALUATION_FAILURE,
-          "Some Policies were not adhered to.", FailureType.POLICY_EVALUATION_FAILURE, stepOutcome);
+      String errorMessage = PolicyStepHelper.buildPolicyEvaluationFailureMessage(opaEvaluationResponseHolder);
+      return PolicyStepHelper.buildFailureStepResponse(
+          ErrorCode.POLICY_EVALUATION_FAILURE, errorMessage, FailureType.POLICY_EVALUATION_FAILURE, stepOutcome);
     }
     return StepResponse.builder().status(Status.SUCCEEDED).stepOutcome(stepOutcome).build();
   }

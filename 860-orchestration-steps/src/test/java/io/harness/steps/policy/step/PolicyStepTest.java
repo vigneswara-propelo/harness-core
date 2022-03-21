@@ -22,6 +22,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.network.SafeHttpCall;
 import io.harness.opaclient.OpaServiceClient;
 import io.harness.opaclient.model.OpaEvaluationResponseHolder;
+import io.harness.opaclient.model.OpaPolicySetEvaluationResponse;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
@@ -199,14 +200,19 @@ public class PolicyStepTest extends CategoryTest {
     when(opaServiceClient.evaluateWithCredentialsByID(accountId, orgId, projectId, urlPolicySets, payloadObj))
         .thenReturn(request);
 
-    OpaEvaluationResponseHolder evaluationResponse = OpaEvaluationResponseHolder.builder().status("error").build();
+    OpaEvaluationResponseHolder evaluationResponse =
+        OpaEvaluationResponseHolder.builder()
+            .status("error")
+            .details(Collections.singletonList(
+                OpaPolicySetEvaluationResponse.builder().status("error").name("myName").build()))
+            .build();
     when(SafeHttpCall.executeWithErrorMessage(request)).thenReturn(evaluationResponse);
     when(PolicyStepOutcomeMapper.toOutcome(evaluationResponse))
         .thenReturn(PolicyStepOutcome.builder().status("error").build());
     StepResponse stepResponse = policyStep.executeSync(ambiance, stepParameters, null, null);
     assertThat(stepResponse.getStatus()).isEqualTo(Status.FAILED);
     assertThat(stepResponse.getFailureInfo().getFailureData(0).getMessage())
-        .isEqualTo("Some Policies were not adhered to.");
+        .isEqualTo("The following Policy Set was not adhered to: myName");
   }
 
   @Test

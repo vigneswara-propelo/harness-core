@@ -14,6 +14,9 @@ import static io.harness.pms.sdk.core.steps.io.StepResponse.builder;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;
 import io.harness.eraro.Level;
+import io.harness.opaclient.model.OpaConstants;
+import io.harness.opaclient.model.OpaEvaluationResponseHolder;
+import io.harness.opaclient.model.OpaPolicySetEvaluationResponse;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.failure.FailureData;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
@@ -24,6 +27,7 @@ import io.harness.pms.yaml.YamlUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -77,5 +81,21 @@ public class PolicyStepHelper {
       return builder().status(Status.FAILED).failureInfo(failureInfo).build();
     }
     return builder().status(Status.FAILED).failureInfo(failureInfo).stepOutcome(stepOutcome).build();
+  }
+
+  public String buildPolicyEvaluationFailureMessage(OpaEvaluationResponseHolder opaEvaluationResponseHolder) {
+    List<OpaPolicySetEvaluationResponse> policySetResponses = opaEvaluationResponseHolder.getDetails();
+    List<String> failedPolicySets = policySetResponses.stream()
+                                        .filter(response -> response.getStatus().equals(OpaConstants.OPA_STATUS_ERROR))
+                                        .map(OpaPolicySetEvaluationResponse::getName)
+                                        .collect(Collectors.toList());
+    String failedPolicySetsString = String.join(", ", failedPolicySets);
+    if (failedPolicySets.isEmpty()) {
+      return "";
+    }
+    if (failedPolicySets.size() == 1) {
+      return "The following Policy Set was not adhered to: " + failedPolicySetsString;
+    }
+    return "The following Policy Sets were not adhered to: " + failedPolicySetsString;
   }
 }
