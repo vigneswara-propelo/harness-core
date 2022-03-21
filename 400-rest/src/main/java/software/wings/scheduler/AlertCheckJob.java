@@ -164,19 +164,20 @@ public class AlertCheckJob implements Job {
 
   @VisibleForTesting
   protected void processDelegateWhichBelongsToGroup(String accountId, List<Delegate> delegates) {
+    // for delegates that have grouping concept, dont send an alert unless all the delegates of a group are down
     Set<String> connectedScalingGroups = new HashSet<>();
-    Set<String> disconnectedScalingGroups = new HashSet<>();
+    Set<String> allScalingGroups = new HashSet<>();
     for (Delegate delegate : delegates) {
       if (delegate.isNg() || isEmpty(delegate.getDelegateGroupName())) {
         continue;
       }
+      allScalingGroups.add(delegate.getDelegateGroupName());
       if (delegate.getLastHeartBeat() >= System.currentTimeMillis() - MAX_HB_TIMEOUT) {
         connectedScalingGroups.add(delegate.getDelegateGroupName());
-      } else {
-        disconnectedScalingGroups.add(delegate.getDelegateGroupName());
       }
     }
-    for (String disconnectedScalingGroup : disconnectedScalingGroups) {
+    allScalingGroups.removeAll(connectedScalingGroups);
+    for (String disconnectedScalingGroup : allScalingGroups) {
       AlertData alertData =
           DelegatesDownAlert.builder().accountId(accountId).delegateGroupName(disconnectedScalingGroup).build();
       alertService.openAlert(accountId, GLOBAL_APP_ID, AlertType.DelegatesDown, alertData);
