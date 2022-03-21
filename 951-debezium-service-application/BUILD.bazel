@@ -5,10 +5,16 @@ java_binary(
     name = "module",
     srcs = glob(["src/main/java/**/*.java"]),
     main_class = "io.harness.DebeziumServiceApplication",
+    resources = [
+        "//951-debezium-service-application/src/main/resources:resource",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
         "//952-debezium-engine:module",
+        "@maven//:ch_qos_logback_logback_access",
+        "@maven//:ch_qos_logback_logback_classic",
+        "@maven//:ch_qos_logback_logback_core",
     ],
 )
 

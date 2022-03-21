@@ -4,6 +4,9 @@ load("//:tools/bazel/macros.bzl", "run_analysis")
 java_library(
     name = "module",
     srcs = glob(["src/main/java/**/*.java"]),
+    resources = [
+        "//959-debezium-beans/src/main/resources:resource",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",

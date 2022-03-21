@@ -7,21 +7,31 @@
 
 package io.harness.debezium;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.debezium.engine.ChangeEvent;
-import io.debezium.engine.DebeziumEngine;
+import io.harness.lock.PersistentLocker;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Singleton
 public class DebeziumEngineStarter {
-  public static void startDebeziumEngine(
-      DebeziumConfig debeziumConfig, DebeziumEngine.ChangeConsumer<ChangeEvent<String, String>> changeConsumer) {
-    ExecutorService debeziumExecutorService =
-        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("debezium-controller").build());
-    DebeziumController debeziumController =
-        new DebeziumController(DebeziumConfiguration.getDebeziumProperties(debeziumConfig), changeConsumer);
-    debeziumExecutorService.submit(debeziumController);
+  @Inject @Named("DebeziumExecutorService") private ExecutorService debeziumExecutorService;
+  @Inject private ChangeConsumerFactory consumerFactory;
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  public void startDebeziumEngine(
+      DebeziumConfig debeziumConfig, ChangeConsumerConfig changeConsumerConfig, PersistentLocker locker) {
+    String monitoredDb = debeziumConfig.getDatabaseIncludeList();
+    try {
+      MongoDatabaseChangeConsumer changeConsumer = consumerFactory.get(monitoredDb, changeConsumerConfig);
+      DebeziumController debeziumController = new DebeziumController(
+          DebeziumConfiguration.getDebeziumProperties(debeziumConfig), changeConsumer, locker, debeziumExecutorService);
+      debeziumExecutorService.submit(debeziumController);
+    } catch (Exception e) {
+      log.error("Cannot Start Debezium Controller for Database {}", monitoredDb, e);
+    }
   }
 }

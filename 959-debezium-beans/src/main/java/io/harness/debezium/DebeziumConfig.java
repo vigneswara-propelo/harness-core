@@ -7,7 +7,12 @@
 
 package io.harness.debezium;
 
+import io.harness.data.structure.EmptyPredicate;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -96,4 +101,11 @@ public class DebeziumConfig {
    the server chooses an appropriate fetch size.
    */
   @JsonProperty("snapshot.fetch.size") private String snapshotFetchSize;
+
+  public List<String> getMonitoredCollections() {
+    if (EmptyPredicate.isEmpty(collectionIncludeList)) {
+      return new ArrayList<>();
+    }
+    return Arrays.asList(collectionIncludeList.split(","));
+  }
 }
