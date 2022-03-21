@@ -202,8 +202,6 @@ public class YamlGitConfigServiceImpl implements YamlGitConfigService {
 
   @Override
   public YamlGitConfigDTO save(YamlGitConfigDTO ygs) {
-    userProfileHelper.validateIfScmUserProfileIsSet(ygs.getAccountIdentifier());
-
     // before saving the git config, check if branch exists
     // otherwise we end-up saving invalid git configs
     checkIfBranchExists(ygs);
