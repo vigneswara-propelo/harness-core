@@ -78,6 +78,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -162,6 +163,9 @@ public class EnvironmentResourceV2 {
         NGEnvironmentConfig ngEnvironmentConfig = NGEnvironmentEntityMapper.toNGEnvironmentConfig(environment.get());
         environment.get().setYaml(NGEnvironmentEntityMapper.toYaml(ngEnvironmentConfig));
       }
+    } else {
+      throw new NotFoundException(String.format("Environment with identifier [%s] in project [%s], org [%s] not found",
+          environmentIdentifier, projectIdentifier, orgIdentifier));
     }
     return ResponseDTO.newResponse(version, environment.map(EnvironmentMapper::toResponseWrapper).orElse(null));
   }
