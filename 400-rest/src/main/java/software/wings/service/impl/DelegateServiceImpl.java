@@ -819,7 +819,8 @@ public class DelegateServiceImpl implements DelegateService {
               .sampleDelegate(delegate.isSampleDelegate())
               .connections(connections)
               .tokenActive(delegate.getDelegateTokenName() == null
-                  || delegateTokenStatusMap.get(delegate.getDelegateTokenName()))
+                  || (delegateTokenStatusMap.containsKey(delegate.getDelegateTokenName())
+                      && delegateTokenStatusMap.get(delegate.getDelegateTokenName())))
               .build();
         })
         .collect(toList());
