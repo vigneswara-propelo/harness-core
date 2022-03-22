@@ -8,6 +8,8 @@
 package io.harness.event;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.pms.contracts.execution.Status.APPROVAL_WAITING;
+import static io.harness.pms.contracts.execution.Status.INTERVENTION_WAITING;
 
 import io.harness.DelegateInfoHelper;
 import io.harness.annotations.dev.HarnessTeam;
@@ -21,11 +23,13 @@ import io.harness.engine.pms.data.PmsOutcomeService;
 import io.harness.execution.NodeExecution;
 import io.harness.generator.OrchestrationAdjacencyListGenerator;
 import io.harness.pms.contracts.ambiance.Level;
+import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.events.OrchestrationEventType;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.execution.utils.StatusUtils;
 import io.harness.pms.sdk.core.resolver.outcome.mapper.PmsOutcomeMapper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.Map;
@@ -88,7 +92,7 @@ public class GraphStatusUpdateHelper {
     String nodeExecutionId = nodeExecution.getUuid();
     graphVertexMap.computeIfPresent(nodeExecutionId, (key, prevValue) -> {
       GraphVertex newValue = convertFromNodeExecution(prevValue, nodeExecution);
-      if (StatusUtils.isFinalStatus(newValue.getStatus())) {
+      if (isOutcomeUpdateGraphStatus(newValue.getStatus())) {
         newValue.setOutcomeDocuments(PmsOutcomeMapper.convertJsonToOrchestrationMap(
             pmsOutcomeService.findAllOutcomesMapByRuntimeId(planExecutionId, nodeExecutionId)));
         newValue.setGraphDelegateSelectionLogParams(
@@ -129,5 +133,10 @@ public class GraphStatusUpdateHelper {
       prevValueBuilder.stepParameters(nodeExecution.getPmsStepParameters());
     }
     return prevValueBuilder.build();
+  }
+
+  @VisibleForTesting
+  boolean isOutcomeUpdateGraphStatus(Status status) {
+    return StatusUtils.isFinalStatus(status) || status.equals(INTERVENTION_WAITING) || status.equals(APPROVAL_WAITING);
   }
 }

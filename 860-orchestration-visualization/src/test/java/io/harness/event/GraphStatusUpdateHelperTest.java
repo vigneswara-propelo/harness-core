@@ -8,9 +8,14 @@
 package io.harness.event;
 
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.pms.contracts.execution.Status.APPROVAL_WAITING;
+import static io.harness.pms.contracts.execution.Status.FAILED;
+import static io.harness.pms.contracts.execution.Status.INTERVENTION_WAITING;
+import static io.harness.pms.contracts.execution.Status.RUNNING;
 import static io.harness.pms.contracts.execution.Status.SUCCEEDED;
 import static io.harness.pms.contracts.execution.events.OrchestrationEventType.NODE_EXECUTION_STATUS_UPDATE;
 import static io.harness.rule.OwnerRule.ALEXEI;
+import static io.harness.rule.OwnerRule.ARCHIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -279,5 +284,25 @@ public class GraphStatusUpdateHelperTest extends OrchestrationVisualizationTestB
         .interruptHistories(nodeExecution.getInterruptHistories())
         .retryIds(nodeExecution.getRetryIds())
         .build();
+  }
+
+  @Test
+  @Owner(developers = ARCHIT)
+  @Category(UnitTests.class)
+  public void testIsOutcomeUpdateGraphStatus() {
+    boolean outcomeUpdateGraphStatus = eventHandlerV2.isOutcomeUpdateGraphStatus(Status.SUCCEEDED);
+    assertThat(outcomeUpdateGraphStatus).isTrue();
+
+    outcomeUpdateGraphStatus = eventHandlerV2.isOutcomeUpdateGraphStatus(FAILED);
+    assertThat(outcomeUpdateGraphStatus).isTrue();
+
+    outcomeUpdateGraphStatus = eventHandlerV2.isOutcomeUpdateGraphStatus(INTERVENTION_WAITING);
+    assertThat(outcomeUpdateGraphStatus).isTrue();
+
+    outcomeUpdateGraphStatus = eventHandlerV2.isOutcomeUpdateGraphStatus(APPROVAL_WAITING);
+    assertThat(outcomeUpdateGraphStatus).isTrue();
+
+    outcomeUpdateGraphStatus = eventHandlerV2.isOutcomeUpdateGraphStatus(RUNNING);
+    assertThat(outcomeUpdateGraphStatus).isFalse();
   }
 }
