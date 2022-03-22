@@ -25,6 +25,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.dto.OrchestrationAdjacencyListDTO;
 import io.harness.dto.OrchestrationGraphDTO;
 import io.harness.engine.executions.node.NodeExecutionService;
+import io.harness.exception.EntityNotFoundException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.JsonSchemaValidationException;
 import io.harness.git.model.ChangeType;
@@ -208,7 +209,7 @@ public class PipelineResourceTest extends CategoryTest {
     assertThatThrownBy(()
                            -> pipelineResource.getPipelineByIdentifier(
                                ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, incorrectPipelineIdentifier, null))
-        .isInstanceOf(InvalidRequestException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessage(String.format(
             "Pipeline with the given ID: %s does not exist or has been deleted", incorrectPipelineIdentifier));
   }
@@ -315,7 +316,7 @@ public class PipelineResourceTest extends CategoryTest {
     assertThatThrownBy(()
                            -> pipelineResource.getPipelineSummary(
                                ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, incorrectPipelineIdentifier, null))
-        .isInstanceOf(InvalidRequestException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessage(String.format(
             "Pipeline with the given ID: %s does not exist or has been deleted", incorrectPipelineIdentifier));
   }

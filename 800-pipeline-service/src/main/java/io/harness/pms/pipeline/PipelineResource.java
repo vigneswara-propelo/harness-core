@@ -23,6 +23,7 @@ import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.ExecutionNode;
 import io.harness.engine.executions.node.NodeExecutionService;
+import io.harness.exception.EntityNotFoundException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.filter.dto.FilterPropertiesDTO;
 import io.harness.git.model.ChangeType;
@@ -106,6 +107,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
     {
       @Content(mediaType = "application/json", schema = @Schema(implementation = FailureDTO.class))
       , @Content(mediaType = "application/yaml", schema = @Schema(implementation = FailureDTO.class))
+    })
+@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Not Found",
+    content =
+    {
+      @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class))
+      , @Content(mediaType = "application/yaml", schema = @Schema(implementation = ErrorDTO.class))
     })
 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error",
     content =
@@ -246,7 +253,7 @@ public class PipelineResource implements YamlSchemaResource {
 
     PMSPipelineResponseDTO pipeline = PMSPipelineDtoMapper.writePipelineDto(pipelineEntity.orElseThrow(
         ()
-            -> new InvalidRequestException(
+            -> new EntityNotFoundException(
                 String.format("Pipeline with the given ID: %s does not exist or has been deleted", pipelineId))));
 
     TemplateMergeResponseDTO templateMergeResponseDTO =
@@ -436,7 +443,7 @@ public class PipelineResource implements YamlSchemaResource {
     PMSPipelineSummaryResponseDTO pipelineSummary = PMSPipelineDtoMapper.preparePipelineSummary(
         pmsPipelineService.get(accountId, orgId, projectId, pipelineId, false)
             .orElseThrow(()
-                             -> new InvalidRequestException(String.format(
+                             -> new EntityNotFoundException(String.format(
                                  "Pipeline with the given ID: %s does not exist or has been deleted", pipelineId))));
 
     return ResponseDTO.newResponse(pipelineSummary);
@@ -618,7 +625,7 @@ public class PipelineResource implements YamlSchemaResource {
       pmsPipelineService.validatePipelineYamlAndSetTemplateRefIfAny(pipelineEntity, false);
       return ResponseDTO.newResponse(pipelineEntity.getIdentifier());
     } else {
-      throw new InvalidRequestException(
+      throw new EntityNotFoundException(
           String.format("Pipeline with the given ID: %s does not exist or has been deleted", pipelineId));
     }
   }
