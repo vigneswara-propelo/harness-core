@@ -150,6 +150,8 @@ public class WingsMongoExportImport {
         }
         if (lastUpdatedAtFieldExists) {
           filter.put("lastUpdatedAt", new BasicDBObject("$gte", exportRecordsUpdatedAfter));
+        } else {
+          filter.put("createdAt", new BasicDBObject("$gte", exportRecordsCreatedAfter));
         }
       } else if (exportRecordsCreatedAfter > 0) {
         boolean createdAtFieldExists = false;
@@ -160,7 +162,7 @@ public class WingsMongoExportImport {
           }
         }
         if (createdAtFieldExists) {
-          filter.put("createdAt", new BasicDBObject("$gte", exportRecordsUpdatedAfter));
+          filter.put("createdAt", new BasicDBObject("$gte", exportRecordsCreatedAfter));
         }
       }
     }
