@@ -15,10 +15,10 @@ import io.harness.expression.ExpressionEvaluator;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.audit.ResourceType;
+import software.wings.delegatetasks.DelegateStateType;
 import software.wings.jersey.JsonViews;
 import software.wings.security.UsageRestrictions;
 import software.wings.settings.SettingValue;
-import software.wings.sm.StateType;
 import software.wings.yaml.setting.VerificationProviderYaml;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -54,7 +54,7 @@ public class LogzConfig extends SettingValue implements EncryptableSetting, Exec
    * Instantiates a new Splunk config.
    */
   public LogzConfig() {
-    super(StateType.LOGZ.name());
+    super(DelegateStateType.LOGZ.name());
   }
 
   private LogzConfig(String logzUrl, char[] token, String accountId, String encryptedToken) {

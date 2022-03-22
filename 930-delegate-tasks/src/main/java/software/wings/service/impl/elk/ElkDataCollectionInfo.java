@@ -14,7 +14,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.ElkConfig;
 import software.wings.delegatetasks.DelegateStateType;
-import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
+import software.wings.delegatetasks.utils.CapablityUtility;
 import software.wings.service.impl.analysis.LogDataCollectionInfo;
 
 import java.util.List;
@@ -58,6 +58,6 @@ public class ElkDataCollectionInfo extends LogDataCollectionInfo implements Exec
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
-    return CapabilityHelper.generateDelegateCapabilities(elkConfig, getEncryptedDataDetails(), maskingEvaluator);
+    return CapablityUtility.generateDelegateCapabilities(elkConfig, getEncryptedDataDetails(), maskingEvaluator);
   }
 }

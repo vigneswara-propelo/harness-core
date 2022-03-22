@@ -9,8 +9,8 @@ package software.wings.delegatetasks;
 
 import static io.harness.threading.Morpheus.sleep;
 
-import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
-import static software.wings.common.VerificationConstants.DUMMY_HOST_NAME;
+import static software.wings.delegatetasks.cv.CVConstants.DATA_COLLECTION_RETRY_SLEEP;
+import static software.wings.delegatetasks.cv.CVConstants.DUMMY_HOST_NAME;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
@@ -26,7 +26,7 @@ import io.harness.serializer.JsonUtils;
 import io.harness.time.Timestamp;
 
 import software.wings.beans.TaskType;
-import software.wings.common.VerificationConstants;
+import software.wings.delegatetasks.cv.CVConstants;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.analysis.DataCollectionTaskResult.DataCollectionTaskStatus;
@@ -317,7 +317,7 @@ public class ElkLogzDataCollectionTask extends AbstractDelegateDataCollectionTas
   private long getDelegateTotalHitsVerificationThreshold() {
     // The multiplier is added to reduce number of runtime exception when running workflow.
     // Varying little bit from configure time threshold is acceptable.
-    return 2 * VerificationConstants.TOTAL_HITS_PER_MIN_THRESHOLD;
+    return 2 * CVConstants.TOTAL_HITS_PER_MIN_THRESHOLD;
   }
 
   public static List<LogElement> parseElkResponse(Object searchResponse, String query, String timestampField,
