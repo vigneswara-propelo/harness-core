@@ -30,7 +30,7 @@ server:
 debeziumConfigs:
   - isEnabled: true
     offset.storage.file.filename: redisson-jcache.yaml
-    offset.storage.topic: debezium:offsets
+    offset.storage.topic: debezium-offsets-pipeline
     name: pipeline
     key.converter.schemas.enable: false
     value.converter.schemas.enable: false
