@@ -18,6 +18,7 @@ import io.harness.common.EntityReference;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.helper.EncryptionHelper;
 import io.harness.connector.services.ConnectorService;
+import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
 import io.harness.eraro.ErrorCode;
@@ -354,7 +355,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
         .oldFileSha(StringValueUtils.getStringFromStringValue(request.getOldFileSha()))
         .yaml(request.getYaml())
         .scmConnector(connectorConfig)
-        .commitId(fetchLastCommitIdForFile(request, entityDetailDTO))
+        .commitId(fetchLastCommitIdForFile(request, entityDetailDTO, connectorConfig))
         .build();
   }
 
@@ -380,5 +381,15 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
             INVALID_SCM_CREDENTIALS, ex.getMessage(), new ScmException(ErrorCode.SCM_UNAUTHORIZED));
       }
     }
+  }
+
+  private String fetchLastCommitIdForFile(
+      FileInfo request, EntityDetail entityDetailDTO, ScmConnector connectorConfig) {
+    // Perform fetch commit id ops for only bitbucket for now
+    if (ConnectorType.BITBUCKET.equals(connectorConfig.getConnectorType())) {
+      return fetchLastCommitIdForFile(request, entityDetailDTO);
+    }
+    // Return dummy commit id in other cases, will not be used anywhere
+    return "";
   }
 }
