@@ -12,14 +12,11 @@ java_library(
         "//:lombok",
         "//960-persistence:module",
         "@maven//:com_google_code_findbugs_annotations",
-        "@maven//:io_debezium_debezium_api",
-        "@maven//:io_debezium_debezium_connector_mongodb",
-        "@maven//:io_debezium_debezium_core",
-        "@maven//:io_debezium_debezium_embedded",
-        "@maven//:org_apache_kafka_connect_api",
-        "@maven//:org_apache_kafka_connect_runtime",
-        "@maven//:org_apache_kafka_kafka_clients",
         "@maven//:org_redisson_redisson",
+        "@maven_debezium//:io_debezium_debezium_api",
+        "@maven_debezium//:io_debezium_debezium_connector_mongodb",
+        "@maven_debezium//:io_debezium_debezium_core",
+        "@maven_debezium//:io_debezium_debezium_embedded",
     ],
 )
 

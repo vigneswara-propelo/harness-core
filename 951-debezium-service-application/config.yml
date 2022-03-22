@@ -17,7 +17,7 @@ logging:
 server:
   applicationConnectors:
     - type: http
-      port: 13001
+      port: 14552
       maxRequestHeaderSize: 100KiB
   adminConnectors:
     - type: http
@@ -29,7 +29,8 @@ server:
 
 debeziumConfigs:
   - isEnabled: true
-    offset.storage.file.filename: redis://127.0.0.1:6379
+    offset.storage.file.filename: redisson-jcache.yaml
+    offset.storage.topic: debezium:offsets
     name: pipeline
     key.converter.schemas.enable: false
     value.converter.schemas.enable: false

@@ -8,9 +8,9 @@
 package io.harness.aggregator.consumers;
 
 import io.harness.accesscontrol.AccessControlEntity;
+import io.harness.aggregator.OpType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.debezium.OpType;
 
 @OwnedBy(HarnessTeam.PL)
 public interface ChangeConsumer<T extends AccessControlEntity> {
