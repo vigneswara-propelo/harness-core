@@ -18,6 +18,7 @@ java_library(
         "//942-enforcement-sdk:module",
         "//959-timeout-engine:module",
         "//950-log-client:module",
+        "//952-debezium-engine:module",
         "//955-delegate-beans:module",
         "//960-persistence:module",
         "//970-grpc:module",

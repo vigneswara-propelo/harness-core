@@ -86,6 +86,10 @@ public final class EventsFrameworkConstants {
   public static final String PIPELINE_NODE_RESUME_EVENT_TOPIC = "pipeline_node_resume";
   public static final int PIPELINE_NODE_RESUME_BATCH_SIZE = 20;
   public static final int PIPELINE_NODE_RESUME_MAX_TOPIC_SIZE = 5000;
+  public static final String PIPELINE_EXECUTION_SUMMARY_REDIS_EVENT_CONSUMER_CD =
+      "PIPELINE_EXECUTION_SUMMARY_REDIS_EVENT_CONSUMER_CD";
+  public static final String PIPELINE_EXECUTION_SUMMARY_CD_REDIS_KEY =
+      "DEBEZIUM_pmsMongo.pms-harness.planExecutionsSummary";
 
   public static final String START_PARTIAL_PLAN_CREATOR_EVENT_TOPIC = "pipeline_start_plan";
   public static final int START_PARTIAL_PLAN_CREATOR_BATCH_SIZE = 20;

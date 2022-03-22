@@ -129,6 +129,7 @@ import io.harness.pms.expressions.functors.ImagePullSecretFunctor;
 import io.harness.pms.governance.EnvironmentRefExpansionHandler;
 import io.harness.pms.governance.ServiceRefExpansionHandler;
 import io.harness.pms.listener.NgOrchestrationNotifyEventListener;
+import io.harness.pms.redisConsumer.PipelineExecutionSummaryCDRedisEventConsumer;
 import io.harness.pms.sdk.PmsSdkConfiguration;
 import io.harness.pms.sdk.PmsSdkInitHelper;
 import io.harness.pms.sdk.PmsSdkModule;
@@ -566,6 +567,8 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
     pipelineEventConsumerController.register(injector.getInstance(NodeAdviseEventRedisConsumer.class), 2);
     pipelineEventConsumerController.register(injector.getInstance(NodeResumeEventRedisConsumer.class), 2);
     pipelineEventConsumerController.register(injector.getInstance(CreatePartialPlanRedisConsumer.class), 2);
+    pipelineEventConsumerController.register(
+        injector.getInstance(PipelineExecutionSummaryCDRedisEventConsumer.class), 1);
   }
 
   private void registerYamlSdk(Injector injector) {
