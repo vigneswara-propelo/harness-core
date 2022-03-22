@@ -18,6 +18,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupConfig;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
+import io.harness.data.structure.CollectionUtils;
 import io.harness.encryption.ScopeHelper;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.EntityDetail;
@@ -76,7 +77,7 @@ public class EnvironmentGroupMapper {
         .color(environmentGroupConfig.getColor())
         .description(environmentGroupConfig.getDescription())
         .tags(convertToList(environmentGroupConfig.getTags()))
-        .envIdentifiers(environmentGroupConfig.getEnvIdentifiers())
+        .envIdentifiers(CollectionUtils.emptyIfNull(environmentGroupConfig.getEnvIdentifiers()))
         .yaml(yaml)
         .build();
   }
