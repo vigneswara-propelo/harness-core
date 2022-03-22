@@ -138,9 +138,13 @@ func (r *runTask) execute(ctx context.Context, retryCount int32) (map[string]str
 		return nil, err
 	}
 
-	cmdArgs := []string{"-c", cmdToExecute}
+	shell, entrypointArg, err := r.getEntrypoint()
+	if err != nil {
+		return nil, err
+	}
+	cmdArgs := []string{entrypointArg, cmdToExecute}
 
-	cmd := r.cmdContextFactory.CmdContextWithSleep(ctx, cmdExitWaitTime, r.getShell(), cmdArgs...).
+	cmd := r.cmdContextFactory.CmdContextWithSleep(ctx, cmdExitWaitTime, shell, cmdArgs...).
 		WithStdout(r.procWriter).WithStderr(r.procWriter).WithEnvVarsMap(envVars)
 	err = runCmd(ctx, cmd, r.id, cmdArgs, retryCount, start, r.logMetrics, r.addonLogger)
 	if err != nil {
@@ -179,17 +183,37 @@ func (r *runTask) getScript(ctx context.Context, outputVarFile string) (string, 
 		return "", err
 	}
 
+	earlyExitCmd, err := r.getEarlyExitCommand()
+	if err != nil {
+		return "", err
+	}
+
 	// Using set -xe instead of printing command via utils.GetLoggableCmd(command) since if ' is present in a command,
 	// echo on the command fails with an error.
-	command := fmt.Sprintf("set -xe\n%s %s", resolvedCmd, outputVarCmd)
+	command := fmt.Sprintf("%s%s %s", earlyExitCmd, resolvedCmd, outputVarCmd)
 	return command, nil
 }
 
-func (r *runTask) getShell() string {
+func (r *runTask) getEntrypoint() (string, string, error) {
 	if r.shellType == pb.ShellType_BASH {
-		return "bash"
+		return "bash", "-c", nil
+	} else if r.shellType == pb.ShellType_SH {
+		return "sh", "-c", nil
+	} else if r.shellType == pb.ShellType_POWERSHELL {
+		return "powershell", "-Command", nil
+	} else if r.shellType == pb.ShellType_PWSH {
+		return "pwsh", "-Command", nil
 	}
-	return "sh"
+	return "", "", fmt.Errorf("Unknown shell type: %s", r.shellType)
+}
+
+func (r *runTask) getEarlyExitCommand() (string, error) {
+	if r.shellType == pb.ShellType_BASH || r.shellType == pb.ShellType_SH {
+		return "set -xe\n", nil
+	} else if r.shellType == pb.ShellType_POWERSHELL || r.shellType == pb.ShellType_PWSH {
+		return "$ErrorActionPreference = 'Stop' \n", nil
+	}
+	return "", fmt.Errorf("Unknown shell type: %s", r.shellType)
 }
 
 func logCommandExecErr(log *zap.SugaredLogger, errMsg, stepID, args string, retryCount int32, startTime time.Time, err error) {

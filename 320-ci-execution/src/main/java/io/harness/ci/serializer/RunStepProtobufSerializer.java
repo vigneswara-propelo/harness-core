@@ -92,7 +92,12 @@ public class RunStepProtobufSerializer implements ProtobufStepSerializer<RunStep
     ShellType protoShellType = ShellType.SH;
     if (shellType == CIShellType.BASH) {
       protoShellType = ShellType.BASH;
+    } else if (shellType == CIShellType.PWSH) {
+      protoShellType = ShellType.PWSH;
+    } else if (shellType == CIShellType.POWERSHELL) {
+      protoShellType = ShellType.POWERSHELL;
     }
+
     runStepBuilder.setShellType(protoShellType);
 
     return UnitStep.newBuilder()
