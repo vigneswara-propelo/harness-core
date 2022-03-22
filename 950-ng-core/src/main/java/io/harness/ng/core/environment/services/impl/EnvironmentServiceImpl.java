@@ -254,6 +254,22 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     return environmentRepository.findAllRunTimeAccess(criteria);
   }
 
+  @Override
+  public List<String> fetchesNonDeletedEnvIdentifiersFromList(
+      String accountId, String orgIdentifier, String projectIdentifier, List<String> envIdentifierList) {
+    Criteria criteria = Criteria.where(EnvironmentKeys.accountId)
+                            .is(accountId)
+                            .and(EnvironmentKeys.orgIdentifier)
+                            .is(orgIdentifier)
+                            .and(EnvironmentKeys.projectIdentifier)
+                            .is(projectIdentifier)
+                            .and(EnvironmentKeys.deleted)
+                            .is(false)
+                            .and(EnvironmentKeys.identifier)
+                            .in(envIdentifierList);
+    return environmentRepository.fetchesNonDeletedEnvIdentifiersFromList(criteria);
+  }
+
   private void checkThatEnvironmentIsNotReferredByOthers(Environment environment) {
     List<EntityDetail> referredByEntities;
     IdentifierRef identifierRef = IdentifierRef.builder()

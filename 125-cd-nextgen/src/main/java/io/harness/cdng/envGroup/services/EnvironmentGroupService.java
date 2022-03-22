@@ -10,10 +10,16 @@ package io.harness.cdng.envGroup.services;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 public interface EnvironmentGroupService {
   Optional<EnvironmentGroupEntity> get(
       String accountId, String orgIdentifier, String projectIdentifier, String envGroupIdentifier, boolean deleted);
 
   EnvironmentGroupEntity create(EnvironmentGroupEntity entity);
+
+  Page<EnvironmentGroupEntity> list(
+      Criteria criteria, Pageable pageRequest, String projectIdentifier, String orgIdentifier, String accountId);
 }

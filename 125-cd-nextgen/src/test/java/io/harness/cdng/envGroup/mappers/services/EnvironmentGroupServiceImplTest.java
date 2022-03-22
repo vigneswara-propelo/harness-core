@@ -25,6 +25,10 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 public class EnvironmentGroupServiceImplTest extends CategoryTest {
   private String ACC_ID = "accId";
@@ -56,5 +60,16 @@ public class EnvironmentGroupServiceImplTest extends CategoryTest {
   public void testCreate() {
     environmentGroupService.create(EnvironmentGroupEntity.builder().build());
     verify(environmentGroupRepository, times(1)).create(EnvironmentGroupEntity.builder().build());
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testList() {
+    Criteria criteria = new Criteria();
+    Pageable pageRequest =
+        PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, EnvironmentGroupEntity.EnvironmentGroupKeys.createdAt));
+    environmentGroupService.list(criteria, (Pageable) pageRequest, PRO_ID, ORG_ID, ACC_ID);
+    verify(environmentGroupRepository, times(1)).list(criteria, pageRequest, PRO_ID, ORG_ID, ACC_ID);
   }
 }

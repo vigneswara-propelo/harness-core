@@ -10,10 +10,16 @@ package io.harness.repositories.envGroup;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 public interface EnvironmentGroupRepositoryCustom {
   Optional<EnvironmentGroupEntity> findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifierAndDeletedNot(
       String accountId, String orgIdentifier, String projectIdentifier, String envGroupId, boolean notDeleted);
 
   EnvironmentGroupEntity create(EnvironmentGroupEntity environmentGroupEntity);
+
+  Page<EnvironmentGroupEntity> list(
+      Criteria criteria, Pageable pageRequest, String projectIdentifier, String orgIdentifier, String accountId);
 }

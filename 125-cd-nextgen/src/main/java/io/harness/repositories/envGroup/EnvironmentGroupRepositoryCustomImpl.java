@@ -18,17 +18,25 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.persistance.GitAwarePersistence;
 import io.harness.gitsync.persistance.GitSyncSdkService;
+import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.outbox.OutboxEvent;
 import io.harness.outbox.api.OutboxService;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.repository.support.PageableExecutionUtils;
+
 /*
    TODO: need to do changes for environment group feature based on if this is available to or will be behind enforcement
    plan
@@ -39,6 +47,7 @@ public class EnvironmentGroupRepositoryCustomImpl implements EnvironmentGroupRep
   private final GitSyncSdkService gitSyncSdkService;
   private final GitAwarePersistence gitAwarePersistence;
   private final OutboxService outboxService;
+  private final EnvironmentService environmentService;
 
   @Override
   public Optional<EnvironmentGroupEntity> findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifierAndDeletedNot(
@@ -58,6 +67,10 @@ public class EnvironmentGroupRepositoryCustomImpl implements EnvironmentGroupRep
 
   @Override
   public EnvironmentGroupEntity create(EnvironmentGroupEntity environmentGroupEntity) {
+    // validate EnvIdentifiers list
+    if (!environmentGroupEntity.getEnvIdentifiers().isEmpty()) {
+      validateNotExistentEnvIdentifiers(environmentGroupEntity);
+    }
     EnvironmentGroupEntity savedEntity;
     Supplier<OutboxEvent> functor = null;
     // If git sync is disabled, then outbox the event
@@ -87,5 +100,31 @@ public class EnvironmentGroupRepositoryCustomImpl implements EnvironmentGroupRep
     }
 
     return savedEntity;
+  }
+
+  @Override
+  public Page<EnvironmentGroupEntity> list(
+      Criteria criteria, Pageable pageRequest, String projectIdentifier, String orgIdentifier, String accountId) {
+    List<EnvironmentGroupEntity> environmentGroupEntities = gitAwarePersistence.find(
+        criteria, pageRequest, projectIdentifier, orgIdentifier, accountId, EnvironmentGroupEntity.class);
+    return PageableExecutionUtils.getPage(environmentGroupEntities, pageRequest,
+        ()
+            -> gitAwarePersistence.count(
+                criteria, projectIdentifier, orgIdentifier, accountId, EnvironmentGroupEntity.class));
+  }
+
+  @VisibleForTesting
+  void validateNotExistentEnvIdentifiers(EnvironmentGroupEntity environmentGroupEntity) {
+    List<String> exitsEnvIdentifiers = environmentService.fetchesNonDeletedEnvIdentifiersFromList(
+        environmentGroupEntity.getAccountId(), environmentGroupEntity.getOrgIdentifier(),
+        environmentGroupEntity.getProjectIdentifier(), environmentGroupEntity.getEnvIdentifiers());
+    List<String> nonExistentEnvIds = environmentGroupEntity.getEnvIdentifiers()
+                                         .stream()
+                                         .filter(id -> !exitsEnvIdentifiers.contains(id))
+                                         .collect(Collectors.toList());
+    if (!nonExistentEnvIds.isEmpty()) {
+      throw new InvalidRequestException(String.format(
+          "These environment identifiers are either deleted or not present for this project %s", nonExistentEnvIds));
+    }
   }
 }

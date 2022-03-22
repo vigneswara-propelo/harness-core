@@ -16,6 +16,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 @Singleton
@@ -38,5 +41,11 @@ public class EnvironmentGroupServiceImpl implements EnvironmentGroupService {
   @Override
   public EnvironmentGroupEntity create(EnvironmentGroupEntity entity) {
     return environmentRepository.create(entity);
+  }
+
+  @Override
+  public Page<EnvironmentGroupEntity> list(
+      Criteria criteria, Pageable pageRequest, String projectIdentifier, String orgIdentifier, String accountId) {
+    return environmentRepository.list(criteria, pageRequest, projectIdentifier, orgIdentifier, accountId);
   }
 }

@@ -7,24 +7,35 @@
 
 package io.harness.cdng.envGroup.resource;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.ng.core.utils.NGUtils.validate;
+import static io.harness.utils.PageUtils.getNGPageResponse;
+import static io.harness.utils.PageUtils.getPageRequest;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.NGResourceFilterConstants;
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ProjectIdentifier;
+import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.SortOrder;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
+import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKeys;
 import io.harness.cdng.envGroup.mappers.EnvironmentGroupMapper;
 import io.harness.cdng.envGroup.services.EnvironmentGroupService;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
+import io.harness.ng.beans.PageRequest;
+import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
+import io.harness.ng.core.utils.CoreCriteriaUtils;
 import io.harness.security.annotations.NextGenManagerAuth;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,6 +59,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 @NextGenManagerAuth
 @Api("/environmentGroup")
@@ -144,5 +157,37 @@ public class EnvironmentGroupResource {
     EnvironmentGroupEntity savedEntity = environmentGroupService.create(entity);
 
     return ResponseDTO.newResponse(EnvironmentGroupMapper.toResponseWrapper(savedEntity));
+  }
+
+  @GET
+  @Path("/list")
+  @ApiOperation(value = "Gets Environment Group list", nickname = "getEnvironmentGroupList")
+  @Operation(operationId = "getEnvironmentGroupList", summary = "Gets Environment Group list for a Project",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Returns the list of Environment Group for a Project")
+      })
+  public ResponseDTO<PageResponse<EnvironmentGroupResponse>>
+  listEnvironmentGroup(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
+                           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ResourceIdentifier String projectIdentifier,
+      @Parameter(description = "The word to be searched and included in the list response") @QueryParam(
+          NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm,
+      @BeanParam PageRequest pageRequest, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
+    Criteria criteria = CoreCriteriaUtils.createCriteriaForGetList(accountId, orgIdentifier, projectIdentifier, false);
+
+    if (isEmpty(pageRequest.getSortOrders())) {
+      SortOrder order = SortOrder.Builder.aSortOrder()
+                            .withField(EnvironmentGroupKeys.lastModifiedAt, SortOrder.OrderType.DESC)
+                            .build();
+      pageRequest.setSortOrders(ImmutableList.of(order));
+    }
+    Page<EnvironmentGroupEntity> envGroupEntities = environmentGroupService.list(
+        criteria, getPageRequest(pageRequest), projectIdentifier, orgIdentifier, accountId);
+    return ResponseDTO.newResponse(getNGPageResponse(envGroupEntities.map(EnvironmentGroupMapper::toResponseWrapper)));
   }
 }

@@ -33,4 +33,7 @@ public interface EnvironmentService {
       String accountId, String orgIdentifier, String projectIdentifier, String environmentIdentifier, Long version);
 
   List<Environment> listAccess(Criteria criteria);
+
+  List<String> fetchesNonDeletedEnvIdentifiersFromList(
+      String accountId, String orgIdentifier, String projectIdentifier, List<String> envIdentifierList);
 }
