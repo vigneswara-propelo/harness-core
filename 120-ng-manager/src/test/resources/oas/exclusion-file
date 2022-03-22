@@ -1,5 +1,4 @@
 endpoint-exclusion: io.harness.connector.apis.resource.ConnectorResource.getCEAwsTemplate
-endpoint-exclusion: io.harness.connector.apis.resource.ConnectorResource.getAllAllowedFieldValues
 endpoint-exclusion: io.harness.ng.core.invites.remote.InviteResource.getInviteWithToken
 endpoint-exclusion: io.harness.ng.core.invites.remote.InviteResource.delete
 endpoint-exclusion: io.harness.ng.userprofile.resource.SourceCodeManagerResource.update
@@ -40,3 +39,12 @@ dto-exclusion: io.harness.ng.core.dto.UserGroupDTO
 dto-exclusion: io.harness.ng.core.dto.TokenDTO
 dto-exclusion: io.harness.connector.ConnectorFilterPropertiesDTO
 dto-exclusion: io.harness.ng.core.invites.dto.CreateInviteDTO
+operation-exclusion: io.harness.ng.scim.resource.NGScimUserResource.createUser
+operation-exclusion: io.harness.ng.core.accountsetting.resources.AccountSettingResource.get
+operation-exclusion: io.harness.ng.scim.resource.NGScimUserResource.deleteUser
+operation-exclusion: io.harness.ng.scim.resource.NGScimUserResource.searchUser
+operation-exclusion: io.harness.ng.core.remote.UserGroupResource.validateScopes
+operation-exclusion: io.harness.ng.core.accountsetting.resources.AccountSettingResource.list
+operation-exclusion: io.harness.ng.scim.resource.NGScimUserResource.getUser
+operation-exclusion: io.harness.ng.scim.resource.NGScimUserResource.updateUser
+operation-exclusion: io.harness.ng.core.user.remote.UserResource.getUserIdentifierFromSecurityContext

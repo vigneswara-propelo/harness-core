@@ -1,13 +1,1 @@
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getGithubIssueCommentActions
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getWebhookTriggerTypes
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getBitbucketTriggerEvents
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getGithubPRActions
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getGitTriggerEventDetails
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getGitlabTriggerEvents
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getSourceRepoToEvent
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getBitbucketPRActions
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getGitlabTriggerActions
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getActionsList
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerWebhookConfigResource.getGithubTriggerEvents
-endpoint-exclusion: io.harness.ngtriggers.resource.NGTriggerResource.generateWebhookToken
 dto-exclusion: io.harness.pms.plan.execution.beans.dto.RunStageRequestDTO
