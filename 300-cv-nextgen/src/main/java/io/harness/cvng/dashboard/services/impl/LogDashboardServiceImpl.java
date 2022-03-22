@@ -24,7 +24,6 @@ import io.harness.cvng.core.beans.params.filterParams.LiveMonitoringLogAnalysisF
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
-import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.dashboard.beans.AnalyzedLogDataDTO;
 import io.harness.cvng.dashboard.beans.AnalyzedLogDataDTO.FrequencyDTO;
 import io.harness.cvng.dashboard.beans.AnalyzedLogDataDTO.LogData;
@@ -42,7 +41,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +58,6 @@ public class LogDashboardServiceImpl implements LogDashboardService {
   @Inject private CVConfigService cvConfigService;
   @Inject private CVNGParallelExecutor cvngParallelExecutor;
   @Inject private VerificationTaskService verificationTaskService;
-  @Inject private MonitoredServiceService monitoredServiceService;
 
   @Override
   public PageResponse<AnalyzedLogDataDTO> getAnomalousLogs(String accountId, String projectIdentifier,
@@ -321,31 +318,5 @@ public class LogDashboardServiceImpl implements LogDashboardService {
       logDataList.add(data);
     });
     return logDataList;
-  }
-
-  private PageResponse<AnalyzedLogDataDTO> formPageResponse(
-      int page, int size, SortedSet<AnalyzedLogDataDTO> analyzedLogData) {
-    List<AnalyzedLogDataDTO> returnList = new ArrayList<>();
-
-    int totalNumPages = analyzedLogData.size() / size;
-    int startIndex = page * size;
-    Iterator<AnalyzedLogDataDTO> iterator = analyzedLogData.iterator();
-    int i = 0;
-    while (iterator.hasNext()) {
-      AnalyzedLogDataDTO analyzedLogDataDTO = iterator.next();
-      if (i >= startIndex && returnList.size() < size) {
-        returnList.add(analyzedLogDataDTO);
-      }
-      i++;
-    }
-
-    return PageResponse.<AnalyzedLogDataDTO>builder()
-        .pageSize(size)
-        .totalPages(totalNumPages)
-        .totalItems(analyzedLogData.size())
-        .pageIndex(returnList.size() == 0 ? -1 : page)
-        .empty(returnList.size() == 0)
-        .content(returnList)
-        .build();
   }
 }

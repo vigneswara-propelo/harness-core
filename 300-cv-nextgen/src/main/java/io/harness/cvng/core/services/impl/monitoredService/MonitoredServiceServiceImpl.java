@@ -323,7 +323,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     healthSourceService.update(monitoredService.getAccountId(), monitoredServiceDTO.getOrgIdentifier(),
         monitoredServiceDTO.getProjectIdentifier(), monitoredService.getEnvironmentIdentifier(),
         monitoredService.getServiceIdentifier(), monitoredService.getIdentifier(), monitoredServiceDTO.getIdentifier(),
-        toBeUpdatedHealthSources);
+        toBeUpdatedHealthSources, monitoredService.isEnabled());
   }
 
   @Override

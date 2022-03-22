@@ -28,7 +28,8 @@ public interface HealthSourceService {
   void delete(String accountId, String orgIdentifier, String projectIdentifier,
       String nameSpaceIdentifierSpaceIdentifier, List<String> identifiers);
   void update(String accountId, String orgIdentifier, String projectIdentifier, String environmentRef,
-      String serviceRef, String monitoredServiceIdentifier, String nameSpaceIdentifier, Set<HealthSource> healthSource);
+      String serviceRef, String monitoredServiceIdentifier, String nameSpaceIdentifier, Set<HealthSource> healthSource,
+      boolean isEnabled);
   static String getNameSpacedIdentifier(String nameSpace, String identifier) {
     return nameSpace + DELIMITER + identifier;
   }
