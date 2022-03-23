@@ -5,10 +5,6 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-/**
- * This class manages the lifecycle of Debezium Controller threads.
- */
-
 package io.harness.debezium;
 
 import io.harness.lock.PersistentLocker;
@@ -21,12 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Singleton
-public class DebeziumControllerStarter {
+public class DebeziumEngineStarter {
   @Inject @Named("DebeziumExecutorService") private ExecutorService debeziumExecutorService;
   @Inject private ChangeConsumerFactory consumerFactory;
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public void startDebeziumController(
+  public void startDebeziumEngine(
       DebeziumConfig debeziumConfig, ChangeConsumerConfig changeConsumerConfig, PersistentLocker locker) {
     String monitoredDb = debeziumConfig.getDatabaseIncludeList();
     try {

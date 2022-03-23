@@ -21,24 +21,28 @@ import org.apache.kafka.connect.storage.MemoryOffsetBackingStore;
 import org.redisson.Redisson;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
+import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 
 @Slf4j
 public class RedisOffsetBackingStore extends MemoryOffsetBackingStore {
+  private Config config;
   private RedissonClient redisson;
   private String redisKey;
 
   public RedisOffsetBackingStore() {}
+
+  public void connect() {
+    redisson = Redisson.create(config);
+    // TODO : ping or throw Exception
+  }
 
   @SneakyThrows
   @Override
   public void configure(WorkerConfig config) {
     super.configure(config);
     this.redisKey = config.getString("offset.storage.topic");
-    Config rConfig;
-    rConfig = buildConfig(config.getString("offset.storage.file.filename"));
-    redisson = Redisson.create(rConfig);
-    // TODO: ping or throw Exception
+    this.config = buildConfig(config.getString("offset.storage.file.filename"));
   }
 
   private Config buildConfig(String filePath) throws IOException {
@@ -46,13 +50,16 @@ public class RedisOffsetBackingStore extends MemoryOffsetBackingStore {
     if (resource == null) {
       throw new InvalidArgumentsException("File Path for redis backing store not valid");
     }
-    return Config.fromYAML(resource);
+    Config rconfig = Config.fromYAML(resource);
+    rconfig.setCodec(new JsonJacksonCodec());
+    return rconfig;
   }
 
   @Override
   public synchronized void start() {
     super.start();
     log.info("Starting RedisOffsetBackingStore");
+    this.connect();
     this.load();
   }
 

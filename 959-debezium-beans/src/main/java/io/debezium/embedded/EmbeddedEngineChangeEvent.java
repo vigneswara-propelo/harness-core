@@ -7,12 +7,9 @@
 
 package io.debezium.embedded;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
-
-import io.harness.annotations.dev.OwnedBy;
-
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.RecordChangeEvent;
+import lombok.ToString;
 import org.apache.kafka.connect.source.SourceRecord;
 
 /**
@@ -21,7 +18,8 @@ import org.apache.kafka.connect.source.SourceRecord;
  * Hence, we have made a copy of the class and made it public.
  * Please change this class if you change the version of Debezium in the future, right now it is 1.7.2.Final
  */
-@OwnedBy(PL)
+
+@ToString
 public class EmbeddedEngineChangeEvent<K, V> implements ChangeEvent<K, V>, RecordChangeEvent<V> {
   private final K key;
   private final V value;
@@ -55,10 +53,5 @@ public class EmbeddedEngineChangeEvent<K, V> implements ChangeEvent<K, V>, Recor
 
   public SourceRecord sourceRecord() {
     return sourceRecord;
-  }
-
-  @Override
-  public String toString() {
-    return "EmbeddedEngineChangeEvent [key=" + key + ", value=" + value + ", sourceRecord=" + sourceRecord + "]";
   }
 }

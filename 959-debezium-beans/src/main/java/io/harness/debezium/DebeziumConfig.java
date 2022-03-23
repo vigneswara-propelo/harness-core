@@ -30,10 +30,6 @@ public class DebeziumConfig {
    */
   @JsonProperty("offset.storage.file.filename") private String offsetStorageFileName;
   /**
-   * Redis Key to store offsets
-   */
-  @JsonProperty("offset.storage.topic") private String offsetStorageTopic;
-  /**
    * whether to include schema for keys as a part of the event
    */
   @JsonProperty("key.converter.schemas.enable") String keyConverterSchemasEnable;

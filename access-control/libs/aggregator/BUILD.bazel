@@ -17,6 +17,7 @@ java_library(
     ],
     deps = [
         "//:lombok",
+        "//959-debezium-beans:module",
         "//960-persistence:module",
         "//980-commons:module",
         "//999-annotations:module",
