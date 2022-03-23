@@ -1931,7 +1931,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     cvngLogService.save(cvngLogDTOs);
 
     LiveMonitoringLogsFilter liveMonitoringLogsFilter = LiveMonitoringLogsFilter.builder()
-                                                            .logType("ExecutionLog")
+                                                            .logType(CVNGLogType.EXECUTION_LOG)
                                                             .startTime(startTime.toEpochMilli())
                                                             .endTime(endTime.toEpochMilli())
                                                             .build();
@@ -1977,7 +1977,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     LiveMonitoringLogsFilter liveMonitoringLogsFilter =
         LiveMonitoringLogsFilter.builder()
             .healthSourceIdentifiers(Arrays.asList(cvConfigs.get(0).getIdentifier()))
-            .logType("ExecutionLog")
+            .logType(CVNGLogType.EXECUTION_LOG)
             .startTime(startTime.toEpochMilli())
             .endTime(endTime.toEpochMilli())
             .build();

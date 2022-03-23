@@ -170,7 +170,7 @@ public class CVNGLogServiceImpl implements CVNGLogService {
         "Logs can be fetched for maximum 1 day");
     return hPersistence.createQuery(CVNGLog.class, excludeAuthority)
         .filter(CVNGLogKeys.accountId, accountId)
-        .filter(CVNGLogKeys.logType, timeRangeLogsFilter.getCVNGLogType())
+        .filter(CVNGLogKeys.logType, timeRangeLogsFilter.getLogType())
         .filter(CVNGLogKeys.traceableType, VERIFICATION_TASK)
         .field(CVNGLogKeys.traceableId)
         .in(verificationTaskIds)
@@ -196,7 +196,7 @@ public class CVNGLogServiceImpl implements CVNGLogService {
     }
     return hPersistence.createQuery(CVNGLog.class, excludeAuthority)
         .filter(CVNGLogKeys.accountId, accountId)
-        .filter(CVNGLogKeys.logType, deploymentLogsFilter.getCVNGLogType())
+        .filter(CVNGLogKeys.logType, deploymentLogsFilter.getLogType())
         .filter(CVNGLogKeys.traceableType, VERIFICATION_TASK)
         .field(CVNGLogKeys.traceableId)
         .in(verificationTaskIds)

@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
-@JsonTypeName("EXECUTION_LOG")
+@JsonTypeName("ExecutionLog")
 @NoArgsConstructor
 @OwnedBy(HarnessTeam.CV)
 public class ExecutionLogDTO extends CVNGLogDTO {

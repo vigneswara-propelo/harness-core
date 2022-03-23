@@ -784,7 +784,7 @@ public class ServiceLevelObjectiveServiceImplTest extends CvNextGenTestBase {
     cvngLogService.save(cvngLogDTOs);
 
     SLILogsFilter sliLogsFilter = SLILogsFilter.builder()
-                                      .logType("ExecutionLog")
+                                      .logType(CVNGLogType.EXECUTION_LOG)
                                       .startTime(startTime.toEpochMilli())
                                       .endTime(endTime.toEpochMilli())
                                       .build();

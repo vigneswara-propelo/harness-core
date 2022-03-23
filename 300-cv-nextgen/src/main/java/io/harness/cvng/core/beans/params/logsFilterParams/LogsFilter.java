@@ -23,10 +23,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @NoArgsConstructor
 public abstract class LogsFilter {
-  @ApiParam(required = true) @NotNull @QueryParam("logType") String logType;
+  @ApiParam(required = true) @NotNull @QueryParam("logType") CVNGLogType logType;
   @ApiParam(defaultValue = "false") @QueryParam("errorLogsOnly") boolean errorLogsOnly;
-
-  public CVNGLogType getCVNGLogType() {
-    return CVNGLogType.toCVNGLogType(logType);
-  }
 }
