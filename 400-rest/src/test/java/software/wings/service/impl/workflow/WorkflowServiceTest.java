@@ -5390,4 +5390,20 @@ public class WorkflowServiceTest extends WingsBaseTest {
     verify(userGroupService)
         .removeParentsReference(USER_GROUP_ID + 2, ACCOUNT_ID, APP_ID, workflow3.getUuid(), WORKFLOW.name());
   }
+
+  @Test
+  @Owner(developers = PRABU)
+  @Category(UnitTests.class)
+  public void shouldCreateBasicDeploymentWorkflowFromGit() {
+    Workflow workflow = constructBasicWorkflowWithPhase();
+    workflow.setSyncFromGit(true);
+
+    Workflow workflow2 = workflowService.createWorkflow(workflow);
+    assertThat(workflow2).isNotNull().hasFieldOrProperty("uuid").hasFieldOrPropertyWithValue("appId", APP_ID);
+
+    BasicOrchestrationWorkflow orchestrationWorkflow =
+        (BasicOrchestrationWorkflow) workflow2.getOrchestrationWorkflow();
+    assertThat(orchestrationWorkflow.getFailureStrategies()).isEmpty();
+    assertThat(orchestrationWorkflow.getNotificationRules()).isEmpty();
+  }
 }

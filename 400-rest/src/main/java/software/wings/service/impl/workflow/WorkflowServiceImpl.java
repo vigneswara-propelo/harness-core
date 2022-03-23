@@ -938,11 +938,11 @@ public class WorkflowServiceImpl implements WorkflowService, DataProvider {
       WorkflowCreator workflowCreator = abstractWorkflowFactory.getWorkflowCreatorFactory(category).getWorkflowCreator(
           orchestrationWorkflow.getOrchestrationWorkflowType());
       workflow = workflowCreator.createWorkflow(workflow);
-      if (isEmpty(orchestrationWorkflow.getNotificationRules())) {
+      if (isEmpty(orchestrationWorkflow.getNotificationRules()) && !workflow.isSyncFromGit()) {
         createDefaultNotificationRule(workflow);
       }
       if (orchestrationWorkflow.getOrchestrationWorkflowType() != BUILD
-          && orchestrationWorkflow instanceof CanaryOrchestrationWorkflow) {
+          && orchestrationWorkflow instanceof CanaryOrchestrationWorkflow && !workflow.isSyncFromGit()) {
         CanaryOrchestrationWorkflow canaryOrchestrationWorkflow = (CanaryOrchestrationWorkflow) orchestrationWorkflow;
         if (isEmpty(canaryOrchestrationWorkflow.getFailureStrategies())) {
           createDefaultFailureStrategy(workflow);
