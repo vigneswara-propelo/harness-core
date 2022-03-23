@@ -213,6 +213,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     log.info("Free license for module [{}] is started in account [{}]", moduleType, accountIdentifier);
 
     accountService.updateDefaultExperienceIfApplicable(accountIdentifier, DefaultExperience.NG);
+    startTrialInCGIfCE(savedEntity);
     return licenseObjectConverter.toDTO(savedEntity);
   }
 
@@ -486,6 +487,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
         getResponse(ceLicenseClient.createCeTrial(CeLicenseInfoDTO.builder()
                                                       .accountId(moduleLicense.getAccountIdentifier())
                                                       .expiryTime(moduleLicense.getExpiryTime())
+                                                      .edition(moduleLicense.getEdition())
                                                       .build()));
       } catch (Exception e) {
         log.error("Unable to sync trial start in CG CCM", e);
