@@ -310,6 +310,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private static final String DELEGATE_NAME =
       isNotBlank(System.getenv().get("DELEGATE_NAME")) ? System.getenv().get("DELEGATE_NAME") : "";
   private static final String DELEGATE_TYPE = System.getenv().get("DELEGATE_TYPE");
+  private static final boolean IsEcsDelegate = "ECS".equals(DELEGATE_TYPE);
   private static final String DELEGATE_GROUP_NAME = System.getenv().get("DELEGATE_GROUP_NAME");
   private final String delegateGroupId = System.getenv().get("DELEGATE_GROUP_ID");
 
@@ -338,10 +339,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   @Inject @Named("healthMonitorExecutor") private ScheduledExecutorService healthMonitorExecutor;
   @Inject @Named("watcherMonitorExecutor") private ScheduledExecutorService watcherMonitorExecutor;
-  @Inject @Named("upgradeExecutor") private ScheduledExecutorService upgradeExecutor;
   @Inject @Named("inputExecutor") private ScheduledExecutorService inputExecutor;
-  @Inject @Named("profileExecutor") private ScheduledExecutorService profileExecutor;
-  @Inject @Named("watcherUpgradeExecutor") private ExecutorService watcherUpgradeExecutor;
   @Inject @Named("backgroundExecutor") private ExecutorService backgroundExecutor;
   @Inject @Named("taskPollExecutor") private ScheduledExecutorService taskPollExecutor;
   @Inject @Named("taskExecutor") private ExecutorService taskExecutor;
@@ -355,7 +353,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Inject private TokenGenerator tokenGenerator;
   @Inject private AsyncHttpClient asyncHttpClient;
   @Inject private Clock clock;
-  @Inject private TimeLimiter timeLimiter;
   @Inject private VersionInfoManager versionInfoManager;
   @Inject private DelegateDecryptionService delegateDecryptionService;
   @Inject private DelegateLogService delegateLogService;
@@ -406,6 +403,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private String accountId;
   private long watcherVersionMatchedAt = System.currentTimeMillis();
   private long delegateJreVersionChangedAt;
+  private TimeLimiter delegateHealthTimeLimiter;
+  private TimeLimiter delegateTaskTimeLimiter;
 
   private final String delegateConnectionId = generateTimeBasedUuid();
   private volatile boolean switchStorageMsgSent;
@@ -464,7 +463,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       log.info("Delegate will start running on JRE {}", System.getProperty(JAVA_VERSION));
       log.info("The deploy mode for delegate is [{}]", System.getenv().get("DEPLOY_MODE"));
       startTime = clock.millis();
-      DelegateStackdriverLogAppender.setTimeLimiter(timeLimiter);
+      delegateHealthTimeLimiter = HTimeLimiter.create(healthMonitorExecutor);
+      delegateTaskTimeLimiter = HTimeLimiter.create(taskExecutor);
+      DelegateStackdriverLogAppender.setTimeLimiter(delegateHealthTimeLimiter);
       DelegateStackdriverLogAppender.setManagerClient(delegateAgentManagerClient);
 
       logProxyConfiguration();
@@ -956,29 +957,20 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     if (log.isDebugEnabled()) {
       log.debug("^^MSG: " + message);
     }
+
+    // Handle Heartbeat message in Health-monitor thread-pool.
+    if (StringUtils.startsWith(message, "[X]")) {
+      healthMonitorExecutor.submit(() -> processHeartbeat(message));
+      return;
+    }
+
+    // Handle other messages in task executor thread-pool.
     taskExecutor.submit(() -> handleMessage(message));
   }
 
   @SuppressWarnings("PMD")
   private void handleMessage(String message) {
-    if (StringUtils.startsWith(message, "[X]")) {
-      String receivedId;
-      if (isEcsDelegate()) {
-        int indexForToken = message.lastIndexOf(TOKEN);
-        receivedId = message.substring(3, indexForToken); // Remove the "[X]
-      } else {
-        receivedId = message.substring(3);
-      }
-      if (delegateId.equals(receivedId)) {
-        long now = clock.millis();
-        log.info("Delegate {} received heartbeat response {} after sending. {} since last response.", receivedId,
-            getDurationString(lastHeartbeatSentAt.get(), now), getDurationString(lastHeartbeatReceivedAt.get(), now));
-        handleEcsDelegateSpecificMessage(message);
-        lastHeartbeatReceivedAt.set(now);
-      } else {
-        log.info("Heartbeat response for another delegate received: {}", receivedId);
-      }
-    } else if (StringUtils.equals(message, SELF_DESTRUCT)) {
+    if (StringUtils.equals(message, SELF_DESTRUCT)) {
       initiateSelfDestruct();
     } else if (StringUtils.equals(message, SELF_DESTRUCT + delegateId)) {
       initiateSelfDestruct();
@@ -1171,7 +1163,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   private void startProfileCheck() {
-    profileExecutor.scheduleWithFixedDelay(() -> {
+    healthMonitorExecutor.scheduleWithFixedDelay(() -> {
       boolean forCodeFormattingOnly; // This line is here for clang-format
       synchronized (this) {
         checkForProfile();
@@ -1188,7 +1180,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         String profileId = profileParams == null ? "" : profileParams.getProfileId();
         long updated = profileParams == null || !resultExists ? 0L : profileParams.getProfileLastUpdatedAt();
         RestResponse<DelegateProfileParams> response =
-            HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(15),
+            HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter, Duration.ofSeconds(15),
                 ()
                     -> executeRestCall(
                         delegateAgentManagerClient.checkForProfile(delegateId, accountId, profileId, updated)));
@@ -1309,7 +1301,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
     // MultipartBody.Part is used to send also the actual file name
     Part part = Part.createFormData("file", profileResult.getName(), requestFile);
-    HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(15),
+    HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter, Duration.ofSeconds(15),
         ()
             -> executeRestCall(delegateAgentManagerClient.saveProfileResult(
                 delegateId, accountId, exitCode != 0, FileBucket.PROFILE_RESULTS, part)));
@@ -1406,14 +1398,14 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     }
 
     log.info("Starting upgrade check at interval {} ms", delegateConfiguration.getHeartbeatIntervalMs());
-    upgradeExecutor.scheduleWithFixedDelay(() -> {
+    healthMonitorExecutor.scheduleWithFixedDelay(() -> {
       if (upgradePending.get()) {
         log.info("[Old] Upgrade is pending...");
       } else {
         log.info("Checking for upgrade");
         String delegateName = System.getenv().get("DELEGATE_NAME");
         try {
-          RestResponse<DelegateScripts> restResponse = HTimeLimiter.callInterruptible21(timeLimiter,
+          RestResponse<DelegateScripts> restResponse = HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter,
               Duration.ofMinutes(1),
               () -> executeRestCall(delegateAgentManagerClient.getDelegateScripts(accountId, version, delegateName)));
           DelegateScripts delegateScripts = restResponse.getResource();
@@ -1461,7 +1453,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     if (shouldContactManager()) {
       try {
         DelegateTaskEventsResponse taskEventsResponse =
-            HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(15),
+            HTimeLimiter.callInterruptible21(delegateTaskTimeLimiter, Duration.ofSeconds(15),
                 () -> executeRestCall(delegateAgentManagerClient.pollTaskEvents(delegateId, accountId)));
         if (shouldProcessDelegateTaskEvents(taskEventsResponse)) {
           List<DelegateTaskEvent> taskEvents = taskEventsResponse.getDelegateTaskEvents();
@@ -1637,7 +1629,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         || (multiVersionRestartNeeded && multiVersionWatcherStarted.compareAndSet(false, true))) {
       String watcherProcess = messageService.getData(WATCHER_DATA, WATCHER_PROCESS, String.class);
       log.warn("Watcher process {} needs restart", watcherProcess);
-      watcherUpgradeExecutor.submit(() -> { performWatcherUpgrade(watcherProcess, multiVersionRestartNeeded); });
+      healthMonitorExecutor.submit(() -> { performWatcherUpgrade(watcherProcess, multiVersionRestartNeeded); });
     }
   }
 
@@ -1699,6 +1691,25 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     return doRestart;
   }
 
+  private void processHeartbeat(String message) {
+    String receivedId;
+    if (isEcsDelegate()) {
+      int indexForToken = message.lastIndexOf(TOKEN);
+      receivedId = message.substring(3, indexForToken); // Remove the "[X]
+    } else {
+      receivedId = message.substring(3);
+    }
+    if (delegateId.equals(receivedId)) {
+      long now = clock.millis();
+      log.info("Delegate {} received heartbeat response {} after sending. {} since last response.", receivedId,
+          getDurationString(lastHeartbeatSentAt.get(), now), getDurationString(lastHeartbeatReceivedAt.get(), now));
+      handleEcsDelegateSpecificMessage(message);
+      lastHeartbeatReceivedAt.set(now);
+    } else {
+      log.info("Heartbeat response for another delegate received: {}", receivedId);
+    }
+  }
+
   private void sendHeartbeat(DelegateParamsBuilder builder, Socket socket) {
     if (!shouldContactManager() || !acquireTasks.get() || frozen.get()) {
       return;
@@ -1723,7 +1734,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
       try {
         HTimeLimiter.callInterruptible21(
-            timeLimiter, Duration.ofSeconds(15), () -> socket.fire(JsonUtils.asJson(delegateParams)));
+            delegateHealthTimeLimiter, Duration.ofSeconds(15), () -> socket.fire(JsonUtils.asJson(delegateParams)));
         lastHeartbeatSentAt.set(clock.millis());
         sentFirstHeartbeat.set(true);
       } catch (UncheckedTimeoutException ex) {
@@ -1745,7 +1756,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       log.info("Sending keepAlive packet...");
       updateBuilderIfEcsDelegate(builder);
       try {
-        HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(15), () -> {
+        HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter, Duration.ofSeconds(15), () -> {
           DelegateParams delegateParams = builder.build().toBuilder().keepAlivePacket(true).build();
           return socket.fire(JsonUtils.asJson(delegateParams));
         });
@@ -1804,7 +1815,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       setSwitchStorage(receivedDelegateResponse.isUseCdn());
       updateJreVersion(receivedDelegateResponse.getJreVersion());
 
-      HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(15),
+      HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter, Duration.ofSeconds(15),
           ()
               -> executeRestCall(
                   delegateAgentManagerClient.doConnectionHeartbeat(delegateId, accountId, connectionHeartbeat)));
@@ -2372,7 +2383,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     }
     if (taskFuture != null) {
       try {
-        HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(5), taskFuture::get);
+        HTimeLimiter.callInterruptible21(delegateTaskTimeLimiter, Duration.ofSeconds(5), taskFuture::get);
       } catch (UncheckedTimeoutException e) {
         ignoredOnPurpose(e);
         log.error("Timed out getting task future");
@@ -2588,7 +2599,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   private boolean isEcsDelegate() {
-    return "ECS".equals(DELEGATE_TYPE);
+    return IsEcsDelegate;
   }
 
   private void generateEcsDelegateSequenceConfigFile() {
