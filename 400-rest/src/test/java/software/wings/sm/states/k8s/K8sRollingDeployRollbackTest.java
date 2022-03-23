@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessModule._870_CG_ORCHESTRATION;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.beans.ExecutionStatus.SKIPPED;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
+import static io.harness.rule.OwnerRule.ABHINAV2;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.BOJANA;
 import static io.harness.rule.OwnerRule.YOGESH;
@@ -132,13 +133,24 @@ public class K8sRollingDeployRollbackTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testExecuteSkippedWhenK8sDeployIsSkipped() {
+    stateExecutionInstance.setContextElements(
+        new LinkedList<>(Collections.singletonList(K8sContextElement.builder().build())));
+    ExecutionResponse response = k8sRollingDeployRollback.execute(context);
+    assertThat(response.getExecutionStatus()).isEqualTo(SKIPPED);
+  }
+
+  @Test
   @Owner(developers = BOJANA)
   @Category(UnitTests.class)
   public void testExecute() {
     when(k8sStateHelper.fetchContainerInfrastructureMapping(any()))
         .thenReturn(DirectKubernetesInfrastructureMapping.builder().build());
     when(featureFlagService.isEnabled(eq(FeatureName.NEW_KUBECTL_VERSION), any())).thenReturn(false);
-    stateExecutionInstance.setContextElements(new LinkedList<>(Arrays.asList(K8sContextElement.builder().build())));
+    stateExecutionInstance.setContextElements(
+        new LinkedList<>(Arrays.asList(K8sContextElement.builder().releaseName(STATE_NAME).build())));
     doReturn(new Activity())
         .when(k8sRollingState)
         .createK8sActivity(
@@ -156,7 +168,8 @@ public class K8sRollingDeployRollbackTest extends CategoryTest {
   @Owner(developers = BOJANA)
   @Category(UnitTests.class)
   public void testExecuteInvalidRequestException() {
-    stateExecutionInstance.setContextElements(new LinkedList<>(Arrays.asList(K8sContextElement.builder().build())));
+    stateExecutionInstance.setContextElements(
+        new LinkedList<>(Arrays.asList(K8sContextElement.builder().releaseName(STATE_NAME).build())));
     k8sRollingDeployRollback.execute(context);
   }
 

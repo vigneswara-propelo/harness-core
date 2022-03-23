@@ -12,12 +12,14 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.beans.ExecutionStatus.SKIPPED;
 import static io.harness.beans.FeatureName.NEW_KUBECTL_VERSION;
 import static io.harness.beans.FeatureName.PRUNE_KUBERNETES_RESOURCES;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import static software.wings.sm.StateExecutionData.StateExecutionDataBuilder.aStateExecutionData;
 import static software.wings.sm.StateType.K8S_DEPLOYMENT_ROLLING_ROLLBACK;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.isNull;
 
 import io.harness.annotations.dev.BreakDependencyOn;
 import io.harness.annotations.dev.OwnedBy;
@@ -129,7 +131,7 @@ public class K8sRollingDeployRollback extends AbstractK8sState {
       K8sContextElement k8sContextElement = context.getContextElement(ContextElementType.K8S);
       ContainerInfrastructureMapping infraMapping = k8sStateHelper.fetchContainerInfrastructureMapping(context);
 
-      if (k8sContextElement == null) {
+      if (isNull(k8sContextElement) || isEmpty(k8sContextElement.getReleaseName())) {
         return ExecutionResponse.builder()
             .executionStatus(SKIPPED)
             .stateExecutionData(aStateExecutionData().withErrorMsg("No context found for rollback. Skipping.").build())
