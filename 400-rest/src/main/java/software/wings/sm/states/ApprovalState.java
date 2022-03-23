@@ -39,6 +39,7 @@ import static software.wings.common.NotificationMessageResolver.NotificationMess
 import static software.wings.common.NotificationMessageResolver.NotificationMessageType.WORKFLOW_RESUME_NOTIFICATION;
 import static software.wings.security.JWT_CATEGORY.EXTERNAL_SERVICE_SECRET;
 import static software.wings.service.impl.slack.SlackApprovalUtils.createSlackApprovalMessage;
+import static software.wings.service.impl.workflow.WorkflowNotificationHelper.USER_NAME;
 import static software.wings.sm.states.ApprovalState.ApprovalStateType.USER_GROUP;
 
 import static java.util.Arrays.asList;
@@ -986,6 +987,7 @@ public class ApprovalState extends State implements SweepingOutputStateMixin {
             .endDate(placeHolderValues.get(SlackApprovalMessageKeys.END_DATE))
             .expiryDate(placeHolderValues.get(SlackApprovalMessageKeys.EXPIRES_DATE))
             .verb(placeHolderValues.get(SlackApprovalMessageKeys.VERB))
+            .triggeredByUser("*Triggered By*: " + placeHolderValues.get(USER_NAME))
             .build();
     JSONObject customData = createCustomData(slackApprovalParams);
 
