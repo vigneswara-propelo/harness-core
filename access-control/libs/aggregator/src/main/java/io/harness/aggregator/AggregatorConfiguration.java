@@ -10,7 +10,6 @@ package io.harness.aggregator;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.debezium.DebeziumConfig;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

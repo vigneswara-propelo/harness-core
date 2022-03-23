@@ -35,7 +35,6 @@ public class DebeziumConfiguration {
   public static final String TRANSFORMS_UNWRAP_ADD_HEADERS = "transforms.unwrap.add.headers";
   public static final String DEBEZIUM_CONNECTOR_MONGODB_TRANSFORMS_EXTRACT_NEW_DOCUMENT_STATE =
       "io.debezium.connector.mongodb.transforms.ExtractNewDocumentState";
-  public static final String REDIS_OFFSETS_KEY = "debezium:offsets";
   public static final String CONNECT_BACKOFF_INITIAL_DELAY_MS = "connect.backoff.initial.delay.ms";
   public static final String CONNECT_BACKOFF_MAX_DELAY_MS = "connect.backoff.max.delay.ms";
   public static final String CONNECT_MAX_ATTEMPTS = "connect.max.attempts";
@@ -46,7 +45,7 @@ public class DebeziumConfiguration {
     props.setProperty(CONNECTOR_NAME, debeziumConfig.getConnectorName());
     props.setProperty(OFFSET_STORAGE, RedisOffsetBackingStore.class.getName());
     props.setProperty(OFFSET_STORAGE_FILE_FILENAME, debeziumConfig.getOffsetStorageFileName());
-    props.setProperty(OFFSET_STORAGE_KEY, REDIS_OFFSETS_KEY);
+    props.setProperty(OFFSET_STORAGE_KEY, debeziumConfig.getOffsetStorageTopic());
     props.setProperty(KEY_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getKeyConverterSchemasEnable());
     props.setProperty(VALUE_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getValueConverterSchemasEnable());
     props.setProperty(OFFSET_FLUSH_INTERVAL_MS, debeziumConfig.getOffsetFlushIntervalMillis());

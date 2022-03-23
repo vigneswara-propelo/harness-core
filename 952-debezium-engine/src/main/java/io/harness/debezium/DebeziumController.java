@@ -5,6 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
+/**
+ * This class manages the lifecycle of Debezium Engine thread.
+ */
+
 package io.harness.debezium;
 
 import static io.harness.debezium.DebeziumConstants.DEBEZIUM_LOCK_PREFIX;

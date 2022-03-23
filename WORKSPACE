@@ -5248,6 +5248,35 @@ maven_install(
     ],
 )
 
+# Adding maven rule for upgraded version of debezium (1.8.0.Final) and required version of mongodb java driver for debezium service
+maven_install(
+    name = "maven_debezium",
+    artifacts = [
+        "org.mongodb:mongodb-driver-core:4.0.4",
+        "org.mongodb:mongodb-driver-sync:4.0.4",
+        "io.debezium:debezium-api:1.8.0.Final",
+        "io.debezium:debezium-connector-mongodb:1.8.0.Final",
+        "io.debezium:debezium-core:1.8.0.Final",
+        maven.artifact(
+            group = "io.debezium",
+            artifact = "debezium-embedded",
+            version = "1.8.0.Final",
+            exclusions = [
+                "log4j:log4j",
+                "org.slf4j:slf4j-log4j12",
+            ],
+        ),
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "http://jfrogdev.dev.harness.io:80/artifactory/portal-maven",
+        "https://harness.jfrog.io/harness/thirdparty-annonymous",
+        "https://s01.oss.sonatype.org/content/repositories/releases",
+        "https://s01.oss.sonatype.org/content/repositories/snapshots",
+        "https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-core/4.3.4",
+    ],
+)
+
 load("//tools/bazel/sonarqube:repositories.bzl", "bazel_sonarqube_repositories")
 
 bazel_sonarqube_repositories()

@@ -17,7 +17,7 @@ logging:
 server:
   applicationConnectors:
     - type: http
-      port: 13001
+      port: 14552
       maxRequestHeaderSize: 100KiB
   adminConnectors:
     - type: http
@@ -29,12 +29,8 @@ server:
 
 debeziumConfigs:
   - isEnabled: true
-<<<<<<< HEAD:951-debezium-service/config.yml
     offset.storage.file.filename: redisson-jcache.yaml
     offset.storage.topic: debezium-offsets-pipeline
-=======
-    offset.storage.file.filename: redis://127.0.0.1:6379
->>>>>>> parent of 6f3b123dea9... techdebt: [PIE-3190]: Debezium version upgrade (#31542):951-debezium-service-application/config.yml
     name: pipeline
     key.converter.schemas.enable: false
     value.converter.schemas.enable: false

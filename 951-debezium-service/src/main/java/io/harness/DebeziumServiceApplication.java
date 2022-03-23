@@ -10,7 +10,7 @@ package io.harness;
 import io.harness.debezium.ChangeConsumerConfig;
 import io.harness.debezium.ConsumerType;
 import io.harness.debezium.DebeziumConfig;
-import io.harness.debezium.DebeziumEngineStarter;
+import io.harness.debezium.DebeziumControllerStarter;
 import io.harness.lock.PersistentLocker;
 import io.harness.maintenance.MaintenanceController;
 
@@ -42,7 +42,7 @@ public class DebeziumServiceApplication extends Application<DebeziumServiceConfi
 
     Injector injector = Guice.createInjector(DebeziumServiceModule.getInstance(moduleConfig));
     PersistentLocker locker = injector.getInstance(PersistentLocker.class);
-    DebeziumEngineStarter starter = injector.getInstance(DebeziumEngineStarter.class);
+    DebeziumControllerStarter starter = injector.getInstance(DebeziumControllerStarter.class);
 
     for (DebeziumConfig debeziumConfig : appConfig.getDebeziumConfigs()) {
       if (debeziumConfig.isEnabled()) {
@@ -51,7 +51,7 @@ public class DebeziumServiceApplication extends Application<DebeziumServiceConfi
                 .consumerType(ConsumerType.EVENTS_FRAMEWORK)
                 .eventsFrameworkConfiguration(appConfig.getEventsFrameworkConfiguration())
                 .build();
-        starter.startDebeziumEngine(debeziumConfig, changeConsumerConfig, locker);
+        starter.startDebeziumController(debeziumConfig, changeConsumerConfig, locker);
       }
     }
   }

@@ -24,15 +24,16 @@ public class DebeziumConfigurationTest {
   @Owner(developers = SHALINI)
   @Category(UnitTests.class)
   public void testGetDebeziumProperties() {
-    DebeziumConfig debeziumConfig = new DebeziumConfig(false, "testConnector", "offset_file", "false", "false", "6000",
-        "1000", "10000", "3", "MongoDbConnectorClass", "rs0/host1", "shop", "", "", "false", "products", "", "2000");
+    DebeziumConfig debeziumConfig =
+        new DebeziumConfig(false, "testConnector", "offset_file", "offsets", "false", "false", "6000", "1000", "10000",
+            "3", "MongoDbConnectorClass", "rs0/host1", "shop", "", "", "false", "products", "", "2000");
     Properties expected_props = new Properties();
     Properties props = new DebeziumConfiguration().getDebeziumProperties(debeziumConfig);
     expected_props.setProperty(DebeziumConfiguration.CONNECTOR_NAME, debeziumConfig.getConnectorName());
     expected_props.setProperty(DebeziumConfiguration.OFFSET_STORAGE, RedisOffsetBackingStore.class.getName());
     expected_props.setProperty(
         DebeziumConfiguration.OFFSET_STORAGE_FILE_FILENAME, debeziumConfig.getOffsetStorageFileName());
-    expected_props.setProperty(DebeziumConfiguration.OFFSET_STORAGE_KEY, DebeziumConfiguration.REDIS_OFFSETS_KEY);
+    expected_props.setProperty(DebeziumConfiguration.OFFSET_STORAGE_KEY, debeziumConfig.getOffsetStorageTopic());
     expected_props.setProperty(
         DebeziumConfiguration.KEY_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getKeyConverterSchemasEnable());
     expected_props.setProperty(
