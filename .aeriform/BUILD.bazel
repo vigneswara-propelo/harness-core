@@ -392,7 +392,11 @@ aeriform("//950-walktree-visitor:tests")
 
 aeriform("//951-cg-git-sync:module")
 
+aeriform("//951-debezium-service")
+
 aeriform("//951-ng-audit-commons:module")
+
+aeriform("//952-debezium-engine")
 
 aeriform("//952-scm-java-client:module")
 
@@ -439,6 +443,8 @@ aeriform("//958-migration-sdk:tests")
 aeriform("//958-ng-file-service-sdk:module")
 
 aeriform("//959-common-entities:module")
+
+aeriform("//959-debezium-beans")
 
 aeriform("//959-file-service-commons:module")
 

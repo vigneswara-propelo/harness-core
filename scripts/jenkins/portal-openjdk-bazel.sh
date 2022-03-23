@@ -249,6 +249,27 @@ java -jar pipeline-service-capsule.jar scan-classpath-metadata
 
 cd ../..
 
+mkdir -p dist/debezium-service
+cd dist/debezium-service
+
+cp ${HOME}/.bazel-dirs/bin/951-debezium-service/module_deploy.jar debezium-service-capsule.jar
+cp ../../951-debezium-service/config.yml .
+cp ../../951-debezium-service/src/main/resources/redisson-jcache.yaml .
+
+cp ../../alpn-boot-8.1.13.v20181017.jar .
+cp ../../dockerization/debezium-service/Dockerfile-debezium-service-jenkins-k8-openjdk ./Dockerfile
+cp ../../dockerization/debezium-service/Dockerfile-debezium-service-jenkins-k8-gcr-openjdk ./Dockerfile-gcr
+cp -r ../../dockerization/debezium-service/scripts/ .
+cp ../../protocol.info .
+echo ${JDK} > jdk.txt
+echo ${VERSION} > version.txt
+if [ ! -z ${PURPOSE} ]
+then
+    echo ${PURPOSE} > purpose.txt
+fi
+
+cd ../..
+
 mkdir -p dist/template-service
 cd dist/template-service
 
