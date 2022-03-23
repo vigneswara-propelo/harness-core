@@ -22,6 +22,7 @@ import io.harness.gitsync.entityInfo.AbstractGitSdkEntityHandler;
 import io.harness.gitsync.sdk.EntityGitDetails;
 import io.harness.ng.core.EntityDetail;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -45,7 +46,7 @@ public class EnvironmentGroupEntityGitSyncHelper
 
   @Override
   protected EnvironmentGroupConfig updateEntityFilePath(String accountIdentifier, String yaml, String newFilePath) {
-    return null;
+    return EnvironmentGroupConfig.builder().build();
   }
 
   @Override
@@ -70,12 +71,12 @@ public class EnvironmentGroupEntityGitSyncHelper
 
   @Override
   public EnvironmentGroupConfig save(String accountIdentifier, String yaml) {
-    return null;
+    return EnvironmentGroupConfig.builder().build();
   }
 
   @Override
   public EnvironmentGroupConfig update(String accountIdentifier, String yaml, ChangeType changeType) {
-    return null;
+    return EnvironmentGroupConfig.builder().build();
   }
 
   @Override
@@ -115,11 +116,11 @@ public class EnvironmentGroupEntityGitSyncHelper
 
   @Override
   public EnvironmentGroupConfig fullSyncEntity(FullSyncChangeSet fullSyncChangeSet) {
-    return null;
+    return EnvironmentGroupConfig.builder().build();
   }
 
   @Override
   public List<FileChange> listAllEntities(ScopeDetails scopeDetails) {
-    return null;
+    return new ArrayList<>();
   }
 }
