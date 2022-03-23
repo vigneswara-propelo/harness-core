@@ -54,6 +54,7 @@ import io.harness.steps.jira.JiraStepVariableCreator;
 import io.harness.steps.jira.create.JiraCreateStepPlanCreator;
 import io.harness.steps.jira.update.JiraUpdateStepPlanCreator;
 import io.harness.steps.policy.step.PolicyStepPlanCreator;
+import io.harness.steps.policy.variables.PolicyStepVariableCreator;
 import io.harness.steps.servicenow.create.ServiceNowCreateStepPlanCreator;
 import io.harness.steps.servicenow.update.ServiceNowUpdateStepPlanCreator;
 import io.harness.steps.shellscript.ShellScriptStepPlanCreator;
@@ -125,6 +126,7 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     variableCreators.add(new ApprovalStepVariableCreator());
     variableCreators.add(new ExecutionVariableCreator());
     variableCreators.add(new ApprovalStageVariableCreator());
+    variableCreators.add(new PolicyStepVariableCreator());
     variableCreators.add(new ServiceNowApprovalStepVariableCreator());
     injectorUtils.injectMembers(variableCreators);
     return variableCreators;
