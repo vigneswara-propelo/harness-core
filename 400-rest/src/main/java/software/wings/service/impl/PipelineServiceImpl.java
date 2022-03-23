@@ -2087,7 +2087,7 @@ public class PipelineServiceImpl implements PipelineService {
       if (StateType.APPROVAL.name().equals(stageElement.getType())) {
         Map<String, Object> properties = stageElement.getProperties();
         properties.forEach((name, value) -> {
-          if (USER_GROUPS.equals(name)) {
+          if (USER_GROUPS.equals(name) && value instanceof List && isNotEmpty((List<String>) value)) {
             userGroups.addAll((List<String>) value);
           }
         });

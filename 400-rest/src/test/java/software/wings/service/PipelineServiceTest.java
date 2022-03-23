@@ -129,6 +129,7 @@ import software.wings.utils.WingsTestConstants.MockChecker;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import com.sun.istack.internal.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,7 +138,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -1864,6 +1864,37 @@ public class PipelineServiceTest extends WingsBaseTest {
     Set<String> expectedUserGroups = new HashSet<>(Arrays.asList("userGroup1", "userGroup2", "userGroup3"));
     assertThat(actualUserGroups.size()).isEqualTo(3);
     assertThat(actualUserGroups).isEqualTo(expectedUserGroups);
+  }
+
+  @Test
+  @Owner(developers = PRABU)
+  @Category(UnitTests.class)
+  public void test_getUserGroupsApprovalTemplatized() {
+    Map<String, Object> properties1 = new HashMap<>();
+    properties1.put("templateExpressions",
+        Collections.singletonList(aVariable().name("${User_Group2}").entityType(USER_GROUP).build()));
+    PipelineStage stage1 = PipelineStage.builder()
+                               .pipelineStageElements(Collections.singletonList(PipelineStageElement.builder()
+                                                                                    .name("STAGE1")
+                                                                                    .type(APPROVAL.name())
+                                                                                    .properties(properties1)
+                                                                                    .disable(false)
+                                                                                    .build()))
+                               .build();
+    Map<String, Object> properties2 = new HashMap<>();
+    properties1.put("templateExpressions",
+        Collections.singletonList(aVariable().name("${User_Group2}").entityType(USER_GROUP).build()));
+    PipelineStage stage2 = PipelineStage.builder()
+                               .pipelineStageElements(Collections.singletonList(PipelineStageElement.builder()
+                                                                                    .name("STAGE2")
+                                                                                    .type(APPROVAL.name())
+                                                                                    .properties(properties2)
+                                                                                    .disable(false)
+                                                                                    .build()))
+                               .build();
+    Pipeline pipeline = preparePipeline(stage1, stage2);
+    Set<String> actualUserGroups = pipelineService.getUserGroups(pipeline);
+    assertThat(actualUserGroups).isEmpty();
   }
 
   private Pipeline getApprovalStagesPipeline() {
