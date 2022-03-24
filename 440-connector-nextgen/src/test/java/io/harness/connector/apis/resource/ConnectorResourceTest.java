@@ -43,10 +43,16 @@ import io.harness.rule.Owner;
 import io.harness.rule.OwnerRule;
 import io.harness.utils.PageTestUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -217,5 +223,28 @@ public class ConnectorResourceTest extends CategoryTest {
     String connectorType = "NewRelic";
     ResponseDTO responseDTO = ResponseDTO.newResponse(ConnectorAllowedFieldValues.TYPE_TO_FIELDS.get(connectorType));
     assertThat(responseDTO.getStatus().toString()).isEqualTo("SUCCESS");
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.DEV_MITTAL)
+  @Category(UnitTests.class)
+  public void connectorDTOObjectValidationTest() {
+    ObjectMapper mapper = new ObjectMapper();
+    assertThat(validate("440-connector-nextgen/src/test/resources/connector/GithubConnector1.json", mapper)).isFalse();
+    assertThat(validate("440-connector-nextgen/src/test/resources/connector/GithubConnector2.json", mapper)).isTrue();
+    assertThat(validate("440-connector-nextgen/src/test/resources/connector/GithubConnector3.json", mapper)).isFalse();
+    assertThat(validate("440-connector-nextgen/src/test/resources/connector/GithubConnector4.json", mapper)).isTrue();
+  }
+
+  public static boolean validate(String path, ObjectMapper mapper) {
+    try {
+      byte[] encoded = Files.readAllBytes(Paths.get(path));
+      String connectorJson = new String(encoded, Charset.defaultCharset());
+      ConnectorDTO connectorDTO = mapper.readValue(connectorJson, ConnectorDTO.class);
+      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+      return validator.validate(connectorDTO).size() == 0;
+    } catch (Exception e) {
+      return false;
+    }
   }
 }

@@ -388,7 +388,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
     if (HARNESS_SECRET_MANAGER_IDENTIFIER.equalsIgnoreCase(connectorRequestDTO.getConnectorInfo().getIdentifier())) {
       log.info("[AccountSetup]:Creating default SecretManager");
     }
-    validateThatAConnectorWithThisNameDoesNotExists(connectorRequestDTO.getConnectorInfo(), accountIdentifier);
+
     Connector connectorEntity = connectorMapper.toConnector(connectorRequestDTO, accountIdentifier);
     connectorEntity.setTimeWhenConnectorIsLastUpdated(System.currentTimeMillis());
     Connector savedConnectorEntity = null;

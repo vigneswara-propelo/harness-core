@@ -158,21 +158,38 @@ public class DefaultConnectorServiceImplTest extends ConnectorsTestBase {
   }
 
   @Test
-  @Owner(developers = OwnerRule.DEEPAK)
+  @Owner(developers = OwnerRule.DEV_MITTAL)
   @Category(UnitTests.class)
   public void testCreateConnectorsWithSameName() {
-    ConnectorResponseDTO connectorDTOOutput = createConnector(identifier, name);
-    assertThatThrownBy(() -> createConnector("identifier1", name)).isExactlyInstanceOf(InvalidRequestException.class);
+    ConnectorResponseDTO connectorDTOOutput1 = createConnector(identifier, name);
+    ConnectorResponseDTO connectorDTOOutput2 = createConnector("identifier2", name);
+    assertThat(connectorDTOOutput2.getConnector().getName()).isEqualTo(name);
+    assertThat(connectorDTOOutput2.getConnector().getIdentifier()).isEqualTo("identifier2");
+    assertThat(connectorDTOOutput1.getConnector().getName()).isEqualTo(name);
+    assertThat(connectorDTOOutput1.getConnector().getIdentifier()).isEqualTo(identifier);
   }
 
   @Test
-  @Owner(developers = OwnerRule.DEEPAK)
+  @Owner(developers = OwnerRule.DEV_MITTAL)
   @Category(UnitTests.class)
   public void testUpdateConnectorsWithSameName() {
-    ConnectorResponseDTO connectorDTOOutput = createConnector(identifier, updatedName);
-    assertThatThrownBy(() -> {
-      connectorService.update(getUpdatedConnector("differentIdentifier"), accountIdentifier);
-    }).isExactlyInstanceOf(InvalidRequestException.class);
+    ConnectorResponseDTO connectorDTOOutput1 = createConnector(identifier, updatedName);
+    ConnectorResponseDTO connectorDTOOutput2 = createConnector("identifier2", "name2");
+    ConnectorResponseDTO updated = connectorService.update(getUpdatedConnector("identifier2"), accountIdentifier);
+    assertThat(updated.getConnector().getName()).isEqualTo(updatedName);
+    assertThat(updated.getConnector().getIdentifier()).isEqualTo("identifier2");
+    assertThat(connectorDTOOutput1.getConnector().getName()).isEqualTo(updatedName);
+    assertThat(connectorDTOOutput1.getConnector().getIdentifier()).isEqualTo(identifier);
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.DEV_MITTAL)
+  @Category(UnitTests.class)
+  public void testCreateConnectorsWithSameId() {
+    ConnectorResponseDTO connectorDTOOutput1 = createConnector(identifier, name);
+    assertThatThrownBy(() -> createConnector(identifier, name)).isExactlyInstanceOf(InvalidRequestException.class);
+    assertThatThrownBy(() -> createConnector(identifier, "differentName"))
+        .isExactlyInstanceOf(InvalidRequestException.class);
   }
 
   private ConnectorDTO getUpdatedConnector(String identifier) {
