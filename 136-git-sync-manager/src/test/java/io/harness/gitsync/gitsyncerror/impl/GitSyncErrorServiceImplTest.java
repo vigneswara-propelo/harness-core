@@ -188,7 +188,17 @@ public class GitSyncErrorServiceImplTest extends GitSyncTestBase {
     Optional<GitSyncErrorDTO> savedError =
         gitSyncErrorService.getGitToHarnessError(accountId, commitId, repoUrl, branch, "filePath");
     assertThat(savedError.isPresent()).isEqualTo(true);
-    assertThat(savedError.get()).isEqualTo(dto);
+    GitSyncErrorDTO expectedDTO = buildDTOWithEntityUrl("filePath", Collections.singletonList(scope));
+    assertThat(savedError.get()).isEqualTo(expectedDTO);
+  }
+
+  private GitSyncErrorDTO buildDTOWithEntityUrl(String filePath, List<Scope> singletonList) {
+    additionalErrorDetailsDTO = GitToHarnessErrorDetailsDTO.builder()
+                                    .gitCommitId(commitId)
+                                    .commitMessage(commitMessage)
+                                    .entityUrl("repo/blob/branch/filePath")
+                                    .build();
+    return buildDTO(filePath, additionalErrorDetailsDTO, singletonList);
   }
 
   @Test
