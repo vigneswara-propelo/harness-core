@@ -84,7 +84,6 @@ import software.wings.beans.infrastructure.instance.key.deployment.ContainerDepl
 import software.wings.beans.infrastructure.instance.key.deployment.DeploymentKey;
 import software.wings.beans.infrastructure.instance.key.deployment.K8sDeploymentKey;
 import software.wings.dl.WingsPersistence;
-import software.wings.helpers.ext.container.ContainerDeploymentManagerHelper;
 import software.wings.helpers.ext.k8s.response.K8sInstanceSyncResponse;
 import software.wings.helpers.ext.k8s.response.K8sTaskExecutionResponse;
 import software.wings.service.ContainerInstanceSyncPerpetualTaskCreator;
@@ -138,7 +137,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
   @Inject private transient K8sStateHelper k8sStateHelper;
   @Inject private WingsPersistence wingsPersistence;
   @Inject private ContainerInstanceSyncPerpetualTaskCreator taskCreator;
-  @Inject private ContainerDeploymentManagerHelper containerDeploymentManagerHelper;
+
   @Override
   public void syncInstances(String appId, String infraMappingId, InstanceSyncFlow instanceSyncFlow) {
     // Key - containerSvcName, Value - Instances
@@ -247,7 +246,10 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
             // Otherwise it will lead to deleting the pods that are not part of response's releaseName and namespace
             if (isNotEmpty(syncResponse.getNamespace()) && isNotEmpty(syncResponse.getReleaseName())
                 && syncResponse.getNamespace().equals(containerMetadata.getNamespace())
-                && syncResponse.getReleaseName().equals(containerMetadata.getReleaseName())) {
+                && syncResponse.getReleaseName().equals(containerMetadata.getReleaseName())
+                && ((StringUtils.isBlank(syncResponse.getClusterName())
+                        && StringUtils.isBlank(containerMetadata.getClusterName()))
+                    || (syncResponse.getClusterName().equals(containerMetadata.getClusterName())))) {
               processK8sPodsInstances(containerInfraMapping, containerMetadata, instancesInDB, deploymentSummaryMap,
                   syncResponse.getK8sPodInfoList());
 
@@ -560,8 +562,8 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
   private List<K8sPod> getK8sPodsFromDelegate(
       ContainerInfrastructureMapping containerInfraMapping, ContainerMetadata containerMetadata) {
     try {
-      return k8sStateHelper.fetchPodList(
-          containerInfraMapping, containerMetadata.getNamespace(), containerMetadata.getReleaseName());
+      return k8sStateHelper.fetchPodListForCluster(containerInfraMapping, containerMetadata.getNamespace(),
+          containerMetadata.getReleaseName(), containerMetadata.getClusterName());
     } catch (Exception e) {
       throw new K8sPodSyncException(format("Exception in fetching podList for release %s, namespace %s",
                                         containerMetadata.getReleaseName(), containerMetadata.getNamespace()),
@@ -615,10 +617,26 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
     DeploymentSummary deploymentSummary = deploymentSummaryMap.get(containerMetadata);
     for (String podName : instancesToBeAdded) {
       if (deploymentSummary == null) {
-        deploymentSummary =
-            DeploymentSummary.builder().deploymentInfo(ContainerDeploymentInfoWithNames.builder().build()).build();
+        deploymentSummary = DeploymentSummary.builder().build();
         if (!instancesInDB.isEmpty()) {
           generateDeploymentSummaryFromInstance(instancesInDB.stream().findFirst().get(), deploymentSummary);
+          InstanceInfo info = instancesInDB.stream()
+                                  .sorted(Comparator.comparingLong(Instance::getLastDeployedAt).reversed())
+                                  .findFirst()
+                                  .get()
+                                  .getInstanceInfo();
+          if (info instanceof K8sPodInfo) {
+            K8sPodInfo instanceInfo = (K8sPodInfo) info;
+            if (Objects.isNull(deploymentSummary.getDeploymentInfo())) {
+              deploymentSummary.setDeploymentInfo(K8sDeploymentInfo.builder()
+                                                      .clusterName(instanceInfo.getClusterName())
+                                                      .releaseName(instanceInfo.getReleaseName())
+                                                      .namespace(instanceInfo.getNamespace())
+                                                      .blueGreenStageColor(instanceInfo.getBlueGreenColor())
+                                                      .helmChartInfo(instanceInfo.getHelmChartInfo())
+                                                      .build());
+            }
+          }
         } else {
           deploymentSummary.setDeployedByName(AUTO_SCALE);
           deploymentSummary.setDeployedById(AUTO_SCALE);
@@ -700,9 +718,9 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
       DeploymentSummary deploymentSummary, K8sPod pod, Collection<Instance> instances) {
     if (deploymentSummary != null && deploymentSummary.getDeploymentInfo() instanceof K8sDeploymentInfo) {
       K8sDeploymentInfo deploymentInfo = (K8sDeploymentInfo) deploymentSummary.getDeploymentInfo();
-      return StringUtils.equals(pod.getColor(), deploymentInfo.getBlueGreenStageColor())
-          ? deploymentInfo.getHelmChartInfo()
-          : null;
+      if (StringUtils.equals(pod.getColor(), deploymentInfo.getBlueGreenStageColor())) {
+        return deploymentInfo.getHelmChartInfo();
+      }
     }
 
     return instances.stream()
@@ -827,6 +845,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
                                        .type(ContainerMetadataType.K8S)
                                        .releaseName(releaseName)
                                        .namespace(namespace)
+                                       .clusterName(deploymentInfo.getClusterName())
                                        .build(),
               deploymentSummary);
         }
@@ -861,12 +880,16 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
         String containerSvcName = getContainerSvcName(containerInfo);
         String namespace = null;
         String releaseName = null;
+        String clusterName = null;
         if (containerInfo instanceof KubernetesContainerInfo) {
           namespace = ((KubernetesContainerInfo) containerInfo).getNamespace();
           releaseName = ((KubernetesContainerInfo) containerInfo).getReleaseName();
         } else if (containerInfo instanceof K8sPodInfo) {
           namespace = ((K8sPodInfo) containerInfo).getNamespace();
           releaseName = ((K8sPodInfo) containerInfo).getReleaseName();
+          if (StringUtils.isNotBlank(containerInfo.getClusterName())) {
+            clusterName = containerInfo.getClusterName();
+          }
         }
         ContainerMetadataType type = containerInfo instanceof K8sPodInfo ? ContainerMetadataType.K8S : null;
         instanceMap.put(ContainerMetadata.builder()
@@ -874,6 +897,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
                             .containerServiceName(containerSvcName)
                             .namespace(namespace)
                             .releaseName(isNotEmpty(releaseName) ? releaseName : null)
+                            .clusterName(clusterName)
                             .build(),
             instance);
       } else {
@@ -885,6 +909,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
   private ContainerMetadata getContainerMetadataFromInstanceSyncResponse(DelegateResponseData responseData) {
     String syncNamespace;
     String syncReleaseName;
+    String clusterName = null;
     String containerServiceName = null;
     ContainerMetadataType syncType = null;
     if (responseData instanceof K8sTaskExecutionResponse) {
@@ -893,6 +918,9 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
 
       syncNamespace = syncResponse.getNamespace();
       syncReleaseName = syncResponse.getReleaseName();
+      if (StringUtils.isNotBlank(syncResponse.getClusterName())) {
+        clusterName = syncResponse.getClusterName();
+      }
       syncType = ContainerMetadataType.K8S;
     } else if (responseData instanceof ContainerSyncResponse) {
       ContainerSyncResponse containerSyncResponse = (ContainerSyncResponse) responseData;
@@ -917,6 +945,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
           .namespace(syncNamespace)
           .releaseName(syncReleaseName)
           .containerServiceName(containerServiceName)
+          .clusterName(clusterName)
           .build();
     }
 
@@ -966,6 +995,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
                                               .type(ContainerMetadataType.K8S)
                                               .releaseName(releaseName)
                                               .namespace(namespace)
+                                              .clusterName(deploymentInfo.getClusterName())
                                               .build(),
               null);
         }
@@ -1019,6 +1049,8 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
       return Optional.empty();
     }
 
+    List<DeploymentInfo> k8sDeploymentInfoList = new ArrayList<>();
+    boolean isK8sDeployment = false;
     for (StepExecutionSummary stepExecutionSummary : stepExecutionSummaryList) {
       if (stepExecutionSummary != null) {
         if (stepExecutionSummary instanceof CommandStepExecutionSummary) {
@@ -1037,7 +1069,8 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
           return Optional.of(containerDeploymentInfoWithNames);
 
         } else if (stepExecutionSummary instanceof K8sExecutionSummary) {
-          return Optional.of(singletonList(getK8sDeploymentInfo((K8sExecutionSummary) stepExecutionSummary)));
+          isK8sDeployment = true;
+          k8sDeploymentInfoList.add(getK8sDeploymentInfo((K8sExecutionSummary) stepExecutionSummary));
         } else if (stepExecutionSummary instanceof HelmSetupExecutionSummary
             || stepExecutionSummary instanceof KubernetesSteadyStateCheckExecutionSummary) {
           if (!(infrastructureMapping instanceof ContainerInfrastructureMapping)) {
@@ -1073,7 +1106,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
         }
       }
     }
-    return Optional.empty();
+    return isK8sDeployment ? Optional.of(k8sDeploymentInfoList) : Optional.empty();
   }
 
   private boolean checkIfContainerServiceDataAvailable(String stateExecutionInstanceId,
@@ -1144,6 +1177,7 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
         .namespaces(k8sExecutionSummary.getNamespaces())
         .helmChartInfo(k8sExecutionSummary.getHelmChartInfo())
         .blueGreenStageColor(k8sExecutionSummary.getBlueGreenStageColor())
+        .clusterName(k8sExecutionSummary.getClusterName())
         .build();
   }
 
@@ -1199,6 +1233,9 @@ public class ContainerInstanceHandler extends InstanceHandler implements Instanc
                                                         .build())
                                              .collect(toList()))
                              .blueGreenColor(pod.getColor())
+                             .clusterName(deploymentSummary.getDeploymentInfo() instanceof K8sDeploymentInfo
+                                     ? ((K8sDeploymentInfo) deploymentSummary.getDeploymentInfo()).getClusterName()
+                                     : null)
                              .build());
 
     boolean instanceBuilderUpdated = false;

@@ -1456,13 +1456,13 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("sm.states.k8s.K8sScale", K8sScale.class);
     w.put("sm.states.k8s.K8sTrafficSplitState", K8sTrafficSplitState.class);
 
-    w.put("sm.states.RancherResolveState", RancherResolveState.class);
-    w.put("sm.states.RancherK8sRollingDeploy", RancherK8sRollingDeploy.class);
-    w.put("sm.states.RancherK8sRollingDeployRollback", RancherK8sRollingDeployRollback.class);
-    w.put("sm.states.RancherK8sCanaryDeploy", RancherK8sCanaryDeploy.class);
-    w.put("sm.states.RancherK8sDelete", RancherK8sDelete.class);
-    w.put("sm.states.RancherK8sBlueGreenDeploy", RancherK8sBlueGreenDeploy.class);
-    w.put("sm.states.RancherKubernetesSwapServiceSelectors", RancherKubernetesSwapServiceSelectors.class);
+    w.put("sm.states.rancher.RancherResolveState", RancherResolveState.class);
+    w.put("sm.states.rancher.RancherK8sRollingDeploy", RancherK8sRollingDeploy.class);
+    w.put("sm.states.rancher.RancherK8sRollingDeployRollback", RancherK8sRollingDeployRollback.class);
+    w.put("sm.states.rancher.RancherK8sCanaryDeploy", RancherK8sCanaryDeploy.class);
+    w.put("sm.states.rancher.RancherK8sDelete", RancherK8sDelete.class);
+    w.put("sm.states.rancher.RancherK8sBlueGreenDeploy", RancherK8sBlueGreenDeploy.class);
+    w.put("sm.states.rancher.RancherKubernetesSwapServiceSelectors", RancherKubernetesSwapServiceSelectors.class);
 
     w.put("sm.states.KubernetesDeploy", KubernetesDeploy.class);
     w.put("sm.states.KubernetesDeployRollback", KubernetesDeployRollback.class);
