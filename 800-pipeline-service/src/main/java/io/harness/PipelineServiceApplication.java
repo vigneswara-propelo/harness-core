@@ -124,6 +124,7 @@ import io.harness.pms.sdk.execution.events.orchestrationevent.OrchestrationEvent
 import io.harness.pms.sdk.execution.events.plan.CreatePartialPlanRedisConsumer;
 import io.harness.pms.sdk.execution.events.progress.ProgressEventRedisConsumer;
 import io.harness.pms.serializer.jackson.PmsBeansJacksonModule;
+import io.harness.pms.tags.OrchestrationEndTagsResolveHandler;
 import io.harness.pms.triggers.scheduled.ScheduledTriggerHandler;
 import io.harness.pms.triggers.webhook.service.TriggerWebhookExecutionService;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
@@ -515,6 +516,8 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
         injector.getInstance(Key.get(NotificationInformHandler.class)));
     planExecutionStrategy.getOrchestrationEndSubject().register(
         injector.getInstance(Key.get(InstrumentationPipelineEndEventHandler.class)));
+    planExecutionStrategy.getOrchestrationEndSubject().register(
+        injector.getInstance(Key.get(OrchestrationEndTagsResolveHandler.class)));
     planExecutionStrategy.getOrchestrationEndSubject().register(
         injector.getInstance(Key.get(PipelineStatusUpdateEventHandler.class)));
 
