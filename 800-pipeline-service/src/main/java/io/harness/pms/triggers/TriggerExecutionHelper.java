@@ -181,7 +181,7 @@ public class TriggerExecutionHelper {
         pipelineYaml =
             pipelineTemplateHelper
                 .resolveTemplateRefsInPipeline(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
-                    pipelineEntity.getProjectIdentifier(), pipelineYaml, true)
+                    pipelineEntity.getProjectIdentifier(), pipelineYaml, false)
                 .getMergedPipelineYaml();
       }
 
