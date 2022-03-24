@@ -34,7 +34,7 @@ public abstract class PodParams<T extends ContainerParams> implements NestedAnno
   private Map<String, String> nodeSelector;
   private List<PodToleration> tolerations;
   private List<PodVolume> volumes;
-
+  private String runtime;
   public abstract PodParams.Type getType();
 
   public enum Type { K8 }

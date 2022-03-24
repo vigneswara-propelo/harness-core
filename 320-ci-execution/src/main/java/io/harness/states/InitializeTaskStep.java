@@ -405,14 +405,13 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
       return entityDetails;
     }
 
-    if (((K8sDirectInfraYaml) infrastructure).getSpec() == null) {
-      throw new CIStageExecutionException("Input infrastructure can not be empty");
+    if (infrastructure.getType() != Infrastructure.Type.KUBERNETES_HOSTED) {
+      if (((K8sDirectInfraYaml) infrastructure).getSpec() == null) {
+        throw new CIStageExecutionException("Input infrastructure can not be empty");
+      }
+      String infraConnectorRef = ((K8sDirectInfraYaml) infrastructure).getSpec().getConnectorRef().getValue();
+      entityDetails.add(createEntityDetails(infraConnectorRef, accountIdentifier, projectIdentifier, orgIdentifier));
     }
-
-    String infraConnectorRef = ((K8sDirectInfraYaml) infrastructure).getSpec().getConnectorRef().getValue();
-
-    // Add Infra connector
-    entityDetails.add(createEntityDetails(infraConnectorRef, accountIdentifier, projectIdentifier, orgIdentifier));
 
     K8BuildJobEnvInfo.PodsSetupInfo podSetupInfo =
         ((K8BuildJobEnvInfo) initializeStepInfo.getBuildJobEnvInfo()).getPodsSetupInfo();

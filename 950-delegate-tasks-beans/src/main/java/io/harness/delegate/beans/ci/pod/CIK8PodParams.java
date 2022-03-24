@@ -28,9 +28,9 @@ public class CIK8PodParams<T extends ContainerParams> extends PodParams<T> {
       Map<String, String> labels, List<T> containerParamsList, List<T> initContainerParamsList,
       List<PVCParams> pvcParamList, List<HostAliasParams> hostAliasParamsList, Integer runAsUser,
       String serviceAccountName, Map<String, String> nodeSelector, List<PodToleration> tolerations,
-      List<PodVolume> volumes) {
+      List<PodVolume> volumes, String runtime) {
     super(name, namespace, annotations, labels, containerParamsList, initContainerParamsList, pvcParamList,
-        hostAliasParamsList, runAsUser, serviceAccountName, nodeSelector, tolerations, volumes);
+        hostAliasParamsList, runAsUser, serviceAccountName, nodeSelector, tolerations, volumes, runtime);
     this.gitConnector = gitConnector;
     this.branchName = branchName;
     this.commitId = commitId;

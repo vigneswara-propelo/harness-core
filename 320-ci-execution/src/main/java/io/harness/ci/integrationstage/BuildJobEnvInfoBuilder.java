@@ -42,7 +42,7 @@ public class BuildJobEnvInfoBuilder {
     }
 
     if (infrastructure.getType() == Infrastructure.Type.KUBERNETES_DIRECT
-        || infrastructure.getType() == Type.USE_FROM_STAGE) {
+        || infrastructure.getType() == Type.USE_FROM_STAGE || infrastructure.getType() == Type.KUBERNETES_HOSTED) {
       return initializeStepInfoBuilder.getInitializeStepInfoBuilder(
           stageElementConfig, ciExecutionArgs, steps, accountId);
     } else if (infrastructure.getType() == Type.VM) {

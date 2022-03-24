@@ -40,6 +40,8 @@ import static org.mockito.Mockito.when;
 import io.harness.beans.FeatureName;
 import io.harness.beans.sweepingoutputs.K8PodDetails;
 import io.harness.beans.sweepingoutputs.StepTaskDetails;
+import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
+import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
 import io.harness.category.element.UnitTests;
 import io.harness.ci.beans.entities.LogServiceConfig;
 import io.harness.ci.beans.entities.TIServiceConfig;
@@ -175,9 +177,14 @@ public class K8BuildSetupUtilsTest extends CIExecutionTestBase {
         BaseNGAccess.builder().accountIdentifier(accountID).orgIdentifier(orgID).projectIdentifier(projectID).build();
     K8PodDetails k8PodDetails = K8PodDetails.builder().stageID(stageID).build();
 
+    Infrastructure infrastructure =
+        ciExecutionPlanTestHelper.getExpectedLiteEngineTaskInfoOnFirstPodWithSetCallbackId().getInfrastructure();
+
+    String infraNamepsace = ((K8sDirectInfraYaml) infrastructure).getSpec().getNamespace().getValue();
+
     CIK8PodParams<CIK8ContainerParams> podParams = k8BuildSetupUtils.getPodParams(ngAccess, k8PodDetails,
-        ciExecutionPlanTestHelper.getExpectedLiteEngineTaskInfoOnFirstPodWithSetCallbackId(), true, null, true,
-        "workspace", ambiance, null, null, null, null, null, null, null);
+        ciExecutionPlanTestHelper.getExpectedLiteEngineTaskInfoOnFirstPodWithSetCallbackId(), true, "workspace",
+        ambiance, null, null, null, null, null, null, null, null, infraNamepsace);
 
     List<SecretVariableDetails> secretVariableDetails =
         new ArrayList<>(ciExecutionPlanTestHelper.getSecretVariableDetails());
