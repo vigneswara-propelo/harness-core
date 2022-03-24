@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.security.annotations.PublicApi;
 import io.harness.testing.TestExecution;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.HashMultimap;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.MapBinder;
@@ -250,24 +251,33 @@ public class OASModule extends AbstractModule {
       if (field.getType().isAnnotationPresent(Schema.class)) {
         dtoWithoutDescriptionToField.addAll(recursiveDtoFieldDescriptionCheck(field.getType()));
       } else {
-        if (!field.isAnnotationPresent(Schema.class) && !field.isAnnotationPresent(Parameter.class)) {
+        if (!field.isAnnotationPresent(Schema.class) && !field.isAnnotationPresent(Parameter.class)
+            && !field.isAnnotationPresent(JsonIgnore.class)) {
           if (!dtoWithoutDescriptionToField.contains(clazz.getName()) && !field.getName().startsWith("this$0")) {
             dtoWithoutDescriptionToField.add(clazz.getName());
           }
         } else {
           Annotation[] annotations = field.getAnnotations();
+          boolean jsonIgnoredField = false;
+          boolean parameterAnnotationDescriptionPresent = true;
+          boolean schemaAnnotationDescriptionPresent = true;
           for (Annotation annotation : annotations) {
             if (annotation.annotationType() == Schema.class) {
               Schema schema = (Schema) annotation;
               if (schema.description().isEmpty()) {
-                dtoWithoutDescriptionToField.add(clazz.getName());
+                schemaAnnotationDescriptionPresent = false;
               }
             } else if (annotation.annotationType() == Parameter.class) {
               Parameter parameter = (Parameter) annotation;
               if (parameter.description().isEmpty()) {
-                dtoWithoutDescriptionToField.add(clazz.getName());
+                parameterAnnotationDescriptionPresent = false;
               }
+            } else if (annotation.annotationType() == JsonIgnore.class) {
+              jsonIgnoredField = true;
             }
+          }
+          if ((!schemaAnnotationDescriptionPresent || !parameterAnnotationDescriptionPresent) && !jsonIgnoredField) {
+            dtoWithoutDescriptionToField.add(clazz.getName());
           }
         }
       }

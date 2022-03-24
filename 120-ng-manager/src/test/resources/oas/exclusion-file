@@ -28,7 +28,6 @@ dto-exclusion: io.harness.ng.authenticationsettings.dtos.mechanisms.OAuthSetting
 dto-exclusion: io.harness.ng.core.user.PasswordChangeDTO
 dto-exclusion: io.harness.ng.feedback.beans.FeedbackFormDTO
 dto-exclusion: io.harness.ng.core.environment.dto.EnvironmentRequestDTO
-dto-exclusion: io.harness.ng.core.dto.OrganizationDTO
 dto-exclusion: io.harness.enforcement.beans.details.FeatureRestrictionDetailListRequestDTO
 dto-exclusion: io.harness.ng.core.dto.SecretResourceFilterDTO
 dto-exclusion: io.harness.ng.core.dto.NgSmtpDTO
