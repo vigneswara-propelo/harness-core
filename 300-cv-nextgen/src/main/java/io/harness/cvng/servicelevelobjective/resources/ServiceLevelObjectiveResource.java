@@ -172,9 +172,17 @@ public class ServiceLevelObjectiveResource {
   @Path("{identifier}/logs")
   @ApiOperation(value = "get service level objective logs", nickname = "getServiceLevelObjectiveLogs")
   @NGAccessControlCheck(resourceType = SLO, permission = VIEW_PERMISSION)
-  public RestResponse<PageResponse<CVNGLogDTO>> getServiceLevelObjectiveLogs(@BeanParam ProjectParams projectParams,
+  public RestResponse<PageResponse<CVNGLogDTO>> getServiceLevelObjectiveLogs(
+      @NotNull @QueryParam("accountId") @AccountIdentifier String accountId,
+      @NotNull @QueryParam("orgIdentifier") @OrgIdentifier String orgIdentifier,
+      @NotNull @QueryParam("projectIdentifier") @ProjectIdentifier String projectIdentifier,
       @ApiParam(required = true) @NotNull @PathParam("identifier") @ResourceIdentifier String identifier,
       @BeanParam SLILogsFilter sliLogsFilter, @BeanParam PageParams pageParams) {
+    ProjectParams projectParams = ProjectParams.builder()
+                                      .accountIdentifier(accountId)
+                                      .orgIdentifier(orgIdentifier)
+                                      .projectIdentifier(projectIdentifier)
+                                      .build();
     return new RestResponse<>(
         serviceLevelObjectiveService.getCVNGLogs(projectParams, identifier, sliLogsFilter, pageParams));
   }

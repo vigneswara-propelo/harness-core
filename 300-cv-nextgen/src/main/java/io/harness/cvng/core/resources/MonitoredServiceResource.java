@@ -478,10 +478,18 @@ public class MonitoredServiceResource {
   @Path("{monitoredServiceIdentifier}/logs")
   @ApiOperation(value = "get monitored service logs", nickname = "getMonitoredServiceLogs")
   @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = VIEW_PERMISSION)
-  public RestResponse<PageResponse<CVNGLogDTO>> getMonitoredServiceLogs(@BeanParam ProjectParams projectParams,
+  public RestResponse<PageResponse<CVNGLogDTO>> getMonitoredServiceLogs(
+      @NotNull @QueryParam("accountId") @AccountIdentifier String accountId,
+      @NotNull @QueryParam("orgIdentifier") @OrgIdentifier String orgIdentifier,
+      @NotNull @QueryParam("projectIdentifier") @ProjectIdentifier String projectIdentifier,
       @ApiParam(required = true) @NotNull @PathParam(
           "monitoredServiceIdentifier") @ResourceIdentifier String monitoredServiceIdentifier,
       @BeanParam LiveMonitoringLogsFilter liveMonitoringLogsFilter, @BeanParam PageParams pageParams) {
+    ProjectParams projectParams = ProjectParams.builder()
+                                      .accountIdentifier(accountId)
+                                      .orgIdentifier(orgIdentifier)
+                                      .projectIdentifier(projectIdentifier)
+                                      .build();
     return new RestResponse<>(
         monitoredServiceService.getCVNGLogs(MonitoredServiceParams.builderWithProjectParams(projectParams)
                                                 .monitoredServiceIdentifier(monitoredServiceIdentifier)
