@@ -572,7 +572,6 @@ import software.wings.service.impl.aws.model.AwsCFGetTemplateParamsRequest;
 import software.wings.service.impl.aws.model.AwsCFGetTemplateParamsResponse;
 import software.wings.service.impl.aws.model.AwsCFRequest;
 import software.wings.service.impl.aws.model.AwsCFRequest.AwsCFRequestType;
-import software.wings.service.impl.aws.model.AwsCFTemplateParamsData;
 import software.wings.service.impl.aws.model.AwsCodeDeployListAppRequest;
 import software.wings.service.impl.aws.model.AwsCodeDeployListAppResponse;
 import software.wings.service.impl.aws.model.AwsCodeDeployListAppRevisionRequest;
@@ -1099,7 +1098,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AwsCFGetTemplateParamsResponse.class, 5477);
     kryo.register(AwsCFRequestType.class, 5475);
     kryo.register(AwsCFRequest.class, 5474);
-    kryo.register(AwsCFTemplateParamsData.class, 5478);
     kryo.register(AwsCodeDeployListAppRequest.class, 5432);
     kryo.register(AwsCodeDeployListAppResponse.class, 5433);
     kryo.register(AwsCodeDeployListAppRevisionRequest.class, 5434);

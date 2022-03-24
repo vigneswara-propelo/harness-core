@@ -24,6 +24,8 @@ import io.harness.artifacts.docker.service.DockerRegistryService;
 import io.harness.artifacts.docker.service.DockerRegistryServiceImpl;
 import io.harness.artifacts.gcr.service.GcrApiService;
 import io.harness.artifacts.gcr.service.GcrApiServiceImpl;
+import io.harness.aws.AWSCloudformationClient;
+import io.harness.aws.AWSCloudformationClientImpl;
 import io.harness.aws.AwsClient;
 import io.harness.aws.AwsClientImpl;
 import io.harness.azure.client.AzureAuthorizationClient;
@@ -163,6 +165,13 @@ import io.harness.delegate.task.citasks.CICleanupTask;
 import io.harness.delegate.task.citasks.CIExecuteStepTask;
 import io.harness.delegate.task.citasks.CIInitializeTask;
 import io.harness.delegate.task.citasks.ExecuteCommandTask;
+import io.harness.delegate.task.cloudformation.CloudformationBaseHelper;
+import io.harness.delegate.task.cloudformation.CloudformationBaseHelperImpl;
+import io.harness.delegate.task.cloudformation.CloudformationTaskNG;
+import io.harness.delegate.task.cloudformation.CloudformationTaskType;
+import io.harness.delegate.task.cloudformation.handlers.CloudformationAbstractTaskHandler;
+import io.harness.delegate.task.cloudformation.handlers.CloudformationCreateStackTaskHandler;
+import io.harness.delegate.task.cloudformation.handlers.CloudformationDeleteStackTaskHandler;
 import io.harness.delegate.task.cvng.CVConnectorValidationHandler;
 import io.harness.delegate.task.docker.DockerTestConnectionDelegateTask;
 import io.harness.delegate.task.docker.DockerValidationHandler;
@@ -944,7 +953,7 @@ public class DelegateModule extends AbstractModule {
     bind(TerraformBaseHelper.class).to(TerraformBaseHelperImpl.class);
     bind(DelegateFileManagerBase.class).to(DelegateFileManagerImpl.class);
     bind(TerraformClient.class).to(TerraformClientImpl.class);
-
+    bind(CloudformationBaseHelper.class).to(CloudformationBaseHelperImpl.class);
     bind(HelmDeployServiceNG.class).to(HelmDeployServiceImplNG.class);
 
     MapBinder<String, CommandUnitExecutorService> serviceCommandExecutorServiceMapBinder =
@@ -1059,6 +1068,7 @@ public class DelegateModule extends AbstractModule {
     bind(ManifestCollectionService.class).to(HelmChartCollectionService.class);
     bind(AzureKubernetesClient.class).to(AzureKubernetesClientImpl.class);
     bind(ArtifactoryNgService.class).to(ArtifactoryNgServiceImpl.class);
+    bind(AWSCloudformationClient.class).to(AWSCloudformationClientImpl.class);
 
     // NG Delegate
     MapBinder<String, K8sRequestHandler> k8sTaskTypeToRequestHandler =
@@ -1081,6 +1091,14 @@ public class DelegateModule extends AbstractModule {
     tfTaskTypeToHandlerMap.addBinding(TFTaskType.APPLY).to(TerraformApplyTaskHandler.class);
     tfTaskTypeToHandlerMap.addBinding(TFTaskType.PLAN).to(TerraformPlanTaskHandler.class);
     tfTaskTypeToHandlerMap.addBinding(TFTaskType.DESTROY).to(TerraformDestroyTaskHandler.class);
+
+    // Cloudformation Task Handlers
+    MapBinder<CloudformationTaskType, CloudformationAbstractTaskHandler> cfnTaskTypeToHandlerMap =
+        MapBinder.newMapBinder(binder(), CloudformationTaskType.class, CloudformationAbstractTaskHandler.class);
+    cfnTaskTypeToHandlerMap.addBinding(CloudformationTaskType.CREATE_STACK)
+        .to(CloudformationCreateStackTaskHandler.class);
+    cfnTaskTypeToHandlerMap.addBinding(CloudformationTaskType.DELETE_STACK)
+        .to(CloudformationDeleteStackTaskHandler.class);
 
     // HelmNG Task Handlers
 
@@ -1502,6 +1520,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.SCM_GIT_WEBHOOK_TASK).toInstance(ScmGitWebhookTask.class);
     mapBinder.addBinding(TaskType.SERVICENOW_CONNECTIVITY_TASK_NG).toInstance(ServiceNowTestConnectionTaskNG.class);
     mapBinder.addBinding(TaskType.SERVICENOW_TASK_NG).toInstance(ServiceNowTaskNG.class);
+    mapBinder.addBinding(TaskType.CLOUDFORMATION_TASK_NG).toInstance(CloudformationTaskNG.class);
   }
 
   private void registerSecretManagementBindings() {

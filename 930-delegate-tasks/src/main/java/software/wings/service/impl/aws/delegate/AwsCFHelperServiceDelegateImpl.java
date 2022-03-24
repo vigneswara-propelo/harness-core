@@ -13,14 +13,12 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
+import io.harness.aws.beans.AwsInternalConfig;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.security.encryption.EncryptedDataDetail;
 
-import software.wings.beans.AwsConfig;
 import software.wings.beans.CloudFormationSourceType;
 import software.wings.beans.GitConfig;
 import software.wings.beans.GitFileConfig;
@@ -48,24 +46,23 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
-@TargetModule(HarnessModule._930_DELEGATE_TASKS)
 @Slf4j
 @OwnedBy(CDP)
-public class AwsCFHelperServiceDelegateImpl extends AwsHelperServiceDelegateBase implements AwsCFHelperServiceDelegate {
+public class AwsCFHelperServiceDelegateImpl
+    extends AwsHelperServiceDelegateBaseNG implements AwsCFHelperServiceDelegate {
   @Inject private GitUtilsDelegate gitUtilsDelegate;
 
   @VisibleForTesting
-  AmazonCloudFormationClient getAmazonCloudFormationClient(Regions region, AwsConfig awsConfig) {
+  AmazonCloudFormationClient getAmazonCloudFormationClient(Regions region, AwsInternalConfig awsConfig) {
     AmazonCloudFormationClientBuilder builder = AmazonCloudFormationClientBuilder.standard().withRegion(region);
     attachCredentialsAndBackoffPolicy(builder, awsConfig);
     return (AmazonCloudFormationClient) builder.build();
   }
 
   @Override
-  public List<AwsCFTemplateParamsData> getParamsData(AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails,
-      String region, String data, String type, GitFileConfig gitFileConfig, GitConfig gitConfig,
+  public List<AwsCFTemplateParamsData> getParamsData(AwsInternalConfig awsConfig, String region, String data,
+      String type, GitFileConfig gitFileConfig, GitConfig gitConfig,
       List<EncryptedDataDetail> sourceRepoEncryptedDetail) {
-    encryptionService.decrypt(awsConfig, encryptionDetails, false);
     try (CloseableAmazonWebServiceClient<AmazonCloudFormationClient> closeableAmazonCloudFormationClient =
              new CloseableAmazonWebServiceClient(getAmazonCloudFormationClient(Regions.fromName(region), awsConfig))) {
       GetTemplateSummaryRequest request = new GetTemplateSummaryRequest();
@@ -105,7 +102,7 @@ public class AwsCFHelperServiceDelegateImpl extends AwsHelperServiceDelegateBase
   }
 
   @Override
-  public String getStackBody(AwsConfig awsConfig, String region, String stackId) {
+  public String getStackBody(AwsInternalConfig awsConfig, String region, String stackId) {
     try (CloseableAmazonWebServiceClient<AmazonCloudFormationClient> closeableAmazonCloudFormationClient =
              new CloseableAmazonWebServiceClient(getAmazonCloudFormationClient(Regions.fromName(region), awsConfig))) {
       GetTemplateRequest getTemplateRequest = new GetTemplateRequest().withStackName(stackId);
@@ -125,7 +122,7 @@ public class AwsCFHelperServiceDelegateImpl extends AwsHelperServiceDelegateBase
   }
 
   @Override
-  public List<String> getCapabilities(AwsConfig awsConfig, String region, String data, String type) {
+  public List<String> getCapabilities(AwsInternalConfig awsConfig, String region, String data, String type) {
     try (CloseableAmazonWebServiceClient<AmazonCloudFormationClient> closeableAmazonCloudFormationClient =
              new CloseableAmazonWebServiceClient(getAmazonCloudFormationClient(Regions.fromName(region), awsConfig))) {
       GetTemplateSummaryRequest request = new GetTemplateSummaryRequest();
