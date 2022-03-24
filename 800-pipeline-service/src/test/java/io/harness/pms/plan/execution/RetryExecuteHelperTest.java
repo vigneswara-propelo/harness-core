@@ -935,6 +935,30 @@ public class RetryExecuteHelperTest extends CategoryTest {
   @Test
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
+  public void testValidateRetryForTriggerExecution() {
+    String originalYamlFile = "retry-original1.yaml";
+    String originalYaml = readFile(originalYamlFile);
+
+    doReturn(Optional.of(PipelineEntity.builder().yaml(originalYaml).build()))
+        .when(pipelineService)
+        .get(accountId, orgId, projectId, pipelineId, false);
+    doReturn(PipelineExecutionSummaryEntity.builder()
+                 .isLatestExecution(true)
+                 .createdAt(System.currentTimeMillis() - DAY_IN_MS)
+                 .build())
+        .when(executionService)
+        .getPipelineExecutionSummaryEntity(accountId, orgId, projectId, planExecId, false);
+    doReturn(Optional.of(PlanExecutionMetadata.builder().yaml(originalYaml).build()))
+        .when(planExecutionMetadataService)
+        .findByPlanExecutionId(planExecId);
+
+    RetryInfo retryInfo = retryExecuteHelper.validateRetry(accountId, orgId, projectId, pipelineId, planExecId);
+    assertThat(retryInfo.isResumable()).isTrue();
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
   public void testValidateRetryForSelectiveStageExecution() {
     String pipelineYaml = "pipeline:\n"
         + "  stages:\n"

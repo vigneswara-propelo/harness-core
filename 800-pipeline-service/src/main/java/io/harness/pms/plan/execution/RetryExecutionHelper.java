@@ -149,7 +149,7 @@ public class RetryExecutionHelper {
     PlanExecutionMetadata planExecutionMetadata = byPlanExecutionId.get();
     String executedPipeline = planExecutionMetadata.getYaml();
     StagesExecutionMetadata stagesExecutionMetadata = planExecutionMetadata.getStagesExecutionMetadata();
-    if (stagesExecutionMetadata.isStagesExecution()) {
+    if (stagesExecutionMetadata != null && stagesExecutionMetadata.isStagesExecution()) {
       updatedPipeline =
           InputSetMergeHelper.removeNonRequiredStages(updatedPipeline, stagesExecutionMetadata.getStageIdentifiers());
     }

@@ -155,7 +155,8 @@ public class PipelineExecutor {
 
     StagesExecutionMetadata stagesExecutionMetadata = planExecutionMetadata.getStagesExecutionMetadata();
     ExecArgs execArgs = executionHelper.buildExecutionArgs(pipelineEntity, moduleType, inputSetPipelineYaml,
-        stagesExecutionMetadata.getStageIdentifiers(), stagesExecutionMetadata.getExpressionValues(), triggerInfo,
+        stagesExecutionMetadata == null ? null : stagesExecutionMetadata.getStageIdentifiers(),
+        stagesExecutionMetadata == null ? null : stagesExecutionMetadata.getExpressionValues(), triggerInfo,
         previousExecutionId, retryExecutionParameters);
     PlanExecution planExecution;
     if (useV2) {
