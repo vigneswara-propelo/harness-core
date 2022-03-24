@@ -225,7 +225,13 @@ public class JiraTask extends AbstractDelegateRunnableTask {
           .createMetadata(jiraCreateMetaResponse)
           .build();
     } catch (URISyntaxException | RestException | IOException | JiraException | RuntimeException e) {
-      String errorMessage = "Failed to fetch issue metadata from Jira server.";
+      String uriString = Resource.getBaseUri() == null ? "" : Resource.getBaseUri();
+      if (uri == null) {
+        uriString = uriString + "issue/createmeta";
+      }
+      String errorMessage =
+          String.format("Failed to fetch issue metadata from Jira server, Uri for GET_CREATE_METADATA - %s ",
+              uri == null ? uriString : uri);
       log.error(errorMessage, e);
       return JiraExecutionData.builder().errorMessage(errorMessage).executionStatus(ExecutionStatus.FAILED).build();
     }
@@ -674,10 +680,9 @@ public class JiraTask extends AbstractDelegateRunnableTask {
     try {
       URL issueUrl =
           new URL(jiraConfig.getBaseUrl() + (jiraConfig.getBaseUrl().endsWith("/") ? "" : "/") + "browse/" + issueKey);
-
       return issueUrl.toString();
     } catch (MalformedURLException e) {
-      log.info("Incorrect url: " + e.getMessage());
+      log.error("Incorrect url: " + e.getMessage(), e);
     }
 
     return null;
@@ -690,6 +695,7 @@ public class JiraTask extends AbstractDelegateRunnableTask {
     BasicCredentials creds = new BasicCredentials(jiraConfig.getUsername(), new String(jiraConfig.getPassword()));
     String baseUrl =
         jiraConfig.getBaseUrl().endsWith("/") ? jiraConfig.getBaseUrl() : jiraConfig.getBaseUrl().concat("/");
+    log.info(" Getting Jira Client from:  " + baseUrl);
     if (Http.getProxyHostName() != null && !Http.shouldUseNonProxy(baseUrl)) {
       log.info("Get Proxy enabled jira client", baseUrl);
       return new JiraClient(getProxyEnabledHttpClientForJira(), baseUrl, creds);

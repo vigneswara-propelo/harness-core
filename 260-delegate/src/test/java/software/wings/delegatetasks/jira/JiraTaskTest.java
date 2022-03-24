@@ -615,10 +615,12 @@ public class JiraTaskTest extends CategoryTest {
   public void shouldFailExecutionOnJiraExceptionForGetCreateMetadata() throws JiraException {
     JiraTaskParameters taskParameters = getTaskParams(JiraAction.GET_CREATE_METADATA);
     Mockito.doThrow(new JiraException("")).when(spyJiraTask).getJiraClient(taskParameters);
-    JiraExecutionData jiraExecutionData = JiraExecutionData.builder()
-                                              .errorMessage("Failed to fetch issue metadata from Jira server.")
-                                              .executionStatus(ExecutionStatus.FAILED)
-                                              .build();
+    JiraExecutionData jiraExecutionData =
+        JiraExecutionData.builder()
+            .errorMessage(
+                "Failed to fetch issue metadata from Jira server, Uri for GET_CREATE_METADATA - /rest/api/latest/issue/createmeta ")
+            .executionStatus(ExecutionStatus.FAILED)
+            .build();
     runTaskAndAssertResponse(taskParameters, jiraExecutionData);
   }
 
