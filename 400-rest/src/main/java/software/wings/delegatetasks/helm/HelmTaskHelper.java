@@ -45,6 +45,7 @@ import io.harness.delegate.task.helm.HelmChartInfo;
 import io.harness.delegate.task.helm.HelmCommandFlag;
 import io.harness.delegate.task.helm.HelmTaskHelperBase;
 import io.harness.exception.HelmClientException;
+import io.harness.exception.HelmClientRuntimeException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.helm.HelmCliCommandType;
@@ -258,6 +259,8 @@ public class HelmTaskHelper {
       return mapK8sValuesLocationToContents;
     } catch (InvalidArgumentsException ex) {
       throw ExceptionMessageSanitizer.sanitizeException(ex);
+    } catch (HelmClientException ex) {
+      throw new HelmClientRuntimeException((HelmClientException) ExceptionMessageSanitizer.sanitizeException(ex));
     } catch (Exception ex) {
       log.info("values yaml file not found", ExceptionMessageSanitizer.sanitizeException(ex));
       return null;

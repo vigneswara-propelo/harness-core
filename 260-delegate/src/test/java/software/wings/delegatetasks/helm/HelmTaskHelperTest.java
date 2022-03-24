@@ -17,6 +17,7 @@ import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ACASIAN;
 import static io.harness.rule.OwnerRule.ACHYUTH;
 import static io.harness.rule.OwnerRule.PRABU;
+import static io.harness.rule.OwnerRule.PRATYUSH;
 import static io.harness.rule.OwnerRule.RAGHVENDRA;
 import static io.harness.rule.OwnerRule.ROHITKARELIA;
 import static io.harness.rule.OwnerRule.YOGESH;
@@ -63,6 +64,7 @@ import io.harness.delegate.task.helm.HelmChartInfo;
 import io.harness.delegate.task.helm.HelmCommandFlag;
 import io.harness.delegate.task.helm.HelmTaskHelperBase;
 import io.harness.exception.HelmClientException;
+import io.harness.exception.HelmClientRuntimeException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.helm.HelmCliCommandType;
@@ -1227,5 +1229,33 @@ public class HelmTaskHelperTest extends WingsBaseTest {
 
     verify(helmTaskHelperBase)
         .removeRepo(repoName, workingDirectory, V2, LONG_TIMEOUT_INTERVAL, false, StringUtils.EMPTY);
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testFailedtoFetchValuesYamlFromChart() throws Exception {
+    String valuesFileContent = "var: value";
+    String chartName = "chartName";
+
+    Map<String, List<String>> mapK8sValuesLocationToFilePaths = new HashMap<>();
+    mapK8sValuesLocationToFilePaths.put(K8sValuesLocation.ServiceOverride.name(), singletonList("values1.yaml"));
+
+    HelmChartConfigParams helmChartConfigParams =
+        HelmChartConfigParams.builder().chartName(chartName).chartVersion("0.1.0").build();
+    String workingDirectory = prepareChartDirectoryWithValuesFileForTest(chartName, valuesFileContent);
+
+    doNothing().when(helmTaskHelper).initHelm(anyString(), any(HelmVersion.class), anyLong());
+    doReturn(new ProcessResult(1, new ProcessOutput("something went wrong executing command".getBytes())))
+        .when(helmTaskHelperBase)
+        .executeCommand(anyMap(), contains("helm/path fetch chartName --untar"), anyString(),
+            eq("fetch chart chartName"), anyLong(), any());
+
+    assertThatThrownBy(()
+                           -> helmTaskHelper.getValuesYamlFromChart(
+                               helmChartConfigParams, LONG_TIMEOUT_INTERVAL, null, mapK8sValuesLocationToFilePaths))
+        .isInstanceOf(HelmClientRuntimeException.class)
+        .hasMessageContaining("Failed to fetch chart")
+        .hasMessageContaining("something went wrong executing command");
   }
 }
