@@ -89,14 +89,4 @@ public abstract class LogAnalysisStateExecutor<T extends LogAnalysisState> exten
     analysisState.setStatus(AnalysisStatus.SUCCESS);
     return analysisState;
   }
-
-  @Override
-  public AnalysisState handleRetry(T analysisState) {
-    if (analysisState.getRetryCount() >= getMaxRetry()) {
-      analysisState.setStatus(AnalysisStatus.FAILED);
-    } else {
-      return handleRerun(analysisState);
-    }
-    return analysisState;
-  }
 }

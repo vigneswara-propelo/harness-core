@@ -132,6 +132,7 @@ import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator.SLOHeal
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective.RollingSLOTarget;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective.ServiceLevelObjectiveBuilder;
+import io.harness.cvng.verificationjob.entities.CanaryVerificationJob;
 import io.harness.cvng.verificationjob.entities.TestVerificationJob;
 import io.harness.cvng.verificationjob.entities.VerificationJob;
 import io.harness.cvng.verificationjob.entities.VerificationJobInstance;
@@ -939,6 +940,21 @@ public class BuilderFactory {
     testVerificationJob.setProjectIdentifier(context.getProjectIdentifier());
     testVerificationJob.setOrgIdentifier(context.getOrgIdentifier());
     return testVerificationJob;
+  }
+
+  public VerificationJob getDeploymentVerificationJob() {
+    CanaryVerificationJob canaryVerificationJob = new CanaryVerificationJob();
+    canaryVerificationJob.setAccountId(context.getAccountId());
+    canaryVerificationJob.setIdentifier("identifier");
+    canaryVerificationJob.setJobName(generateUuid());
+    canaryVerificationJob.setMonitoringSources(Arrays.asList("monitoringIdentifier"));
+    canaryVerificationJob.setSensitivity(Sensitivity.MEDIUM);
+    canaryVerificationJob.setServiceIdentifier(context.getServiceIdentifier(), false);
+    canaryVerificationJob.setEnvIdentifier(context.getEnvIdentifier(), false);
+    canaryVerificationJob.setDuration(Duration.ofMinutes(5));
+    canaryVerificationJob.setProjectIdentifier(context.getProjectIdentifier());
+    canaryVerificationJob.setOrgIdentifier(context.getOrgIdentifier());
+    return canaryVerificationJob;
   }
 
   public static class BuilderFactoryBuilder {

@@ -16,6 +16,8 @@ import static io.harness.eventsframework.EventsFrameworkConstants.SRM_STATEMACHI
 
 import io.harness.cvng.core.jobs.StateMachineEventPublisherService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
+import io.harness.cvng.metrics.CVNGMetricsUtils;
+import io.harness.cvng.metrics.services.impl.MetricContextBuilder;
 import io.harness.cvng.statemachine.beans.AnalysisInput;
 import io.harness.cvng.statemachine.beans.AnalysisStatus;
 import io.harness.cvng.statemachine.entities.AnalysisOrchestrator;
@@ -25,6 +27,8 @@ import io.harness.cvng.statemachine.services.api.AnalysisStateMachineService;
 import io.harness.cvng.statemachine.services.api.OrchestrationService;
 import io.harness.lock.AcquiredLock;
 import io.harness.lock.PersistentLocker;
+import io.harness.metrics.AutoMetricContext;
+import io.harness.metrics.service.api.MetricService;
 import io.harness.persistence.HPersistence;
 
 import com.google.common.base.Preconditions;
@@ -51,6 +55,8 @@ public class OrchestrationServiceImpl implements OrchestrationService {
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private StateMachineEventPublisherService stateMachineEventPublisherService;
   @Inject private PersistentLocker persistentLocker;
+  @Inject private MetricService metricService;
+  @Inject private MetricContextBuilder metricContextBuilder;
 
   @Override
   public void queueAnalysis(String verificationTaskId, Instant startTime, Instant endTime) {
@@ -132,6 +138,9 @@ public class OrchestrationServiceImpl implements OrchestrationService {
       log.info("For verification task ID {}, orchestrator has more than 5 tasks waiting."
               + " Please check if there is a growing backlog.",
           orchestrator.getVerificationTaskId());
+      try (AutoMetricContext ignore = metricContextBuilder.getContext(orchestrator, AnalysisOrchestrator.class)) {
+        metricService.incCounter(CVNGMetricsUtils.ORCHESTRATOR_STATE_MACHINE_QUEUE_COUNT_ABOVE_FIVE);
+      }
     }
 
     AnalysisStateMachine currentlyExecutingStateMachine =

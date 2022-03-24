@@ -151,8 +151,8 @@ public class OrchestrationServiceImplTest extends CvNextGenTestBase {
   @Category(UnitTests.class)
   public void testRetryLogic() {
     Instant startTime = clock.instant();
+    orchestrationService.queueAnalysis(verificationTaskId, startTime.minus(5, ChronoUnit.MINUTES), startTime);
     orchestrationService.queueAnalysis(verificationTaskId, startTime, startTime.plus(5, ChronoUnit.MINUTES));
-    AnalysisStateMachine analysisStateMachine;
 
     List<AnalysisOrchestrator> orchestrator =
         hPersistence.createQuery(AnalysisOrchestrator.class)
@@ -160,19 +160,28 @@ public class OrchestrationServiceImplTest extends CvNextGenTestBase {
             .asList();
     assertThat(orchestrator).hasSize(1);
     assertThat(orchestrator.get(0).getStatus().name()).isEqualTo(AnalysisStatus.CREATED.name());
-    assertThat(orchestrator.get(0).getAnalysisStateMachineQueue()).hasSize(1);
+    assertThat(orchestrator.get(0).getAnalysisStateMachineQueue()).hasSize(2);
     orchestrationService.orchestrate(orchestrator.get(0));
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
       updateLearningEngineTask();
       orchestrationService.orchestrate(orchestrator.get(0));
     }
-
-    analysisStateMachine = hPersistence.createQuery(AnalysisStateMachine.class)
-                               .filter(AnalysisStateMachineKeys.verificationTaskId, verificationTaskId)
-                               .get();
-    assertThat(analysisStateMachine.getCurrentState().getStatus().name()).isEqualTo(AnalysisStatus.FAILED.name());
-    assertThat(analysisStateMachine.getCurrentState().getRetryCount()).isEqualTo(2);
+    List<AnalysisStateMachine> analysisStateMachines =
+        hPersistence.createQuery(AnalysisStateMachine.class)
+            .filter(AnalysisStateMachineKeys.verificationTaskId, verificationTaskId)
+            .asList();
+    assertThat(analysisStateMachines).hasSize(2);
+    assertThat(analysisStateMachines.stream()
+                   .filter(analysisStateMachine -> analysisStateMachine.getStatus().equals(AnalysisStatus.IGNORED))
+                   .findAny()
+                   .get()
+                   .getCurrentState()
+                   .getRetryCount())
+        .isEqualTo(2);
+    assertThat(analysisStateMachines.stream().filter(
+                   analysisStateMachine -> analysisStateMachine.getStatus().equals(AnalysisStatus.RUNNING)))
+        .isNotEmpty();
   }
 
   private void updateLearningEngineTask() {

@@ -25,6 +25,8 @@ import io.harness.cvng.core.entities.VerificationTask.TaskType;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.ExecutionLogService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
+import io.harness.cvng.metrics.CVNGMetricsUtils;
+import io.harness.cvng.metrics.services.impl.MetricContextBuilder;
 import io.harness.cvng.models.VerificationType;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
@@ -47,6 +49,8 @@ import io.harness.cvng.statemachine.services.api.AnalysisStateMachineService;
 import io.harness.cvng.verificationjob.entities.HealthVerificationJob;
 import io.harness.cvng.verificationjob.entities.VerificationJobInstance;
 import io.harness.cvng.verificationjob.services.api.VerificationJobInstanceService;
+import io.harness.metrics.AutoMetricContext;
+import io.harness.metrics.service.api.MetricService;
 import io.harness.persistence.HPersistence;
 
 import com.google.common.base.Preconditions;
@@ -71,6 +75,8 @@ public class AnalysisStateMachineServiceImpl implements AnalysisStateMachineServ
   @Inject private Clock clock;
   @Inject private ServiceLevelIndicatorService serviceLevelIndicatorService;
   @Inject private ExecutionLogService executionLogService;
+  @Inject private MetricService metricService;
+  @Inject private MetricContextBuilder metricContextBuilder;
 
   @Override
   public void initiateStateMachine(String verificationTaskId, AnalysisStateMachine stateMachine) {
@@ -216,10 +222,14 @@ public class AnalysisStateMachineServiceImpl implements AnalysisStateMachineServ
       analysisStateMachine.setStatus(AnalysisStatus.SUCCESS);
       nextStateExecutor.handleFinalStatuses(nextState);
     } else if (AnalysisStatus.getFinalStates().contains(nextState.getStatus())) {
-      // The current state has closed down as either FAILED or TIMEOUT
-      analysisStateMachine.setNextAttemptTime(Instant.now().plus(30, ChronoUnit.MINUTES).toEpochMilli());
+      analysisStateMachine.setNextAttemptTime(
+          nextStateExecutor.getNextValidAfter(clock.instant(), nextState.getRetryCount()).toEpochMilli());
       analysisStateMachine.setStatus(nextState.getStatus());
       nextStateExecutor.handleFinalStatuses(nextState);
+      try (AutoMetricContext ignore =
+               metricContextBuilder.getContext(analysisStateMachine, AnalysisStateMachine.class)) {
+        metricService.incCounter(CVNGMetricsUtils.ANALYSIS_STATE_MACHINE_RETRY_COUNT);
+      }
     }
     hPersistence.save(analysisStateMachine);
     executionLogService.getLogger(analysisStateMachine)

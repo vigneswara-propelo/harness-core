@@ -38,7 +38,7 @@ public enum AnalysisStatus {
   }
 
   public static List<AnalysisStatus> getFinalStates() {
-    return Arrays.asList(COMPLETED, FAILED, TIMEOUT);
+    return Arrays.asList(COMPLETED, FAILED, TIMEOUT, IGNORED);
   }
   public static List<AnalysisStatus> getFailedStatuses() {
     return Arrays.asList(FAILED, TIMEOUT);
