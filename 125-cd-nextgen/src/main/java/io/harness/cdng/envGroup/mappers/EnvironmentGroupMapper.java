@@ -22,6 +22,7 @@ import io.harness.data.structure.CollectionUtils;
 import io.harness.encryption.ScopeHelper;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.EntityDetail;
+import io.harness.ng.core.envGroup.dto.EnvironmentGroupDeleteResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponseDTO;
 import io.harness.pms.yaml.YamlUtils;
@@ -54,6 +55,16 @@ public class EnvironmentGroupMapper {
         .environment(writeDTO(envGroup))
         .createdAt(envGroup.getCreatedAt())
         .lastModifiedAt(envGroup.getLastModifiedAt())
+        .build();
+  }
+
+  public EnvironmentGroupDeleteResponse toDeleteResponseWrapper(EnvironmentGroupEntity envGroup) {
+    return EnvironmentGroupDeleteResponse.builder()
+        .accountId(envGroup.getAccountId())
+        .orgIdentifier(envGroup.getOrgIdentifier())
+        .projectIdentifier(envGroup.getProjectIdentifier())
+        .identifier(envGroup.getIdentifier())
+        .deleted(envGroup.getDeleted())
         .build();
   }
 

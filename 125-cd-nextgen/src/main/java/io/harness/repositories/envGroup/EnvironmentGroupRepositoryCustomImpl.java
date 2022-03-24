@@ -13,6 +13,7 @@ import static java.lang.String.format;
 
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.cdng.events.EnvironmentGroupCreateEvent;
+import io.harness.cdng.events.EnvironmentGroupDeleteEvent;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.git.model.ChangeType;
@@ -111,6 +112,28 @@ public class EnvironmentGroupRepositoryCustomImpl implements EnvironmentGroupRep
         ()
             -> gitAwarePersistence.count(
                 criteria, projectIdentifier, orgIdentifier, accountId, EnvironmentGroupEntity.class));
+  }
+
+  @Override
+  public EnvironmentGroupEntity deleteEnvGroup(EnvironmentGroupEntity entityToDelete) {
+    Supplier<OutboxEvent> functor = null;
+    // If git sync is disabled, then outbox the event
+    boolean gitSyncEnabled = gitSyncSdkService.isGitSyncEnabled(entityToDelete.getAccountIdentifier(),
+        entityToDelete.getOrgIdentifier(), entityToDelete.getProjectIdentifier());
+
+    // if git is disabled, then only outbox the event
+    if (!gitSyncEnabled) {
+      functor = ()
+          -> outboxService.save(EnvironmentGroupDeleteEvent.builder()
+                                    .accountIdentifier(entityToDelete.getAccountIdentifier())
+                                    .orgIdentifier(entityToDelete.getOrgIdentifier())
+                                    .projectIdentifier(entityToDelete.getProjectIdentifier())
+                                    .environmentGroupEntity(entityToDelete)
+                                    .build());
+    }
+
+    return gitAwarePersistence.save(
+        entityToDelete, entityToDelete.getYaml(), ChangeType.DELETE, EnvironmentGroupEntity.class, functor);
   }
 
   @VisibleForTesting

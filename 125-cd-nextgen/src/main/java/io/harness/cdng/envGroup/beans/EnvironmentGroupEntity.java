@@ -77,7 +77,7 @@ public class EnvironmentGroupEntity implements PersistentEntity, GitSyncableEnti
   @Wither @CreatedDate Long createdAt;
   @Wither @LastModifiedDate Long lastModifiedAt;
   @Wither @Version Long version;
-  @Builder.Default Boolean deleted = Boolean.FALSE;
+  @Wither @Builder.Default Boolean deleted = Boolean.FALSE;
 
   // Linked Environment Identifiers
   private List<String> envIdentifiers;

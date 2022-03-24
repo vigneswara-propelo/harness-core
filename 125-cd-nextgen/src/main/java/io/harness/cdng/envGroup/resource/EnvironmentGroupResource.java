@@ -12,6 +12,10 @@ import static io.harness.ng.core.utils.NGUtils.validate;
 import static io.harness.utils.PageUtils.getNGPageResponse;
 import static io.harness.utils.PageUtils.getPageRequest;
 
+import static java.lang.Long.parseLong;
+import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+
 import io.harness.NGCommonEntityConstants;
 import io.harness.NGResourceFilterConstants;
 import io.harness.accesscontrol.AccountIdentifier;
@@ -25,12 +29,14 @@ import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKeys;
 import io.harness.cdng.envGroup.mappers.EnvironmentGroupMapper;
 import io.harness.cdng.envGroup.services.EnvironmentGroupService;
+import io.harness.gitsync.interceptor.GitEntityDeleteInfoDTO;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.ng.core.envGroup.dto.EnvironmentGroupDeleteResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
 import io.harness.ng.core.utils.CoreCriteriaUtils;
 import io.harness.security.annotations.NextGenManagerAuth;
@@ -50,8 +56,10 @@ import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -59,6 +67,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.core.query.Criteria;
 
@@ -96,6 +105,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
               schema = @Schema(implementation = ErrorDTO.class))
     })
 @OwnedBy(HarnessTeam.PIPELINE)
+@Slf4j
 public class EnvironmentGroupResource {
   private final EnvironmentGroupService environmentGroupService;
   public static final String ENVIRONMENT_GROUP_PARAM_MESSAGE = "Environment Group Identifier for the entity";
@@ -110,13 +120,13 @@ public class EnvironmentGroupResource {
         ApiResponse(responseCode = "default", description = "The saved Environment Group")
       })
   public ResponseDTO<EnvironmentGroupResponse>
-  get(@Parameter(description = ENVIRONMENT_GROUP_PARAM_MESSAGE) @PathParam(
+  get(@Parameter(description = ENVIRONMENT_GROUP_PARAM_MESSAGE) @NotNull @PathParam(
           NGCommonEntityConstants.ENVIRONMENT_GROUP_KEY) String envGroupId,
       @Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
       @Parameter(description = "Specify whether Environment is deleted or not") @QueryParam(
           NGCommonEntityConstants.DELETED_KEY) @DefaultValue("false") boolean deleted,
@@ -171,9 +181,9 @@ public class EnvironmentGroupResource {
   public ResponseDTO<PageResponse<EnvironmentGroupResponse>>
   listEnvironmentGroup(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
                            NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ResourceIdentifier String projectIdentifier,
       @Parameter(description = "The word to be searched and included in the list response") @QueryParam(
           NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm,
@@ -189,5 +199,32 @@ public class EnvironmentGroupResource {
     Page<EnvironmentGroupEntity> envGroupEntities = environmentGroupService.list(
         criteria, getPageRequest(pageRequest), projectIdentifier, orgIdentifier, accountId);
     return ResponseDTO.newResponse(getNGPageResponse(envGroupEntities.map(EnvironmentGroupMapper::toResponseWrapper)));
+  }
+
+  @DELETE
+  @Path("{envGroupIdentifier}")
+  @ApiOperation(value = "Delete en Environment Group by Identifier", nickname = "deleteEnvironmentGroup")
+  @Operation(operationId = "deleteEnvironmentGroup", summary = "Delete en Environment Group by Identifier",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Returns true if the Environment Group is deleted")
+      })
+  public ResponseDTO<EnvironmentGroupDeleteResponse>
+  delete(@HeaderParam(IF_MATCH) String ifMatch,
+      @Parameter(description = ENVIRONMENT_GROUP_PARAM_MESSAGE) @PathParam(
+          NGCommonEntityConstants.ENVIRONMENT_GROUP_KEY) String envGroupId,
+      @Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
+          NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @NotNull @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @NotNull @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
+      @BeanParam GitEntityDeleteInfoDTO entityDeleteInfo) {
+    // TODO: set up usages of env group as well as env linked with it. RBAC
+    log.info(String.format("Delete Environment group Api %s", envGroupId));
+    EnvironmentGroupEntity deletedEntity = environmentGroupService.delete(
+        accountId, orgIdentifier, projectIdentifier, envGroupId, isNumeric(ifMatch) ? parseLong(ifMatch) : null);
+    return ResponseDTO.newResponse(EnvironmentGroupMapper.toDeleteResponseWrapper(deletedEntity));
   }
 }
