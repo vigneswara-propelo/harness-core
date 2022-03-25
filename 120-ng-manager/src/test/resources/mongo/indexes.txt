@@ -745,6 +745,7 @@ services {"name": "yaml", "unique": true} {"appId": 1, "name": 1}
 servicesNG {"name": "index_accountId_orgId_projectId_createdAt_deleted_deletedAt", "background": true} {"accountId": 1, "orgIdentifier": 1, "projectIdentifier": 1, "createdAt": 1, "deleted": 1, "deletedAt": 1}
 servicesNG {"name": "unique_accountId_organizationIdentifier_projectIdentifier_serviceIdentifier", "unique": true} {"accountId": 1, "orgIdentifier": 1, "projectIdentifier": 1, "identifier": 1}
 settingAttributes {"name": "accountIdAppIdCategoryCreatedAt", "background": true} {"accountId": 1, "appId": 1, "category": 1, "createdAt": -1}
+settingAttributes {"name": "accountIdAppIdCategoryNameIdx", "background": true, "collation": {"locale": "en", "strength": 1}} {"accountId": 1, "appId": 1, "category": 1, "name": 1}
 settingAttributes {"name": "acctCatTypeIdx", "background": true} {"accountId": 1, "category": 1, "value.type": 1}
 settingAttributes {"name": "acctValTypeIdx", "background": true} {"accountId": 1, "value.type": 1}
 settingAttributes {"name": "appId_1", "background": true} {"appId": 1}
