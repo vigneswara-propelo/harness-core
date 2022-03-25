@@ -295,6 +295,20 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     return Optional.ofNullable(ResourceGroupMapper.toResponseWrapper(updatedResourceGroup));
   }
 
+  @Override
+  public Optional<ResourceGroupResponse> upsert(ResourceGroupDTO resourceGroupDTO, boolean harnessManaged) {
+    ManagedFilter managedFilter = harnessManaged ? ManagedFilter.ONLY_MANAGED : ManagedFilter.ONLY_CUSTOM;
+    Optional<ResourceGroup> resourceGroupOpt =
+        getResourceGroup(Scope.of(resourceGroupDTO.getAccountIdentifier(), resourceGroupDTO.getOrgIdentifier(),
+                             resourceGroupDTO.getProjectIdentifier()),
+            resourceGroupDTO.getIdentifier(), managedFilter);
+    if (!resourceGroupOpt.isPresent()) {
+      return Optional.ofNullable(create(resourceGroupDTO, harnessManaged));
+    } else {
+      return Optional.ofNullable(update(resourceGroupDTO, true, harnessManaged).orElse(null));
+    }
+  }
+
   private boolean areScopeLevelsUpdated(ResourceGroup currentResourceGroup, ResourceGroup resourceGroupUpdate) {
     if (isEmpty(currentResourceGroup.getAllowedScopeLevels())) {
       return false;

@@ -38,6 +38,8 @@ public interface ResourceGroupService {
   Optional<ResourceGroupResponse> update(
       ResourceGroupDTO resourceGroupDTO, boolean sanitizeResourceSelectors, boolean harnessManaged);
 
+  Optional<ResourceGroupResponse> upsert(ResourceGroupDTO resourceGroupDTO, boolean harnessManaged);
+
   boolean delete(Scope scope, String identifier);
 
   void deleteManaged(@NotEmpty String identifier);

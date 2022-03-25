@@ -85,7 +85,7 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
       ResourceGroup savedResourceGroup = resourceGroupV2Repository.save(resourceGroup);
       io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO resourceGroupV1DTO =
           ResourceGroupMapper.toV1DTO(savedResourceGroup, savedResourceGroup.getHarnessManaged());
-      resourceGroupV1Service.create(resourceGroupV1DTO, resourceGroup.getHarnessManaged());
+      resourceGroupV1Service.upsert(resourceGroupV1DTO, resourceGroup.getHarnessManaged());
       outboxService.save(new ResourceGroupCreateEvent(savedResourceGroup.getAccountIdentifier(), resourceGroupV1DTO,
           ResourceGroupMapper.toDTO(savedResourceGroup)));
       return savedResourceGroup;
@@ -318,8 +318,7 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
             io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO resourceGroupV1DTO =
                 ResourceGroupMapper.toV1DTO(savedResourceGroup, savedResourceGroup.getHarnessManaged());
             io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse savedResourceGroupV1 =
-                resourceGroupV1Service.update(resourceGroupV1DTO, true, savedResourceGroup.getHarnessManaged())
-                    .orElse(null);
+                resourceGroupV1Service.upsert(resourceGroupV1DTO, savedResourceGroup.getHarnessManaged()).orElse(null);
             if (savedResourceGroupV1 != null) {
               ResourceGroupMapper.setScopeAndResourceFilter(
                   io.harness.resourcegroup.framework.v1.remote.mapper.ResourceGroupMapper.fromDTO(
