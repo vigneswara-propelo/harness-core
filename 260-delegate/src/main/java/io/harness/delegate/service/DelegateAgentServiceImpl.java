@@ -652,7 +652,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       log.info("Manager Authority:{}, Manager Target:{}", delegateConfiguration.getManagerAuthority(),
           delegateConfiguration.getManagerTarget());
 
-      if (!isServer || !delegateNg || isNotBlank(delegateProfile)) {
+      if (!isImmutableDelegate || !delegateNg || isNotBlank(delegateProfile)) {
         startProfileCheck();
       }
       if (delegateConfiguration.isClientToolsDownloadDisabled()) {
