@@ -7,6 +7,7 @@
 
 package io.harness.cvng.analysis.services.impl;
 
+import static io.harness.cvng.CVConstants.BULK_OPERATION_THRESHOLD;
 import static io.harness.cvng.CVConstants.SERVICE_BASE_URL;
 import static io.harness.cvng.analysis.CVAnalysisConstants.CUMULATIVE_SUMS_URL;
 import static io.harness.cvng.analysis.CVAnalysisConstants.LOG_METRIC_TEMPLATE_FILE;
@@ -25,6 +26,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
+import io.harness.cvng.CVConstants;
 import io.harness.cvng.analysis.beans.Risk;
 import io.harness.cvng.analysis.beans.ServiceGuardTimeSeriesAnalysisDTO;
 import io.harness.cvng.analysis.beans.ServiceGuardTxnMetricAnalysisDataDTO;
@@ -65,6 +67,9 @@ import io.harness.serializer.YamlUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BulkWriteOperation;
+import com.mongodb.DBCollection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -310,6 +315,9 @@ public class TrendAnalysisServiceImpl implements TrendAnalysisService {
     Map<Long, LogAnalysisCluster> logAnalysisClusterMap =
         logAnalysisClusters.stream().collect(Collectors.toMap(LogAnalysisCluster::getLabel, cluster -> cluster));
 
+    final DBCollection collection = hPersistence.getCollection(LogAnalysisCluster.class);
+    BulkWriteOperation bulkWriteOperation = collection.initializeUnorderedBulkOperation();
+    int numberOfBulkOperations = 0;
     for (Map.Entry<String, Map<String, ServiceGuardTxnMetricAnalysisDataDTO>> txnMetricAnalysis :
         analysis.getTxnMetricAnalysisData().entrySet()) {
       String txnName = txnMetricAnalysis.getKey();
@@ -338,9 +346,23 @@ public class TrendAnalysisServiceImpl implements TrendAnalysisService {
           }
           index--;
         }
+        bulkWriteOperation
+            .find(hPersistence.createQuery(LogAnalysisCluster.class)
+                      .filter(LogAnalysisCluster.UUID_KEY, cluster.getUuid())
+                      .getQueryObject())
+            .updateOne(new BasicDBObject(CVConstants.SET_KEY,
+                new BasicDBObject(LogAnalysisClusterKeys.frequencyTrend, cluster.getFrequencyTrend())));
+        numberOfBulkOperations++;
+        if (numberOfBulkOperations > BULK_OPERATION_THRESHOLD) {
+          bulkWriteOperation.execute();
+          numberOfBulkOperations = 0;
+          bulkWriteOperation = collection.initializeUnorderedBulkOperation();
+        }
       }
     }
-    hPersistence.save(new ArrayList<>(logAnalysisClusterMap.values()));
+    if (numberOfBulkOperations > 0) {
+      bulkWriteOperation.execute();
+    }
   }
 
   private TimeSeriesRiskSummary buildRiskSummary(
