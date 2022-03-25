@@ -552,10 +552,11 @@ public class CanaryWorkflowExecutionAdvisor implements ExecutionEventAdvisor {
     return false;
   }
 
-  private ExecutionEventAdvice computeExecutionEventAdvice(CanaryOrchestrationWorkflow orchestrationWorkflow,
+  ExecutionEventAdvice computeExecutionEventAdvice(CanaryOrchestrationWorkflow orchestrationWorkflow,
       FailureStrategy failureStrategy, ExecutionEvent executionEvent, PhaseSubWorkflow phaseSubWorkflow,
       StateExecutionInstance stateExecutionInstance) {
-    if (workflowExecutionService.checkIfOnDemand(
+    if (failureStrategy == null
+        && workflowExecutionService.checkIfOnDemand(
             stateExecutionInstance.getAppId(), stateExecutionInstance.getExecutionUuid())) {
       if (phaseSubWorkflow == null) {
         return null;
