@@ -414,7 +414,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   private final boolean multiVersion = DeployMode.KUBERNETES.name().equals(System.getenv().get(DeployMode.DEPLOY_MODE))
       || TRUE.toString().equals(System.getenv().get("MULTI_VERSION"));
-  private boolean isServer;
+  private boolean isImmutableDelegate;
 
   private long maxRSS;
   private final AtomicBoolean rejectRequest = new AtomicBoolean(false);
@@ -451,8 +451,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void run(final boolean watched, final boolean isServer) {
-    this.isServer = isServer;
+  public void run(final boolean watched, final boolean isImmutableDelegate) {
+    this.isImmutableDelegate = isImmutableDelegate;
     try {
       accountId = delegateConfiguration.getAccountId();
       if (perpetualTaskWorker != null) {
@@ -638,7 +638,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         }
       }
 
-      startChroniqleQueueMonitor();
+      if (this.isImmutableDelegate) {
+        startChroniqleQueueMonitor();
+      }
 
       startMonitoringWatcher();
 
@@ -728,7 +730,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         }
       }
 
-      if (!this.isServer) {
+      if (!this.isImmutableDelegate) {
         synchronized (waiter) {
           while (waiter.get()) {
             waiter.wait();
@@ -2104,7 +2106,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     timeoutEnforcement.submit(() -> enforceDelegateTaskTimeout(delegateTaskPackage.getDelegateTaskId(), taskData));
 
     // Start task execution in same thread and measure duration.
-    if (isServer) {
+    if (isImmutableDelegate) {
       metricRegistry.recordGaugeDuration(
           TASK_EXECUTION_TIME, new String[] {DELEGATE_NAME, taskData.getTaskType()}, delegateRunnableTask);
     } else {
