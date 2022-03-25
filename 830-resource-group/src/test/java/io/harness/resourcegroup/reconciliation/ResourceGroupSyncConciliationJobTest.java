@@ -36,7 +36,7 @@ import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.ResourceGroupTestBase;
 import io.harness.resourcegroup.framework.v1.remote.mapper.ResourceGroupMapper;
 import io.harness.resourcegroup.framework.v1.service.Resource;
-import io.harness.resourcegroup.framework.v1.service.ResourceGroupService;
+import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.model.StaticResourceSelector;
 import io.harness.resourcegroup.v1.model.ResourceGroup;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
@@ -276,19 +276,28 @@ public class ResourceGroupSyncConciliationJobTest extends ResourceGroupTestBase 
         getResourceGroupsWithResourceFilter(accountIdentifier, null, null, secretResourceType, identifier);
     PageRequest pageRequest = PageRequest.builder().pageIndex(0).pageSize(20).build();
     PageRequest secondPageRequest = PageRequest.builder().pageIndex(1).pageSize(20).build();
-    List<ResourceGroupResponse> resourceGroups =
-        getResourceGroupsWithResource(accountIdentifier, null, null, secretResourceType, identifier, 5);
+    List<io.harness.resourcegroupclient.remote.v2.ResourceGroupResponse> resourceGroups =
+        getResourceGroupsWithResource(accountIdentifier, null, null, secretResourceType, identifier, 5)
+            .stream()
+            .map(io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper::toV2Response)
+            .collect(Collectors.toList());
     when(resourceGroupServiceMock.list(resourceGroupFilterDTO, pageRequest))
         .thenReturn(PageTestUtils.getPage(resourceGroups, resourceGroups.size()));
     when(resourceGroupServiceMock.list(resourceGroupFilterDTO, secondPageRequest))
         .thenReturn(PageTestUtils.getPage(emptyList(), 0));
-    resourceGroups.forEach(resourceGroupResponse -> {
+    resourceGroups.forEach(resourceGroupV2Response -> {
+      ResourceGroupResponse resourceGroupResponse =
+          io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper.toV1Response(resourceGroupV2Response);
       ResourceGroupDTO resourceGroupDTO =
           (ResourceGroupDTO) HObjectMapper.clone(resourceGroupResponse.getResourceGroup());
       resourceGroupDTO.setResourceSelectors(singletonList(
           StaticResourceSelector.builder().resourceType(secretResourceType).identifiers(emptyList()).build()));
       resourceGroupDTO.setAllowedScopeLevels(emptySet());
-      when(resourceGroupServiceMock.update(resourceGroupDTO, true, false)).thenReturn(Optional.empty());
+      when(resourceGroupServiceMock.update(
+               io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper.fromV1DTO(
+                   resourceGroupDTO, false),
+               false))
+          .thenReturn(Optional.empty());
     });
     doNothing().when(redisConsumer).acknowledge(consumerMessageId);
 
@@ -296,13 +305,18 @@ public class ResourceGroupSyncConciliationJobTest extends ResourceGroupTestBase 
 
     verify(redisConsumer, times(1)).read(any());
     verify(resourceGroupServiceMock, times(2)).list(any(), any());
-    resourceGroups.forEach(resourceGroupResponse -> {
+    resourceGroups.forEach(resourceGroupV2Response -> {
+      ResourceGroupResponse resourceGroupResponse =
+          io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper.toV1Response(resourceGroupV2Response);
       ResourceGroupDTO resourceGroupDTO =
           (ResourceGroupDTO) HObjectMapper.clone(resourceGroupResponse.getResourceGroup());
       resourceGroupDTO.setResourceSelectors(singletonList(
           StaticResourceSelector.builder().resourceType(secretResourceType).identifiers(emptyList()).build()));
       resourceGroupDTO.setAllowedScopeLevels(emptySet());
-      verify(resourceGroupServiceMock, times(1)).update(resourceGroupDTO, true, false);
+      verify(resourceGroupServiceMock, times(1))
+          .update(io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper.fromV1DTO(
+                      resourceGroupDTO, false),
+              false);
     });
     verify(redisConsumer, times(1)).acknowledge(any());
   }

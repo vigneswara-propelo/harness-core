@@ -11,8 +11,6 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER_SRE;
-import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
-import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_POLICY;
 import static io.harness.utils.PageUtils.getPageRequest;
 
 import static java.lang.Boolean.TRUE;
@@ -25,10 +23,6 @@ import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.core.common.beans.NGTag.NGTagKeys;
-import io.harness.outbox.api.OutboxService;
-import io.harness.resourcegroup.framework.v1.events.ResourceGroupCreateEvent;
-import io.harness.resourcegroup.framework.v1.events.ResourceGroupDeleteEvent;
-import io.harness.resourcegroup.framework.v1.events.ResourceGroupUpdateEvent;
 import io.harness.resourcegroup.framework.v1.remote.mapper.ResourceGroupMapper;
 import io.harness.resourcegroup.framework.v1.repositories.spring.ResourceGroupRepository;
 import io.harness.resourcegroup.framework.v1.service.ResourceGroupService;
@@ -42,8 +36,6 @@ import io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import io.serializer.HObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,12 +43,10 @@ import javax.validation.executable.ValidateOnExecution;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import net.jodah.failsafe.Failsafe;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.transaction.support.TransactionTemplate;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
@@ -65,17 +55,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class ResourceGroupServiceImpl implements ResourceGroupService {
   ResourceGroupValidatorServiceImpl resourceGroupValidatorService;
   ResourceGroupRepository resourceGroupRepository;
-  OutboxService outboxService;
-  TransactionTemplate transactionTemplate;
 
   @Inject
   public ResourceGroupServiceImpl(ResourceGroupValidatorServiceImpl resourceGroupValidatorService,
-      ResourceGroupRepository resourceGroupRepository, OutboxService outboxService,
-      @Named(OUTBOX_TRANSACTION_TEMPLATE) TransactionTemplate transactionTemplate) {
+      ResourceGroupRepository resourceGroupRepository) {
     this.resourceGroupValidatorService = resourceGroupValidatorService;
     this.resourceGroupRepository = resourceGroupRepository;
-    this.outboxService = outboxService;
-    this.transactionTemplate = transactionTemplate;
   }
 
   @Override
@@ -101,12 +86,7 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     if (sanitized && resourceGroup.getResourceSelectors().isEmpty()) {
       throw new InvalidRequestException("All selected resources are invalid");
     }
-    return Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-      ResourceGroup savedResourceGroup = resourceGroupRepository.save(resourceGroup);
-      outboxService.save(new ResourceGroupCreateEvent(
-          savedResourceGroup.getAccountIdentifier(), ResourceGroupMapper.toDTO(savedResourceGroup)));
-      return savedResourceGroup;
-    }));
+    return resourceGroupRepository.save(resourceGroup);
   }
 
   @Override
@@ -205,13 +185,8 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     if (Boolean.TRUE.equals(resourceGroup.getHarnessManaged())) {
       throw new InvalidRequestException("Managed resource group cannot be deleted");
     }
-
-    return Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-      resourceGroupRepository.delete(resourceGroup);
-      outboxService.save(
-          new ResourceGroupDeleteEvent(scope.getAccountIdentifier(), ResourceGroupMapper.toDTO(resourceGroup)));
-      return true;
-    }));
+    resourceGroupRepository.delete(resourceGroup);
+    return true;
   }
 
   @Override
@@ -221,12 +196,7 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
       return;
     }
     ResourceGroup resourceGroup = resourceGroupOpt.get();
-
-    Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-      resourceGroupRepository.delete(resourceGroup);
-      outboxService.save(new ResourceGroupDeleteEvent(null, ResourceGroupMapper.toDTO(resourceGroup)));
-      return true;
-    }));
+    resourceGroupRepository.delete(resourceGroup);
   }
 
   @Override
@@ -234,24 +204,16 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     if (scope == null || isEmpty(scope.getAccountIdentifier())) {
       throw new InvalidRequestException("Invalid scope. Cannot proceed with deletion.");
     }
-    Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-      List<ResourceGroup> deletedResourceGroups =
-          resourceGroupRepository.deleteByAccountIdentifierAndOrgIdentifierAndProjectIdentifier(
-              scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier());
-      if (isNotEmpty(deletedResourceGroups)) {
-        deletedResourceGroups.forEach(rg
-            -> outboxService.save(
-                new ResourceGroupDeleteEvent(rg.getAccountIdentifier(), ResourceGroupMapper.toDTO(rg))));
-      }
-      return true;
-    }));
+    resourceGroupRepository.deleteByAccountIdentifierAndOrgIdentifierAndProjectIdentifier(
+        scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier());
   }
 
   @Override
   @SuppressWarnings("PMD")
   public Optional<ResourceGroupResponse> get(Scope scope, String identifier, ManagedFilter managedFilter) {
     Optional<ResourceGroup> resourceGroupOpt = getResourceGroup(scope, identifier, managedFilter);
-    return Optional.ofNullable(ResourceGroupMapper.toResponseWrapper(resourceGroupOpt.orElse(null)));
+    ResourceGroup resourcegroup = resourceGroupOpt.orElse(null);
+    return Optional.ofNullable(ResourceGroupMapper.toResponseWrapper(resourcegroup));
   }
 
   private Optional<ResourceGroup> getResourceGroup(Scope scope, String identifier, ManagedFilter managedFilter) {
@@ -317,9 +279,6 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
       throw new InvalidRequestException("Can't update managed resource group");
     }
 
-    ResourceGroupDTO oldResourceGroup =
-        (ResourceGroupDTO) HObjectMapper.clone(ResourceGroupMapper.toDTO(savedResourceGroup));
-
     savedResourceGroup.setName(updatedResourceGroup.getName());
     savedResourceGroup.setColor(updatedResourceGroup.getColor());
     savedResourceGroup.setTags(updatedResourceGroup.getTags());
@@ -331,13 +290,8 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     }
     savedResourceGroup.setAllowedScopeLevels(updatedResourceGroup.getAllowedScopeLevels());
 
-    updatedResourceGroup =
-        Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-          ResourceGroup resourceGroup = resourceGroupRepository.save(savedResourceGroup);
-          outboxService.save(new ResourceGroupUpdateEvent(
-              savedResourceGroup.getAccountIdentifier(), ResourceGroupMapper.toDTO(resourceGroup), oldResourceGroup));
-          return resourceGroup;
-        }));
+    updatedResourceGroup = resourceGroupRepository.save(savedResourceGroup);
+
     return Optional.ofNullable(ResourceGroupMapper.toResponseWrapper(updatedResourceGroup));
   }
 

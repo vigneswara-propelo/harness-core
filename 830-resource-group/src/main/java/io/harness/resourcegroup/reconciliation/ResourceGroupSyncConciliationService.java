@@ -13,7 +13,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.eventsframework.EventsFrameworkConstants;
 import io.harness.eventsframework.api.Consumer;
 import io.harness.resourcegroup.framework.v1.service.Resource;
-import io.harness.resourcegroup.framework.v1.service.ResourceGroupService;
+import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;

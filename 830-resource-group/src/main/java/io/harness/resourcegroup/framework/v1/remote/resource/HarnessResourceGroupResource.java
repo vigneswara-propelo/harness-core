@@ -43,7 +43,8 @@ import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.resourcegroup.framework.v1.service.ResourceGroupService;
+import io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper;
+import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.model.DynamicResourceSelector;
 import io.harness.resourcegroup.model.ResourceSelectorByScope;
 import io.harness.resourcegroup.model.StaticResourceSelector;
@@ -135,8 +136,10 @@ public class HarnessResourceGroupResource {
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
     accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
         Resource.of(RESOURCE_GROUP, identifier), VIEW_RESOURCEGROUP_PERMISSION);
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt = resourceGroupService.get(
-        Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier, ManagedFilter.NO_FILTER);
+    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(ResourceGroupMapper.toV1Response(
+        resourceGroupService
+            .get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier, ManagedFilter.NO_FILTER)
+            .orElse(null)));
     return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
   }
 
@@ -160,9 +163,11 @@ public class HarnessResourceGroupResource {
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt =
-        resourceGroupService.get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier,
-            isEmpty(accountIdentifier) ? ManagedFilter.ONLY_MANAGED : ManagedFilter.NO_FILTER);
+    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(ResourceGroupMapper.toV1Response(
+        resourceGroupService
+            .get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier,
+                isEmpty(accountIdentifier) ? ManagedFilter.ONLY_MANAGED : ManagedFilter.NO_FILTER)
+            .orElse(null)));
     return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
   }
 
@@ -187,8 +192,10 @@ public class HarnessResourceGroupResource {
       @BeanParam PageRequest pageRequest) {
     accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
         Resource.of(RESOURCE_GROUP, null), VIEW_RESOURCEGROUP_PERMISSION);
-    return ResponseDTO.newResponse(getNGPageResponse(resourceGroupService.list(
-        Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), pageRequest, searchTerm)));
+    return ResponseDTO.newResponse(getNGPageResponse(
+        resourceGroupService
+            .list(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), pageRequest, searchTerm)
+            .map(ResourceGroupMapper::toV1Response)));
   }
 
   @POST
@@ -209,7 +216,8 @@ public class HarnessResourceGroupResource {
         ResourceScope.of(resourceGroupFilterDTO.getAccountIdentifier(), resourceGroupFilterDTO.getOrgIdentifier(),
             resourceGroupFilterDTO.getProjectIdentifier()),
         Resource.of(RESOURCE_GROUP, null), VIEW_RESOURCEGROUP_PERMISSION);
-    return ResponseDTO.newResponse(getNGPageResponse(resourceGroupService.list(resourceGroupFilterDTO, pageRequest)));
+    return ResponseDTO.newResponse(getNGPageResponse(
+        resourceGroupService.list(resourceGroupFilterDTO, pageRequest).map(ResourceGroupMapper::toV1Response)));
   }
 
   @POST
@@ -235,8 +243,8 @@ public class HarnessResourceGroupResource {
         Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
     verifySupportedResourceSelectorsAreUsed(resourceGroupRequest);
     validateResourceSelectors(resourceGroupRequest);
-    ResourceGroupResponse resourceGroupResponse =
-        resourceGroupService.create(resourceGroupRequest.getResourceGroup(), false);
+    ResourceGroupResponse resourceGroupResponse = ResourceGroupMapper.toV1Response(resourceGroupService.create(
+        ResourceGroupMapper.fromV1DTO(resourceGroupRequest.getResourceGroup(), false), false));
     return ResponseDTO.newResponse(resourceGroupResponse);
   }
 
@@ -265,8 +273,10 @@ public class HarnessResourceGroupResource {
         Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
     verifySupportedResourceSelectorsAreUsed(resourceGroupRequest);
     validateResourceSelectors(resourceGroupRequest);
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt =
-        resourceGroupService.update(resourceGroupRequest.getResourceGroup(), true, false);
+    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(ResourceGroupMapper.toV1Response(
+        resourceGroupService
+            .update(ResourceGroupMapper.fromV1DTO(resourceGroupRequest.getResourceGroup(), false), false)
+            .orElse(null)));
     return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
   }
 

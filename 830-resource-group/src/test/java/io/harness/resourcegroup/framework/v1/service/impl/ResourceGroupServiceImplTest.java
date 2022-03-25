@@ -28,7 +28,6 @@ import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
-import io.harness.outbox.api.OutboxService;
 import io.harness.resourcegroup.ResourceGroupTestBase;
 import io.harness.resourcegroup.framework.v1.remote.mapper.ResourceGroupMapper;
 import io.harness.resourcegroup.framework.v1.repositories.spring.ResourceGroupRepository;
@@ -57,7 +56,6 @@ public class ResourceGroupServiceImplTest extends ResourceGroupTestBase {
   private ResourceGroupValidatorServiceImpl resourceGroupValidatorService;
   @Inject private ResourceGroupRepository resourceGroupRepository;
   private ResourceGroupRepository resourceGroupRepositoryMock;
-  private OutboxService outboxService;
   private TransactionTemplate transactionTemplate;
   private ResourceGroupServiceImpl resourceGroupService;
   private ResourceGroupServiceImpl resourceGroupServiceMockRepo;
@@ -67,12 +65,10 @@ public class ResourceGroupServiceImplTest extends ResourceGroupTestBase {
   public void setup() {
     resourceGroupValidatorService = mock(ResourceGroupValidatorServiceImpl.class);
     resourceGroupRepositoryMock = mock(ResourceGroupRepository.class);
-    outboxService = mock(OutboxService.class);
     transactionTemplate = mock(TransactionTemplate.class);
-    resourceGroupService = spy(new ResourceGroupServiceImpl(
-        resourceGroupValidatorService, resourceGroupRepository, outboxService, transactionTemplate));
-    resourceGroupServiceMockRepo = spy(new ResourceGroupServiceImpl(
-        resourceGroupValidatorService, resourceGroupRepositoryMock, outboxService, transactionTemplate));
+    resourceGroupService = spy(new ResourceGroupServiceImpl(resourceGroupValidatorService, resourceGroupRepository));
+    resourceGroupServiceMockRepo =
+        spy(new ResourceGroupServiceImpl(resourceGroupValidatorService, resourceGroupRepositoryMock));
 
     pageRequest = PageRequest.builder().pageIndex(0).pageSize(50).build();
   }

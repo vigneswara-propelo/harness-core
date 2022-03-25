@@ -33,10 +33,13 @@ import lombok.NoArgsConstructor;
 public class ResourceGroupDeleteEvent implements Event {
   String accountIdentifier;
   ResourceGroupDTO resourceGroup;
+  io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO resourceGroupV2;
 
-  public ResourceGroupDeleteEvent(String accountIdentifier, ResourceGroupDTO resourceGroup) {
+  public ResourceGroupDeleteEvent(String accountIdentifier, ResourceGroupDTO resourceGroup,
+      io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO resourceGroupV2) {
     this.accountIdentifier = accountIdentifier;
     this.resourceGroup = resourceGroup;
+    this.resourceGroupV2 = resourceGroupV2;
   }
 
   @JsonIgnore

@@ -15,7 +15,8 @@ import io.harness.lock.PersistentLocker;
 import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.commons.bootstrap.ConfigurationState;
 import io.harness.resourcegroup.commons.bootstrap.ConfigurationStateRepository;
-import io.harness.resourcegroup.framework.v1.service.ResourceGroupService;
+import io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper;
+import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
 
@@ -110,7 +111,9 @@ public class ResourceGroupsManagementJob {
         resourceGroupService.list(resourceGroupFilterDTO, pageRequest)
             .getContent()
             .stream()
-            .map(resourceGroup -> ResourceGroupConfigMapper.toConfig(resourceGroup.getResourceGroup()))
+            .map(resourceGroup
+                -> ResourceGroupConfigMapper.toConfig(
+                    ResourceGroupMapper.toV1DTO(resourceGroup.getResourceGroup(), resourceGroup.isHarnessManaged())))
             .collect(Collectors.toSet());
     Set<ResourceGroupConfig> addedOrUpdatedResourceGroups =
         Sets.difference(latestResourceGroups, currentResourceGroups);
@@ -131,10 +134,12 @@ public class ResourceGroupsManagementJob {
                                                          .filter(p -> !addedIdentifiers.contains(p.getIdentifier()))
                                                          .collect(Collectors.toSet());
 
-    addedResourceGroups.forEach(
-        resourceGroupConfig -> resourceGroupService.create(ResourceGroupConfigMapper.toDTO(resourceGroupConfig), true));
+    addedResourceGroups.forEach(resourceGroupConfig
+        -> resourceGroupService.create(
+            ResourceGroupMapper.fromV1DTO(ResourceGroupConfigMapper.toDTO(resourceGroupConfig), true), true));
     updatedResourceGroups.forEach(resourceGroupConfig
-        -> resourceGroupService.update(ResourceGroupConfigMapper.toDTO(resourceGroupConfig), true, true));
+        -> resourceGroupService.update(
+            ResourceGroupMapper.fromV1DTO(ResourceGroupConfigMapper.toDTO(resourceGroupConfig), true), true));
     removedIdentifiers.forEach(resourceGroupService::deleteManaged);
 
     ConfigurationState configurationState =

@@ -56,6 +56,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class ResourceGroupServiceImplTest extends ResourceGroupTestBase {
   @Inject private ResourceGroupV2Repository resourceGroupV2Repository;
   private ResourceGroupV2Repository resourceGroupV2RepositoryMock;
+  private io.harness.resourcegroup.framework.v1.service.ResourceGroupService resourceGroupV1ServiceMock;
   private OutboxService outboxService;
   private TransactionTemplate transactionTemplate;
   private ResourceGroupServiceImpl resourceGroupService;
@@ -65,12 +66,13 @@ public class ResourceGroupServiceImplTest extends ResourceGroupTestBase {
   @Before
   public void setup() {
     resourceGroupV2RepositoryMock = mock(ResourceGroupV2Repository.class);
+    resourceGroupV1ServiceMock = mock(io.harness.resourcegroup.framework.v1.service.ResourceGroupService.class);
     outboxService = mock(OutboxService.class);
     transactionTemplate = mock(TransactionTemplate.class);
-    resourceGroupService =
-        spy(new ResourceGroupServiceImpl(resourceGroupV2Repository, outboxService, transactionTemplate));
-    resourceGroupServiceMockRepo =
-        spy(new ResourceGroupServiceImpl(resourceGroupV2RepositoryMock, outboxService, transactionTemplate));
+    resourceGroupService = spy(new ResourceGroupServiceImpl(
+        resourceGroupV1ServiceMock, resourceGroupV2Repository, outboxService, transactionTemplate));
+    resourceGroupServiceMockRepo = spy(new ResourceGroupServiceImpl(
+        resourceGroupV1ServiceMock, resourceGroupV2RepositoryMock, outboxService, transactionTemplate));
 
     pageRequest = PageRequest.builder().pageIndex(0).pageSize(50).build();
   }

@@ -34,12 +34,17 @@ public class ResourceGroupUpdateEvent implements Event {
   String accountIdentifier;
   ResourceGroupDTO newResourceGroup;
   ResourceGroupDTO oldResourceGroup;
+  io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO newResourceGroupV2;
+  io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO oldResourceGroupV2;
 
-  public ResourceGroupUpdateEvent(
-      String accountIdentifier, ResourceGroupDTO newResourceGroup, ResourceGroupDTO oldResourceGroup) {
+  public ResourceGroupUpdateEvent(String accountIdentifier, ResourceGroupDTO newResourceGroup,
+      ResourceGroupDTO oldResourceGroup, io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO newResourceGroupV2,
+      io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO oldResourceGroupV2) {
     this.accountIdentifier = accountIdentifier;
     this.newResourceGroup = newResourceGroup;
     this.oldResourceGroup = oldResourceGroup;
+    this.newResourceGroupV2 = newResourceGroupV2;
+    this.oldResourceGroupV2 = oldResourceGroupV2;
   }
 
   @JsonIgnore

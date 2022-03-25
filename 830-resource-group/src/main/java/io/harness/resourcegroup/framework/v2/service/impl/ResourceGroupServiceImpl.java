@@ -29,9 +29,9 @@ import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.outbox.api.OutboxService;
-import io.harness.resourcegroup.framework.v2.events.ResourceGroupCreateEvent;
-import io.harness.resourcegroup.framework.v2.events.ResourceGroupDeleteEvent;
-import io.harness.resourcegroup.framework.v2.events.ResourceGroupUpdateEvent;
+import io.harness.resourcegroup.framework.v1.events.ResourceGroupCreateEvent;
+import io.harness.resourcegroup.framework.v1.events.ResourceGroupDeleteEvent;
+import io.harness.resourcegroup.framework.v1.events.ResourceGroupUpdateEvent;
 import io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper;
 import io.harness.resourcegroup.framework.v2.repositories.spring.ResourceGroupV2Repository;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
@@ -64,13 +64,17 @@ import org.springframework.transaction.support.TransactionTemplate;
 @OwnedBy(PL)
 @ValidateOnExecution
 public class ResourceGroupServiceImpl implements ResourceGroupService {
+  io.harness.resourcegroup.framework.v1.service.ResourceGroupService resourceGroupV1Service;
   ResourceGroupV2Repository resourceGroupV2Repository;
   OutboxService outboxService;
   TransactionTemplate transactionTemplate;
 
   @Inject
-  public ResourceGroupServiceImpl(ResourceGroupV2Repository resourceGroupV2Repository, OutboxService outboxService,
+  public ResourceGroupServiceImpl(
+      io.harness.resourcegroup.framework.v1.service.ResourceGroupService resourceGroupV1Service,
+      ResourceGroupV2Repository resourceGroupV2Repository, OutboxService outboxService,
       @Named(OUTBOX_TRANSACTION_TEMPLATE) TransactionTemplate transactionTemplate) {
+    this.resourceGroupV1Service = resourceGroupV1Service;
     this.resourceGroupV2Repository = resourceGroupV2Repository;
     this.outboxService = outboxService;
     this.transactionTemplate = transactionTemplate;
@@ -79,10 +83,24 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
   private ResourceGroup createInternal(ResourceGroup resourceGroup) {
     return Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
       ResourceGroup savedResourceGroup = resourceGroupV2Repository.save(resourceGroup);
-      outboxService.save(new ResourceGroupCreateEvent(
-          savedResourceGroup.getAccountIdentifier(), ResourceGroupMapper.toDTO(savedResourceGroup)));
+      io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO resourceGroupV1DTO =
+          ResourceGroupMapper.toV1DTO(savedResourceGroup, savedResourceGroup.getHarnessManaged());
+      resourceGroupV1Service.create(resourceGroupV1DTO, resourceGroup.getHarnessManaged());
+      outboxService.save(new ResourceGroupCreateEvent(savedResourceGroup.getAccountIdentifier(), resourceGroupV1DTO,
+          ResourceGroupMapper.toDTO(savedResourceGroup)));
       return savedResourceGroup;
     }));
+  }
+
+  private ResourceGroup createV2Internal(ResourceGroup resourceGroup) {
+    try {
+      return resourceGroupV2Repository.save(resourceGroup);
+    } catch (DuplicateKeyException ex) {
+      throw new DuplicateFieldException(
+          String.format("A resource group with identifier %s already exists at the specified scope",
+              resourceGroup.getIdentifier()),
+          USER_SRE, ex);
+    }
   }
 
   private ResourceGroup create(ResourceGroup resourceGroup) {
@@ -102,6 +120,23 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     resourceGroup.setHarnessManaged(harnessManaged);
 
     return ResourceGroupMapper.toResponseWrapper(create(resourceGroup));
+  }
+
+  @Override
+  public Optional<ResourceGroupResponse> upsert(ResourceGroup resourceGroup, boolean isInternal) {
+    Optional<ResourceGroup> resourceGroupOpt =
+        getResourceGroup(Scope.of(resourceGroup.getAccountIdentifier(), resourceGroup.getOrgIdentifier(),
+                             resourceGroup.getProjectIdentifier()),
+            resourceGroup.getIdentifier(),
+            isEmpty(resourceGroup.getAccountIdentifier()) ? ManagedFilter.ONLY_MANAGED : ManagedFilter.ONLY_CUSTOM);
+    if (!resourceGroupOpt.isPresent()) {
+      return Optional.ofNullable(
+          ResourceGroupMapper.toResponseWrapper(isInternal ? createV2Internal(resourceGroup) : create(resourceGroup)));
+    } else {
+      return Optional.ofNullable(
+          updateV2(ResourceGroupMapper.toDTO(resourceGroup), resourceGroup.getHarnessManaged(), isInternal)
+              .orElse(null));
+    }
   }
 
   private Criteria getResourceGroupFilterCriteria(ResourceGroupFilterDTO resourceGroupFilterDTO) {
@@ -190,6 +225,7 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     return resourceGroupV2Repository.findAll(criteria, page).map(ResourceGroupMapper::toResponseWrapper);
   }
 
+  @Override
   public Optional<ResourceGroupResponse> get(Scope scope, String identifier, ManagedFilter managedFilter) {
     Optional<ResourceGroup> resourceGroupOpt = getResourceGroup(scope, identifier, managedFilter);
     return Optional.ofNullable(ResourceGroupMapper.toResponseWrapper(resourceGroupOpt.orElse(null)));
@@ -238,6 +274,11 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
 
   @Override
   public Optional<ResourceGroupResponse> update(ResourceGroupDTO resourceGroupDTO, boolean harnessManaged) {
+    return updateV2(resourceGroupDTO, harnessManaged, false);
+  }
+
+  private Optional<ResourceGroupResponse> updateV2(
+      ResourceGroupDTO resourceGroupDTO, boolean harnessManaged, boolean isInternal) {
     ManagedFilter managedFilter = harnessManaged ? ManagedFilter.ONLY_MANAGED : ManagedFilter.ONLY_CUSTOM;
     Optional<ResourceGroup> resourceGroupOpt =
         getResourceGroup(Scope.of(resourceGroupDTO.getAccountIdentifier(), resourceGroupDTO.getOrgIdentifier(),
@@ -267,13 +308,32 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
     }
     savedResourceGroup.setAllowedScopeLevels(updatedResourceGroup.getAllowedScopeLevels());
 
-    updatedResourceGroup =
-        Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-          ResourceGroup resourceGroup = resourceGroupV2Repository.save(savedResourceGroup);
-          outboxService.save(new ResourceGroupUpdateEvent(
-              savedResourceGroup.getAccountIdentifier(), ResourceGroupMapper.toDTO(resourceGroup), oldResourceGroup));
-          return resourceGroup;
-        }));
+    io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO oldResourceGroupV1 =
+        ResourceGroupMapper.toV1DTO(ResourceGroupMapper.fromDTO(oldResourceGroup), harnessManaged);
+    if (isInternal) {
+      updatedResourceGroup = resourceGroupV2Repository.save(savedResourceGroup);
+    } else {
+      updatedResourceGroup =
+          Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
+            io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO resourceGroupV1DTO =
+                ResourceGroupMapper.toV1DTO(savedResourceGroup, savedResourceGroup.getHarnessManaged());
+            io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse savedResourceGroupV1 =
+                resourceGroupV1Service.update(resourceGroupV1DTO, true, savedResourceGroup.getHarnessManaged())
+                    .orElse(null);
+            if (savedResourceGroupV1 != null) {
+              ResourceGroupMapper.setScopeAndResourceFilter(
+                  io.harness.resourcegroup.framework.v1.remote.mapper.ResourceGroupMapper.fromDTO(
+                      savedResourceGroupV1.getResourceGroup()),
+                  savedResourceGroup);
+            }
+            ResourceGroup resourceGroup = resourceGroupV2Repository.save(savedResourceGroup);
+
+            outboxService.save(
+                new ResourceGroupUpdateEvent(savedResourceGroup.getAccountIdentifier(), resourceGroupV1DTO,
+                    oldResourceGroupV1, ResourceGroupMapper.toDTO(savedResourceGroup), oldResourceGroup));
+            return resourceGroup;
+          }));
+    }
     return Optional.ofNullable(ResourceGroupMapper.toResponseWrapper(updatedResourceGroup));
   }
 
@@ -287,7 +347,10 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
 
     Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
       resourceGroupV2Repository.delete(resourceGroup);
-      outboxService.save(new ResourceGroupDeleteEvent(null, ResourceGroupMapper.toDTO(resourceGroup)));
+      resourceGroupV1Service.deleteManaged(resourceGroup.getIdentifier());
+      outboxService.save(new ResourceGroupDeleteEvent(null,
+          ResourceGroupMapper.toV1DTO(resourceGroup, resourceGroup.getHarnessManaged()),
+          ResourceGroupMapper.toDTO(resourceGroup)));
       return true;
     }));
   }
@@ -301,10 +364,11 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
       List<ResourceGroup> deletedResourceGroups =
           resourceGroupV2Repository.deleteByAccountIdentifierAndOrgIdentifierAndProjectIdentifier(
               scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier());
+      resourceGroupV1Service.deleteByScope(scope);
       if (isNotEmpty(deletedResourceGroups)) {
         deletedResourceGroups.forEach(rg
-            -> outboxService.save(
-                new ResourceGroupDeleteEvent(rg.getAccountIdentifier(), ResourceGroupMapper.toDTO(rg))));
+            -> outboxService.save(new ResourceGroupDeleteEvent(rg.getAccountIdentifier(),
+                ResourceGroupMapper.toV1DTO(rg, rg.getHarnessManaged()), ResourceGroupMapper.toDTO(rg))));
       }
       return true;
     }));
@@ -324,8 +388,10 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
 
     return Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
       resourceGroupV2Repository.delete(resourceGroup);
-      outboxService.save(
-          new ResourceGroupDeleteEvent(scope.getAccountIdentifier(), ResourceGroupMapper.toDTO(resourceGroup)));
+      resourceGroupV1Service.delete(scope, identifier);
+      outboxService.save(new ResourceGroupDeleteEvent(scope.getAccountIdentifier(),
+          ResourceGroupMapper.toV1DTO(resourceGroup, resourceGroup.getHarnessManaged()),
+          ResourceGroupMapper.toDTO(resourceGroup)));
       return true;
     }));
   }

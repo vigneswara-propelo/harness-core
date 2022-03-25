@@ -108,7 +108,7 @@ public class ResourceGroupEventHandlerTest extends CategoryTest {
     String identifier = randomAlphabetic(10);
     ResourceGroupDTO resourceGroupDTO = getResourceGroupDTO(accountIdentifier, orgIdentifier, null, identifier);
     ResourceGroupCreateEvent resourceGroupCreateEvent =
-        new ResourceGroupCreateEvent(accountIdentifier, resourceGroupDTO);
+        new ResourceGroupCreateEvent(accountIdentifier, resourceGroupDTO, null);
     String eventData = objectMapper.writeValueAsString(resourceGroupCreateEvent);
     OutboxEvent outboxEvent = OutboxEvent.builder()
                                   .id(randomAlphabetic(10))
@@ -165,7 +165,7 @@ public class ResourceGroupEventHandlerTest extends CategoryTest {
     ResourceGroupDTO oldResourceGroupDTO = getResourceGroupDTO(accountIdentifier, orgIdentifier, null, identifier);
     ResourceGroupDTO newResourceGroupDTO = getResourceGroupDTO(accountIdentifier, orgIdentifier, null, identifier);
     ResourceGroupUpdateEvent resourceGroupUpdateEvent =
-        new ResourceGroupUpdateEvent(accountIdentifier, newResourceGroupDTO, oldResourceGroupDTO);
+        new ResourceGroupUpdateEvent(accountIdentifier, newResourceGroupDTO, oldResourceGroupDTO, null, null);
     String eventData = objectMapper.writeValueAsString(resourceGroupUpdateEvent);
     OutboxEvent outboxEvent = OutboxEvent.builder()
                                   .id(randomAlphabetic(10))
@@ -222,7 +222,7 @@ public class ResourceGroupEventHandlerTest extends CategoryTest {
     String identifier = randomAlphabetic(10);
     ResourceGroupDTO resourceGroupDTO = getResourceGroupDTO(accountIdentifier, orgIdentifier, null, identifier);
     ResourceGroupDeleteEvent resourceGroupDeleteEvent =
-        new ResourceGroupDeleteEvent(accountIdentifier, resourceGroupDTO);
+        new ResourceGroupDeleteEvent(accountIdentifier, resourceGroupDTO, null);
     String eventData = objectMapper.writeValueAsString(resourceGroupDeleteEvent);
     OutboxEvent outboxEvent = OutboxEvent.builder()
                                   .id(randomAlphabetic(10))

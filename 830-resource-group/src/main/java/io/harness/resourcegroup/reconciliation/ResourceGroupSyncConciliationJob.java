@@ -25,8 +25,9 @@ import io.harness.eventsframework.api.EventsFrameworkDownException;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.framework.v1.service.Resource;
-import io.harness.resourcegroup.framework.v1.service.ResourceGroupService;
 import io.harness.resourcegroup.framework.v1.service.ResourceInfo;
+import io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper;
+import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.model.StaticResourceSelector;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
@@ -175,14 +176,19 @@ public class ResourceGroupSyncConciliationJob implements Runnable {
     int counter = 0;
     int maxLimit = 50;
     while (counter < maxLimit) {
-      Page<ResourceGroupResponse> resourceGroupsPage = resourceGroupService.list(
-          getResourceGroupsWithResourceFilter(resource), PageRequest.builder().pageIndex(counter).pageSize(20).build());
+      Page<ResourceGroupResponse> resourceGroupsPage =
+          resourceGroupService
+              .list(getResourceGroupsWithResourceFilter(resource),
+                  PageRequest.builder().pageIndex(counter).pageSize(20).build())
+              .map(ResourceGroupMapper::toV1Response);
       if (!resourceGroupsPage.hasContent()) {
         break;
       }
       for (ResourceGroupResponse resourceGroup : resourceGroupsPage.getContent()) {
         deleteResourceFromResourceGroup(resource, resourceGroup.getResourceGroup());
-        resourceGroupService.update(resourceGroup.getResourceGroup(), true, resourceGroup.isHarnessManaged());
+        resourceGroupService.update(
+            ResourceGroupMapper.fromV1DTO(resourceGroup.getResourceGroup(), resourceGroup.isHarnessManaged()),
+            resourceGroup.isHarnessManaged());
       }
       counter++;
     }
