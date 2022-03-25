@@ -79,7 +79,7 @@ public class CVNGMetricsPublisher implements MetricsPublisher, MetricDefinitionI
             .build());
     TASKS_INFO.put(AnalysisStateMachine.class,
         QueryParams.builder()
-            .nonFinalStatuses(AnalysisStatus.getNonFinalStatuses())
+            .nonFinalStatuses(AnalysisStatus.getCountMetricsNonFinalStatuses())
             .statusField(AnalysisStateMachineKeys.status)
             .name("analysis_state_machine")
             .build());

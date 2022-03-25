@@ -43,7 +43,7 @@ public enum AnalysisStatus {
   public static List<AnalysisStatus> getFailedStatuses() {
     return Arrays.asList(FAILED, TIMEOUT);
   }
-  public static List<AnalysisStatus> getNonFinalStatuses() {
-    return Arrays.asList(CREATED, RUNNING, RETRY, TRANSITION);
+  public static List<AnalysisStatus> getCountMetricsNonFinalStatuses() {
+    return Arrays.asList(CREATED, RUNNING, TRANSITION);
   }
 }
