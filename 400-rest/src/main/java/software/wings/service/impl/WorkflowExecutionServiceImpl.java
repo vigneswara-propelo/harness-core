@@ -3624,6 +3624,10 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     addParameterizedArtifactVariableToContext(executionArgs.getArtifactVariables(), workflowStandardParams);
 
     LinkedList<ContextElement> contextElements = stateExecutionInstance.getContextElements();
+    Map<String, Object> wfVariableObj = Collections.<String, Object>unmodifiableMap(wfVariables);
+    if (workflowStandardParams.getWorkflowElement() != null) {
+      workflowStandardParams.getWorkflowElement().setVariables(wfVariableObj);
+    }
     contextElements.push(workflowStandardParams);
 
     UpdateOperations<StateExecutionInstance> ops =
