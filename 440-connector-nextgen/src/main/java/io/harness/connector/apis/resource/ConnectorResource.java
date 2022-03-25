@@ -452,7 +452,11 @@ public class ConnectorResource {
   public ResponseDTO<ConnectorCatalogueResponseDTO>
   getConnectorCatalogue(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotBlank @QueryParam(
       NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier) {
-    return ResponseDTO.newResponse(connectorService.getConnectorCatalogue());
+    ConnectorCatalogueResponseDTO connectorCatalogue = connectorService.getConnectorCatalogue();
+    // temporary solution for hiding Azure connector from catalogue list
+    connectorCatalogue.getCatalogue().forEach(connectorCatalogueItem
+        -> connectorCatalogueItem.getConnectors().removeIf(connectorType -> connectorType == ConnectorType.AZURE));
+    return ResponseDTO.newResponse(connectorCatalogue);
   }
 
   @GET
