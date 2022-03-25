@@ -382,7 +382,7 @@ public class CfCliClientImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void test_doLogin() throws Exception {
     doNothing().when(logCallback).saveExecutionLog(anyString());
-    doReturn(0).when(cfCliClient).executeCommand(anyString(), any(), any());
+    doReturn(0).when(cfCliClient).executeCommand(anyString(), any(), any(), any());
     Map<String, String> env = new HashMap<>();
     env.put("CF_HOME", "CF_HOME");
     doReturn(env).when(cfCliClient).getEnvironmentMapForCfExecutor(anyString(), anyString());
@@ -396,7 +396,7 @@ public class CfCliClientImplTest extends CategoryTest {
                                  .spaceName("space with name")
                                  .build();
     cfCliClient.doLogin(config, logCallback, "conf");
-    verify(cfCliClient, times(3)).executeCommand(anyString(), anyMap(), any());
+    verify(cfCliClient, times(3)).executeCommand(anyString(), anyMap(), any(), any());
   }
 
   @Test
@@ -468,11 +468,11 @@ public class CfCliClientImplTest extends CategoryTest {
                             .path("path")
                             .build();
     doReturn(info).when(cfCliClient).extractRouteInfoFromPath(any(), anyString());
-    doReturn(0).when(cfCliClient).executeCommand(anyString(), any(), any());
+    doReturn(0).when(cfCliClient).executeCommand(anyString(), any(), any(), any());
     cfCliClient.executeRoutesOperationForApplicationUsingCli(
         CfCliCommandType.MAP_ROUTE, requestConfig, singletonList("cdp-10515.z.example.com/path"), logCallback);
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-    verify(cfCliClient).executeCommand(captor.capture(), any(), any());
+    verify(cfCliClient).executeCommand(captor.capture(), any(), any(), any());
     String value = captor.getValue();
     assertThat(value).isEqualTo("cf map-route App_BG_00 example.com --hostname cdp-10515 --path path");
   }
@@ -497,17 +497,17 @@ public class CfCliClientImplTest extends CategoryTest {
 
     // check command generated
     doReturn(true).when(cfCliClient).doLogin(any(), any(), anyString());
-    doReturn(0).when(cfCliClient).executeCommand(anyString(), anyMap(), any());
+    doReturn(0).when(cfCliClient).executeCommand(anyString(), anyMap(), any(), any());
     cfCliClient.setEnvVariablesForApplication(
         Collections.singletonMap(HARNESS__STATUS__IDENTIFIER, HARNESS__ACTIVE__IDENTIFIER), cfRequestConfig,
         logCallback);
     ArgumentCaptor<String> commandCaptor = ArgumentCaptor.forClass(String.class);
-    verify(cfCliClient).executeCommand(commandCaptor.capture(), anyMap(), any());
+    verify(cfCliClient).executeCommand(commandCaptor.capture(), anyMap(), any(), any());
 
     assertThat(commandCaptor.getValue()).isEqualTo("cf set-env app HARNESS__STATUS__IDENTIFIER ACTIVE");
 
     // Command execution failed, returned 1
-    doReturn(1).when(cfCliClient).executeCommand(anyString(), anyMap(), any());
+    doReturn(1).when(cfCliClient).executeCommand(anyString(), anyMap(), any(), any());
     try {
       cfCliClient.setEnvVariablesForApplication(
           Collections.singletonMap(HARNESS__STATUS__IDENTIFIER, HARNESS__ACTIVE__IDENTIFIER), cfRequestConfig,
@@ -539,16 +539,16 @@ public class CfCliClientImplTest extends CategoryTest {
 
     // check command generated
     doReturn(true).when(cfCliClient).doLogin(any(), any(), anyString());
-    doReturn(0).when(cfCliClient).executeCommand(anyString(), anyMap(), any());
+    doReturn(0).when(cfCliClient).executeCommand(anyString(), anyMap(), any(), any());
     cfCliClient.unsetEnvVariablesForApplication(
         Collections.singletonList(HARNESS__STATUS__IDENTIFIER), cfRequestConfig, logCallback);
     ArgumentCaptor<String> commandCaptor = ArgumentCaptor.forClass(String.class);
-    verify(cfCliClient).executeCommand(commandCaptor.capture(), anyMap(), any());
+    verify(cfCliClient).executeCommand(commandCaptor.capture(), anyMap(), any(), any());
 
     assertThat(commandCaptor.getValue()).isEqualTo("cf unset-env app HARNESS__STATUS__IDENTIFIER");
 
     // Command execution failed, returned 1
-    doReturn(1).when(cfCliClient).executeCommand(anyString(), anyMap(), any());
+    doReturn(1).when(cfCliClient).executeCommand(anyString(), anyMap(), any(), any());
     try {
       cfCliClient.unsetEnvVariablesForApplication(
           Collections.singletonList(HARNESS__STATUS__IDENTIFIER), cfRequestConfig, logCallback);
