@@ -1,10 +1,3 @@
-/*
- * Copyright 2022 Harness Inc. All rights reserved.
- * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
- * that can be found in the licenses directory at the root of this repository, also available at
- * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
- */
-
 package io.harness.pms.pipeline;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
@@ -13,8 +6,6 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.StoreIn;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.validator.Trimmed;
-import io.harness.gitsync.sdk.EntityGitDetails;
-import io.harness.gitsync.sdk.EntityGitDetails.EntityGitDetailsKeys;
 import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
@@ -37,25 +28,22 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@FieldNameConstants(innerTypeName = "PipelineMetadataKeys")
+@FieldNameConstants(innerTypeName = "PipelineMetadataV2Keys")
 @Entity(value = "pipelineMetadata", noClassnameStored = true)
-@Document("pipelineMetadata")
-@TypeAlias("pipelineMetadata")
+@Document("pipelineMetadataV2")
+@TypeAlias("pipelineMetadataV2")
 @HarnessEntity(exportable = true)
 @StoreIn(DbAliases.PMS)
-@Deprecated
-public class PipelineMetadata {
+public class PipelineMetadataV2 {
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
         .add(CompoundMongoIndex.builder()
-                 .name("account_org_project_pipeline_yaml_git_config_branch_idx")
+                 .name("account_org_project_pipeline")
                  .unique(true)
-                 .field(PipelineMetadataKeys.accountIdentifier)
-                 .field(PipelineMetadataKeys.orgIdentifier)
-                 .field(PipelineMetadataKeys.projectIdentifier)
-                 .field(PipelineMetadataKeys.identifier)
-                 .field(PipelineMetadataKeys.entityGitDetails + "." + EntityGitDetailsKeys.branch)
-                 .field(PipelineMetadataKeys.entityGitDetails + "." + EntityGitDetailsKeys.repoIdentifier)
+                 .field(PipelineMetadataV2Keys.accountIdentifier)
+                 .field(PipelineMetadataV2Keys.orgIdentifier)
+                 .field(PipelineMetadataV2Keys.projectIdentifier)
+                 .field(PipelineMetadataV2Keys.identifier)
                  .build())
         .build();
   }
@@ -66,7 +54,5 @@ public class PipelineMetadata {
   @Trimmed @NotEmpty String projectIdentifier;
   @NotEmpty String identifier;
 
-  ExecutionSummaryInfo executionSummaryInfo;
-  EntityGitDetails entityGitDetails;
   int runSequence;
 }

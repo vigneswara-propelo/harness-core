@@ -60,7 +60,7 @@ import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.PipelineEntity.PipelineEntityKeys;
 import io.harness.pms.pipeline.PipelineEntityUtils;
 import io.harness.pms.pipeline.PipelineFilterPropertiesDto;
-import io.harness.pms.pipeline.PipelineMetadata;
+import io.harness.pms.pipeline.PipelineMetadataV2;
 import io.harness.pms.pipeline.StepCategory;
 import io.harness.pms.pipeline.StepPalleteFilterWrapper;
 import io.harness.pms.pipeline.StepPalleteInfo;
@@ -284,8 +284,8 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
   @Override
   public int incrementRunSequence(
       String accountId, String orgIdentifier, String projectIdentifier, String pipelineIdentifier, boolean deleted) {
-    return pipelineMetadataService.incrementExecutionCounter(accountId, orgIdentifier, projectIdentifier,
-        pipelineIdentifier, gitSyncHelper.getGitSyncBranchContextBytesThreadLocal());
+    return pipelineMetadataService.incrementExecutionCounter(
+        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier);
   }
 
   @Override
@@ -293,33 +293,25 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
     String accountId = pipelineEntity.getAccountId();
     String orgIdentifier = pipelineEntity.getOrgIdentifier();
     String projectIdentifier = pipelineEntity.getProjectIdentifier();
-    ByteString gitSyncBranchContext = gitSyncHelper.getGitSyncBranchContextBytesThreadLocal(pipelineEntity);
-    Optional<PipelineMetadata> pipelineMetadataOptional = pipelineMetadataService.getMetadata(
-        accountId, orgIdentifier, projectIdentifier, pipelineEntity.getIdentifier(), gitSyncBranchContext);
-    PipelineMetadata pipelineMetadata;
-    if (pipelineMetadataOptional.isPresent()) {
-      return pipelineMetadataService.incrementExecutionCounter(
-          accountId, orgIdentifier, projectIdentifier, pipelineEntity.getIdentifier(), gitSyncBranchContext);
-    } else {
+    int count = pipelineMetadataService.incrementExecutionCounter(
+        accountId, orgIdentifier, projectIdentifier, pipelineEntity.getIdentifier());
+    if (count == -1) {
       try {
-        PipelineMetadata metadata =
-            PipelineMetadata.builder()
-                .accountIdentifier(pipelineEntity.getAccountIdentifier())
-                .orgIdentifier(orgIdentifier)
-                .projectIdentifier(projectIdentifier)
-                .executionSummaryInfo(pipelineEntity.getExecutionSummaryInfo())
-                .runSequence(pipelineEntity.getRunSequence() + 1)
-                .identifier(pipelineEntity.getIdentifier())
-                .entityGitDetails(gitSyncHelper.getEntityGitDetailsFromBytes(gitSyncBranchContext))
-                .build();
-        pipelineMetadata = pipelineMetadataService.save(metadata);
+        PipelineMetadataV2 metadata = PipelineMetadataV2.builder()
+                                          .accountIdentifier(pipelineEntity.getAccountIdentifier())
+                                          .orgIdentifier(orgIdentifier)
+                                          .projectIdentifier(projectIdentifier)
+                                          .runSequence(pipelineEntity.getRunSequence() + 1)
+                                          .identifier(pipelineEntity.getIdentifier())
+                                          .build();
+        return pipelineMetadataService.save(metadata).getRunSequence();
       } catch (DuplicateKeyException exception) {
         // retry insert if above fails
         return pipelineMetadataService.incrementExecutionCounter(
-            accountId, orgIdentifier, projectIdentifier, pipelineEntity.getIdentifier(), gitSyncBranchContext);
+            accountId, orgIdentifier, projectIdentifier, pipelineEntity.getIdentifier());
       }
     }
-    return pipelineMetadata.getRunSequence();
+    return count;
   }
 
   @Override

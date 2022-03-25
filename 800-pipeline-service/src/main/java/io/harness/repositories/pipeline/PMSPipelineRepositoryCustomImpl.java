@@ -24,7 +24,7 @@ import io.harness.pms.events.PipelineUpdateEvent;
 import io.harness.pms.gitsync.PmsGitSyncHelper;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.PipelineEntity.PipelineEntityKeys;
-import io.harness.pms.pipeline.PipelineMetadata;
+import io.harness.pms.pipeline.PipelineMetadataV2;
 import io.harness.pms.pipeline.service.PipelineMetadataService;
 import io.harness.springdata.TransactionHelper;
 
@@ -100,16 +100,13 @@ public class PMSPipelineRepositoryCustomImpl implements PMSPipelineRepositoryCus
       PipelineEntity savedEntity = gitAwarePersistence.save(
           pipelineToSave, pipelineToSave.getYaml(), ChangeType.ADD, PipelineEntity.class, supplier);
       ByteString gitSyncBranchContext = pmsGitSyncHelper.getGitSyncBranchContextBytesThreadLocal(savedEntity);
-      PipelineMetadata metadata =
-          PipelineMetadata.builder()
-              .accountIdentifier(savedEntity.getAccountIdentifier())
-              .orgIdentifier(savedEntity.getOrgIdentifier())
-              .projectIdentifier(savedEntity.getProjectIdentifier())
-              .executionSummaryInfo(savedEntity.getExecutionSummaryInfo())
-              .runSequence(0)
-              .identifier(savedEntity.getIdentifier())
-              .entityGitDetails(pmsGitSyncHelper.getEntityGitDetailsFromBytes(gitSyncBranchContext))
-              .build();
+      PipelineMetadataV2 metadata = PipelineMetadataV2.builder()
+                                        .accountIdentifier(savedEntity.getAccountIdentifier())
+                                        .orgIdentifier(savedEntity.getOrgIdentifier())
+                                        .projectIdentifier(savedEntity.getProjectIdentifier())
+                                        .runSequence(0)
+                                        .identifier(savedEntity.getIdentifier())
+                                        .build();
       pipelineMetadataService.save(metadata);
       return savedEntity;
     });
