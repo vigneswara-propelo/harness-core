@@ -834,11 +834,11 @@ public class DelegateServiceImpl implements DelegateService {
         && compare(originalDelegate.getDelegateProfileId(), delegate.getDelegateProfileId()) != 0;
 
     final Delegate updatedDelegate;
-    if (ECS.equals(delegate.getDelegateType())) {
-      updatedDelegate = updateEcsDelegate(delegate, true);
+    final UpdateOperations<Delegate> updateOperations = getDelegateUpdateOperations(delegate);
+    if (isGroupedCgDelegate(delegate)) {
+      updatedDelegate = updateAllCgDelegatesInGroup(delegate, updateOperations, "ALL");
     } else {
       log.info("Updating delegate : {}", delegate.getUuid());
-      final UpdateOperations<Delegate> updateOperations = getDelegateUpdateOperations(delegate);
       updatedDelegate = updateDelegate(delegate, updateOperations);
     }
 
@@ -859,19 +859,15 @@ public class DelegateServiceImpl implements DelegateService {
     return updatedDelegate;
   }
 
-  private Delegate updateEcsDelegate(Delegate delegate, boolean updateEntireEcsCluster) {
+  private Delegate updateEcsDelegateInstance(Delegate delegate) {
     final UpdateOperations<Delegate> updateOperations = getDelegateUpdateOperations(delegate);
-    if (updateEntireEcsCluster) {
-      return updateAllCgDelegatesInGroup(delegate, updateOperations, "ALL");
+    log.info("Updating ECS delegate : {}", delegate.getUuid());
+    if (isDelegateWithoutPollingEnabled(delegate)) {
+      // This updates delegates, as well as delegateConnection and taksBeingExecuted on delegate
+      return updateDelegate(delegate, updateOperations);
     } else {
-      log.info("Updating ECS delegate : {}", delegate.getUuid());
-      if (isDelegateWithoutPollingEnabled(delegate)) {
-        // This updates delegates, as well as delegateConnection and taksBeingExecuted on delegate
-        return updateDelegate(delegate, updateOperations);
-      } else {
-        // only update lastHeartbeatAt
-        return updateHeartbeatForDelegateWithPollingEnabled(delegate);
-      }
+      // only update lastHeartbeatAt
+      return updateHeartbeatForDelegateWithPollingEnabled(delegate);
     }
   }
 
@@ -2525,7 +2521,7 @@ public class DelegateServiceImpl implements DelegateService {
         delegate.setDescription(existingDelegate.getDescription());
       }
       if (ECS.equals(delegate.getDelegateType())) {
-        registeredDelegate = updateEcsDelegate(delegate, false);
+        registeredDelegate = updateEcsDelegateInstance(delegate);
       } else {
         registeredDelegate = update(delegate);
       }
