@@ -99,7 +99,7 @@ public interface AuthService {
   void authorize(String accountId, List<String> appIds, String entityId, User user,
       List<PermissionAttribute> permissionAttributes);
 
-  void validateDelegateToken(String accountId, String tokenString);
+  void validateDelegateToken(String accountId, String tokenString, boolean setTokenNameInGlobalContext);
 
   void invalidateAllTokensForUser(String userId);
 

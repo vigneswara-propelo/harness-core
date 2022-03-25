@@ -92,7 +92,7 @@ public class DelegateTokenEventServerAuthenticatorImpl implements DelegateTokenA
                      .orElse(null));
 
   @Override
-  public void validateDelegateToken(String accountId, String tokenString) {
+  public void validateDelegateToken(String accountId, String tokenString, boolean setTokenNameInGlobalContext) {
     String accountKey = null;
     DelegateTokenStatus defaultTokenStatus = null;
     try {

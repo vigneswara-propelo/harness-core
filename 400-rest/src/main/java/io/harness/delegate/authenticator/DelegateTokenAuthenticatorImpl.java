@@ -71,8 +71,10 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
                      .map(Account::getAccountKey)
                      .orElse(null));
 
+  // we should set global context data only for rest calls, because we unset the global context thread only for rest
+  // calls.
   @Override
-  public void validateDelegateToken(String accountId, String tokenString) {
+  public void validateDelegateToken(String accountId, String tokenString, boolean setTokenNameInGlobalContext) {
     EncryptedJWT encryptedJWT;
     try {
       encryptedJWT = EncryptedJWT.parse(tokenString);
@@ -80,9 +82,11 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       throw new InvalidTokenException("Invalid delegate token format", USER_ADMIN);
     }
 
-    boolean successfullyDecrypted = decryptJWTDelegateToken(accountId, DelegateTokenStatus.ACTIVE, encryptedJWT);
+    boolean successfullyDecrypted =
+        decryptJWTDelegateToken(accountId, DelegateTokenStatus.ACTIVE, encryptedJWT, setTokenNameInGlobalContext);
     if (!successfullyDecrypted) {
-      boolean decryptedWithRevokedToken = decryptJWTDelegateToken(accountId, DelegateTokenStatus.REVOKED, encryptedJWT);
+      boolean decryptedWithRevokedToken =
+          decryptJWTDelegateToken(accountId, DelegateTokenStatus.REVOKED, encryptedJWT, setTokenNameInGlobalContext);
       if (decryptedWithRevokedToken) {
         String delegateHostName = "";
         try {
@@ -123,7 +127,8 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     decryptDelegateToken(encryptedJWT, accountKey);
   }
 
-  private boolean decryptJWTDelegateToken(String accountId, DelegateTokenStatus status, EncryptedJWT encryptedJWT) {
+  private boolean decryptJWTDelegateToken(
+      String accountId, DelegateTokenStatus status, EncryptedJWT encryptedJWT, boolean setTokenNameInGlobalContext) {
     long time_start = System.currentTimeMillis();
     Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
                                      .field(DelegateTokenKeys.accountId)
@@ -131,7 +136,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
                                      .field(DelegateTokenKeys.status)
                                      .equal(status);
 
-    boolean result = decryptDelegateTokenByQuery(query, accountId, status, encryptedJWT);
+    boolean result = decryptDelegateTokenByQuery(query, accountId, status, encryptedJWT, setTokenNameInGlobalContext);
     long time_end = System.currentTimeMillis() - time_start;
     log.debug("Delegate Token verification for accountId {} and status {} has taken {} milliseconds.", accountId,
         status.name(), time_end);
@@ -139,8 +144,8 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
   }
 
   // TODO: Arpit associate delegate token correspondingly
-  private boolean decryptDelegateTokenByQuery(
-      Query query, String accountId, DelegateTokenStatus status, EncryptedJWT encryptedJWT) {
+  private boolean decryptDelegateTokenByQuery(Query query, String accountId, DelegateTokenStatus status,
+      EncryptedJWT encryptedJWT, boolean setTokenNameInGlobalContext) {
     try (HIterator<DelegateToken> iterator = new HIterator<>(query.fetch())) {
       while (iterator.hasNext()) {
         DelegateToken delegateToken = iterator.next();
@@ -151,7 +156,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
             decryptDelegateToken(encryptedJWT, delegateToken.getValue());
           }
 
-          if (DelegateTokenStatus.ACTIVE == status) {
+          if (DelegateTokenStatus.ACTIVE == status && setTokenNameInGlobalContext) {
             if (!GlobalContextManager.isAvailable()) {
               initGlobalContextGuard(new GlobalContext());
             }

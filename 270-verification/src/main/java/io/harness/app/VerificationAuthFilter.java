@@ -53,6 +53,6 @@ public class VerificationAuthFilter extends VerificationServiceAuthenticationFil
 
   @Override
   public void validateDelegateToken(String accountId, String tokenString) {
-    delegateTokenAuthenticator.validateDelegateToken(accountId, tokenString);
+    delegateTokenAuthenticator.validateDelegateToken(accountId, tokenString, false);
   }
 }

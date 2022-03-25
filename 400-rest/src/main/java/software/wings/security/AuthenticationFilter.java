@@ -390,8 +390,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     try (AccountLogContext ignore = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
       String header = containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
       if (header != null && header.contains("Delegate")) {
-        authService.validateDelegateToken(
-            accountId, substringAfter(containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION), "Delegate "));
+        authService.validateDelegateToken(accountId,
+            substringAfter(containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION), "Delegate "), true);
       } else {
         throw new IllegalStateException("Invalid header:" + header);
       }

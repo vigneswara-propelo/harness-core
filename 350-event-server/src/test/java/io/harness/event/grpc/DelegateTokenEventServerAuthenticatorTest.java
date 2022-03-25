@@ -84,7 +84,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
   public void shouldValidateDelegateToken() {
     TokenGenerator tokenGenerator = new TokenGenerator(ACCOUNT_ID, accountKey);
     delegateTokenAuthenticator.validateDelegateToken(
-        ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname"));
+        ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false);
   }
 
   @Test
@@ -117,7 +117,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
 
     assertThatCode(()
                        -> delegateTokenAuthenticator.validateDelegateToken(
-                           ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname")))
+                           ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false))
         .doesNotThrowAnyException();
     verify(persistence).createQuery(DelegateToken.class);
   }
@@ -153,7 +153,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
 
     assertThatThrownBy(()
                            -> delegateTokenAuthenticator.validateDelegateToken(
-                               ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname")))
+                               ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false))
         .isInstanceOf(InvalidTokenException.class);
   }
 
@@ -197,7 +197,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
 
     assertThatThrownBy(()
                            -> delegateTokenAuthenticator.validateDelegateToken(
-                               ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname")))
+                               ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false))
         .isInstanceOf(RevokedTokenException.class);
   }
 
@@ -232,7 +232,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
 
     assertThatThrownBy(()
                            -> delegateTokenAuthenticator.validateDelegateToken(
-                               ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname")))
+                               ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false))
         .isInstanceOf(InvalidTokenException.class);
   }
 
@@ -242,8 +242,8 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
   public void shouldNotValidateDelegateToken() {
     TokenGenerator tokenGenerator = new TokenGenerator(GLOBAL_ACCOUNT_ID, accountKey);
     assertThatThrownBy(()
-                           -> delegateTokenAuthenticator.validateDelegateToken(
-                               GLOBAL_ACCOUNT_ID, tokenGenerator.getToken("https", "localhost", 9090, "hostname")))
+                           -> delegateTokenAuthenticator.validateDelegateToken(GLOBAL_ACCOUNT_ID,
+                               tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Access denied");
   }
@@ -254,7 +254,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
   public void shouldNotValidateExpiredDelegateToken() {
     String expiredToken =
         "eyJlbmMiOiJBMTI4R0NNIiwiYWxnIjoiZGlyIn0..SFvYSml0znPxoa7K.JcsFw5GiYevubqqzjy-nQyDMzjtA64YhxZjnQz6VH7lRCAGP5JML9Ov86rSRV1V7Kb-a12UvTNzqEqdJ4PCLv4R7GA5SzCwxLEYrlTLtUWX40r0GKuRGoiJVJqax2bBy3gOqDftETZCm_90lD3NxDeJ__RICl4osp9IxCKmlfGyoqriAswoEvkVtu0wjRlvBS-FtY42AeyCf9XIH5rppw-AsXoHH40M6_8FN-mFkilfqv3QKPaGL6Zph.1ipAjbMS834AKSotvHy4sg";
-    assertThatThrownBy(() -> delegateTokenAuthenticator.validateDelegateToken(ACCOUNT_ID, expiredToken))
+    assertThatThrownBy(() -> delegateTokenAuthenticator.validateDelegateToken(ACCOUNT_ID, expiredToken, false))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Unauthorized");
   }
@@ -266,7 +266,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
     TokenGenerator tokenGenerator = new TokenGenerator(ACCOUNT_ID, accountKey);
     assertThatThrownBy(()
                            -> delegateTokenAuthenticator.validateDelegateToken(
-                               null, tokenGenerator.getToken("https", "localhost", 9090, "hostname")))
+                               null, tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Access denied");
   }
@@ -277,8 +277,8 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
   public void shouldThrowDenyAccessWhenAccountIdNotFoundForDelegate() {
     TokenGenerator tokenGenerator = new TokenGenerator(ACCOUNT_ID, accountKey);
     assertThatThrownBy(()
-                           -> delegateTokenAuthenticator.validateDelegateToken(
-                               ACCOUNT_ID + "1", tokenGenerator.getToken("https", "localhost", 9090, "hostname")))
+                           -> delegateTokenAuthenticator.validateDelegateToken(ACCOUNT_ID + "1",
+                               tokenGenerator.getToken("https", "localhost", 9090, "hostname"), false))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Access denied");
   }
@@ -287,7 +287,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
   @Owner(developers = ANUBHAW)
   @Category(UnitTests.class)
   public void shouldThrowThrowInavlidTokenForDelegate() {
-    assertThatThrownBy(() -> delegateTokenAuthenticator.validateDelegateToken(ACCOUNT_ID, "Dummy"))
+    assertThatThrownBy(() -> delegateTokenAuthenticator.validateDelegateToken(ACCOUNT_ID, "Dummy", false))
         .isInstanceOf(InvalidTokenException.class);
   }
 
@@ -308,7 +308,7 @@ public class DelegateTokenEventServerAuthenticatorTest extends CategoryTest {
     when(morphiaIterator.hasNext()).thenReturn(false);
     when(mockQuery.fetch()).thenReturn(morphiaIterator);
 
-    assertThatThrownBy(() -> delegateTokenAuthenticator.validateDelegateToken(ACCOUNT_ID, getDelegateToken()))
+    assertThatThrownBy(() -> delegateTokenAuthenticator.validateDelegateToken(ACCOUNT_ID, getDelegateToken(), false))
         .isInstanceOf(InvalidTokenException.class);
   }
 

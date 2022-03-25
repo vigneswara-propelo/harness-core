@@ -521,7 +521,7 @@ public class AccountResource {
   @LearningEngineAuth
   public RestResponse<Boolean> validateDelegateToken(
       @QueryParam("accountId") @NotEmpty String accountId, @QueryParam("delegateToken") @NotNull String delegateToken) {
-    authService.validateDelegateToken(accountId, substringAfter(delegateToken, "Delegate "));
+    authService.validateDelegateToken(accountId, substringAfter(delegateToken, "Delegate "), true);
     return new RestResponse<>(true);
   }
 
