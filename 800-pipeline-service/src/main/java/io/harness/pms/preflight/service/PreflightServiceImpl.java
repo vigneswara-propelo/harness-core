@@ -131,9 +131,11 @@ public class PreflightServiceImpl implements PreflightService {
     if (errorInfo != null) {
       update.set(PreFlightEntityKeys.errorInfo, errorInfo);
     }
-    if (status == PreFlightStatus.FAILURE || status == PreFlightStatus.SUCCESS) {
+    if (status == PreFlightStatus.SUCCESS) {
       update.set(
           PreFlightEntityKeys.validUntil, Date.from(OffsetDateTime.now().plus(Duration.ofMinutes(5)).toInstant()));
+    } else if (status == PreFlightStatus.FAILURE) {
+      update.set(PreFlightEntityKeys.validUntil, Date.from(OffsetDateTime.now().plus(Duration.ofDays(14)).toInstant()));
     }
     preFlightRepository.update(criteria, update);
   }
