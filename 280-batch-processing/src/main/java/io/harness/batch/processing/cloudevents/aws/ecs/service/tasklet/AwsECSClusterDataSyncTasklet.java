@@ -120,7 +120,7 @@ public class AwsECSClusterDataSyncTasklet implements Tasklet {
   @Autowired private InstanceResourceService instanceResourceService;
   @Autowired private CloudToHarnessMappingService cloudToHarnessMappingService;
   @Autowired private LastReceivedPublishedMessageDao lastReceivedPublishedMessageDao;
-  private final ExecutorService ecsSyncClusterExecutor = new ManagedExecutorService(Executors.newWorkStealingPool(2));
+  private final ExecutorService ecsSyncClusterExecutor = new ManagedExecutorService(Executors.newWorkStealingPool(3));
 
   private static final String ECS_OS_TYPE = "ecs.os-type";
 
