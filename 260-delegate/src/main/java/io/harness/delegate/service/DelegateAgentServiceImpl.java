@@ -1993,7 +1993,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         return;
       }
 
-      if (isEmpty(delegateTaskPackage.getDelegateId())) {
+      if (isEmpty(delegateTaskPackage.getDelegateInstanceId())) {
         // Not whitelisted. Perform validation.
         // TODO: Remove this once TaskValidation does not use secrets
 
@@ -2003,7 +2003,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         currentlyValidatingTasks.put(delegateTaskPackage.getDelegateTaskId(), delegateTaskPackage);
         updateCounterIfLessThanCurrent(maxValidatingTasksCount, currentlyValidatingTasks.size());
         delegateValidateTask.validationResults();
-      } else if (delegateId.equals(delegateTaskPackage.getDelegateId())) {
+      } else if (delegateInstanceId.equals(delegateTaskPackage.getDelegateInstanceId())) {
         applyDelegateSecretFunctor(delegateTaskPackage);
         // Whitelisted. Proceed immediately.
         log.info("Delegate {} whitelisted for task and accountId: {}", delegateId, accountId);
@@ -2043,7 +2043,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
                   accountId, delegateInstanceId, getDelegateConnectionResultDetails(results)));
 
           if (delegateTaskPackage != null && delegateTaskPackage.getData() != null
-              && delegateId.equals(delegateTaskPackage.getDelegateId())) {
+              && delegateInstanceId.equals(delegateTaskPackage.getDelegateInstanceId())) {
             applyDelegateSecretFunctor(delegateTaskPackage);
             executeTask(delegateTaskPackage);
           } else {
