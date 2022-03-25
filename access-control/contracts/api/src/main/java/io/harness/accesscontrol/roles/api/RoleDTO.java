@@ -36,10 +36,15 @@ import lombok.experimental.FieldNameConstants;
 public class RoleDTO {
   public static final String MODEL_NAME = "Role";
 
-  @ApiModelProperty(required = true) final String identifier;
-  @ApiModelProperty(required = true) final String name;
+  @Schema(description = "Unique identifier of the role") @ApiModelProperty(required = true) final String identifier;
+  @Schema(description = "Name of the role") @ApiModelProperty(required = true) final String name;
+  @Schema(
+      description = "List of the permission identifiers (Subset of the list returned by GET /authz/api/permissions)")
   final Set<String> permissions;
-  @Setter Set<String> allowedScopeLevels;
-  final String description;
-  final Map<String, String> tags;
+  @Schema(description = "The scope levels at which this role can be used",
+      allowableValues = {"account", "organization", "project"})
+  @Setter
+  Set<String> allowedScopeLevels;
+  @Schema(description = "Description of the role") final String description;
+  @Schema(description = "Tags") final Map<String, String> tags;
 }
