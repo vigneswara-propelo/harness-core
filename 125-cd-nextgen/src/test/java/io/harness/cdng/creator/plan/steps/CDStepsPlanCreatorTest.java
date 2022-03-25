@@ -8,6 +8,7 @@
 package io.harness.cdng.creator.plan.steps;
 
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
+import static io.harness.rule.OwnerRule.SAHIL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,6 +88,27 @@ public class CDStepsPlanCreatorTest extends CDNGTestBase {
     PlanNode planForParentNode = stepsPlanCreator.createPlanForParentNode(ctx, null, childrenNodeId);
     assertThat(planForParentNode.getUuid()).isEqualTo(ctx.getCurrentField().getNode().getUuid());
     assertThat(planForParentNode.getStepParameters()).isEqualTo(stepParameters);
+  }
+
+  @Test
+  @Owner(developers = SAHIL)
+  @Category(UnitTests.class)
+  public void testAdviserForStepGroup() throws IOException {
+    List<String> childrenNodeId = Arrays.asList("child1", "child2");
+
+    YamlField stepsYamlField = getYamlFieldFromGivenFileName("cdng/plan/steps/step-group.yml")
+                                   .getNode()
+                                   .getField("stepGroup")
+                                   .getNode()
+                                   .getField("steps");
+    NGSectionStepParameters stepParameters =
+        NGSectionStepParameters.builder().childNodeId(childrenNodeId.get(0)).build();
+
+    PlanCreationContext ctx = PlanCreationContext.builder().currentField(stepsYamlField).build();
+    PlanNode planForParentNode = stepsPlanCreator.createPlanForParentNode(ctx, null, childrenNodeId);
+    assertThat(planForParentNode.getUuid()).isEqualTo(ctx.getCurrentField().getNode().getUuid());
+    assertThat(planForParentNode.getStepParameters()).isEqualTo(stepParameters);
+    assertThat(planForParentNode.getAdviserObtainments().size()).isEqualTo(0);
   }
 
   @Test
