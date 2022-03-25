@@ -131,7 +131,9 @@ public class InviteResource {
                 + " either InviteId or JwtToken as specified in request")
       })
   public ResponseDTO<InviteDTO>
-  getInviteWithToken(@Parameter(description = "Invitation Id") @QueryParam("inviteId") String inviteId,
+  getInviteWithToken(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @QueryParam(
+                         NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
+      @Parameter(description = "Invitation Id") @QueryParam("inviteId") String inviteId,
       @Parameter(description = "JWT Token") @QueryParam("jwttoken") String jwtToken) {
     if ((isBlank(inviteId) && isBlank(jwtToken)) || (!isBlank(inviteId) && !isBlank(jwtToken))) {
       throw new InvalidRequestException("Specify either inviteId or jwtToken");
@@ -162,7 +164,7 @@ public class InviteResource {
   @NGAccessControlCheck(resourceType = USER, permission = VIEW_USER_PERMISSION)
   public ResponseDTO<PageResponse<InviteDTO>>
   getInvites(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @QueryParam(
-                 "accountIdentifier") @NotNull @AccountIdentifier String accountIdentifier,
+                 NGCommonEntityConstants.ACCOUNT_KEY) @NotNull @AccountIdentifier String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam("orgIdentifier") @OrgIdentifier String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam("projectIdentifier")
       @ProjectIdentifier String projectIdentifier, @BeanParam PageRequest pageRequest) {
@@ -223,7 +225,7 @@ public class InviteResource {
   @Deprecated
   public ResponseDTO<List<InviteOperationResponse>>
   createInvitations(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                        "accountIdentifier") @NotNull String accountIdentifier,
+                        NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam("orgIdentifier") String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam("projectIdentifier") String projectIdentifier,
       @RequestBody(required = true,
@@ -252,7 +254,8 @@ public class InviteResource {
   @PublicApi
   public Response
   verifyInviteViaNGAuthUi(@QueryParam("token") @NotNull String jwtToken,
-      @QueryParam("accountIdentifier") @NotNull String accountIdentifier, @QueryParam("email") @NotNull String email) {
+      @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
+      @QueryParam("email") @NotNull String email) {
     InviteAcceptResponse inviteAcceptResponse = inviteService.acceptInvite(jwtToken);
     try {
       String decodedEmail = URLDecoder.decode(email, "UTF-8");
@@ -292,7 +295,7 @@ public class InviteResource {
   updateInvite(@Parameter(description = "Invite id") @PathParam("inviteId") @NotNull String inviteId,
       @RequestBody(required = true, description = "Details of the Updated Invite") @NotNull @Valid InviteDTO inviteDTO,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @QueryParam(
-          "accountIdentifier") String accountIdentifier) {
+          NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier) {
     NGAccess ngAccess = BaseNGAccess.builder().accountIdentifier(accountIdentifier).build();
     Invite invite = InviteMapper.toInvite(inviteDTO, ngAccess);
     invite.setId(inviteId);
@@ -312,7 +315,9 @@ public class InviteResource {
   @Produces("application/json")
   @Consumes()
   public ResponseDTO<Optional<InviteDTO>>
-  delete(@Parameter(description = "Invite Id") @PathParam("inviteId") @NotNull String inviteId) {
+  delete(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @QueryParam(
+             NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
+      @Parameter(description = "Invite Id") @PathParam("inviteId") @NotNull String inviteId) {
     Optional<Invite> inviteOptional = inviteService.deleteInvite(inviteId);
     return ResponseDTO.newResponse(inviteOptional.map(InviteMapper::writeDTO));
   }
