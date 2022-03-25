@@ -19,6 +19,7 @@ import io.harness.resourcegroup.v2.model.ScopeSelector;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(NON_NULL)
 @OwnedBy(PL)
+@ApiModel(value = "ResourceGroupV2")
 @Schema(name = "ResourceGroupV2", description = "Contains information of Resource Group")
 public class ResourceGroupDTO {
   @ApiModelProperty(required = true) @NotNull @NotEmpty String accountIdentifier;
@@ -51,7 +53,7 @@ public class ResourceGroupDTO {
   @Size(max = 1024) String description;
   Set<String> allowedScopeLevels;
 
-  @NotNull @NotEmpty @Valid List<ScopeSelector> includedScopes;
+  @Valid List<ScopeSelector> includedScopes;
 
   ResourceFilter resourceFilter;
 }

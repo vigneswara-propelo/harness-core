@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
@@ -20,6 +21,7 @@ import lombok.Data;
 @OwnedBy(PL)
 @Data
 @Builder
+@ApiModel(value = "ResourceGroupV2Response")
 @Schema(
     name = "ResourceGroupV2Response", description = "This has details of the Resource Group along with its metadata.")
 public class ResourceGroupResponse {

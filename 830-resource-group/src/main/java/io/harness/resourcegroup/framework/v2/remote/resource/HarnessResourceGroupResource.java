@@ -17,11 +17,13 @@ import static io.harness.NGCommonEntityConstants.INTERNAL_SERVER_ERROR_CODE;
 import static io.harness.NGCommonEntityConstants.INTERNAL_SERVER_ERROR_MESSAGE;
 import static io.harness.NGCommonEntityConstants.ORG_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.PROJECT_PARAM_MESSAGE;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.ng.core.utils.NGUtils.verifyValuesNotChanged;
 import static io.harness.resourcegroup.ResourceGroupPermissions.DELETE_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.EDIT_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupResourceTypes.RESOURCE_GROUP;
+import static io.harness.resourcegroup.v1.remote.dto.ManagedFilter.NO_FILTER;
 import static io.harness.utils.PageUtils.getNGPageResponse;
 
 import io.harness.NGCommonEntityConstants;
@@ -42,6 +44,7 @@ import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidatorImpl;
+import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupRequest;
@@ -62,6 +65,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
@@ -110,6 +114,7 @@ public class HarnessResourceGroupResource {
   ResourceGroupService resourceGroupService;
   ResourceGroupValidatorImpl resourceGroupValidator;
 
+  @GET
   @Path("{identifier}")
   @ApiOperation(value = "Get a resource group by Identifier", nickname = "getResourceGroupV2")
   @Operation(operationId = "getResourceGroupV2", summary = "Get a resource group by identifier",
@@ -127,7 +132,10 @@ public class HarnessResourceGroupResource {
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    return ResponseDTO.newResponse(ResourceGroupResponse.builder().build());
+    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(
+        resourceGroupService.get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier, NO_FILTER)
+            .orElse(null));
+    return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
   }
 
   @GET
@@ -151,7 +159,12 @@ public class HarnessResourceGroupResource {
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    return ResponseDTO.newResponse(ResourceGroupResponse.builder().build());
+    Optional<ResourceGroupResponse> resourceGroupResponseOpt =
+        Optional.ofNullable(resourceGroupService
+                                .get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier,
+                                    isEmpty(accountIdentifier) ? ManagedFilter.ONLY_MANAGED : ManagedFilter.NO_FILTER)
+                                .orElse(null));
+    return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
   }
 
   @GET
@@ -222,7 +235,7 @@ public class HarnessResourceGroupResource {
 
   @PUT
   @Path("{identifier}")
-  @ApiOperation(value = "Update a resource group", nickname = "updateResourceGroup")
+  @ApiOperation(value = "Update a resource group", nickname = "updateResourceGroupV2")
   @Operation(operationId = "updateResourceGroup", summary = "Update a resource group",
       responses =
       {

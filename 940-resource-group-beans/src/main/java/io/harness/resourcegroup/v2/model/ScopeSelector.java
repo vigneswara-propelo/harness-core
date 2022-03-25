@@ -17,6 +17,7 @@ import io.harness.resourcegroup.beans.ScopeFilterType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Schema(name = "ScopeSelector", description = "Contains information of scope to which resource filter is applied")
 public class ScopeSelector {
   @NotNull @ApiModelProperty(required = true) ScopeFilterType filter;
   String accountIdentifier;
