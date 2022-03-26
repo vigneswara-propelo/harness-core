@@ -219,17 +219,17 @@ if ! `grep managerUrl config-delegate.yml > /dev/null`; then
 fi
 if ! `grep verificationServiceUrl config-delegate.yml > /dev/null`; then
   echo "verificationServiceUrl: https://localhost:9090/verification/" >> config-delegate.yml
-else
+elif [[ "$(grep verificationServiceUrl config-delegate.yml | cut -d ' ' -f 2)" != "https://localhost:9090/verification/" ]]; then
   sed -i.bak "s|^verificationServiceUrl:.*$|verificationServiceUrl: https://localhost:9090/verification/|" config-delegate.yml
 fi
 if ! `grep cvNextGenUrl config-delegate.yml > /dev/null`; then
   echo "cvNextGenUrl: https://localhost:9090/cv/api/" >> config-delegate.yml
-else
+elif [[ "$(grep cvNextGenUrl config-delegate.yml | cut -d ' ' -f 2)" != "https://localhost:9090/cv/api/" ]]; then
   sed -i.bak "s|^cvNextGenUrl:.*$|cvNextGenUrl: https://localhost:9090/cv/api/|" config-delegate.yml
 fi
 if ! `grep watcherCheckLocation config-delegate.yml > /dev/null`; then
   echo "watcherCheckLocation: http://localhost:8888/watcherci.txt" >> config-delegate.yml
-else
+elif [[ "$(grep watcherCheckLocation config-delegate.yml | cut -d ' ' -f 2)" != "http://localhost:8888/watcherci.txt" ]]; then
   sed -i.bak "s|^watcherCheckLocation:.*$|watcherCheckLocation: http://localhost:8888/watcherci.txt|" config-delegate.yml
 fi
 if ! `grep heartbeatIntervalMs config-delegate.yml > /dev/null`; then
@@ -254,31 +254,31 @@ fi
 
 if ! `grep useCdn config-delegate.yml > /dev/null`; then
   echo "useCdn: false" >> config-delegate.yml
-else
+elif [[ "$(grep useCdn config-delegate.yml | cut -d ' ' -f 2)" != "false" ]]; then
   sed -i.bak "s|^useCdn:.*$|useCdn: false|" config-delegate.yml
 fi
 if ! `grep cdnUrl config-delegate.yml > /dev/null`; then
   echo "cdnUrl: http://localhost:9500" >> config-delegate.yml
-else
+elif [[ "$(grep cdnUrl config-delegate.yml | cut -d ' ' -f 2)" != "http://localhost:9500" ]]; then
   sed -i.bak "s|^cdnUrl:.*$|cdnUrl: http://localhost:9500|" config-delegate.yml
 fi
 
 
 if ! `grep grpcServiceEnabled config-delegate.yml > /dev/null`; then
   echo "grpcServiceEnabled: $GRPC_SERVICE_ENABLED" >> config-delegate.yml
-else
+elif [[ "$(grep grpcServiceEnabled config-delegate.yml | cut -d ' ' -f 2)" != "$GRPC_SERVICE_ENABLED" ]]; then
   sed -i.bak "s|^grpcServiceEnabled:.*$|grpcServiceEnabled: $GRPC_SERVICE_ENABLED|" config-delegate.yml
 fi
 
 if ! `grep grpcServiceConnectorPort config-delegate.yml > /dev/null`; then
   echo "grpcServiceConnectorPort: $GRPC_SERVICE_CONNECTOR_PORT" >> config-delegate.yml
-else
+elif [[ "$(grep grpcServiceConnectorPort config-delegate.yml | cut -d ' ' -f 2)" != "$GRPC_SERVICE_CONNECTOR_PORT" ]]; then
   sed -i.bak "s|^grpcServiceConnectorPort:.*$|grpcServiceConnectorPort: $GRPC_SERVICE_CONNECTOR_PORT|" config-delegate.yml
 fi
 
 if ! `grep logStreamingServiceBaseUrl config-delegate.yml > /dev/null`; then
   echo "logStreamingServiceBaseUrl: http://localhost:8079" >> config-delegate.yml
-else
+elif [[ "$(grep logStreamingServiceBaseUrl config-delegate.yml | cut -d ' ' -f 2)" != "http://localhost:8079" ]]; then
   sed -i.bak "s|^logStreamingServiceBaseUrl:.*$|logStreamingServiceBaseUrl: http://localhost:8079|" config-delegate.yml
 fi
 

@@ -136,17 +136,17 @@ if ! `grep managerUrl config-delegate.yml > /dev/null`; then
 fi
 if ! `grep verificationServiceUrl config-delegate.yml > /dev/null`; then
   echo "verificationServiceUrl: ${managerHostAndPort}/verification/" >> config-delegate.yml
-else
+elif [[ "$(grep verificationServiceUrl config-delegate.yml | cut -d ' ' -f 2)" != "${managerHostAndPort}/verification/" ]]; then
   sed -i.bak "s|^verificationServiceUrl:.*$|verificationServiceUrl: ${managerHostAndPort}/verification/|" config-delegate.yml
 fi
 if ! `grep cvNextGenUrl config-delegate.yml > /dev/null`; then
   echo "cvNextGenUrl: ${managerHostAndPort}/cv/api/" >> config-delegate.yml
-else
+elif [[ "$(grep cvNextGenUrl config-delegate.yml | cut -d ' ' -f 2)" != "${managerHostAndPort}/cv/api/" ]]; then
   sed -i.bak "s|^cvNextGenUrl:.*$|cvNextGenUrl: ${managerHostAndPort}/cv/api/|" config-delegate.yml
 fi
 if ! `grep watcherCheckLocation config-delegate.yml > /dev/null`; then
   echo "watcherCheckLocation: ${watcherStorageUrl}/${watcherCheckLocation}" >> config-delegate.yml
-else
+elif [[ "$(grep watcherCheckLocation config-delegate.yml | cut -d ' ' -f 2)" != "${watcherStorageUrl}/${watcherCheckLocation}" ]]; then
   sed -i.bak "s|^watcherCheckLocation:.*$|watcherCheckLocation: ${watcherStorageUrl}/${watcherCheckLocation}|" config-delegate.yml
 fi
 if ! `grep heartbeatIntervalMs config-delegate.yml > /dev/null`; then
@@ -171,43 +171,43 @@ fi
 
 if ! `grep useCdn config-delegate.yml > /dev/null`; then
   echo "useCdn: ${useCdn}" >> config-delegate.yml
-else
+elif [[ "$(grep useCdn config-delegate.yml | cut -d ' ' -f 2)" != "${useCdn}" ]]; then
   sed -i.bak "s|^useCdn:.*$|useCdn: ${useCdn}|" config-delegate.yml
 fi
 if ! `grep cdnUrl config-delegate.yml > /dev/null`; then
   echo "cdnUrl: ${cdnUrl}" >> config-delegate.yml
-else
+elif [[ "$(grep cdnUrl config-delegate.yml | cut -d ' ' -f 2)" != "${cdnUrl}" ]]; then
   sed -i.bak "s|^cdnUrl:.*$|cdnUrl: ${cdnUrl}|" config-delegate.yml
 fi
 
 <#if managerTarget??>
 if ! `grep managerTarget config-delegate.yml > /dev/null`; then
   echo "managerTarget: ${managerTarget}" >> config-delegate.yml
-else
+elif [[ "$(grep managerTarget config-delegate.yml | cut -d ' ' -f 2)" != "${managerTarget}" ]]; then
   sed -i.bak "s|^managerTarget:.*$|managerTarget: ${managerTarget}|" config-delegate.yml
 fi
 if ! `grep managerAuthority config-delegate.yml > /dev/null`; then
   echo "managerAuthority: ${managerAuthority}" >> config-delegate.yml
-else
+elif [[ "$(grep managerAuthority config-delegate.yml | cut -d ' ' -f 2)" != "${managerAuthority}" ]]; then
   sed -i.bak "s|^managerAuthority:.*$|managerAuthority: ${managerAuthority}|" config-delegate.yml
 fi
 </#if>
 
 if ! `grep grpcServiceEnabled config-delegate.yml > /dev/null`; then
   echo "grpcServiceEnabled: $GRPC_SERVICE_ENABLED" >> config-delegate.yml
-else
+elif [[ "$(grep grpcServiceEnabled config-delegate.yml | cut -d ' ' -f 2)" != "$GRPC_SERVICE_ENABLED" ]]; then
   sed -i.bak "s|^grpcServiceEnabled:.*$|grpcServiceEnabled: $GRPC_SERVICE_ENABLED|" config-delegate.yml
 fi
 
 if ! `grep grpcServiceConnectorPort config-delegate.yml > /dev/null`; then
   echo "grpcServiceConnectorPort: $GRPC_SERVICE_CONNECTOR_PORT" >> config-delegate.yml
-else
+elif [[ "$(grep grpcServiceConnectorPort config-delegate.yml | cut -d ' ' -f 2)" != "$GRPC_SERVICE_CONNECTOR_PORT" ]]; then
   sed -i.bak "s|^grpcServiceConnectorPort:.*$|grpcServiceConnectorPort: $GRPC_SERVICE_CONNECTOR_PORT|" config-delegate.yml
 fi
 
 if ! `grep logStreamingServiceBaseUrl config-delegate.yml > /dev/null`; then
   echo "logStreamingServiceBaseUrl: ${logStreamingServiceBaseUrl}" >> config-delegate.yml
-else
+elif [[ "$(grep logStreamingServiceBaseUrl config-delegate.yml | cut -d ' ' -f 2)" != "${logStreamingServiceBaseUrl}" ]]; then
   sed -i.bak "s|^logStreamingServiceBaseUrl:.*$|logStreamingServiceBaseUrl: ${logStreamingServiceBaseUrl}|" config-delegate.yml
 fi
 
