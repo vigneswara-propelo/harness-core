@@ -248,11 +248,7 @@ fi
 
 if [ ! -e config-delegate.yml ]; then
   echo "accountId: $ACCOUNT_ID" > config-delegate.yml
-  if [ ! -e $ACCOUNT_SECRET ]; then
-    echo "delegateToken: $ACCOUNT_SECRET" >> config-delegate.yml
-  else
-    echo "delegateToken: $DELEGATE_TOKEN" >> config-delegate.yml
-  fi
+  echo "accountSecret: $ACCOUNT_SECRET" >> config-delegate.yml
 fi
 test "$(tail -c 1 config-delegate.yml)" && `echo "" >> config-delegate.yml`
 if ! `grep managerUrl config-delegate.yml > /dev/null`; then
