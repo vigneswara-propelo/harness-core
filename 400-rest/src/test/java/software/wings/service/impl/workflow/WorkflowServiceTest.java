@@ -157,6 +157,7 @@ import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.get
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.getServiceTemplateExpression;
 import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.prepareInfraDefTemplateExpression;
 import static software.wings.sm.StateType.APPROVAL_RESUME;
+import static software.wings.sm.StateType.ARTIFACT_COLLECT_LOOP_STATE;
 import static software.wings.sm.StateType.AWS_CODEDEPLOY_STATE;
 import static software.wings.sm.StateType.AWS_LAMBDA_VERIFICATION;
 import static software.wings.sm.StateType.AWS_NODE_SELECT;
@@ -4773,7 +4774,7 @@ public class WorkflowServiceTest extends WingsBaseTest {
   public void testAllStateTypesDefinedInStepTypes() {
     List<StateType> excludedStateTypes = asList(SUB_WORKFLOW, REPEAT, FORK, WAIT, PAUSE, ENV_STATE, PHASE, PHASE_STEP,
         AWS_LAMBDA_VERIFICATION, STAGING_ORIGINAL_EXECUTION, SCALYR, ENV_RESUME_STATE, ENV_LOOP_RESUME_STATE,
-        APPROVAL_RESUME, ENV_LOOP_STATE);
+        APPROVAL_RESUME, ENV_LOOP_STATE, ARTIFACT_COLLECT_LOOP_STATE);
 
     Set<String> stateTypes = new HashSet<>();
     for (StateType stateType : StateType.values()) {

@@ -199,6 +199,7 @@ public enum DelegateStateType {
   PHASE,
   FORK,
   ENV_RESUME_STATE,
+  ARTIFACT_COLLECT_LOOP_STATE,
   AWS_LAMBDA_VERIFICATION;
 
   private String displayName = UPPER_UNDERSCORE.to(UPPER_CAMEL, name());

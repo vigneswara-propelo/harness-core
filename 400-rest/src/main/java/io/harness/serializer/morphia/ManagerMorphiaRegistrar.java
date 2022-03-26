@@ -581,6 +581,7 @@ import software.wings.sm.states.AppDynamicsState;
 import software.wings.sm.states.ApprovalResumeState;
 import software.wings.sm.states.ApprovalState;
 import software.wings.sm.states.ArtifactCheckState;
+import software.wings.sm.states.ArtifactCollectLoopState;
 import software.wings.sm.states.ArtifactCollectionState;
 import software.wings.sm.states.AwsAmiRollbackSwitchRoutesState;
 import software.wings.sm.states.AwsAmiRollbackTrafficShiftAlbSwitchRoutesState;
@@ -1385,6 +1386,7 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("sm.states.AppDynamicsState", AppDynamicsState.class);
     w.put("sm.states.ApprovalResumeState", ApprovalResumeState.class);
     w.put("sm.states.ApprovalState", ApprovalState.class);
+    w.put("sm.states.ArtifactCollectLoopState", ArtifactCollectLoopState.class);
     w.put("sm.states.ArtifactCheckState", ArtifactCheckState.class);
     w.put("sm.states.ArtifactCollectionState", ArtifactCollectionState.class);
     w.put("sm.states.AwsAmiRollbackSwitchRoutesState", AwsAmiRollbackSwitchRoutesState.class);

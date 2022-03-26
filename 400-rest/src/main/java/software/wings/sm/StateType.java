@@ -112,6 +112,7 @@ import software.wings.sm.states.AppDynamicsState;
 import software.wings.sm.states.ApprovalResumeState;
 import software.wings.sm.states.ApprovalState;
 import software.wings.sm.states.ArtifactCheckState;
+import software.wings.sm.states.ArtifactCollectLoopState;
 import software.wings.sm.states.ArtifactCollectionState;
 import software.wings.sm.states.AwsAmiRollbackSwitchRoutesState;
 import software.wings.sm.states.AwsAmiRollbackTrafficShiftAlbSwitchRoutesState;
@@ -501,6 +502,8 @@ public enum StateType implements StateTypeDescriptor {
    * Bamboo state type
    */
   BAMBOO(BambooState.class, OTHERS, asList(), ORCHESTRATION_STENCILS, COMMON),
+
+  ARTIFACT_COLLECT_LOOP_STATE(ArtifactCollectLoopState.class, ENVIRONMENTS, asList(), NONE),
 
   /**
    * Artifact Collection state type.
