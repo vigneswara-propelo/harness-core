@@ -29,6 +29,7 @@ import software.wings.beans.Pipeline;
 import software.wings.beans.User;
 import software.wings.beans.Workflow;
 import software.wings.beans.WorkflowExecution;
+import software.wings.security.AppPermissionSummary;
 import software.wings.security.PermissionAttribute;
 import software.wings.security.UserRequestContext;
 import software.wings.security.UserThreadLocal;
@@ -42,6 +43,7 @@ import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -138,6 +140,12 @@ public class DeploymentAuthHandler {
     List<PermissionAttribute> permissionAttributeList = new ArrayList<>();
     permissionAttributeList.add(new PermissionAttribute(DEPLOYMENT, EXECUTE_PIPELINE));
     authorize(permissionAttributeList, Collections.singletonList(appId), entityId);
+  }
+
+  public void authorizeExecutableDeployableInEnv(
+      Set<String> envIds, String appId, String executableId, String filterType) {
+    authService.authorize(envIds, appId,
+        AppPermissionSummary.ExecutableElementInfo.builder().entityType(filterType).entityId(executableId).build());
   }
 
   public void authorizeWorkflowExecution(String appId, String entityId) {

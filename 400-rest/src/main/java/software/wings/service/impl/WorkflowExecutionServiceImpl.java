@@ -29,6 +29,7 @@ import static io.harness.beans.ExecutionStatus.activeStatuses;
 import static io.harness.beans.ExecutionStatus.isActiveStatus;
 import static io.harness.beans.FeatureName.HELM_CHART_AS_ARTIFACT;
 import static io.harness.beans.FeatureName.NEW_DEPLOYMENT_FREEZE;
+import static io.harness.beans.FeatureName.PIPELINE_PER_ENV_DEPLOYMENT_PERMISSION;
 import static io.harness.beans.FeatureName.RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION;
 import static io.harness.beans.FeatureName.WEBHOOK_TRIGGER_AUTHORIZATION;
 import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
@@ -256,6 +257,7 @@ import software.wings.exception.InvalidBaselineConfigurationException;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.infra.AwsAmiInfrastructure;
 import software.wings.infra.InfrastructureDefinition;
+import software.wings.security.ExecutableElementsFilter;
 import software.wings.security.UserThreadLocal;
 import software.wings.service.ArtifactStreamHelper;
 import software.wings.service.impl.WorkflowTree.WorkflowTreeBuilder;
@@ -1399,6 +1401,10 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     boolean shouldAuthorizeExecution = trigger == null && user != null;
     if (shouldAuthorizeExecution) {
       deploymentAuthHandler.authorizePipelineExecution(appId, pipelineId);
+      if (featureFlagService.isEnabled(PIPELINE_PER_ENV_DEPLOYMENT_PERMISSION, accountId)) {
+        deploymentAuthHandler.authorizeExecutableDeployableInEnv(
+            new HashSet<>(pipeline.getEnvIds()), appId, pipelineId, ExecutableElementsFilter.FilterType.PIPELINE);
+      }
       if (isNotEmpty(pipeline.getEnvIds())) {
         pipeline.getEnvIds().forEach(s -> authService.checkIfUserAllowedToDeployPipelineToEnv(appId, s));
       }
@@ -1616,6 +1622,11 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     boolean isDirectExecution = trigger == null && user != null && isEmpty(pipelineExecutionId);
     if (isDirectExecution) {
       deploymentAuthHandler.authorizeWorkflowExecution(appId, workflowId);
+      //      if (featureFlagService.isEnabled(PIPELINE_PER_ENV_DEPLOYMENT_PERMISSION, accountId)) {
+      // enable when it is ready
+      //        deploymentAuthHandler.authorizeExecutableDeployableInEnv(
+      //            Collections.singleton(envId), appId, workflowId, ExecutableElementsFilter.FilterType.WORKFLOW);
+      //      }
       authService.checkIfUserAllowedToDeployWorkflowToEnv(appId, envId);
     }
 
