@@ -40,4 +40,6 @@ public interface GitFileLocationRepositoryCustom {
   GitFileLocation update(Query query, Update update);
 
   List<GitFileLocation> deleteAll(Query query);
+
+  GitFileLocation findOne(Criteria criteria);
 }

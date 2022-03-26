@@ -216,14 +216,27 @@ public class GitEntityServiceImpl implements GitEntityService {
   }
 
   @Override
-  public boolean save(String accountId, EntityDetail entityDetail, YamlGitConfigDTO yamlGitConfig, String folderPath,
-      String filePath, String commitId, String branchName) {
-    final Optional<GitFileLocation> gitFileLocation =
-        gitFileLocationRepository.findByEntityGitPathAndGitSyncConfigIdAndAccountIdAndBranch(
-            filePath, yamlGitConfig.getIdentifier(), accountId, branchName);
+  public GitSyncEntityDTO save(String accountId, EntityDetail entityDetail, YamlGitConfigDTO yamlGitConfig,
+      String folderPath, String filePath, String commitId, String branchName) {
     String completeFilePath = GitSyncFilePathUtils.createFilePath(folderPath, filePath);
+    Optional<GitFileLocation> gitFileLocation =
+        gitFileLocationRepository.findByAccountIdAndOrganizationIdAndProjectIdAndCompleteGitPathAndRepoAndBranch(
+            accountId, entityDetail.getEntityRef().getOrgIdentifier(),
+            entityDetail.getEntityRef().getProjectIdentifier(), completeFilePath, yamlGitConfig.getRepo(), branchName);
+
+    if (!gitFileLocation.isPresent()) {
+      String completeFilePathWithoutStartingSlash =
+          GitSyncFilePathUtils.getFilePathWithoutStartingSlash(completeFilePath);
+      gitFileLocation =
+          gitFileLocationRepository.findByAccountIdAndOrganizationIdAndProjectIdAndCompleteGitPathAndRepoAndBranch(
+              accountId, entityDetail.getEntityRef().getOrgIdentifier(),
+              entityDetail.getEntityRef().getProjectIdentifier(), completeFilePathWithoutStartingSlash,
+              yamlGitConfig.getRepo(), branchName);
+    }
+
     final RepoProviders repoProviderFromConnectorType =
         RepoProviderHelper.getRepoProviderFromConnectorType(yamlGitConfig.getGitConnectorType());
+
     // todo(abhinav): changeisDefault to value which comes when
     final GitFileLocation fileLocation = GitFileLocation.builder()
                                              .accountId(accountId)
@@ -248,7 +261,14 @@ public class GitEntityServiceImpl implements GitEntityService {
                                              .build();
     gitFileLocation.ifPresent(location -> fileLocation.setUuid(location.getUuid()));
     gitFileLocationRepository.save(fileLocation);
-    return true;
+    if (gitFileLocation.isPresent()) {
+      log.info("Updated Git Entity having accountId [{}], repo [{}], branch [{}] and completeFilePath [{}]", accountId,
+          yamlGitConfig.getRepo(), branchName, completeFilePath);
+    } else {
+      log.info("Saved Git Entity having accountId [{}], repo [{}], branch [{}] and completeFilePath [{}]", accountId,
+          yamlGitConfig.getRepo(), branchName, completeFilePath);
+    }
+    return buildGitSyncEntityDTO(fileLocation);
   }
 
   public void updateFilePath(
@@ -264,7 +284,7 @@ public class GitEntityServiceImpl implements GitEntityService {
                             .is(branchName);
 
     Update updateOperation = new Update();
-    updateOperation.set(GitFileLocationKeys.completeGitPath, newFilePath)
+    updateOperation.set(GitFileLocationKeys.completeGitPath, GitSyncFilePathUtils.formatFilePath(newFilePath))
         .set(GitFileLocationKeys.folderPath, gitEntityFilePath.getRootFolder())
         .set(GitFileLocationKeys.entityGitPath, gitEntityFilePath.getFilePath());
 

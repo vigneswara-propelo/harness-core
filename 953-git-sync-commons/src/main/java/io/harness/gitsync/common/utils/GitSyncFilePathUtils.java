@@ -71,4 +71,14 @@ public class GitSyncFilePathUtils {
     }
     return path;
   }
+
+  public static String getFilePathWithoutStartingSlash(String path) {
+    if (isEmpty(path)) {
+      throw new InvalidRequestException("File Path cannot be empty");
+    }
+    if (path.charAt(0) == '/') {
+      return path.substring(1);
+    }
+    return path;
+  }
 }
