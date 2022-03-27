@@ -98,8 +98,8 @@ public class CDNGPipelineConfigurationResource {
   @GET
   @Path("/serviceDefinitionTypes")
   @ApiOperation(value = "Git list of service definition types", nickname = "getServiceDefinitionTypes")
-  public ResponseDTO<List<ServiceDefinitionType>> getServiceDefinitionTypes() {
-    return ResponseDTO.newResponse(cdngPipelineConfigurationHelper.getServiceDefinitionTypes());
+  public ResponseDTO<List<ServiceDefinitionType>> getServiceDefinitionTypes(@QueryParam("accountId") String accountId) {
+    return ResponseDTO.newResponse(cdngPipelineConfigurationHelper.getServiceDefinitionTypes(accountId));
   }
 
   @GET

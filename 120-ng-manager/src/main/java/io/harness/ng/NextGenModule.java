@@ -190,6 +190,8 @@ import io.harness.ng.userprofile.services.api.SourceCodeManagerService;
 import io.harness.ng.userprofile.services.api.UserInfoService;
 import io.harness.ng.userprofile.services.impl.SourceCodeManagerServiceImpl;
 import io.harness.ng.userprofile.services.impl.UserInfoServiceImpl;
+import io.harness.ng.validator.service.NGHostValidationServiceImpl;
+import io.harness.ng.validator.service.api.NGHostValidationService;
 import io.harness.ng.webhook.services.api.WebhookEventProcessingService;
 import io.harness.ng.webhook.services.api.WebhookEventService;
 import io.harness.ng.webhook.services.api.WebhookService;
@@ -647,6 +649,7 @@ public class NextGenModule extends AbstractModule {
     bind(UserInfoService.class).to(UserInfoServiceImpl.class);
     bind(WebhookService.class).to(WebhookServiceImpl.class);
     bind(WebhookEventProcessingService.class).to(WebhookEventProcessingServiceImpl.class);
+    bind(NGHostValidationService.class).to(NGHostValidationServiceImpl.class);
     bind(MessageListener.class)
         .annotatedWith(Names.named(USER_ENTITY + ENTITY_CRUD))
         .to(UserEntityCrudStreamListener.class);

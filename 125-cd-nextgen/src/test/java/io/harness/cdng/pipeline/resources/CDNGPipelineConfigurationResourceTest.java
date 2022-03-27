@@ -75,9 +75,9 @@ public class CDNGPipelineConfigurationResourceTest extends CategoryTest {
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
   public void testGetServiceDefinitionTypes() {
-    when(pipelineService.getServiceDefinitionTypes()).thenReturn(Arrays.asList(ServiceDefinitionType.values()));
+    when(pipelineService.getServiceDefinitionTypes(null)).thenReturn(Arrays.asList(ServiceDefinitionType.values()));
     List<ServiceDefinitionType> serviceDefinitionTypes =
-        cdngPipelineConfigurationResource.getServiceDefinitionTypes().getData();
+        cdngPipelineConfigurationResource.getServiceDefinitionTypes(null).getData();
 
     assertThat(serviceDefinitionTypes).isNotNull();
     assertThat(serviceDefinitionTypes.size()).isEqualTo(3);

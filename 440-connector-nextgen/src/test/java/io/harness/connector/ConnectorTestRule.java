@@ -26,6 +26,7 @@ import io.harness.eventsframework.EventsFrameworkConstants;
 import io.harness.eventsframework.api.Producer;
 import io.harness.eventsframework.impl.noop.NoOpProducer;
 import io.harness.factory.ClosingFactory;
+import io.harness.ff.FeatureFlagService;
 import io.harness.gitsync.clients.YamlGitConfigClient;
 import io.harness.gitsync.persistance.GitAwarePersistence;
 import io.harness.gitsync.persistance.GitSyncSdkService;
@@ -41,6 +42,7 @@ import io.harness.ng.core.api.NGSecretManagerService;
 import io.harness.ng.core.api.SecretCrudService;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.validator.service.api.NGHostValidationService;
 import io.harness.outbox.api.OutboxService;
 import io.harness.persistence.HPersistence;
 import io.harness.remote.CEAwsSetupConfig;
@@ -132,6 +134,8 @@ public class ConnectorTestRule implements InjectorRuleMixin, MethodRule, MongoRu
         bind(GitAwarePersistence.class).to(NoOpGitAwarePersistenceImpl.class);
         bind(GitSyncSdkService.class).toInstance(mock(GitSyncSdkService.class));
         bind(YamlGitConfigClient.class).toInstance(mock(YamlGitConfigClient.class));
+        bind(NGHostValidationService.class).toInstance(mock(NGHostValidationService.class));
+        bind(FeatureFlagService.class).toInstance(mock(FeatureFlagService.class));
       }
     });
     modules.add(mongoTypeModule(annotations));

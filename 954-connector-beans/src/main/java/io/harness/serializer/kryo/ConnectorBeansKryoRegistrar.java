@@ -110,6 +110,8 @@ import io.harness.delegate.beans.connector.nexusconnector.NexusConnectorDTO;
 import io.harness.delegate.beans.connector.nexusconnector.NexusConstants;
 import io.harness.delegate.beans.connector.nexusconnector.NexusUsernamePasswordAuthDTO;
 import io.harness.delegate.beans.connector.pagerduty.PagerDutyConnectorDTO;
+import io.harness.delegate.beans.connector.pdcconnector.HostDTO;
+import io.harness.delegate.beans.connector.pdcconnector.PhysicalDataCenterConnectorDTO;
 import io.harness.delegate.beans.connector.prometheusconnector.PrometheusConnectorDTO;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
@@ -337,5 +339,8 @@ public class ConnectorBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(AzureAuthDTO.class, 19688);
     kryo.register(AzureClientSecretKeyDTO.class, 19689);
     kryo.register(AzureClientKeyCertDTO.class, 19690);
+
+    kryo.register(PhysicalDataCenterConnectorDTO.class, 19691);
+    kryo.register(HostDTO.class, 19692);
   }
 }

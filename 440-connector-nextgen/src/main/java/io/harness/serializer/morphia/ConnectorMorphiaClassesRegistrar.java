@@ -83,6 +83,7 @@ import io.harness.connector.entities.embedded.newrelicconnector.NewRelicConnecto
 import io.harness.connector.entities.embedded.nexusconnector.NexusConnector;
 import io.harness.connector.entities.embedded.nexusconnector.NexusUserNamePasswordAuthentication;
 import io.harness.connector.entities.embedded.pagerduty.PagerDutyConnector;
+import io.harness.connector.entities.embedded.pdcconnector.PhysicalDataCenterConnector;
 import io.harness.connector.entities.embedded.prometheusconnector.PrometheusConnector;
 import io.harness.connector.entities.embedded.servicenow.ServiceNowConnector;
 import io.harness.connector.entities.embedded.splunkconnector.SplunkConnector;
@@ -109,6 +110,7 @@ public class ConnectorMorphiaClassesRegistrar implements MorphiaRegistrar {
     set.add(AppDynamicsConnector.class);
     set.add(SplunkConnector.class);
     set.add(DockerConnector.class);
+    set.add(PhysicalDataCenterConnector.class);
     set.add(GcpConfig.class);
     set.add(AwsConfig.class);
     set.add(CEAwsConfig.class);

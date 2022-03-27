@@ -14,6 +14,7 @@ import static io.harness.delegate.beans.connector.k8Connector.KubernetesCredenti
 import static io.harness.rule.OwnerRule.DEEPAK;
 import static io.harness.rule.OwnerRule.PHOENIKX;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
@@ -65,7 +66,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Rule;
@@ -265,7 +265,7 @@ public class DefaultConnectorServiceImplTest extends ConnectorsTestBase {
     List<String> connectorIdentifierList =
         connectorSummaryDTOSList.stream()
             .map(connectorSummaryDTO -> connectorSummaryDTO.getConnector().getIdentifier())
-            .collect(Collectors.toList());
+            .collect(toList());
     assertThat(connectorIdentifierList).contains(connectorIdentifier1);
     assertThat(connectorIdentifierList).contains(connectorIdentifier2);
     assertThat(connectorIdentifierList).contains(connectorIdentifier3);
@@ -435,7 +435,7 @@ public class DefaultConnectorServiceImplTest extends ConnectorsTestBase {
     List<String> connectorIdentifierList =
         connectorSummaryDTOSList.stream()
             .map(connectorSummaryDTO -> connectorSummaryDTO.getConnector().getIdentifier())
-            .collect(Collectors.toList());
+            .collect(toList());
     assertThat(connectorIdentifierList).contains(connectorIdentifier1);
     assertThat(connectorIdentifierList).contains(connectorIdentifier2);
     assertThat(connectorIdentifierList).contains(connectorIdentifier3);
@@ -475,7 +475,7 @@ public class DefaultConnectorServiceImplTest extends ConnectorsTestBase {
     List<String> connectorIdentifierList =
         connectorSummaryDTOSList.stream()
             .map(connectorSummaryDTO -> connectorSummaryDTO.getConnector().getIdentifier())
-            .collect(Collectors.toList());
+            .collect(toList());
     assertThat(connectorIdentifierList).doesNotContain(connectorIdentifier1);
     assertThat(connectorIdentifierList).contains(connectorIdentifier2);
     assertThat(connectorIdentifierList).contains(connectorIdentifier3);
@@ -508,7 +508,7 @@ public class DefaultConnectorServiceImplTest extends ConnectorsTestBase {
     List<String> connectorIdentifierList =
         connectorSummaryDTOSList.stream()
             .map(connectorSummaryDTO -> connectorSummaryDTO.getConnector().getIdentifier())
-            .collect(Collectors.toList());
+            .collect(toList());
     assertThat(connectorIdentifierList).contains(connectorIdentifier1);
     assertThat(connectorIdentifierList).contains(connectorIdentifier2);
     assertThat(connectorIdentifierList).contains(connectorIdentifier3);

@@ -10,6 +10,7 @@ package io.harness.connector.apis.resource;
 import static io.harness.delegate.beans.connector.ConnectorType.KUBERNETES_CLUSTER;
 import static io.harness.delegate.beans.connector.k8Connector.KubernetesCredentialType.INHERIT_FROM_DELEGATE;
 
+import static com.google.common.base.Predicates.alwaysTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -30,6 +31,7 @@ import io.harness.connector.ConnectorFilterPropertiesDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorValidationResult;
+import io.harness.connector.featureflagfilter.ConnectorEnumFilter;
 import io.harness.connector.helper.CatalogueHelper;
 import io.harness.connector.helper.ConnectorRbacHelper;
 import io.harness.connector.services.ConnectorService;
@@ -67,13 +69,14 @@ public class ConnectorResourceTest extends CategoryTest {
   @Mock private ConnectorService connectorService;
   @Mock private AccessControlClient accessControlClient;
   @Mock private ConnectorRbacHelper connectorRbacHelper;
+  @Mock private ConnectorEnumFilter enumFilter;
+  @InjectMocks private CatalogueHelper catalogueHelper;
   @InjectMocks private ConnectorResource connectorResource;
   ConnectorResponseDTO connectorResponse;
   ConnectorInfoDTO connectorInfo;
   ConnectorDTO connectorRequest;
   String accountIdentifier = "accountIdentifier";
   ConnectorCatalogueResponseDTO catalogueResponseDTO;
-  private final CatalogueHelper catalogueHelper = new CatalogueHelper();
 
   @Before
   public void setUp() throws Exception {
@@ -97,8 +100,9 @@ public class ConnectorResourceTest extends CategoryTest {
   }
 
   private ConnectorCatalogueResponseDTO setUpCatalogueResponse() {
+    doReturn(alwaysTrue()).when(enumFilter).filter(any(), any());
     return ConnectorCatalogueResponseDTO.builder()
-        .catalogue(catalogueHelper.getConnectorTypeToCategoryMapping())
+        .catalogue(catalogueHelper.getConnectorTypeToCategoryMapping(accountIdentifier))
         .build();
   }
 
@@ -204,7 +208,7 @@ public class ConnectorResourceTest extends CategoryTest {
   @Owner(developers = OwnerRule.VARDAN_BANSAL)
   @Category(UnitTests.class)
   public void getConnectorCatalogueTest() {
-    when(connectorService.getConnectorCatalogue()).thenReturn(catalogueResponseDTO);
+    when(connectorService.getConnectorCatalogue(accountIdentifier)).thenReturn(catalogueResponseDTO);
     final ResponseDTO<ConnectorCatalogueResponseDTO> response =
         connectorResource.getConnectorCatalogue("accountIdentifier");
     assertThat(response).isNotNull();
@@ -214,7 +218,7 @@ public class ConnectorResourceTest extends CategoryTest {
         catalogue.stream().map(item -> item.getConnectors().size()).mapToInt(Integer::intValue).sum();
     // Temporary size decreased by 1 because of hided Azure connector. Will be removed after Azure connector is enabled
     assertThat(totalConnectorsWithinAllCategories).isEqualTo(ConnectorType.values().length - 1);
-    Mockito.verify(connectorService, times(1)).getConnectorCatalogue();
+    Mockito.verify(connectorService, times(1)).getConnectorCatalogue(accountIdentifier);
   }
 
   @Test

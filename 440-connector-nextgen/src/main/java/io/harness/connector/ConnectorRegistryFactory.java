@@ -27,6 +27,7 @@ import io.harness.connector.heartbeat.JiraValidationParamsProvider;
 import io.harness.connector.heartbeat.K8sConnectorValidationParamsProvider;
 import io.harness.connector.heartbeat.NexusValidationParamsProvider;
 import io.harness.connector.heartbeat.NoOpConnectorValidationParamsProvider;
+import io.harness.connector.heartbeat.PhysicalDataCenterConnectorValidationParamsProvider;
 import io.harness.connector.heartbeat.ScmConnectorValidationParamsProvider;
 import io.harness.connector.heartbeat.ServiceNowValidationParamsProvider;
 import io.harness.connector.heartbeat.VaultConnectorValidationParamsProvider;
@@ -82,6 +83,8 @@ import io.harness.connector.mappers.nexusmapper.NexusDTOToEntity;
 import io.harness.connector.mappers.nexusmapper.NexusEntityToDTO;
 import io.harness.connector.mappers.pagerduty.PagerDutyDTOToEntity;
 import io.harness.connector.mappers.pagerduty.PagerDutyEntityToDTO;
+import io.harness.connector.mappers.pdcconnector.PhysicalDataCenterDTOToEntity;
+import io.harness.connector.mappers.pdcconnector.PhysicalDataCenterEntityToDTO;
 import io.harness.connector.mappers.prometheusmapper.PrometheusDTOToEntity;
 import io.harness.connector.mappers.prometheusmapper.PrometheusEntityToDTO;
 import io.harness.connector.mappers.secretmanagermapper.AwsKmsDTOToEntity;
@@ -121,6 +124,7 @@ import io.harness.connector.validator.HttpHelmRepoConnectionValidator;
 import io.harness.connector.validator.JiraConnectorValidator;
 import io.harness.connector.validator.KubernetesConnectionValidator;
 import io.harness.connector.validator.NexusConnectorValidator;
+import io.harness.connector.validator.PhysicalDataCenterConnectorValidator;
 import io.harness.connector.validator.SecretManagerConnectorValidator;
 import io.harness.connector.validator.ServiceNowConnectorValidator;
 import io.harness.connector.validator.scmValidators.AwsCodeCommitValidator;
@@ -278,6 +282,10 @@ public class ConnectorRegistryFactory {
         new ConnectorRegistrar(ConnectorCategory.MONITORING, ErrorTrackingConnectorValidator.class,
             CVConnectorParamsProvider.class, ErrorTrackingDTOToEntity.class, ErrorTrackingEntityToDTO.class,
             NotSupportedValidationHandler.class));
+    registrar.put(ConnectorType.PDC,
+        new ConnectorRegistrar(ConnectorCategory.CLOUD_PROVIDER, PhysicalDataCenterConnectorValidator.class,
+            PhysicalDataCenterConnectorValidationParamsProvider.class, PhysicalDataCenterDTOToEntity.class,
+            PhysicalDataCenterEntityToDTO.class, NotSupportedValidationHandler.class));
   }
 
   public static Class<? extends ConnectionValidator> getConnectorValidator(ConnectorType connectorType) {

@@ -17,6 +17,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.errorhandling.NGErrorHelper.DEFAULT_ERROR_SUMMARY;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.git.model.ChangeType.ADD;
+import static io.harness.utils.PageUtils.getPageRequest;
 import static io.harness.utils.RestCallToNGManagerClientUtils.execute;
 
 import static java.lang.String.format;
@@ -106,7 +107,6 @@ import io.harness.outbox.api.OutboxService;
 import io.harness.perpetualtask.PerpetualTaskId;
 import io.harness.repositories.ConnectorRepository;
 import io.harness.utils.FullyQualifiedIdentifierHelper;
-import io.harness.utils.PageUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -202,7 +202,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
     Criteria criteria =
         filterService.createCriteriaFromConnectorListQueryParams(accountIdentifier, orgIdentifier, projectIdentifier,
             filterIdentifier, searchTerm, filterProperties, includeAllConnectorsAccessibleAtScope, isBuiltInSMDisabled);
-    Pageable pageable = PageUtils.getPageRequest(
+    Pageable pageable = getPageRequest(
         PageRequest.builder()
             .pageIndex(page)
             .pageSize(size)
@@ -284,7 +284,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
         accountSettingService.getIsBuiltInSMDisabled(accountIdentifier, null, null, AccountSettingType.CONNECTOR);
     Criteria criteria = filterService.createCriteriaFromConnectorFilter(accountIdentifier, orgIdentifier,
         projectIdentifier, searchTerm, type, category, sourceCategory, isBuiltInSMDisabled);
-    Pageable pageable = PageUtils.getPageRequest(
+    Pageable pageable = getPageRequest(
         PageRequest.builder()
             .pageIndex(page)
             .pageSize(size)
@@ -850,9 +850,9 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
   }
 
   @Override
-  public ConnectorCatalogueResponseDTO getConnectorCatalogue() {
+  public ConnectorCatalogueResponseDTO getConnectorCatalogue(String accountIdentifier) {
     return ConnectorCatalogueResponseDTO.builder()
-        .catalogue(catalogueHelper.getConnectorTypeToCategoryMapping())
+        .catalogue(catalogueHelper.getConnectorTypeToCategoryMapping(accountIdentifier))
         .build();
   }
 
@@ -944,7 +944,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
       return emptyList();
     }
 
-    Pageable pageable = PageUtils.getPageRequest(
+    Pageable pageable = getPageRequest(
         PageRequest.builder()
             .pageSize(connectorFQN.size())
             .sortOrders(Collections.singletonList(

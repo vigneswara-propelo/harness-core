@@ -36,6 +36,7 @@ import io.harness.delegate.beans.connector.localconnector.LocalConnectorDTO;
 import io.harness.delegate.beans.connector.newrelic.NewRelicConnectorDTO;
 import io.harness.delegate.beans.connector.nexusconnector.NexusConnectorDTO;
 import io.harness.delegate.beans.connector.pagerduty.PagerDutyConnectorDTO;
+import io.harness.delegate.beans.connector.pdcconnector.PhysicalDataCenterConnectorDTO;
 import io.harness.delegate.beans.connector.prometheusconnector.PrometheusConnectorDTO;
 import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitConnectorDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketConnectorDTO;
@@ -89,7 +90,8 @@ import java.util.List;
       @JsonSubTypes.Type(value = PagerDutyConnectorDTO.class, name = "PagerDuty"),
       @JsonSubTypes.Type(value = CustomHealthConnectorDTO.class, name = "CustomHealth"),
       @JsonSubTypes.Type(value = ServiceNowConnectorDTO.class, name = "ServiceNow"),
-      @JsonSubTypes.Type(value = ErrorTrackingConnectorDTO.class, name = "ErrorTracking")
+      @JsonSubTypes.Type(value = ErrorTrackingConnectorDTO.class, name = "ErrorTracking"),
+      @JsonSubTypes.Type(value = PhysicalDataCenterConnectorDTO.class, name = "Pdc")
 })
 @OwnedBy(DX)
 @Schema(name = "ConnectorConfig", description = "This is the view of the ConnectorConfig entity defined in Harness")
