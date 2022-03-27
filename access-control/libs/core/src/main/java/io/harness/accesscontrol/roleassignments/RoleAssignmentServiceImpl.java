@@ -85,6 +85,11 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
       if (!roleAssignmentUpdate.getPrincipalType().equals(roleAssignment.getPrincipalType())) {
         throw new InvalidRequestException("Cannot change principal type in the role assignment");
       }
+      if (roleAssignmentUpdate.getPrincipalScopeLevel() != null
+          && !roleAssignmentUpdate.getPrincipalScopeLevel().equals(roleAssignment.getPrincipalScopeLevel())
+          && roleAssignment.getPrincipalScopeLevel() != null) {
+        throw new InvalidRequestException("Cannot change principal scope in the role assignment");
+      }
       if (!roleAssignmentUpdate.getRoleIdentifier().equals(roleAssignment.getRoleIdentifier())) {
         throw new InvalidRequestException("Cannot change role in the role assignment");
       }

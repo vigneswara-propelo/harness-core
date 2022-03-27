@@ -37,6 +37,7 @@ import io.harness.accesscontrol.roles.RoleService;
 import io.harness.accesscontrol.roles.RoleTestUtils;
 import io.harness.accesscontrol.scopes.TestScopeLevels;
 import io.harness.accesscontrol.scopes.core.Scope;
+import io.harness.accesscontrol.scopes.core.ScopeService;
 import io.harness.aggregator.AggregatorTestBase;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
@@ -56,6 +57,7 @@ public class RoleAssignmentChangeConsumerImplTest extends AggregatorTestBase {
   private RoleService roleService;
   private ResourceGroupService resourceGroupService;
   private UserGroupService userGroupService;
+  private ScopeService scopeService;
   private RoleAssignmentRepository roleAssignmentRepository;
   @Inject @Named(ACL.PRIMARY_COLLECTION) private ACLRepository aclRepository;
   private RoleAssignmentChangeConsumerImpl roleAssignmentChangeConsumer;
@@ -73,9 +75,10 @@ public class RoleAssignmentChangeConsumerImplTest extends AggregatorTestBase {
     roleService = mock(RoleService.class);
     resourceGroupService = mock(ResourceGroupService.class);
     userGroupService = mock(UserGroupService.class);
+    scopeService = mock(ScopeService.class);
     roleAssignmentRepository = mock(RoleAssignmentRepository.class);
     ChangeConsumerService changeConsumerService =
-        new ChangeConsumerServiceImpl(roleService, userGroupService, resourceGroupService);
+        new ChangeConsumerServiceImpl(roleService, userGroupService, resourceGroupService, scopeService);
     roleAssignmentChangeConsumer = new RoleAssignmentChangeConsumerImpl(
         aclRepository, roleAssignmentRepository, changeConsumerService, roleAssignmentCRUDEventHandler);
     scopeIdentifier =

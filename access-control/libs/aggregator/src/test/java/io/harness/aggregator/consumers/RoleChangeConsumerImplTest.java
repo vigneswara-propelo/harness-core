@@ -33,6 +33,7 @@ import io.harness.accesscontrol.roles.RoleService;
 import io.harness.accesscontrol.roles.persistence.RoleDBO;
 import io.harness.accesscontrol.roles.persistence.RoleDBOMapper;
 import io.harness.accesscontrol.roles.persistence.repositories.RoleRepository;
+import io.harness.accesscontrol.scopes.core.ScopeService;
 import io.harness.aggregator.AggregatorTestBase;
 import io.harness.aggregator.controllers.AggregatorBaseSyncController.AggregatorJobType;
 import io.harness.annotations.dev.OwnedBy;
@@ -59,6 +60,7 @@ public class RoleChangeConsumerImplTest extends AggregatorTestBase {
   private RoleAssignmentRepository roleAssignmentRepository;
   private RoleRepository roleRepository;
   private RoleService roleService;
+  private ScopeService scopeService;
   private RoleChangeConsumerImpl roleChangeConsumer;
   private RoleAssignmentChangeConsumerImpl roleAssignmentChangeConsumer;
   private String scopeIdentifier;
@@ -73,8 +75,9 @@ public class RoleChangeConsumerImplTest extends AggregatorTestBase {
     ResourceGroupService resourceGroupService = mock(ResourceGroupService.class);
     RoleAssignmentCRUDEventHandler roleAssignmentCRUDEventHandler = mock(RoleAssignmentCRUDEventHandler.class);
     UserGroupService userGroupService = mock(UserGroupService.class);
+    scopeService = mock(ScopeService.class);
     ChangeConsumerService changeConsumerService =
-        new ChangeConsumerServiceImpl(roleService, userGroupService, resourceGroupService);
+        new ChangeConsumerServiceImpl(roleService, userGroupService, resourceGroupService, scopeService);
     roleChangeConsumer = new RoleChangeConsumerImpl(aclRepository, roleAssignmentRepository, roleRepository,
         AggregatorJobType.PRIMARY.name(), changeConsumerService);
     aclRepository.cleanCollection();

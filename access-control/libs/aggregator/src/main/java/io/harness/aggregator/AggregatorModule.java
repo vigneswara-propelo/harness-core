@@ -69,5 +69,6 @@ public class AggregatorModule extends AbstractModule {
     requireBinding(ResourceGroupService.class);
     requireBinding(ScopeService.class);
     requireBinding(ChangeEventFailureHandler.class);
+    requireBinding(ScopeService.class);
   }
 }

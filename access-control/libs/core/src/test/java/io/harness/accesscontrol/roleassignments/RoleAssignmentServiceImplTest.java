@@ -69,6 +69,7 @@ public class RoleAssignmentServiceImplTest extends AccessControlCoreTestBase {
         .roleIdentifier(randomAlphabetic(10))
         .principalType(PrincipalType.USER)
         .principalIdentifier(randomAlphabetic(10))
+        .principalScopeLevel(randomAlphabetic(10))
         .resourceGroupIdentifier(randomAlphabetic(10))
         .build();
   }
@@ -154,6 +155,7 @@ public class RoleAssignmentServiceImplTest extends AccessControlCoreTestBase {
                                                .roleIdentifier(randomAlphabetic(10))
                                                .principalType(PrincipalType.USER)
                                                .principalIdentifier(randomAlphabetic(10))
+                                               .principalScopeLevel(randomAlphabetic(10))
                                                .resourceGroupIdentifier(randomAlphabetic(10))
                                                .disabled(true)
                                                .version(17L)
@@ -166,6 +168,7 @@ public class RoleAssignmentServiceImplTest extends AccessControlCoreTestBase {
             .roleIdentifier(currentRoleAssignment.getRoleIdentifier())
             .principalType(currentRoleAssignment.getPrincipalType())
             .principalIdentifier(currentRoleAssignment.getPrincipalIdentifier())
+            .principalScopeLevel(currentRoleAssignment.getPrincipalScopeLevel())
             .resourceGroupIdentifier(currentRoleAssignment.getResourceGroupIdentifier())
             .disabled(false)
             .build();
@@ -218,6 +221,7 @@ public class RoleAssignmentServiceImplTest extends AccessControlCoreTestBase {
             .roleIdentifier(currentRoleAssignment.getRoleIdentifier())
             .principalType(currentRoleAssignment.getPrincipalType())
             .principalIdentifier(currentRoleAssignment.getPrincipalIdentifier())
+            .principalScopeLevel(currentRoleAssignment.getPrincipalScopeLevel())
             .resourceGroupIdentifier(currentRoleAssignment.getResourceGroupIdentifier())
             .build();
     when(roleAssignmentDao.get(roleAssignmentUpdate.getIdentifier(), roleAssignmentUpdate.getScopeIdentifier()))
@@ -229,6 +233,8 @@ public class RoleAssignmentServiceImplTest extends AccessControlCoreTestBase {
         Pair.of(ReflectionUtils.getFieldByName(RoleAssignment.class, "roleIdentifier"), randomAlphabetic(11)));
     fieldsAndNewValues.add(
         Pair.of(ReflectionUtils.getFieldByName(RoleAssignment.class, "principalIdentifier"), randomAlphabetic(11)));
+    fieldsAndNewValues.add(
+        Pair.of(ReflectionUtils.getFieldByName(RoleAssignment.class, "principalScopeLevel"), randomAlphabetic(11)));
     fieldsAndNewValues.add(
         Pair.of(ReflectionUtils.getFieldByName(RoleAssignment.class, "principalType"), PrincipalType.SERVICE_ACCOUNT));
 

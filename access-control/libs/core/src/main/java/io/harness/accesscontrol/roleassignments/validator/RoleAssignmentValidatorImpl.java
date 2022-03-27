@@ -62,6 +62,7 @@ public class RoleAssignmentValidatorImpl implements RoleAssignmentValidator {
 
     if (request.isValidatePrincipal()) {
       builder.principalValidationResult(validatePrincipal(Principal.builder()
+                                                              .principalScopeLevel(assignment.getPrincipalScopeLevel())
                                                               .principalIdentifier(assignment.getPrincipalIdentifier())
                                                               .principalType(assignment.getPrincipalType())
                                                               .build(),

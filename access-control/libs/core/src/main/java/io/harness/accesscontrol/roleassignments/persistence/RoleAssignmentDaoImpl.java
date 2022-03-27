@@ -141,6 +141,8 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDao {
     }
 
     else if (!roleAssignmentFilter.getPrincipalFilter().isEmpty()) {
+      // principalScopeLevel changes in next release
+      // include principalScopeLevel in criteria once user group role assignments are migrated
       criteria.orOperator(roleAssignmentFilter.getPrincipalFilter()
                               .stream()
                               .map(principal

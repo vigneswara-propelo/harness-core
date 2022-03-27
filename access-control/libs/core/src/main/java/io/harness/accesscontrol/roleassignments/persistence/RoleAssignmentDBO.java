@@ -62,6 +62,7 @@ public class RoleAssignmentDBO implements PersistentEntity, AccessControlEntity 
   final String scopeLevel;
   @NotEmpty final String resourceGroupIdentifier;
   @NotEmpty final String roleIdentifier;
+  final String principalScopeLevel;
   @NotEmpty final String principalIdentifier;
   @NotNull final PrincipalType principalType;
   @Getter(value = AccessLevel.NONE) final Boolean managed;

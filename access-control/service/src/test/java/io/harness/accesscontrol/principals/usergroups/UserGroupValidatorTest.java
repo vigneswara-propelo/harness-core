@@ -17,6 +17,7 @@ import io.harness.accesscontrol.AccessControlTestBase;
 import io.harness.accesscontrol.principals.Principal;
 import io.harness.accesscontrol.principals.PrincipalType;
 import io.harness.accesscontrol.principals.PrincipalValidator;
+import io.harness.accesscontrol.scopes.core.ScopeService;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
@@ -29,12 +30,14 @@ import org.junit.experimental.categories.Category;
 @OwnedBy(PL)
 public class UserGroupValidatorTest extends AccessControlTestBase {
   private UserGroupService userGroupService;
+  private ScopeService scopeService;
   private PrincipalValidator principalValidator;
 
   @Before
   public void setup() {
     userGroupService = mock(UserGroupService.class);
-    principalValidator = spy(new UserGroupValidator(userGroupService));
+    scopeService = mock(ScopeService.class);
+    principalValidator = spy(new UserGroupValidator(userGroupService, scopeService));
   }
 
   @Test

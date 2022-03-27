@@ -33,6 +33,7 @@ import io.harness.accesscontrol.roleassignments.persistence.RoleAssignmentDBO;
 import io.harness.accesscontrol.roleassignments.persistence.repositories.RoleAssignmentRepository;
 import io.harness.accesscontrol.roles.Role;
 import io.harness.accesscontrol.roles.RoleService;
+import io.harness.accesscontrol.scopes.core.ScopeService;
 import io.harness.aggregator.AggregatorTestBase;
 import io.harness.aggregator.controllers.AggregatorBaseSyncController.AggregatorJobType;
 import io.harness.annotations.dev.OwnedBy;
@@ -60,6 +61,7 @@ public class ResourceGroupChangeConsumerImplTest extends AggregatorTestBase {
   private RoleService roleService;
   private UserGroupService userGroupService;
   private ResourceGroupService resourceGroupService;
+  private ScopeService scopeService;
   private ResourceGroupChangeConsumerImpl resourceGroupChangeConsumer;
   private int randomCount;
   private String id = randomAlphabetic(10);
@@ -70,10 +72,11 @@ public class ResourceGroupChangeConsumerImplTest extends AggregatorTestBase {
     roleService = mock(RoleService.class);
     resourceGroupService = mock(ResourceGroupService.class);
     userGroupService = mock(UserGroupService.class);
+    scopeService = mock(ScopeService.class);
     roleAssignmentRepository = mock(RoleAssignmentRepository.class);
     resourceGroupRepository = mock(ResourceGroupRepository.class);
     ChangeConsumerService changeConsumerService =
-        new ChangeConsumerServiceImpl(roleService, userGroupService, resourceGroupService);
+        new ChangeConsumerServiceImpl(roleService, userGroupService, resourceGroupService, scopeService);
     resourceGroupChangeConsumer = new ResourceGroupChangeConsumerImpl(aclRepository, roleAssignmentRepository,
         resourceGroupRepository, AggregatorJobType.PRIMARY.name(), changeConsumerService);
     aclRepository.cleanCollection();

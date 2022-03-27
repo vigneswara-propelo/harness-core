@@ -10,6 +10,7 @@ package io.harness.aggregator.consumers;
 import static io.harness.accesscontrol.principals.PrincipalType.SERVICE_ACCOUNT;
 import static io.harness.accesscontrol.principals.PrincipalType.USER;
 import static io.harness.accesscontrol.principals.PrincipalType.USER_GROUP;
+import static io.harness.accesscontrol.scopes.core.ScopeHelper.toParentScope;
 import static io.harness.aggregator.ACLUtils.buildACL;
 
 import io.harness.accesscontrol.acl.api.Principal;
@@ -22,6 +23,8 @@ import io.harness.accesscontrol.resources.resourcegroups.ResourceGroupService;
 import io.harness.accesscontrol.roleassignments.persistence.RoleAssignmentDBO;
 import io.harness.accesscontrol.roles.Role;
 import io.harness.accesscontrol.roles.RoleService;
+import io.harness.accesscontrol.scopes.core.Scope;
+import io.harness.accesscontrol.scopes.core.ScopeService;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
@@ -41,6 +44,7 @@ public class ChangeConsumerServiceImpl implements ChangeConsumerService {
   private final RoleService roleService;
   private final UserGroupService userGroupService;
   private final ResourceGroupService resourceGroupService;
+  private final ScopeService scopeService;
 
   @Override
   public List<ACL> getAClsForRoleAssignment(RoleAssignmentDBO roleAssignment) {
@@ -54,8 +58,11 @@ public class ChangeConsumerServiceImpl implements ChangeConsumerService {
 
     Set<String> principals = new HashSet<>();
     if (USER_GROUP.equals(roleAssignment.getPrincipalType())) {
+      Scope scope = toParentScope(scopeService.buildScopeFromScopeIdentifier(roleAssignment.getScopeIdentifier()),
+          roleAssignment.getPrincipalScopeLevel());
+      String principalScopeIdentifier = scope == null ? roleAssignment.getScopeIdentifier() : scope.toString();
       Optional<UserGroup> userGroup =
-          userGroupService.get(roleAssignment.getPrincipalIdentifier(), roleAssignment.getScopeIdentifier());
+          userGroupService.get(roleAssignment.getPrincipalIdentifier(), principalScopeIdentifier);
       userGroup.ifPresent(group -> principals.addAll(group.getUsers()));
     } else {
       principals.add(roleAssignment.getPrincipalIdentifier());

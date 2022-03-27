@@ -77,6 +77,7 @@ public class UserGroupChangeConsumerImpl implements ChangeConsumer<UserGroupDBO>
       return;
     }
 
+    // principalScopeLevel changes in next release
     Criteria criteria = Criteria.where(RoleAssignmentDBOKeys.principalType)
                             .is(USER_GROUP)
                             .and(RoleAssignmentDBOKeys.principalIdentifier)

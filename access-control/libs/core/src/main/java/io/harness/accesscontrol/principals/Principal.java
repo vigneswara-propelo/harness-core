@@ -21,6 +21,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Builder
 @EqualsAndHashCode
 public class Principal {
+  String principalScopeLevel;
   @NotNull PrincipalType principalType;
   @NotEmpty String principalIdentifier;
 }

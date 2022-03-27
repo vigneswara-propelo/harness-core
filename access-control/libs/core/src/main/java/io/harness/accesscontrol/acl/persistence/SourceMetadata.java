@@ -23,6 +23,7 @@ import lombok.experimental.FieldNameConstants;
 @OwnedBy(HarnessTeam.PL)
 public class SourceMetadata {
   String userGroupIdentifier;
+  String userGroupScopeLevel;
   String roleIdentifier;
   String roleAssignmentIdentifier;
   String resourceGroupIdentifier;
