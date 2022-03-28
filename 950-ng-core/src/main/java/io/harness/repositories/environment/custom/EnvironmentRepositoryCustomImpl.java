@@ -96,6 +96,12 @@ public class EnvironmentRepositoryCustomImpl implements EnvironmentRepositoryCus
         .collect(Collectors.toList());
   }
 
+  @Override
+  public List<Environment> fetchesNonDeletedEnvironmentFromListOfIdentifiers(Criteria criteria) {
+    Query query = new Query(criteria);
+    return mongoTemplate.find(query, Environment.class);
+  }
+
   private RetryPolicy<Object> getRetryPolicy(String failedAttemptMessage, String failureMessage) {
     return new RetryPolicy<>()
         .handle(OptimisticLockingFailureException.class)

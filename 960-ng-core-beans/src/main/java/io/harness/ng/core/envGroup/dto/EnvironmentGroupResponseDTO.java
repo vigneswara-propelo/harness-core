@@ -8,7 +8,9 @@
 package io.harness.ng.core.envGroup.dto;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.gitsync.sdk.EntityGitDetails;
 import io.harness.ng.core.envGroup.constant.EnvironmentGroupConstants;
+import io.harness.ng.core.environment.dto.EnvironmentResponse;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,4 +39,8 @@ public class EnvironmentGroupResponseDTO {
   @Schema(description = NGCommonEntityConstants.TAGS) Map<String, String> tags;
   @Schema(description = NGCommonEntityConstants.VERSION_PARAM_MESSAGE) @JsonIgnore Long version;
   @Schema(description = EnvironmentGroupConstants.ENV_IDENTIFIERS_LIST_PARAM_MESSAGE) List<String> envIdentifiers;
+  @Schema(description = EnvironmentGroupConstants.ENV_RESPONSE_PARAM_MESSAGE) List<EnvironmentResponse> envResponse;
+
+  // GitInfo
+  @Schema(description = EnvironmentGroupConstants.GIT_DETAILS_MESSAGE) EntityGitDetails gitDetails;
 }

@@ -23,6 +23,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponseDTO;
+import io.harness.ng.core.environment.dto.EnvironmentResponse;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
@@ -31,6 +32,7 @@ import io.harness.rule.Owner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import org.junit.Test;
@@ -56,13 +58,17 @@ public class EnvironmentGroupMapperTest extends CategoryTest {
                                                         .lastModifiedAt(2L)
                                                         .yaml("yaml")
                                                         .build();
-    EnvironmentGroupResponseDTO environmentGroupResponseDTO = EnvironmentGroupMapper.writeDTO(environmentGroupEntity);
+
+    List<EnvironmentResponse> envResponseList = Arrays.asList(EnvironmentResponse.builder().build());
+    EnvironmentGroupResponseDTO environmentGroupResponseDTO =
+        EnvironmentGroupMapper.writeDTO(environmentGroupEntity, envResponseList);
     assertThat(environmentGroupResponseDTO.getName()).isEqualTo("envGroup");
     assertThat(environmentGroupResponseDTO.getAccountId()).isEqualTo(ACC_ID);
     assertThat(environmentGroupResponseDTO.getOrgIdentifier()).isEqualTo(ORG_ID);
     assertThat(environmentGroupResponseDTO.getProjectIdentifier()).isEqualTo(PRO_ID);
     assertThat(environmentGroupResponseDTO.getIdentifier()).isEqualTo("id1");
     assertThat(environmentGroupResponseDTO.getEnvIdentifiers().size()).isEqualTo(2);
+    assertThat(environmentGroupResponseDTO.getEnvResponse().size()).isEqualTo(1);
   }
 
   @Test
@@ -81,8 +87,8 @@ public class EnvironmentGroupMapperTest extends CategoryTest {
                                                         .lastModifiedAt(2L)
                                                         .yaml("yaml")
                                                         .build();
-    EnvironmentGroupResponse environmentGroupResponse =
-        EnvironmentGroupMapper.toResponseWrapper(environmentGroupEntity);
+    EnvironmentGroupResponse environmentGroupResponse = EnvironmentGroupMapper.toResponseWrapper(
+        environmentGroupEntity, Collections.singletonList(EnvironmentResponse.builder().build()));
     assertThat(environmentGroupResponse.getCreatedAt()).isEqualTo(1L);
     assertThat(environmentGroupResponse.getLastModifiedAt()).isEqualTo(2L);
     assertThat(environmentGroupResponse.getEnvGroup().getIdentifier()).isEqualTo("id1");

@@ -38,6 +38,10 @@ import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupDeleteResponse;
 import io.harness.ng.core.envGroup.dto.EnvironmentGroupResponse;
+import io.harness.ng.core.environment.beans.Environment;
+import io.harness.ng.core.environment.dto.EnvironmentResponse;
+import io.harness.ng.core.environment.mappers.EnvironmentMapper;
+import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.utils.CoreCriteriaUtils;
 import io.harness.security.annotations.NextGenManagerAuth;
 
@@ -52,6 +56,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import java.util.List;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
@@ -108,6 +113,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @Slf4j
 public class EnvironmentGroupResource {
   private final EnvironmentGroupService environmentGroupService;
+  private final EnvironmentService environmentService;
   public static final String ENVIRONMENT_GROUP_PARAM_MESSAGE = "Environment Group Identifier for the entity";
 
   @GET
@@ -134,7 +140,15 @@ public class EnvironmentGroupResource {
     // TODO: NEED TO ADD RBAC
     Optional<EnvironmentGroupEntity> environmentGroupEntity =
         environmentGroupService.get(accountId, orgIdentifier, projectIdentifier, envGroupId, deleted);
-    return ResponseDTO.newResponse(environmentGroupEntity.map(EnvironmentGroupMapper::toResponseWrapper).orElse(null));
+
+    // fetching Environments from list of identifiers
+    if (environmentGroupEntity.isPresent()) {
+      List<EnvironmentResponse> envResponseList = getEnvironmentResponses(environmentGroupEntity.get());
+      return ResponseDTO.newResponse(
+          EnvironmentGroupMapper.toResponseWrapper(environmentGroupEntity.get(), envResponseList));
+    }
+
+    return null;
   }
 
   // Api to create an Environment Group
@@ -166,7 +180,11 @@ public class EnvironmentGroupResource {
     validate(entity);
     EnvironmentGroupEntity savedEntity = environmentGroupService.create(entity);
 
-    return ResponseDTO.newResponse(EnvironmentGroupMapper.toResponseWrapper(savedEntity));
+    // fetching Environments from list of identifiers
+    List<EnvironmentResponse> envResponseList = null;
+    envResponseList = getEnvironmentResponses(savedEntity);
+
+    return ResponseDTO.newResponse(EnvironmentGroupMapper.toResponseWrapper(savedEntity, envResponseList));
   }
 
   @GET
@@ -198,7 +216,9 @@ public class EnvironmentGroupResource {
     }
     Page<EnvironmentGroupEntity> envGroupEntities = environmentGroupService.list(
         criteria, getPageRequest(pageRequest), projectIdentifier, orgIdentifier, accountId);
-    return ResponseDTO.newResponse(getNGPageResponse(envGroupEntities.map(EnvironmentGroupMapper::toResponseWrapper)));
+
+    return ResponseDTO.newResponse(getNGPageResponse(envGroupEntities.map(
+        envGroup -> EnvironmentGroupMapper.toResponseWrapper(envGroup, getEnvironmentResponses(envGroup)))));
   }
 
   @DELETE
@@ -226,5 +246,16 @@ public class EnvironmentGroupResource {
     EnvironmentGroupEntity deletedEntity = environmentGroupService.delete(
         accountId, orgIdentifier, projectIdentifier, envGroupId, isNumeric(ifMatch) ? parseLong(ifMatch) : null);
     return ResponseDTO.newResponse(EnvironmentGroupMapper.toDeleteResponseWrapper(deletedEntity));
+  }
+
+  private List<EnvironmentResponse> getEnvironmentResponses(EnvironmentGroupEntity groupEntity) {
+    List<EnvironmentResponse> envResponseList = null;
+
+    List<Environment> envList =
+        environmentService.fetchesNonDeletedEnvironmentFromListOfIdentifiers(groupEntity.getAccountId(),
+            groupEntity.getOrgIdentifier(), groupEntity.getProjectIdentifier(), groupEntity.getEnvIdentifiers());
+    envResponseList = EnvironmentMapper.toResponseWrapper(envList);
+
+    return envResponseList;
   }
 }

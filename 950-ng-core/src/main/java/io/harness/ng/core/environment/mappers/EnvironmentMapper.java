@@ -20,7 +20,9 @@ import io.harness.ng.core.environment.dto.EnvironmentResponse;
 import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
 import io.harness.ng.core.environment.yaml.NGEnvironmentConfig;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(PIPELINE)
@@ -80,5 +82,9 @@ public class EnvironmentMapper {
         .tags(convertToMap(environment.getTags()))
         .color(environment.getColor())
         .build();
+  }
+
+  public static List<EnvironmentResponse> toResponseWrapper(List<Environment> envList) {
+    return envList.stream().map(env -> toResponseWrapper(env)).collect(Collectors.toList());
   }
 }

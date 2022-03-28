@@ -8,6 +8,7 @@
 package io.harness.ng.core.environment.mappers;
 
 import static io.harness.rule.OwnerRule.ARCHIT;
+import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,6 +18,7 @@ import io.harness.ng.core.common.beans.NGTag;
 import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.ng.core.environment.dto.EnvironmentRequestDTO;
+import io.harness.ng.core.environment.dto.EnvironmentResponse;
 import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
 import io.harness.ng.core.environment.yaml.NGEnvironmentConfig;
 import io.harness.ng.core.environment.yaml.NGEnvironmentInfoConfig;
@@ -109,5 +111,18 @@ public class EnvironmentMapperTest extends CategoryTest {
     EnvironmentResponseDTO environmentDTO = EnvironmentMapper.writeDTO(responseEnvironment);
     assertThat(environmentDTO).isNotNull();
     assertThat(environmentDTO).isEqualTo(environmentResponseDTO);
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testGetEnvironmentResponseList() {
+    Environment env1 = requestEnvironment.withVersion(10L);
+    Environment env2 = requestEnvironment.withVersion(20L);
+
+    List<EnvironmentResponse> environmentResponseList = EnvironmentMapper.toResponseWrapper(Arrays.asList(env1, env2));
+    assertThat(environmentResponseList.size()).isEqualTo(2);
+    assertThat(environmentResponseList.get(0).getEnvironment().getVersion()).isEqualTo(10l);
+    assertThat(environmentResponseList.get(1).getEnvironment().getVersion()).isEqualTo(20L);
   }
 }
