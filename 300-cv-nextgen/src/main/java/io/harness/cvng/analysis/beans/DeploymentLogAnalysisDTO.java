@@ -12,6 +12,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,12 @@ public class DeploymentLogAnalysisDTO {
 
     public String getDisplayName() {
       return displayName;
+    }
+
+    public static List<ClusterType> getNonBaselineValues() {
+      return Arrays.stream(ClusterType.values())
+          .filter(key -> key != ClusterType.BASELINE)
+          .collect(Collectors.toList());
     }
   }
 
@@ -120,6 +127,13 @@ public class DeploymentLogAnalysisDTO {
         labelToControlDataMap.putAll(controlClusterSummaries.stream().collect(
             Collectors.toMap(ControlClusterSummary::getLabel, ControlClusterSummary::getControlFrequencyData)));
       }
+    }
+
+    public List<ControlClusterSummary> getControlClusterSummaries() {
+      if (controlClusterSummaries == null) {
+        return Collections.emptyList();
+      }
+      return controlClusterSummaries;
     }
 
     public List<Double> getControlData(int label) {

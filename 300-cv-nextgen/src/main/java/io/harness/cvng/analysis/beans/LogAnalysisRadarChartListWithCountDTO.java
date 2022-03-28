@@ -19,7 +19,7 @@ import lombok.Value;
 public class LogAnalysisRadarChartListWithCountDTO {
   private Integer totalClusters;
   @Singular private List<LogAnalysisClusterWithCountDTO.EventCount> eventCounts;
-  private PageResponse<LogAnalysisRadarChartListDTO> logAnalysisRadarChartList;
+  private PageResponse<LogAnalysisRadarChartListDTO> logAnalysisRadarCharts;
 
   @Value
   @Builder

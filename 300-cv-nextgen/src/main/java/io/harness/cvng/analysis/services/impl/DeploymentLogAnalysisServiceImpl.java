@@ -23,10 +23,8 @@ import io.harness.cvng.analysis.beans.LogAnalysisClusterDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterWithCountDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterWithCountDTO.EventCount;
 import io.harness.cvng.analysis.beans.LogAnalysisRadarChartClusterDTO;
-import io.harness.cvng.analysis.beans.LogAnalysisRadarChartClusterDTO.LogAnalysisRadarChartClusterDTOBuilder;
 import io.harness.cvng.analysis.beans.LogAnalysisRadarChartListDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisRadarChartListDTO.LogAnalysisRadarChartListDTOBuilder;
-import io.harness.cvng.analysis.beans.LogAnalysisRadarChartListDTO.LogAnalysisRadarChartListDTOComparator;
 import io.harness.cvng.analysis.beans.LogAnalysisRadarChartListWithCountDTO;
 import io.harness.cvng.analysis.beans.Risk;
 import io.harness.cvng.analysis.entities.DeploymentLogAnalysis;
@@ -56,20 +54,21 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.query.Sort;
 
+@Slf4j
 public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisService {
   public static final int DEFAULT_PAGE_SIZE = 10;
   @Inject private HPersistence hPersistence;
@@ -147,8 +146,8 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
 
     return LogAnalysisClusterWithCountDTO.builder()
         .totalClusters(totalClusters)
-        .eventCounts(Arrays.stream(ClusterType.values())
-                         .filter(key -> key != ClusterType.BASELINE)
+        .eventCounts(ClusterType.getNonBaselineValues()
+                         .stream()
                          .map(clusterType
                              -> EventCount.builder()
                                     .clusterType(clusterType)
@@ -438,22 +437,21 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
         PageUtils.offsetAndLimit(logAnalysisResults, pageParams.getPage(), pageParams.getSize());
 
     Map<ClusterType, Long> eventCountByEventTypeMap =
-        logAnalysisRadarChartListDTOPageResponse.getContent()
-            .stream()
+        logAnalysisResults.stream()
             .map(logAnalysisClusterDTO -> logAnalysisClusterDTO.getClusterType())
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
     return LogAnalysisRadarChartListWithCountDTO.builder()
         .totalClusters(totalClusters)
-        .eventCounts(Arrays.stream(ClusterType.values())
-                         .filter(key -> key != ClusterType.BASELINE)
+        .eventCounts(ClusterType.getNonBaselineValues()
+                         .stream()
                          .map(clusterType
                              -> EventCount.builder()
                                     .clusterType(clusterType)
                                     .count(eventCountByEventTypeMap.getOrDefault(clusterType, 0L).intValue())
                                     .build())
                          .collect(Collectors.toList()))
-        .logAnalysisRadarChartList(logAnalysisRadarChartListDTOPageResponse)
+        .logAnalysisRadarCharts(logAnalysisRadarChartListDTOPageResponse)
         .build();
   }
 
@@ -463,7 +461,9 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
     List<LogAnalysisRadarChartListDTO> logAnalysisResults =
         getRadarChartLogAnalysisResult(accountId, verificationJobInstanceId, deploymentLogAnalysisFilter);
     logAnalysisResults = filterByAngle(logAnalysisResults, deploymentLogAnalysisFilter);
-    return logAnalysisResults.stream().map(key -> toLogAnalysisClusterChartDTO(key)).collect(Collectors.toList());
+    return logAnalysisResults.stream()
+        .map(key -> LogAnalysisRadarChartClusterDTO.buildWithLogAnalysisRadarChartListDTO(key))
+        .collect(Collectors.toList());
   }
 
   private List<LogAnalysisRadarChartListDTO> filterByAngle(
@@ -482,37 +482,10 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
     return filteredLogAnalysisResult;
   }
 
-  private LogAnalysisRadarChartClusterDTO toLogAnalysisClusterChartDTO(
-      LogAnalysisRadarChartListDTO logAnalysisRadarChartListDTO) {
-    LogAnalysisRadarChartClusterDTOBuilder logAnalysisRadarChartClusterDTOBuilder =
-        LogAnalysisRadarChartClusterDTO.builder()
-            .message(logAnalysisRadarChartListDTO.getMessage())
-            .clusterType(logAnalysisRadarChartListDTO.getClusterType())
-            .angle(logAnalysisRadarChartListDTO.getAngle())
-            .label(logAnalysisRadarChartListDTO.getLabel())
-            .radius(logAnalysisRadarChartListDTO.getRadius())
-            .risk(logAnalysisRadarChartListDTO.getRisk());
-    if (logAnalysisRadarChartListDTO.hasControlData()) {
-      logAnalysisRadarChartClusterDTOBuilder.baseline(
-          LogAnalysisRadarChartClusterDTO.builder()
-              .message(logAnalysisRadarChartListDTO.getBaseline().getMessage())
-              .clusterType(logAnalysisRadarChartListDTO.getBaseline().getClusterType())
-              .angle(logAnalysisRadarChartListDTO.getBaseline().getAngle())
-              .label(logAnalysisRadarChartListDTO.getBaseline().getLabel())
-              .radius(logAnalysisRadarChartListDTO.getBaseline().getRadius())
-              .risk(logAnalysisRadarChartListDTO.getBaseline().getRisk())
-              .build());
-    }
-    return logAnalysisRadarChartClusterDTOBuilder.build();
-  }
-
   private List<LogAnalysisRadarChartListDTO> getRadarChartLogAnalysisResult(
       String accountId, String verificationJobInstanceId, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter) {
     List<DeploymentLogAnalysis> latestDeploymentLogAnalysis =
         getLatestDeploymentLogAnalysis(accountId, verificationJobInstanceId, deploymentLogAnalysisFilter);
-    if (isEmpty(latestDeploymentLogAnalysis)) {
-      return Collections.emptyList();
-    }
     List<LogAnalysisRadarChartListDTO> allLogAnalysisRadarChartListDTOs = new ArrayList<>();
     for (DeploymentLogAnalysis deploymentLogAnalysis : latestDeploymentLogAnalysis) {
       allLogAnalysisRadarChartListDTOs.addAll(
@@ -526,9 +499,10 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
   }
 
   private void setAngleAndRadiusForRadarChart(List<LogAnalysisRadarChartListDTO> logAnalysisRadarChartListDTOS) {
-    Collections.sort(logAnalysisRadarChartListDTOS, new LogAnalysisRadarChartListDTOComparator());
+    Collections.sort(logAnalysisRadarChartListDTOS);
     int totalSize = logAnalysisRadarChartListDTOS.size();
-    double angleDifference = 360 / totalSize;
+    Preconditions.checkArgument(totalSize != 0, "Radar CHart List size cannot be 0 for the angle calculation");
+    double angleDifference = (double) 360 / totalSize;
     double angle = 0;
     for (LogAnalysisRadarChartListDTO logAnalysisRadarChartListDTO : logAnalysisRadarChartListDTOS) {
       logAnalysisRadarChartListDTO.setAngle(angle);
@@ -540,17 +514,17 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
             getRandomRadiusInExpectedRange(logAnalysisRadarChartListDTO.getBaseline().getClusterType()));
       }
       angle += angleDifference;
+      angle = Math.min(angle, 360);
     }
   }
 
   private double getRandomRadiusInExpectedRange(ClusterType clusterType) {
-    double random = new Random().nextDouble();
     if (clusterType.equals(ClusterType.BASELINE)) {
-      return random;
+      return ThreadLocalRandom.current().nextDouble(0, 1);
     } else if (clusterType.equals(ClusterType.KNOWN_EVENT) || clusterType.equals(ClusterType.UNEXPECTED_FREQUENCY)) {
-      return 1 + random;
+      return ThreadLocalRandom.current().nextDouble(1, 2);
     } else {
-      return 2 + random;
+      return ThreadLocalRandom.current().nextDouble(2, 3);
     }
   }
 
@@ -568,11 +542,12 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
           break;
         }
       }
-      Preconditions.checkNotNull(resultSummary,
-          String.format(
-              "No Result Summary present with given host name filter %s", deploymentLogAnalysisFilter.getHostName()));
     } else {
       resultSummary = deploymentLogAnalysis.getResultSummary();
+    }
+
+    if (resultSummary == null) {
+      return new ArrayList<>();
     }
 
     Map<Integer, DeploymentLogAnalysisDTO.ControlClusterSummary> controlClusters = new HashMap<>();
@@ -591,17 +566,24 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
                 .risk(testClusterSummary.getRiskLevel())
                 .frequencyData(testClusterSummary.getTestFrequencyData())
                 .count(testClusterSummary.getCount());
-
         if (testClusterSummary.getClusterType().equals(ClusterType.KNOWN_EVENT)
             || testClusterSummary.getClusterType().equals(ClusterType.UNEXPECTED_FREQUENCY)) {
-          logAnalysisRadarChartListDTOBuilder.baseline(
+          LogAnalysisRadarChartListDTOBuilder controlLogAnalysisChartListDTOBuilder =
               LogAnalysisRadarChartListDTO.builder()
                   .label(testClusterSummary.getLabel())
                   .message(labelToClusterMap.get(testClusterSummary.getLabel()).getText())
                   .clusterType(ClusterType.BASELINE)
-                  .risk(Risk.NO_ANALYSIS)
-                  .frequencyData(controlClusters.get(testClusterSummary.getLabel()).getControlFrequencyData())
-                  .build());
+                  .risk(Risk.NO_ANALYSIS);
+          // In some scenerio's the LE is not saving the control data for host specific data. Throwing warning in case
+          // if the control data is not present
+          if (controlClusters.containsKey(testClusterSummary.getLabel())) {
+            controlLogAnalysisChartListDTOBuilder.frequencyData(
+                controlClusters.get(testClusterSummary.getLabel()).getControlFrequencyData());
+          } else {
+            log.warn("control data is not present for verificationTaskId: %s",
+                deploymentLogAnalysis.getVerificationTaskId());
+          }
+          logAnalysisRadarChartListDTOBuilder.baseline(controlLogAnalysisChartListDTOBuilder.build());
         }
         logAnalysisRadarChartListDTOList.add(logAnalysisRadarChartListDTOBuilder.build());
       }
