@@ -770,6 +770,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   private void clearData() {
+    log.info("Clearing data for delegate process {}, Upgrade Pending {}", getProcessId(), upgradePending.get());
     messageService.closeData(DELEGATE_DASH + getProcessId());
     messageService.closeChannel(DELEGATE, getProcessId());
 

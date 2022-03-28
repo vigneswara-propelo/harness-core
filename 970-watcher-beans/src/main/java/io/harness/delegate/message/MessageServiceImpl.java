@@ -216,7 +216,11 @@ public class MessageServiceImpl implements MessageService {
                 messageHandler.accept(message);
               }
               try {
-                messageQueues.get(getMessageChannel(sourceType, sourceProcessId)).put(message);
+                if (messageQueues.get(getMessageChannel(sourceType, sourceProcessId)) != null) {
+                  messageQueues.get(getMessageChannel(sourceType, sourceProcessId)).put(message);
+                } else {
+                  log.warn("Failed attempt to read from closed channel");
+                }
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
               } catch (IOException e) {
