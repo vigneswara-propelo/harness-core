@@ -922,6 +922,26 @@ public class ArtifactStreamServiceImpl implements ArtifactStreamService, DataPro
     }
   }
 
+  @Override
+  public Map<String, String> getArtifactStreamNames(String appId, Set<String> artifactStreamIds) {
+    if (isEmpty(artifactStreamIds)) {
+      return Collections.emptyMap();
+    }
+    List<ArtifactStream> artifactStreams = wingsPersistence.createQuery(ArtifactStream.class)
+                                               .field(ServiceKeys.appId)
+                                               .equal(appId)
+                                               .field(ServiceKeys.uuid)
+                                               .in(artifactStreamIds)
+                                               .project(ServiceKeys.name, true)
+                                               .project(ServiceKeys.uuid, true)
+                                               .asList();
+
+    Map<String, String> artifactStreamIdToNameMap = new HashMap<>();
+    artifactStreams.forEach(
+        artifactStream -> artifactStreamIdToNameMap.put(artifactStream.getUuid(), artifactStream.getName()));
+    return artifactStreamIdToNameMap;
+  }
+
   private void populateCustomArtifactStreamFields(
       ArtifactStream artifactStream, ArtifactStream existingArtifactStream) {
     boolean versionChanged = false;
