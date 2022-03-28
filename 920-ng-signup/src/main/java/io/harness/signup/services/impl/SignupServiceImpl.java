@@ -554,22 +554,29 @@ public class SignupServiceImpl implements SignupService {
     properties.put("source", source);
 
     addUtmInfoToProperties(utmInfo, properties);
+    // identify event to register new signed-up user and send user info to marketing
     telemetryReporter.sendIdentifyEvent(
         email, properties, ImmutableMap.<Destination, Boolean>builder().put(Destination.MARKETO, true).build());
-    telemetryReporter.flush();
 
     HashMap<String, Object> groupProperties = new HashMap<>();
     groupProperties.put("group_id", accountId);
     groupProperties.put("group_type", "Account");
     groupProperties.put("group_name", accountName);
-    groupProperties.put("userID", email);
 
+    // group event to register new signed-up user with new account
     telemetryReporter.sendGroupEvent(
         accountId, email, groupProperties, ImmutableMap.<Destination, Boolean>builder().build());
 
-    groupProperties.remove("userID");
+    // identify event to register a dummy user account to represent account for analytics purposes
     telemetryReporter.sendIdentifyEvent(TelemetryConstants.SEGMENT_DUMMY_ACCOUNT_PREFIX + accountId, groupProperties,
         ImmutableMap.<Destination, Boolean>builder().put(Destination.AMPLITUDE, true).build());
+
+    // group event to register dummy user account with new account
+    telemetryReporter.sendGroupEvent(accountId, TelemetryConstants.SEGMENT_DUMMY_ACCOUNT_PREFIX + accountId,
+        groupProperties, ImmutableMap.<Destination, Boolean>builder().build());
+
+    // flush all events so that event queue is empty
+    telemetryReporter.flush();
 
     // Wait 20 seconds, to ensure identify is sent before track
     ScheduledExecutorService tempExecutor = Executors.newSingleThreadScheduledExecutor();
