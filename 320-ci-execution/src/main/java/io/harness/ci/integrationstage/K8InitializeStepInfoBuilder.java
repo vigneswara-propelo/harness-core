@@ -54,6 +54,8 @@ import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
 import io.harness.beans.steps.stepinfo.RunTestsStepInfo;
 import io.harness.beans.sweepingoutputs.StageInfraDetails.Type;
+import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
+import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
 import io.harness.beans.yaml.extended.volumes.CIVolume;
 import io.harness.beans.yaml.extended.volumes.EmptyDirYaml;
 import io.harness.beans.yaml.extended.volumes.HostPathYaml;
@@ -120,11 +122,12 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
 
   @Override
   public BuildJobEnvInfo getInitializeStepInfoBuilder(StageElementConfig stageElementConfig,
-      CIExecutionArgs ciExecutionArgs, List<ExecutionWrapperConfig> steps, String accountId) {
+      Infrastructure infrastructure, CIExecutionArgs ciExecutionArgs, List<ExecutionWrapperConfig> steps,
+      String accountId) {
     String uniqueStageExecutionIdentifier = generatePodName(stageElementConfig.getIdentifier());
     return K8BuildJobEnvInfo.builder()
-        .podsSetupInfo(getCIPodsSetupInfo(
-            stageElementConfig, ciExecutionArgs, steps, true, uniqueStageExecutionIdentifier, accountId))
+        .podsSetupInfo(getCIPodsSetupInfo(stageElementConfig, infrastructure, ciExecutionArgs, steps, true,
+            uniqueStageExecutionIdentifier, accountId))
         .workDir(STEP_WORK_DIR)
         .stepConnectorRefs(getStepConnectorRefs(stageElementConfig))
         .build();
@@ -157,8 +160,8 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
   }
 
   private K8BuildJobEnvInfo.PodsSetupInfo getCIPodsSetupInfo(StageElementConfig stageElementConfig,
-      CIExecutionArgs ciExecutionArgs, List<ExecutionWrapperConfig> steps, boolean isFirstPod, String podName,
-      String accountId) {
+      Infrastructure infrastructure, CIExecutionArgs ciExecutionArgs, List<ExecutionWrapperConfig> steps,
+      boolean isFirstPod, String podName, String accountId) {
     List<PodSetupInfo> pods = new ArrayList<>();
 
     Set<Integer> usedPorts = new HashSet<>();
@@ -178,7 +181,12 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
     List<String> serviceIdList = CIServiceBuilder.getServiceIdList(stageElementConfig);
     List<Integer> serviceGrpcPortList = CIServiceBuilder.getServiceGrpcPortList(stageElementConfig);
     IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageElementConfig);
-    List<PodVolume> volumes = convertVolumes(integrationStageConfig.getVolumes().getValue());
+
+    if (((K8sDirectInfraYaml) infrastructure).getSpec() == null) {
+      throw new CIStageExecutionException("Input infrastructure can not be empty");
+    }
+    K8sDirectInfraYaml k8sDirectInfraYaml = (K8sDirectInfraYaml) infrastructure;
+    List<PodVolume> volumes = convertVolumes(k8sDirectInfraYaml.getSpec().getVolumes().getValue());
 
     if (integrationStageConfig.getSharedPaths().isExpression()) {
       ExceptionUtility.throwUnresolvedExpressionException(integrationStageConfig.getSharedPaths().getExpressionValue(),

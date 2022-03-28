@@ -258,7 +258,7 @@ public class CIExecutionPlanTestHelper {
         .buildJobEnvInfo(getCIBuildJobEnvInfoOnFirstPod())
         .executionElementConfig(getExecutionElementConfig())
         .ciCodebase(getCICodebase())
-        .infrastructure(getInfrastructure())
+        .infrastructure(getInfrastructureWithVolume())
         .timeout(600000)
         .build();
   }
@@ -293,7 +293,7 @@ public class CIExecutionPlanTestHelper {
         .name("liteEngineTask")
         .buildJobEnvInfo(getCIBuildJobEnvInfoOnOtherPods())
         .executionElementConfig(getExecutionElementConfig())
-        .infrastructure(getInfrastructure())
+        .infrastructure(getInfrastructureWithVolume())
         .timeout(600000)
         .build();
   }
@@ -1276,6 +1276,15 @@ public class CIExecutionPlanTestHelper {
         .build();
   }
   public IntegrationStageConfig getIntegrationStageConfig() {
+    return IntegrationStageConfig.builder()
+        .execution(getExecutionElementConfig())
+        .infrastructure(getInfrastructureWithVolume())
+        .sharedPaths(createValueField(newArrayList("share/")))
+        .serviceDependencies(ParameterField.createValueField(Collections.singletonList(getServiceDependencyElement())))
+        .build();
+  }
+
+  public Infrastructure getInfrastructureWithVolume() {
     EmptyDirYaml emptyDirYaml = EmptyDirYaml.builder()
                                     .mountPath(createValueField(mountPath1))
                                     .spec(EmptyDirYamlSpec.builder()
@@ -1297,13 +1306,13 @@ public class CIExecutionPlanTestHelper {
                                                       .readOnly(ParameterField.createValueField(null))
                                                       .build())
                                             .build();
-
-    return IntegrationStageConfig.builder()
-        .execution(getExecutionElementConfig())
-        .infrastructure(getInfrastructure())
-        .sharedPaths(createValueField(newArrayList("share/")))
-        .serviceDependencies(ParameterField.createValueField(Collections.singletonList(getServiceDependencyElement())))
-        .volumes(ParameterField.createValueField(Arrays.asList(emptyDirYaml, hostPathYaml, pvcYaml)))
+    return K8sDirectInfraYaml.builder()
+        .type(Infrastructure.Type.KUBERNETES_DIRECT)
+        .spec(K8sDirectInfraYamlSpec.builder()
+                  .connectorRef(createValueField("testKubernetesCluster"))
+                  .namespace(createValueField("testNamespace"))
+                  .volumes(ParameterField.createValueField(Arrays.asList(emptyDirYaml, hostPathYaml, pvcYaml)))
+                  .build())
         .build();
   }
 }

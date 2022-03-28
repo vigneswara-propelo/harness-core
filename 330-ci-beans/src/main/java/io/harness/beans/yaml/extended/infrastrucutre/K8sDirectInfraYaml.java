@@ -15,6 +15,7 @@ import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.yaml.extended.volumes.CIVolume;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.YamlSchemaTypes;
 
@@ -64,5 +65,8 @@ public class K8sDirectInfraYaml implements Infrastructure {
     @YamlSchemaTypes(value = {runtime})
     @ApiModelProperty(dataType = "[Lio.harness.beans.yaml.extended.infrastrucutre.Toleration;")
     private ParameterField<List<Toleration>> tolerations;
+    @YamlSchemaTypes(value = {runtime})
+    @ApiModelProperty(dataType = "[Lio.harness.beans.yaml.extended.volumes.CIVolume;")
+    ParameterField<List<CIVolume>> volumes;
   }
 }

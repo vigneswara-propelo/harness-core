@@ -16,7 +16,6 @@ import io.harness.beans.SwaggerConstants;
 import io.harness.beans.dependencies.DependencyElement;
 import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.UseFromStageInfraYaml;
-import io.harness.beans.yaml.extended.volumes.CIVolume;
 import io.harness.plancreator.execution.ExecutionElementConfig;
 import io.harness.plancreator.stages.stage.StageInfoConfig;
 import io.harness.pms.yaml.ParameterField;
@@ -55,10 +54,6 @@ public class IntegrationStageConfig implements StageInfoConfig {
   @YamlSchemaTypes(value = {string})
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
   ParameterField<List<String>> sharedPaths;
-
-  @YamlSchemaTypes(value = {runtime})
-  @ApiModelProperty(dataType = "[Lio.harness.beans.yaml.extended.volumes.CIVolume;")
-  ParameterField<List<CIVolume>> volumes;
 
   ExecutionElementConfig execution;
   @NotNull

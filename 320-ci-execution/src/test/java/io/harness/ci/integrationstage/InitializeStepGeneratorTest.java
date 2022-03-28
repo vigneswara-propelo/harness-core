@@ -37,7 +37,7 @@ public class InitializeStepGeneratorTest extends CIExecutionTestBase {
     // input
     ExecutionElementConfig executionElementConfig = ciExecutionPlanTestHelper.getExecutionElementConfig();
     StageElementConfig stageElementConfig = ciExecutionPlanTestHelper.getIntegrationStageElementConfig();
-    Infrastructure infrastructure = ciExecutionPlanTestHelper.getInfrastructure();
+    Infrastructure infrastructure = ciExecutionPlanTestHelper.getInfrastructureWithVolume();
     String podName = "pod";
     Integer liteEngineCounter = 1;
 
@@ -73,7 +73,7 @@ public class InitializeStepGeneratorTest extends CIExecutionTestBase {
     // input
     ExecutionElementConfig executionElementConfig = ciExecutionPlanTestHelper.getExecutionElementConfig();
     StageElementConfig stageElementConfig = ciExecutionPlanTestHelper.getIntegrationStageElementConfig();
-    Infrastructure infrastructure = ciExecutionPlanTestHelper.getInfrastructure();
+    Infrastructure infrastructure = ciExecutionPlanTestHelper.getInfrastructureWithVolume();
 
     CIExecutionArgs ciExecutionArgs = ciExecutionPlanTestHelper.getCIExecutionArgs();
     InitializeStepInfo actual = initializeStepGenerator.createInitializeStepInfo(

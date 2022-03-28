@@ -36,6 +36,7 @@ import static io.harness.common.CIExecutionConstants.PIPELINE_ID_ATTR;
 import static io.harness.common.CIExecutionConstants.POD_MAX_WAIT_UNTIL_READY_SECS;
 import static io.harness.common.CIExecutionConstants.PROJECT_ID_ATTR;
 import static io.harness.common.CIExecutionConstants.STAGE_ID_ATTR;
+import static io.harness.common.CIExecutionConstants.STAGE_NAME_ATTR;
 import static io.harness.common.CIExecutionConstants.TI_SERVICE_ENDPOINT_VARIABLE;
 import static io.harness.common.CIExecutionConstants.TI_SERVICE_TOKEN_VARIABLE;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -650,6 +651,7 @@ public class K8BuildSetupUtils {
     final String pipelineExecutionID = ambiance.getPlanExecutionId();
     final int buildNumber = ambiance.getMetadata().getRunSequence();
     final String stageID = k8PodDetails.getStageID();
+    final String stageName = k8PodDetails.getStageName();
 
     Map<String, String> labels = new HashMap<>();
     if (isLabelAllowed(accountID)) {
@@ -669,6 +671,9 @@ public class K8BuildSetupUtils {
     }
     if (isLabelAllowed(stageID)) {
       labels.put(STAGE_ID_ATTR, stageID);
+    }
+    if (isLabelAllowed(stageName)) {
+      labels.put(STAGE_NAME_ATTR, stageName);
     }
     if (isLabelAllowed(String.valueOf(buildNumber))) {
       labels.put(BUILD_NUMBER_ATTR, String.valueOf(buildNumber));
