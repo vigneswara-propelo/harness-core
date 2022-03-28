@@ -368,36 +368,38 @@ public class CIK8JavaClientHandler {
   private List<CIContainerStatus> getContainersStatus(V1Pod pod) {
     List<CIContainerStatus> containerStatusList = new ArrayList<>();
     List<V1ContainerStatus> containerStatuses = pod.getStatus().getContainerStatuses();
-    for (V1ContainerStatus containerStatus : containerStatuses) {
-      String name = containerStatus.getName();
-      String image = containerStatus.getImage();
-      if (containerStatus.getState().getRunning() != null) {
-        containerStatusList.add(CIContainerStatus.builder()
-                                    .name(name)
-                                    .image(image)
-                                    .status(CIContainerStatus.Status.SUCCESS)
-                                    .startTime(containerStatus.getState().getRunning().getStartedAt().toString())
-                                    .build());
-      } else if (containerStatus.getState().getTerminated() != null) {
-        V1ContainerStateTerminated containerStateTerminated = containerStatus.getState().getTerminated();
-        containerStatusList.add(CIContainerStatus.builder()
-                                    .name(name)
-                                    .image(image)
-                                    .status(CIContainerStatus.Status.ERROR)
-                                    .startTime(containerStateTerminated.getStartedAt().toString())
-                                    .endTime(containerStateTerminated.getFinishedAt().toString())
-                                    .errorMsg(getContainerErrMsg(
-                                        containerStateTerminated.getReason(), containerStateTerminated.getMessage()))
-                                    .build());
-      } else if (containerStatus.getState().getWaiting() != null) {
-        V1ContainerStateWaiting containerStateWaiting = containerStatus.getState().getWaiting();
-        containerStatusList.add(
-            CIContainerStatus.builder()
-                .name(name)
-                .image(image)
-                .status(CIContainerStatus.Status.ERROR)
-                .errorMsg(getContainerErrMsg(containerStateWaiting.getReason(), containerStateWaiting.getMessage()))
-                .build());
+    if (isNotEmpty(containerStatuses)) {
+      for (V1ContainerStatus containerStatus : containerStatuses) {
+        String name = containerStatus.getName();
+        String image = containerStatus.getImage();
+        if (containerStatus.getState().getRunning() != null) {
+          containerStatusList.add(CIContainerStatus.builder()
+                                      .name(name)
+                                      .image(image)
+                                      .status(CIContainerStatus.Status.SUCCESS)
+                                      .startTime(containerStatus.getState().getRunning().getStartedAt().toString())
+                                      .build());
+        } else if (containerStatus.getState().getTerminated() != null) {
+          V1ContainerStateTerminated containerStateTerminated = containerStatus.getState().getTerminated();
+          containerStatusList.add(CIContainerStatus.builder()
+                                      .name(name)
+                                      .image(image)
+                                      .status(CIContainerStatus.Status.ERROR)
+                                      .startTime(containerStateTerminated.getStartedAt().toString())
+                                      .endTime(containerStateTerminated.getFinishedAt().toString())
+                                      .errorMsg(getContainerErrMsg(
+                                          containerStateTerminated.getReason(), containerStateTerminated.getMessage()))
+                                      .build());
+        } else if (containerStatus.getState().getWaiting() != null) {
+          V1ContainerStateWaiting containerStateWaiting = containerStatus.getState().getWaiting();
+          containerStatusList.add(
+              CIContainerStatus.builder()
+                  .name(name)
+                  .image(image)
+                  .status(CIContainerStatus.Status.ERROR)
+                  .errorMsg(getContainerErrMsg(containerStateWaiting.getReason(), containerStateWaiting.getMessage()))
+                  .build());
+        }
       }
     }
     return containerStatusList;
