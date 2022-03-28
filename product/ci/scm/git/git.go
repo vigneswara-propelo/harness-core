@@ -211,15 +211,22 @@ func GetLatestCommit(ctx context.Context, request *pb.GetLatestCommitRequest, lo
 		log.Errorw("GetLatestCommit failure, bad ref/branch", "provider", gitclient.GetProvider(*request.GetProvider()), "slug", request.GetSlug(), "ref", ref, "elapsed_time_ms", utils.TimeSince(start), zap.Error(err))
 		return nil, err
 	}
-	if branch != "" && strings.Contains(ref, "/") {
-		switch client.Driver {
-		case scm.DriverBitbucket,
-			scm.DriverStash:
+
+	switch client.Driver {
+	case scm.DriverBitbucket,
+		scm.DriverStash:
+		if branch != "" && strings.Contains(ref, "/") {
 			ref = scm.TrimRef(ref)
 			branch, _, err := client.Git.FindBranch(ctx, request.GetSlug(), ref)
 			if err == nil {
 				ref = branch.Sha
 			}
+		}
+	case scm.DriverAzure:
+		// Azure doesnt support getting a commit by ref/branch name. So we get the latest commit from the branch using the root folder.
+		contents, _, err := client.Contents.List(ctx, request.GetSlug(), "", ref, scm.ListOptions{})
+		if err == nil {
+			ref = contents[0].Sha
 		}
 	}
 

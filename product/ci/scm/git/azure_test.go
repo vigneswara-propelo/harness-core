@@ -24,7 +24,7 @@ const (
 	repoID       = "fde2d21f-13b9-4864-a995-83329045289a"
 )
 
-func TestListCommitAzure(t *testing.T) {
+func TestListCommitsAzure(t *testing.T) {
 	if azureToken == "" {
 		t.Skip("Skipping, Acceptance test")
 	}
@@ -52,6 +52,32 @@ func TestListCommitAzure(t *testing.T) {
 	assert.Greater(t, len(got.CommitIds), 1, "more than 1 commit")
 }
 
+func TestGetLatestCommitOnFileAzure(t *testing.T) {
+	if azureToken == "" {
+		t.Skip("Skipping, Acceptance test")
+	}
+	in := &pb.GetLatestCommitOnFileRequest{
+		Slug:     repoID,
+		FilePath: "README.md",
+		Branch:   "main",
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_Azure{
+				Azure: &pb.AzureProvider{
+					PersonalAccessToken: azureToken,
+					Organization:        organization,
+					Project:             project,
+				},
+			},
+			Debug: true,
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := GetLatestCommitOnFile(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.NotEqual(t, "", got.CommitId, "there is a commit id")
+}
 func TestListBranchesAzure(t *testing.T) {
 	if azureToken == "" {
 		t.Skip("Skipping, Acceptance test")
@@ -108,7 +134,7 @@ func TestCreatePRAzure(t *testing.T) {
 
 // NB make sure there is no existing Branch by this name
 func TestCreateBranchAzure(t *testing.T) {
-	if gitGithubToken == "" {
+	if azureToken == "" {
 		t.Skip("Skipping, Acceptance test")
 	}
 	in := &pb.CreateBranchRequest{
@@ -130,5 +156,106 @@ func TestCreateBranchAzure(t *testing.T) {
 	got, err := CreateBranch(context.Background(), in, log.Sugar())
 
 	assert.Nil(t, err, "no errors")
-	assert.Equal(t, int32(201), got.Status, "Correct http response")
+	assert.Equal(t, int32(200), got.Status, "Correct http response")
+}
+
+func TestGetLatestCommitAzure(t *testing.T) {
+	if azureToken == "" {
+		t.Skip("Skipping, Acceptance test")
+	}
+	in := &pb.GetLatestCommitRequest{
+		Slug: repoID,
+		Type: &pb.GetLatestCommitRequest_Branch{
+			Branch: "main",
+		},
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_Azure{
+				Azure: &pb.AzureProvider{
+					PersonalAccessToken: azureToken,
+					Organization:        organization,
+					Project:             project,
+				},
+			},
+			Debug: true,
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := GetLatestCommit(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.NotNil(t, got.Commit.Sha, "There is a commit id")
+}
+
+func TestCompareCommitsAzure(t *testing.T) {
+	if azureToken == "" {
+		t.Skip("Skipping, Acceptance test")
+	}
+
+	in := &pb.ListCommitsRequest{
+		Slug: repoID,
+		Type: &pb.ListCommitsRequest_Branch{
+			Branch: "main",
+		},
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_Azure{
+				Azure: &pb.AzureProvider{
+					PersonalAccessToken: azureToken,
+					Organization:        organization,
+					Project:             project,
+				},
+			},
+			Debug: true,
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	returnedCommits, err := ListCommits(context.Background(), in, log.Sugar())
+	assert.Nil(t, err, "no errors")
+
+	in2 := &pb.CompareCommitsRequest{
+		Slug:   repoID,
+		Target: returnedCommits.CommitIds[0],
+		Source: returnedCommits.CommitIds[10],
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_Azure{
+				Azure: &pb.AzureProvider{
+					PersonalAccessToken: azureToken,
+					Organization:        organization,
+					Project:             project,
+				},
+			},
+			Debug: true,
+		},
+	}
+
+	log, _ = logs.GetObservedLogger(zap.InfoLevel)
+	got2, err2 := CompareCommits(context.Background(), in2, log.Sugar())
+
+	assert.Nil(t, err2, "no errors")
+	assert.GreaterOrEqual(t, len(got2.Files), 1, "At least 1 file is different")
+}
+
+func TestRepoListAzure(t *testing.T) {
+	if azureToken == "" {
+		t.Skip("Skipping, Acceptance test")
+	}
+	in := &pb.GetUserReposRequest{
+		Provider: &pb.Provider{
+			Hook: &pb.Provider_Azure{
+				Azure: &pb.AzureProvider{
+					PersonalAccessToken: azureToken,
+					Organization:        organization,
+					Project:             project,
+				},
+			},
+			Debug: true,
+		},
+	}
+
+	log, _ := logs.GetObservedLogger(zap.InfoLevel)
+	got, err := GetUserRepos(context.Background(), in, log.Sugar())
+
+	assert.Nil(t, err, "no errors")
+	assert.GreaterOrEqual(t, len(got.Repos), 1, "There is at least one repo")
 }
