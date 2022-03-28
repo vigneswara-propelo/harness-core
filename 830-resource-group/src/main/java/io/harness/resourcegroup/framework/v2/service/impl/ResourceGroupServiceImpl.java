@@ -128,7 +128,8 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
         getResourceGroup(Scope.of(resourceGroup.getAccountIdentifier(), resourceGroup.getOrgIdentifier(),
                              resourceGroup.getProjectIdentifier()),
             resourceGroup.getIdentifier(),
-            isEmpty(resourceGroup.getAccountIdentifier()) ? ManagedFilter.ONLY_MANAGED : ManagedFilter.ONLY_CUSTOM);
+            Boolean.TRUE.equals(resourceGroup.getHarnessManaged()) ? ManagedFilter.ONLY_MANAGED
+                                                                   : ManagedFilter.ONLY_CUSTOM);
     if (!resourceGroupOpt.isPresent()) {
       return Optional.ofNullable(
           ResourceGroupMapper.toResponseWrapper(isInternal ? createV2Internal(resourceGroup) : create(resourceGroup)));

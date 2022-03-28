@@ -150,6 +150,45 @@ public class ResourceGroupServiceImplTest extends ResourceGroupTestBase {
     assertGetOnlyCustomFilterCriteria(criteria, accountIdentifier, orgIdentifier, null, identifier);
   }
 
+  @Test
+  @Owner(developers = REETIKA)
+  @Category(UnitTests.class)
+  public void testUpsertCustomCriteria() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    String identifier = randomAlphabetic(10);
+    ResourceGroup resourceGroup = ResourceGroup.builder()
+                                      .accountIdentifier(accountIdentifier)
+                                      .orgIdentifier(orgIdentifier)
+                                      .identifier(identifier)
+                                      .build();
+
+    resourceGroupService.upsert(resourceGroup, true);
+    Criteria criteriaCustom =
+        getActualGetCriteria(Scope.of(accountIdentifier, orgIdentifier, null), identifier, ManagedFilter.ONLY_CUSTOM);
+    assertGetOnlyCustomFilterCriteria(criteriaCustom, accountIdentifier, orgIdentifier, null, identifier);
+  }
+
+  @Test
+  @Owner(developers = REETIKA)
+  @Category(UnitTests.class)
+  public void testUpsertManagedCriteria() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    String identifier = randomAlphabetic(10);
+    ResourceGroup resourceGroup = ResourceGroup.builder()
+                                      .accountIdentifier(accountIdentifier)
+                                      .orgIdentifier(orgIdentifier)
+                                      .identifier(identifier)
+                                      .harnessManaged(true)
+                                      .build();
+
+    resourceGroupService.upsert(resourceGroup, true);
+    Criteria criteriaCustom =
+        getActualGetCriteria(Scope.of(accountIdentifier, orgIdentifier, null), identifier, ManagedFilter.ONLY_MANAGED);
+    assertGetOnlyManagedFilterCriteria(criteriaCustom, accountIdentifier, orgIdentifier, null, identifier);
+  }
+
   private void assertGetOnlyCustomFilterCriteria(
       Criteria criteria, String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier) {
     Criteria expectedCriteria = Criteria.where(ResourceGroupKeys.identifier).is(identifier);
