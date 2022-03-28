@@ -1451,6 +1451,7 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AccountPermissionSummary.class, 7404);
     kryo.register(WhitelistStatus.class, 7405);
     kryo.register(ApiKeyEntry.class, 7406);
+    kryo.register(AppPermissionSummary.ExecutableElementInfo.class, 7407);
 
     kryo.register(GcbTaskParams.class, 7408);
     kryo.register(GcbState.GcbDelegateResponse.class, 7409);
