@@ -106,6 +106,7 @@ import io.harness.concurrent.HTimeLimiter;
 import io.harness.configuration.DeployMode;
 import io.harness.data.structure.NullSafeImmutableMap;
 import io.harness.data.structure.UUIDGenerator;
+import io.harness.delegate.DelegateAgentCommonVariables;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateConnectionHeartbeat;
 import io.harness.delegate.beans.DelegateInstanceStatus;
@@ -579,6 +580,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
               .ceEnabled(Boolean.parseBoolean(System.getenv("ENABLE_CE")));
 
       delegateId = registerDelegate(builder);
+      DelegateAgentCommonVariables.setDelegateId(delegateId);
       log.info("[New] Delegate registered in {} ms", clock.millis() - start);
       DelegateStackdriverLogAppender.setDelegateId(delegateId);
 

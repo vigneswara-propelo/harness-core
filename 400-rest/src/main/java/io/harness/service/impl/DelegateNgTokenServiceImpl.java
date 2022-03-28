@@ -106,8 +106,13 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                 Date.from(OffsetDateTime.now().plusDays(DelegateToken.TTL.toDays()).toInstant()));
     DelegateToken updatedDelegateToken =
         persistence.findAndModify(filterQuery, updateOperations, new FindAndModifyOptions());
+
+    // we are not removing token from delegateTokenCache in DelegateTokenCacheHelper, since the cache has an expiry of 3
+    // mins.
+
     invalidateDelegateGroupCache(accountId, tokenName);
     publishRevokeTokenAuditEvent(updatedDelegateToken);
+
     return getDelegateTokenDetails(updatedDelegateToken, false);
   }
 

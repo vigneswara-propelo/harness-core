@@ -395,8 +395,10 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public void validateDelegateToken(String accountId, String tokenString, boolean setTokenNameInGlobalContext) {
-    delegateTokenAuthenticator.validateDelegateToken(accountId, tokenString, setTokenNameInGlobalContext);
+  public void validateDelegateToken(
+      String accountId, String tokenString, String delegateId, boolean shouldSetTokenNameInGlobalContext) {
+    delegateTokenAuthenticator.validateDelegateToken(
+        accountId, tokenString, delegateId, shouldSetTokenNameInGlobalContext);
   }
 
   @Override
