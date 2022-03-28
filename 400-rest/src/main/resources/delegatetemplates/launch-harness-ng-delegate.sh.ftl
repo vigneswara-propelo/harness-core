@@ -15,8 +15,6 @@ docker run -d --restart unless-stopped --memory=${delegateXmx} --cpus=${delegate
 -e DELEGATE_DESCRIPTION=${delegateDescription} \
 -e DELEGATE_TYPE=DOCKER \
 -e DELEGATE_TAGS=${delegateTags} \
--e DELEGATE_ORG_IDENTIFIER=${delegateOrgIdentifier} \
--e DELEGATE_PROJECT_IDENTIFIER=${delegateProjectIdentifier} \
 -e PROXY_HOST= \
 -e PROXY_PORT= \
 -e PROXY_SCHEME= \

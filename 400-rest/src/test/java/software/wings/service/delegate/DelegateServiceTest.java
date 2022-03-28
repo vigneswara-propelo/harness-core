@@ -96,6 +96,7 @@ import io.harness.capability.HttpConnectionParameters;
 import io.harness.capability.service.CapabilityService;
 import io.harness.category.element.UnitTests;
 import io.harness.configuration.DeployMode;
+import io.harness.context.GlobalContext;
 import io.harness.delegate.beans.ConnectionMode;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.Delegate.DelegateBuilder;
@@ -118,6 +119,8 @@ import io.harness.delegate.beans.DelegateSize;
 import io.harness.delegate.beans.DelegateSizeDetails;
 import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
 import io.harness.delegate.beans.DelegateTaskResponse;
+import io.harness.delegate.beans.DelegateToken;
+import io.harness.delegate.beans.DelegateTokenStatus;
 import io.harness.delegate.beans.DelegateType;
 import io.harness.delegate.beans.DuplicateDelegateException;
 import io.harness.delegate.beans.FileBucket;
@@ -136,7 +139,9 @@ import io.harness.delegate.utils.DelegateEntityOwnerHelper;
 import io.harness.eventsframework.api.Producer;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
+import io.harness.globalcontex.DelegateTokenGlobalContextData;
 import io.harness.logstreaming.LogStreamingServiceConfig;
+import io.harness.manage.GlobalContextManager;
 import io.harness.network.LocalhostUtils;
 import io.harness.observer.Subject;
 import io.harness.persistence.HPersistence;
@@ -3716,6 +3721,66 @@ public class DelegateServiceTest extends WingsBaseTest {
                                "https://localhost:7070", MediaType.MULTIPART_FORM_DATA_TYPE))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(UNIQUE_DELEGATE_NAME_ERROR_MESSAGE);
+  }
+
+  @Test
+  @Owner(developers = ARPIT)
+  @Category(UnitTests.class)
+  public void shouldRegisterDelegateParamsWithOwnerFromGlobalContext() {
+    final String accountId = generateUuid();
+    final String delegateGroupId = generateUuid();
+    final String orgId = "orgId";
+    final String projectId = "projectId";
+    final String delegateTokenName = "delegateToken";
+    final DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
+
+    DelegateParams params = DelegateParams.builder()
+                                .accountId(accountId)
+                                .projectIdentifier(projectId)
+                                .hostName(HOST_NAME)
+                                .description(DESCRIPTION)
+                                .delegateType(KUBERNETES_DELEGATE)
+                                .ip("127.0.0.1")
+                                .delegateName(DELEGATE_GROUP_NAME)
+                                .delegateGroupId(delegateGroupId)
+                                .version(VERSION)
+                                .proxy(true)
+                                .ng(true)
+                                .pollingModeEnabled(true)
+                                .sampleDelegate(true)
+                                .build();
+
+    DelegateToken delegateToken = DelegateToken.builder()
+                                      .accountId(accountId)
+                                      .name(delegateTokenName)
+                                      .isNg(true)
+                                      .status(DelegateTokenStatus.ACTIVE)
+                                      .owner(owner)
+                                      .build();
+
+    persistence.save(delegateToken);
+
+    if (!GlobalContextManager.isAvailable()) {
+      GlobalContextManager.set(new GlobalContext());
+    }
+    GlobalContextManager.upsertGlobalContextRecord(
+        DelegateTokenGlobalContextData.builder().tokenName(delegateTokenName).build());
+
+    DelegateProfile profile = createDelegateProfileBuilder().accountId(accountId).primary(true).build();
+    DelegateGroup group = DelegateGroup.builder()
+                              .accountId(accountId)
+                              .uuid(delegateGroupId)
+                              .name(DELEGATE_GROUP_NAME)
+                              .owner(owner)
+                              .build();
+    persistence.save(group);
+    when(delegateProfileService.fetchNgPrimaryProfile(accountId, owner)).thenReturn(profile);
+    when(delegatesFeature.getMaxUsageAllowedForAccount(accountId)).thenReturn(Integer.MAX_VALUE);
+
+    DelegateRegisterResponse registerResponse = delegateService.register(params);
+    Delegate delegateFromDb = delegateCache.get(accountId, registerResponse.getDelegateId(), true);
+
+    assertThat(delegateFromDb.getOwner()).isEqualTo(owner);
   }
 
   private CapabilityRequirement buildCapabilityRequirement() {

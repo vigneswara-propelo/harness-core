@@ -73,10 +73,6 @@
           value: "${delegateDescription}"
         - name: DELEGATE_TAGS
           value: "${delegateTags}"
-        - name: DELEGATE_ORG_IDENTIFIER
-          value: "${delegateOrgIdentifier}"
-        - name: DELEGATE_PROJECT_IDENTIFIER
-          value: "${delegateProjectIdentifier}"
         - name: NEXT_GEN
           value: "true"
 </#macro>

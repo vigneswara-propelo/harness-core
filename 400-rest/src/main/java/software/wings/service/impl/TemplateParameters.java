@@ -27,8 +27,6 @@ public class TemplateParameters {
   private final boolean ceEnabled;
   private final boolean ciEnabled;
   private final String logStreamingServiceBaseUrl;
-  private final String delegateOrgIdentifier;
-  private final String delegateProjectIdentifier;
   private final String delegateDescription;
   private final String delegateSize;
   private final int delegateReplicas;

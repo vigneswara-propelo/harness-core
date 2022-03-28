@@ -103,10 +103,6 @@ spec:
           value: ""
         - name: DELEGATE_TAGS
           value: ""
-        - name: DELEGATE_ORG_IDENTIFIER
-          value: ""
-        - name: DELEGATE_PROJECT_IDENTIFIER
-          value: ""
         - name: NEXT_GEN
           value: "true"
         - name: ACCOUNT_SECRET

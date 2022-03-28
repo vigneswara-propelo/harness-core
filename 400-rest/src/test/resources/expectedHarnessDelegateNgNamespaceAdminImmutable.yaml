@@ -126,10 +126,6 @@ spec:
           value: "desc"
         - name: DELEGATE_TAGS
           value: ""
-        - name: DELEGATE_ORG_IDENTIFIER
-          value: "9S5HMP0xROugl3_QgO62rQO"
-        - name: DELEGATE_PROJECT_IDENTIFIER
-          value: "9S5HMP0xROugl3_QgO62rQP"
         - name: NEXT_GEN
           value: "true"
         - name: CLIENT_TOOLS_DOWNLOAD_DISABLED
