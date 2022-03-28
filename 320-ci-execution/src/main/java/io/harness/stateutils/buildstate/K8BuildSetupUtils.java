@@ -20,6 +20,7 @@ import static io.harness.common.CIExecutionConstants.BUILD_NUMBER_ATTR;
 import static io.harness.common.CIExecutionConstants.HARNESS_ACCOUNT_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_BUILD_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_CI_INDIRECT_LOG_UPLOAD_FF;
+import static io.harness.common.CIExecutionConstants.HARNESS_EXECUTION_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_LOG_PREFIX_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_ORG_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_PIPELINE_ID_VARIABLE;
@@ -618,6 +619,7 @@ public class K8BuildSetupUtils {
     final String pipelineID = ambiance.getMetadata().getPipelineIdentifier();
     final int buildNumber = ambiance.getMetadata().getRunSequence();
     final String stageID = k8PodDetails.getStageID();
+    final String executionID = ambiance.getPlanExecutionId();
 
     // Add git connector environment variables
     envVars.putAll(gitEnvVars);
@@ -639,6 +641,7 @@ public class K8BuildSetupUtils {
     envVars.put(HARNESS_PIPELINE_ID_VARIABLE, pipelineID);
     envVars.put(HARNESS_BUILD_ID_VARIABLE, String.valueOf(buildNumber));
     envVars.put(HARNESS_STAGE_ID_VARIABLE, stageID);
+    envVars.put(HARNESS_EXECUTION_ID_VARIABLE, executionID);
     envVars.put(HARNESS_LOG_PREFIX_VARIABLE, logPrefix);
     return envVars;
   }

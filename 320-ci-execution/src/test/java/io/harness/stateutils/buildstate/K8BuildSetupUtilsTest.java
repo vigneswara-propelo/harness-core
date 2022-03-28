@@ -13,6 +13,7 @@ import static io.harness.common.CIExecutionConstants.ACCESS_KEY_MINIO_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_ACCOUNT_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_BUILD_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_CI_INDIRECT_LOG_UPLOAD_FF;
+import static io.harness.common.CIExecutionConstants.HARNESS_EXECUTION_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_ORG_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_PROJECT_ID_VARIABLE;
 import static io.harness.common.CIExecutionConstants.HARNESS_STAGE_ID_VARIABLE;
@@ -130,6 +131,7 @@ public class K8BuildSetupUtilsTest extends CIExecutionTestBase {
     String projectID = "project";
     int buildID = 1;
     String stageID = "stage";
+    String executionID = "execution";
     String namespace = "default";
 
     String logEndpoint = "http://localhost:8080";
@@ -219,6 +221,7 @@ public class K8BuildSetupUtilsTest extends CIExecutionTestBase {
     stepEnvVars.put(HARNESS_PROJECT_ID_VARIABLE, projectID);
     stepEnvVars.put(HARNESS_BUILD_ID_VARIABLE, String.valueOf(buildID));
     stepEnvVars.put(HARNESS_STAGE_ID_VARIABLE, stageID);
+    stepEnvVars.put(HARNESS_EXECUTION_ID_VARIABLE, executionID);
     stepEnvVars.put(HARNESS_CI_INDIRECT_LOG_UPLOAD_FF, "true");
     stepEnvVars.putAll(ciExecutionPlanTestHelper.getEnvVariables(true));
 
