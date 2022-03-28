@@ -12,6 +12,8 @@ import io.harness.cvng.activity.beans.DeploymentActivitySummaryDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterChartDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterWithCountDTO;
+import io.harness.cvng.analysis.beans.LogAnalysisRadarChartClusterDTO;
+import io.harness.cvng.analysis.beans.LogAnalysisRadarChartListWithCountDTO;
 import io.harness.cvng.analysis.beans.TransactionMetricInfoSummaryPageDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.cdng.beans.InputSetTemplateRequest;
@@ -113,6 +115,34 @@ public class CVNGStepResource {
       @BeanParam DeploymentLogAnalysisFilter deploymentLogAnalysisFilter) {
     return new RestResponse(
         stepTaskService.getDeploymentActivityLogAnalysisClusters(accountId, callBackId, deploymentLogAnalysisFilter));
+  }
+
+  @GET
+  @Path("/{verifyStepExecutionId}/radar-chart-clusters")
+  @Timed
+  @ExceptionMetered
+  @ApiOperation(value = "get radar chart logs for given activity",
+      nickname = "getVerifyStepDeploymentRadarChartLogAnalysisClusters")
+  public RestResponse<List<LogAnalysisRadarChartClusterDTO>>
+  getDeploymentLogAnalysisRadarChartClusters(@NotEmpty @NotNull @QueryParam("accountId") String accountId,
+      @NotNull @NotEmpty @PathParam("verifyStepExecutionId") String callBackId,
+      @BeanParam DeploymentLogAnalysisFilter deploymentLogAnalysisFilter) {
+    return new RestResponse(stepTaskService.getDeploymentActivityRadarCartLogAnalysisClusters(
+        accountId, callBackId, deploymentLogAnalysisFilter));
+  }
+
+  @Path("/{verifyStepExecutionId}/deployment-log-analysis-radar-chart-data")
+  @GET
+  @Timed
+  @ExceptionMetered
+  @ApiOperation(value = "get radar chart logs list for given activity",
+      nickname = "getVerifyStepDeploymentLogAnalysisRadarChartReslut")
+  public RestResponse<LogAnalysisRadarChartListWithCountDTO>
+  getDeploymentLogAnalysisRadarChartResult(@NotEmpty @NotNull @QueryParam("accountId") String accountId,
+      @PathParam("verifyStepExecutionId") String callBackId,
+      @BeanParam DeploymentLogAnalysisFilter deploymentLogAnalysisFilter, @BeanParam PageParams pageParams) {
+    return new RestResponse(stepTaskService.getDeploymentActivityRadarChartLogAnalysisResult(
+        accountId, callBackId, deploymentLogAnalysisFilter, pageParams));
   }
 
   @Path("/{verifyStepExecutionId}/deployment-log-analysis-data")

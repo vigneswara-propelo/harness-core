@@ -11,6 +11,8 @@ import io.harness.cvng.activity.beans.DeploymentActivitySummaryDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterChartDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterWithCountDTO;
+import io.harness.cvng.analysis.beans.LogAnalysisRadarChartClusterDTO;
+import io.harness.cvng.analysis.beans.LogAnalysisRadarChartListWithCountDTO;
 import io.harness.cvng.analysis.beans.TransactionMetricInfoSummaryPageDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.cdng.entities.CVNGStepTask;
@@ -32,13 +34,21 @@ public interface CVNGStepTaskService {
   TransactionMetricInfoSummaryPageDTO getDeploymentActivityTimeSeriesData(String accountId, String callBackId,
       DeploymentTimeSeriesAnalysisFilter deploymentTimeSeriesAnalysisFilter, PageParams pageParams);
   Set<HealthSourceDTO> healthSources(String accountId, String callBackId);
+  @Deprecated
   List<LogAnalysisClusterChartDTO> getDeploymentActivityLogAnalysisClusters(
       String accountId, String callBackId, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter);
   @Deprecated
   PageResponse<LogAnalysisClusterDTO> getDeploymentActivityLogAnalysisResult(String accountId, String callBackId,
       Integer label, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter, PageParams pageParams);
+  @Deprecated
   LogAnalysisClusterWithCountDTO getDeploymentActivityLogAnalysisResultV2(String accountId, String callBackId,
       Integer label, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter, PageParams pageParams);
+
+  LogAnalysisRadarChartListWithCountDTO getDeploymentActivityRadarChartLogAnalysisResult(String accountId,
+      String callBackId, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter, PageParams pageParams);
+  List<LogAnalysisRadarChartClusterDTO> getDeploymentActivityRadarCartLogAnalysisClusters(
+      String accountId, String callBackId, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter);
+
   List<String> getTransactionNames(String accountId, String callBackId);
   List<String> getNodeNames(String accountId, String callBackId);
 

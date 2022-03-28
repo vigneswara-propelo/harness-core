@@ -29,6 +29,7 @@ public class DeploymentLogAnalysisDTO {
   List<HostSummary> hostSummaries;
 
   public enum ClusterType {
+    BASELINE("Baseline"),
     KNOWN_EVENT("Known"),
     UNKNOWN_EVENT("Unknown"),
     UNEXPECTED_FREQUENCY("Unexpected Frequency");

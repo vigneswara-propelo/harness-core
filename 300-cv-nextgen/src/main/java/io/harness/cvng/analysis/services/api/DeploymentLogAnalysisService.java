@@ -12,6 +12,8 @@ import io.harness.cvng.activity.beans.DeploymentActivityResultDTO.LogsAnalysisSu
 import io.harness.cvng.analysis.beans.LogAnalysisClusterChartDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterDTO;
 import io.harness.cvng.analysis.beans.LogAnalysisClusterWithCountDTO;
+import io.harness.cvng.analysis.beans.LogAnalysisRadarChartClusterDTO;
+import io.harness.cvng.analysis.beans.LogAnalysisRadarChartListWithCountDTO;
 import io.harness.cvng.analysis.beans.Risk;
 import io.harness.cvng.analysis.entities.DeploymentLogAnalysis;
 import io.harness.cvng.core.beans.params.PageParams;
@@ -29,6 +31,12 @@ public interface DeploymentLogAnalysisService {
   List<DeploymentLogAnalysis> getAnalysisResults(String verificationTaskId);
 
   List<LogAnalysisClusterChartDTO> getLogAnalysisClusters(
+      String accountId, String verificationJobInstanceId, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter);
+
+  LogAnalysisRadarChartListWithCountDTO getRadarChartLogAnalysisResult(String accountId,
+      String verificationJobInstanceId, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter, PageParams pageParams);
+
+  List<LogAnalysisRadarChartClusterDTO> getRadarChartLogAnalysisClusters(
       String accountId, String verificationJobInstanceId, DeploymentLogAnalysisFilter deploymentLogAnalysisFilter);
 
   Optional<Risk> getRecentHighestRiskScore(String accountId, String verificationJobInstanceId);
