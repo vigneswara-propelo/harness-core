@@ -27,6 +27,7 @@ import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveDTO;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveFilter;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveResponse;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
+import io.harness.cvng.utils.NGAccessControlClientCheck;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.rest.RestResponse;
@@ -71,6 +72,7 @@ public class ServiceLevelObjectiveResource {
   @Timed
   @ExceptionMetered
   @ApiOperation(value = "saves slo data", nickname = "saveSLOData")
+  @NGAccessControlClientCheck
   public RestResponse<ServiceLevelObjectiveResponse> saveSLOData(
       @ApiParam(required = true) @NotNull @QueryParam("accountId") String accountId,
       @NotNull @Valid @Body ServiceLevelObjectiveDTO serviceLevelObjectiveDTO) {
