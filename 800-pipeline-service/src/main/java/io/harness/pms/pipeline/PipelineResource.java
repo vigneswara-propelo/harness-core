@@ -241,7 +241,11 @@ public class PipelineResource implements YamlSchemaResource {
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
       @Parameter(description = PipelineResourceConstants.PIPELINE_ID_PARAM_MESSAGE, required = true) @PathParam(
           NGCommonEntityConstants.PIPELINE_KEY) @ResourceIdentifier String pipelineId,
-      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
+      @Parameter(
+          description =
+              "This is a boolean value. If true, returns Templates resolved Pipeline YAML in the response else returns null.")
+      @QueryParam("getTemplatesResolvedPipeline") @DefaultValue("false") boolean getTemplatesResolvedPipeline) {
     log.info(String.format("Retrieving pipeline with identifier %s in project %s, org %s, account %s", pipelineId,
         projectId, orgId, accountId));
 
@@ -256,9 +260,17 @@ public class PipelineResource implements YamlSchemaResource {
             -> new EntityNotFoundException(
                 String.format("Pipeline with the given ID: %s does not exist or has been deleted", pipelineId))));
 
-    TemplateMergeResponseDTO templateMergeResponseDTO =
-        pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity.get());
-    pipeline.setResolvedTemplatesPipelineYaml(templateMergeResponseDTO.getMergedPipelineYaml());
+    if (getTemplatesResolvedPipeline) {
+      try {
+        String templateResolvedPipelineYaml = "";
+        TemplateMergeResponseDTO templateMergeResponseDTO =
+            pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity.get());
+        templateResolvedPipelineYaml = templateMergeResponseDTO.getMergedPipelineYaml();
+        pipeline.setResolvedTemplatesPipelineYaml(templateResolvedPipelineYaml);
+      } catch (Exception e) {
+        log.info("Cannot get resolved templates pipeline YAML");
+      }
+    }
 
     return ResponseDTO.newResponse(version, pipeline);
   }
