@@ -25,6 +25,7 @@ import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ProjectIdentifier;
 import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.interceptor.GitEntityCreateInfoDTO;
@@ -41,16 +42,19 @@ import io.harness.pms.inputset.InputSetSchemaConstants;
 import io.harness.pms.inputset.MergeInputSetResponseDTOPMS;
 import io.harness.pms.inputset.MergeInputSetTemplateRequestDTO;
 import io.harness.pms.inputset.OverlayInputSetErrorWrapperDTOPMS;
+import io.harness.pms.merger.helpers.InputSetYamlHelper;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity.InputSetEntityKeys;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetListTypePMS;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetResponseDTOPMS;
+import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetSanitiseResponseDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetSummaryResponseDTOPMS;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetTemplateRequestDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetTemplateResponseDTOPMS;
 import io.harness.pms.ngpipeline.inputset.beans.resource.MergeInputSetRequestDTOPMS;
 import io.harness.pms.ngpipeline.inputset.exceptions.InvalidInputSetException;
 import io.harness.pms.ngpipeline.inputset.exceptions.InvalidOverlayInputSetException;
+import io.harness.pms.ngpipeline.inputset.helpers.InputSetSanitizer;
 import io.harness.pms.ngpipeline.inputset.helpers.ValidateAndMergeHelper;
 import io.harness.pms.ngpipeline.inputset.mappers.PMSInputSetElementMapper;
 import io.harness.pms.ngpipeline.inputset.mappers.PMSInputSetFilterHelper;
@@ -66,6 +70,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -331,9 +336,9 @@ public class InputSetResourcePMS {
       @Parameter(description = InputSetSchemaConstants.PIPELINE_ID_FOR_INPUT_SET_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.PIPELINE_KEY) @ResourceIdentifier String pipelineIdentifier,
       @QueryParam("pipelineBranch") @Parameter(
-          description = "Github branch of the Pipeline for which the Input Set is to be created") String pipelineBranch,
+          description = "Github branch of the Pipeline for which the Input Set is to be updated") String pipelineBranch,
       @QueryParam("pipelineRepoID")
-      @Parameter(description = "Github Repo Id of the Pipeline for which the Input Set is to be created")
+      @Parameter(description = "Github Repo Id of the Pipeline for which the Input Set is to be updated")
       String pipelineRepoID, @BeanParam GitEntityUpdateInfoDTO gitEntityInfo,
       @RequestBody(required = true,
           description =
@@ -607,5 +612,58 @@ public class InputSetResourcePMS {
                                        .pipelineYaml(mergeInputSetTemplateRequestDTO.getRuntimeInputYaml())
                                        .completePipelineYaml(fullYaml)
                                        .build());
+  }
+
+  @POST
+  @Path("{inputSetIdentifier}/sanitise")
+  @ApiOperation(value = "Sanitise an InputSet", nickname = "sanitiseInputSet")
+  @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_CREATE_AND_EDIT)
+  @Operation(operationId = "sanitiseInputSet", summary = "Sanitise an Input Set by removing invalid fields",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
+            description = "Sanitise an Input Set by removing invalid fields from the Input Set YAML and save it")
+      })
+  @Hidden
+  public ResponseDTO<InputSetSanitiseResponseDTO>
+  sanitiseInputSet(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @Parameter(
+                       description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE) String accountId,
+      @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier @Parameter(
+          description = PipelineResourceConstants.ORG_PARAM_MESSAGE) String orgIdentifier,
+      @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier @Parameter(
+          description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE) String projectIdentifier,
+      @Parameter(description = InputSetSchemaConstants.PIPELINE_ID_FOR_INPUT_SET_PARAM_MESSAGE) @NotNull @QueryParam(
+          NGCommonEntityConstants.PIPELINE_KEY) @ResourceIdentifier String pipelineIdentifier,
+      @Parameter(
+          description =
+              "Identifier for the Input Set that needs to be updated. An Input Set corresponding to this identifier should already exist.")
+      @PathParam(NGCommonEntityConstants.INPUT_SET_IDENTIFIER_KEY) String inputSetIdentifier,
+      @QueryParam("pipelineBranch") @Parameter(
+          description = "Github branch of the Pipeline for which the Input Set is to be updated") String pipelineBranch,
+      @QueryParam("pipelineRepoID")
+      @Parameter(description = "Github Repo Id of the Pipeline for which the Input Set is to be updated")
+      String pipelineRepoID, @BeanParam GitEntityUpdateInfoDTO gitEntityInfo,
+      @RequestBody(required = true,
+          description = "The invalid Input Set Yaml to be sanitized") @NotNull String invalidInputSetYaml) {
+    String pipelineYaml = validateAndMergeHelper.getPipelineYaml(
+        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, pipelineBranch, pipelineRepoID);
+    String sanitizedRuntimeInputYaml = InputSetSanitizer.sanitizeInputSet(pipelineYaml, invalidInputSetYaml);
+    if (EmptyPredicate.isEmpty(sanitizedRuntimeInputYaml)) {
+      return ResponseDTO.newResponse(InputSetSanitiseResponseDTO.builder().shouldDeleteInputSet(true).build());
+    }
+    String newInputSetYaml = InputSetYamlHelper.setPipelineComponent(invalidInputSetYaml, sanitizedRuntimeInputYaml);
+
+    log.info(String.format("Updating input set with identifier %s for pipeline %s in project %s, org %s, account %s",
+        inputSetIdentifier, pipelineIdentifier, projectIdentifier, orgIdentifier, accountId));
+    newInputSetYaml = removeRuntimeInputFromYaml(newInputSetYaml);
+
+    InputSetEntity entity = PMSInputSetElementMapper.toInputSetEntity(
+        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, newInputSetYaml);
+    InputSetEntity updatedEntity = pmsInputSetService.update(entity, ChangeType.MODIFY);
+    return ResponseDTO.newResponse(
+        InputSetSanitiseResponseDTO.builder()
+            .shouldDeleteInputSet(false)
+            .inputSetUpdateResponse(PMSInputSetElementMapper.toInputSetResponseDTOPMS(updatedEntity))
+            .build());
   }
 }

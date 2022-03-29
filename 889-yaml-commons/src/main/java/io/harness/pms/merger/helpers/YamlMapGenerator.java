@@ -79,6 +79,15 @@ public class YamlMapGenerator {
       }
     }
     if (!tempMap.isEmpty()) {
+      if (tempMap.size() == 2 && tempMap.containsKey(YAMLFieldNameConstants.IDENTIFIER)
+          && tempMap.containsKey(YAMLFieldNameConstants.TYPE)) {
+        return;
+      }
+      if (tempMap.size() == 1
+          && (tempMap.containsKey(YAMLFieldNameConstants.IDENTIFIER)
+              || tempMap.containsKey(YAMLFieldNameConstants.NAME))) {
+        return;
+      }
       Map<String, Object> newTempMap = new LinkedHashMap<>();
       if (fieldNames.contains(YAMLFieldNameConstants.IDENTIFIER)) {
         newTempMap.put(YAMLFieldNameConstants.IDENTIFIER, originalYaml.get(YAMLFieldNameConstants.IDENTIFIER));

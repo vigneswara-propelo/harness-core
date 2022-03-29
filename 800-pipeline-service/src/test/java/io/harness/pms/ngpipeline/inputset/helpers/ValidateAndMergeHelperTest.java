@@ -247,10 +247,10 @@ public class ValidateAndMergeHelperTest extends PipelineServiceTestBase {
         + "  stages:\n";
     String stage1 = "  - stage:\n"
         + "      identifier: \"s1\"\n"
-        + "      name: \"<+input>\"\n";
+        + "      myField: \"<+input>\"\n";
     String stage2 = "  - stage:\n"
         + "      identifier: \"s2\"\n"
-        + "      name: \"<+input>\"\n";
+        + "      myField: \"<+input>\"\n";
     String pipelineYaml = pipelineStart + stage1 + stage2;
 
     PipelineEntity pipelineEntity = PipelineEntity.builder().yaml(pipelineYaml).build();
