@@ -1526,7 +1526,6 @@
             "Gcp",
             "Aws",
             "Azure",
-            "Pdc",
             "Artifactory",
             "Jira",
             "Nexus",
@@ -1545,7 +1544,8 @@
             "PagerDuty",
             "CustomHealth",
             "ServiceNow",
-            "ErrorTracking"
+            "ErrorTracking",
+             "Pdc"
           ]
         }
       },

@@ -9,10 +9,10 @@ package io.harness.batch.processing.ccm;
 
 public enum BatchJobBucket {
   OUT_OF_CLUSTER,
-  OUT_OF_CLUSTER_ECS,
   IN_CLUSTER,
   IN_CLUSTER_BILLING,
   IN_CLUSTER_RECOMMENDATION,
   IN_CLUSTER_NODE_RECOMMENDATION,
-  OTHERS
+  OTHERS,
+  OUT_OF_CLUSTER_ECS
 }

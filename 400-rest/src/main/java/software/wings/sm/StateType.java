@@ -503,8 +503,6 @@ public enum StateType implements StateTypeDescriptor {
    */
   BAMBOO(BambooState.class, OTHERS, asList(), ORCHESTRATION_STENCILS, COMMON),
 
-  ARTIFACT_COLLECT_LOOP_STATE(ArtifactCollectLoopState.class, ENVIRONMENTS, asList(), NONE),
-
   /**
    * Artifact Collection state type.
    */
@@ -898,7 +896,9 @@ public enum StateType implements StateTypeDescriptor {
 
   CUSTOM_DEPLOYMENT_FETCH_INSTANCES(InstanceFetchState.class, OTHERS, 5, WorkflowServiceHelper.FETCH_INSTANCES,
       Lists.newArrayList(InfrastructureMappingType.CUSTOM), asList(PhaseStepType.CUSTOM_DEPLOYMENT_PHASE_STEP),
-      ORCHESTRATION_STENCILS);
+      ORCHESTRATION_STENCILS),
+
+  ARTIFACT_COLLECT_LOOP_STATE(ArtifactCollectLoopState.class, ENVIRONMENTS, asList(), NONE);
 
   private static final String PCF_MAP_ROUTE_NAME = "Map Route";
   private static final String PCF_UNMAP_ROUTE_NAME = "Unmap Route";
