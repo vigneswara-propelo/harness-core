@@ -29,20 +29,19 @@ server:
 
 debeziumConfigs:
   - isEnabled: true
-    offset.storage.file.filename: redisson-jcache.yaml
     offset.storage.topic: debezium-offsets-pipeline
     name: pipeline
     key.converter.schemas.enable: false
     value.converter.schemas.enable: false
-    offset.flush.interval.ms: 5000
-    mongodb.hosts: localhost:27017
+    offset.flush.interval.ms: ${OFFSET_FLUSH_INTERVAL_MS:-5000}
+    mongodb.hosts: ${MONGO_DB_HOSTS:-localhost:27017}
     mongodb.name: pmsMongo
-    mongodb.user:
-    mongodb.password:
-    mongodb.ssl.enabled: false
+    mongodb.user: ${MONGO_DB_USER:-}
+    mongodb.password: ${MONGO_DB_PASSWORD:-}
+    mongodb.ssl.enabled: ${MONGO_DB_SSL_ENABLED:-false}
     connector.class: io.debezium.connector.mongodb.MongoDbConnector
     database.include.list: pms-harness
-    collection.include.list: pms-harness.planExecutionsSummary
+    collection.include.list: ${COLLECTION_INCLUDE_LIST:-pms-harness.planExecutionsSummary}
     connect.backoff.initial.delay.ms: 1000
     connect.backoff.max.delay.ms: 10000
     connect.max.attempts: 3

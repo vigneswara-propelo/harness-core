@@ -7,6 +7,9 @@
 
 package io.harness.debezium;
 
+import io.harness.redis.RedisConfig;
+import io.harness.serializer.JsonUtils;
+
 import java.util.Optional;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +43,11 @@ public class DebeziumConfiguration {
   public static final String CONNECT_MAX_ATTEMPTS = "connect.max.attempts";
   public static final String SNAPSHOT_FETCH_SIZE = "snapshot.fetch.size";
 
-  public static Properties getDebeziumProperties(DebeziumConfig debeziumConfig) {
+  public static Properties getDebeziumProperties(DebeziumConfig debeziumConfig, RedisConfig redisLockConfig) {
     Properties props = new Properties();
     props.setProperty(CONNECTOR_NAME, debeziumConfig.getConnectorName());
     props.setProperty(OFFSET_STORAGE, RedisOffsetBackingStore.class.getName());
-    props.setProperty(OFFSET_STORAGE_FILE_FILENAME, debeziumConfig.getOffsetStorageFileName());
+    props.setProperty(OFFSET_STORAGE_FILE_FILENAME, JsonUtils.asJson(redisLockConfig));
     props.setProperty(OFFSET_STORAGE_KEY, debeziumConfig.getOffsetStorageTopic());
     props.setProperty(KEY_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getKeyConverterSchemasEnable());
     props.setProperty(VALUE_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getValueConverterSchemasEnable());

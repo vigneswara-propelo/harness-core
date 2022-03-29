@@ -95,3 +95,14 @@ replace_key_value redisLockConfig.masterName $REDIS_LOCK_CONFIG_SENTINEL_MASTER_
 replace_key_value redisLockConfig.userName $REDIS_LOCK_CONFIG_REDIS_USERNAME
 replace_key_value redisLockConfig.password $REDIS_LOCK_CONFIG_REDIS_PASSWORD
 replace_key_value redisLockConfig.useScriptCache $REDIS_LOCK_CONFIG_REDIS_USE_SCRIPT_CACHE
+
+if [[ "" != "$REDIS_LOCK_CONFIG_REDIS_SENTINELS" ]]; then
+  IFS=',' read -ra SENTINEL_URLS <<< "$REDIS_LOCK_CONFIG_REDIS_SENTINELS"
+  INDEX=0
+  for REDIS_SENTINEL_URL in "${SENTINEL_URLS[@]}"; do
+    yq write -i $CONFIG_FILE redisLockConfig.sentinelUrls.[$INDEX] "${REDIS_SENTINEL_URL}"
+    INDEX=$(expr $INDEX + 1)
+  done
+fi
+
+replace_key_value distributedLockImplementation $DISTRIBUTED_LOCK_IMPLEMENTATION

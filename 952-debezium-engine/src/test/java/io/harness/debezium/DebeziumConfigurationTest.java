@@ -12,7 +12,9 @@ import static io.harness.rule.OwnerRule.SHALINI;
 import static junit.framework.TestCase.assertEquals;
 
 import io.harness.category.element.UnitTests;
+import io.harness.redis.RedisConfig;
 import io.harness.rule.Owner;
+import io.harness.serializer.JsonUtils;
 
 import java.util.Optional;
 import java.util.Properties;
@@ -27,12 +29,12 @@ public class DebeziumConfigurationTest {
     DebeziumConfig debeziumConfig =
         new DebeziumConfig(false, "testConnector", "offset_file", "offsets", "false", "false", "6000", "1000", "10000",
             "3", "MongoDbConnectorClass", "rs0/host1", "shop", "", "", "false", "products", "", "2000");
+    RedisConfig redisConfig = new RedisConfig();
     Properties expected_props = new Properties();
-    Properties props = new DebeziumConfiguration().getDebeziumProperties(debeziumConfig);
+    Properties props = new DebeziumConfiguration().getDebeziumProperties(debeziumConfig, redisConfig);
     expected_props.setProperty(DebeziumConfiguration.CONNECTOR_NAME, debeziumConfig.getConnectorName());
     expected_props.setProperty(DebeziumConfiguration.OFFSET_STORAGE, RedisOffsetBackingStore.class.getName());
-    expected_props.setProperty(
-        DebeziumConfiguration.OFFSET_STORAGE_FILE_FILENAME, debeziumConfig.getOffsetStorageFileName());
+    expected_props.setProperty(DebeziumConfiguration.OFFSET_STORAGE_FILE_FILENAME, JsonUtils.asJson(redisConfig));
     expected_props.setProperty(DebeziumConfiguration.OFFSET_STORAGE_KEY, debeziumConfig.getOffsetStorageTopic());
     expected_props.setProperty(
         DebeziumConfiguration.KEY_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getKeyConverterSchemasEnable());

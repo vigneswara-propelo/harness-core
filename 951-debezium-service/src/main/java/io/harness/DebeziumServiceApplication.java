@@ -7,6 +7,8 @@
 
 package io.harness;
 
+import static io.harness.logging.LoggingInitializer.initializeLogging;
+
 import io.harness.debezium.ChangeConsumerConfig;
 import io.harness.debezium.ConsumerType;
 import io.harness.debezium.DebeziumConfig;
@@ -14,10 +16,15 @@ import io.harness.debezium.DebeziumControllerStarter;
 import io.harness.lock.PersistentLocker;
 import io.harness.maintenance.MaintenanceController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.dropwizard.Application;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.serializer.HObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -29,6 +36,19 @@ public class DebeziumServiceApplication extends Application<DebeziumServiceConfi
     }));
 
     new DebeziumServiceApplication().run(args);
+  }
+
+  @Override
+  public void initialize(Bootstrap<DebeziumServiceConfiguration> bootstrap) {
+    initializeLogging();
+    // Enable variable substitution with environment variables
+    bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+        bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+    configureObjectMapper(bootstrap.getObjectMapper());
+  }
+
+  public static void configureObjectMapper(final ObjectMapper mapper) {
+    HObjectMapper.configureObjectMapperForNG(mapper);
   }
 
   @Override
@@ -51,7 +71,7 @@ public class DebeziumServiceApplication extends Application<DebeziumServiceConfi
                 .consumerType(ConsumerType.EVENTS_FRAMEWORK)
                 .eventsFrameworkConfiguration(appConfig.getEventsFrameworkConfiguration())
                 .build();
-        starter.startDebeziumController(debeziumConfig, changeConsumerConfig, locker);
+        starter.startDebeziumController(debeziumConfig, changeConsumerConfig, locker, appConfig.getRedisLockConfig());
       }
     }
   }

@@ -12,6 +12,7 @@
 package io.harness.debezium;
 
 import io.harness.lock.PersistentLocker;
+import io.harness.redis.RedisConfig;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -26,13 +27,14 @@ public class DebeziumControllerStarter {
   @Inject private ChangeConsumerFactory consumerFactory;
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public void startDebeziumController(
-      DebeziumConfig debeziumConfig, ChangeConsumerConfig changeConsumerConfig, PersistentLocker locker) {
+  public void startDebeziumController(DebeziumConfig debeziumConfig, ChangeConsumerConfig changeConsumerConfig,
+      PersistentLocker locker, RedisConfig redisLockConfig) {
     String monitoredDb = debeziumConfig.getDatabaseIncludeList();
     try {
       MongoDatabaseChangeConsumer changeConsumer = consumerFactory.get(monitoredDb, changeConsumerConfig);
-      DebeziumController debeziumController = new DebeziumController(
-          DebeziumConfiguration.getDebeziumProperties(debeziumConfig), changeConsumer, locker, debeziumExecutorService);
+      DebeziumController debeziumController =
+          new DebeziumController(DebeziumConfiguration.getDebeziumProperties(debeziumConfig, redisLockConfig),
+              changeConsumer, locker, debeziumExecutorService);
       debeziumExecutorService.submit(debeziumController);
     } catch (Exception e) {
       log.error("Cannot Start Debezium Controller for Database {}", monitoredDb, e);

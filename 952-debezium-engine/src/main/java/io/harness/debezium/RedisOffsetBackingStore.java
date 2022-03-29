@@ -7,10 +7,10 @@
 
 package io.harness.debezium;
 
-import io.harness.exception.InvalidArgumentsException;
+import io.harness.eventsframework.impl.redis.RedisUtils;
+import io.harness.redis.RedisConfig;
+import io.harness.serializer.JsonUtils;
 
-import java.io.IOException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +18,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.storage.MemoryOffsetBackingStore;
-import org.redisson.Redisson;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
 
 @Slf4j
 public class RedisOffsetBackingStore extends MemoryOffsetBackingStore {
@@ -35,18 +33,10 @@ public class RedisOffsetBackingStore extends MemoryOffsetBackingStore {
   public void configure(WorkerConfig config) {
     super.configure(config);
     this.redisKey = config.getString("offset.storage.topic");
-    Config rConfig;
-    rConfig = buildConfig(config.getString("offset.storage.file.filename"));
-    redisson = Redisson.create(rConfig);
+    String redisLockConfigJson = config.getString("offset.storage.file.filename");
+    RedisConfig redisConfig = JsonUtils.asObject(redisLockConfigJson, RedisConfig.class);
+    redisson = RedisUtils.getClient(redisConfig);
     // TODO: ping or throw Exception
-  }
-
-  private Config buildConfig(String filePath) throws IOException {
-    URL resource = getClass().getClassLoader().getResource(filePath);
-    if (resource == null) {
-      throw new InvalidArgumentsException("File Path for redis backing store not valid");
-    }
-    return Config.fromYAML(resource);
   }
 
   @Override
