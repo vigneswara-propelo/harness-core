@@ -21,6 +21,7 @@ import static io.harness.rule.OwnerRule.ROHIT_KUMAR;
 import static io.harness.rule.OwnerRule.SATYAM;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 import static io.harness.rule.OwnerRule.TMACARI;
+import static io.harness.rule.OwnerRule.VAIBHAV_KUMAR;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -699,6 +700,29 @@ public class CfCliClientImplTest extends CategoryTest {
     Map<String, String> environmentProperties = cfCliClient.getEnvironmentMapForCfExecutor("app.host.io", "test");
     assertThat(environmentProperties.size()).isEqualTo(1);
     assertThat(environmentProperties.get("https_proxy")).isNull();
+  }
+
+  @Test
+  @Owner(developers = VAIBHAV_KUMAR)
+  @Category(UnitTests.class)
+  public void testAppSetupTimeoutUsedInAutoscaling() throws PivotalClientApiException {
+    int timeout = 2903;
+    CfRequestConfig pcfRequestConfig = getCfRequestConfigWithCfCliPath();
+    pcfRequestConfig.setTimeOutIntervalInMins(timeout);
+    pcfRequestConfig.setLoggedin(true);
+    doNothing().when(logCallback).saveExecutionLog(anyString());
+
+    cfCliClient.checkIfAppHasAutoscalerAttached(
+        CfAppAutoscalarRequestData.builder().cfRequestConfig(pcfRequestConfig).build(), logCallback);
+    cfCliClient.checkIfAppHasAutoscalerWithExpectedState(
+        CfAppAutoscalarRequestData.builder().cfRequestConfig(pcfRequestConfig).build(), logCallback);
+
+    ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+    verify(cfCliClient, times(2)).createProcessExecutorForCfTask(captor.capture(), any(), any(), any());
+
+    List<Long> capturedPeople = captor.getAllValues();
+    assertThat(capturedPeople.get(0)).isEqualTo(timeout);
+    assertThat(capturedPeople.get(1)).isEqualTo(timeout);
   }
 
   @Test
