@@ -25,8 +25,9 @@ import io.harness.common.EntityReference;
 import io.harness.eraro.ErrorCode;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.exception.ExplanationException;
+import io.harness.exception.HintException;
 import io.harness.exception.InvalidRequestException;
-import io.harness.exception.SCMExceptionExplanations;
+import io.harness.exception.SCMExceptionHints;
 import io.harness.exception.ScmException;
 import io.harness.exception.WingsException;
 import io.harness.exception.ngexception.beans.ScmErrorMetadataDTO;
@@ -132,8 +133,7 @@ public class SCMGitSyncHelperTest extends GitSdkTestBase {
              harnessToGitPushInfoServiceBlockingStub::pushFile, any(FileInfo.class)))
         .thenReturn(pushFileResponse1);
     assertThatThrownBy(() -> scmGitSyncHelper.pushToGit(gitEntityInfo2, yaml, ChangeType.ADD, entityDetail))
-        .isInstanceOf(ExplanationException.class)
-        .hasMessage(SCMExceptionExplanations.UNABLE_TO_PUSH_TO_REPO_WITH_USER_CREDENTIALS);
+        .hasMessage("Please check your credentials.");
     when(GitSyncGrpcClientUtils.retryAndProcessException(
              harnessToGitPushInfoServiceBlockingStub::pushFile, any(FileInfo.class)))
         .thenReturn(pushFileResponse2);
@@ -173,8 +173,8 @@ public class SCMGitSyncHelperTest extends GitSdkTestBase {
         .hasMessage("");
 
     assertThatThrownBy(() -> scmGitSyncHelper.checkForError(buildPushFileResponse(1, 404, errorMessage)))
-        .isInstanceOf(ExplanationException.class)
-        .hasMessage(SCMExceptionExplanations.UNABLE_TO_PUSH_TO_REPO_WITH_USER_CREDENTIALS);
+        .isInstanceOf(HintException.class)
+        .hasMessage(SCMExceptionHints.INVALID_CREDENTIALS);
 
     try {
       scmGitSyncHelper.checkForError(buildPushFileResponse(1, 304, errorMessage));

@@ -9,6 +9,8 @@ package io.harness.impl.scm;
 
 import static io.harness.constants.Constants.SCM_CONFLICT_ERROR_CODE;
 import static io.harness.constants.Constants.SCM_CONFLICT_ERROR_MESSAGE;
+import static io.harness.constants.Constants.SCM_INTERNAL_SERVER_ERROR_CODE;
+import static io.harness.constants.Constants.SCM_INTERNAL_SERVER_ERROR_MESSAGE;
 import static io.harness.delegate.beans.connector.ConnectorType.BITBUCKET;
 import static io.harness.delegate.beans.connector.ConnectorType.GITHUB;
 import static io.harness.rule.OwnerRule.MEET;
@@ -26,7 +28,6 @@ import io.harness.beans.gitsync.GitFileDetails;
 import io.harness.category.element.UnitTests;
 import io.harness.constants.Constants;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
-import io.harness.exception.ExplanationException;
 import io.harness.product.ci.scm.proto.Commit;
 import io.harness.product.ci.scm.proto.CreateBranchResponse;
 import io.harness.product.ci.scm.proto.CreateFileResponse;
@@ -144,10 +145,11 @@ public class ScmServiceClientImplTest extends CategoryTest {
     when(scmGitProviderHelper.getSlug(any())).thenReturn(slug);
     when(scmBlockingStub.createFile(any()))
         .thenReturn(CreateFileResponse.newBuilder().setStatus(200).setCommitId("").build());
-
-    assertThatThrownBy(() -> scmServiceClient.createFile(scmConnector, getGitFileDetailsDefault(), scmBlockingStub))
-        .isInstanceOf(ExplanationException.class)
-        .hasMessage("Faced internal server error on SCM, couldn't complete operation");
+    CreateFileResponse createFileResponse =
+        scmServiceClient.createFile(scmConnector, getGitFileDetailsDefault(), scmBlockingStub);
+    assertThat(createFileResponse).isNotNull();
+    assertThat(createFileResponse.getStatus() == SCM_INTERNAL_SERVER_ERROR_CODE).isTrue();
+    assertThat(createFileResponse.getError().equals(SCM_INTERNAL_SERVER_ERROR_MESSAGE)).isTrue();
   }
 
   @Test
@@ -158,10 +160,11 @@ public class ScmServiceClientImplTest extends CategoryTest {
     when(scmGitProviderHelper.getSlug(any())).thenReturn(slug);
     when(scmBlockingStub.updateFile(any()))
         .thenReturn(UpdateFileResponse.newBuilder().setStatus(200).setCommitId("").build());
-
-    assertThatThrownBy(() -> scmServiceClient.updateFile(scmConnector, getGitFileDetailsDefault(), scmBlockingStub))
-        .isInstanceOf(ExplanationException.class)
-        .hasMessage("Faced internal server error on SCM, couldn't complete operation");
+    UpdateFileResponse updateFileResponse =
+        scmServiceClient.updateFile(scmConnector, getGitFileDetailsDefault(), scmBlockingStub);
+    assertThat(updateFileResponse).isNotNull();
+    assertThat(updateFileResponse.getStatus() == SCM_INTERNAL_SERVER_ERROR_CODE).isTrue();
+    assertThat(updateFileResponse.getError().equals(SCM_INTERNAL_SERVER_ERROR_MESSAGE)).isTrue();
   }
 
   @Test
