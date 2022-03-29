@@ -107,52 +107,55 @@ public class K8SSyncEventTasklet extends EventWriter implements Tasklet {
   public List<Lifecycle> process(List<PublishedMessage> publishedMessages) {
     log.info("Published batch size is K8SSyncEventTasklet {} ", publishedMessages.size());
     List<Lifecycle> lifecycleList = new ArrayList<>();
+    for (PublishedMessage publishedMessage : publishedMessages) {
+      try {
+        K8SClusterSyncEvent k8SClusterSyncEvent = (K8SClusterSyncEvent) publishedMessage.getMessage();
+        log.info("K8S sync event {} ", k8SClusterSyncEvent);
 
-    publishedMessages.forEach(publishedMessage -> {
-      K8SClusterSyncEvent k8SClusterSyncEvent = (K8SClusterSyncEvent) publishedMessage.getMessage();
-      log.info("K8S sync event {} ", k8SClusterSyncEvent);
+        String accountId = publishedMessage.getAccountId();
+        String clusterId = k8SClusterSyncEvent.getClusterId();
+        Timestamp lastProcessedTimestamp = k8SClusterSyncEvent.getLastProcessedTimestamp();
+        Set<String> activeInstanceIds =
+            fetchActiveInstanceAtTime(accountId, clusterId, HTimestamps.toInstant(lastProcessedTimestamp));
 
-      String accountId = publishedMessage.getAccountId();
-      String clusterId = k8SClusterSyncEvent.getClusterId();
-      Timestamp lastProcessedTimestamp = k8SClusterSyncEvent.getLastProcessedTimestamp();
-      Set<String> activeInstanceIds =
-          fetchActiveInstanceAtTime(accountId, clusterId, HTimestamps.toInstant(lastProcessedTimestamp));
+        log.info("Active K8S instances before {} time {}", lastProcessedTimestamp, activeInstanceIds.size());
 
-      log.info("Active K8S instances before {} time {}", lastProcessedTimestamp, activeInstanceIds.size());
+        Set<String> activeInstanceArns = new HashSet<>();
 
-      Set<String> activeInstanceArns = new HashSet<>();
+        if (k8SClusterSyncEvent.getVersion() == 2) {
+          activeInstanceArns.addAll(k8SClusterSyncEvent.getActiveNodeUidsMapMap().keySet());
+          activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePodUidsMapMap().keySet());
+          activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePvUidsMapMap().keySet());
+        } else {
+          activeInstanceArns.addAll(k8SClusterSyncEvent.getActiveNodeUidsList());
+          activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePodUidsList());
+          activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePvUidsList());
+        }
 
-      if (k8SClusterSyncEvent.getVersion() == 2) {
-        activeInstanceArns.addAll(k8SClusterSyncEvent.getActiveNodeUidsMapMap().keySet());
-        activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePodUidsMapMap().keySet());
-        activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePvUidsMapMap().keySet());
-      } else {
-        activeInstanceArns.addAll(k8SClusterSyncEvent.getActiveNodeUidsList());
-        activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePodUidsList());
-        activeInstanceArns.addAll(k8SClusterSyncEvent.getActivePvUidsList());
+        final SetView<String> inactiveInstanceArns = Sets.difference(activeInstanceIds, activeInstanceArns);
+
+        log.info("Inactive K8S instance arns {}", inactiveInstanceArns.toString());
+
+        lifecycleList.addAll(
+            inactiveInstanceArns.stream()
+                .map(instanceId
+                    -> createLifecycle(instanceId, clusterId, lastProcessedTimestamp, EventType.EVENT_TYPE_STOP))
+                .collect(Collectors.toList()));
+
+        // instances which are actually active but in instanceData collection it is either stopped or doesn't exists.
+        final SetView<String> missedActiveInstanceArns = Sets.difference(activeInstanceArns, activeInstanceIds);
+        log.info("Missed K8S instance arns {}", missedActiveInstanceArns.toString());
+
+        lifecycleList.addAll(
+            missedActiveInstanceArns.stream()
+                .map(instanceId
+                    -> createLifecycle(instanceId, clusterId, lastProcessedTimestamp, EventType.EVENT_TYPE_START))
+                .collect(Collectors.toList()));
+
+      } catch (Exception ex) {
+        log.error("Exception while processing message", ex);
       }
-
-      final SetView<String> inactiveInstanceArns = Sets.difference(activeInstanceIds, activeInstanceArns);
-
-      log.info("Inactive K8S instance arns {}", inactiveInstanceArns.toString());
-
-      lifecycleList.addAll(
-          inactiveInstanceArns.stream()
-              .map(instanceId
-                  -> createLifecycle(instanceId, clusterId, lastProcessedTimestamp, EventType.EVENT_TYPE_STOP))
-              .collect(Collectors.toList()));
-
-      // instances which are actually active but in instanceData collection it is either stopped or doesn't exists.
-      final SetView<String> missedActiveInstanceArns = Sets.difference(activeInstanceArns, activeInstanceIds);
-      log.info("Missed K8S instance arns {}", missedActiveInstanceArns.toString());
-
-      lifecycleList.addAll(
-          missedActiveInstanceArns.stream()
-              .map(instanceId
-                  -> createLifecycle(instanceId, clusterId, lastProcessedTimestamp, EventType.EVENT_TYPE_START))
-              .collect(Collectors.toList()));
-    });
-
+    }
     return lifecycleList;
   }
 
