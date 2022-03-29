@@ -28,9 +28,6 @@ import static software.wings.service.impl.DelegateServiceImpl.KUBERNETES_DELEGAT
 
 import static java.util.stream.Collectors.toList;
 
-import io.harness.NGCommonEntityConstants;
-import io.harness.accesscontrol.OrgIdentifier;
-import io.harness.accesscontrol.ProjectIdentifier;
 import io.harness.accesscontrol.acl.api.Resource;
 import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.accesscontrol.clients.AccessControlClient;
@@ -40,7 +37,6 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.data.validator.Trimmed;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateApproval;
-import io.harness.delegate.beans.DelegateGroupListing;
 import io.harness.delegate.beans.DelegateSetupDetails;
 import io.harness.delegate.beans.DelegateSizeDetails;
 import io.harness.delegate.task.DelegateLogContext;
@@ -1052,33 +1048,6 @@ public class DelegateSetupResourceV3 {
       delegateService.createDelegateGroup(accountId, delegateSetupDetails);
 
       return Response.ok().build();
-    }
-  }
-
-  @GET
-  @Path("/ng/delegate-token")
-  @Timed
-  @ExceptionMetered
-  @Operation(operationId = "getDelegateGroups", summary = "Lists Delegate Groups.",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(responseCode = "default", description = "A list of Delegate Groups.")
-      })
-  public RestResponse<DelegateGroupListing>
-  list(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotEmpty @QueryParam(
-           "accountId") @NotNull String accountIdentifier,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
-      @Parameter(description = "Delegate Token name") @QueryParam("delegateTokenName") String delegateTokenName) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
-        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION);
-
-    try (AutoLogContext ignore1 = new AccountLogContext(accountIdentifier, OVERRIDE_ERROR)) {
-      return new RestResponse<>(delegateSetupService.listDelegateGroupDetails(
-          accountIdentifier, orgIdentifier, projectIdentifier, delegateTokenName));
     }
   }
 

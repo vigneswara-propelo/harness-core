@@ -8,6 +8,7 @@
 package io.harness.ng.core.delegate.client;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.delegate.beans.DelegateGroupListing;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenStatus;
 import io.harness.rest.RestResponse;
@@ -43,4 +44,11 @@ public interface DelegateTokenNgClient {
       @Query(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Query(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @Query("status") DelegateTokenStatus status);
+
+  @GET(DELEGATE_TOKEN_NG_API + "/delegate-groups")
+  Call<RestResponse<DelegateGroupListing>> getDelegateGroupsUsingToken(
+      @Query(NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
+      @Query(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Query(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @Query("delegateTokenName") String delegateTokenName);
 }
