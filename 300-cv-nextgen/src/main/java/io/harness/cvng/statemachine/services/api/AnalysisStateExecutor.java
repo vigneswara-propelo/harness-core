@@ -18,8 +18,8 @@ import java.time.Instant;
 import java.util.List;
 
 public abstract class AnalysisStateExecutor<T extends AnalysisState> {
-  private static final List<Duration> RETRY_WAIT_DURATIONS = Lists.newArrayList(Duration.ofSeconds(5),
-      Duration.ofSeconds(10), Duration.ofSeconds(20), Duration.ofSeconds(30), Duration.ofMinutes(1));
+  private static final List<Duration> RETRY_WAIT_DURATIONS = Lists.newArrayList(Duration.ofMinutes(1),
+      Duration.ofMinutes(5), Duration.ofMinutes(10), Duration.ofMinutes(30), Duration.ofHours(1));
 
   public abstract AnalysisState execute(T analysisState);
   public abstract AnalysisStatus getExecutionStatus(T analysisState);

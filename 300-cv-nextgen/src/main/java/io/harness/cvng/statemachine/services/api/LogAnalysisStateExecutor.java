@@ -69,8 +69,7 @@ public abstract class LogAnalysisStateExecutor<T extends LogAnalysisState> exten
     log.info("In serviceguard log analysis for Inputs {}, cleaning up worker task. Old taskID: {}",
         analysisState.getInputs(), analysisState.getWorkerTaskId());
     analysisState.setWorkerTaskId(null);
-    execute(analysisState);
-    return analysisState;
+    return execute(analysisState);
   }
 
   @Override
