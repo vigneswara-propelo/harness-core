@@ -666,11 +666,6 @@ public class DelegateServiceImpl implements DelegateService {
       throw new InvalidRequestException("Delegate Size must be provided.", USER);
     }
 
-    // TODO: ARPIT uncomment it when NG delegateToken goes in prod
-    //    if(delegateSetupDetails.getTokenName() == null) {
-    //      throw new InvalidRequestException("Delegate Token must be provided.", USER);
-    //    }
-
     K8sConfigDetails k8sConfigDetails = delegateSetupDetails.getK8sConfigDetails();
     if (k8sConfigDetails == null || k8sConfigDetails.getK8sPermissionType() == null) {
       throw new InvalidRequestException("K8s permission type must be provided.", USER);
@@ -680,6 +675,10 @@ public class DelegateServiceImpl implements DelegateService {
 
     if (!KUBERNETES.equals(delegateSetupDetails.getDelegateType())) {
       throw new InvalidRequestException("Delegate type must be KUBERNETES.");
+    }
+
+    if (isEmpty(delegateSetupDetails.getTokenName())) {
+      throw new InvalidRequestException("Delegate Token must be provided.", USER);
     }
   }
 
@@ -3707,10 +3706,9 @@ public class DelegateServiceImpl implements DelegateService {
     }
     checkUniquenessOfDelegateName(accountId, delegateSetupDetails.getName(), true);
 
-    // TODO: Arpit uncomment it when ng delegate token feature is rolled out
-    //    if(delegateSetupDetails.getTokenName() == null) {
-    //      throw new InvalidRequestException("Delegate Token must be provided.", USER);
-    //    }
+    if (isEmpty(delegateSetupDetails.getTokenName())) {
+      throw new InvalidRequestException("Delegate Token must be provided.", USER);
+    }
   }
 
   @Override
