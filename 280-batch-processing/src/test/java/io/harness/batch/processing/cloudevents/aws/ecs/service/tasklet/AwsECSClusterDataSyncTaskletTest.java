@@ -12,13 +12,13 @@ import static io.harness.rule.OwnerRule.HITESH;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.anySet;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySet;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.batch.processing.billing.timeseries.data.InstanceUtilizationData;
@@ -89,22 +89,11 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AwsECSClusterDataSyncTaskletTest extends CategoryTest {
-  @Spy @InjectMocks private AwsECSClusterDataSyncTasklet awsECSClusterDataSyncTasklet;
-  @Mock private CEClusterDao ceClusterDao;
-  @Mock private EcsMetricClient ecsMetricClient;
-  @Mock private InstanceDataDao instanceDataDao;
-  @Mock private CECloudAccountDao ceCloudAccountDao;
-  @Mock private ECSServiceDao ecsServiceDao;
-  @Mock private AwsECSHelperService awsECSHelperService;
-  @Mock private AwsEC2HelperService awsEC2HelperService;
-  @Mock protected InstanceDataService instanceDataService;
-  @Mock private UtilizationDataServiceImpl utilizationDataService;
-  @Mock protected InstanceResourceService instanceResourceService;
-  @Mock private CloudToHarnessMappingService cloudToHarnessMappingService;
-  @Mock private AwsECSClusterService awsECSClusterService;
-  @Mock private NGConnectorHelper ngConnectorHelper;
-  @Mock private LastReceivedPublishedMessageDao lastReceivedPublishedMessageDao;
-
+  private static final String accountId = "accountId";
+  private static final String settingId = "settingId";
+  private static final Instant instant = Instant.now().truncatedTo(ChronoUnit.HOURS);
+  private static final long startTime = instant.minus(1, ChronoUnit.HOURS).toEpochMilli();
+  private static final long endTime = instant.toEpochMilli();
   private final String REGION = "us-east-1";
   private final String ACCOUNT_ID = "accountId";
   private final String INFRA_ACCOUNT_ID = "infraAccountId";
@@ -122,12 +111,21 @@ public class AwsECSClusterDataSyncTaskletTest extends CategoryTest {
   private final String SERVICE_NAME = "ce-fargate";
   private final String DEPLOYMENT_ID = "ecs-svc/7379042797953014107";
   private final String EC2_INSTANCE_ID = "i-0f0afe3d9df9b095c";
-
-  private static final String accountId = "accountId";
-  private static final String settingId = "settingId";
-  private static final Instant instant = Instant.now().truncatedTo(ChronoUnit.HOURS);
-  private static final long startTime = instant.minus(1, ChronoUnit.HOURS).toEpochMilli();
-  private static final long endTime = instant.toEpochMilli();
+  @Mock protected InstanceDataService instanceDataService;
+  @Mock protected InstanceResourceService instanceResourceService;
+  @Spy @InjectMocks private AwsECSClusterDataSyncTasklet awsECSClusterDataSyncTasklet;
+  @Mock private CEClusterDao ceClusterDao;
+  @Mock private EcsMetricClient ecsMetricClient;
+  @Mock private InstanceDataDao instanceDataDao;
+  @Mock private CECloudAccountDao ceCloudAccountDao;
+  @Mock private ECSServiceDao ecsServiceDao;
+  @Mock private AwsECSHelperService awsECSHelperService;
+  @Mock private AwsEC2HelperService awsEC2HelperService;
+  @Mock private UtilizationDataServiceImpl utilizationDataService;
+  @Mock private CloudToHarnessMappingService cloudToHarnessMappingService;
+  @Mock private AwsECSClusterService awsECSClusterService;
+  @Mock private NGConnectorHelper ngConnectorHelper;
+  @Mock private LastReceivedPublishedMessageDao lastReceivedPublishedMessageDao;
 
   private MetricValue getMetricValue(String metricName, String statistic, long startTime, double value) {
     return MetricValue.builder()
@@ -230,7 +228,7 @@ public class AwsECSClusterDataSyncTaskletTest extends CategoryTest {
         .when(cloudToHarnessMappingService)
         .listSettingAttributesCreatedInDuration(any(), any(), any());
 
-    Mockito.doReturn(emptyList()).when(ngConnectorHelper).getNextGenConnectors(any());
+    Mockito.doReturn(emptyList()).when(ngConnectorHelper).getNextGenConnectors(any(), any(), any(), any());
 
     RepeatStatus execute = awsECSClusterDataSyncTasklet.execute(null, chunkContext);
     assertThat(execute).isNull();

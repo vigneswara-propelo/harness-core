@@ -76,7 +76,7 @@ public class NodeRecommendationService {
         k8sRecommendationDAO.aggregateTotalResourceRequirement(accountIdentifier, nodePoolId, startTime, endTime);
 
     return RecommendNodePoolClusterRequest.builder()
-        .totalResourceUsage(totalResourceUsage)
+        .totalResourceUsage(RecommendationUtils.getTotalResourceUsageGiB(totalResourceUsage))
         .recommendClusterRequest(RecommendationUtils.constructNodeRecommendationRequest(totalResourceUsage))
         .build();
   }
