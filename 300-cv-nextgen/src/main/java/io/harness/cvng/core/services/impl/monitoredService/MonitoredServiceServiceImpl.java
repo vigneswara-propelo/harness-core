@@ -213,7 +213,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   private boolean getMonitoredServiceEnableStatus() {
-    return true; // TODO: Need to implement this logic later based on licensing
+    return false; // TODO: Need to implement this logic later based on licensing.
   }
 
   @Override

@@ -15,8 +15,6 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 import static io.harness.rule.OwnerRule.SOWMYA;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
 
 import io.harness.CvNextGenTestBase;
 import io.harness.category.element.UnitTests;
@@ -41,7 +39,6 @@ import io.harness.cvng.analysis.services.api.LearningEngineTaskService;
 import io.harness.cvng.analysis.services.api.TrendAnalysisService;
 import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.TimeSeriesMetricType;
-import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.TimeSeriesMetricDefinition;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.SplunkCVConfig;
@@ -51,7 +48,6 @@ import io.harness.cvng.dashboard.entities.HeatMap;
 import io.harness.cvng.dashboard.services.api.HeatMapService;
 import io.harness.cvng.models.VerificationType;
 import io.harness.cvng.statemachine.beans.AnalysisInput;
-import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.persistence.HPersistence;
 import io.harness.rule.Owner;
 
@@ -71,7 +67,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class TrendAnalysisServiceImplTest extends CvNextGenTestBase {
@@ -83,7 +78,6 @@ public class TrendAnalysisServiceImplTest extends CvNextGenTestBase {
   @Inject private CVConfigService cvConfigService;
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private HeatMapService heatMapService;
-  @Mock private NextGenService nextGenService;
   private BuilderFactory builderFactory;
 
   @Before
@@ -95,7 +89,6 @@ public class TrendAnalysisServiceImplTest extends CvNextGenTestBase {
     cvConfigId = cvConfig.getUuid();
     verificationTaskId = verificationTaskService.getServiceGuardVerificationTaskId(cvConfig.getAccountId(), cvConfigId);
 
-    FieldUtils.writeField(cvConfigService, "nextGenService", nextGenService, true);
     FieldUtils.writeField(trendAnalysisService, "heatMapService", heatMapService, true);
   }
 
@@ -197,9 +190,6 @@ public class TrendAnalysisServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = SOWMYA)
   @Category(UnitTests.class)
   public void testSaveAnalysis() {
-    doReturn(builderFactory.environmentResponseDTOBuilder().type(EnvironmentType.Production).build())
-        .when(nextGenService)
-        .getEnvironment(any(), any(), any(), any());
     Instant start = Instant.now().minus(10, ChronoUnit.MINUTES).truncatedTo(ChronoUnit.MINUTES);
     Instant end = start.plus(5, ChronoUnit.MINUTES);
     List<LogAnalysisCluster> logAnalysisClusters = createLogAnalysisClusters(start, end);
@@ -251,9 +241,6 @@ public class TrendAnalysisServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = SOWMYA)
   @Category(UnitTests.class)
   public void testSaveAnalysis_emptyCumulativeSums() {
-    doReturn(builderFactory.environmentResponseDTOBuilder().type(EnvironmentType.Production).build())
-        .when(nextGenService)
-        .getEnvironment(any(), any(), any(), any());
     Instant start = Instant.now().minus(10, ChronoUnit.MINUTES).truncatedTo(ChronoUnit.MINUTES);
     Instant end = start.plus(5, ChronoUnit.MINUTES);
     List<LogAnalysisCluster> logAnalysisClusters = createLogAnalysisClusters(start, end);
@@ -296,9 +283,6 @@ public class TrendAnalysisServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = SOWMYA)
   @Category(UnitTests.class)
   public void testSaveAnalysis_baselineWindow() {
-    doReturn(builderFactory.environmentResponseDTOBuilder().type(EnvironmentType.Production).build())
-        .when(nextGenService)
-        .getEnvironment(any(), any(), any(), any());
     Instant start = Instant.now().minus(10, ChronoUnit.MINUTES).truncatedTo(ChronoUnit.MINUTES);
     Instant end = start.plus(5, ChronoUnit.MINUTES);
     List<LogAnalysisCluster> logAnalysisClusters = createLogAnalysisClusters(start, end);

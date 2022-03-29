@@ -20,9 +20,6 @@ import static io.harness.rule.OwnerRule.RAGHU;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.Offset.offset;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 import io.harness.CvNextGenTestBase;
 import io.harness.category.element.UnitTests;
@@ -97,10 +94,6 @@ public class HeatMapServiceImplTest extends CvNextGenTestBase {
     clock = Clock.fixed(Instant.parse("2020-04-22T10:02:06Z"), ZoneOffset.UTC);
     MockitoAnnotations.initMocks(this);
     FieldUtils.writeField(heatMapService, "clock", clock, true);
-
-    when(cvConfigService.getConfigsOfProductionEnvironments(
-             anyString(), anyString(), anyString(), anyString(), anyString(), any()))
-        .thenReturn(Arrays.asList(cvConfig));
   }
 
   @Test

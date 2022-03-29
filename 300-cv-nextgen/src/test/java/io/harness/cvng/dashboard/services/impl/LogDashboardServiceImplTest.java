@@ -31,7 +31,6 @@ import io.harness.cvng.analysis.entities.LogAnalysisResult;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.AnalysisResult;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.LogAnalysisTag;
 import io.harness.cvng.analysis.services.api.LogAnalysisService;
-import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
 import io.harness.cvng.core.beans.params.filterParams.LiveMonitoringLogAnalysisFilter;
@@ -42,7 +41,6 @@ import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.dashboard.beans.AnalyzedLogDataDTO;
-import io.harness.cvng.dashboard.beans.LogDataByTag;
 import io.harness.cvng.dashboard.services.api.LogDashboardService;
 import io.harness.ng.beans.PageResponse;
 import io.harness.persistence.HPersistence;
@@ -59,7 +57,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
@@ -70,10 +67,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class LogDashboardServiceImplTest extends CvNextGenTestBase {
-  private String projectIdentifier;
-  private String orgIdentifier;
   private String serviceIdentifier;
-  private String envIdentifier;
   private String accountId;
   private Clock clock;
 
@@ -89,10 +83,9 @@ public class LogDashboardServiceImplTest extends CvNextGenTestBase {
   @Before
   public void setUp() throws Exception {
     builderFactory = BuilderFactory.getDefault();
-    projectIdentifier = builderFactory.getContext().getProjectIdentifier();
-    orgIdentifier = builderFactory.getContext().getOrgIdentifier();
+    builderFactory.getContext().getProjectIdentifier();
+    builderFactory.getContext().getOrgIdentifier();
     serviceIdentifier = builderFactory.getContext().getServiceIdentifier();
-    envIdentifier = builderFactory.getContext().getEnvIdentifier();
     accountId = builderFactory.getContext().getAccountId();
     monitoredServiceService.createDefault(builderFactory.getProjectParams(),
         builderFactory.getContext().getServiceIdentifier(), builderFactory.getContext().getEnvIdentifier());
@@ -267,33 +260,6 @@ public class LogDashboardServiceImplTest extends CvNextGenTestBase {
       }
     }
     assertThat(containsKnown).isTrue();
-  }
-
-  @Test
-  @Owner(developers = PRAVEEN)
-  @Category(UnitTests.class)
-  public void testGetLogCountByTag() {
-    String cvConfigId = generateUuid();
-    Instant startTime = Instant.now().minus(10, ChronoUnit.MINUTES);
-    Instant endTime = Instant.now().minus(5, ChronoUnit.MINUTES);
-    List<Long> labelList = Arrays.asList(1234l, 12345l, 123455l, 12334l);
-    List<LogAnalysisResult> resultList = buildLogAnalysisResults(cvConfigId, false, startTime, endTime, labelList);
-
-    when(mockCvConfigService.getConfigsOfProductionEnvironments(accountId, orgIdentifier, projectIdentifier,
-             envIdentifier, serviceIdentifier, CVMonitoringCategory.PERFORMANCE))
-        .thenReturn(Arrays.asList(createCvConfig(cvConfigId, serviceIdentifier)));
-    when(mockLogAnalysisService.getAnalysisResults(
-             cvConfigId, Arrays.asList(LogAnalysisTag.values()), startTime, endTime))
-        .thenReturn(resultList);
-
-    SortedSet<LogDataByTag> timeTagCountMap =
-        logDashboardService.getLogCountByTag(accountId, projectIdentifier, orgIdentifier, serviceIdentifier,
-            envIdentifier, CVMonitoringCategory.PERFORMANCE, startTime.toEpochMilli(), endTime.toEpochMilli());
-
-    assertThat(timeTagCountMap).isNotEmpty();
-    assertThat(timeTagCountMap.size()).isEqualTo(1);
-    List<LogDataByTag.CountByTag> countMap = timeTagCountMap.first().getCountByTags();
-    assertThat(countMap.size()).isEqualTo(2);
   }
 
   @Test

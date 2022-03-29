@@ -122,7 +122,6 @@ public class LogAnalysisServiceImplTest extends CvNextGenTestBase {
     accountId = generateUuid();
     instant = Instant.parse("2020-07-27T10:44:11.000Z");
     verificationTaskId = verificationTaskService.getServiceGuardVerificationTaskId(cvConfig.getAccountId(), cvConfigId);
-    FieldUtils.writeField(cvConfigService, "nextGenService", nextGenService, true);
   }
 
   @Test

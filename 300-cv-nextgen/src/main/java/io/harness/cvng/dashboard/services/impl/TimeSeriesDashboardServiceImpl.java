@@ -92,38 +92,6 @@ public class TimeSeriesDashboardServiceImpl implements TimeSeriesDashboardServic
     });
   }
 
-  @Override
-  public PageResponse<TimeSeriesMetricDataDTO> getSortedMetricData(String accountId, String projectIdentifier,
-      String orgIdentifier, String environmentIdentifier, String serviceIdentifier,
-      CVMonitoringCategory monitoringCategory, Long startTimeMillis, Long endTimeMillis, Long analysisStartTimeMillis,
-      boolean anomalous, int page, int size, String filter, DataSourceType dataSourceType) {
-    // TODO: Change this to a request body. This is too many query params.
-    Instant startTime = Instant.ofEpochMilli(startTimeMillis);
-    Instant endTime = Instant.ofEpochMilli(endTimeMillis);
-    Instant analysisStartTime = Instant.ofEpochMilli(analysisStartTimeMillis);
-
-    // get all the cvConfigs that belong to
-    List<CVConfig> cvConfigList = cvConfigService.getConfigsOfProductionEnvironments(
-        accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceIdentifier, monitoringCategory);
-    if (dataSourceType != null) {
-      cvConfigList = cvConfigList.stream()
-                         .filter(cvConfig -> cvConfig.getType().equals(dataSourceType))
-                         .collect(Collectors.toList());
-    }
-    List<String> cvConfigIds = cvConfigList.stream().map(CVConfig::getUuid).collect(Collectors.toList());
-
-    return getMetricData(cvConfigIds,
-        MonitoredServiceParams.builder()
-            .accountIdentifier(accountId)
-            .orgIdentifier(orgIdentifier)
-            .projectIdentifier(projectIdentifier)
-            .serviceIdentifier(serviceIdentifier)
-            .environmentIdentifier(environmentIdentifier)
-            .build(),
-        monitoringCategory, startTime, endTime, analysisStartTime, PageParams.builder().page(page).size(size).build(),
-        TimeSeriesAnalysisFilter.builder().anomalousMetricsOnly(anomalous).filter(filter).build());
-  }
-
   private PageResponse<TimeSeriesMetricDataDTO> getMetricData(List<String> cvConfigIds,
       MonitoredServiceParams monitoredServiceParams, CVMonitoringCategory monitoringCategory, Instant startTime,
       Instant endTime, Instant analysisStartTime, PageParams pageParams,

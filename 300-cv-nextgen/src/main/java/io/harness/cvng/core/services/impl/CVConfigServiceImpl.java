@@ -8,19 +8,15 @@
 package io.harness.cvng.core.services.impl;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.toList;
 
-import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.DataSourceType;
-import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.CVConfig.CVConfigKeys;
 import io.harness.cvng.core.entities.CVConfig.CVConfigUpdatableEntity;
@@ -30,8 +26,6 @@ import io.harness.cvng.core.services.api.DeletedCVConfigService;
 import io.harness.cvng.core.services.api.UpdatableEntity;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.encryption.Scope;
-import io.harness.ng.core.environment.beans.EnvironmentType;
-import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
 import io.harness.persistence.HPersistence;
 
 import com.google.common.base.Preconditions;
@@ -55,7 +49,6 @@ public class CVConfigServiceImpl implements CVConfigService {
   @Inject private HPersistence hPersistence;
   @Inject private DeletedCVConfigService deletedCVConfigService;
   @Inject private VerificationTaskService verificationTaskService;
-  @Inject private NextGenService nextGenService;
   @Inject private Map<DataSourceType, CVConfigUpdatableEntity> dataSourceTypeCVConfigMapBinder;
 
   @Override
@@ -181,65 +174,6 @@ public class CVConfigServiceImpl implements CVConfigService {
         .collect(toList());
   }
 
-  private BasicDBObject getQueryWithAccountOrgProjectFiltersSet(String accountId, String orgIdentifier,
-      String projectIdentifier, String envIdentifier, String serviceIdentifier) {
-    BasicDBObject cvConfigQuery = new BasicDBObject();
-    List<BasicDBObject> conditions = new ArrayList<>();
-    conditions.add(new BasicDBObject(CVConfigKeys.accountId, accountId));
-    conditions.add(new BasicDBObject(CVConfigKeys.projectIdentifier, projectIdentifier));
-    conditions.add(new BasicDBObject(CVConfigKeys.orgIdentifier, orgIdentifier));
-    if (isNotEmpty(envIdentifier)) {
-      conditions.add(new BasicDBObject(CVConfigKeys.envIdentifier, envIdentifier));
-    }
-
-    if (isNotEmpty(serviceIdentifier)) {
-      conditions.add(new BasicDBObject(CVConfigKeys.serviceIdentifier, serviceIdentifier));
-    }
-    cvConfigQuery.put("$and", conditions);
-    return cvConfigQuery;
-  }
-
-  @Override
-  public List<CVConfig> list(String accountId, String orgIdentifier, String projectIdentifier,
-      String environmentIdentifier, String serviceIdentifier, CVMonitoringCategory monitoringCategory) {
-    Query<CVConfig> query = hPersistence.createQuery(CVConfig.class, excludeAuthority)
-                                .filter(CVConfigKeys.accountId, accountId)
-                                .filter(CVConfigKeys.orgIdentifier, orgIdentifier)
-                                .filter(CVConfigKeys.projectIdentifier, projectIdentifier);
-    if (isNotEmpty(environmentIdentifier)) {
-      query = query.filter(CVConfigKeys.envIdentifier, environmentIdentifier);
-    }
-    if (isNotEmpty(serviceIdentifier)) {
-      query = query.filter(CVConfigKeys.serviceIdentifier, serviceIdentifier);
-    }
-    if (monitoringCategory != null) {
-      query = query.filter(CVConfigKeys.category, monitoringCategory);
-    }
-    return query.asList();
-  }
-
-  @Override
-  public List<CVConfig> getConfigsOfProductionEnvironments(String accountId, String orgIdentifier,
-      String projectIdentifier, String environmentIdentifier, String serviceIdentifier,
-      CVMonitoringCategory monitoringCategory) {
-    List<CVConfig> configsForFilter =
-        list(accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceIdentifier, monitoringCategory);
-    if (isEmpty(configsForFilter)) {
-      return Collections.emptyList();
-    }
-    List<CVConfig> configsToReturn = new ArrayList<>();
-    configsForFilter.forEach(config -> {
-      EnvironmentResponseDTO environment =
-          nextGenService.getEnvironment(accountId, orgIdentifier, projectIdentifier, config.getEnvIdentifier());
-      Preconditions.checkNotNull(environment, "no env with identifier %s found for account %s org %s project %s",
-          config.getEnvIdentifier(), accountId, orgIdentifier, projectIdentifier);
-      if (environment.getType().equals(EnvironmentType.Production)) {
-        configsToReturn.add(config);
-      }
-    });
-    return configsToReturn;
-  }
-
   @Override
   public List<CVConfig> list(MonitoredServiceParams monitoredServiceParams) {
     return createQuery(monitoredServiceParams).asList();
@@ -312,24 +246,6 @@ public class CVConfigServiceImpl implements CVConfigService {
                                  .filter(CVConfigKeys.projectIdentifier, projectIdentifier)
                                  .count();
     return numberOfCVConfigs > 0;
-  }
-
-  @Override
-  public int getNumberOfServicesSetup(String accountId, String orgIdentifier, String projectIdentifier) {
-    BasicDBObject cvConfigQuery =
-        getQueryWithAccountOrgProjectFiltersSet(accountId, orgIdentifier, projectIdentifier, null, null);
-    List<String> serviceIdentifiers =
-        hPersistence.getCollection(CVConfig.class).distinct(CVConfigKeys.serviceIdentifier, cvConfigQuery);
-    return serviceIdentifiers.size();
-  }
-
-  private Query createQuery(ServiceEnvironmentParams serviceEnvironmentParams) {
-    return hPersistence.createQuery(CVConfig.class, excludeAuthority)
-        .filter(CVConfigKeys.accountId, serviceEnvironmentParams.getAccountIdentifier())
-        .filter(CVConfigKeys.orgIdentifier, serviceEnvironmentParams.getOrgIdentifier())
-        .filter(CVConfigKeys.projectIdentifier, serviceEnvironmentParams.getProjectIdentifier())
-        .filter(CVConfigKeys.serviceIdentifier, serviceEnvironmentParams.getServiceIdentifier())
-        .filter(CVConfigKeys.envIdentifier, serviceEnvironmentParams.getEnvironmentIdentifier());
   }
 
   private Query createQuery(MonitoredServiceParams monitoredServiceParams) {

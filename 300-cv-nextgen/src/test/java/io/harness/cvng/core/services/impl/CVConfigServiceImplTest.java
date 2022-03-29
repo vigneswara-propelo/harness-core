@@ -16,14 +16,11 @@ import static io.harness.rule.OwnerRule.VUK;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 import io.harness.CvNextGenTestBase;
 import io.harness.category.element.UnitTests;
 import io.harness.cvng.BuilderFactory;
 import io.harness.cvng.beans.CVMonitoringCategory;
-import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.entities.AppDynamicsCVConfig;
 import io.harness.cvng.core.entities.CVConfig;
@@ -32,9 +29,6 @@ import io.harness.cvng.core.entities.SplunkCVConfig;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.models.VerificationType;
 import io.harness.encryption.Scope;
-import io.harness.ng.core.environment.beans.EnvironmentType;
-import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
-import io.harness.ng.core.service.dto.ServiceResponseDTO;
 import io.harness.rule.Owner;
 
 import com.google.common.collect.Lists;
@@ -45,15 +39,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mock;
 
 public class CVConfigServiceImplTest extends CvNextGenTestBase {
   @Inject private CVConfigService cvConfigService;
-  @Mock private NextGenService nextGenService;
 
   private String accountId;
   private String connectorIdentifier;
@@ -88,28 +79,6 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
                                    .serviceIdentifier(serviceInstanceIdentifier)
                                    .environmentIdentifier(environmentIdentifier)
                                    .build();
-    when(nextGenService.getEnvironment(anyString(), anyString(), anyString(), anyString())).then(invocation -> {
-      Object[] args = invocation.getArguments();
-      return EnvironmentResponseDTO.builder()
-          .accountId((String) args[0])
-          .orgIdentifier((String) args[1])
-          .projectIdentifier((String) args[2])
-          .identifier((String) args[3])
-          .name((String) args[3])
-          .type(EnvironmentType.Production)
-          .build();
-    });
-    when(nextGenService.getService(anyString(), anyString(), anyString(), anyString())).then(invocation -> {
-      Object[] args = invocation.getArguments();
-      return ServiceResponseDTO.builder()
-          .accountId((String) args[0])
-          .orgIdentifier((String) args[1])
-          .projectIdentifier((String) args[2])
-          .identifier((String) args[3])
-          .name((String) args[3])
-          .build();
-    });
-    FieldUtils.writeField(cvConfigService, "nextGenService", nextGenService, true);
   }
 
   @Test
@@ -283,50 +252,6 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
-  @Owner(developers = PRAVEEN)
-  @Category(UnitTests.class)
-  public void testList_withServiceEnvironmentCategory() {
-    List<CVConfig> cvConfigs = createCVConfigs(4);
-    String serviceIdentifier = generateUuid();
-    String envIdentifier = generateUuid();
-    CVMonitoringCategory category = CVMonitoringCategory.PERFORMANCE;
-    int index = 0;
-    for (CVConfig cvConfig : cvConfigs) {
-      cvConfig.setOrgIdentifier(orgIdentifier);
-      cvConfig.setProjectIdentifier(projectIdentifier);
-      cvConfig.setServiceIdentifier(serviceIdentifier);
-      cvConfig.setEnvIdentifier(envIdentifier);
-      cvConfig.setCategory(index++ % 2 == 0 ? CVMonitoringCategory.PERFORMANCE : CVMonitoringCategory.ERRORS);
-    }
-    save(cvConfigs);
-    assertThat(cvConfigService.list(accountId, orgIdentifier, projectIdentifier, envIdentifier, serviceIdentifier,
-                   CVMonitoringCategory.PERFORMANCE))
-        .hasSize(2);
-  }
-
-  @Test
-  @Owner(developers = PRAVEEN)
-  @Category(UnitTests.class)
-  public void testList_withNullCategory() {
-    List<CVConfig> cvConfigs = createCVConfigs(4);
-    String serviceIdentifier = generateUuid();
-    String envIdentifier = generateUuid();
-    CVMonitoringCategory category = CVMonitoringCategory.PERFORMANCE;
-    int index = 0;
-    for (CVConfig cvConfig : cvConfigs) {
-      cvConfig.setOrgIdentifier(orgIdentifier);
-      cvConfig.setProjectIdentifier(projectIdentifier);
-      cvConfig.setServiceIdentifier(serviceIdentifier);
-      cvConfig.setEnvIdentifier(envIdentifier);
-      cvConfig.setCategory(index++ % 2 == 0 ? CVMonitoringCategory.PERFORMANCE : CVMonitoringCategory.ERRORS);
-    }
-    save(cvConfigs);
-    assertThat(
-        cvConfigService.list(accountId, orgIdentifier, projectIdentifier, envIdentifier, serviceIdentifier, null))
-        .hasSize(4);
-  }
-
-  @Test
   @Owner(developers = KAMAL)
   @Category(UnitTests.class)
   public void testGetProjectsNames_whenNoConfigsPresent() {
@@ -471,20 +396,6 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
     boolean doesAnyCVConfigExists =
         cvConfigService.doesAnyCVConfigExistsInProject(accountId, orgIdentifier, projectIdentifier);
     assertThat(doesAnyCVConfigExists).isTrue();
-  }
-
-  @Test
-  @Owner(developers = DEEPAK)
-  @Category(UnitTests.class)
-  public void testGetNumberOfServicesSetup() {
-    List<CVConfig> cvConfigs = createCVConfigs(5);
-    for (int i = 0; i < 3; i++) {
-      cvConfigs.get(i).setServiceIdentifier("serviceIdentifier " + i);
-    }
-    cvConfigs.get(4).setServiceIdentifier("serviceIdentifier " + 0);
-    save(cvConfigs);
-    int numberOfServices = cvConfigService.getNumberOfServicesSetup(accountId, orgIdentifier, projectIdentifier);
-    assertThat(numberOfServices).isEqualTo(4);
   }
 
   @Test

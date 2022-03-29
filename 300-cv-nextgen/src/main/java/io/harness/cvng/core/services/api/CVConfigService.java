@@ -7,7 +7,6 @@
 
 package io.harness.cvng.core.services.api;
 
-import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
@@ -34,8 +33,6 @@ public interface CVConfigService extends DeleteEntityByHandler<CVConfig> {
   List<CVConfig> list(String accountId, String connectorIdentifier, String productName);
   List<CVConfig> list(
       String accountId, String orgIdentifier, String projectIdentifier, String monitoringSourceIdentifier);
-  List<CVConfig> list(String accountId, String orgIdentifier, String projectIdentifier, String environmentIdentifier,
-      String serviceIdentifier, CVMonitoringCategory monitoringCategory);
   List<CVConfig> listByMonitoringSources(String accountId, String orgIdentifier, String projectIdentifier,
       String serviceIdentifier, String envIdentifier, List<String> monitoringSources);
   List<String> getProductNames(String accountId, String connectorIdentifier);
@@ -43,11 +40,7 @@ public interface CVConfigService extends DeleteEntityByHandler<CVConfig> {
   List<CVConfig> listByMonitoringSources(
       String accountId, String orgIdentifier, String projectIdentifier, List<String> monitoringSourceIdentifier);
 
-  List<CVConfig> getConfigsOfProductionEnvironments(String accountId, String orgIdentifier, String projectIdentifier,
-      String environmentIdentifier, String serviceIdentifier, CVMonitoringCategory monitoringCategory);
-
   boolean doesAnyCVConfigExistsInProject(String accountId, String orgIdentifier, String projectIdentifier);
-  int getNumberOfServicesSetup(String accountId, String orgIdentifier, String projectIdentifier);
 
   void setHealthMonitoringFlag(
       String accountId, String orgIdentifier, String projectIdentifier, List<String> identifiers, boolean isEnabled);

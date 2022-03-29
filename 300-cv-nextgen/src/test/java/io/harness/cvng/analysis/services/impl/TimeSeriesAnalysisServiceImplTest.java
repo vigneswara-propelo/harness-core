@@ -18,8 +18,6 @@ import static io.harness.rule.OwnerRule.SOWMYA;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import io.harness.CvNextGenTestBase;
@@ -52,7 +50,6 @@ import io.harness.cvng.beans.job.Sensitivity;
 import io.harness.cvng.beans.job.TestVerificationJobDTO;
 import io.harness.cvng.beans.job.VerificationJobDTO;
 import io.harness.cvng.beans.job.VerificationJobType;
-import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.TimeSeriesMetricDefinition;
 import io.harness.cvng.core.entities.AppDynamicsCVConfig;
 import io.harness.cvng.core.entities.CVConfig;
@@ -71,7 +68,6 @@ import io.harness.cvng.verificationjob.entities.VerificationJob;
 import io.harness.cvng.verificationjob.entities.VerificationJobInstance;
 import io.harness.cvng.verificationjob.services.api.VerificationJobInstanceService;
 import io.harness.cvng.verificationjob.services.api.VerificationJobService;
-import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.persistence.HPersistence;
 import io.harness.rule.Owner;
 
@@ -98,7 +94,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mock;
 
 public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
   @Inject private LearningEngineTaskService learningEngineTaskService;
@@ -111,7 +106,6 @@ public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
   @Inject private VerificationJobService verificationJobService;
   @Inject private HeatMapService heatMapService;
   @Inject private MetricPackService metricPackService;
-  @Mock private NextGenService nextGenService;
 
   private String cvConfigId;
   private String verificationTaskId;
@@ -145,7 +139,6 @@ public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
     orgIdentifier = generateUuid();
     projectIdentifier = generateUuid();
 
-    FieldUtils.writeField(cvConfigService, "nextGenService", nextGenService, true);
     FieldUtils.writeField(timeSeriesAnalysisService, "heatMapService", heatMapService, true);
   }
 
@@ -293,9 +286,6 @@ public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = PRAVEEN)
   @Category(UnitTests.class)
   public void testSaveAnalysis_serviceGuard() {
-    doReturn(builderFactory.environmentResponseDTOBuilder().type(EnvironmentType.Production).build())
-        .when(nextGenService)
-        .getEnvironment(any(), any(), any(), any());
     timeSeriesAnalysisService.saveAnalysis(learningEngineTaskId, buildServiceGuardMetricAnalysisDTO());
 
     TimeSeriesCumulativeSums cumulativeSums =
@@ -318,9 +308,6 @@ public class TimeSeriesAnalysisServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = SOWMYA)
   @Category(UnitTests.class)
   public void testSaveAnalysis_serviceGuard_withoutCumulativeSums() {
-    doReturn(builderFactory.environmentResponseDTOBuilder().type(EnvironmentType.Production).build())
-        .when(nextGenService)
-        .getEnvironment(any(), any(), any(), any());
     timeSeriesAnalysisService.saveAnalysis(
         learningEngineTaskId, buildServiceGuardMetricAnalysisDTO_emptyCumulativeSums(verificationTaskId));
 
