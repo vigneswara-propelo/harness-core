@@ -16,6 +16,7 @@ public interface CVNGMetricsUtils {
   String METRIC_LABEL_PREFIX = "metricsLabel_";
   // time taken metrics are tracked from the time when task becomes eligible to finish.
   String VERIFICATION_JOB_INSTANCE_EXTRA_TIME = "verification_job_instance_extra_time";
+  String VERIFICATION_JOB_INSTANCE_HEALTH_SOURCE_EXTRA_TIME = "verification_job_instance_health_source_extra_time";
   String DATA_COLLECTION_TASK_TOTAL_TIME = "data_collection_task_total_time";
   String DATA_COLLECTION_TASK_WAIT_TIME = "data_collection_task_wait_time";
   String DATA_COLLECTION_TASK_RUNNING_TIME = "data_collection_task_running_time";
