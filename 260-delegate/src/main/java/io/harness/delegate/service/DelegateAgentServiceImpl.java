@@ -182,6 +182,7 @@ import software.wings.delegatetasks.LogSanitizer;
 import software.wings.delegatetasks.delegatecapability.CapabilityCheckController;
 import software.wings.delegatetasks.validation.DelegateConnectionResult;
 import software.wings.delegatetasks.validation.DelegateValidateTask;
+import software.wings.misc.MemoryHelper;
 import software.wings.service.intfc.security.EncryptionService;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -417,7 +418,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       || TRUE.toString().equals(System.getenv().get("MULTI_VERSION"));
   private boolean isImmutableDelegate;
 
-  private long maxRSS;
+  private double maxRSSThresholdMB;
   private final AtomicBoolean rejectRequest = new AtomicBoolean(false);
 
   public static Optional<String> getDelegateId() {
@@ -583,7 +584,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       DelegateAgentCommonVariables.setDelegateId(delegateId);
       log.info("[New] Delegate registered in {} ms", clock.millis() - start);
       DelegateStackdriverLogAppender.setDelegateId(delegateId);
-
       if (delegateConfiguration.isDynamicHandlingOfRequestEnabled()) {
         startDynamicHandlingOfTasks();
       }
@@ -751,23 +751,16 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   private void maybeUpdateTaskRejectionStatus() {
-    MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-    double currentRSS = memoryMXBean.getHeapMemoryUsage().getUsed();
-
-    OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-    double currentCPU = osBean.getSystemCpuLoad();
-
-    if (currentRSS >= RESOURCE_USAGE_THRESHOLD * maxRSS || currentCPU >= RESOURCE_USAGE_THRESHOLD) {
-      log.warn(
-          "Reached resource threshold, temporarily reject incoming task request. CurrentCPU {} CurrentRSSMB {} ThresholdMB {}",
-          currentCPU, currentRSS, RESOURCE_USAGE_THRESHOLD * maxRSS);
+    final long currentRSSMB = MemoryHelper.getProcessMemoryMB();
+    if (currentRSSMB >= maxRSSThresholdMB) {
+      log.warn("Reached resource threshold, temporarily reject incoming task request. CurrentRSSMB {} ThresholdMB {}",
+          currentRSSMB, maxRSSThresholdMB);
       rejectRequest.compareAndSet(false, true);
       return;
     }
 
     if (rejectRequest.compareAndSet(true, false)) {
-      log.info("Accepting incoming task request. CurrentCPU {} CurrentRSSMB {} ThresholdMB {}", currentCPU, currentRSS,
-          RESOURCE_USAGE_THRESHOLD * maxRSS);
+      log.info("Accepting incoming task request. CurrentRSSMB {} ThresholdMB {}", currentRSSMB, maxRSSThresholdMB);
     }
   }
 
@@ -1495,15 +1488,18 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   private void startDynamicHandlingOfTasks() {
     log.info("Starting dynamic handling of tasks tp {} ms", 1000);
-    MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-    maxRSS = memoryMXBean.getHeapMemoryUsage().getMax();
-    healthMonitorExecutor.scheduleAtFixedRate(() -> {
-      try {
-        maybeUpdateTaskRejectionStatus();
-      } catch (Exception ex) {
-        log.error("Exception while determining delegate behaviour", ex);
-      }
-    }, 0, 1, TimeUnit.SECONDS);
+    try {
+      maxRSSThresholdMB = MemoryHelper.getProcessMaxMemoryMB() * RESOURCE_USAGE_THRESHOLD;
+      healthMonitorExecutor.scheduleAtFixedRate(() -> {
+        try {
+          maybeUpdateTaskRejectionStatus();
+        } catch (Exception ex) {
+          log.error("Exception while determining delegate behaviour", ex);
+        }
+      }, 0, 1, TimeUnit.SECONDS);
+    } catch (Exception ex) {
+      log.error("Error while fetching maxRSS, will not enable dynamic handling of tasks");
+    }
   }
 
   private void startHeartbeat(DelegateParamsBuilder builder, Socket socket) {

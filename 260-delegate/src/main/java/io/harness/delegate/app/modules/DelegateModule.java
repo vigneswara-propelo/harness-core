@@ -490,6 +490,7 @@ import software.wings.helpers.ext.sftp.SftpService;
 import software.wings.helpers.ext.sftp.SftpServiceImpl;
 import software.wings.helpers.ext.smb.SmbService;
 import software.wings.helpers.ext.smb.SmbServiceImpl;
+import software.wings.misc.MemoryHelper;
 import software.wings.service.EcrClassicBuildServiceImpl;
 import software.wings.service.impl.AcrBuildServiceImpl;
 import software.wings.service.impl.AmazonS3BuildServiceImpl;
@@ -629,7 +630,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @TargetModule(HarnessModule._420_DELEGATE_AGENT)
 @OwnedBy(HarnessTeam.DEL)
 @BreakDependencyOn("io.harness.delegate.beans.connector.ConnectorType")
@@ -765,7 +768,20 @@ public class DelegateModule extends AbstractModule {
   @Singleton
   @Named("taskExecutor")
   public ExecutorService taskExecutor() {
-    final int maxPoolSize = configuration.isDynamicHandlingOfRequestEnabled() ? Integer.MAX_VALUE : 400;
+    int maxPoolSize = Integer.MAX_VALUE;
+    long delegateXmx = 0;
+    try {
+      delegateXmx = MemoryHelper.getProcessMaxMemoryMB();
+      if (!configuration.isDynamicHandlingOfRequestEnabled()) {
+        // Set max threads to 400, if dynamic handling is disabled.
+        maxPoolSize = 400;
+      }
+    } catch (Exception ex) {
+      // We failed to fetch memory bean, setting number of threads as 400.
+      maxPoolSize = 400;
+    }
+    log.info(
+        "Starting Delegate process with {} MB of Xmx and {} number of execution threads", delegateXmx, maxPoolSize);
     return ThreadPool.create(10, maxPoolSize, 1, TimeUnit.SECONDS,
         new ThreadFactoryBuilder().setNameFormat("task-exec-%d").setPriority(Thread.MIN_PRIORITY).build());
   }
