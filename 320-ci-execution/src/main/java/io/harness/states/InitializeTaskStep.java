@@ -73,6 +73,7 @@ import io.harness.steps.StepUtils;
 import io.harness.steps.executable.TaskExecutableWithRbac;
 import io.harness.supplier.ThrowingSupplier;
 import io.harness.utils.IdentifierRefHelper;
+import io.harness.yaml.core.timeout.Timeout;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
@@ -95,6 +96,8 @@ import lombok.extern.slf4j.Slf4j;
 public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementParameters, CITaskExecutionResponse> {
   public static final String TASK_TYPE_INITIALIZATION_PHASE = "INITIALIZATION_PHASE";
   public static final String LE_STATUS_TASK_TYPE = "CI_LE_STATUS";
+  public static final Long TASK_BUFFER_TIMEOUT_MILLIS = 30 * 1000L;
+
   @Inject private BuildSetupUtils buildSetupUtils;
   @Inject private ExecutionSweepingOutputService executionSweepingOutputResolver;
   @Inject private KryoSerializer kryoSerializer;
@@ -142,14 +145,8 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
         buildSetupUtils.getBuildSetupTaskParams(stepParameters, ambiance, taskIds, logPrefix, stepLogKeys);
     log.info("Created params for build task: {}", buildSetupTaskParams);
 
-    final TaskData taskData = TaskData.builder()
-                                  .async(true)
-                                  .timeout(stepParameters.getTimeout())
-                                  .taskType(TASK_TYPE_INITIALIZATION_PHASE)
-                                  .parameters(new Object[] {buildSetupTaskParams})
-                                  .build();
-
-    return StepUtils.prepareTaskRequest(ambiance, taskData, kryoSerializer);
+    return StepUtils.prepareTaskRequest(
+        ambiance, getTaskData(stepElementParameters, buildSetupTaskParams), kryoSerializer);
   }
 
   @Override
@@ -165,6 +162,17 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
       throw new CIStageExecutionException(
           format("Invalid infra type for task response: %s", ciTaskExecutionResponse.getType()));
     }
+  }
+
+  public TaskData getTaskData(
+      StepElementParameters stepElementParameters, CIInitializeTaskParams buildSetupTaskParams) {
+    return TaskData.builder()
+        .async(true)
+        .timeout(Timeout.fromString((String) stepElementParameters.getTimeout().fetchFinalValue()).getTimeoutInMillis()
+            + TASK_BUFFER_TIMEOUT_MILLIS)
+        .taskType(TASK_TYPE_INITIALIZATION_PHASE)
+        .parameters(new Object[] {buildSetupTaskParams})
+        .build();
   }
 
   private StepResponse handleK8TaskResponse(
