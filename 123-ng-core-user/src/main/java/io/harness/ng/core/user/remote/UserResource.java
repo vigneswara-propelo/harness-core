@@ -31,7 +31,9 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
+import io.harness.eraro.ErrorCode;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.NoResultFoundException;
 import io.harness.ng.accesscontrol.user.ACLAggregateFilter;
 import io.harness.ng.accesscontrol.user.AggregateUserService;
 import io.harness.ng.beans.PageRequest;
@@ -76,6 +78,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
@@ -391,14 +394,19 @@ public class UserResource {
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
     accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
         Resource.of(USER, userId), VIEW_USER_PERMISSION);
-
     Scope scope = Scope.builder()
                       .accountIdentifier(accountIdentifier)
                       .orgIdentifier(orgIdentifier)
                       .projectIdentifier(projectIdentifier)
                       .build();
-    UserAggregateDTO aclUserAggregateDTOs = aggregateUserService.getAggregatedUser(scope, userId);
-    return ResponseDTO.newResponse(aclUserAggregateDTOs);
+    Optional<UserAggregateDTO> aclUserAggregateDTO = aggregateUserService.getAggregatedUser(scope, userId);
+    String errorMessage = String.format("User with id %s not found in the given scope", userId);
+    return ResponseDTO.newResponse(aclUserAggregateDTO.orElseThrow(notFoundExceptionSupplier(errorMessage)));
+  }
+
+  @NotNull
+  private Supplier<NoResultFoundException> notFoundExceptionSupplier(String message) {
+    return () -> NoResultFoundException.newBuilder().code(ErrorCode.ENTITY_NOT_FOUND).message(message).build();
   }
 
   @POST
