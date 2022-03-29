@@ -94,6 +94,7 @@ public abstract class BasePodSpecBuilder {
         .withServiceAccountName(podParams.getServiceAccountName())
         .withNodeSelector(podParams.getNodeSelector())
         .withTolerations(getTolerations(podParams))
+        .withRuntimeClassName(podParams.getRuntime())
         .withInitContainers(initContainers)
         .withImagePullSecrets(imageSecrets)
         .withHostAliases(getHostAliases(podParams.getHostAliasParamsList()))

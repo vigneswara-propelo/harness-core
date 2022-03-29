@@ -188,6 +188,17 @@ public class PodSpecBuilderTestHelper {
         .build();
   }
 
+  public static CIK8PodParams<CIK8ContainerParams> basicInputWithRuntime() {
+    return CIK8PodParams.<CIK8ContainerParams>builder()
+        .name(podName)
+        .namespace(namespace)
+        .stepExecVolumeName(stepExecVolumeName)
+        .stepExecWorkingDir(stepExecWorkingDir)
+        .containerParamsList(asList(basicContainerParamsWithoutImageCred()))
+        .runtime("gvisor")
+        .build();
+  }
+
   public static CIK8PodParams<CIK8ContainerParams> getPodSpecWithEnvSecret() {
     return CIK8PodParams.<CIK8ContainerParams>builder()
         .name(podName)
@@ -267,6 +278,26 @@ public class PodSpecBuilderTestHelper {
                                            .withValue("experimental")
                                            .withEffect("NoSchedule")
                                            .build()))
+        .endSpec()
+        .build();
+  }
+
+  public static V1Pod basicExpectedPodWithRuntime() {
+    return new V1PodBuilder()
+        .withNewMetadata()
+        .withName(podName)
+        .withNamespace(namespace)
+        .endMetadata()
+        .withNewSpec()
+        .withContainers(basicContainerBuilder().build())
+        .withRestartPolicy(CIConstants.RESTART_POLICY)
+        .withActiveDeadlineSeconds(CIConstants.POD_MAX_TTL_SECS)
+        .withHostAliases(new ArrayList<>())
+        .withVolumes(new ArrayList<>())
+        .withInitContainers(new ArrayList<>())
+        .withImagePullSecrets(new ArrayList<>())
+        .withRuntimeClassName("gvisor")
+        .withTolerations(new ArrayList<>())
         .endSpec()
         .build();
   }
