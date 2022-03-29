@@ -589,7 +589,7 @@ public class HelmDeployState extends State {
     } else {
       StringBuilder builder = new StringBuilder(256);
       builder.append("Failed to find the previous helm release version. ");
-      if (helmVersion == HelmVersion.V3 || helmVersion == HelmVersion.V380) {
+      if (HelmVersion.isHelmV3(helmVersion)) {
         builder.append("Make sure Helm 3 is installed");
       } else {
         builder.append("Make sure that the helm client and tiller is installed");
@@ -1051,7 +1051,7 @@ public class HelmDeployState extends State {
             helmChartConfigTaskParams.setUseLatestChartMuseumVersion(
                 featureFlagService.isEnabled(USE_LATEST_CHARTMUSEUM_VERSION, context.getAccountId()));
 
-            if (HelmVersion.V3.equals(helmVersion) || HelmVersion.V380.equals(helmVersion)) {
+            if (HelmVersion.isHelmV3(helmVersion)) {
               helmChartConfigTaskParams.setUseRepoFlags(
                   featureFlagService.isEnabled(USE_HELM_REPO_FLAGS, context.getAccountId()));
               helmChartConfigTaskParams.setDeleteRepoCacheDir(

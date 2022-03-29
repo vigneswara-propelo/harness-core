@@ -733,7 +733,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
   @Override
   public HelmCommandResponse ensureHelmInstalled(HelmCommandRequest commandRequest) {
     HelmVersion helmVersion = commandRequest.getHelmVersion();
-    if (helmVersion == HelmVersion.V3 || helmVersion == HelmVersion.V380) {
+    if (HelmVersion.isHelmV3(helmVersion)) {
       return ensureHelm3Installed(commandRequest);
     }
     if (helmVersion == null) {

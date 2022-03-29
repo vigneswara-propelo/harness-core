@@ -189,7 +189,7 @@ public class HelmTaskHelperBase {
       long timeoutInMillis, String addCommandLogging, HelmVersion helmVersion) {
     ProcessResult processResult = executeCommand(env, addCommand, chartDirectory,
         "add helm repo. Executed command" + addCommandLogging, timeoutInMillis, HelmCliCommandType.REPO_ADD);
-    if (HelmVersion.V3.equals(helmVersion) && processResult.getExitValue() != 0) {
+    if (HelmVersion.isHelmV3(helmVersion) && processResult.getExitValue() != 0) {
       String output = processResult.hasOutput() ? processResult.getOutput().getUTF8() : null;
       // Starting from helm 3.3.4, when --force-update not enabled and there is an update in repo configuration
       // (for example, password is updated) helm repo add will fail with: repository name (repo-name) already exists,
