@@ -5,25 +5,21 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cvng.core.services.api;
+package io.harness.cvng.core.beans.sidekick;
 
 import io.harness.cvng.core.entities.SideKick.SideKickData;
+import io.harness.cvng.core.entities.SideKick.Type;
+import io.harness.cvng.core.entities.changeSource.ChangeSource;
 
-import java.time.Instant;
 import lombok.Builder;
 import lombok.Value;
 
-public interface SideKickExecutor<E extends SideKickData> {
-  void execute(E sideKickInfo);
-
-  @Value
-  @Builder
-  class RetryData {
-    boolean shouldRetry;
-    Instant nextRetryTime;
-  }
-
-  default RetryData shouldRetry(int lastRetryCount) {
-    return RetryData.builder().shouldRetry(false).build();
+@Value
+@Builder
+public class RetryChangeSourceHandleDeleteSideKickData implements SideKickData {
+  ChangeSource changeSource;
+  @Override
+  public Type getType() {
+    return Type.RETRY_CHANGE_SOURCE_HANDLE_DELETE;
   }
 }

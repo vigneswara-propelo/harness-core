@@ -18,12 +18,14 @@ import io.harness.cvng.client.VerificationManagerService;
 import io.harness.cvng.core.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.core.beans.monitoredService.ChangeSourceDTO;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
+import io.harness.cvng.core.beans.sidekick.RetryChangeSourceHandleDeleteSideKickData;
 import io.harness.cvng.core.entities.changeSource.ChangeSource;
 import io.harness.cvng.core.entities.changeSource.ChangeSource.ChangeSourceKeys;
 import io.harness.cvng.core.entities.changeSource.HarnessCDCurrentGenChangeSource;
 import io.harness.cvng.core.entities.changeSource.KubernetesChangeSource;
 import io.harness.cvng.core.services.api.ChangeEventService;
 import io.harness.cvng.core.services.api.FeatureFlagService;
+import io.harness.cvng.core.services.api.SideKickService;
 import io.harness.cvng.core.services.api.demo.ChangeSourceDemoDataGenerator;
 import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.services.impl.ChangeSourceUpdateHandler;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -58,6 +61,7 @@ public class ChangeSourceServiceImpl implements ChangeSourceService {
   @Inject private VerificationManagerService verificationManagerService;
   @Inject private FeatureFlagService featureFlagService;
   @Inject private Map<ChangeSourceType, ChangeSourceDemoDataGenerator> changeSourceTypeToDemoDataGeneratorMap;
+  @Inject private SideKickService sideKickService;
 
   @Override
   public void create(
@@ -117,9 +121,14 @@ public class ChangeSourceServiceImpl implements ChangeSourceService {
     changeSources.forEach(changeSource -> {
       hPersistence.delete(changeSource);
       if (changeSourceUpdateHandlerMap.containsKey(changeSource.getType())) {
-        changeSourceUpdateHandlerMap.get(changeSource.getType()).handleDelete(changeSource);
+        CompletableFuture.runAsync(() -> asyncChangeSourceHandleDelete(changeSource));
       }
     });
+  }
+
+  private void asyncChangeSourceHandleDelete(ChangeSource changeSource) {
+    sideKickService.schedule(
+        RetryChangeSourceHandleDeleteSideKickData.builder().changeSource(changeSource).build(), Instant.now());
   }
 
   @Override

@@ -12,6 +12,7 @@ import static io.harness.cvng.dashboard.entities.HeatMap.HeatMapResolution.FIVE_
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.ABHIJITH;
 import static io.harness.rule.OwnerRule.ANJAN;
+import static io.harness.rule.OwnerRule.ARPITJ;
 import static io.harness.rule.OwnerRule.DEEPAK_CHHIKARA;
 import static io.harness.rule.OwnerRule.KAMAL;
 import static io.harness.rule.OwnerRule.KANHAIYA;
@@ -25,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import io.harness.CvNextGenTestBase;
@@ -37,6 +39,7 @@ import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.beans.MonitoredServiceDataSourceType;
 import io.harness.cvng.beans.MonitoredServiceType;
 import io.harness.cvng.beans.TimeSeriesMetricType;
+import io.harness.cvng.beans.change.ChangeSourceType;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogType;
 import io.harness.cvng.beans.cvnglog.ExecutionLogDTO;
@@ -79,6 +82,7 @@ import io.harness.cvng.core.entities.MonitoredService;
 import io.harness.cvng.core.entities.MonitoredService.MonitoredServiceKeys;
 import io.harness.cvng.core.entities.PrometheusCVConfig;
 import io.harness.cvng.core.entities.PrometheusCVConfig.MetricInfo;
+import io.harness.cvng.core.entities.changeSource.PagerDutyChangeSource;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.CVNGLogService;
 import io.harness.cvng.core.services.api.MetricPackService;
@@ -88,6 +92,8 @@ import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.services.api.monitoredService.HealthSourceService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.core.services.api.monitoredService.ServiceDependencyService;
+import io.harness.cvng.core.services.impl.ChangeSourceUpdateHandler;
+import io.harness.cvng.core.services.impl.PagerdutyChangeSourceUpdateHandler;
 import io.harness.cvng.dashboard.entities.HeatMap;
 import io.harness.cvng.dashboard.entities.HeatMap.HeatMapRisk;
 import io.harness.cvng.dashboard.services.api.HeatMapService;
@@ -108,6 +114,7 @@ import io.harness.rule.Owner;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import java.net.SocketTimeoutException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -130,6 +137,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
@@ -166,6 +174,9 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   ProjectParams projectParams;
   ServiceEnvironmentParams environmentParams;
   Map<String, String> tags;
+  ChangeSourceType changeSourceType;
+  PagerdutyChangeSourceUpdateHandler pagerdutyChangeSourceUpdateHandler;
+  Map<ChangeSourceType, ChangeSourceUpdateHandler> changeSourceUpdateHandlerMap;
 
   @Before
   public void setup() throws IllegalAccessException {
@@ -193,6 +204,10 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         put("tag2", "");
       }
     };
+    changeSourceUpdateHandlerMap = new HashMap<>();
+    pagerdutyChangeSourceUpdateHandler = Mockito.mock(PagerdutyChangeSourceUpdateHandler.class);
+    changeSourceUpdateHandlerMap.put(ChangeSourceType.PAGER_DUTY, pagerdutyChangeSourceUpdateHandler);
+
     projectParams = ProjectParams.builder()
                         .accountIdentifier(accountId)
                         .orgIdentifier(orgIdentifier)
@@ -202,7 +217,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
 
     FieldUtils.writeField(monitoredServiceService, "nextGenService", nextGenService, true);
     FieldUtils.writeField(monitoredServiceService, "setupUsageEventService", setupUsageEventService, true);
-    FieldUtils.writeField(changeSourceService, "changeSourceUpdateHandlerMap", new HashMap<>(), true);
+    FieldUtils.writeField(changeSourceService, "changeSourceUpdateHandlerMap", changeSourceUpdateHandlerMap, true);
     FieldUtils.writeField(monitoredServiceService, "changeSourceService", changeSourceService, true);
     FieldUtils.writeField(heatMapService, "clock", clock, true);
     FieldUtils.writeField(monitoredServiceService, "heatMapService", heatMapService, true);
@@ -602,6 +617,36 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(isDeleted).isEqualTo(true);
     monitoredService = getMonitoredService(monitoredServiceDTO.getIdentifier());
     assertThat(monitoredService).isEqualTo(null);
+    cvConfigs = cvConfigService.list(accountId, orgIdentifier, projectIdentifier,
+        HealthSourceService.getNameSpacedIdentifier(monitoredServiceIdentifier, healthSourceIdentifier));
+    assertThat(changeSourceService.get(
+                   builderFactory.getContext().getMonitoredServiceParams(), Arrays.asList(changeSourceIdentifier)))
+        .isEmpty();
+    assertThat(cvConfigs.size()).isEqualTo(0);
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testDelete_PagerDutyChangeSource_HandleDeleteException() {
+    MonitoredServiceDTO monitoredServiceDTO = createMonitoredServiceDTOWithPagerDutyChangeSource();
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+    MonitoredService monitoredService = getMonitoredService(monitoredServiceDTO.getIdentifier());
+    assertCommonMonitoredService(monitoredService, monitoredServiceDTO);
+    List<CVConfig> cvConfigs = cvConfigService.list(accountId, orgIdentifier, projectIdentifier,
+        HealthSourceService.getNameSpacedIdentifier(monitoredServiceIdentifier, healthSourceIdentifier));
+    assertThat(cvConfigs.size()).isEqualTo(1);
+
+    doThrow(SocketTimeoutException.class)
+        .when(pagerdutyChangeSourceUpdateHandler)
+        .handleDelete(any(PagerDutyChangeSource.class));
+
+    boolean isDeleted =
+        monitoredServiceService.delete(builderFactory.getContext().getProjectParams(), monitoredServiceIdentifier);
+    assertThat(isDeleted).isEqualTo(true);
+
+    MonitoredService monitoredService1 = getMonitoredService(monitoredServiceDTO.getIdentifier());
+    assertThat(monitoredService1).isEqualTo(null);
     cvConfigs = cvConfigService.list(accountId, orgIdentifier, projectIdentifier,
         HealthSourceService.getNameSpacedIdentifier(monitoredServiceIdentifier, healthSourceIdentifier));
     assertThat(changeSourceService.get(
@@ -1778,6 +1823,19 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
                                         .stream()
                                         .collect(Collectors.toSet()))
                      .changeSources(Arrays.asList(builderFactory.getHarnessCDChangeSourceDTOBuilder().build())
+                                        .stream()
+                                        .collect(Collectors.toSet()))
+                     .build())
+        .build();
+  }
+
+  MonitoredServiceDTO createMonitoredServiceDTOWithPagerDutyChangeSource() {
+    return createMonitoredServiceDTOBuilder()
+        .sources(MonitoredServiceDTO.Sources.builder()
+                     .healthSources(Arrays.asList(builderFactory.createHealthSource(CVMonitoringCategory.ERRORS))
+                                        .stream()
+                                        .collect(Collectors.toSet()))
+                     .changeSources(Arrays.asList(builderFactory.getPagerDutyChangeSourceDTOBuilder().build())
                                         .stream()
                                         .collect(Collectors.toSet()))
                      .build())
