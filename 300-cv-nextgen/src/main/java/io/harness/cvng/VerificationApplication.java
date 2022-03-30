@@ -8,6 +8,7 @@
 package io.harness.cvng;
 
 import static io.harness.AuthorizationServiceHeader.BEARER;
+import static io.harness.AuthorizationServiceHeader.CV_NEXT_GEN;
 import static io.harness.AuthorizationServiceHeader.DEFAULT;
 import static io.harness.AuthorizationServiceHeader.IDENTITY_SERVICE;
 import static io.harness.cvng.cdng.services.impl.CVNGNotifyEventListener.CVNG_ORCHESTRATION;
@@ -20,6 +21,7 @@ import static com.google.inject.matcher.Matchers.not;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
 
+import io.harness.AccessControlClientModule;
 import io.harness.ModuleType;
 import io.harness.PipelineServiceUtilityModule;
 import io.harness.annotations.dev.HarnessTeam;
@@ -371,6 +373,8 @@ public class VerificationApplication extends Application<VerificationConfigurati
     });
 
     modules.add(MorphiaModule.getInstance());
+    modules.add(AccessControlClientModule.getInstance(
+        configuration.getAccessControlClientConfiguration(), CV_NEXT_GEN.getServiceId()));
     modules.add(new CVServiceModule(configuration));
     modules.add(new PersistentLockModule());
     modules.add(new EventsFrameworkModule(configuration.getEventsFrameworkConfiguration()));
