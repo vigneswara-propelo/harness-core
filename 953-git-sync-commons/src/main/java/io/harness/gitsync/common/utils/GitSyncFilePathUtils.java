@@ -19,10 +19,13 @@ import io.harness.utils.FilePathUtils;
 
 import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 
 @OwnedBy(HarnessTeam.PL)
 @UtilityClass
 public class GitSyncFilePathUtils {
+  private static final String FILE_PATH_SEPARATOR = "/";
+
   public static GitEntityFilePath getRootFolderAndFilePath(String completeFilePath) {
     String[] pathSplited = Pattern.compile("([.])(harness/)").split(completeFilePath);
     if (pathSplited.length != 2) {
@@ -76,9 +79,6 @@ public class GitSyncFilePathUtils {
     if (isEmpty(path)) {
       throw new InvalidRequestException("File Path cannot be empty");
     }
-    if (path.charAt(0) == '/') {
-      return path.substring(1);
-    }
-    return path;
+    return StringUtils.stripStart(path, FILE_PATH_SEPARATOR);
   }
 }

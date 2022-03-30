@@ -7,6 +7,7 @@
 
 package io.harness.gitsync.gitsync.common.utils;
 
+import static io.harness.rule.OwnerRule.BHAVYA;
 import static io.harness.rule.OwnerRule.MOHIT_GARG;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,5 +66,18 @@ public class GitSyncFilePathUtilsTest extends CategoryTest {
     filePath = "/filePath";
     formattedFilePath = GitSyncFilePathUtils.formatFilePath(filePath);
     assertThat(formattedFilePath).isEqualTo("/filePath");
+  }
+
+  @Test
+  @Owner(developers = BHAVYA)
+  @Category(UnitTests.class)
+  public void testGetFilePathWithoutStartingSlash() {
+    String filePath = "filePath";
+    String formattedFilePath = GitSyncFilePathUtils.getFilePathWithoutStartingSlash(filePath);
+    assertThat(formattedFilePath).isEqualTo("filePath");
+
+    filePath = "/////filePath/.harness";
+    formattedFilePath = GitSyncFilePathUtils.getFilePathWithoutStartingSlash(filePath);
+    assertThat(formattedFilePath).isEqualTo("filePath/.harness");
   }
 }
