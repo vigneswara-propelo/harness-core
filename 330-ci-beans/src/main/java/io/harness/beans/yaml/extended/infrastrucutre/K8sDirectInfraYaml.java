@@ -8,6 +8,7 @@
 package io.harness.beans.yaml.extended.infrastrucutre;
 
 import static io.harness.annotations.dev.HarnessTeam.CI;
+import static io.harness.beans.SwaggerConstants.BOOLEAN_CLASSPATH;
 import static io.harness.beans.SwaggerConstants.INTEGER_CLASSPATH;
 import static io.harness.beans.SwaggerConstants.STRING_CLASSPATH;
 import static io.harness.beans.SwaggerConstants.STRING_MAP_CLASSPATH;
@@ -15,6 +16,8 @@ import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.yaml.extended.infrastrucutre.k8.SecurityContext;
+import io.harness.beans.yaml.extended.infrastrucutre.k8.Toleration;
 import io.harness.beans.yaml.extended.volumes.CIVolume;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.YamlSchemaTypes;
@@ -63,10 +66,17 @@ public class K8sDirectInfraYaml implements Infrastructure {
     @ApiModelProperty(dataType = STRING_MAP_CLASSPATH)
     private ParameterField<Map<String, String>> nodeSelector;
     @YamlSchemaTypes(value = {runtime})
-    @ApiModelProperty(dataType = "[Lio.harness.beans.yaml.extended.infrastrucutre.Toleration;")
+    @ApiModelProperty(dataType = "[Lio.harness.beans.yaml.extended.infrastrucutre.k8.Toleration;")
     private ParameterField<List<Toleration>> tolerations;
     @YamlSchemaTypes(value = {runtime})
     @ApiModelProperty(dataType = "[Lio.harness.beans.yaml.extended.volumes.CIVolume;")
     ParameterField<List<CIVolume>> volumes;
+    @YamlSchemaTypes({runtime})
+    @ApiModelProperty(dataType = BOOLEAN_CLASSPATH)
+    private ParameterField<Boolean> automountServiceAccountToken;
+    @YamlSchemaTypes(value = {runtime})
+    @ApiModelProperty(dataType = "io.harness.beans.yaml.extended.infrastrucutre.k8.SecurityContext")
+    ParameterField<SecurityContext> containerSecurityContext;
+    @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> priorityClassName;
   }
 }

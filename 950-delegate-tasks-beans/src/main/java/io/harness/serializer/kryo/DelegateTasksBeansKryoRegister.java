@@ -80,9 +80,11 @@ import io.harness.delegate.beans.ci.pod.CIK8ContainerParams;
 import io.harness.delegate.beans.ci.pod.CIK8PodParams;
 import io.harness.delegate.beans.ci.pod.CIK8ServicePodParams;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
+import io.harness.delegate.beans.ci.pod.ContainerCapabilities;
 import io.harness.delegate.beans.ci.pod.ContainerParams;
 import io.harness.delegate.beans.ci.pod.ContainerResourceParams;
 import io.harness.delegate.beans.ci.pod.ContainerSecrets;
+import io.harness.delegate.beans.ci.pod.ContainerSecurityContext;
 import io.harness.delegate.beans.ci.pod.EmptyDirVolume;
 import io.harness.delegate.beans.ci.pod.EncryptedVariableWithType;
 import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
@@ -1134,5 +1136,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(PVCVolume.class, 543488);
     kryo.register(AwsCFTemplateParamsData.class, 5478);
     kryo.register(PhysicalDataCenterConnectorValidationParams.class, 543489);
+    kryo.register(ContainerSecurityContext.class, 543490);
+    kryo.register(ContainerCapabilities.class, 543491);
   }
 }

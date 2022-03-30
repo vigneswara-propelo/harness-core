@@ -92,6 +92,7 @@ public abstract class BasePodSpecBuilder {
         .withNewSpec()
         .withContainers(containers)
         .withServiceAccountName(podParams.getServiceAccountName())
+        .withAutomountServiceAccountToken(podParams.getAutomountServiceAccountToken())
         .withNodeSelector(podParams.getNodeSelector())
         .withTolerations(getTolerations(podParams))
         .withRuntimeClassName(podParams.getRuntime())
@@ -99,7 +100,8 @@ public abstract class BasePodSpecBuilder {
         .withImagePullSecrets(imageSecrets)
         .withHostAliases(getHostAliases(podParams.getHostAliasParamsList()))
         .withVolumes(new ArrayList<>(volumesToCreate.values()))
-        .withSecurityContext(getSecurityContext(podParams));
+        .withSecurityContext(getSecurityContext(podParams))
+        .withPriorityClassName(podParams.getPriorityClassName());
   }
 
   private List<V1Toleration> getTolerations(PodParams<ContainerParams> podParams) {

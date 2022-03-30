@@ -40,6 +40,7 @@ import io.harness.delegate.beans.ci.pod.CIK8ContainerParams;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.pod.ContainerResourceParams;
 import io.harness.delegate.beans.ci.pod.ContainerSecrets;
+import io.harness.delegate.beans.ci.pod.ContainerSecurityContext;
 import io.harness.delegate.beans.ci.pod.ImageDetailsWithConnector;
 import io.harness.delegate.beans.ci.pod.SecretParams;
 import io.harness.execution.CIExecutionConfigService;
@@ -67,7 +68,8 @@ public class InternalContainerParamsProvider {
   @Inject private CIFeatureFlagService featureFlagService;
 
   public CIK8ContainerParams getSetupAddonContainerParams(ConnectorDetails harnessInternalImageConnector,
-      Map<String, String> volumeToMountPath, String workDir, String accountIdentifier) {
+      Map<String, String> volumeToMountPath, String workDir, ContainerSecurityContext ctrSecurityContext,
+      String accountIdentifier) {
     List<String> args = new ArrayList<>(Collections.singletonList(SETUP_ADDON_ARGS));
     Map<String, String> envVars = new HashMap<>();
     envVars.put(HARNESS_WORKSPACE, workDir);
@@ -86,13 +88,16 @@ public class InternalContainerParamsProvider {
         .volumeToMountPath(volumeToMountPath)
         .commands(SH_COMMAND)
         .args(args)
+        .securityContext(ctrSecurityContext)
+        .containerResourceParams(getAddonResourceParams())
         .build();
   }
 
   public CIK8ContainerParams getLiteEngineContainerParams(ConnectorDetails harnessInternalImageConnector,
       Map<String, ConnectorDetails> publishArtifactConnectors, K8PodDetails k8PodDetails, Integer stageCpuRequest,
       Integer stageMemoryRequest, Map<String, String> logEnvVars, Map<String, String> tiEnvVars,
-      Map<String, String> volumeToMountPath, String workDirPath, String logPrefix, Ambiance ambiance) {
+      Map<String, String> volumeToMountPath, String workDirPath, ContainerSecurityContext ctrSecurityContext,
+      String logPrefix, Ambiance ambiance) {
     String imageName = ciExecutionConfigService.getLiteEngineImage(AmbianceUtils.getAccountId(ambiance));
     String fullyQualifiedImage =
         IntegrationStageUtils.getFullyQualifiedImageName(imageName, harnessInternalImageConnector);
@@ -110,6 +115,7 @@ public class InternalContainerParamsProvider {
                                        .imageConnectorDetails(harnessInternalImageConnector)
                                        .build())
         .volumeToMountPath(volumeToMountPath)
+        .securityContext(ctrSecurityContext)
         .workingDir(workDirPath)
         .build();
   }
@@ -162,6 +168,17 @@ public class InternalContainerParamsProvider {
   private ContainerResourceParams getLiteEngineResourceParams(Integer stageCpuRequest, Integer stageMemoryRequest) {
     Integer cpu = stageCpuRequest + LITE_ENGINE_CONTAINER_CPU;
     Integer memory = stageMemoryRequest + LITE_ENGINE_CONTAINER_MEM;
+    return ContainerResourceParams.builder()
+        .resourceRequestMilliCpu(cpu)
+        .resourceRequestMemoryMiB(memory)
+        .resourceLimitMilliCpu(cpu)
+        .resourceLimitMemoryMiB(memory)
+        .build();
+  }
+
+  private ContainerResourceParams getAddonResourceParams() {
+    Integer cpu = LITE_ENGINE_CONTAINER_CPU;
+    Integer memory = LITE_ENGINE_CONTAINER_MEM;
     return ContainerResourceParams.builder()
         .resourceRequestMilliCpu(cpu)
         .resourceRequestMemoryMiB(memory)

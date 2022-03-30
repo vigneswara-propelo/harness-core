@@ -12,7 +12,9 @@ import static java.util.Collections.singletonList;
 
 import io.harness.delegate.beans.ci.pod.CIK8ContainerParams;
 import io.harness.delegate.beans.ci.pod.CIK8PodParams;
+import io.harness.delegate.beans.ci.pod.ContainerCapabilities;
 import io.harness.delegate.beans.ci.pod.ContainerSecrets;
+import io.harness.delegate.beans.ci.pod.ContainerSecurityContext;
 import io.harness.delegate.beans.ci.pod.EmptyDirVolume;
 import io.harness.delegate.beans.ci.pod.HostPathVolume;
 import io.harness.delegate.beans.ci.pod.ImageDetailsWithConnector;
@@ -30,6 +32,7 @@ import io.harness.security.encryption.EncryptedRecordData;
 import io.harness.security.encryption.EncryptionType;
 
 import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.openapi.models.V1CapabilitiesBuilder;
 import io.kubernetes.client.openapi.models.V1ContainerBuilder;
 import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSourceBuilder;
 import io.kubernetes.client.openapi.models.V1HostPathVolumeSourceBuilder;
@@ -37,6 +40,8 @@ import io.kubernetes.client.openapi.models.V1LocalObjectReferenceBuilder;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSourceBuilder;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodBuilder;
+import io.kubernetes.client.openapi.models.V1SecurityContext;
+import io.kubernetes.client.openapi.models.V1SecurityContextBuilder;
 import io.kubernetes.client.openapi.models.V1TolerationBuilder;
 import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeBuilder;
@@ -477,6 +482,78 @@ public class PodSpecBuilderTestHelper {
         .withInitContainers(new ArrayList<>())
         .withImagePullSecrets(new ArrayList<>())
         .withTolerations(new ArrayList<>())
+        .endSpec()
+        .build();
+  }
+
+  public static CIK8ContainerParams basicContainerParamsWithSecurityContext() {
+    ContainerSecurityContext ctrSecurityCtx =
+        ContainerSecurityContext.builder()
+            .runAsUser(10000)
+            .runAsNonRoot(true)
+            .runAsGroup(10000)
+            .readOnlyRootFilesystem(true)
+            .capabilities(ContainerCapabilities.builder().drop(asList("ALL")).add(asList("CAP_ADMIN")).build())
+            .privileged(false)
+            .allowPrivilegeEscalation(false)
+            .procMount("foobar")
+            .build();
+    ImageDetails imageWithoutCred = ImageDetails.builder().name(imageName).tag(tag).registryUrl(registryUrl).build();
+    return CIK8ContainerParams.builder()
+        .name(containerName1)
+        .imageDetailsWithConnector(ImageDetailsWithConnector.builder().imageDetails(imageWithoutCred).build())
+        .securityContext(ctrSecurityCtx)
+        .build();
+  }
+
+  public static CIK8PodParams<CIK8ContainerParams> basicInputWithSecurityContext() {
+    return CIK8PodParams.<CIK8ContainerParams>builder()
+        .name(podName)
+        .namespace(namespace)
+        .stepExecVolumeName(stepExecVolumeName)
+        .stepExecWorkingDir(stepExecWorkingDir)
+        .automountServiceAccountToken(false)
+        .priorityClassName("foobar")
+        .containerParamsList(asList(basicContainerParamsWithSecurityContext()))
+        .build();
+  }
+
+  public static V1ContainerBuilder basicContainerBuilderWithSecurityContext() {
+    V1SecurityContext securityContext =
+        new V1SecurityContextBuilder()
+            .withAllowPrivilegeEscalation(false)
+            .withCapabilities(new V1CapabilitiesBuilder().withDrop(asList("ALL")).withAdd(asList("CAP_ADD")).build())
+            .withPrivileged(false)
+            .withProcMount("foobar")
+            .withRunAsGroup((long) 10000)
+            .withRunAsUser((long) 10000)
+            .withReadOnlyRootFilesystem(true)
+            .withRunAsNonRoot(true)
+            .build();
+
+    return new V1ContainerBuilder()
+        .withName(containerName1)
+        .withImage(imageCtrName)
+        .withSecurityContext(securityContext);
+  }
+
+  public static V1Pod expectedPodWithSecurityContext() {
+    return new V1PodBuilder()
+        .withNewMetadata()
+        .withName(podName)
+        .withNamespace(namespace)
+        .endMetadata()
+        .withNewSpec()
+        .withContainers(basicContainerBuilderWithSecurityContext().build())
+        .withRestartPolicy(CIConstants.RESTART_POLICY)
+        .withActiveDeadlineSeconds(CIConstants.POD_MAX_TTL_SECS)
+        .withHostAliases(new ArrayList<>())
+        .withInitContainers(new ArrayList<>())
+        .withImagePullSecrets(new ArrayList<>())
+        .withTolerations(new ArrayList<>())
+        .withVolumes(new ArrayList<>())
+        .withPriorityClassName("foobar")
+        .withAutomountServiceAccountToken(false)
         .endSpec()
         .build();
   }

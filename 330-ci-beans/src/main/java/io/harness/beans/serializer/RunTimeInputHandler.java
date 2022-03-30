@@ -21,7 +21,7 @@ import io.harness.beans.yaml.extended.CIShellType;
 import io.harness.beans.yaml.extended.ImagePullPolicy;
 import io.harness.beans.yaml.extended.TIBuildTool;
 import io.harness.beans.yaml.extended.TILanguage;
-import io.harness.beans.yaml.extended.infrastrucutre.Toleration;
+import io.harness.beans.yaml.extended.infrastrucutre.k8.Toleration;
 import io.harness.encryption.SecretRefData;
 import io.harness.exception.ngexception.CIStageExecutionUserException;
 import io.harness.pms.yaml.ParameterField;

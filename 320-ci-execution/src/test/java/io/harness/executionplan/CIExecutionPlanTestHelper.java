@@ -538,6 +538,7 @@ public class CIExecutionPlanTestHelper {
                                      .resourceLimitMemoryMiB(SERVICE_LIMIT_MEM)
                                      .build())
         .stepIdentifier(SERVICE_ID)
+        .privileged(false)
         .build();
   }
 

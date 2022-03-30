@@ -83,7 +83,9 @@ public class PluginStepInfo implements CIStepInfo, WithConnectorRef {
   @ApiModelProperty(dataType = "io.harness.beans.yaml.extended.reports.UnitTestReport")
   private ParameterField<UnitTestReport> reports;
 
-  @YamlSchemaTypes({string}) @ApiModelProperty(dataType = BOOLEAN_CLASSPATH) private ParameterField<Boolean> privileged;
+  @YamlSchemaTypes({runtime})
+  @ApiModelProperty(dataType = BOOLEAN_CLASSPATH)
+  private ParameterField<Boolean> privileged;
   @YamlSchemaTypes({string}) @ApiModelProperty(dataType = INTEGER_CLASSPATH) private ParameterField<Integer> runAsUser;
   @YamlSchemaTypes({runtime})
   @ApiModelProperty(dataType = "io.harness.beans.yaml.extended.ImagePullPolicy")
