@@ -6,14 +6,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.category.element.UnitTests;
 import io.harness.resourcegroup.ResourceGroupTestBase;
+import io.harness.resourcegroup.beans.ScopeFilterType;
+import io.harness.resourcegroup.model.ResourceSelector;
+import io.harness.resourcegroup.model.ResourceSelectorByScope;
 import io.harness.resourcegroup.v1.model.ResourceGroup;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
+import io.harness.resourcegroup.v2.model.ScopeSelector;
 import io.harness.rule.Owner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.serializer.HObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,6 +114,45 @@ public class ResourceGroupMapperTest extends ResourceGroupTestBase {
       ResourceGroupDTO convertedResourceGroupDTO =
           ResourceGroupMapper.toV1DTO(ResourceGroupMapper.fromDTO(resourceGroupV2DTO), false);
       assertThat(convertedResourceGroupDTO).isEqualTo(resourceGroupV1DTO);
+    } catch (Exception ex) {
+      Assert.fail("Encountered exception while converting resource group  V1 to V2" + ex.getMessage());
+    }
+  }
+
+  @Test
+  @Owner(developers = REETIKA)
+  @Category(UnitTests.class)
+  public void testCustomRGV2ToV1ScopeCheck() {
+    String customResourceGroupV1 =
+        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v1/selectorByScope.json");
+    String customResourceGroupV2 =
+        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v2/selectorByScope.json");
+    ResourceGroupDTO resourceGroupV1DTO = null;
+    io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO resourceGroupV2DTO = null;
+    try {
+      resourceGroupV1DTO = objectMapper.readValue(customResourceGroupV1, ResourceGroupDTO.class);
+      resourceGroupV2DTO =
+          objectMapper.readValue(customResourceGroupV2, io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO.class);
+      io.harness.resourcegroup.framework.v1.remote.mapper.ResourceGroupMapper.fromDTO(resourceGroupV1DTO);
+    } catch (Exception ex) {
+      Assert.fail("Encountered exception while deserializing resource group " + ex.getMessage());
+    }
+    try {
+      ResourceGroupDTO convertedResourceGroupDTO =
+          ResourceGroupMapper.toV1DTO(ResourceGroupMapper.fromDTO(resourceGroupV2DTO), false);
+      assertThat(convertedResourceGroupDTO).isEqualTo(resourceGroupV1DTO);
+    } catch (Exception ex) {
+      Assert.fail("Encountered exception while converting resource group  V1 to V2" + ex.getMessage());
+    }
+    try {
+      resourceGroupV2DTO.setAccountIdentifier(null);
+      resourceGroupV2DTO.setIncludedScopes(
+          Arrays.asList(ScopeSelector.builder().filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES).build()));
+      ResourceGroupDTO convertedResourceGroupDTO =
+          ResourceGroupMapper.toV1DTO(ResourceGroupMapper.fromDTO(resourceGroupV2DTO), true);
+      assertThat(convertedResourceGroupDTO.getResourceSelectors().size()).isEqualTo(1);
+      ResourceSelector resourceSelector = convertedResourceGroupDTO.getResourceSelectors().get(0);
+      assertThat(((ResourceSelectorByScope) resourceSelector).getScope()).isEqualTo(null);
     } catch (Exception ex) {
       Assert.fail("Encountered exception while converting resource group  V1 to V2" + ex.getMessage());
     }

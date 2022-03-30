@@ -141,7 +141,10 @@ public class ResourceGroupMapper {
 
     if (resourceGroup.getResourceFilter() != null) {
       if (resourceGroup.getResourceFilter().isIncludeAllResources()) {
-        resourceSelectors.add(ResourceSelectorByScope.builder().includeChildScopes(includeChildScopes.get()).build());
+        resourceSelectors.add(ResourceSelectorByScope.builder()
+                                  .includeChildScopes(includeChildScopes.get())
+                                  .scope(resourceGroup.getAccountIdentifier() != null ? scopeOfResourceGroup : null)
+                                  .build());
       } else if (!isEmpty(resourceGroup.getResourceFilter().getResources())) {
         resourceGroup.getResourceFilter().getResources().forEach(resources -> {
           if (resources != null && resources.getResourceType() != null) {
