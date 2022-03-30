@@ -90,6 +90,7 @@ public final class EventsFrameworkConstants {
       "PIPELINE_EXECUTION_SUMMARY_REDIS_EVENT_CONSUMER_CD";
   public static final String PIPELINE_EXECUTION_SUMMARY_CD_REDIS_KEY =
       "DEBEZIUM_pmsMongo.pms-harness.planExecutionsSummary";
+  public static final String PIPELINE_EXECUTION_SUMMARY_CD_CONSUMER = "PIPELINE_EXECUTION_SUMMARY_CD_CONSUMER";
 
   public static final String START_PARTIAL_PLAN_CREATOR_EVENT_TOPIC = "pipeline_start_plan";
   public static final int START_PARTIAL_PLAN_CREATOR_BATCH_SIZE = 20;

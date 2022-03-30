@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Harness Inc. All rights reserved.
+ * Copyright 2022 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -21,18 +21,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 
 @Slf4j
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PipelineExecutionSummaryCDChangeEventHandler extends RedisAbstractHandler {
   @Inject private DSLContext dsl;
-
-  List<Record> fetch(String id) {
-    return dsl.select()
-        .from(Tables.PIPELINE_EXECUTION_SUMMARY_CD)
-        .where(Tables.PIPELINE_EXECUTION_SUMMARY_CD.ID.eq(id))
-        .fetch();
-  }
 
   @SneakyThrows
   public Record createRecord(String value, String id) {
@@ -104,7 +98,7 @@ public class PipelineExecutionSummaryCDChangeEventHandler extends RedisAbstractH
       if (ciExecutionInfo != null) {
         DBObject branch = (DBObject) (ciExecutionInfo.get("branch"));
 
-        HashMap firstCommit = null;
+        HashMap firstCommit;
         String commits = "commits";
         if (branch != null && branch.get(commits) != null && ((List) branch.get(commits)).size() > 0) {
           firstCommit = (HashMap) ((List) branch.get(commits)).get(0);
@@ -160,39 +154,67 @@ public class PipelineExecutionSummaryCDChangeEventHandler extends RedisAbstractH
     return record;
   }
 
-  @Override
-  public void handleCreateEvent(String id, String value) {
-    if (fetch(id).size() != 0) {
-      return;
+  public boolean isConnectionError(DataAccessException ex) {
+    if (ex.getMessage().contains("Error getting connection from data source")) {
+      return true;
     }
-    Record record = createRecord(value, id);
-    if (record == null) {
-      return;
-    }
-    dsl.insertInto(Tables.PIPELINE_EXECUTION_SUMMARY_CD).set(record).execute();
+    return false;
   }
 
   @Override
-  public void handleDeleteEvent(String id) {
-    if (fetch(id).size() == 0) {
-      return;
+  public boolean handleCreateEvent(String id, String value) {
+    Record record = createRecord(value, id);
+    if (record == null) {
+      return true;
     }
-    dsl.delete(Tables.PIPELINE_EXECUTION_SUMMARY_CD).where(Tables.PIPELINE_EXECUTION_SUMMARY_CD.ID.eq(id)).execute();
+    try {
+      dsl.insertInto(Tables.PIPELINE_EXECUTION_SUMMARY_CD)
+          .set(record)
+          .onConflict(Tables.PIPELINE_EXECUTION_SUMMARY_CD.ID)
+          .doNothing()
+          .execute();
+    } catch (DataAccessException ex) {
+      log.error("Caught Exception while inserting data", ex);
+      if (isConnectionError(ex)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
-  public void handleUpdateEvent(String id, String value) {
+  public boolean handleDeleteEvent(String id) {
+    try {
+      dsl.delete(Tables.PIPELINE_EXECUTION_SUMMARY_CD).where(Tables.PIPELINE_EXECUTION_SUMMARY_CD.ID.eq(id)).execute();
+    } catch (DataAccessException ex) {
+      log.error("Caught Exception while deleting data", ex);
+      if (isConnectionError(ex)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public boolean handleUpdateEvent(String id, String value) {
     Record record = createRecord(value, id);
     if (record == null) {
-      return;
+      return true;
     }
-    if (fetch(id).size() == 0) {
-      handleCreateEvent(id, value);
-      return;
+    try {
+      dsl.insertInto(Tables.PIPELINE_EXECUTION_SUMMARY_CD)
+          .set(record)
+          .onConflict(Tables.PIPELINE_EXECUTION_SUMMARY_CD.ID)
+          .doUpdate()
+          .set(record)
+          .where(Tables.PIPELINE_EXECUTION_SUMMARY_CD.ID.eq(id))
+          .execute();
+    } catch (DataAccessException ex) {
+      log.error("Caught Exception while updating data", ex);
+      if (isConnectionError(ex)) {
+        return false;
+      }
     }
-    dsl.update(Tables.PIPELINE_EXECUTION_SUMMARY_CD)
-        .set(record)
-        .where(Tables.PIPELINE_EXECUTION_SUMMARY_CD.ID.eq(id))
-        .execute();
+    return true;
   }
 }
