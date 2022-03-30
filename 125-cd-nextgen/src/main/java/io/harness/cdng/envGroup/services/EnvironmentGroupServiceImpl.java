@@ -85,4 +85,35 @@ public class EnvironmentGroupServiceImpl implements EnvironmentGroupService {
           String.format("Error while deleting input set [%s]: %s", envGroupId, e.getMessage()));
     }
   }
+
+  @Override
+  public EnvironmentGroupEntity update(EnvironmentGroupEntity requestedEntity) {
+    String accountId = requestedEntity.getAccountId();
+    String orgId = requestedEntity.getOrgIdentifier();
+    String projectId = requestedEntity.getProjectIdentifier();
+    String envGroupId = requestedEntity.getIdentifier();
+
+    Optional<EnvironmentGroupEntity> optionalEnvGroupEntity = get(accountId, orgId, projectId, envGroupId, false);
+    if (!optionalEnvGroupEntity.isPresent()) {
+      throw new InvalidRequestException(
+          String.format("Environment Group %s in project %s in organization %s is either deleted or was not created",
+              envGroupId, projectId, orgId));
+    }
+
+    EnvironmentGroupEntity originalEntity = optionalEnvGroupEntity.get();
+    if (originalEntity.getVersion() != null && !originalEntity.getVersion().equals(originalEntity.getVersion())) {
+      throw new InvalidRequestException(format(
+          "Environment Group [%s] under Project[%s], Organization [%s] is not on the correct version.",
+          originalEntity.getIdentifier(), originalEntity.getProjectIdentifier(), originalEntity.getOrgIdentifier()));
+    }
+
+    EnvironmentGroupEntity updatedEntity = originalEntity.withName(requestedEntity.getName())
+                                               .withDescription(requestedEntity.getDescription())
+                                               .withLastModifiedAt(System.currentTimeMillis())
+                                               .withColor(requestedEntity.getColor())
+                                               .withEnvIdentifiers(requestedEntity.getEnvIdentifiers())
+                                               .withTags(requestedEntity.getTags())
+                                               .withYaml(requestedEntity.getYaml());
+    return environmentRepository.update(updatedEntity, originalEntity);
+  }
 }

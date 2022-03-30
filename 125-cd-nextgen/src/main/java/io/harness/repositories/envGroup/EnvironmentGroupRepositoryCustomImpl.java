@@ -14,6 +14,7 @@ import static java.lang.String.format;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.cdng.events.EnvironmentGroupCreateEvent;
 import io.harness.cdng.events.EnvironmentGroupDeleteEvent;
+import io.harness.cdng.events.EnvironmentGroupUpdateEvent;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.git.model.ChangeType;
@@ -134,6 +135,39 @@ public class EnvironmentGroupRepositoryCustomImpl implements EnvironmentGroupRep
 
     return gitAwarePersistence.save(
         entityToDelete, entityToDelete.getYaml(), ChangeType.DELETE, EnvironmentGroupEntity.class, functor);
+  }
+
+  @Override
+  public EnvironmentGroupEntity update(EnvironmentGroupEntity updatedEntity, EnvironmentGroupEntity originalEntity) {
+    // validate EnvIdentifiers list
+    if (!updatedEntity.getEnvIdentifiers().isEmpty()) {
+      validateNotExistentEnvIdentifiers(updatedEntity);
+    }
+
+    Supplier<OutboxEvent> functor = null;
+    // If git sync is disabled, then outbox the event
+    boolean gitSyncEnabled = gitSyncSdkService.isGitSyncEnabled(
+        updatedEntity.getAccountIdentifier(), updatedEntity.getOrgIdentifier(), updatedEntity.getProjectIdentifier());
+
+    // if git is disabled, then only outbox the event
+    if (!gitSyncEnabled) {
+      functor = ()
+          -> outboxService.save(EnvironmentGroupUpdateEvent.builder()
+                                    .accountIdentifier(updatedEntity.getAccountIdentifier())
+                                    .orgIdentifier(updatedEntity.getOrgIdentifier())
+                                    .projectIdentifier(updatedEntity.getProjectIdentifier())
+                                    .newEnvironmentGroupEntity(updatedEntity)
+                                    .oldEnvironmentGroupEntity(originalEntity)
+                                    .build());
+    }
+
+    try {
+      return gitAwarePersistence.save(
+          updatedEntity, updatedEntity.getYaml(), ChangeType.MODIFY, EnvironmentGroupEntity.class, functor);
+    } catch (Exception e) {
+      throw new InvalidRequestException(String.format(
+          "Error occurred while updating Environment Group %s - %s", updatedEntity.getIdentifier(), e.getMessage()));
+    }
   }
 
   @VisibleForTesting

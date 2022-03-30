@@ -23,10 +23,13 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.repositories.envGroup.EnvironmentGroupRepository;
 import io.harness.rule.Owner;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -118,5 +121,46 @@ public class EnvironmentGroupServiceImplTest extends CategoryTest {
     doReturn(nonDeletedEntity).when(environmentGroupRepository).deleteEnvGroup(deletedEntity);
     assertThatThrownBy(() -> environmentGroupService.delete(ACC_ID, ORG_ID, PRO_ID, ENV_GROUP_ID, 10L))
         .isInstanceOf(InvalidRequestException.class);
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testUpdate() {
+    EnvironmentGroupEntity originalEntity = getEnvironmentGroupEntity(ACC_ID, ORG_ID, PRO_ID, ENV_GROUP_ID);
+    originalEntity = originalEntity.withName("oldName")
+                         .withColor("oldColor")
+                         .withLastModifiedAt(10L)
+                         .withDescription("oldDes")
+                         .withEnvIdentifiers(Collections.singletonList("env1"))
+                         .withYaml("oldYaml");
+
+    EnvironmentGroupEntity updatedEntity = originalEntity.withName("newName")
+                                               .withColor("newColor")
+                                               .withLastModifiedAt(20L)
+                                               .withDescription("newDes")
+                                               .withEnvIdentifiers(Arrays.asList("env1", "env2"))
+                                               .withYaml("newYaml");
+
+    doReturn(Optional.of(originalEntity))
+        .when(environmentGroupRepository)
+        .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifierAndDeletedNot(
+            ACC_ID, ORG_ID, PRO_ID, ENV_GROUP_ID, true);
+
+    ArgumentCaptor<EnvironmentGroupEntity> captorForUpdatedEntity =
+        ArgumentCaptor.forClass(EnvironmentGroupEntity.class);
+    ArgumentCaptor<EnvironmentGroupEntity> captorForOriginalEntity =
+        ArgumentCaptor.forClass(EnvironmentGroupEntity.class);
+    doReturn(updatedEntity)
+        .when(environmentGroupRepository)
+        .update(captorForUpdatedEntity.capture(), captorForOriginalEntity.capture());
+    environmentGroupService.update(updatedEntity);
+
+    EnvironmentGroupEntity capturedUpdatedEntity = captorForUpdatedEntity.getValue();
+    assertThat(capturedUpdatedEntity.getName()).isEqualTo("newName");
+    assertThat(capturedUpdatedEntity.getDescription()).isEqualTo("newDes");
+    assertThat(capturedUpdatedEntity.getColor()).isEqualTo("newColor");
+    assertThat(capturedUpdatedEntity.getLastModifiedAt()).isNotEqualTo(10L);
+    assertThat(capturedUpdatedEntity.getEnvIdentifiers()).contains("env2");
   }
 }

@@ -34,8 +34,10 @@ import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKeys;
 import io.harness.cdng.envGroup.mappers.EnvironmentGroupMapper;
 import io.harness.cdng.envGroup.services.EnvironmentGroupService;
+import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.interceptor.GitEntityDeleteInfoDTO;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
+import io.harness.gitsync.interceptor.GitEntityUpdateInfoDTO;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ErrorDTO;
@@ -73,6 +75,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -263,6 +266,54 @@ public class EnvironmentGroupResource {
     EnvironmentGroupEntity deletedEntity = environmentGroupService.delete(
         accountId, orgIdentifier, projectIdentifier, envGroupId, isNumeric(ifMatch) ? parseLong(ifMatch) : null);
     return ResponseDTO.newResponse(EnvironmentGroupMapper.toDeleteResponseWrapper(deletedEntity));
+  }
+
+  @PUT
+  @Path("/{envGroupIdentifier}")
+  @ApiOperation(value = "Update an Environment Group by Identifier", nickname = "updateEnvironmentGroup")
+  @Operation(operationId = "updateEnvironmentGroup", summary = "Update an Environment Group by Identifier",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Returns the updated Environment Group")
+      })
+  public ResponseDTO<EnvironmentGroupResponse>
+  update(@HeaderParam(IF_MATCH) String ifMatch,
+      @Parameter(description = ENVIRONMENT_GROUP_PARAM_MESSAGE) @NotNull @PathParam(
+          NGCommonEntityConstants.ENVIRONMENT_GROUP_KEY) String envGroupId,
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @Parameter(
+          description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) String accountId,
+      @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier @Parameter(
+          description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) String orgIdentifier,
+      @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier @Parameter(
+          description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) String projectIdentifier,
+      @RequestBody(required = true,
+          description =
+              "Environment Group YAML to be updated. The Account, Org, and Project identifiers inside the YAML should match the query parameters.")
+      @NotNull String yaml,
+      @BeanParam GitEntityUpdateInfoDTO gitEntityInfo) {
+    log.info(String.format("Updating Environment Group with identifier %s in project %s, org %s, account %s",
+        envGroupId, projectIdentifier, orgIdentifier, accountId));
+    EnvironmentGroupEntity requestedEntity =
+        EnvironmentGroupMapper.toEnvironmentEntity(accountId, orgIdentifier, projectIdentifier, yaml);
+    // Validate the fields of the Entity
+    validate(requestedEntity);
+
+    // Validating if identifier is same passed in yaml and path param
+    if (!envGroupId.equals(requestedEntity.getIdentifier())) {
+      throw new InvalidRequestException("Updating of Environment Group Identifier is not supported");
+    }
+
+    // updating the version if any
+    requestedEntity.setVersion(isNumeric(ifMatch) ? parseLong(ifMatch) : null);
+
+    EnvironmentGroupEntity updatedEntity = environmentGroupService.update(requestedEntity);
+
+    // fetching Environments from list of identifiers
+    List<EnvironmentResponse> envResponseList = getEnvironmentResponses(updatedEntity);
+
+    return ResponseDTO.newResponse(updatedEntity.getVersion().toString(),
+        EnvironmentGroupMapper.toResponseWrapper(updatedEntity, envResponseList));
   }
 
   private List<EnvironmentResponse> getEnvironmentResponses(EnvironmentGroupEntity groupEntity) {

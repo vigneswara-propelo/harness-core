@@ -221,4 +221,32 @@ public class EnvironmentGroupRepositoryCustomImplTest extends CategoryTest {
     assertThat(captorForChangeEntityType.getValue()).isEqualTo(ChangeType.DELETE);
     assertThat(captorForClassType.getValue()).isEqualTo(EnvironmentGroupEntity.class);
   }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testUpdate() {
+    EnvironmentGroupEntity originalEntity = getDummyEnvironmentEntity();
+
+    EnvironmentGroupEntity updaetdEntity = originalEntity.withName("newName");
+    ArgumentCaptor<EnvironmentGroupEntity> captorForEntity = ArgumentCaptor.forClass(EnvironmentGroupEntity.class);
+    ArgumentCaptor<String> captorForYaml = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<ChangeType> captorForChangeEntityType = ArgumentCaptor.forClass(ChangeType.class);
+    ArgumentCaptor<Class> captorForClassType = ArgumentCaptor.forClass(Class.class);
+
+    doReturn(updaetdEntity.getEnvIdentifiers())
+        .when(environmentService)
+        .fetchesNonDeletedEnvIdentifiersFromList(ACC_ID, ORG_ID, PRO_ID, updaetdEntity.getEnvIdentifiers());
+
+    doReturn(updaetdEntity)
+        .when(gitAwarePersistence)
+        .save(captorForEntity.capture(), captorForYaml.capture(), captorForChangeEntityType.capture(),
+            captorForClassType.capture(), any());
+
+    environmentGroupRepositoryCustom.update(updaetdEntity, originalEntity);
+    assertThat(captorForEntity.getValue()).isEqualTo(updaetdEntity);
+    assertThat(captorForYaml.getValue()).isEqualTo(originalEntity.getYaml());
+    assertThat(captorForChangeEntityType.getValue()).isEqualTo(ChangeType.MODIFY);
+    assertThat(captorForClassType.getValue()).isEqualTo(EnvironmentGroupEntity.class);
+  }
 }
