@@ -1235,7 +1235,6 @@ public class DelegateServiceImpl implements DelegateService {
               .put("verificationHostAndPort", templateParameters.getVerificationHost())
               .put("watcherStorageUrl", watcherStorageUrl)
               .put("watcherCheckLocation", watcherCheckLocation)
-              .put("remoteWatcherUrlCdn", infraDownloadService.getCdnWatcherBaseUrl())
               .put("delegateStorageUrl", delegateStorageUrl)
               .put("delegateCheckLocation", delegateCheckLocation)
               .put("deployMode", mainConfiguration.getDeployMode().name())
@@ -1280,7 +1279,13 @@ public class DelegateServiceImpl implements DelegateService {
       }
 
       params.put("useCdn", String.valueOf(useCDN));
-      params.put("cdnUrl", cdnConfig.getUrl());
+      if (useCDN) {
+        params.put("cdnUrl", cdnConfig.getUrl());
+        params.put("remoteWatcherUrlCdn", infraDownloadService.getCdnWatcherBaseUrl());
+      } else {
+        params.put("cdnUrl", EMPTY);
+        params.put("remoteWatcherUrlCdn", EMPTY);
+      }
 
       if (isNotBlank(templateParameters.getDelegateXmx())) {
         params.put("delegateXmx", templateParameters.getDelegateXmx());

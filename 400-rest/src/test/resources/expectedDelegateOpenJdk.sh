@@ -257,12 +257,6 @@ if ! `grep useCdn config-delegate.yml > /dev/null`; then
 elif [[ "$(grep useCdn config-delegate.yml | cut -d ' ' -f 2)" != "false" ]]; then
   sed -i.bak "s|^useCdn:.*$|useCdn: false|" config-delegate.yml
 fi
-if ! `grep cdnUrl config-delegate.yml > /dev/null`; then
-  echo "cdnUrl: http://localhost:9500" >> config-delegate.yml
-elif [[ "$(grep cdnUrl config-delegate.yml | cut -d ' ' -f 2)" != "http://localhost:9500" ]]; then
-  sed -i.bak "s|^cdnUrl:.*$|cdnUrl: http://localhost:9500|" config-delegate.yml
-fi
-
 
 if ! `grep grpcServiceEnabled config-delegate.yml > /dev/null`; then
   echo "grpcServiceEnabled: $GRPC_SERVICE_ENABLED" >> config-delegate.yml
