@@ -322,8 +322,8 @@ public class AnomalyServiceImpl implements AnomalyService {
         .gcpSKUId(anomaly.getGcpskuid())
         .gcpSKUDescription(anomaly.getGcpskudescription())
         .gcpProduct(anomaly.getGcpproduct())
-        .awsAccount(anomaly.getAwsaccount())
-        .awsService(anomaly.getAwsservice())
+        .awsUsageAccountId(anomaly.getAwsaccount())
+        .awsServiceCode(anomaly.getAwsservice())
         .awsUsageType(anomaly.getAwsusagetype())
         .awsInstancetype(anomaly.getAwsinstancetype())
         .build();
