@@ -9,6 +9,7 @@ package software.wings.delegatetasks.jira;
 
 import static io.harness.rule.OwnerRule.AGORODETKI;
 import static io.harness.rule.OwnerRule.ROHITKARELIA;
+import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -282,7 +283,7 @@ public class JiraTaskTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = ROHITKARELIA)
+  @Owner(developers = {ROHITKARELIA, UTKARSH_CHOUBEY})
   @Category({UnitTests.class})
   public void shouldThrowProxyAuthErrorOnGetProjects() {
     JiraTaskParameters jiraTaskParameters = getJiraTaskParametersForAUTH();
@@ -300,7 +301,8 @@ public class JiraTaskTest extends CategoryTest {
     JiraExecutionData jiraExecutionData = (JiraExecutionData) jiraTask.getProjects(jiraTaskParameters);
     assertThat(jiraExecutionData.getExecutionStatus()).isEqualTo(ExecutionStatus.FAILED);
     assertThat(jiraExecutionData.getErrorMessage())
-        .isEqualTo("Failed to fetch projects from Jira server. Reason: Proxy Authentication Required. Error Code: 407");
+        .isEqualTo(
+            "Failed to fetch projects from Jira server, Uri for GET PROJECTS - /rest/api/latest/project  Reason: Proxy Authentication Required. Error Code: 407");
   }
 
   @Test

@@ -309,14 +309,20 @@ public class JiraTask extends AbstractDelegateRunnableTask {
 
   @VisibleForTesting
   protected DelegateResponseData getProjects(JiraTaskParameters parameters) {
+    URI uri = null;
     try {
       JiraClient jira = getJiraClient(parameters);
-      URI uri = jira.getRestClient().buildURI(Resource.getBaseUri() + "project");
+      uri = jira.getRestClient().buildURI(Resource.getBaseUri() + "project");
       JSON response = jira.getRestClient().get(uri);
       JSONArray projectsArray = JSONArray.fromObject(response);
       return JiraExecutionData.builder().projects(projectsArray).executionStatus(ExecutionStatus.SUCCESS).build();
     } catch (URISyntaxException | IOException | RestException | JiraException | RuntimeException e) {
-      String errorMessage = "Failed to fetch projects from Jira server.";
+      String uriString = Resource.getBaseUri() == null ? "" : Resource.getBaseUri();
+      if (uri == null) {
+        uriString = uriString + "project";
+      }
+      String errorMessage = String.format(
+          "Failed to fetch projects from Jira server, Uri for GET PROJECTS - %s ", uri == null ? uriString : uri);
       if (e instanceof RestException && ((RestException) e).getHttpStatusCode() == 407) {
         // Proxy Authentication required
         errorMessage += " Reason: "
