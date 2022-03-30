@@ -254,3 +254,4 @@ Aleksa Buha aleksa.buha@harness.io
 alebuh aleksa.buha@harness.io
 Satyam Goel satyam.goel@harness.io
 Hen Amar hen.amar@harness.io
+Sahildeep Singh sahildeep.singh@harness.io
