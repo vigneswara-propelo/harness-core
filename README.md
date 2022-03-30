@@ -336,6 +336,7 @@ While running an app from pre checked in configs, Add JAVA_HOME as an environmen
 ### Show current git branch in command prompt
 
 If you are using zsh (which is default on MacOS Catalina and later), basic git integration comes out of the box.
+  
 
 If you are using bash, add the following to your `~/.bash_profile` to display the current git branch in the command prompt:
 
