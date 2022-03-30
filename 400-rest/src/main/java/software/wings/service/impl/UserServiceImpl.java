@@ -1494,6 +1494,7 @@ public class UserServiceImpl implements UserService {
 
   private List<UserGroup> getUserGroupsOfUser(String accountId, String userId, boolean loadUsers) {
     PageRequest<UserGroup> pageRequest = aPageRequest()
+                                             .withLimit(Long.toString(userGroupService.getCountOfUserGroups(accountId)))
                                              .addFilter(UserGroupKeys.accountId, EQ, accountId)
                                              .addFilter(UserGroupKeys.memberIds, EQ, userId)
                                              .build();
@@ -1511,6 +1512,7 @@ public class UserServiceImpl implements UserService {
 
   private List<UserGroup> getUserGroups(String accountId, SetView<String> userGroupIds) {
     PageRequest<UserGroup> pageRequest = aPageRequest()
+                                             .withLimit(Long.toString(userGroupService.getCountOfUserGroups(accountId)))
                                              .addFilter("_id", IN, userGroupIds.toArray())
                                              .addFilter(UserGroupKeys.accountId, EQ, accountId)
                                              .build();
@@ -2696,7 +2698,10 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void loadUserGroupsForUsers(List<User> users, String accountId) {
-    PageRequest<UserGroup> req = aPageRequest().addFilter(UserGroupKeys.accountId, EQ, accountId).build();
+    PageRequest<UserGroup> req = aPageRequest()
+                                     .withLimit(Long.toString(userGroupService.getCountOfUserGroups(accountId)))
+                                     .addFilter(UserGroupKeys.accountId, EQ, accountId)
+                                     .build();
     PageResponse<UserGroup> res = userGroupService.list(accountId, req, false);
     List<UserGroup> allUserGroupList = res.getResponse();
     if (isEmpty(allUserGroupList)) {
@@ -2811,8 +2816,12 @@ public class UserServiceImpl implements UserService {
       }
 
       if (updateUsergroup) {
-        PageResponse<UserGroup> pageResponse = userGroupService.list(
-            accountId, aPageRequest().addFilter(UserGroupKeys.memberIds, HAS, user.getUuid()).build(), true);
+        PageResponse<UserGroup> pageResponse = userGroupService.list(accountId,
+            aPageRequest()
+                .withLimit(Long.toString(userGroupService.getCountOfUserGroups(accountId)))
+                .addFilter(UserGroupKeys.memberIds, HAS, user.getUuid())
+                .build(),
+            true);
         List<UserGroup> userGroupList = pageResponse.getResponse();
         removeUserFromUserGroups(user, userGroupList, false);
       }
