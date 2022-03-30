@@ -43,6 +43,9 @@ public class HarnessCDChangeEventTransformerTest extends CvNextGenTestBase {
   public void testGetEntity() {
     ChangeEventDTO changeEventDTO = builderFactory.getHarnessCDChangeEventDTOBuilder().build();
     DeploymentActivity harnessCDActivity = harnessCDChangeEventTransformer.getEntity(changeEventDTO);
+    assertThat(harnessCDActivity.getActivityName())
+        .isEqualTo("Deployment of " + builderFactory.getContext().getServiceIdentifier() + " in "
+            + builderFactory.getContext().getEnvIdentifier());
     verifyEqual(harnessCDActivity, changeEventDTO);
   }
 

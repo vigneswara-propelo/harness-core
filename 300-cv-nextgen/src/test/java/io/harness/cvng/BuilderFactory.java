@@ -14,6 +14,8 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
 import io.harness.cvng.activity.entities.DeploymentActivity;
 import io.harness.cvng.activity.entities.DeploymentActivity.DeploymentActivityBuilder;
+import io.harness.cvng.activity.entities.HarnessCDCurrentGenActivity;
+import io.harness.cvng.activity.entities.HarnessCDCurrentGenActivity.HarnessCDCurrentGenActivityBuilder;
 import io.harness.cvng.activity.entities.KubernetesClusterActivity;
 import io.harness.cvng.activity.entities.KubernetesClusterActivity.KubernetesClusterActivityBuilder;
 import io.harness.cvng.activity.entities.KubernetesClusterActivity.RelatedAppMonitoredService;
@@ -25,6 +27,7 @@ import io.harness.cvng.beans.MonitoredServiceType;
 import io.harness.cvng.beans.change.ChangeEventDTO;
 import io.harness.cvng.beans.change.ChangeEventDTO.ChangeEventDTOBuilder;
 import io.harness.cvng.beans.change.ChangeSourceType;
+import io.harness.cvng.beans.change.HarnessCDCurrentGenEventMetadata;
 import io.harness.cvng.beans.change.HarnessCDEventMetadata;
 import io.harness.cvng.beans.change.KubernetesChangeEventMetadata;
 import io.harness.cvng.beans.change.KubernetesChangeEventMetadata.Action;
@@ -663,6 +666,27 @@ public class BuilderFactory {
         .activityStartTime(clock.instant());
   }
 
+  public HarnessCDCurrentGenActivityBuilder getHarnessCDCurrentGenActivityBuilder() {
+    return HarnessCDCurrentGenActivity.builder()
+        .accountId(context.getAccountId())
+        .orgIdentifier(context.getOrgIdentifier())
+        .projectIdentifier(context.getProjectIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceParams().getMonitoredServiceIdentifier())
+        .eventTime(clock.instant())
+        .changeSourceIdentifier("changeSourceID")
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
+        .type(ChangeSourceType.HARNESS_CD.getActivityType())
+        .artifactType("artifactType")
+        .artifactName("artifactName")
+        .workflowEndTime(clock.instant())
+        .workflowStartTime(clock.instant())
+        .workflowId("workflowId")
+        .workflowExecutionId("workflowExecutionId")
+        .activityName(generateUuid())
+        .activityEndTime(clock.instant())
+        .activityStartTime(clock.instant());
+  }
+
   public KubernetesClusterActivityBuilder getKubernetesClusterActivityBuilder() {
     return KubernetesClusterActivity.builder()
         .accountId(context.getAccountId())
@@ -728,6 +752,19 @@ public class BuilderFactory {
                       .artifactType("artifactType")
                       .artifactTag("artifactTag")
                       .status("status")
+                      .build());
+  }
+
+  public ChangeEventDTOBuilder getHarnessCDCurrentGenChangeEventDTOBuilder() {
+    return getChangeEventDTOBuilder()
+        .type(ChangeSourceType.HARNESS_CD_CURRENT_GEN)
+        .metadata(HarnessCDCurrentGenEventMetadata.builder()
+                      .artifactType("artifactType")
+                      .artifactName("artifactName")
+                      .workflowEndTime(clock.millis())
+                      .workflowStartTime(clock.millis())
+                      .workflowId("workflowId")
+                      .workflowExecutionId("workflowExecutionId")
                       .build());
   }
 
