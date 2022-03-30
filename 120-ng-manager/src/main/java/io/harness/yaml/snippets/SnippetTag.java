@@ -58,5 +58,7 @@ public enum SnippetTag implements YamlSnippetTags {
   pagerduty,
   customhealth,
   servicenow,
-  errortracking
+  errortracking,
+  azure,
+  pdc
 }
