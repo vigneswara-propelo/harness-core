@@ -7,11 +7,15 @@
 
 package io.harness.notification.eventbackbone;
 
+import static io.harness.AuthorizationServiceHeader.NOTIFICATION_SERVICE;
+
 import io.harness.NotificationRequest;
 import io.harness.notification.entities.MongoNotificationRequest;
 import io.harness.notification.service.api.NotificationService;
 import io.harness.queue.QueueConsumer;
 import io.harness.queue.QueueListener;
+import io.harness.security.SecurityContextBuilder;
+import io.harness.security.dto.ServicePrincipal;
 
 import com.google.inject.Inject;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -35,9 +39,12 @@ public class MongoMessageConsumer extends QueueListener<MongoNotificationRequest
       if (!notificationRequest.getUnknownFields().asMap().isEmpty()) {
         throw new InvalidProtocolBufferException("Unknown fields detected. Check Notification Request producer");
       }
+      SecurityContextBuilder.setContext(new ServicePrincipal(NOTIFICATION_SERVICE.getServiceId()));
       notificationService.processNewMessage(notificationRequest);
     } catch (InvalidProtocolBufferException e) {
       log.error("Corrupted message received off the mongo queue");
+    } finally {
+      SecurityContextBuilder.unsetCompleteContext();
     }
   }
 }

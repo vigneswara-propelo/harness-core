@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import io.harness.CategoryTest;
 import io.harness.NotificationRequest;
 import io.harness.category.element.UnitTests;
+import io.harness.manage.GlobalContextManager;
 import io.harness.notification.entities.MongoNotificationRequest;
 import io.harness.notification.service.api.NotificationService;
 import io.harness.notification.utils.NotificationRequestTestUtils;
@@ -54,6 +55,7 @@ public class MongoMessageConsumerTest extends CategoryTest {
         MongoNotificationRequest.builder().bytes(notificationRequest.toByteArray()).build();
     mongoMessageConsumer.onMessage(mongoNotificationRequest);
     verify(notificationService, times(1)).processNewMessage(notificationRequest);
+    assertThat(GlobalContextManager.isAvailable()).isEqualTo(false);
   }
 
   @Test
@@ -70,5 +72,6 @@ public class MongoMessageConsumerTest extends CategoryTest {
     List<ILoggingEvent> logList = listAppender.list;
     assertThat(logList.get(logList.size() - 1).getMessage())
         .isEqualTo("Corrupted message received off the mongo queue");
+    assertThat(GlobalContextManager.isAvailable()).isEqualTo(false);
   }
 }

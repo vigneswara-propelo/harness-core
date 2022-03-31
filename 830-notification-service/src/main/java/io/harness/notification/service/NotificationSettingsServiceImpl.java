@@ -74,13 +74,17 @@ public class NotificationSettingsServiceImpl implements NotificationSettingsServ
     try {
       List<UserGroupFilterDTO> userGroupFilterDTO =
           userGroups.stream()
-              .map(userGroup
-                  -> UserGroupFilterDTO.builder()
-                         .accountIdentifier(accountIdentifier)
-                         .identifierFilter(Sets.newHashSet(ImmutableList.of(userGroup.getIdentifier())))
-                         .orgIdentifier(userGroup.getOrgIdentifier())
-                         .projectIdentifier(userGroup.getProjectIdentifier())
-                         .build())
+              .map(userGroup -> {
+                String orgIdentifier = isEmpty(userGroup.getOrgIdentifier()) ? null : userGroup.getOrgIdentifier();
+                String projectIdentifier =
+                    isEmpty(userGroup.getProjectIdentifier()) ? null : userGroup.getProjectIdentifier();
+                return UserGroupFilterDTO.builder()
+                    .accountIdentifier(accountIdentifier)
+                    .identifierFilter(Sets.newHashSet(ImmutableList.of(userGroup.getIdentifier())))
+                    .orgIdentifier(orgIdentifier)
+                    .projectIdentifier(projectIdentifier)
+                    .build();
+              })
               .collect(Collectors.toList());
 
       for (UserGroupFilterDTO filterDTO : userGroupFilterDTO) {
