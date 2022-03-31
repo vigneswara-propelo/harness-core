@@ -13,6 +13,7 @@ import static io.harness.exception.WingsException.USER;
 import static io.harness.helm.HelmConstants.DEFAULT_HELM_COMMAND_TIMEOUT;
 import static io.harness.helm.HelmConstants.DEFAULT_TILLER_CONNECTION_TIMEOUT_MILLIS;
 import static io.harness.helm.HelmConstants.HELM_COMMAND_FLAG_PLACEHOLDER;
+import static io.harness.helm.HelmConstants.V3Commands.HELM_REPO_ADD_FORCE_UPDATE;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.logging.LogLevel.ERROR;
@@ -250,13 +251,36 @@ public class HelmClientImpl implements HelmClient {
     logHelmCommandInExecutionLogs(command, helmCommandData.getLogCallback());
     command = applyKubeConfigToCommand(command, kubeConfigLocation);
 
+    HelmCliResponse response;
+    String errorMessagePrefix = "Failed to add helm repo. ";
+
     if (!isErrorFrameworkEnabled) {
-      return executeHelmCLICommand(command);
+      response = executeHelmCLICommand(command);
     }
 
-    String errorMessagePrefix = "Failed to add helm repo. ";
-    return fetchCliResponseWithExceptionHandling(
-        command, commandType, errorMessagePrefix, null, DEFAULT_HELM_COMMAND_TIMEOUT);
+    else {
+      response = fetchCliResponseWithExceptionHandling(
+          command, commandType, errorMessagePrefix, null, DEFAULT_HELM_COMMAND_TIMEOUT);
+    }
+
+    if (HelmVersion.isHelmV3(helmCommandData.getHelmVersion())) {
+      // Starting from helm 3.3.4, when --force-update not enabled and there is an update in repo configuration
+      // (for example, password is updated) helm repo add will fail with: repository name (repo-name) already exists,
+      // please specify a different name. For this case will try again with --force-update
+      if (response.getCommandExecutionStatus() == FAILURE && isNotEmpty(response.getOutput())
+          && response.getOutput().contains("already exists")) {
+        String forceAddRepoCommand = command + HELM_REPO_ADD_FORCE_UPDATE;
+        log.info(
+            "Detected repository configuration change after executing. Trying again with --force-update command flag");
+        if (isErrorFrameworkEnabled) {
+          return fetchCliResponseWithExceptionHandling(
+              forceAddRepoCommand, commandType, errorMessagePrefix, null, DEFAULT_HELM_COMMAND_TIMEOUT);
+        }
+        return executeHelmCLICommand(forceAddRepoCommand);
+      }
+    }
+
+    return response;
   }
 
   @Override

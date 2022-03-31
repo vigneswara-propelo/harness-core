@@ -10,14 +10,17 @@ package io.harness.helm;
 import static io.harness.annotations.dev.HarnessModule._960_API_SERVICES;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ABOSII;
+import static io.harness.rule.OwnerRule.ACHYUTH;
 import static io.harness.rule.OwnerRule.IVAN;
 import static io.harness.rule.OwnerRule.YOGESH;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -247,6 +250,25 @@ public class HelmClientImplTest extends CategoryTest {
         .isEqualTo("/client-tools/v3.1/helm repo add stable https://oci-registry");
     assertThat(getCommandWithCommandFlags(HelmVersion.V3, command, helmInstallCommandData))
         .isEqualTo("/client-tools/v3.1/helm repo add stable https://oci-registry");
+  }
+
+  @Test
+  @Owner(developers = ACHYUTH)
+  @Category(UnitTests.class)
+  public void addPublicRepoWithForceUpdate() throws Exception {
+    doReturn(HelmCliResponse.builder()
+                 .output("already exists")
+                 .commandExecutionStatus(CommandExecutionStatus.FAILURE)
+                 .build())
+        .when(helmClient)
+        .executeHelmCLICommand(eq("/client-tools/v3.1/helm repo add stable https://oci-registry"));
+
+    doReturn(HelmCliResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).build())
+        .when(helmClient)
+        .executeHelmCLICommand(eq("/client-tools/v3.1/helm repo add stable https://oci-registry --force-update"));
+
+    helmInstallCommandData.setHelmVersion(HelmVersion.V380);
+    assertThatCode(() -> helmClient.addPublicRepo(helmInstallCommandData, false));
   }
 
   @Test
