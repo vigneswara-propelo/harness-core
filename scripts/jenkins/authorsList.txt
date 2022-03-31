@@ -179,6 +179,7 @@ Swamy Sambamurthy swamy@harness.io
 Swapnil Mahajan swapnil@harness.io
 Tan Nhu tan@harness.io
 Tathagat Chaurasiya tathagat.chaurasiya@harness.io
+Thomas Grasman thomas.grasman@harness.io
 TP Honey tp@harness.io
 Tudor Macari tudor.macari@harness.io
 Udham Singh udham.singh@harness.io
