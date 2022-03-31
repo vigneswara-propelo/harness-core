@@ -9,6 +9,9 @@ package io.harness.cdng.envGroup.beans;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.WRAPPER_OBJECT;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
+
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.validator.EntityIdentifier;
@@ -16,6 +19,8 @@ import io.harness.data.validator.EntityName;
 import io.harness.data.validator.Trimmed;
 import io.harness.gitsync.beans.YamlDTO;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
@@ -26,6 +31,8 @@ import lombok.Data;
 @Data
 @Builder
 @RecasterAlias("io.harness.cdng.envGroup.beans.EnvironmentGroupConfig")
+@JsonTypeInfo(use = NAME, include = WRAPPER_OBJECT)
+@JsonTypeName("environmentGroup")
 public class EnvironmentGroupConfig implements YamlDTO {
   @EntityName String name;
   @EntityIdentifier String identifier;
