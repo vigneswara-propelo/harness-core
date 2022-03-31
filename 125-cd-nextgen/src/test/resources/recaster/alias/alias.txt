@@ -282,3 +282,4 @@ io.harness.plancreator.stages.StageElementWrapperConfig
 io.harness.plancreator.execution.StepsExecutionConfig
 io.harness.yaml.core.parallelStepElementConfig
 io.harness.cdng.envGroup.beans.EnvironmentGroupConfig
+io.harness.cdng.service.beans.WinRmServiceSpec

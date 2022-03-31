@@ -99,6 +99,7 @@ import io.harness.cdng.service.beans.ServiceUseFromStage.Overrides;
 import io.harness.cdng.service.beans.ServiceYaml;
 import io.harness.cdng.service.beans.SshServiceSpec;
 import io.harness.cdng.service.beans.StageOverridesConfig;
+import io.harness.cdng.service.beans.WinRmServiceSpec;
 import io.harness.cdng.service.steps.ServiceStepParameters;
 import io.harness.cdng.tasks.manifestFetch.step.ManifestFetchOutcome;
 import io.harness.cdng.tasks.manifestFetch.step.ManifestFetchParameters;
@@ -217,5 +218,6 @@ public class NGKryoRegistrar implements KryoRegistrar {
     kryo.register(ManifestStepParameters.class, 12559);
     kryo.register(NGVariableOverrideSets.class, 12560);
     kryo.register(SshServiceSpec.class, 12561);
+    kryo.register(WinRmServiceSpec.class, 12562);
   }
 }

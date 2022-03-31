@@ -91,6 +91,7 @@ public class ServiceVariableCreator {
           }
           break;
         case ServiceSpecType.SSH:
+        case ServiceSpecType.WINRM:
           YamlField sshSpecNode = serviceDefNode.getNode().getField(YamlTypes.SERVICE_SPEC);
           if (sshSpecNode != null) {
             addVariablesForSshServiceSpec(sshSpecNode, yamlPropertiesMap);

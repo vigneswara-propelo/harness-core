@@ -20,6 +20,6 @@ import com.google.inject.Singleton;
 @Singleton
 public class CdEnumFilter extends EnumFeatureFlagFilter {
   public CdEnumFilter() {
-    put(FeatureName.SSH_NG, Sets.newHashSet(ServiceDefinitionType.SSH));
+    put(FeatureName.SSH_NG, Sets.newHashSet(ServiceDefinitionType.SSH, ServiceDefinitionType.WINRM));
   }
 }
