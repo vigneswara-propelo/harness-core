@@ -737,7 +737,7 @@ public class BuilderFactory {
                                               .build()));
   }
 
-  public ChangeEventDTOBuilder getHarnessCDChangeEventDTOBuilder() {
+  public ChangeEventDTOBuilder harnessCDChangeEventDTOBuilder() {
     return getChangeEventDTOBuilder()
         .type(ChangeSourceType.HARNESS_CD)
         .metadata(HarnessCDEventMetadata.builder()
@@ -755,7 +755,7 @@ public class BuilderFactory {
                       .build());
   }
 
-  public ChangeEventDTOBuilder getHarnessCDCurrentGenChangeEventDTOBuilder() {
+  public ChangeEventDTOBuilder harnessCDCurrentGenChangeEventDTOBuilder() {
     return getChangeEventDTOBuilder()
         .type(ChangeSourceType.HARNESS_CD_CURRENT_GEN)
         .metadata(HarnessCDCurrentGenEventMetadata.builder()
