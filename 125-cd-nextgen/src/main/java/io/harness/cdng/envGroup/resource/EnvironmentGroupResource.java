@@ -277,10 +277,12 @@ public class EnvironmentGroupResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns the updated Environment Group")
       })
+  @NGAccessControlCheck(resourceType = NGResourceType.ENVIRONMENT_GROUP,
+      permission = CDNGRbacPermissions.ENVIRONMENT_GROUP_UPDATE_PERMISSION)
   public ResponseDTO<EnvironmentGroupResponse>
   update(@HeaderParam(IF_MATCH) String ifMatch,
       @Parameter(description = ENVIRONMENT_GROUP_PARAM_MESSAGE) @NotNull @PathParam(
-          NGCommonEntityConstants.ENVIRONMENT_GROUP_KEY) String envGroupId,
+          NGCommonEntityConstants.ENVIRONMENT_GROUP_KEY) @ResourceIdentifier String envGroupId,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @Parameter(
           description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) String accountId,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier @Parameter(
@@ -298,6 +300,9 @@ public class EnvironmentGroupResource {
         EnvironmentGroupMapper.toEnvironmentEntity(accountId, orgIdentifier, projectIdentifier, yaml);
     // Validate the fields of the Entity
     validate(requestedEntity);
+
+    // validate view permissions for each environment linked with environment group
+    validatePermissionForEnvironment(requestedEntity);
 
     // Validating if identifier is same passed in yaml and path param
     if (!envGroupId.equals(requestedEntity.getIdentifier())) {
