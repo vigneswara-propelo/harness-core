@@ -12,8 +12,6 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.OrchestrationGraph;
 import io.harness.engine.executions.plan.PlanExecutionService;
 import io.harness.execution.PlanExecution;
-import io.harness.pms.contracts.execution.Status;
-import io.harness.service.GraphGenerationService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -24,17 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PlanExecutionStatusUpdateEventHandler {
   @Inject private PlanExecutionService planExecutionService;
-  @Inject private GraphGenerationService graphGenerationService;
 
   public OrchestrationGraph handleEvent(String planExecutionId, OrchestrationGraph orchestrationGraph) {
     PlanExecution planExecution = planExecutionService.get(planExecutionId);
     try {
-      if (planExecution.getStatus() == Status.ERRORED) {
-        // If plan Execution is ERRORED force generate the graph
-        // graph. So that pipeline is failed
-        log.info("[PMS_GRAPH]  Got Errored execution regenerating the graph final time");
-        return graphGenerationService.buildOrchestrationGraph(planExecutionId);
-      }
       log.info("[PMS_GRAPH]  Updating Plan Execution with uuid [{}] with status [{}].", planExecution.getUuid(),
           planExecution.getStatus());
       if (planExecution.getEndTs() != null) {
