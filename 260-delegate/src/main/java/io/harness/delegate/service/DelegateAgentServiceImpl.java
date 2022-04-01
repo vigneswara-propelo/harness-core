@@ -1586,6 +1586,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         statusData.put(DELEGATE_UPGRADE_STARTED, upgradeStartedAt);
       }
       if (!acquireTasks.get()) {
+        if (stoppedAcquiringAt == 0) {
+          stoppedAcquiringAt = clock.millis();
+        }
         statusData.put(DELEGATE_SHUTDOWN_STARTED, stoppedAcquiringAt);
       }
       if (isNotBlank(migrateTo)) {
