@@ -551,7 +551,7 @@ public class SignupServiceImpl implements SignupService {
     properties.put("id", userInfo.getUuid());
     properties.put("startTime", String.valueOf(Instant.now().toEpochMilli()));
     properties.put("accountId", accountId);
-    properties.put("accountName", accountId);
+    properties.put("accountName", accountName);
     properties.put("source", source);
 
     addUtmInfoToProperties(utmInfo, properties);
