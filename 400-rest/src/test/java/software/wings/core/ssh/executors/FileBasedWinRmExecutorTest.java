@@ -17,6 +17,7 @@ import static org.apache.commons.io.IOUtils.contentEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
@@ -96,7 +97,8 @@ public class FileBasedWinRmExecutorTest extends CategoryTest {
     mockStatic(SshHelperUtils.class);
     mockRemoteCommandStatus(executor, SUCCESS);
     PowerMockito
-        .when(SshHelperUtils.executeLocalCommand(anyString(), any(LogCallback.class), any(Writer.class), anyBoolean()))
+        .when(SshHelperUtils.executeLocalCommand(
+            anyString(), any(LogCallback.class), any(Writer.class), anyBoolean(), anyMapOf(String.class, String.class)))
         .thenReturn(true);
     doReturn(buildByteInputStream(size))
         .when(delegateFileManager)
