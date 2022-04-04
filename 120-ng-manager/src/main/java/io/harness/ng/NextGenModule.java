@@ -24,6 +24,7 @@ import static io.harness.eventsframework.EventsFrameworkConstants.INSTANCE_STATS
 import static io.harness.eventsframework.EventsFrameworkConstants.SETUP_USAGE;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.ACCOUNT_ENTITY;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.CONNECTOR_ENTITY;
+import static io.harness.eventsframework.EventsFrameworkMetadataConstants.ENVIRONMENT_GROUP_ENTITY;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.PROJECT_ENTITY;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.SECRET_ENTITY;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.USER_ENTITY;
@@ -133,6 +134,7 @@ import io.harness.ng.core.entitysetupusage.event.SetupUsageChangeEventMessageLis
 import io.harness.ng.core.entitysetupusage.event.SetupUsageChangeEventMessageProcessor;
 import io.harness.ng.core.event.AccountSetupListener;
 import io.harness.ng.core.event.ConnectorEntityCRUDStreamListener;
+import io.harness.ng.core.event.EnvironmentGroupEntityCrudStreamListener;
 import io.harness.ng.core.event.MessageListener;
 import io.harness.ng.core.event.MessageProcessor;
 import io.harness.ng.core.event.ProjectEntityCRUDStreamListener;
@@ -758,6 +760,9 @@ public class NextGenModule extends AbstractModule {
     bind(MessageListener.class)
         .annotatedWith(Names.named(CONNECTOR_ENTITY + ENTITY_CRUD))
         .to(ConnectorEntityCRUDStreamListener.class);
+    bind(MessageListener.class)
+        .annotatedWith(Names.named(ENVIRONMENT_GROUP_ENTITY + ENTITY_CRUD))
+        .to(EnvironmentGroupEntityCrudStreamListener.class);
     bind(MessageListener.class)
         .annotatedWith(Names.named(SECRET_ENTITY + ENTITY_CRUD))
         .to(SecretEntityCRUDStreamListener.class);

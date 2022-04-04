@@ -27,4 +27,6 @@ public interface EnvironmentGroupService {
       String accountId, String orgIdentifier, String projectIdentifier, String envGroupId, Long version);
 
   EnvironmentGroupEntity update(EnvironmentGroupEntity requestedEntity);
+
+  void deleteAllEnvGroupInProject(String accountId, String orgIdentifier, String projectIdentifier);
 }
