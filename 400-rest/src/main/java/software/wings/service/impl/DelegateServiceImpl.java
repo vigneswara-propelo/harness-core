@@ -559,7 +559,13 @@ public class DelegateServiceImpl implements DelegateService {
   @Override
   public Set<String> retrieveDelegateSelectors(Delegate delegate) {
     Set<String> selectors = delegate.getTags() == null ? new HashSet<>() : new HashSet<>(delegate.getTags());
-
+    if (delegate.isNg()) {
+      DelegateGroup delegateGroup =
+          delegateCache.getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
+      if (delegateGroup.getTags() != null) {
+        selectors.addAll(delegateGroup.getTags());
+      }
+    }
     selectors.addAll(delegateSetupService.retrieveDelegateImplicitSelectors(delegate).keySet());
 
     return selectors;
@@ -2427,7 +2433,8 @@ public class DelegateServiceImpl implements DelegateService {
                                   .supportedTaskTypes(delegateParams.getSupportedTaskTypes())
                                   .delegateRandomToken(delegateParams.getDelegateRandomToken())
                                   .keepAlivePacket(delegateParams.isKeepAlivePacket())
-                                  .tags(delegateParams.getTags())
+                                  // if delegate is ng then save tags only in delegate group.
+                                  .tags(delegateParams.isNg() ? null : delegateParams.getTags())
                                   .polllingModeEnabled(delegateParams.isPollingModeEnabled())
                                   .proxy(delegateParams.isProxy())
                                   .sampleDelegate(delegateParams.isSampleDelegate())

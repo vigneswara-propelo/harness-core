@@ -41,6 +41,7 @@ import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.Delegate.DelegateKeys;
 import io.harness.delegate.beans.DelegateActivity;
 import io.harness.delegate.beans.DelegateEntityOwner;
+import io.harness.delegate.beans.DelegateGroup;
 import io.harness.delegate.beans.DelegateInstanceStatus;
 import io.harness.delegate.beans.DelegateProfile;
 import io.harness.delegate.beans.DelegateProfileScopingRule;
@@ -781,7 +782,7 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
               msg.append(" - ");
             }
             if (!canAssignTags) {
-              msg.append("Tag mismatch: ").append(Optional.ofNullable(delegate.getTags()).orElse(emptyList()));
+              msg.append("Tag mismatch: ").append(getDelegateTags(delegate).orElse(emptyList()));
             }
             if (canAssignScope && canAssignTags) {
               msg.append("In scope and no tag mismatch");
@@ -1040,4 +1041,14 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
   }
 
   private enum ScopeMatchResult { SCOPE_MATCHED, ALLOWED_WILDCARD, SCOPE_NOT_MATCHED }
+
+  private Optional<List<String>> getDelegateTags(Delegate delegate) {
+    if (delegate.isNg()) {
+      DelegateGroup delegateGroup =
+          delegateCache.getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
+      List<String> tags = new ArrayList<>(delegateGroup.getTags());
+      return Optional.of(tags);
+    }
+    return Optional.ofNullable(delegate.getTags());
+  }
 }
