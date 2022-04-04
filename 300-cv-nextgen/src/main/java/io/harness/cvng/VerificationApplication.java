@@ -781,9 +781,9 @@ public class VerificationApplication extends Application<VerificationConfigurati
             .clazz(DataCollectionTask.class)
             .fieldName(DataCollectionTaskKeys.workerStatusIteration)
             .targetInterval(ofMinutes(1))
-            .acceptableNoAlertDelay(ofMinutes(1))
+            .acceptableNoAlertDelay(ofMinutes(5))
             .executorService(dataCollectionTasksPerpetualTaskStatusUpdateExecutor)
-            .semaphore(new Semaphore(3))
+            .semaphore(new Semaphore(2))
             .handler(dataCollectionTasksPerpetualTaskStatusUpdateHandler)
             .schedulingType(REGULAR)
             .filterExpander(query
@@ -804,7 +804,7 @@ public class VerificationApplication extends Application<VerificationConfigurati
 
     injector.injectMembers(dataCollectionTasksPerpetualTaskStatusUpdateIterator);
     dataCollectionTasksPerpetualTaskStatusUpdateExecutor.scheduleWithFixedDelay(
-        () -> dataCollectionTasksPerpetualTaskStatusUpdateIterator.process(), 0, 3, TimeUnit.MINUTES);
+        () -> dataCollectionTasksPerpetualTaskStatusUpdateIterator.process(), 0, 2, TimeUnit.MINUTES);
   }
 
   private void registerVerificationJobInstanceDataCollectionTaskIterator(Injector injector) {
