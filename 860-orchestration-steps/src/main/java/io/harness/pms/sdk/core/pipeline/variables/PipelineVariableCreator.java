@@ -8,7 +8,10 @@
 package io.harness.pms.sdk.core.pipeline.variables;
 
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.plancreator.pipeline.PipelineInfoConfig;
+import io.harness.pms.contracts.plan.YamlExtraProperties;
 import io.harness.pms.contracts.plan.YamlProperties;
+import io.harness.pms.contracts.plan.YamlUpdates;
 import io.harness.pms.sdk.core.variables.ChildrenVariableCreator;
 import io.harness.pms.sdk.core.variables.beans.VariableCreationContext;
 import io.harness.pms.sdk.core.variables.beans.VariableCreationResponse;
@@ -17,6 +20,7 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.yaml.extended.ci.codebase.Build;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class PipelineVariableCreator extends ChildrenVariableCreator {
+public class PipelineVariableCreator extends ChildrenVariableCreator<PipelineInfoConfig> {
   @Override
   public LinkedHashMap<String, VariableCreationResponse> createVariablesForChildrenNodes(
       VariableCreationContext ctx, YamlField config) {
@@ -60,13 +64,23 @@ public class PipelineVariableCreator extends ChildrenVariableCreator {
     if (nameField != null) {
       String nameFQN = YamlUtils.getFullyQualifiedName(nameField.getNode());
       yamlPropertiesMap.put(nameField.getNode().getCurrJsonNode().textValue(),
-          YamlProperties.newBuilder().setLocalName(nameFQN).setFqn(nameFQN).build());
+          YamlProperties.newBuilder()
+              .setLocalName(nameFQN)
+              .setFqn(nameFQN)
+              .setVariableName(YAMLFieldNameConstants.NAME)
+              .setVisible(true)
+              .build());
     }
     YamlField descriptionField = yamlNode.getField(YAMLFieldNameConstants.DESCRIPTION);
     if (descriptionField != null) {
       String descriptionFQN = YamlUtils.getFullyQualifiedName(descriptionField.getNode());
       yamlPropertiesMap.put(descriptionField.getNode().getCurrJsonNode().textValue(),
-          YamlProperties.newBuilder().setLocalName(descriptionFQN).setFqn(descriptionFQN).build());
+          YamlProperties.newBuilder()
+              .setLocalName(descriptionFQN)
+              .setFqn(descriptionFQN)
+              .setVariableName(YAMLFieldNameConstants.DESCRIPTION)
+              .setVisible(true)
+              .build());
     }
     YamlField variablesField = yamlNode.getField(YAMLFieldNameConstants.VARIABLES);
     if (variablesField != null) {
@@ -84,6 +98,14 @@ public class PipelineVariableCreator extends ChildrenVariableCreator {
       fields.forEach(field -> {
         if (!field.getName().equals(YAMLFieldNameConstants.UUID)) {
           VariableCreatorHelper.addFieldToPropertiesMap(field, yamlPropertiesMap, YAMLFieldNameConstants.PIPELINE);
+        } else {
+          yamlPropertiesMap.put(field.getNode().getCurrJsonNode().textValue(),
+              YamlProperties.newBuilder()
+                  .setLocalName(YAMLFieldNameConstants.PIPELINE + ".tags")
+                  .setFqn(YAMLFieldNameConstants.PIPELINE + ".tags")
+                  .setVariableName("tags")
+                  .setVisible(true)
+                  .build());
         }
       });
     }
@@ -92,6 +114,11 @@ public class PipelineVariableCreator extends ChildrenVariableCreator {
   @Override
   public Map<String, Set<String>> getSupportedTypes() {
     return Collections.singletonMap(YAMLFieldNameConstants.PIPELINE, Collections.singleton("__any__"));
+  }
+
+  @Override
+  public Class<PipelineInfoConfig> getFieldClass() {
+    return PipelineInfoConfig.class;
   }
 
   private void getStageYamlFields(
@@ -125,5 +152,81 @@ public class PipelineVariableCreator extends ChildrenVariableCreator {
               .dependencies(DependenciesUtils.toDependenciesProto(stageYamlFieldMap))
               .build());
     }
+  }
+
+  @Override
+  public LinkedHashMap<String, VariableCreationResponse> createVariablesForChildrenNodesV2(
+      VariableCreationContext ctx, PipelineInfoConfig config) {
+    return createVariablesForChildrenNodes(ctx, ctx.getCurrentField());
+  }
+
+  @Override
+  public VariableCreationResponse createVariablesForParentNodeV2(
+      VariableCreationContext ctx, PipelineInfoConfig config) {
+    Map<String, YamlExtraProperties> yamlExtraPropertiesMap = new HashMap<>();
+    Map<String, YamlProperties> yamlPropertiesMap = new HashMap<>();
+
+    VariableCreatorHelper.collectVariableExpressions(config, yamlPropertiesMap, yamlExtraPropertiesMap,
+        YAMLFieldNameConstants.PIPELINE, YAMLFieldNameConstants.PIPELINE);
+
+    // pipeline section extra properties
+    YamlExtraProperties pipelineExtraProperties = getPipelineExtraProperties(config);
+    if (yamlExtraPropertiesMap.containsKey(config.getUuid())) {
+      YamlExtraProperties yamlExtraProperties = yamlExtraPropertiesMap.get(config.getUuid());
+      YamlExtraProperties properties = yamlExtraProperties.toBuilder()
+                                           .addAllProperties(pipelineExtraProperties.getPropertiesList())
+                                           .addAllOutputProperties(pipelineExtraProperties.getOutputPropertiesList())
+                                           .build();
+      yamlExtraPropertiesMap.put(config.getUuid(), properties);
+    } else {
+      yamlExtraPropertiesMap.put(config.getUuid(), pipelineExtraProperties);
+    }
+
+    YamlField pipeline =
+        YamlUtils.readTree(config, YAMLFieldNameConstants.PIPELINE, ctx.getCurrentField().getNode().getParentNode());
+
+    return VariableCreationResponse.builder()
+        .yamlExtraProperties(yamlExtraPropertiesMap)
+        .yamlProperties(yamlPropertiesMap)
+        .yamlUpdates(YamlUpdates.newBuilder()
+                         .putFqnToYaml(ctx.getCurrentField().getYamlPath(), pipeline.getNode().toString())
+                         .build())
+        .build();
+  }
+
+  private YamlExtraProperties getPipelineExtraProperties(PipelineInfoConfig config) {
+    // Adding sequenceId expression (not part of the yaml, thus visible - false)
+    YamlProperties sequenceIdProperty = YamlProperties.newBuilder()
+                                            .setFqn(YAMLFieldNameConstants.PIPELINE + ".sequenceId")
+                                            .setVariableName("sequenceId")
+                                            .build();
+    // executionId Property
+    YamlProperties executionIdProperty = YamlProperties.newBuilder()
+                                             .setFqn(YAMLFieldNameConstants.PIPELINE + ".executionId")
+                                             .setVariableName("executionId")
+                                             .build();
+    YamlProperties startTsProperty = YamlProperties.newBuilder()
+                                         .setFqn(YAMLFieldNameConstants.PIPELINE + ".startTs")
+                                         .setVariableName("startTs")
+                                         .build();
+    YamlProperties endTsProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".endTs").setVariableName("endTs").build();
+    YamlExtraProperties.Builder yamlExtraPropertyBuilder = YamlExtraProperties.newBuilder();
+
+    // ci build properties
+    if (config.getProperties() != null) {
+      List<String> expressionsAvailable = Build.getExpressionsAvailable();
+      for (String fqn : expressionsAvailable) {
+        String propertiesExpressionPath = "pipeline.properties.ci.codebase.build";
+        yamlExtraPropertyBuilder.addProperties(
+            YamlProperties.newBuilder().setFqn(propertiesExpressionPath + "." + fqn).build());
+      }
+    }
+
+    return yamlExtraPropertyBuilder.addProperties(sequenceIdProperty)
+        .addProperties(executionIdProperty)
+        .addProperties(startTsProperty)
+        .addProperties(endTsProperty)
+        .build();
   }
 }

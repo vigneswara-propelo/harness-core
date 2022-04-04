@@ -71,7 +71,7 @@ public interface PMSPipelineService {
 
   StepCategory getStepsV2(String accountId, StepPalleteFilterWrapper stepPalleteFilterWrapper);
 
-  VariableMergeServiceResponse createVariablesResponse(String yaml);
+  VariableMergeServiceResponse createVariablesResponse(String yaml, boolean newVersion);
 
   Criteria formCriteria(String accountId, String orgId, String projectId, String filterIdentifier,
       PipelineFilterPropertiesDto filterProperties, boolean deleted, String module, String searchTerm);

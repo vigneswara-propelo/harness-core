@@ -58,10 +58,16 @@ public class VariableCreatorMergeService {
     this.pmsGitSyncHelper = pmsGitSyncHelper;
   }
 
-  public VariableMergeServiceResponse createVariablesResponse(@NotNull String yaml) throws IOException {
+  public VariableMergeServiceResponse createVariablesResponse(@NotNull String yaml, boolean newVersion)
+      throws IOException {
     Map<String, PlanCreatorServiceInfo> services = pmsSdkHelper.getServices();
 
-    YamlField processedYaml = YamlUtils.injectUuidWithLeafUuid(yaml);
+    YamlField processedYaml;
+    if (!newVersion) {
+      processedYaml = YamlUtils.injectUuidWithLeafUuid(yaml);
+    } else {
+      processedYaml = YamlUtils.injectUuidInYamlField(yaml);
+    }
     YamlField topRootFieldInYaml =
         YamlUtils.getTopRootFieldInYamlField(Objects.requireNonNull(processedYaml).getNode());
 
@@ -75,12 +81,16 @@ public class VariableCreatorMergeService {
     if (gitSyncBranchContext != null) {
       metadataBuilder.setGitSyncBranchContext(gitSyncBranchContext);
     }
+    // TODO(archit): delete variables v1 api and this newVersion flag
+    if (newVersion) {
+      metadataBuilder.putMetadata("newVersion", "newVersion");
+    }
 
     VariablesCreationBlobResponse response =
         createVariablesForDependenciesRecursive(services, dependencies, metadataBuilder.build());
 
     return VariableCreationBlobResponseUtils.getMergeServiceResponse(
-        YamlUtils.writeYamlString(processedYaml), response, serviceExpressionMap);
+        response.getDeps().getYaml(), response, serviceExpressionMap, newVersion);
   }
 
   private VariablesCreationBlobResponse createVariablesForDependenciesRecursive(
@@ -104,11 +114,12 @@ public class VariableCreatorMergeService {
       finalResponseBuilder.setDeps(finalResponseBuilder.getDeps().toBuilder().clearDependencies().build());
 
       VariableCreationBlobResponseUtils.mergeDependencies(finalResponseBuilder, variablesCreationBlobResponse);
-      VariableCreationBlobResponseUtils.mergeYamlProperties(finalResponseBuilder, variablesCreationBlobResponse);
-      VariableCreationBlobResponseUtils.mergeYamlOutputProperties(finalResponseBuilder, variablesCreationBlobResponse);
+      VariableCreationBlobResponseUtils.mergeProperties(
+          finalResponseBuilder, variablesCreationBlobResponse, metadata.getMetadataMap().containsKey("newVersion"));
     }
 
-    finalResponseBuilder.setDeps(unresolvedDependenciesMap);
+    finalResponseBuilder.setDeps(
+        finalResponseBuilder.getDeps().toBuilder().putAllDependencies(unresolvedDependenciesMap.getDependenciesMap()));
     return finalResponseBuilder.build();
   }
 
@@ -142,7 +153,8 @@ public class VariableCreatorMergeService {
       VariablesCreationBlobResponse.Builder builder = VariablesCreationBlobResponse.newBuilder();
       List<VariablesCreationResponse> variablesCreationResponses = completableFutures.allOf().get(5, TimeUnit.MINUTES);
       variablesCreationResponses.forEach(response -> {
-        VariableCreationBlobResponseUtils.mergeResponses(builder, response.getBlobResponse());
+        VariableCreationBlobResponseUtils.mergeResponses(
+            builder, response.getBlobResponse(), metadata.getMetadataMap().containsKey("newVersion"));
         if (response.getResponseCase() == VariablesCreationResponse.ResponseCase.ERRORRESPONSE) {
           builder.addErrorResponse(response.getErrorResponse());
         }

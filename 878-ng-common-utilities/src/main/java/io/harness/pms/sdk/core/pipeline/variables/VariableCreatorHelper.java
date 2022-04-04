@@ -10,17 +10,25 @@ package io.harness.pms.sdk.core.pipeline.variables;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.data.structure.UUIDGenerator;
 import io.harness.exception.InvalidRequestException;
+import io.harness.pms.contracts.plan.YamlExtraProperties;
 import io.harness.pms.contracts.plan.YamlProperties;
 import io.harness.pms.sdk.core.variables.beans.VariableCreationResponse;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.reflection.ReflectionUtils;
+import io.harness.yaml.core.failurestrategy.VariableExpression;
 
 import com.google.common.base.Preconditions;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,13 +42,13 @@ import lombok.experimental.UtilityClass;
 @TargetModule(HarnessModule._878_NG_COMMON_UTILITIES)
 public class VariableCreatorHelper {
   public void addVariablesForVariables(
-      YamlField variablesField, Map<String, YamlProperties> yamlPropertiesMap, String fieldName) {
+      YamlField variablesField, Map<String, YamlProperties> yamlPropertiesMap, String topRootFieldName) {
     List<YamlNode> variableNodes = variablesField.getNode().asArray();
     variableNodes.forEach(variableNode -> {
       YamlField uuidNode = variableNode.getField(YAMLFieldNameConstants.UUID);
       if (uuidNode != null) {
         String fqn = YamlUtils.getFullyQualifiedName(uuidNode.getNode());
-        String localName = YamlUtils.getQualifiedNameTillGivenField(uuidNode.getNode(), fieldName);
+        String localName = YamlUtils.getQualifiedNameTillGivenField(uuidNode.getNode(), topRootFieldName);
         YamlField valueNode = variableNode.getField(YAMLFieldNameConstants.VALUE);
         String variableName =
             Objects.requireNonNull(variableNode.getField(YAMLFieldNameConstants.NAME)).getNode().asText();
@@ -49,7 +57,12 @@ public class VariableCreatorHelper {
               "Variable with name \"" + variableName + "\" added without any value. Fqn: " + fqn);
         }
         yamlPropertiesMap.put(valueNode.getNode().getCurrJsonNode().textValue(),
-            YamlProperties.newBuilder().setLocalName(localName).setFqn(fqn).build());
+            YamlProperties.newBuilder()
+                .setLocalName(localName)
+                .setFqn(fqn)
+                .setVariableName(variableName)
+                .setVisible(true)
+                .build());
       }
     });
   }
@@ -84,7 +97,7 @@ public class VariableCreatorHelper {
     localName = YamlUtils.getQualifiedNameTillGivenField(fieldNode.getNode(), YAMLFieldNameConstants.PROPERTIES);
 
     yamlPropertiesMap.put(fieldNode.getNode().getCurrJsonNode().textValue(),
-        YamlProperties.newBuilder().setLocalName(localName).setFqn(fqn).build());
+        YamlProperties.newBuilder().setLocalName(localName).setFqn(fqn).setVisible(true).build());
   }
 
   public VariableCreationResponse createVariableResponseForVariables(YamlField variablesField, String fieldName) {
@@ -94,11 +107,16 @@ public class VariableCreatorHelper {
   }
 
   public void addFieldToPropertiesMap(
-      YamlField fieldNode, Map<String, YamlProperties> yamlPropertiesMap, String fieldName) {
+      YamlField fieldNode, Map<String, YamlProperties> yamlPropertiesMap, String topRootFieldName) {
     String fqn = YamlUtils.getFullyQualifiedName(fieldNode.getNode());
-    String localName = YamlUtils.getQualifiedNameTillGivenField(fieldNode.getNode(), fieldName);
+    String localName = YamlUtils.getQualifiedNameTillGivenField(fieldNode.getNode(), topRootFieldName);
     yamlPropertiesMap.put(fieldNode.getNode().getCurrJsonNode().textValue(),
-        YamlProperties.newBuilder().setLocalName(localName).setFqn(fqn).build());
+        YamlProperties.newBuilder()
+            .setLocalName(localName)
+            .setFqn(fqn)
+            .setVariableName(fieldNode.getNode().getFieldName())
+            .setVisible(true)
+            .build());
   }
 
   public boolean isNotYamlFieldEmpty(YamlField yamlField) {
@@ -147,5 +165,193 @@ public class VariableCreatorHelper {
             .of(Preconditions.checkNotNull(config.getNode().getField(YAMLFieldNameConstants.STEPS)).getNode().asArray())
             .orElse(Collections.emptyList());
     return getStepYamlFields(yamlNodes);
+  }
+
+  public void collectVariableExpressions(Object obj, Map<String, YamlProperties> yamlPropertiesMap,
+      Map<String, YamlExtraProperties> yamlExtraPropertiesMap, String fqnPrefix, String localNamePrefix) {
+    Class<?> c = obj.getClass();
+    List<Field> fields = ReflectionUtils.getAllDeclaredAndInheritedFields(c);
+    Field fieldUUid = ReflectionUtils.getFieldByName(c, "uuid");
+    if (fieldUUid != null) {
+      fieldUUid.setAccessible(true);
+      try {
+        if (fieldUUid.get(obj) == null) {
+          fieldUUid.set(obj, UUIDGenerator.generateUuid());
+        }
+
+      } catch (IllegalAccessException e) {
+        throw new InvalidRequestException(
+            "Unable to set field property in variables expression for field - " + fieldUUid.toString(), e);
+      }
+    }
+    for (Field field : fields) {
+      // if annotation not present, continue
+      if (!field.isAnnotationPresent(VariableExpression.class)) {
+        continue;
+      }
+
+      VariableExpression annotation = field.getAnnotation(VariableExpression.class);
+      field.setAccessible(true);
+
+      try {
+        Object fieldValue = field.get(obj);
+        // Primitive objects
+        if (isPrimitiveVariable(field)) {
+          addYamlPropertyForPrimitiveVariables(
+              field, obj, annotation, fieldUUid, yamlPropertiesMap, yamlExtraPropertiesMap, fqnPrefix, localNamePrefix);
+        } else {
+          // if null then add fieldName to extra property
+          YamlProperties yamlProperties = getYamlProperties(field, fqnPrefix, localNamePrefix, annotation);
+          if (fieldValue == null) {
+            addYamlExtraPropertyToObject(fieldUUid, yamlExtraPropertiesMap, yamlProperties, field.getName(), obj);
+          }
+          // Check for List
+          else if (List.class.isAssignableFrom(field.getType())) {
+            List valueList = (List) fieldValue;
+            for (Object item : valueList) {
+              String listKey = getMergedFqn(field.getName(), getUniqueKeyInListField(item));
+              collectVariableExpressions(item, yamlPropertiesMap, yamlExtraPropertiesMap,
+                  getMergedFqn(fqnPrefix, listKey), getMergedFqn(localNamePrefix, listKey));
+            }
+          }
+          // check for map
+          else if (Map.class.isAssignableFrom(field.getType())) {
+            Map objectMap = (Map) fieldValue;
+            for (Object k1 : objectMap.keySet()) {
+              // Ignore Uuid keys.
+              if (k1.equals(YAMLFieldNameConstants.UUID)) {
+                continue;
+              }
+              String key = getMergedFqn(field.getName(), (String) k1);
+              Object mapValue = objectMap.get(k1);
+              if (isPrimitiveVariable(mapValue)) {
+                String valueUuid = UUIDGenerator.generateUuid();
+                objectMap.put(k1, valueUuid);
+                yamlPropertiesMap.put(valueUuid,
+                    getPrimitiveYamlProperty(getMergedFqn(fqnPrefix, key), getMergedFqn(localNamePrefix, key),
+                        getMergedFqn(annotation.aliasName(), key), annotation.visible(), (String) k1));
+              } else {
+                collectVariableExpressions(mapValue, yamlPropertiesMap, yamlExtraPropertiesMap,
+                    getMergedFqn(fqnPrefix, key), getMergedFqn(localNamePrefix, key));
+              }
+            }
+          }
+          // else its a complex object
+          else {
+            collectVariableExpressions(fieldValue, yamlPropertiesMap, yamlExtraPropertiesMap,
+                getMergedFqn(fqnPrefix, field.getName()), getMergedFqn(localNamePrefix, field.getName()));
+          }
+        }
+
+      } catch (IllegalAccessException e) {
+        throw new InvalidRequestException(
+            "Unable to set field property in variables expression for field - " + field.toString(), e);
+      }
+    }
+  }
+
+  private boolean isPrimitiveVariable(Field field) {
+    return String.class.isAssignableFrom(field.getType()) || ParameterField.class.isAssignableFrom(field.getType())
+        || field.getType().isPrimitive();
+  }
+
+  private boolean isPrimitiveVariable(Object obj) {
+    return String.class.isAssignableFrom(obj.getClass()) || ParameterField.class.isAssignableFrom(obj.getClass())
+        || obj.getClass().isPrimitive();
+  }
+
+  private void addYamlPropertyForPrimitiveVariables(Field field, Object obj, VariableExpression annotation,
+      Field fieldUUid, Map<String, YamlProperties> yamlPropertiesMap,
+      Map<String, YamlExtraProperties> yamlExtraPropertiesMap, String fqnPrefix, String localNamePrefix)
+      throws IllegalAccessException {
+    // Primitive objects
+    YamlProperties yamlProperties = getYamlProperties(field, fqnPrefix, localNamePrefix, annotation);
+    if (field.getType().equals(String.class)) {
+      if (annotation.replaceWithUUid()) {
+        String uuid = UUIDGenerator.generateUuid();
+        field.set(obj, uuid);
+        yamlPropertiesMap.put(uuid, yamlProperties);
+      } else {
+        addYamlExtraPropertyToObject(fieldUUid, yamlExtraPropertiesMap, yamlProperties, field.getName(), obj);
+      }
+    } else if (field.getType().isPrimitive()) {
+      addYamlExtraPropertyToObject(fieldUUid, yamlExtraPropertiesMap, yamlProperties, field.getName(), obj);
+    } else if (field.getType().equals(ParameterField.class)) {
+      if (annotation.replaceWithUUid()) {
+        String uuid = UUIDGenerator.generateUuid();
+        field.set(obj, ParameterField.createJsonResponseField(uuid));
+        yamlPropertiesMap.put(uuid, yamlProperties);
+      } else {
+        addYamlExtraPropertyToObject(fieldUUid, yamlExtraPropertiesMap, yamlProperties, field.getName(), obj);
+      }
+    }
+  }
+
+  private void addYamlExtraPropertyToObject(Field fieldUUid, Map<String, YamlExtraProperties> yamlExtraPropertiesMap,
+      YamlProperties yamlProperties, String fieldName, Object givenObj) throws IllegalAccessException {
+    if (fieldUUid == null) {
+      throw new InvalidRequestException(
+          "Could not add variables for primitive types in object which doesn't have uuid field in parent object for fieldName - "
+          + fieldName);
+    }
+    String uuid = (String) fieldUUid.get(givenObj);
+    if (yamlExtraPropertiesMap.containsKey(uuid)) {
+      YamlExtraProperties yamlExtraProperties = yamlExtraPropertiesMap.get(uuid);
+      YamlExtraProperties properties = yamlExtraProperties.toBuilder().addProperties(yamlProperties).build();
+      yamlExtraPropertiesMap.put(uuid, properties);
+    } else {
+      yamlExtraPropertiesMap.put(uuid, YamlExtraProperties.newBuilder().addProperties(yamlProperties).build());
+    }
+  }
+
+  private String getMergedFqn(String prefix, String fieldPath) {
+    if (EmptyPredicate.isEmpty(fieldPath)) {
+      return prefix;
+    }
+    if (EmptyPredicate.isEmpty(prefix)) {
+      return "";
+    }
+    return prefix + "." + fieldPath;
+  }
+
+  private String getUniqueKeyInListField(Object fieldObject) {
+    Map<String, Object> fieldValues = ReflectionUtils.getFieldValues(fieldObject,
+        new HashSet<>(
+            Arrays.asList(YamlNode.IDENTIFIER_FIELD_NAME, YamlNode.KEY_FIELD_NAME, YamlNode.NAME_FIELD_NAME)));
+    if (fieldValues.get(YamlNode.IDENTIFIER_FIELD_NAME) != null) {
+      return (String) fieldValues.get(YamlNode.IDENTIFIER_FIELD_NAME);
+    } else if (fieldValues.get(YamlNode.KEY_FIELD_NAME) != null) {
+      return (String) fieldValues.get(YamlNode.KEY_FIELD_NAME);
+    } else if (fieldValues.get(YamlNode.NAME_FIELD_NAME) != null) {
+      return (String) fieldValues.get(YamlNode.NAME_FIELD_NAME);
+    } else {
+      throw new InvalidRequestException(
+          "No unique identifier in the list object during variable creator - " + fieldObject.toString());
+    }
+  }
+
+  private YamlProperties getYamlProperties(
+      Field field, String fqnPrefix, String localNamePrefix, VariableExpression annotation) {
+    String fieldName = annotation.policy().equals(VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD)
+        ? annotation.customFieldName()
+        : field.getName();
+    return YamlProperties.newBuilder()
+        .setFqn(getMergedFqn(fqnPrefix, fieldName))
+        .setLocalName(getMergedFqn(localNamePrefix, fieldName))
+        .setAliasFQN(annotation.aliasName())
+        .setVisible(annotation.visible())
+        .setVariableName(fieldName)
+        .build();
+  }
+
+  private YamlProperties getPrimitiveYamlProperty(
+      String fqn, String localName, String aliasName, boolean isVisible, String variableName) {
+    return YamlProperties.newBuilder()
+        .setFqn(fqn)
+        .setLocalName(localName)
+        .setAliasFQN(aliasName)
+        .setVisible(isVisible)
+        .setVariableName(variableName)
+        .build();
   }
 }

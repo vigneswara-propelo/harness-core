@@ -202,6 +202,7 @@ public class PipelineResource implements YamlSchemaResource {
             description = "Returns all Variables used that are valid to be used as expression in pipeline.")
       })
   @ApiOperation(value = "Create variables for Pipeline", nickname = "createVariables")
+  @Hidden
   public ResponseDTO<VariableMergeServiceResponse>
   createVariables(@Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE,
                       required = true) @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
@@ -217,7 +218,38 @@ public class PipelineResource implements YamlSchemaResource {
     String resolveTemplateRefsInPipeline =
         pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity).getMergedPipelineYaml();
     VariableMergeServiceResponse variablesResponse =
-        pmsPipelineService.createVariablesResponse(resolveTemplateRefsInPipeline);
+        pmsPipelineService.createVariablesResponse(resolveTemplateRefsInPipeline, false);
+
+    return ResponseDTO.newResponse(variablesResponse);
+  }
+
+  @POST
+  @Path("/v2/variables")
+  @Operation(operationId = "createVariablesV2",
+      summary = "Get all the Variables which can be used as expression in the Pipeline.",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
+            description = "Returns all Variables used that are valid to be used as expression in pipeline.")
+      })
+  @ApiOperation(value = "Create variables for Pipeline", nickname = "createVariablesV2")
+  @Hidden
+  public ResponseDTO<VariableMergeServiceResponse>
+  createVariablesV2(@Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE,
+                        required = true) @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
+      @Parameter(description = PipelineResourceConstants.ORG_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) String orgId,
+      @Parameter(description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @RequestBody(required = true, description = "Pipeline YAML") @NotNull @ApiParam(hidden = true) String yaml) {
+    log.info("Creating variables for pipeline v2 version.");
+
+    PipelineEntity pipelineEntity = PMSPipelineDtoMapper.toPipelineEntity(accountId, orgId, projectId, yaml);
+    // Apply all the templateRefs(if any) then check for variables.
+    String resolveTemplateRefsInPipeline =
+        pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity).getMergedPipelineYaml();
+    VariableMergeServiceResponse variablesResponse =
+        pmsPipelineService.createVariablesResponse(resolveTemplateRefsInPipeline, true);
 
     return ResponseDTO.newResponse(variablesResponse);
   }

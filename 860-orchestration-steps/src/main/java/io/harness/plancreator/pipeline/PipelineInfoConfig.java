@@ -18,6 +18,7 @@ import io.harness.plancreator.stages.StageElementWrapperConfig;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.validator.NGRegexValidatorConstants;
+import io.harness.yaml.core.failurestrategy.VariableExpression;
 import io.harness.yaml.core.properties.NGProperties;
 import io.harness.yaml.core.timeout.Timeout;
 import io.harness.yaml.core.variables.NGVariable;
@@ -54,16 +55,22 @@ public class PipelineInfoConfig {
   @ApiModelProperty(hidden = true)
   String uuid;
 
-  @NotNull @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) String name;
-  @NotNull @EntityIdentifier @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN) String identifier;
+  @NotNull @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) @VariableExpression String name;
+  @NotNull
+  @EntityIdentifier
+  @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN)
+  @VariableExpression(replaceWithUUid = false)
+  String identifier;
 
   FlowControlConfig flowControl;
 
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> description;
-  Map<String, String> tags;
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
+  @VariableExpression
+  ParameterField<String> description;
+  @VariableExpression Map<String, String> tags;
 
-  List<NGVariable> variables;
-  NGProperties properties;
+  @VariableExpression List<NGVariable> variables;
+  @VariableExpression NGProperties properties;
 
   @Singular List<StageElementWrapperConfig> stages;
   List<NotificationRules> notificationRules;
