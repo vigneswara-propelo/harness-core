@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -72,7 +73,7 @@ public class PipelineInfoConfig {
   @VariableExpression List<NGVariable> variables;
   @VariableExpression NGProperties properties;
 
-  @Singular List<StageElementWrapperConfig> stages;
+  @Singular @Size(min = 1) List<StageElementWrapperConfig> stages;
   List<NotificationRules> notificationRules;
 
   String orgIdentifier;

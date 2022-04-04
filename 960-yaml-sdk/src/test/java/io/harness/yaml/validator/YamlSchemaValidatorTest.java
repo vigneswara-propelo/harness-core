@@ -83,6 +83,14 @@ public class YamlSchemaValidatorTest extends CategoryTest {
 
     final Set<String> type2IncorrectVal = yamlSchemaValidator.validate(type2Incorrect, EntityType.CONNECTORS);
     assertThat(type2IncorrectVal).isNotEmpty();
+
+    final String emptyStagePipeline = getYamlResource("validator/zero-stages-pipeline.yaml");
+    final String pipelineSchema = getYamlResource("testSchema/pipelineSchema.json");
+
+    // Validating a pipeline with empty stages list.
+    Set<String> errorResponse = yamlSchemaValidator.validate(emptyStagePipeline, pipelineSchema, true, 2);
+    assertEquals(errorResponse.size(), 1);
+    assertEquals(errorResponse.toArray()[0], "$.pipeline.stages: there must be a minimum of 1 items in the array");
   }
 
   private String getYamlResource(String resource) throws IOException {
