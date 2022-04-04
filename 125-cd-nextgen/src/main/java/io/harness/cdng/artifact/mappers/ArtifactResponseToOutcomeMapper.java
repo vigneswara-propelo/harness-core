@@ -139,6 +139,7 @@ public class ArtifactResponseToOutcomeMapper {
         .type(ArtifactSourceType.NEXUS3_REGISTRY.getDisplayName())
         .primaryArtifact(artifactConfig.isPrimaryArtifact())
         .imagePullSecret(IMAGE_PULL_SECRET + ArtifactUtils.getArtifactKey(artifactConfig) + ">")
+        .registryHostname(getRegistryHostnameValue(artifactDelegateResponse))
         .build();
   }
 
@@ -157,6 +158,7 @@ public class ArtifactResponseToOutcomeMapper {
         .type(ArtifactSourceType.ARTIFACTORY_REGISTRY.getDisplayName())
         .primaryArtifact(artifactConfig.isPrimaryArtifact())
         .imagePullSecret(IMAGE_PULL_SECRET + ArtifactUtils.getArtifactKey(artifactConfig) + ">")
+        .registryHostname(getRegistryHostnameValue(artifactDelegateResponse))
         .build();
   }
 
@@ -166,6 +168,15 @@ public class ArtifactResponseToOutcomeMapper {
     }
     return EmptyPredicate.isNotEmpty(artifactDelegateResponse.getBuildDetails().getMetadata())
         ? artifactDelegateResponse.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE)
+        : null;
+  }
+
+  private String getRegistryHostnameValue(ArtifactDelegateResponse artifactDelegateResponse) {
+    if (artifactDelegateResponse == null || artifactDelegateResponse.getBuildDetails() == null) {
+      return null;
+    }
+    return EmptyPredicate.isNotEmpty(artifactDelegateResponse.getBuildDetails().getMetadata())
+        ? artifactDelegateResponse.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.REGISTRY_HOSTNAME)
         : null;
   }
 }
