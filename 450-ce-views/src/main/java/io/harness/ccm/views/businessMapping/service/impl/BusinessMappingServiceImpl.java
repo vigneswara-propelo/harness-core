@@ -20,7 +20,7 @@ import java.util.List;
 public class BusinessMappingServiceImpl implements BusinessMappingService {
   @Inject BusinessMappingDao businessMappingDao;
   @Override
-  public boolean save(BusinessMapping businessMapping) {
+  public BusinessMapping save(BusinessMapping businessMapping) {
     return businessMappingDao.save(businessMapping);
   }
 
