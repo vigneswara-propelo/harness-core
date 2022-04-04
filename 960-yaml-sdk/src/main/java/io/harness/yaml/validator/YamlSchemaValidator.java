@@ -106,6 +106,9 @@ public class YamlSchemaValidator {
       return;
     }
     ArrayNode stages = (ArrayNode) yaml.get(PIPELINE_NODE).get(STAGES_NODE);
+    if (stages == null) {
+      return;
+    }
     for (int index = 0; index < stages.size(); index++) {
       JsonNode parallelNode = stages.get(index).get(PARALLEL_NODE);
       if (parallelNode == null) {
