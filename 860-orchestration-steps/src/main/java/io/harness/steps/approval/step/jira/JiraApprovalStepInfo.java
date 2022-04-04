@@ -14,6 +14,7 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
 import io.harness.filters.WithConnectorRef;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.plancreator.steps.internal.PMSStepInfo;
 import io.harness.pms.contracts.steps.StepType;
@@ -51,7 +52,7 @@ public class JiraApprovalStepInfo implements PMSStepInfo, WithConnectorRef {
 
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
   @YamlSchemaTypes(value = {runtime})
-  ParameterField<List<String>> delegateSelectors;
+  ParameterField<List<TaskSelectorYaml>> delegateSelectors;
 
   @Override
   public StepType getStepType() {

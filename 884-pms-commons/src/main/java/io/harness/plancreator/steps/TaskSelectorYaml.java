@@ -10,7 +10,9 @@ package io.harness.plancreator.steps;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.TaskSelector;
+import io.harness.pms.yaml.ParameterField;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Data;
@@ -26,6 +28,15 @@ public class TaskSelectorYaml {
     return TaskSelector.newBuilder().setSelector(taskSelectorYaml.delegateSelectors).build();
   }
   public static List<TaskSelector> toTaskSelector(List<TaskSelectorYaml> taskSelectorYaml) {
+    if (taskSelectorYaml == null) {
+      return Collections.emptyList();
+    }
     return taskSelectorYaml.stream().map(TaskSelectorYaml::toTaskSelector).collect(Collectors.toList());
+  }
+  public static List<TaskSelector> toTaskSelector(ParameterField<List<TaskSelectorYaml>> delegateSelectors) {
+    if (delegateSelectors == null) {
+      return Collections.emptyList();
+    }
+    return TaskSelectorYaml.toTaskSelector(delegateSelectors.getValue());
   }
 }

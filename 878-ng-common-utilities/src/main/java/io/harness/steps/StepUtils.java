@@ -39,6 +39,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logstreaming.LogStreamingHelper;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.contracts.execution.Status;
@@ -66,6 +67,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.apache.commons.collections4.ListUtils;
 
@@ -364,6 +366,17 @@ public class StepUtils {
       return new ArrayList<>();
     }
     return delegateSelectors.getValue();
+  }
+
+  public static List<String> getDelegateSelectorListFromTaskSelectorYaml(
+      ParameterField<List<TaskSelectorYaml>> delegateSelectors) {
+    if (ParameterField.isNull(delegateSelectors) || delegateSelectors.getValue() == null) {
+      return new ArrayList<>();
+    }
+    return delegateSelectors.getValue()
+        .stream()
+        .map(TaskSelectorYaml::getDelegateSelectors)
+        .collect(Collectors.toList());
   }
 
   public static Status getStepStatus(CommandExecutionStatus commandExecutionStatus) {
