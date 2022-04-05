@@ -184,13 +184,13 @@ aeriform("//820-platform-service:module")
 
 aeriform("//820-platform-service:tests")
 
-aeriform("//830-notification-service:module")
+aeriform("//820-platform-service/libs/notification-service:module")
 
-aeriform("//830-notification-service:tests")
+aeriform("//820-platform-service/libs/notification-service:tests")
 
-aeriform("//830-resource-group:module")
+aeriform("//820-platform-service/libs/resource-group-service:module")
 
-aeriform("//830-resource-group:tests")
+aeriform("//820-platform-service/libs/resource-group-service:tests")
 
 aeriform("//835-notification-senders:module")
 
@@ -310,9 +310,9 @@ aeriform("//940-feature-flag:module")
 
 aeriform("//940-feature-flag:tests")
 
-aeriform("//940-ng-audit-service:module")
+aeriform("//820-platform-service/libs/audit-service:module")
 
-aeriform("//940-ng-audit-service:tests")
+aeriform("//820-platform-service/libs/audit-service:tests")
 
 aeriform("//940-notification-client:module")
 

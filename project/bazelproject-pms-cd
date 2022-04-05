@@ -20,8 +20,6 @@ directories:
   800-pipeline-service
   810-ng-triggers
   820-platform-service
-  830-notification-service
-  830-resource-group
   835-notification-senders
   860-orchestration-steps
   860-orchestration-visualization
@@ -52,7 +50,6 @@ directories:
   937-persistence-tracer
   940-cg-audit-service
   940-feature-flag
-  940-ng-audit-service
   940-notification-client
   940-primary-version-manager
   940-resource-group-beans

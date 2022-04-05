@@ -9,11 +9,11 @@ java_library(
     srcs = glob(["src/main/java/**/*.java"]),
     data = ["//:resource"],
     resources = [
-        "//830-resource-group/src/main/resources:resource",
+        "//820-platform-service/libs/resource-group-service/src/main/resources:resource",
     ],
     visibility = ["//visibility:public"],
     runtime_deps = [
-        "//830-resource-group/src/main/resources",
+        "//820-platform-service/libs/resource-group-service/src/main/resources",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
     ],
     deps = [
@@ -64,17 +64,17 @@ java_library(
     testonly = True,
     srcs = glob(["src/test/**/*.java"]),
     data = [
-        "//830-resource-group/src/main/resources:resource",
-        "//830-resource-group/src/test/resources:resource",
+        "//820-platform-service/libs/resource-group-service/src/main/resources:resource",
+        "//820-platform-service/libs/resource-group-service/src/test/resources:resource",
     ],
     resources = [
         "//:resource",
-        "//830-resource-group/src/main/resources:resource",
-        "//830-resource-group/src/test/resources:resource",
+        "//820-platform-service/libs/resource-group-service/src/main/resources:resource",
+        "//820-platform-service/libs/resource-group-service/src/test/resources:resource",
     ],
     visibility = ["//visibility:public"],
     runtime_deps = [
-        "//830-resource-group/src/main/resources",
+        "//820-platform-service/libs/resource-group-service/src/main/resources",
         "//980-commons/src/test/resources",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
     ],

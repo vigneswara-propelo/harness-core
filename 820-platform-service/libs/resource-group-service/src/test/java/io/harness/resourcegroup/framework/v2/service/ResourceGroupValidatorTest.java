@@ -53,8 +53,8 @@ public class ResourceGroupValidatorTest extends ResourceGroupTestBase {
   @Owner(developers = REETIKA)
   @Category(UnitTests.class)
   public void validateResourceGroup() {
-    String accountLevelResourceGroup =
-        readFileAsString("830-resource-group/src/test/resources/resourcegroups/v2/accountResourceGroupV2.json");
+    String accountLevelResourceGroup = readFileAsString(
+        "820-platform-service/libs/resource-group-service/src/test/resources/resourcegroups/v2/accountResourceGroupV2.json");
     ResourceGroupDTO resourceGroupDTO = null;
     try {
       resourceGroupDTO = objectMapper.readValue(accountLevelResourceGroup, ResourceGroupDTO.class);

@@ -87,8 +87,9 @@ BAZEL_MODULES="\
   //815-cg-triggers:module \
   //820-platform-service:module \
   //820-platform-service:module_deploy.jar \
-  //830-notification-service:module \
-  //830-resource-group:module \
+  //820-platform-service/libs/audit-service:module \
+  //820-platform-service/libs/notification-service:module \
+  //820-platform-service/libs/resource-group-service:module \
   //835-notification-senders:module \
   //835-notification-senders:module \
   //840-template-service:module \
@@ -123,7 +124,6 @@ BAZEL_MODULES="\
   //935-analyser-service:module \
   //937-persistence-tracer:module \
   //940-feature-flag:module \
-  //940-ng-audit-service:module \
   //940-notification-client:module \
   //940-notification-client:module_deploy.jar \
   //940-resource-group-beans:module \
@@ -312,8 +312,6 @@ build_bazel_module 460-capability
 build_bazel_module 490-ce-commons
 build_bazel_module 810-ng-triggers
 build_bazel_module 815-cg-triggers
-build_bazel_module 830-notification-service
-build_bazel_module 830-resource-group
 build_bazel_module 835-notification-senders
 build_bazel_module 865-cg-events
 build_bazel_module 860-orchestration-steps
@@ -339,7 +337,6 @@ build_bazel_module 930-delegate-tasks
 build_bazel_module 930-ng-core-clients
 build_bazel_module 932-connector-task
 build_bazel_module 940-feature-flag
-build_bazel_module 940-ng-audit-service
 build_bazel_module 940-resource-group-beans
 build_bazel_module 940-secret-manager-client
 build_bazel_module 945-ng-audit-client

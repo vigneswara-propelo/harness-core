@@ -53,7 +53,7 @@ public class ResourceGroupMapperTest extends ResourceGroupTestBase {
   @Category(UnitTests.class)
   public void testManagedRGV1ToV2() {
     String accountLevelResourceGroup = readFileAsString(
-        "830-resource-group/src/test/resources/resourcegroups/v1/AllResourcesIncludingChildScopes.json");
+        "820-platform-service/libs/resource-group-service/src/test/resources/resourcegroups/v1/AllResourcesIncludingChildScopes.json");
     ResourceGroup resourceGroupV1 = null;
     try {
       ResourceGroupDTO resourceGroupV1DTO = objectMapper.readValue(accountLevelResourceGroup, ResourceGroupDTO.class);
@@ -75,10 +75,10 @@ public class ResourceGroupMapperTest extends ResourceGroupTestBase {
   @Owner(developers = REETIKA)
   @Category(UnitTests.class)
   public void testCustomRGV1ToV2() {
-    String customResourceGroupV1 =
-        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v1/customResourceGroup.json");
-    String customResourceGroupV2 =
-        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v2/customResourceGroup.json");
+    String customResourceGroupV1 = readFileAsString(
+        "820-platform-service/libs/resource-group-service/src/main/resources/io/harness/resourcegroup/v1/customResourceGroup.json");
+    String customResourceGroupV2 = readFileAsString(
+        "820-platform-service/libs/resource-group-service/src/main/resources/io/harness/resourcegroup/v2/customResourceGroup.json");
     ResourceGroup resourceGroupV1 = null;
     io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO resourceGroupV2DTO = null;
     try {
@@ -103,10 +103,10 @@ public class ResourceGroupMapperTest extends ResourceGroupTestBase {
   @Owner(developers = REETIKA)
   @Category(UnitTests.class)
   public void testCustomRGV2ToV1() {
-    String customResourceGroupV1 =
-        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v1/newResourceGroup.json");
-    String customResourceGroupV2 =
-        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v2/newResourceGroup.json");
+    String customResourceGroupV1 = readFileAsString(
+        "820-platform-service/libs/resource-group-service/src/main/resources/io/harness/resourcegroup/v1/newResourceGroup.json");
+    String customResourceGroupV2 = readFileAsString(
+        "820-platform-service/libs/resource-group-service/src/main/resources/io/harness/resourcegroup/v2/newResourceGroup.json");
     ResourceGroupDTO resourceGroupV1DTO = null;
     io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO resourceGroupV2DTO = null;
     try {
@@ -130,10 +130,10 @@ public class ResourceGroupMapperTest extends ResourceGroupTestBase {
   @Owner(developers = REETIKA)
   @Category(UnitTests.class)
   public void testCustomRGV2ToV1ScopeCheck() {
-    String customResourceGroupV1 =
-        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v1/selectorByScope.json");
-    String customResourceGroupV2 =
-        readFileAsString("830-resource-group/src/main/resources/io/harness/resourcegroup/v2/selectorByScope.json");
+    String customResourceGroupV1 = readFileAsString(
+        "820-platform-service/libs/resource-group-service/src/main/resources/io/harness/resourcegroup/v1/selectorByScope.json");
+    String customResourceGroupV2 = readFileAsString(
+        "820-platform-service/libs/resource-group-service/src/main/resources/io/harness/resourcegroup/v2/selectorByScope.json");
     ResourceGroupDTO resourceGroupV1DTO = null;
     io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO resourceGroupV2DTO = null;
     try {
