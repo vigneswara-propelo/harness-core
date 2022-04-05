@@ -336,7 +336,7 @@ public class K8sTaskHelperBase {
       return ProcessResponse.builder()
           .processResult(
               command.execute(k8sDelegateTaskParams.getWorkingDirectory(), logOutputStream, logErrorStream, true))
-          .errorMessage(errorCaptureStream.toString())
+          .errorMessage(ExceptionMessageSanitizer.sanitizeMessage(errorCaptureStream.toString()))
           .kubectlPath(k8sDelegateTaskParams.getKubectlPath())
           .printableCommand(getPrintableCommand(command.command()))
           .build();
@@ -1247,12 +1247,13 @@ public class K8sTaskHelperBase {
       if (!success) {
         log.warn(result.outputUTF8());
         if (isErrorFrameworkEnabled) {
-          ProcessResponse processResponse = ProcessResponse.builder()
-                                                .errorMessage(errorCaptureStream.toString())
-                                                .processResult(result)
-                                                .printableCommand(printableExecutedCommand)
-                                                .kubectlPath(kubectlPath)
-                                                .build();
+          ProcessResponse processResponse =
+              ProcessResponse.builder()
+                  .errorMessage(ExceptionMessageSanitizer.sanitizeMessage(errorCaptureStream.toString()))
+                  .processResult(result)
+                  .printableCommand(printableExecutedCommand)
+                  .kubectlPath(kubectlPath)
+                  .build();
           throw new KubernetesCliTaskRuntimeException(processResponse, KubernetesCliCommandType.STEADY_STATE_CHECK);
         }
       }
@@ -1470,12 +1471,13 @@ public class K8sTaskHelperBase {
       if (!success) {
         log.warn(result.outputUTF8());
         if (isErrorFrameworkEnabled) {
-          ProcessResponse processResponse = ProcessResponse.builder()
-                                                .errorMessage(errorCaptureStream.toString())
-                                                .processResult(result)
-                                                .printableCommand(printableExecutedCommand)
-                                                .kubectlPath(k8sDelegateTaskParams.getKubectlPath())
-                                                .build();
+          ProcessResponse processResponse =
+              ProcessResponse.builder()
+                  .errorMessage(ExceptionMessageSanitizer.sanitizeMessage(errorCaptureStream.toString()))
+                  .processResult(result)
+                  .printableCommand(printableExecutedCommand)
+                  .kubectlPath(k8sDelegateTaskParams.getKubectlPath())
+                  .build();
           throw new KubernetesCliTaskRuntimeException(processResponse, KubernetesCliCommandType.STEADY_STATE_CHECK);
         }
       }
