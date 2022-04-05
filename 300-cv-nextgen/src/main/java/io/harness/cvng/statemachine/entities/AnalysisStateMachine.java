@@ -11,7 +11,7 @@ import static io.harness.cvng.CVConstants.STATE_MACHINE_IGNORE_MINUTES;
 
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.StoreIn;
-import io.harness.cvng.beans.cvnglog.ExecutionLogDTO;
+import io.harness.cvng.beans.cvnglog.ExecutionLogDTO.LogLevel;
 import io.harness.cvng.core.entities.VerificationTaskExecutionInstance;
 import io.harness.cvng.statemachine.beans.AnalysisState;
 import io.harness.cvng.statemachine.beans.AnalysisStatus;
@@ -103,13 +103,13 @@ public final class AnalysisStateMachine implements PersistentEntity, UuidAware, 
     return analysisEndTime;
   }
 
-  public ExecutionLogDTO.LogLevel getLogLevel() {
+  public LogLevel getLogLevel() {
     if (AnalysisStatus.getFailedStatuses().contains(status)) {
-      return ExecutionLogDTO.LogLevel.ERROR;
+      return LogLevel.ERROR;
     } else if (AnalysisStatus.IGNORED.equals(status)) {
-      return ExecutionLogDTO.LogLevel.WARN;
+      return LogLevel.WARN;
     } else {
-      return ExecutionLogDTO.LogLevel.INFO;
+      return LogLevel.INFO;
     }
   }
 }
