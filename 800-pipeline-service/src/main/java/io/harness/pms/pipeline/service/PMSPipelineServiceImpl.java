@@ -585,7 +585,8 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       return pipelineYaml;
     }
     long start = System.currentTimeMillis();
-    ExpansionRequestMetadata expansionRequestMetadata = getRequestMetadata(accountId, orgIdentifier, projectIdentifier);
+    ExpansionRequestMetadata expansionRequestMetadata =
+        getRequestMetadata(accountId, orgIdentifier, projectIdentifier, pipelineYaml);
 
     Set<ExpansionRequest> expansionRequests = expansionRequestsExtractor.fetchExpansionRequests(pipelineYaml);
     Set<ExpansionResponseBatch> expansionResponseBatches =
@@ -610,20 +611,18 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
         pipelineEntity.getProjectIdentifier(), criteria, update);
   }
 
-  ExpansionRequestMetadata getRequestMetadata(String accountId, String orgIdentifier, String projectIdentifier) {
+  ExpansionRequestMetadata getRequestMetadata(
+      String accountId, String orgIdentifier, String projectIdentifier, String pipelineYaml) {
     ByteString gitSyncBranchContextBytes = gitSyncHelper.getGitSyncBranchContextBytesThreadLocal();
+    ExpansionRequestMetadata.Builder expansionRequestMetadataBuilder =
+        ExpansionRequestMetadata.newBuilder()
+            .setAccountId(accountId)
+            .setOrgId(orgIdentifier)
+            .setProjectId(projectIdentifier)
+            .setYaml(ByteString.copyFromUtf8(pipelineYaml));
     if (gitSyncBranchContextBytes != null) {
-      return ExpansionRequestMetadata.newBuilder()
-          .setAccountId(accountId)
-          .setOrgId(orgIdentifier)
-          .setProjectId(projectIdentifier)
-          .setGitSyncBranchContext(gitSyncBranchContextBytes)
-          .build();
+      expansionRequestMetadataBuilder.setGitSyncBranchContext(gitSyncBranchContextBytes);
     }
-    return ExpansionRequestMetadata.newBuilder()
-        .setAccountId(accountId)
-        .setOrgId(orgIdentifier)
-        .setProjectId(projectIdentifier)
-        .build();
+    return expansionRequestMetadataBuilder.build();
   }
 }

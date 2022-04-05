@@ -83,7 +83,7 @@ public class SLOPolicyExpansionHandlerTest extends CvNextGenTestBase {
             .setOrgId(builderFactory.getProjectParams().getOrgIdentifier())
             .setProjectId(builderFactory.getProjectParams().getProjectIdentifier())
             .build();
-    ExpansionResponse expansionResponse = sloPolicyExpansionHandler.expand(jsonNode, metadataProject);
+    ExpansionResponse expansionResponse = sloPolicyExpansionHandler.expand(jsonNode, metadataProject, null);
     assertThat(expansionResponse.isSuccess()).isTrue();
     assertThat(expansionResponse.getKey()).isEqualTo("sloPolicy");
     assertThat(expansionResponse.getValue().toJson()).isEqualTo(JsonUtils.asJson(sloPolicyDTO));
@@ -105,7 +105,7 @@ public class SLOPolicyExpansionHandlerTest extends CvNextGenTestBase {
             .setOrgId(builderFactory.getProjectParams().getOrgIdentifier())
             .setProjectId(builderFactory.getProjectParams().getProjectIdentifier())
             .build();
-    ExpansionResponse expansionResponse = sloPolicyExpansionHandler.expand(jsonNode, metadataProject);
+    ExpansionResponse expansionResponse = sloPolicyExpansionHandler.expand(jsonNode, metadataProject, null);
     assertThat(expansionResponse.isSuccess()).isTrue();
     assertThat(expansionResponse.getKey()).isEqualTo("sloPolicy");
     assertThat(expansionResponse.getValue().toJson()).isEqualTo(JsonUtils.asJson(sloPolicyDTO));

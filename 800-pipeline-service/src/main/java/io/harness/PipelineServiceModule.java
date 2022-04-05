@@ -596,6 +596,17 @@ public class PipelineServiceModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @Named("JsonExpansionExecutorService")
+  public Executor jsonExpansionExecutorService() {
+    return ThreadPool.create(configuration.getJsonExpansionPoolConfig().getCorePoolSize(),
+        configuration.getJsonExpansionPoolConfig().getMaxPoolSize(),
+        configuration.getJsonExpansionPoolConfig().getIdleTime(),
+        configuration.getJsonExpansionPoolConfig().getTimeUnit(),
+        new ThreadFactoryBuilder().setNameFormat("JsonExpansionExecutorService-%d").build());
+  }
+
+  @Provides
+  @Singleton
   @Named("pmsEventsCache")
   public Cache<String, Integer> sdkEventsCache(
       HarnessCacheManager harnessCacheManager, VersionInfoManager versionInfoManager) {
@@ -646,5 +657,12 @@ public class PipelineServiceModule extends AbstractModule {
   @Named("planCreatorMergeServiceDependencyBatch")
   public Integer getPlanCreatorMergeServiceDependencyBatch() {
     return configuration.getPlanCreatorMergeServiceDependencyBatch();
+  }
+
+  @Provides
+  @Singleton
+  @Named("jsonExpansionRequestBatchSize")
+  public Integer getjsonExpansionRequestBatchSize() {
+    return configuration.getJsonExpansionBatchSize();
   }
 }

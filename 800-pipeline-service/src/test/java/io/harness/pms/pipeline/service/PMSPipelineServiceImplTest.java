@@ -357,6 +357,7 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
                                                             .setOrgId(ORG_IDENTIFIER)
                                                             .setProjectId(PROJ_IDENTIFIER)
                                                             .setGitSyncBranchContext(randomByteString)
+                                                            .setYaml(ByteString.copyFromUtf8(dummyYaml))
                                                             .build();
     ExpansionRequest dummyRequest = ExpansionRequest.builder().fqn("fqn").build();
     Set<ExpansionRequest> dummyRequestSet = Collections.singleton(dummyRequest);
