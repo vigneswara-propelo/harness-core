@@ -39,8 +39,8 @@ import io.harness.cache.CacheModule;
 import io.harness.cdng.creator.CDNGModuleInfoProvider;
 import io.harness.cdng.creator.CDNGPlanCreatorProvider;
 import io.harness.cdng.creator.filters.CDNGFilterCreationResponseMerger;
-import io.harness.cdng.envGroup.beans.EnvironmentGroupConfig;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
+import io.harness.cdng.envGroup.beans.EnvironmentGroupWrapperConfig;
 import io.harness.cdng.gitSync.EnvironmentGroupEntityGitSyncHelper;
 import io.harness.cdng.licenserestriction.ServiceRestrictionsUsageImpl;
 import io.harness.cdng.orchestration.NgStepRegistrar;
@@ -496,7 +496,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
 
     gitSyncEntitiesConfigurations.add(GitSyncEntitiesConfiguration.builder()
                                           .entityType(EntityType.ENVIRONMENT_GROUP)
-                                          .yamlClass(EnvironmentGroupConfig.class)
+                                          .yamlClass(EnvironmentGroupWrapperConfig.class)
                                           .entityClass(EnvironmentGroupEntity.class)
                                           .entityHelperClass(EnvironmentGroupEntityGitSyncHelper.class)
                                           .build());
