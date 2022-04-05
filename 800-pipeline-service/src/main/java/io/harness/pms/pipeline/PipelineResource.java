@@ -303,7 +303,6 @@ public class PipelineResource implements YamlSchemaResource {
         log.info("Cannot get resolved templates pipeline YAML");
       }
     }
-
     return ResponseDTO.newResponse(version, pipeline);
   }
 
