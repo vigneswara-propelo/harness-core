@@ -241,6 +241,7 @@ public class PipelineResource implements YamlSchemaResource {
           NGCommonEntityConstants.ORG_KEY) String orgId,
       @Parameter(description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
       @RequestBody(required = true, description = "Pipeline YAML") @NotNull @ApiParam(hidden = true) String yaml) {
     log.info("Creating variables for pipeline v2 version.");
 
@@ -249,8 +250,7 @@ public class PipelineResource implements YamlSchemaResource {
     String resolveTemplateRefsInPipeline =
         pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity).getMergedPipelineYaml();
     VariableMergeServiceResponse variablesResponse =
-        pmsPipelineService.createVariablesResponse(resolveTemplateRefsInPipeline, true);
-
+        pmsPipelineService.createVariablesResponseV2(accountId, orgId, projectId, resolveTemplateRefsInPipeline);
     return ResponseDTO.newResponse(variablesResponse);
   }
 

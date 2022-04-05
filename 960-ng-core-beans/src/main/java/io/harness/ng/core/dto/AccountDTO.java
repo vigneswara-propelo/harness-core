@@ -17,6 +17,7 @@ import io.harness.data.validator.NGEntityName;
 import io.harness.ng.core.account.AuthenticationMechanism;
 import io.harness.ng.core.account.DefaultExperience;
 import io.harness.ng.core.account.ServiceAccountConfig;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -38,8 +39,8 @@ import lombok.experimental.FieldDefaults;
 @Schema(name = "Account", description = "This is the view of an Account defined in Harness")
 public class AccountDTO {
   @EntityIdentifier(allowBlank = false) String identifier;
-  @NGEntityName String name;
-  String companyName;
+  @NGEntityName @VariableExpression String name;
+  @VariableExpression String companyName;
   String cluster;
   DefaultExperience defaultExperience;
   AuthenticationMechanism authenticationMechanism;

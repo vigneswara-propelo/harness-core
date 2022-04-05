@@ -8,7 +8,7 @@
 package io.harness.yaml.core.properties;
 
 import io.harness.pms.yaml.YamlNode;
-import io.harness.yaml.core.failurestrategy.VariableExpression;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.extended.ci.codebase.CodeBase;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

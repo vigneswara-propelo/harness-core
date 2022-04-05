@@ -489,6 +489,18 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
     }
   }
 
+  @Override
+  public VariableMergeServiceResponse createVariablesResponseV2(
+      String accountId, String orgId, String projectId, String yaml) {
+    try {
+      return variableCreatorMergeService.createVariablesResponseV2(accountId, orgId, projectId, yaml);
+    } catch (Exception ex) {
+      log.error("Error happened while creating variables for pipeline:", ex);
+      throw new InvalidRequestException(
+          format("Error happened while creating variables for pipeline: %s", ex.getMessage()));
+    }
+  }
+
   // Todo: Remove only if there are no references to the pipeline
   @Override
   public boolean deleteAllPipelinesInAProject(String accountId, String orgId, String projectId) {

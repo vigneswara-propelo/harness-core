@@ -14,8 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.plancreator.pipeline.PipelineInfoConfig;
+import io.harness.plancreator.stages.stage.StageElementConfig;
 import io.harness.pms.contracts.plan.YamlExtraProperties;
 import io.harness.pms.contracts.plan.YamlProperties;
+import io.harness.pms.sdk.core.variables.VariableCreatorHelper;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
@@ -25,6 +27,7 @@ import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +41,7 @@ public class VariableCreatorHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void createVariablesForChildrenNodesV2WithNullMapAndList() throws IOException {
     ClassLoader classLoader = this.getClass().getClassLoader();
-    final URL testFile = classLoader.getResource("pipeline.yaml");
+    final URL testFile = classLoader.getResource("pipelineCreatorBase.yaml");
     String pipelineJson = Resources.toString(testFile, Charsets.UTF_8);
     YamlField fullYamlField = YamlUtils.readTree(pipelineJson);
 
@@ -71,6 +74,62 @@ public class VariableCreatorHelperTest extends CategoryTest {
     assertThat(yamlPropertiesMap.containsKey(pipelineInfoConfig.getDescription().getResponseField())).isTrue();
     assertThat(yamlPropertiesMap.get(pipelineInfoConfig.getDescription().getResponseField()).getFqn())
         .isEqualTo("pipeline.description");
+  }
+
+  @Test
+  @Owner(developers = ARCHIT)
+  @Category(UnitTests.class)
+  public void createVariablesForChildrenNodesV2WithNullMapAndListForStage() throws IOException {
+    ClassLoader classLoader = this.getClass().getClassLoader();
+    final URL testFile = classLoader.getResource("pipelineCreatorBase.yaml");
+    String pipelineJson = Resources.toString(testFile, Charsets.UTF_8);
+    YamlField fullYamlField = YamlUtils.readTree(pipelineJson);
+
+    // Pipeline Node
+    YamlField pipelineField = fullYamlField.getNode().getField("pipeline");
+
+    PipelineInfoConfig pipelineInfoConfig =
+        YamlUtils.read(pipelineField.getNode().toString(), PipelineInfoConfig.class);
+    Map<String, YamlExtraProperties> yamlExtraPropertiesMap = new HashMap<>();
+    Map<String, YamlProperties> yamlPropertiesMap = new HashMap<>();
+
+    StageElementConfig stageElementConfig =
+        YamlUtils.read(pipelineInfoConfig.getStages().get(0).getStage().toString(), StageElementConfig.class);
+
+    VariableCreatorHelper.collectVariableExpressions(
+        stageElementConfig, yamlPropertiesMap, yamlExtraPropertiesMap, "pipeline.stages.stage1", "stage");
+
+    // check for extra properties expressions
+    assertThat(yamlExtraPropertiesMap.containsKey(stageElementConfig.getUuid())).isTrue();
+    List<String> fqnExtraPropertiesList = yamlExtraPropertiesMap.get(stageElementConfig.getUuid())
+                                              .getPropertiesList()
+                                              .stream()
+                                              .map(YamlProperties::getFqn)
+                                              .collect(Collectors.toList());
+    assertThat(fqnExtraPropertiesList)
+        .containsAll(Arrays.asList("pipeline.stages.stage1.variables", "pipeline.stages.stage1.identifier",
+            "pipeline.stages.stage1.tags", "pipeline.stages.stage1.type"));
+
+    // enum when condition expression
+    fqnExtraPropertiesList = yamlExtraPropertiesMap.get(stageElementConfig.getWhen().getUuid())
+                                 .getPropertiesList()
+                                 .stream()
+                                 .map(YamlProperties::getFqn)
+                                 .collect(Collectors.toList());
+    assertThat(fqnExtraPropertiesList)
+        .containsAll(Collections.singletonList("pipeline.stages.stage1.when.pipelineStatus"));
+
+    // check for name and description and when condition expressions
+    assertThat(yamlPropertiesMap.containsKey(stageElementConfig.getName())).isTrue();
+    assertThat(yamlPropertiesMap.get(stageElementConfig.getName()).getFqn()).isEqualTo("pipeline.stages.stage1.name");
+
+    assertThat(yamlPropertiesMap.containsKey(stageElementConfig.getDescription().getResponseField())).isTrue();
+    assertThat(yamlPropertiesMap.get(stageElementConfig.getDescription().getResponseField()).getFqn())
+        .isEqualTo("pipeline.stages.stage1.description");
+
+    assertThat(yamlPropertiesMap.containsKey(stageElementConfig.getWhen().getCondition().getResponseField())).isTrue();
+    assertThat(yamlPropertiesMap.get(stageElementConfig.getWhen().getCondition().getResponseField()).getFqn())
+        .isEqualTo("pipeline.stages.stage1.when.condition");
   }
 
   @Test

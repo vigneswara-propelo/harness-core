@@ -79,7 +79,11 @@ public class VariableCreatorService
     if (request.getMetadata().getMetadataMap().containsKey("newVersion")) {
       try {
         Class<?> cls = variableCreator.getFieldClass();
-        Object obj = YamlUtils.read(yamlField.getNode().toString(), cls);
+        if (cls == null) {
+          return VariableCreationResponse.builder().build();
+        }
+        Object obj =
+            YamlField.class.isAssignableFrom(cls) ? yamlField : YamlUtils.read(yamlField.getNode().toString(), cls);
         response = variableCreator.createVariablesForFieldV2(
             VariableCreationContext.builder().currentField(yamlField).build(), obj);
       } catch (IOException ex) {

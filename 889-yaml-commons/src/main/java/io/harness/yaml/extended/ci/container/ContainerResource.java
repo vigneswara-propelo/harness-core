@@ -15,7 +15,7 @@ import io.harness.beans.SwaggerConstants;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
-import io.harness.yaml.core.failurestrategy.VariableExpression;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.extended.ci.validator.ResourceValidatorConstants;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

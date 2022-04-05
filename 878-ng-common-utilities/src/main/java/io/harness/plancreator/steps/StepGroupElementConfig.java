@@ -17,6 +17,7 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.validator.NGRegexValidatorConstants;
 import io.harness.when.beans.StepWhenCondition;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.core.failurestrategy.FailureStrategyConfig;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -49,13 +50,17 @@ public class StepGroupElementConfig {
   @ApiModelProperty(hidden = true)
   String uuid;
 
-  @NotNull @EntityIdentifier @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN) String identifier;
-  @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) String name;
+  @NotNull
+  @EntityIdentifier
+  @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN)
+  @VariableExpression(replaceWithUUid = false)
+  String identifier;
+  @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) @VariableExpression String name;
 
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
   @ApiModelProperty(hidden = true)
   ParameterField<String> skipCondition;
-  StepWhenCondition when;
+  @VariableExpression StepWhenCondition when;
 
   List<FailureStrategyConfig> failureStrategies;
   @NotNull @Size(min = 1) List<ExecutionWrapperConfig> steps;

@@ -38,12 +38,12 @@ public abstract class ChildrenVariableCreator<T> implements VariableCreator<T> {
   public VariableCreationResponse createVariablesForFieldV2(VariableCreationContext ctx, T field) {
     VariableCreationResponse finalResponse = VariableCreationResponse.builder().build();
 
+    VariableCreationResponse variablesForParentNode = createVariablesForParentNodeV2(ctx, field);
     LinkedHashMap<String, VariableCreationResponse> variablesForChildrenNodes =
         createVariablesForChildrenNodesV2(ctx, field);
     for (Map.Entry<String, VariableCreationResponse> entry : variablesForChildrenNodes.entrySet()) {
       mergeResponses(finalResponse, entry.getValue());
     }
-    VariableCreationResponse variablesForParentNode = createVariablesForParentNodeV2(ctx, field);
     mergeResponses(finalResponse, variablesForParentNode);
     return finalResponse;
   }

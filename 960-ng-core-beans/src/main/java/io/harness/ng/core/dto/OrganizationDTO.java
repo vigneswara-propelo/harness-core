@@ -15,6 +15,7 @@ import io.harness.OrganizationConstants;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.validator.EntityIdentifier;
 import io.harness.data.validator.NGEntityName;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -42,10 +43,15 @@ public class OrganizationDTO {
   @ApiModelProperty(required = true)
   @EntityIdentifier(allowBlank = false)
   @Schema(description = OrganizationConstants.IDENTIFIER)
+  @VariableExpression
   String identifier;
-  @ApiModelProperty(required = true) @NGEntityName @Schema(description = OrganizationConstants.NAME) String name;
-  @Size(max = 1024) @Schema(description = "Description of the Organization.") String description;
-  @Size(max = 128) @Schema(description = "Tags for the Organization.") Map<String, String> tags;
+  @ApiModelProperty(required = true)
+  @NGEntityName
+  @Schema(description = OrganizationConstants.NAME)
+  @VariableExpression
+  String name;
+  @Size(max = 1024) @Schema(description = "Description of the Organization.") @VariableExpression String description;
+  @Size(max = 128) @Schema(description = "Tags for the Organization.") @VariableExpression Map<String, String> tags;
   @JsonIgnore Long version;
   @JsonIgnore boolean harnessManaged;
 

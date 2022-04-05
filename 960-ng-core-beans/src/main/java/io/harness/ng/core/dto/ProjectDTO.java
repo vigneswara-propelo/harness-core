@@ -17,6 +17,7 @@ import io.harness.ModuleType;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.validator.EntityIdentifier;
 import io.harness.data.validator.NGEntityName;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -46,12 +47,17 @@ public class ProjectDTO {
   @ApiModelProperty(required = true)
   @Schema(description = PROJECT_PARAM_MESSAGE)
   @EntityIdentifier(allowBlank = false)
+  @VariableExpression
   String identifier;
-  @ApiModelProperty(required = true) @Schema(description = "Project Name for the entity") @NGEntityName String name;
+  @ApiModelProperty(required = true)
+  @Schema(description = "Project Name for the entity")
+  @NGEntityName
+  @VariableExpression
+  String name;
   @Schema(description = "Color") String color;
   @Size(max = 1024) @Schema(description = "List of modules") List<ModuleType> modules;
-  @Size(max = 1024) @Schema(description = "Description") String description;
-  @Size(max = 128) @Schema(description = "Tags") Map<String, String> tags;
+  @Size(max = 1024) @Schema(description = "Description") @VariableExpression String description;
+  @Size(max = 128) @Schema(description = "Tags") @VariableExpression Map<String, String> tags;
   @JsonIgnore Long version;
 
   @Builder

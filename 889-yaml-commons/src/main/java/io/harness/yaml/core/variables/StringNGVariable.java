@@ -8,7 +8,7 @@
 package io.harness.yaml.core.variables;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
-import static io.harness.yaml.core.failurestrategy.VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD;
+import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
@@ -19,7 +19,7 @@ import io.harness.validator.NGRegexValidatorConstants;
 import io.harness.validator.NGVariableName;
 import io.harness.visitor.helpers.variables.StringVariableVisitorHelper;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
-import io.harness.yaml.core.failurestrategy.VariableExpression;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;

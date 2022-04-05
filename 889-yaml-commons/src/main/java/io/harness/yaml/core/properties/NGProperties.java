@@ -9,7 +9,7 @@ package io.harness.yaml.core.properties;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.pms.yaml.YamlNode;
-import io.harness.yaml.core.failurestrategy.VariableExpression;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

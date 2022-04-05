@@ -13,6 +13,7 @@ import io.harness.pms.contracts.plan.YamlExtraProperties;
 import io.harness.pms.contracts.plan.YamlProperties;
 import io.harness.pms.contracts.plan.YamlUpdates;
 import io.harness.pms.sdk.core.variables.ChildrenVariableCreator;
+import io.harness.pms.sdk.core.variables.VariableCreatorHelper;
 import io.harness.pms.sdk.core.variables.beans.VariableCreationContext;
 import io.harness.pms.sdk.core.variables.beans.VariableCreationResponse;
 import io.harness.pms.yaml.DependenciesUtils;
@@ -21,6 +22,7 @@ import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.yaml.extended.ci.codebase.Build;
+import io.harness.yaml.utils.JsonPipelineUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -171,46 +173,36 @@ public class PipelineVariableCreator extends ChildrenVariableCreator<PipelineInf
 
     // pipeline section extra properties
     YamlExtraProperties pipelineExtraProperties = getPipelineExtraProperties(config);
-    if (yamlExtraPropertiesMap.containsKey(config.getUuid())) {
-      YamlExtraProperties yamlExtraProperties = yamlExtraPropertiesMap.get(config.getUuid());
-      YamlExtraProperties properties = yamlExtraProperties.toBuilder()
-                                           .addAllProperties(pipelineExtraProperties.getPropertiesList())
-                                           .addAllOutputProperties(pipelineExtraProperties.getOutputPropertiesList())
-                                           .build();
-      yamlExtraPropertiesMap.put(config.getUuid(), properties);
-    } else {
-      yamlExtraPropertiesMap.put(config.getUuid(), pipelineExtraProperties);
-    }
-
-    YamlField pipeline =
-        YamlUtils.readTree(config, YAMLFieldNameConstants.PIPELINE, ctx.getCurrentField().getNode().getParentNode());
+    VariableCreatorHelper.addYamlExtraPropertyToMap(config.getUuid(), yamlExtraPropertiesMap, pipelineExtraProperties);
 
     return VariableCreationResponse.builder()
         .yamlExtraProperties(yamlExtraPropertiesMap)
         .yamlProperties(yamlPropertiesMap)
         .yamlUpdates(YamlUpdates.newBuilder()
-                         .putFqnToYaml(ctx.getCurrentField().getYamlPath(), pipeline.getNode().toString())
+                         .putFqnToYaml(ctx.getCurrentField().getYamlPath(), JsonPipelineUtils.getJsonString(config))
                          .build())
         .build();
   }
 
   private YamlExtraProperties getPipelineExtraProperties(PipelineInfoConfig config) {
     // Adding sequenceId expression (not part of the yaml, thus visible - false)
-    YamlProperties sequenceIdProperty = YamlProperties.newBuilder()
-                                            .setFqn(YAMLFieldNameConstants.PIPELINE + ".sequenceId")
-                                            .setVariableName("sequenceId")
-                                            .build();
+    YamlProperties sequenceIdProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".sequenceId").build();
     // executionId Property
-    YamlProperties executionIdProperty = YamlProperties.newBuilder()
-                                             .setFqn(YAMLFieldNameConstants.PIPELINE + ".executionId")
-                                             .setVariableName("executionId")
-                                             .build();
-    YamlProperties startTsProperty = YamlProperties.newBuilder()
-                                         .setFqn(YAMLFieldNameConstants.PIPELINE + ".startTs")
-                                         .setVariableName("startTs")
-                                         .build();
+    YamlProperties executionIdProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".executionId").build();
+
+    YamlProperties triggerTypeProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".triggerType").build();
+    YamlProperties triggeredByNameProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".triggeredBy.name").build();
+    YamlProperties triggeredByEmailProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".triggeredBy.email").build();
+
+    YamlProperties startTsProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".startTs").build();
     YamlProperties endTsProperty =
-        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".endTs").setVariableName("endTs").build();
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".endTs").build();
     YamlExtraProperties.Builder yamlExtraPropertyBuilder = YamlExtraProperties.newBuilder();
 
     // ci build properties
@@ -227,6 +219,9 @@ public class PipelineVariableCreator extends ChildrenVariableCreator<PipelineInf
         .addProperties(executionIdProperty)
         .addProperties(startTsProperty)
         .addProperties(endTsProperty)
+        .addProperties(triggerTypeProperty)
+        .addProperties(triggeredByNameProperty)
+        .addProperties(triggeredByEmailProperty)
         .build();
   }
 }

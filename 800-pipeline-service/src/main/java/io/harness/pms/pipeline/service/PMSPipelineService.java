@@ -73,6 +73,8 @@ public interface PMSPipelineService {
 
   VariableMergeServiceResponse createVariablesResponse(String yaml, boolean newVersion);
 
+  VariableMergeServiceResponse createVariablesResponseV2(String accountId, String orgId, String projectId, String yaml);
+
   Criteria formCriteria(String accountId, String orgId, String projectId, String filterIdentifier,
       PipelineFilterPropertiesDto filterProperties, boolean deleted, String module, String searchTerm);
 
