@@ -19,12 +19,12 @@ import com.google.inject.Provides;
 import com.google.inject.Scopes;
 
 @OwnedBy(DEL)
-public class DelegateTokenNgClientModule extends AbstractModule {
+public class DelegateNgManagerCgManagerClientModule extends AbstractModule {
   private final ServiceHttpClientConfig serviceHttpClientConfig;
   private final String serviceSecret;
   private final String clientId;
 
-  public DelegateTokenNgClientModule(
+  public DelegateNgManagerCgManagerClientModule(
       ServiceHttpClientConfig serviceHttpClientConfig, String serviceSecret, String clientId) {
     this.serviceHttpClientConfig = serviceHttpClientConfig;
     this.serviceSecret = serviceSecret;
@@ -32,13 +32,16 @@ public class DelegateTokenNgClientModule extends AbstractModule {
   }
 
   @Provides
-  private DelegateTokenNgClientFactory delegateTokenNgClientFactory(KryoConverterFactory kryoConverterFactory) {
-    return new DelegateTokenNgClientFactory(
+  private DelegateNgManagerCgManagerClientFactory delegateNgManagerCgManagerClientFactory(
+      KryoConverterFactory kryoConverterFactory) {
+    return new DelegateNgManagerCgManagerClientFactory(
         this.serviceHttpClientConfig, this.serviceSecret, new ServiceTokenGenerator(), kryoConverterFactory, clientId);
   }
 
   @Override
   protected void configure() {
-    this.bind(DelegateTokenNgClient.class).toProvider(DelegateTokenNgClientFactory.class).in(Scopes.SINGLETON);
+    this.bind(DelegateNgManagerCgManagerClient.class)
+        .toProvider(DelegateNgManagerCgManagerClientFactory.class)
+        .in(Scopes.SINGLETON);
   }
 }

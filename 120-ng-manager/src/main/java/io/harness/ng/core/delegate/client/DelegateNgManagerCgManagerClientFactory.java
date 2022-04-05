@@ -23,14 +23,15 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Singleton
 @OwnedBy(DEL)
-public class DelegateTokenNgClientFactory extends AbstractHttpClientFactory implements Provider<DelegateTokenNgClient> {
-  protected DelegateTokenNgClientFactory(ServiceHttpClientConfig cgManagerConfig, String serviceSecret,
+public class DelegateNgManagerCgManagerClientFactory
+    extends AbstractHttpClientFactory implements Provider<DelegateNgManagerCgManagerClient> {
+  protected DelegateNgManagerCgManagerClientFactory(ServiceHttpClientConfig cgManagerConfig, String serviceSecret,
       ServiceTokenGenerator tokenGenerator, KryoConverterFactory kryoConverterFactory, String clientId) {
     super(cgManagerConfig, serviceSecret, tokenGenerator, kryoConverterFactory, clientId);
   }
 
   @Override
-  public DelegateTokenNgClient get() {
-    return getRetrofit().create(DelegateTokenNgClient.class);
+  public DelegateNgManagerCgManagerClient get() {
+    return getRetrofit().create(DelegateNgManagerCgManagerClient.class);
   }
 }

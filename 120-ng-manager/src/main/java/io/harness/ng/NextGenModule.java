@@ -124,8 +124,7 @@ import io.harness.ng.core.api.impl.NGModulesServiceImpl;
 import io.harness.ng.core.api.impl.NGSecretServiceV2Impl;
 import io.harness.ng.core.api.impl.TokenServiceImpl;
 import io.harness.ng.core.api.impl.UserGroupServiceImpl;
-import io.harness.ng.core.delegate.client.DelegateConfigNgClientModule;
-import io.harness.ng.core.delegate.client.DelegateTokenNgClientModule;
+import io.harness.ng.core.delegate.client.DelegateNgManagerCgManagerClientModule;
 import io.harness.ng.core.encryptors.NGManagerKmsEncryptor;
 import io.harness.ng.core.encryptors.NGManagerVaultEncryptor;
 import io.harness.ng.core.entityactivity.event.EntityActivityCrudEventMessageListener;
@@ -545,9 +544,7 @@ public class NextGenModule extends AbstractModule {
     install(ConnectorModule.getInstance(appConfig.getNextGenConfig(), appConfig.getCeNextGenClientConfig()));
     install(new NgConnectorManagerClientModule(
         appConfig.getManagerClientConfig(), appConfig.getNextGenConfig().getManagerServiceSecret()));
-    install(new DelegateTokenNgClientModule(appConfig.getManagerClientConfig(),
-        appConfig.getNextGenConfig().getManagerServiceSecret(), NG_MANAGER.getServiceId()));
-    install(new DelegateConfigNgClientModule(appConfig.getManagerClientConfig(),
+    install(new DelegateNgManagerCgManagerClientModule(appConfig.getManagerClientConfig(),
         appConfig.getNextGenConfig().getManagerServiceSecret(), NG_MANAGER.getServiceId()));
     bind(NgGlobalKmsService.class).to(NgGlobalKmsServiceImpl.class);
     install(new ProviderModule() {

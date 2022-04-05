@@ -96,6 +96,7 @@ import io.harness.delegate.beans.DelegateApproval;
 import io.harness.delegate.beans.DelegateConfiguration;
 import io.harness.delegate.beans.DelegateConnectionDetails;
 import io.harness.delegate.beans.DelegateConnectionHeartbeat;
+import io.harness.delegate.beans.DelegateDTO;
 import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateGroup;
 import io.harness.delegate.beans.DelegateGroup.DelegateGroupKeys;
@@ -110,6 +111,7 @@ import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.beans.DelegateScripts;
 import io.harness.delegate.beans.DelegateSetupDetails;
 import io.harness.delegate.beans.DelegateSizeDetails;
+import io.harness.delegate.beans.DelegateTags;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenStatus;
 import io.harness.delegate.beans.DelegateType;
@@ -1001,11 +1003,12 @@ public class DelegateServiceImpl implements DelegateService {
   @Override
   public Delegate updateTags(Delegate delegate) {
     UpdateOperations<Delegate> updateOperations = persistence.createUpdateOperations(Delegate.class);
-    setUnset(updateOperations, DelegateKeys.tags, delegate.getTags());
-    log.info("Updating delegate tags : Delegate:{} tags:{}", delegate.getUuid(), delegate.getTags());
 
-    auditServiceHelper.reportForAuditingUsingAccountId(delegate.getAccountId(), null, delegate, Type.UPDATE_TAG);
-    log.info("Auditing updation of Tags for delegate={} in account={}", delegate.getUuid(), delegate.getAccountId());
+    // this is important to keep only unique list of tags in db.
+    Set<String> uniqueSetOfTags = new HashSet<>(delegate.getTags());
+
+    setUnset(updateOperations, DelegateKeys.tags, new ArrayList<>(uniqueSetOfTags));
+    log.info("Updating delegate tags : Delegate:{} tags:{}", delegate.getUuid(), delegate.getTags());
 
     Delegate updatedDelegate = null;
     if (isGroupedCgDelegate(delegate)) {
@@ -1014,6 +1017,10 @@ public class DelegateServiceImpl implements DelegateService {
     } else {
       updatedDelegate = updateDelegate(delegate, updateOperations);
     }
+
+    auditServiceHelper.reportForAuditingUsingAccountId(
+        delegate.getAccountId(), delegate, updatedDelegate, Type.UPDATE_TAG);
+    log.info("Auditing updation of Tags for delegate={} in account={}", delegate.getUuid(), delegate.getAccountId());
 
     return updatedDelegate;
   }
@@ -3338,6 +3345,58 @@ public class DelegateServiceImpl implements DelegateService {
     }
 
     return null;
+  }
+
+  @Override
+  public DelegateDTO listDelegateTags(String accountId, String delegateId) {
+    Delegate delegate = delegateCache.get(accountId, delegateId, true);
+    if (delegate == null) {
+      throw new InvalidRequestException(
+          format("Delegate with accountId: %s and delegateId: %s does not exists.", accountId, delegateId));
+    }
+    return DelegateDTO.convertToDTO(delegate);
+  }
+
+  @Override
+  public DelegateDTO addDelegateTags(String accountId, String delegateId, DelegateTags delegateTags) {
+    Delegate delegate = delegateCache.get(accountId, delegateId, true);
+    if (delegate == null) {
+      throw new InvalidRequestException(
+          format("Delegate with accountId: %s and delegateId: %s does not exists.", accountId, delegateId));
+    }
+    List<String> existingTags = delegate.getTags();
+    if (isNotEmpty(existingTags)) {
+      existingTags.addAll(delegateTags.getTags());
+      delegate.setTags(existingTags);
+    } else {
+      delegate.setTags(delegateTags.getTags());
+    }
+    Delegate updatedDelegate = updateTags(delegate);
+    return DelegateDTO.convertToDTO(updatedDelegate);
+  }
+
+  @Override
+  public DelegateDTO updateDelegateTags(String accountId, String delegateId, DelegateTags delegateTags) {
+    Delegate delegate = delegateCache.get(accountId, delegateId, true);
+    if (delegate == null) {
+      throw new InvalidRequestException(
+          format("Delegate with accountId: %s and delegateId: %s does not exists.", accountId, delegateId));
+    }
+    delegate.setTags(delegateTags.getTags());
+    Delegate updatedDelegate = updateTags(delegate);
+    return DelegateDTO.convertToDTO(updatedDelegate);
+  }
+
+  @Override
+  public DelegateDTO deleteDelegateTags(String accountId, String delegateId) {
+    Delegate delegate = delegateCache.get(accountId, delegateId, true);
+    if (delegate == null) {
+      throw new InvalidRequestException(
+          format("Delegate with accountId: %s and delegateId: %s does not exists.", accountId, delegateId));
+    }
+    delegate.setTags(emptyList());
+    Delegate updatedDelegate = updateTags(delegate);
+    return DelegateDTO.convertToDTO(updatedDelegate);
   }
 
   private DelegateSequenceConfig generateNewSeqenceConfig(Delegate delegate, Integer seqNum) {
