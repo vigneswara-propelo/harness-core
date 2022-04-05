@@ -227,9 +227,9 @@ iteratorsConfig:
     enabled: true
     targetIntervalInSeconds: 60
   resourceRestraint:
-    threadPoolCount: 5
+    threadPoolCount: 2
     enabled: true
-    targetIntervalInSeconds: 60
+    targetIntervalInSeconds: 300
   interruptMonitor:
     threadPoolCount: 2
     enabled: true

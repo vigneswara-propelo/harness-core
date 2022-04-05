@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.registries;
+package io.harness.engine.pms.execution;
 
 import static io.harness.rule.OwnerRule.SAHIL;
 
