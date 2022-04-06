@@ -18,7 +18,6 @@ import io.harness.ccm.cluster.entities.EcsCluster;
 import io.harness.ccm.license.CeLicenseInfo;
 import io.harness.ccm.license.CeLicenseType;
 import io.harness.cvng.state.CVNGVerificationTask;
-import io.harness.delegate.task.ListNotifyResponseData;
 import io.harness.perpetualtask.PerpetualTaskSchedule;
 import io.harness.perpetualtask.internal.AssignmentTaskResponse;
 import io.harness.serializer.KryoRegistrar;
@@ -196,7 +195,6 @@ import software.wings.beans.DatadogYaml;
 import software.wings.beans.DelegateTaskBroadcast;
 import software.wings.beans.DirectKubernetesInfrastructureMapping;
 import software.wings.beans.DockerConfig;
-import software.wings.beans.EcrConfig;
 import software.wings.beans.EcsInfrastructureMapping;
 import software.wings.beans.ElasticLoadBalancerConfig;
 import software.wings.beans.ElementExecutionSummary;
@@ -967,7 +965,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(ShellScriptParameters.class, 5186);
     kryo.register(TerraformProvisionParameters.class, 5342);
     kryo.register(DockerConfig.class, 5010);
-    kryo.register(EcrConfig.class, 5011);
     kryo.register(ElasticLoadBalancerConfig.class, 5020);
     kryo.register(ElementExecutionSummary.class, 5027);
     kryo.register(GcpConfig.class, 5014);
@@ -1490,8 +1487,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AzureVMSSSetupExecutionSummary.class, 7469);
     kryo.register(InstanceFetchStateExecutionData.class, 7471);
     kryo.register(InstanceFetchStateExecutionSummary.class, 7472);
-
-    kryo.register(ListNotifyResponseData.class, 5133);
 
     kryo.register(HelmChartCollectionParams.class, 8058);
     kryo.register(AwsAmiInfoVariables.class, 8059);

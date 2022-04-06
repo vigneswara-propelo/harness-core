@@ -229,6 +229,7 @@ import io.harness.delegate.command.CommandExecutionResult;
 import io.harness.delegate.exception.DelegateRetryableException;
 import io.harness.delegate.exception.HelmNGException;
 import io.harness.delegate.exception.TaskNGDataException;
+import io.harness.delegate.task.ListNotifyResponseData;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
 import io.harness.delegate.task.artifacts.ArtifactTaskType;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateRequest;
@@ -560,6 +561,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(YamlGitConfig.class, 5547);
     kryo.register(YamlGitConfig.SyncMode.class, 5548);
     kryo.register(SettingAttribute.SettingCategory.class, 5069);
+    kryo.register(ListNotifyResponseData.class, 5133);
     kryo.register(JenkinsExecutionResponse.class, 5146);
 
     kryo.register(software.wings.beans.yaml.GitCommand.GitCommandType.class, 5190);

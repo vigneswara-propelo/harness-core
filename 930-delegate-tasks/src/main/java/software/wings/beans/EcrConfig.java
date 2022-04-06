@@ -9,8 +9,6 @@ package software.wings.beans;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
-import static software.wings.service.impl.aws.model.AwsConstants.AWS_DEFAULT_REGION;
-
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
@@ -22,8 +20,6 @@ import software.wings.audit.ResourceType;
 import software.wings.jersey.JsonViews;
 import software.wings.settings.SettingValue;
 import software.wings.settings.SettingVariableTypes;
-import software.wings.stencils.DefaultValue;
-import software.wings.stencils.EnumData;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -55,10 +51,7 @@ public class EcrConfig extends SettingValue implements EncryptableSetting {
   @Attributes(title = "Amazon ECR Registry URL", required = true) @NotEmpty private String ecrUrl;
   @Attributes(title = "Access Key", required = true) @NotEmpty private String accessKey;
   @Attributes(title = "Secret Key", required = true) @Encrypted(fieldName = "secret_key") private char[] secretKey;
-  @Attributes(title = "Region", required = true)
-  @DefaultValue(AWS_DEFAULT_REGION)
-  @EnumData(enumDataProvider = AwsRegionDataProvider.class)
-  private String region;
+  @Attributes(title = "Region", required = true) private String region;
   @SchemaIgnore @NotEmpty private String accountId;
 
   @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedSecretKey;

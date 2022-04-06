@@ -14,6 +14,7 @@ import io.harness.serializer.KryoRegistrar;
 
 import software.wings.beans.AppDynamicsConfig;
 import software.wings.beans.DynaTraceConfig;
+import software.wings.beans.EcrConfig;
 import software.wings.beans.ElkConfig;
 import software.wings.beans.NewRelicConfig;
 import software.wings.beans.SumoConfig;
@@ -53,6 +54,7 @@ import com.esotericsoftware.kryo.Kryo;
 public class DelegateTasksKryoRegistrar implements KryoRegistrar {
   @Override
   public void register(Kryo kryo) {
+    kryo.register(EcrConfig.class, 5011);
     kryo.register(ElkConfig.class, 5017);
     kryo.register(ExecutionLogCallback.class, 5044);
     kryo.register(ElkDataCollectionInfo.class, 5169);
