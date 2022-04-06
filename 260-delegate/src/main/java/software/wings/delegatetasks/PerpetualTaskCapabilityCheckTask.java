@@ -73,7 +73,7 @@ public class PerpetualTaskCapabilityCheckTask extends AbstractDelegateRunnableTa
         return;
       }
 
-      checkResponses.add(capabilityCheck.performCapabilityCheck(delegateCapability));
+      checkResponses.add(capabilityCheck.performCapabilityCheck(delegateCapability, false));
     });
     boolean validated = false;
     if (isNotEmpty(checkResponses)) {

@@ -27,7 +27,7 @@ public class GitInstallationCapabilityCheck implements CapabilityCheck, ProtoCap
   private static final int GIT_COMMAND_TIMEOUT_MILLIS = 1000;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     return CapabilityResponse.builder()
         .validated(checkIfGitClientIsInstalled())
         .delegateCapability(delegateCapability)

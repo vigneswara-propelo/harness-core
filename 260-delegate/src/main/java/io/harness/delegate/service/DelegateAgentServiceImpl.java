@@ -2004,7 +2004,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         injector.injectMembers(delegateValidateTask);
         currentlyValidatingTasks.put(delegateTaskPackage.getDelegateTaskId(), delegateTaskPackage);
         updateCounterIfLessThanCurrent(maxValidatingTasksCount, currentlyValidatingTasks.size());
-        delegateValidateTask.validationResults();
+        delegateValidateTask.validationResults(delegateTaskPackage.isNG());
       } else if (delegateInstanceId.equals(delegateTaskPackage.getDelegateInstanceId())) {
         applyDelegateSecretFunctor(delegateTaskPackage);
         // Whitelisted. Proceed immediately.

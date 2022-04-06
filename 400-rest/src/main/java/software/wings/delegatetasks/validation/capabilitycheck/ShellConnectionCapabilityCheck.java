@@ -38,7 +38,7 @@ public class ShellConnectionCapabilityCheck implements CapabilityCheck {
   @Inject SecretManagementDelegateService secretManagementDelegateService;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     ShellConnectionCapability capability = (ShellConnectionCapability) delegateCapability;
     ShellScriptParameters parameters = capability.getShellScriptParameters();
 

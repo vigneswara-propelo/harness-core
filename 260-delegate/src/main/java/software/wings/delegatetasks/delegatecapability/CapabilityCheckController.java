@@ -47,7 +47,7 @@ public class CapabilityCheckController extends AbstractDelegateValidateTask {
   }
 
   @Override
-  public List<DelegateConnectionResult> validate() {
+  public List<DelegateConnectionResult> validate(boolean isNG) {
     List<CapabilityResponse> checkResponses = new ArrayList<>();
     try {
       List<ExecutionCapability> executionCapabilities = getExecutionCapabilities();
@@ -70,7 +70,7 @@ public class CapabilityCheckController extends AbstractDelegateValidateTask {
           return;
         }
 
-        CapabilityResponse capabilityResponse = capabilityCheck.performCapabilityCheck(delegateCapability);
+        CapabilityResponse capabilityResponse = capabilityCheck.performCapabilityCheck(delegateCapability, isNG);
 
         try {
           CapabilityParameters parameters = CapabilityProtoConverter.toProto(delegateCapability);

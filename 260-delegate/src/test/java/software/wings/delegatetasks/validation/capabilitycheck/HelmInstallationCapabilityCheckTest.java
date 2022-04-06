@@ -44,7 +44,7 @@ public class HelmInstallationCapabilityCheckTest extends WingsBaseTest {
   public void shouldPerformCapabilityCheck() {
     when(k8sGlobalConfigService.getHelmPath(HelmVersion.V2)).thenReturn("");
     CapabilityResponse capabilityResponse2 = helmInstallationCapabilityCheck.performCapabilityCheck(
-        HelmInstallationCapability.builder().version(HelmVersion.V2).build());
+        HelmInstallationCapability.builder().version(HelmVersion.V2).build(), false);
     assertThat(capabilityResponse2).isNotNull();
     assertThat(capabilityResponse2.isValidated()).isFalse();
   }

@@ -23,7 +23,7 @@ public class CIVmConnectionCapabilityCheck implements CapabilityCheck, ProtoCapa
   @Inject HttpHelper httpHelper;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     CIVmConnectionCapability connectionCapabiilty = (CIVmConnectionCapability) delegateCapability;
     boolean isOwner = isPoolOwner(connectionCapabiilty.getPoolId());
     return CapabilityResponse.builder().delegateCapability(delegateCapability).validated(isOwner).build();

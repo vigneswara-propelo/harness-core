@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SystemEnvCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     SystemEnvCheckerCapability systemEnvCheckerCapability = (SystemEnvCheckerCapability) delegateCapability;
     boolean valid = systemEnvCheckerCapability.getComparate().equals(
         System.getenv().get(systemEnvCheckerCapability.getSystemPropertyName()));

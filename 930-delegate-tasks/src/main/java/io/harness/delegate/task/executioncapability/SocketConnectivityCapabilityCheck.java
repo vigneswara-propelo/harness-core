@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class SocketConnectivityCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     SocketConnectivityExecutionCapability socketConnCapability =
         (SocketConnectivityExecutionCapability) delegateCapability;
     try {

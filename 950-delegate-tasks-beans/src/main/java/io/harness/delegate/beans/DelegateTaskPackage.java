@@ -43,4 +43,5 @@ public class DelegateTaskPackage {
 
   private List<ExecutionCapability> executionCapabilities;
   private LinkedHashMap<String, String> logStreamingAbstractions;
+  boolean isNG;
 }

@@ -17,7 +17,7 @@ import com.google.inject.Singleton;
 
 public class AlwaysFalseValidationCapabilityCheck implements CapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     AlwaysFalseValidationCapability ignoreValidationCapability = (AlwaysFalseValidationCapability) delegateCapability;
 
     return CapabilityResponse.builder().delegateCapability(ignoreValidationCapability).validated(false).build();

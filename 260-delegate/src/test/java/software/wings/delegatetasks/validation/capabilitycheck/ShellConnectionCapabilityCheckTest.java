@@ -65,7 +65,8 @@ public class ShellConnectionCapabilityCheckTest extends WingsBaseTest {
                                                                      .withAccountId(WingsTestConstants.ACCOUNT_ID)
                                                                      .build())
                                        .build())
-            .build());
+            .build(),
+        false);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }

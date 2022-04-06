@@ -24,7 +24,7 @@ import org.zeroturnaround.exec.ProcessResult;
 @Slf4j
 public class ProcessExecutorCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     ProcessExecutorCapability processExecutorCapability = (ProcessExecutorCapability) delegateCapability;
 
     ProcessExecutor processExecutor =

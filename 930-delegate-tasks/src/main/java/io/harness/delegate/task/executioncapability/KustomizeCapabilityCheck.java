@@ -33,7 +33,7 @@ public class KustomizeCapabilityCheck implements CapabilityCheck, ProtoCapabilit
   private static final String KUSTOMIZE_PLUGIN_DIR_SUFFIX = "kustomize/plugin";
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
     KustomizeCapability capability = (KustomizeCapability) delegateCapability;
     return CapabilityResponse.builder()
         .validated(doesKustomizePluginDirExist(capability.getPluginRootDir()))

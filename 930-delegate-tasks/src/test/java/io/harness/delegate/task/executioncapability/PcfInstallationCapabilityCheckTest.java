@@ -51,7 +51,7 @@ public class PcfInstallationCapabilityCheckTest extends CategoryTest {
             .build();
     doReturn(true).when(cfCliDelegateResolver).isDelegateEligibleToExecuteCfCliCommand(CfCliVersion.V6);
 
-    CapabilityResponse capabilityResponse = pcfInstallationCapabilityCheck.performCapabilityCheck(capability);
+    CapabilityResponse capabilityResponse = pcfInstallationCapabilityCheck.performCapabilityCheck(capability, false);
 
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
@@ -71,7 +71,7 @@ public class PcfInstallationCapabilityCheckTest extends CategoryTest {
             .build();
     doReturn(true).when(cfCliDelegateResolver).isDelegateEligibleToExecuteCfCliCommand(CfCliVersion.V7);
 
-    CapabilityResponse capabilityResponse = pcfInstallationCapabilityCheck.performCapabilityCheck(capability);
+    CapabilityResponse capabilityResponse = pcfInstallationCapabilityCheck.performCapabilityCheck(capability, false);
 
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
