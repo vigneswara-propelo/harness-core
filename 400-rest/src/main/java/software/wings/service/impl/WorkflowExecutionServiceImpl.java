@@ -1861,9 +1861,6 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
   }
 
   private void sendEvent(Application app, ExecutionArgs executionArgs, WorkflowExecution execution) {
-    if (!featureFlagService.isEnabled(FeatureName.APP_TELEMETRY, app.getAccountId())) {
-      return;
-    }
     if (PIPELINE.equals(executionArgs.getWorkflowType())) {
       PipelineSummary summary = execution.getPipelineSummary();
       if (summary != null) {
