@@ -11,6 +11,7 @@ import io.harness.cvng.core.entities.VerificationTask;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.migration.CVNGMigration;
 import io.harness.cvng.migration.beans.ChecklistItem;
+import io.harness.cvng.statemachine.beans.AnalysisOrchestratorStatus;
 import io.harness.cvng.statemachine.beans.AnalysisStatus;
 import io.harness.cvng.statemachine.entities.AnalysisOrchestrator;
 import io.harness.cvng.statemachine.entities.AnalysisOrchestrator.AnalysisOrchestratorKeys;
@@ -50,7 +51,7 @@ public class DeleteOldAnalysisOrchestratorMigration implements CVNGMigration {
             || !verificationTaskOptional.isPresent()) {
           UpdateOperations<AnalysisOrchestrator> updateOperations =
               hPersistence.createUpdateOperations(AnalysisOrchestrator.class)
-                  .set(AnalysisOrchestratorKeys.status, AnalysisStatus.COMPLETED);
+                  .set(AnalysisOrchestratorKeys.status, AnalysisOrchestratorStatus.COMPLETED);
           hPersistence.update(orchestrator, updateOperations);
           log.info("Updated analysis status to completed for {}", orchestrator);
         }
