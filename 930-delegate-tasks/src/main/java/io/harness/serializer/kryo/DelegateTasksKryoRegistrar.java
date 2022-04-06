@@ -46,6 +46,7 @@ import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
 import software.wings.service.impl.newrelic.NewRelicSetupTestNodeData;
 import software.wings.service.impl.sumo.SumoDataCollectionInfo;
 import software.wings.service.intfc.analysis.ClusterLevel;
+import software.wings.utils.ArtifactType;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -92,5 +93,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(ClusterLevel.class, 7348);
     kryo.register(DynaTraceApplication.class, 8074);
     kryo.register(DelegateStateType.class, 8601);
+    kryo.register(ArtifactType.class, 5117);
   }
 }

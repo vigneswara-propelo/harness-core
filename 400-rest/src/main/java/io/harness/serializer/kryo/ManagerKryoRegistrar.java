@@ -771,7 +771,6 @@ import software.wings.sm.states.spotinst.SpotinstTrafficShiftAlbSetupElement;
 import software.wings.sm.states.spotinst.SpotinstTrafficShiftAlbSetupExecutionData;
 import software.wings.sm.states.spotinst.SpotinstTrafficShiftAlbSwapRoutesExecutionData;
 import software.wings.sm.status.StateStatusUpdateInfo;
-import software.wings.utils.ArtifactType;
 import software.wings.utils.ContainerFamily;
 import software.wings.verification.VerificationDataAnalysisResponse;
 import software.wings.verification.VerificationStateAnalysisExecutionData;
@@ -1211,7 +1210,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(StateType.class, 4001);
     kryo.register(StepExecutionSummary.class, 5145);
     kryo.register(WorkflowStandardParams.class, 5227);
-    kryo.register(ArtifactType.class, 5117);
     kryo.register(ContainerFamily.class, 5118);
     kryo.register(VerificationStateAnalysisExecutionData.class, 5552);
     kryo.register(EcsBGRoute53ServiceSetupRequest.class, 7101);
