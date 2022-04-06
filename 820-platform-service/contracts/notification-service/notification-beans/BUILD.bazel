@@ -6,12 +6,12 @@ java_library(
     name = "module",
     srcs = glob(["src/main/java/**/*.java"]),
     resource_jars = [
-        "//960-notification-beans/src/main/proto:960_notification_beans_java_proto",
+        "//820-platform-service/contracts/notification-service/notification-beans/src/main/proto:notification_beans_java_proto",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
-        "//960-notification-beans/src/main/proto:960_notification_beans_java_proto",
+        "//820-platform-service/contracts/notification-service/notification-beans/src/main/proto:notification_beans_java_proto",
         "//970-api-services-beans:module",
         "//970-api-services-beans/src/main/proto:970_api_services_beans_java_proto",
         "//970-ng-commons:module",

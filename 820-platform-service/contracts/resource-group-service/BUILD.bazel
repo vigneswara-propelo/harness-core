@@ -28,8 +28,8 @@ java_library(
     name = "tests",
     testonly = True,
     srcs = glob(["src/test/java/**/*.java"]),
-    data = ["//940-resource-group-beans/src/test/resources:resource"],
-    resources = ["//940-resource-group-beans/src/test/resources:resource"],
+    data = ["//820-platform-service/contracts/resource-group-service/src/test/resources:resource"],
+    resources = ["//820-platform-service/contracts/resource-group-service/src/test/resources:resource"],
     visibility = ["//visibility:public"],
     deps = [
         ":module",

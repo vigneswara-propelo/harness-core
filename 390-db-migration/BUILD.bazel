@@ -14,7 +14,7 @@ java_library(
         "//420-delegate-service:module",
         "//450-ce-views:module",
         "//490-ce-commons:module",
-        "//835-notification-senders:module",
+        "//820-platform-service/contracts/notification-service/notification-senders:module",
         "//870-cg-orchestration:module",
         "//890-sm-core:module",
         "//920-delegate-agent-beans:module",

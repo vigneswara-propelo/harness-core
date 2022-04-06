@@ -9,7 +9,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
-        "//951-ng-audit-commons:module",
+        "//820-platform-service/contracts/audit-service:module",
         "//955-filters-sdk:module",
         "//960-ng-core-beans:module",
         "//960-persistence:module",
@@ -44,7 +44,7 @@ java_library(
     deps = [
         ":module",
         "//:lombok",
-        "//951-ng-audit-commons:module",
+        "//820-platform-service/contracts/audit-service:module",
         "//960-persistence:module",
         "//960-persistence:supporter-test",
         "//970-ng-commons:module",

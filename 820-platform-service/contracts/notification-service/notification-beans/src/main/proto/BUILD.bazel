@@ -2,7 +2,7 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:tools/bazel/protos/harness_grpc_library.bzl", "harness_proto_library")
 
 proto_library(
-    name = "960_notification_beans_proto",
+    name = "notification_beans_proto",
     srcs = glob(["**/*.proto"]),
     strip_import_prefix = "",
     visibility = ["//visibility:public"],
@@ -14,9 +14,9 @@ proto_library(
 )
 
 harness_proto_library(
-    name = "960_notification_beans_java_proto",
+    name = "notification_beans_java_proto",
     visibility = ["//visibility:public"],
     deps = [
-        ":960_notification_beans_proto",
+        ":notification_beans_proto",
     ],
 )
