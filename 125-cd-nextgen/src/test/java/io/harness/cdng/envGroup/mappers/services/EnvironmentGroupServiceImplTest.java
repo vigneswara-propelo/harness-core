@@ -21,6 +21,7 @@ import io.harness.EntityType;
 import io.harness.beans.IdentifierRef;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
+import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKeys;
 import io.harness.cdng.envGroup.services.EnvironmentGroupServiceImpl;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.eventsframework.api.Producer;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -371,5 +373,34 @@ public class EnvironmentGroupServiceImplTest extends CategoryTest {
     ByteString data = value.getData();
 
     assertThat(data).isEqualTo(entityReferenceDTO.toByteString());
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testFormCriteria() {
+    // CASE1: search term as null and deleted is false
+    Criteria actualCriteria = environmentGroupService.formCriteria(ACC_ID, ORG_ID, PRO_ID, false, null);
+    Document criteriaObject = actualCriteria.getCriteriaObject();
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.accountId)).isEqualTo(ACC_ID);
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.orgIdentifier)).isEqualTo(ORG_ID);
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.projectIdentifier)).isEqualTo(PRO_ID);
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.deleted)).isEqualTo(false);
+
+    // CASE2: search term as null and deleted is true
+    actualCriteria = environmentGroupService.formCriteria(ACC_ID, ORG_ID, PRO_ID, true, null);
+    criteriaObject = actualCriteria.getCriteriaObject();
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.accountId)).isEqualTo(ACC_ID);
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.orgIdentifier)).isEqualTo(ORG_ID);
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.projectIdentifier)).isEqualTo(PRO_ID);
+    assertThat(criteriaObject.get(EnvironmentGroupKeys.deleted)).isEqualTo(true);
+
+    // CASE3: special character in search term
+    assertThatThrownBy(() -> environmentGroupService.formCriteria(ACC_ID, ORG_ID, PRO_ID, false, "*"))
+        .isInstanceOf(InvalidRequestException.class);
+
+    // CASE4: testing the search query
+    assertThatCode(() -> environmentGroupService.formCriteria(ACC_ID, ORG_ID, PRO_ID, false, "searchTerm"))
+        .doesNotThrowAnyException();
   }
 }
