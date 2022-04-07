@@ -21,6 +21,7 @@ import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.data.structure.HarnessStringUtils;
 import io.harness.engine.GovernanceService;
 import io.harness.eventsframework.api.EventsFrameworkDownException;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
@@ -31,6 +32,8 @@ import io.harness.exception.ExplanationException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.InvalidYamlException;
 import io.harness.exception.ScmException;
+import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorDTO;
+import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorWrapperDTO;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.common.utils.GitEntityFilePath;
 import io.harness.gitsync.common.utils.GitSyncFilePathUtils;
@@ -373,20 +376,32 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
   @Override
   public GovernanceMetadata validatePipelineYamlAndSetTemplateRefIfAny(
       PipelineEntity pipelineEntity, boolean checkAgainstOPAPolicies) {
-    GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
-    if (gitEntityInfo != null && gitEntityInfo.isNewBranch()) {
-      GitSyncBranchContext gitSyncBranchContext =
-          GitSyncBranchContext.builder()
-              .gitBranchInfo(GitEntityInfo.builder()
-                                 .branch(gitEntityInfo.getBaseBranch())
-                                 .yamlGitConfigId(gitEntityInfo.getYamlGitConfigId())
-                                 .build())
-              .build();
-      try (PmsGitSyncBranchContextGuard ignored = new PmsGitSyncBranchContextGuard(gitSyncBranchContext, true)) {
+    try {
+      GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
+      if (gitEntityInfo != null && gitEntityInfo.isNewBranch()) {
+        GitSyncBranchContext gitSyncBranchContext =
+            GitSyncBranchContext.builder()
+                .gitBranchInfo(GitEntityInfo.builder()
+                                   .branch(gitEntityInfo.getBaseBranch())
+                                   .yamlGitConfigId(gitEntityInfo.getYamlGitConfigId())
+                                   .build())
+                .build();
+        try (PmsGitSyncBranchContextGuard ignored = new PmsGitSyncBranchContextGuard(gitSyncBranchContext, true)) {
+          return validatePipelineYamlAndSetTemplateRefIfAnyInternal(pipelineEntity, checkAgainstOPAPolicies);
+        }
+      } else {
         return validatePipelineYamlAndSetTemplateRefIfAnyInternal(pipelineEntity, checkAgainstOPAPolicies);
       }
-    } else {
-      return validatePipelineYamlAndSetTemplateRefIfAnyInternal(pipelineEntity, checkAgainstOPAPolicies);
+    } catch (io.harness.yaml.validator.InvalidYamlException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      YamlSchemaErrorWrapperDTO errorWrapperDTO =
+          YamlSchemaErrorWrapperDTO.builder()
+              .schemaErrors(Collections.singletonList(
+                  YamlSchemaErrorDTO.builder().message(ex.getMessage()).fqn("$.pipeline").build()))
+              .build();
+      throw new io.harness.yaml.validator.InvalidYamlException(
+          HarnessStringUtils.emptyIfNull(ex.getMessage()), ex, errorWrapperDTO);
     }
   }
 
@@ -564,6 +579,7 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
     return criteria;
   }
 
+  // TODO(Brijesh): Make this async.
   private void sendPipelineSaveTelemetryEvent(PipelineEntity entity, String actionType) {
     HashMap<String, Object> properties = new HashMap<>();
     properties.put(PIPELINE_NAME, entity.getName());

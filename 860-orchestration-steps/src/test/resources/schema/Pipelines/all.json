@@ -1752,7 +1752,8 @@
       "type": "object",
       "required": [
         "identifier",
-        "name"
+        "name",
+        "stages"
       ],
       "properties": {
         "allowStageExecutions": {
