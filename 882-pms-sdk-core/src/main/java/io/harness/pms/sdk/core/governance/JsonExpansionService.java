@@ -42,7 +42,7 @@ public class JsonExpansionService extends JsonExpansionServiceImplBase {
   @Override
   public void expand(ExpansionRequestBatch requestsBatch, StreamObserver<ExpansionResponseBatch> responseObserver) {
     ExpansionResponseBatch.Builder expansionResponseBatchBuilder = ExpansionResponseBatch.newBuilder();
-    Map<String, ExpansionResponseProto> jsonNodeMap = new HashMap<>();
+    Map<String, ExpansionResponse> jsonNodeMap = new HashMap<>();
     List<ExpansionRequestProto> expansionRequests = requestsBatch.getExpansionRequestProtoList();
     for (ExpansionRequestProto request : expansionRequests) {
       String fqn = request.getFqn();
@@ -53,15 +53,15 @@ public class JsonExpansionService extends JsonExpansionServiceImplBase {
         String json = request.getValue().toStringUtf8();
         String cacheKey = key + ":" + json;
         if (jsonNodeMap.containsKey(cacheKey)) {
-          expansionResponseBatchBuilder.addExpansionResponseProto(jsonNodeMap.get(cacheKey));
+          expansionResponseBatchBuilder.addExpansionResponseProto(
+              convertToResponseProto(jsonNodeMap.get(cacheKey), fqn));
           continue;
         }
         JsonNode value = getValueJsonNode(request);
         ExpansionResponse expansionResponse =
             jsonExpansionHandler.expand(value, requestsBatch.getRequestMetadata(), fqn);
-        ExpansionResponseProto expansionResponseProto = convertToResponseProto(expansionResponse, fqn);
-        jsonNodeMap.put(cacheKey, expansionResponseProto);
-        expansionResponseBatchBuilder.addExpansionResponseProto(jsonNodeMap.get(cacheKey));
+        jsonNodeMap.put(cacheKey, expansionResponse);
+        expansionResponseBatchBuilder.addExpansionResponseProto(convertToResponseProto(jsonNodeMap.get(cacheKey), fqn));
       } catch (Exception ex) {
         log.error(ExceptionUtils.getMessage(ex), ex);
         WingsException processedException = exceptionManager.processException(ex);
