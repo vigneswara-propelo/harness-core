@@ -43,6 +43,8 @@ import io.harness.connector.mappers.awsmapper.AwsDTOToEntity;
 import io.harness.connector.mappers.awsmapper.AwsEntityToDTO;
 import io.harness.connector.mappers.azuremapper.AzureDTOToEntity;
 import io.harness.connector.mappers.azuremapper.AzureEntityToDTO;
+import io.harness.connector.mappers.azurerepomapper.AzureRepoDTOToEntity;
+import io.harness.connector.mappers.azurerepomapper.AzureRepoEntityToDTO;
 import io.harness.connector.mappers.bitbucketconnectormapper.BitbucketDTOToEntity;
 import io.harness.connector.mappers.bitbucketconnectormapper.BitbucketEntityToDTO;
 import io.harness.connector.mappers.ceawsmapper.CEAwsDTOToEntity;
@@ -108,6 +110,7 @@ import io.harness.connector.mappers.sumologicmapper.SumoLogicEntityToDTO;
 import io.harness.connector.task.ConnectorValidationHandler;
 import io.harness.connector.task.NotSupportedValidationHandler;
 import io.harness.connector.task.git.GitValidationHandler;
+import io.harness.connector.validator.AlwaysTrueConnectorValidator;
 import io.harness.connector.validator.ArtifactoryConnectionValidator;
 import io.harness.connector.validator.AwsConnectorValidator;
 import io.harness.connector.validator.AzureConnectorValidator;
@@ -281,6 +284,10 @@ public class ConnectorRegistryFactory {
     registrar.put(ConnectorType.ERROR_TRACKING,
         new ConnectorRegistrar(ConnectorCategory.MONITORING, ErrorTrackingConnectorValidator.class,
             CVConnectorParamsProvider.class, ErrorTrackingDTOToEntity.class, ErrorTrackingEntityToDTO.class,
+            NotSupportedValidationHandler.class));
+    registrar.put(ConnectorType.AZURE_REPO,
+        new ConnectorRegistrar(ConnectorCategory.CODE_REPO, AlwaysTrueConnectorValidator.class,
+            NoOpConnectorValidationParamsProvider.class, AzureRepoDTOToEntity.class, AzureRepoEntityToDTO.class,
             NotSupportedValidationHandler.class));
     registrar.put(ConnectorType.PDC,
         new ConnectorRegistrar(ConnectorCategory.CLOUD_PROVIDER, PhysicalDataCenterConnectorValidator.class,

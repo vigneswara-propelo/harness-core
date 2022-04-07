@@ -29,6 +29,12 @@ import io.harness.connector.entities.embedded.awssecretmanager.AwsSecretManagerC
 import io.harness.connector.entities.embedded.azureconnector.AzureConfig;
 import io.harness.connector.entities.embedded.azureconnector.AzureManualCredential;
 import io.harness.connector.entities.embedded.azurekeyvaultconnector.AzureKeyVaultConnector;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoApiAccess;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoConnector;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoHttpAuthentication;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoSshAuthentication;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoTokenApiAccess;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoUsernameToken;
 import io.harness.connector.entities.embedded.bitbucketconnector.BitbucketConnector;
 import io.harness.connector.entities.embedded.bitbucketconnector.BitbucketHttpAuthentication;
 import io.harness.connector.entities.embedded.bitbucketconnector.BitbucketSshAuthentication;
@@ -135,6 +141,7 @@ public class ConnectorMorphiaClassesRegistrar implements MorphiaRegistrar {
     set.add(ServiceNowConnector.class);
     set.add(ErrorTrackingConnector.class);
     set.add(AzureConfig.class);
+    set.add(AzureRepoConnector.class);
   }
 
   @Override
@@ -191,5 +198,12 @@ public class ConnectorMorphiaClassesRegistrar implements MorphiaRegistrar {
         HttpHelmUsernamePasswordAuthentication.class);
     h.put("connector.entities.embedded.gcpccm.GcpBillingExportDetails", GcpBillingExportDetails.class);
     h.put("connector.entities.embedded.azureconnector.AzureManualCredential", AzureManualCredential.class);
+    h.put("connector.entities.embedded.azurerepoconnector.AzureRepoAppApiAccess", AzureRepoApiAccess.class);
+    h.put("connector.entities.embedded.azurerepoconnector.AzureRepoTokenApiAccess", AzureRepoTokenApiAccess.class);
+    h.put(
+        "connector.entities.embedded.azurerepoconnector.AzureRepoSshAuthentication", AzureRepoSshAuthentication.class);
+    h.put("connector.entities.embedded.azurerepoconnector.AzureRepoHttpAuthentication",
+        AzureRepoHttpAuthentication.class);
+    h.put("connector.entities.embedded.azurerepoconnector.AzureRepoUsernameToken", AzureRepoUsernameToken.class);
   }
 }

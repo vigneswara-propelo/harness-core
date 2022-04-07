@@ -122,6 +122,18 @@ import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitHttpsA
 import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitHttpsCredentialsDTO;
 import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitSecretKeyAccessKeyDTO;
 import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitUrlType;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAccessDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAccessSpecDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAccessType;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoAuthenticationDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectorDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoCredentialsDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpAuthenticationType;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpCredentialsDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpCredentialsSpecDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoSshCredentialsDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoTokenSpecDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoUsernameTokenDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketApiAccessDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketApiAccessSpecDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketApiAccessType;
@@ -342,5 +354,17 @@ public class ConnectorBeansKryoRegistrar implements KryoRegistrar {
 
     kryo.register(PhysicalDataCenterConnectorDTO.class, 19691);
     kryo.register(HostDTO.class, 19692);
+    kryo.register(AzureRepoConnectorDTO.class, 19693);
+    kryo.register(AzureRepoHttpCredentialsDTO.class, 19694);
+    kryo.register(AzureRepoHttpAuthenticationType.class, 19695);
+    kryo.register(AzureRepoApiAccessDTO.class, 19696);
+    kryo.register(AzureRepoSshCredentialsDTO.class, 19697);
+    kryo.register(AzureRepoApiAccessSpecDTO.class, 19698);
+    kryo.register(AzureRepoTokenSpecDTO.class, 19699);
+    kryo.register(AzureRepoApiAccessType.class, 19800);
+    kryo.register(AzureRepoAuthenticationDTO.class, 19801);
+    kryo.register(AzureRepoCredentialsDTO.class, 19802);
+    kryo.register(AzureRepoUsernameTokenDTO.class, 19803);
+    kryo.register(AzureRepoHttpCredentialsSpecDTO.class, 19804);
   }
 }
