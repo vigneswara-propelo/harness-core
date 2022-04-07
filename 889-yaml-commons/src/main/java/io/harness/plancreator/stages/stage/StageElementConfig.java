@@ -52,6 +52,8 @@ import org.springframework.data.annotation.TypeAlias;
 @OneOfSet(fields = {"skipCondition, when, failureStrategies, type, stageType, variables, tags", "template"},
     requiredFieldNames = {"type", "template"})
 @RecasterAlias("io.harness.plancreator.stages.stage.StageElementConfig")
+// @deprecated: Use the AbstractStageNode instead.
+@Deprecated
 public class StageElementConfig {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
