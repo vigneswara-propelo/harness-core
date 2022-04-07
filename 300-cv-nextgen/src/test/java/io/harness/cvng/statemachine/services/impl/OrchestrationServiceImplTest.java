@@ -53,11 +53,14 @@ import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -129,10 +132,11 @@ public class OrchestrationServiceImplTest extends CvNextGenTestBase {
     assertThat(orchestrator).isNull();
     orchestrationService.queueAnalysis(verificationTaskId, startTime.minus(5, ChronoUnit.MINUTES), startTime);
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 8; i++) {
       updateLearningEngineTask();
       orchestrator = orchestrationService.getAnalysisOrchestrator(verificationTaskId);
       orchestrationService.orchestrate(orchestrator);
+      incrementAnalysisStateMachineClockBy5Hours();
     }
     assertThat(orchestrationService.getAnalysisOrchestrator(verificationTaskId).getStatus())
         .isEqualTo(AnalysisOrchestratorStatus.WAITING);
@@ -186,9 +190,10 @@ public class OrchestrationServiceImplTest extends CvNextGenTestBase {
     assertThat(orchestrator.get(0).getAnalysisStateMachineQueue()).hasSize(2);
     orchestrationService.orchestrate(orchestrator.get(0));
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 7; i++) {
       updateLearningEngineTask();
       orchestrationService.orchestrate(orchestrator.get(0));
+      incrementAnalysisStateMachineClockBy5Hours();
     }
     List<AnalysisStateMachine> analysisStateMachines =
         hPersistence.createQuery(AnalysisStateMachine.class)
@@ -197,14 +202,17 @@ public class OrchestrationServiceImplTest extends CvNextGenTestBase {
     assertThat(analysisStateMachines).hasSize(2);
     assertThat(analysisStateMachines.stream()
                    .filter(analysisStateMachine -> analysisStateMachine.getStatus().equals(AnalysisStatus.IGNORED))
-                   .findAny()
-                   .get()
-                   .getCurrentState()
-                   .getRetryCount())
-        .isEqualTo(2);
-    assertThat(analysisStateMachines.stream().filter(
-                   analysisStateMachine -> analysisStateMachine.getStatus().equals(AnalysisStatus.RUNNING)))
+                   .filter(analysisStateMachine -> analysisStateMachine.getCurrentState().getRetryCount() == 2))
         .isNotEmpty();
+    orchestrationService.queueAnalysis(
+        verificationTaskId, startTime.plus(1, ChronoUnit.DAYS), startTime.plus(2, ChronoUnit.DAYS));
+    orchestrationService.orchestrate(orchestrationService.getAnalysisOrchestrator(verificationTaskId));
+    analysisStateMachines = hPersistence.createQuery(AnalysisStateMachine.class)
+                                .filter(AnalysisStateMachineKeys.verificationTaskId, verificationTaskId)
+                                .asList();
+    assertThat(analysisStateMachines).hasSize(3);
+    // validate retry count is propogated
+    analysisStateMachines.forEach(analysisStateMachine -> assertThat(analysisStateMachine.getTotalRetryCount() == 2));
   }
 
   private void updateLearningEngineTask() {
@@ -549,5 +557,12 @@ public class OrchestrationServiceImplTest extends CvNextGenTestBase {
   public void orchestrate(String verificationTaskId) {
     AnalysisOrchestrator orchestrator = getOrchestrator(verificationTaskId);
     orchestrationService.orchestrate(orchestrator);
+  }
+
+  @SneakyThrows
+  private void incrementAnalysisStateMachineClockBy5Hours() {
+    Clock oldClock = (Clock) FieldUtils.readField(analysisStateMachineService, "clock", true);
+    Clock newClock = Clock.fixed(oldClock.instant().plus(Duration.ofHours(5)), ZoneOffset.UTC);
+    FieldUtils.writeField(analysisStateMachineService, "clock", newClock, true);
   }
 }

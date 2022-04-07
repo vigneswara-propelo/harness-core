@@ -375,7 +375,7 @@ public class CVServiceModule extends AbstractModule {
     bind(HPersistence.class).to(MongoPersistence.class);
     bind(TimeSeriesRecordService.class).to(TimeSeriesRecordServiceImpl.class);
     bind(OrchestrationService.class).to(OrchestrationServiceImpl.class);
-    bind(AnalysisStateMachineService.class).to(AnalysisStateMachineServiceImpl.class);
+    bind(AnalysisStateMachineService.class).to(AnalysisStateMachineServiceImpl.class).in(Scopes.SINGLETON);
     bind(TimeSeriesAnalysisService.class).to(TimeSeriesAnalysisServiceImpl.class);
     bind(TrendAnalysisService.class).to(TrendAnalysisServiceImpl.class);
     bind(LearningEngineTaskService.class).to(LearningEngineTaskServiceImpl.class);

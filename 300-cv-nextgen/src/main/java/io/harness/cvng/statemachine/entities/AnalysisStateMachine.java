@@ -29,6 +29,8 @@ import io.harness.persistence.UuidAware;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Date;
@@ -69,6 +71,9 @@ public final class AnalysisStateMachine implements PersistentEntity, UuidAware, 
         .build();
   }
 
+  private static final List<Duration> RETRY_WAIT_DURATIONS = Lists.newArrayList(Duration.ofMinutes(1),
+      Duration.ofMinutes(5), Duration.ofMinutes(10), Duration.ofMinutes(30), Duration.ofHours(1), Duration.ofHours(3));
+
   @Id private String uuid;
   @FdIndex private String accountId;
   private long createdAt;
@@ -81,8 +86,26 @@ public final class AnalysisStateMachine implements PersistentEntity, UuidAware, 
   @FdIndex private AnalysisStatus status;
 
   private long nextAttemptTime;
+  private int totalRetryCount;
 
   @NotNull private Integer stateMachineIgnoreMinutes;
+
+  public int incrementTotalRetryCount() {
+    totalRetryCount = totalRetryCount + 1;
+    return totalRetryCount;
+  }
+
+  public void setNextAttemptTimeUsingRetryCount(Instant now) {
+    nextAttemptTime =
+        now.plus(RETRY_WAIT_DURATIONS.get(Math.min(totalRetryCount, RETRY_WAIT_DURATIONS.size() - 1))).toEpochMilli();
+  }
+
+  public int getTotalRetryCountToBePropagated() {
+    if (status.equals(AnalysisStatus.SUCCESS) || status.equals(AnalysisStatus.COMPLETED)) {
+      return 0;
+    }
+    return totalRetryCount;
+  }
 
   public Integer getStateMachineIgnoreMinutes() {
     if (stateMachineIgnoreMinutes == null) {

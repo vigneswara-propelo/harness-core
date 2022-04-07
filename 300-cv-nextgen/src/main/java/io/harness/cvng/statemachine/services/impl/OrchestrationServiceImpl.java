@@ -156,7 +156,8 @@ public class OrchestrationServiceImpl implements OrchestrationService {
         case CREATED:
         case SUCCESS:
         case IGNORED:
-          orchestrateNewAnalysisStateMachine(orchestrator.getVerificationTaskId());
+          orchestrateNewAnalysisStateMachine(
+              orchestrator.getVerificationTaskId(), currentlyExecutingStateMachine.getTotalRetryCountToBePropagated());
           break;
         case RUNNING:
           log.info("For {}, state machine is currently RUNNING. "
@@ -178,7 +179,8 @@ public class OrchestrationServiceImpl implements OrchestrationService {
           log.info("Unknown analysis status of the state machine under execution");
       }
       if (AnalysisStatus.SUCCESS == stateMachineStatus || AnalysisStatus.COMPLETED == stateMachineStatus) {
-        orchestrateNewAnalysisStateMachine(orchestrator.getVerificationTaskId());
+        orchestrateNewAnalysisStateMachine(
+            orchestrator.getVerificationTaskId(), currentlyExecutingStateMachine.getTotalRetryCountToBePropagated());
       }
     }
   }
@@ -202,7 +204,7 @@ public class OrchestrationServiceImpl implements OrchestrationService {
         : null;
   }
 
-  private void orchestrateNewAnalysisStateMachine(String verificationTaskId) {
+  private void orchestrateNewAnalysisStateMachine(String verificationTaskId, int totalRetryCount) {
     int ignoredCount = 0;
     List<AnalysisStateMachine> ignoredStatemachines = new ArrayList<>();
     AnalysisStateMachine analysisStateMachine = null;
@@ -213,7 +215,7 @@ public class OrchestrationServiceImpl implements OrchestrationService {
         log.info("There is currently nothing to analyze for verificationTaskId {}", verificationTaskId);
         break;
       }
-
+      analysisStateMachine.setTotalRetryCount(totalRetryCount);
       Optional<AnalysisStateMachine> ignoredStateMachine =
           stateMachineService.ignoreOldStateMachine(analysisStateMachine);
       if (!ignoredStateMachine.isPresent()) {
