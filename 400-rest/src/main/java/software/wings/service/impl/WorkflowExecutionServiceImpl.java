@@ -21,6 +21,7 @@ import static io.harness.beans.ExecutionStatus.PAUSED;
 import static io.harness.beans.ExecutionStatus.PAUSING;
 import static io.harness.beans.ExecutionStatus.PREPARING;
 import static io.harness.beans.ExecutionStatus.QUEUED;
+import static io.harness.beans.ExecutionStatus.REJECTED;
 import static io.harness.beans.ExecutionStatus.RUNNING;
 import static io.harness.beans.ExecutionStatus.STARTING;
 import static io.harness.beans.ExecutionStatus.SUCCESS;
@@ -5989,7 +5990,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
         pipelineExecution.getPipelineStageExecutions()
             .stream()
             .flatMap(pipelineStageExecution -> pipelineStageExecution.getWorkflowExecutions().stream())
-            .filter(execution -> execution.getStatus() == FAILED)
+            .filter(execution -> execution.getStatus() == FAILED || execution.getStatus() == REJECTED)
             .forEach(execution
                 -> execution.setFailureDetails(fetchFailureDetails(execution.getAppId(), execution.getUuid())));
       }

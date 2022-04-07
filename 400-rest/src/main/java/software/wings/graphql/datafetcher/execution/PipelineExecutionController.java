@@ -160,7 +160,8 @@ public class PipelineExecutionController {
                                           .collect(Collectors.toList()));
     }
     String failureDetails = null;
-    if (workflowExecution.getStatus() == ExecutionStatus.FAILED) {
+    if (workflowExecution.getStatus() == ExecutionStatus.FAILED
+        || workflowExecution.getStatus() == ExecutionStatus.REJECTED) {
       failureDetails =
           workflowExecutionService.fetchFailureDetails(workflowExecution.getAppId(), workflowExecution.getUuid());
     }
