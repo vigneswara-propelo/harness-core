@@ -644,7 +644,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
               new ConnectorDeleteEvent(accountIdentifier, connectorMapper.writeDTO(existingConnector).getConnector()));
     }
 
-    connectorRepository.save(existingConnector, null, changeType, supplier);
+    connectorRepository.delete(existingConnector, null, changeType, supplier);
 
     return true;
   }
@@ -975,7 +975,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
               }
             }
             item.setDeleted(true);
-            connectorRepository.save(item, ChangeType.DELETE);
+            connectorRepository.delete(item, ChangeType.DELETE);
             Connector existingConnector = connectorOptional.get();
             ConnectorResponseDTO connectorDTO = connectorMapper.writeDTO(existingConnector);
             connectorEntityReferenceHelper.deleteConnectorEntityReferenceWhenConnectorGetsDeleted(
