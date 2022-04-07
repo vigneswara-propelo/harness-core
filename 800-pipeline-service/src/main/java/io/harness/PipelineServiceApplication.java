@@ -173,7 +173,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ServiceManager;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Guice;
@@ -707,7 +706,7 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
   }
 
   private GitSyncSdkConfiguration getGitSyncConfiguration(PipelineServiceConfiguration config) {
-    final Supplier<List<EntityType>> sortOrder = () -> Lists.newArrayList(EntityType.PIPELINES, EntityType.INPUT_SETS);
+    final Supplier<List<EntityType>> sortOrder = () -> PMSGitEntityOrderComparator.sortOrder;
     ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
     configureObjectMapper(objectMapper);
     Set<GitSyncEntitiesConfiguration> gitSyncEntitiesConfigurations = new HashSet<>();
@@ -734,6 +733,7 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
         .eventsRedisConfig(config.getEventsFrameworkConfiguration().getRedisConfig())
         .serviceHeader(PIPELINE_SERVICE)
         .gitSyncEntitiesConfiguration(gitSyncEntitiesConfigurations)
+        .gitSyncEntitySortComparator(PMSGitEntityOrderComparator.class)
         .objectMapper(objectMapper)
         .build();
   }

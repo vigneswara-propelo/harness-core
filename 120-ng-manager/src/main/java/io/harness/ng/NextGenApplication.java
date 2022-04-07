@@ -485,7 +485,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
   }
 
   private GitSyncSdkConfiguration getGitSyncConfiguration(NextGenConfiguration config) {
-    final Supplier<List<EntityType>> sortOrder = () -> Collections.singletonList(EntityType.CONNECTORS);
+    final Supplier<List<EntityType>> sortOrder = () -> CoreGitEntityOrderComparator.sortOrder;
     ObjectMapper ngObjectMapper = new ObjectMapper(new YAMLFactory());
     configureObjectMapper(ngObjectMapper);
     Set<GitSyncEntitiesConfiguration> gitSyncEntitiesConfigurations = new HashSet<>();
@@ -514,6 +514,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
         .eventsRedisConfig(config.getEventsFrameworkConfiguration().getRedisConfig())
         .serviceHeader(NG_MANAGER)
         .gitSyncEntitiesConfiguration(gitSyncEntitiesConfigurations)
+        .gitSyncEntitySortComparator(CoreGitEntityOrderComparator.class)
         .objectMapper(ngObjectMapper)
         .build();
   }

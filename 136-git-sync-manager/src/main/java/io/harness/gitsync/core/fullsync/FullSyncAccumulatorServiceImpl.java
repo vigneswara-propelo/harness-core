@@ -99,10 +99,13 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
       if (entitiesForFullSync != null) {
         isEntitiesAvailableForFullSync =
             checkIfEntitiesAvailableForFullSync(entitiesForFullSync, microservice) || isEntitiesAvailableForFullSync;
-        emptyIfNull(entitiesForFullSync.getFileChangesList()).forEach(entityForFullSync -> {
+        int fileProcessingSequenceNumber = 0;
+        for (FileChange entityForFullSync : entitiesForFullSync.getFileChangesList()) {
           saveFullSyncEntityInfo(gitConfigScope, messageId, microservice, entityForFullSync,
-              fullSyncEventRequest.getBranch(), fullSyncEventRequest.getRootFolder(), yamlGitConfigDTO);
-        });
+              fullSyncEventRequest.getBranch(), fullSyncEventRequest.getRootFolder(), yamlGitConfigDTO,
+              fileProcessingSequenceNumber);
+          fileProcessingSequenceNumber++;
+        }
       }
     }
 
@@ -182,7 +185,8 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
   }
 
   private void saveFullSyncEntityInfo(EntityScopeInfo entityScopeInfo, String messageId, Microservice microservice,
-      FileChange entityForFullSync, String branchName, String rootFolder, YamlGitConfigDTO yamlGitConfigDTO) {
+      FileChange entityForFullSync, String branchName, String rootFolder, YamlGitConfigDTO yamlGitConfigDTO,
+      int fileProcessingSequenceNumber) {
     String projectIdentifier = getStringValueFromProtoString(entityScopeInfo.getProjectId());
     String orgIdentifier = getStringValueFromProtoString(entityScopeInfo.getOrgId());
     final GitFullSyncEntityInfo gitFullSyncEntityInfo =
@@ -201,6 +205,7 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
             .branchName(branchName)
             .rootFolder(rootFolder)
             .retryCount(0)
+            .fileProcessingSequenceNumber(fileProcessingSequenceNumber)
             .build();
     markOverriddenEntities(
         entityScopeInfo.getAccountId(), orgIdentifier, projectIdentifier, entityForFullSync.getFilePath());
