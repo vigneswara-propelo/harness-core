@@ -1801,8 +1801,8 @@
             "CustomHealth",
             "ServiceNow",
             "ErrorTracking",
-            "AzureRepo",
-            "Pdc"
+            "Pdc",
+            "AzureRepo"
           ]
         }
       },
