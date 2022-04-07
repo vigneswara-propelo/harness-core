@@ -741,7 +741,7 @@ public class NgUserServiceImpl implements NgUserService {
           userMembership -> Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
             userMembershipRepository.delete(userMembership);
             outboxService.save(new RemoveCollaboratorEvent(
-                scope.getAccountIdentifier(), scope, publicIdentifier, userId, userName, source));
+                scope.getAccountIdentifier(), userMembership.getScope(), publicIdentifier, userId, userName, source));
             return userMembership;
           })));
     }

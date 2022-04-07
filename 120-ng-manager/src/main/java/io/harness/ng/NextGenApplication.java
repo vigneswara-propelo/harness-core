@@ -105,6 +105,7 @@ import io.harness.ng.core.exceptionmappers.WingsExceptionMapperV2;
 import io.harness.ng.core.handler.NGVaultSecretManagerRenewalHandler;
 import io.harness.ng.core.migration.NGBeanMigrationProvider;
 import io.harness.ng.core.migration.ProjectMigrationProvider;
+import io.harness.ng.core.migration.UserGroupMigrationProvider;
 import io.harness.ng.core.remote.licenserestriction.CloudCostK8sConnectorRestrictionsUsageImpl;
 import io.harness.ng.core.remote.licenserestriction.OrgRestrictionsUsageImpl;
 import io.harness.ng.core.remote.licenserestriction.ProjectRestrictionsUsageImpl;
@@ -471,6 +472,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
           { add(SourceCodeManagerMigrationProvider.class); }
           { add(GitSyncMigrationProvider.class); }
           { add(DelegateMigrationProvider.class); }
+          { add(UserGroupMigrationProvider.class); }
         })
         .build();
   }
