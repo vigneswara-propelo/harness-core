@@ -673,4 +673,51 @@ public class PipelineResource implements YamlSchemaResource {
           String.format("Pipeline with the given ID: %s does not exist or has been deleted", pipelineId));
     }
   }
+
+  @GET
+  @Path("resolved-templates-pipeline-yaml/{pipelineIdentifier}")
+  @ApiOperation(value = "Gets template resolved pipeline yaml", nickname = "getTemplateResolvedPipeline")
+  @Hidden
+  @Operation(operationId = "getTemplateResolvedPipeline",
+      summary = "Gets template resolved pipeline yaml by pipeline identifier",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Returns templates resolved pipeline YAML")
+      })
+  @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
+  public ResponseDTO<TemplatesResolvedPipelineResponseDTO>
+  getTemplateResolvedPipelineYaml(
+      @Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
+      @Parameter(description = PipelineResourceConstants.ORG_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgId,
+      @Parameter(description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
+      @Parameter(description = PipelineResourceConstants.PIPELINE_ID_PARAM_MESSAGE, required = true) @PathParam(
+          NGCommonEntityConstants.PIPELINE_KEY) @ResourceIdentifier String pipelineId,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
+    log.info(
+        String.format("Retrieving templates resolved pipeline with identifier %s in project %s, org %s, account %s",
+            pipelineId, projectId, orgId, accountId));
+
+    Optional<PipelineEntity> pipelineEntity = pmsPipelineService.get(accountId, orgId, projectId, pipelineId, false);
+
+    if (!pipelineEntity.isPresent()) {
+      throw new EntityNotFoundException(
+          String.format("Pipeline with the given ID: %s does not exist or has been deleted", pipelineId));
+    }
+
+    String pipelineYaml = pipelineEntity.get().getYaml();
+
+    TemplateMergeResponseDTO templateMergeResponseDTO =
+        pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity.get());
+    String templateResolvedPipelineYaml = templateMergeResponseDTO.getMergedPipelineYaml();
+    TemplatesResolvedPipelineResponseDTO templatesResolvedPipelineResponseDTO =
+        TemplatesResolvedPipelineResponseDTO.builder()
+            .resolvedTemplatesPipelineYaml(templateResolvedPipelineYaml)
+            .yamlPipeline(pipelineYaml)
+            .build();
+    return ResponseDTO.newResponse(templatesResolvedPipelineResponseDTO);
+  }
 }
