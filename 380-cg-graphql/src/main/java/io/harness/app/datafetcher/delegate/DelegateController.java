@@ -58,6 +58,7 @@ public class DelegateController {
         .version(delegate.getVersion())
         .pollingModeEnabled(delegate.isPolllingModeEnabled())
         .lastHeartBeat(delegate.getLastHeartBeat())
+        .lastHeartbeat(delegate.getLastHeartBeat())
         .includeScopes(delegate.getIncludeScopes())
         .excludeScopes(delegate.getExcludeScopes())
         .supportedTasks(delegate.getSupportedTaskTypes())
