@@ -62,7 +62,7 @@ public class APIErrorsTelemetrySenderFilter implements ContainerResponseFilter {
     int responseCode = containerResponseContext.getStatus();
     HashMap<String, Object> properties = new HashMap<>();
 
-    if (!StringUtils.isEmpty(accountIdentifier) && (responseCode < 200 || responseCode > 299)) {
+    if (!StringUtils.isEmpty(accountIdentifier) && (responseCode < 200 || responseCode > 399)) {
       properties.put(ACCOUNT_IDENTIFIER, accountIdentifier);
       properties.put(
           ORG_IDENTIFIER, getParameterValueFromUri(containerRequestContext, NGCommonEntityConstants.ORG_KEY));
@@ -79,6 +79,10 @@ public class APIErrorsTelemetrySenderFilter implements ContainerResponseFilter {
         properties.put(ERROR_MESSAGE, ((FailureDTO) containerResponseContext.getEntity()).getMessage());
       } else if (containerResponseContext.getEntity() instanceof ErrorMessage) {
         properties.put(ERROR_MESSAGE, ((ErrorMessage) containerResponseContext.getEntity()).getMessage());
+      }
+      if (!properties.containsKey(ERROR_MESSAGE)) {
+        log.warn("Error message is not captured for error: {}. and for Error entity class: {}",
+            containerResponseContext.getEntity(), containerResponseContext.getEntity().getClass());
       }
       try {
         telemetryReporter.sendTrackEvent(API_ERRORS, null, accountIdentifier, properties,
