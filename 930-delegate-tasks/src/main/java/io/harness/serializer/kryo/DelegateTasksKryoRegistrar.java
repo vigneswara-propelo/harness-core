@@ -23,6 +23,7 @@ import software.wings.beans.config.LogzConfig;
 import software.wings.beans.trigger.WebHookTriggerResponseData;
 import software.wings.beans.trigger.WebhookTriggerParameters;
 import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.buildsource.BuildCollectParameters;
 import software.wings.delegatetasks.cv.DataCollectionException;
 import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
@@ -96,5 +97,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(DynaTraceApplication.class, 8074);
     kryo.register(DelegateStateType.class, 8601);
     kryo.register(ArtifactType.class, 5117);
+    kryo.register(BuildCollectParameters.class, 8602);
   }
 }
