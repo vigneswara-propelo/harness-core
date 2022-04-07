@@ -9,6 +9,7 @@ package io.harness.gitsync.core.fullsync;
 
 import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.gitsync.core.beans.GitFullSyncEntityInfo.SyncStatus.FAILED;
 import static io.harness.gitsync.core.beans.GitFullSyncEntityInfo.SyncStatus.OVERRIDDEN;
 import static io.harness.gitsync.core.beans.GitFullSyncEntityInfo.SyncStatus.QUEUED;
@@ -18,6 +19,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
 import io.harness.eventsframework.schemas.entity.EntityScopeInfo;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.UnexpectedException;
 import io.harness.gitsync.FileChange;
 import io.harness.gitsync.FileChanges;
 import io.harness.gitsync.FullSyncEventRequest;
@@ -35,9 +37,11 @@ import io.harness.gitsync.core.beans.GitFullSyncEntityInfo;
 import io.harness.gitsync.core.fullsync.entity.GitFullSyncJob;
 import io.harness.gitsync.core.fullsync.service.FullSyncJobService;
 import io.harness.gitsync.fullsync.utils.FullSyncLogContextHelper;
+import io.harness.grpc.utils.StringValueUtils;
 import io.harness.ng.core.entitydetail.EntityDetailProtoToRestMapper;
 import io.harness.security.dto.UserPrincipal;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.protobuf.StringValue;
@@ -66,8 +70,14 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
     log.info("Started triggering the git full sync job for the message Id {}", messageId);
     final EntityScopeInfo gitConfigScope = fullSyncEventRequest.getGitConfigScope();
     final ScopeDetails scopeDetails = getScopeDetails(gitConfigScope, messageId);
-    YamlGitConfigDTO yamlGitConfigDTO = yamlGitConfigService.get(gitConfigScope.getProjectId().getValue(),
-        gitConfigScope.getOrgId().getValue(), gitConfigScope.getAccountId(), gitConfigScope.getIdentifier());
+    String accountId = gitConfigScope.getAccountId();
+    String projectId = StringValueUtils.getStringFromStringValue(gitConfigScope.getProjectId());
+    String orgId = StringValueUtils.getStringFromStringValue(gitConfigScope.getOrgId());
+    if (orgId == null || projectId == null) {
+      throw new UnexpectedException("The orgId and projectId cannot be null");
+    }
+    YamlGitConfigDTO yamlGitConfigDTO =
+        yamlGitConfigService.get(projectId, orgId, accountId, gitConfigScope.getIdentifier());
     boolean isEntitiesAvailableForFullSync = false;
 
     for (Map.Entry<Microservice, FullSyncServiceBlockingStub> fullSyncStubEntry :
@@ -98,6 +108,7 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
 
     if (!isEntitiesAvailableForFullSync) {
       log.info("No entities to perform full-sync for message id {}", messageId);
+      markTheQueuedFilesAsSuccessfullySynced(accountId, orgId, projectId, messageId);
       return;
     }
     if (fullSyncEventRequest.getIsNewBranch()) {
@@ -107,6 +118,27 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
     if (gitFullSyncJob == null) {
       log.info("The job is not created for the message id {}, as a job with id already exists", messageId);
       return;
+    }
+  }
+
+  @VisibleForTesting
+  void markTheQueuedFilesAsSuccessfullySynced(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String messageId) {
+    try {
+      List<GitFullSyncEntityInfo> entitiesBelongingToPrevJobs =
+          gitFullSyncEntityService.getQueuedEntitiesFromPreviousJobs(
+              accountIdentifier, orgIdentifier, projectIdentifier, messageId);
+      if (isEmpty(entitiesBelongingToPrevJobs)) {
+        log.info("No previous full sync entity to be marked as successful");
+        return;
+      }
+      for (GitFullSyncEntityInfo gitFullSyncEntityInfo : entitiesBelongingToPrevJobs) {
+        gitFullSyncEntityService.updateStatus(
+            accountIdentifier, gitFullSyncEntityInfo.getUuid(), GitFullSyncEntityInfo.SyncStatus.SUCCESS, null);
+        log.info("Marking the full sync entity with uuid {} as successful", gitFullSyncEntityInfo.getUuid());
+      }
+    } catch (Exception ex) {
+      log.error("Marking the previous queued files as successful failed", ex);
     }
   }
 
