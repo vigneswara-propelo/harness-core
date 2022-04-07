@@ -112,8 +112,8 @@ public class DelegateController {
   public static void populateQLDelegateScope(
       DelegateScope delegateScope, QLDelegateScopeBuilder qlDelegateScopeBuilder) {
     qlDelegateScopeBuilder.name(delegateScope.getName())
-        .applications(delegateScope.getServices())
-        .services(delegateScope.getApplications())
+        .applications(delegateScope.getApplications())
+        .services(delegateScope.getServices())
         .environments(delegateScope.getEnvironments())
         .uuid(delegateScope.getUuid())
         .environmentTypes(populateQLEnvironmentTypeList(delegateScope.getEnvironmentTypes()))
