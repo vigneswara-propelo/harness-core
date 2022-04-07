@@ -113,4 +113,8 @@ public class ViewFieldUtils {
         QLCEViewField.builder().fieldId("label").fieldName("Label").build(),
         QLCEViewField.builder().fieldId("none").fieldName(NONE_FIELD).build());
   }
+
+  public static String getBusinessMappingUnallocatedCostDefaultName() {
+    return "Cost categories default";
+  }
 }
