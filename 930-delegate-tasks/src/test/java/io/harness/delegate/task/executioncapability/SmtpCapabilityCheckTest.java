@@ -43,7 +43,7 @@ public class SmtpCapabilityCheckTest extends CategoryTest {
   public void shouldPerformCapabilityCheck() {
     PowerMockito.mockStatic(SmtpCapabilityCheck.class);
     when(SmtpCapabilityCheck.isCapable(anyBoolean(), anyBoolean(), any(), anyInt(), any())).thenReturn(true);
-    CapabilityResponse capabilityResponse = smtpCapabilityCheck.performCapabilityCheck(smtpCapability, false);
+    CapabilityResponse capabilityResponse = smtpCapabilityCheck.performCapabilityCheck(smtpCapability);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }

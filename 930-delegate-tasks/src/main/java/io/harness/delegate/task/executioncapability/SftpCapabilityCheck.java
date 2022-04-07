@@ -28,7 +28,7 @@ import net.schmizz.sshj.transport.TransportException;
 @Slf4j
 public class SftpCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     SftpCapability sftpCapability = (SftpCapability) delegateCapability;
     String connectionHost = getSFTPConnectionHost(sftpCapability.getSftpUrl());
     return CapabilityResponse.builder()

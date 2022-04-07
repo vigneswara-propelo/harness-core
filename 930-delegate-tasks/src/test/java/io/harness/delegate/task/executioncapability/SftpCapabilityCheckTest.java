@@ -39,7 +39,7 @@ public class SftpCapabilityCheckTest extends CategoryTest {
   public void shouldTestPerformCapabilityCheck() throws Exception {
     SSHClient sshClient = PowerMockito.mock(SSHClient.class);
     PowerMockito.whenNew(SSHClient.class).withAnyArguments().thenReturn(sshClient);
-    CapabilityResponse capabilityResponse = sftpCapabilityCheck.performCapabilityCheck(sftpCapability, false);
+    CapabilityResponse capabilityResponse = sftpCapabilityCheck.performCapabilityCheck(sftpCapability);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }

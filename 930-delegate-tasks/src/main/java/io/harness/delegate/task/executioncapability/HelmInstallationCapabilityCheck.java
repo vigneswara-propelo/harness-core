@@ -37,7 +37,7 @@ public class HelmInstallationCapabilityCheck implements CapabilityCheck, ProtoCa
   @Inject private K8sGlobalConfigService k8sGlobalConfigService;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     HelmInstallationCapability capability = (HelmInstallationCapability) delegateCapability;
     String helmPath = k8sGlobalConfigService.getHelmPath(capability.getVersion());
     if (isEmpty(helmPath)) {

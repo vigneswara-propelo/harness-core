@@ -23,24 +23,20 @@ import java.util.stream.Collectors;
 
 public class HttpConnectionExecutionCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     HttpConnectionExecutionCapability httpConnectionExecutionCapability =
         (HttpConnectionExecutionCapability) delegateCapability;
     boolean valid;
-    if (!isNG) {
-      if (httpConnectionExecutionCapability.getHeaders() != null) {
-        valid = Http.connectableHttpUrlWithHeaders(
-            httpConnectionExecutionCapability.fetchConnectableUrl(), httpConnectionExecutionCapability.getHeaders());
-      } else {
-        if (httpConnectionExecutionCapability.isIgnoreRedirect()) {
-          valid =
-              Http.connectableHttpUrlWithoutFollowingRedirect(httpConnectionExecutionCapability.fetchConnectableUrl());
-        } else {
-          valid = Http.connectableHttpUrl(httpConnectionExecutionCapability.fetchConnectableUrl());
-        }
-      }
+    if (httpConnectionExecutionCapability.getHeaders() != null) {
+      valid = Http.connectableHttpUrlWithHeaders(
+          httpConnectionExecutionCapability.fetchConnectableUrl(), httpConnectionExecutionCapability.getHeaders());
     } else {
-      valid = Http.connectableHttpUrlWithoutFollowingRedirect(httpConnectionExecutionCapability.fetchConnectableUrl());
+      if (httpConnectionExecutionCapability.isIgnoreRedirect()) {
+        valid =
+            Http.connectableHttpUrlWithoutFollowingRedirect(httpConnectionExecutionCapability.fetchConnectableUrl());
+      } else {
+        valid = Http.connectableHttpUrl(httpConnectionExecutionCapability.fetchConnectableUrl());
+      }
     }
     return CapabilityResponse.builder().delegateCapability(httpConnectionExecutionCapability).validated(valid).build();
   }

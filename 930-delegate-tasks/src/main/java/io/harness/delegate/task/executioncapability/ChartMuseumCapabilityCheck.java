@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ChartMuseumCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     ChartMuseumCapability capability = (ChartMuseumCapability) delegateCapability;
     String chartMuseumPath = InstallUtils.getChartMuseumPath(capability.isUseLatestChartMuseumVersion());
     if (isBlank(chartMuseumPath)) {

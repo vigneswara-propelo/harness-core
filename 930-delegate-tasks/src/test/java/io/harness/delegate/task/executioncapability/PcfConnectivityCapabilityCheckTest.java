@@ -43,7 +43,7 @@ public class PcfConnectivityCapabilityCheckTest extends CategoryTest {
     doReturn(true).when(pcfConnectivityCapabilityCheck).isEndpointConnectable(eq(ENDPOINT_URL), eq("https://"));
     doReturn(false).when(pcfConnectivityCapabilityCheck).isEndpointConnectable(eq(ENDPOINT_URL), eq("http://"));
     CapabilityResponse capabilityResponse =
-        pcfConnectivityCapabilityCheck.performCapabilityCheck(pcfConnectivityCapability, false);
+        pcfConnectivityCapabilityCheck.performCapabilityCheck(pcfConnectivityCapability);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }
@@ -55,7 +55,7 @@ public class PcfConnectivityCapabilityCheckTest extends CategoryTest {
     doReturn(false).when(pcfConnectivityCapabilityCheck).isEndpointConnectable(eq(ENDPOINT_URL), eq("https://"));
     doReturn(false).when(pcfConnectivityCapabilityCheck).isEndpointConnectable(eq(ENDPOINT_URL), eq("http://"));
     CapabilityResponse capabilityResponse =
-        pcfConnectivityCapabilityCheck.performCapabilityCheck(pcfConnectivityCapability, false);
+        pcfConnectivityCapabilityCheck.performCapabilityCheck(pcfConnectivityCapability);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isFalse();
   }

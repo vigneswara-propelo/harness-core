@@ -81,7 +81,7 @@ public class WinrmHostValidationCapabilityCheckTest extends WingsBaseTest {
   @Category(UnitTests.class)
   public void shouldPerformCapabilityCheck() throws JSchException {
     doReturn(mockSession).when(spyCapabilityCheck).makeSession(any(WinRmSessionConfig.class), any(LogCallback.class));
-    CapabilityResponse capabilityResponse = spyCapabilityCheck.performCapabilityCheck(capability, false);
+    CapabilityResponse capabilityResponse = spyCapabilityCheck.performCapabilityCheck(capability);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }

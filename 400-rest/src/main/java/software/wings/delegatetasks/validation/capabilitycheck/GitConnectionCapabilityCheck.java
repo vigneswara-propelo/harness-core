@@ -32,7 +32,7 @@ public class GitConnectionCapabilityCheck implements CapabilityCheck {
   @Inject private GitClient gitClient;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     GitConnectionCapability capability = (GitConnectionCapability) delegateCapability;
     GitConfig gitConfig = capability.getGitConfig();
     List<EncryptedDataDetail> encryptedDataDetails = capability.getEncryptedDataDetails();

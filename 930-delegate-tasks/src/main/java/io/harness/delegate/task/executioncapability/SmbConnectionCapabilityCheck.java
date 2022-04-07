@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SmbConnectionCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     SmbConnectionCapability capability = (SmbConnectionCapability) delegateCapability;
     try {
       boolean validated = isConnectibleSOBServer(capability.getSmbUrl());

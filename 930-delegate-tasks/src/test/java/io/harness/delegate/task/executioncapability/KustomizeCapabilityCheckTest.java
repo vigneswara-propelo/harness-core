@@ -43,7 +43,7 @@ public class KustomizeCapabilityCheckTest extends CategoryTest {
   public void pluginsExist() {
     PowerMockito.mockStatic(KustomizeCapabilityCheck.class);
     when(KustomizeCapabilityCheck.doesKustomizePluginDirExist(any())).thenReturn(true);
-    assertThat(capabilityCheck.performCapabilityCheck(capability, false))
+    assertThat(capabilityCheck.performCapabilityCheck(capability))
         .isEqualTo(CapabilityResponse.builder().validated(true).delegateCapability(capability).build());
   }
 
@@ -53,7 +53,7 @@ public class KustomizeCapabilityCheckTest extends CategoryTest {
   public void pluginsDoNotExist() {
     PowerMockito.mockStatic(KustomizeCapabilityCheck.class);
     when(KustomizeCapabilityCheck.doesKustomizePluginDirExist(any())).thenReturn(false);
-    assertThat(capabilityCheck.performCapabilityCheck(capability, false))
+    assertThat(capabilityCheck.performCapabilityCheck(capability))
         .isEqualTo(CapabilityResponse.builder().validated(false).delegateCapability(capability).build());
   }
 }

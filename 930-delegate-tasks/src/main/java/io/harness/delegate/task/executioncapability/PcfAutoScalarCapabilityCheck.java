@@ -35,7 +35,7 @@ public class PcfAutoScalarCapabilityCheck implements CapabilityCheck, ProtoCapab
   @Inject private CfCliDelegateResolver cfCliDelegateResolver;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     PcfAutoScalarCapability pcfAutoScalarCapability = (PcfAutoScalarCapability) delegateCapability;
     CfCliVersion cfCliVersion = pcfAutoScalarCapability.getVersion();
 

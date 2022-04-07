@@ -51,12 +51,12 @@ public abstract class AbstractDelegateValidateTask implements DelegateValidateTa
   }
 
   @Override
-  public List<DelegateConnectionResult> validationResults(boolean isNG) {
+  public List<DelegateConnectionResult> validationResults() {
     try (TaskLogContext ignore = new TaskLogContext(this.delegateTaskId, OVERRIDE_ERROR)) {
       List<DelegateConnectionResult> results = null;
       try {
         long startTime = System.currentTimeMillis();
-        results = validate(isNG);
+        results = validate();
         long duration = System.currentTimeMillis() - startTime;
         for (DelegateConnectionResult result : results) {
           result.setAccountId(accountId);
@@ -79,7 +79,7 @@ public abstract class AbstractDelegateValidateTask implements DelegateValidateTa
     return emptyList();
   }
 
-  public List<DelegateConnectionResult> validate(boolean isNG) {
+  public List<DelegateConnectionResult> validate() {
     try {
       String criteria = getCriteria().get(0);
       return singletonList(

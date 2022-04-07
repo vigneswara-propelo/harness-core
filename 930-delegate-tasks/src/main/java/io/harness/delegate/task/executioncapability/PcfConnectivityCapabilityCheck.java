@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PcfConnectivityCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     PcfConnectivityCapability pcfConnectivityCapability = (PcfConnectivityCapability) delegateCapability;
     try {
       boolean httpEndpointConnectable = isEndpointConnectable(pcfConnectivityCapability.getEndpointUrl(), "http://");

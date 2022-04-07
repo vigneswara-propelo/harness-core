@@ -858,9 +858,6 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
           && Boolean.parseBoolean(delegateTask.getSetupAbstractions().get(NG));
 
       if (isTaskNg) {
-        if (featureFlagService.isEnabled(FeatureName.IGNORE_REDIRECT_HTTP_NG, delegateTask.getAccountId())) {
-          delegateTaskPackageBuilder.isNG(true);
-        }
         try {
           String logStreamingAccountToken = logStreamingAccountTokenCache.get(delegateTask.getAccountId());
 

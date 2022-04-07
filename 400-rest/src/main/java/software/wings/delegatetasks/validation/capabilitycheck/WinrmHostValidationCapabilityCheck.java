@@ -45,7 +45,7 @@ public class WinrmHostValidationCapabilityCheck implements CapabilityCheck {
   @Inject private EncryptionService encryptionService;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     WinrmHostValidationCapability capability = (WinrmHostValidationCapability) delegateCapability;
     CapabilityResponseBuilder capabilityResponseBuilder = CapabilityResponse.builder().delegateCapability(capability);
     WinRmConnectionAttributes connectionAttributes = capability.getWinRmConnectionAttributes();

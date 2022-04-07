@@ -32,7 +32,7 @@ public class HelmCommandCapabilityCheck implements CapabilityCheck {
   @Inject private ContainerDeploymentDelegateHelper containerDeploymentDelegateHelper;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     HelmCommandCapability capability = (HelmCommandCapability) delegateCapability;
     HelmCommandRequest commandRequest = capability.getCommandRequest();
 

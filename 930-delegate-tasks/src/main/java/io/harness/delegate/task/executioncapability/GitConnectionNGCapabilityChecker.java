@@ -35,7 +35,7 @@ public class GitConnectionNGCapabilityChecker implements CapabilityCheck {
   @Inject private SshSessionConfigMapper sshSessionConfigMapper;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     GitConnectionNGCapability capability = (GitConnectionNGCapability) delegateCapability;
     GitConfigDTO gitConfig = capability.getGitConfig();
     List<EncryptedDataDetail> encryptedDataDetails = capability.getEncryptedDataDetails();

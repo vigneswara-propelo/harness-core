@@ -17,6 +17,6 @@ import java.util.List;
 @OwnedBy(HarnessTeam.DEL)
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
 public interface DelegateValidateTask {
-  List<DelegateConnectionResult> validationResults(boolean isNG);
+  List<DelegateConnectionResult> validationResults();
   List<String> getCriteria();
 }

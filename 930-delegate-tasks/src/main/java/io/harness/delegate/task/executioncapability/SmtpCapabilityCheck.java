@@ -31,7 +31,7 @@ public class SmtpCapabilityCheck implements CapabilityCheck, ProtoCapabilityChec
   private static final TimeLimiter timeLimiter = HTimeLimiter.create();
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     SmtpCapability capability = (SmtpCapability) delegateCapability;
     boolean capable = isCapable(capability.isUseSSL(), capability.isStartTLS(), capability.getHost(),
         capability.getPort(), capability.getUsername());

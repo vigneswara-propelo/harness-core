@@ -48,7 +48,7 @@ public class SSHHostValidationCapabilityCheck implements CapabilityCheck {
   @Inject private SecretManagementDelegateService secretManagementDelegateService;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     SSHHostValidationCapability capability = (SSHHostValidationCapability) delegateCapability;
     CapabilityResponseBuilder capabilityResponseBuilder = CapabilityResponse.builder().delegateCapability(capability);
 

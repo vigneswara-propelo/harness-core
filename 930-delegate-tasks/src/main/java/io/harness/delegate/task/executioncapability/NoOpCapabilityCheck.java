@@ -21,7 +21,7 @@ import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 @OwnedBy(HarnessTeam.CE)
 public class NoOpCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     return CapabilityResponse.builder().delegateCapability(delegateCapability).validated(true).build();
   }
 

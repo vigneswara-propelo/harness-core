@@ -30,7 +30,7 @@ public class PcfInstallationCapabilityCheck implements CapabilityCheck, ProtoCap
   @Inject private CfCliDelegateResolver cfCliDelegateResolver;
 
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     PcfInstallationCapability capability = (PcfInstallationCapability) delegateCapability;
     return CapabilityResponse.builder()
         .validated(cfCliDelegateResolver.isDelegateEligibleToExecuteCfCliCommand(capability.getVersion()))

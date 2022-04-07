@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AwsRegionCapabilityCheck implements CapabilityCheck, ProtoCapabilityCheck {
   @Override
-  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability, boolean isNG) {
+  public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     AwsRegionCapability awsRegionCapability = (AwsRegionCapability) delegateCapability;
     String region = awsRegionCapability.getRegion();
     boolean valid = region == null || checkIfSameRegion(region) || isLocalDev();

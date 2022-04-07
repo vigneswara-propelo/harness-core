@@ -53,7 +53,7 @@ public class PcfAutoScalarCapabilityCheckTest extends CategoryTest {
     when(PcfUtils.checkIfAppAutoscalarInstalled(anyString(), any())).thenReturn(true);
     when(cfCliDelegateResolver.getAvailableCfCliPathOnDelegate(any())).thenReturn(Optional.of("cf-cli-path"));
     CapabilityResponse capabilityResponse =
-        pcfAutoScalarCapabilityCheck.performCapabilityCheck(PcfAutoScalarCapability.builder().build(), false);
+        pcfAutoScalarCapabilityCheck.performCapabilityCheck(PcfAutoScalarCapability.builder().build());
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }

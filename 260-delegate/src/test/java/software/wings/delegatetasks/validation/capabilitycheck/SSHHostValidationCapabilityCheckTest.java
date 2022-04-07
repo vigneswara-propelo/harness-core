@@ -95,7 +95,7 @@ public class SSHHostValidationCapabilityCheckTest extends WingsBaseTest {
   public void shouldPerformCapabilityCheck() throws JSchException {
     doNothing().when(sshHostValidationCapabilityCheck).performTest(any(SshSessionConfig.class));
     CapabilityResponse capabilityResponse =
-        sshHostValidationCapabilityCheck.performCapabilityCheck(validationCapability, false);
+        sshHostValidationCapabilityCheck.performCapabilityCheck(validationCapability);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }
@@ -114,7 +114,7 @@ public class SSHHostValidationCapabilityCheckTest extends WingsBaseTest {
                                                                                .build())
                                                            .build();
     CapabilityResponse capabilityResponse =
-        sshHostValidationCapabilityCheck.performCapabilityCheck(validationCapability, false);
+        sshHostValidationCapabilityCheck.performCapabilityCheck(validationCapability);
     assertThat(capabilityResponse).isNotNull();
     assertThat(capabilityResponse.isValidated()).isTrue();
   }

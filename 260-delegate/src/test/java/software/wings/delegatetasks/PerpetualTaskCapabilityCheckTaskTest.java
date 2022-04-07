@@ -77,7 +77,7 @@ public class PerpetualTaskCapabilityCheckTaskTest extends WingsBaseTest {
 
     when(executionCapability.getCapabilityType()).thenReturn(CapabilityType.ALWAYS_TRUE);
     when(capabilityCheckFactory.obtainCapabilityCheck(CapabilityType.ALWAYS_TRUE)).thenReturn(capabilityCheck);
-    when(capabilityCheck.performCapabilityCheck(executionCapability, false)).thenReturn(capabilityResponse);
+    when(capabilityCheck.performCapabilityCheck(executionCapability)).thenReturn(capabilityResponse);
 
     PerpetualTaskCapabilityCheckResponse perpetualTaskCapabilityCheckResponse =
         (PerpetualTaskCapabilityCheckResponse) task.run(params);
