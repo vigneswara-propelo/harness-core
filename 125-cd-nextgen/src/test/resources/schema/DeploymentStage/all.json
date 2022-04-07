@@ -719,6 +719,32 @@
         }
       ]
     },
+    "CustomArtifactConfig": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ArtifactConfig"
+        },
+        {
+          "type": "object",
+          "required": [
+            "version"
+          ],
+          "properties": {
+            "version": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/ParameterFieldString"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "CustomPolicyStepSpec": {
       "allOf": [
         {
@@ -3957,7 +3983,8 @@
             "Gcr",
             "Ecr",
             "Nexus3Registry",
-            "ArtifactoryRegistry"
+            "ArtifactoryRegistry",
+            "CustomArtifact"
           ]
         }
       },
@@ -3975,6 +4002,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/ArtifactoryRegistryArtifactConfig"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "CustomArtifact"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/CustomArtifactConfig"
               }
             }
           }
@@ -5070,7 +5113,8 @@
             "Gcr",
             "Ecr",
             "Nexus3Registry",
-            "ArtifactoryRegistry"
+            "ArtifactoryRegistry",
+            "CustomArtifact"
           ]
         }
       },
@@ -5088,6 +5132,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/ArtifactoryRegistryArtifactConfig"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "CustomArtifact"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/CustomArtifactConfig"
               }
             }
           }

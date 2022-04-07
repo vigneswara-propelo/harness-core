@@ -283,3 +283,5 @@ io.harness.plancreator.execution.StepsExecutionConfig
 io.harness.yaml.core.parallelStepElementConfig
 io.harness.cdng.envGroup.beans.EnvironmentGroupConfig
 io.harness.cdng.service.beans.WinRmServiceSpec
+io.harness.cdng.artifact.CustomArtifactSummary
+io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig

@@ -12,6 +12,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.artifact.bean.artifactsource.ArtifactSource;
 import io.harness.cdng.artifact.bean.artifactsource.DockerArtifactSource;
 import io.harness.cdng.artifact.bean.yaml.ArtifactListConfig;
+import io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.DockerHubArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.SidecarArtifact;
@@ -73,5 +74,6 @@ public class NGMorphiaRegistrar implements MorphiaRegistrar {
     h.put("cdng.infra.steps.InfraStepParameters", InfraStepParameters.class);
     h.put("io.harness.cdng.provision.terraform.TerraformConfig", TerraformConfig.class);
     h.put("io.harness.polling.bean.PollingDocument", PollingDocument.class);
+    h.put("io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig", CustomArtifactConfig.class);
   }
 }
