@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.CDC)
-public class ServiceNowApprovalStepVariableCreator extends GenericStepVariableCreator {
+public class ServiceNowApprovalStepVariableCreator extends GenericStepVariableCreator<ServiceNowApprovalStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
     Set<String> strings = new HashSet<>();

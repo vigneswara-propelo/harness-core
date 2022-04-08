@@ -31,15 +31,18 @@ public @interface VariableExpression {
     REGULAR,
     // Normal flow of the objects as defined in the class, but fieldName will be used as defined in customFieldName
     REGULAR_WITH_CUSTOM_FIELD
-
   }
   IteratePolicy policy() default IteratePolicy.REGULAR;
+
   // AliasExpression which can be used to refer the same field
   String aliasName() default "";
+
   // To make variables visible on the variables screen
   boolean visible() default true;
-  // replace field with uuid, if false will be added to yamlExtraProperty of the parent
-  boolean replaceWithUUid() default true;
+
   // fieldName to be used instead of reflection fieldName if policy is REGULAR_WITH_CUSTOM_FIELD
   String customFieldName() default "";
+
+  // skipVariableExpression inclusion for all fields inside it if object or leaf value
+  boolean skipVariableExpression() default false;
 }

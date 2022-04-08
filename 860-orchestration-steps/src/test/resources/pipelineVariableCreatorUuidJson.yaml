@@ -25,14 +25,32 @@
                     "spec": {
                       "url": "https://google.com",
                       "method": "GET",
-                      "headers": [],
-                      "outputVariables": [],
-                      "__uuid": "Sw5Vyqp2QvKcOtm2FAhctg"
+                      "headers": [
+                        {
+                          "key": "head1",
+                          "value": "v1",
+                          "__uuid": "gKgQOcjaRMyljDhNPTE1Qg"
+                        },
+                        {
+                          "key": "head2",
+                          "value": "v2",
+                          "__uuid": "hXxogSUSTVemSaNwqIxDrw"
+                        }
+                      ],
+                      "outputVariables": [
+                        {
+                          "name": "o1",
+                          "value": "v1",
+                          "type": "String",
+                          "__uuid": "4G7y3pKAQzW-neREpx2mmQ"
+                        }
+                      ],
+                      "__uuid": "M6HHtApvRa6cscRUnJ5NqA"
                     },
                     "timeout": "10s",
-                    "__uuid": "OPDEDpT2S_2PFqeWVVhEwA"
+                    "__uuid": "xtkQAaoNRkCgtI5mU8KnEQ"
                   },
-                  "__uuid": "r8Uq7gxzS42XfE54jfaGTw"
+                  "__uuid": "0Q3hGwmGRHuXL54RAcG9dg"
                 },
                 {
                   "stepGroup": {

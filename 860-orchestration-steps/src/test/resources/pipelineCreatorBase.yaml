@@ -20,8 +20,15 @@ pipeline:
                   spec:
                     url: https://google.com
                     method: GET
-                    headers: []
-                    outputVariables: []
+                    headers:
+                      - key: head1
+                        value: v1
+                      - key: head2
+                        value: v2
+                    outputVariables:
+                      - name: o1
+                        value: v1
+                        type: String
                   timeout: 10s
               - stepGroup:
                   name: sg1

@@ -63,7 +63,7 @@ public class StageElementConfig {
   @NotNull
   @EntityIdentifier
   @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN)
-  @VariableExpression(replaceWithUUid = false)
+  @VariableExpression
   String identifier;
   @NotNull @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) @VariableExpression String name;
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
@@ -79,7 +79,7 @@ public class StageElementConfig {
   List<FailureStrategyConfig> failureStrategies;
   @VariableExpression List<NGVariable> variables;
   @VariableExpression Map<String, String> tags;
-  @VariableExpression(replaceWithUUid = false) String type;
+  @VariableExpression String type;
   @JsonProperty("spec")
   @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
   @VariableExpression

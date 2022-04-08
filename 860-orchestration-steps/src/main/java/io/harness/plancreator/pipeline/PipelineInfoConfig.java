@@ -60,10 +60,10 @@ public class PipelineInfoConfig {
   @NotNull
   @EntityIdentifier
   @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN)
-  @VariableExpression(replaceWithUUid = false)
+  @VariableExpression
   String identifier;
 
-  FlowControlConfig flowControl;
+  @VariableExpression(skipVariableExpression = true) FlowControlConfig flowControl;
 
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
   @VariableExpression
@@ -73,15 +73,20 @@ public class PipelineInfoConfig {
   @VariableExpression List<NGVariable> variables;
   @VariableExpression NGProperties properties;
 
-  @NotNull @Singular @Size(min = 1) List<StageElementWrapperConfig> stages;
-  List<NotificationRules> notificationRules;
+  @NotNull
+  @Singular
+  @Size(min = 1)
+  @VariableExpression(skipVariableExpression = true)
+  List<StageElementWrapperConfig> stages;
+  @VariableExpression(skipVariableExpression = true) List<NotificationRules> notificationRules;
 
-  String orgIdentifier;
-  String projectIdentifier;
+  @VariableExpression(skipVariableExpression = true) String orgIdentifier;
+  @VariableExpression(skipVariableExpression = true) String projectIdentifier;
 
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
   @Pattern(regexp = NGRegexValidatorConstants.TIMEOUT_PATTERN)
+  @VariableExpression(skipVariableExpression = true)
   ParameterField<Timeout> timeout;
 
-  boolean allowStageExecutions;
+  @VariableExpression(skipVariableExpression = true) boolean allowStageExecutions;
 }

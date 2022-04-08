@@ -43,6 +43,7 @@ public class CodeBase {
   @YamlSchemaTypes(value = {string})
   @ApiModelProperty(dataType = "io.harness.yaml.extended.ci.codebase.Build")
   @NotNull
+  @VariableExpression(skipVariableExpression = true)
   ParameterField<Build> build;
   @YamlSchemaTypes({runtime})
   @ApiModelProperty(dataType = SwaggerConstants.INTEGER_CLASSPATH)

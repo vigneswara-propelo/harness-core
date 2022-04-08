@@ -53,7 +53,7 @@ public abstract class AbstractStageNode {
   @NotNull
   @EntityIdentifier
   @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN)
-  @VariableExpression(replaceWithUUid = false)
+  @VariableExpression
   String identifier;
   @NotNull @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) @VariableExpression String name;
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)

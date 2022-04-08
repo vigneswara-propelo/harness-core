@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(PIPELINE)
-public class ShellScriptStepVariableCreator extends GenericStepVariableCreator {
+public class ShellScriptStepVariableCreator extends GenericStepVariableCreator<ShellScriptStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
     return Collections.singleton(StepSpecTypeConstants.SHELL_SCRIPT);

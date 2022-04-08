@@ -38,14 +38,14 @@ import lombok.experimental.FieldDefaults;
 @OwnedBy(PL)
 @Schema(name = "Account", description = "This is the view of an Account defined in Harness")
 public class AccountDTO {
-  @EntityIdentifier(allowBlank = false) String identifier;
-  @NGEntityName @VariableExpression String name;
-  @VariableExpression String companyName;
-  String cluster;
-  DefaultExperience defaultExperience;
-  AuthenticationMechanism authenticationMechanism;
-  ServiceAccountConfig serviceAccountConfig;
-  boolean isNextGenEnabled;
+  @EntityIdentifier(allowBlank = false) @VariableExpression(skipVariableExpression = true) String identifier;
+  @NGEntityName String name;
+  String companyName;
+  @VariableExpression(skipVariableExpression = true) String cluster;
+  @VariableExpression(skipVariableExpression = true) DefaultExperience defaultExperience;
+  @VariableExpression(skipVariableExpression = true) AuthenticationMechanism authenticationMechanism;
+  @VariableExpression(skipVariableExpression = true) ServiceAccountConfig serviceAccountConfig;
+  @VariableExpression(skipVariableExpression = true) boolean isNextGenEnabled;
 
   @Builder
   public AccountDTO(String identifier, String name, String companyName, String cluster,

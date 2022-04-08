@@ -43,16 +43,21 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("io.harness.yaml.core.variables.NumberNGVariable")
 @OwnedBy(CDC)
 public class NumberNGVariable implements NGVariable {
-  @NGVariableName @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN) String name;
-  @ApiModelProperty(allowableValues = NGVariableConstants.NUMBER_TYPE) NGVariableType type = NGVariableType.NUMBER;
+  @NGVariableName
+  @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN)
+  @VariableExpression(skipVariableExpression = true)
+  String name;
+  @ApiModelProperty(allowableValues = NGVariableConstants.NUMBER_TYPE)
+  @VariableExpression(skipVariableExpression = true)
+  NGVariableType type = NGVariableType.NUMBER;
   @NotNull
   @YamlSchemaTypes({string})
   @ApiModelProperty(dataType = SwaggerConstants.DOUBLE_CLASSPATH)
   @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD)
   ParameterField<Double> value;
-  String description;
-  boolean required;
-  @JsonProperty("default") Double defaultValue;
+  @VariableExpression(skipVariableExpression = true) String description;
+  @VariableExpression(skipVariableExpression = true) boolean required;
+  @VariableExpression(skipVariableExpression = true) @JsonProperty("default") Double defaultValue;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
 
   @Override

@@ -17,6 +17,7 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.steps.StepSpecTypeConstants;
+import io.harness.steps.jira.create.JiraCreateStepNode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.CDC)
-public class JiraStepVariableCreator extends GenericStepVariableCreator {
+public class JiraStepVariableCreator extends GenericStepVariableCreator<JiraCreateStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
     Set<String> strings = new HashSet<>();

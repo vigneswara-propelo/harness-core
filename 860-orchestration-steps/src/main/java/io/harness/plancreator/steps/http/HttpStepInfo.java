@@ -29,6 +29,7 @@ import io.harness.walktree.beans.VisitableChildren;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.utils.NGVariablesUtils;
 
@@ -56,7 +57,7 @@ public class HttpStepInfo extends HttpBaseStepInfo implements PMSStepInfo, Visit
   // For Visitor Framework Impl
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
 
-  List<NGVariable> outputVariables;
+  @VariableExpression(skipVariableExpression = true) List<NGVariable> outputVariables;
   List<HttpHeaderConfig> headers;
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
   @YamlSchemaTypes(value = {runtime})

@@ -53,7 +53,7 @@ public class StepGroupElementConfig {
   @NotNull
   @EntityIdentifier
   @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN)
-  @VariableExpression(replaceWithUUid = false)
+  @VariableExpression
   String identifier;
   @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) @VariableExpression String name;
 
@@ -62,6 +62,6 @@ public class StepGroupElementConfig {
   ParameterField<String> skipCondition;
   @VariableExpression StepWhenCondition when;
 
-  List<FailureStrategyConfig> failureStrategies;
-  @NotNull @Size(min = 1) List<ExecutionWrapperConfig> steps;
+  @VariableExpression(skipVariableExpression = true) List<FailureStrategyConfig> failureStrategies;
+  @NotNull @Size(min = 1) @VariableExpression(skipVariableExpression = true) List<ExecutionWrapperConfig> steps;
 }

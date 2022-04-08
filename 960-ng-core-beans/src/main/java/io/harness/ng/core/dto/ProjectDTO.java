@@ -43,21 +43,22 @@ import lombok.experimental.FieldDefaults;
 @ApiModel(value = "Project")
 @Schema(name = "Project", description = "This is the Project Entity details defined in Harness")
 public class ProjectDTO {
-  @EntityIdentifier(allowBlank = true) @Schema(description = ORG_PARAM_MESSAGE) String orgIdentifier;
+  @EntityIdentifier(allowBlank = true)
+  @Schema(description = ORG_PARAM_MESSAGE)
+  @VariableExpression(skipVariableExpression = true)
+  String orgIdentifier;
   @ApiModelProperty(required = true)
   @Schema(description = PROJECT_PARAM_MESSAGE)
   @EntityIdentifier(allowBlank = false)
-  @VariableExpression
   String identifier;
-  @ApiModelProperty(required = true)
-  @Schema(description = "Project Name for the entity")
-  @NGEntityName
-  @VariableExpression
-  String name;
-  @Schema(description = "Color") String color;
-  @Size(max = 1024) @Schema(description = "List of modules") List<ModuleType> modules;
-  @Size(max = 1024) @Schema(description = "Description") @VariableExpression String description;
-  @Size(max = 128) @Schema(description = "Tags") @VariableExpression Map<String, String> tags;
+  @ApiModelProperty(required = true) @Schema(description = "Project Name for the entity") @NGEntityName String name;
+  @Schema(description = "Color") @VariableExpression(skipVariableExpression = true) String color;
+  @Size(max = 1024)
+  @Schema(description = "List of modules")
+  @VariableExpression(skipVariableExpression = true)
+  List<ModuleType> modules;
+  @Size(max = 1024) @Schema(description = "Description") String description;
+  @Size(max = 128) @Schema(description = "Tags") Map<String, String> tags;
   @JsonIgnore Long version;
 
   @Builder
