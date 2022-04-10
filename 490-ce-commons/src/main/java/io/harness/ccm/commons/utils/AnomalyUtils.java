@@ -5,15 +5,23 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ccm.utils;
+package io.harness.ccm.commons.utils;
 
 import io.harness.ccm.commons.constants.AnomalyFieldConstants;
 import io.harness.ccm.commons.constants.ViewFieldConstants;
-import io.harness.ccm.commons.utils.TimeUtils;
+import io.harness.ccm.commons.entities.anomaly.AnomalyData;
+import io.harness.ccm.commons.entities.anomaly.AnomalyQueryDTO;
+import io.harness.ccm.commons.entities.anomaly.EntityInfo;
 import io.harness.timescaledb.tables.pojos.Anomalies;
+
+import java.util.ArrayList;
 
 public class AnomalyUtils {
   private static final String SEPARATOR = "/";
+  private static final String ANOMALY_RELATIVE_TIME_TEMPLATE = "since %s %s";
+  private static final String STATUS_RELATIVE_TIME_TEMPLATE = "%s %s ago";
+  public static final Integer DEFAULT_LIMIT = 1000;
+  public static final Integer DEFAULT_OFFSET = 0;
 
   public static String getRelativeTime(long anomalyTime, String template) {
     long currentTime = System.currentTimeMillis();
@@ -152,5 +160,54 @@ public class AnomalyUtils {
       return AnomalyFieldConstants.GCP;
     }
     return "";
+  }
+
+  public static AnomalyData buildAnomalyData(Anomalies anomaly) {
+    long anomalyTime = anomaly.getAnomalytime().toEpochSecond() * 1000;
+    return AnomalyData.builder()
+        .id(anomaly.getId())
+        .time(anomalyTime)
+        .anomalyRelativeTime(AnomalyUtils.getRelativeTime(anomalyTime, ANOMALY_RELATIVE_TIME_TEMPLATE))
+        .actualAmount(AnomalyUtils.getRoundedOffCost(anomaly.getActualcost()))
+        .expectedAmount(AnomalyUtils.getRoundedOffCost(anomaly.getExpectedcost()))
+        .anomalousSpend(AnomalyUtils.getRoundedOffCost(anomaly.getActualcost() - anomaly.getExpectedcost()))
+        .anomalousSpendPercentage(AnomalyUtils.getAnomalyTrend(anomaly.getActualcost(), anomaly.getExpectedcost()))
+        .entity(getEntityInfo(anomaly))
+        .resourceName(AnomalyUtils.getResourceName(anomaly))
+        .resourceInfo(AnomalyUtils.getResourceInfo(anomaly))
+        // Todo : Remove default assignment when status column is added to anomaly table
+        .status("Open")
+        .statusRelativeTime(AnomalyUtils.getRelativeTime(anomalyTime, STATUS_RELATIVE_TIME_TEMPLATE))
+        .cloudProvider(AnomalyUtils.getCloudProvider(anomaly))
+        .build();
+  }
+
+  private static EntityInfo getEntityInfo(Anomalies anomaly) {
+    return EntityInfo.builder()
+        .field(AnomalyUtils.getGroupByField(anomaly))
+        .clusterId(anomaly.getClusterid())
+        .clusterName(anomaly.getClustername())
+        .namespace(anomaly.getNamespace())
+        .workloadName(anomaly.getWorkloadname())
+        .workloadType(anomaly.getWorkloadtype())
+        .gcpProjectId(anomaly.getGcpproject())
+        .gcpSKUId(anomaly.getGcpskuid())
+        .gcpSKUDescription(anomaly.getGcpskudescription())
+        .gcpProduct(anomaly.getGcpproduct())
+        .awsUsageAccountId(anomaly.getAwsaccount())
+        .awsServiceCode(anomaly.getAwsservice())
+        .awsUsageType(anomaly.getAwsusagetype())
+        .awsInstancetype(anomaly.getAwsinstancetype())
+        .build();
+  }
+
+  public static AnomalyQueryDTO getDefaultAnomalyQuery() {
+    return AnomalyQueryDTO.builder()
+        .filter(null)
+        .groupBy(new ArrayList<>())
+        .orderBy(new ArrayList<>())
+        .limit(DEFAULT_LIMIT)
+        .offset(DEFAULT_OFFSET)
+        .build();
   }
 }

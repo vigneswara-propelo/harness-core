@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ccm.utils;
+package io.harness.ccm.views.helper;
 
 import static io.harness.ccm.commons.constants.ViewFieldConstants.AWS_ACCOUNT_FIELD_ID;
 import static io.harness.ccm.commons.constants.ViewFieldConstants.AWS_INSTANCE_TYPE_FIELD_ID;
@@ -26,7 +26,7 @@ import io.harness.ccm.commons.entities.CCMNumberFilter;
 import io.harness.ccm.commons.entities.CCMOperator;
 import io.harness.ccm.commons.entities.CCMStringFilter;
 import io.harness.ccm.commons.entities.CCMTimeFilter;
-import io.harness.ccm.graphql.dto.perspectives.PerspectiveQueryDTO;
+import io.harness.ccm.views.dto.PerspectiveQueryDTO;
 import io.harness.ccm.views.entities.CEView;
 import io.harness.ccm.views.entities.ViewField;
 import io.harness.ccm.views.entities.ViewIdCondition;
