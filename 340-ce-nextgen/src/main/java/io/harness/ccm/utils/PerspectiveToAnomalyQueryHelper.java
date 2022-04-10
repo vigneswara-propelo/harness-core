@@ -236,6 +236,7 @@ public class PerspectiveToAnomalyQueryHelper {
 
   public List<QLCEViewFilterWrapper> getPerspectiveDefaultFilters(CEView view) {
     List<QLCEViewFilterWrapper> defaultFilters = new ArrayList<>();
+
     List<ViewRule> viewRules = view.getViewRules();
 
     for (ViewRule rule : viewRules) {

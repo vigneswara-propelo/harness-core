@@ -34,6 +34,10 @@ public class AnomalyUtils {
     return expectedCost != 0 ? Math.round(((actualCost - expectedCost) / expectedCost) * 10000D) / 100D : 0;
   }
 
+  public static Double getRoundedOffCost(Double cost) {
+    return Math.round(cost * 100D) / 100D;
+  }
+
   public static String getResourceName(Anomalies anomaly) {
     StringBuilder builder = new StringBuilder();
     if (anomaly.getClustername() != null) {

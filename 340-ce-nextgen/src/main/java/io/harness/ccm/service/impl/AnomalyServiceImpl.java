@@ -126,7 +126,12 @@ public class AnomalyServiceImpl implements AnomalyService {
         : DSL.noCondition();
 
     if (anomalyQuery.getGroupBy().isEmpty()) {
-      return anomalyDao.fetchAnomaliesTotalCost(accountIdentifier, condition);
+      List<AnomalySummary> totalCostSummary = anomalyDao.fetchAnomaliesTotalCost(accountIdentifier, condition);
+      List<AnomalySummary> updatedTotalCostSummary = new ArrayList<>();
+      totalCostSummary.forEach(entry
+          -> updatedTotalCostSummary.add(buildAnomalySummary(entry.getName(), entry.getCount(), entry.getActualCost(),
+              entry.getActualCost() - entry.getExpectedCost())));
+      return updatedTotalCostSummary;
     } else {
       List<AnomalyData> anomalies = listAnomalies(accountIdentifier, anomalyQuery);
       if (anomalyQuery.getGroupBy().get(0).getGroupByField() == ALL) {
@@ -156,8 +161,9 @@ public class AnomalyServiceImpl implements AnomalyService {
 
   private List<AnomalySummary> buildTopAnomaliesSummary(List<AnomalyData> anomalies) {
     List<AnomalySummary> topAnomalies = new ArrayList<>();
-    anomalies.forEach(
-        anomaly -> topAnomalies.add(buildAnomalySummary(anomaly.getResourceName(), 1.0, anomaly.getActualAmount())));
+    anomalies.forEach(anomaly
+        -> topAnomalies.add(buildAnomalySummary(
+            anomaly.getResourceName(), 1.0, anomaly.getActualAmount(), anomaly.getAnomalousSpend())));
     return topAnomalies;
   }
 
@@ -168,10 +174,11 @@ public class AnomalyServiceImpl implements AnomalyService {
       if (cloudProviderToSummaryMap.containsKey(cloudProvider)) {
         cloudProviderToSummaryMap.put(cloudProvider,
             buildAnomalySummary(cloudProvider, 1 + cloudProviderToSummaryMap.get(cloudProvider).getCount(),
-                anomaly.getActualAmount() + cloudProviderToSummaryMap.get(cloudProvider).getActualCost()));
+                anomaly.getActualAmount() + cloudProviderToSummaryMap.get(cloudProvider).getActualCost(),
+                anomaly.getAnomalousSpend() + cloudProviderToSummaryMap.get(cloudProvider).getAnomalousCost()));
       } else {
-        cloudProviderToSummaryMap.put(
-            cloudProvider, buildAnomalySummary(cloudProvider, 1.0, anomaly.getActualAmount()));
+        cloudProviderToSummaryMap.put(cloudProvider,
+            buildAnomalySummary(cloudProvider, 1.0, anomaly.getActualAmount(), anomaly.getAnomalousSpend()));
       }
     });
     List<AnomalySummary> cloudProviderSummary = new ArrayList<>(cloudProviderToSummaryMap.values());
@@ -182,7 +189,8 @@ public class AnomalyServiceImpl implements AnomalyService {
   private List<AnomalySummary> buildAnomalyByStatusSummary(List<AnomalyData> anomalies) {
     Double count = (double) anomalies.size();
     Double cost = anomalies.stream().mapToDouble(AnomalyData::getActualAmount).sum();
-    return Collections.singletonList(buildAnomalySummary("Open", count, cost));
+    Double anomalousCost = anomalies.stream().mapToDouble(AnomalyData::getAnomalousSpend).sum();
+    return Collections.singletonList(buildAnomalySummary("Open", count, cost, anomalousCost));
   }
 
   @Override
@@ -258,9 +266,10 @@ public class AnomalyServiceImpl implements AnomalyService {
         .id(anomaly.getId())
         .time(anomalyTime)
         .anomalyRelativeTime(AnomalyUtils.getRelativeTime(anomalyTime, ANOMALY_RELATIVE_TIME_TEMPLATE))
-        .actualAmount(anomaly.getActualcost())
-        .expectedAmount(anomaly.getExpectedcost())
-        .trend(AnomalyUtils.getAnomalyTrend(anomaly.getActualcost(), anomaly.getExpectedcost()))
+        .actualAmount(AnomalyUtils.getRoundedOffCost(anomaly.getActualcost()))
+        .expectedAmount(AnomalyUtils.getRoundedOffCost(anomaly.getExpectedcost()))
+        .anomalousSpend(AnomalyUtils.getRoundedOffCost(anomaly.getActualcost() - anomaly.getExpectedcost()))
+        .anomalousSpendPercentage(AnomalyUtils.getAnomalyTrend(anomaly.getActualcost(), anomaly.getExpectedcost()))
         .entity(getEntityInfo(anomaly))
         .resourceName(AnomalyUtils.getResourceName(anomaly))
         .resourceInfo(AnomalyUtils.getResourceInfo(anomaly))
@@ -339,7 +348,7 @@ public class AnomalyServiceImpl implements AnomalyService {
         .build();
   }
 
-  private AnomalySummary buildAnomalySummary(String name, Double count, Double actualCost) {
-    return AnomalySummary.builder().name(name).count(count).actualCost(actualCost).build();
+  private AnomalySummary buildAnomalySummary(String name, Double count, Double actualCost, Double anomalousCost) {
+    return AnomalySummary.builder().name(name).count(count).actualCost(actualCost).anomalousCost(anomalousCost).build();
   }
 }
