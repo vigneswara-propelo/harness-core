@@ -21,6 +21,7 @@ import lombok.Data;
 @OwnedBy(HarnessTeam.PIPELINE)
 public class TaskSelectorYaml {
   String delegateSelectors;
+  String origin;
   public TaskSelectorYaml(String delegateSelectors) {
     this.delegateSelectors = delegateSelectors;
   }

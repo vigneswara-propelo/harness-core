@@ -16,6 +16,7 @@ import io.harness.beans.SwaggerConstants;
 import io.harness.filters.WithConnectorRef;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.SpecParameters;
+import io.harness.plancreator.steps.common.WithDelegateSelector;
 import io.harness.plancreator.steps.internal.PMSStepInfo;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
@@ -45,7 +46,7 @@ import org.springframework.data.annotation.TypeAlias;
 @JsonTypeName(StepSpecTypeConstants.SERVICENOW_CREATE)
 @TypeAlias("serviceNowCreateStepInfo")
 @RecasterAlias("io.harness.steps.servicenow.create.ServiceNowCreateStepInfo")
-public class ServiceNowCreateStepInfo implements PMSStepInfo, WithConnectorRef {
+public class ServiceNowCreateStepInfo implements PMSStepInfo, WithConnectorRef, WithDelegateSelector {
   @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> connectorRef;
   @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> ticketType;
 

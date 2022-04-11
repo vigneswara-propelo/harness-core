@@ -17,6 +17,7 @@ import io.harness.data.structure.CollectionUtils;
 import io.harness.http.HttpHeaderConfig;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.SpecParameters;
+import io.harness.plancreator.steps.common.WithDelegateSelector;
 import io.harness.plancreator.steps.internal.PMSStepInfo;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
@@ -53,7 +54,7 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("httpStepInfo")
 @OwnedBy(PIPELINE)
 @RecasterAlias("io.harness.plancreator.steps.http.HttpStepInfo")
-public class HttpStepInfo extends HttpBaseStepInfo implements PMSStepInfo, Visitable {
+public class HttpStepInfo extends HttpBaseStepInfo implements PMSStepInfo, Visitable, WithDelegateSelector {
   // For Visitor Framework Impl
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
 

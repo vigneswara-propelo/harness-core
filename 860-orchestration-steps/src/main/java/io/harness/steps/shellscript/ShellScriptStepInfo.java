@@ -12,6 +12,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.SpecParameters;
+import io.harness.plancreator.steps.common.WithDelegateSelector;
 import io.harness.plancreator.steps.internal.PMSStepInfo;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
@@ -39,7 +40,8 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("shellScriptStepInfo")
 @OwnedBy(HarnessTeam.CDC)
 @RecasterAlias("io.harness.cdng.pipeline.stepinfo.ShellScriptStepInfo")
-public class ShellScriptStepInfo extends ShellScriptBaseStepInfo implements PMSStepInfo, Visitable {
+public class ShellScriptStepInfo
+    extends ShellScriptBaseStepInfo implements PMSStepInfo, Visitable, WithDelegateSelector {
   List<NGVariable> outputVariables;
   List<NGVariable> environmentVariables;
 

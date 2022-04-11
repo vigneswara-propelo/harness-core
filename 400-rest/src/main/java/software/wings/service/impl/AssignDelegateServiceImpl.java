@@ -37,6 +37,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.Cd1SetupFields;
 import io.harness.beans.DelegateTask;
 import io.harness.beans.DelegateTask.DelegateTaskKeys;
+import io.harness.beans.FeatureName;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.Delegate.DelegateKeys;
 import io.harness.delegate.beans.DelegateActivity;
@@ -81,6 +82,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import io.fabric8.utils.Lists;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -125,6 +127,11 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
   public static final long WHITELIST_TTL = TimeUnit.HOURS.toMillis(6);
   public static final long BLACKLIST_TTL = TimeUnit.MINUTES.toMillis(5);
   private static final long WHITELIST_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(10);
+
+  public final String PIPELINE = "pipeline";
+  public final String STAGE = "stage";
+  public final String STEP_GROUP = "stepGroup";
+  public final String STEP = "step";
 
   @Inject private DelegateSelectionLogsService delegateSelectionLogsService;
   @Inject private DelegateService delegateService;
@@ -443,11 +450,13 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
     if (isEmpty(executionCapabilities)) {
       return true;
     }
-
     List<SelectorCapability> selectorsCapabilityList = executionCapabilities.stream()
                                                            .filter(c -> c instanceof SelectorCapability)
                                                            .map(c -> (SelectorCapability) c)
                                                            .collect(Collectors.toList());
+    if (featureFlagService.isEnabled(FeatureName.OVERRIDE_CONNECTOR_SELECTOR, delegate.getAccountId())) {
+      selectorsCapabilityList = selectorCapabilitiesWithHierarchyApplied(selectorsCapabilityList);
+    }
 
     if (isEmpty(selectorsCapabilityList)) {
       return true;
@@ -1050,5 +1059,19 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
       return Optional.of(tags);
     }
     return Optional.ofNullable(delegate.getTags());
+  }
+
+  private List<SelectorCapability> selectorCapabilitiesWithHierarchyApplied(
+      List<SelectorCapability> selectorCapabilities) {
+    List<SelectorCapability> selectorsAtStepGroup =
+        selectorCapabilities.stream()
+            .filter(c
+                -> c.getSelectorOrigin().equals(STEP) || c.getSelectorOrigin().equals(STEP_GROUP)
+                    || c.getSelectorOrigin().equals(STAGE) || c.getSelectorOrigin().equals(PIPELINE))
+            .collect(toList());
+    if (!Lists.isNullOrEmpty(selectorsAtStepGroup)) {
+      return selectorsAtStepGroup;
+    }
+    return selectorCapabilities;
   }
 }
