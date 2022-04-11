@@ -1576,17 +1576,6 @@ public class DelegateServiceImpl implements DelegateService {
       }
       out.closeArchiveEntry();
 
-      File delegate = File.createTempFile("delegate", ".sh");
-      saveProcessedTemplate(scriptParams, delegate, "delegate.sh.ftl");
-      delegate = new File(delegate.getAbsolutePath());
-      TarArchiveEntry delegateTarArchiveEntry = new TarArchiveEntry(delegate, DELEGATE_DIR + "/delegate.sh");
-      delegateTarArchiveEntry.setMode(0755);
-      out.putArchiveEntry(delegateTarArchiveEntry);
-      try (FileInputStream fis = new FileInputStream(delegate)) {
-        IOUtils.copy(fis, out);
-      }
-      out.closeArchiveEntry();
-
       File stop = File.createTempFile("stop", ".sh");
       saveProcessedTemplate(scriptParams, stop, "stop.sh.ftl");
       stop = new File(stop.getAbsolutePath());
