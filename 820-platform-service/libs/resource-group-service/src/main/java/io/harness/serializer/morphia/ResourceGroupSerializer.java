@@ -26,7 +26,6 @@ import io.harness.serializer.kryo.DelegateTasksBeansKryoRegister;
 import io.harness.serializer.kryo.DelegateTasksKryoRegistrar;
 import io.harness.serializer.kryo.NGAuditCommonsKryoRegistrar;
 import io.harness.serializer.kryo.NGCoreKryoRegistrar;
-import io.harness.serializer.morphia.v2.ResourceGroupBeansMorphiaRegistrar;
 
 import com.google.common.collect.ImmutableSet;
 import lombok.experimental.UtilityClass;
@@ -56,7 +55,5 @@ public class ResourceGroupSerializer {
           .addAll(DelegateTaskRegistrars.morphiaRegistrars)
           .addAll(GitSyncSdkRegistrar.morphiaRegistrars)
           .add(ResourceGroupMorphiaRegistrar.class)
-          .add(io.harness.serializer.morphia.v1.ResourceGroupBeansMorphiaRegistrar.class)
-          .add(ResourceGroupBeansMorphiaRegistrar.class)
           .build();
 }

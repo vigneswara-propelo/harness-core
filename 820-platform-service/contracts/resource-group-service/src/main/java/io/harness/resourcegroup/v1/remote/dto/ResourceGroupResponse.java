@@ -5,9 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.resourcegroupclient.remote.v1;
-
-import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
+package io.harness.resourcegroup.v1.remote.dto;
 
 import javax.validation.constraints.NotNull;
 import lombok.Builder;

@@ -11,11 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER_SRE;
-import static io.harness.ng.core.common.beans.NGTag.NGTagKeys;
 import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
-import static io.harness.resourcegroup.v2.model.ResourceFilter.ResourceFilterKeys;
-import static io.harness.resourcegroup.v2.model.ResourceGroup.ResourceGroupKeys;
-import static io.harness.resourcegroup.v2.model.ResourceSelector.ResourceSelectorKeys;
 import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_POLICY;
 import static io.harness.utils.PageUtils.getPageRequest;
 
@@ -28,6 +24,7 @@ import io.harness.beans.SortOrder;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
+import io.harness.ng.core.common.beans.NGTag.NGTagKeys;
 import io.harness.outbox.api.OutboxService;
 import io.harness.resourcegroup.framework.v1.events.ResourceGroupCreateEvent;
 import io.harness.resourcegroup.framework.v1.events.ResourceGroupDeleteEvent;
@@ -37,9 +34,12 @@ import io.harness.resourcegroup.framework.v2.repositories.spring.ResourceGroupV2
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
+import io.harness.resourcegroup.v2.model.ResourceFilter.ResourceFilterKeys;
 import io.harness.resourcegroup.v2.model.ResourceGroup;
+import io.harness.resourcegroup.v2.model.ResourceGroup.ResourceGroupKeys;
+import io.harness.resourcegroup.v2.model.ResourceSelector.ResourceSelectorKeys;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
-import io.harness.resourcegroupclient.remote.v2.ResourceGroupResponse;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
@@ -318,7 +318,7 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
           Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
             io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO resourceGroupV1DTO =
                 ResourceGroupMapper.toV1DTO(savedResourceGroup, savedResourceGroup.getHarnessManaged());
-            io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse savedResourceGroupV1 =
+            io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse savedResourceGroupV1 =
                 resourceGroupV1Service.upsert(resourceGroupV1DTO, savedResourceGroup.getHarnessManaged()).orElse(null);
             if (savedResourceGroupV1 != null) {
               ResourceGroupMapper.setScopeAndResourceFilter(

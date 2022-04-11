@@ -21,6 +21,8 @@ public class ResourceGroupMorphiaRegistrar implements MorphiaRegistrar {
   @Override
   public void registerClasses(Set<Class> set) {
     set.add(ConfigurationState.class);
+    set.add(io.harness.resourcegroup.v1.model.ResourceGroup.class);
+    set.add(io.harness.resourcegroup.v2.model.ResourceGroup.class);
   }
 
   @Override

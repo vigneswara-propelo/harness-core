@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.resourcegroup.framework.v1.remote.resource;
+package io.harness.resourcegroup.v1.remote.resource;
 
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_JSON_MEDIA_TYPE;
@@ -20,15 +20,12 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.NGCommonEntityConstants;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.ScopeLevel;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.resourcegroup.framework.v1.service.ResourceTypeService;
 import io.harness.resourcegroup.v1.remote.dto.ResourceTypeDTO;
 import io.harness.security.annotations.NextGenManagerAuth;
 
-import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -44,8 +41,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 
 @Api("/resourcetype")
 @Path("resourcetype")
@@ -66,7 +61,6 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
       @Content(mediaType = APPLICATION_JSON_MEDIA_TYPE, schema = @Schema(implementation = ErrorDTO.class))
       , @Content(mediaType = APPLICATION_YAML_MEDIA_TYPE, schema = @Schema(implementation = ErrorDTO.class))
     })
-@AllArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({ @Inject }))
 @ApiResponses(value =
     {
       @ApiResponse(code = 400, response = FailureDTO.class, message = "Bad Request")
@@ -74,9 +68,7 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
     })
 @NextGenManagerAuth
 @OwnedBy(PL)
-public class HarnessResourceTypeResource {
-  ResourceTypeService resourceTypeService;
-
+public interface HarnessResourceTypeResource {
   @GET
   @ApiOperation(value = "Gets all resource types available at this scope", nickname = "getResourceTypes")
   @Operation(operationId = "getResourceTypes", summary = "Gets all resource types available at this scope",
@@ -85,13 +77,10 @@ public class HarnessResourceTypeResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns all resource types available at this scope")
       })
-  public ResponseDTO<ResourceTypeDTO>
+  ResponseDTO<ResourceTypeDTO>
   get(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    return ResponseDTO.newResponse(
-        resourceTypeService.getResourceTypes(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier)));
-  }
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 }

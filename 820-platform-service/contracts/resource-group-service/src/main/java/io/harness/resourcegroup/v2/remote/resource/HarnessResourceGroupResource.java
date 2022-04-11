@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.resourcegroup.framework.v2.remote.resource;
+package io.harness.resourcegroup.v2.remote.resource;
 
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_JSON_MEDIA_TYPE;
@@ -17,14 +17,10 @@ import static io.harness.NGCommonEntityConstants.INTERNAL_SERVER_ERROR_CODE;
 import static io.harness.NGCommonEntityConstants.INTERNAL_SERVER_ERROR_MESSAGE;
 import static io.harness.NGCommonEntityConstants.ORG_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.PROJECT_PARAM_MESSAGE;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.ng.core.utils.NGUtils.verifyValuesNotChanged;
 import static io.harness.resourcegroup.ResourceGroupPermissions.DELETE_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.EDIT_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupResourceTypes.RESOURCE_GROUP;
-import static io.harness.resourcegroup.v1.remote.dto.ManagedFilter.NO_FILTER;
-import static io.harness.utils.PageUtils.getNGPageResponse;
 
 import io.harness.NGCommonEntityConstants;
 import io.harness.NGResourceFilterConstants;
@@ -33,8 +29,6 @@ import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.accesscontrol.commons.exceptions.AccessDeniedErrorDTO;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.Scope;
-import io.harness.beans.ScopeLevel;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.ng.beans.PageRequest;
@@ -42,19 +36,12 @@ import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
-import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidatorImpl;
-import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
-import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupRequest;
-import io.harness.resourcegroupclient.remote.v2.ResourceGroupResponse;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -65,7 +52,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
@@ -78,9 +64,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Api(value = "/v2/resourcegroup", hidden = true)
 @Path("/v2/resourcegroup")
@@ -101,7 +84,6 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
       @Content(mediaType = APPLICATION_JSON_MEDIA_TYPE, schema = @Schema(implementation = ErrorDTO.class))
       , @Content(mediaType = APPLICATION_YAML_MEDIA_TYPE, schema = @Schema(implementation = ErrorDTO.class))
     })
-@AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @ApiResponses(value =
     {
       @ApiResponse(code = 400, response = FailureDTO.class, message = "Bad Request")
@@ -110,10 +92,7 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
     })
 @NextGenManagerAuth
 @OwnedBy(HarnessTeam.PL)
-public class HarnessResourceGroupResource {
-  ResourceGroupService resourceGroupService;
-  ResourceGroupValidatorImpl resourceGroupValidator;
-
+public interface HarnessResourceGroupResource {
   @GET
   @Path("{identifier}")
   @ApiOperation(value = "Get a resource group by Identifier", nickname = "getResourceGroupV2")
@@ -124,19 +103,14 @@ public class HarnessResourceGroupResource {
         ApiResponse(responseCode = "default", description = "This returns a Resource Group specific to the Identifier")
       })
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   get(@Parameter(description = IDENTIFIER_PARAM_MESSAGE, required = true) @NotNull @PathParam(
           NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(
-        resourceGroupService.get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier, NO_FILTER)
-            .orElse(null));
-    return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
-  }
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 
   @GET
   @Path("internal/{identifier}")
@@ -151,21 +125,14 @@ public class HarnessResourceGroupResource {
       hidden = true)
   @InternalApi
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   getInternal(@Parameter(description = IDENTIFIER_PARAM_MESSAGE) @NotNull @PathParam(
                   NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt =
-        Optional.ofNullable(resourceGroupService
-                                .get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier,
-                                    isEmpty(accountIdentifier) ? ManagedFilter.ONLY_MANAGED : ManagedFilter.NO_FILTER)
-                                .orElse(null));
-    return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
-  }
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 
   @GET
   @ApiOperation(value = "Get list of resource groups", nickname = "getResourceGroupListV2")
@@ -175,7 +142,7 @@ public class HarnessResourceGroupResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "This contains a list of Resource Groups")
       })
-  public ResponseDTO<PageResponse<ResourceGroupResponse>>
+  ResponseDTO<PageResponse<ResourceGroupResponse>>
   list(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
            NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -185,10 +152,7 @@ public class HarnessResourceGroupResource {
           description =
               "Details of all the resource groups having this string in their name or identifier will be returned.")
       @QueryParam(NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm,
-      @BeanParam PageRequest pageRequest) {
-    return ResponseDTO.newResponse(getNGPageResponse(resourceGroupService.list(
-        Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), pageRequest, searchTerm)));
-  }
+      @BeanParam PageRequest pageRequest);
 
   @POST
   @Path("filter")
@@ -199,13 +163,11 @@ public class HarnessResourceGroupResource {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
             description = "This fetches the list of Resource Groups filtered by multiple fields.")
       })
-  public ResponseDTO<PageResponse<ResourceGroupResponse>>
+  ResponseDTO<PageResponse<ResourceGroupResponse>>
   list(@RequestBody(description = "Filter Resource Groups based on multiple parameters",
            required = true) @NotNull ResourceGroupFilterDTO resourceGroupFilterDTO,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotNull
-      @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier, @BeanParam PageRequest pageRequest) {
-    return ResponseDTO.newResponse(getNGPageResponse(resourceGroupService.list(resourceGroupFilterDTO, pageRequest)));
-  }
+      @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier, @BeanParam PageRequest pageRequest);
 
   @POST
   @ApiOperation(value = "Create a resource group", nickname = "createResourceGroupV2")
@@ -217,21 +179,14 @@ public class HarnessResourceGroupResource {
       })
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   create(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
              NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @RequestBody(description = "This contains the details required to create a Resource Group",
-          required = true) @Valid ResourceGroupRequest resourceGroupRequest) {
-    resourceGroupRequest.getResourceGroup().setAllowedScopeLevels(
-        Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
-    resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
-    ResourceGroupResponse resourceGroupResponse =
-        resourceGroupService.create(resourceGroupRequest.getResourceGroup(), false);
-    return ResponseDTO.newResponse(resourceGroupResponse);
-  }
+          required = true) @Valid ResourceGroupRequest resourceGroupRequest);
 
   @PUT
   @Path("{identifier}")
@@ -243,7 +198,7 @@ public class HarnessResourceGroupResource {
         ApiResponse(responseCode = "default", description = "Successfully updated a Resource Group")
       })
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   update(@Parameter(description = IDENTIFIER_PARAM_MESSAGE) @NotNull @PathParam(
              NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
@@ -252,14 +207,7 @@ public class HarnessResourceGroupResource {
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @RequestBody(description = "This contains the details required to create a Resource Group",
-          required = true) @Valid ResourceGroupRequest resourceGroupRequest) {
-    resourceGroupRequest.getResourceGroup().setAllowedScopeLevels(
-        Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
-    resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
-    validateRequest(accountIdentifier, orgIdentifier, projectIdentifier, resourceGroupRequest.getResourceGroup());
-    return ResponseDTO.newResponse(
-        (resourceGroupService.update(resourceGroupRequest.getResourceGroup(), false)).orElse(null));
-  }
+          required = true) @Valid ResourceGroupRequest resourceGroupRequest);
 
   @DELETE
   @Path("{identifier}")
@@ -273,23 +221,12 @@ public class HarnessResourceGroupResource {
   @Produces("application/json")
   @Consumes()
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = DELETE_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<Boolean>
+  ResponseDTO<Boolean>
   delete(@NotNull @Parameter(description = IDENTIFIER_PARAM_MESSAGE) @PathParam(
              NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    return ResponseDTO.newResponse(
-        resourceGroupService.delete(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier));
-  }
-
-  private void validateRequest(
-      String accountIdentifier, String orgIdentifier, String identifier, ResourceGroupDTO resourceGroupDTO) {
-    verifyValuesNotChanged(
-        Lists.newArrayList(Pair.of(accountIdentifier, resourceGroupDTO.getAccountIdentifier())), false);
-    verifyValuesNotChanged(Lists.newArrayList(Pair.of(orgIdentifier, resourceGroupDTO.getOrgIdentifier())), false);
-    verifyValuesNotChanged(Lists.newArrayList(Pair.of(identifier, resourceGroupDTO.getIdentifier())), false);
-  }
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 }

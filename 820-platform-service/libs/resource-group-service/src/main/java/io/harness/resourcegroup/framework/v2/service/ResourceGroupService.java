@@ -16,7 +16,7 @@ import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
 import io.harness.resourcegroup.v2.model.ResourceGroup;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
-import io.harness.resourcegroupclient.remote.v2.ResourceGroupResponse;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 
 import java.util.Optional;
 import javax.validation.constraints.NotNull;

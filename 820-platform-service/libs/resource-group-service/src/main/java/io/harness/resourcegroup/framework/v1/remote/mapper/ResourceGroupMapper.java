@@ -18,7 +18,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.resourcegroup.v1.model.ResourceGroup;
 import io.harness.resourcegroup.v1.model.ResourceGroup.ResourceGroupBuilder;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
-import io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
 
 import java.util.ArrayList;
 import java.util.Collections;

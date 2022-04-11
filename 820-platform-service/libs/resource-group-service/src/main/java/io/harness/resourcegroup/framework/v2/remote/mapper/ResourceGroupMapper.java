@@ -26,7 +26,7 @@ import io.harness.resourcegroup.v2.model.ResourceFilter;
 import io.harness.resourcegroup.v2.model.ResourceGroup;
 import io.harness.resourcegroup.v2.model.ScopeSelector;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
-import io.harness.resourcegroupclient.remote.v2.ResourceGroupResponse;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -264,7 +264,7 @@ public class ResourceGroupMapper {
     return toV1DTO(fromDTO(resourceGroup), harnessManaged);
   }
 
-  public static io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse toV1Response(
+  public static io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse toV1Response(
       ResourceGroupResponse response) {
     if (response == null) {
       return null;
@@ -274,7 +274,7 @@ public class ResourceGroupMapper {
   }
 
   public static ResourceGroupResponse toV2Response(
-      io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse response) {
+      io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse response) {
     if (response == null) {
       return null;
     }

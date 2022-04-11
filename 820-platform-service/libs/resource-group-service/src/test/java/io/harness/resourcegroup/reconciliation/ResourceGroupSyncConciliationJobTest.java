@@ -42,8 +42,8 @@ import io.harness.resourcegroup.v1.model.ResourceGroup;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
 import io.harness.resourcegroup.v1.remote.dto.ResourceSelectorFilter;
-import io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse;
 import io.harness.rule.Owner;
 import io.harness.utils.PageTestUtils;
 
@@ -276,7 +276,7 @@ public class ResourceGroupSyncConciliationJobTest extends ResourceGroupTestBase 
         getResourceGroupsWithResourceFilter(accountIdentifier, null, null, secretResourceType, identifier);
     PageRequest pageRequest = PageRequest.builder().pageIndex(0).pageSize(20).build();
     PageRequest secondPageRequest = PageRequest.builder().pageIndex(1).pageSize(20).build();
-    List<io.harness.resourcegroupclient.remote.v2.ResourceGroupResponse> resourceGroups =
+    List<io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse> resourceGroups =
         getResourceGroupsWithResource(accountIdentifier, null, null, secretResourceType, identifier, 5)
             .stream()
             .map(io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper::toV2Response)

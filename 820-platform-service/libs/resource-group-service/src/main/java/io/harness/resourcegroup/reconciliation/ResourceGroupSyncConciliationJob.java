@@ -32,8 +32,8 @@ import io.harness.resourcegroup.model.StaticResourceSelector;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
 import io.harness.resourcegroup.v1.remote.dto.ResourceSelectorFilter;
-import io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse;
 import io.harness.security.SecurityContextBuilder;
 import io.harness.security.dto.ServicePrincipal;
 

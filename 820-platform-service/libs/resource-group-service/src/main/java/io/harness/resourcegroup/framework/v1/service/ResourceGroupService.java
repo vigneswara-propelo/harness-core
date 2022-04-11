@@ -15,7 +15,7 @@ import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
-import io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
 
 import java.util.Optional;
 import javax.validation.Valid;

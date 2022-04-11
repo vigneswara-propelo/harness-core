@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.resourcegroup.framework.v1.remote.resource;
+package io.harness.resourcegroup.v1.remote.resource;
 
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_JSON_MEDIA_TYPE;
@@ -16,48 +16,26 @@ import static io.harness.NGCommonEntityConstants.INTERNAL_SERVER_ERROR_CODE;
 import static io.harness.NGCommonEntityConstants.INTERNAL_SERVER_ERROR_MESSAGE;
 import static io.harness.NGCommonEntityConstants.ORG_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.PROJECT_PARAM_MESSAGE;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.resourcegroup.ResourceGroupPermissions.DELETE_RESOURCEGROUP_PERMISSION;
-import static io.harness.resourcegroup.ResourceGroupPermissions.EDIT_RESOURCEGROUP_PERMISSION;
-import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGROUP_PERMISSION;
-import static io.harness.resourcegroup.ResourceGroupResourceTypes.RESOURCE_GROUP;
-import static io.harness.utils.PageUtils.getNGPageResponse;
 
 import io.harness.NGCommonEntityConstants;
 import io.harness.NGResourceFilterConstants;
 import io.harness.accesscontrol.AccountIdentifier;
-import io.harness.accesscontrol.acl.api.Resource;
-import io.harness.accesscontrol.acl.api.ResourceScope;
-import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.accesscontrol.commons.exceptions.AccessDeniedErrorDTO;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.Scope;
-import io.harness.beans.ScopeLevel;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
-import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper;
-import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
-import io.harness.resourcegroup.model.DynamicResourceSelector;
-import io.harness.resourcegroup.model.ResourceSelectorByScope;
-import io.harness.resourcegroup.model.StaticResourceSelector;
-import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
-import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupRequest;
-import io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
 
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -68,8 +46,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
@@ -82,8 +58,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 
 @Api("/resourcegroup")
 @Path("resourcegroup")
@@ -104,7 +78,6 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
       @Content(mediaType = APPLICATION_JSON_MEDIA_TYPE, schema = @Schema(implementation = ErrorDTO.class))
       , @Content(mediaType = APPLICATION_YAML_MEDIA_TYPE, schema = @Schema(implementation = ErrorDTO.class))
     })
-@AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @ApiResponses(value =
     {
       @ApiResponse(code = 400, response = FailureDTO.class, message = "Bad Request")
@@ -113,10 +86,7 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
     })
 @NextGenManagerAuth
 @OwnedBy(HarnessTeam.PL)
-public class HarnessResourceGroupResource {
-  ResourceGroupService resourceGroupService;
-  AccessControlClient accessControlClient;
-
+public interface HarnessResourceGroupResource {
   @GET
   @Path("{identifier}")
   @ApiOperation(value = "Get a resource group by Identifier", nickname = "getResourceGroup")
@@ -126,22 +96,14 @@ public class HarnessResourceGroupResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "This returns a Resource Group specific to the Identifier")
       })
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   get(@Parameter(description = "This is the Identifier of the Entity", required = true) @NotNull @PathParam(
           NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
-        Resource.of(RESOURCE_GROUP, identifier), VIEW_RESOURCEGROUP_PERMISSION);
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(ResourceGroupMapper.toV1Response(
-        resourceGroupService
-            .get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier, ManagedFilter.NO_FILTER)
-            .orElse(null)));
-    return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
-  }
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 
   @GET
   @Path("internal/{identifier}")
@@ -155,21 +117,14 @@ public class HarnessResourceGroupResource {
       },
       hidden = true)
   @InternalApi
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   getInternal(@Parameter(description = "This is the Identifier of the Entity") @NotNull @PathParam(
                   NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(ResourceGroupMapper.toV1Response(
-        resourceGroupService
-            .get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier,
-                isEmpty(accountIdentifier) ? ManagedFilter.ONLY_MANAGED : ManagedFilter.NO_FILTER)
-            .orElse(null)));
-    return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
-  }
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 
   @GET
   @ApiOperation(value = "Get list of resource groups", nickname = "getResourceGroupList")
@@ -179,7 +134,7 @@ public class HarnessResourceGroupResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "This contains a list of Resource Groups")
       })
-  public ResponseDTO<PageResponse<ResourceGroupResponse>>
+  ResponseDTO<PageResponse<ResourceGroupResponse>>
   list(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
            NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -189,14 +144,7 @@ public class HarnessResourceGroupResource {
           description =
               "Details of all the resource groups having this string in their name or identifier will be returned.")
       @QueryParam(NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm,
-      @BeanParam PageRequest pageRequest) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
-        Resource.of(RESOURCE_GROUP, null), VIEW_RESOURCEGROUP_PERMISSION);
-    return ResponseDTO.newResponse(getNGPageResponse(
-        resourceGroupService
-            .list(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), pageRequest, searchTerm)
-            .map(ResourceGroupMapper::toV1Response)));
-  }
+      @BeanParam PageRequest pageRequest);
 
   @POST
   @Path("filter")
@@ -207,18 +155,11 @@ public class HarnessResourceGroupResource {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
             description = "This fetches the list of Resource Groups filtered by multiple fields.")
       })
-  public ResponseDTO<PageResponse<ResourceGroupResponse>>
+  ResponseDTO<PageResponse<ResourceGroupResponse>>
   list(@RequestBody(description = "Filter Resource Groups based on multiple parameters",
            required = true) @NotNull ResourceGroupFilterDTO resourceGroupFilterDTO,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotNull
-      @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier, @BeanParam PageRequest pageRequest) {
-    accessControlClient.checkForAccessOrThrow(
-        ResourceScope.of(resourceGroupFilterDTO.getAccountIdentifier(), resourceGroupFilterDTO.getOrgIdentifier(),
-            resourceGroupFilterDTO.getProjectIdentifier()),
-        Resource.of(RESOURCE_GROUP, null), VIEW_RESOURCEGROUP_PERMISSION);
-    return ResponseDTO.newResponse(getNGPageResponse(
-        resourceGroupService.list(resourceGroupFilterDTO, pageRequest).map(ResourceGroupMapper::toV1Response)));
-  }
+      @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier, @BeanParam PageRequest pageRequest);
 
   @POST
   @ApiOperation(value = "Create a resource group", nickname = "createResourceGroup")
@@ -229,24 +170,14 @@ public class HarnessResourceGroupResource {
         ApiResponse(responseCode = "default", description = "Successfully created a Resource Group")
       })
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   create(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
              NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @RequestBody(description = "This contains the details required to create a Resource Group",
-          required = true) @Valid ResourceGroupRequest resourceGroupRequest) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
-        Resource.of(RESOURCE_GROUP, null), EDIT_RESOURCEGROUP_PERMISSION);
-    resourceGroupRequest.getResourceGroup().setAllowedScopeLevels(
-        Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
-    verifySupportedResourceSelectorsAreUsed(resourceGroupRequest);
-    validateResourceSelectors(resourceGroupRequest);
-    ResourceGroupResponse resourceGroupResponse = ResourceGroupMapper.toV1Response(resourceGroupService.create(
-        ResourceGroupMapper.fromV1DTO(resourceGroupRequest.getResourceGroup(), false), false));
-    return ResponseDTO.newResponse(resourceGroupResponse);
-  }
+          required = true) @Valid ResourceGroupRequest resourceGroupRequest);
 
   @PUT
   @Path("{identifier}")
@@ -257,7 +188,7 @@ public class HarnessResourceGroupResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Successfully updated a Resource Group")
       })
-  public ResponseDTO<ResourceGroupResponse>
+  ResponseDTO<ResourceGroupResponse>
   update(@Parameter(description = "Identifier for the entity") @NotNull @PathParam(
              NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
@@ -266,19 +197,7 @@ public class HarnessResourceGroupResource {
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @RequestBody(description = "This contains the details required to create a Resource Group",
-          required = true) @Valid ResourceGroupRequest resourceGroupRequest) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
-        Resource.of(RESOURCE_GROUP, identifier), EDIT_RESOURCEGROUP_PERMISSION);
-    resourceGroupRequest.getResourceGroup().setAllowedScopeLevels(
-        Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
-    verifySupportedResourceSelectorsAreUsed(resourceGroupRequest);
-    validateResourceSelectors(resourceGroupRequest);
-    Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(ResourceGroupMapper.toV1Response(
-        resourceGroupService
-            .update(ResourceGroupMapper.fromV1DTO(resourceGroupRequest.getResourceGroup(), false), false)
-            .orElse(null)));
-    return ResponseDTO.newResponse(resourceGroupResponseOpt.orElse(null));
-  }
+          required = true) @Valid ResourceGroupRequest resourceGroupRequest);
 
   @DELETE
   @Path("{identifier}")
@@ -291,75 +210,11 @@ public class HarnessResourceGroupResource {
       })
   @Produces("application/json")
   @Consumes()
-  public ResponseDTO<Boolean>
+  ResponseDTO<Boolean>
   delete(@NotNull @PathParam(NGCommonEntityConstants.IDENTIFIER_KEY) String identifier,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
-        Resource.of(RESOURCE_GROUP, identifier), DELETE_RESOURCEGROUP_PERMISSION);
-    return ResponseDTO.newResponse(
-        resourceGroupService.delete(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier));
-  }
-
-  private void verifySupportedResourceSelectorsAreUsed(ResourceGroupRequest resourceGroupRequest) {
-    if (resourceGroupRequest == null || resourceGroupRequest.getResourceGroup() == null) {
-      return;
-    }
-    ResourceGroupDTO resourceGroupDTO = resourceGroupRequest.getResourceGroup();
-    if (resourceGroupDTO.isFullScopeSelected()) {
-      throw new InvalidRequestException("Full scope selected cannot be provided for custom resource groups.");
-    }
-    if (isNotEmpty(resourceGroupDTO.getResourceSelectors())) {
-      resourceGroupDTO.getResourceSelectors().forEach(resourceSelector -> {
-        if (resourceSelector instanceof ResourceSelectorByScope) {
-          if (!resourceGroupDTO.getScope().equals(((ResourceSelectorByScope) resourceSelector).getScope())) {
-            throw new InvalidRequestException(
-                "Resource Selector by scope with different scope cannot be provided for custom resource groups.");
-          }
-        }
-      });
-    }
-  }
-
-  private void validateResourceSelectors(ResourceGroupRequest resourceGroupRequest) {
-    if (resourceGroupRequest == null || resourceGroupRequest.getResourceGroup() == null) {
-      return;
-    }
-    ResourceGroupDTO resourceGroupDTO = resourceGroupRequest.getResourceGroup();
-    if (isNotEmpty(resourceGroupDTO.getResourceSelectors())) {
-      AtomicBoolean selectorByScopePresent = new AtomicBoolean(false);
-      AtomicBoolean dynamicSelectorIncludingChildScopesPresent = new AtomicBoolean(false);
-      AtomicBoolean dynamicSelectorNotIncludingChildScopesPresent = new AtomicBoolean(false);
-      AtomicBoolean staticSelectorPresent = new AtomicBoolean(false);
-
-      resourceGroupDTO.getResourceSelectors().forEach(resourceSelector -> {
-        if (resourceSelector instanceof ResourceSelectorByScope) {
-          selectorByScopePresent.set(true);
-        } else if (resourceSelector instanceof StaticResourceSelector) {
-          staticSelectorPresent.set(true);
-        } else if (resourceSelector instanceof DynamicResourceSelector) {
-          if (Boolean.TRUE.equals(((DynamicResourceSelector) resourceSelector).getIncludeChildScopes())) {
-            dynamicSelectorIncludingChildScopesPresent.set(true);
-          } else {
-            dynamicSelectorNotIncludingChildScopesPresent.set(false);
-          }
-        }
-      });
-
-      if (selectorByScopePresent.get()
-          && (dynamicSelectorIncludingChildScopesPresent.get() || dynamicSelectorNotIncludingChildScopesPresent.get()
-              || staticSelectorPresent.get())) {
-        throw new InvalidRequestException(
-            "Resource Selector by scope cannot be selected along with other resource selectors.");
-      }
-
-      if (dynamicSelectorIncludingChildScopesPresent.get() && dynamicSelectorNotIncludingChildScopesPresent.get()) {
-        throw new InvalidRequestException(
-            "Either the current scope or the current scope including the child scopes should be selected, and not both.");
-      }
-    }
-  }
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier);
 }

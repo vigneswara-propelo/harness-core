@@ -32,7 +32,7 @@ import io.harness.resourcegroup.v1.model.ResourceGroup.ResourceGroupKeys;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
-import io.harness.resourcegroupclient.remote.v1.ResourceGroupResponse;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
