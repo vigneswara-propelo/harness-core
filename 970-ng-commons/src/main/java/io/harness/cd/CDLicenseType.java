@@ -5,6 +5,6 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.licensing.beans.modules.types;
+package io.harness.cd;
 
 public enum CDLicenseType { SERVICES, SERVICE_INSTANCES }

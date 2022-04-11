@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.cdng.usage.beans;
+package io.harness.licensing.usage.beans.cd;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
