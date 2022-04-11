@@ -19,19 +19,17 @@ import io.harness.ng.core.dto.FailureDTO;
 import io.harness.telemetry.Category;
 import io.harness.telemetry.TelemetryOption;
 import io.harness.telemetry.TelemetryReporter;
+import io.harness.telemetry.utils.TelemetryDataUtils;
 
 import com.google.inject.Singleton;
 import io.dropwizard.jersey.errors.ErrorMessage;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
-import org.glassfish.jersey.uri.UriTemplate;
 
 @OwnedBy(PIPELINE)
 @Singleton
@@ -70,7 +68,7 @@ public class APIErrorsTelemetrySenderFilter implements ContainerResponseFilter {
           PROJECT_IDENTIFIER, getParameterValueFromUri(containerRequestContext, NGCommonEntityConstants.PROJECT_KEY));
       properties.put(SERVICE_NAME, serviceName);
       properties.put(API_ENDPOINT, containerRequestContext.getUriInfo().getRequestUri().toString());
-      properties.put(API_PATTERN, getApiPattern(containerRequestContext));
+      properties.put(API_PATTERN, TelemetryDataUtils.getApiPattern(containerRequestContext));
       properties.put(API_TYPE, containerRequestContext.getMethod());
       properties.put(RESPONSE_CODE, responseCode);
       if (containerResponseContext.getEntity() instanceof ErrorDTO) {
@@ -101,15 +99,6 @@ public class APIErrorsTelemetrySenderFilter implements ContainerResponseFilter {
       paramValue = containerRequestContext.getUriInfo().getPathParameters().getFirst(param);
     }
     return StringUtils.isEmpty(paramValue) ? "" : paramValue;
-  }
-
-  private String getApiPattern(ContainerRequestContext containerRequestContext) {
-    List<UriTemplate> templates = ((UriRoutingContext) containerRequestContext.getUriInfo()).getMatchedTemplates();
-    StringBuilder pattern = new StringBuilder("");
-    for (int i = 0; i < templates.size(); i++) {
-      pattern.append(templates.get(templates.size() - 1 - i).getTemplate());
-    }
-    return pattern.toString();
   }
 
   private String generateErrorMessage(ErrorDTO errorDTO) {
