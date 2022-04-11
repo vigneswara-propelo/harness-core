@@ -105,6 +105,8 @@ public class CVNGBackgroundMigrationList {
         .add(Pair.of(42, AddMonitoredServiceToWebhookMigration.class))
         .add(Pair.of(43, AddTaskInfoToVerificationTask.class))
         .add(Pair.of(44, DeleteOldAnalysisOrchestratorMigration.class))
+        .add(Pair.of(45, AddMetricIdentifierInCVConfigsAndMetricPacks.class))
+        .add(Pair.of(46, AddMetricIdentifierToTimeSeriesThreshold.class))
         .build();
   }
 }
