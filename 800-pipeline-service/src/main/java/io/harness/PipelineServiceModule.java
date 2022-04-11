@@ -607,6 +607,14 @@ public class PipelineServiceModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @Named("TelemetrySenderExecutor")
+  public Executor telemetrySenderExecutor() {
+    return ThreadPool.create(
+        1, 2, 25, TimeUnit.SECONDS, new ThreadFactoryBuilder().setNameFormat("TelemetrySenderExecutor-%d").build());
+  }
+
+  @Provides
+  @Singleton
   @Named("pmsEventsCache")
   public Cache<String, Integer> sdkEventsCache(
       HarnessCacheManager harnessCacheManager, VersionInfoManager versionInfoManager) {
