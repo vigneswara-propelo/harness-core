@@ -118,7 +118,7 @@ public class CVNGDemoPerpetualTaskServiceImpl implements CVNGDemoPerpetualTaskSe
           dataCollectionTask.getVerificationTaskId(), dataCollectionTask.getDataCollectionWorkerId(),
           dataCollectionTask.getStartTime(), dataCollectionTask.getEndTime(),
           DemoMetricParams.builder()
-              .customMetric(!metricCVConfig.getMetricInfos().isEmpty())
+              .customMetric(isNotEmpty(metricCVConfig.getMetricInfos()))
               .groupName((String) metricCVConfig.maybeGetGroupName().orElse("default"))
               .analysisInfos(analysisInfos)
               .demoTemplate(demoTemplate)

@@ -579,7 +579,6 @@ public class TimeSeriesRecordServiceImpl implements TimeSeriesRecordService {
         getDemoRiskScoreForAllTheMetrics(demoMetricParams.getDemoTemplate().getDemoTemplateIdentifier());
     // todo: check the metrics have the same size
     int index = cvngDemoDataIndexService.readIndexForDemoData(accountId, dataCollectionWorkerId, verificationTaskId);
-    int indexForCustom = index;
     List<TimeSeriesDataCollectionRecord> timeSeriesDataCollectionRecords = new ArrayList<>();
     while (time.compareTo(endTime) < 0) {
       TimeSeriesDataCollectionRecord timeSeriesDataCollectionRecord =
@@ -625,8 +624,8 @@ public class TimeSeriesRecordServiceImpl implements TimeSeriesRecordService {
                 .stream()
                 .filter(metricValue -> selectedMetricIdentifiers.contains(metricValue.getMetricIdentifier()))
                 .collect(Collectors.toSet()));
-        timeSeriesDataCollectionRecords.add(timeSeriesDataCollectionRecord);
       }
+      timeSeriesDataCollectionRecords.add(timeSeriesDataCollectionRecord);
       index++;
       time = time.plus(1, ChronoUnit.MINUTES);
     }
