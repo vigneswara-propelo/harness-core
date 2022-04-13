@@ -2360,7 +2360,8 @@ public class DelegateServiceImpl implements DelegateService {
         : getProjectIdentifierUsingTokenFromGlobalContext(delegateParams.getAccountId()).orElse(null);
 
     DelegateSetupDetails delegateSetupDetails = DelegateSetupDetails.builder()
-                                                    .name(delegateParams.getHostName())
+                                                    .name(delegateParams.getDelegateName())
+                                                    .hostName(delegateParams.getHostName())
                                                     .orgIdentifier(orgIdentifier)
                                                     .projectIdentifier(projectIdentifier)
                                                     .description(delegateParams.getDescription())
@@ -2447,6 +2448,7 @@ public class DelegateServiceImpl implements DelegateService {
         .project(DelegateKeys.ng, true)
         .project(DelegateKeys.hostName, true)
         .project(DelegateKeys.owner, true)
+        .project(DelegateKeys.delegateGroupName, true)
         .project(DelegateKeys.description, true)
         .get();
   }
