@@ -1033,17 +1033,18 @@
         {
           "type": "object",
           "required": [
+            "applicationId",
             "auth",
-            "clientId",
             "tenantId"
           ],
           "properties": {
+            "applicationId": {
+              "type": "string",
+              "readOnly": true
+            },
             "auth": {
               "readOnly": true,
               "$ref": "#/definitions/AzureAuthDTO"
-            },
-            "clientId": {
-              "type": "string"
             },
             "tenantId": {
               "type": "string"

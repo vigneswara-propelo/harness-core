@@ -5,11 +5,20 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.azureconnector;
+package io.harness.delegate.beans.connector.azureconnector.response;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
 
+import java.util.Map;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@SuperBuilder
+@NoArgsConstructor
 @OwnedBy(HarnessTeam.CDP)
-public interface AzureDelegateTaskResponse extends DelegateTaskNotifyResponseData {}
+public class AzureSubscriptionsResponse extends AzureDelegateTaskResponse {
+  private Map<String, String> subscriptions;
+}

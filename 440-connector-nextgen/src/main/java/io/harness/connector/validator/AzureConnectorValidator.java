@@ -20,7 +20,7 @@ import io.harness.delegate.beans.connector.azureconnector.AzureCredentialType;
 import io.harness.delegate.beans.connector.azureconnector.AzureManualDetailsDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureTaskParams;
 import io.harness.delegate.beans.connector.azureconnector.AzureTaskType;
-import io.harness.delegate.beans.connector.azureconnector.AzureValidateTaskResponse;
+import io.harness.delegate.beans.connector.azureconnector.response.AzureValidateTaskResponse;
 import io.harness.delegate.task.TaskParameters;
 
 @OwnedBy(HarnessTeam.CDP)

@@ -12,6 +12,8 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import io.harness.NGBeanModule;
 import io.harness.WalkTreeModule;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.artifact.resources.acr.service.AcrResourceService;
+import io.harness.cdng.artifact.resources.acr.service.AcrResourceServiceImpl;
 import io.harness.cdng.artifact.resources.artifactory.service.ArtifactoryResourceService;
 import io.harness.cdng.artifact.resources.artifactory.service.ArtifactoryResourceServiceImpl;
 import io.harness.cdng.artifact.resources.docker.service.DockerResourceService;
@@ -35,6 +37,8 @@ import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.instance.info.InstanceInfoServiceImpl;
 import io.harness.cdng.jira.resources.service.JiraResourceService;
 import io.harness.cdng.jira.resources.service.JiraResourceServiceImpl;
+import io.harness.cdng.k8s.resources.azure.service.AzureResourceService;
+import io.harness.cdng.k8s.resources.azure.service.AzureResourceServiceImpl;
 import io.harness.cdng.k8s.resources.gcp.service.GcpResourceService;
 import io.harness.cdng.k8s.resources.gcp.service.impl.GcpResourceServiceImpl;
 import io.harness.cdng.servicenow.resources.service.ServiceNowResourceService;
@@ -92,6 +96,8 @@ public class NGModule extends AbstractModule {
     bind(ServiceNowResourceService.class).to(ServiceNowResourceServiceImpl.class);
     bind(ArtifactoryResourceService.class).to(ArtifactoryResourceServiceImpl.class);
     bind(EnvironmentGroupService.class).to(EnvironmentGroupServiceImpl.class);
+    bind(AcrResourceService.class).to(AcrResourceServiceImpl.class);
+    bind(AzureResourceService.class).to(AzureResourceServiceImpl.class);
 
     MapBinder<String, FilterPropertiesMapper> filterPropertiesMapper =
         MapBinder.newMapBinder(binder(), String.class, FilterPropertiesMapper.class);

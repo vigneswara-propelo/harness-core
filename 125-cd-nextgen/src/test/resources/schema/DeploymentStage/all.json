@@ -103,6 +103,60 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "AcrArtifactConfig": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ArtifactConfig"
+        },
+        {
+          "type": "object",
+          "required": [
+            "connectorRef",
+            "registry",
+            "repository",
+            "subscription"
+          ],
+          "properties": {
+            "connectorRef": {
+              "type": "string"
+            },
+            "metadata": {
+              "type": "string"
+            },
+            "registry": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "subscription": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "tagRegex": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "tagRegex"
+              ]
+            },
+            {
+              "required": [
+                "tag"
+              ]
+            }
+          ]
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "AddRuleYaml": {
       "allOf": [
         {
@@ -3994,6 +4048,7 @@
             "DockerRegistry",
             "Gcr",
             "Ecr",
+            "Acr",
             "Nexus3Registry",
             "ArtifactoryRegistry",
             "CustomArtifact"
@@ -4002,6 +4057,22 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#",
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Acr"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AcrArtifactConfig"
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {
@@ -5124,6 +5195,7 @@
             "DockerRegistry",
             "Gcr",
             "Ecr",
+            "Acr",
             "Nexus3Registry",
             "ArtifactoryRegistry",
             "CustomArtifact"
@@ -5132,6 +5204,22 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#",
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Acr"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AcrArtifactConfig"
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {

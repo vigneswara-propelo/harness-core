@@ -5,12 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.azureconnector;
+package io.harness.delegate.beans.connector.azureconnector.response;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.ConnectorValidationResult;
-import io.harness.delegate.beans.DelegateMetaInfo;
 
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +17,6 @@ import lombok.Data;
 @OwnedBy(HarnessTeam.CDP)
 @Data
 @Builder
-public class AzureValidateTaskResponse implements AzureDelegateTaskResponse {
+public class AzureValidateTaskResponse extends AzureDelegateTaskResponse {
   private ConnectorValidationResult connectorValidationResult;
-  private DelegateMetaInfo delegateMetaInfo;
 }
