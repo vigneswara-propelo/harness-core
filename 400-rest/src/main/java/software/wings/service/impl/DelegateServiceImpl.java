@@ -1243,7 +1243,7 @@ public class DelegateServiceImpl implements DelegateService {
               .put("upgraderDockerImage",
                   getUpgraderDockerImage(templateParameters.getAccountId(), templateParameters.getDelegateType()))
               .put("accountId", templateParameters.getAccountId())
-              .put("accountSecret", accountSecret != null ? accountSecret : EMPTY)
+              .put("delegateToken", accountSecret != null ? accountSecret : EMPTY)
               .put("base64Secret", base64Secret)
               .put("hexkey", hexkey)
               .put(UPGRADE_VERSION, latestVersion)
