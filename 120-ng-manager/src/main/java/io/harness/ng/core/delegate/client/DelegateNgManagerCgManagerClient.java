@@ -62,6 +62,13 @@ public interface DelegateNgManagerCgManagerClient {
       @Query(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @Query("delegateTokenName") String delegateTokenName);
 
+  @GET(DELEGATE_TOKEN_NG_API + "/delegate-token-value")
+  Call<RestResponse<String>> getDelegateTokenValue(
+      @Query(NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
+      @Query(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Query(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @Query("delegateTokenName") String delegateTokenName);
+
   //------------------------Delegate Group Tags, Deprecated Apis-----------------------------------
 
   @PUT(DELEGATE_GROUP_TAGS_API + "/tags")
