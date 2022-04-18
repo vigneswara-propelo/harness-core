@@ -15,15 +15,17 @@ import io.harness.event.client.impl.EventPublisherConstants;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Data;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 @Data
 @Builder
+@ToString
 @OwnedBy(DEL)
 public class DelegateConfiguration {
   private String accountId;
-  private String accountSecret;
-  private String delegateToken;
+  @ToString.Exclude private String accountSecret;
+  @ToString.Exclude private String delegateToken;
   private String managerUrl;
   private String verificationServiceUrl;
   private String cvNextGenUrl;
