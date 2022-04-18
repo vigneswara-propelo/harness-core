@@ -8,7 +8,6 @@
 package io.harness.resourcegroup.framework.v2.remote.resource;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.ng.core.utils.NGUtils.verifyValuesNotChanged;
 import static io.harness.resourcegroup.ResourceGroupPermissions.DELETE_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.EDIT_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGROUP_PERMISSION;
@@ -31,20 +30,17 @@ import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidatorImpl;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
-import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupRequest;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 import io.harness.resourcegroup.v2.remote.resource.HarnessResourceGroupResource;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 
 @AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @NextGenManagerAuth
@@ -103,7 +99,6 @@ public class HarnessResourceGroupResourceImpl implements HarnessResourceGroupRes
     resourceGroupRequest.getResourceGroup().setAllowedScopeLevels(
         Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
-    validateRequest(accountIdentifier, orgIdentifier, projectIdentifier, resourceGroupRequest.getResourceGroup());
     return ResponseDTO.newResponse(
         (resourceGroupService.update(resourceGroupRequest.getResourceGroup(), false)).orElse(null));
   }
@@ -113,13 +108,5 @@ public class HarnessResourceGroupResourceImpl implements HarnessResourceGroupRes
       String identifier, String accountIdentifier, String orgIdentifier, String projectIdentifier) {
     return ResponseDTO.newResponse(
         resourceGroupService.delete(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier));
-  }
-
-  private void validateRequest(
-      String accountIdentifier, String orgIdentifier, String identifier, ResourceGroupDTO resourceGroupDTO) {
-    verifyValuesNotChanged(
-        Lists.newArrayList(Pair.of(accountIdentifier, resourceGroupDTO.getAccountIdentifier())), false);
-    verifyValuesNotChanged(Lists.newArrayList(Pair.of(orgIdentifier, resourceGroupDTO.getOrgIdentifier())), false);
-    verifyValuesNotChanged(Lists.newArrayList(Pair.of(identifier, resourceGroupDTO.getIdentifier())), false);
   }
 }

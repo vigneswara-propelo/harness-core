@@ -20,6 +20,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Builder
 public class Scope {
   public static final String PATH_DELIMITER = "/";
+  public static final String SCOPE_DELIMITER = "$";
 
   @NotNull ScopeLevel level;
   @NotEmpty String instanceId;

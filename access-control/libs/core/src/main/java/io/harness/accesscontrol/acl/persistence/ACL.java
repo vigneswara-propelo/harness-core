@@ -19,7 +19,6 @@ import io.harness.persistence.PersistentEntity;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -76,11 +75,6 @@ public class ACL implements PersistentEntity {
       String principalIdentifier, String permissionIdentifier) {
     return scopeIdentifier + DELIMITER + permissionIdentifier + DELIMITER + resourceSelector + DELIMITER + principalType
         + DELIMITER + principalIdentifier;
-  }
-
-  public static String getAclQueryString(@NotNull ACL acl) {
-    return getAclQueryString(acl.getScopeIdentifier(), acl.getResourceSelector(), acl.getPrincipalType(),
-        acl.getPrincipalIdentifier(), acl.getPermissionIdentifier());
   }
 
   public static List<MongoIndex> mongoIndexes() {

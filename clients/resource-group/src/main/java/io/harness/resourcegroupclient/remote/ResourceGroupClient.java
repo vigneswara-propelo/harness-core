@@ -14,7 +14,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
-import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -25,7 +25,7 @@ import retrofit2.http.Query;
 
 @OwnedBy(HarnessTeam.PL)
 public interface ResourceGroupClient {
-  String RESOURCE_GROUP_API = "resourcegroup";
+  String RESOURCE_GROUP_API = "v2/resourcegroup";
 
   @GET(RESOURCE_GROUP_API + "/internal/{identifier}")
   Call<ResponseDTO<ResourceGroupResponse>> getResourceGroup(
