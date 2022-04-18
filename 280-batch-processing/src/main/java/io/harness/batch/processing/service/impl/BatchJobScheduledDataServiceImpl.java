@@ -115,7 +115,9 @@ public class BatchJobScheduledDataServiceImpl implements BatchJobScheduledDataSe
     }
 
     // We can reduce the last days (to 2-3 days) data to generate, before GA if required.
-    if (null != instant && batchJobType == BatchJobType.K8S_NODE_RECOMMENDATION) {
+    if (null != instant
+        && ImmutableSet.of(BatchJobType.K8S_NODE_RECOMMENDATION, BatchJobType.AWS_ECS_SERVICE_RECOMMENDATION)
+               .contains(batchJobType)) {
       Instant startInstant = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
       instant = startInstant.isAfter(instant) ? startInstant : instant;
     }

@@ -158,6 +158,7 @@ public class AwsECSServiceRecommendationTasklet implements Tasklet {
           log.debug("Unable to get lastDayCost for serviceArn: {}", serviceArn);
         }
         recommendation.setTtl(Instant.now().plus(RECOMMENDATION_TTL));
+        recommendation.setValidRecommendation(true);
         recommendation.setDirty(false);
 
         // Save recommendation in mongo
