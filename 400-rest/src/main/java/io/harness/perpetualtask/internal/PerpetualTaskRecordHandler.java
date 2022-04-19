@@ -8,7 +8,6 @@
 package io.harness.perpetualtask.internal;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.exception.WingsException.ExecutionContext.MANAGER;
 import static io.harness.govern.IgnoreThrowable.ignoredOnPurpose;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType.IRREGULAR_SKIP_MISSED;
@@ -33,13 +32,11 @@ import io.harness.delegate.beans.RemoteMethodReturnValueData;
 import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.exception.InvalidRequestException;
-import io.harness.exception.WingsException;
 import io.harness.iterator.PersistenceIterator;
 import io.harness.iterator.PersistenceIteratorFactory;
 import io.harness.iterator.PersistenceIteratorFactory.PumpExecutorOptions;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
-import io.harness.logging.ExceptionLogger;
 import io.harness.mongo.iterator.MongoPersistenceIterator;
 import io.harness.mongo.iterator.filter.MorphiaFilterExpander;
 import io.harness.mongo.iterator.provider.MorphiaPersistenceProvider;
@@ -183,8 +180,6 @@ public class PerpetualTaskRecordHandler implements PerpetualTaskCrudObserver {
         ignoredOnPurpose(exception);
         perpetualTaskService.updateTaskUnassignedReason(
             taskId, PerpetualTaskUnassignedReason.NO_ELIGIBLE_DELEGATES, taskRecord.getAssignTryCount());
-      } catch (WingsException exception) {
-        ExceptionLogger.logProcessedMessages(exception, MANAGER, log);
       } catch (Exception e) {
         log.error("Failed to assign any Delegate to perpetual task {} ", taskId, e);
       }
