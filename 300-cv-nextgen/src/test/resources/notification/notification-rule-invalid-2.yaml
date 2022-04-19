@@ -4,7 +4,6 @@ identifier: rule
 orgIdentifier: $orgIdentifier
 projectIdentifier: $projectIdentifier
 type: slo
-notificationMethod:
-  type: Email
-  userGroups: [testUserGroup]
-  recipients: [test@harness.io]
+spec:
+  type: slo
+  errorBudgetRemainingPercentageThreshold: 10
