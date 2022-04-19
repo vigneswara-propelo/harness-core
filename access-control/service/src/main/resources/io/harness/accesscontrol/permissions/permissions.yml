@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: permissionsConfiguration
-version: 20
+version: 21
 permissions:
   - identifier: core_project_delete
     name: Delete Project
@@ -707,7 +707,7 @@ permissions:
       - project
   - identifier: gitops_agent_view
     name: View a Gitops Agent
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -715,7 +715,7 @@ permissions:
       - project
   - identifier: gitops_agent_edit
     name: Edit a Gitops Agent
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -723,7 +723,7 @@ permissions:
       - project
   - identifier: gitops_agent_delete
     name: Delete a Gitops agent
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -731,15 +731,7 @@ permissions:
       - project
   - identifier: gitops_application_view
     name: View a Gitops Application
-    status: STAGING
-    includeInAllRoles: false
-    allowedScopeLevels:
-      - account
-      - organization
-      - project
-  - identifier: gitops_application_create
-    name: Create a Gitops Application
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -747,7 +739,7 @@ permissions:
       - project
   - identifier: gitops_application_edit
     name: Edit a Gitops Application
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -755,7 +747,7 @@ permissions:
       - project
   - identifier: gitops_application_delete
     name: Delete a Gitops Application
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -763,7 +755,7 @@ permissions:
       - project
   - identifier: gitops_application_sync
     name: Sync a Gitops Application
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -771,7 +763,7 @@ permissions:
       - project
   - identifier: gitops_repository_view
     name: View a Gitops Repository
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -779,7 +771,7 @@ permissions:
       - project
   - identifier: gitops_repository_edit
     name: Edit a Gitops Repository
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -787,7 +779,7 @@ permissions:
       - project
   - identifier: gitops_repository_delete
     name: Delete a Gitops Repository
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -795,7 +787,7 @@ permissions:
       - project
   - identifier: gitops_cluster_view
     name: View a Gitops Cluster
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -803,7 +795,7 @@ permissions:
       - project
   - identifier: gitops_cluster_edit
     name: Edit a Gitops Cluster
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -811,7 +803,7 @@ permissions:
       - project
   - identifier: gitops_cluster_delete
     name: Delete a Gitops Cluster
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -819,7 +811,7 @@ permissions:
       - project
   - identifier: gitops_gpgkey_view
     name: View a Gitops Gpgkey
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -827,7 +819,7 @@ permissions:
       - project
   - identifier: gitops_gpgkey_edit
     name: Edit a Gitops Gpgkey
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -835,7 +827,7 @@ permissions:
       - project
   - identifier: gitops_gpgkey_delete
     name: Delete a Gitops Gpgkey
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -843,7 +835,7 @@ permissions:
       - project
   - identifier: gitops_cert_view
     name: View a Gitops Cert
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -851,7 +843,7 @@ permissions:
       - project
   - identifier: gitops_cert_edit
     name: Edit a Gitops Cert
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
@@ -859,7 +851,7 @@ permissions:
       - project
   - identifier: gitops_cert_delete
     name: Delete a Gitops Cert
-    status: STAGING
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
