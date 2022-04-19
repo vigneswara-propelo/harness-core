@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.artifact.ArtifactFileMetadata;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
@@ -115,5 +116,16 @@ public class ArtifactStreamAttributes implements ExecutionCapabilityDemander {
       return String.format("https://%s/v2/%s/tags/list", registryHostName, imageName);
     }
     return "https://" + registryHostName + (registryHostName.endsWith("/") ? "" : "/");
+  }
+
+  public void setMetadata(Map<String, String> metadata) {
+    if (EmptyPredicate.isEmpty(metadata)) {
+      this.metadata = metadata;
+      return;
+    }
+    // Doing this so as to avoid ArtifactMetadataEvaluator & Kryo exception using that
+    Map<String, String> recreated = new HashMap<>();
+    metadata.keySet().forEach(key -> recreated.put(key, metadata.get(key)));
+    this.metadata = recreated;
   }
 }
