@@ -118,7 +118,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
   public AccountLicenseDTO getAccountLicense(String accountIdentifier) {
     AccountLicenseDTO dto = AccountLicenseDTO.builder().accountId(accountIdentifier).build();
     Map<ModuleType, List<ModuleLicenseDTO>> allModuleLicenses = new HashMap<>();
-    for (ModuleType moduleType : ModuleType.values()) {
+    for (ModuleType moduleType : ModuleType.getModules()) {
       if (moduleType.isInternal()) {
         continue;
       }
@@ -374,7 +374,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
   @Override
   public Map<ModuleType, Long> getLastUpdatedAtMap(String accountIdentifier) {
     Map<ModuleType, Long> lastUpdatedAtMap = new HashMap<>();
-    for (ModuleType moduleType : ModuleType.values()) {
+    for (ModuleType moduleType : ModuleType.getModules()) {
       if (moduleType.isInternal()) {
         continue;
       }

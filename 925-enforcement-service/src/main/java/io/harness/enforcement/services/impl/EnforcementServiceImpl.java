@@ -197,7 +197,7 @@ public class EnforcementServiceImpl implements EnforcementService {
 
     boolean featureFlagEnabled = isFeatureFlagEnabled(accountIdentifier);
     ConversionHandler conversionHandler = conversionHandlerFactory.getConversionHandler(featureFlagEnabled);
-    for (ModuleType moduleType : ModuleType.values()) {
+    for (ModuleType moduleType : ModuleType.getModules()) {
       if (moduleType.isInternal() && !ModuleType.CORE.equals(moduleType)) {
         continue;
       }

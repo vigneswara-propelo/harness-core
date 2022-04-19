@@ -34,7 +34,7 @@ public class ModuleLicenseHelper {
   public static Map<ModuleType, ModuleLicense> getLastExpiredLicenseForEachModuleType(
       List<ModuleLicense> allModuleLicenses) {
     Map<ModuleType, ModuleLicense> result = new HashMap<>();
-    for (ModuleType moduleType : ModuleType.values()) {
+    for (ModuleType moduleType : ModuleType.getModules()) {
       if (!moduleType.isInternal()) {
         result.put(moduleType, null);
       }
