@@ -9,6 +9,7 @@ package io.harness.pms.merger.helpers;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.pms.merger.helpers.MergeHelper.mergeRuntimeInputValuesIntoOriginalYaml;
+import static io.harness.rule.OwnerRule.DEV_MITTAL;
 import static io.harness.rule.OwnerRule.NAMAN;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -118,6 +119,53 @@ public class MergeHelperTest extends CategoryTest {
 
     String noUpdatesOnYaml = MergeHelper.mergeUpdatesIntoJson(pipeline, null);
     assertThat(noUpdatesOnYaml).isEqualTo(readFile("opa-pipeline.json"));
+  }
+
+  @Test
+  @Owner(developers = DEV_MITTAL)
+  @Category(UnitTests.class)
+  public void testMergeYamlUpdatesEmojis() throws IOException {
+    String filename = "opa-pipeline.yaml";
+    String pipeline = readFile(filename);
+
+    String fqn1 = "pipeline/stages/[0]/stage/spec/execution/steps/[0]/step/spec/connector";
+    String exp1 = readFile("emojiExp1.txt");
+
+    String fqn2 = "pipeline/stages/[1]/stage/spec/infrastructure/environment";
+    String exp2 = readFile("emojiExp2.txt");
+
+    Map<String, String> fqnToJsonMap = new HashMap<>();
+    fqnToJsonMap.put(fqn1, exp1);
+    fqnToJsonMap.put(fqn2, exp2);
+    String expandedPipeline = MergeHelper.mergeUpdatesIntoJson(pipeline, fqnToJsonMap);
+    assertThat(expandedPipeline).isNotNull();
+    String expandedPipelineExpected = readFile("opa-pipeline-with-expansions-no-removals.json");
+    assertThat(expandedPipeline).isEqualTo(expandedPipelineExpected);
+    YamlField yamlField = YamlUtils.readTree(expandedPipeline);
+    YamlNode firstExp =
+        yamlField.getNode().gotoPath("pipeline/stages/[0]/stage/spec/execution/steps/[0]/step/spec/connector");
+    YamlNode secondExp = yamlField.getNode().gotoPath("pipeline/stages/[1]/stage/spec/infrastructure/environment");
+    assertThat(firstExp).isNotNull();
+    assertThat(secondExp).isNotNull();
+
+    String noUpdates = MergeHelper.mergeUpdatesIntoJson(expandedPipeline, null);
+    assertThat(noUpdates).isEqualTo(expandedPipeline);
+
+    String noUpdatesOnYaml = MergeHelper.mergeUpdatesIntoJson(pipeline, null);
+    assertThat(noUpdatesOnYaml).isEqualTo(readFile("opa-pipeline.json"));
+  }
+
+  @Test
+  @Owner(developers = DEV_MITTAL)
+  @Category(UnitTests.class)
+  public void testRemoveNonASCII() {
+    String asciiString = "";
+    for (int i = 0; i < 128; i++) {
+      asciiString += (char) i;
+    }
+    assertThat(MergeHelper.removeNonASCII(asciiString)).isEqualTo(asciiString);
+    assertThat(MergeHelper.removeNonASCII(asciiString + "\ud330\ud803\ud823")).isEqualTo(asciiString);
+    assertThat(MergeHelper.removeNonASCII("\ud230\ud803\ud123" + asciiString)).isEqualTo(asciiString);
   }
 
   @Test

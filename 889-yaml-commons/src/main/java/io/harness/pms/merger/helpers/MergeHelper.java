@@ -121,14 +121,21 @@ public class MergeHelper {
       return JsonUtils.asJson(pipelineNode.getCurrJsonNode());
     }
     fqnToJsonMap.keySet().forEach(fqn -> {
+      String content = fqnToJsonMap.get(fqn);
+      content = removeNonASCII(content);
       try {
-        pipelineNode.replacePath(fqn, YamlUtils.readTree(fqnToJsonMap.get(fqn)).getNode().getCurrJsonNode());
+        pipelineNode.replacePath(fqn, YamlUtils.readTree(content).getNode().getCurrJsonNode());
       } catch (IOException e) {
-        log.error("Could not read json provided for the fqn: " + fqn + ". Json:\n" + fqnToJsonMap.get(fqn), e);
+        log.error("Could not read json provided for the fqn: " + fqn + ". Json:\n" + content, e);
         throw new YamlException("Could not read json provided for the fqn: " + fqn);
       }
     });
     return JsonUtils.asJson(pipelineNode.getCurrJsonNode());
+  }
+
+  // Yaml Object Mapper can't handle emojis and non ascii characters
+  public String removeNonASCII(String content) {
+    return content.replaceAll("[^\\x00-\\x7F]", "");
   }
 
   public String removeFQNs(String json, List<String> toBeRemovedFQNs) {
