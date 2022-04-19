@@ -140,7 +140,8 @@ public class ClusterDataToBigQueryTaskletTest extends BaseTaskletTest {
   public void testGetClusterBillingDataForBatch() {
     mockGetWorkload();
     final List<InstanceBillingData> instances = ImmutableList.of(createBillingData(NAME_0), createBillingData(NAME_1));
-    List<ClusterBillingData> clusterBillingData = clusterDataToBigQueryTasklet.getClusterBillingDataForBatch(instances);
+    List<ClusterBillingData> clusterBillingData =
+        clusterDataToBigQueryTasklet.getClusterBillingDataForBatch(ACCOUNT_ID, instances);
     assertEquals(clusterBillingData.size(), instances.size());
     assertEquals(clusterBillingData.get(0).getLabels(), Collections.singletonList(new Label(LABEL_KEY, LABEL_VALUE)));
     assertEquals(clusterBillingData.get(1).getLabels(), Collections.emptyList());

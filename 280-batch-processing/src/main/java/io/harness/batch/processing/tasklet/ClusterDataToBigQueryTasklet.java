@@ -123,7 +123,8 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
     boolean avroFileWithSchemaExists = false;
     do {
       instanceBillingDataList = billingDataReader.getNext();
-      List<ClusterBillingData> clusterBillingDataList = getClusterBillingDataForBatch(instanceBillingDataList);
+      List<ClusterBillingData> clusterBillingDataList =
+          getClusterBillingDataForBatch(jobConstants.getAccountId(), instanceBillingDataList);
       log.debug("clusterBillingDataList size: {}", clusterBillingDataList.size());
       writeDataToAvro(
           jobConstants.getAccountId(), clusterBillingDataList, billingDataFileName, avroFileWithSchemaExists);
@@ -142,7 +143,8 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
   }
 
   @VisibleForTesting
-  public List<ClusterBillingData> getClusterBillingDataForBatch(List<InstanceBillingData> instanceBillingDataList) {
+  public List<ClusterBillingData> getClusterBillingDataForBatch(
+      String accountId, List<InstanceBillingData> instanceBillingDataList) {
     List<ClusterBillingData> clusterBillingDataList = new ArrayList<>();
 
     Map<String, Map<String, String>> instanceIdToLabelMapping = new HashMap<>();
@@ -156,7 +158,7 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
             .map(InstanceBillingData::getInstanceId)
             .collect(Collectors.toList());
     if (!instanceIdList.isEmpty()) {
-      instanceIdToLabelMapping = instanceDataService.fetchLabelsForGivenInstances(instanceIdList);
+      instanceIdToLabelMapping = instanceDataService.fetchLabelsForGivenInstances(accountId, instanceIdList);
     }
 
     Map<Key, List<InstanceBillingData>> instanceBillingDataGrouped =
