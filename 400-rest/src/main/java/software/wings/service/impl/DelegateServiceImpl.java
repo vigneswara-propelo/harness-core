@@ -580,11 +580,15 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @Override
-  public Double getConnectedRatioWithPrimary(String targetVersion) {
+  public Double getConnectedRatioWithPrimary(String targetVersion, String accountId) {
     targetVersion = Arrays.stream(targetVersion.split("-")).findFirst().get();
-    String primaryVersion = Arrays.stream(configurationController.getPrimaryVersion().split("-")).findFirst().get();
 
-    long primary = delegateConnectionDao.numberOfActiveDelegateConnectionsPerVersion(primaryVersion);
+    String primaryDelegateForAccount = StringUtils.isEmpty(accountId) ? Account.GLOBAL_ACCOUNT_ID : accountId;
+
+    DelegateConfiguration delegateConfiguration = accountService.getDelegateConfiguration(primaryDelegateForAccount);
+
+    String primaryVersion = delegateConfiguration.getDelegateVersions().get(0).split("-")[0];
+    long primary = delegateConnectionDao.numberOfActiveDelegateConnectionsPerVersion(primaryVersion, accountId);
 
     // If we do not have any delegates in the primary version, lets unblock the deployment,
     // that will be very rare and we are in trouble anyways, let report 1 to let the new deployment go.
@@ -592,9 +596,21 @@ public class DelegateServiceImpl implements DelegateService {
       return 1.0;
     }
 
-    long target = delegateConnectionDao.numberOfActiveDelegateConnectionsPerVersion(targetVersion);
-
+    long target = delegateConnectionDao.numberOfActiveDelegateConnectionsPerVersion(targetVersion, accountId);
     return BigDecimal.valueOf((double) target / (double) primary).setScale(3, RoundingMode.HALF_UP).doubleValue();
+  }
+
+  @Override
+  public Double getConnectedDelegatesRatio(String version, String accountId) {
+    long totalDelegatesWithVersion = delegateConnectionDao.numberOfDelegateConnectionsPerVersion(version, accountId);
+    if (totalDelegatesWithVersion == 0) {
+      return 0.0;
+    }
+    long connectedDelegatesWithVersion =
+        delegateConnectionDao.numberOfActiveDelegateConnectionsPerVersion(version, accountId);
+    return BigDecimal.valueOf((double) connectedDelegatesWithVersion / (double) totalDelegatesWithVersion)
+        .setScale(3, RoundingMode.HALF_UP)
+        .doubleValue();
   }
 
   @Override
