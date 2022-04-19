@@ -107,11 +107,14 @@ public class AnomalyQueryBuilder {
   @NotNull
   private Condition applyStringFilters(@NotNull List<CCMStringFilter> filters, Condition condition) {
     for (CCMStringFilter filter : filters) {
-      if (filter.getField() == ALL && filter.getOperator() == LIKE) {
-        condition = condition.and(constructSearchCondition(filter.getValues()));
-      } else {
-        condition = condition.and(
-            constructCondition(getTableField(filter.getField()), filter.getValues(), filter.getOperator()));
+      try {
+        if (filter.getField() == ALL && filter.getOperator() == LIKE) {
+          condition = condition.and(constructSearchCondition(filter.getValues()));
+        } else {
+          condition = condition.and(
+              constructCondition(getTableField(filter.getField()), filter.getValues(), filter.getOperator()));
+        }
+      } catch (Exception ignored) {
       }
     }
     return condition;
