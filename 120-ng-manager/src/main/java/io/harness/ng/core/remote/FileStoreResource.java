@@ -9,7 +9,9 @@ package io.harness.ng.core.remote;
 
 import static io.harness.NGCommonEntityConstants.ACCOUNT_KEY;
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
+import static io.harness.NGCommonEntityConstants.APPLICATION_YAML_MEDIA_TYPE;
 import static io.harness.NGCommonEntityConstants.FILE_PARAM_MESSAGE;
+import static io.harness.NGCommonEntityConstants.IDENTIFIER_KEY;
 import static io.harness.NGCommonEntityConstants.ORG_KEY;
 import static io.harness.NGCommonEntityConstants.ORG_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.PROJECT_KEY;
@@ -29,6 +31,7 @@ import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.dto.filestore.FileDTO;
+import io.harness.ng.core.dto.filestore.FileDtoYamlWrapper;
 import io.harness.ng.core.dto.filestore.node.FolderNodeDTO;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.serializer.JsonUtils;
@@ -64,6 +67,7 @@ import javax.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.validator.constraints.NotBlank;
 
 @OwnedBy(CDP)
 @Path("/file-store")
@@ -114,7 +118,7 @@ public class FileStoreResource {
 
     validate(file);
 
-    return ResponseDTO.newResponse(fileStoreService.create(file, content));
+    return ResponseDTO.newResponse(fileStoreService.create(file, content, false));
   }
 
   @PUT
@@ -130,8 +134,8 @@ public class FileStoreResource {
           allowBlank = true) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(PROJECT_KEY) @EntityIdentifier(
           allowBlank = true) String projectIdentifier,
-      @Parameter(description = FILE_PARAM_MESSAGE) @EntityIdentifier @PathParam(NGCommonEntityConstants.IDENTIFIER_KEY)
-      String identifier, @Parameter(description = "The file tags") @FormDataParam("tags") String tagsJson,
+      @Parameter(description = FILE_PARAM_MESSAGE) @EntityIdentifier @PathParam(IDENTIFIER_KEY) String identifier,
+      @Parameter(description = "The file tags") @FormDataParam("tags") String tagsJson,
       @NotNull @BeanParam FileDTO file, @FormDataParam("content") InputStream content) {
     file.setAccountIdentifier(accountIdentifier);
     file.setOrgIdentifier(orgIdentifier);
@@ -185,8 +189,7 @@ public class FileStoreResource {
           allowBlank = true) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(PROJECT_KEY) @EntityIdentifier(
           allowBlank = true) String projectIdentifier,
-      @Parameter(description = FILE_PARAM_MESSAGE) @EntityIdentifier @PathParam(
-          NGCommonEntityConstants.IDENTIFIER_KEY) String identifier) {
+      @Parameter(description = FILE_PARAM_MESSAGE) @EntityIdentifier @PathParam(IDENTIFIER_KEY) String identifier) {
     return ResponseDTO.newResponse(
         fileStoreService.delete(accountIdentifier, orgIdentifier, projectIdentifier, identifier));
   }
@@ -212,5 +215,49 @@ public class FileStoreResource {
       @NotNull FolderNodeDTO folderNodeDTO) {
     return ResponseDTO.newResponse(
         fileStoreService.listFolderNodes(accountIdentifier, orgIdentifier, projectIdentifier, folderNodeDTO));
+  }
+
+  @POST
+  @Path("/yaml")
+  @Consumes({APPLICATION_YAML_MEDIA_TYPE})
+  @ApiOperation(value = "Create file or folder via YAML", nickname = "createViaYAML")
+  @Operation(operationId = "createViaYAML", summary = "Creates file or folder via YAML",
+      responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns create response") })
+  public ResponseDTO<FileDTO>
+  createViaYaml(
+      @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
+      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(PROJECT_KEY) String projectIdentifier,
+      @RequestBody(required = true,
+          description = "YAML definition of file or folder") @NotNull @Valid FileDtoYamlWrapper fileDtoYamlWrapper) {
+    FileDTO file = fileDtoYamlWrapper.getFile();
+    file.setAccountIdentifier(accountIdentifier);
+    file.setOrgIdentifier(orgIdentifier);
+    file.setProjectIdentifier(projectIdentifier);
+
+    return ResponseDTO.newResponse(fileStoreService.create(file, null, true));
+  }
+
+  @PUT
+  @Path("yaml/{identifier}")
+  @Consumes({APPLICATION_YAML_MEDIA_TYPE})
+  @ApiOperation(value = "Update file or folder via YAML", nickname = "updateViaYAML")
+  @Operation(operationId = "updateViaYAML", summary = "Updates file or folder via YAML",
+      responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns update response") })
+  public ResponseDTO<FileDTO>
+  updateViaYaml(
+      @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
+      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(PROJECT_KEY) String projectIdentifier,
+      @Parameter(description = FILE_PARAM_MESSAGE) @PathParam(IDENTIFIER_KEY) @EntityIdentifier String identifier,
+      @RequestBody(required = true,
+          description = "YAML definition of file or folder") @NotNull @Valid FileDtoYamlWrapper fileDtoYamlWrapper) {
+    FileDTO file = fileDtoYamlWrapper.getFile();
+    file.setAccountIdentifier(accountIdentifier);
+    file.setOrgIdentifier(orgIdentifier);
+    file.setProjectIdentifier(projectIdentifier);
+    file.setIdentifier(identifier);
+
+    return ResponseDTO.newResponse(fileStoreService.update(file, null, identifier));
   }
 }

@@ -20,6 +20,8 @@ import io.harness.ng.core.common.beans.NGTag;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -46,14 +48,24 @@ public class FileDTO {
   @Schema(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) private String orgIdentifier;
   @Schema(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) private String projectIdentifier;
 
+  @ApiModelProperty(required = true)
   @EntityIdentifier
   @Schema(description = "Identifier of the File")
   @FormDataParam("identifier")
   private String identifier;
 
-  @NotBlank @Schema(description = "Name of the File") @FormDataParam("name") private String name;
+  @ApiModelProperty(required = true)
+  @NotBlank
+  @Schema(description = "Name of the File")
+  @FormDataParam("name")
+  private String name;
   @Schema(description = "This specifies the file usage") @FormDataParam("fileUsage") private FileUsage fileUsage;
-  @NotNull @Schema(description = "This specifies the type of the File") @FormDataParam("type") private NGFileType type;
+  @ApiModelProperty(required = true)
+  @NotNull
+  @Schema(description = "This specifies the type of the File")
+  @FormDataParam("type")
+  private NGFileType type;
+  @ApiModelProperty(required = true)
   @NotBlank
   @Schema(description = "This specifies parent identifier")
   @FormDataParam("parentIdentifier")
@@ -61,6 +73,7 @@ public class FileDTO {
   @Schema(description = "Description of the File") @FormDataParam("description") private String description;
   @Schema(description = "Tags") @Valid private List<NGTag> tags;
   @Schema(description = "Mime type of the File") @FormDataParam("mimeType") private String mimeType;
+  @Schema(description = "Whether File is draft or not") @JsonProperty(access = Access.READ_ONLY) private Boolean draft;
 
   @JsonIgnore
   public boolean isFile() {
@@ -75,7 +88,7 @@ public class FileDTO {
   @Builder
   public FileDTO(String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier,
       String name, FileUsage fileUsage, NGFileType type, String parentIdentifier, String description, List<NGTag> tags,
-      String mimeType) {
+      String mimeType, Boolean draft) {
     this.accountIdentifier = accountIdentifier;
     this.orgIdentifier = orgIdentifier;
     this.projectIdentifier = projectIdentifier;
@@ -87,5 +100,6 @@ public class FileDTO {
     this.description = description;
     this.tags = tags;
     this.mimeType = mimeType;
+    this.draft = draft;
   }
 }

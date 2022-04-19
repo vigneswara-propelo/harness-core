@@ -77,6 +77,7 @@ public class NGFile implements PersistentEntity, UuidAware, NGAccountAccess, NGO
   String checksum;
   String mimeType;
   Long size;
+  Boolean draft;
 
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
@@ -109,5 +110,10 @@ public class NGFile implements PersistentEntity, UuidAware, NGAccountAccess, NGO
   @JsonIgnore
   public boolean isFile() {
     return type == NGFileType.FILE;
+  }
+
+  @JsonIgnore
+  public boolean isDraft() {
+    return draft != null && draft;
   }
 }
