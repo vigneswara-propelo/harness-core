@@ -112,8 +112,9 @@ public class FileStoreServiceImplTest extends CategoryTest {
         .thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> fileStoreService.update(createFileDto(), null, "identifier1"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("File with identifier: identifier1 not found.");
+        .isInstanceOf(InvalidArgumentsException.class)
+        .hasMessage(
+            "File or folder with identifier [identifier1], account [null], org [null] and project [null] could not be retrieved from file store.");
   }
 
   @Test
@@ -137,7 +138,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
     assertThatThrownBy(
         () -> fileStoreService.downloadFile(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, FILE_IDENTIFIER))
         .isInstanceOf(InvalidArgumentsException.class)
-        .hasMessageContaining(format("Unable to find file, fileIdentifier: %s", FILE_IDENTIFIER));
+        .hasMessageContaining(format("File or folder with identifier [%s]", FILE_IDENTIFIER));
   }
 
   @Test
@@ -424,12 +425,11 @@ public class FileStoreServiceImplTest extends CategoryTest {
     when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndParentIdentifier(
              ACCOUNT_IDENTIFIER, null, null, folder1))
         .thenReturn(Arrays.asList(file));
-    boolean result =
-        fileStoreService.delete(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, "account." + folder1);
-    assertThat(result).isTrue();
-    verify(fileStoreRepository).delete(file);
-    verify(fileStoreRepository).delete(parentFolder);
-    verify(fileService).deleteFile(fileUuid, FileBucket.FILE_STORE);
+    assertThatThrownBy(
+        () -> fileStoreService.delete(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, "account." + folder1))
+        .isInstanceOf(InvalidArgumentsException.class)
+        .hasMessage(
+            "File or folder with identifier [account.folder1], account [accountIdentifier], org [orgIdentifier] and project [projectIdentifier] could not be retrieved from file store.");
   }
 
   @Test

@@ -86,7 +86,7 @@ public class NGFile implements PersistentEntity, UuidAware, NGAccountAccess, NGO
                  .field(NGFiles.orgIdentifier)
                  .field(NGFiles.projectIdentifier)
                  .field(NGFiles.parentIdentifier)
-                 .field(NGFiles.identifier)
+                 .field(NGFiles.name)
                  .unique(true)
                  .collation(
                      Collation.builder().locale(CollationLocale.ENGLISH).strength(CollationStrength.PRIMARY).build())
@@ -96,7 +96,7 @@ public class NGFile implements PersistentEntity, UuidAware, NGAccountAccess, NGO
                 .field(NGFiles.accountIdentifier)
                 .field(NGFiles.orgIdentifier)
                 .field(NGFiles.projectIdentifier)
-                .field(NGFiles.parentIdentifier)
+                .field(NGFiles.identifier)
                 .build())
         .build();
   }
