@@ -391,10 +391,6 @@ public class InfrastructureStepTest extends CategoryTest {
         K8sGcpInfrastructure.builder().connectorRef(ParameterField.createValueField("account.missing")).build(),
         "Connector not found for identifier : [account.missing]");
 
-    assertConnectorValidationMessage(
-        K8sGcpInfrastructure.builder().connectorRef(ParameterField.createValueField("account.gcp-delegate")).build(),
-        "Deployment using Google Kubernetes Engine infrastructure with inheriting credentials from delegate is not supported yet");
-
     assertThatCode(
         ()
             -> infrastructureStep.validateConnector(

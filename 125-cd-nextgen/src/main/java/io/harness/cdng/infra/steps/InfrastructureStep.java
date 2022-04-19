@@ -33,7 +33,6 @@ import io.harness.connector.utils.ConnectorUtils;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
-import io.harness.delegate.beans.connector.gcpconnector.GcpCredentialType;
 import io.harness.delegate.task.k8s.K8sInfraDelegateConfig;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.exception.InvalidArgumentsException;
@@ -165,12 +164,6 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
         throw new InvalidRequestException(String.format(
             "Invalid connector type [%s] for identifier: [%s], expected [%s]", connectorInfo.getConnectorType().name(),
             infrastructure.getConnectorReference().getValue(), ConnectorType.GCP.name()));
-      }
-
-      GcpConnectorDTO gcpConnector = (GcpConnectorDTO) connectorInfo.getConnectorConfig();
-      if (GcpCredentialType.INHERIT_FROM_DELEGATE == gcpConnector.getCredential().getGcpCredentialType()) {
-        throw new InvalidRequestException(
-            "Deployment using Google Kubernetes Engine infrastructure with inheriting credentials from delegate is not supported yet");
       }
     }
   }
