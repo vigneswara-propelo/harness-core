@@ -153,6 +153,7 @@ Roger Simms roger.simms@harness.io
 Rohit Karelia rohit.karelia@harness.io
 Rohit Kumar rohit.kumar@harness.io
 Rushabh Shah rushabh.shah@harness.io
+Rutvij Mehta rutvij.mehta@harness.io
 Sagnik De sagnik.de@harness.io
 Sahil Hindwani sahil.hindwani@harness.io
 Sahithi Kolichala sahithi@harness.io
