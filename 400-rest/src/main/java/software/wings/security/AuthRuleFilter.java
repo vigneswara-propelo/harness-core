@@ -28,6 +28,7 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.FeatureName;
+import io.harness.delegate.utils.DelegateMtlsApiConstants;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.AccessDeniedException;
 import io.harness.exception.InvalidRequestException;
@@ -114,6 +115,7 @@ public class AuthRuleFilter implements ContainerRequestFilter {
       "harness-api-keys",
       "users/set-default-account",
       "account/new",
+      DelegateMtlsApiConstants.API_ROOT_RELATIVE + "/" + DelegateMtlsApiConstants.API_PATH_CHECK_AVAILABILITY,
   };
   private static final String[] NO_FILTERING_URIS_SUFFIXES = new String[] {"/logout"};
   private static final String[] EXEMPTED_URI_PREFIXES = new String[] {"limits/configure", "account/license",

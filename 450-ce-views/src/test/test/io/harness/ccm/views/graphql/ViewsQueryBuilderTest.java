@@ -114,7 +114,7 @@ public class ViewsQueryBuilderTest extends CategoryTest {
   public void testGetQueryClusterView() {
     List<QLCEViewField> clusterFields = ViewFieldUtils.getClusterFields();
     final QLCEViewField clusterName = clusterFields.get(0);
-    final QLCEViewField namespace = clusterFields.get(1);
+    final QLCEViewField namespace = clusterFields.get(2);
 
     List<ViewRule> viewRules = Arrays.asList(
         ViewRule.builder()

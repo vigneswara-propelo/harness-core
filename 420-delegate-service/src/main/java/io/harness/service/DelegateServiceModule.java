@@ -22,25 +22,50 @@ import io.harness.metrics.service.impl.MetricServiceImpl;
 import io.harness.service.impl.DelegateCacheImpl;
 import io.harness.service.impl.DelegateCallbackRegistryImpl;
 import io.harness.service.impl.DelegateInsightsServiceImpl;
+import io.harness.service.impl.DelegateMtlsEndpointServiceImpl;
 import io.harness.service.impl.DelegateSetupServiceImpl;
 import io.harness.service.impl.DelegateTaskSelectorMapServiceImpl;
 import io.harness.service.impl.DelegateTaskServiceImpl;
 import io.harness.service.intfc.DelegateCache;
 import io.harness.service.intfc.DelegateCallbackRegistry;
 import io.harness.service.intfc.DelegateInsightsService;
+import io.harness.service.intfc.DelegateMtlsEndpointService;
 import io.harness.service.intfc.DelegateSetupService;
 import io.harness.service.intfc.DelegateTaskSelectorMapService;
 import io.harness.service.intfc.DelegateTaskService;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.name.Named;
+import org.apache.commons.lang3.StringUtils;
 
 @OwnedBy(HarnessTeam.DEL)
 public class DelegateServiceModule extends AbstractModule {
+  private final String mtlsSubdomain;
+
+  public DelegateServiceModule() {
+    this("");
+  }
+  public DelegateServiceModule(String mtlsSubdomain) {
+    this.mtlsSubdomain = mtlsSubdomain;
+  }
+
+  @Provides
+  @Named("delegateMtlsSubdomain")
+  public String delegateMtlsSubdomain() {
+    return this.mtlsSubdomain;
+  }
+
   @Override
   protected void configure() {
     install(FeatureFlagModule.getInstance());
     install(FiltersModule.getInstance());
+
+    // register only if mtlsSubdomain is provided - UTs and other services don't need it.
+    if (StringUtils.isNotEmpty(this.mtlsSubdomain)) {
+      bind(DelegateMtlsEndpointService.class).to(DelegateMtlsEndpointServiceImpl.class);
+    }
 
     bind(DelegateTaskService.class).to(DelegateTaskServiceImpl.class);
     bind(DelegateMetricsService.class).to(DelegateMetricsServiceImpl.class);
