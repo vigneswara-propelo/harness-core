@@ -115,6 +115,7 @@ public class CEAzureConnectorValidator extends io.harness.ccm.connectors.Abstrac
             .testedAt(Instant.now().toEpochMilli())
             .build();
       } else if (ex.getErrorCode().toString().equals("AuthorizationPermissionMismatch")) {
+        // TODO: Review this when autostopping validations are performed.
         return ConnectorValidationResult.builder()
             .status(ConnectivityStatus.FAILURE)
             .errors(ImmutableList.of(
@@ -130,12 +131,13 @@ public class CEAzureConnectorValidator extends io.harness.ccm.connectors.Abstrac
       }
       return ConnectorValidationResult.builder()
           .status(ConnectivityStatus.FAILURE)
-          .errors(ImmutableList.of(ErrorDetail.builder()
-                                       .code(ex.getStatusCode())
-                                       .reason(ex.getMessage())
-                                       .message("Review the billing export settings in your Azure account."
-                                           + " For more information, refer to the documentation.")
-                                       .build()))
+          .errors(ImmutableList.of(
+              ErrorDetail.builder()
+                  .code(ex.getStatusCode())
+                  .reason(ex.getMessage())
+                  .message("Review the billing export settings in your Azure account and in CCM connector."
+                      + " For more information, refer to the documentation.")
+                  .build()))
           .errorSummary("Exception while validating storage account details")
           .testedAt(Instant.now().toEpochMilli())
           .build();
@@ -148,7 +150,7 @@ public class CEAzureConnectorValidator extends io.harness.ccm.connectors.Abstrac
                   .code(ex.statusCode())
                   .reason("Incorrect tenantID.")
                   .message(
-                      "Verify if you have entered the correct tenant ID in Harness. For more information, refer to the documentation.")
+                      "Verify if you have entered the correct tenant ID in CCM Connector. For more information, refer to the documentation.")
                   .build()))
           .errorSummary("The specified tenantID does not exist")
           .testedAt(Instant.now().toEpochMilli())
@@ -162,7 +164,7 @@ public class CEAzureConnectorValidator extends io.harness.ccm.connectors.Abstrac
                 ErrorDetail.builder()
                     .reason("Incorrect storage account.")
                     .message(
-                        "Verify if you have entered the correct storage account in Harness. For more information, refer to the documentation.")
+                        "Verify if you have entered the correct storage account in CCM Connector. For more information, refer to the documentation.")
                     .build()))
             .errorSummary("The specified storage account does not exist")
             .testedAt(Instant.now().toEpochMilli())
@@ -199,6 +201,7 @@ public class CEAzureConnectorValidator extends io.harness.ccm.connectors.Abstrac
           && !ceConnectorsHelper.isDataSyncCheck(accountIdentifier, connectorIdentifier, ConnectorType.CE_AZURE,
               ceConnectorsHelper.JOB_TYPE_CLOUDFUNCTION)) {
         // Issue with CFs
+        log.error("Error with processing data"); // Used for log based metrics
         return ConnectorValidationResult.builder()
             .errors(ImmutableList.of(
                 ErrorDetail.builder()
@@ -236,13 +239,13 @@ public class CEAzureConnectorValidator extends io.harness.ccm.connectors.Abstrac
     }
     log.info("Latest .csv.gz file in {} latestFileName: {} latestFileLastModifiedTime: {}", prefix, latestFileName,
         latestFileLastModifiedTime);
-    if (!latestFileName.isEmpty()
-        && latestFileLastModifiedTime.getEpochSecond() < (Instant.now().getEpochSecond() - 24 * 60 * 60)) {
+    if (latestFileLastModifiedTime.getEpochSecond() < (Instant.now().getEpochSecond() - 24 * 60 * 60)) {
+      String reason = String.format("No billing export csv file is found in last 24 hrs at %s. ", prefix);
       errorDetails.add(
           ErrorDetail.builder()
-              .reason("Incorrect billing export information")
+              .reason(reason)
               .message(
-                  "Verify the billing export configuration in Harness and in your Azure account. For more information, refer to the documentation.")
+                  "Verify the billing export configuration in CCM and in your Azure account. For more information, refer to the documentation.")
               .code(403)
               .build());
     }

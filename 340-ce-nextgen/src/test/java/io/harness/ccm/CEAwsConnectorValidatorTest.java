@@ -270,8 +270,11 @@ public class CEAwsConnectorValidatorTest extends CategoryTest {
     ConnectorValidationResult result = connectorValidator.validate(ceawsConnectorResponseDTO, null);
     System.out.println(result.getErrorSummary());
     assertThat(result.getStatus()).isEqualTo(ConnectivityStatus.FAILURE);
-    assertThat(result.getErrors().get(0).getMessage()).contains("iam:SimulatePrincipalPolicy");
+    assertThat(result.getErrors().get(0).getMessage())
+        .contains(
+            "Review the Cost and Usage report settings in your AWS account. For more information, refer to the documentation.");
     assertThat(result.getErrors()).hasSize(1);
-    assertThat(result.getErrors().get(0).getReason()).isEqualTo(MESSAGE);
+    assertThat(result.getErrors().get(0).getReason())
+        .isEqualTo("Can't access cost and usage report: report_name_utsav");
   }
 }
