@@ -1239,6 +1239,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.DOCKER_GET_LABELS).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.DOCKER_VALIDATE_ARTIFACT_SERVER).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.DOCKER_VALIDATE_ARTIFACT_STREAM).toInstance(ServiceImplDelegateTask.class);
+    mapBinder.addBinding(TaskType.DOCKER_GET_ARTIFACT_META_INFO).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.ECR_GET_BUILDS).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.ECR_VALIDATE_ARTIFACT_SERVER).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.ECR_GET_PLANS).toInstance(ServiceImplDelegateTask.class);

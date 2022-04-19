@@ -13,6 +13,7 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.beans.ArtifactMetadata;
 import io.harness.beans.EmbeddedUser;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.artifact.ArtifactFileMetadata;
@@ -124,8 +125,7 @@ public class Artifact extends Base {
   private String artifactStreamId;
   private String artifactSourceName;
   @Transient private String artifactStreamName;
-  private Map<String, String> metadata = new HashMap<>();
-  private Map<String, String> labels = new HashMap<>();
+  private ArtifactMetadata metadata = new ArtifactMetadata(new HashMap<>());
   @Transient @JsonIgnore public ArtifactLabelEvaluator label;
   @NotEmpty private String displayName;
   private String revision;
@@ -361,8 +361,7 @@ public class Artifact extends Base {
     protected String appId;
     private String artifactStreamId;
     private String artifactSourceName;
-    private Map<String, String> metadata = new HashMap<>();
-    private Map<String, String> labels = new HashMap<>();
+    private ArtifactMetadata metadata = new ArtifactMetadata();
     private ArtifactLabelEvaluator label;
     private String displayName;
     private String revision;
@@ -400,13 +399,8 @@ public class Artifact extends Base {
       return this;
     }
 
-    public Builder withMetadata(Map<String, String> metadata) {
+    public Builder withMetadata(ArtifactMetadata metadata) {
       this.metadata = metadata;
-      return this;
-    }
-
-    public Builder withLabels(Map<String, String> labels) {
-      this.labels = labels;
       return this;
     }
 
@@ -525,7 +519,6 @@ public class Artifact extends Base {
           .withArtifactStreamId(artifactStreamId)
           .withArtifactSourceName(artifactSourceName)
           .withMetadata(metadata)
-          .withLabels(labels)
           .withLabel(label)
           .withDisplayName(displayName)
           .withRevision(revision)
@@ -555,7 +548,6 @@ public class Artifact extends Base {
       artifact.setArtifactStreamId(artifactStreamId);
       artifact.setArtifactSourceName(artifactSourceName);
       artifact.setMetadata(metadata);
-      artifact.setLabels(labels);
       artifact.setLabel(label);
       artifact.setDisplayName(displayName);
       artifact.setRevision(revision);
