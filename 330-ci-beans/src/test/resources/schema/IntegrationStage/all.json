@@ -4426,9 +4426,7 @@
               "format": "int32"
             },
             {
-              "type": "string",
-              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
-              "minLength": 1
+              "type": "string"
             }
           ]
         }

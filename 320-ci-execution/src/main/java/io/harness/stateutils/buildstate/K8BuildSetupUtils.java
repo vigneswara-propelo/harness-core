@@ -782,7 +782,7 @@ public class K8BuildSetupUtils {
         .readOnlyRootFilesystem(securityContext.getReadOnlyRootFilesystem().getValue())
         .runAsNonRoot(securityContext.getRunAsNonRoot().getValue())
         .runAsGroup(securityContext.getRunAsGroup().getValue())
-        .runAsUser(securityContext.getRunAsUser().getValue())
+        .runAsUser(resolveIntegerParameter(securityContext.getRunAsUser(), null))
         .capabilities(getCtrCapabilities(securityContext.getCapabilities().getValue()))
         .build();
   }

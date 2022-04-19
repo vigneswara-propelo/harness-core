@@ -11,6 +11,7 @@ import static io.harness.beans.SwaggerConstants.BOOLEAN_CLASSPATH;
 import static io.harness.beans.SwaggerConstants.INTEGER_CLASSPATH;
 import static io.harness.beans.SwaggerConstants.STRING_CLASSPATH;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
+import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.YamlSchemaTypes;
@@ -40,7 +41,7 @@ public class SecurityContext {
   @YamlSchemaTypes({runtime})
   @ApiModelProperty(dataType = INTEGER_CLASSPATH)
   private ParameterField<Integer> runAsGroup;
-  @YamlSchemaTypes({runtime}) @ApiModelProperty(dataType = INTEGER_CLASSPATH) private ParameterField<Integer> runAsUser;
+  @YamlSchemaTypes({string}) @ApiModelProperty(dataType = INTEGER_CLASSPATH) private ParameterField<Integer> runAsUser;
   @ApiModelProperty(dataType = "io.harness.beans.yaml.extended.infrastrucutre.k8.Capabilities")
   private ParameterField<Capabilities> capabilities;
 }
