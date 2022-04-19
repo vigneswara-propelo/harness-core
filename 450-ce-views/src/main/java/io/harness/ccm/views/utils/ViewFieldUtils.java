@@ -81,6 +81,7 @@ public class ViewFieldUtils {
 
   public static List<QLCEViewField> getClusterFields() {
     return ImmutableList.of(QLCEViewField.builder().fieldId("clusterName").fieldName("Cluster Name").build(),
+        QLCEViewField.builder().fieldId("clusterType").fieldName("Cluster Type").build(),
         QLCEViewField.builder().fieldId("namespace").fieldName("Namespace").build(),
         QLCEViewField.builder().fieldId("workloadName").fieldName("Workload").build(),
         QLCEViewField.builder().fieldId("appId").fieldName("Application").build(),
