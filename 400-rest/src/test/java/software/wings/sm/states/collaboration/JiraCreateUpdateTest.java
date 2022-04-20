@@ -745,7 +745,7 @@ public class JiraCreateUpdateTest extends WingsBaseTest {
                         .build());
     when(activityService.save(any())).thenReturn(Activity.builder().uuid(ACTIVITY_ID).build());
     when(jiraHelperService.getCreateMetadata(
-             JIRA_CONNECTOR_ID, null, jiraCreateUpdateState.getProject(), ACCOUNT_ID, APP_ID, 0))
+             JIRA_CONNECTOR_ID, null, jiraCreateUpdateState.getProject(), ACCOUNT_ID, APP_ID, 0, ISSUE_TYPE))
         .thenReturn(createMetaResponse);
     when(delegateService.queueTask(any())).thenReturn(UUID);
   }

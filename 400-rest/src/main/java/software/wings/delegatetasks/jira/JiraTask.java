@@ -202,6 +202,10 @@ public class JiraTask extends AbstractDelegateRunnableTask {
         queryParams.put("expand", "projects.issuetypes.fields");
       }
 
+      if (EmptyPredicate.isNotEmpty(parameters.getIssueType())) {
+        queryParams.put("issuetypeNames", parameters.getIssueType());
+      }
+
       if (EmptyPredicate.isNotEmpty(parameters.getProject())) {
         queryParams.put("projectKeys", parameters.getProject());
       }

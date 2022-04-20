@@ -660,6 +660,7 @@ public class JiraTaskTest extends CategoryTest {
     Map<String, String> queryParams = new HashMap<>();
     queryParams.put("expand", "projects.issuetypes.fields");
     queryParams.put("projectKeys", PROJECT_KEY);
+    queryParams.put("issuetypeNames", STORY);
     Mockito.doReturn(jiraClient).when(spyJiraTask).getJiraClient(taskParameters);
     when(jiraClient.getRestClient()).thenReturn(restClient);
     when(restClient.buildURI(Resource.getBaseUri() + "issue/createmeta", queryParams)).thenReturn(uri);
