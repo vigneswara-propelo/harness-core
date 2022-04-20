@@ -78,7 +78,10 @@ public class RuntimeInputValuesValidator {
               matches = true;
             }
           }
-          error = matches ? "" : "The value provided does not match any of the allowed values";
+          String result = String.join(",", allowedValues);
+          error = matches ? ""
+                          : "The value provided does not match any of the allowed values "
+                  + "[" + result + "]";
         }
       } catch (IOException e) {
         throw new InvalidRequestException(
