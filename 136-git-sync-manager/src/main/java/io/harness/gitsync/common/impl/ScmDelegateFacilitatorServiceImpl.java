@@ -166,6 +166,28 @@ public class ScmDelegateFacilitatorServiceImpl extends AbstractScmClientFacilita
   }
 
   @Override
+  public FileContent getFile(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, String repoName, String branchName, String filePath, String commitId) {
+    ScmConnector connector =
+        getScmConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName);
+    final List<EncryptedDataDetail> encryptionDetails =
+        getEncryptedDataDetails(accountIdentifier, orgIdentifier, projectIdentifier, connector);
+    final GitFilePathDetails gitFilePathDetails = getGitFilePathDetails(filePath, branchName, commitId);
+    final ScmGitFileTaskParams scmGitFileTaskParams = getScmGitFileTaskParams(
+        connector, encryptionDetails, gitFilePathDetails, GitFileTaskType.GET_FILE_CONTENT, commitId, branchName, null);
+    DelegateTaskRequest delegateTaskRequest = getDelegateTaskRequest(
+        accountIdentifier, orgIdentifier, projectIdentifier, scmGitFileTaskParams, TaskType.SCM_GIT_FILE_TASK);
+    final DelegateResponseData delegateResponseData = executeDelegateSyncTask(delegateTaskRequest);
+    GitFileTaskResponseData gitFileTaskResponseData = (GitFileTaskResponseData) delegateResponseData;
+    try {
+      return FileContent.parseFrom(gitFileTaskResponseData.getFileContent());
+    } catch (InvalidProtocolBufferException e) {
+      log.error("Error while getFile SCM Ops", e);
+      throw new UnexpectedException("Unexpected error occurred while doing scm operation", e);
+    }
+  }
+
+  @Override
   public CreatePRDTO createPullRequest(GitPRCreateRequest gitCreatePRRequest) {
     validateTheCreatePRRequest(gitCreatePRRequest);
     YamlGitConfigDTO yamlGitConfigDTO =

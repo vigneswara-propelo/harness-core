@@ -25,6 +25,7 @@ import io.harness.product.ci.scm.proto.CreateBranchResponse;
 import io.harness.product.ci.scm.proto.CreateFileResponse;
 import io.harness.product.ci.scm.proto.CreateWebhookResponse;
 import io.harness.product.ci.scm.proto.DeleteFileResponse;
+import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 
 import java.util.List;
@@ -41,6 +42,9 @@ public interface ScmClientFacilitatorService {
 
   GitFileContent getFileContent(String yamlGitConfigIdentifier, String accountIdentifier, String orgIdentifier,
       String projectIdentifier, String filePath, String branch, String commitId);
+
+  FileContent getFile(String accountIdentifier, String orgIdentifier, String projectIdentifier, String connectorRef,
+      String repoName, String branchName, String filePath, String commitId);
 
   CreatePRDTO createPullRequest(GitPRCreateRequest gitCreatePRRequest);
 

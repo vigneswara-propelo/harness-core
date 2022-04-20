@@ -164,6 +164,14 @@ public abstract class AbstractScmClientFacilitatorServiceImpl implements ScmClie
         .userName(isEmpty(scmUserName) ? currentUser.getName() : scmUserName);
   }
 
+  ScmConnector getScmConnector(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String connectorRef, String repoName) {
+    ScmConnector connector = gitSyncConnectorHelper.getDecryptedConnectorByRef(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef);
+    connector.setUrl(connector.getGitConnectionUrl(repoName));
+    return connector;
+  }
+
   private String getScmUserName(String accountId, SCMType scmType) {
     String scmUserName = "";
     try {

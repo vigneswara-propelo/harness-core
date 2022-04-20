@@ -200,9 +200,9 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     String slug = scmGitProviderHelper.getSlug(scmConnector);
     final GetFileRequest.Builder gitFileRequestBuilder =
         GetFileRequest.newBuilder().setPath(gitFilePathDetails.getFilePath()).setProvider(gitProvider).setSlug(slug);
-    if (gitFilePathDetails.getBranch() != null) {
+    if (isNotEmpty(gitFilePathDetails.getBranch())) {
       gitFileRequestBuilder.setBranch(gitFilePathDetails.getBranch());
-    } else if (gitFilePathDetails.getRef() != null) {
+    } else if (isNotEmpty(gitFilePathDetails.getRef())) {
       gitFileRequestBuilder.setRef(gitFilePathDetails.getRef());
     }
     return ScmGrpcClientUtils.retryAndProcessException(scmBlockingStub::getFile, gitFileRequestBuilder.build());

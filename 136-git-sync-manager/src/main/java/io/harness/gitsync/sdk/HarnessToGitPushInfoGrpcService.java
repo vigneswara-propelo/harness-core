@@ -17,6 +17,8 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.exceptionmanager.ExceptionManager;
 import io.harness.gitsync.BranchDetails;
 import io.harness.gitsync.FileInfo;
+import io.harness.gitsync.GetFileRequest;
+import io.harness.gitsync.GetFileResponse;
 import io.harness.gitsync.HarnessToGitPushInfoServiceGrpc.HarnessToGitPushInfoServiceImplBase;
 import io.harness.gitsync.IsGitSyncEnabled;
 import io.harness.gitsync.PushFileResponse;
@@ -84,6 +86,20 @@ public class HarnessToGitPushInfoGrpcService extends HarnessToGitPushInfoService
                              .build();
     }
     responseObserver.onNext(pushFileResponse);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void getFile(GetFileRequest request, StreamObserver<GetFileResponse> responseObserver) {
+    GetFileResponse getFileResponse;
+    try (GlobalContextManager.GlobalContextGuard guard = GlobalContextManager.ensureGlobalContextGuard();
+         MdcContextSetter ignore1 = new MdcContextSetter(request.getContextMapMap())) {
+      getFileResponse = harnessToGitHelperService.getFile(request);
+    } catch (Exception ex) {
+      final String errorMessage = ExceptionUtils.getMessage(ex);
+      getFileResponse = GetFileResponse.newBuilder().setStatus(500).setError(errorMessage).build();
+    }
+    responseObserver.onNext(getFileResponse);
     responseObserver.onCompleted();
   }
 

@@ -546,5 +546,7 @@ public class DefaultConnectorServiceImplTest extends ConnectorsTestBase {
     assertThat(connectorResponseDTOOptional.isPresent()).isTrue();
     assertThat(connectorResponseDTOOptional.get().getConnector().getName()).isEqualTo(name);
     assertThat(connectorResponseDTOOptional.get().getConnector().getIdentifier()).isEqualTo(identifier);
+    assertThat(connectorResponseDTOOptional.get().getConnector().getOrgIdentifier()).isEqualTo(null);
+    assertThat(connectorResponseDTOOptional.get().getConnector().getProjectIdentifier()).isEqualTo(null);
   }
 }

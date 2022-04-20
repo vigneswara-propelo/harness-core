@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.gitsync.common.beans.BranchSyncStatus.UNSYNCED;
 
+import io.harness.ScopeIdentifiers;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
 import io.harness.common.EntityReference;
@@ -28,6 +29,9 @@ import io.harness.exception.UnexpectedException;
 import io.harness.gitsync.BranchDetails;
 import io.harness.gitsync.ChangeType;
 import io.harness.gitsync.FileInfo;
+import io.harness.gitsync.GetFileRequest;
+import io.harness.gitsync.GetFileResponse;
+import io.harness.gitsync.GitMetaData;
 import io.harness.gitsync.PushFileResponse;
 import io.harness.gitsync.PushInfo;
 import io.harness.gitsync.RepoDetails;
@@ -58,6 +62,7 @@ import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.entitydetail.EntityDetailProtoToRestMapper;
 import io.harness.product.ci.scm.proto.CreateFileResponse;
 import io.harness.product.ci.scm.proto.DeleteFileResponse;
+import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.security.Principal;
 import io.harness.security.dto.UserPrincipal;
@@ -318,6 +323,19 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
     return gitFullSyncJob.get().getTriggeredBy();
   }
 
+  @Override
+  public GetFileResponse getFile(GetFileRequest getFileRequest) {
+    ScopeIdentifiers scopeIdentifiers = getFileRequest.getScopeIdentifiers();
+    FileContent fileContent = scmOrchestratorService.processScmRequestUsingConnectorSettings(scmClientFacilitatorService
+        -> scmClientFacilitatorService.getFile(scopeIdentifiers.getAccountIdentifier(),
+            scopeIdentifiers.getOrgIdentifier(), scopeIdentifiers.getProjectIdentifier(),
+            getFileRequest.getConnectorRef(), getFileRequest.getRepoName(), getFileRequest.getBranchName(),
+            getFileRequest.getFilePath(), getFileRequest.getCommitId()),
+        scopeIdentifiers.getProjectIdentifier(), scopeIdentifiers.getOrgIdentifier(),
+        scopeIdentifiers.getAccountIdentifier(), getFileRequest.getConnectorRef());
+    return prepareGetFileResponse(getFileRequest, fileContent);
+  }
+
   private InfoForGitPush getInfoForGitPush(
       FileInfo request, EntityDetail entityDetailDTO, String accountId, YamlGitConfigDTO yamlGitConfig) {
     Principal principal = request.getPrincipal();
@@ -371,5 +389,20 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
     }
     // Return dummy commit id in other cases, will not be used anywhere
     return "";
+  }
+
+  private GetFileResponse prepareGetFileResponse(GetFileRequest getFileRequest, FileContent fileContent) {
+    return GetFileResponse.newBuilder()
+        .setStatus(fileContent.getStatus())
+        .setFileContent(fileContent.getContent())
+        .setError(fileContent.getError())
+        .setGitMetaData(GitMetaData.newBuilder()
+                            .setRepoName(getFileRequest.getRepoName())
+                            .setBranchName(getFileRequest.getBranchName())
+                            .setCommitId(fileContent.getCommitId())
+                            .setBlobId(fileContent.getBlobId())
+                            .setFilePath(fileContent.getPath())
+                            .build())
+        .build();
   }
 }

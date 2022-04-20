@@ -104,6 +104,15 @@ public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitat
   }
 
   @Override
+  public FileContent getFile(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, String repoName, String branchName, String filePath, String commitId) {
+    ScmConnector connector =
+        getScmConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName);
+    final GitFilePathDetails gitFilePathDetails = getGitFilePathDetails(filePath, branchName, commitId);
+    return scmClient.getFileContent(connector, gitFilePathDetails);
+  }
+
+  @Override
   public CreatePRDTO createPullRequest(GitPRCreateRequest gitCreatePRRequest) {
     // since project level ref = ref
     YamlGitConfigDTO yamlGitConfigDTO =

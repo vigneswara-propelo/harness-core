@@ -13,6 +13,8 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.eventsframework.schemas.entity.EntityScopeInfo;
 import io.harness.gitsync.BranchDetails;
 import io.harness.gitsync.FileInfo;
+import io.harness.gitsync.GetFileRequest;
+import io.harness.gitsync.GetFileResponse;
 import io.harness.gitsync.PushFileResponse;
 import io.harness.gitsync.PushInfo;
 import io.harness.gitsync.RepoDetails;
@@ -29,4 +31,6 @@ public interface HarnessToGitHelperService {
   PushFileResponse pushFile(FileInfo request);
 
   UserPrincipal getFullSyncUser(FileInfo request);
+
+  GetFileResponse getFile(GetFileRequest getFileRequest);
 }

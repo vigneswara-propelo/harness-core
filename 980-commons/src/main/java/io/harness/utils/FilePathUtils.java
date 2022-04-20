@@ -7,6 +7,8 @@
 
 package io.harness.utils;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
@@ -51,6 +53,13 @@ public class FilePathUtils {
       return "/" + filePath;
     }
     return filePath;
+  }
+
+  public static String addEndingSlashIfMissing(String filePath) {
+    if (isNotEmpty(filePath) && filePath.endsWith("/")) {
+      return filePath;
+    }
+    return filePath + "/";
   }
 
   // ---------------------------------- PRIVATE METHODS ----------------------------

@@ -10,6 +10,7 @@ package io.harness.gitsync;
 import "google/protobuf/wrappers.proto";
 import "970-ng-commons/src/main/proto/io/harness/eventsframework/schemas/entity/entity_detail.proto";
 import "970-ng-commons/src/main/proto/io/harness/eventsframework/schemas/entity/entity_scope_info.proto";
+import "970-ng-commons/src/main/proto/io/harness/scope_identifiers.proto";
 import "io/harness/gitsync/change_type.proto";
 import "980-commons/src/main/proto/io/harness/security/principal.proto";
 
@@ -20,6 +21,7 @@ service HarnessToGitPushInfoService {
   rpc pushFile(FileInfo) returns (PushFileResponse);
   rpc isGitSyncEnabledForScope(io.harness.eventsframework.schemas.entity.EntityScopeInfo) returns (IsGitSyncEnabled);
   rpc getDefaultBranch(RepoDetails) returns (BranchDetails);
+  rpc getFile(GetFileRequest) returns (GetFileResponse);
 }
 
 message PushInfo {
@@ -84,4 +86,29 @@ message RepoDetails {
 message BranchDetails {
   string default_branch = 1;
   string error = 2;
+}
+
+message GetFileRequest {
+  string repoName = 1;
+  string branchName = 2;
+  string filePath = 3;
+  string commitId = 4;
+  string connectorRef = 5;
+  ScopeIdentifiers scopeIdentifiers = 6;
+  map<string, string> contextMap = 7;
+}
+
+message GetFileResponse {
+  int32 status = 1;
+  string fileContent = 2;
+  string error = 3;
+  GitMetaData gitMetaData = 4;
+}
+
+message GitMetaData {
+  string repoName = 1;
+  string branchName = 2;
+  string commitId = 3;
+  string filePath = 4;
+  string blobId = 5;
 }
