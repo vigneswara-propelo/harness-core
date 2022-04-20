@@ -145,6 +145,12 @@ public class PipelineResource implements YamlSchemaResource {
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgId,
       @Parameter(description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
+      @Parameter(description = PipelineResourceConstants.PIPELINE_ID_PARAM_MESSAGE, required = false) @QueryParam(
+          NGCommonEntityConstants.IDENTIFIER_KEY) String pipelineIdentifier,
+      @Parameter(description = PipelineResourceConstants.PIPELINE_NAME_PARAM_MESSAGE, required = false) @QueryParam(
+          NGCommonEntityConstants.NAME_KEY) String pipelineName,
+      @Parameter(description = PipelineResourceConstants.PIPELINE_DESCRIPTION_PARAM_MESSAGE,
+          required = false) @QueryParam(NGCommonEntityConstants.DESCRIPTION_KEY) String pipelineDescription,
       @BeanParam GitEntityCreateInfoDTO gitEntityCreateInfo,
       @RequestBody(required = true, description = "Pipeline YAML") @NotNull String yaml) {
     PipelineEntity pipelineEntity = PMSPipelineDtoMapper.toPipelineEntity(accountId, orgId, projectId, yaml);
@@ -172,6 +178,12 @@ public class PipelineResource implements YamlSchemaResource {
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgId,
       @Parameter(description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
+      @Parameter(description = PipelineResourceConstants.PIPELINE_ID_PARAM_MESSAGE, required = false) @QueryParam(
+          NGCommonEntityConstants.IDENTIFIER_KEY) String pipelineIdentifier,
+      @Parameter(description = PipelineResourceConstants.PIPELINE_NAME_PARAM_MESSAGE, required = false) @QueryParam(
+          NGCommonEntityConstants.NAME_KEY) String pipelineName,
+      @Parameter(description = PipelineResourceConstants.PIPELINE_DESCRIPTION_PARAM_MESSAGE,
+          required = false) @QueryParam(NGCommonEntityConstants.DESCRIPTION_KEY) String pipelineDescription,
       @BeanParam GitEntityCreateInfoDTO gitEntityCreateInfo,
       @RequestBody(required = true, description = "Pipeline YAML") @NotNull String yaml) {
     PipelineEntity pipelineEntity = PMSPipelineDtoMapper.toPipelineEntity(accountId, orgId, projectId, yaml);

@@ -150,7 +150,7 @@ public class PipelineResourceTest extends CategoryTest {
         TemplateMergeResponseDTO.builder().mergedPipelineYaml(yaml).build();
     doReturn(templateMergeResponseDTO).when(pipelineTemplateHelper).resolveTemplateRefsInPipeline(entity);
     ResponseDTO<String> identifier =
-        pipelineResource.createPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, null, yaml);
+        pipelineResource.createPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, null, null, null, null, yaml);
     assertThat(identifier.getData()).isNotEmpty();
     assertThat(identifier.getData()).isEqualTo(PIPELINE_IDENTIFIER);
   }
@@ -164,7 +164,7 @@ public class PipelineResourceTest extends CategoryTest {
         .when(pmsPipelineService)
         .validatePipelineYamlAndSetTemplateRefIfAny(entity, true);
     ResponseDTO<PipelineSaveResponse> responseDTO =
-        pipelineResource.createPipelineV2(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, null, yaml);
+        pipelineResource.createPipelineV2(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, null, null, null, null, yaml);
     assertThat(responseDTO.getData().getGovernanceMetadata()).isNotNull();
     assertThat(responseDTO.getData().getGovernanceMetadata().getDeny()).isTrue();
   }
@@ -176,7 +176,9 @@ public class PipelineResourceTest extends CategoryTest {
     doThrow(JsonSchemaValidationException.class)
         .when(pmsPipelineService)
         .validatePipelineYamlAndSetTemplateRefIfAny(entity, false);
-    assertThatThrownBy(() -> pipelineResource.createPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, null, yaml))
+    assertThatThrownBy(()
+                           -> pipelineResource.createPipeline(
+                               ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, null, null, null, null, yaml))
         .isInstanceOf(JsonSchemaValidationException.class);
   }
 
