@@ -166,6 +166,8 @@ public class ManifestCollectionUtils {
             .repoName(convertBase64UuidToCanonicalForm(appManifestId))
             .repoDisplayName(settingAttribute.getName())
             .helmVersion(helmVersion)
+            .useLatestChartMuseumVersion(
+                featureFlagService.isEnabled(FeatureName.USE_LATEST_CHARTMUSEUM_VERSION, accountId))
             .bypassHelmFetch(featureFlagService.isEnabled(FeatureName.BYPASS_HELM_FETCH, accountId))
             .helmRepoConfig(helmRepoConfig);
 
