@@ -934,7 +934,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     try {
       FibonacciBackOff.executeForEver(() -> {
         RequestBuilder requestBuilder = prepareRequestBuilder();
-        return socket.open(requestBuilder.build());
+        Socket skt = socket.open(requestBuilder.build());
+        log.info("Socket status: {}", socket.status().toString());
+        return skt;
       });
     } catch (IOException ex) {
       log.error("Unable to open socket", ex);
@@ -1762,7 +1764,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         log.error("Error sending heartbeat", e);
       }
     } else {
-      log.warn("Socket is not open");
+      log.warn("Socket is not open, status: {}", socket.status().toString());
     }
   }
 
@@ -1785,7 +1787,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         log.error("Error sending heartbeat", e);
       }
     } else {
-      log.warn("Socket is not open");
+      log.warn("Socket is not open, status: {}", socket.status().toString());
     }
   }
 
