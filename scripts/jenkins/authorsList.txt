@@ -262,3 +262,4 @@ Utkarsh Choubey utkarsh.choubey@harness.io
 Sahildeep Singh sahildeep.singh@harness.io
 Dhruv dhruv@harness.io
 Raghav raghav.gupta@harness.io
+Miloš Vasić milos.vasic@harness.io

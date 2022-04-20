@@ -5191,8 +5191,6 @@ maven_install(
         "http://jfrogdev.dev.harness.io:80/artifactory/portal-maven",
         "https://harness.jfrog.io/artifactory/harness-internal",
         "https://harness.jfrog.io/harness/thirdparty-annonymous",
-        "https://s01.oss.sonatype.org/content/repositories/releases",
-        "https://s01.oss.sonatype.org/content/repositories/snapshots",
     ],
     version_conflict_policy = "pinned",
 )
@@ -5244,8 +5242,6 @@ maven_install(
     repositories = [
         "http://jfrogdev.dev.harness.io:80/artifactory/portal-maven",
         "https://harness.jfrog.io/harness/thirdparty-annonymous",
-        "https://s01.oss.sonatype.org/content/repositories/releases",
-        "https://s01.oss.sonatype.org/content/repositories/snapshots",
     ],
 )
 
@@ -5272,8 +5268,6 @@ maven_install(
         "https://repo1.maven.org/maven2",
         "http://jfrogdev.dev.harness.io:80/artifactory/portal-maven",
         "https://harness.jfrog.io/harness/thirdparty-annonymous",
-        "https://s01.oss.sonatype.org/content/repositories/releases",
-        "https://s01.oss.sonatype.org/content/repositories/snapshots",
         "https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-core/4.3.4",
     ],
 )
