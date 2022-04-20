@@ -43,6 +43,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.security.encryption.SecretDecryptionService;
 import io.harness.shell.SshSessionConfig;
 
+import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,7 +133,7 @@ public class GitFetchTaskNGTest {
   @Test
   @Owner(developers = ABHINAV2)
   @Category(UnitTests.class)
-  public void testTaskRun() {
+  public void testTaskRun() throws IOException {
     doReturn(fetchFilesResult)
         .when(ngGitService)
         .fetchFilesByPath(
@@ -146,7 +147,7 @@ public class GitFetchTaskNGTest {
   @Test
   @Owner(developers = ABHINAV2)
   @Category(UnitTests.class)
-  public void testFetchFilesFromRepoWithNonExistentFile() {
+  public void testFetchFilesFromRepoWithNonExistentFile() throws IOException {
     doThrow(new InvalidRequestException(TEST_INPUT_ID, new NoSuchFileException(TEST_INPUT_ID)))
         .when(ngGitService)
         .fetchFilesByPath(
@@ -159,7 +160,7 @@ public class GitFetchTaskNGTest {
   @Test
   @Owner(developers = ABHINAV2)
   @Category(UnitTests.class)
-  public void testFetchFilesFromRepoWithException() {
+  public void testFetchFilesFromRepoWithException() throws IOException {
     doThrow(new InvalidRequestException(TEST_INPUT_ID))
         .when(ngGitService)
         .fetchFilesByPath(

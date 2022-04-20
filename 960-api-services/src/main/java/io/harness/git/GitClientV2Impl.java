@@ -70,8 +70,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.nio.channels.AsynchronousCloseException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.FileLock;
+import java.nio.channels.FileLockInterruptionException;
+import java.nio.channels.NonWritableChannelException;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -870,8 +877,12 @@ public class GitClientV2Impl implements GitClientV2 {
       request.setBranch(StringUtils.EMPTY);
     }
 
-    synchronized (gitClientHelper.getLockObject(gitConnectorId)) {
-      try {
+    final File lockFile = gitClientHelper.getLockObject(gitConnectorId);
+    synchronized (lockFile) {
+      log.info("Trying to acquire lock on {}", lockFile);
+      try (FileOutputStream fileOutputStream = new FileOutputStream(lockFile);
+           FileLock lock = fileOutputStream.getChannel().lock()) {
+        log.info("Successfully acquired lock on {}", lockFile);
         log.info(new StringBuilder(128)
                      .append(" Processing Git command: FILES_BETWEEN_COMMITS ")
                      .append("Account: ")
@@ -916,6 +927,7 @@ public class GitClientV2Impl implements GitClientV2 {
         tryResetWorkingDir(request);
         throw e;
       } catch (Exception e) {
+        logPossibleFileLockRelatedExceptions(e);
         tryResetWorkingDir(request);
         log.error(gitClientHelper.getGitLogMessagePrefix(request.getRepoType()) + EXCEPTION_STRING, e);
         throw new YamlException(new StringBuilder()
@@ -934,13 +946,24 @@ public class GitClientV2Impl implements GitClientV2 {
     }
   }
 
+  private void logPossibleFileLockRelatedExceptions(Exception e) {
+    if (e instanceof ClosedChannelException || e instanceof AsynchronousCloseException
+        || e instanceof FileLockInterruptionException || e instanceof OverlappingFileLockException
+        || e instanceof NonWritableChannelException) {
+      log.error("Exception occurred while creating file lock", e);
+    }
+  }
+
   @Override
-  public FetchFilesResult fetchFilesByPath(FetchFilesByPathRequest request) {
+  public FetchFilesResult fetchFilesByPath(FetchFilesByPathRequest request) throws IOException {
     cleanup(request);
     validateRequiredArgs(request);
-
-    synchronized (gitClientHelper.getLockObject(request.getConnectorId())) {
-      try {
+    File lockFile = gitClientHelper.getLockObject(request.getConnectorId());
+    synchronized (lockFile) {
+      log.info("Trying to acquire lock on {}", lockFile);
+      try (FileOutputStream fileOutputStream = new FileOutputStream(lockFile);
+           FileLock lock = fileOutputStream.getChannel().lock()) {
+        log.info("Successfully acquired lock on {}", lockFile);
         checkoutFiles(request);
         List<GitFile> gitFiles = getFilteredGitFiles(request);
         resetWorkingDir(request);
@@ -956,6 +979,7 @@ public class GitClientV2Impl implements GitClientV2 {
             .build();
 
       } catch (Exception e) {
+        logPossibleFileLockRelatedExceptions(e);
         tryResetWorkingDir(request);
         log.error(gitClientHelper.getGitLogMessagePrefix(request.getRepoType()) + EXCEPTION_STRING, e);
         throw e;
@@ -1011,12 +1035,16 @@ public class GitClientV2Impl implements GitClientV2 {
   }
 
   @Override
-  public void downloadFiles(DownloadFilesRequest request) {
+  public void downloadFiles(DownloadFilesRequest request) throws IOException {
     cleanup(request);
     validateRequiredArgs(request);
 
-    synchronized (gitClientHelper.getLockObject(request.getConnectorId())) {
-      try {
+    final File lockFile = gitClientHelper.getLockObject(request.getConnectorId());
+    synchronized (lockFile) {
+      log.info("Trying to acquire lock on {}", lockFile);
+      try (FileOutputStream fileOutputStream = new FileOutputStream(lockFile);
+           FileLock lock = fileOutputStream.getChannel().lock()) {
+        log.info("Successfully acquired lock on {}", lockFile);
         checkoutFiles(request);
         String repoPath = gitClientHelper.getFileDownloadRepoDirectory(request);
 
@@ -1053,6 +1081,7 @@ public class GitClientV2Impl implements GitClientV2 {
         tryResetWorkingDir(request);
         throw e;
       } catch (Exception e) {
+        logPossibleFileLockRelatedExceptions(e);
         tryResetWorkingDir(request);
         throw new YamlException(new StringBuilder()
                                     .append("Failed while fetching files ")
@@ -1090,6 +1119,7 @@ public class GitClientV2Impl implements GitClientV2 {
     }
   }
 
+  // use this method wrapped in inter process file lock to handle multiple delegate version
   private void checkoutFiles(FetchFilesByPathRequest request) {
     synchronized (gitClientHelper.getLockObject(request.getConnectorId())) {
       log.info(new StringBuilder(128)

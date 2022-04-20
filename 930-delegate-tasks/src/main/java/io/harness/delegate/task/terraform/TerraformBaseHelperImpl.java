@@ -775,7 +775,8 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
   }
 
   private void handleGitVarFiles(LogCallback logCallback, String accountId, String tfVarDirectory, Path tfVarDirAbsPath,
-      List<String> varFilePaths, GitStoreDelegateConfig gitStoreDelegateConfig, GitConfigDTO gitConfigDTO) {
+      List<String> varFilePaths, GitStoreDelegateConfig gitStoreDelegateConfig, GitConfigDTO gitConfigDTO)
+      throws IOException {
     logCallback.saveExecutionLog(format("Fetching Var files from Git repository: [%s]", gitConfigDTO.getUrl()), INFO,
         CommandExecutionStatus.RUNNING);
 

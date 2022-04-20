@@ -15,6 +15,7 @@ import static io.harness.exception.WingsException.NOBODY;
 import static io.harness.exception.WingsException.SRE;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.exception.WingsException.USER_ADMIN;
+import static io.harness.filesystem.FileIo.createDirectoryIfDoesNotExist;
 import static io.harness.git.Constants.GIT_DEFAULT_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_HELM_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_REPO_BASE_DIR;
@@ -28,6 +29,8 @@ import static io.harness.git.Constants.REPOSITORY_GIT_FILE_DOWNLOADS_ACCOUNT;
 import static io.harness.git.Constants.REPOSITORY_GIT_FILE_DOWNLOADS_BASE;
 import static io.harness.git.Constants.REPOSITORY_GIT_FILE_DOWNLOADS_REPO_BASE_DIR;
 import static io.harness.git.Constants.REPOSITORY_GIT_FILE_DOWNLOADS_REPO_DIR;
+import static io.harness.git.Constants.REPOSITORY_GIT_LOCK_DIR;
+import static io.harness.git.Constants.REPOSITORY_GIT_LOCK_FIlE;
 import static io.harness.git.model.ChangeType.ADD;
 import static io.harness.git.model.ChangeType.DELETE;
 import static io.harness.git.model.ChangeType.MODIFY;
@@ -86,15 +89,26 @@ public class GitClientHelper {
   private static final Integer REPO_GROUP = 6;
   private static final Integer SCM_GROUP = 3;
 
-  private static final LoadingCache<String, Object> cache = CacheBuilder.newBuilder()
-                                                                .maximumSize(2000)
-                                                                .expireAfterAccess(1, TimeUnit.HOURS)
-                                                                .build(new CacheLoader<String, Object>() {
-                                                                  @Override
-                                                                  public Object load(String key) throws Exception {
-                                                                    return new Object();
-                                                                  }
-                                                                });
+  static {
+    try {
+      createDirectoryIfDoesNotExist(REPOSITORY_GIT_LOCK_DIR);
+    } catch (IOException e) {
+      log.error("Error occurred while creating the lock directory", e);
+    }
+  }
+
+  private static final LoadingCache<String, File> cache = CacheBuilder.newBuilder()
+                                                              .maximumSize(2000)
+                                                              .expireAfterAccess(1, TimeUnit.HOURS)
+                                                              .build(new CacheLoader<String, File>() {
+                                                                @Override
+                                                                public File load(String key) throws IOException {
+                                                                  File file =
+                                                                      new File(format(REPOSITORY_GIT_LOCK_FIlE, key));
+                                                                  file.createNewFile();
+                                                                  return file;
+                                                                }
+                                                              });
 
   public static String getGitRepo(String url) {
     Matcher m = GIT_URL.matcher(url);
@@ -238,7 +252,7 @@ public class GitClientHelper {
     }
   }
 
-  Object getLockObject(String id) {
+  File getLockObject(String id) {
     try {
       return cache.get(id);
     } catch (Exception e) {
@@ -262,22 +276,21 @@ public class GitClientHelper {
 
   void createDirStructureForFileDownload(GitBaseRequest request) {
     try {
-      FileIo.createDirectoryIfDoesNotExist(REPOSITORY);
-      FileIo.createDirectoryIfDoesNotExist(REPOSITORY_GIT_FILE_DOWNLOADS);
+      createDirectoryIfDoesNotExist(REPOSITORY);
+      createDirectoryIfDoesNotExist(REPOSITORY_GIT_FILE_DOWNLOADS);
 
-      FileIo.createDirectoryIfDoesNotExist(
+      createDirectoryIfDoesNotExist(
           REPOSITORY_GIT_FILE_DOWNLOADS_ACCOUNT.replace("{ACCOUNT_ID}", request.getAccountId()));
 
-      FileIo.createDirectoryIfDoesNotExist(
-          REPOSITORY_GIT_FILE_DOWNLOADS_BASE.replace("{ACCOUNT_ID}", request.getAccountId())
-              .replace("{CONNECTOR_ID}", request.getConnectorId()));
+      createDirectoryIfDoesNotExist(REPOSITORY_GIT_FILE_DOWNLOADS_BASE.replace("{ACCOUNT_ID}", request.getAccountId())
+                                        .replace("{CONNECTOR_ID}", request.getConnectorId()));
 
-      FileIo.createDirectoryIfDoesNotExist(
+      createDirectoryIfDoesNotExist(
           REPOSITORY_GIT_FILE_DOWNLOADS_REPO_BASE_DIR.replace("{ACCOUNT_ID}", request.getAccountId())
               .replace("{CONNECTOR_ID}", request.getConnectorId())
               .replace("{REPO_NAME}", getRepoName(request.getRepoUrl())));
 
-      FileIo.createDirectoryIfDoesNotExist(
+      createDirectoryIfDoesNotExist(
           REPOSITORY_GIT_FILE_DOWNLOADS_REPO_DIR.replace("{ACCOUNT_ID}", request.getAccountId())
               .replace("{CONNECTOR_ID}", request.getConnectorId())
               .replace("{REPO_NAME}", getRepoName(request.getRepoUrl()))
