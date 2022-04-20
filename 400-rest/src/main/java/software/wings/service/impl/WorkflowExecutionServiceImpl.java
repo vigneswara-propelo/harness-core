@@ -5671,6 +5671,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
                                          .project(WorkflowExecutionKeys.endTs, true)
                                          .project(WorkflowExecutionKeys.name, true)
                                          .project(WorkflowExecutionKeys.envId, true)
+                                         .project(WorkflowExecutionKeys.pipelineExecutionId, true)
                                          .field("_id")
                                          .in(entityIds);
 
