@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.core.api.impl;
+package io.harness.ng.core.filestore.service;
 
 import static io.harness.rule.OwnerRule.BOJAN;
 import static io.harness.rule.OwnerRule.FILIP;
@@ -40,6 +40,7 @@ import io.harness.ng.core.dto.filestore.FileDTO;
 import io.harness.ng.core.dto.filestore.node.FileNodeDTO;
 import io.harness.ng.core.dto.filestore.node.FolderNodeDTO;
 import io.harness.ng.core.entities.NGFile;
+import io.harness.ng.core.filestore.utils.FileReferencedByHelper;
 import io.harness.repositories.filestore.FileStoreRepositoryCriteriaCreator;
 import io.harness.repositories.filestore.spring.FileStoreRepository;
 import io.harness.rule.Owner;
@@ -65,17 +66,17 @@ import org.springframework.dao.DuplicateKeyException;
 @OwnedBy(HarnessTeam.CDP)
 @RunWith(MockitoJUnitRunner.class)
 public class FileStoreServiceImplTest extends CategoryTest {
-  public static final String ACCOUNT_IDENTIFIER = "accountIdentifier";
+  private static final String ACCOUNT_IDENTIFIER = "accountIdentifier";
   private static final String ORG_IDENTIFIER = "orgIdentifier";
-  public static final String PROJECT_IDENTIFIER = "projectIdentifier";
-  public static final String PARENT_IDENTIFIER = "parentIdentifier";
-  public static final String IDENTIFIER = "identifier";
-  public static final String FILE_IDENTIFIER = "fileIdentifier";
-  public static final String FILE_NAME = "fileName";
+  private static final String PROJECT_IDENTIFIER = "projectIdentifier";
+  private static final String IDENTIFIER = "identifier";
+  private static final String FILE_IDENTIFIER = "fileIdentifier";
+  private static final String FILE_NAME = "fileName";
 
   @Mock private FileStoreRepository fileStoreRepository;
   @Mock private FileService fileService;
   @Mock private MainConfiguration configuration;
+  @Mock private FileReferencedByHelper fileReferencedByHelper;
 
   @InjectMocks private FileStoreServiceImpl fileStoreService;
 
@@ -86,6 +87,8 @@ public class FileStoreServiceImplTest extends CategoryTest {
     when(fileStoreRepository.save(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
     givenThatDatabaseIsEmpty();
+
+    when(fileReferencedByHelper.isFileReferencedByOtherEntities(any())).thenReturn(false);
   }
 
   @Test

@@ -17,11 +17,15 @@ import io.harness.ng.core.entitysetupusage.entity.EntitySetupUsage;
 
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 
 @OwnedBy(DX)
 public interface EntitySetupUsageService {
   Page<EntitySetupUsageDTO> listAllEntityUsage(int page, int size, String accountIdentifier, String referredEntityFQN,
       EntityType referredEntityType, String searchTerm);
+
+  Page<EntitySetupUsageDTO> listAllEntityUsage(int page, int size, String accountIdentifier, String referredEntityFQN,
+      EntityType referredEntityType, EntityType referredByEntityType, String searchTerm, Sort sort);
 
   List<EntitySetupUsageDTO> listAllReferredUsages(int page, int size, String accountIdentifier,
       String referredByEntityFQN, EntityType referredEntityType, String searchTerm);

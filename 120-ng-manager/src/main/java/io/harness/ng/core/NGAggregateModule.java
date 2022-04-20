@@ -15,12 +15,12 @@ import io.harness.ng.core.api.AggregateAccountResourceService;
 import io.harness.ng.core.api.AggregateOrganizationService;
 import io.harness.ng.core.api.AggregateProjectService;
 import io.harness.ng.core.api.AggregateUserGroupService;
-import io.harness.ng.core.api.FileStoreService;
 import io.harness.ng.core.api.impl.AggregateAccountResourceServiceImpl;
 import io.harness.ng.core.api.impl.AggregateOrganizationServiceImpl;
 import io.harness.ng.core.api.impl.AggregateProjectServiceImpl;
 import io.harness.ng.core.api.impl.AggregateUserGroupServiceImpl;
-import io.harness.ng.core.api.impl.FileStoreServiceImpl;
+import io.harness.ng.core.filestore.service.FileStoreService;
+import io.harness.ng.core.filestore.service.FileStoreServiceImpl;
 import io.harness.ng.core.service.services.ServiceEntityManagementService;
 import io.harness.ng.core.service.services.ServiceEntityManagementServiceImpl;
 
