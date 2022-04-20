@@ -12,7 +12,9 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.HarnessStringUtils.emptyIfNull;
 import static io.harness.gitsync.interceptor.GitSyncConstants.DEFAULT;
 
+import io.harness.ScopeIdentifiers;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Scope;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
@@ -20,6 +22,9 @@ import io.harness.exception.WingsException;
 import io.harness.exception.ngexception.beans.ScmErrorMetadataDTO;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.FileInfo;
+import io.harness.gitsync.GetFileRequest;
+import io.harness.gitsync.GetFileResponse;
+import io.harness.gitsync.GitMetaData;
 import io.harness.gitsync.HarnessToGitPushInfoServiceGrpc.HarnessToGitPushInfoServiceBlockingStub;
 import io.harness.gitsync.PushFileResponse;
 import io.harness.gitsync.common.helper.ChangeTypeMapper;
@@ -29,6 +34,8 @@ import io.harness.gitsync.exceptions.GitSyncException;
 import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.beans.SCMNoOpResponse;
+import io.harness.gitsync.scm.beans.ScmGetFileResponse;
+import io.harness.gitsync.scm.beans.ScmGitMetaData;
 import io.harness.gitsync.scm.beans.ScmPushResponse;
 import io.harness.impl.ScmResponseStatusUtils;
 import io.harness.ng.core.EntityDetail;
@@ -40,9 +47,11 @@ import io.harness.security.dto.ServicePrincipal;
 import io.harness.security.dto.UserPrincipal;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.protobuf.StringValue;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
@@ -70,6 +79,32 @@ public class SCMGitSyncHelper {
       throwDifferentExceptionInCaseOfChangeTypeAdd(gitBranchInfo, changeType, e);
     }
     return ScmGitUtils.createScmPushResponse(yaml, gitBranchInfo, pushFileResponse, entityDetail, changeType);
+  }
+
+  public ScmGetFileResponse getFile(Scope scope, String repoName, String branchName, String filePath, String commitId,
+      String connectorRef, Map<String, String> contextMap) {
+    final GetFileRequest getFileRequest =
+        GetFileRequest.newBuilder()
+            .setRepoName(repoName)
+            .setConnectorRef(connectorRef)
+            .setCommitId(Strings.nullToEmpty(commitId))
+            .setBranchName(Strings.nullToEmpty(branchName))
+            .setFilePath(filePath)
+            .putAllContextMap(contextMap)
+            .setScopeIdentifiers(ScopeIdentifiers.newBuilder()
+                                     .setAccountIdentifier(scope.getAccountIdentifier())
+                                     .setOrgIdentifier(Strings.nullToEmpty(scope.getOrgIdentifier()))
+                                     .setProjectIdentifier(Strings.nullToEmpty(scope.getProjectIdentifier()))
+                                     .build())
+            .build();
+    final GetFileResponse getFileResponse = GitSyncGrpcClientUtils.retryAndProcessException(
+        harnessToGitPushInfoServiceBlockingStub::getFile, getFileRequest);
+
+    // Add Error Handling
+    return ScmGetFileResponse.builder()
+        .fileContent(getFileResponse.getFileContent())
+        .gitMetaData(getGitMetaData(getFileResponse.getGitMetaData()))
+        .build();
   }
 
   @VisibleForTesting
@@ -180,5 +215,15 @@ public class SCMGitSyncHelper {
       default:
         throw new InvalidRequestException("Principal type not set.");
     }
+  }
+
+  private ScmGitMetaData getGitMetaData(GitMetaData gitMetaData) {
+    return ScmGitMetaData.builder()
+        .blobId(gitMetaData.getBlobId())
+        .branchName(gitMetaData.getBranchName())
+        .repoName(gitMetaData.getRepoName())
+        .filePath(gitMetaData.getFilePath())
+        .commitId(gitMetaData.getCommitId())
+        .build();
   }
 }
