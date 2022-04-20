@@ -61,6 +61,7 @@ import io.harness.ff.FeatureFlagService;
 import io.harness.persistence.HPersistence;
 import io.harness.service.dto.RetryDelegate;
 import io.harness.service.intfc.DelegateCache;
+import io.harness.service.intfc.DelegateSetupService;
 import io.harness.service.intfc.DelegateTaskRetryObserver;
 
 import software.wings.beans.Environment;
@@ -145,6 +146,7 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
   @Inject private InfrastructureMappingService infrastructureMappingService;
   @Inject private DelegateCache delegateCache;
   @Inject private DelegateTaskServiceClassic delegateTaskServiceClassic;
+  @Inject private DelegateSetupService delegateSetupService;
 
   private LoadingCache<ImmutablePair<String, String>, Optional<DelegateConnectionResult>>
       delegateConnectionResultCache =
@@ -1053,7 +1055,7 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
   private Optional<List<String>> getDelegateTags(Delegate delegate) {
     if (delegate.isNg()) {
       DelegateGroup delegateGroup =
-          delegateCache.getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
+          delegateSetupService.getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
       List<String> tags = new ArrayList<>(delegateGroup.getTags());
       return Optional.of(tags);
     }

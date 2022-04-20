@@ -15,8 +15,6 @@ import static java.lang.String.format;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.UUIDGenerator;
-import io.harness.delegate.beans.Delegate;
-import io.harness.delegate.beans.Delegate.DelegateKeys;
 import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateToken;
 import io.harness.delegate.beans.DelegateToken.DelegateTokenKeys;
@@ -110,7 +108,6 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
     // we are not removing token from delegateTokenCache in DelegateTokenCacheHelper, since the cache has an expiry of 3
     // mins.
 
-    invalidateDelegateGroupCache(accountId, tokenName);
     publishRevokeTokenAuditEvent(updatedDelegateToken);
 
     return getDelegateTokenDetails(updatedDelegateToken, false);
@@ -296,17 +293,6 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
         .name(delegateToken.getName())
         .identifier(delegateToken.getUuid())
         .build();
-  }
-
-  private void invalidateDelegateGroupCache(String accountId, String tokenName) {
-    List<Delegate> delegates = persistence.createQuery(Delegate.class)
-                                   .filter(DelegateKeys.accountId, accountId)
-                                   .filter(DelegateKeys.delegateTokenName, tokenName)
-                                   .asList();
-    delegates.stream()
-        .map(Delegate::getUuid)
-        .distinct()
-        .forEach(delegateGroupId -> delegateCache.invalidateDelegateGroupCache(accountId, delegateGroupId));
   }
 
   @Override

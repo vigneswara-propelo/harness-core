@@ -128,9 +128,6 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
             .build();
     persistence.save(delegateGroup2);
 
-    when(delegateCache.getDelegateGroup(accountId, delegateGroup1.getUuid())).thenReturn(delegateGroup1);
-    when(delegateCache.getDelegateGroup(accountId, delegateGroup2.getUuid())).thenReturn(delegateGroup2);
-
     // Insights
     DelegateInsightsDetails delegateInsightsDetails =
         DelegateInsightsDetails.builder()
@@ -357,15 +354,21 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
     String orgId = generateUuid();
     String projectId = generateUuid();
 
-    DelegateGroup acctGroup =
-        DelegateGroup.builder().accountId(accountId).ng(true).tags(ImmutableSet.of("custom-grp-tag")).build();
+    DelegateGroup acctGroup = DelegateGroup.builder()
+                                  .accountId(accountId)
+                                  .name("acctGroup")
+                                  .ng(true)
+                                  .tags(ImmutableSet.of("custom-grp-tag"))
+                                  .build();
     DelegateGroup orgGroup = DelegateGroup.builder()
                                  .accountId(accountId)
+                                 .name("orgGroup")
                                  .ng(true)
                                  .owner(DelegateEntityOwnerHelper.buildOwner(orgId, null))
                                  .build();
     DelegateGroup projectGroup = DelegateGroup.builder()
                                      .accountId(accountId)
+                                     .name("projectGroup")
                                      .ng(true)
                                      .owner(DelegateEntityOwnerHelper.buildOwner(orgId, projectId))
                                      .build();
@@ -453,8 +456,6 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                                        .tags(ImmutableSet.of("custom-grp-tag"))
                                        .build();
     persistence.save(delegateGroup1);
-
-    when(delegateCache.getDelegateGroup(accountId, delegateGroup1.getUuid())).thenReturn(delegateGroup1);
 
     // Insights
     DelegateInsightsDetails delegateInsightsDetails =
@@ -544,11 +545,14 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
     DelegateSizeDetails grp1SizeDetails =
         DelegateSizeDetails.builder().size(DelegateSize.LARGE).cpu(2.5d).label("size").ram(2048).replicas(2).build();
 
+    DelegateEntityOwner owner = DelegateEntityOwner.builder().identifier("orgId/projectId").build();
+
     DelegateGroup delegateGroup1 = DelegateGroup.builder()
                                        .name("grp1")
                                        .identifier("identifier1")
                                        .accountId(accountId)
                                        .ng(true)
+                                       .owner(owner)
                                        .delegateType(KUBERNETES)
                                        .description("description")
                                        .sizeDetails(grp1SizeDetails)
@@ -556,10 +560,6 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                                        .tags(ImmutableSet.of("custom-grp-tag"))
                                        .build();
     persistence.save(delegateGroup1);
-
-    DelegateEntityOwner owner = DelegateEntityOwner.builder().identifier("orgId/projectId").build();
-    when(delegateCache.getDelegateGroupByAccountAndOwnerAndIdentifier(accountId, owner, delegateGroup1.getIdentifier()))
-        .thenReturn(delegateGroup1);
 
     // Insights
     DelegateInsightsDetails delegateInsightsDetails =
@@ -875,7 +875,8 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                                       .name("group")
                                       .tags(ImmutableSet.of("custom-tag"))
                                       .build();
-    when(delegateCache.getDelegateGroup(accountId, delegateGroup.getUuid())).thenReturn(delegateGroup);
+
+    persistence.save(delegateGroup);
 
     Delegate delegate = Delegate.builder()
                             .accountId(accountId)
@@ -1175,11 +1176,6 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
 
     persistence.saveBatch(delegateGroups);
     persistence.saveBatch(delegates);
-
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_1)).thenReturn(delegateGroups.get(0));
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_2)).thenReturn(delegateGroups.get(1));
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_3)).thenReturn(delegateGroups.get(2));
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_4)).thenReturn(delegateGroups.get(3));
   }
 
   private List<Delegate> prepareDelegates() {

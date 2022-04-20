@@ -70,4 +70,6 @@ public interface DelegateSetupService {
 
   Optional<DelegateGroupDTO> updateDelegateGroupTags(String accountIdentifier, String orgIdentifier,
       String projectIdentifier, String groupIdentifier, DelegateGroupTags delegateGroupTags);
+
+  DelegateGroup getDelegateGroup(String accountId, String delegateGroupId);
 }

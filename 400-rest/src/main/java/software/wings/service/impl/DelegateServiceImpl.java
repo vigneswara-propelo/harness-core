@@ -563,7 +563,7 @@ public class DelegateServiceImpl implements DelegateService {
     Set<String> selectors = delegate.getTags() == null ? new HashSet<>() : new HashSet<>(delegate.getTags());
     if (delegate.isNg()) {
       DelegateGroup delegateGroup =
-          delegateCache.getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
+          delegateSetupService.getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
       if (delegateGroup.getTags() != null) {
         selectors.addAll(delegateGroup.getTags());
       }
