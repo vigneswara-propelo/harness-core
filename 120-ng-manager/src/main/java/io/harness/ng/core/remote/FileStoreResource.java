@@ -118,7 +118,7 @@ public class FileStoreResource {
 
     validate(file);
 
-    return ResponseDTO.newResponse(fileStoreService.create(file, content, false));
+    return ResponseDTO.newResponse(fileStoreService.create(file, content, null));
   }
 
   @PUT

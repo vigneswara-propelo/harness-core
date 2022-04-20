@@ -21,7 +21,7 @@ import lombok.experimental.UtilityClass;
 @OwnedBy(CDP)
 @UtilityClass
 public class FileDTOMapper {
-  public NGFile getNGFileFromDTO(FileDTO fileDto, boolean draft) {
+  public NGFile getNGFileFromDTO(FileDTO fileDto, Boolean draft) {
     if (fileDto.isFolder()) {
       return NGFile.builder()
           .accountIdentifier(fileDto.getAccountIdentifier())
@@ -60,7 +60,6 @@ public class FileDTOMapper {
           .name(ngFile.getName())
           .type(ngFile.getType())
           .parentIdentifier(ngFile.getParentIdentifier())
-          .draft(ngFile.isDraft())
           .build();
     }
 
@@ -76,7 +75,7 @@ public class FileDTOMapper {
         .description(ngFile.getDescription())
         .tags(ngFile.getTags())
         .mimeType(ngFile.getMimeType())
-        .draft(ngFile.isDraft())
+        .draft(ngFile.getDraft())
         .build();
   }
 
@@ -95,6 +94,7 @@ public class FileDTOMapper {
     file.setTags(!EmptyPredicate.isEmpty(fileDto.getTags()) ? fileDto.getTags() : Collections.emptyList());
     file.setName(fileDto.getName());
     file.setMimeType(fileDto.getMimeType());
+    file.setDraft(fileDto.getDraft());
     return file;
   }
 

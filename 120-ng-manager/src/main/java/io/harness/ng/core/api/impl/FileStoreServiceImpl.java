@@ -63,7 +63,7 @@ public class FileStoreServiceImpl implements FileStoreService {
   }
 
   @Override
-  public FileDTO create(@NotNull FileDTO fileDto, InputStream content, boolean draft) {
+  public FileDTO create(@NotNull FileDTO fileDto, InputStream content, Boolean draft) {
     log.info("Creating {}: {}", fileDto.getType().name().toLowerCase(), fileDto);
 
     if (existInDatabase(fileDto)) {
@@ -72,10 +72,8 @@ public class FileStoreServiceImpl implements FileStoreService {
 
     NGFile ngFile = FileDTOMapper.getNGFileFromDTO(fileDto, draft);
 
-    if (shouldStoreFileContent(ngFile)) {
-      if (content == null) {
-        throw new InvalidArgumentsException(format("File content is empty. Identifier: %s", fileDto.getIdentifier()));
-      }
+    if (shouldStoreFileContent(content, ngFile)) {
+      log.info("Start creating file in file system, identifier: {}", fileDto.getIdentifier());
       saveFile(fileDto, ngFile, content);
     }
 
@@ -96,13 +94,13 @@ public class FileStoreServiceImpl implements FileStoreService {
     NGFile existingFile = fetchFile(
         fileDto.getAccountIdentifier(), fileDto.getOrgIdentifier(), fileDto.getProjectIdentifier(), identifier);
 
-    FileDTOMapper.updateNGFile(fileDto, existingFile);
-    if (content != null && fileDto.isFile()) {
+    NGFile updatedNGFile = FileDTOMapper.updateNGFile(fileDto, existingFile);
+    if (shouldStoreFileContent(content, updatedNGFile)) {
       log.info("Start updating file in file system, identifier: {}", identifier);
-      saveFile(fileDto, existingFile, content);
+      saveFile(fileDto, updatedNGFile, content);
     }
-    fileStoreRepository.save(existingFile);
-    return FileDTOMapper.getFileDTOFromNGFile(existingFile);
+    fileStoreRepository.save(updatedNGFile);
+    return FileDTOMapper.getFileDTOFromNGFile(updatedNGFile);
   }
 
   @Override
@@ -159,8 +157,8 @@ public class FileStoreServiceImpl implements FileStoreService {
         .isPresent();
   }
 
-  private boolean shouldStoreFileContent(NGFile ngFile) {
-    return !ngFile.isDraft() && ngFile.isFile();
+  private boolean shouldStoreFileContent(InputStream content, NGFile ngFile) {
+    return content != null && !ngFile.isDraft() && ngFile.isFile();
   }
 
   private NGFile fetchFile(
@@ -168,11 +166,11 @@ public class FileStoreServiceImpl implements FileStoreService {
     return fileStoreRepository
         .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
             accountIdentifier, orgIdentifier, projectIdentifier, identifier)
-        .orElseThrow(()
-                         -> new InvalidArgumentsException(
-                             format("File or folder with identifier [%s], account [%s], org [%s] and project [%s] "
-                                     + "could not be retrieved from file store.",
-                                 identifier, accountIdentifier, orgIdentifier, projectIdentifier)));
+        .orElseThrow(
+            ()
+                -> new InvalidArgumentsException(format(
+                    "Not found file/folder with identifier [%s], accountIdentifier [%s], orgIdentifier [%s] and projectIdentifier [%s]",
+                    identifier, accountIdentifier, orgIdentifier, projectIdentifier)));
   }
 
   private String getDuplicateEntityMessage(@NotNull FileDTO fileDto) {

@@ -114,7 +114,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
     assertThatThrownBy(() -> fileStoreService.update(createFileDto(), null, "identifier1"))
         .isInstanceOf(InvalidArgumentsException.class)
         .hasMessage(
-            "File or folder with identifier [identifier1], account [null], org [null] and project [null] could not be retrieved from file store.");
+            "Not found file/folder with identifier [identifier1], accountIdentifier [null], orgIdentifier [null] and projectIdentifier [null]");
   }
 
   @Test
@@ -138,7 +138,9 @@ public class FileStoreServiceImplTest extends CategoryTest {
     assertThatThrownBy(
         () -> fileStoreService.downloadFile(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, FILE_IDENTIFIER))
         .isInstanceOf(InvalidArgumentsException.class)
-        .hasMessageContaining(format("File or folder with identifier [%s]", FILE_IDENTIFIER));
+        .hasMessageContaining(format(
+            "Not found file/folder with identifier [%s], accountIdentifier [%s], orgIdentifier [%s] and projectIdentifier [%s]",
+            FILE_IDENTIFIER, ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER));
   }
 
   @Test
@@ -317,17 +319,6 @@ public class FileStoreServiceImplTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = BOJAN)
-  @Category(UnitTests.class)
-  public void shouldHandleEmptyFileExceptionForFile() {
-    FileDTO fileDTO = aFileDto();
-
-    assertThatThrownBy(() -> fileStoreService.create(fileDTO, null, false))
-        .isInstanceOf(InvalidArgumentsException.class)
-        .hasMessageContaining("File content is empty. Identifier: " + fileDTO.getIdentifier(), fileDTO.getIdentifier());
-  }
-
-  @Test
   @Owner(developers = VLAD)
   @Category(UnitTests.class)
   public void shouldDeleteFileDoesNotExist() {
@@ -338,7 +329,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
         () -> fileStoreService.delete(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, IDENTIFIER))
         .isInstanceOf(InvalidArgumentsException.class)
         .hasMessage(
-            "File or folder with identifier [identifier], account [accountIdentifier], org [orgIdentifier] and project [projectIdentifier] could not be retrieved from file store.");
+            "Not found file/folder with identifier [identifier], accountIdentifier [accountIdentifier], orgIdentifier [orgIdentifier] and projectIdentifier [projectIdentifier]");
   }
 
   @Test
@@ -468,7 +459,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
         () -> fileStoreService.delete(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, "account." + folder1))
         .isInstanceOf(InvalidArgumentsException.class)
         .hasMessage(
-            "File or folder with identifier [account.folder1], account [accountIdentifier], org [orgIdentifier] and project [projectIdentifier] could not be retrieved from file store.");
+            "Not found file/folder with identifier [account.folder1], accountIdentifier [accountIdentifier], orgIdentifier [orgIdentifier] and projectIdentifier [projectIdentifier]");
   }
 
   @Test

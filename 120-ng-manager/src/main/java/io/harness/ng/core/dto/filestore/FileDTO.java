@@ -85,6 +85,11 @@ public class FileDTO {
     return type == NGFileType.FOLDER;
   }
 
+  @JsonIgnore
+  public boolean isDraft() {
+    return draft != null && draft;
+  }
+
   @Builder
   public FileDTO(String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier,
       String name, FileUsage fileUsage, NGFileType type, String parentIdentifier, String description, List<NGTag> tags,
