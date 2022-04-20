@@ -163,6 +163,8 @@ import io.harness.delegate.beans.connector.k8Connector.K8sValidationParams;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesConnectionTaskParams;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesConnectionTaskResponse;
 import io.harness.delegate.beans.connector.nexusconnector.NexusValidationParams;
+import io.harness.delegate.beans.connector.pdcconnector.HostConnectivityTaskParams;
+import io.harness.delegate.beans.connector.pdcconnector.HostConnectivityTaskResponse;
 import io.harness.delegate.beans.connector.pdcconnector.PhysicalDataCenterConnectorValidationParams;
 import io.harness.delegate.beans.connector.scm.ScmValidationParams;
 import io.harness.delegate.beans.connector.servicenow.ServiceNowConnectionTaskParams;
@@ -1156,5 +1158,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AcrArtifactDelegateResponse.class, 543500);
     kryo.register(AzureResourceGroupsResponse.class, 543501);
     kryo.register(AzureClustersResponse.class, 543502);
+    kryo.register(HostConnectivityTaskParams.class, 543503);
+    kryo.register(HostConnectivityTaskResponse.class, 543504);
   }
 }

@@ -87,7 +87,8 @@ public class HintException extends WingsException {
       "Please make sure that your delegates are connected. Refer %s for more information on delegate Installation";
   public static final String HINT_ILLEGAL_IMAGE_PATH = "Please provide valid image path";
   public static final String HINT_HOST_UNREACHABLE = "Please ensure that registry host [%s] is reachable";
-
+  public static final String HINT_SOCKET_CONNECTION_TO_HOST_UNREACHABLE =
+      "Please ensure if port is opened on host. Check firewall rules between the delegate and host. Try to test connectivity by telnet";
   public static final String HINT_INVALID_GIT_REPO = "Please provide valid git repository url";
   public static final String HINT_INVALID_GIT_HOST =
       "Please provide valid git repository url and ensure delegate to git provider connectivity";

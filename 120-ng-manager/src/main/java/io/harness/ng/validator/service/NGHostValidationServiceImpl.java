@@ -10,14 +10,13 @@ package io.harness.ng.validator.service;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.beans.NgSetupFields.NG;
 import static io.harness.delegate.beans.NgSetupFields.OWNER;
-import static io.harness.delegate.task.utils.PhysicalDataCenterConstants.DEFAULT_HOST_VALIDATION_FAILED_MSG;
 import static io.harness.delegate.task.utils.PhysicalDataCenterConstants.HOSTS_NUMBER_VALIDATION_LIMIT;
 import static io.harness.delegate.task.utils.PhysicalDataCenterConstants.TRUE_STR;
 import static io.harness.delegate.task.utils.PhysicalDataCenterUtils.extractHostnameFromHost;
 import static io.harness.delegate.task.utils.PhysicalDataCenterUtils.extractPortFromHost;
+import static io.harness.delegate.task.utils.PhysicalDataCenterUtils.getPortOrSSHDefault;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.exception.WingsException.USER_SRE;
-import static io.harness.ng.validator.dto.HostValidationDTO.HostValidationStatus.FAILED;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -26,15 +25,23 @@ import io.harness.beans.DelegateTaskRequest;
 import io.harness.beans.IdentifierRef;
 import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
-import io.harness.delegate.beans.RemoteMethodReturnValueData;
 import io.harness.delegate.beans.SSHTaskParams;
+import io.harness.delegate.beans.connector.pdcconnector.HostConnectivityTaskParams;
+import io.harness.delegate.beans.connector.pdcconnector.HostConnectivityTaskResponse;
 import io.harness.delegate.beans.secrets.SSHConfigValidationTaskResponse;
 import io.harness.delegate.task.utils.PhysicalDataCenterConstants;
 import io.harness.delegate.utils.TaskSetupAbstractionHelper;
 import io.harness.encryption.SecretRefData;
 import io.harness.encryption.SecretRefHelper;
+import io.harness.errorhandling.NGErrorHelper;
+import io.harness.exception.DelegateNotAvailableException;
+import io.harness.exception.DelegateServiceDriverException;
+import io.harness.exception.HintException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.WingsException;
+import io.harness.exception.exceptionmanager.ExceptionManager;
+import io.harness.exception.exceptionmanager.exceptionhandler.DocumentLinksConstants;
 import io.harness.manage.ManagedExecutorService;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.ng.core.api.NGSecretServiceV2;
@@ -61,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -76,7 +84,69 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
   @Inject private NGSecretServiceV2 ngSecretServiceV2;
   @Inject private TaskSetupAbstractionHelper taskSetupAbstractionHelper;
   @Inject private DelegateGrpcClientWrapper delegateGrpcClientWrapper;
-  private final Executor executor = new ManagedExecutorService(Executors.newFixedThreadPool(4));
+  @Inject ExceptionManager exceptionManager;
+  @Inject NGErrorHelper ngErrorHelper;
+  private final Executor hostsConnectivityExecutor = new ManagedExecutorService(Executors.newFixedThreadPool(4));
+  private final Executor hostsSSHExecutor = new ManagedExecutorService(Executors.newFixedThreadPool(4));
+
+  @Override
+  public List<HostValidationDTO> validateHostsConnectivity(@NotNull List<String> hosts,
+      @Nullable String accountIdentifier, @Nullable String orgIdentifier, @Nullable String projectIdentifier,
+      Set<String> delegateSelectors) {
+    if (hosts.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    CompletableFutures<HostValidationDTO> validateHostSocketConnectivityTasks =
+        new CompletableFutures<>(hostsConnectivityExecutor);
+    for (String hostName : limitHosts(hosts)) {
+      validateHostSocketConnectivityTasks.supplyAsync(()
+                                                          -> validateHostConnectivity(hostName, accountIdentifier,
+                                                              orgIdentifier, projectIdentifier, delegateSelectors));
+    }
+
+    return executeParallelTasks(validateHostSocketConnectivityTasks);
+  }
+
+  @Override
+  public HostValidationDTO validateHostConnectivity(@NotNull String host, String accountIdentifier,
+      @Nullable String orgIdentifier, @Nullable String projectIdentifier, Set<String> delegateSelectors) {
+    if (isBlank(host)) {
+      throw new InvalidArgumentsException("Host cannot be null or empty", USER_SRE);
+    }
+
+    String portOrSSHDefault = getPortOrSSHDefault(host);
+    String hostName = extractHostnameFromHost(host).orElseThrow(
+        ()
+            -> new InvalidArgumentsException(
+                format("Not found hostName, host: %s, extracted port: %s", host, portOrSSHDefault), USER_SRE));
+
+    DelegateTaskRequest delegateTaskRequest =
+        DelegateTaskRequest.builder()
+            .accountId(accountIdentifier)
+            .taskType(TaskType.NG_HOST_CONNECTIVITY_TASK.name())
+            .taskParameters(HostConnectivityTaskParams.builder()
+                                .hostName(hostName)
+                                .port(Integer.parseInt(portOrSSHDefault))
+                                .delegateSelectors(delegateSelectors)
+                                .build())
+            .taskSetupAbstractions(setupTaskAbstractions(accountIdentifier, orgIdentifier, projectIdentifier))
+            .executionTimeout(Duration.ofSeconds(PhysicalDataCenterConstants.EXECUTION_TIMEOUT_IN_SECONDS))
+            .build();
+
+    log.info("Start host connectivity validation, host:{}, hostName:{}, accountIdent:{}, orgIdent:{}, projIdent:{},",
+        host, hostName, accountIdentifier, orgIdentifier, projectIdentifier);
+    DelegateResponseData delegateResponseData = executeDelegateSyncTask(delegateTaskRequest);
+
+    HostConnectivityTaskResponse responseData = (HostConnectivityTaskResponse) delegateResponseData;
+
+    return HostValidationDTO.builder()
+        .host(hostName)
+        .status(HostValidationDTO.HostValidationStatus.fromBoolean(responseData.isConnectionSuccessful()))
+        .error(responseData.isConnectionSuccessful() ? buildErrorDetails()
+                                                     : buildErrorDetails(responseData.getErrorMessage()))
+        .build();
+  }
 
   @Override
   public List<HostValidationDTO> validateSSHHosts(@NotNull List<String> hosts, @Nullable String accountIdentifier,
@@ -88,28 +158,14 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
       throw new InvalidArgumentsException("Secret identifier cannot be null or empty", USER_SRE);
     }
 
-    CompletableFutures<HostValidationDTO> validateHostTasks = new CompletableFutures<>(executor);
+    CompletableFutures<HostValidationDTO> validateSSHHostTasks = new CompletableFutures<>(hostsSSHExecutor);
     for (String hostName : limitHosts(hosts)) {
-      validateHostTasks.supplyAsyncExceptionally(()
-                                                     -> validateSSHHost(hostName, accountIdentifier, orgIdentifier,
-                                                         projectIdentifier, secretIdentifierWithScope),
-          ex
-          -> HostValidationDTO.builder()
-                 .host(hostName)
-                 .status(FAILED)
-                 .error(buildErrorDetailsWithMsg(ex.getMessage(), hostName))
-                 .build());
+      validateSSHHostTasks.supplyAsync(()
+                                           -> validateSSHHost(hostName, accountIdentifier, orgIdentifier,
+                                               projectIdentifier, secretIdentifierWithScope));
     }
 
-    CompletableFuture<List<HostValidationDTO>> hostValidationResults = validateHostTasks.allOf();
-    try {
-      return new ArrayList<>(hostValidationResults.get());
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-      throw new InvalidRequestException(ex.getMessage(), USER);
-    } catch (ExecutionException ex) {
-      throw new InvalidRequestException(ex.getMessage(), USER);
-    }
+    return executeParallelTasks(validateSSHHostTasks);
   }
 
   @Override
@@ -163,23 +219,15 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
 
     log.info("Start validation host:{}, hostName:{}, secretIdent:{}, accountIdent:{}, orgIdent:{}, projIdent:{},", host,
         hostName, secretIdentifierWithScope, accountIdentifier, orgIdentifier, projectIdentifier);
-    DelegateResponseData delegateResponseData = this.delegateGrpcClientWrapper.executeSyncTask(delegateTaskRequest);
+    DelegateResponseData delegateResponseData = executeDelegateSyncTask(delegateTaskRequest);
 
-    if (delegateResponseData instanceof SSHConfigValidationTaskResponse) {
-      SSHConfigValidationTaskResponse responseData = (SSHConfigValidationTaskResponse) delegateResponseData;
-      return HostValidationDTO.builder()
-          .host(hostName)
-          .status(HostValidationDTO.HostValidationStatus.fromBoolean(responseData.isConnectionSuccessful()))
-          .error(responseData.isConnectionSuccessful()
-                  ? buildEmptyErrorDetails()
-                  : buildErrorDetailsWithMsg(responseData.getErrorMessage(), hostName))
-          .build();
-    }
+    SSHConfigValidationTaskResponse responseData = (SSHConfigValidationTaskResponse) delegateResponseData;
 
     return HostValidationDTO.builder()
         .host(hostName)
-        .status(FAILED)
-        .error(buildErrorDetailsWithMsg(getErrorMessageFromDelegateResponseData(delegateResponseData), hostName))
+        .status(HostValidationDTO.HostValidationStatus.fromBoolean(responseData.isConnectionSuccessful()))
+        .error(responseData.isConnectionSuccessful() ? buildErrorDetails()
+                                                     : buildErrorDetails(responseData.getErrorMessage()))
         .build();
   }
 
@@ -191,6 +239,22 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
     }
 
     return hosts.subList(0, Math.min(HOSTS_NUMBER_VALIDATION_LIMIT, numberOfHosts));
+  }
+
+  private List<HostValidationDTO> executeParallelTasks(
+      @NotNull CompletableFutures<HostValidationDTO> validateHostTasks) {
+    CompletableFuture<List<HostValidationDTO>> hostValidationResults = validateHostTasks.allOf();
+    try {
+      return new ArrayList<>(hostValidationResults.get());
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      throw new InvalidRequestException(ex.getMessage(), USER);
+    } catch (ExecutionException ex) {
+      if (ex.getCause() instanceof WingsException) {
+        throw(WingsException) ex.getCause();
+      }
+      throw exceptionManager.processException(ex, WingsException.ExecutionContext.MANAGER, log);
+    }
   }
 
   private BaseNGAccess getBaseNGAccess(
@@ -213,22 +277,33 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
     return abstractions;
   }
 
-  private String getErrorMessageFromDelegateResponseData(DelegateResponseData delegateResponseData) {
-    if (delegateResponseData instanceof ErrorNotifyResponseData) {
-      ErrorNotifyResponseData errorNotifyResponseData = (ErrorNotifyResponseData) delegateResponseData;
-      return errorNotifyResponseData.getErrorMessage();
+  private DelegateResponseData executeDelegateSyncTask(DelegateTaskRequest delegateTaskRequest) {
+    final DelegateResponseData delegateResponseData;
+    try {
+      delegateResponseData = delegateGrpcClientWrapper.executeSyncTask(delegateTaskRequest);
+    } catch (DelegateServiceDriverException ex) {
+      throw new HintException(
+          String.format(HintException.DELEGATE_NOT_AVAILABLE, DocumentLinksConstants.DELEGATE_INSTALLATION_LINK),
+          new DelegateNotAvailableException(ex.getCause().getMessage(), ex, WingsException.USER));
     }
 
-    return (delegateResponseData instanceof RemoteMethodReturnValueData)
-        ? ((RemoteMethodReturnValueData) delegateResponseData).getException().getMessage()
-        : DEFAULT_HOST_VALIDATION_FAILED_MSG;
+    if (delegateResponseData instanceof ErrorNotifyResponseData) {
+      throw new HintException(
+          String.format(HintException.DELEGATE_NOT_AVAILABLE, DocumentLinksConstants.DELEGATE_INSTALLATION_LINK),
+          new DelegateNotAvailableException("Delegates are not available", WingsException.USER));
+    }
+    return delegateResponseData;
   }
 
-  private ErrorDetail buildErrorDetailsWithMsg(final String message, final String hostName) {
-    return ErrorDetail.builder().message(message).reason(format("Validation failed for host: %s", hostName)).build();
+  private ErrorDetail buildErrorDetails(final String errorMsg) {
+    return ErrorDetail.builder()
+        .message(errorMsg)
+        .reason(ngErrorHelper.getReason(errorMsg))
+        .code(ngErrorHelper.getCode(errorMsg))
+        .build();
   }
 
-  private ErrorDetail buildEmptyErrorDetails() {
+  private ErrorDetail buildErrorDetails() {
     return ErrorDetail.builder().build();
   }
 

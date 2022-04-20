@@ -70,6 +70,8 @@ public class ExplanationException extends WingsException {
 
   public static String URL_NOT_FOUND = "Provided URL path does not exist.";
   public static String AUTHORIZATION_FAILURE = "Provided credentials are unauthorized.";
+  public static String DELEGATE_TO_HOST_SOCKET_CONNECTION_FAILED =
+      "Delegate(s) is(are) not able to establish socket connection to host(s)";
   public ExplanationException(String message, Throwable cause) {
     super(message, cause, EXPLANATION, INFO, USER_SRE, null);
     super.excludeReportTarget(EXPLANATION, EnumSet.of(ReportTarget.LOG_SYSTEM));

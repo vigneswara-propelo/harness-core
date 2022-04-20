@@ -14,15 +14,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.DelegateTaskRequest;
 import io.harness.category.element.UnitTests;
+import io.harness.delegate.beans.ErrorNotifyResponseData;
+import io.harness.delegate.beans.connector.pdcconnector.HostConnectivityTaskParams;
+import io.harness.delegate.beans.connector.pdcconnector.HostConnectivityTaskResponse;
 import io.harness.delegate.beans.secrets.SSHConfigValidationTaskResponse;
 import io.harness.delegate.utils.TaskSetupAbstractionHelper;
 import io.harness.eraro.ErrorCode;
+import io.harness.errorhandling.NGErrorHelper;
+import io.harness.exception.HintException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.ng.core.api.NGSecretServiceV2;
 import io.harness.ng.core.dto.ErrorDetail;
@@ -36,6 +43,7 @@ import io.harness.secretmanagerclient.services.SshKeySpecDTOHelper;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.service.DelegateGrpcClientWrapper;
 
+import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +51,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -60,11 +69,13 @@ public class NGHostValidationServiceImplTest extends CategoryTest {
   private static final String INVALID_HOST = ":22";
   private static final String HOST_NULL = null;
   private static final String SECRET_IDENTIFIER_NULL = null;
+  public static final String DELEGATE_SELECTOR = "delegate_selector_group";
 
   @Mock private NGSecretServiceV2 ngSecretServiceV2;
   @Mock private SshKeySpecDTOHelper sshKeySpecDTOHelper;
   @Mock private TaskSetupAbstractionHelper taskSetupAbstractionHelper;
   @Mock private DelegateGrpcClientWrapper delegateGrpcClientWrapper;
+  @Mock private NGErrorHelper ngErrorHelper;
   @InjectMocks NGHostValidationServiceImpl hostValidationService;
 
   @Test
@@ -93,6 +104,8 @@ public class NGHostValidationServiceImplTest extends CategoryTest {
     mockEncryptionDetails();
     mockTaskAbstractions();
 
+    when(ngErrorHelper.getReason(VALIDATION_HOST_FAILED_ERROR_MSG)).thenReturn(VALIDATION_HOST_FAILED_ERROR_MSG);
+    when(ngErrorHelper.getCode(VALIDATION_HOST_FAILED_ERROR_MSG)).thenReturn(450);
     when(delegateGrpcClientWrapper.executeSyncTask(any())).thenReturn(buildSSHConfigValidationTaskResponseFailed());
 
     HostValidationDTO result = hostValidationService.validateSSHHost(
@@ -102,8 +115,9 @@ public class NGHostValidationServiceImplTest extends CategoryTest {
     assertThat(result.getStatus()).isEqualTo(HostValidationDTO.HostValidationStatus.FAILED);
     assertThat(result.getError())
         .isEqualTo(ErrorDetail.builder()
-                       .reason("Validation failed for host: host")
+                       .reason("SSH Validation host failed")
                        .message(VALIDATION_HOST_FAILED_ERROR_MSG)
+                       .code(450)
                        .build());
   }
 
@@ -191,6 +205,81 @@ public class NGHostValidationServiceImplTest extends CategoryTest {
         .hasMessage("Secret identifier cannot be null or empty");
   }
 
+  @Test
+  @Owner(developers = {IVAN})
+  @Category(UnitTests.class)
+  public void testValidateHostConnectivity() {
+    mockTaskAbstractions();
+
+    when(delegateGrpcClientWrapper.executeSyncTask(any())).thenReturn(buildHostConnectivityTaskResponseSuccess());
+    ArgumentCaptor<DelegateTaskRequest> delegateTaskRequestCaptor = ArgumentCaptor.forClass(DelegateTaskRequest.class);
+
+    HostValidationDTO result = hostValidationService.validateHostConnectivity(
+        HOST, ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, Sets.newHashSet(DELEGATE_SELECTOR));
+
+    verify(delegateGrpcClientWrapper).executeSyncTask(delegateTaskRequestCaptor.capture());
+    DelegateTaskRequest delegateTaskRequest = delegateTaskRequestCaptor.getValue();
+    HostConnectivityTaskParams hostConnectivityTaskParams =
+        (HostConnectivityTaskParams) delegateTaskRequest.getTaskParameters();
+    assertThat(hostConnectivityTaskParams.getHostName()).isEqualTo(HOST);
+    assertThat(hostConnectivityTaskParams.getDelegateSelectors()).isEqualTo(Sets.newHashSet(DELEGATE_SELECTOR));
+    assertThat(hostConnectivityTaskParams.getPort()).isEqualTo(22);
+
+    assertThat(result.getHost()).isEqualTo(HOST);
+    assertThat(result.getStatus()).isEqualTo(HostValidationDTO.HostValidationStatus.SUCCESS);
+    assertThat(result.getError()).isEqualTo(ErrorDetail.builder().build());
+  }
+
+  @Test
+  @Owner(developers = {IVAN})
+  @Category(UnitTests.class)
+  public void testValidateHostConnectivityWithFailedResponse() {
+    mockTaskAbstractions();
+
+    when(ngErrorHelper.getReason(VALIDATION_HOST_FAILED_ERROR_MSG)).thenReturn(VALIDATION_HOST_FAILED_ERROR_MSG);
+    when(ngErrorHelper.getCode(VALIDATION_HOST_FAILED_ERROR_MSG)).thenReturn(450);
+    when(delegateGrpcClientWrapper.executeSyncTask(any())).thenReturn(buildHostConnectivityTaskResponseFailed());
+
+    HostValidationDTO result = hostValidationService.validateHostConnectivity(
+        HOST, ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, Sets.newHashSet(DELEGATE_SELECTOR));
+
+    assertThat(result.getHost()).isEqualTo(HOST);
+    assertThat(result.getStatus()).isEqualTo(HostValidationDTO.HostValidationStatus.FAILED);
+    assertThat(result.getError())
+        .isEqualTo(ErrorDetail.builder()
+                       .reason("SSH Validation host failed")
+                       .message(VALIDATION_HOST_FAILED_ERROR_MSG)
+                       .code(450)
+                       .build());
+  }
+
+  @Test
+  @Owner(developers = {IVAN})
+  @Category(UnitTests.class)
+  public void testValidateHostConnectivityWithErrorNotifyResponseData() {
+    mockTaskAbstractions();
+
+    when(delegateGrpcClientWrapper.executeSyncTask(any())).thenReturn(buildErrorNotifyResponseData());
+
+    assertThatThrownBy(()
+                           -> hostValidationService.validateHostConnectivity(HOST, ACCOUNT_IDENTIFIER, ORG_IDENTIFIER,
+                               PROJECT_IDENTIFIER, Sets.newHashSet(DELEGATE_SELECTOR)))
+        .isInstanceOf(HintException.class)
+        .hasMessage(
+            "Please make sure that your delegates are connected. Refer https://docs.harness.io/article/migeq3achl-harness-delegate-faqs#delegate_installation for more information on delegate Installation");
+  }
+
+  @Test
+  @Owner(developers = IVAN)
+  @Category(UnitTests.class)
+  public void testValidateHostConnectivityWithMissingHost() {
+    assertThatThrownBy(()
+                           -> hostValidationService.validateHostConnectivity(HOST_NULL, ACCOUNT_IDENTIFIER,
+                               ORG_IDENTIFIER, PROJECT_IDENTIFIER, Sets.newHashSet(DELEGATE_SELECTOR)))
+        .isInstanceOf(InvalidArgumentsException.class)
+        .hasMessage("Host cannot be null or empty");
+  }
+
   private void mockSecret(SecretType secretType) {
     Secret secret = mock(Secret.class);
     SecretSpec secretKeySpec = mock(SecretSpec.class);
@@ -227,5 +316,21 @@ public class NGHostValidationServiceImplTest extends CategoryTest {
         .errorCode(ErrorCode.DEFAULT_ERROR_CODE)
         .errorMessage(VALIDATION_HOST_FAILED_ERROR_MSG)
         .build();
+  }
+
+  private HostConnectivityTaskResponse buildHostConnectivityTaskResponseSuccess() {
+    return HostConnectivityTaskResponse.builder().connectionSuccessful(true).build();
+  }
+
+  private HostConnectivityTaskResponse buildHostConnectivityTaskResponseFailed() {
+    return HostConnectivityTaskResponse.builder()
+        .connectionSuccessful(false)
+        .errorCode(ErrorCode.DEFAULT_ERROR_CODE)
+        .errorMessage(VALIDATION_HOST_FAILED_ERROR_MSG)
+        .build();
+  }
+
+  private ErrorNotifyResponseData buildErrorNotifyResponseData() {
+    return ErrorNotifyResponseData.builder().errorMessage(VALIDATION_HOST_FAILED_ERROR_MSG).build();
   }
 }

@@ -4527,9 +4527,6 @@
         },
         {
           "type": "object",
-          "required": [
-            "sshKeyRef"
-          ],
           "properties": {
             "delegateSelectors": {
               "type": "array",
@@ -4543,9 +4540,6 @@
               "items": {
                 "$ref": "#/definitions/HostDTO"
               }
-            },
-            "sshKeyRef": {
-              "type": "string"
             }
           }
         }
