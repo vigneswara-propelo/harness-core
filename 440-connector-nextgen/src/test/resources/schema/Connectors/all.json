@@ -1243,7 +1243,7 @@
             "type": {
               "type": "string",
               "enum": [
-                "Organization",
+                "Account",
                 "Repo"
               ]
             },

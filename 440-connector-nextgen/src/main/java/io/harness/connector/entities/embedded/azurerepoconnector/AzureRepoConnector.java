@@ -8,8 +8,8 @@
 package io.harness.connector.entities.embedded.azurerepoconnector;
 
 import io.harness.connector.entities.Connector;
-import io.harness.delegate.beans.connector.scm.AzureRepoConnectionType;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
+import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAccessType;
 
 import lombok.Builder;
@@ -29,7 +29,7 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoConnector")
 @Persistent
 public class AzureRepoConnector extends Connector {
-  @NotEmpty AzureRepoConnectionType connectionType;
+  @NotEmpty GitConnectionType connectionType;
   @NotEmpty String url;
   String validationRepo;
   @NotEmpty GitAuthType authType;

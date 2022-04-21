@@ -13,8 +13,8 @@ import io.harness.beans.DecryptableEntity;
 import io.harness.connector.DelegateSelectable;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.ConnectorType;
-import io.harness.delegate.beans.connector.scm.AzureRepoConnectionType;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
+import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -46,10 +46,10 @@ import org.hibernate.validator.constraints.NotBlank;
 public class AzureRepoConnectorDTO extends ConnectorConfigDTO implements ScmConnector, DelegateSelectable {
   @NotNull
   @JsonProperty("type")
-  @Schema(description = "Organization | Repository connector type")
-  AzureRepoConnectionType connectionType;
+  @Schema(description = "Account | Repository connector type")
+  GitConnectionType connectionType;
   @NotBlank @NotNull @Schema(description = "SSH | HTTP URL based on type of connection") String url;
-  @Schema(description = "The repo to validate AzureRepo credentials. Only valid for Organization type connector")
+  @Schema(description = "The repo to validate AzureRepo credentials. Only valid for Account type connector")
   String validationRepo;
   @Valid
   @NotNull
@@ -61,7 +61,7 @@ public class AzureRepoConnectorDTO extends ConnectorConfigDTO implements ScmConn
   @Schema(description = "Selected Connectivity Modes") Set<String> delegateSelectors;
 
   @Builder
-  public AzureRepoConnectorDTO(AzureRepoConnectionType connectionType, String url, String validationRepo,
+  public AzureRepoConnectorDTO(GitConnectionType connectionType, String url, String validationRepo,
       AzureRepoAuthenticationDTO authentication, AzureRepoApiAccessDTO apiAccess, Set<String> delegateSelectors,
       boolean executeOnDelegate) {
     this.connectionType = connectionType;
