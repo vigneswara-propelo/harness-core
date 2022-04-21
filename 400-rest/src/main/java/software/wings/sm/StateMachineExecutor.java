@@ -1712,6 +1712,7 @@ public class StateMachineExecutor implements StateInspectionListener {
     cloned.setHasInspection(false);
     cloned.setExpiryTs(Long.MAX_VALUE);
     cloned.setStateTimeout(null);
+    cloned.setDelegateTaskId(null);
     return cloned;
   }
 
