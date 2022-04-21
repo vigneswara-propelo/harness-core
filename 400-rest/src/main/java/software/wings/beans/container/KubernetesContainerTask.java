@@ -24,8 +24,6 @@ import io.harness.exception.WingsException;
 import io.harness.k8s.KubernetesConvention;
 
 import software.wings.api.DeploymentType;
-import software.wings.beans.artifact.ArtifactEnumDataProvider;
-import software.wings.stencils.EnumData;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -75,7 +73,7 @@ public class KubernetesContainerTask extends ContainerTask {
   private static final Pattern STATEFUL_SET_PATTERN = Pattern.compile("kind:\\s*\"?StatefulSet");
 
   @Attributes(title = "LABELS") private List<Label> labels;
-  @EnumData(enumDataProvider = ArtifactEnumDataProvider.class) private String artifactName;
+  private String artifactName;
 
   public KubernetesContainerTask() {
     super(DeploymentType.KUBERNETES.name());

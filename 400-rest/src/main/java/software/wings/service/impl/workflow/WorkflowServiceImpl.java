@@ -281,7 +281,6 @@ import software.wings.sm.states.ApprovalState.ApprovalStateKeys;
 import software.wings.sm.states.ApprovalState.ApprovalStateType;
 import software.wings.sm.states.EnvState.EnvStateKeys;
 import software.wings.sm.states.k8s.K8sStateHelper;
-import software.wings.stencils.DataProvider;
 import software.wings.stencils.Stencil;
 import software.wings.stencils.StencilCategory;
 import software.wings.stencils.StencilPostProcessor;
@@ -335,7 +334,7 @@ import ru.vyarus.guice.validator.group.annotation.ValidationGroups;
 @ValidateOnExecution
 @Slf4j
 @TargetModule(HarnessModule._870_CG_ORCHESTRATION)
-public class WorkflowServiceImpl implements WorkflowService, DataProvider {
+public class WorkflowServiceImpl implements WorkflowService {
   private static final String VERIFY = "Verify";
   private static final String ROLLBACK_PROVISION_INFRASTRUCTURE = "Rollback Provision Infrastructure";
 
@@ -1597,12 +1596,6 @@ public class WorkflowServiceImpl implements WorkflowService, DataProvider {
    */
   public void setStaticConfiguration(StaticConfiguration staticConfiguration) {
     this.staticConfiguration = staticConfiguration;
-  }
-
-  @Override
-  public Map<String, String> getData(String appId, Map<String, String> params) {
-    List<Workflow> workflows = wingsPersistence.createQuery(Workflow.class).filter(WorkflowKeys.appId, appId).asList();
-    return workflows.stream().collect(toMap(Workflow::getUuid, Workflow::getName));
   }
 
   StateType getCorrespondingRollbackState(GraphNode step) {

@@ -50,8 +50,6 @@ import software.wings.beans.yaml.GitFileChange;
 import software.wings.beans.yaml.YamlType;
 import software.wings.infra.GoogleKubernetesEngine;
 import software.wings.infra.InfrastructureDefinition;
-import software.wings.service.impl.SSHKeyDataProvider;
-import software.wings.service.impl.WinRmConnectionAttributesDataProvider;
 import software.wings.service.impl.workflow.WorkflowServiceHelper;
 import software.wings.service.impl.yaml.handler.BaseYamlHandler;
 import software.wings.service.impl.yaml.handler.NameValuePairYamlHandler;
@@ -124,8 +122,6 @@ public abstract class WorkflowYamlHandlerTestBase extends YamlHandlerTestBase {
   @InjectMocks @Inject protected VariableYamlHandler variableYamlHandler;
   @InjectMocks @Inject protected NameValuePairYamlHandler nameValuePairYamlHandler;
   @InjectMocks @Inject protected WorkflowServiceHelper workflowServiceHelper;
-  @InjectMocks @Inject private SSHKeyDataProvider sshKeyDataProvider;
-  @InjectMocks @Inject private WinRmConnectionAttributesDataProvider winRmConnectionAttributesDataProvider;
   @InjectMocks @Inject private EntityVersionService entityVersionService;
 
   protected void setup(String yamlFilePath, String workflowName) {

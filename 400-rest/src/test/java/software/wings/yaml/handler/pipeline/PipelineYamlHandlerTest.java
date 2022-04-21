@@ -58,8 +58,6 @@ import software.wings.beans.yaml.YamlType;
 import software.wings.infra.AwsInstanceInfrastructure;
 import software.wings.infra.InfrastructureDefinition;
 import software.wings.rules.SetupScheduler;
-import software.wings.service.impl.SSHKeyDataProvider;
-import software.wings.service.impl.WinRmConnectionAttributesDataProvider;
 import software.wings.service.impl.workflow.WorkflowServiceHelper;
 import software.wings.service.impl.yaml.WorkflowYAMLHelper;
 import software.wings.service.impl.yaml.handler.tag.HarnessTagYamlHelper;
@@ -117,8 +115,6 @@ public class PipelineYamlHandlerTest extends YamlHandlerTestBase {
   @InjectMocks @Inject WorkflowServiceHelper workflowServiceHelper;
   @InjectMocks @Inject private PipelineYamlHandler yamlHandler;
   @InjectMocks @Inject private PipelineStageYamlHandler pipelineStageYamlHandler;
-  @InjectMocks @Inject private SSHKeyDataProvider sshKeyDataProvider;
-  @InjectMocks @Inject private WinRmConnectionAttributesDataProvider winRmConnectionAttributesDataProvider;
   @InjectMocks @Inject private EntityVersionService entityVersionService;
 
   private final String APP_NAME = "app1";

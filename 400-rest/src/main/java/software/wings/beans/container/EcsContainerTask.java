@@ -29,8 +29,6 @@ import io.harness.serializer.JsonSubtypeResolver;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.api.DeploymentType;
-import software.wings.beans.artifact.ArtifactEnumDataProvider;
-import software.wings.stencils.EnumData;
 import software.wings.utils.EcsConvention;
 
 import com.amazonaws.AmazonWebServiceRequest;
@@ -102,7 +100,7 @@ public class EcsContainerTask extends ContainerTask {
     }
   }
 
-  @EnumData(enumDataProvider = ArtifactEnumDataProvider.class) private String artifactName;
+  private String artifactName;
 
   public EcsContainerTask() {
     super(DeploymentType.ECS.name());

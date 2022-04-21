@@ -21,7 +21,6 @@ import io.harness.tasks.ResponseData;
 import software.wings.api.ForkElement;
 import software.wings.beans.LoopEnvStateParams;
 import software.wings.beans.LoopEnvStateParams.LoopEnvStateParamsBuilder;
-import software.wings.service.impl.workflow.WorkflowServiceImpl;
 import software.wings.sm.ExecutionContext;
 import software.wings.sm.ExecutionContextImpl;
 import software.wings.sm.ExecutionResponse;
@@ -31,7 +30,6 @@ import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.StateExecutionInstanceHelper;
 import software.wings.sm.StateType;
 import software.wings.sm.states.ForkState.ForkStateExecutionData;
-import software.wings.stencils.EnumData;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.reinert.jjschema.SchemaIgnore;
@@ -51,7 +49,7 @@ import org.mongodb.morphia.annotations.Transient;
 @Slf4j
 @FieldNameConstants(innerTypeName = "EnvLoopStateKeys")
 public class EnvLoopState extends State implements WorkflowState {
-  @EnumData(enumDataProvider = WorkflowServiceImpl.class) @Getter @Setter private String workflowId;
+  @Getter @Setter private String workflowId;
 
   @Getter @Setter private String pipelineId;
   @Getter @Setter private String pipelineStageElementId;
