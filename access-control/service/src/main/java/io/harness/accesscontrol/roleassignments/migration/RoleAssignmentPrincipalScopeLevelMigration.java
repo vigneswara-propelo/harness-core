@@ -112,7 +112,11 @@ public class RoleAssignmentPrincipalScopeLevelMigration implements NGMigration {
 
   private String getServiceAccountScopeLevel(@NotNull String serviceAccountIdentifier, @NotNull Scope scope) {
     HarnessScopeParams scopeParams = ScopeMapper.toParams(scope);
-    harnessServiceAccountService.sync(serviceAccountIdentifier, scope);
+    Scope serviceAccountScope = scope;
+    while (serviceAccountScope != null) {
+      harnessServiceAccountService.sync(serviceAccountIdentifier, scope);
+      serviceAccountScope = serviceAccountScope.getParentScope();
+    }
     Scope accountScope = ScopeMapper.fromParams(
         HarnessScopeParams.builder().accountIdentifier(scopeParams.getAccountIdentifier()).build());
     if (serviceAccountService.get(serviceAccountIdentifier, accountScope.toString()).isPresent()) {

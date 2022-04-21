@@ -120,6 +120,8 @@ public class RoleAssignmentDTOMapper {
                       .collect(Collectors.toSet()))
         .principalTypeFilter(
             object.getPrincipalTypeFilter() == null ? new HashSet<>() : object.getPrincipalTypeFilter())
+        .principalScopeLevelFilter(
+            object.getPrincipalScopeLevelFilter() == null ? new HashSet<>() : object.getPrincipalScopeLevelFilter())
         .managedFilter(Objects.isNull(object.getHarnessManagedFilter())
                 ? ManagedFilter.NO_FILTER
                 : buildFromSet(object.getHarnessManagedFilter()))

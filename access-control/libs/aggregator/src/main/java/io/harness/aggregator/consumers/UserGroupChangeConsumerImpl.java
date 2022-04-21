@@ -20,6 +20,7 @@ import io.harness.accesscontrol.principals.usergroups.persistence.UserGroupRepos
 import io.harness.accesscontrol.roleassignments.persistence.RoleAssignmentDBO;
 import io.harness.accesscontrol.roleassignments.persistence.RoleAssignmentDBO.RoleAssignmentDBOKeys;
 import io.harness.accesscontrol.roleassignments.persistence.repositories.RoleAssignmentRepository;
+import io.harness.accesscontrol.scopes.core.ScopeService;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.GeneralException;
 
@@ -36,6 +37,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -50,14 +52,17 @@ public class UserGroupChangeConsumerImpl implements ChangeConsumer<UserGroupDBO>
   private final UserGroupRepository userGroupRepository;
   private final ExecutorService executorService;
   private final ChangeConsumerService changeConsumerService;
+  private final ScopeService scopeService;
   private final UserGroupCRUDEventHandler userGroupCRUDEventHandler;
 
   public UserGroupChangeConsumerImpl(ACLRepository aclRepository, RoleAssignmentRepository roleAssignmentRepository,
       UserGroupRepository userGroupRepository, String executorServiceSuffix,
-      ChangeConsumerService changeConsumerService, UserGroupCRUDEventHandler userGroupCRUDEventHandler) {
+      ChangeConsumerService changeConsumerService, ScopeService scopeService,
+      UserGroupCRUDEventHandler userGroupCRUDEventHandler) {
     this.aclRepository = aclRepository;
     this.roleAssignmentRepository = roleAssignmentRepository;
     this.userGroupRepository = userGroupRepository;
+    this.scopeService = scopeService;
     this.userGroupCRUDEventHandler = userGroupCRUDEventHandler;
     String changeConsumerThreadFactory = String.format("%s-user-group-change-consumer", executorServiceSuffix) + "-%d";
     // Number of threads = Number of Available Cores * (1 + (Wait time / Service time) )
@@ -77,13 +82,18 @@ public class UserGroupChangeConsumerImpl implements ChangeConsumer<UserGroupDBO>
       return;
     }
 
-    // principalScopeLevel changes in next release
+    Pattern startsWithScope = Pattern.compile("^".concat(userGroup.get().getScopeIdentifier()));
+    String principalScopeLevel =
+        scopeService.buildScopeFromScopeIdentifier(userGroup.get().getScopeIdentifier()).getLevel().toString();
+
     Criteria criteria = Criteria.where(RoleAssignmentDBOKeys.principalType)
                             .is(USER_GROUP)
                             .and(RoleAssignmentDBOKeys.principalIdentifier)
                             .is(userGroup.get().getIdentifier())
+                            .and(RoleAssignmentDBOKeys.principalScopeLevel)
+                            .is(principalScopeLevel)
                             .and(RoleAssignmentDBOKeys.scopeIdentifier)
-                            .is(userGroup.get().getScopeIdentifier());
+                            .regex(startsWithScope);
     List<ReProcessRoleAssignmentOnUserGroupUpdateTask> tasksToExecute =
         roleAssignmentRepository.findAll(criteria, Pageable.unpaged())
             .stream()

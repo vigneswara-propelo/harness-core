@@ -23,6 +23,7 @@ import io.harness.accesscontrol.roleassignments.api.RoleAssignmentAggregateRespo
 import io.harness.accesscontrol.roleassignments.api.RoleAssignmentFilterDTO;
 import io.harness.accesscontrol.roles.api.RoleResponseDTO;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeLevel;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
@@ -87,7 +88,13 @@ public class AggregateUserGroupServiceImpl implements AggregateUserGroupService 
 
     Set<PrincipalDTO> principalDTOSet =
         userGroupPageResponse.stream()
-            .map(userGroup -> PrincipalDTO.builder().identifier(userGroup.getIdentifier()).type(USER_GROUP).build())
+            .map(userGroup
+                -> PrincipalDTO.builder()
+                       .identifier(userGroup.getIdentifier())
+                       .type(USER_GROUP)
+                       .scopeLevel(
+                           ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase())
+                       .build())
             .collect(Collectors.toSet());
     RoleAssignmentFilterDTO roleAssignmentFilterDTO =
         RoleAssignmentFilterDTO.builder().principalFilter(principalDTOSet).build();
@@ -122,6 +129,8 @@ public class AggregateUserGroupServiceImpl implements AggregateUserGroupService 
             .roleFilter(aggregateACLRequest.getRoleFilter())
             .resourceGroupFilter(aggregateACLRequest.getResourceGroupFilter())
             .principalTypeFilter(Collections.singleton(USER_GROUP))
+            .principalScopeLevelFilter(Collections.singleton(
+                ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()))
             .build();
 
     Map<String, List<RoleAssignmentMetadataDTO>> userGroupRoleAssignmentsMap =
@@ -174,7 +183,12 @@ public class AggregateUserGroupServiceImpl implements AggregateUserGroupService 
       throw new InvalidRequestException(String.format("User Group is not available %s:%s:%s:%s", accountIdentifier,
           orgIdentifier, projectIdentifier, userGroupIdentifier));
     }
-    PrincipalDTO principalDTO = PrincipalDTO.builder().identifier(userGroupIdentifier).type(USER_GROUP).build();
+    PrincipalDTO principalDTO =
+        PrincipalDTO.builder()
+            .identifier(userGroupIdentifier)
+            .type(USER_GROUP)
+            .scopeLevel(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase())
+            .build();
     RoleAssignmentFilterDTO roleAssignmentFilterDTO =
         RoleAssignmentFilterDTO.builder().principalFilter(Collections.singleton(principalDTO)).build();
     Map<String, List<RoleAssignmentMetadataDTO>> userGroupRoleAssignmentsMap =

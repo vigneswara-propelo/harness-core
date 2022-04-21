@@ -260,11 +260,10 @@ public class RoleAssignmentResourceImpl implements RoleAssignmentResource {
 
   private RoleAssignment buildRoleAssignmentWithPrincipalScopeLevel(RoleAssignment roleAssignment, Scope scope) {
     String principalScopeLevel = null;
-    // remove this when custom principal scope level supported
-    if (USER_GROUP.equals(roleAssignment.getPrincipalType())) {
+    if (USER_GROUP.equals(roleAssignment.getPrincipalType()) && isEmpty(roleAssignment.getPrincipalScopeLevel())) {
       principalScopeLevel = roleAssignment.getScopeLevel();
     }
-    if (SERVICE_ACCOUNT.equals(roleAssignment.getPrincipalType())) {
+    if (SERVICE_ACCOUNT.equals(roleAssignment.getPrincipalType()) && isEmpty(roleAssignment.getPrincipalScopeLevel())) {
       principalScopeLevel = getServiceAccountScopeLevel(roleAssignment.getPrincipalIdentifier(), scope);
     }
     return RoleAssignment.builder()
@@ -285,7 +284,12 @@ public class RoleAssignmentResourceImpl implements RoleAssignmentResource {
 
   private String getServiceAccountScopeLevel(@NotNull String serviceAccountIdentifier, @NotNull Scope scope) {
     HarnessScopeParams scopeParams = ScopeMapper.toParams(scope);
-    harnessServiceAccountService.sync(serviceAccountIdentifier, scope);
+    Scope serviceAccountScope = scope;
+    while (serviceAccountScope != null) {
+      harnessServiceAccountService.sync(serviceAccountIdentifier, scope);
+      serviceAccountScope = serviceAccountScope.getParentScope();
+    }
+
     Scope accountScope = ScopeMapper.fromParams(
         HarnessScopeParams.builder().accountIdentifier(scopeParams.getAccountIdentifier()).build());
     if (serviceAccountService.get(serviceAccountIdentifier, accountScope.toString()).isPresent()) {
@@ -319,8 +323,6 @@ public class RoleAssignmentResourceImpl implements RoleAssignmentResource {
           String.format("Principal scope level cannot be %s for %s scoped role assignment.",
               principalDTO.getScopeLevel(), scopeLevel.toString()));
     }
-    // remove this after the migration
-    throw new InvalidRequestException("Custom principal scope level is not supported right now.");
   }
 
   private static boolean isValidParentScopeLevel(ScopeLevel parentScopeLevel, ScopeLevel scopeLevel) {

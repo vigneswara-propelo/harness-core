@@ -43,6 +43,7 @@ import io.harness.account.AccountClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.beans.Scope.ScopeKeys;
+import io.harness.beans.ScopeLevel;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
 import io.harness.licensing.Edition;
@@ -347,11 +348,14 @@ public class NgUserServiceImpl implements NgUserService {
                               .filter(principal -> USER.equals(principal.getType()))
                               .map(PrincipalDTO::getIdentifier)
                               .collect(Collectors.toCollection(HashSet::new));
-    List<String> userGroupIds = principals.stream()
-                                    .filter(principal -> USER_GROUP.equals(principal.getType()))
-                                    .map(PrincipalDTO::getIdentifier)
-                                    .distinct()
-                                    .collect(toList());
+    List<String> userGroupIds =
+        principals.stream()
+            .filter(principal
+                -> USER_GROUP.equals(principal.getType())
+                    && ScopeLevel.of(scope).toString().toLowerCase().equals(principal.getScopeLevel()))
+            .map(PrincipalDTO::getIdentifier)
+            .distinct()
+            .collect(toList());
     if (!userGroupIds.isEmpty()) {
       UserGroupFilterDTO userGroupFilterDTO = UserGroupFilterDTO.builder()
                                                   .accountIdentifier(scope.getAccountIdentifier())
