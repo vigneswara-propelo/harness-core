@@ -21,6 +21,7 @@ import io.harness.pms.sdk.core.data.Outcome;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
 import io.harness.rule.Owner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -78,11 +79,28 @@ public class PmsOutcomeMapperTest extends PmsSdkCoreTestBase {
   @Test
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
+  public void testConvertJsonToOutcomeListEmptyList() {
+    assertThat(PmsOutcomeMapper.convertJsonToOutcome(new ArrayList<>())).isNotNull();
+    assertThat(PmsOutcomeMapper.convertJsonToOutcome(new ArrayList<>()).size()).isEqualTo(0);
+  }
+
+  @Test
+  @Owner(developers = SAHIL)
+  @Category(UnitTests.class)
   public void testConvertJsonToOrchestrationMap() {
     Map<String, String> jsons = new HashMap<>();
     jsons.put("key", "test");
     assertThat(PmsOutcomeMapper.convertJsonToOrchestrationMap(jsons)).isNotNull();
     assertThat(PmsOutcomeMapper.convertJsonToOrchestrationMap(jsons).size()).isEqualTo(1);
+  }
+
+  @Test
+  @Owner(developers = SAHIL)
+  @Category(UnitTests.class)
+  public void testConvertJsonToOrchestrationMapEmpty() {
+    Map<String, String> jsons = new HashMap<>();
+    assertThat(PmsOutcomeMapper.convertJsonToOrchestrationMap(jsons)).isNotNull();
+    assertThat(PmsOutcomeMapper.convertJsonToOrchestrationMap(jsons).size()).isEqualTo(0);
   }
 
   @Data

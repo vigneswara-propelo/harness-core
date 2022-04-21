@@ -13,6 +13,7 @@ import io.harness.pms.sdk.core.steps.io.StepParameters;
 import java.util.HashMap;
 
 @RecasterAlias("io.harness.pms.sdk.core.plan.MapStepParameters")
+// Todo: Remove if not used
 public class MapStepParameters extends HashMap<String, Object> implements StepParameters {
   public MapStepParameters() {}
 

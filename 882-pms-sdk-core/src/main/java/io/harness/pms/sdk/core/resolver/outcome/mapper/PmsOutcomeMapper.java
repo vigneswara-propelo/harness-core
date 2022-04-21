@@ -54,26 +54,4 @@ public class PmsOutcomeMapper {
     }
     return outcomes;
   }
-
-  public List<Outcome> convertFromDocumentToOutcome(List<Map<String, Object>> outcomeMaps) {
-    if (isEmpty(outcomeMaps)) {
-      return Collections.emptyList();
-    }
-    List<Outcome> outcomes = new ArrayList<>();
-    for (Map<String, Object> map : outcomeMaps) {
-      outcomes.add(RecastOrchestrationUtils.fromMap(map, Outcome.class));
-    }
-    return outcomes;
-  }
-
-  public List<Map<String, Object>> convertOutcomesToDocumentList(List<Outcome> outcomes) {
-    if (isEmpty(outcomes)) {
-      return Collections.emptyList();
-    }
-    List<Map<String, Object>> outcomeMaps = new ArrayList<>();
-    for (Outcome outcome : outcomes) {
-      outcomeMaps.add(RecastOrchestrationUtils.toMap(outcome));
-    }
-    return outcomeMaps;
-  }
 }

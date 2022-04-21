@@ -14,9 +14,9 @@ import static io.harness.yaml.core.failurestrategy.NGFailureType.AUTHORIZATION_E
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.harness.OrchestrationStepsTestBase;
 import io.harness.category.element.UnitTests;
 import io.harness.pms.contracts.execution.failure.FailureType;
+import io.harness.pms.sdk.core.PmsSdkCoreTestBase;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
 import io.harness.yaml.core.failurestrategy.FailureStrategyActionConfig;
@@ -36,7 +36,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-public class FailureStrategiesUtilsTest extends OrchestrationStepsTestBase {
+public class FailureStrategiesUtilsTest extends PmsSdkCoreTestBase {
   @Test
   @Owner(developers = ALEKSANDAR)
   @Category(UnitTests.class)
