@@ -296,8 +296,12 @@ public class ExecutionResource {
       @QueryParam("parallelIndexToResume") int parallelIndexToResume,
       @QueryParam("workflowExecutionId") String workflowExecutionId) {
     WorkflowExecution workflowExecution = workflowExecutionService.getWorkflowExecution(appId, workflowExecutionId);
+
     notNullCheck(EXECUTION_DOES_NOT_EXIST + workflowExecutionId, workflowExecution);
     deploymentAuthHandler.authorize(appId, workflowExecution);
+    if (workflowExecution.getExecutionArgs() != null) {
+      workflowExecution.getExecutionArgs().setCreatedByType(CreatedByType.USER);
+    }
     WorkflowExecution resumedExecution =
         workflowExecutionService.triggerPipelineResumeExecution(appId, parallelIndexToResume, workflowExecution);
     resumedExecution.setStateMachine(null);
