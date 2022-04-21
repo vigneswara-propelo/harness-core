@@ -18,6 +18,8 @@ import io.harness.connector.ConnectorResourceClient;
 import io.harness.connector.ConnectorResourceClientModule;
 import io.harness.delegate.DelegateServiceResourceClient;
 import io.harness.delegate.DelegateServiceResourceClientModule;
+import io.harness.envgroup.EnvironmentGroupResourceClientModule;
+import io.harness.envgroup.remote.EnvironmentGroupResourceClient;
 import io.harness.environment.EnvironmentResourceClientModule;
 import io.harness.gitops.GitopsResourceClientModule;
 import io.harness.gitops.remote.GitopsResourceClient;
@@ -110,6 +112,7 @@ public class ResourceGroupModule extends AbstractModule {
     requireBinding(DelegateServiceResourceClient.class);
     requireBinding(TemplateResourceClient.class);
     requireBinding(GitopsResourceClient.class);
+    requireBinding(EnvironmentGroupResourceClient.class);
   }
 
   private void installResourceValidators() {
@@ -142,6 +145,8 @@ public class ResourceGroupModule extends AbstractModule {
     install(
         new ServiceResourceClientModule(ngManagerHttpClientConfig, ngManagerSecret, RESOUCE_GROUP_SERVICE.toString()));
     install(new EnvironmentResourceClientModule(
+        ngManagerHttpClientConfig, ngManagerSecret, RESOUCE_GROUP_SERVICE.toString()));
+    install(new EnvironmentGroupResourceClientModule(
         ngManagerHttpClientConfig, ngManagerSecret, RESOUCE_GROUP_SERVICE.toString()));
     install(new TemplateResourceClientModule(
         ServiceHttpClientConfig.builder().baseUrl(resourceClients.getTemplateService().getBaseUrl()).build(),

@@ -218,6 +218,7 @@ public class EnvironmentGroupResource {
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ResourceIdentifier String projectIdentifier,
+      @QueryParam("envGroupIdentifiers") List<String> envGroupIds,
       @Parameter(description = "The word to be searched and included in the list response") @QueryParam(
           NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm,
       @Parameter(description = NGCommonEntityConstants.PAGE_PARAM_MESSAGE) @QueryParam(
@@ -234,6 +235,9 @@ public class EnvironmentGroupResource {
     Criteria criteria = environmentGroupService.formCriteria(accountId, orgIdentifier, projectIdentifier, false,
         searchTerm, filterIdentifier, (EnvironmentGroupFilterPropertiesDTO) filterProperties);
 
+    if (!envGroupIds.isEmpty()) {
+      criteria.and(EnvironmentGroupKeys.identifier).in(envGroupIds);
+    }
     Pageable pageRequest =
         PageUtils.getPageRequest(page, size, sort, Sort.by(Sort.Direction.DESC, EnvironmentGroupKeys.lastModifiedAt));
 
