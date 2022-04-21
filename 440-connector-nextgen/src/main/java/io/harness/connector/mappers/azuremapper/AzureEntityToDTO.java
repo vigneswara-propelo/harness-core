@@ -12,6 +12,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.entities.embedded.azureconnector.AzureConfig;
 import io.harness.connector.entities.embedded.azureconnector.AzureManagedIdentityCredential;
 import io.harness.connector.entities.embedded.azureconnector.AzureManualCredential;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoAuthentication;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoHttpAuth;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoHttpAuthentication;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoSshAuthentication;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoUsernameToken;
 import io.harness.connector.mappers.ConnectorEntityToDTOMapper;
 import io.harness.delegate.beans.connector.azureconnector.AzureAuthDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureClientKeyCertDTO;
@@ -27,9 +32,18 @@ import io.harness.delegate.beans.connector.azureconnector.AzureManagedIdentityTy
 import io.harness.delegate.beans.connector.azureconnector.AzureManualDetailsDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureSecretType;
 import io.harness.delegate.beans.connector.azureconnector.AzureUserAssignedMSIAuthDTO;
+import io.harness.delegate.beans.connector.scm.GitAuthType;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoAuthenticationDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoCredentialsDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpAuthenticationType;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpCredentialsDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpCredentialsSpecDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoSshCredentialsDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoUsernameTokenDTO;
 import io.harness.encryption.SecretRefData;
 import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.InvalidRequestException;
+import io.harness.govern.Switch;
 
 import com.google.inject.Singleton;
 
@@ -47,6 +61,30 @@ public class AzureEntityToDTO implements ConnectorEntityToDTOMapper<AzureConnect
       default:
         throw new InvalidRequestException("Invalid Credential type.");
     }
+  }
+
+  public static AzureRepoAuthenticationDTO buildAzureAuthentication(
+      GitAuthType authType, AzureRepoAuthentication authenticationDetails) {
+    AzureRepoCredentialsDTO credentialsDTO = null;
+    switch (authType) {
+      case SSH:
+        final AzureRepoSshAuthentication githubSshAuthentication = (AzureRepoSshAuthentication) authenticationDetails;
+        credentialsDTO = AzureRepoSshCredentialsDTO.builder()
+                             .sshKeyRef(SecretRefHelper.createSecretRef(githubSshAuthentication.getSshKeyRef()))
+                             .build();
+        break;
+      case HTTP:
+        final AzureRepoHttpAuthentication httpAuthentication = (AzureRepoHttpAuthentication) authenticationDetails;
+        final AzureRepoHttpAuthenticationType type = httpAuthentication.getType();
+        final AzureRepoHttpAuth auth = httpAuthentication.getAuth();
+        AzureRepoHttpCredentialsSpecDTO httpCredentialsSpecDTO = getHttpCredentialsSpecDTO(type, auth);
+        credentialsDTO =
+            AzureRepoHttpCredentialsDTO.builder().type(type).httpCredentialsSpec(httpCredentialsSpecDTO).build();
+        break;
+      default:
+        Switch.unhandled(authType);
+    }
+    return AzureRepoAuthenticationDTO.builder().authType(authType).credentials(credentialsDTO).build();
   }
 
   private AzureConnectorDTO buildManualCredential(AzureConfig connector) {
@@ -113,5 +151,27 @@ public class AzureEntityToDTO implements ConnectorEntityToDTOMapper<AzureConnect
                         .config(AzureInheritFromDelegateDetailsDTO.builder().authDTO(azureMSIAuthDTO).build())
                         .build())
         .build();
+  }
+
+  private static AzureRepoHttpCredentialsSpecDTO getHttpCredentialsSpecDTO(
+      AzureRepoHttpAuthenticationType type, Object auth) {
+    AzureRepoHttpCredentialsSpecDTO httpCredentialsSpecDTO = null;
+    switch (type) {
+      case USERNAME_AND_TOKEN:
+        final AzureRepoUsernameToken usernameToken = (AzureRepoUsernameToken) auth;
+        SecretRefData usernameReference = null;
+        if (usernameToken.getUsernameRef() != null) {
+          usernameReference = SecretRefHelper.createSecretRef(usernameToken.getUsernameRef());
+        }
+        httpCredentialsSpecDTO = AzureRepoUsernameTokenDTO.builder()
+                                     .username(usernameToken.getUsername())
+                                     .usernameRef(usernameReference)
+                                     .tokenRef(SecretRefHelper.createSecretRef(usernameToken.getTokenRef()))
+                                     .build();
+        break;
+      default:
+        Switch.unhandled(type);
+    }
+    return httpCredentialsSpecDTO;
   }
 }
