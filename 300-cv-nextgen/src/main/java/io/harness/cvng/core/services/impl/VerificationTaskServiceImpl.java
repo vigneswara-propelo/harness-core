@@ -307,6 +307,11 @@ public class VerificationTaskServiceImpl implements VerificationTaskService {
     return verificationTasksIds;
   }
 
+  @Override
+  public void deleteVerificationTask(String taskId) {
+    hPersistence.delete(VerificationTask.class, taskId);
+  }
+
   private VerificationTask getDeploymentTask(String accountId, String cvConfigId, String verificationJobInstanceId) {
     return createQueryForDeploymentTasks(accountId, cvConfigId, verificationJobInstanceId).get();
   }

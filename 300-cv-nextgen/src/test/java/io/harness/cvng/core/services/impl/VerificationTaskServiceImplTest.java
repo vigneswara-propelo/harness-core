@@ -9,6 +9,7 @@ package io.harness.cvng.core.services.impl;
 
 import static io.harness.cvng.beans.DataSourceType.APP_DYNAMICS;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.rule.OwnerRule.DHRUVX;
 import static io.harness.rule.OwnerRule.KAMAL;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -293,6 +294,19 @@ public class VerificationTaskServiceImplTest extends CvNextGenTestBase {
         .isEqualTo(BLACKLIST)
         .withFailMessage(
             "Entities with verificationTaskId does not have TTL set %s", Sets.difference(withoutTTL, BLACKLIST));
+  }
+
+  @Test
+  @Owner(developers = DHRUVX)
+  @Category(UnitTests.class)
+  public void testDelete() {
+    String cvConfigId = generateUuid();
+    String verificationTaskId =
+        verificationTaskService.createLiveMonitoringVerificationTask(accountId, cvConfigId, APP_DYNAMICS);
+    verificationTaskService.deleteVerificationTask(verificationTaskId);
+    assertThatThrownBy(() -> verificationTaskService.get(verificationTaskId))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Invalid verificationTaskId. Verification mapping does not exist.");
   }
 
   private boolean doesClassContainField(Class<?> clazz, String fieldName) {

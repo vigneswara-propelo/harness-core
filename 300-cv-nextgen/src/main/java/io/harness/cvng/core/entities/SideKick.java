@@ -50,7 +50,7 @@ public final class SideKick implements UuidAware, CreatedAtAware, UpdatedAtAware
   public interface SideKickData {
     Type getType();
   }
-  public enum Type { DEMO_DATA_ACTIVITY_CREATOR, RETRY_CHANGE_SOURCE_HANDLE_DELETE }
+  public enum Type { DEMO_DATA_ACTIVITY_CREATOR, RETRY_CHANGE_SOURCE_HANDLE_DELETE, VERIFICATION_TASK_CLEANUP }
 
   public enum Status { QUEUED, RUNNING, SUCCESS, FAILED }
 }

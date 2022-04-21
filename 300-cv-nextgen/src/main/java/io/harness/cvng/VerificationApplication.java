@@ -832,6 +832,7 @@ public class VerificationApplication extends Application<VerificationConfigurati
     injector.injectMembers(dataCollectionIterator);
     verificationTaskExecutor.scheduleWithFixedDelay(() -> dataCollectionIterator.process(), 0, 30, TimeUnit.SECONDS);
   }
+
   private void registerCVConfigCleanupIterator(Injector injector) {
     ScheduledThreadPoolExecutor dataCollectionExecutor = new ScheduledThreadPoolExecutor(
         5, new ThreadFactoryBuilder().setNameFormat("cv-config-cleanup-iterator").build());

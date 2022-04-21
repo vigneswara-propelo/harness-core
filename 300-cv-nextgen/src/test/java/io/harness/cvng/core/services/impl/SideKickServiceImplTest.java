@@ -54,6 +54,7 @@ public class SideKickServiceImplTest extends CvNextGenTestBase {
   private BuilderFactory builderFactory;
 
   RetryChangeSourceHandleDeleteSideKickExecutor retryChangeSourceHandleDeleteSideKickExecutor;
+
   @SneakyThrows
   @Before
   public void setup() {

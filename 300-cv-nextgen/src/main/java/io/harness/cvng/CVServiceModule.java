@@ -203,6 +203,7 @@ import io.harness.cvng.core.services.impl.monitoredService.MonitoredServiceServi
 import io.harness.cvng.core.services.impl.monitoredService.ServiceDependencyServiceImpl;
 import io.harness.cvng.core.services.impl.sidekickexecutors.DemoActivitySideKickExecutor;
 import io.harness.cvng.core.services.impl.sidekickexecutors.RetryChangeSourceHandleDeleteSideKickExecutor;
+import io.harness.cvng.core.services.impl.sidekickexecutors.VerificationTaskCleanupSideKickExecutor;
 import io.harness.cvng.core.transformer.changeEvent.ChangeEventEntityAndDTOTransformer;
 import io.harness.cvng.core.transformer.changeEvent.ChangeEventMetaDataTransformer;
 import io.harness.cvng.core.transformer.changeEvent.HarnessCDChangeEventTransformer;
@@ -762,6 +763,9 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
     sideKickExecutorMapBinder.addBinding(SideKick.Type.RETRY_CHANGE_SOURCE_HANDLE_DELETE)
         .to(RetryChangeSourceHandleDeleteSideKickExecutor.class)
+        .in(Scopes.SINGLETON);
+    sideKickExecutorMapBinder.addBinding(SideKick.Type.VERIFICATION_TASK_CLEANUP)
+        .to(VerificationTaskCleanupSideKickExecutor.class)
         .in(Scopes.SINGLETON);
 
     bind(NotificationRuleService.class).to(NotificationRuleServiceImpl.class);

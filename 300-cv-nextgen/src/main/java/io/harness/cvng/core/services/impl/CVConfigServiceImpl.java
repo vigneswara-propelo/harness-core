@@ -17,12 +17,13 @@ import static java.util.stream.Collectors.toList;
 import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.core.beans.params.MonitoredServiceParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.beans.sidekick.VerificationTaskCleanupSideKickData;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.CVConfig.CVConfigKeys;
 import io.harness.cvng.core.entities.CVConfig.CVConfigUpdatableEntity;
-import io.harness.cvng.core.entities.DeletedCVConfig;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.services.api.DeletedCVConfigService;
+import io.harness.cvng.core.services.api.SideKickService;
 import io.harness.cvng.core.services.api.UpdatableEntity;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.encryption.Scope;
@@ -31,6 +32,7 @@ import io.harness.persistence.HPersistence;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +52,8 @@ public class CVConfigServiceImpl implements CVConfigService {
   @Inject private DeletedCVConfigService deletedCVConfigService;
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private Map<DataSourceType, CVConfigUpdatableEntity> dataSourceTypeCVConfigMapBinder;
+  @Inject private SideKickService sideKickService;
+  @Inject private Clock clock;
 
   @Override
   public CVConfig save(CVConfig cvConfig) {
@@ -95,8 +99,11 @@ public class CVConfigServiceImpl implements CVConfigService {
     if (cvConfig == null) {
       return;
     }
-    deletedCVConfigService.save(
-        DeletedCVConfig.builder().cvConfig(cvConfig).accountId(cvConfig.getAccountId()).build(), Duration.ofHours(2));
+    String verificationTaskId =
+        verificationTaskService.getServiceGuardVerificationTaskId(cvConfig.getAccountId(), cvConfig.getUuid());
+    sideKickService.schedule(
+        VerificationTaskCleanupSideKickData.builder().verificationTaskId(verificationTaskId).cvConfig(cvConfig).build(),
+        clock.instant().plus(Duration.ofHours(2)));
     hPersistence.delete(CVConfig.class, cvConfigId);
   }
 

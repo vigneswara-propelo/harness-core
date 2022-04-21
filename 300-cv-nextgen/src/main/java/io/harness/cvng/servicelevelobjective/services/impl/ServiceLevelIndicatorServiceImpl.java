@@ -20,6 +20,7 @@ import io.harness.cvng.core.beans.OnboardingResponseDTO;
 import io.harness.cvng.core.beans.TimeGraphResponse;
 import io.harness.cvng.core.beans.TimeGraphResponse.DataPoints;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.beans.sidekick.VerificationTaskCleanupSideKickData;
 import io.harness.cvng.core.beans.sli.SLIOnboardingGraphs;
 import io.harness.cvng.core.beans.sli.SLIOnboardingGraphs.MetricGraph;
 import io.harness.cvng.core.entities.CVConfig;
@@ -28,6 +29,7 @@ import io.harness.cvng.core.entities.MetricPack;
 import io.harness.cvng.core.services.api.DataCollectionSLIInfoMapper;
 import io.harness.cvng.core.services.api.MetricPackService;
 import io.harness.cvng.core.services.api.OnboardingService;
+import io.harness.cvng.core.services.api.SideKickService;
 import io.harness.cvng.core.services.api.UpdatableEntity;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.HealthSourceService;
@@ -71,6 +73,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
@@ -91,6 +94,7 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
   @Inject private Clock clock;
   @Inject private OrchestrationService orchestrationService;
   @Inject private SLIRecordService sliRecordService;
+  @Inject private SideKickService sideKickService;
 
   @Override
   public SLIOnboardingGraphs getOnboardingGraphs(ProjectParams projectParams, String monitoredServiceIdentifier,
@@ -278,8 +282,14 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
               .in(serviceLevelIndicatorIdentifier);
       List<ServiceLevelIndicator> serviceLevelIndicatorList = serviceLevelIndicatorQuery.asList();
       hPersistence.delete(serviceLevelIndicatorQuery);
-      sliRecordService.delete(
-          serviceLevelIndicatorList.stream().map(ServiceLevelIndicator::getUuid).collect(Collectors.toList()));
+      serviceLevelIndicatorList.forEach(sli -> {
+        String verificationTaskId = verificationTaskService.getSLIVerificationTaskId(sli.getAccountId(), sli.getUuid());
+        if (StringUtils.isNotBlank(verificationTaskId)) {
+          sideKickService.schedule(
+              VerificationTaskCleanupSideKickData.builder().verificationTaskId(verificationTaskId).build(),
+              clock.instant().plus(Duration.ofMinutes(15)));
+        }
+      });
     }
   }
 
