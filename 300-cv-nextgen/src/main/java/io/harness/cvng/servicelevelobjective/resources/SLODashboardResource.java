@@ -34,6 +34,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 @Api("slo-dashboard")
 @Path("slo-dashboard")
@@ -64,8 +65,10 @@ public class SLODashboardResource {
   @NGAccessControlCheck(resourceType = SLO, permission = VIEW_PERMISSION)
   public ResponseDTO<SLODashboardDetail> getSloDashboardWidget(
       @ApiParam(required = true) @NotNull @PathParam("identifier") @ResourceIdentifier String identifier,
+      @QueryParam("startTime") Long startTime, @QueryParam("endTime") Long endTime,
       @NotNull @Valid @BeanParam ProjectParams projectParams) {
-    return ResponseDTO.newResponse(sloDashboardService.getSloDashboardDetail(projectParams, identifier));
+    return ResponseDTO.newResponse(
+        sloDashboardService.getSloDashboardDetail(projectParams, identifier, startTime, endTime));
   }
 
   @GET

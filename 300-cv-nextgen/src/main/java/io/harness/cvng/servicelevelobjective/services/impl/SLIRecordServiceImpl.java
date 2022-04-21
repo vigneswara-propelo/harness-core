@@ -11,6 +11,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.persistence.HQuery.excludeAuthorityCount;
 
 import io.harness.annotations.retry.RetryOnException;
+import io.harness.cvng.core.beans.params.TimeRangeParams;
 import io.harness.cvng.servicelevelobjective.beans.SLIMissingDataType;
 import io.harness.cvng.servicelevelobjective.beans.SLIValue;
 import io.harness.cvng.servicelevelobjective.beans.SLODashboardWidget.Point;
@@ -134,8 +135,17 @@ public class SLIRecordServiceImpl implements SLIRecordService {
   @Override
   public SLOGraphData getGraphData(String sliId, Instant startTime, Instant endTime, int totalErrorBudgetMinutes,
       SLIMissingDataType sliMissingDataType, int sliVersion) {
+    return getGraphData(sliId, startTime, endTime, totalErrorBudgetMinutes, sliMissingDataType, sliVersion, null);
+  }
+
+  @Override
+  public SLOGraphData getGraphData(String sliId, Instant startTime, Instant endTime, int totalErrorBudgetMinutes,
+      SLIMissingDataType sliMissingDataType, int sliVersion, TimeRangeParams filter) {
     Preconditions.checkState(totalErrorBudgetMinutes != 0, "Total error budget minutes should not be zero.");
-    List<SLIRecord> sliRecords = sliRecords(sliId, startTime, endTime);
+    if (Objects.isNull(filter)) {
+      filter = TimeRangeParams.builder().startTime(startTime).endTime(endTime).build();
+    }
+    List<SLIRecord> sliRecords = sliRecords(sliId, startTime, endTime, filter);
     List<Point> sliTread = new ArrayList<>();
     List<Point> errorBudgetBurndown = new ArrayList<>();
     double errorBudgetRemainingPercentage = 100;
@@ -167,6 +177,19 @@ public class SLIRecordServiceImpl implements SLIRecordService {
       errorBudgetRemainingPercentage = errorBudgetBurndown.get(errorBudgetBurndown.size() - 1).getValue();
       errorBudgetRemaining = totalErrorBudgetMinutes - sliValue.getBadCount();
     }
+
+    long startFilter = filter.getStartTime().toEpochMilli();
+    long endFilter = filter.getEndTime().toEpochMilli();
+
+    sliTread = sliTread.stream()
+                   .filter(sli -> sli.getTimestamp() >= startFilter)
+                   .filter(sli -> sli.getTimestamp() <= endFilter)
+                   .collect(Collectors.toList());
+    errorBudgetBurndown = errorBudgetBurndown.stream()
+                              .filter(e -> e.getTimestamp() >= startFilter)
+                              .filter(e -> e.getTimestamp() <= endFilter)
+                              .collect(Collectors.toList());
+
     return SLOGraphData.builder()
         .errorBudgetBurndown(errorBudgetBurndown)
         .errorBudgetRemaining(errorBudgetRemaining)
@@ -184,9 +207,11 @@ public class SLIRecordServiceImpl implements SLIRecordService {
         .asList(new FindOptions().limit(count));
   }
 
-  private List<SLIRecord> sliRecords(String sliId, Instant startTime, Instant endTime) {
-    SLIRecord firstRecordInRange = getFirstSLIRecord(sliId, startTime);
-    SLIRecord lastRecordInRange = getLastSLIRecord(sliId, endTime);
+  private List<SLIRecord> sliRecords(String sliId, Instant startTime, Instant endTime, TimeRangeParams filter) {
+    SLIRecord firstRecord = getFirstSLIRecord(sliId, startTime);
+    SLIRecord lastRecord = getLastSLIRecord(sliId, endTime);
+    SLIRecord firstRecordInRange = getFirstSLIRecord(sliId, filter.getStartTime());
+    SLIRecord lastRecordInRange = getLastSLIRecord(sliId, filter.getEndTime());
     if (firstRecordInRange == null || lastRecordInRange == null) {
       return Collections.emptyList();
     } else {
@@ -200,13 +225,15 @@ public class SLIRecordServiceImpl implements SLIRecordService {
       diff = 1L;
     }
     // long reminder = totalMinutes % maxNumberOfPoints;
+    minutes.add(firstRecord.getTimestamp());
     minutes.add(startTime);
     Duration diffDuration = Duration.ofMinutes(diff);
     for (Instant current = startTime.plus(Duration.ofMinutes(diff)); current.isBefore(endTime);
          current = current.plus(diffDuration)) {
       minutes.add(current);
     }
-    minutes.add(endTime.minus(Duration.ofMinutes(1))); // always include start and end minute.
+    minutes.add(endTime.minus(Duration.ofMinutes(1)));
+    minutes.add(lastRecord.getTimestamp()); // always include start and end minute.
     return hPersistence.createQuery(SLIRecord.class, excludeAuthorityCount)
         .filter(SLIRecordKeys.sliId, sliId)
         .field(SLIRecordKeys.timestamp)

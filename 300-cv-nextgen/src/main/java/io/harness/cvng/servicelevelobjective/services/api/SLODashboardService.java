@@ -19,7 +19,8 @@ public interface SLODashboardService {
   PageResponse<SLODashboardWidget> getSloDashboardWidgets(
       ProjectParams projectParams, SLODashboardApiFilter filter, PageParams pageParams);
 
-  SLODashboardDetail getSloDashboardDetail(ProjectParams projectParams, String sloIdentifier);
+  SLODashboardDetail getSloDashboardDetail(
+      ProjectParams projectParams, String sloIdentifier, Long startTime, Long endTime);
 
   SLORiskCountResponse getRiskCount(ProjectParams projectParams, SLODashboardApiFilter serviceLevelObjectiveFilter);
 }
