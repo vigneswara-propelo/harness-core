@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: rolesConfiguration
-version: 20
+version: 21
 roles:
     - identifier: _project_admin
       name: Project Admin
@@ -86,6 +86,25 @@ roles:
         - chi_slo_view
         - chi_slo_edit
         - chi_slo_delete
+        - gitops_agent_view
+        - gitops_agent_edit
+        - gitops_agent_delete
+        - gitops_application_view
+        - gitops_application_edit
+        - gitops_application_delete
+        - gitops_application_sync
+        - gitops_repository_view
+        - gitops_repository_edit
+        - gitops_repository_delete
+        - gitops_cluster_view
+        - gitops_cluster_edit
+        - gitops_cluster_delete
+        - gitops_gpgkey_view
+        - gitops_gpgkey_edit
+        - gitops_gpgkey_delete
+        - gitops_cert_view
+        - gitops_cert_edit
+        - gitops_cert_delete
       allowedScopeLevels:
         - project
       managed: true
@@ -118,6 +137,12 @@ roles:
         - ff_target_view
         - ff_environment_apiKeyView
         - ff_environment_view
+        - gitops_agent_view
+        - gitops_application_view
+        - gitops_repository_view
+        - gitops_cluster_view
+        - gitops_gpgkey_view
+        - gitops_cert_view
       allowedScopeLevels:
         - project
       managed: true
@@ -211,6 +236,25 @@ roles:
         - ff_featureflag_toggle
         - core_dashboards_view
         - core_dashboards_edit
+        - gitops_agent_view
+        - gitops_agent_edit
+        - gitops_agent_delete
+        - gitops_application_view
+        - gitops_application_edit
+        - gitops_application_delete
+        - gitops_application_sync
+        - gitops_repository_view
+        - gitops_repository_edit
+        - gitops_repository_delete
+        - gitops_cluster_view
+        - gitops_cluster_edit
+        - gitops_cluster_delete
+        - gitops_gpgkey_view
+        - gitops_gpgkey_edit
+        - gitops_gpgkey_delete
+        - gitops_cert_view
+        - gitops_cert_edit
+        - gitops_cert_delete
       allowedScopeLevels:
         - organization
       managed: true
@@ -245,6 +289,12 @@ roles:
         - ff_environment_apiKeyView
         - ff_environment_view
         - core_dashboards_view
+        - gitops_agent_view
+        - gitops_application_view
+        - gitops_repository_view
+        - gitops_cluster_view
+        - gitops_gpgkey_view
+        - gitops_cert_view
       allowedScopeLevels:
         - organization
       managed: true
@@ -345,6 +395,25 @@ roles:
         - ff_environment_edit
         - ff_environment_view
         - ff_featureflag_toggle
+        - gitops_agent_view
+        - gitops_agent_edit
+        - gitops_agent_delete
+        - gitops_application_view
+        - gitops_application_edit
+        - gitops_application_delete
+        - gitops_application_sync
+        - gitops_repository_view
+        - gitops_repository_edit
+        - gitops_repository_delete
+        - gitops_cluster_view
+        - gitops_cluster_edit
+        - gitops_cluster_delete
+        - gitops_gpgkey_view
+        - gitops_gpgkey_edit
+        - gitops_gpgkey_delete
+        - gitops_cert_view
+        - gitops_cert_edit
+        - gitops_cert_delete
       allowedScopeLevels:
         - account
       managed: true
@@ -382,6 +451,12 @@ roles:
         - ff_environment_apiKeyView
         - ff_environment_view
         - core_dashboards_view
+        - gitops_agent_view
+        - gitops_application_view
+        - gitops_repository_view
+        - gitops_cluster_view
+        - gitops_gpgkey_view
+        - gitops_cert_view
       allowedScopeLevels:
         - account
       managed: true
@@ -421,6 +496,34 @@ roles:
         - ff_targetgroup_view
         - ff_target_view
         - ff_environment_apiKeyView
+      managed: true
+      allowedScopeLevels:
+        - account
+        - organization
+        - project
+    - identifier: _gitops_admin_role
+      name: Gitops Admin Role
+      description: Can create, edit, and view Gitops Resources
+      permissions:
+        - gitops_agent_view
+        - gitops_agent_edit
+        - gitops_agent_delete
+        - gitops_application_view
+        - gitops_application_edit
+        - gitops_application_delete
+        - gitops_application_sync
+        - gitops_repository_view
+        - gitops_repository_edit
+        - gitops_repository_delete
+        - gitops_cluster_view
+        - gitops_cluster_edit
+        - gitops_cluster_delete
+        - gitops_gpgkey_view
+        - gitops_gpgkey_edit
+        - gitops_gpgkey_delete
+        - gitops_cert_view
+        - gitops_cert_edit
+        - gitops_cert_delete
       managed: true
       allowedScopeLevels:
         - account
