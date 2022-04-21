@@ -47,13 +47,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 import org.mongodb.morphia.annotations.Transient;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 
 @OwnedBy(HarnessTeam.CDC)
 public class ArtifactCollectLoopState extends State {
-  @Getter List<ArtifactInput> artifactInputList;
+  @Getter @Setter List<ArtifactInput> artifactInputList;
 
   @Transient @Inject StateExecutionInstanceHelper instanceHelper;
   @Transient @Inject WorkflowExecutionServiceImpl executionService;
@@ -129,7 +130,7 @@ public class ArtifactCollectLoopState extends State {
     return ExecutionResponse.builder().executionStatus(executionStatusOfChildren).build();
   }
 
-  private void updateArtifactsInContext(ExecutionContextImpl context) {
+  public void updateArtifactsInContext(ExecutionContextImpl context) {
     String appId = context.getAppId();
     String workflowExecutionId = context.getWorkflowExecutionId();
     List<Artifact> artifacts = executionService.getArtifactsCollected(appId, workflowExecutionId);
