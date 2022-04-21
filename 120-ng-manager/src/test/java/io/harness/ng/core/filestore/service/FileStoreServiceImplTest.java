@@ -7,6 +7,10 @@
 
 package io.harness.ng.core.filestore.service;
 
+import static io.harness.ng.core.entities.NGFile.builder;
+import static io.harness.repositories.filestore.FileStoreRepositoryCriteriaCreator.createCriteriaByScopeAndParentIdentifier;
+import static io.harness.repositories.filestore.FileStoreRepositoryCriteriaCreator.createFilesFilterCriteria;
+import static io.harness.repositories.filestore.FileStoreRepositoryCriteriaCreator.createSortByLastModifiedAtDesc;
 import static io.harness.rule.OwnerRule.BOJAN;
 import static io.harness.rule.OwnerRule.FILIP;
 import static io.harness.rule.OwnerRule.IVAN;
@@ -33,15 +37,17 @@ import io.harness.delegate.beans.FileBucket;
 import io.harness.delegate.beans.FileUploadLimit;
 import io.harness.exception.DuplicateEntityException;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.file.beans.NGBaseFile;
 import io.harness.filestore.FileStoreConstants;
 import io.harness.filestore.NGFileType;
+import io.harness.ng.core.dto.filestore.CreatedBy;
 import io.harness.ng.core.dto.filestore.FileDTO;
+import io.harness.ng.core.dto.filestore.filter.FilesFilterPropertiesDTO;
 import io.harness.ng.core.dto.filestore.node.FileNodeDTO;
 import io.harness.ng.core.dto.filestore.node.FolderNodeDTO;
 import io.harness.ng.core.entities.NGFile;
 import io.harness.ng.core.filestore.utils.FileReferencedByHelper;
-import io.harness.repositories.filestore.FileStoreRepositoryCriteriaCreator;
 import io.harness.repositories.filestore.spring.FileStoreRepository;
 import io.harness.rule.Owner;
 
@@ -53,7 +59,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import jersey.repackaged.com.google.common.collect.Lists;
+import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -61,7 +71,11 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 @OwnedBy(HarnessTeam.CDP)
 @RunWith(MockitoJUnitRunner.class)
@@ -185,13 +199,14 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldSaveNgFile() {
     // Given
+    givenThatFileNotExistInDB();
     final FileDTO fileDto = aFileDto();
 
     // When
     fileStoreService.create(fileDto, getStreamWithDummyContent(), false);
 
     // Then
-    NGFile expected = NGFile.builder()
+    NGFile expected = builder()
                           .identifier(fileDto.getIdentifier())
                           .accountIdentifier(fileDto.getAccountIdentifier())
                           .description(fileDto.getDescription())
@@ -201,6 +216,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
                           .draft(false)
                           .tags(Collections.emptyList())
                           .size(0L)
+                          .parentIdentifier(fileDto.getParentIdentifier())
                           .build();
 
     verify(fileStoreRepository).save(expected);
@@ -211,6 +227,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldSaveFileUsingFileService() {
     // Given
+    givenThatFileNotExistInDB();
     final FileDTO fileDto = aFileDto();
 
     // When
@@ -229,6 +246,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldNotInvokeSaveFileOnFileServiceForFolder() {
     // Given
+    givenThatFileNotExistInDB();
     final FileDTO folderDto = aFolderDto();
 
     // When
@@ -243,6 +261,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldNotInvokeSaveFileOnFileServiceForDraftFile() {
     // Given
+    givenThatFileNotExistInDB();
     final FileDTO fileDto = aFileDto();
 
     // When
@@ -257,6 +276,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldSaveDraftNgFile() {
     // Given
+    givenThatFileNotExistInDB();
     final FileDTO fileDto = aFileDto();
 
     // When
@@ -271,6 +291,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
                           .type(fileDto.getType())
                           .draft(true)
                           .tags(Collections.emptyList())
+                          .parentIdentifier(fileDto.getParentIdentifier())
                           .build();
 
     verify(fileStoreRepository).save(expected);
@@ -286,38 +307,40 @@ public class FileStoreServiceImplTest extends CategoryTest {
 
     assertThatThrownBy(() -> fileStoreService.create(folderDto, null, false))
         .isInstanceOf(DuplicateEntityException.class)
-        .hasMessageContaining(
-            "Try creating another folder, folder with identifier [%s] already exists in the parent folder",
+        .hasMessageContaining("Try creating another folder, folder with identifier [identifier] already exists.",
             folderDto.getIdentifier());
   }
 
   @Test
   @Owner(developers = FILIP)
   @Category(UnitTests.class)
-  public void shouldThrowExceptionWhenFileAlreadyExistsInDatabase() {
-    givenThatFileExistsInDatabase();
-
+  public void shouldHandleDuplicateIdentifierExceptionForFile() {
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
+             any(), any(), any(), any()))
+        .thenReturn(Optional.of(builder().build()));
     FileDTO fileDTO = aFileDto();
 
     assertThatThrownBy(() -> fileStoreService.create(fileDTO, getStreamWithDummyContent(), false))
         .isInstanceOf(DuplicateEntityException.class)
-        .hasMessageContaining(
-            "Try creating another file, file with identifier [%s] already exists in the parent folder",
-            fileDTO.getIdentifier());
+        .hasMessageContaining("Try creating another file, file with identifier [identifier] already exists.");
   }
 
   @Test
   @Owner(developers = FILIP)
   @Category(UnitTests.class)
-  public void shouldHandleDuplicateKeyExceptionForFile() {
-    when(fileStoreRepository.save(any())).thenThrow(DuplicateKeyException.class);
-
+  public void shouldHandleDuplicateNameExceptionForFile() {
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndParentIdentifierAndName(
+             any(), any(), any(), any(), any()))
+        .thenReturn(Optional.of(builder().build()));
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
+             any(), any(), any(), any()))
+        .thenReturn(Optional.empty());
     FileDTO fileDTO = aFileDto();
 
     assertThatThrownBy(() -> fileStoreService.create(fileDTO, getStreamWithDummyContent(), false))
         .isInstanceOf(DuplicateEntityException.class)
         .hasMessageContaining(
-            "Try creating another file, file with identifier [%s] already exists in the parent folder",
+            "Try creating another file, file with name [file-name] already exists in the parent folder [parent-identifier].",
             fileDTO.getIdentifier());
   }
 
@@ -325,6 +348,9 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Owner(developers = VLAD)
   @Category(UnitTests.class)
   public void shouldDeleteFileDoesNotExist() {
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndParentIdentifierAndName(
+             any(), any(), any(), any(), any()))
+        .thenReturn(Optional.empty());
     when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
              ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, IDENTIFIER))
         .thenReturn(Optional.empty());
@@ -340,7 +366,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldDeleteFile() {
     String fileUuid = "fileUUID";
-    NGFile file = NGFile.builder().name(IDENTIFIER).identifier(IDENTIFIER).fileUuid(fileUuid).build();
+    NGFile file = builder().name(IDENTIFIER).identifier(IDENTIFIER).fileUuid(fileUuid).build();
     when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
              ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, IDENTIFIER))
         .thenReturn(Optional.of(file));
@@ -355,9 +381,9 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldDeleteFolder() {
     String fileUuid = "fileUUID";
-    NGFile file = NGFile.builder().name(IDENTIFIER).fileUuid(fileUuid).build();
+    NGFile file = builder().name(IDENTIFIER).fileUuid(fileUuid).build();
     String folder1 = "folder1";
-    NGFile parentFolder = NGFile.builder()
+    NGFile parentFolder = builder()
                               .name(folder1)
                               .identifier(folder1)
                               .type(NGFileType.FOLDER)
@@ -386,9 +412,9 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldDeleteFolderWithSubfolder() {
     String fileUuid1 = "fileUUID1";
-    NGFile file = NGFile.builder().name(IDENTIFIER).identifier(IDENTIFIER).fileUuid(fileUuid1).build();
+    NGFile file = builder().name(IDENTIFIER).identifier(IDENTIFIER).fileUuid(fileUuid1).build();
     String folder1 = "folder1";
-    NGFile parentFolder = NGFile.builder()
+    NGFile parentFolder = builder()
                               .name(folder1)
                               .identifier(folder1)
                               .type(NGFileType.FOLDER)
@@ -397,7 +423,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
                               .projectIdentifier(PROJECT_IDENTIFIER)
                               .build();
     String folder2 = "folder2";
-    NGFile childFolder = NGFile.builder()
+    NGFile childFolder = builder()
                              .name(folder2)
                              .identifier(folder2)
                              .type(NGFileType.FOLDER)
@@ -407,7 +433,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
                              .build();
     String file2 = "file2";
     String fileUuid2 = "fileUUID2";
-    NGFile childFile = NGFile.builder().name(file2).fileUuid(fileUuid2).build();
+    NGFile childFile = builder().name(file2).fileUuid(fileUuid2).build();
     when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
              ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, IDENTIFIER))
         .thenReturn(Optional.of(file));
@@ -441,9 +467,9 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void shouldDeleteFolderWithScopePrefix() {
     String fileUuid = "fileUUID";
-    NGFile file = NGFile.builder().name(IDENTIFIER).identifier(IDENTIFIER).fileUuid(fileUuid).build();
+    NGFile file = builder().name(IDENTIFIER).identifier(IDENTIFIER).fileUuid(fileUuid).build();
     String folder1 = "folder1";
-    NGFile parentFolder = NGFile.builder()
+    NGFile parentFolder = builder()
                               .name(folder1)
                               .identifier(folder1)
                               .type(NGFileType.FOLDER)
@@ -482,27 +508,10 @@ public class FileStoreServiceImplTest extends CategoryTest {
   public void testListFolderNodes() {
     FolderNodeDTO folderNodeDTO = FolderNodeDTO.builder().identifier(FILE_IDENTIFIER).name(FILE_NAME).build();
     when(fileStoreRepository.findAllAndSort(
-             FileStoreRepositoryCriteriaCreator.createCriteriaByScopeAndParentIdentifier(
+             createCriteriaByScopeAndParentIdentifier(
                  Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER), FILE_IDENTIFIER),
-             FileStoreRepositoryCriteriaCreator.createSortByLastModifiedAtDesc()))
-        .thenReturn(Arrays.asList(NGFile.builder()
-                                      .type(NGFileType.FOLDER)
-                                      .name("folderName1")
-                                      .identifier("folderIdentifier1")
-                                      .parentId(FILE_IDENTIFIER)
-                                      .build(),
-            NGFile.builder()
-                .type(NGFileType.FOLDER)
-                .name("folderName2")
-                .identifier("folderIdentifier2")
-                .parentId(FILE_IDENTIFIER)
-                .build(),
-            NGFile.builder()
-                .type(NGFileType.FILE)
-                .name("fileName")
-                .identifier("fileIdentifier")
-                .parentId(FILE_IDENTIFIER)
-                .build()));
+             createSortByLastModifiedAtDesc()))
+        .thenReturn(getNgFiles());
 
     FolderNodeDTO populatedFolderNodeDTO =
         fileStoreService.listFolderNodes(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, folderNodeDTO);
@@ -517,6 +526,53 @@ public class FileStoreServiceImplTest extends CategoryTest {
             FolderNodeDTO.builder().name("folderName2").identifier("folderIdentifier2").build());
   }
 
+  @Test
+  @Owner(developers = BOJAN)
+  @Category(UnitTests.class)
+  public void testListFilesWithoutFilterShouldReturnAll() {
+    when(fileStoreRepository.findAllAndSort(
+             createTestCriteriaForListFiles(null, ""), createSortByLastModifiedAtDesc(), PageRequest.of(0, 10)))
+        .thenReturn(new PageImpl<>(Lists.newArrayList(builder().name("filename1").build())));
+    Page<FileDTO> pageResponse = fileStoreService.listFilesWithFilter(
+        ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, "", "", null, PageRequest.of(0, 10));
+
+    assertThat(pageResponse).isNotNull();
+    assertThat(pageResponse.getContent().size()).isEqualTo(1);
+    assertThat(pageResponse.getContent().get(0).getName()).isEqualTo("filename1");
+  }
+
+  private Criteria createTestCriteriaForListFiles(FilesFilterPropertiesDTO filterProperties, String searchTerm) {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    return createFilesFilterCriteria(scope, filterProperties, searchTerm);
+  }
+
+  @Test
+  @Owner(developers = BOJAN)
+  @Category(UnitTests.class)
+  public void testListFilesWithFilterException() {
+    assertThatThrownBy(
+        ()
+            -> fileStoreService.listFilesWithFilter(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER,
+                "filterIdentifier", "", new FilesFilterPropertiesDTO(), PageRequest.of(0, 10)))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Can not apply both filter properties and saved filter together");
+  }
+
+  @Test
+  @Owner(developers = BOJAN)
+  @Category(UnitTests.class)
+  public void testListCreatedByShouldReturnAll() {
+    when(fileStoreRepository.aggregate(any(), any()))
+        .thenReturn(new AggregationResults<>(
+            Lists.newArrayList(new CreatedBy("testuser1"), new CreatedBy("testuser2")), new Document()));
+    Set<String> createdByList =
+        fileStoreService.getCreatedByList(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+
+    assertThat(createdByList).isNotNull();
+    assertThat(createdByList.size()).isEqualTo(2);
+    assertThat(createdByList.stream().findFirst().get()).isEqualTo("testuser1");
+  }
+
   private static FileDTO aFileDto() {
     return FileDTO.builder()
         .identifier("identifier")
@@ -524,6 +580,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
         .description("some description")
         .name("file-name")
         .type(NGFileType.FILE)
+        .parentIdentifier("parent-identifier")
         .build();
   }
 
@@ -540,7 +597,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
   private void givenThatFileExistsInDatabase() {
     when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
              anyString(), anyString(), anyString(), anyString()))
-        .thenReturn(Optional.of(NGFile.builder().build()));
+        .thenReturn(Optional.of(builder().build()));
   }
 
   private void givenThatDatabaseIsEmpty() {
@@ -562,11 +619,44 @@ public class FileStoreServiceImplTest extends CategoryTest {
         .build();
   }
   private NGFile createNgFile() {
-    return NGFile.builder()
+    return builder()
         .type(NGFileType.FILE)
         .name("oldName")
         .description("oldDescription")
         .identifier("identifier1")
         .build();
+  }
+
+  private List<NGFile> getNgFiles() {
+    return Arrays.asList(builder()
+                             .type(NGFileType.FOLDER)
+                             .name("folderName1")
+                             .identifier("folderIdentifier1")
+                             .parentId(FILE_IDENTIFIER)
+                             .createdBy("testuser1")
+                             .build(),
+        builder()
+            .type(NGFileType.FOLDER)
+            .name("folderName2")
+            .identifier("folderIdentifier2")
+            .parentId(FILE_IDENTIFIER)
+            .createdBy("testuser1")
+            .build(),
+        builder()
+            .type(NGFileType.FILE)
+            .name("fileName")
+            .identifier("fileIdentifier")
+            .parentId(FILE_IDENTIFIER)
+            .createdBy("testuser2")
+            .build());
+  }
+
+  private void givenThatFileNotExistInDB() {
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndParentIdentifierAndName(
+             any(), any(), any(), any(), any()))
+        .thenReturn(Optional.empty());
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
+             any(), any(), any(), any()))
+        .thenReturn(Optional.empty());
   }
 }

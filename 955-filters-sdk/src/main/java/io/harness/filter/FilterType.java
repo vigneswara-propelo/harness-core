@@ -23,5 +23,6 @@ public enum FilterType {
   @JsonProperty("Deployment") DEPLOYMENT,
   @JsonProperty("Audit") AUDIT,
   @JsonProperty("Template") TEMPLATE,
-  @JsonProperty("EnvironmentGroup") ENVIRONMENTGROUP
+  @JsonProperty("EnvironmentGroup") ENVIRONMENTGROUP,
+  @JsonProperty("FileStore") FILESTORE
 }

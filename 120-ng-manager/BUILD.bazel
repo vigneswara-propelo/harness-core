@@ -33,6 +33,7 @@ shared_dependencies = [
     "//947-scim-core:module",
     "//950-ng-core:module",
     "//950-telemetry:module",
+    "//955-filters-sdk:module",
     "//958-migration-sdk:module",
     "//958-ng-file-service-sdk:module",
     "//959-psql-database-models:module",

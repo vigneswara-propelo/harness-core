@@ -25,4 +25,6 @@ public interface FileStoreRepository extends PagingAndSortingRepository<NGFile, 
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String parentIdentifier);
   Optional<NGFile> findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier);
+  Optional<NGFile> findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndParentIdentifierAndName(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String parentIdentifier, String name);
 }

@@ -23,6 +23,9 @@
         "accountIdentifier": {
           "type": "string"
         },
+        "createdBy": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },

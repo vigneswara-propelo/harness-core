@@ -17,6 +17,7 @@ import static io.harness.NGCommonEntityConstants.ORG_KEY;
 import static io.harness.NGCommonEntityConstants.ORG_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.PROJECT_KEY;
 import static io.harness.NGCommonEntityConstants.PROJECT_PARAM_MESSAGE;
+import static io.harness.NGResourceFilterConstants.FILTER_KEY;
 import static io.harness.NGResourceFilterConstants.SEARCH_TERM_KEY;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.ng.core.utils.NGUtils.validate;
@@ -30,6 +31,7 @@ import io.harness.NGCommonEntityConstants;
 import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.validator.EntityIdentifier;
+import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.beans.SearchPageParams;
 import io.harness.ng.core.common.beans.NGTag;
@@ -38,11 +40,13 @@ import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.dto.filestore.FileDTO;
 import io.harness.ng.core.dto.filestore.FileDtoYamlWrapper;
+import io.harness.ng.core.dto.filestore.filter.FilesFilterPropertiesDTO;
 import io.harness.ng.core.dto.filestore.node.FolderNodeDTO;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
 import io.harness.ng.core.filestore.service.FileStoreService;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.serializer.JsonUtils;
+import io.harness.utils.PageUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.inject.Inject;
@@ -59,6 +63,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
@@ -77,6 +82,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.data.domain.Page;
 
 @OwnedBy(CDP)
 @Path("/file-store")
@@ -283,5 +289,43 @@ public class FileStoreResource {
     return ResponseDTO.newResponse(getNGPageResponse(fileStoreService.listReferencedBy(
         SearchPageParams.builder().page(page).size(size).searchTerm(searchTerm).build(), accountIdentifier,
         orgIdentifier, projectIdentifier, identifier, entityType)));
+  }
+
+  @POST
+  @Consumes({"application/json"})
+  @Path("filter")
+  @ApiOperation(value = "Gets the filtered list of files", nickname = "listFilesWithFilter")
+  @Operation(operationId = "listFilesWithFilter", summary = "Get filtered list of files.",
+      responses =
+      { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns filtered list of files.") })
+  public ResponseDTO<Page<FileDTO>>
+  listFilesWithFilter(
+      @RequestBody(description = "Details of Page including: size, index, sort") @BeanParam PageRequest pageRequest,
+      @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) String accountIdentifier,
+      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(PROJECT_KEY) String projectIdentifier,
+      @QueryParam(FILTER_KEY) String filterIdentifier, @QueryParam(SEARCH_TERM_KEY) String searchTerm,
+      @RequestBody(description = "Details of the File filter properties to be applied")
+      FilesFilterPropertiesDTO filesFilterPropertiesDTO) {
+    return ResponseDTO.newResponse(
+        fileStoreService.listFilesWithFilter(accountIdentifier, orgIdentifier, projectIdentifier, filterIdentifier,
+            searchTerm, filesFilterPropertiesDTO, PageUtils.getPageRequest(pageRequest)));
+  }
+
+  @GET
+  @Consumes({"application/json"})
+  @Path("createdBy")
+  @ApiOperation(value = "Get list of created by usernames", nickname = "getCreatedByList")
+  @Operation(operationId = "getCreatedByList", summary = "Get list of created by usernames.",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns the list of created by usernames")
+      })
+  public ResponseDTO<Set<String>>
+  getCreatedByList(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) String accountIdentifier,
+      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(PROJECT_KEY) String projectIdentifier) {
+    return ResponseDTO.newResponse(
+        fileStoreService.getCreatedByList(accountIdentifier, orgIdentifier, projectIdentifier));
   }
 }

@@ -12,13 +12,16 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.beans.SearchPageParams;
 import io.harness.ng.core.dto.filestore.FileDTO;
+import io.harness.ng.core.dto.filestore.filter.FilesFilterPropertiesDTO;
 import io.harness.ng.core.dto.filestore.node.FolderNodeDTO;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @OwnedBy(HarnessTeam.CDP)
 public interface FileStoreService {
@@ -90,4 +93,9 @@ public interface FileStoreService {
    */
   Page<EntitySetupUsageDTO> listReferencedBy(SearchPageParams pageParams, @NotNull String accountIdentifier,
       String orgIdentifier, String projectIdentifier, @NotNull String identifier, EntityType entityType);
+
+  Page<FileDTO> listFilesWithFilter(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String filterIdentifier, String searchTerm, FilesFilterPropertiesDTO filesFilterPropertiesDTO, Pageable pageable);
+
+  Set<String> getCreatedByList(String accountIdentifier, String orgIdentifier, String projectIdentifier);
 }
