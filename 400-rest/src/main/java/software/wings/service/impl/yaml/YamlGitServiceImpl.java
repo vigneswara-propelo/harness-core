@@ -1090,7 +1090,8 @@ public class YamlGitServiceImpl implements YamlGitService {
     // We get some exception in delegate while processing git commands, out of those
     // exceptions, we show the git connection error in UI and create alert so that
     // the user is directed to the git connectivity issue page
-    if (ErrorCode.GIT_CONNECTION_ERROR == gitSyncFailureAlertDetails.getErrorCode()) {
+    if (ErrorCode.GIT_CONNECTION_ERROR == gitSyncFailureAlertDetails.getErrorCode()
+        || (ErrorCode.GENERAL_YAML_ERROR == gitSyncFailureAlertDetails.getErrorCode())) {
       alertService.openAlert(accountId, appId, AlertType.GitConnectionError,
           getGitConnectionErrorAlert(accountId, gitSyncFailureAlertDetails));
     } else {
@@ -1117,7 +1118,7 @@ public class YamlGitServiceImpl implements YamlGitService {
   private GitConnectionErrorAlert getGitConnectionErrorAlert(
       String accountId, GitSyncFailureAlertDetails gitFailureDetails) {
     if (gitFailureDetails == null) {
-      throw new UnexpectedException("The git error detials supplied for the connection error is empty");
+      throw new UnexpectedException("The git error details supplied for the connection error is empty");
     }
     return GitConnectionErrorAlert.builder()
         .accountId(accountId)
