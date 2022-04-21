@@ -1807,6 +1807,27 @@ public class WorkflowExecutionServiceTest extends WingsBaseTest {
     assertThat(stageExecutionList.get(0).getTriggeredBy().getName()).isEqualTo("admin");
   }
 
+  @Test
+  @Owner(developers = INDER)
+  @Category(UnitTests.class)
+  public void shouldNotAllowWorkflowExecutionWhenEnvNotAvailableForNonBuildWorkflow() {
+    Workflow workflow = aWorkflow()
+                            .appId("appId")
+                            .name("workflowName")
+                            .description("Sample Workflow")
+                            .orchestrationWorkflow(aCanaryOrchestrationWorkflow().build())
+                            .workflowType(WorkflowType.ORCHESTRATION)
+                            .uuid("uuid")
+                            .build();
+    when(workflowExecutionServiceHelper.obtainWorkflow(workflow.getUuid(), workflow.getUuid())).thenReturn(workflow);
+
+    assertThatThrownBy(()
+                           -> workflowExecutionService.triggerOrchestrationWorkflowExecution(workflow.getUuid(), null,
+                               workflow.getUuid(), null, ExecutionArgs.builder().build(), null, null))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Environment is not provided in the workflow");
+  }
+
   private WorkflowExecution getFailedOrchestrationWorkflowExecution() {
     return WorkflowExecution.builder()
         .uuid(WORKFLOW_EXECUTION_ID)
