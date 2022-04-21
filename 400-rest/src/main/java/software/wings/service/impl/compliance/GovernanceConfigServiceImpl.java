@@ -484,6 +484,10 @@ public class GovernanceConfigServiceImpl implements GovernanceConfigService {
           entry.setDescription(null);
         }
 
+        if (isEmpty(oldWindow.getDescription())) {
+          oldWindow.setDescription(null);
+        }
+
         // if any updates to an active window
         if (!entry.equals(oldWindow)) {
           if (oldWindow.checkIfActive()) {
