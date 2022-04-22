@@ -190,7 +190,7 @@ public class InstanceBillingDataTasklet implements Tasklet {
             .filter(this::validInstanceForBilling)
             .collect(Collectors.groupingBy(InstanceData::getClusterId));
     String awsDataSetId = customBillingMetaDataService.getAwsDataSetId(accountId);
-    log.info("AWS data set {}", awsDataSetId);
+    log.debug("AWS data set {}", awsDataSetId);
     if (awsDataSetId != null) {
       Set<String> resourceIds = new HashSet<>();
       Set<String> eksFargateResourceIds = new HashSet<>();
@@ -226,7 +226,7 @@ public class InstanceBillingDataTasklet implements Tasklet {
     }
 
     String azureDataSetId = customBillingMetaDataService.getAzureDataSetId(accountId);
-    log.info("Azure data set {}", azureDataSetId);
+    log.debug("Azure data set {}", azureDataSetId);
     if (azureDataSetId != null) {
       Set<String> resourceIds = new HashSet<>();
       instanceDataLists.forEach(instanceData -> {
@@ -475,7 +475,7 @@ public class InstanceBillingDataTasklet implements Tasklet {
                 .divide(capacityFromInstanceData, MathContext.DECIMAL128);
       }
       if (storageUnallocatedFraction.compareTo(BigDecimal.ZERO) < 0) {
-        log.warn("-ve storageUnallocatedCost, Request:{}/Capacity:{} {}", utilizationData.getAvgStorageRequestValue(),
+        log.debug("-ve storageUnallocatedCost, Request:{}/Capacity:{} {}", utilizationData.getAvgStorageRequestValue(),
             utilizationData.getAvgStorageCapacityValue(), instanceData.toString());
         return BigDecimal.ZERO;
       }

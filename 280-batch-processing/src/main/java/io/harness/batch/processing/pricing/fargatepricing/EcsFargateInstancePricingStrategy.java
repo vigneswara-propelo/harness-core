@@ -81,7 +81,7 @@ public class EcsFargateInstancePricingStrategy implements InstancePricingStrateg
 
       VMInstanceBillingData vmInstanceBillingData =
           awsCustomBillingService.getFargateVMPricingInfo(instanceData.getInstanceId(), startTime, endTime);
-      log.info("Custom Fargate Pricing: {}", vmInstanceBillingData);
+      log.debug("Custom Fargate Pricing: {}", vmInstanceBillingData);
       if (null != vmInstanceBillingData && !Double.isNaN(vmInstanceBillingData.getComputeCost())) {
         double pricePerHr = (vmInstanceBillingData.getComputeCost() * 3600) / instanceActiveSeconds;
         double cpuPricePerHr = (vmInstanceBillingData.getCpuCost() * 3600) / instanceActiveSeconds;

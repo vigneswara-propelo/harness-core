@@ -9,6 +9,7 @@ package io.harness.batch.processing.service.impl;
 
 import static io.harness.ccm.commons.entities.k8s.K8sWorkload.encodeDotsInKey;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.persistence.HQuery.excludeAuthorityCount;
 
 import io.harness.batch.processing.service.intfc.WorkloadRepository;
 import io.harness.ccm.commons.beans.recommendation.ResourceId;
@@ -92,7 +93,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
   @Override
   public List<K8sWorkload> getWorkload(String accountId, String clusterId, String namespace, Set<String> workloadName) {
-    return hPersistence.createQuery(K8sWorkload.class)
+    return hPersistence.createQuery(K8sWorkload.class, excludeAuthorityCount)
         .filter(K8sWorkloadKeys.accountId, accountId)
         .filter(K8sWorkloadKeys.clusterId, clusterId)
         .filter(K8sWorkloadKeys.namespace, namespace)
