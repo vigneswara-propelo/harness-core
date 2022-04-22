@@ -26,14 +26,13 @@ import io.harness.eventsframework.consumer.Message;
 import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.framework.v1.service.Resource;
 import io.harness.resourcegroup.framework.v1.service.ResourceInfo;
-import io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
-import io.harness.resourcegroup.model.StaticResourceSelector;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
-import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
-import io.harness.resourcegroup.v1.remote.dto.ResourceGroupResponse;
 import io.harness.resourcegroup.v1.remote.dto.ResourceSelectorFilter;
+import io.harness.resourcegroup.v2.model.ResourceSelector;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 import io.harness.security.SecurityContextBuilder;
 import io.harness.security.dto.ServicePrincipal;
 
@@ -176,19 +175,14 @@ public class ResourceGroupSyncConciliationJob implements Runnable {
     int counter = 0;
     int maxLimit = 50;
     while (counter < maxLimit) {
-      Page<ResourceGroupResponse> resourceGroupsPage =
-          resourceGroupService
-              .list(getResourceGroupsWithResourceFilter(resource),
-                  PageRequest.builder().pageIndex(counter).pageSize(20).build())
-              .map(ResourceGroupMapper::toV1Response);
+      Page<ResourceGroupResponse> resourceGroupsPage = resourceGroupService.list(
+          getResourceGroupsWithResourceFilter(resource), PageRequest.builder().pageIndex(counter).pageSize(20).build());
       if (!resourceGroupsPage.hasContent()) {
         break;
       }
       for (ResourceGroupResponse resourceGroup : resourceGroupsPage.getContent()) {
         deleteResourceFromResourceGroup(resource, resourceGroup.getResourceGroup());
-        resourceGroupService.update(
-            ResourceGroupMapper.fromV1DTO(resourceGroup.getResourceGroup(), resourceGroup.isHarnessManaged()),
-            resourceGroup.isHarnessManaged());
+        resourceGroupService.update(resourceGroup.getResourceGroup(), resourceGroup.isHarnessManaged());
       }
       counter++;
     }
@@ -214,11 +208,11 @@ public class ResourceGroupSyncConciliationJob implements Runnable {
   }
 
   private void deleteResourceFromResourceGroup(ResourceInfo resource, ResourceGroupDTO resourceGroup) {
-    List<StaticResourceSelector> resourceSelectors =
-        resourceGroup.getResourceSelectors()
+    List<ResourceSelector> resourceSelectors =
+        resourceGroup.getResourceFilter()
+            .getResources()
             .stream()
-            .filter(StaticResourceSelector.class ::isInstance)
-            .map(StaticResourceSelector.class ::cast)
+            .filter(Objects::nonNull)
             .filter(rs -> rs.getResourceType().equals(resource.getResourceType()))
             .collect(Collectors.toList());
 

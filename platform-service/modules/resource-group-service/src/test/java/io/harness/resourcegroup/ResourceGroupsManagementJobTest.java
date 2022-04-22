@@ -20,7 +20,6 @@ import io.harness.ng.beans.PageRequest;
 import io.harness.reflection.ReflectionUtils;
 import io.harness.resourcegroup.commons.bootstrap.ConfigurationState;
 import io.harness.resourcegroup.commons.bootstrap.ConfigurationStateRepository;
-import io.harness.resourcegroup.framework.v2.remote.mapper.ResourceGroupMapper;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
@@ -126,9 +125,7 @@ public class ResourceGroupsManagementJobTest extends ResourceGroupTestBase {
         resourceGroupService.list(resourceGroupFilterDTO, pageRequest)
             .getContent()
             .stream()
-            .map(resourceGroup
-                -> ResourceGroupConfigMapper.toConfig(
-                    ResourceGroupMapper.toV1DTO(resourceGroup.getResourceGroup(), resourceGroup.isHarnessManaged())))
+            .map(resourceGroup -> ResourceGroupConfigMapper.toConfig(resourceGroup.getResourceGroup()))
             .collect(Collectors.toSet());
     assertEquals(resourceGroupsConfig.getResourceGroups().size(), currentResourceConfigs.size());
     Map<String, ResourceGroupConfig> currentResourceGroupConfigsMap = new HashMap<>();

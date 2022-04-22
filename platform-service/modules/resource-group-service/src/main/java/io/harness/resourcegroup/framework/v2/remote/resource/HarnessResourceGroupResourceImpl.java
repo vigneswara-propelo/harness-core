@@ -17,6 +17,9 @@ import static io.harness.utils.PageUtils.getNGPageResponse;
 
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
+import io.harness.accesscontrol.OrgIdentifier;
+import io.harness.accesscontrol.ProjectIdentifier;
+import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
@@ -50,8 +53,9 @@ public class HarnessResourceGroupResourceImpl implements HarnessResourceGroupRes
   ResourceGroupValidatorImpl resourceGroupValidator;
 
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<ResourceGroupResponse> get(
-      String identifier, String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+  public ResponseDTO<ResourceGroupResponse> get(@ResourceIdentifier String identifier,
+      @AccountIdentifier String accountIdentifier, @OrgIdentifier String orgIdentifier,
+      @ProjectIdentifier String projectIdentifier) {
     Optional<ResourceGroupResponse> resourceGroupResponseOpt = Optional.ofNullable(
         resourceGroupService.get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier, NO_FILTER)
             .orElse(null));
@@ -60,8 +64,9 @@ public class HarnessResourceGroupResourceImpl implements HarnessResourceGroupRes
 
   @InternalApi
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<ResourceGroupResponse> getInternal(
-      String identifier, String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+  public ResponseDTO<ResourceGroupResponse> getInternal(@ResourceIdentifier String identifier,
+      @AccountIdentifier String accountIdentifier, @OrgIdentifier String orgIdentifier,
+      @ProjectIdentifier String projectIdentifier) {
     Optional<ResourceGroupResponse> resourceGroupResponseOpt =
         Optional.ofNullable(resourceGroupService
                                 .get(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier,
@@ -83,8 +88,9 @@ public class HarnessResourceGroupResourceImpl implements HarnessResourceGroupRes
 
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
-  public ResponseDTO<ResourceGroupResponse> create(@AccountIdentifier String accountIdentifier, String orgIdentifier,
-      String projectIdentifier, ResourceGroupRequest resourceGroupRequest) {
+  public ResponseDTO<ResourceGroupResponse> create(@AccountIdentifier String accountIdentifier,
+      @OrgIdentifier String orgIdentifier, @ProjectIdentifier String projectIdentifier,
+      ResourceGroupRequest resourceGroupRequest) {
     resourceGroupRequest.getResourceGroup().setAllowedScopeLevels(
         Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
@@ -94,8 +100,9 @@ public class HarnessResourceGroupResourceImpl implements HarnessResourceGroupRes
   }
 
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<ResourceGroupResponse> update(String identifier, String accountIdentifier, String orgIdentifier,
-      String projectIdentifier, ResourceGroupRequest resourceGroupRequest) {
+  public ResponseDTO<ResourceGroupResponse> update(@ResourceIdentifier String identifier,
+      @AccountIdentifier String accountIdentifier, @OrgIdentifier String orgIdentifier,
+      @ProjectIdentifier String projectIdentifier, ResourceGroupRequest resourceGroupRequest) {
     resourceGroupRequest.getResourceGroup().setAllowedScopeLevels(
         Sets.newHashSet(ScopeLevel.of(accountIdentifier, orgIdentifier, projectIdentifier).toString().toLowerCase()));
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
@@ -104,8 +111,8 @@ public class HarnessResourceGroupResourceImpl implements HarnessResourceGroupRes
   }
 
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = DELETE_RESOURCEGROUP_PERMISSION)
-  public ResponseDTO<Boolean> delete(
-      String identifier, String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+  public ResponseDTO<Boolean> delete(@ResourceIdentifier String identifier, @AccountIdentifier String accountIdentifier,
+      @OrgIdentifier String orgIdentifier, @ProjectIdentifier String projectIdentifier) {
     return ResponseDTO.newResponse(
         resourceGroupService.delete(Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), identifier));
   }

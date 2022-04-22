@@ -11,7 +11,7 @@ import static io.harness.NGConstants.HARNESS_BLUE;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.resourcegroup.v1.remote.dto.ResourceGroupDTO;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
 
 import lombok.experimental.UtilityClass;
 
@@ -23,7 +23,8 @@ public class ResourceGroupConfigMapper {
                                .identifier(config.getIdentifier())
                                .name(config.getName())
                                .tags(config.getTags())
-                               .resourceSelectors(config.getResourceSelectors())
+                               .includedScopes(config.getIncludedScopes())
+                               .resourceFilter(config.getResourceFilter())
                                .description(config.getDescription())
                                .color(HARNESS_BLUE)
                                .build();
@@ -36,9 +37,10 @@ public class ResourceGroupConfigMapper {
         .identifier(dto.getIdentifier())
         .name(dto.getName())
         .tags(dto.getTags())
-        .resourceSelectors(dto.getResourceSelectors())
         .allowedScopeLevels(dto.getAllowedScopeLevels())
         .description(dto.getDescription())
+        .includedScopes(dto.getIncludedScopes())
+        .resourceFilter(dto.getResourceFilter())
         .build();
   }
 }
