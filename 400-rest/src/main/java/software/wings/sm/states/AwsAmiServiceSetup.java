@@ -48,10 +48,8 @@ import io.harness.tasks.ResponseData;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.api.AmiServiceSetupElement;
-import software.wings.api.AwsAmiInfoVariables;
 import software.wings.api.AwsAmiSetupExecutionData;
 import software.wings.api.PhaseElement;
-import software.wings.api.pcf.InfoVariables;
 import software.wings.beans.Activity;
 import software.wings.beans.Activity.ActivityBuilder;
 import software.wings.beans.Activity.Type;
@@ -76,7 +74,6 @@ import software.wings.service.intfc.InfrastructureMappingService;
 import software.wings.service.intfc.LogService;
 import software.wings.service.intfc.ServiceResourceService;
 import software.wings.service.intfc.SettingsService;
-import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.security.SecretManager;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputService;
 import software.wings.sm.ExecutionContext;
@@ -115,7 +112,6 @@ public class AwsAmiServiceSetup extends State {
   @Inject private SweepingOutputService sweepingOutputService;
   @Inject private AwsAmiServiceStateHelper awsAmiServiceStateHelper;
   @Inject private AwsStateHelper awsStateHelper;
-  @Inject private transient WorkflowExecutionService workflowExecutionService;
   @Inject private FeatureFlagService featureFlagService;
 
   private String commandName = AMI_SETUP_COMMAND_NAME;
@@ -183,27 +179,12 @@ public class AwsAmiServiceSetup extends State {
             .value(amiServiceElement)
             .build());
 
-    populateAmiVariables(context, amiServiceElement);
+    awsStateHelper.populateAmiVariables(context, amiServiceElement.fetchAmiVariableInfo());
     return ExecutionResponse.builder()
         .executionStatus(amiServiceSetupResponse.getExecutionStatus())
         .errorMessage(amiServiceSetupResponse.getErrorMessage())
         .stateExecutionData(awsAmiExecutionData)
         .build();
-  }
-
-  void populateAmiVariables(ExecutionContext context, AmiServiceSetupElement amiServiceElement) {
-    InfoVariables infoVariables = sweepingOutputService.findSweepingOutput(
-        context.prepareSweepingOutputInquiryBuilder().name(AwsAmiInfoVariables.SWEEPING_OUTPUT_NAME).build());
-    if (infoVariables == null) {
-      SweepingOutputInstance.Scope outputScope =
-          workflowExecutionService.isMultiService(context.getAppId(), context.getWorkflowExecutionId())
-          ? SweepingOutputInstance.Scope.PHASE
-          : SweepingOutputInstance.Scope.WORKFLOW;
-      sweepingOutputService.save(context.prepareSweepingOutputBuilder(outputScope)
-                                     .name(AwsAmiInfoVariables.SWEEPING_OUTPUT_NAME)
-                                     .value(amiServiceElement.fetchAmiVariableInfo())
-                                     .build());
-    }
   }
 
   @Override

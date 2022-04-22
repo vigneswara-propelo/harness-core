@@ -159,6 +159,7 @@ public class AwsAmiServiceTrafficShiftAlbSetupTest extends WingsBaseTest {
     ExecutionResponse response = state.handleAsyncResponse(mockContext, ImmutableMap.of(ACTIVITY_ID, delegateResponse));
     verifyAwsAmiTrafficShiftSetupAsyncResponse(awsAmiExecutionData, lbDetailsWithTargetGroups, response);
     verify(sweepingOutputService, times(1)).save(sweepingOutputInstanceArgumentCaptor.capture());
+    verify(awsStateHelper, times(1)).populateAmiVariables(any(), any());
     AmiServiceTrafficShiftAlbSetupElement contextElement =
         (AmiServiceTrafficShiftAlbSetupElement) sweepingOutputInstanceArgumentCaptor.getValue().getValue();
     assertThat(contextElement).isNotNull();
@@ -265,6 +266,7 @@ public class AwsAmiServiceTrafficShiftAlbSetupTest extends WingsBaseTest {
     on(state).set("activityService", mockActivityService);
     on(state).set("spotinstStateHelper", mockSpotinstStateHelper);
     on(state).set("featureFlagService", featureFlagService);
+    on(state).set("awsStateHelper", awsStateHelper);
 
     doReturn(10).when(mockSpotinstStateHelper).renderCount(anyString(), any(), anyInt());
 

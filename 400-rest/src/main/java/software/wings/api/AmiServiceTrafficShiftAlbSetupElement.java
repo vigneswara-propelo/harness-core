@@ -14,6 +14,7 @@ import io.harness.beans.SweepingOutput;
 import io.harness.context.ContextElementType;
 import io.harness.delegate.task.aws.LbDetailsForAlbTrafficShift;
 
+import software.wings.api.AwsAmiInfoVariables.AwsAmiInfoVariablesBuilder;
 import software.wings.service.impl.aws.model.AwsAmiPreDeploymentData;
 import software.wings.sm.ContextElement;
 import software.wings.sm.ExecutionContext;
@@ -74,5 +75,16 @@ public class AmiServiceTrafficShiftAlbSetupElement implements ContextElement, Sw
   @Override
   public String getType() {
     return "amiServiceTrafficShiftAlbSetupElement";
+  }
+
+  public AwsAmiInfoVariables fetchAmiVariableInfo() {
+    AwsAmiInfoVariablesBuilder builder = AwsAmiInfoVariables.builder();
+    if (newAutoScalingGroupName != null) {
+      builder.newAsgName(newAutoScalingGroupName);
+    }
+    if (oldAutoScalingGroupName != null) {
+      builder.oldAsgName(oldAutoScalingGroupName);
+    }
+    return builder.build();
   }
 }

@@ -89,7 +89,6 @@ import software.wings.service.intfc.InfrastructureMappingService;
 import software.wings.service.intfc.LogService;
 import software.wings.service.intfc.ServiceResourceService;
 import software.wings.service.intfc.SettingsService;
-import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.security.SecretManager;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputInquiry;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputInquiry.SweepingOutputInquiryBuilder;
@@ -121,7 +120,6 @@ public class AwsAmiServiceSetupTest extends WingsBaseTest {
   @Mock private SpotInstStateHelper mockSpotinstStateHelper;
   @Mock private SweepingOutputService mockSweepingOutputService;
   @Mock private AwsAmiServiceStateHelper mockAwsAmiServiceStateHelper;
-  @Mock private WorkflowExecutionService workflowExecutionService;
   @Mock private AwsStateHelper awsStateHelper;
   @Mock private FeatureFlagService mockFeatureFlagService;
 
@@ -291,7 +289,8 @@ public class AwsAmiServiceSetupTest extends WingsBaseTest {
                                                       .desiredInstances(1)
                                                       .build();
     ExecutionResponse response = state.handleAsyncResponse(mockContext, ImmutableMap.of(ACTIVITY_ID, delegateResponse));
-    verify(mockSweepingOutputService, times(2)).save(any());
+    verify(mockSweepingOutputService, times(1)).save(any());
+    verify(awsStateHelper).populateAmiVariables(any(), any());
     assertThat(response).isNotNull();
     assertThat(response.getNotifyElements()).isNotNull();
     assertThat(response.getNotifyElements().size()).isEqualTo(0);
