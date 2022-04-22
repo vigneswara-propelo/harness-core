@@ -26,10 +26,10 @@ then
 fi
 
 cp ${HOME}/.bazel-dirs/bin/platform-service/service/module_deploy.jar platform-service-capsule.jar
-cp ../../platform-service/config.yml .
-cp ../../platform-service/keystore.jks .
-cp ../../platform-service/key.pem .
-cp ../../platform-service/cert.pem .
+cp ../../platform-service/config/config.yml .
+cp ../../platform-service/config/keystore.jks .
+cp ../../platform-service/config/key.pem .
+cp ../../platform-service/config/cert.pem .
 cp ../../platform-service/build/container/Dockerfile-platform-service-jenkins-k8-openjdk ./Dockerfile
 cp ../../platform-service/build/container/Dockerfile-platform-service-jenkins-k8-gcr-openjdk ./Dockerfile-gcr
 cp -r ../../platform-service/build/container/scripts/ .
