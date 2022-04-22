@@ -1013,18 +1013,31 @@ public class ApprovalState extends State implements SweepingOutputStateMixin {
   @VisibleForTesting
   String validateMessageLength(String displayText, SlackApprovalParams slackApprovalParams, URL notificationTemplateUrl,
       WorkflowNotificationDetails serviceDetails, StringBuilder artifacts, WorkflowNotificationDetails infraDetails) {
+    // Current caller never send notificationTemplateUrl argument as null
     if (displayText.length() < 1900) {
       return displayText;
     } else {
-      int serviceCount = serviceDetails.getName().split(",").length;
-      boolean areServicesTrimmed = trimNotificationDetails(serviceDetails, serviceCount);
-      int artifactsCount = artifacts.toString().replace("*Artifacts:* ", "").split(", ").length;
-      boolean areArtifactsTrimmed = trimArtifacts(artifacts, artifactsCount);
+      int serviceCount = 0;
+      boolean areServicesTrimmed = false;
+      if (serviceDetails != null) {
+        serviceCount = serviceDetails.getName().split(",").length;
+        areServicesTrimmed = trimNotificationDetails(serviceDetails, serviceCount);
+      }
+
+      int artifactsCount = 0;
+      boolean areArtifactsTrimmed = false;
+      if (artifacts != null) {
+        artifactsCount = artifacts.toString().replace("*Artifacts:* ", "").split(", ").length;
+        areArtifactsTrimmed = trimArtifacts(artifacts, artifactsCount);
+      }
+
       int infraCount = 0;
+      boolean areInfrasTrimmed = false;
       if (infraDetails != null) {
         infraCount = infraDetails.getName().split(",").length;
+        areInfrasTrimmed = trimNotificationDetails(infraDetails, infraCount);
       }
-      boolean areInfrasTrimmed = trimNotificationDetails(infraDetails, infraCount);
+
       SlackApprovalParams params =
           slackApprovalParams.toBuilder()
               .servicesInvolved(areServicesTrimmed
@@ -1468,9 +1481,6 @@ public class ApprovalState extends State implements SweepingOutputStateMixin {
 
   @Override
   public boolean isSelectionLogsTrackingForTasksEnabled() {
-    if (approvalStateType == ApprovalStateType.SHELL_SCRIPT) {
-      return true;
-    }
-    return false;
+    return approvalStateType == ApprovalStateType.SHELL_SCRIPT;
   }
 }
