@@ -7,10 +7,14 @@
 
 package io.harness.service.impl;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.Delegate.DelegateKeys;
+import io.harness.delegate.beans.DelegateGroup;
+import io.harness.delegate.beans.DelegateGroup.DelegateGroupKeys;
 import io.harness.delegate.beans.DelegateProfile;
 import io.harness.delegate.beans.DelegateProfile.DelegateProfileKeys;
 import io.harness.persistence.HPersistence;
@@ -51,6 +55,20 @@ public class DelegateCacheImpl implements DelegateCache {
             }
           });
 
+  private LoadingCache<ImmutablePair<String, String>, DelegateGroup> delegateGroupCache =
+      CacheBuilder.newBuilder()
+          .maximumSize(10000)
+          .expireAfterWrite(30, TimeUnit.SECONDS)
+          .build(new CacheLoader<ImmutablePair<String, String>, DelegateGroup>() {
+            @Override
+            public DelegateGroup load(ImmutablePair<String, String> delegateGroupKey) {
+              return persistence.createQuery(DelegateGroup.class)
+                  .filter(DelegateGroupKeys.accountId, delegateGroupKey.getLeft())
+                  .filter(DelegateGroupKeys.uuid, delegateGroupKey.getRight())
+                  .get();
+            }
+          });
+
   private LoadingCache<ImmutablePair<String, String>, DelegateProfile> delegateProfilesCache =
       CacheBuilder.newBuilder()
           .maximumSize(10000)
@@ -84,6 +102,20 @@ public class DelegateCacheImpl implements DelegateCache {
       log.error("Delegate not found exception", e);
     }
     return null;
+  }
+
+  // only for task assignment logic we should fetch from cache, since we process very heavy number of tasks per minute.
+  @Override
+  public DelegateGroup getDelegateGroup(String accountId, String delegateGroupId) {
+    if (isBlank(accountId) || isBlank(delegateGroupId)) {
+      return null;
+    }
+
+    try {
+      return delegateGroupCache.get(ImmutablePair.of(accountId, delegateGroupId));
+    } catch (ExecutionException | CacheLoader.InvalidCacheLoadException e) {
+      return null;
+    }
   }
 
   @Override

@@ -128,6 +128,9 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
             .build();
     persistence.save(delegateGroup2);
 
+    when(delegateCache.getDelegateGroup(accountId, delegateGroup1.getUuid())).thenReturn(delegateGroup1);
+    when(delegateCache.getDelegateGroup(accountId, delegateGroup2.getUuid())).thenReturn(delegateGroup2);
+
     // Insights
     DelegateInsightsDetails delegateInsightsDetails =
         DelegateInsightsDetails.builder()
@@ -368,8 +371,8 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                                  .build();
     DelegateGroup projectGroup = DelegateGroup.builder()
                                      .accountId(accountId)
-                                     .name("projectGroup")
                                      .ng(true)
+                                     .name("projectGroup")
                                      .owner(DelegateEntityOwnerHelper.buildOwner(orgId, projectId))
                                      .build();
     persistence.save(Arrays.asList(acctGroup, orgGroup, projectGroup));
@@ -456,6 +459,8 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                                        .tags(ImmutableSet.of("custom-grp-tag"))
                                        .build();
     persistence.save(delegateGroup1);
+
+    when(delegateCache.getDelegateGroup(accountId, delegateGroup1.getUuid())).thenReturn(delegateGroup1);
 
     // Insights
     DelegateInsightsDetails delegateInsightsDetails =
@@ -808,7 +813,7 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                             .build();
     persistence.save(delegate);
 
-    Set<String> tags = delegateSetupService.retrieveDelegateImplicitSelectors(delegate).keySet();
+    Set<String> tags = delegateSetupService.retrieveDelegateImplicitSelectors(delegate, false).keySet();
     assertThat(tags.size()).isEqualTo(5);
     assertThat(tags).containsExactlyInAnyOrder(delegateProfile.getName().toLowerCase(), "test", "jkl", "fgh", "host");
   }
@@ -838,7 +843,7 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                             .build();
     persistence.save(delegate);
 
-    Set<String> selectors = delegateSetupService.retrieveDelegateImplicitSelectors(delegate).keySet();
+    Set<String> selectors = delegateSetupService.retrieveDelegateImplicitSelectors(delegate, false).keySet();
     assertThat(selectors.size()).isEqualTo(2);
     assertThat(selectors).containsExactly("fgh", "jkl");
   }
@@ -859,7 +864,7 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                             .build();
     persistence.save(delegate);
 
-    Set<String> tags = delegateSetupService.retrieveDelegateImplicitSelectors(delegate).keySet();
+    Set<String> tags = delegateSetupService.retrieveDelegateImplicitSelectors(delegate, false).keySet();
     assertThat(tags.size()).isEqualTo(1);
   }
 
@@ -888,7 +893,7 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
                             .build();
     persistence.save(delegate);
 
-    Set<String> tags = delegateSetupService.retrieveDelegateImplicitSelectors(delegate).keySet();
+    Set<String> tags = delegateSetupService.retrieveDelegateImplicitSelectors(delegate, false).keySet();
     assertThat(tags.size()).isEqualTo(2);
     assertThat(tags).containsExactlyInAnyOrder("group", "custom-tag");
   }
@@ -1176,6 +1181,11 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
 
     persistence.saveBatch(delegateGroups);
     persistence.saveBatch(delegates);
+
+    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_1)).thenReturn(delegateGroups.get(0));
+    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_2)).thenReturn(delegateGroups.get(1));
+    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_3)).thenReturn(delegateGroups.get(2));
+    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_4)).thenReturn(delegateGroups.get(3));
   }
 
   private List<Delegate> prepareDelegates() {

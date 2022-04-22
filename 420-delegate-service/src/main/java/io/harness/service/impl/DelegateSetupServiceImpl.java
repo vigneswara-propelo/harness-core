@@ -20,7 +20,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -57,7 +56,6 @@ import io.harness.service.intfc.DelegateSetupService;
 import software.wings.beans.SelectorType;
 import software.wings.service.impl.DelegateConnectionDao;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.Duration;
@@ -168,11 +166,13 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
   }
 
   @Override
-  public Map<String, SelectorType> retrieveDelegateImplicitSelectors(Delegate delegate) {
+  public Map<String, SelectorType> retrieveDelegateImplicitSelectors(Delegate delegate, boolean fetchFromCache) {
     SortedMap<String, SelectorType> selectorTypeMap = new TreeMap<>();
 
     if (isNotEmpty(delegate.getDelegateGroupId())) {
-      DelegateGroup delegateGroup = getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
+      DelegateGroup delegateGroup = fetchFromCache
+          ? delegateCache.getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId())
+          : getDelegateGroup(delegate.getAccountId(), delegate.getDelegateGroupId());
 
       if (delegateGroup != null) {
         selectorTypeMap.put(delegateGroup.getName().toLowerCase(), SelectorType.GROUP_NAME);
@@ -676,7 +676,7 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
 
   @Override
   public DelegateGroup getDelegateGroup(String accountId, String delegateGroupId) {
-    if (isBlank(accountId) || isBlank(delegateGroupId)) {
+    if (isEmpty(accountId) || isEmpty(delegateGroupId)) {
       return null;
     }
     return persistence.createQuery(DelegateGroup.class)
@@ -685,10 +685,9 @@ public class DelegateSetupServiceImpl implements DelegateSetupService {
         .get();
   }
 
-  @VisibleForTesting
-  public DelegateGroup getDelegateGroupByAccountAndOwnerAndIdentifier(
+  private DelegateGroup getDelegateGroupByAccountAndOwnerAndIdentifier(
       String accountId, DelegateEntityOwner owner, String delegateGroupIdentifier) {
-    if (isBlank(accountId) || isBlank(delegateGroupIdentifier)) {
+    if (isEmpty(accountId) || isEmpty(delegateGroupIdentifier)) {
       return null;
     }
     return persistence.createQuery(DelegateGroup.class)

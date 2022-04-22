@@ -67,7 +67,7 @@ public interface DelegateService extends OwnedByAccount {
 
   DelegateStatus getDelegateStatusWithScalingGroups(String accountId);
 
-  Set<String> retrieveDelegateSelectors(Delegate delegate);
+  Set<String> retrieveDelegateSelectors(Delegate delegate, boolean fetchFromCache);
 
   List<String> getAvailableVersions(String accountId);
 

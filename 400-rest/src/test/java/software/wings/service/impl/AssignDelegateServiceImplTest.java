@@ -49,6 +49,7 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.harness.annotations.dev.BreakDependencyOn;
@@ -835,7 +836,7 @@ public class AssignDelegateServiceImplTest extends WingsBaseTest {
     for (TagTestData test : tests) {
       Delegate delegate = delegateBuilder.tags(test.getDelegateTags()).build();
       when(delegateCache.get("ACCOUNT_ID", "DELEGATE_ID", false)).thenReturn(delegate);
-      when(delegateService.retrieveDelegateSelectors(delegate))
+      when(delegateService.retrieveDelegateSelectors(delegate, true))
           .thenReturn(delegate.getTags() == null ? new HashSet<>() : new HashSet<>(test.getDelegateTags()));
 
       DelegateTask delegateTask = delegateTaskBuilder.executionCapabilities(test.getExecutionCapabilities()).build();
@@ -849,7 +850,7 @@ public class AssignDelegateServiceImplTest extends WingsBaseTest {
     for (TagTestData test : tests) {
       Delegate delegate = delegateBuilder.tags(test.getDelegateTags()).build();
       when(delegateCache.get("ACCOUNT_ID", "DELEGATE_ID", false)).thenReturn(delegate);
-      when(delegateService.retrieveDelegateSelectors(delegate))
+      when(delegateService.retrieveDelegateSelectors(delegate, true))
           .thenReturn(delegate.getTags() == null ? new HashSet<>() : new HashSet<>(test.getDelegateTags()));
 
       DelegateTask delegateTask = delegateTaskBuilder.executionCapabilities(test.getExecutionCapabilities()).build();
@@ -870,7 +871,7 @@ public class AssignDelegateServiceImplTest extends WingsBaseTest {
   @Owner(developers = GEORGE)
   @Category(UnitTests.class)
   public void assignByNames() {
-    when(delegateService.retrieveDelegateSelectors(any(Delegate.class)))
+    when(delegateService.retrieveDelegateSelectors(any(Delegate.class), eq(true)))
         .thenReturn(emptySet())
         .thenReturn(new HashSet<>(asList("A")))
         .thenReturn(new HashSet<>(asList("a", "b")));

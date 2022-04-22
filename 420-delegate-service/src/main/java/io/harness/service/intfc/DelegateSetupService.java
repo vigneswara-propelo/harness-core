@@ -38,7 +38,7 @@ public interface DelegateSetupService {
 
   String getHostNameForGroupedDelegate(String hostname);
 
-  Map<String, SelectorType> retrieveDelegateImplicitSelectors(Delegate delegate);
+  Map<String, SelectorType> retrieveDelegateImplicitSelectors(Delegate delegate, boolean fetchFromCache);
 
   Map<String, SelectorType> retrieveDelegateGroupImplicitSelectors(DelegateGroup delegateGroup);
 
