@@ -30,11 +30,7 @@ public enum ServiceDefinitionType {
   @JsonProperty(ServiceSpecType.SSH) SSH("Ssh", Lists.newArrayList(ExecutionStrategyType.DEFAULT), ServiceSpecType.SSH),
 
   @JsonProperty(ServiceSpecType.WINRM)
-  WINRM("WinRm", Lists.newArrayList(ExecutionStrategyType.DEFAULT), ServiceSpecType.WINRM),
-
-  @JsonProperty(ServiceSpecType.DEPLOYMENT_TEMPLATE)
-  DEPLOYMENT_TEMPLATE(ServiceSpecType.DEPLOYMENT_TEMPLATE, Lists.newArrayList(ExecutionStrategyType.DEFAULT),
-      ServiceSpecType.DEPLOYMENT_TEMPLATE);
+  WINRM("WinRm", Lists.newArrayList(ExecutionStrategyType.DEFAULT), ServiceSpecType.WINRM);
 
   /*
   //Unsupported for now

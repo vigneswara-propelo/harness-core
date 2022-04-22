@@ -52,7 +52,7 @@ public class CDNGPipelineConfigurationResourceTest extends CategoryTest {
         cdngPipelineConfigurationResource.getExecutionStrategyList().getData();
 
     assertThat(executionStrategyResponse).isNotNull();
-    assertThat(executionStrategyResponse.keySet().size()).isEqualTo(5);
+    assertThat(executionStrategyResponse.keySet().size()).isEqualTo(4);
 
     assertThat(executionStrategyResponse.get(ServiceDefinitionType.KUBERNETES))
         .isEqualTo(Lists.newArrayList(ExecutionStrategyType.ROLLING, ExecutionStrategyType.BLUE_GREEN,
@@ -66,10 +66,6 @@ public class CDNGPipelineConfigurationResourceTest extends CategoryTest {
 
     assertThat(executionStrategyResponse.get(ServiceDefinitionType.WINRM))
         .isEqualTo(Lists.newArrayList(ExecutionStrategyType.DEFAULT));
-
-    assertThat(executionStrategyResponse.get(ServiceDefinitionType.DEPLOYMENT_TEMPLATE))
-        .isEqualTo(Lists.newArrayList(ExecutionStrategyType.DEFAULT));
-
     /*
     Assertions commented as these service definitions are currently not supported
     assertThat(executionStrategyResponse.get(ServiceDefinitionType.PCF))
@@ -90,7 +86,7 @@ public class CDNGPipelineConfigurationResourceTest extends CategoryTest {
         cdngPipelineConfigurationResource.getServiceDefinitionTypes(null).getData();
 
     assertThat(serviceDefinitionTypes).isNotNull();
-    assertThat(serviceDefinitionTypes.size()).isEqualTo(5);
+    assertThat(serviceDefinitionTypes.size()).isEqualTo(4);
   }
 
   @Test

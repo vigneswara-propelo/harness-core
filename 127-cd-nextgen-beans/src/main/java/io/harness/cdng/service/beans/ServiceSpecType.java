@@ -14,5 +14,4 @@ public interface ServiceSpecType {
   String NATIVE_HELM = "NativeHelm";
   String PCF = "Pcf";
   String WINRM = "WinRm";
-  String DEPLOYMENT_TEMPLATE = "DeploymentTemplate";
 }
