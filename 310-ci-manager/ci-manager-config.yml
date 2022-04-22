@@ -143,7 +143,7 @@ ciExecutionServiceConfig:
         - -c
         - python3 ${DOCKER_ENTRYPOINT}
     artifactoryUploadConfig:
-      image: plugins/artifactory:1.0.4
+      image: plugins/artifactory:1.0.6
       entrypoint:
         - /bin/plugin
     cacheGCSConfig:
@@ -164,7 +164,7 @@ ciExecutionServiceConfig:
       gcsUpload: plugins/gcs:1.2.4
       s3Upload: plugins/s3:1.0.4
       security: plugin/sto_plugin:dev
-      artifactoryUpload: plugins/artifactory:1.0.4
+      artifactoryUpload: plugins/artifactory:1.0.6
       cacheGCS: plugins/cache:1.3.7
       cacheS3: plugins/cache:1.3.7
 
