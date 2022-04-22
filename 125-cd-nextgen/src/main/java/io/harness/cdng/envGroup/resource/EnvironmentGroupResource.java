@@ -32,6 +32,7 @@ import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity.EnvironmentGroupKey
 import io.harness.cdng.envGroup.beans.EnvironmentGroupFilterPropertiesDTO;
 import io.harness.cdng.envGroup.mappers.EnvironmentGroupMapper;
 import io.harness.cdng.envGroup.services.EnvironmentGroupService;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.filter.dto.FilterPropertiesDTO;
 import io.harness.gitsync.interceptor.GitEntityDeleteInfoDTO;
@@ -52,6 +53,7 @@ import io.harness.rbac.CDNGRbacPermissions;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.utils.PageUtils;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -235,7 +237,7 @@ public class EnvironmentGroupResource {
     Criteria criteria = environmentGroupService.formCriteria(accountId, orgIdentifier, projectIdentifier, false,
         searchTerm, filterIdentifier, (EnvironmentGroupFilterPropertiesDTO) filterProperties);
 
-    if (!envGroupIds.isEmpty()) {
+    if (EmptyPredicate.isNotEmpty(envGroupIds)) {
       criteria.and(EnvironmentGroupKeys.identifier).in(envGroupIds);
     }
     Pageable pageRequest =
@@ -330,7 +332,8 @@ public class EnvironmentGroupResource {
         EnvironmentGroupMapper.toResponseWrapper(updatedEntity, envResponseList));
   }
 
-  private List<EnvironmentResponse> getEnvironmentResponses(EnvironmentGroupEntity groupEntity) {
+  @VisibleForTesting
+  List<EnvironmentResponse> getEnvironmentResponses(EnvironmentGroupEntity groupEntity) {
     List<EnvironmentResponse> envResponseList = null;
 
     List<Environment> envList =
@@ -341,7 +344,8 @@ public class EnvironmentGroupResource {
     return envResponseList;
   }
 
-  private void validatePermissionForEnvironment(EnvironmentGroupEntity envGroup) {
+  @VisibleForTesting
+  void validatePermissionForEnvironment(EnvironmentGroupEntity envGroup) {
     String accountId = envGroup.getAccountId();
     String orgId = envGroup.getOrgIdentifier();
     String projectId = envGroup.getProjectIdentifier();
