@@ -215,7 +215,7 @@ public class LearningEngineTaskServiceImpl implements LearningEngineTaskService 
     incTaskStatusMetric(learningEngineTask.getAccountId(), ExecutionStatus.FAILED);
     addTimeToFinishMetrics(learningEngineTask);
     executionLogService.getLogger(learningEngineTask)
-        .log(learningEngineTask.getLogLevel(), "Learning engine task status: " + learningEngineTask.getTaskStatus());
+        .error("Learning engine task failed. Exception: ", learningEngineTask.getException());
   }
 
   private boolean hasTaskTimedOut(LearningEngineTask task) {

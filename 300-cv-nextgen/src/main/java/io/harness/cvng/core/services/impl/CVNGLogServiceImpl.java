@@ -12,6 +12,7 @@ import static io.harness.cvng.CVConstants.TAG_DATA_SOURCE;
 import static io.harness.cvng.CVConstants.TAG_ONBOARDING;
 import static io.harness.cvng.CVConstants.TAG_UNRECORDED;
 import static io.harness.cvng.CVConstants.TAG_VERIFICATION_TYPE;
+import static io.harness.cvng.beans.cvnglog.CVNGLogType.EXECUTION_LOG;
 import static io.harness.cvng.beans.cvnglog.TraceableType.ONBOARDING;
 import static io.harness.cvng.beans.cvnglog.TraceableType.VERIFICATION_TASK;
 import static io.harness.persistence.HQuery.excludeAuthority;
@@ -20,6 +21,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogType;
+import io.harness.cvng.beans.cvnglog.ExecutionLogDTO;
 import io.harness.cvng.beans.cvnglog.TraceableType;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.logsFilterParams.DeploymentLogsFilter;
@@ -123,6 +125,20 @@ public class CVNGLogServiceImpl implements CVNGLogService {
         .filter(CVNGLogKeys.traceableId, verificationTaskId)
         .filter(CVNGLogKeys.logType, cvngLogType)
         .asList();
+  }
+
+  @Override
+  public List<ExecutionLogDTO> getExecutionLogDTOs(String accountId, String verificationTaskId) {
+    return hPersistence.createQuery(CVNGLog.class)
+        .filter(CVNGLogKeys.accountId, accountId)
+        .filter(CVNGLogKeys.traceableId, verificationTaskId)
+        .filter(CVNGLogKeys.traceableType, VERIFICATION_TASK)
+        .filter(CVNGLogKeys.logType, EXECUTION_LOG)
+        .asList()
+        .stream()
+        .map(cvngLog -> (List<ExecutionLogDTO>) (List<?>) cvngLog.toCVNGLogDTOs())
+        .flatMap(List<ExecutionLogDTO>::stream)
+        .collect(Collectors.toList());
   }
 
   @Override

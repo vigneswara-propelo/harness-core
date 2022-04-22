@@ -184,6 +184,10 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
     ExecutionLogger executionLogger = executionLogService.getLogger(dataCollectionTask);
     executionLogger.log(
         dataCollectionTask.getLogLevel(), "Data collection task status: " + dataCollectionTask.getStatus());
+    if (result.getException() != null) {
+      executionLogger.log(
+          dataCollectionTask.getLogLevel(), "Data collection task failed with exception: ", result.getException());
+    }
     for (ExecutionLog executionLog : result.getExecutionLogs()) {
       executionLogger.log(executionLog.getLogLevel(), executionLog.getLog());
     }
