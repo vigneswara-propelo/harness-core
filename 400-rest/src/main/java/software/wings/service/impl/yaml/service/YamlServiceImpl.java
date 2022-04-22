@@ -1107,10 +1107,7 @@ public class YamlServiceImpl<Y extends BaseYaml, B extends Base> implements Yaml
       return null;
     } catch (Exception ex) {
       log.warn(format("Unable to process uploaded zip file for account %s, error: %s", accountId, ex));
-      return YamlOperationResponse.builder()
-          .responseStatus(YamlOperationResponse.Status.FAILED)
-          .errorMessage(ex.toString())
-          .build();
+      throw new InvalidArgumentsException("Unable to open zip file or some error in content of zip file", USER, ex);
     }
   }
 
