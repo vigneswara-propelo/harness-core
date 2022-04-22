@@ -161,14 +161,14 @@ public class K8sTaskHelperSecondaryTest extends WingsBaseTest {
   private void setupForDoStatusCheckForAllResources() throws Exception {
     PowerMockito.mockStatic(Utils.class);
     ProcessResult processResult = new ProcessResult(0, new ProcessOutput(" ".getBytes()));
-    when(Utils.executeScript(anyString(), anyString(), any(), any())).thenReturn(processResult);
+    when(Utils.executeScript(anyString(), anyString(), any(), any(), any())).thenReturn(processResult);
 
     when(Utils.encloseWithQuotesIfNeeded("kubectl")).thenReturn("kubectl");
     when(Utils.encloseWithQuotesIfNeeded("oc")).thenReturn("oc");
     when(Utils.encloseWithQuotesIfNeeded("config-path")).thenReturn("config-path");
 
     when(process.destroyForcibly()).thenReturn(process);
-    when(Utils.startScript(any(), any(), any(), any())).thenReturn(startedProcess);
+    when(Utils.startScript(any(), any(), any(), any(), any())).thenReturn(startedProcess);
     when(startedProcess.getProcess()).thenReturn(process);
   }
 
@@ -177,8 +177,12 @@ public class K8sTaskHelperSecondaryTest extends WingsBaseTest {
     String fileContents = Resources.toString(url, Charsets.UTF_8);
     KubernetesResource resource = ManifestHelper.processYaml(fileContents).get(0);
 
-    K8sDelegateTaskParams k8sDelegateTaskParams =
-        K8sDelegateTaskParams.builder().kubectlPath("kubectl").ocPath("oc").kubeconfigPath("config-path").build();
+    K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
+                                                      .kubectlPath("kubectl")
+                                                      .ocPath("oc")
+                                                      .kubeconfigPath("config-path")
+                                                      .workingDirectory("working-dir")
+                                                      .build();
     Kubectl client = Kubectl.client("kubectl", "config-path");
 
     if (allResources) {
@@ -190,7 +194,7 @@ public class K8sTaskHelperSecondaryTest extends WingsBaseTest {
 
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     PowerMockito.verifyStatic(Utils.class);
-    Utils.executeScript(any(), captor.capture(), any(), any());
+    Utils.executeScript(any(), captor.capture(), any(), any(), any());
     assertThat(captor.getValue()).isEqualTo(expectedOutput);
   }
 }

@@ -126,7 +126,7 @@ public class RancherTaskHelper {
 
     return kubernetesConfigBuilder.masterUrl(config.getClusters().get(0).getCluster().getServer())
         .caCert(config.getClusters().get(0).getCluster().getCertificateAuthorityData().toCharArray())
-        .serviceAccountToken(config.getUsers().get(0).getUser().getToken().toCharArray())
+        .serviceAccountTokenSupplier(() -> config.getUsers().get(0).getUser().getToken())
         .build();
   }
 

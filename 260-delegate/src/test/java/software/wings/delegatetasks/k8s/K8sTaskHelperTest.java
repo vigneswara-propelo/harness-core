@@ -584,7 +584,7 @@ public class K8sTaskHelperTest extends CategoryTest {
     ProcessResult processResult = new ProcessResult(0, new ProcessOutput("".getBytes()));
     doReturn(processResult)
         .when(spyHelperBase)
-        .executeCommandUsingUtils(any(K8sDelegateTaskParams.class), any(), any(), any());
+        .executeCommandUsingUtils(any(K8sDelegateTaskParams.class), any(), any(), any(), any());
 
     final List<FileData> manifestFiles = spyHelper.renderTemplateForGivenFiles(k8sDelegateTaskParams,
         K8sDelegateManifestConfig.builder().manifestStoreTypes(Remote).build(), ".", new ArrayList<>(),

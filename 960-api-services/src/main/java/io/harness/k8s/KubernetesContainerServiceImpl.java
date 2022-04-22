@@ -17,8 +17,10 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.ACCESS_DENIED;
 import static io.harness.eraro.ErrorCode.INVALID_CREDENTIAL;
 import static io.harness.exception.WingsException.USER;
+import static io.harness.filesystem.FileIo.writeUtf8StringToFile;
 import static io.harness.k8s.K8sConstants.CLIENT_ID_KEY;
 import static io.harness.k8s.K8sConstants.CLIENT_SECRET_KEY;
+import static io.harness.k8s.K8sConstants.GCP_KUBE_CONFIG_TEMPLATE;
 import static io.harness.k8s.K8sConstants.HARNESS_KUBERNETES_REVISION_LABEL_KEY;
 import static io.harness.k8s.K8sConstants.ID_TOKEN_KEY;
 import static io.harness.k8s.K8sConstants.ISSUER_URL_KEY;
@@ -176,6 +178,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
 import java.time.Duration;
@@ -483,10 +486,9 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
     ProcessResult result = null;
     final File kubeConfigDir = Files.createTempDir();
     try (ByteArrayOutputStream errStream = new ByteArrayOutputStream()) {
-      final String kubeconfigFileContent = getConfigFileContent(kubernetesConfig);
-      final String kubeconfigPath = Paths.get(kubeConfigDir.getPath(), K8sConstants.KUBECONFIG_FILENAME).toString();
-      FileIo.writeUtf8StringToFile(kubeconfigPath, kubeconfigFileContent);
+      persistKubernetesConfig(kubernetesConfig, kubeConfigDir.getPath());
       final Kubectl client = getKubectlClient(useNewKubectlVersion);
+
       for (final String workloadType : Arrays.asList(
                Kind.ReplicaSet.name(), Kind.StatefulSet.name(), Kind.DaemonSet.name(), Kind.Deployment.name())) {
         errStream.reset();
@@ -511,6 +513,24 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
     } finally {
       cleanupDir(kubeConfigDir);
     }
+  }
+
+  @Override
+  public void persistKubernetesConfig(KubernetesConfig config, String dir) throws IOException {
+    persistKubernetesConfigFile(config, dir);
+    persistGcpJsonKeyFileIfNeeded(config, dir);
+  }
+
+  private void persistGcpJsonKeyFileIfNeeded(KubernetesConfig kubernetesConfig, String dir) throws IOException {
+    if (kubernetesConfig.getGcpAccountKeyFileContent().isPresent()) {
+      Path gcpKeyFilePath = Paths.get(dir, K8sConstants.GCP_JSON_KEY_FILE_NAME);
+      writeUtf8StringToFile(gcpKeyFilePath.toString(), kubernetesConfig.getGcpAccountKeyFileContent().get());
+    }
+  }
+
+  private void persistKubernetesConfigFile(KubernetesConfig config, String dir) throws IOException {
+    String configFileContent = getConfigFileContent(config);
+    writeUtf8StringToFile(Paths.get(dir, K8sConstants.KUBECONFIG_FILENAME).toString(), configFileContent);
   }
 
   @VisibleForTesting
@@ -598,8 +618,8 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   public V1TokenReviewStatus fetchTokenReviewStatus(KubernetesConfig kubernetesConfig) {
     ApiClient apiClient = kubernetesHelperService.getApiClient(kubernetesConfig);
 
-    String token = isNotEmpty(kubernetesConfig.getServiceAccountToken())
-        ? new String(kubernetesConfig.getServiceAccountToken())
+    String token = kubernetesConfig.getServiceAccountTokenSupplier() == null
+        ? kubernetesConfig.getServiceAccountTokenSupplier().get()
         : "";
 
     for (String key : apiClient.getAuthentications().keySet()) {
@@ -2135,6 +2155,10 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
       return generateKubeConfigStringForOpenID(config, oidcTokenRequestData);
     }
 
+    if (KubernetesClusterAuthType.GCP_OAUTH == config.getAuthType()) {
+      return generateKubeConfigStringForGcp(config);
+    }
+
     String insecureSkipTlsVerify = isEmpty(config.getCaCert()) ? "insecure-skip-tls-verify: true" : "";
     String certificateAuthorityData =
         isNotEmpty(config.getCaCert()) ? "certificate-authority-data: " + new String(config.getCaCert()) : "";
@@ -2145,8 +2169,9 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
     String password = isNotEmpty(config.getPassword()) ? "password: " + new String(config.getPassword()) : "";
     String username = isNotEmpty(config.getUsername()) ? "username: " + new String(config.getUsername()) : "";
     String namespace = isNotEmpty(config.getNamespace()) ? "namespace: " + config.getNamespace() : "";
-    String serviceAccountTokenData =
-        isNotEmpty(config.getServiceAccountToken()) ? "token: " + new String(config.getServiceAccountToken()) : "";
+    String serviceAccountTokenData = config.getServiceAccountTokenSupplier() != null
+        ? "token: " + config.getServiceAccountTokenSupplier().get()
+        : "";
 
     return KUBE_CONFIG_TEMPLATE.replace("${MASTER_URL}", config.getMasterUrl())
         .replace("${INSECURE_SKIP_TLS_VERIFY}", insecureSkipTlsVerify)
@@ -2157,6 +2182,18 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
         .replace("${CLIENT_KEY_DATA}", clientKeyData)
         .replace("${PASSWORD}", password)
         .replace("${SERVICE_ACCOUNT_TOKEN_DATA}", serviceAccountTokenData);
+  }
+
+  private String generateKubeConfigStringForGcp(KubernetesConfig config) {
+    String insecureSkipTlsVerify = isEmpty(config.getCaCert()) ? "insecure-skip-tls-verify: true" : "";
+    String certificateAuthorityData =
+        isNotEmpty(config.getCaCert()) ? "certificate-authority-data: " + new String(config.getCaCert()) : "";
+    String namespace = isNotEmpty(config.getNamespace()) ? "namespace: " + config.getNamespace() : "";
+
+    return GCP_KUBE_CONFIG_TEMPLATE.replace("${MASTER_URL}", config.getMasterUrl())
+        .replace("${INSECURE_SKIP_TLS_VERIFY}", insecureSkipTlsVerify)
+        .replace("${CERTIFICATE_AUTHORITY_DATA}", certificateAuthorityData)
+        .replace("${NAMESPACE}", namespace);
   }
 
   private void encodeCharsIfNeeded(KubernetesConfig config) {

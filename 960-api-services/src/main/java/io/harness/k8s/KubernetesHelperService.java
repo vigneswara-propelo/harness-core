@@ -79,6 +79,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -217,8 +218,8 @@ public class KubernetesHelperService {
     if (kubernetesConfig.getClientKeyPassphrase() != null) {
       configBuilder.withClientKeyPassphrase(new String(kubernetesConfig.getClientKeyPassphrase()).trim());
     }
-    if (kubernetesConfig.getServiceAccountToken() != null) {
-      configBuilder.withOauthToken(new String(kubernetesConfig.getServiceAccountToken()).trim());
+    if (kubernetesConfig.getServiceAccountTokenSupplier() != null) {
+      configBuilder.withOauthToken(kubernetesConfig.getServiceAccountTokenSupplier().get().trim());
     }
     if (kubernetesConfig.getClientKeyAlgo() != null) {
       configBuilder.withClientKeyAlgo(kubernetesConfig.getClientKeyAlgo().trim());
@@ -508,7 +509,7 @@ public class KubernetesHelperService {
 
     String serviceAccountToken = getFileContent(KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH);
     if (isNotBlank(serviceAccountToken)) {
-      kubernetesConfigBuilder.serviceAccountToken(serviceAccountToken.toCharArray());
+      kubernetesConfigBuilder.serviceAccountTokenSupplier(() -> serviceAccountToken);
     }
 
     return kubernetesConfigBuilder.build();
@@ -524,8 +525,10 @@ public class KubernetesHelperService {
     if (kubeConfigFileExists) {
       String kubeconfigContents;
       try {
-        kubeconfigContents = new String(Files.readAllBytes(kubeConfigFile.toPath()), StandardCharsets.UTF_8);
+        Path kubeConfigPath = kubeConfigFile.toPath();
+        kubeconfigContents = new String(Files.readAllBytes(kubeConfigPath), StandardCharsets.UTF_8);
         Config config = Config.fromKubeconfig(null, kubeconfigContents, kubeConfigFile.getPath());
+
         return kubernetesConfigBuilder.masterUrl(config.getMasterUrl())
             .username(getCharArray(config.getUsername()))
             .password(getCharArray(config.getPassword()))
@@ -533,7 +536,7 @@ public class KubernetesHelperService {
             .clientCert(getCharArray(config.getClientCertData()))
             .clientKey(getCharArray(config.getClientKeyData()))
             .clientKeyPassphrase(getCharArray(config.getClientKeyPassphrase()))
-            .serviceAccountToken(getCharArray(config.getOauthToken()))
+            .serviceAccountTokenSupplier(config::getOauthToken)
             .clientKeyAlgo(config.getClientKeyAlgo())
             .build();
       } catch (IOException e) {

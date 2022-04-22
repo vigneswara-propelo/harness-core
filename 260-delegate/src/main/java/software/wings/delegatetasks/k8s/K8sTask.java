@@ -13,7 +13,6 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.filesystem.FileIo.createDirectoryIfDoesNotExist;
 import static io.harness.filesystem.FileIo.deleteDirectoryAndItsContentIfExists;
 import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfProcess;
-import static io.harness.filesystem.FileIo.writeUtf8StringToFile;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -90,13 +89,11 @@ public class K8sTask extends AbstractDelegateRunnableTask {
                                     .toString();
 
       try {
-        String kubeconfigFileContent =
-            containerDeploymentDelegateHelper.getKubeconfigFileContent(k8sTaskParameters.getK8sClusterConfig());
-
         createDirectoryIfDoesNotExist(workingDirectory);
         waitForDirectoryToBeAccessibleOutOfProcess(workingDirectory, 10);
-        writeUtf8StringToFile(
-            Paths.get(workingDirectory, K8sConstants.KUBECONFIG_FILENAME).toString(), kubeconfigFileContent);
+
+        containerDeploymentDelegateHelper.persistKubernetesConfig(
+            k8sTaskParameters.getK8sClusterConfig(), workingDirectory);
 
         createDirectoryIfDoesNotExist(Paths.get(workingDirectory, K8sConstants.MANIFEST_FILES_DIR).toString());
 

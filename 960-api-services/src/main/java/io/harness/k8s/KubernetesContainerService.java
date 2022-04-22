@@ -189,6 +189,8 @@ public interface KubernetesContainerService {
 
   String getConfigFileContent(KubernetesConfig config);
 
+  void persistKubernetesConfig(KubernetesConfig config, String workingDir) throws IOException;
+
   HasMetadata getController(KubernetesConfig kubernetesConfig, String name, String namespace);
 
   CEK8sDelegatePrerequisite.MetricsServerCheck validateMetricsServer(KubernetesConfig kubernetesConfig);

@@ -251,7 +251,7 @@ public class KubernetesClusterConfig extends SettingValue implements Encryptable
     }
 
     if (EmptyPredicate.isNotEmpty(serviceAccountToken)) {
-      kubernetesConfig.serviceAccountToken(serviceAccountToken);
+      kubernetesConfig.serviceAccountTokenSupplier(() -> new String(serviceAccountToken));
     }
 
     return kubernetesConfig.build();

@@ -42,6 +42,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -73,8 +74,8 @@ public class ContainerDeploymentDelegateHelper {
     return createKubeConfig(getKubernetesConfig(containerServiceParam));
   }
 
-  public String getKubeconfigFileContent(K8sClusterConfig k8sClusterConfig) {
-    return kubernetesContainerService.getConfigFileContent(getKubernetesConfig(k8sClusterConfig, false));
+  public void persistKubernetesConfig(K8sClusterConfig k8sClusterConfig, String workingDir) throws IOException {
+    kubernetesContainerService.persistKubernetesConfig(getKubernetesConfig(k8sClusterConfig, false), workingDir);
   }
 
   private String createKubeConfig(KubernetesConfig kubernetesConfig) {

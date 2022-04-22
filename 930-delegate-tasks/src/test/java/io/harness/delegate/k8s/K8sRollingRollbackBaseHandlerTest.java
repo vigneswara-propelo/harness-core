@@ -68,6 +68,7 @@ import io.harness.rule.Owner;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -141,8 +142,8 @@ public class K8sRollingRollbackBaseHandlerTest extends CategoryTest {
 
     doReturn(processResult)
         .when(k8sRollingRollbackBaseHandler)
-        .executeScript(
-            eq(k8sDelegateTaskParams), eq(expectedOutput), any(LogOutputStream.class), any(LogOutputStream.class));
+        .executeScript(eq(k8sDelegateTaskParams), eq(expectedOutput), any(LogOutputStream.class),
+            any(LogOutputStream.class), any(Map.class));
     doReturn(processResult)
         .when(k8sRollingRollbackBaseHandler)
         .runK8sExecutable(eq(k8sDelegateTaskParams), eq(logCallback), any(RolloutUndoCommand.class));
@@ -364,7 +365,9 @@ public class K8sRollingRollbackBaseHandlerTest extends CategoryTest {
     K8sRollingRollbackHandlerConfig rollbackHandlerConfig = new K8sRollingRollbackHandlerConfig();
     rollbackHandlerConfig.setClient(Kubectl.client("kubectl", "config-path"));
     doReturn(buildProcessResult(0)).when(k8sRollingRollbackBaseHandler).runK8sExecutable(any(), any(), any());
-    doReturn(buildProcessResult(0)).when(k8sRollingRollbackBaseHandler).executeScript(any(), anyString(), any(), any());
+    doReturn(buildProcessResult(0))
+        .when(k8sRollingRollbackBaseHandler)
+        .executeScript(any(), anyString(), any(), any(), any());
 
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
     releaseHistory.getReleases().add(buildReleaseMultipleManagedWorkloads(Failed));
@@ -379,7 +382,8 @@ public class K8sRollingRollbackBaseHandlerTest extends CategoryTest {
     ArgumentCaptor<RolloutUndoCommand> captor = ArgumentCaptor.forClass(RolloutUndoCommand.class);
     ArgumentCaptor<String> stringArgumentCaptor = ArgumentCaptor.forClass(String.class);
     verify(k8sRollingRollbackBaseHandler, times(1)).runK8sExecutable(any(), any(), captor.capture());
-    verify(k8sRollingRollbackBaseHandler, times(1)).executeScript(any(), stringArgumentCaptor.capture(), any(), any());
+    verify(k8sRollingRollbackBaseHandler, times(1))
+        .executeScript(any(), stringArgumentCaptor.capture(), any(), any(), any());
 
     RolloutUndoCommand rolloutUndoCommand = captor.getValue();
     assertThat(rolloutUndoCommand.command())

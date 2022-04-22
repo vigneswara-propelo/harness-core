@@ -57,6 +57,7 @@ import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.IOException;
@@ -305,7 +306,8 @@ public class K8sRollingRollbackBaseHandler {
              LogOutputStream logErrorStream = getExecutionLogOutputStream(logCallback, ERROR)) {
           printableCommand = new StringBuilder().append("\n").append(printableCommand).append("\n\n").toString();
           logOutputStream.write(printableCommand.getBytes(StandardCharsets.UTF_8));
-          result = executeScript(k8sDelegateTaskParams, rolloutUndoCommand, logOutputStream, logErrorStream);
+          result = executeScript(
+              k8sDelegateTaskParams, rolloutUndoCommand, logOutputStream, logErrorStream, Maps.newHashMap());
         }
       } else {
         RolloutUndoCommand rolloutUndoCommand =
@@ -415,9 +417,10 @@ public class K8sRollingRollbackBaseHandler {
 
   @VisibleForTesting
   ProcessResult executeScript(K8sDelegateTaskParams k8sDelegateTaskParams, String rolloutUndoCommand,
-      LogOutputStream logOutputStream, LogOutputStream logErrorStream) throws Exception {
+      LogOutputStream logOutputStream, LogOutputStream logErrorStream, Map<String, String> environment)
+      throws Exception {
     return Utils.executeScript(
-        k8sDelegateTaskParams.getWorkingDirectory(), rolloutUndoCommand, logOutputStream, logErrorStream);
+        k8sDelegateTaskParams.getWorkingDirectory(), rolloutUndoCommand, logOutputStream, logErrorStream, environment);
   }
 
   @VisibleForTesting

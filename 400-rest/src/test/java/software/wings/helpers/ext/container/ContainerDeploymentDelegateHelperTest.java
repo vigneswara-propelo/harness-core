@@ -41,6 +41,7 @@ import software.wings.beans.KubernetesClusterConfig;
 import software.wings.beans.RancherConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.command.ExecutionLogCallback;
+import software.wings.cloudprovider.gke.GkeClusterService;
 import software.wings.delegatetasks.rancher.RancherTaskHelper;
 import software.wings.helpers.ext.k8s.request.K8sClusterConfig;
 import software.wings.service.impl.ContainerServiceParams;
@@ -61,6 +62,7 @@ public class ContainerDeploymentDelegateHelperTest extends WingsBaseTest {
   @Mock LogCallback logCallback;
   @Mock private EncryptionService encryptionService;
   @Mock private RancherTaskHelper rancherTaskHelper;
+  @Mock private GkeClusterService gkeClusterService;
   @Spy @InjectMocks private OidcTokenRetriever oidcTokenRetriever;
   @Spy @InjectMocks ContainerDeploymentDelegateBaseHelper containerDeploymentDelegateBaseHelper;
   @Spy @InjectMocks ContainerDeploymentDelegateHelper containerDeploymentDelegateHelper;
@@ -75,33 +77,6 @@ public class ContainerDeploymentDelegateHelperTest extends WingsBaseTest {
   @Owner(developers = ADWAIT)
   @Category(UnitTests.class)
   public void testGetConfigFileContent() throws Exception {
-    String expected = "apiVersion: v1\n"
-        + "clusters:\n"
-        + "- cluster:\n"
-        + "    server: masterUrl\n"
-        + "    insecure-skip-tls-verify: true\n"
-        + "  name: CLUSTER_NAME\n"
-        + "contexts:\n"
-        + "- context:\n"
-        + "    cluster: CLUSTER_NAME\n"
-        + "    user: HARNESS_USER\n"
-        + "    namespace: namespace\n"
-        + "  name: CURRENT_CONTEXT\n"
-        + "current-context: CURRENT_CONTEXT\n"
-        + "kind: Config\n"
-        + "preferences: {}\n"
-        + "users:\n"
-        + "- name: HARNESS_USER\n"
-        + "  user:\n"
-        + "    auth-provider:\n"
-        + "      config:\n"
-        + "        client-id: clientId\n"
-        + "        client-secret: secret\n"
-        + "        id-token: id_token\n"
-        + "        refresh-token: refresh_token\n"
-        + "        idp-issuer-url: url\n"
-        + "      name: oidc\n";
-
     OpenIdOAuth2AccessToken accessToken = mock(OpenIdOAuth2AccessToken.class);
     doReturn("id_token").when(accessToken).getOpenIdToken();
     doReturn(3600).when(accessToken).getExpiresIn();

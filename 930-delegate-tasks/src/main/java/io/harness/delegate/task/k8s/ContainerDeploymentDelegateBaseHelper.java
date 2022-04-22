@@ -46,6 +46,7 @@ import com.google.inject.Singleton;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -139,6 +140,15 @@ public class ContainerDeploymentDelegateBaseHelper {
   public String getKubeconfigFileContent(K8sInfraDelegateConfig k8sInfraDelegateConfig) {
     decryptK8sInfraDelegateConfig(k8sInfraDelegateConfig);
     return kubernetesContainerService.getConfigFileContent(createKubernetesConfig(k8sInfraDelegateConfig));
+  }
+
+  public void persistKubernetesConfig(KubernetesConfig kubernetesConfig, String directory) throws IOException {
+    kubernetesContainerService.persistKubernetesConfig(kubernetesConfig, directory);
+  }
+
+  public KubernetesConfig decryptAndGetKubernetesConfig(K8sInfraDelegateConfig k8sInfraDelegateConfig) {
+    decryptK8sInfraDelegateConfig(k8sInfraDelegateConfig);
+    return createKubernetesConfig(k8sInfraDelegateConfig);
   }
 
   public void decryptK8sInfraDelegateConfig(K8sInfraDelegateConfig k8sInfraDelegateConfig) {
