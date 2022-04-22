@@ -19,6 +19,7 @@ public enum RepoProviders {
   @JsonProperty("github") GITHUB,
   @JsonProperty("gitlab") GITLAB,
   @JsonProperty("bitbucket") BITBUCKET,
+  @JsonProperty("azure") AZURE,
   @JsonProperty("unknown") UNKNOWN;
 
   @JsonCreator

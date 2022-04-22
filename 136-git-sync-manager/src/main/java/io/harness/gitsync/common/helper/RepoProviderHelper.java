@@ -49,6 +49,8 @@ public class RepoProviderHelper {
         return RepoProviders.BITBUCKET;
       case GITLAB:
         return RepoProviders.GITLAB;
+      case AZURE_REPO:
+        return RepoProviders.AZURE;
       default:
         throw new InvalidRequestException("Unknown connector type " + connectorType);
     }

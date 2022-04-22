@@ -258,7 +258,6 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
     final ChangeType changeType = request.getChangeType();
     final YamlGitConfigDTO yamlGitConfig = yamlGitConfigService.get(
         entityReference.getProjectIdentifier(), entityReference.getOrgIdentifier(), accountId, yamlGitConfigId);
-
     final InfoForGitPush infoForGitPush = getInfoForGitPush(request, entityDetailDTO, accountId, yamlGitConfig);
 
     switch (changeType) {

@@ -17,6 +17,8 @@ import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAccessDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectorDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketApiAccessDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketConnectorDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubApiAccessDTO;
@@ -129,6 +131,8 @@ public class GitSyncConnectorHelper {
       checkAPIAccessFieldPresence((GitlabConnectorDTO) scmConnector);
     } else if (scmConnector instanceof BitbucketConnectorDTO) {
       checkAPIAccessFieldPresence((BitbucketConnectorDTO) scmConnector);
+    } else if (scmConnector instanceof AzureRepoConnectorDTO) {
+      checkAPIAccessFieldPresence((AzureRepoConnectorDTO) scmConnector);
     } else {
       throw new NotImplementedException(
           String.format("The scm apis for the provider type %s is not supported", scmConnector.getClass()));
@@ -160,6 +164,14 @@ public class GitSyncConnectorHelper {
 
   private void checkAPIAccessFieldPresence(BitbucketConnectorDTO bitbucketConnectorDTO) {
     BitbucketApiAccessDTO apiAccess = bitbucketConnectorDTO.getApiAccess();
+    if (apiAccess == null) {
+      throw new InvalidRequestException(
+          "The connector doesn't contain api access field which is required for the git sync ");
+    }
+  }
+
+  private void checkAPIAccessFieldPresence(AzureRepoConnectorDTO azureRepoConnectorDTO) {
+    AzureRepoApiAccessDTO apiAccess = azureRepoConnectorDTO.getApiAccess();
     if (apiAccess == null) {
       throw new InvalidRequestException(
           "The connector doesn't contain api access field which is required for the git sync ");

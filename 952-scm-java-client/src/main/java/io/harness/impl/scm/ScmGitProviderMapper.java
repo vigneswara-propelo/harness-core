@@ -14,6 +14,9 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cistatus.service.GithubAppConfig;
 import io.harness.cistatus.service.GithubService;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAccessDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectorDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoTokenSpecDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketApiAccessDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketConnectorDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketUsernameTokenApiAccessDTO;
@@ -26,6 +29,7 @@ import io.harness.delegate.beans.connector.scm.gitlab.GitlabConnectorDTO;
 import io.harness.delegate.beans.connector.scm.gitlab.GitlabTokenSpecDTO;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.git.GitClientHelper;
+import io.harness.product.ci.scm.proto.AzureProvider;
 import io.harness.product.ci.scm.proto.BitbucketCloudProvider;
 import io.harness.product.ci.scm.proto.BitbucketServerProvider;
 import io.harness.product.ci.scm.proto.GithubProvider;
@@ -36,6 +40,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 
 @Singleton
 @Slf4j
@@ -44,6 +49,9 @@ public class ScmGitProviderMapper {
   @Inject(optional = true) GithubService githubService;
   private static final String SCM_SKIP_SSL = "SCM_SKIP_SSL";
   private static final String ADDITIONAL_CERTS_PATH = "ADDITIONAL_CERTS_PATH";
+  private static final String azure_repo_name_separator = "/_git/";
+  private static final String azure_repo_url_prefix = "dev.azure.com/";
+  private static final String azure_repo_org_separator = "/";
 
   public Provider mapToSCMGitProvider(ScmConnector scmConnector) {
     return mapToSCMGitProvider(scmConnector, false);
@@ -56,6 +64,8 @@ public class ScmGitProviderMapper {
       return mapToGitLabProvider((GitlabConnectorDTO) scmConnector, debug);
     } else if (scmConnector instanceof BitbucketConnectorDTO) {
       return mapToBitbucketProvider((BitbucketConnectorDTO) scmConnector, debug);
+    } else if (scmConnector instanceof AzureRepoConnectorDTO) {
+      return mapToAzureRepoProvider((AzureRepoConnectorDTO) scmConnector, debug);
     } else {
       throw new NotImplementedException(
           String.format("The scm apis for the provider type %s is not supported", scmConnector.getClass()));
@@ -71,6 +81,24 @@ public class ScmGitProviderMapper {
     } else {
       builder.setBitbucketServer(createBitbucketServerProvider(bitbucketConnector));
     }
+    return builder.setSkipVerify(skipVerify).setAdditionalCertsPath(getAdditionalCertsPath()).build();
+  }
+
+  private Provider mapToAzureRepoProvider(AzureRepoConnectorDTO azureRepoConnector, boolean debug) {
+    // e.g:= https.dev.azure.com/org/project_name/_git/repo_name
+    String projectUrl = StringUtils.substringBeforeLast(azureRepoConnector.getUrl(), azure_repo_name_separator);
+    String orgAndProject = StringUtils.substringAfter(projectUrl, azure_repo_url_prefix);
+    String org = StringUtils.substringBefore(orgAndProject, azure_repo_org_separator);
+    String project = StringUtils.substringAfter(orgAndProject, azure_repo_org_separator);
+
+    boolean skipVerify = checkScmSkipVerify();
+    AzureRepoApiAccessDTO apiAccess = azureRepoConnector.getApiAccess();
+    AzureRepoTokenSpecDTO bitbucketUsernameTokenApiAccessDTO = (AzureRepoTokenSpecDTO) apiAccess.getSpec();
+    String pat = String.valueOf(bitbucketUsernameTokenApiAccessDTO.getTokenRef().getDecryptedValue());
+    AzureProvider.Builder azureProvider =
+        AzureProvider.newBuilder().setOrganization(org).setProject(project).setPersonalAccessToken(pat);
+    Provider.Builder builder = Provider.newBuilder().setDebug(debug).setAzure(azureProvider);
+
     return builder.setSkipVerify(skipVerify).setAdditionalCertsPath(getAdditionalCertsPath()).build();
   }
 
