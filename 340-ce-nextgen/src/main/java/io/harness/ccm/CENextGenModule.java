@@ -85,8 +85,7 @@ import io.harness.grpc.DelegateServiceDriverGrpcClientModule;
 import io.harness.grpc.DelegateServiceGrpcClient;
 import io.harness.licensing.usage.interfaces.LicenseUsageInterface;
 import io.harness.lock.DistributedLockImplementation;
-import io.harness.metrics.service.api.MetricService;
-import io.harness.metrics.service.impl.MetricServiceImpl;
+import io.harness.metrics.modules.MetricsModule;
 import io.harness.mongo.AbstractMongoModule;
 import io.harness.mongo.MongoConfig;
 import io.harness.mongo.MongoPersistence;
@@ -234,6 +233,7 @@ public class CENextGenModule extends AbstractModule {
     install(EnforcementClientModule.getInstance(configuration.getNgManagerClientConfig(),
         configuration.getNgManagerServiceSecret(), CE_NEXT_GEN.getServiceId(),
         configuration.getEnforcementClientConfiguration()));
+    install(new MetricsModule());
 
     install(new SecretNGManagerClientModule(configuration.getNgManagerClientConfig(),
         configuration.getNgManagerServiceSecret(), CE_NEXT_GEN.getServiceId()));
@@ -265,7 +265,6 @@ public class CENextGenModule extends AbstractModule {
     bind(EntityMetadataService.class).to(EntityMetadataServiceImpl.class);
     bind(CCMConnectorDetailsService.class).to(CCMConnectorDetailsServiceImpl.class);
     bind(AnomalyService.class).to(AnomalyServiceImpl.class);
-    bind(MetricService.class).to(MetricServiceImpl.class);
     bind(CCMNotificationService.class).to(CCMNotificationServiceImpl.class);
 
     registerEventsFrameworkMessageListeners();

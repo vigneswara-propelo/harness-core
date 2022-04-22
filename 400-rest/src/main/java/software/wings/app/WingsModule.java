@@ -818,6 +818,7 @@ import org.jetbrains.annotations.NotNull;
 @OwnedBy(PL)
 @TargetModule(_360_CG_MANAGER)
 public class WingsModule extends AbstractModule implements ServersModule {
+  private static final int OPEN_CENSUS_EXPORT_INTERVAL_MINUTES = 5;
   private final String hashicorpvault = "hashicorpvault";
   private final MainConfiguration configuration;
   private final StartupMode startupMode;
@@ -1453,7 +1454,7 @@ public class WingsModule extends AbstractModule implements ServersModule {
     bind(CDChangeSourceIntegrationService.class).to(CDChangeSourceIntegrationServiceImpl.class);
     bind(FeatureFlagHelperService.class).to(CGFeatureFlagHelperServiceImpl.class);
 
-    install(new MetricsModule());
+    install(new MetricsModule(OPEN_CENSUS_EXPORT_INTERVAL_MINUTES));
     bind(MetricsPublisher.class).to(DelegateMetricsPublisher.class).in(Scopes.SINGLETON);
 
     // these two module needed for background migration # 214.

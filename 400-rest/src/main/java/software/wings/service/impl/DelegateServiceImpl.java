@@ -865,7 +865,7 @@ public class DelegateServiceImpl implements DelegateService {
     if (isGroupedCgDelegate(delegate)) {
       updatedDelegate = updateAllCgDelegatesInGroup(delegate, updateOperations, "ALL");
     } else {
-      log.info("Updating delegate : {}", delegate.getUuid());
+      log.debug("Updating delegate : {}", delegate.getUuid());
       updatedDelegate = updateDelegate(delegate, updateOperations);
     }
 
@@ -2294,7 +2294,7 @@ public class DelegateServiceImpl implements DelegateService {
       return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
     }
     if (existingDelegate != null) {
-      log.info("Delegate {} already registered for Hostname with : {} IP: {}", delegate.getUuid(),
+      log.debug("Delegate {} already registered for Hostname with : {} IP: {}", delegate.getUuid(),
           delegate.getHostName(), delegate.getIp());
     } else {
       log.info("Registering delegate for Hostname: {} IP: {}", delegate.getHostName(), delegate.getIp());
@@ -2499,7 +2499,7 @@ public class DelegateServiceImpl implements DelegateService {
     long now = clock.millis();
     long skew = Math.abs(now - delegateHeartbeat);
     if (skew > TimeUnit.MINUTES.toMillis(2L)) {
-      log.warn("Delegate {} has clock skew of {}", delegate.getUuid(), Misc.getDurationString(skew));
+      log.debug("Delegate {} has clock skew of {}", delegate.getUuid(), Misc.getDurationString(skew));
     }
     delegate.setLastHeartBeat(now);
     delegate.setValidUntil(Date.from(OffsetDateTime.now().plusDays(Delegate.TTL.toDays()).toInstant()));
@@ -2521,7 +2521,7 @@ public class DelegateServiceImpl implements DelegateService {
       sendTelemetryTrackEvents(
           delegate.getAccountId(), delegate.getDelegateType(), delegate.isNg(), DELEGATE_REGISTERED_EVENT);
     } else {
-      log.info("Delegate exists, updating: {}", delegate.getUuid());
+      log.debug("Delegate exists, updating: {}", delegate.getUuid());
       delegate.setUuid(existingDelegate.getUuid());
       delegate.setStatus(existingDelegate.getStatus());
       delegate.setDelegateProfileId(existingDelegate.getDelegateProfileId());

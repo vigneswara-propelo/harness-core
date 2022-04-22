@@ -184,7 +184,6 @@ public class DelegateTaskRebroadcastIterator implements MongoPersistenceIterator
           count++;
         }
       }
-      log.info("IT: {} tasks were rebroadcast for account id: {}", count, account.getUuid());
     }
   }
 }

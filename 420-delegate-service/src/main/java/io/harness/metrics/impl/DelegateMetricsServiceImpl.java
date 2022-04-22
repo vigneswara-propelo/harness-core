@@ -14,7 +14,6 @@ import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.metrics.AutoMetricContext;
 import io.harness.metrics.beans.DelegateTaskMetricContext;
-import io.harness.metrics.beans.DelegateTaskResponseMetricContext;
 import io.harness.metrics.beans.DelegateTaskTypeMetricContext;
 import io.harness.metrics.beans.PerpetualTaskMetricContext;
 import io.harness.metrics.intfc.DelegateMetricsService;
@@ -76,7 +75,7 @@ public class DelegateMetricsServiceImpl implements DelegateMetricsService {
   @Override
   public void recordDelegateTaskResponseMetrics(
       DelegateTask delegateTask, DelegateTaskResponse response, String metricName) {
-    try (DelegateTaskResponseMetricContext ignore = new DelegateTaskResponseMetricContext(delegateTask, response)) {
+    try (DelegateTaskMetricContext ignore = new DelegateTaskMetricContext(delegateTask.getAccountId())) {
       metricService.incCounter(metricName);
     }
   }
