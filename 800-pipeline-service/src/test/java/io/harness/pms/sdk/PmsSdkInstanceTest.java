@@ -8,10 +8,17 @@
 package io.harness.pms.sdk;
 
 import static io.harness.rule.OwnerRule.BRIJESH;
+import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 import static io.harness.rule.OwnerRule.SAHIL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
@@ -19,13 +26,18 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.datastructures.EphemeralCacheService;
+import io.harness.exception.InvalidRequestException;
+import io.harness.lock.AcquiredLock;
 import io.harness.lock.PersistentLocker;
 import io.harness.pms.contracts.plan.InitializeSdkRequest;
+import io.harness.pms.contracts.plan.InitializeSdkResponse;
+import io.harness.pms.exception.InitializeSdkException;
 import io.harness.pms.pipeline.service.yamlschema.SchemaFetcher;
 import io.harness.repositories.sdk.PmsSdkInstanceRepository;
 import io.harness.rule.Owner;
 import io.harness.springdata.TransactionHelper;
 
+import io.grpc.stub.StreamObserver;
 import io.vavr.collection.Iterator;
 import java.util.Map;
 import javax.cache.Cache;
@@ -45,6 +57,7 @@ public class PmsSdkInstanceTest extends CategoryTest {
   @Mock Cache<String, PmsSdkInstance> sdkInstanceCache;
   @Mock TransactionHelper transactionHelper;
   @Mock EphemeralCacheService ephemeralCacheService;
+  @Mock StreamObserver<InitializeSdkResponse> responseObserver;
   PmsSdkInstanceService pmsSdkInstanceService;
 
   @Before
@@ -71,5 +84,29 @@ public class PmsSdkInstanceTest extends CategoryTest {
     when(sdkInstanceCache.get("cd")).thenReturn(PmsSdkInstance.builder().name("cd").build());
     Map<String, PmsSdkInstance> sdkInstanceMap = pmsSdkInstanceService.getSdkInstanceCacheValue();
     assertThat(sdkInstanceMap.size()).isEqualTo(0);
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testInitializeSdk() {
+    InitializeSdkRequest.Builder requestBuilder = InitializeSdkRequest.newBuilder().putStaticAliases("alias", "value");
+
+    // passing request without name
+    InitializeSdkRequest requestWithoutName = requestBuilder.build();
+    assertThatThrownBy(() -> pmsSdkInstanceService.initializeSdk(requestWithoutName, responseObserver))
+        .isInstanceOf(InvalidRequestException.class);
+
+    // passing request with name
+    InitializeSdkRequest requestWithName = InitializeSdkRequest.newBuilder().setName("name").build();
+    assertThatThrownBy(() -> pmsSdkInstanceService.initializeSdk(requestWithName, responseObserver))
+        .isInstanceOf(InitializeSdkException.class);
+
+    // dummy lock
+    AcquiredLock<?> acquiredLock = mock(AcquiredLock.class);
+    doReturn(acquiredLock).when(persistentLocker).tryToAcquireLock(any(), any());
+    pmsSdkInstanceService.initializeSdk(requestWithName, responseObserver);
+    verify(schemaFetcher, times(1)).invalidateAllCache();
+    verify(ephemeralCacheService, times(1)).getDistributedSet("sdkStepsVisibleInUI");
   }
 }
