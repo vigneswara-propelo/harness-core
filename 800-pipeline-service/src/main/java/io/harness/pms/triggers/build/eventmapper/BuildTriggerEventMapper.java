@@ -51,6 +51,8 @@ public class BuildTriggerEventMapper {
   public WebhookEventMappingResponse consumeBuildTriggerEvent(PollingResponse pollingResponse) {
     String pollingDescriptor = buildTriggerHelper.generatePollingDescriptor(pollingResponse);
 
+    log.info("Received polling response for signatures {} of pollingEvent {}", pollingResponse.getSignaturesList(),
+        pollingDescriptor);
     int signaturesCount = pollingResponse.getSignaturesCount();
     if (signaturesCount <= 0) {
       String msg =
