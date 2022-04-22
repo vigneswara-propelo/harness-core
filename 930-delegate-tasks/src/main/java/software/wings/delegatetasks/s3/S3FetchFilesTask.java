@@ -37,7 +37,7 @@ import software.wings.beans.s3.S3FetchFileResult;
 import software.wings.beans.s3.S3File;
 import software.wings.beans.s3.S3FileRequest;
 import software.wings.delegatetasks.DelegateLogService;
-import software.wings.service.impl.AwsHelperService;
+import software.wings.service.intfc.aws.delegate.AwsS3HelperServiceDelegate;
 import software.wings.service.intfc.security.EncryptionService;
 
 import com.amazonaws.services.s3.model.S3Object;
@@ -57,7 +57,7 @@ import org.springframework.util.StreamUtils;
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
 public class S3FetchFilesTask extends AbstractDelegateRunnableTask {
   @Inject private EncryptionService encryptionService;
-  @Inject private AwsHelperService awsHelperService;
+  @Inject private AwsS3HelperServiceDelegate awsS3HelperServiceDelegate;
   @Inject private DelegateLogService delegateLogService;
 
   public S3FetchFilesTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
@@ -103,7 +103,7 @@ public class S3FetchFilesTask extends AbstractDelegateRunnableTask {
             color(format("%nFetching %s file from s3 bucket: %s", fileKey, s3FileRequest.getBucketName()),
                 LogColor.White, LogWeight.Bold));
         S3Object s3Object =
-            awsHelperService.getObjectFromS3(awsConfig, details, s3FileRequest.getBucketName(), fileKey);
+            awsS3HelperServiceDelegate.getObjectFromS3(awsConfig, details, s3FileRequest.getBucketName(), fileKey);
         try (InputStream is = s3Object.getObjectContent()) {
           S3File s3File = S3File.builder()
                               .fileKey(fileKey)

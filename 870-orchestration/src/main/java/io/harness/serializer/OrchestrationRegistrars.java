@@ -165,6 +165,7 @@ public class OrchestrationRegistrars {
           .addAll(OrchestrationBeansRegistrars.morphiaRegistrars)
           .addAll(OrchestrationDelayRegistrars.morphiaRegistrars)
           .addAll(NGCoreClientRegistrars.morphiaRegistrars)
+          .addAll(RbacCoreRegistrars.morphiaRegistrars)
           .add(OrchestrationMorphiaRegistrar.class)
           .addAll(DelegateTaskRegistrars.morphiaRegistrars)
           .build();

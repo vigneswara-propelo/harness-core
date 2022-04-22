@@ -21,7 +21,7 @@ import io.harness.logging.LogCallback;
 import io.harness.shell.AbstractScriptExecutor;
 import io.harness.shell.SshHelperUtils;
 
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
 import software.wings.delegatetasks.DelegateFileManager;
 

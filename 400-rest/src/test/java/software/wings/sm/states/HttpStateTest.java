@@ -81,7 +81,7 @@ import software.wings.beans.Activity;
 import software.wings.beans.Activity.Type;
 import software.wings.beans.Application;
 import software.wings.beans.Variable;
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.beans.template.TemplateUtils;
 import software.wings.delegatetasks.HttpTask;
 import software.wings.service.impl.AccountServiceImpl;

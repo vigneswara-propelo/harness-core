@@ -132,7 +132,7 @@ import software.wings.beans.approval.ShellScriptApprovalParams;
 import software.wings.beans.approval.ShellScriptApprovalParams.ShellScriptApprovalParamsKeys;
 import software.wings.beans.approval.SlackApprovalParams;
 import software.wings.beans.artifact.Artifact;
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.beans.security.UserGroup;
 import software.wings.common.NotificationMessageResolver;
 import software.wings.common.TemplateExpressionProcessor;

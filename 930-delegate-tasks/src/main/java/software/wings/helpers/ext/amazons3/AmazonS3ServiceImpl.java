@@ -27,10 +27,9 @@ import io.harness.exception.WingsException;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.delegatetasks.collect.artifacts.ArtifactCollectionTaskHelper;
 import software.wings.helpers.ext.jenkins.BuildDetails;
-import software.wings.service.impl.AwsHelperService;
 import software.wings.service.intfc.aws.delegate.AwsS3HelperServiceDelegate;
 
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
@@ -56,7 +55,6 @@ import org.apache.commons.lang3.tuple.Pair;
 @Singleton
 @Slf4j
 public class AmazonS3ServiceImpl implements AmazonS3Service {
-  @Inject AwsHelperService awsHelperService;
   @Inject AwsS3HelperServiceDelegate awsS3HelperServiceDelegate;
   @Inject private ArtifactCollectionTaskHelper artifactCollectionTaskHelper;
   private static final int MAX_FILES_TO_SHOW_IN_UI = 1000;
@@ -77,7 +75,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
     List<S3ObjectSummary> objectSummaryListFinal = new ArrayList<>();
     do {
-      result = awsHelperService.listObjectsInS3(awsConfig, encryptionDetails, listObjectsV2Request);
+      result = awsS3HelperServiceDelegate.listObjectsInS3(awsConfig, encryptionDetails, listObjectsV2Request);
       List<S3ObjectSummary> objectSummaryList = result.getObjectSummaries();
       if (EmptyPredicate.isNotEmpty(objectSummaryList)) {
         objectSummaryListFinal.addAll(objectSummaryList.stream()
@@ -106,7 +104,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
       String bucketName, List<String> artifactPaths, boolean isExpression) {
     try {
       boolean versioningEnabledForBucket =
-          awsHelperService.isVersioningEnabledForBucket(awsConfig, encryptionDetails, bucketName);
+          awsS3HelperServiceDelegate.isVersioningEnabledForBucket(awsConfig, encryptionDetails, bucketName);
       List<BuildDetails> buildDetailsList = Lists.newArrayList();
       for (String artifactPath : artifactPaths) {
         List<BuildDetails> buildDetailsListForArtifactPath = getArtifactsBuildDetails(
@@ -132,7 +130,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
       List<S3ObjectSummary> objectSummaryListFinal = new ArrayList<>();
       do {
-        result = awsHelperService.listObjectsInS3(awsConfig, encryptionDetails, listObjectsV2Request);
+        result = awsS3HelperServiceDelegate.listObjectsInS3(awsConfig, encryptionDetails, listObjectsV2Request);
         List<S3ObjectSummary> objectSummaryList = result.getObjectSummaries();
         if (EmptyPredicate.isNotEmpty(objectSummaryList)) {
           objectSummaryListFinal.addAll(objectSummaryList);
@@ -152,7 +150,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
     } else {
       long size = 0;
       ObjectMetadata objectMetadata =
-          awsHelperService.getObjectMetadataFromS3(awsConfig, encryptionDetails, bucketName, artifactPath);
+          awsS3HelperServiceDelegate.getObjectMetadataFromS3(awsConfig, encryptionDetails, bucketName, artifactPath);
       if (objectMetadata != null) {
         size = objectMetadata.getContentLength();
       }
@@ -223,7 +221,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
     List<String> objectKeyList = Lists.newArrayList();
     ListObjectsV2Result result;
     do {
-      result = awsHelperService.listObjectsInS3(awsConfig, encryptionDetails, listObjectsV2Request);
+      result = awsS3HelperServiceDelegate.listObjectsInS3(awsConfig, encryptionDetails, listObjectsV2Request);
       List<S3ObjectSummary> objectSummaryList = result.getObjectSummaries();
       // in descending order. The most recent one comes first
       objectSummaryList.sort((o1, o2) -> o2.getLastModified().compareTo(o1.getLastModified()));
@@ -257,7 +255,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
   @Override
   public Pair<String, InputStream> downloadArtifact(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String bucketName, String key) {
-    S3Object object = awsHelperService.getObjectFromS3(awsConfig, encryptionDetails, bucketName, key);
+    S3Object object = awsS3HelperServiceDelegate.getObjectFromS3(awsConfig, encryptionDetails, bucketName, key);
     if (object != null) {
       return Pair.of(object.getKey(), object.getObjectContent());
     }
@@ -270,7 +268,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
     String versionId = null;
     if (versioningEnabledForBucket) {
       ObjectMetadata objectMetadata =
-          awsHelperService.getObjectMetadataFromS3(awsConfig, encryptionDetails, bucketName, key);
+          awsS3HelperServiceDelegate.getObjectMetadataFromS3(awsConfig, encryptionDetails, bucketName, key);
       if (objectMetadata != null) {
         versionId = key + ":" + objectMetadata.getVersionId();
       }
@@ -300,7 +298,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
   public Long getFileSize(
       AwsConfig awsConfig, List<EncryptedDataDetail> encryptionDetails, String bucketName, String key) {
     ObjectMetadata objectMetadata =
-        awsHelperService.getObjectMetadataFromS3(awsConfig, encryptionDetails, bucketName, key);
+        awsS3HelperServiceDelegate.getObjectMetadataFromS3(awsConfig, encryptionDetails, bucketName, key);
     if (objectMetadata == null) {
       throw new InvalidRequestException(
           String.format("No object metadata found for key %s in bucket %s", key, bucketName),

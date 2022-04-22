@@ -26,7 +26,7 @@ import io.harness.testframework.graphql.QLTestObject;
 
 import software.wings.beans.Application;
 import software.wings.beans.artifact.Artifact;
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.beans.artifact.ArtifactStream;
 import software.wings.graphql.schema.type.artifact.QLArtifact.QLArtifactKeys;
 import software.wings.service.intfc.ArtifactService;

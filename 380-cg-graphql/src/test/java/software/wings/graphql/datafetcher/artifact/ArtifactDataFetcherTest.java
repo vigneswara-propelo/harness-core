@@ -23,7 +23,7 @@ import io.harness.rule.Owner;
 import software.wings.beans.Service;
 import software.wings.beans.User;
 import software.wings.beans.artifact.Artifact;
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.beans.artifact.ArtifactStream;
 import software.wings.beans.artifact.BambooArtifactStream;
 import software.wings.graphql.datafetcher.AbstractDataFetcherTestBase;

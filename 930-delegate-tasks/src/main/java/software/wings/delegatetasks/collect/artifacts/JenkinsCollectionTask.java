@@ -21,18 +21,22 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.exception.ExceptionUtils;
 import io.harness.security.encryption.EncryptedDataDetail;
 
-import software.wings.beans.BambooConfig;
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
-import software.wings.beans.artifact.ArtifactStreamAttributes;
-import software.wings.helpers.ext.bamboo.BambooService;
+import software.wings.beans.JenkinsConfig;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
+import software.wings.beans.command.JenkinsTaskParams;
+import software.wings.helpers.ext.jenkins.Jenkins;
+import software.wings.service.impl.jenkins.JenkinsUtils;
+import software.wings.service.intfc.security.EncryptionService;
 
 import com.google.inject.Inject;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Created by rishi on 12/14/16.
@@ -40,11 +44,12 @@ import org.apache.commons.lang3.NotImplementedException;
 @OwnedBy(CDC)
 @Slf4j
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
-public class BambooCollectionTask extends AbstractDelegateRunnableTask {
-  @Inject private BambooService bambooService;
+public class JenkinsCollectionTask extends AbstractDelegateRunnableTask {
+  @Inject private JenkinsUtils jenkinsUtil;
+  @Inject private EncryptionService encryptionService;
   @Inject private ArtifactCollectionTaskHelper artifactCollectionTaskHelper;
 
-  public BambooCollectionTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
+  public JenkinsCollectionTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> postExecute, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, postExecute, preExecute);
   }
@@ -56,16 +61,26 @@ public class BambooCollectionTask extends AbstractDelegateRunnableTask {
 
   @Override
   public ListNotifyResponseData run(Object[] parameters) {
-    return run((BambooConfig) parameters[0], (List<EncryptedDataDetail>) parameters[1],
-        (ArtifactStreamAttributes) parameters[2], (Map<String, String>) parameters[3]);
+    JenkinsTaskParams jenkinsTaskParams = (JenkinsTaskParams) parameters[0];
+    return run(jenkinsTaskParams.getJenkinsConfig(), jenkinsTaskParams.getEncryptedDataDetails(),
+        jenkinsTaskParams.getJobName(), jenkinsTaskParams.getArtifactPaths(), jenkinsTaskParams.getMetaData());
   }
 
-  public ListNotifyResponseData run(BambooConfig bambooConfig, List<EncryptedDataDetail> encryptionDetails,
-      ArtifactStreamAttributes artifactStreamAttributes, Map<String, String> arguments) {
+  public ListNotifyResponseData run(JenkinsConfig jenkinsConfig, List<EncryptedDataDetail> encryptionDetails,
+      String jobName, List<String> artifactPaths, Map<String, String> arguments) {
     ListNotifyResponseData res = new ListNotifyResponseData();
+
     try {
-      bambooService.downloadArtifacts(bambooConfig, encryptionDetails, artifactStreamAttributes,
-          arguments.get(ArtifactMetadataKeys.buildNo), getDelegateId(), getTaskId(), getAccountId(), res);
+      encryptionService.decrypt(jenkinsConfig, encryptionDetails, false);
+      Jenkins jenkins = jenkinsUtil.getJenkins(jenkinsConfig);
+
+      for (String artifactPath : artifactPaths) {
+        log.info("Collecting artifact {} of job {}", artifactPath, jobName);
+        Pair<String, InputStream> fileInfo =
+            jenkins.downloadArtifact(jobName, arguments.get(ArtifactMetadataKeys.buildNo), artifactPath);
+        artifactCollectionTaskHelper.addDataToResponse(
+            fileInfo, artifactPath, res, getDelegateId(), getTaskId(), getAccountId());
+      }
     } catch (Exception e) {
       log.warn("Exception: " + ExceptionUtils.getMessage(e), e);
       // TODO: better error handling

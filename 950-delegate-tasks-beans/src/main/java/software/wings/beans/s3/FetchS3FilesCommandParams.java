@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.beans.artifact;
+package software.wings.beans.s3;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.HarnessTeam;
@@ -17,30 +17,28 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
 
-import software.wings.beans.config.ArtifactoryConfig;
-import software.wings.delegatetasks.delegatecapability.CapabilityHelper;
+import software.wings.beans.AwsConfig;
+import software.wings.delegatetasks.utils.CapablityUtility;
 
 import java.util.List;
-import java.util.Map;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
-@TargetModule(HarnessModule._950_DELEGATE_TASKS_BEANS)
-@OwnedBy(HarnessTeam.DEL)
-@Data
+@Value
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ArtifactoryCollectionTaskParameters implements TaskParameters, ExecutionCapabilityDemander {
-  private ArtifactoryConfig artifactoryConfig;
-  private List<EncryptedDataDetail> encryptedDataDetails;
-  private String jobName;
-  private Map<String, String> metadata;
+@OwnedBy(HarnessTeam.CDP)
+@TargetModule(HarnessModule._950_DELEGATE_TASKS_BEANS)
+public class FetchS3FilesCommandParams implements TaskParameters, ExecutionCapabilityDemander {
+  private List<S3FileRequest> s3FileRequests;
+  private AwsConfig awsConfig;
+  private List<EncryptedDataDetail> encryptionDetails;
+  private String accountId;
+  private String appId;
+  private String activityId;
+  private String executionLogName;
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
-    return CapabilityHelper.generateDelegateCapabilities(artifactoryConfig, encryptedDataDetails, maskingEvaluator);
+    return CapablityUtility.generateDelegateCapabilities(awsConfig, getEncryptionDetails(), maskingEvaluator);
   }
 }

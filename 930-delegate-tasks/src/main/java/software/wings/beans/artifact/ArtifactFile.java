@@ -12,17 +12,45 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
-import io.harness.beans.EmbeddedUser;
 import io.harness.delegate.beans.ChecksumType;
+import io.harness.file.HarnessFile;
+import io.harness.mongo.index.FdIndex;
+import io.harness.persistence.CreatedAtAware;
+import io.harness.persistence.PersistentEntity;
+import io.harness.persistence.UpdatedAtAware;
+import io.harness.persistence.UuidAware;
+import io.harness.validation.Create;
+import io.harness.validation.Update;
 
-import software.wings.beans.BaseFile;
+import software.wings.beans.entityinterface.ApplicationAccess;
+
+import com.github.reinert.jjschema.SchemaIgnore;
+import javax.validation.constraints.NotNull;
+import lombok.Data;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.mongodb.morphia.annotations.Id;
 
 /**
  * The Class ArtifactFile.
  */
 @OwnedBy(CDC)
 @TargetModule(HarnessModule._957_CG_BEANS)
-public class ArtifactFile extends BaseFile {
+@Data
+public class ArtifactFile
+    implements PersistentEntity, HarnessFile, UuidAware, CreatedAtAware, UpdatedAtAware, ApplicationAccess {
+  @Id @NotNull(groups = {Update.class}) @SchemaIgnore private String uuid;
+  @FormDataParam("name") private String name;
+  private String fileUuid;
+  @NotEmpty(groups = Create.class) private String fileName;
+  private String mimeType;
+  private long size;
+  private ChecksumType checksumType = ChecksumType.MD5;
+  @FormDataParam("md5") private String checksum;
+  @NotEmpty protected String accountId;
+  @FdIndex @NotNull @SchemaIgnore protected String appId;
+  @SchemaIgnore @FdIndex private long createdAt;
+  @SchemaIgnore @NotNull private long lastUpdatedAt;
   /**
    * The type Builder.
    */
@@ -36,9 +64,7 @@ public class ArtifactFile extends BaseFile {
     private String checksum;
     private String uuid;
     private String appId;
-    private EmbeddedUser createdBy;
     private long createdAt;
-    private EmbeddedUser lastUpdatedBy;
     private long lastUpdatedAt;
 
     private Builder() {}
@@ -152,17 +178,6 @@ public class ArtifactFile extends BaseFile {
     }
 
     /**
-     * With created by builder.
-     *
-     * @param createdBy the created by
-     * @return the builder
-     */
-    public Builder withCreatedBy(EmbeddedUser createdBy) {
-      this.createdBy = createdBy;
-      return this;
-    }
-
-    /**
      * With created at builder.
      *
      * @param createdAt the created at
@@ -170,17 +185,6 @@ public class ArtifactFile extends BaseFile {
      */
     public Builder withCreatedAt(long createdAt) {
       this.createdAt = createdAt;
-      return this;
-    }
-
-    /**
-     * With last updated by builder.
-     *
-     * @param lastUpdatedBy the last updated by
-     * @return the builder
-     */
-    public Builder withLastUpdatedBy(EmbeddedUser lastUpdatedBy) {
-      this.lastUpdatedBy = lastUpdatedBy;
       return this;
     }
 
@@ -211,9 +215,7 @@ public class ArtifactFile extends BaseFile {
           .withChecksum(checksum)
           .withUuid(uuid)
           .withAppId(appId)
-          .withCreatedBy(createdBy)
           .withCreatedAt(createdAt)
-          .withLastUpdatedBy(lastUpdatedBy)
           .withLastUpdatedAt(lastUpdatedAt);
     }
 
@@ -233,9 +235,7 @@ public class ArtifactFile extends BaseFile {
       artifactFile.setChecksum(checksum);
       artifactFile.setUuid(uuid);
       artifactFile.setAppId(appId);
-      artifactFile.setCreatedBy(createdBy);
       artifactFile.setCreatedAt(createdAt);
-      artifactFile.setLastUpdatedBy(lastUpdatedBy);
       artifactFile.setLastUpdatedAt(lastUpdatedAt);
       return artifactFile;
     }

@@ -88,28 +88,6 @@ public class Artifact extends Base {
                  .build())
         .build();
   }
-  @UtilityClass
-  public static final class ArtifactMetadataKeys {
-    public static final String artifactFileName = "artifactFileName";
-    public static final String artifactFileSize = "artifactFileSize";
-    public static final String artifactPath = "artifactPath";
-    public static final String bucketName = "bucketName";
-    public static final String buildFullDisplayName = "buildFullDisplayName";
-    public static final String buildNo = "buildNo";
-    public static final String key = "key";
-    public static final String url = "url";
-    public static final String image = "image";
-    public static final String tag = "tag";
-    public static final String repositoryName = "repositoryName";
-    public static final String nexusPackageName = "package";
-    public static final String version = "version";
-    public static final String nexusGroupId = "groupId";
-    public static final String nexusArtifactId = "artifactId";
-    public static final String versionId = "versionId";
-    public static final String publishDate = "publishDate";
-    public static final String extension = "extension";
-    public static final String classifier = "classifier";
-  }
 
   @UtilityClass
   public static final class ArtifactKeys {

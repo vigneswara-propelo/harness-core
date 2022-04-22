@@ -11,14 +11,14 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.threading.Morpheus.sleep;
 
-import static software.wings.sm.states.BambooState.BambooExecutionResponse;
-
 import static java.time.Duration.ofSeconds;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.ExecutionStatus;
+import io.harness.delegate.beans.DelegateMetaInfo;
+import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
 import io.harness.delegate.beans.DelegateTaskPackage;
 import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
@@ -30,6 +30,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import software.wings.beans.BambooConfig;
 import software.wings.helpers.ext.bamboo.BambooService;
 import software.wings.helpers.ext.bamboo.Result;
+import software.wings.sm.states.FilePathAssertionEntry;
 import software.wings.sm.states.ParameterEntry;
 
 import com.google.common.collect.Maps;
@@ -38,6 +39,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -125,5 +131,24 @@ public class BambooTask extends AbstractDelegateRunnableTask {
     // Get the build result
     log.info("Build execution for build key {} is finished. Result:{} ", buildResultKey, result);
     return result;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @EqualsAndHashCode(callSuper = false)
+  public static final class BambooExecutionResponse implements DelegateTaskNotifyResponseData {
+    private DelegateMetaInfo delegateMetaInfo;
+    private String projectName;
+    private String planName;
+    private String planUrl;
+    private String buildStatus;
+    private String buildUrl;
+    private String buildNumber;
+    private ExecutionStatus executionStatus;
+    private String errorMessage;
+    private List<ParameterEntry> parameters;
+    private List<FilePathAssertionEntry> filePathAssertionMap;
   }
 }

@@ -42,13 +42,11 @@ import io.harness.serializer.KryoRegistrar;
 
 import software.wings.beans.AwsSecretsManagerConfig;
 import software.wings.beans.AzureVaultConfig;
-import software.wings.beans.BaseVaultConfig;
 import software.wings.beans.CyberArkConfig;
 import software.wings.beans.GcpKmsConfig;
 import software.wings.beans.GcpSecretsManagerConfig;
 import software.wings.beans.KmsConfig;
 import software.wings.beans.LocalEncryptionConfig;
-import software.wings.beans.SSHVaultConfig;
 import software.wings.beans.VaultConfig;
 
 import com.amazonaws.services.secretsmanager.model.AWSSecretsManagerException;
@@ -85,9 +83,7 @@ public class SMCoreKryoRegistrar implements KryoRegistrar {
     kryo.register(DeleteSecretTaskResponse.class, 150009);
     kryo.register(ValidateSecretReferenceTaskResponse.class, 150010);
     kryo.register(UpsertSecretTaskType.class, 15011);
-    kryo.register(SSHVaultConfig.class, 15012);
     kryo.register(SSHVaultAuthResult.class, 15013);
-    kryo.register(BaseVaultConfig.class, 15014);
     kryo.register(ValidateSecretManagerConfigurationTaskParameters.class, 15015);
     kryo.register(ValidateSecretManagerConfigurationTaskResponse.class, 15016);
     kryo.register(NGEncryptedData.class, 15017);

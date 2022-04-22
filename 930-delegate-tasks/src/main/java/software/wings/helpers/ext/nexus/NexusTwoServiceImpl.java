@@ -43,7 +43,7 @@ import io.harness.nexus.model.IndexBrowserTreeViewResponse;
 import io.harness.nexus.model.Project;
 import io.harness.stream.StreamUtils;
 
-import software.wings.beans.artifact.Artifact.ArtifactMetadataKeys;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
 import software.wings.common.AlphanumComparator;
 import software.wings.delegatetasks.collect.artifacts.ArtifactCollectionTaskHelper;

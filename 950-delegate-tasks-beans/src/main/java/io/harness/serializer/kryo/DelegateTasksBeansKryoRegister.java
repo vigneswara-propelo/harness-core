@@ -509,6 +509,11 @@ import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
 import software.wings.beans.command.CodeDeployParams;
 import software.wings.beans.command.JenkinsTaskParams;
+import software.wings.beans.s3.FetchS3FilesCommandParams;
+import software.wings.beans.s3.FetchS3FilesExecutionResponse;
+import software.wings.beans.s3.S3Bucket;
+import software.wings.beans.s3.S3FetchFileResult;
+import software.wings.beans.s3.S3File;
 import software.wings.beans.s3.S3FileRequest;
 import software.wings.beans.servicenow.ServiceNowFields;
 import software.wings.beans.shellscript.provisioner.ShellScriptProvisionParameters;
@@ -559,6 +564,7 @@ import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricSli
 import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricTimeSlice;
 import software.wings.settings.validation.ConnectivityValidationAttributes;
 import software.wings.sm.states.JenkinsExecutionResponse;
+import software.wings.sm.states.ParameterEntry;
 import software.wings.yaml.gitSync.YamlGitConfig;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -607,6 +613,12 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(ShellScriptProvisionParameters.class, 7151);
     kryo.register(CCMConfig.class, 7248);
     kryo.register(GitConfig.UrlType.class, 7460);
+    kryo.register(S3Bucket.class, 8064);
+    kryo.register(S3FetchFileResult.class, 8065);
+    kryo.register(S3File.class, 8066);
+    kryo.register(FetchS3FilesExecutionResponse.class, 8068);
+    kryo.register(FetchS3FilesCommandParams.class, 8069);
+    kryo.register(FetchS3FilesExecutionResponse.FetchS3FilesCommandStatus.class, 8070);
     kryo.register(GitConfig.ProviderType.class, 40022);
     kryo.register(AlwaysFalseValidationCapability.class, 19036);
     kryo.register(AppDynamicsConnectionTaskParams.class, 19107);
@@ -1164,6 +1176,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AcrArtifactDelegateResponse.class, 543500);
     kryo.register(AzureResourceGroupsResponse.class, 543501);
     kryo.register(AzureClustersResponse.class, 543502);
+    kryo.register(ParameterEntry.class, 7448);
     kryo.register(HostConnectivityTaskParams.class, 543503);
     kryo.register(HostConnectivityTaskResponse.class, 543504);
 

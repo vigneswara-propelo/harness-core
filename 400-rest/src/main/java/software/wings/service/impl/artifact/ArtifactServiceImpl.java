@@ -64,7 +64,6 @@ import io.harness.queue.QueuePublisher;
 import io.harness.validation.Create;
 import io.harness.validation.Update;
 
-import software.wings.beans.BaseFile;
 import software.wings.beans.artifact.Artifact;
 import software.wings.beans.artifact.Artifact.ArtifactKeys;
 import software.wings.beans.artifact.Artifact.ContentStatus;
@@ -846,7 +845,7 @@ public class ArtifactServiceImpl implements ArtifactService {
     return artifacts.stream()
         .flatMap(artifact -> artifact.getArtifactFiles().stream())
         .filter(artifactFile -> artifactFile.getFileUuid() != null)
-        .map(BaseFile::getFileUuid)
+        .map(ArtifactFile::getFileUuid)
         .collect(Collectors.toList());
   }
 

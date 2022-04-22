@@ -21,12 +21,10 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.exception.ExceptionUtils;
 import io.harness.security.encryption.EncryptedDataDetail;
 
+import software.wings.beans.BambooConfig;
+import software.wings.beans.artifact.ArtifactMetadataKeys;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
-import software.wings.beans.config.NexusConfig;
-import software.wings.delegatetasks.DelegateFileManager;
-import software.wings.helpers.ext.nexus.NexusService;
-import software.wings.service.intfc.security.EncryptionService;
-import software.wings.service.mappers.artifact.NexusConfigToNexusRequestMapper;
+import software.wings.helpers.ext.bamboo.BambooService;
 
 import com.google.inject.Inject;
 import java.util.List;
@@ -37,21 +35,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
 
 /**
- * Created by srinivas on 4/4/17.
+ * Created by rishi on 12/14/16.
  */
 @OwnedBy(CDC)
 @Slf4j
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
-public class NexusCollectionTask extends AbstractDelegateRunnableTask {
-  @Inject private NexusService nexusService;
-
-  @Inject private DelegateFileManager delegateFileManager;
-
+public class BambooCollectionTask extends AbstractDelegateRunnableTask {
+  @Inject private BambooService bambooService;
   @Inject private ArtifactCollectionTaskHelper artifactCollectionTaskHelper;
 
-  @Inject private EncryptionService encryptionService;
-
-  public NexusCollectionTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
+  public BambooCollectionTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> postExecute, BooleanSupplier preExecute) {
     super(delegateTaskPackage, logStreamingTaskClient, postExecute, preExecute);
   }
@@ -63,28 +56,33 @@ public class NexusCollectionTask extends AbstractDelegateRunnableTask {
 
   @Override
   public ListNotifyResponseData run(Object[] parameters) {
-    try {
-      return run((NexusConfig) parameters[0], (List<EncryptedDataDetail>) parameters[1],
-          (ArtifactStreamAttributes) parameters[2], (Map<String, String>) parameters[3]);
-    } catch (Exception e) {
-      log.error("Exception occurred while collecting artifact", e);
-      return new ListNotifyResponseData();
-    }
+    return run((BambooConfig) parameters[0], (List<EncryptedDataDetail>) parameters[1],
+        (ArtifactStreamAttributes) parameters[2], (Map<String, String>) parameters[3]);
   }
 
-  public ListNotifyResponseData run(NexusConfig nexusConfig, List<EncryptedDataDetail> encryptionDetails,
-      ArtifactStreamAttributes artifactStreamAttributes, Map<String, String> artifactMetadata) {
+  public ListNotifyResponseData run(BambooConfig bambooConfig, List<EncryptedDataDetail> encryptionDetails,
+      ArtifactStreamAttributes artifactStreamAttributes, Map<String, String> arguments) {
     ListNotifyResponseData res = new ListNotifyResponseData();
-
     try {
-      log.info("Collecting artifact {}  from Nexus server {}", nexusConfig.getNexusUrl());
-      nexusService.downloadArtifacts(
-          NexusConfigToNexusRequestMapper.toNexusRequest(nexusConfig, encryptionService, encryptionDetails),
-          artifactStreamAttributes, artifactMetadata, getDelegateId(), getTaskId(), getAccountId(), res);
-
+      bambooService.downloadArtifacts(bambooConfig, encryptionDetails, artifactStreamAttributes,
+          arguments.get(ArtifactMetadataKeys.buildNo), getDelegateId(), getTaskId(), getAccountId(), res);
     } catch (Exception e) {
       log.warn("Exception: " + ExceptionUtils.getMessage(e), e);
+      // TODO: better error handling
+
+      //      if (e instanceof WingsException)
+      //        WingsException ex = (WingsException) e;
+      //        errorMessage = Joiner.on(",").join(ex.getResponseMessageList().stream()
+      //            .map(responseMessage ->
+      //            MessageManager.getInstance().getResponseMessage(responseMessage.getCode(),
+      //            ex.getParams()).getMessage()) .collect(toList()));
+      //      } else {
+      //        errorMessage = e.getMessage();
+      //      }
+      //      executionStatus = executionStatus.FAILED;
+      //      jenkinsExecutionResponse.setErrorMessage(errorMessage);
     }
+
     return res;
   }
 }
