@@ -191,7 +191,7 @@ import org.mongodb.morphia.Key;
 public class ExecutionContextImpl implements DeploymentExecutionContext {
   public static final String PHASE_PARAM = "PHASE_PARAM";
   private static final SecureRandom random = new SecureRandom();
-  private static final Pattern wildCharPattern = Pattern.compile("[-+*/\\\\ &$\"'.|]");
+  private static final Pattern wildCharPattern = Pattern.compile("[-+*/\\\\ &$\"'.|\\(\\)]");
   private static final Pattern argsCharPattern = Pattern.compile("[()\"']");
   private static final String CURRENT_STEP_LITERAL = "currentStep";
 
@@ -921,7 +921,8 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
     return context;
   }
 
-  private String normalizeStateName(String name) {
+  @VisibleForTesting
+  String normalizeStateName(String name) {
     Matcher matcher = wildCharPattern.matcher(name);
     return matcher.replaceAll("__");
   }
