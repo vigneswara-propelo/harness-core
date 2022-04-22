@@ -10,13 +10,14 @@ package io.harness.ng.core.dto.secrets;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.ng.core.models.BaseSSHSpec;
-import io.harness.ng.core.models.KerberosConfig;
+import io.harness.ng.core.models.BaseWinRmSpec;
+import io.harness.ng.core.models.KerberosWinRmConfig;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Optional;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,10 +32,20 @@ import lombok.experimental.SuperBuilder;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
 @OwnedBy(CDP)
-public class KerberosConfigDTO extends KerberosBaseConfigDTO implements BaseSSHSpecDTO {
+public class KerberosWinRmConfigDTO extends KerberosBaseConfigDTO implements BaseWinRmSpecDTO {
+  @Schema(description = "This is the Kerberos either to use SSL/https .") private boolean useSSL = true;
+
+  @Schema(description = "This is the Kerberos either to skip certificate checks .")
+  private boolean skipCertChecks = true;
+
+  @Schema(description = "This is the Kerberos powershell runs without loading profile .") private boolean useNoProfile;
+
   @Override
-  public BaseSSHSpec toEntity() {
-    return KerberosConfig.builder()
+  public BaseWinRmSpec toEntity() {
+    return KerberosWinRmConfig.builder()
+        .useSSL(useSSL)
+        .skipCertChecks(skipCertChecks)
+        .useNoProfile(useNoProfile)
         .principal(getPrincipal())
         .realm(getRealm())
         .tgtGenerationMethod(getTgtGenerationMethod())

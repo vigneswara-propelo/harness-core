@@ -7,8 +7,11 @@
 
 package io.harness.ng.core.models;
 
-import io.harness.ng.core.dto.secrets.BaseSSHSpecDTO;
-import io.harness.ng.core.dto.secrets.KerberosConfigDTO;
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.ng.core.dto.secrets.BaseWinRmSpecDTO;
+import io.harness.ng.core.dto.secrets.KerberosWinRmConfigDTO;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Optional;
@@ -22,10 +25,18 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Kerberos")
-public class KerberosConfig extends KerberosBaseConfig implements BaseSSHSpec {
+@OwnedBy(CDP)
+public class KerberosWinRmConfig extends KerberosBaseConfig implements BaseWinRmSpec {
+  private boolean useSSL;
+  private boolean skipCertChecks;
+  private boolean useNoProfile;
+
   @Override
-  public BaseSSHSpecDTO toDTO() {
-    return KerberosConfigDTO.builder()
+  public BaseWinRmSpecDTO toDTO() {
+    return KerberosWinRmConfigDTO.builder()
+        .useSSL(useSSL)
+        .skipCertChecks(skipCertChecks)
+        .useNoProfile(useNoProfile)
         .principal(getPrincipal())
         .realm(getRealm())
         .tgtGenerationMethod(getTgtGenerationMethod())

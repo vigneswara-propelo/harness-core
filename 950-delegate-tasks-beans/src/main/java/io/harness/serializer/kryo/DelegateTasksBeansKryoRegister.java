@@ -227,6 +227,7 @@ import io.harness.delegate.beans.polling.ArtifactPollingDelegateResponse;
 import io.harness.delegate.beans.polling.ManifestPollingDelegateResponse;
 import io.harness.delegate.beans.polling.PollingDelegateResponse;
 import io.harness.delegate.beans.secrets.SSHConfigValidationTaskResponse;
+import io.harness.delegate.beans.secrets.WinRmConfigValidationTaskResponse;
 import io.harness.delegate.beans.storeconfig.ArtifactoryStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.FetchType;
 import io.harness.delegate.beans.storeconfig.GcsHelmStoreDelegateConfig;
@@ -479,6 +480,8 @@ import io.harness.delegate.task.terraform.TerraformTaskNGParameters;
 import io.harness.delegate.task.terraform.TerraformTaskNGResponse;
 import io.harness.delegate.task.terraform.TerraformVarFileInfo;
 import io.harness.ng.core.dto.secrets.KerberosConfigDTO;
+import io.harness.ng.core.dto.secrets.KerberosWinRmConfigDTO;
+import io.harness.ng.core.dto.secrets.NTLMConfigDTO;
 import io.harness.ng.core.dto.secrets.SSHAuthDTO;
 import io.harness.ng.core.dto.secrets.SSHConfigDTO;
 import io.harness.ng.core.dto.secrets.SSHCredentialType;
@@ -489,9 +492,12 @@ import io.harness.ng.core.dto.secrets.SSHPasswordCredentialDTO;
 import io.harness.ng.core.dto.secrets.TGTGenerationMethod;
 import io.harness.ng.core.dto.secrets.TGTKeyTabFilePathSpecDTO;
 import io.harness.ng.core.dto.secrets.TGTPasswordSpecDTO;
+import io.harness.ng.core.dto.secrets.WinRmAuthDTO;
+import io.harness.ng.core.dto.secrets.WinRmCredentialsSpecDTO;
 import io.harness.secretmanagerclient.SSHAuthScheme;
 import io.harness.secretmanagerclient.SecretType;
 import io.harness.secretmanagerclient.ValueType;
+import io.harness.secretmanagerclient.WinRmAuthScheme;
 import io.harness.serializer.KryoRegistrar;
 
 import software.wings.beans.AwsConfig;
@@ -1160,5 +1166,13 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AzureClustersResponse.class, 543502);
     kryo.register(HostConnectivityTaskParams.class, 543503);
     kryo.register(HostConnectivityTaskResponse.class, 543504);
+
+    // WinRm
+    kryo.register(WinRmCredentialsSpecDTO.class, 600001);
+    kryo.register(WinRmAuthScheme.class, 600002);
+    kryo.register(NTLMConfigDTO.class, 600003);
+    kryo.register(KerberosWinRmConfigDTO.class, 600004);
+    kryo.register(WinRmAuthDTO.class, 600005);
+    kryo.register(WinRmConfigValidationTaskResponse.class, 600010);
   }
 }

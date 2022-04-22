@@ -7,7 +7,12 @@
 
 package io.harness.delegate.beans.secrets;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
+import io.harness.annotations.dev.OwnedBy;
+
 import lombok.experimental.SuperBuilder;
 
+@OwnedBy(CDP)
 @SuperBuilder
-public class SSHConfigValidationTaskResponse extends BaseConfigValidationTaskResponse {}
+public class WinRmConfigValidationTaskResponse extends BaseConfigValidationTaskResponse {}

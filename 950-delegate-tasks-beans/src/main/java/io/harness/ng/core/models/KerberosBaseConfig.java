@@ -10,13 +10,23 @@ package io.harness.ng.core.models;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.ng.core.dto.secrets.BaseSSHSpecDTO;
+import io.harness.ng.core.dto.secrets.TGTGenerationMethod;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
+@Data
+@NoArgsConstructor
+@SuperBuilder
 @OwnedBy(CDP)
-public interface BaseSSHSpec {
-  BaseSSHSpecDTO toDTO();
+public class KerberosBaseConfig {
+  protected String principal;
+  protected String realm;
+  protected TGTGenerationMethod tgtGenerationMethod;
+
+  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
+      property = "tgtGenerationMethod", visible = true)
+  protected TGTGenerationSpec spec;
 }
