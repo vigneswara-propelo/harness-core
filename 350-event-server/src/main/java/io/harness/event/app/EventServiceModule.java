@@ -53,6 +53,7 @@ import java.util.Set;
 @OwnedBy(PL)
 public class EventServiceModule extends AbstractModule {
   private final EventServiceConfig eventServiceConfig;
+  private static final int OPEN_CENSUS_EXPORT_INTERVAL_MINUTES = 5;
 
   public EventServiceModule(EventServiceConfig eventServiceConfig) {
     this.eventServiceConfig = eventServiceConfig;
@@ -98,7 +99,7 @@ public class EventServiceModule extends AbstractModule {
 
     install(new RegistrarsModule());
 
-    install(new MetricsModule());
+    install(new MetricsModule(OPEN_CENSUS_EXPORT_INTERVAL_MINUTES));
     bind(MetricsPublisher.class).to(EventServiceMetricsPublisher.class).in(Scopes.SINGLETON);
   }
 

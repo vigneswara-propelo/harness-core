@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventServiceRecordMetrics {
-  public static final int METRICS_RECORD_PERIOD_SECONDS = 60;
+  public static final int METRICS_RECORD_PERIOD_SECONDS = 300;
 
   @Inject private Injector injector;
   @Inject @Named("metricsPublisherExecutor") protected ScheduledExecutorService executorService;
