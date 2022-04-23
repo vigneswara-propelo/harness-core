@@ -502,6 +502,8 @@ import io.harness.serializer.KryoRegistrar;
 
 import software.wings.beans.AwsConfig;
 import software.wings.beans.GitConfig;
+import software.wings.beans.HostReachabilityInfo;
+import software.wings.beans.HostValidationResponse;
 import software.wings.beans.JenkinsConfig;
 import software.wings.beans.JenkinsSubTaskType;
 import software.wings.beans.LambdaTestEvent;
@@ -1177,6 +1179,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(ParameterEntry.class, 7448);
     kryo.register(HostConnectivityTaskParams.class, 543503);
     kryo.register(HostConnectivityTaskResponse.class, 543504);
+    kryo.register(HostValidationResponse.class, 5167);
+    kryo.register(HostReachabilityInfo.class, 5172);
 
     // WinRm
     kryo.register(WinRmCredentialsSpecDTO.class, 600001);

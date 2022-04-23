@@ -9,8 +9,6 @@ package software.wings.delegatetasks.validation.capabilitycheck;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
-import static software.wings.common.Constants.WINDOWS_HOME_DIR;
-
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
@@ -43,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 @OwnedBy(CDP)
 public class WinrmHostValidationCapabilityCheck implements CapabilityCheck {
   @Inject private EncryptionService encryptionService;
+  private static final String WINDOWS_HOME_DIR = "%USERPROFILE%";
 
   @Override
   public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {

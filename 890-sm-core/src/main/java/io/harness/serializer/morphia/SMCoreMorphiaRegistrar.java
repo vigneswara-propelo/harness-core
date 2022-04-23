@@ -12,7 +12,6 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EncryptedData;
 import io.harness.beans.MigrateSecretTask;
-import io.harness.beans.SecretChangeLog;
 import io.harness.beans.SecretKey;
 import io.harness.beans.SecretUsageLog;
 import io.harness.morphia.MorphiaRegistrar;
@@ -26,7 +25,6 @@ public class SMCoreMorphiaRegistrar implements MorphiaRegistrar {
   @Override
   public void registerClasses(Set<Class> set) {
     set.add(EncryptedData.class);
-    set.add(SecretChangeLog.class);
     set.add(SecretUsageLog.class);
     set.add(MigrateSecretTask.class);
     set.add(NGEncryptedData.class);

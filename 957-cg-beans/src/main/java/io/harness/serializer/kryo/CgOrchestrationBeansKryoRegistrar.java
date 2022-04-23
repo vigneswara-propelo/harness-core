@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.ExecutionInterruptType;
 import io.harness.beans.ExecutionStatus;
+import io.harness.beans.OrchestrationWorkflowType;
 import io.harness.beans.SweepingOutput;
 import io.harness.beans.terraform.TerraformPlanParam;
 import io.harness.context.ContextElementType;
@@ -86,5 +87,6 @@ public class CgOrchestrationBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(AmiDeploymentType.class, 400125);
     kryo.register(CloudProviderType.class, 400126);
     kryo.register(TerraformPlanParam.class, 7458);
+    kryo.register(OrchestrationWorkflowType.class, 5148);
   }
 }
