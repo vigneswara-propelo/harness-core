@@ -17,7 +17,9 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class CapablityUtility {
   public static List<ExecutionCapability> generateDelegateCapabilities(ExecutionCapabilityDemander capabilityDemander,
       List<EncryptedDataDetail> encryptedDataDetails, ExpressionEvaluator maskingEvaluator) {

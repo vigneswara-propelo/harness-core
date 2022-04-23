@@ -32,22 +32,11 @@ import io.harness.delegatetasks.ValidateSecretManagerConfigurationTaskParameters
 import io.harness.delegatetasks.ValidateSecretManagerConfigurationTaskResponse;
 import io.harness.delegatetasks.ValidateSecretReferenceTaskParameters;
 import io.harness.delegatetasks.ValidateSecretReferenceTaskResponse;
-import io.harness.exception.SecretManagementDelegateException;
-import io.harness.exception.SecretManagementException;
 import io.harness.helpers.ext.vault.SSHVaultAuthResult;
 import io.harness.helpers.ext.vault.SecretEngineSummary;
 import io.harness.helpers.ext.vault.VaultAppRoleLoginResult;
 import io.harness.ng.core.entities.NGEncryptedData;
 import io.harness.serializer.KryoRegistrar;
-
-import software.wings.beans.AwsSecretsManagerConfig;
-import software.wings.beans.AzureVaultConfig;
-import software.wings.beans.CyberArkConfig;
-import software.wings.beans.GcpKmsConfig;
-import software.wings.beans.GcpSecretsManagerConfig;
-import software.wings.beans.KmsConfig;
-import software.wings.beans.LocalEncryptionConfig;
-import software.wings.beans.VaultConfig;
 
 import com.amazonaws.services.secretsmanager.model.AWSSecretsManagerException;
 import com.esotericsoftware.kryo.Kryo;
@@ -56,22 +45,12 @@ import com.esotericsoftware.kryo.Kryo;
 public class SMCoreKryoRegistrar implements KryoRegistrar {
   @Override
   public void register(Kryo kryo) {
-    kryo.register(AwsSecretsManagerConfig.class, 7178);
     kryo.register(AWSSecretsManagerException.class, 7184);
-    kryo.register(AzureVaultConfig.class, 7205);
-    kryo.register(CyberArkConfig.class, 7228);
     kryo.register(EncryptedData.class, 5124);
     kryo.register(EncryptedDataParent.class, 7335);
-    kryo.register(GcpKmsConfig.class, 7290);
-    kryo.register(GcpSecretsManagerConfig.class, 72100);
-    kryo.register(KmsConfig.class, 5183);
-    kryo.register(LocalEncryptionConfig.class, 7180);
     kryo.register(SecretChangeLog.class, 5598);
     kryo.register(SecretEngineSummary.class, 7239);
-    kryo.register(SecretManagementDelegateException.class, 5585);
-    kryo.register(SecretManagementException.class, 5517);
     kryo.register(VaultAppRoleLoginResult.class, 7240);
-    kryo.register(VaultConfig.class, 5214);
     kryo.register(ValidateSecretReferenceTaskParameters.class, 150001);
     kryo.register(UpsertSecretTaskParameters.class, 150002);
     kryo.register(FetchSecretTaskParameters.class, 150003);

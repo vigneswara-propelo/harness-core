@@ -14,7 +14,7 @@ import static io.harness.shell.SshSessionFactory.generateTGTUsingSshConfig;
 import static io.harness.shell.SshSessionFactory.getSSHSession;
 
 import static software.wings.beans.yaml.YamlConstants.GIT_YAML_LOG_PREFIX;
-import static software.wings.utils.SshHelperUtils.createSshSessionConfig;
+import static software.wings.utils.SshDelegateHelperUtils.createSshSessionConfig;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;

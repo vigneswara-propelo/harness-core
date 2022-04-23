@@ -514,7 +514,6 @@ import software.wings.beans.s3.FetchS3FilesExecutionResponse;
 import software.wings.beans.s3.S3Bucket;
 import software.wings.beans.s3.S3FetchFileResult;
 import software.wings.beans.s3.S3File;
-import software.wings.beans.s3.S3FileRequest;
 import software.wings.beans.servicenow.ServiceNowFields;
 import software.wings.beans.shellscript.provisioner.ShellScriptProvisionParameters;
 import software.wings.beans.yaml.Change;
@@ -1093,7 +1092,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(EcsServiceDeployResponse.class, 7149);
     kryo.register(ExistingStackInfo.class, 5479);
     kryo.register(AwsLambdaDetails.class, 5701);
-    kryo.register(S3FileRequest.class, 8067);
     kryo.register(CodeDeployParams.class, 5189);
     kryo.register(ServiceNowAction.class, 7156);
     kryo.register(ServiceNowFields.class, 7169);
