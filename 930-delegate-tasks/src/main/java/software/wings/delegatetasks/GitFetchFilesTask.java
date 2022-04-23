@@ -209,6 +209,10 @@ public class GitFetchFilesTask extends AbstractDelegateRunnableTask {
       gitFetchFilesResult =
           gitService.fetchFilesByPath(gitConfig, gitFileConfig.getConnectorId(), gitFileConfig.getCommitId(),
               gitFileConfig.getBranch(), filePathsToFetch, gitFileConfig.isUseBranch(), shouldExportCommitSha);
+      if (gitFileConfig.isUseBranch()) {
+        executionLogCallback.saveExecutionLog("\nFetched files for Branch: " + gitFileConfig.getBranch()
+            + " with CommitId: " + gitFetchFilesResult.getLatestCommitSHA());
+      }
     }
 
     gitFetchFilesTaskHelper.printFileNamesInExecutionLogs(
