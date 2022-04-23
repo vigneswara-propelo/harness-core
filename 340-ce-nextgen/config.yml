@@ -133,6 +133,7 @@ gcpConfig:
 ceAzureSetupConfig:
   azureAppClientId: azureAppClientIdPlaceholder
   azureAppClientSecret: azureAppClientSecretplaceholder
+  enableFileCheckAtSource: false
 
 awsConfig:
   accessKey: accessKey_placeholder

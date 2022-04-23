@@ -224,6 +224,10 @@ public class CEAzureConnectorValidator extends io.harness.ccm.connectors.Abstrac
   public Collection<ErrorDetail> validateIfFileIsPresent(
       com.azure.core.http.rest.PagedIterable<BlobItem> blobItems, String prefix) {
     List<ErrorDetail> errorDetails = new ArrayList<>();
+    if (!configuration.getCeAzureSetupConfig().isEnableFileCheckAtSource()) {
+      log.info("File present check is disabled in config.");
+      return errorDetails;
+    }
     String latestFileName = "";
     Instant latestFileLastModifiedTime = Instant.EPOCH;
     Instant lastModifiedTime;
