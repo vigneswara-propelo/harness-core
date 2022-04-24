@@ -43,7 +43,6 @@ import org.apache.commons.lang3.NotImplementedException;
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
 @OwnedBy(CDP)
 public class HelmCollectChartTask extends AbstractDelegateRunnableTask {
-  @Inject private HelmTaskHelper helmTaskHelper;
   @Inject private DelegateLogService delegateLogService;
   @Inject
   @Named(ManifestRepoServiceType.HELM_COMMAND_SERVICE)

@@ -79,6 +79,9 @@ import software.wings.delegatetasks.validation.capabilities.GitConnectionCapabil
 import software.wings.delegatetasks.validation.capabilities.WinrmHostValidationCapability;
 import software.wings.helpers.ext.azure.devops.AzureArtifactsFeed;
 import software.wings.helpers.ext.azure.devops.AzureArtifactsPackageVersion;
+import software.wings.helpers.ext.helm.request.HelmChartCollectionParams;
+import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
+import software.wings.helpers.ext.helm.response.HelmCollectChartResponse;
 import software.wings.helpers.ext.k8s.request.K8sClusterConfig;
 import software.wings.helpers.ext.mail.SmtpConfig;
 import software.wings.helpers.ext.pcf.request.CfCommandSetupRequest;
@@ -235,5 +238,9 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(BasicValidationInfo.class, 7325);
     kryo.register(HostValidationTaskParameters.class, 7341);
     kryo.register(GcpSecretsManagerConfig.class, 72100);
+    kryo.register(HelmChartCollectionParams.class, 8058);
+    kryo.register(HelmChartConfigParams.class, 7167);
+    kryo.register(HelmCollectChartResponse.class, 71111);
+    kryo.register(HelmChartCollectionParams.HelmChartCollectionType.class, 400134);
   }
 }

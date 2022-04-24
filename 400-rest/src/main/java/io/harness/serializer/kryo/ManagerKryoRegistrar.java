@@ -340,7 +340,6 @@ import software.wings.beans.settings.helm.AmazonS3HelmRepoConfig;
 import software.wings.beans.settings.helm.GCSHelmRepoConfig;
 import software.wings.beans.settings.helm.HelmRepoConfigValidationResponse;
 import software.wings.beans.settings.helm.HelmRepoConfigValidationTaskParams;
-import software.wings.beans.settings.helm.HttpHelmRepoConfig;
 import software.wings.beans.sso.LdapConnectionSettings;
 import software.wings.beans.sso.LdapGroupResponse;
 import software.wings.beans.sso.LdapGroupSettings;
@@ -410,14 +409,11 @@ import software.wings.helpers.ext.gcb.models.BuildStep;
 import software.wings.helpers.ext.gcb.models.GcbBuildDetails;
 import software.wings.helpers.ext.gcb.models.GcbBuildStatus;
 import software.wings.helpers.ext.helm.HelmCommandExecutionResponse;
-import software.wings.helpers.ext.helm.request.HelmChartCollectionParams;
-import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
 import software.wings.helpers.ext.helm.request.HelmCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmInstallCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmReleaseHistoryCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmRollbackCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmValuesFetchTaskParameters;
-import software.wings.helpers.ext.helm.response.HelmCollectChartResponse;
 import software.wings.helpers.ext.helm.response.HelmReleaseHistoryCommandResponse;
 import software.wings.helpers.ext.helm.response.HelmValuesFetchTaskResponse;
 import software.wings.helpers.ext.k8s.request.K8sApplyTaskParameters;
@@ -1153,7 +1149,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(ServiceNowTaskParameters.class, 7154);
     kryo.register(ServiceNowDelegateServiceImpl.class, 7157);
     kryo.register(HelmRepoConfigValidationTaskParams.class, 7158);
-    kryo.register(HttpHelmRepoConfig.class, 7159);
     kryo.register(HelmRepoConfigValidationResponse.class, 7160);
     kryo.register(TemplateReference.class, 7161);
     kryo.register(AmazonS3HelmRepoConfig.class, 7162);
@@ -1161,7 +1156,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(ServiceNowMetaDTO.class, 7164);
     kryo.register(HelmValuesFetchTaskParameters.class, 7165);
     kryo.register(HelmValuesFetchTaskResponse.class, 7166);
-    kryo.register(HelmChartConfigParams.class, 7167);
     kryo.register(BugsnagSetupTestData.class, 7168);
     kryo.register(ServiceNowExecutionData.class, 7170);
     kryo.register(MLAnalysisType.class, 7175);
@@ -1187,7 +1181,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(ConfigFile.ConfigOverrideType.class, 71108);
     kryo.register(EntityVersion.class, 71109);
     kryo.register(EntityVersion.ChangeType.class, 71110);
-    kryo.register(HelmCollectChartResponse.class, 71111);
     kryo.register(AwsEcsListClusterServicesRequest.class, 7206);
     kryo.register(AwsEcsListClusterServicesResponse.class, 7207);
     kryo.register(Deployment.class, 7208);
@@ -1360,8 +1353,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AzureVMSSSetupExecutionSummary.class, 7469);
     kryo.register(InstanceFetchStateExecutionData.class, 7471);
     kryo.register(InstanceFetchStateExecutionSummary.class, 7472);
-
-    kryo.register(HelmChartCollectionParams.class, 8058);
     kryo.register(AwsAmiInfoVariables.class, 8059);
 
     kryo.register(AzureVMSSDeployExecutionSummary.class, 8060);
@@ -1516,7 +1507,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(SetupStatus.class, 400130);
     kryo.register(Type.class, 400131);
     kryo.register(OSType.class, 400132);
-    kryo.register(HelmChartCollectionParams.HelmChartCollectionType.class, 400134);
     kryo.register(ServiceHelmElement.class, 400135);
     kryo.register(ServiceHelmElements.class, 400136);
     kryo.register(AppManifestCollectionExecutionData.class, 400137);
