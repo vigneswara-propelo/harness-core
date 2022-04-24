@@ -101,6 +101,8 @@ import software.wings.service.impl.aws.model.AwsS3ListBucketNamesResponse;
 import software.wings.service.impl.aws.model.AwsS3Request;
 import software.wings.service.impl.aws.model.AwsS3Request.AwsS3RequestType;
 import software.wings.service.impl.aws.model.response.HostReachabilityResponse;
+import software.wings.service.impl.azure.manager.AzureTaskExecutionRequest;
+import software.wings.service.impl.azure.manager.AzureVMSSCommandRequest;
 import software.wings.service.impl.dynatrace.DynaTraceApplication;
 import software.wings.service.impl.dynatrace.DynaTraceDataCollectionInfo;
 import software.wings.service.impl.dynatrace.DynaTraceMetricDataResponse;
@@ -238,9 +240,11 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(BasicValidationInfo.class, 7325);
     kryo.register(HostValidationTaskParameters.class, 7341);
     kryo.register(GcpSecretsManagerConfig.class, 72100);
+    kryo.register(AzureTaskExecutionRequest.class, 8095);
     kryo.register(HelmChartCollectionParams.class, 8058);
     kryo.register(HelmChartConfigParams.class, 7167);
     kryo.register(HelmCollectChartResponse.class, 71111);
     kryo.register(HelmChartCollectionParams.HelmChartCollectionType.class, 400134);
+    kryo.register(AzureVMSSCommandRequest.class, 8035);
   }
 }

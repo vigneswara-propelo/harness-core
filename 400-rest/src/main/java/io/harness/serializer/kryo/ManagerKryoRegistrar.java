@@ -596,9 +596,7 @@ import software.wings.service.impl.aws.model.response.AwsCloudWatchMetricDataRes
 import software.wings.service.impl.aws.model.response.AwsCloudWatchStatisticsResponse;
 import software.wings.service.impl.aws.model.response.AwsLambdaDetailsMetricsResponse;
 import software.wings.service.impl.aws.model.response.AwsLambdaDetailsResponse;
-import software.wings.service.impl.azure.manager.AzureTaskExecutionRequest;
 import software.wings.service.impl.azure.manager.AzureVMSSAllPhaseRollbackData;
-import software.wings.service.impl.azure.manager.AzureVMSSCommandRequest;
 import software.wings.service.impl.bugsnag.BugsnagApplication;
 import software.wings.service.impl.bugsnag.BugsnagSetupTestData;
 import software.wings.service.impl.cloudwatch.AwsNameSpace;
@@ -1345,7 +1343,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(io.harness.dashboard.Action.class, 7453);
 
     kryo.register(TemplatizedSecretManagerStateExecutionData.class, 7457);
-    kryo.register(AzureVMSSCommandRequest.class, 8035);
     kryo.register(CeLicenseInfo.class, 7465);
     kryo.register(CeLicenseType.class, 7466);
     kryo.register(AzureVMSSSetupContextElement.class, 7467);
@@ -1372,7 +1369,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AzureVMSSAllPhaseRollbackData.class, 8092);
     kryo.register(TrialSignupOptions.class, 8093);
     kryo.register(TrialSignupOptions.Products.class, 8094);
-    kryo.register(AzureTaskExecutionRequest.class, 8095);
 
     kryo.register(TfVarGitSource.class, 8097);
     kryo.register(HelmSubCommand.class, 8076);
