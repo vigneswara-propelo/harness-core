@@ -104,7 +104,8 @@ public class BatchJobScheduledDataServiceImpl implements BatchJobScheduledDataSe
     if (null != instant
         && ImmutableSet.of(BatchJobBucket.OUT_OF_CLUSTER, BatchJobBucket.OUT_OF_CLUSTER_ECS)
                .contains(batchJobType.getBatchJobBucket())
-        && !ImmutableSet.of(BatchJobType.AWS_ECS_CLUSTER_SYNC).contains(batchJobType)) {
+        && !ImmutableSet.of(BatchJobType.AWS_ECS_CLUSTER_SYNC, BatchJobType.AWS_ECS_SERVICE_RECOMMENDATION)
+                .contains(batchJobType)) {
       Instant startInstant = Instant.now().minus(2, ChronoUnit.HOURS).truncatedTo(ChronoUnit.HOURS);
       instant = startInstant.isAfter(instant) ? startInstant : instant;
     }
