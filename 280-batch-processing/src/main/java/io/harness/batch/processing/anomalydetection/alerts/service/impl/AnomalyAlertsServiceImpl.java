@@ -7,21 +7,35 @@
 
 package io.harness.batch.processing.anomalydetection.alerts.service.impl;
 
+import static io.harness.notification.NotificationChannelType.EMAIL;
+import static io.harness.notification.NotificationChannelType.MSTEAMS;
+import static io.harness.notification.NotificationChannelType.SLACK;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.slack.api.webhook.WebhookPayloads.payload;
 
+import io.harness.Team;
 import io.harness.batch.processing.anomalydetection.alerts.SlackMessageGenerator;
 import io.harness.batch.processing.anomalydetection.alerts.service.itfc.AnomalyAlertsService;
 import io.harness.batch.processing.shard.AccountShardService;
 import io.harness.ccm.anomaly.entities.AnomalyEntity;
 import io.harness.ccm.anomaly.service.itfc.AnomalyService;
 import io.harness.ccm.commons.dao.notifications.CCMNotificationsDao;
+import io.harness.ccm.commons.entities.anomaly.AnomalyData;
+import io.harness.ccm.commons.entities.notifications.CCMNotificationChannel;
 import io.harness.ccm.commons.entities.notifications.CCMNotificationSetting;
 import io.harness.ccm.commons.entities.notifications.CCMPerspectiveNotificationChannelsDTO;
 import io.harness.ccm.communication.CESlackWebhookService;
 import io.harness.ccm.communication.entities.CESlackWebhook;
 import io.harness.ccm.views.service.CEViewService;
 import io.harness.ccm.views.service.PerspectiveAnomalyService;
+import io.harness.notification.NotificationChannelType;
+import io.harness.notification.channeldetails.EmailChannel;
+import io.harness.notification.channeldetails.EmailChannel.EmailChannelBuilder;
+import io.harness.notification.channeldetails.MSTeamChannel;
+import io.harness.notification.channeldetails.MSTeamChannel.MSTeamChannelBuilder;
+import io.harness.notification.channeldetails.SlackChannel;
+import io.harness.notification.channeldetails.SlackChannel.SlackChannelBuilder;
 import io.harness.notification.notificationclient.NotificationClient;
 
 import com.google.inject.Inject;
@@ -33,6 +47,8 @@ import com.slack.api.webhook.WebhookResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,14 +61,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AnomalyAlertsServiceImpl implements AnomalyAlertsService {
   @Autowired @Inject private AnomalyService anomalyService;
-  @Autowired @Inject private PerspectiveAnomalyService perspectiveAnomalyService;
-  @Autowired @Inject private CCMNotificationsDao notificationSettingsDao;
   @Autowired @Inject private CESlackWebhookService ceSlackWebhookService;
   @Autowired @Inject private AccountShardService accountShardService;
   @Autowired @Inject private SlackMessageGenerator slackMessageGenerator;
   @Autowired @Inject private Slack slack;
-  @Autowired @Inject private NotificationClient notificationClient;
+
+  // NG Anomaly alerts
+  @Autowired private NotificationClient notificationClient;
   @Autowired private CEViewService viewService;
+  @Autowired private PerspectiveAnomalyService perspectiveAnomalyService;
+  @Autowired private CCMNotificationsDao notificationSettingsDao;
 
   int MAX_RETRY = 3;
 
@@ -111,28 +129,70 @@ public class AnomalyAlertsServiceImpl implements AnomalyAlertsService {
   }
 
   // Anomaly alerts Next Gen
-
   public void sendNgAnomalyAlerts(String accountId, Instant date) {
     if (slack == null) {
       slack = Slack.getInstance();
     }
     try {
-      checkAndSendAnomalyAlerts(accountId, date);
+      checkAndSendNgAnomalyAlerts(accountId, date);
     } catch (Exception e) {
       log.error("Can't send anomaly alerts for account : {}, Exception: ", accountId, e);
     }
   }
 
-  private void checkAndSendAnomalyAlerts(String accountId, Instant date) {
+  private void checkAndSendNgAnomalyAlerts(String accountId, Instant date) {
     checkNotNull(accountId);
     List<CCMPerspectiveNotificationChannelsDTO> notificationSettings =
         listNotificationChannelsPerPerspective(accountId);
     notificationSettings.forEach(
-        notificationSetting -> checkAndSendAnomalyAlertsForPerspective(notificationSetting, accountId));
+        notificationSetting -> checkAndSendAnomalyAlertsForPerspective(notificationSetting, accountId, date));
   }
 
   private void checkAndSendAnomalyAlertsForPerspective(
-      CCMPerspectiveNotificationChannelsDTO perspectiveNotificationSetting, String accountId) {}
+      CCMPerspectiveNotificationChannelsDTO perspectiveNotificationSetting, String accountId, Instant date) {
+    log.info("Sending NG anomaly alerts -----");
+    log.info("Perspective Notification settings: {}", perspectiveNotificationSetting);
+    List<AnomalyData> perspectiveAnomalies = perspectiveAnomalyService.listPerspectiveAnomaliesForDate(
+        accountId, perspectiveNotificationSetting.getPerspectiveId(), date);
+
+    log.info("Perspective anomalies: {}", perspectiveAnomalies);
+
+    List<CCMNotificationChannel> channels = perspectiveNotificationSetting.getChannels();
+    List<String> eMails = getChannelUrls(channels, EMAIL);
+    log.info("Emails: {}", eMails);
+    List<String> slackWebHookUrls = getChannelUrls(channels, SLACK);
+    log.info("Slack webhooks: {}", slackWebHookUrls);
+    List<String> msTeamKeys = getChannelUrls(channels, MSTEAMS);
+
+    EmailChannelBuilder emailChannelBuilder = EmailChannel.builder()
+                                                  .accountId(accountId)
+                                                  .recipients(eMails)
+                                                  .team(Team.OTHER)
+                                                  .templateId("email_ccm_anomaly_alert.txt")
+                                                  .userGroups(Collections.emptyList());
+
+    SlackChannelBuilder slackChannelBuilder = SlackChannel.builder()
+                                                  .accountId(accountId)
+                                                  .webhookUrls(slackWebHookUrls)
+                                                  .team(Team.OTHER)
+                                                  .templateId("slack_ccm_anomaly_alert.txt")
+                                                  .userGroups(Collections.emptyList());
+
+    MSTeamChannelBuilder msTeamChannelBuilder = MSTeamChannel.builder()
+                                                    .accountId(accountId)
+                                                    .msTeamKeys(msTeamKeys)
+                                                    .team(Team.OTHER)
+                                                    .templateId("template-id-here")
+                                                    .userGroups(Collections.emptyList());
+
+    Map<String, String> templateData = new HashMap<>();
+    templateData.put("perspective_name", perspectiveNotificationSetting.getPerspectiveName());
+    templateData.put("anomalies", slackMessageGenerator.getAnomalyDetailsTemplateString(perspectiveAnomalies.get(0)));
+
+    // Sending email alerts
+    emailChannelBuilder.templateData(templateData);
+    notificationClient.sendNotificationAsync(emailChannelBuilder.build());
+  }
 
   public List<CCMPerspectiveNotificationChannelsDTO> listNotificationChannelsPerPerspective(String accountId) {
     List<CCMNotificationSetting> notificationSettings = notificationSettingsDao.list(accountId);
@@ -149,5 +209,15 @@ public class AnomalyAlertsServiceImpl implements AnomalyAlertsService {
                 .channels(notificationSetting.getChannels())
                 .build()));
     return perspectiveNotificationChannels;
+  }
+
+  private List<String> getChannelUrls(List<CCMNotificationChannel> channels, NotificationChannelType channelType) {
+    List<CCMNotificationChannel> relevantChannels =
+        channels.stream()
+            .filter(channel -> channel.getNotificationChannelType() == channelType)
+            .collect(Collectors.toList());
+    List<String> channelUrls = new ArrayList<>();
+    relevantChannels.forEach(channel -> channelUrls.addAll(channel.getChannelUrls()));
+    return channelUrls;
   }
 }
