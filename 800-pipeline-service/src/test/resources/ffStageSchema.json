@@ -38,7 +38,7 @@
     "type": {
       "type": "string",
       "enum": [
-        "Approval"
+        "FeatureFlag"
       ]
     },
     "variables": {
@@ -67,14 +67,14 @@
       "if": {
         "properties": {
           "type": {
-            "const": "Approval"
+            "const": "cf"
           }
         }
       },
       "then": {
         "properties": {
           "spec": {
-            "$ref": "#/definitions/ApprovalStageConfig"
+            "$ref": "#/definitions/FeatureFlagStageInfo"
           }
         }
       }
