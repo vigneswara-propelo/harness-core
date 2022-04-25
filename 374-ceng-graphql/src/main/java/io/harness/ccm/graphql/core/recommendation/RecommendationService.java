@@ -41,6 +41,7 @@ public class RecommendationService {
         k8sRecommendationDAO.fetchRecommendationsOverview(accountId, condition, offset, limit);
 
     return ceRecommendationsList.stream()
+        .filter(ceRecommendations -> !ceRecommendations.getResourcetype().equals("ECS_SERVICE"))
         .map(ceRecommendations
             -> RecommendationItemDTO.builder()
                    .id(ceRecommendations.getId())
