@@ -47,7 +47,8 @@ public class BatchJobScheduledDataServiceImpl implements BatchJobScheduledDataSe
               .contains(batchJobType.getBatchJobBucket())) {
         Instant connectorCreationTime =
             Instant.ofEpochMilli(Instant.now().toEpochMilli()).truncatedTo(ChronoUnit.DAYS).minus(1, ChronoUnit.DAYS);
-        if (ImmutableSet.of(BatchJobType.AWS_ECS_CLUSTER_SYNC).contains(batchJobType)) {
+        if (ImmutableSet.of(BatchJobType.AWS_ECS_CLUSTER_SYNC, BatchJobType.AWS_ECS_SERVICE_RECOMMENDATION)
+                .contains(batchJobType)) {
           Instant startInstant = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
           connectorCreationTime = startInstant.isAfter(connectorCreationTime) ? startInstant : connectorCreationTime;
         } else {
