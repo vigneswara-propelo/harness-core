@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum ImagePullPolicy {
   @JsonProperty("Always") ALWAYS("Always"),
   @JsonProperty("Never") NEVER("Never"),
-  @JsonProperty("IfNotPresent") If_NOT_PRESENT("IfNotPresent");
+  @JsonProperty("IfNotPresent") IFNOTPRESENT("IfNotPresent");
   private final String yamlName;
 
   @JsonCreator
