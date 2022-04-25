@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CE;
 import static io.harness.beans.FeatureName.CE_BILLING_DATA_PRE_AGGREGATION;
 import static io.harness.ccm.commons.constants.ViewFieldConstants.AWS_ACCOUNT_FIELD;
 import static io.harness.ccm.views.entities.ViewFieldIdentifier.CLUSTER;
+import static io.harness.ccm.views.entities.ViewFieldIdentifier.LABEL;
 import static io.harness.ccm.views.graphql.QLCEViewAggregateOperation.MAX;
 import static io.harness.ccm.views.graphql.QLCEViewAggregateOperation.MIN;
 import static io.harness.ccm.views.graphql.QLCEViewTimeFilterOperator.AFTER;
@@ -440,7 +441,6 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
     Instant endInstantForForecastCost = viewsQueryHelper.getEndInstantForForecastCost(filters);
     ViewCostData currentCostData = getCostData(bigQuery, viewsQueryHelper.getFiltersForForecastCost(filters),
         aggregateFunction, cloudProviderTableName, queryParams);
-    log.info("Current cost data: {}", currentCostData);
     Double forecastCost = getForecastCost(currentCostData, endInstantForForecastCost);
     return getForecastCostBillingStats(forecastCost, currentCostData.getCost(), getStartInstantForForecastCost(),
         endInstantForForecastCost.plus(1, ChronoUnit.SECONDS));
@@ -470,18 +470,28 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
         } catch (Exception e) {
           dataSources = null;
         }
-        dataSourceCondition = dataSources != null && dataSources.size() == 1 && dataSources.get(0).equals(CLUSTER);
+        if (dataSources != null) {
+          dataSourceCondition = true;
+          for (ViewFieldIdentifier identifier : dataSources) {
+            if (!identifier.equals(CLUSTER) && !identifier.equals(LABEL)) {
+              dataSourceCondition = false;
+              break;
+            }
+          }
+        }
       }
     }
     for (ViewRule rule : viewRuleList) {
       for (ViewCondition condition : rule.getViewConditions()) {
         ViewIdCondition viewIdCondition = (ViewIdCondition) condition;
         ViewFieldIdentifier viewFieldIdentifier = viewIdCondition.getViewField().getIdentifier();
-        if (!viewFieldIdentifier.equals(CLUSTER)) {
+        if (!(viewFieldIdentifier.equals(CLUSTER) || viewFieldIdentifier.equals(LABEL))) {
           ruleCondition = false;
+          break;
         }
       }
     }
+
     return dataSourceCondition && ruleCondition;
   }
 
