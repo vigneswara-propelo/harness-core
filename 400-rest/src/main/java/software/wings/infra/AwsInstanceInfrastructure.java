@@ -62,7 +62,7 @@ public class AwsInstanceInfrastructure
   @Transient private String loadBalancerName;
   private boolean usePublicDns;
   private String hostConnectionType;
-  @Expression(ALLOW_SECRETS) private AwsInstanceFilter awsInstanceFilter;
+  @Expression(ALLOW_SECRETS) @IncludeFieldMap private AwsInstanceFilter awsInstanceFilter;
   private String autoScalingGroupName;
   private boolean setDesiredCapacity;
   private int desiredCapacity;
