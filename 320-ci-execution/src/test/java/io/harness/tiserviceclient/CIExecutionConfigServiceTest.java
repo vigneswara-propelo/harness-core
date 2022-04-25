@@ -120,45 +120,6 @@ public class CIExecutionConfigServiceTest extends CIExecutionTestBase {
   @Test
   @Owner(developers = AMAN)
   @Category(UnitTests.class)
-  public void getDeprecatedImages() {
-    CIExecutionConfig executionConfig = CIExecutionConfig.builder()
-                                            .accountIdentifier("acct")
-                                            .buildAndPushDockerRegistryImage("bpdr:1.2.2")
-                                            .addOnImage("harness/ci-addon:1.0.0")
-                                            .liteEngineImage("harness/ci-lite-engine:1.0.0")
-                                            .gitCloneImage("gc:1.2.2")
-                                            .buildAndPushDockerRegistryImage("bpdr:1.2.2")
-                                            .buildAndPushECRImage("bpecr:1.2.2")
-                                            .buildAndPushGCRImage("bpgcr:1.2.2")
-                                            .gcsUploadImage("gcsupload:1.2.2")
-                                            .s3UploadImage("s3upload:1.2.2")
-                                            .artifactoryUploadTag("art:1.2.2")
-                                            .securityImage("sc:1.2.2")
-                                            .cacheGCSTag("cachegcs:1.2.2")
-                                            .cacheS3Tag("caches3:1.2.2")
-                                            .gcsUploadImage("gcsUpload:1.2.2")
-                                            .build();
-    when(cIExecutionConfigRepository.findFirstByAccountIdentifier("acct")).thenReturn(Optional.of(executionConfig));
-    List<DeprecatedImageInfo> deprecatedImageInfos =
-        Arrays.asList(DeprecatedImageInfo.builder().tag("AddonImage").version("harness/ci-addon:1.0.0").build(),
-            DeprecatedImageInfo.builder().tag("LiteEngineImage").version("harness/ci-lite-engine:1.0.0").build(),
-            DeprecatedImageInfo.builder().tag("CacheS3Image").version("caches3:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("ArtifactoryUploadImage").version("art:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("CacheGCSImage").version("cachegcs:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("S3UploadImage").version("s3upload:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("CacheS3Image").version("caches3:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("GCSUploadImage").version("gcsUpload:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("SecurityImage").version("gcsUpload:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("BuildAndPushDockerImage").version("bpdr:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("GitCloneImage").version("gc:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("BuildAndPushECRConfigImage").version("bpecr:1.2.2").build(),
-            DeprecatedImageInfo.builder().tag("BuildAndPushGCRConfigImage").version("bpgcr:1.2.2").build());
-    assertThat(ciExecutionConfigService.getDeprecatedTags("acct")).isEqualTo(deprecatedImageInfos);
-  }
-
-  @Test
-  @Owner(developers = AMAN)
-  @Category(UnitTests.class)
   public void getLE_LEIsDeprecatedTest() {
     CIExecutionConfig executionConfig = CIExecutionConfig.builder()
                                             .accountIdentifier("acct")
