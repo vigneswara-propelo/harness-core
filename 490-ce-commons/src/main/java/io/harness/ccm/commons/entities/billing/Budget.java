@@ -21,6 +21,8 @@ import io.harness.persistence.UpdatedAtAware;
 import io.harness.persistence.UuidAware;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -40,11 +42,11 @@ import org.mongodb.morphia.annotations.Id;
 public final class Budget implements PersistentEntity, UuidAware, AccountAccess, CreatedAtAware, UpdatedAtAware {
   @Id String uuid;
   @NotBlank @FdIndex String accountId;
-  @NotBlank String name;
-  @NotBlank BudgetScope scope; // referred to as "Applies to" in the UI
-  @NotBlank BudgetType type;
-  @NotBlank Double budgetAmount;
-  @NotBlank BudgetPeriod period;
+  @Size(min = 1, max = 80, message = "for budget name must be between 1 and 80 characters long") @NotBlank String name;
+  @NotNull BudgetScope scope; // referred to as "Applies to" in the UI
+  @NotNull BudgetType type;
+  @NotNull Double budgetAmount;
+  @NotNull BudgetPeriod period;
   Double growthRate;
   Double actualCost;
   Double forecastCost;

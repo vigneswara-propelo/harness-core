@@ -87,7 +87,7 @@ public class BudgetResource {
   public ResponseDTO<String>
   save(@Parameter(required = true, description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
            NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @NotNull @Valid String accountId,
-      @RequestBody(required = true, description = "Budget definition") Budget budget) {
+      @RequestBody(required = true, description = "Budget definition") @NotNull @Valid Budget budget) {
     budget.setAccountId(accountId);
     budget.setNgBudget(true);
     return ResponseDTO.newResponse(budgetService.create(budget));

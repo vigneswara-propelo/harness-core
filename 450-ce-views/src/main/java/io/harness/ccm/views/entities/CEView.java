@@ -40,7 +40,7 @@ import org.mongodb.morphia.annotations.Id;
 public final class CEView implements PersistentEntity, UuidAware, CreatedAtAware, UpdatedAtAware, AccountAccess,
                                      CreatedByAware, UpdatedByAware {
   @Id String uuid;
-  @Size(min = 1, max = 32, message = "for view must be between 1 and 32 characters long") @NotBlank String name;
+  @Size(min = 1, max = 80, message = "for view must be between 1 and 80 characters long") @NotBlank String name;
   String accountId;
   @NotBlank String viewVersion;
 
