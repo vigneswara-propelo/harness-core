@@ -856,6 +856,7 @@ public class NodeSelectStateTest extends WingsBaseTest {
   public void testGetInstanceElements() {
     testGetInstanceElementsForNoServiceInstance();
     testGetInstanceDetailsForPartialRollout();
+    testGetInstanceDetailsForPartialRolloutSpecificHosts();
   }
 
   private void testGetInstanceDetailsForPartialRollout() {
@@ -869,20 +870,42 @@ public class NodeSelectStateTest extends WingsBaseTest {
 
     when(instanceExpressionProcessor.convertToInstanceElements(allAvailable)).thenReturn(allInstanceElements);
 
-    final List<InstanceElement> instanceElements = nodeSelectState.getInstanceElements(deployed, allAvailable);
+    final List<InstanceElement> instanceElements = nodeSelectState.getInstanceElements(deployed, allAvailable, false);
     assertThat(instanceElements).hasSize(3);
     assertThat(instanceElements.stream().filter(InstanceElement::isNewInstance).collect(Collectors.toList()))
         .containsExactly(allInstanceElements.get(1));
   }
 
+  private void testGetInstanceDetailsForPartialRolloutSpecificHosts() {
+    List<ServiceInstance> infraInstances = asList(aServiceInstance().withUuid("id-1").build());
+    List<ServiceInstance> deployed =
+        asList(aServiceInstance().withUuid("specific-1").build(), aServiceInstance().withUuid("specific-2").build());
+    List<InstanceElement> infraInstanceElems =
+        infraInstances.stream()
+            .map(instance -> anInstanceElement().uuid(instance.getUuid()).build())
+            .collect(Collectors.toList());
+    List<InstanceElement> specificHostsInstanceElems =
+        deployed.stream()
+            .map(instance -> anInstanceElement().uuid(instance.getUuid()).build())
+            .collect(Collectors.toList());
+
+    when(instanceExpressionProcessor.convertToInstanceElements(infraInstances)).thenReturn(infraInstanceElems);
+    when(instanceExpressionProcessor.convertToInstanceElements(deployed)).thenReturn(specificHostsInstanceElems);
+
+    final List<InstanceElement> instanceElements = nodeSelectState.getInstanceElements(deployed, infraInstances, true);
+    assertThat(instanceElements).hasSize(2);
+    assertThat(instanceElements.stream().filter(InstanceElement::isNewInstance).collect(Collectors.toList()))
+        .containsExactly(specificHostsInstanceElems.get(0), specificHostsInstanceElems.get(1));
+  }
+
   private void testGetInstanceElementsForNoServiceInstance() {
     when(instanceExpressionProcessor.convertToInstanceElements(emptyList())).thenReturn(emptyList());
-    List<InstanceElement> instanceElements = nodeSelectState.getInstanceElements(emptyList(), emptyList());
+    List<InstanceElement> instanceElements = nodeSelectState.getInstanceElements(emptyList(), emptyList(), false);
     assertThat(instanceElements).isEmpty();
 
     // if instanceExpressionProcessor returns null for some reason
     when(instanceExpressionProcessor.convertToInstanceElements(emptyList())).thenReturn(null);
-    instanceElements = nodeSelectState.getInstanceElements(emptyList(), emptyList());
+    instanceElements = nodeSelectState.getInstanceElements(emptyList(), emptyList(), false);
     assertThat(instanceElements).isEmpty();
   }
 
@@ -927,17 +950,18 @@ public class NodeSelectStateTest extends WingsBaseTest {
     getInstanceDetailsWhenNoNewerInstancesDeployed();
     getInstanceDetailsForPartialRollout();
     getInstanceDetailsForNoInstances();
+    getInstanceDetailsSpecificHosts();
   }
 
   private void getInstanceDetailsWhenNoNewerInstancesDeployed() {
-    List<InstanceDetails> instanceDetails = nodeSelectState.getInstanceDetails(
-        APP_ID, ENV_ID, emptyList(), Arrays.asList(aServiceInstance().withUuid("id-3").withHostId("host-3").build()));
+    List<InstanceDetails> instanceDetails = nodeSelectState.getInstanceDetails(APP_ID, ENV_ID, emptyList(),
+        Collections.singletonList(aServiceInstance().withUuid("id-3").withHostId("host-3").build()), false);
     assertThat(instanceDetails).isNotEmpty();
     assertThat(instanceDetails.get(0).getPhysicalHost().getInstanceId()).isEqualTo("host-3");
   }
 
   private void getInstanceDetailsForNoInstances() {
-    assertThat(nodeSelectState.getInstanceDetails(APP_ID, ENV_ID, emptyList(), emptyList())).isEmpty();
+    assertThat(nodeSelectState.getInstanceDetails(APP_ID, ENV_ID, emptyList(), emptyList(), false)).isEmpty();
   }
 
   private void getInstanceDetailsForPartialRollout() {
@@ -945,15 +969,27 @@ public class NodeSelectStateTest extends WingsBaseTest {
         asList(ServiceInstance.Builder.aServiceInstance().withUuid("id-1").withHostId("host-1").build(),
             aServiceInstance().withUuid("id-2").withHostId("host-2").build(),
             aServiceInstance().withUuid("id-3").withHostId("host-3").build());
-    List<InstanceElement> allInstanceElements =
-        allAvailable.stream()
-            .map(instance -> anInstanceElement().uuid(instance.getUuid()).build())
-            .collect(Collectors.toList());
     List<ServiceInstance> deployed = asList(allAvailable.get(1));
     final List<InstanceDetails> instanceDetails =
-        nodeSelectState.getInstanceDetails(APP_ID, ENV_ID, deployed, allAvailable);
+        nodeSelectState.getInstanceDetails(APP_ID, ENV_ID, deployed, allAvailable, false);
     assertThat(instanceDetails).hasSize(3);
     assertThat(instanceDetails.stream().filter(InstanceDetails::isNewInstance).collect(Collectors.toList())).hasSize(1);
+  }
+
+  private void getInstanceDetailsSpecificHosts() {
+    List<ServiceInstance> infraInstances = asList(aServiceInstance().withUuid("id-1").withHostId("host-1").build());
+    List<ServiceInstance> deployed = asList(aServiceInstance().withUuid("id-2").withHostId("specific-1").build(),
+        aServiceInstance().withUuid("id-3").withHostId("specific-2").build());
+    final List<InstanceDetails> instanceDetails =
+        nodeSelectState.getInstanceDetails(APP_ID, ENV_ID, deployed, infraInstances, true);
+    assertThat(instanceDetails).hasSize(2);
+    assertThat(instanceDetails.stream()
+                   .filter(InstanceDetails::isNewInstance)
+                   .map(InstanceDetails::getPhysicalHost)
+                   .map(InstanceDetails.PHYSICAL_HOST::getInstanceId)
+                   .collect(Collectors.toList()))
+        .contains("specific-1", "specific-2")
+        .hasSize(2);
   }
 
   @Test
@@ -985,7 +1021,7 @@ public class NodeSelectStateTest extends WingsBaseTest {
   }
 
   private void testBuildInstanceDetailFromAwsHost() {
-    Host host = Host.Builder.aHost()
+    Host host = aHost()
                     .withUuid("id-1")
                     .withHostName("ip-42")
                     .withEc2Instance(new com.amazonaws.services.ec2.model.Instance())
@@ -1002,7 +1038,7 @@ public class NodeSelectStateTest extends WingsBaseTest {
   }
 
   private void testBuildInstanceDetailFromPhysicalHost() {
-    Host host = Host.Builder.aHost()
+    Host host = aHost()
                     .withUuid("id-1")
                     .withHostName("ip-42")
                     .withPublicDns("harness-linux-ssh-test.westus2.cloudapp.azure.com")
