@@ -501,6 +501,7 @@ import io.harness.secretmanagerclient.WinRmAuthScheme;
 import io.harness.serializer.KryoRegistrar;
 
 import software.wings.beans.AwsConfig;
+import software.wings.beans.GcpConfig;
 import software.wings.beans.GitConfig;
 import software.wings.beans.HostReachabilityInfo;
 import software.wings.beans.HostValidationResponse;
@@ -510,6 +511,7 @@ import software.wings.beans.LambdaTestEvent;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
 import software.wings.beans.command.CodeDeployParams;
+import software.wings.beans.command.GcbTaskParams;
 import software.wings.beans.command.JenkinsTaskParams;
 import software.wings.beans.s3.FetchS3FilesCommandParams;
 import software.wings.beans.s3.FetchS3FilesExecutionResponse;
@@ -567,6 +569,9 @@ import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricTim
 import software.wings.settings.validation.ConnectivityValidationAttributes;
 import software.wings.sm.states.JenkinsExecutionResponse;
 import software.wings.sm.states.ParameterEntry;
+import software.wings.sm.states.gcbconfigs.GcbOptions;
+import software.wings.sm.states.gcbconfigs.GcbRemoteBuildSpec;
+import software.wings.sm.states.gcbconfigs.GcbTriggerBuildSpec;
 import software.wings.yaml.gitSync.YamlGitConfig;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -1183,6 +1188,15 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(HostValidationResponse.class, 5167);
     kryo.register(HostReachabilityInfo.class, 5172);
     kryo.register(HttpHelmRepoConfig.class, 7159);
+    kryo.register(GcpConfig.class, 5014);
+    kryo.register(GcbTaskParams.class, 7408);
+    kryo.register(GcbTaskParams.GcbTaskType.class, 7427);
+    kryo.register(GcbOptions.class, 7439);
+    kryo.register(GcbTriggerBuildSpec.class, 7440);
+    kryo.register(GcbRemoteBuildSpec.class, 7441);
+    kryo.register(GcbOptions.GcbSpecSource.class, 7442);
+    kryo.register(GcbTriggerBuildSpec.GcbTriggerSource.class, 7443);
+    kryo.register(GcbRemoteBuildSpec.RemoteFileSource.class, 7444);
 
     // WinRm
     kryo.register(WinRmCredentialsSpecDTO.class, 600001);

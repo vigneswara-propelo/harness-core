@@ -24,7 +24,6 @@ import software.wings.beans.DockerConfig;
 import software.wings.beans.DynaTraceConfig;
 import software.wings.beans.EcrConfig;
 import software.wings.beans.ElkConfig;
-import software.wings.beans.GcpConfig;
 import software.wings.beans.GcpKmsConfig;
 import software.wings.beans.GcpSecretsManagerConfig;
 import software.wings.beans.HostConnectionAttributes;
@@ -122,7 +121,6 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("delegatetasks.validation.capabilities.GitConnectionCapability", GitConnectionCapability.class);
     w.put("beans.SSHVaultConfig", SSHVaultConfig.class);
     w.put("beans.BaseVaultConfig", BaseVaultConfig.class);
-    w.put("beans.GcpConfig", GcpConfig.class);
     w.put("beans.artifact.ArtifactFile", ArtifactFile.class);
     w.put("beans.ServiceNowConfig", ServiceNowConfig.class);
     w.put("beans.DockerConfig", DockerConfig.class);

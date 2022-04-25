@@ -12,9 +12,8 @@ import static io.harness.logging.LogLevel.INFO;
 import static io.harness.threading.Morpheus.sleep;
 
 import static software.wings.beans.Log.Builder.aLog;
-import static software.wings.sm.states.GcbState.GcbDelegateResponse.failedGcbTaskResponse;
-import static software.wings.sm.states.GcbState.GcbDelegateResponse.gcbDelegateResponseOf;
-import static software.wings.sm.states.GcbState.GcbDelegateResponse.interruptedGcbTask;
+import static software.wings.delegatetasks.GcbDelegateResponse.failedGcbTaskResponse;
+import static software.wings.delegatetasks.GcbDelegateResponse.gcbDelegateResponseOf;
 import static software.wings.sm.states.gcbconfigs.GcbRemoteBuildSpec.RemoteFileSource.BRANCH;
 
 import static java.lang.String.format;
@@ -49,7 +48,6 @@ import software.wings.helpers.ext.gcb.models.RepoSource;
 import software.wings.helpers.ext.gcb.models.RepoSource.RepoSourceBuilder;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.yaml.GitClient;
-import software.wings.sm.states.GcbState.GcbDelegateResponse;
 import software.wings.sm.states.gcbconfigs.GcbOptions;
 import software.wings.sm.states.gcbconfigs.GcbRemoteBuildSpec;
 import software.wings.sm.states.gcbconfigs.GcbTriggerBuildSpec;
@@ -141,7 +139,7 @@ public class GcbTask extends AbstractDelegateRunnableTask {
       return gcbDelegateResponseOf(params, build);
     } catch (RuntimeInterruptedException | InterruptedRuntimeException e) {
       log.error("GCB_TASK - GCB poll task failed due to: ", e);
-      return interruptedGcbTask(params);
+      return GcbDelegateResponse.interruptedGcbTask(params);
     }
   }
 

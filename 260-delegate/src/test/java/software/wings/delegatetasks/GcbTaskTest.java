@@ -16,7 +16,7 @@ import static software.wings.beans.Log.Builder.aLog;
 import static software.wings.beans.TaskType.GCB;
 import static software.wings.beans.command.GcbTaskParams.GcbTaskType.POLL;
 import static software.wings.beans.command.GcbTaskParams.GcbTaskType.START;
-import static software.wings.sm.states.GcbState.GcbDelegateResponse.gcbDelegateResponseOf;
+import static software.wings.delegatetasks.GcbDelegateResponse.gcbDelegateResponseOf;
 import static software.wings.utils.WingsTestConstants.ACTIVITY_ID;
 import static software.wings.utils.WingsTestConstants.BRANCH_NAME;
 import static software.wings.utils.WingsTestConstants.BUILD_ID;
@@ -62,7 +62,6 @@ import software.wings.helpers.ext.gcb.models.GcbBuildStatus;
 import software.wings.helpers.ext.gcb.models.OperationMeta;
 import software.wings.helpers.ext.gcb.models.RepoSource;
 import software.wings.service.intfc.yaml.GitClient;
-import software.wings.sm.states.GcbState.GcbDelegateResponse;
 import software.wings.sm.states.gcbconfigs.GcbOptions;
 import software.wings.sm.states.gcbconfigs.GcbRemoteBuildSpec;
 import software.wings.sm.states.gcbconfigs.GcbTriggerBuildSpec;
@@ -131,6 +130,7 @@ public class GcbTaskTest extends CategoryTest {
     assertThat(actual).isEqualTo(delegateResponse);
   }
 
+  @SuppressWarnings("checkstyle:RepetitiveName")
   @Test
   @Owner(developers = VGLIJIN)
   @Category(UnitTests.class)
