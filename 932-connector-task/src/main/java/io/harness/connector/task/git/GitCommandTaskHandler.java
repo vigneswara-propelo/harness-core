@@ -10,6 +10,7 @@ package io.harness.connector.task.git;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.beans.connector.scm.github.GithubApiAccessType.GITHUB_APP;
 import static io.harness.delegate.beans.git.GitCommandExecutionResponse.GitCommandStatus.SUCCESS;
+import static io.harness.exception.WingsException.ExecutionContext.MANAGER;
 import static io.harness.impl.ScmResponseStatusUtils.convertScmStatusCodeToErrorCode;
 
 import static java.lang.String.format;
@@ -37,6 +38,7 @@ import io.harness.delegate.beans.git.GitCommandExecutionResponse;
 import io.harness.eraro.ErrorCode;
 import io.harness.errorhandling.NGErrorHelper;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.exceptionmanager.ExceptionManager;
 import io.harness.exception.runtime.SCMRuntimeException;
 import io.harness.git.GitClientHelper;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
@@ -47,7 +49,6 @@ import io.harness.shell.SshSessionConfig;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -59,6 +60,7 @@ public class GitCommandTaskHandler {
   @Inject private NGErrorHelper ngErrorHelper;
   @Inject private ScmDelegateClient scmDelegateClient;
   @Inject private ScmServiceClient scmServiceClient;
+  @Inject private ExceptionManager exceptionManager;
   @Inject(optional = true) private ScmClient scmClient;
 
   public ConnectorValidationResult validateGitCredentials(GitConfigDTO gitConnector, ScmConnector scmConnector,
@@ -68,12 +70,7 @@ public class GitCommandTaskHandler {
       delegateResponseData = (GitCommandExecutionResponse) handleValidateTask(
           gitConnector, scmConnector, accountIdentifier, sshSessionConfig);
     } catch (Exception e) {
-      return ConnectorValidationResult.builder()
-          .status(ConnectivityStatus.FAILURE)
-          .testedAt(System.currentTimeMillis())
-          .errorSummary(ngErrorHelper.getErrorSummary(e.getMessage()))
-          .errors(Collections.singletonList(ngErrorHelper.createErrorDetail(e.getMessage())))
-          .build();
+      throw exceptionManager.processException(e, MANAGER, log);
     }
     return ConnectorValidationResult.builder()
         .status(ConnectivityStatus.SUCCESS)
