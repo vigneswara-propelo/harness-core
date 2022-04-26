@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.DX;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAccessSpecDTO;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectorDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketApiAccessSpecDTO;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketConnectorDTO;
@@ -47,6 +48,8 @@ public class GitApiAccessDecryptionHelper {
       return hasAPIAccess((BitbucketConnectorDTO) scmConnector);
     } else if (scmConnector instanceof GitlabConnectorDTO) {
       return hasAPIAccess((GitlabConnectorDTO) scmConnector);
+    } else if (scmConnector instanceof AzureRepoConnectorDTO) {
+      return hasAPIAccess((AzureRepoConnectorDTO) scmConnector);
     } else if (scmConnector instanceof GitConfigDTO) {
       return false;
     }
@@ -66,6 +69,11 @@ public class GitApiAccessDecryptionHelper {
   private boolean hasAPIAccess(GitlabConnectorDTO gitlabConnectorDTO) {
     return !(gitlabConnectorDTO == null || gitlabConnectorDTO.getApiAccess() == null
         || gitlabConnectorDTO.getApiAccess().getSpec() == null);
+  }
+
+  private boolean hasAPIAccess(AzureRepoConnectorDTO azureRepoConnectorDTO) {
+    return !(azureRepoConnectorDTO == null || azureRepoConnectorDTO.getApiAccess() == null
+        || azureRepoConnectorDTO.getApiAccess().getSpec() == null);
   }
 
   public DecryptableEntity getAPIAccessDecryptableEntity(GithubConnectorDTO githubConnectorDTO) {
@@ -103,6 +111,8 @@ public class GitApiAccessDecryptionHelper {
       setAPIAccessDecryptableEntity((BitbucketConnectorDTO) scmConnector, decryptableEntity);
     } else if (scmConnector instanceof GitlabConnectorDTO) {
       setAPIAccessDecryptableEntity((GitlabConnectorDTO) scmConnector, decryptableEntity);
+    } else if (scmConnector instanceof AzureRepoConnectorDTO) {
+      setAPIAccessDecryptableEntity((AzureRepoConnectorDTO) scmConnector, decryptableEntity);
     }
   }
 
@@ -128,5 +138,13 @@ public class GitApiAccessDecryptionHelper {
       throw new InvalidRequestException("The given connector doesn't have api access field set");
     }
     gitlabConnectorDTO.getApiAccess().setSpec((GitlabApiAccessSpecDTO) decryptableEntity);
+  }
+
+  public void setAPIAccessDecryptableEntity(
+      AzureRepoConnectorDTO azureRepoConnectorDTO, DecryptableEntity decryptableEntity) {
+    if (azureRepoConnectorDTO == null || azureRepoConnectorDTO.getApiAccess() == null) {
+      throw new InvalidRequestException("The given connector doesn't have api access field set");
+    }
+    azureRepoConnectorDTO.getApiAccess().setSpec((AzureRepoApiAccessSpecDTO) decryptableEntity);
   }
 }

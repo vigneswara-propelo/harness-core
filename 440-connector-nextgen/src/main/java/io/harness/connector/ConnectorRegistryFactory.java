@@ -110,7 +110,6 @@ import io.harness.connector.mappers.sumologicmapper.SumoLogicEntityToDTO;
 import io.harness.connector.task.ConnectorValidationHandler;
 import io.harness.connector.task.NotSupportedValidationHandler;
 import io.harness.connector.task.git.GitValidationHandler;
-import io.harness.connector.validator.AlwaysTrueConnectorValidator;
 import io.harness.connector.validator.ArtifactoryConnectionValidator;
 import io.harness.connector.validator.AwsConnectorValidator;
 import io.harness.connector.validator.AzureConnectorValidator;
@@ -129,6 +128,7 @@ import io.harness.connector.validator.PhysicalDataCenterConnectorValidator;
 import io.harness.connector.validator.SecretManagerConnectorValidator;
 import io.harness.connector.validator.ServiceNowConnectorValidator;
 import io.harness.connector.validator.scmValidators.AwsCodeCommitValidator;
+import io.harness.connector.validator.scmValidators.AzureRepoConnectorValidator;
 import io.harness.connector.validator.scmValidators.BitbucketConnectorValidator;
 import io.harness.connector.validator.scmValidators.GitConnectorValidator;
 import io.harness.connector.validator.scmValidators.GithubConnectorValidator;
@@ -284,8 +284,8 @@ public class ConnectorRegistryFactory {
             CVConnectorParamsProvider.class, ErrorTrackingDTOToEntity.class, ErrorTrackingEntityToDTO.class,
             NotSupportedValidationHandler.class));
     registrar.put(ConnectorType.AZURE_REPO,
-        new ConnectorRegistrar(ConnectorCategory.CODE_REPO, AlwaysTrueConnectorValidator.class,
-            NoOpConnectorValidationParamsProvider.class, AzureRepoDTOToEntity.class, AzureRepoEntityToDTO.class,
+        new ConnectorRegistrar(ConnectorCategory.CODE_REPO, AzureRepoConnectorValidator.class,
+            ScmConnectorValidationParamsProvider.class, AzureRepoDTOToEntity.class, AzureRepoEntityToDTO.class,
             NotSupportedValidationHandler.class));
     registrar.put(ConnectorType.PDC,
         new ConnectorRegistrar(ConnectorCategory.CLOUD_PROVIDER, PhysicalDataCenterConnectorValidator.class,

@@ -318,6 +318,7 @@ public class OwnerRule implements TestRule {
           .put(KAPIL, defaultUserInfo(KAPIL).slack("U02E2J40E21").team(CV).build())
           .put(KARAN, defaultUserInfo(KARAN).slack("U015LRX21FD").team(PL).build())
           .put(LUCAS, defaultUserInfo(LUCAS).slack("U01C8MPTS2J").team(DEL).build())
+          .put(MANKRIT, defaultUserInfo(MANKRIT).slack("U02U8PSRMB4").team(PL).build())
           .put(MARKO, defaultUserInfo(MARKO).slack("U022NV33SF7").team(DEL).build())
           .put(MATT, defaultUserInfo(MATT).slack("U019QR7TA7M").team(DEL).build())
           .put(MEENAKSHI, UserInfo.builder().email("meenakshi.raikwar@harness.io").slack("UKP2AEUNA").build())

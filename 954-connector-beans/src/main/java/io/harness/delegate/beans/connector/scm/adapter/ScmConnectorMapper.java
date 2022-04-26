@@ -30,7 +30,7 @@ public class ScmConnectorMapper {
     } else if (scmConnector instanceof BitbucketConnectorDTO) {
       return BitbucketToGitMapper.mapToGitConfigDTO((BitbucketConnectorDTO) scmConnector);
     } else if (scmConnector instanceof AzureRepoConnectorDTO) {
-      return AzureRepoTOGitMapper.mapToGitConfigDTO((AzureRepoConnectorDTO) scmConnector);
+      return AzureRepoToGitMapper.mapToGitConfigDTO((AzureRepoConnectorDTO) scmConnector);
     } else {
       return (GitConfigDTO) scmConnector;
     }

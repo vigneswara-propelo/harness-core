@@ -40,7 +40,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
 
 @Singleton
 @Slf4j
@@ -85,20 +84,17 @@ public class ScmGitProviderMapper {
   }
 
   private Provider mapToAzureRepoProvider(AzureRepoConnectorDTO azureRepoConnector, boolean debug) {
-    // e.g:= https.dev.azure.com/org/project_name/_git/repo_name
-    String projectUrl = StringUtils.substringBeforeLast(azureRepoConnector.getUrl(), azure_repo_name_separator);
-    String orgAndProject = StringUtils.substringAfter(projectUrl, azure_repo_url_prefix);
-    String org = StringUtils.substringBefore(orgAndProject, azure_repo_org_separator);
-    String project = StringUtils.substringAfter(orgAndProject, azure_repo_org_separator);
-
     boolean skipVerify = checkScmSkipVerify();
-    AzureRepoApiAccessDTO apiAccess = azureRepoConnector.getApiAccess();
-    AzureRepoTokenSpecDTO bitbucketUsernameTokenApiAccessDTO = (AzureRepoTokenSpecDTO) apiAccess.getSpec();
-    String pat = String.valueOf(bitbucketUsernameTokenApiAccessDTO.getTokenRef().getDecryptedValue());
-    AzureProvider.Builder azureProvider =
-        AzureProvider.newBuilder().setOrganization(org).setProject(project).setPersonalAccessToken(pat);
-    Provider.Builder builder = Provider.newBuilder().setDebug(debug).setAzure(azureProvider);
+    String orgAndProject = GitClientHelper.getAzureRepoOrgAndProject(azureRepoConnector.getUrl());
+    String org = GitClientHelper.getAzureRepoOrg(orgAndProject);
+    String project = GitClientHelper.getAzureRepoProject(orgAndProject);
 
+    AzureRepoApiAccessDTO apiAccess = azureRepoConnector.getApiAccess();
+    AzureRepoTokenSpecDTO azureRepoUsernameTokenApiAccessDTO = (AzureRepoTokenSpecDTO) apiAccess.getSpec();
+    String personalAccessToken = String.valueOf(azureRepoUsernameTokenApiAccessDTO.getTokenRef().getDecryptedValue());
+    AzureProvider.Builder azureProvider =
+        AzureProvider.newBuilder().setOrganization(org).setProject(project).setPersonalAccessToken(personalAccessToken);
+    Provider.Builder builder = Provider.newBuilder().setDebug(debug).setAzure(azureProvider);
     return builder.setSkipVerify(skipVerify).setAdditionalCertsPath(getAdditionalCertsPath()).build();
   }
 

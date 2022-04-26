@@ -189,6 +189,19 @@ public class GitClientHelper {
     }
   }
 
+  public static String getAzureRepoOrgAndProject(String url) {
+    String temp = StringUtils.substringBeforeLast(url, "/_git/");
+    return StringUtils.substringAfter(temp, "dev.azure.com/");
+  }
+
+  public static String getAzureRepoOrg(String orgAndProject) {
+    return StringUtils.substringBefore(orgAndProject, "/");
+  }
+
+  public static String getAzureRepoProject(String orgAndProject) {
+    return StringUtils.substringAfter(orgAndProject, "/");
+  }
+
   private static String getGitSCMHost(String url) {
     Matcher m = GIT_URL_NO_OWNER.matcher(url);
     try {
