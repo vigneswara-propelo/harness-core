@@ -501,6 +501,7 @@ import io.harness.secretmanagerclient.WinRmAuthScheme;
 import io.harness.serializer.KryoRegistrar;
 
 import software.wings.beans.AwsConfig;
+import software.wings.beans.EcrConfig;
 import software.wings.beans.GcpConfig;
 import software.wings.beans.GitConfig;
 import software.wings.beans.HostReachabilityInfo;
@@ -1199,6 +1200,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(GcbOptions.GcbSpecSource.class, 7442);
     kryo.register(GcbTriggerBuildSpec.GcbTriggerSource.class, 7443);
     kryo.register(GcbRemoteBuildSpec.RemoteFileSource.class, 7444);
+    kryo.register(EcrConfig.class, 5011);
 
     // WinRm
     kryo.register(WinRmCredentialsSpecDTO.class, 600001);

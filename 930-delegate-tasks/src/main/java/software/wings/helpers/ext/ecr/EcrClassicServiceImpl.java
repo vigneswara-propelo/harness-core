@@ -16,7 +16,6 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.EcrConfig;
-import software.wings.beans.artifact.EcrArtifactStream;
 import software.wings.common.BuildDetailsComparatorAscending;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.service.impl.AwsHelperService;
@@ -97,12 +96,12 @@ public class EcrClassicServiceImpl implements EcrClassicService {
   }
 
   @Override
-  public String getEcrImageUrl(EcrConfig ecrConfig, EcrArtifactStream ecrArtifactStream) {
+  public String getEcrImageUrl(EcrConfig ecrConfig, String imageName) {
     String registry = ecrConfig.getEcrUrl().substring(8);
     if (!registry.endsWith("/")) {
       registry += "/";
     }
 
-    return registry + ecrArtifactStream.getImageName();
+    return registry + imageName;
   }
 }

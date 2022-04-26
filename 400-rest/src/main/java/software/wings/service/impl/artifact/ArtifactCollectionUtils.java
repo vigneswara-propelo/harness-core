@@ -537,7 +537,7 @@ public class ArtifactCollectionUtils {
           ecrArtifactStream.getRegion(), ecrArtifactStream);
     } else {
       EcrConfig ecrConfig = (EcrConfig) value;
-      return ecrClassicService.getEcrImageUrl(ecrConfig, ecrArtifactStream);
+      return ecrClassicService.getEcrImageUrl(ecrConfig, ecrArtifactStream.getImageName());
     }
   }
 

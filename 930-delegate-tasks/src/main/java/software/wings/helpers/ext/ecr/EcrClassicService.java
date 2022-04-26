@@ -13,7 +13,6 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.EcrConfig;
-import software.wings.beans.artifact.EcrArtifactStream;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 
 import java.util.List;
@@ -73,8 +72,8 @@ public interface EcrClassicService {
    * Get the ECR repository info for the given name
    *
    * @param ecrConfig         ecr artifact server / connector config
-   * @param ecrArtifactStream repository name
+   * @param imageName
    * @return ecr image url
    */
-  String getEcrImageUrl(EcrConfig ecrConfig, EcrArtifactStream ecrArtifactStream);
+  String getEcrImageUrl(EcrConfig ecrConfig, String imageName);
 }

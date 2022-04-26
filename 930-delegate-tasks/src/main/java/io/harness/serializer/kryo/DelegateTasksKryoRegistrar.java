@@ -32,7 +32,6 @@ import software.wings.beans.ClusterSelectionCriteriaEntry;
 import software.wings.beans.CyberArkConfig;
 import software.wings.beans.DockerConfig;
 import software.wings.beans.DynaTraceConfig;
-import software.wings.beans.EcrConfig;
 import software.wings.beans.ElkConfig;
 import software.wings.beans.GcpKmsConfig;
 import software.wings.beans.GcpSecretsManagerConfig;
@@ -168,7 +167,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(ArtifactStreamAttributes.class, 5007);
     kryo.register(BambooConfig.class, 5009);
     kryo.register(DockerConfig.class, 5010);
-    kryo.register(EcrConfig.class, 5011);
     kryo.register(NexusConfig.class, 5016);
     kryo.register(ElkConfig.class, 5017);
     kryo.register(ArtifactoryConfig.class, 5018);

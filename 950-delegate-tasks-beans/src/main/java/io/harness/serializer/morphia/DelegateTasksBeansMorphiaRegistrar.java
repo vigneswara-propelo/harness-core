@@ -52,6 +52,7 @@ import io.harness.morphia.MorphiaRegistrarHelperPut;
 import io.harness.ng.core.models.Secret;
 
 import software.wings.beans.AwsConfig;
+import software.wings.beans.EcrConfig;
 import software.wings.beans.GcpConfig;
 import software.wings.beans.GitConfig;
 import software.wings.beans.JenkinsConfig;
@@ -137,6 +138,7 @@ public class DelegateTasksBeansMorphiaRegistrar implements MorphiaRegistrar {
     w.put("sm.states.JenkinsExecutionResponse", JenkinsExecutionResponse.class);
     w.put("beans.settings.helm.HttpHelmRepoConfig", HttpHelmRepoConfig.class);
     w.put("beans.GcpConfig", GcpConfig.class);
+    w.put("beans.EcrConfig", EcrConfig.class);
     h.put("waiter.ListNotifyResponseData", ListNotifyResponseData.class);
   }
 }
