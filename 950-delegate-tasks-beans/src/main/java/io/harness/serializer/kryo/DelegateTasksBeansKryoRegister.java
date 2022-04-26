@@ -555,6 +555,7 @@ import software.wings.service.impl.aws.model.AwsAmiPreDeploymentData;
 import software.wings.service.impl.aws.model.AwsAsgGetRunningCountData;
 import software.wings.service.impl.aws.model.AwsCFTemplateParamsData;
 import software.wings.service.impl.aws.model.AwsLambdaVpcConfig;
+import software.wings.service.impl.aws.model.AwsSecurityGroup;
 import software.wings.service.impl.aws.model.AwsSubnet;
 import software.wings.service.impl.aws.model.AwsVPC;
 import software.wings.service.impl.aws.model.embed.AwsLambdaDetails;
@@ -1094,6 +1095,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AwsAsgGetRunningCountData.class, 7190);
     kryo.register(AwsVPC.class, 7319);
     kryo.register(AwsSubnet.class, 7320);
+    kryo.register(AwsSecurityGroup.class, 7321);
     kryo.register(HelmCommandResponse.class, 5261);
     kryo.register(AwsAmiPreDeploymentData.class, 5519);
     kryo.register(EcsCommandResponse.class, 5608);
