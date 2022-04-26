@@ -22,6 +22,8 @@ import software.wings.api.DeploymentType;
 import software.wings.beans.AppDynamicsConfig;
 import software.wings.beans.AwsSecretsManagerConfig;
 import software.wings.beans.AzureConfig;
+import software.wings.beans.AzureContainerRegistry;
+import software.wings.beans.AzureResourceGroup;
 import software.wings.beans.AzureVaultConfig;
 import software.wings.beans.BambooConfig;
 import software.wings.beans.BaseVaultConfig;
@@ -279,6 +281,8 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(HelmCollectChartResponse.class, 71111);
     kryo.register(HelmChartCollectionParams.HelmChartCollectionType.class, 400134);
     kryo.register(AzureVMSSCommandRequest.class, 8035);
+    kryo.register(AzureContainerRegistry.class, 40013);
+    kryo.register(AzureResourceGroup.class, 40016);
     kryo.register(ClusterSelectionCriteriaEntry.class, 50008);
     kryo.register(RancherResolveClustersTaskParameters.class, 50004);
     kryo.register(RancherResolveClustersResponse.class, 50005);

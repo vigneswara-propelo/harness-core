@@ -15,7 +15,6 @@ import static io.harness.network.Http.connectableHttpUrl;
 import static io.harness.validation.Validator.equalCheck;
 
 import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
-import static software.wings.service.impl.artifact.ArtifactServiceImpl.ARTIFACT_RETENTION_SIZE;
 import static software.wings.utils.ArtifactType.DOCKER;
 
 import io.harness.annotations.dev.OwnedBy;

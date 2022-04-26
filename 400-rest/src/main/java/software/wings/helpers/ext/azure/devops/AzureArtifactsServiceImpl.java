@@ -21,7 +21,7 @@ import static software.wings.helpers.ext.azure.devops.AzureArtifactsServiceHelpe
 import static software.wings.helpers.ext.azure.devops.AzureArtifactsServiceHelper.validateAzureDevopsUrl;
 import static software.wings.helpers.ext.azure.devops.AzureArtifactsServiceHelper.validateRawResponse;
 import static software.wings.helpers.ext.jenkins.BuildDetails.Builder.aBuildDetails;
-import static software.wings.service.impl.artifact.ArtifactServiceImpl.ARTIFACT_RETENTION_SIZE;
+import static software.wings.service.intfc.BuildService.ARTIFACT_RETENTION_SIZE;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;

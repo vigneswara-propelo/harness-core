@@ -28,8 +28,8 @@ import software.wings.helpers.ext.azure.devops.AzureArtifactsPackage;
 import software.wings.helpers.ext.azure.devops.AzureDevopsProject;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.helpers.ext.jenkins.JobDetails;
-import software.wings.service.impl.artifact.ArtifactCollectionUtils;
 import software.wings.utils.ArtifactType;
+import software.wings.utils.DelegateArtifactCollectionUtils;
 import software.wings.utils.RepositoryFormat;
 import software.wings.utils.RepositoryType;
 
@@ -48,6 +48,7 @@ import java.util.Optional;
 @TargetModule(_930_DELEGATE_TASKS)
 @OwnedBy(CDC)
 public interface BuildService<T> {
+  int ARTIFACT_RETENTION_SIZE = 25;
   /**
    * Gets builds.
    *
@@ -328,8 +329,9 @@ public interface BuildService<T> {
       List<BuildDetails> buildDetails, ArtifactStreamAttributes artifactStreamAttributes, T config) {
     // NOTE: config and encryptionDetails are used only for fetching labels.
     // Filter out new build details that are not saved already in our DB.
-    buildDetails = ArtifactCollectionUtils.getNewBuildDetails(artifactStreamAttributes.getSavedBuildDetailsKeys(),
-        buildDetails, artifactStreamAttributes.getArtifactStreamType(), artifactStreamAttributes);
+    buildDetails =
+        DelegateArtifactCollectionUtils.getNewBuildDetails(artifactStreamAttributes.getSavedBuildDetailsKeys(),
+            buildDetails, artifactStreamAttributes.getArtifactStreamType(), artifactStreamAttributes);
 
     // Disable fetching labels for now as it has many issues.
     return buildDetails;

@@ -33,6 +33,7 @@ import software.wings.service.intfc.CustomBuildService;
 import software.wings.service.intfc.DockerBuildService;
 import software.wings.service.intfc.JenkinsBuildService;
 import software.wings.service.intfc.security.EncryptionService;
+import software.wings.utils.DelegateArtifactCollectionUtils;
 
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -208,7 +209,7 @@ public class ArtifactRepositoryServiceImplTest extends CategoryTest {
 
   private ArtifactsPublishedCache<BuildDetails> getArtifactsPublishedCached(
       BuildSourceParameters buildSourceParameters) {
-    Function<BuildDetails, String> buildDetailsKeyFn = ArtifactCollectionUtils.getBuildDetailsKeyFn(
+    Function<BuildDetails, String> buildDetailsKeyFn = DelegateArtifactCollectionUtils.getBuildDetailsKeyFn(
         buildSourceParameters.getArtifactStreamType(), buildSourceParameters.getArtifactStreamAttributes());
     boolean enableCleanup = ArtifactCollectionUtils.supportsCleanup(buildSourceParameters.getArtifactStreamType());
     return new ArtifactsPublishedCache(

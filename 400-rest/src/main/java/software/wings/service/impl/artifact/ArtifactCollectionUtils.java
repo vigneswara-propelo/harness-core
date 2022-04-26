@@ -38,7 +38,7 @@ import static software.wings.beans.artifact.ArtifactStreamType.SMB;
 import static software.wings.expression.SecretFunctor.Mode.CASCADING;
 import static software.wings.helpers.ext.jenkins.BuildDetails.Builder.aBuildDetails;
 import static software.wings.service.impl.ArtifactoryBuildServiceImpl.MANUAL_PULL_ARTIFACTORY_LIMIT;
-import static software.wings.service.impl.artifact.ArtifactServiceImpl.ARTIFACT_RETENTION_SIZE;
+import static software.wings.service.intfc.BuildService.ARTIFACT_RETENTION_SIZE;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -119,6 +119,7 @@ import software.wings.service.intfc.security.SecretManager;
 import software.wings.settings.SettingValue;
 import software.wings.settings.SettingVariableTypes;
 import software.wings.utils.ArtifactType;
+import software.wings.utils.DelegateArtifactCollectionUtils;
 import software.wings.utils.RepositoryType;
 
 import com.google.common.collect.Lists;
@@ -864,7 +865,7 @@ public class ArtifactCollectionUtils {
       String artifactStreamType, ArtifactStreamAttributes artifactStreamAttributes) {
     if (AMI.name().equals(artifactStreamType)) {
       return Artifact::getRevision;
-    } else if (isGenericArtifactStream(artifactStreamType, artifactStreamAttributes)) {
+    } else if (DelegateArtifactCollectionUtils.isGenericArtifactStream(artifactStreamType, artifactStreamAttributes)) {
       return Artifact::getArtifactPath;
     } else {
       return Artifact::getBuildNo;
@@ -889,52 +890,11 @@ public class ArtifactCollectionUtils {
       return buildDetails;
     }
 
-    Function<BuildDetails, String> keyFn = getBuildDetailsKeyFn(artifactStreamType, artifactStreamAttributes);
+    Function<BuildDetails, String> keyFn =
+        DelegateArtifactCollectionUtils.getBuildDetailsKeyFn(artifactStreamType, artifactStreamAttributes);
     return buildDetails.stream()
         .filter(singleBuildDetails -> !savedBuildDetailsKeys.contains(keyFn.apply(singleBuildDetails)))
         .collect(Collectors.toList());
-  }
-
-  /**
-   * getBuildDetailsKeyFn returns a function that can extract a unique key for a BuildDetails object so that it can be
-   * compared with an Artifact object.
-   *
-   * @param artifactStreamType       the artifact stream type
-   * @param artifactStreamAttributes the artifact stream attributes - used only for ARTIFACTORY
-   * @return the function that can used to get the key for a BuildDetails
-   */
-  public static Function<BuildDetails, String> getBuildDetailsKeyFn(
-      String artifactStreamType, ArtifactStreamAttributes artifactStreamAttributes) {
-    if (AMI.name().equals(artifactStreamType)) {
-      return BuildDetails::getRevision;
-    } else if (isGenericArtifactStream(artifactStreamType, artifactStreamAttributes)) {
-      return BuildDetails::getArtifactPath;
-    } else {
-      return BuildDetails::getNumber;
-    }
-  }
-
-  /**
-   * isGenericArtifactStream returns true if we need to compare artifact paths to check if two artifacts - one stored in
-   * our DB and one from an artifact repo - are different.
-   *
-   * @param artifactStreamType       the artifact stream type
-   * @param artifactStreamAttributes the artifact stream attributes - used only for ARTIFACTORY
-   * @return true, if generic artifact stream - uses artifact path as key
-   */
-  static boolean isGenericArtifactStream(String artifactStreamType, ArtifactStreamAttributes artifactStreamAttributes) {
-    if (AMAZON_S3.name().equals(artifactStreamType)) {
-      return true;
-    }
-    if (ARTIFACTORY.name().equals(artifactStreamType)) {
-      if (artifactStreamAttributes.getArtifactType() != null
-          && artifactStreamAttributes.getArtifactType() == ArtifactType.DOCKER) {
-        return false;
-      }
-      return artifactStreamAttributes.getRepositoryType() == null
-          || !artifactStreamAttributes.getRepositoryType().equals(RepositoryType.docker.name());
-    }
-    return false;
   }
 
   public boolean skipArtifactStreamIteration(ArtifactStream artifactStream, boolean isCollection) {

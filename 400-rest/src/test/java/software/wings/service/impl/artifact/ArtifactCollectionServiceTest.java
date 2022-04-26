@@ -98,6 +98,7 @@ import software.wings.service.intfc.aws.manager.AwsEcrHelperServiceManager;
 import software.wings.service.intfc.security.ManagerDecryptionService;
 import software.wings.service.intfc.security.SecretManager;
 import software.wings.utils.ArtifactType;
+import software.wings.utils.DelegateArtifactCollectionUtils;
 import software.wings.utils.WingsTestConstants;
 
 import com.google.inject.Inject;
@@ -125,6 +126,7 @@ public class ArtifactCollectionServiceTest extends WingsBaseTest {
   @Inject @Spy private HPersistence persistence;
   @InjectMocks @Inject @Named("ArtifactCollectionService") private ArtifactCollectionService artifactCollectionService;
   @InjectMocks @Inject private ArtifactCollectionUtils artifactCollectionUtils;
+  @InjectMocks @Inject private DelegateArtifactCollectionUtils delegateArtifactCollectionUtils;
 
   @Mock ArtifactStreamService artifactStreamService;
   @Mock private ArtifactService artifactService;
@@ -996,12 +998,12 @@ public class ArtifactCollectionServiceTest extends WingsBaseTest {
                                                             .savedBuildDetailsKeys(savedBuildDetailsKeys)
                                                             .artifactStreamType(AMAZON_S3.name())
                                                             .build();
-    List<BuildDetails> buildDetails1 = artifactCollectionUtils.getNewBuildDetails(
+    List<BuildDetails> buildDetails1 = delegateArtifactCollectionUtils.getNewBuildDetails(
         savedBuildDetailsKeys, buildDetails, AMAZON_S3.name(), artifactStreamAttributes);
     assertThat(buildDetails1).isEmpty();
 
     buildDetails.add(aBuildDetails().withArtifactPath("new path").build());
-    buildDetails1 = artifactCollectionUtils.getNewBuildDetails(
+    buildDetails1 = delegateArtifactCollectionUtils.getNewBuildDetails(
         savedBuildDetailsKeys, buildDetails, AMAZON_S3.name(), artifactStreamAttributes);
     assertThat(buildDetails1.size()).isEqualTo(1);
     assertThat(buildDetails1).extracting(BuildDetails::getArtifactPath).containsExactly("new path");
@@ -1014,7 +1016,7 @@ public class ArtifactCollectionServiceTest extends WingsBaseTest {
     Set<String> set = new HashSet<>();
     set.add("10");
     set.add("11");
-    assertThat(artifactCollectionUtils.getNewBuildDetails(
+    assertThat(delegateArtifactCollectionUtils.getNewBuildDetails(
                    set, asList(), AMAZON_S3.name(), ArtifactStreamAttributes.builder().build()))
         .isEmpty();
   }
@@ -1023,7 +1025,7 @@ public class ArtifactCollectionServiceTest extends WingsBaseTest {
   @Owner(developers = AADITI)
   @Category(UnitTests.class)
   public void testGetNewBuildDetailsNoSavedArtifacts() {
-    List<BuildDetails> buildDetails = artifactCollectionUtils.getNewBuildDetails(Collections.emptySet(),
+    List<BuildDetails> buildDetails = delegateArtifactCollectionUtils.getNewBuildDetails(Collections.emptySet(),
         asList(aBuildDetails().withArtifactPath("todolist copy.war").build()), AMAZON_S3.name(),
         ArtifactStreamAttributes.builder().build());
     assertThat(buildDetails).isNotEmpty();
