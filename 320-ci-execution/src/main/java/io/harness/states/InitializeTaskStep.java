@@ -129,10 +129,8 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
     }
     InitializeStepInfo initializeStepInfo = (InitializeStepInfo) stepElementParameters.getSpec();
 
-    try {
+    if (initializeStepInfo.getBuildJobEnvInfo() == null) {
       initializeStepInfo.setBuildJobEnvInfo(fetchBuildJobEnvInfo(initializeStepInfo, ambiance));
-    } catch (Exception ex) {
-      log.error("Failed to update build info", ex);
     }
 
     List<EntityDetail> connectorsEntityDetails =
@@ -148,10 +146,8 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
       Ambiance ambiance, StepElementParameters stepElementParameters, StepInputPackage inputPackage) {
     InitializeStepInfo initializeStepInfo = (InitializeStepInfo) stepElementParameters.getSpec();
 
-    try {
+    if (initializeStepInfo.getBuildJobEnvInfo() == null) {
       initializeStepInfo.setBuildJobEnvInfo(fetchBuildJobEnvInfo(initializeStepInfo, ambiance));
-    } catch (Exception ex) {
-      log.error("Failed to update build info", ex);
     }
 
     Map<String, String> taskIds = new HashMap<>();
@@ -220,10 +216,8 @@ public class InitializeTaskStep implements TaskExecutableWithRbac<StepElementPar
     K8sTaskExecutionResponse k8sTaskExecutionResponse = (K8sTaskExecutionResponse) ciTaskExecutionResponse;
     InitializeStepInfo initializeStepInfo = (InitializeStepInfo) stepElementParameters.getSpec();
 
-    try {
+    if (initializeStepInfo.getBuildJobEnvInfo() == null) {
       initializeStepInfo.setBuildJobEnvInfo(fetchBuildJobEnvInfo(initializeStepInfo, ambiance));
-    } catch (Exception ex) {
-      log.error("Failed to update build info", ex);
     }
 
     DependencyOutcome dependencyOutcome =
