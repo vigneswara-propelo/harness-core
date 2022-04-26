@@ -22,8 +22,7 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 
-import software.wings.infra.RancherKubernetesInfrastructure.ClusterSelectionCriteriaEntry;
-import software.wings.sm.states.rancher.RancherResolveState;
+import software.wings.beans.ClusterSelectionCriteriaEntry;
 
 import com.google.inject.Inject;
 import java.io.IOException;
@@ -47,6 +46,9 @@ import org.apache.commons.lang3.tuple.Pair;
 @OwnedBy(CDP)
 @TargetModule(HarnessModule._930_DELEGATE_TASKS)
 public class RancherResolveClustersTask extends AbstractDelegateRunnableTask {
+  public static final String COMMAND_UNIT_NAME = "Execute";
+  public static final String COMMAND_NAME = "Rancher Cluster Resolve";
+
   @Inject private RancherTaskHelper helper;
 
   public RancherResolveClustersTask(DelegateTaskPackage delegateTaskPackage,
@@ -62,7 +64,7 @@ public class RancherResolveClustersTask extends AbstractDelegateRunnableTask {
 
   @Override
   public RancherResolveClustersResponse run(TaskParameters parameters) throws IOException {
-    LogCallback logCallback = getLogStreamingTaskClient().obtainLogCallback(RancherResolveState.COMMAND_UNIT_NAME);
+    LogCallback logCallback = getLogStreamingTaskClient().obtainLogCallback(COMMAND_UNIT_NAME);
     if (!(parameters instanceof RancherResolveClustersTaskParameters)) {
       throw new InvalidArgumentsException(
           Pair.of("parameters", "Must be instance of RancherResolveClustersTaskParameters"));

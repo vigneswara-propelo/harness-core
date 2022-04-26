@@ -26,6 +26,7 @@ import software.wings.beans.AzureVaultConfig;
 import software.wings.beans.BambooConfig;
 import software.wings.beans.BaseVaultConfig;
 import software.wings.beans.BastionConnectionAttributes;
+import software.wings.beans.ClusterSelectionCriteriaEntry;
 import software.wings.beans.CyberArkConfig;
 import software.wings.beans.DockerConfig;
 import software.wings.beans.DynaTraceConfig;
@@ -72,6 +73,8 @@ import software.wings.delegatetasks.buildsource.BuildCollectParameters;
 import software.wings.delegatetasks.collect.artifacts.AzureArtifactsCollectionTaskParameters;
 import software.wings.delegatetasks.cv.DataCollectionException;
 import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
+import software.wings.delegatetasks.rancher.RancherResolveClustersResponse;
+import software.wings.delegatetasks.rancher.RancherResolveClustersTaskParameters;
 import software.wings.delegatetasks.validation.capabilities.BasicValidationInfo;
 import software.wings.delegatetasks.validation.capabilities.ClusterMasterUrlValidationCapability;
 import software.wings.delegatetasks.validation.capabilities.GitConnectionCapability;
@@ -244,5 +247,8 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(HelmCollectChartResponse.class, 71111);
     kryo.register(HelmChartCollectionParams.HelmChartCollectionType.class, 400134);
     kryo.register(AzureVMSSCommandRequest.class, 8035);
+    kryo.register(ClusterSelectionCriteriaEntry.class, 50008);
+    kryo.register(RancherResolveClustersTaskParameters.class, 50004);
+    kryo.register(RancherResolveClustersResponse.class, 50005);
   }
 }

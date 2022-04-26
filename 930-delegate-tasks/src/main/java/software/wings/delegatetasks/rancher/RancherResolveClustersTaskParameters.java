@@ -20,8 +20,8 @@ import io.harness.delegate.task.TaskParameters;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
 
+import software.wings.beans.ClusterSelectionCriteriaEntry;
 import software.wings.beans.RancherConfig;
-import software.wings.infra.RancherKubernetesInfrastructure;
 
 import java.util.List;
 import lombok.Builder;
@@ -33,15 +33,15 @@ import lombok.Data;
 public class RancherResolveClustersTaskParameters
     implements TaskParameters, ActivityAccess, ExecutionCapabilityDemander, Cd1ApplicationAccess {
   private RancherConfig rancherConfig;
-  private List<RancherKubernetesInfrastructure.ClusterSelectionCriteriaEntry> clusterSelectionCriteria;
+  private List<ClusterSelectionCriteriaEntry> clusterSelectionCriteria;
   private String activityId;
   private String appId;
   private List<EncryptedDataDetail> encryptedDataDetails;
 
   @Builder
   public RancherResolveClustersTaskParameters(RancherConfig rancherConfig,
-      List<RancherKubernetesInfrastructure.ClusterSelectionCriteriaEntry> clusterSelectionCriteria,
-      List<EncryptedDataDetail> encryptedDataDetails, String activityId, String appId) {
+      List<ClusterSelectionCriteriaEntry> clusterSelectionCriteria, List<EncryptedDataDetail> encryptedDataDetails,
+      String activityId, String appId) {
     this.rancherConfig = rancherConfig;
     this.clusterSelectionCriteria = clusterSelectionCriteria;
     this.encryptedDataDetails = encryptedDataDetails;
