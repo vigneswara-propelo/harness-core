@@ -23,6 +23,7 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.plan.ExecutionTriggerInfo;
 import io.harness.pms.contracts.plan.TriggerType;
 import io.harness.pms.contracts.plan.TriggeredBy;
+import io.harness.pms.helpers.PipelineExpressionHelper;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.pms.plan.execution.service.PMSExecutionService;
 import io.harness.rule.Owner;
@@ -36,14 +37,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(HarnessTeam.PIPELINE)
-public class TriggeredByFunctorTest extends CategoryTest {
+public class PipelineExecutionFunctorTest extends CategoryTest {
   @Mock private PMSExecutionService pmsExecutionService;
-  @InjectMocks private TriggeredByFunctor triggeredByFunctor;
+  @Mock PipelineExpressionHelper pipelineExpressionHelper;
+  @InjectMocks private PipelineExecutionFunctor triggeredByFunctor;
   Ambiance ambiance = Ambiance.newBuilder()
                           .putSetupAbstractions("accountId", "accountId")
                           .putSetupAbstractions("projectIdentifier", "projectId")
                           .putSetupAbstractions("orgIdentifier", "orgIdentifier")
                           .build();
+
+  String executionUrl =
+      "http:127.0.0.1:8080/account/dummyAccount/cd/orgs/dummyOrg/projects/dummyProject/pipelines/dummyPipeline/executions/dummyPlanExecutionId/pipeline";
 
   @Before
   public void setUp() {
@@ -83,6 +88,7 @@ public class TriggeredByFunctorTest extends CategoryTest {
                                       .build())
             .build();
 
+    doReturn(executionUrl).when(pipelineExpressionHelper).generateUrl(ambiance);
     doReturn(pipelineExecutionSummaryEntity)
         .when(pmsExecutionService)
         .getPipelineExecutionSummaryEntity(any(), any(), any(), any());
@@ -92,5 +98,8 @@ public class TriggeredByFunctorTest extends CategoryTest {
     triggeredByMap = (Map<String, String>) response.get("triggeredBy");
     assertEquals(triggeredByMap.get("email"), "admin@harness.io");
     assertEquals(triggeredByMap.get("name"), "Admin");
+    Map<String, String> executionMap = (Map<String, String>) response.get("execution");
+    assertEquals(executionMap.size(), 1);
+    assertEquals(executionMap.get("url"), executionUrl);
   }
 }

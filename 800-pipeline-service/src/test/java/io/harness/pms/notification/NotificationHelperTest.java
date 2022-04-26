@@ -49,6 +49,7 @@ import io.harness.pms.contracts.plan.ExecutionMetadata;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.expression.PmsEngineExpressionService;
+import io.harness.pms.helpers.PipelineExpressionHelper;
 import io.harness.pms.pipeline.service.PMSPipelineService;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
 import io.harness.rule.Owner;
@@ -71,6 +72,7 @@ public class NotificationHelperTest extends CategoryTest {
   NotificationHelper notificationHelper;
   PmsEngineExpressionService pmsEngineExpressionService;
   PMSPipelineService pmsPipelineService;
+  PipelineExpressionHelper pipelineExpressionHelper;
   String executionUrl =
       "http:127.0.0.1:8080/account/dummyAccount/cd/orgs/dummyOrg/projects/dummyProject/pipelines/dummyPipeline/executions/dummyPlanExecutionId/pipeline";
   Ambiance ambiance =
@@ -156,6 +158,7 @@ public class NotificationHelperTest extends CategoryTest {
     planExecutionMetadataService = mock(PlanExecutionMetadataService.class);
     pmsEngineExpressionService = mock(PmsEngineExpressionService.class);
     pmsPipelineService = mock(PMSPipelineService.class);
+    pipelineExpressionHelper = mock(PipelineExpressionHelper.class);
     notificationHelper = spy(new NotificationHelper());
     notificationHelper.notificationClient = notificationClient;
     notificationHelper.planExecutionService = planExecutionService;
@@ -163,6 +166,7 @@ public class NotificationHelperTest extends CategoryTest {
     notificationHelper.planExecutionMetadataService = planExecutionMetadataService;
     notificationHelper.pmsEngineExpressionService = pmsEngineExpressionService;
     notificationHelper.pmsPipelineService = pmsPipelineService;
+    notificationHelper.pipelineExpressionHelper = pipelineExpressionHelper;
   }
 
   @Test
@@ -170,6 +174,7 @@ public class NotificationHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGenerateUrl() {
     when(pipelineServiceConfiguration.getPipelineServiceBaseUrl()).thenReturn("http:127.0.0.1:8080");
+    doReturn(executionUrl).when(pipelineExpressionHelper).generateUrl(ambiance);
     String generatedUrl = notificationHelper.generateUrl(ambiance);
     assertEquals(executionUrl, generatedUrl);
   }

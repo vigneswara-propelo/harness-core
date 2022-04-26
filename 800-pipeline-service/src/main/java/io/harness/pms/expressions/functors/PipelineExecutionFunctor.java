@@ -13,6 +13,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.expression.LateBindingValue;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
+import io.harness.pms.helpers.PipelineExpressionHelper;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.pms.plan.execution.service.PMSExecutionService;
 
@@ -20,12 +21,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 @OwnedBy(PIPELINE)
-public class TriggeredByFunctor implements LateBindingValue {
+public class PipelineExecutionFunctor implements LateBindingValue {
   private final PMSExecutionService pmsExecutionService;
+  PipelineExpressionHelper pipelineExpressionHelper;
   private final Ambiance ambiance;
 
-  public TriggeredByFunctor(PMSExecutionService pmsExecutionService, Ambiance ambiance) {
+  public PipelineExecutionFunctor(
+      PMSExecutionService pmsExecutionService, PipelineExpressionHelper pipelineExpressionHelper, Ambiance ambiance) {
     this.pmsExecutionService = pmsExecutionService;
+    this.pipelineExpressionHelper = pipelineExpressionHelper;
     this.ambiance = ambiance;
   }
 
@@ -43,6 +47,13 @@ public class TriggeredByFunctor implements LateBindingValue {
     triggeredByMap.put("email",
         pipelineExecutionSummaryEntity.getExecutionTriggerInfo().getTriggeredBy().getExtraInfoMap().get("email"));
     jsonObject.put("triggeredBy", triggeredByMap);
+    addExecutionUrlMap(jsonObject);
     return jsonObject;
+  }
+
+  private void addExecutionUrlMap(Map<String, Object> jsonObject) {
+    Map<String, String> executionMap = new HashMap<>();
+    executionMap.put("url", pipelineExpressionHelper.generateUrl(ambiance));
+    jsonObject.put("execution", executionMap);
   }
 }

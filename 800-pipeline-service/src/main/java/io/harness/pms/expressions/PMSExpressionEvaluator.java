@@ -23,9 +23,10 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.expression.RemoteFunctorServiceGrpc.RemoteFunctorServiceBlockingStub;
 import io.harness.pms.expressions.functors.AccountFunctor;
 import io.harness.pms.expressions.functors.OrgFunctor;
+import io.harness.pms.expressions.functors.PipelineExecutionFunctor;
 import io.harness.pms.expressions.functors.ProjectFunctor;
 import io.harness.pms.expressions.functors.RemoteExpressionFunctor;
-import io.harness.pms.expressions.functors.TriggeredByFunctor;
+import io.harness.pms.helpers.PipelineExpressionHelper;
 import io.harness.pms.plan.execution.SetupAbstractionKeys;
 import io.harness.pms.plan.execution.service.PMSExecutionService;
 import io.harness.pms.sdk.PmsSdkInstance;
@@ -48,6 +49,7 @@ public class PMSExpressionEvaluator extends AmbianceExpressionEvaluator {
   @Inject private PlanExecutionMetadataService planExecutionMetadataService;
   @Inject private PMSExecutionService pmsExecutionService;
   @Inject PmsSdkInstanceService pmsSdkInstanceService;
+  @Inject PipelineExpressionHelper pipelineExpressionHelper;
 
   public PMSExpressionEvaluator(VariableResolverTracker variableResolverTracker, Ambiance ambiance,
       Set<NodeExecutionEntityType> entityTypes, boolean refObjectSpecific) {
@@ -62,7 +64,7 @@ public class PMSExpressionEvaluator extends AmbianceExpressionEvaluator {
     addToContext("org", new OrgFunctor(organizationClient, ambiance));
     addToContext("project", new ProjectFunctor(projectClient, ambiance));
 
-    addToContext("pipeline", new TriggeredByFunctor(pmsExecutionService, ambiance));
+    addToContext("pipeline", new PipelineExecutionFunctor(pmsExecutionService, pipelineExpressionHelper, ambiance));
 
     // Trigger functors
     addToContext(SetupAbstractionKeys.eventPayload, new EventPayloadFunctor(ambiance, planExecutionMetadataService));
