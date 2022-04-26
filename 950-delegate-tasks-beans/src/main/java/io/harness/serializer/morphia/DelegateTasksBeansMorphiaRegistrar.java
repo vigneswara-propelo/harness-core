@@ -64,6 +64,7 @@ import software.wings.beans.yaml.GitCommitAndPushResult;
 import software.wings.beans.yaml.GitCommitRequest;
 import software.wings.beans.yaml.GitDiffRequest;
 import software.wings.beans.yaml.GitDiffResult;
+import software.wings.helpers.ext.ecs.response.EcsCommandExecutionResponse;
 import software.wings.helpers.ext.ecs.response.EcsServiceDeployResponse;
 import software.wings.helpers.ext.helm.response.HelmInstallCommandResponse;
 import software.wings.sm.states.JenkinsExecutionResponse;
@@ -138,6 +139,7 @@ public class DelegateTasksBeansMorphiaRegistrar implements MorphiaRegistrar {
     w.put("sm.states.JenkinsExecutionResponse", JenkinsExecutionResponse.class);
     w.put("beans.settings.helm.HttpHelmRepoConfig", HttpHelmRepoConfig.class);
     w.put("beans.GcpConfig", GcpConfig.class);
+    w.put("helpers.ext.ecs.response.EcsCommandExecutionResponse", EcsCommandExecutionResponse.class);
     w.put("beans.EcrConfig", EcrConfig.class);
     h.put("waiter.ListNotifyResponseData", ListNotifyResponseData.class);
   }

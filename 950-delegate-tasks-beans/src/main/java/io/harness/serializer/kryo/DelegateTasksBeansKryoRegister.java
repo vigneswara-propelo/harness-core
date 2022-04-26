@@ -539,6 +539,8 @@ import software.wings.beans.yaml.GitFilesBetweenCommitsRequest;
 import software.wings.beans.yaml.GitPushResult;
 import software.wings.delegatetasks.servicenow.ServiceNowAction;
 import software.wings.helpers.ext.cloudformation.response.ExistingStackInfo;
+import software.wings.helpers.ext.ecs.request.EcsCommandRequest;
+import software.wings.helpers.ext.ecs.response.EcsCommandExecutionResponse;
 import software.wings.helpers.ext.ecs.response.EcsCommandResponse;
 import software.wings.helpers.ext.ecs.response.EcsServiceDeployResponse;
 import software.wings.helpers.ext.helm.response.HelmInstallCommandResponse;
@@ -1200,6 +1202,9 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(GcbOptions.GcbSpecSource.class, 7442);
     kryo.register(GcbTriggerBuildSpec.GcbTriggerSource.class, 7443);
     kryo.register(GcbRemoteBuildSpec.RemoteFileSource.class, 7444);
+    kryo.register(EcsCommandExecutionResponse.class, 5609);
+    kryo.register(EcsCommandRequest.EcsCommandType.class, 5607);
+    kryo.register(EcsCommandRequest.class, 5606);
     kryo.register(EcrConfig.class, 5011);
 
     // WinRm
