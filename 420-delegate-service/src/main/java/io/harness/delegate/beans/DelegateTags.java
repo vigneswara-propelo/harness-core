@@ -11,10 +11,16 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 
 @Value
 @OwnedBy(HarnessTeam.DEL)
 public class DelegateTags {
   List<String> tags;
+
+  public List<String> getTags() {
+    return tags.stream().filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
+  }
 }

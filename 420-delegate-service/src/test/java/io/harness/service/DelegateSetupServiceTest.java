@@ -9,6 +9,7 @@ package io.harness.service;
 
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.delegate.beans.DelegateType.KUBERNETES;
+import static io.harness.rule.OwnerRule.ARPIT;
 import static io.harness.rule.OwnerRule.BOJAN;
 import static io.harness.rule.OwnerRule.MARKO;
 import static io.harness.rule.OwnerRule.NICOLAS;
@@ -31,9 +32,11 @@ import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.Delegate.DelegateBuilder;
 import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateGroup;
+import io.harness.delegate.beans.DelegateGroupDTO;
 import io.harness.delegate.beans.DelegateGroupDetails;
 import io.harness.delegate.beans.DelegateGroupListing;
 import io.harness.delegate.beans.DelegateGroupStatus;
+import io.harness.delegate.beans.DelegateGroupTags;
 import io.harness.delegate.beans.DelegateInsightsBarDetails;
 import io.harness.delegate.beans.DelegateInsightsDetails;
 import io.harness.delegate.beans.DelegateInstanceStatus;
@@ -63,6 +66,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.groovy.util.Maps;
@@ -1175,17 +1179,88 @@ public class DelegateSetupServiceTest extends DelegateServiceTestBase {
     assertThat(delegateGroupListing.getDelegateGroupDetails()).hasSize(1);
   }
 
+  @Test
+  @Owner(developers = ARPIT)
+  @Category(UnitTests.class)
+  public void shouldListDelegateGroupTags() {
+    DelegateGroup delegateGroup = DelegateGroup.builder()
+                                      .uuid(TEST_DELEGATE_GROUP_ID_1)
+                                      .name("grp1")
+                                      .identifier("identifier1")
+                                      .accountId(TEST_ACCOUNT_ID)
+                                      .ng(true)
+                                      .delegateType(KUBERNETES)
+                                      .description("description")
+                                      .sizeDetails(DelegateSizeDetails.builder().size(DelegateSize.LARGE).build())
+                                      .tags(Sets.newHashSet("tag123", "tag456", "taggroup1"))
+                                      .build();
+    persistence.save(delegateGroup);
+
+    Optional<DelegateGroupDTO> delegateGroupFromDB =
+        delegateSetupService.listDelegateGroupTags(TEST_ACCOUNT_ID, null, null, "identifier1");
+
+    assertThat(delegateGroupFromDB).isPresent();
+    assertThat(delegateGroupFromDB.get().getIdentifier()).isEqualTo("identifier1");
+    assertThat(delegateGroupFromDB.get().getTags()).containsExactlyInAnyOrder("tag123", "tag456", "taggroup1");
+  }
+
+  @Test
+  @Owner(developers = ARPIT)
+  @Category(UnitTests.class)
+  public void shouldAddDelegateGroupTags() {
+    DelegateGroup delegateGroup = DelegateGroup.builder()
+                                      .uuid(TEST_DELEGATE_GROUP_ID_1)
+                                      .name("grp1")
+                                      .identifier("identifier1")
+                                      .accountId(TEST_ACCOUNT_ID)
+                                      .ng(true)
+                                      .delegateType(KUBERNETES)
+                                      .description("description")
+                                      .sizeDetails(DelegateSizeDetails.builder().size(DelegateSize.LARGE).build())
+                                      .tags(Sets.newHashSet("tag123", "tag456"))
+                                      .build();
+    persistence.save(delegateGroup);
+    DelegateGroupTags delegateGroupTags = new DelegateGroupTags(Sets.newHashSet("  tag1  ", "tag2"));
+
+    Optional<DelegateGroupDTO> updatedDelegateGroup =
+        delegateSetupService.addDelegateGroupTags(TEST_ACCOUNT_ID, null, null, "identifier1", delegateGroupTags);
+
+    assertThat(updatedDelegateGroup).isPresent();
+    assertThat(updatedDelegateGroup.get().getIdentifier()).isEqualTo("identifier1");
+    assertThat(updatedDelegateGroup.get().getTags()).containsExactlyInAnyOrder("tag123", "tag456", "tag1", "tag2");
+  }
+
+  @Test
+  @Owner(developers = ARPIT)
+  @Category(UnitTests.class)
+  public void shouldUpdateDelegateGroupTags() {
+    DelegateGroup delegateGroup = DelegateGroup.builder()
+                                      .uuid(TEST_DELEGATE_GROUP_ID_1)
+                                      .name("grp1")
+                                      .identifier("identifier1")
+                                      .accountId(TEST_ACCOUNT_ID)
+                                      .ng(true)
+                                      .delegateType(KUBERNETES)
+                                      .description("description")
+                                      .sizeDetails(DelegateSizeDetails.builder().size(DelegateSize.LARGE).build())
+                                      .tags(Sets.newHashSet("tag123", "tag456", "taggroup1"))
+                                      .build();
+    persistence.save(delegateGroup);
+    DelegateGroupTags delegateGroupTags = new DelegateGroupTags(Sets.newHashSet("  tag123  ", "tag123", "  tag456"));
+    Optional<DelegateGroupDTO> updatedDelegateGroup =
+        delegateSetupService.updateDelegateGroupTags(TEST_ACCOUNT_ID, null, null, "identifier1", delegateGroupTags);
+
+    assertThat(updatedDelegateGroup).isPresent();
+    assertThat(updatedDelegateGroup.get().getIdentifier()).isEqualTo("identifier1");
+    assertThat(updatedDelegateGroup.get().getTags()).containsExactlyInAnyOrder("tag123", "tag456");
+  }
+
   private void prepareInitialData() {
     List<DelegateGroup> delegateGroups = prepareDelegateGroups();
     List<Delegate> delegates = prepareDelegates();
 
     persistence.saveBatch(delegateGroups);
     persistence.saveBatch(delegates);
-
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_1)).thenReturn(delegateGroups.get(0));
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_2)).thenReturn(delegateGroups.get(1));
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_3)).thenReturn(delegateGroups.get(2));
-    when(delegateCache.getDelegateGroup(TEST_ACCOUNT_ID, TEST_DELEGATE_GROUP_ID_4)).thenReturn(delegateGroups.get(3));
   }
 
   private List<Delegate> prepareDelegates() {
