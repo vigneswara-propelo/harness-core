@@ -4562,6 +4562,17 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
       });
     }
+
+    // Add userGroups from Notification Rules
+    if (isNotEmpty(canaryOrchestrationWorkflow.getNotificationRules())) {
+      for (NotificationRule notificationRule : canaryOrchestrationWorkflow.getNotificationRules()) {
+        if (!notificationRule.isUserGroupAsExpression()) {
+          if (isNotEmpty(notificationRule.getUserGroupIds())) {
+            userGroupIds.addAll(notificationRule.getUserGroupIds());
+          }
+        }
+      }
+    }
     return userGroupIds;
   }
 
