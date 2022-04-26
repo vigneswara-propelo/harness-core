@@ -15,6 +15,7 @@ import io.harness.eventsframework.EventsFrameworkConfiguration;
 import io.harness.eventsframework.EventsFrameworkConstants;
 import io.harness.eventsframework.api.Producer;
 import io.harness.eventsframework.impl.noop.NoOpProducer;
+import io.harness.eventsframework.impl.redis.GitAwareRedisProducer;
 import io.harness.eventsframework.impl.redis.RedisProducer;
 import io.harness.redis.RedisConfig;
 
@@ -34,10 +35,17 @@ public class TemplateEventsFrameworkModule extends AbstractModule {
       bind(Producer.class)
           .annotatedWith(Names.named(EventsFrameworkConstants.ENTITY_CRUD))
           .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
+      bind(Producer.class)
+          .annotatedWith(Names.named(EventsFrameworkConstants.SETUP_USAGE))
+          .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
     } else {
       bind(Producer.class)
           .annotatedWith(Names.named(EventsFrameworkConstants.ENTITY_CRUD))
           .toInstance(RedisProducer.of(EventsFrameworkConstants.ENTITY_CRUD, redisConfig,
+              EventsFrameworkConstants.ENTITY_CRUD_MAX_TOPIC_SIZE, TEMPLATE_SERVICE.getServiceId()));
+      bind(Producer.class)
+          .annotatedWith(Names.named(EventsFrameworkConstants.SETUP_USAGE))
+          .toInstance(GitAwareRedisProducer.of(EventsFrameworkConstants.SETUP_USAGE, redisConfig,
               EventsFrameworkConstants.ENTITY_CRUD_MAX_TOPIC_SIZE, TEMPLATE_SERVICE.getServiceId()));
     }
   }

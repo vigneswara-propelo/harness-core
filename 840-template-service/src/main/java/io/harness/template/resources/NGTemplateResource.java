@@ -616,7 +616,8 @@ public class NGTemplateResource {
   public ResponseDTO<List<EntityDetailProtoDTO>> getTemplateReferences(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgId,
-      @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectId, @NotNull String yaml) {
+      @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @NotNull String yaml) {
     return ResponseDTO.newResponse(
         templateReferenceHelper.getNestedTemplateReferences(accountId, orgId, projectId, yaml, false));
   }

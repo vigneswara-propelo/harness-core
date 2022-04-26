@@ -36,7 +36,7 @@ public class TemplateReferenceProtoUtils {
         templateReference.getVersionLabel());
   }
 
-  private TemplateReferenceProtoDTO createTemplateReferenceProto(String accountId, String orgIdentifier,
+  public TemplateReferenceProtoDTO createTemplateReferenceProto(String accountId, String orgIdentifier,
       String projectIdentifier, String templateIdentifier, Scope scope, String versionLabel) {
     TemplateReferenceProtoDTO.Builder templateRefBuilder = TemplateReferenceProtoDTO.newBuilder()
                                                                .setIdentifier(StringValue.of(templateIdentifier))

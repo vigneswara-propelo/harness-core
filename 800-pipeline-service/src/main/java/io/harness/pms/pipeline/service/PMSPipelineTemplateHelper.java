@@ -13,6 +13,7 @@ import static io.harness.exception.WingsException.USER;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.enforcement.constants.FeatureRestrictionName;
+import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
 import io.harness.exception.ngexception.NGTemplateException;
@@ -29,6 +30,8 @@ import io.harness.template.remote.TemplateResourceClient;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -92,5 +95,21 @@ public class PMSPipelineTemplateHelper {
       }
     }
     return TemplateMergeResponseDTO.builder().mergedPipelineYaml(yaml).build();
+  }
+
+  public List<EntityDetailProtoDTO> getTemplateReferencesForGivenYaml(
+      String accountId, String orgId, String projectId, String yaml) {
+    if (pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.NG_TEMPLATE_REFERENCES_SUPPORT)) {
+      GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
+      if (gitEntityInfo != null) {
+        return NGRestUtils.getResponse(templateResourceClient.getTemplateReferenceForGivenYaml(accountId, orgId,
+            projectId, gitEntityInfo.isNewBranch() ? gitEntityInfo.getBaseBranch() : gitEntityInfo.getBranch(),
+            gitEntityInfo.getYamlGitConfigId(), true, yaml));
+      }
+
+      return NGRestUtils.getResponse(
+          templateResourceClient.getTemplateReferenceForGivenYaml(accountId, orgId, projectId, null, null, null, yaml));
+    }
+    return new ArrayList<>();
   }
 }
