@@ -518,12 +518,6 @@ import software.wings.service.impl.aws.model.AwsCodeDeployListDeploymentInstance
 import software.wings.service.impl.aws.model.AwsCodeDeployRequest;
 import software.wings.service.impl.aws.model.AwsCodeDeployRequest.AwsCodeDeployRequestType;
 import software.wings.service.impl.aws.model.AwsCodeDeployS3LocationData;
-import software.wings.service.impl.aws.model.AwsEcrGetAuthTokenRequest;
-import software.wings.service.impl.aws.model.AwsEcrGetAuthTokenResponse;
-import software.wings.service.impl.aws.model.AwsEcrGetImageUrlRequest;
-import software.wings.service.impl.aws.model.AwsEcrGetImageUrlResponse;
-import software.wings.service.impl.aws.model.AwsEcrRequest;
-import software.wings.service.impl.aws.model.AwsEcrRequest.AwsEcrRequestType;
 import software.wings.service.impl.aws.model.AwsEcsAllPhaseRollbackData;
 import software.wings.service.impl.aws.model.AwsEcsListClusterServicesRequest;
 import software.wings.service.impl.aws.model.AwsEcsListClusterServicesResponse;
@@ -971,12 +965,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AwsCodeDeployRequestType.class, 5431);
     kryo.register(AwsCodeDeployRequest.class, 5430);
     kryo.register(AwsCodeDeployS3LocationData.class, 5436);
-    kryo.register(AwsEcrGetAuthTokenRequest.class, 5386);
-    kryo.register(AwsEcrGetAuthTokenResponse.class, 5387);
-    kryo.register(AwsEcrGetImageUrlRequest.class, 5384);
-    kryo.register(AwsEcrGetImageUrlResponse.class, 5385);
-    kryo.register(AwsEcrRequestType.class, 5383);
-    kryo.register(AwsEcrRequest.class, 5382);
     kryo.register(AwsEcsListClustersRequest.class, 5400);
     kryo.register(AwsEcsListClustersResponse.class, 5401);
     kryo.register(AwsEcsRequestType.class, 5399);
