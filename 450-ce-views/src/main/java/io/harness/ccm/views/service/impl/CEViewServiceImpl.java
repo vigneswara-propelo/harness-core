@@ -83,7 +83,8 @@ public class CEViewServiceImpl implements CEViewService {
   @Inject private BigQueryService bigQueryService;
 
   private static final String VIEW_NAME_DUPLICATE_EXCEPTION = "View with given name already exists";
-  private static final String VIEW_LIMIT_REACHED_EXCEPTION = "Maximum allowed custom views limit(100) has been reached";
+  private static final String VIEW_LIMIT_REACHED_EXCEPTION =
+      "Maximum allowed custom views limit(1000) has been reached";
   private static final String DEFAULT_AZURE_VIEW_NAME = "Azure";
   private static final String DEFAULT_AZURE_FIELD_ID = "azureSubscriptionGuid";
   private static final String DEFAULT_AZURE_FIELD_NAME = "Subscription id";
@@ -100,7 +101,7 @@ public class CEViewServiceImpl implements CEViewService {
   private static final String DEFAULT_CLUSTER_FIELD_ID = "clusterName";
   private static final String DEFAULT_CLUSTER_FIELD_NAME = "Cluster Name";
 
-  private static final int VIEW_COUNT = 250;
+  private static final int VIEW_COUNT = 1000;
   @Override
   public CEView save(CEView ceView) {
     validateView(ceView);
