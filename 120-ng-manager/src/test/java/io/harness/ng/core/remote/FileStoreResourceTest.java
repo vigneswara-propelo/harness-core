@@ -24,7 +24,6 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
-import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.beans.SearchPageParams;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.dto.filestore.FileDTO;
@@ -141,7 +140,7 @@ public class FileStoreResourceTest extends CategoryTest {
         new PageImpl<>(Collections.singletonList(entitySetupUsage));
     when(fileStoreService.listReferencedBy(pageParams, ACCOUNT, ORG, PROJECT, IDENTIFIER, EntityType.PIPELINES))
         .thenReturn(entityServiceUsageList);
-    ResponseDTO<PageResponse<EntitySetupUsageDTO>> response =
+    ResponseDTO<Page<EntitySetupUsageDTO>> response =
         fileStoreResource.getReferencedBy(page, size, ACCOUNT, ORG, PROJECT, IDENTIFIER, EntityType.PIPELINES, null);
     verify(fileStoreService).listReferencedBy(pageParams, ACCOUNT, ORG, PROJECT, IDENTIFIER, EntityType.PIPELINES);
     assertThat(response).isNotNull();

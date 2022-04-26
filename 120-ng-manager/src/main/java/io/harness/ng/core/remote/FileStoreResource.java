@@ -21,7 +21,6 @@ import static io.harness.NGResourceFilterConstants.FILTER_KEY;
 import static io.harness.NGResourceFilterConstants.SEARCH_TERM_KEY;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.ng.core.utils.NGUtils.validate;
-import static io.harness.utils.PageUtils.getNGPageResponse;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
@@ -32,7 +31,6 @@ import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.validator.EntityIdentifier;
 import io.harness.ng.beans.PageRequest;
-import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.beans.SearchPageParams;
 import io.harness.ng.core.common.beans.NGTag;
 import io.harness.ng.core.dto.ErrorDTO;
@@ -275,7 +273,7 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns the list of entities file is referenced by")
       })
-  public ResponseDTO<PageResponse<EntitySetupUsageDTO>>
+  public ResponseDTO<Page<EntitySetupUsageDTO>>
   getReferencedBy(@Parameter(description = "Page number of navigation. The default value is 0") @QueryParam(
                       NGResourceFilterConstants.PAGE_KEY) @DefaultValue("0") int page,
       @Parameter(description = "Number of entries per page. The default value is 100") @QueryParam(
@@ -286,9 +284,9 @@ public class FileStoreResource {
       @Parameter(description = FILE_PARAM_MESSAGE) @NotBlank @EntityIdentifier @PathParam(IDENTIFIER_KEY)
       String identifier, @Parameter(description = "Entity type") @QueryParam(ENTITY_TYPE) EntityType entityType,
       @QueryParam(SEARCH_TERM_KEY) String searchTerm) {
-    return ResponseDTO.newResponse(getNGPageResponse(fileStoreService.listReferencedBy(
+    return ResponseDTO.newResponse(fileStoreService.listReferencedBy(
         SearchPageParams.builder().page(page).size(size).searchTerm(searchTerm).build(), accountIdentifier,
-        orgIdentifier, projectIdentifier, identifier, entityType)));
+        orgIdentifier, projectIdentifier, identifier, entityType));
   }
 
   @POST
