@@ -105,6 +105,7 @@ public class JenkinsImpl implements Jenkins {
       "org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject";
   private final String BLUE_STEEL_TEAM_FOLDER_CLASS_NAME =
       "com.cloudbees.opscenter.bluesteel.folder.BlueSteelTeamFolder";
+  private final String ORGANIZATION_FOLDER_CLASS_NAME = "jenkins.branch.OrganizationFolder";
   private final String SERVER_ERROR = "Server Error";
 
   @Inject private ExecutorService executorService;
@@ -328,7 +329,8 @@ public class JenkinsImpl implements Jenkins {
     // job.get_class().equals(FOLDER_JOB_CLASS_NAME) is to find if the jenkins job is of type folder.
     // (job instanceOf FolderJob) doesn't work
     return job.get_class().equals(FOLDER_JOB_CLASS_NAME) || job.get_class().equals(MULTI_BRANCH_JOB_CLASS_NAME)
-        || job.get_class().equals(BLUE_STEEL_TEAM_FOLDER_CLASS_NAME);
+        || job.get_class().equals(BLUE_STEEL_TEAM_FOLDER_CLASS_NAME)
+        || job.get_class().equals(ORGANIZATION_FOLDER_CLASS_NAME);
   }
 
   /* (non-Javadoc)
