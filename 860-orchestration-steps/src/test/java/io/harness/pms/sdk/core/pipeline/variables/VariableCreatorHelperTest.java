@@ -230,7 +230,10 @@ public class VariableCreatorHelperTest extends CategoryTest {
                         .listDummyC(ParameterField.createValueField(Collections.singletonList(dummyC)))
                         .mapField(ParameterField.createValueField(m1))
                         .build();
-    dummyA = DummyA.builder().dummyB(ParameterField.createValueField(dummyB)).build();
+    DummyF dummyF = DummyF.builder().identifier("dummyF1").value("v1").build();
+    DummyE dummyE = DummyE.builder().dummyF(dummyF).build();
+    List<DummyE> dummyEList = Collections.singletonList(dummyE);
+    dummyA = DummyA.builder().dummyB(ParameterField.createValueField(dummyB)).listDummyE(dummyEList).build();
     yamlExtraPropertiesMap = new HashMap<>();
     yamlPropertiesMap = new HashMap<>();
     VariableCreatorHelper.collectVariableExpressions(dummyA, yamlPropertiesMap, yamlExtraPropertiesMap, "test", "test");
@@ -268,13 +271,14 @@ public class VariableCreatorHelperTest extends CategoryTest {
     assertThat(
         yamlPropertiesMap.get(dummyA.getDummyB().getValue().getDummyC().getValue().getB().getResponseField()).getFqn())
         .isEqualTo("test.dummyB.dummyC.b");
-    return;
   }
 
   @Data
   @Builder
   private static class DummyA {
+    @ApiModelProperty(hidden = true) String uuid;
     ParameterField<DummyB> dummyB;
+    List<DummyE> listDummyE;
   }
 
   @Data
@@ -302,5 +306,18 @@ public class VariableCreatorHelperTest extends CategoryTest {
   private static class DummyD {
     @VariableExpression(skipVariableExpression = true) String key;
     @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD) String value;
+  }
+
+  @Data
+  @Builder
+  private static class DummyE {
+    DummyF dummyF;
+  }
+
+  @Data
+  @Builder
+  private static class DummyF {
+    @VariableExpression(skipVariableExpression = true) String identifier;
+    String value;
   }
 }

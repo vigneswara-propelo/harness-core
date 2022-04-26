@@ -355,16 +355,37 @@ public class VariableCreatorHelper {
     VariableExpression annotation = field.getAnnotation(VariableExpression.class);
     String fieldAliasName = annotation == null ? "" : annotation.aliasName();
     for (Object item : valueList) {
-      // Handling list of primitive types
-      String uniqueKeyInListField = getUniqueKeyInListField(item);
-      if (isLeafVariable(null, item) || uniqueKeyInListField == null) {
+      if (isLeafVariable(null, item)) {
         YamlProperties yamlProperties = getYamlProperties(field, fqnPrefix, localNamePrefix, aliasNamePrefix);
         addYamlExtraPropertyToObject(parentFieldUuid, yamlExtraPropertiesMap, yamlProperties, fieldName, parentObject);
         break;
+      } else {
+        // Handling list of primitive types
+        String uniqueKeyInListField = getUniqueKeyInListField(item);
+        // Check one more level down for unique key, valid for manifests etc.
+        if (uniqueKeyInListField == null) {
+          List<Field> internalObjectFields = ReflectionUtils.getAllDeclaredAndInheritedFields(item.getClass());
+          Field internalField = internalObjectFields.get(0);
+          internalField.setAccessible(true);
+          Object internalFieldValue = internalField.get(item);
+          uniqueKeyInListField = getUniqueKeyInListField(internalFieldValue);
+          if (uniqueKeyInListField == null) {
+            YamlProperties yamlProperties = getYamlProperties(field, fqnPrefix, localNamePrefix, aliasNamePrefix);
+            addYamlExtraPropertyToObject(
+                parentFieldUuid, yamlExtraPropertiesMap, yamlProperties, fieldName, parentObject);
+            break;
+          } else {
+            String listKey = getMergedFqn(fieldName, uniqueKeyInListField);
+            collectVariableExpressions(internalFieldValue, yamlPropertiesMap, yamlExtraPropertiesMap,
+                getMergedFqn(fqnPrefix, listKey), getMergedFqn(localNamePrefix, listKey),
+                getMergedFqn(aliasNamePrefix, fieldAliasName));
+          }
+        } else {
+          String listKey = getMergedFqn(fieldName, uniqueKeyInListField);
+          collectVariableExpressions(item, yamlPropertiesMap, yamlExtraPropertiesMap, getMergedFqn(fqnPrefix, listKey),
+              getMergedFqn(localNamePrefix, listKey), getMergedFqn(aliasNamePrefix, fieldAliasName));
+        }
       }
-      String listKey = getMergedFqn(fieldName, uniqueKeyInListField);
-      collectVariableExpressions(item, yamlPropertiesMap, yamlExtraPropertiesMap, getMergedFqn(fqnPrefix, listKey),
-          getMergedFqn(localNamePrefix, listKey), getMergedFqn(aliasNamePrefix, fieldAliasName));
     }
   }
 
