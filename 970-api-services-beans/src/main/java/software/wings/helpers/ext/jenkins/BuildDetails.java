@@ -39,6 +39,7 @@ public class BuildDetails {
   private BuildStatus status;
   private Map<String, String> buildParameters = new HashMap<>();
   private Map<String, String> metadata = new HashMap<>();
+  private Map<String, String> labels = new HashMap<>();
   private List<ArtifactFileMetadata> artifactFileMetadataList = new ArrayList<>();
 
   public enum BuildStatus {
@@ -224,6 +225,14 @@ public class BuildDetails {
 
   public void setMetadata(Map<String, String> metadata) {
     this.metadata = metadata;
+  }
+
+  public Map<String, String> getLabels() {
+    return labels;
+  }
+
+  public void setLabels(Map<String, String> labels) {
+    this.labels = labels;
   }
 
   /**
