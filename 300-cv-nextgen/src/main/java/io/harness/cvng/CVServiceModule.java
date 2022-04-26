@@ -244,10 +244,12 @@ import io.harness.cvng.dashboard.services.impl.TimeSeriesDashboardServiceImpl;
 import io.harness.cvng.migration.impl.CVNGMigrationServiceImpl;
 import io.harness.cvng.migration.service.CVNGMigrationService;
 import io.harness.cvng.notification.beans.NotificationRuleType;
+import io.harness.cvng.notification.entities.NotificationRule.NotificationRuleUpdatableEntity;
+import io.harness.cvng.notification.entities.SLONotificationRule.SLONotificationRuleUpdatableEntity;
 import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.cvng.notification.services.impl.NotificationRuleServiceImpl;
-import io.harness.cvng.notification.transformer.NotificationRuleSpecTransformer;
-import io.harness.cvng.notification.transformer.SLONotificationRuleSpecTransformer;
+import io.harness.cvng.notification.transformer.NotificationRuleConditionTransformer;
+import io.harness.cvng.notification.transformer.SLONotificationRuleConditionTransformer;
 import io.harness.cvng.servicelevelobjective.beans.SLIMetricType;
 import io.harness.cvng.servicelevelobjective.beans.SLOTargetType;
 import io.harness.cvng.servicelevelobjective.entities.RatioServiceLevelIndicator.RatioServiceLevelIndicatorUpdatableEntity;
@@ -769,11 +771,17 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
 
     bind(NotificationRuleService.class).to(NotificationRuleServiceImpl.class);
-    MapBinder<NotificationRuleType, NotificationRuleSpecTransformer>
-        notificationRuleTypeNotificationRuleSpecTransformerMapBinder =
-            MapBinder.newMapBinder(binder(), NotificationRuleType.class, NotificationRuleSpecTransformer.class);
-    notificationRuleTypeNotificationRuleSpecTransformerMapBinder.addBinding(NotificationRuleType.SLO)
-        .to(SLONotificationRuleSpecTransformer.class)
+    MapBinder<NotificationRuleType, NotificationRuleConditionTransformer>
+        notificationRuleTypeNotificationRuleConditionTransformerMapBinder =
+            MapBinder.newMapBinder(binder(), NotificationRuleType.class, NotificationRuleConditionTransformer.class);
+    notificationRuleTypeNotificationRuleConditionTransformerMapBinder.addBinding(NotificationRuleType.SLO)
+        .to(SLONotificationRuleConditionTransformer.class)
+        .in(Scopes.SINGLETON);
+
+    MapBinder<NotificationRuleType, NotificationRuleUpdatableEntity> notificationRuleMapBinder =
+        MapBinder.newMapBinder(binder(), NotificationRuleType.class, NotificationRuleUpdatableEntity.class);
+    notificationRuleMapBinder.addBinding(NotificationRuleType.SLO)
+        .to(SLONotificationRuleUpdatableEntity.class)
         .in(Scopes.SINGLETON);
     bindRetryOnExceptionInterceptor();
   }

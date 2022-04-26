@@ -8,7 +8,9 @@
 package io.harness.cvng.notification.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -20,11 +22,19 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SLONotificationRuleSpec extends NotificationRuleSpec {
-  @NonNull Integer errorBudgetRemainingPercentageThreshold;
+public class SLONotificationRuleCondition extends NotificationRuleCondition {
+  @NonNull SLONotificationRuleConditionType conditionType;
+  @NonNull SLONotificationRuleConditionSpec spec;
 
-  @Override
-  public NotificationRuleType getType() {
-    return NotificationRuleType.SLO;
+  public enum SLONotificationRuleConditionType {
+    @JsonProperty("errorBudgetRemainingPercentage") ERROR_BUDGET_REMAINING_PERCENTAGE,
+    @JsonProperty("errorBudgetRemainingMinutes") ERROR_BUDGET_REMAINING_MINUTES,
+    @JsonProperty("errorBudgetBurnRate") ERROR_BUDGET_BURN_RATE;
+  }
+
+  @Data
+  @Builder
+  public static class SLONotificationRuleConditionSpec {
+    @NonNull Double threshold;
   }
 }

@@ -13,6 +13,7 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cvng.notification.beans.NotificationRuleRef;
 import io.harness.cvng.servicelevelobjective.beans.DayOfWeek;
 import io.harness.cvng.servicelevelobjective.beans.SLOCalenderType;
 import io.harness.cvng.servicelevelobjective.beans.SLODashboardDetail.TimeRangeFilter;
@@ -38,8 +39,10 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -82,6 +85,7 @@ public class ServiceLevelObjective
   String healthSourceIdentifier;
   String monitoredServiceIdentifier;
   List<String> serviceLevelIndicators;
+  List<NotificationRuleRef> notificationRuleRefs;
   SLOTarget sloTarget;
   ServiceLevelIndicatorType type;
   private long lastUpdatedAt;
@@ -89,6 +93,13 @@ public class ServiceLevelObjective
   private Double sloTargetPercentage;
   public ZoneOffset getZoneOffset() {
     return ZoneOffset.UTC; // hardcoding it to UTC for now. We need to ask it from user.
+  }
+
+  public List<String> getNotificationRuleRefs() {
+    if (notificationRuleRefs == null) {
+      return Collections.emptyList();
+    }
+    return notificationRuleRefs.stream().map(ref -> ref.getNotificationRuleRef()).collect(Collectors.toList());
   }
 
   public int getActiveErrorBudgetMinutes(

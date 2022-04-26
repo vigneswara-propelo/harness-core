@@ -17,7 +17,9 @@ import io.harness.cvng.BuilderFactory;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceDTO;
 import io.harness.cvng.notification.beans.NotificationRuleDTO;
 import io.harness.cvng.notification.beans.NotificationRuleType;
-import io.harness.cvng.notification.beans.SLONotificationRuleSpec;
+import io.harness.cvng.notification.beans.SLONotificationRuleCondition;
+import io.harness.cvng.notification.beans.SLONotificationRuleCondition.SLONotificationRuleConditionSpec;
+import io.harness.cvng.notification.beans.SLONotificationRuleCondition.SLONotificationRuleConditionType;
 import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.rule.Owner;
 import io.harness.rule.ResourceTestRule;
@@ -25,6 +27,7 @@ import io.harness.rule.ResourceTestRule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -96,7 +99,7 @@ public class NotificationRuleResourceTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = KAPIL)
   @Category(UnitTests.class)
-  public void testSaveNotificationRuleData_withIncorrectYAML_withoutSpec() throws IOException {
+  public void testSaveNotificationRuleData_withIncorrectYAML_withoutConditions() throws IOException {
     String sloYaml = getYAML("notification/notification-rule-invalid.yaml");
     Response response = RESOURCES.client()
                             .target("http://localhost:9998/notification-rule/")
@@ -104,7 +107,7 @@ public class NotificationRuleResourceTest extends CvNextGenTestBase {
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .post(Entity.json(convertToJson(sloYaml)));
     assertThat(response.getStatus()).isEqualTo(400);
-    assertThat(response.readEntity(String.class)).contains("\"field\":\"spec\",\"message\":\"may not be null\"");
+    assertThat(response.readEntity(String.class)).contains("\"field\":\"conditions\",\"message\":\"may not be null\"");
   }
 
   @Test
@@ -133,7 +136,11 @@ public class NotificationRuleResourceTest extends CvNextGenTestBase {
             .identifier("notificationRuleDTO")
             .name("notificationRuleDTO")
             .type(NotificationRuleType.SLO)
-            .spec(SLONotificationRuleSpec.builder().errorBudgetRemainingPercentageThreshold(10).build())
+            .conditions(
+                Arrays.asList(SLONotificationRuleCondition.builder()
+                                  .conditionType(SLONotificationRuleConditionType.ERROR_BUDGET_REMAINING_PERCENTAGE)
+                                  .spec(SLONotificationRuleConditionSpec.builder().threshold(10.0).build())
+                                  .build()))
             .build();
     notificationRuleService.create(builderFactory.getContext().getProjectParams(), notificationRuleDTO);
 

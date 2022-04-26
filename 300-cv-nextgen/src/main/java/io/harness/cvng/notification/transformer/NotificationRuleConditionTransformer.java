@@ -8,11 +8,14 @@
 package io.harness.cvng.notification.transformer;
 
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.notification.beans.NotificationRuleCondition;
 import io.harness.cvng.notification.beans.NotificationRuleDTO;
-import io.harness.cvng.notification.beans.NotificationRuleSpec;
 import io.harness.cvng.notification.entities.NotificationRule;
 
-public abstract class NotificationRuleSpecTransformer<E extends NotificationRule, S extends NotificationRuleSpec> {
+import java.util.List;
+
+public abstract class NotificationRuleConditionTransformer<E extends NotificationRule, S
+                                                               extends NotificationRuleCondition> {
   public abstract E getEntity(ProjectParams projectParams, NotificationRuleDTO notificationRuleDTO);
 
   public final NotificationRuleDTO getDto(E notificationRule) {
@@ -23,10 +26,10 @@ public abstract class NotificationRuleSpecTransformer<E extends NotificationRule
         .name(notificationRule.getName())
         .type(notificationRule.getType())
         .notificationMethod(notificationRule.getNotificationMethod())
-        .spec(getSpec(notificationRule))
+        .conditions((List<NotificationRuleCondition>) getSpec(notificationRule))
         .enabled(notificationRule.isEnabled())
         .build();
   }
 
-  protected abstract S getSpec(E notificationRule);
+  protected abstract List<S> getSpec(E notificationRule);
 }

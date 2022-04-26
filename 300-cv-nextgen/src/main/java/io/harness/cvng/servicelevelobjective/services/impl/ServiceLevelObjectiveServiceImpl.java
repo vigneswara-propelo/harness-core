@@ -17,6 +17,7 @@ import io.harness.cvng.core.services.api.CVNGLogService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.core.utils.DateTimeUtils;
+import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.cvng.servicelevelobjective.SLORiskCountResponse;
 import io.harness.cvng.servicelevelobjective.SLORiskCountResponse.RiskCount;
 import io.harness.cvng.servicelevelobjective.beans.ErrorBudgetRisk;
@@ -83,6 +84,7 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
   @Inject private SLOErrorBudgetResetService sloErrorBudgetResetService;
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private CVNGLogService cvngLogService;
+  @Inject private NotificationRuleService notificationRuleService;
 
   @Override
   public ServiceLevelObjectiveResponse create(
@@ -126,6 +128,7 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
     serviceLevelIndicatorService.deleteByIdentifier(projectParams, serviceLevelObjective.getServiceLevelIndicators());
     sloErrorBudgetResetService.clearErrorBudgetResets(projectParams, identifier);
     sloHealthIndicatorService.delete(projectParams, serviceLevelObjective.getIdentifier());
+    notificationRuleService.delete(projectParams, serviceLevelObjective.getNotificationRuleRefs());
     return hPersistence.delete(serviceLevelObjective);
   }
 
@@ -373,6 +376,8 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
             .getSLOTarget(serviceLevelObjectiveDTO.getTarget().getSpec()));
     updateOperations.set(
         ServiceLevelObjectiveKeys.sloTargetPercentage, serviceLevelObjectiveDTO.getTarget().getSloTargetPercentage());
+    updateOperations.set(ServiceLevelObjectiveKeys.notificationRuleRefs,
+        notificationRuleService.update(projectParams, serviceLevelObjectiveDTO.getNotificationRuleRefs()));
     hPersistence.update(serviceLevelObjective, updateOperations);
     return serviceLevelObjective;
   }
@@ -400,6 +405,8 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
             .healthSourceRef(serviceLevelObjective.getHealthSourceIdentifier())
             .serviceLevelIndicators(
                 serviceLevelIndicatorService.get(projectParams, serviceLevelObjective.getServiceLevelIndicators()))
+            .notificationRuleRefs(notificationRuleService.getNotificationRuleRefs(
+                projectParams, serviceLevelObjective.getNotificationRuleRefs()))
             .target(SLOTarget.builder()
                         .type(serviceLevelObjective.getSloTarget().getType())
                         .spec(sloTargetTypeSLOTargetTransformerMap.get(serviceLevelObjective.getSloTarget().getType())
@@ -430,6 +437,8 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
             .serviceLevelIndicators(serviceLevelIndicatorService.create(projectParams,
                 serviceLevelObjectiveDTO.getServiceLevelIndicators(), serviceLevelObjectiveDTO.getIdentifier(),
                 serviceLevelObjectiveDTO.getMonitoredServiceRef(), serviceLevelObjectiveDTO.getHealthSourceRef()))
+            .notificationRuleRefs(
+                notificationRuleService.update(projectParams, serviceLevelObjectiveDTO.getNotificationRuleRefs()))
             .monitoredServiceIdentifier(serviceLevelObjectiveDTO.getMonitoredServiceRef())
             .healthSourceIdentifier(serviceLevelObjectiveDTO.getHealthSourceRef())
             .tags(TagMapper.convertToList(serviceLevelObjectiveDTO.getTags()))

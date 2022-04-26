@@ -23,6 +23,9 @@ import io.harness.cvng.core.services.api.CVNGLogService;
 import io.harness.cvng.core.services.api.MetricPackService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
+import io.harness.cvng.notification.beans.NotificationRuleDTO;
+import io.harness.cvng.notification.beans.NotificationRuleRefDTO;
+import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelIndicatorDTO;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveDTO;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
@@ -37,6 +40,7 @@ import com.google.inject.Injector;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,6 +66,7 @@ public class ServiceLevelObjectiveResourceTest extends CvNextGenTestBase {
   @Inject private MonitoredServiceService monitoredServiceService;
   @Inject private MetricPackService metricPackService;
   @Inject CVNGLogService cvngLogService;
+  @Inject NotificationRuleService notificationRuleService;
   private MonitoredServiceDTO monitoredServiceDTO;
   private BuilderFactory builderFactory;
   private static ServiceLevelObjectiveResource serviceLevelObjectiveResource = new ServiceLevelObjectiveResource();
@@ -334,6 +339,64 @@ public class ServiceLevelObjectiveResourceTest extends CvNextGenTestBase {
     Response response = webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
     assertThat(response.getStatus()).isEqualTo(400);
     assertThat(response.readEntity(String.class)).contains("Failed to convert query param logType to CVNGLogType");
+  }
+
+  @Test
+  @Owner(developers = KAPIL)
+  @Category(UnitTests.class)
+  public void testCreate_withNotificationRules() throws IOException {
+    NotificationRuleDTO notificationRuleDTO = builderFactory.getNotificationRuleDTOBuilder().build();
+    List<NotificationRuleRefDTO> notificationRuleRefs =
+        notificationRuleService.create(builderFactory.getProjectParams(), Arrays.asList(notificationRuleDTO));
+
+    String sloYaml = getYAML("slo/slo-with-notification-rule.yaml");
+    sloYaml = sloYaml.replace("$identifier", notificationRuleRefs.get(0).getNotificationRuleRef());
+    sloYaml = sloYaml.replace("$enabled", String.valueOf(notificationRuleRefs.get(0).isEnabled()));
+    Response response = RESOURCES.client()
+                            .target("http://localhost:9998/slo/")
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .post(Entity.json(convertToJson(sloYaml)));
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.readEntity(String.class))
+        .contains("\"notificationRuleRefs\":[{\"notificationRuleRef\":\"rule\",\"enabled\":false}]");
+  }
+
+  @Test
+  @Owner(developers = KAPIL)
+  @Category(UnitTests.class)
+  public void testUpdateSLOData_withNotificationRules() throws IOException {
+    NotificationRuleDTO notificationRuleDTO = builderFactory.getNotificationRuleDTOBuilder().build();
+    List<NotificationRuleRefDTO> notificationRuleRefs =
+        notificationRuleService.create(builderFactory.getProjectParams(), Arrays.asList(notificationRuleDTO));
+    String sloYaml = getYAML("slo/slo-with-notification-rule.yaml");
+    sloYaml = sloYaml.replace("$identifier", notificationRuleRefs.get(0).getNotificationRuleRef());
+    sloYaml = sloYaml.replace("$enabled", String.valueOf(notificationRuleRefs.get(0).isEnabled()));
+
+    Response response = RESOURCES.client()
+                            .target("http://localhost:9998/slo/")
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .post(Entity.json(convertToJson(sloYaml)));
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.readEntity(String.class))
+        .contains("\"notificationRuleRefs\":[{\"notificationRuleRef\":\"rule\",\"enabled\":false}]");
+
+    sloYaml = getYAML("slo/slo-with-notification-rule.yaml");
+    sloYaml = sloYaml.replace("$identifier", notificationRuleRefs.get(0).getNotificationRuleRef());
+    sloYaml = sloYaml.replace("$enabled", String.valueOf(!notificationRuleRefs.get(0).isEnabled()));
+
+    response = RESOURCES.client()
+                   .target("http://localhost:9998/slo/"
+                       + "slo")
+                   .queryParam("accountId", builderFactory.getContext().getAccountId())
+                   .queryParam("orgIdentifier", builderFactory.getContext().getOrgIdentifier())
+                   .queryParam("projectIdentifier", builderFactory.getContext().getProjectIdentifier())
+                   .request(MediaType.APPLICATION_JSON_TYPE)
+                   .put(Entity.json(convertToJson(sloYaml)));
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.readEntity(String.class))
+        .contains("\"notificationRuleRefs\":[{\"notificationRuleRef\":\"rule\",\"enabled\":true}]");
   }
 
   private static String convertToJson(String yamlString) {

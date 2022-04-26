@@ -4,9 +4,15 @@ identifier: rule
 orgIdentifier: $orgIdentifier
 projectIdentifier: $projectIdentifier
 type: slo
-spec:
-  type: slo
-  errorBudgetRemainingPercentageThreshold: 10
+conditions:
+  - type: slo
+    conditionType: errorBudgetRemainingPercentage
+    spec:
+      threshold: 10
+  - type: slo
+    conditionType: errorBudgetBurnRate
+    spec:
+      threshold: 5
 notificationMethod:
   type: Email
   userGroups: [testUserGroup]

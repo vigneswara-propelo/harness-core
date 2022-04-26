@@ -5,5 +5,6 @@ orgIdentifier: $orgIdentifier
 projectIdentifier: $projectIdentifier
 type: slo
 spec:
-  type: slo
-  errorBudgetRemainingPercentageThreshold: 10
+  - type: slo
+    specType: errorBudgetRemainingPercentage
+    threshold: 10
