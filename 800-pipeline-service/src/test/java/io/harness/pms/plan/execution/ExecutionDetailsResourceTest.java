@@ -162,14 +162,6 @@ public class ExecutionDetailsResourceTest extends CategoryTest {
         .when(pmsExecutionService)
         .getPipelineExecutionSummaryEntity(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PLAN_EXECUTION_ID, false);
     doReturn(orchestrationGraph).when(pmsExecutionService).getOrchestrationGraph(STAGE_NODE_ID, PLAN_EXECUTION_ID);
-    doReturn(Optional.of(PipelineEntity.builder()
-                             .branch("branch")
-                             .yamlGitConfigRef("repo")
-                             .filePath("file.yaml")
-                             .rootFolder("root/.harness/")
-                             .build()))
-        .when(pmsPipelineService)
-        .getWithoutIsDeleted(anyString(), anyString(), anyString(), anyString());
 
     doNothing().when(accessControlClient).checkForAccessOrThrow(any(), any(), any());
 

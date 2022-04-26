@@ -24,17 +24,12 @@ public interface PMSPipelineRepositoryCustom {
   Page<PipelineEntity> findAll(Criteria criteria, Pageable pageable, String accountIdentifier, String orgIdentifier,
       String projectIdentifier, boolean getDistinctFromBranches);
 
-  PipelineEntity findFirstPipeline(Criteria criteria);
-
   Long countAllPipelines(Criteria criteria);
 
   PipelineEntity save(PipelineEntity pipelineToSave);
 
   Optional<PipelineEntity> findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifierAndDeletedNot(
       String accountId, String orgIdentifier, String projectIdentifier, String pipelineIdentifier, boolean notDeleted);
-
-  Optional<PipelineEntity> findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifier(
-      String accountId, String orgIdentifier, String projectIdentifier, String pipelineIdentifier);
 
   PipelineEntity updatePipelineYaml(
       PipelineEntity pipelineToUpdate, PipelineEntity oldPipelineEntity, ChangeType changeType);

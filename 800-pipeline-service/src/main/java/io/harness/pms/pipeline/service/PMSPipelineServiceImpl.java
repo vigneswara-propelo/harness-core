@@ -174,19 +174,6 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
   }
 
   @Override
-  public Optional<PipelineEntity> getWithoutIsDeleted(
-      String accountId, String orgIdentifier, String projectIdentifier, String identifier) {
-    try {
-      return pmsPipelineRepository.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifier(
-          accountId, orgIdentifier, projectIdentifier, identifier);
-    } catch (Exception e) {
-      log.error(String.format("Error while retrieving pipeline [%s]", identifier), e);
-      throw new InvalidRequestException(
-          String.format("Error while retrieving pipeline [%s]: %s", identifier, ExceptionUtils.getMessage(e)));
-    }
-  }
-
-  @Override
   public PipelineEntity updatePipelineYaml(PipelineEntity pipelineEntity, ChangeType changeType) {
     PMSPipelineServiceHelper.validatePresenceOfRequiredFields(pipelineEntity.getAccountId(),
         pipelineEntity.getOrgIdentifier(), pipelineEntity.getProjectIdentifier(), pipelineEntity.getIdentifier());
@@ -426,11 +413,6 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
           projectIdentifier, OpaConstants.OPA_EVALUATION_ACTION_PIPELINE_SAVE, "");
     }
     return GovernanceMetadata.newBuilder().setDeny(false).build();
-  }
-
-  @Override
-  public PipelineEntity findFirstPipeline(Criteria criteria) {
-    return pmsPipelineRepository.findFirstPipeline(criteria);
   }
 
   @Override
