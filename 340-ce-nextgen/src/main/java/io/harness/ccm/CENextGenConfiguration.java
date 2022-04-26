@@ -68,6 +68,7 @@ public class CENextGenConfiguration extends Configuration {
   public static final String SERVICE_ROOT_PATH = "/ccm/api";
   public static final String SERVICE_ID = "cenextgen-microservice";
   public static final String BASE_PACKAGE = "io.harness.ccm";
+  public static final String FILTER_PACKAGE = "io.harness.filter";
 
   public static final List<String> RESOURCE_PACKAGES = ImmutableList.of("io.harness.ccm.remote.resources");
   public static final String LICENSE_PACKAGE = "io.harness.licensing.usage.resources";
@@ -118,7 +119,8 @@ public class CENextGenConfiguration extends Configuration {
   }
 
   public static Collection<Class<?>> getResourceClasses() {
-    final Reflections reflections = new Reflections(RESOURCE_PACKAGES, LICENSE_PACKAGE, ENFORCEMENT_CLIENT_PACKAGE);
+    final Reflections reflections =
+        new Reflections(RESOURCE_PACKAGES, LICENSE_PACKAGE, ENFORCEMENT_CLIENT_PACKAGE, FILTER_PACKAGE);
 
     return reflections.getTypesAnnotatedWith(Path.class);
   }

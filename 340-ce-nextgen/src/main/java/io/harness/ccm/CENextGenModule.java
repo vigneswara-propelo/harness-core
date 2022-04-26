@@ -38,6 +38,8 @@ import io.harness.ccm.graphql.core.budget.BudgetCostServiceImpl;
 import io.harness.ccm.graphql.core.budget.BudgetService;
 import io.harness.ccm.graphql.core.budget.BudgetServiceImpl;
 import io.harness.ccm.perpetualtask.K8sWatchTaskResourceClientModule;
+import io.harness.ccm.remote.mapper.anomaly.AnomalyFilterPropertiesMapper;
+import io.harness.ccm.remote.mapper.recommendation.CCMRecommendationFilterPropertiesMapper;
 import io.harness.ccm.service.impl.AWSBucketPolicyHelperServiceImpl;
 import io.harness.ccm.service.impl.AWSOrganizationHelperServiceImpl;
 import io.harness.ccm.service.impl.AnomalyServiceImpl;
@@ -79,6 +81,11 @@ import io.harness.delegate.beans.DelegateSyncTaskResponse;
 import io.harness.delegate.beans.DelegateTaskProgressResponse;
 import io.harness.enforcement.client.EnforcementClientModule;
 import io.harness.ff.FeatureFlagModule;
+import io.harness.filter.FilterType;
+import io.harness.filter.FiltersModule;
+import io.harness.filter.impl.FilterServiceImpl;
+import io.harness.filter.mapper.FilterPropertiesMapper;
+import io.harness.filter.service.FilterService;
 import io.harness.govern.ProviderMethodInterceptor;
 import io.harness.govern.ProviderModule;
 import io.harness.grpc.DelegateServiceDriverGrpcClientModule;
@@ -121,6 +128,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.matcher.Matchers;
+import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import java.util.List;
@@ -218,6 +226,7 @@ public class CENextGenModule extends AbstractModule {
 
     install(new CENextGenPersistenceModule());
     install(ExecutorModule.getInstance());
+    install(FiltersModule.getInstance());
     install(new AbstractMongoModule() {
       @Override
       public UserProvider userProvider() {
@@ -266,6 +275,7 @@ public class CENextGenModule extends AbstractModule {
     bind(CCMConnectorDetailsService.class).to(CCMConnectorDetailsServiceImpl.class);
     bind(AnomalyService.class).to(AnomalyServiceImpl.class);
     bind(CCMNotificationService.class).to(CCMNotificationServiceImpl.class);
+    bind(FilterService.class).to(FilterServiceImpl.class);
 
     registerEventsFrameworkMessageListeners();
 
@@ -274,6 +284,12 @@ public class CENextGenModule extends AbstractModule {
     bindAccountLogContextInterceptor();
 
     registerDelegateTaskService();
+
+    MapBinder<String, FilterPropertiesMapper> filterPropertiesMapper =
+        MapBinder.newMapBinder(binder(), String.class, FilterPropertiesMapper.class);
+    filterPropertiesMapper.addBinding(FilterType.CCMRECOMMENDATION.toString())
+        .to(CCMRecommendationFilterPropertiesMapper.class);
+    filterPropertiesMapper.addBinding(FilterType.ANOMALY.toString()).to(AnomalyFilterPropertiesMapper.class);
   }
 
   private void bindAccountLogContextInterceptor() {

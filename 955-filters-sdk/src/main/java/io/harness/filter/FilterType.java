@@ -24,5 +24,7 @@ public enum FilterType {
   @JsonProperty("Audit") AUDIT,
   @JsonProperty("Template") TEMPLATE,
   @JsonProperty("EnvironmentGroup") ENVIRONMENTGROUP,
-  @JsonProperty("FileStore") FILESTORE
+  @JsonProperty("FileStore") FILESTORE,
+  @JsonProperty("CCMRecommendation") CCMRECOMMENDATION,
+  @JsonProperty("Anomaly") ANOMALY
 }
