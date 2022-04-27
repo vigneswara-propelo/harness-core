@@ -48,6 +48,7 @@ import software.wings.delegatetasks.validation.capabilities.BasicValidationInfo;
 import software.wings.delegatetasks.validation.capabilities.SSHHostValidationCapability;
 import software.wings.delegatetasks.validation.capabilities.WinrmHostValidationCapability;
 import software.wings.settings.SettingValue;
+import software.wings.utils.MappingUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
@@ -570,7 +571,7 @@ public class CommandExecutionContext implements ExecutionCapabilityDemander {
     }
 
     public Builder metadata(Map<String, String> metadata) {
-      this.metadata = metadata;
+      this.metadata = MappingUtils.safeCopy(metadata);
       return this;
     }
 

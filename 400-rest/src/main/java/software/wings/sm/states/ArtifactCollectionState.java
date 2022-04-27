@@ -83,6 +83,7 @@ import software.wings.sm.ExecutionContext;
 import software.wings.sm.ExecutionResponse;
 import software.wings.sm.State;
 import software.wings.stencils.DefaultValue;
+import software.wings.utils.MappingUtils;
 
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
@@ -512,17 +513,18 @@ public class ArtifactCollectionState extends State {
         }
         Artifact artifact = artifactCollectionUtils.getArtifact(artifactStream, buildDetail);
         Artifact savedArtifact = artifactService.create(artifact, artifactStream, false);
+        Map<String, String> metadata = MappingUtils.safeCopy(artifact.getMetadata());
         if (savedArtifact.isDuplicate()) {
           if (shouldUpdateMetadata(artifact, savedArtifact)) {
             artifactService.updateMetadataAndRevision(
-                savedArtifact.getUuid(), savedArtifact.getAccountId(), artifact.getMetadata(), artifact.getRevision());
+                savedArtifact.getUuid(), savedArtifact.getAccountId(), metadata, artifact.getRevision());
           }
         }
         ArtifactCollectionExecutionData artifactCollectionExecutionData =
             ArtifactCollectionExecutionData.builder()
                 .artifactStreamId(artifactStreamId)
                 .buildNo(artifact.getBuildNo())
-                .metadata(artifact.getMetadata())
+                .metadata(metadata)
                 .artifactSource(artifactStream.getSourceName())
                 .revision(artifact.getRevision())
                 .artifactId(savedArtifact.getUuid())

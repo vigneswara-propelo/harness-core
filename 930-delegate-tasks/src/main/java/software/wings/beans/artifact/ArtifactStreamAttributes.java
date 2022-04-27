@@ -12,7 +12,6 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.artifact.ArtifactFileMetadata;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
@@ -23,6 +22,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.SettingAttribute;
 import software.wings.utils.ArtifactType;
+import software.wings.utils.MappingUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -119,13 +119,7 @@ public class ArtifactStreamAttributes implements ExecutionCapabilityDemander {
   }
 
   public void setMetadata(Map<String, String> metadata) {
-    if (EmptyPredicate.isEmpty(metadata)) {
-      this.metadata = metadata;
-      return;
-    }
-    // Doing this so as to avoid ArtifactMetadataEvaluator & Kryo exception using that
-    Map<String, String> recreated = new HashMap<>();
-    metadata.keySet().forEach(key -> recreated.put(key, metadata.get(key)));
-    this.metadata = recreated;
+    // Doing this to avoid ArtifactMetadataEvaluator & Kryo exception using that
+    this.metadata = MappingUtils.safeCopy(metadata);
   }
 }
