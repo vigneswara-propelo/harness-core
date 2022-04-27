@@ -247,7 +247,6 @@ import software.wings.beans.ServiceInstance;
 import software.wings.beans.ServiceTemplate;
 import software.wings.beans.ServiceVariable;
 import software.wings.beans.SlackConfig;
-import software.wings.beans.SpotInstConfig;
 import software.wings.beans.StringValue;
 import software.wings.beans.SystemCatalog;
 import software.wings.beans.TerraformInfrastructureProvisioner;
@@ -1222,7 +1221,6 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("beans.settings.helm.AmazonS3HelmRepoConfig", AmazonS3HelmRepoConfig.class);
     w.put("beans.settings.helm.GCSHelmRepoConfig", GCSHelmRepoConfig.class);
     w.put("beans.SlackConfig", SlackConfig.class);
-    w.put("beans.SpotInstConfig", SpotInstConfig.class);
     w.put("beans.StringValue", StringValue.class);
     w.put("beans.template.artifactsource.ArtifactSourceTemplate", ArtifactSourceTemplate.class);
     w.put("beans.template.artifactsource.CustomArtifactSourceTemplate", CustomArtifactSourceTemplate.class);

@@ -221,7 +221,6 @@ import software.wings.beans.Setup;
 import software.wings.beans.Setup.SetupStatus;
 import software.wings.beans.SlackConfig;
 import software.wings.beans.SlackMessage;
-import software.wings.beans.SpotInstConfig;
 import software.wings.beans.StringValue;
 import software.wings.beans.Tag;
 import software.wings.beans.TechStack;
@@ -559,7 +558,6 @@ import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowFi
 import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowMetaDTO;
 import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowTicketType;
 import software.wings.service.impl.splunk.SplunkDataCollectionInfoV2;
-import software.wings.service.impl.spotinst.SpotInstCommandRequest;
 import software.wings.service.impl.spotinst.SpotinstAllPhaseRollbackData;
 import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
 import software.wings.service.impl.stackdriver.StackDriverLogDataCollectionInfo;
@@ -1063,8 +1061,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(StandardUnit.class, 7215);
     kryo.register(CloudFormationRollbackInfo.class, 7216);
     kryo.register(ApprovalState.class, 7219);
-    kryo.register(SpotInstCommandRequest.class, 7220);
-    kryo.register(SpotInstConfig.class, 7221);
     kryo.register(ServiceArtifactVariableElement.class, 7222);
     kryo.register(SpotInstSetupContextElement.class, 7223);
     kryo.register(SpotInstSetupExecutionSummary.class, 7224);

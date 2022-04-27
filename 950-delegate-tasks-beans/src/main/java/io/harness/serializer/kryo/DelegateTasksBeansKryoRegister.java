@@ -510,6 +510,7 @@ import software.wings.beans.JenkinsConfig;
 import software.wings.beans.JenkinsSubTaskType;
 import software.wings.beans.LambdaTestEvent;
 import software.wings.beans.SettingAttribute;
+import software.wings.beans.SpotInstConfig;
 import software.wings.beans.TaskType;
 import software.wings.beans.command.CodeDeployParams;
 import software.wings.beans.command.GcbTaskParams;
@@ -1206,6 +1207,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(EcsCommandRequest.EcsCommandType.class, 5607);
     kryo.register(EcsCommandRequest.class, 5606);
     kryo.register(EcrConfig.class, 5011);
+    kryo.register(SpotInstConfig.class, 7221);
 
     // WinRm
     kryo.register(WinRmCredentialsSpecDTO.class, 600001);

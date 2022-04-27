@@ -172,6 +172,7 @@ import software.wings.service.impl.logz.LogzDataCollectionInfo;
 import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
 import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
 import software.wings.service.impl.newrelic.NewRelicSetupTestNodeData;
+import software.wings.service.impl.spotinst.SpotInstCommandRequest;
 import software.wings.service.impl.sumo.SumoDataCollectionInfo;
 import software.wings.service.intfc.analysis.ClusterLevel;
 import software.wings.settings.validation.ConnectivityValidationDelegateRequest;
@@ -360,5 +361,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(ClusterSelectionCriteriaEntry.class, 50008);
     kryo.register(RancherResolveClustersTaskParameters.class, 50004);
     kryo.register(RancherResolveClustersResponse.class, 50005);
+    kryo.register(SpotInstCommandRequest.class, 7220);
   }
 }
