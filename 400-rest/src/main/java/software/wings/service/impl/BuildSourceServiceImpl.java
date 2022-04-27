@@ -568,6 +568,7 @@ public class BuildSourceServiceImpl implements BuildSourceService {
     SyncTaskContextBuilder syncTaskContextBuilder =
         SyncTaskContext.builder()
             .accountId(settingAttribute.getAccountId())
+            .appId(SCOPE_WILDCARD)
             .timeout(settingAttribute.getValue().getType().equals(SettingVariableTypes.JENKINS.name())
                     ? 120 * 1000
                     : DEFAULT_SYNC_CALL_TIMEOUT);
