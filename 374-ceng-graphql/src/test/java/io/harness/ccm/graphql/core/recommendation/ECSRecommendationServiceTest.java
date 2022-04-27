@@ -24,8 +24,8 @@ import io.harness.category.element.UnitTests;
 import io.harness.ccm.commons.dao.recommendation.ECSRecommendationDAO;
 import io.harness.ccm.commons.entities.ecs.recommendation.ECSPartialRecommendationHistogram;
 import io.harness.ccm.commons.entities.ecs.recommendation.ECSServiceRecommendation;
+import io.harness.ccm.graphql.dto.recommendation.ContainerHistogramDTO;
 import io.harness.ccm.graphql.dto.recommendation.ECSRecommendationDTO;
-import io.harness.ccm.graphql.dto.recommendation.ECSRecommendationDTO.HistogramExp;
 import io.harness.histogram.HistogramCheckpoint;
 import io.harness.rule.Owner;
 
@@ -131,7 +131,7 @@ public class ECSRecommendationServiceTest extends CategoryTest {
     assertThat(ecsRecommendationDTO).isNotNull();
     assertThat(ecsRecommendationDTO.getLastDayCost()).isEqualTo(cost);
 
-    final HistogramExp cpuHistogram = ecsRecommendationDTO.getCpuHistogram();
+    final ContainerHistogramDTO.HistogramExp cpuHistogram = ecsRecommendationDTO.getCpuHistogram();
     assertThat(cpuHistogram.getMinBucket()).isEqualTo(0);
     assertThat(cpuHistogram.getMaxBucket()).isEqualTo(2);
     assertThat(cpuHistogram.getTotalWeight()).isEqualTo(2.0);
@@ -139,7 +139,7 @@ public class ECSRecommendationServiceTest extends CategoryTest {
     assertThat(cpuHistogram.getBucketWeights()[0]).isEqualTo(1.0);
     assertThat(cpuHistogram.getBucketWeights()[2]).isEqualTo(1.0);
 
-    final HistogramExp memoryHistogram = ecsRecommendationDTO.getMemoryHistogram();
+    final ContainerHistogramDTO.HistogramExp memoryHistogram = ecsRecommendationDTO.getMemoryHistogram();
     assertThat(memoryHistogram.getMinBucket()).isEqualTo(0);
     assertThat(memoryHistogram.getMaxBucket()).isEqualTo(0);
     assertThat(memoryHistogram.getTotalWeight()).isEqualTo(2.0);

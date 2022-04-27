@@ -329,7 +329,7 @@ public class RecommendationsDetailsQueryTest extends CategoryTest {
   private static ECSRecommendationDTO createECSRecommendation() {
     return ECSRecommendationDTO.builder()
         .lastDayCost(cost)
-        .memoryHistogram(ECSRecommendationDTO.HistogramExp.builder()
+        .memoryHistogram(ContainerHistogramDTO.HistogramExp.builder()
                              .numBuckets(NUM_BUCKET)
                              .minBucket(MIN_BUCKET)
                              .maxBucket(MAX_BUCKET)
@@ -337,7 +337,7 @@ public class RecommendationsDetailsQueryTest extends CategoryTest {
                              .precomputed(new double[] {2, 3})
                              .totalWeight(TOTAL_WEIGHT)
                              .build())
-        .cpuHistogram(ECSRecommendationDTO.HistogramExp.builder()
+        .cpuHistogram(ContainerHistogramDTO.HistogramExp.builder()
                           .numBuckets(NUM_BUCKET)
                           .minBucket(MIN_BUCKET)
                           .maxBucket(MAX_BUCKET)
@@ -362,19 +362,19 @@ public class RecommendationsDetailsQueryTest extends CategoryTest {
     final ECSRecommendationDTO ecsRecommendationDTO = (ECSRecommendationDTO) recommendationDetails;
     assertThat(ecsRecommendationDTO.getLastDayCost()).isEqualTo(cost);
 
-    final ECSRecommendationDTO.HistogramExp cpuHistogram = ecsRecommendationDTO.getCpuHistogram();
+    final ContainerHistogramDTO.HistogramExp cpuHistogram = ecsRecommendationDTO.getCpuHistogram();
 
     assertHistogram(cpuHistogram);
     assertThat(cpuHistogram.getBucketWeights()[0]).isEqualTo(3.0);
     assertThat(cpuHistogram.getBucketWeights()[1]).isEqualTo(4.0);
 
-    final ECSRecommendationDTO.HistogramExp memoryHistogram = ecsRecommendationDTO.getMemoryHistogram();
+    final ContainerHistogramDTO.HistogramExp memoryHistogram = ecsRecommendationDTO.getMemoryHistogram();
 
     assertThat(memoryHistogram.getBucketWeights()[0]).isEqualTo(1.0);
     assertThat(memoryHistogram.getBucketWeights()[1]).isEqualTo(2.0);
   }
 
-  private void assertHistogram(ECSRecommendationDTO.HistogramExp histogramExp) {
+  private void assertHistogram(ContainerHistogramDTO.HistogramExp histogramExp) {
     assertThat(histogramExp.getMinBucket()).isEqualTo(MIN_BUCKET);
     assertThat(histogramExp.getMaxBucket()).isEqualTo(MAX_BUCKET);
     assertThat(histogramExp.getTotalWeight()).isEqualTo(TOTAL_WEIGHT);

@@ -24,17 +24,17 @@ public class ECSRecommendationDTO implements RecommendationDetailsDTO {
   Map<String, Map<String, String>> percentileBased;
   Cost lastDayCost;
 
-  HistogramExp cpuHistogram;
-  HistogramExp memoryHistogram;
+  ContainerHistogramDTO.HistogramExp cpuHistogram;
+  ContainerHistogramDTO.HistogramExp memoryHistogram;
 
-  @Value
-  @Builder
-  public static class HistogramExp {
-    int numBuckets;
-    int minBucket;
-    int maxBucket;
-    double[] bucketWeights;
-    double totalWeight;
-    double[] precomputed;
-  }
+  //  @Value
+  //  @Builder
+  //  public static class HistogramExp {
+  //    int numBuckets;
+  //    int minBucket;
+  //    int maxBucket;
+  //    double[] bucketWeights;
+  //    double totalWeight;
+  //    double[] precomputed;
+  //  }
 }

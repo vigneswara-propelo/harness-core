@@ -28,6 +28,8 @@ import io.harness.batch.processing.dao.intfc.ECSServiceDao;
 import io.harness.category.element.UnitTests;
 import io.harness.ccm.commons.beans.Resource;
 import io.harness.ccm.commons.dao.recommendation.ECSRecommendationDAO;
+import io.harness.ccm.commons.entities.ecs.recommendation.ECSPartialRecommendationHistogram;
+import io.harness.ccm.commons.entities.ecs.recommendation.ECSServiceRecommendation;
 import io.harness.ff.FeatureFlagService;
 import io.harness.rule.Owner;
 import io.harness.testsupport.BaseTaskletTest;
@@ -131,8 +133,10 @@ public class AwsECSServiceRecommendationTaskletTest extends BaseTaskletTest {
     when(ecsRecommendationDAO.fetchPartialRecommendationHistograms(any(), any(), any(), any(), any()))
         .thenReturn(new ArrayList<>());
     when(billingDataService.getECSServiceLastAvailableDayCost(any(), any(), any(), any())).thenReturn(cost());
-    when(ecsRecommendationDAO.savePartialRecommendation(any())).thenReturn("");
-    when(ecsRecommendationDAO.saveRecommendation(any())).thenReturn("");
+    when(ecsRecommendationDAO.savePartialRecommendation(any()))
+        .thenReturn(ECSPartialRecommendationHistogram.builder().build());
+    when(ecsRecommendationDAO.saveRecommendation(any()))
+        .thenReturn(ECSServiceRecommendation.builder().uuid("uuid").build());
     doNothing()
         .when(ecsRecommendationDAO)
         .upsertCeRecommendation(
