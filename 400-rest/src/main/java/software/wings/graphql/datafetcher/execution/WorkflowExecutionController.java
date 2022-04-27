@@ -186,6 +186,8 @@ public class WorkflowExecutionController {
           workflowExecutionService.fetchFailureDetails(workflowExecution.getAppId(), workflowExecution.getUuid());
     }
 
+    workflowExecutionService.refreshStatus(workflowExecution);
+
     builder.id(workflowExecution.getUuid())
         .workflowId(workflowExecution.getWorkflowId())
         .appId(workflowExecution.getAppId())

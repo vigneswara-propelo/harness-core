@@ -87,6 +87,10 @@ public enum ExecutionStatus {
     return status != null && finalStatuses.contains(status);
   }
 
+  public static boolean isNotFinalStatus(ExecutionStatus status) {
+    return !isFinalStatus(status);
+  }
+
   public static Set<ExecutionStatus> brokeStatuses() {
     return brokeStatuses;
   }

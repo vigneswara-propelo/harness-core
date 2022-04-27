@@ -34,6 +34,7 @@ import static io.harness.beans.FeatureName.NEW_DEPLOYMENT_FREEZE;
 import static io.harness.beans.FeatureName.PIPELINE_PER_ENV_DEPLOYMENT_PERMISSION;
 import static io.harness.beans.FeatureName.RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION;
 import static io.harness.beans.FeatureName.WEBHOOK_TRIGGER_AUTHORIZATION;
+import static io.harness.beans.FeatureName.WORKFLOW_EXECUTION_REFRESH_STATUS;
 import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
 import static io.harness.beans.PageRequest.UNLIMITED;
 import static io.harness.beans.SearchFilter.Operator.EQ;
@@ -1177,6 +1178,8 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     } else {
       refreshBreakdown(workflowExecution);
       refreshSummaries(workflowExecution);
+      // CDS-36623
+      refreshStatus(workflowExecution);
     }
     return workflowExecution;
   }
@@ -1274,6 +1277,21 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
         .project(WorkflowExecutionKeys.pipelineExecutionId, true)
         .get()
         .getPipelineExecutionId();
+  }
+
+  /**
+   * Refresh workflow execution status looking inside deployment execution flow hierarchy. It's executed when the
+   * incoming workflow execution is NOT at final state and only if the FF {@code WORKFLOW_EXECUTION_REFRESH_STATUS} is
+   * enabled for the account.
+   */
+  @Override
+  public void refreshStatus(WorkflowExecution workflowExecution) {
+    // CDS-36623
+    if (ExecutionStatus.isNotFinalStatus(workflowExecution.getStatus())) {
+      if (featureFlagService.isEnabled(WORKFLOW_EXECUTION_REFRESH_STATUS, workflowExecution.getAccountId())) {
+        populateNodeHierarchy(workflowExecution, false, true, true);
+      }
+    }
   }
 
   private void populateNodeHierarchy(
