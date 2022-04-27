@@ -33,7 +33,9 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.GitFileConfig;
+import software.wings.beans.appmanifest.AppManifestKind;
 import software.wings.beans.appmanifest.ApplicationManifest;
+import software.wings.beans.appmanifest.StoreType;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.ngmigration.CgEntityNode;
 import software.wings.ngmigration.DiscoveryNode;
@@ -42,6 +44,7 @@ import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
 import software.wings.service.intfc.ApplicationManifestService;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,12 +53,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class ManifestMigrationService extends NgMigrationService {
   @Inject private ApplicationManifestService applicationManifestService;
   @Inject private MigratorExpressionUtils migratorExpressionUtils;
   @Inject private NgManifestFactory manifestFactory;
+  private final List<AppManifestKind> SUPPORTED_MANIFEST_KIND =
+      Lists.newArrayList(AppManifestKind.VALUES, AppManifestKind.K8S_MANIFEST);
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -94,9 +100,23 @@ public class ManifestMigrationService extends NgMigrationService {
   }
 
   @Override
-  public NGMigrationStatus canMigrate(
-      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
-    return null;
+  public NGMigrationStatus canMigrate(NGMigrationEntity entity) {
+    ApplicationManifest applicationManifest = (ApplicationManifest) entity;
+    if (StoreType.Remote.equals(applicationManifest.getStoreType())) {
+      return NGMigrationStatus.builder()
+          .status(false)
+          .reasons(Collections.singletonList("Only remote manifests are supported currently for migration"))
+          .build();
+    }
+    if (!SUPPORTED_MANIFEST_KIND.contains(applicationManifest.getKind())) {
+      return NGMigrationStatus.builder()
+          .status(false)
+          .reasons(Collections.singletonList(
+              String.format("Only %s type of manifests are currently supported with migration",
+                  SUPPORTED_MANIFEST_KIND.stream().map(AppManifestKind::name).collect(Collectors.joining(", ")))))
+          .build();
+    }
+    return NGMigrationStatus.builder().status(true).build();
   }
 
   @Override

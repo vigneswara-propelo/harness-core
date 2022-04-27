@@ -23,6 +23,8 @@ import io.harness.ngmigration.service.MigratorUtility;
 import io.harness.ngmigration.service.NgMigrationService;
 
 import software.wings.beans.artifact.ArtifactStream;
+import software.wings.beans.artifact.ArtifactStreamType;
+import software.wings.beans.artifact.DockerArtifactStream;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.ngmigration.CgEntityNode;
 import software.wings.ngmigration.DiscoveryNode;
@@ -60,8 +62,12 @@ public class ArtifactStreamMigrationService extends NgMigrationService {
                                           .entityId(artifactStreamEntityId)
                                           .entity(artifactStream)
                                           .build();
-    Set<CgEntityId> children = Collections.singleton(
-        CgEntityId.builder().type(NGMigrationEntityType.CONNECTOR).id(artifactStream.getSettingId()).build());
+    Set<CgEntityId> children = Collections.emptySet();
+    // There is no connector for CUSTOM ARTIFACT SOURCE
+    if (!ArtifactStreamType.CUSTOM.name().equals(artifactStream.getArtifactStreamType())) {
+      children = Collections.singleton(
+          CgEntityId.builder().type(NGMigrationEntityType.CONNECTOR).id(artifactStream.getSettingId()).build());
+    }
     return DiscoveryNode.builder().children(children).entityNode(artifactStreamNode).build();
   }
 
@@ -71,9 +77,16 @@ public class ArtifactStreamMigrationService extends NgMigrationService {
   }
 
   @Override
-  public NGMigrationStatus canMigrate(
-      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
-    return null;
+  public NGMigrationStatus canMigrate(NGMigrationEntity entity) {
+    ArtifactStream artifactStream = (ArtifactStream) entity;
+    if (artifactStream instanceof DockerArtifactStream) {
+      return NGMigrationStatus.builder().status(true).build();
+    }
+    return NGMigrationStatus.builder()
+        .status(false)
+        .reasons(
+            Collections.singletonList(String.format("%s artifact source is not supported", artifactStream.getName())))
+        .build();
   }
 
   @Override

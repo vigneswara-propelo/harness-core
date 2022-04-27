@@ -26,6 +26,7 @@ import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.connector.BaseConnector;
 import io.harness.ngmigration.connector.ConnectorFactory;
 import io.harness.ngmigration.service.MigratorMappingService;
 import io.harness.ngmigration.service.MigratorUtility;
@@ -46,6 +47,7 @@ import software.wings.service.intfc.SettingsService;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +94,7 @@ public class ConnectorMigrationService extends NgMigrationService {
                                      .entity(settingAttribute)
                                      .build();
     Set<CgEntityId> children = new HashSet<>();
-    String secret = ConnectorFactory.getSecretId(settingAttribute);
+    String secret = ConnectorFactory.getConnector(settingAttribute).getSecretId(settingAttribute);
     if (StringUtils.isNotBlank(secret)) {
       children.add(CgEntityId.builder().id(secret).type(NGMigrationEntityType.SECRET).build());
     }
@@ -105,9 +107,23 @@ public class ConnectorMigrationService extends NgMigrationService {
   }
 
   @Override
+  public NGMigrationStatus canMigrate(NGMigrationEntity entity) {
+    SettingAttribute settingAttribute = (SettingAttribute) entity;
+    BaseConnector connectorImpl = ConnectorFactory.getConnector(settingAttribute);
+    if (connectorImpl.isConnectorSupported(settingAttribute)) {
+      return NGMigrationStatus.builder().status(true).build();
+    }
+    return NGMigrationStatus.builder()
+        .status(false)
+        .reasons(Collections.singletonList(
+            String.format("Connector/Cloud Provider %s is not supported with migration", settingAttribute.getName())))
+        .build();
+  }
+
+  @Override
   public NGMigrationStatus canMigrate(
       Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
-    return null;
+    return canMigrate(entities.get(entityId).getEntity());
   }
 
   @Override
@@ -152,6 +168,7 @@ public class ConnectorMigrationService extends NgMigrationService {
 
     List<NGYamlFile> files = new ArrayList<>();
     Set<CgEntityId> childEntities = graph.get(entityId);
+    BaseConnector connectorImpl = ConnectorFactory.getConnector(settingAttribute);
     files.add(NGYamlFile.builder()
                   .type(NGMigrationEntityType.CONNECTOR)
                   .filename("connector/" + settingAttribute.getName() + ".yaml")
@@ -163,8 +180,8 @@ public class ConnectorMigrationService extends NgMigrationService {
                                                .tags(null)
                                                .orgIdentifier(orgIdentifier)
                                                .projectIdentifier(projectIdentifier)
-                                               .connectorType(ConnectorFactory.getConnectorType(settingAttribute))
-                                               .connectorConfig(ConnectorFactory.getConfigDTO(
+                                               .connectorType(connectorImpl.getConnectorType(settingAttribute))
+                                               .connectorConfig(connectorImpl.getConfigDTO(
                                                    settingAttribute, childEntities, migratedEntities))
                                                .build())
                             .build())

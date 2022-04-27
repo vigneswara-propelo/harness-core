@@ -47,8 +47,12 @@ public abstract class NgMigrationService {
 
   public abstract DiscoveryNode discover(String accountId, String appId, String entityId);
 
-  public abstract NGMigrationStatus canMigrate(
-      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId);
+  public abstract NGMigrationStatus canMigrate(NGMigrationEntity entity);
+
+  public NGMigrationStatus canMigrate(
+      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
+    return canMigrate(entities.get(entityId).getEntity());
+  }
 
   public abstract void migrate(String auth, NGClient ngClient, PmsClient pmsClient, MigrationInputDTO inputDTO,
       NGYamlFile yamlFile) throws IOException;

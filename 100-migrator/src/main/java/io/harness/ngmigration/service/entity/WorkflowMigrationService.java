@@ -7,6 +7,7 @@
 
 package io.harness.ngmigration.service.entity;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static software.wings.ngmigration.NGMigrationEntityType.ENVIRONMENT;
@@ -14,6 +15,8 @@ import static software.wings.ngmigration.NGMigrationEntityType.INFRA;
 import static software.wings.ngmigration.NGMigrationEntityType.MANIFEST;
 import static software.wings.ngmigration.NGMigrationEntityType.SERVICE;
 import static software.wings.ngmigration.NGMigrationEntityType.WORKFLOW;
+import static software.wings.sm.StepType.K8S_DEPLOYMENT_ROLLING;
+import static software.wings.sm.StepType.SHELL_SCRIPT;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -71,10 +74,12 @@ import software.wings.ngmigration.NGMigrationStatus;
 import software.wings.service.impl.yaml.handler.workflow.RollingWorkflowYamlHandler;
 import software.wings.service.intfc.ApplicationManifestService;
 import software.wings.service.intfc.WorkflowService;
+import software.wings.sm.StepType;
 import software.wings.yaml.workflow.RollingWorkflowYaml;
 import software.wings.yaml.workflow.StepYaml;
 
 import com.google.inject.Inject;
+import io.fabric8.utils.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +101,11 @@ public class WorkflowMigrationService extends NgMigrationService {
   @Inject private RollingWorkflowYamlHandler rollingWorkflowYamlHandler;
   @Inject private ApplicationManifestService applicationManifestService;
   @Inject private MigratorExpressionUtils migratorExpressionUtils;
+
+  private static final List<String> SUPPORTED_STEPS = Lists.newArrayList(K8S_DEPLOYMENT_ROLLING, SHELL_SCRIPT)
+                                                          .stream()
+                                                          .map(StepType::name)
+                                                          .collect(Collectors.toList());
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -153,7 +163,7 @@ public class WorkflowMigrationService extends NgMigrationService {
     OrchestrationWorkflowType orchestrationWorkflowType =
         workflow.getOrchestrationWorkflow().getOrchestrationWorkflowType();
     if (!OrchestrationWorkflowType.ROLLING.equals(orchestrationWorkflowType)) {
-      throw new UnsupportedOperationException("Currently only support rolling WF");
+      log.info("Discovered unsupported workflow type");
     }
     return DiscoveryNode.builder().children(children).entityNode(workflowNode).build();
   }
@@ -164,9 +174,45 @@ public class WorkflowMigrationService extends NgMigrationService {
   }
 
   @Override
-  public NGMigrationStatus canMigrate(
-      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
-    return null;
+  public NGMigrationStatus canMigrate(NGMigrationEntity entity) {
+    Workflow workflow = (Workflow) entity;
+    OrchestrationWorkflowType workflowType = workflow.getOrchestration().getOrchestrationWorkflowType();
+    if (OrchestrationWorkflowType.ROLLING.equals(workflowType)) {
+      RollingWorkflowYaml rollingWorkflowYaml = rollingWorkflowYamlHandler.toYaml(workflow, workflow.getAppId());
+      if (EmptyPredicate.isEmpty(rollingWorkflowYaml.getPhases())) {
+        return NGMigrationStatus.builder()
+            .status(false)
+            .reasons(Collections.singletonList(String.format("No phases in workflow %s", workflow.getName())))
+            .build();
+      }
+      List<WorkflowPhase.Yaml> phases = rollingWorkflowYaml.getPhases();
+      List<StepYaml> stepYamls = phases.stream()
+                                     .filter(phase -> isNotEmpty(phase.getPhaseSteps()))
+                                     .flatMap(phase -> phase.getPhaseSteps().stream())
+                                     .filter(phaseStep -> isNotEmpty(phaseStep.getSteps()))
+                                     .flatMap(phaseStep -> phaseStep.getSteps().stream())
+                                     .collect(Collectors.toList());
+      if (isEmpty(stepYamls)) {
+        return NGMigrationStatus.builder()
+            .status(false)
+            .reasons(Collections.singletonList(String.format("No steps in workflow %s", workflow.getName())))
+            .build();
+      }
+      List<String> errorReasons = new ArrayList<>();
+      stepYamls.stream()
+          .filter(stepYaml -> !SUPPORTED_STEPS.contains(stepYaml.getType()))
+          .forEach(stepYaml
+              -> errorReasons.add(
+                  String.format("%s step of %s step type in workflow %s is not supported with migration",
+                      stepYaml.getName(), stepYaml.getType(), workflow.getName())));
+      boolean possible = errorReasons.isEmpty();
+      return NGMigrationStatus.builder().status(possible).reasons(errorReasons).build();
+    }
+    return NGMigrationStatus.builder()
+        .status(false)
+        .reasons(Collections.singletonList(
+            String.format("Workflow %s of type %s is not supported with migration", workflow.getName(), workflowType)))
+        .build();
   }
 
   @Override

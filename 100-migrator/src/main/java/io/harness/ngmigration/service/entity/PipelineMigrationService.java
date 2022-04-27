@@ -7,12 +7,13 @@
 
 package io.harness.ngmigration.service.entity;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import static java.lang.String.format;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.MigratedEntityMapping;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
@@ -36,6 +37,7 @@ import io.harness.remote.client.NGRestUtils;
 
 import software.wings.beans.Pipeline;
 import software.wings.beans.PipelineStage;
+import software.wings.beans.PipelineStage.PipelineStageElement;
 import software.wings.ngmigration.CgBasicInfo;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.ngmigration.CgEntityNode;
@@ -54,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -100,13 +103,13 @@ public class PipelineMigrationService extends NgMigrationService {
                                     .build();
 
     Set<CgEntityId> children = new HashSet<>();
-    if (EmptyPredicate.isNotEmpty(pipeline.getPipelineStages())) {
+    if (isNotEmpty(pipeline.getPipelineStages())) {
       List<PipelineStage> stages = pipeline.getPipelineStages();
       stages.stream().flatMap(stage -> stage.getPipelineStageElements().stream()).forEach(stageElement -> {
         // Handle Approval State
         if (StateType.ENV_STATE.name().equals(stageElement.getType())) {
           String workflowId = (String) stageElement.getProperties().get("workflowId");
-          if (EmptyPredicate.isNotEmpty(workflowId)) {
+          if (isNotEmpty(workflowId)) {
             children.add(CgEntityId.builder().type(NGMigrationEntityType.WORKFLOW).id(workflowId).build());
           }
         }
@@ -127,9 +130,24 @@ public class PipelineMigrationService extends NgMigrationService {
   }
 
   @Override
-  public NGMigrationStatus canMigrate(
-      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
-    return null;
+  public NGMigrationStatus canMigrate(NGMigrationEntity entity) {
+    Pipeline pipeline = (Pipeline) entity;
+    boolean possible = true;
+    List<String> errorReasons = new ArrayList<>();
+    if (isNotEmpty(pipeline.getPipelineStages())) {
+      List<PipelineStageElement> stageElements = pipeline.getPipelineStages()
+                                                     .stream()
+                                                     .flatMap(stage -> stage.getPipelineStageElements().stream())
+                                                     .collect(Collectors.toList());
+      for (PipelineStageElement stageElement : stageElements) {
+        if (!StateType.ENV_STATE.name().equals(stageElement.getType())) {
+          possible = false;
+          errorReasons.add(String.format(
+              "%s stage in %s pipeline is not possible to migrate", stageElement.getName(), pipeline.getName()));
+        }
+      }
+    }
+    return NGMigrationStatus.builder().status(possible).reasons(errorReasons).build();
   }
 
   @Override
@@ -166,14 +184,14 @@ public class PipelineMigrationService extends NgMigrationService {
     }
 
     List<StageElementWrapperConfig> ngStages = new ArrayList<>();
-    if (EmptyPredicate.isNotEmpty(pipeline.getPipelineStages())) {
+    if (isNotEmpty(pipeline.getPipelineStages())) {
       pipeline.getPipelineStages()
           .stream()
           .flatMap(stage -> stage.getPipelineStageElements().stream())
           .forEach(stageElement -> {
             if (StateType.ENV_STATE.name().equals(stageElement.getType())) {
               String workflowId = (String) stageElement.getProperties().get("workflowId");
-              if (EmptyPredicate.isNotEmpty(workflowId)) {
+              if (isNotEmpty(workflowId)) {
                 // Every CG pipeline stage to NG convert
                 ngStages.add(workflowMigrationService.getNgStage(inputDTO, entities, graph,
                     CgEntityId.builder().type(NGMigrationEntityType.WORKFLOW).id(workflowId).build(),

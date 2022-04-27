@@ -63,6 +63,11 @@ public class DummyMigrationService extends NgMigrationService {
   }
 
   @Override
+  public NGMigrationStatus canMigrate(NGMigrationEntity entity) {
+    return NGMigrationStatus.builder().status(true).build();
+  }
+
+  @Override
   public NGMigrationStatus canMigrate(
       Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
     return NGMigrationStatus.builder().status(true).build();

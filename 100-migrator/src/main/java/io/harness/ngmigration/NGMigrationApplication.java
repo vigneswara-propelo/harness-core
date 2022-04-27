@@ -59,7 +59,6 @@ import io.harness.health.HealthService;
 import io.harness.lock.DistributedLockImplementation;
 import io.harness.lock.PersistentLocker;
 import io.harness.maintenance.MaintenanceController;
-import io.harness.marketplace.gcp.GcpMarketplaceSubscriberService;
 import io.harness.metrics.HarnessMetricRegistry;
 import io.harness.metrics.MetricRegistryModule;
 import io.harness.migrations.MigrationModule;
@@ -74,7 +73,6 @@ import io.harness.observer.NoOpRemoteObserverInformerImpl;
 import io.harness.observer.RemoteObserver;
 import io.harness.observer.RemoteObserverInformer;
 import io.harness.observer.consumer.AbstractRemoteObserverModule;
-import io.harness.outbox.OutboxEventPollService;
 import io.harness.perpetualtask.PerpetualTaskService;
 import io.harness.perpetualtask.PerpetualTaskServiceImpl;
 import io.harness.perpetualtask.internal.PerpetualTaskRecordHandler;
@@ -124,7 +122,6 @@ import software.wings.app.TemplateModule;
 import software.wings.app.WingsModule;
 import software.wings.app.YamlModule;
 import software.wings.beans.User;
-import software.wings.core.managerConfiguration.ConfigurationController;
 import software.wings.dl.WingsPersistence;
 import software.wings.exception.GenericExceptionMapper;
 import software.wings.exception.JsonProcessingExceptionMapper;
@@ -134,7 +131,6 @@ import software.wings.filter.AuditResponseFilter;
 import software.wings.jersey.JsonViews;
 import software.wings.jersey.KryoFeature;
 import software.wings.licensing.LicenseService;
-import software.wings.search.framework.ElasticsearchSyncService;
 import software.wings.security.AuthResponseFilter;
 import software.wings.security.AuthRuleFilter;
 import software.wings.security.AuthenticationFilter;
@@ -158,10 +154,8 @@ import software.wings.service.impl.SettingsServiceImpl;
 import software.wings.service.impl.WorkflowExecutionServiceImpl;
 import software.wings.service.impl.applicationmanifest.ManifestPerpetualTaskManger;
 import software.wings.service.impl.artifact.ArtifactStreamPTaskManager;
-import software.wings.service.impl.artifact.ArtifactStreamPTaskMigrationJob;
 import software.wings.service.impl.artifact.ArtifactStreamSettingAttributePTaskManager;
 import software.wings.service.impl.infrastructuredefinition.InfrastructureDefinitionServiceImpl;
-import software.wings.service.impl.instance.InstanceSyncPerpetualTaskMigrationJob;
 import software.wings.service.impl.workflow.WorkflowServiceImpl;
 import software.wings.service.impl.yaml.YamlPushServiceImpl;
 import software.wings.service.intfc.AccountService;
@@ -169,7 +163,6 @@ import software.wings.service.intfc.ApplicationManifestService;
 import software.wings.service.intfc.ArtifactStreamService;
 import software.wings.service.intfc.AuditService;
 import software.wings.service.intfc.DelegateProfileService;
-import software.wings.service.intfc.DelegateService;
 import software.wings.service.intfc.InfrastructureDefinitionService;
 import software.wings.service.intfc.InfrastructureDefinitionServiceObserver;
 import software.wings.service.intfc.InfrastructureMappingService;
@@ -718,37 +711,8 @@ public class NGMigrationApplication extends Application<MigratorConfig> {
     environment.lifecycle().manage(injector.getInstance(MaintenanceController.class));
   }
 
-  private void registerManagedBeansManager(
-      MainConfiguration configuration, Environment environment, Injector injector) {
-    environment.lifecycle().manage(injector.getInstance(ConfigurationController.class));
-    environment.lifecycle().manage(injector.getInstance(GcpMarketplaceSubscriberService.class));
-    // Perpetual task
-    environment.lifecycle().manage(injector.getInstance(ArtifactStreamPTaskMigrationJob.class));
-    environment.lifecycle().manage(injector.getInstance(InstanceSyncPerpetualTaskMigrationJob.class));
-
-    environment.lifecycle().manage(injector.getInstance(OutboxEventPollService.class));
-
-    if (configuration.isSearchEnabled()) {
-      environment.lifecycle().manage(injector.getInstance(ElasticsearchSyncService.class));
-    }
-  }
-
   private void registerCorrelationFilter(Environment environment, Injector injector) {
     environment.jersey().register(injector.getInstance(CorrelationFilter.class));
-  }
-
-  public void registerObservers(MainConfiguration configuration, Injector injector) {
-    // Register Audit observer
-    DelegateServiceImpl delegateServiceImpl =
-        (DelegateServiceImpl) injector.getInstance(Key.get(DelegateService.class));
-
-    if (isManager()) {
-      registerManagerObservers(injector, delegateServiceImpl);
-    }
-
-    if (shouldEnableDelegateMgmt(configuration)) {
-      registerDelegateServiceObservers(injector, delegateServiceImpl);
-    }
   }
 
   /**

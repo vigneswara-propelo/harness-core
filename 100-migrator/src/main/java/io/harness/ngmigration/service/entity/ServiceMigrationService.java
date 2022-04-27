@@ -42,6 +42,7 @@ import io.harness.ngmigration.service.MigratorUtility;
 import io.harness.ngmigration.service.NgMigrationService;
 import io.harness.pms.yaml.ParameterField;
 
+import software.wings.api.DeploymentType;
 import software.wings.beans.Service;
 import software.wings.beans.artifact.ArtifactStream;
 import software.wings.beans.artifact.DockerArtifactStream;
@@ -52,10 +53,12 @@ import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationStatus;
 import software.wings.service.intfc.ArtifactStreamService;
 import software.wings.service.intfc.ServiceResourceService;
+import software.wings.utils.ArtifactType;
 
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +99,26 @@ public class ServiceMigrationService extends NgMigrationService {
   @Override
   public DiscoveryNode discover(String accountId, String appId, String entityId) {
     return discover(serviceResourceService.get(entityId));
+  }
+
+  @Override
+  public NGMigrationStatus canMigrate(NGMigrationEntity entity) {
+    Service service = (Service) entity;
+    if (!ArtifactType.DOCKER.equals(service.getArtifactType())) {
+      return NGMigrationStatus.builder()
+          .status(false)
+          .reasons(Collections.singletonList(String.format(
+              "%s service of artifact type %s is not supported", service.getName(), service.getArtifactType())))
+          .build();
+    }
+    if (!DeploymentType.KUBERNETES.equals(service.getDeploymentType())) {
+      return NGMigrationStatus.builder()
+          .status(false)
+          .reasons(Collections.singletonList(String.format(
+              "%s service of deployment type %s is not supported", service.getName(), service.getDeploymentType())))
+          .build();
+    }
+    return NGMigrationStatus.builder().status(true).build();
   }
 
   private PrimaryArtifact getPrimaryArtifact(
@@ -153,12 +176,6 @@ public class ServiceMigrationService extends NgMigrationService {
                                   .tags(null)
                                   .build();
     return ServiceConfig.builder().service(serviceYaml).serviceDefinition(serviceDefinition).build();
-  }
-
-  @Override
-  public NGMigrationStatus canMigrate(
-      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
-    return null;
   }
 
   @Override
