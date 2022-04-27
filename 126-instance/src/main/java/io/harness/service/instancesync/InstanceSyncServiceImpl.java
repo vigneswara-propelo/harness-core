@@ -9,10 +9,8 @@ package io.harness.service.instancesync;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.service.beans.ServiceSpecType;
 import io.harness.delegate.beans.instancesync.InstanceSyncPerpetualTaskResponse;
 import io.harness.delegate.beans.instancesync.ServerInstanceInfo;
-import io.harness.delegate.beans.instancesync.info.K8sServerInstanceInfo;
 import io.harness.dtos.DeploymentSummaryDTO;
 import io.harness.dtos.InfrastructureMappingDTO;
 import io.harness.dtos.InstanceDTO;
@@ -128,8 +126,10 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
           InstanceSyncLocalCacheManager.setDeploymentSummary(
               deploymentSummaryDTO.getInstanceSyncKey(), deploymentSummaryDTO);
           // Sync only for deployment infos / instance sync handler keys from instances from server
+          AbstractInstanceSyncHandler instanceSyncHandler = instanceSyncHandlerFactoryService.getInstanceSyncHandler(
+              deploymentSummaryDTO.getDeploymentInfoDTO().getType());
           performInstanceSync(instanceSyncPerpetualTaskInfoDTO, infrastructureMappingDTO,
-              deploymentSummaryDTO.getServerInstanceInfoList(), true);
+              deploymentSummaryDTO.getServerInstanceInfoList(), instanceSyncHandler, true);
 
           log.info("Instance sync completed for infrastructure mapping id : {}", infrastructureMappingDTO.getId());
           return;
@@ -186,8 +186,10 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
             AcquiredLock<?> acquiredLock = persistentLocker.waitToAcquireLock(InstanceSyncConstants.INSTANCE_SYNC_PREFIX
                     + instanceSyncPerpetualTaskInfoDTO.getInfrastructureMappingId(),
                 InstanceSyncConstants.INSTANCE_SYNC_LOCK_TIMEOUT, InstanceSyncConstants.INSTANCE_SYNC_WAIT_TIMEOUT)) {
+          AbstractInstanceSyncHandler instanceSyncHandler = instanceSyncHandlerFactoryService.getInstanceSyncHandler(
+              instanceSyncPerpetualTaskResponse.getDeploymentType());
           performInstanceSync(instanceSyncPerpetualTaskInfoDTO, infrastructureMappingDTO.get(),
-              instanceSyncPerpetualTaskResponse.getServerInstanceDetails(), false);
+              instanceSyncPerpetualTaskResponse.getServerInstanceDetails(), instanceSyncHandler, false);
           log.info("Instance Sync completed");
         } catch (Exception exception) {
           log.error("Exception occured during instance sync", exception);
@@ -203,10 +205,11 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
    */
   private void performInstanceSync(InstanceSyncPerpetualTaskInfoDTO instanceSyncPerpetualTaskInfoDTO,
       InfrastructureMappingDTO infrastructureMappingDTO, List<ServerInstanceInfo> serverInstanceInfoList,
-      boolean isNewDeploymentSync) {
+      AbstractInstanceSyncHandler instanceSyncHandler, boolean isNewDeploymentSync) {
     // Prepare final list of instances to be added / deleted / updated
-    Map<OperationsOnInstances, List<InstanceDTO>> instancesToBeModified = handleInstanceSync(
-        instanceSyncPerpetualTaskInfoDTO, infrastructureMappingDTO, serverInstanceInfoList, isNewDeploymentSync);
+    Map<OperationsOnInstances, List<InstanceDTO>> instancesToBeModified =
+        handleInstanceSync(instanceSyncPerpetualTaskInfoDTO, infrastructureMappingDTO, serverInstanceInfoList,
+            instanceSyncHandler, isNewDeploymentSync);
     processInstances(instancesToBeModified);
   }
 
@@ -225,9 +228,7 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
   Map<OperationsOnInstances, List<InstanceDTO>> handleInstanceSync(
       InstanceSyncPerpetualTaskInfoDTO instanceSyncPerpetualTaskInfoDTO,
       InfrastructureMappingDTO infrastructureMappingDTO, List<ServerInstanceInfo> serverInstanceInfoList,
-      boolean isNewDeploymentSync) {
-    AbstractInstanceSyncHandler instanceSyncHandler = instanceSyncHandlerFactoryService.getInstanceSyncHandler(
-        getServerInstanceInfoType(serverInstanceInfoList.get(0)));
+      AbstractInstanceSyncHandler instanceSyncHandler, boolean isNewDeploymentSync) {
     List<InstanceDTO> instancesInDB = instanceService.getActiveInstancesByInfrastructureMappingId(
         infrastructureMappingDTO.getAccountIdentifier(), infrastructureMappingDTO.getOrgIdentifier(),
         infrastructureMappingDTO.getProjectIdentifier(), infrastructureMappingDTO.getId(), System.currentTimeMillis());
@@ -590,13 +591,5 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
     serverInstanceInfoList.forEach(
         serverInstanceInfo -> stringBuilder.append(serverInstanceInfo.toString()).append(" :: "));
     log.info("Server Instances in the perpetual task response : {}", stringBuilder.toString());
-  }
-
-  private String getServerInstanceInfoType(ServerInstanceInfo serverInstanceInfo) {
-    if (serverInstanceInfo instanceof K8sServerInstanceInfo) {
-      return ServiceSpecType.KUBERNETES;
-    }
-
-    return ServiceSpecType.NATIVE_HELM; // as of now only 2 types K8s and Native Helm
   }
 }

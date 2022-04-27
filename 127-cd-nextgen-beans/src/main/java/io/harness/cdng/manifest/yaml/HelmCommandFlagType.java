@@ -8,8 +8,8 @@
 package io.harness.cdng.manifest.yaml;
 
 import io.harness.cdng.manifest.ManifestStoreType;
-import io.harness.cdng.service.beans.ServiceSpecType;
 import io.harness.helm.HelmSubCommandType;
+import io.harness.ng.core.k8s.ServiceSpecType;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;

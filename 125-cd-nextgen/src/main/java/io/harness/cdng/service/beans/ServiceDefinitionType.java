@@ -8,6 +8,7 @@
 package io.harness.cdng.service.beans;
 
 import io.harness.beans.ExecutionStrategyType;
+import io.harness.ng.core.k8s.ServiceSpecType;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

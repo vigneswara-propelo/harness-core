@@ -15,6 +15,7 @@ import io.harness.cdng.service.ServiceSpec;
 import io.harness.cdng.variables.beans.NGVariableOverrideSetWrapper;
 import io.harness.cdng.visitor.helpers.serviceconfig.NativeHelmServiceSpecVisitorHelper;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.ng.core.k8s.ServiceSpecType;
 import io.harness.walktree.beans.VisitableChildren;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
