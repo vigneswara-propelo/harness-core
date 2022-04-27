@@ -573,6 +573,7 @@ import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricSli
 import software.wings.service.impl.newrelic.NewRelicMetricData.NewRelicMetricTimeSlice;
 import software.wings.settings.validation.ConnectivityValidationAttributes;
 import software.wings.sm.states.JenkinsExecutionResponse;
+import software.wings.sm.states.KubernetesSteadyStateCheckResponse;
 import software.wings.sm.states.ParameterEntry;
 import software.wings.sm.states.gcbconfigs.GcbOptions;
 import software.wings.sm.states.gcbconfigs.GcbRemoteBuildSpec;
@@ -1208,6 +1209,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(EcsCommandRequest.class, 5606);
     kryo.register(EcrConfig.class, 5011);
     kryo.register(SpotInstConfig.class, 7221);
+    kryo.register(KubernetesSteadyStateCheckResponse.class, 5277);
 
     // WinRm
     kryo.register(WinRmCredentialsSpecDTO.class, 600001);

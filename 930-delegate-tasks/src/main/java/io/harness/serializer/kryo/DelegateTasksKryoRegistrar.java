@@ -66,6 +66,9 @@ import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.beans.config.ArtifactoryConfig;
 import software.wings.beans.config.LogzConfig;
 import software.wings.beans.config.NexusConfig;
+import software.wings.beans.container.EcsSteadyStateCheckParams;
+import software.wings.beans.container.EcsSteadyStateCheckResponse;
+import software.wings.beans.container.KubernetesSteadyStateCheckParams;
 import software.wings.beans.delegation.ShellScriptParameters;
 import software.wings.beans.settings.azureartifacts.AzureArtifactsPATConfig;
 import software.wings.beans.trigger.WebHookTriggerResponseData;
@@ -368,5 +371,8 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(RancherResolveClustersTaskParameters.class, 50004);
     kryo.register(RancherResolveClustersResponse.class, 50005);
     kryo.register(SpotInstCommandRequest.class, 7220);
+    kryo.register(EcsSteadyStateCheckParams.class, 5370);
+    kryo.register(EcsSteadyStateCheckResponse.class, 5371);
+    kryo.register(KubernetesSteadyStateCheckParams.class, 5276);
   }
 }

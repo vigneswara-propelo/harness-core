@@ -612,7 +612,6 @@ import software.wings.sm.states.KubernetesDeployRollback;
 import software.wings.sm.states.KubernetesSetup;
 import software.wings.sm.states.KubernetesSetupRollback;
 import software.wings.sm.states.KubernetesSteadyStateCheck;
-import software.wings.sm.states.KubernetesSteadyStateCheckResponse;
 import software.wings.sm.states.KubernetesSwapServiceSelectors;
 import software.wings.sm.states.KubernetesSwapServiceSelectorsResponse;
 import software.wings.sm.states.LogzAnalysisState;
@@ -1403,7 +1402,6 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("sm.states.KubernetesSetup", KubernetesSetup.class);
     w.put("sm.states.KubernetesSetupRollback", KubernetesSetupRollback.class);
     w.put("sm.states.KubernetesSteadyStateCheck", KubernetesSteadyStateCheck.class);
-    w.put("sm.states.KubernetesSteadyStateCheckResponse", KubernetesSteadyStateCheckResponse.class);
     w.put("sm.states.KubernetesSwapServiceSelectors", KubernetesSwapServiceSelectors.class);
     w.put("sm.states.KubernetesSwapServiceSelectorsResponse", KubernetesSwapServiceSelectorsResponse.class);
     w.put("sm.states.LogzAnalysisState", LogzAnalysisState.class);
