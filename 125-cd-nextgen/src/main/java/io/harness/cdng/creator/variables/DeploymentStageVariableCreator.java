@@ -7,6 +7,7 @@
 
 package io.harness.cdng.creator.variables;
 
+import io.harness.cdng.creator.plan.stage.DeploymentStageNode;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.pms.sdk.core.variables.AbstractStageVariableCreator;
 import io.harness.pms.sdk.core.variables.VariableCreatorHelper;
@@ -22,7 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class DeploymentStageVariableCreator extends AbstractStageVariableCreator {
+public class DeploymentStageVariableCreator extends AbstractStageVariableCreator<DeploymentStageNode> {
   @Override
   public LinkedHashMap<String, VariableCreationResponse> createVariablesForChildrenNodes(
       VariableCreationContext ctx, YamlField config) {
@@ -56,7 +57,18 @@ public class DeploymentStageVariableCreator extends AbstractStageVariableCreator
   }
 
   @Override
+  public LinkedHashMap<String, VariableCreationResponse> createVariablesForChildrenNodesV2(
+      VariableCreationContext ctx, DeploymentStageNode config) {
+    return createVariablesForChildrenNodes(ctx, ctx.getCurrentField());
+  }
+
+  @Override
   public Map<String, Set<String>> getSupportedTypes() {
     return Collections.singletonMap(YAMLFieldNameConstants.STAGE, Collections.singleton("Deployment"));
+  }
+
+  @Override
+  public Class<DeploymentStageNode> getFieldClass() {
+    return DeploymentStageNode.class;
   }
 }

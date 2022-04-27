@@ -36,6 +36,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.experimental.Wither;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -50,6 +51,8 @@ import org.springframework.data.annotation.TypeAlias;
 @OwnedBy(CDP)
 @RecasterAlias("io.harness.cdng.manifest.yaml.GitLabStore")
 public class GitLabStore implements GitStoreConfig, Visitable, WithConnectorRef {
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String uuid;
+
   @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
   @Wither
@@ -67,7 +70,7 @@ public class GitLabStore implements GitStoreConfig, Visitable, WithConnectorRef 
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither private ParameterField<String> repoName;
 
   // For Visitor Framework Impl
-  String metadata;
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
 
   @Override
   public String getKind() {

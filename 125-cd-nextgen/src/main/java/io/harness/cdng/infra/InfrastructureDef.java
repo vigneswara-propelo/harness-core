@@ -15,6 +15,7 @@ import io.harness.cdng.infra.yaml.Infrastructure;
 import io.harness.cdng.infra.yaml.InfrastructureType;
 import io.harness.cdng.visitor.helpers.pipelineinfrastructure.InfrastructureDefVisitorHelper;
 import io.harness.plancreator.execution.ExecutionElementConfig;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.walktree.beans.VisitableChildren;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
@@ -36,6 +37,11 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("infrastructureDef")
 @RecasterAlias("io.harness.cdng.infra.InfrastructureDef")
 public class InfrastructureDef implements Visitable {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
+
   @NotNull @JsonProperty("type") InfrastructureType type;
 
   @JsonProperty("spec")

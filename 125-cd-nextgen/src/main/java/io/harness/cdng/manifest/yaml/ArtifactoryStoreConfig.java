@@ -33,6 +33,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.experimental.Wither;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -45,6 +46,8 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("artifactoryStore")
 @RecasterAlias("io.harness.cdng.manifest.yaml.ArtifactoryStoreConfig")
 public class ArtifactoryStoreConfig implements FileStorageStoreConfig, Visitable, WithConnectorRef {
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String uuid;
+
   @NotNull
   @Wither
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)

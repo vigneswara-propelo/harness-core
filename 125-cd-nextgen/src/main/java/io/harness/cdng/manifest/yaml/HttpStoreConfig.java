@@ -28,6 +28,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.experimental.Wither;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -40,6 +41,8 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("httpStore")
 @RecasterAlias("io.harness.cdng.manifest.yaml.HttpStoreConfig")
 public class HttpStoreConfig implements StoreConfig, Visitable, WithConnectorRef {
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String uuid;
+
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither private ParameterField<String> connectorRef;
 
   @Override

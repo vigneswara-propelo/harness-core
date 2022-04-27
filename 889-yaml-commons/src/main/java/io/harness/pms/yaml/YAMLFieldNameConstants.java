@@ -59,4 +59,6 @@ public class YAMLFieldNameConstants {
   public final String COMMAND_TYPE = "commandType";
   public final String STOP_STEPS_SEQUENCE = "stopStepsSequence";
   public final String DELEGATE_SELECTORS = "delegateSelectors";
+
+  public final String CONFIGURATION = "configuration";
 }

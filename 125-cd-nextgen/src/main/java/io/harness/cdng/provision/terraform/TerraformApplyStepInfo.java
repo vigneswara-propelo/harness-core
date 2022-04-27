@@ -19,12 +19,14 @@ import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.validation.Validator;
 import io.harness.walktree.visitor.Visitable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.TypeAlias;
@@ -47,6 +50,11 @@ import org.springframework.data.annotation.TypeAlias;
 @RecasterAlias("io.harness.cdng.provision.terraform.TerraformApplyStepInfo")
 public class TerraformApplyStepInfo
     extends TerraformApplyBaseStepInfo implements CDStepInfo, Visitable, WithConnectorRef {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
+
   @NotNull @JsonProperty("configuration") TerraformStepConfiguration terraformStepConfiguration;
 
   @Builder(builderMethodName = "infoBuilder")
