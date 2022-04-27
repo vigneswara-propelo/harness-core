@@ -290,7 +290,11 @@ public class InstanceFetchState extends State {
    */
   @Override
   public void handleAbortEvent(ExecutionContext context) {
-    // nothing to handle
+    if (context == null || context.getStateExecutionData() == null) {
+      return;
+    }
+    context.getStateExecutionData().setErrorMsg(
+        "Fetch instance job did not complete within timeout " + (getTimeoutMillis() / 1000) + " (s)");
   }
 
   /**
