@@ -240,6 +240,7 @@ public class GraphQLResource {
         if (apiKeyEntry == null) {
           throw graphQLUtils.getInvalidApiKeyException();
         } else {
+          log.info("Using api key {}", apiKeyEntry.getName());
           UserPermissionInfo apiKeyPermissions = apiKeyService.getApiKeyPermissions(apiKeyEntry, accountId);
           UserRestrictionInfo apiKeyRestrictions =
               apiKeyService.getApiKeyRestrictions(apiKeyEntry, apiKeyPermissions, accountId);
