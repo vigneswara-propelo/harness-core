@@ -142,10 +142,19 @@ public class BatchJobRunner {
       }
 
       long totalTimeTaken = Duration.between(jobsStartTime, Instant.now()).toMinutes();
+      logJobRunTimeStats(accountId, batchJobType, totalTimeTaken);
       if (totalTimeTaken >= 30) {
         log.warn("Job was taking more time so terminated next runs {}", totalTimeTaken);
         break;
       }
+    }
+  }
+
+  private void logJobRunTimeStats(String accountId, BatchJobType batchJobType, long totalTimeTaken) {
+    if (batchJobType.getIntervalUnit() == ChronoUnit.HOURS && totalTimeTaken > 60) {
+      log.error("Hourly Time taken for job is more {} {} {}", accountId, batchJobType, totalTimeTaken);
+    } else if (batchJobType.getIntervalUnit() == ChronoUnit.DAYS && totalTimeTaken > 150) {
+      log.error("Daily Time taken for job is more {} {} {}", accountId, batchJobType, totalTimeTaken);
     }
   }
 

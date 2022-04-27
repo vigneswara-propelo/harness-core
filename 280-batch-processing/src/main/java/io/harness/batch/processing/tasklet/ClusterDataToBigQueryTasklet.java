@@ -124,7 +124,7 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
     do {
       instanceBillingDataList = billingDataReader.getNext();
       List<ClusterBillingData> clusterBillingDataList =
-          getClusterBillingDataForBatch(jobConstants.getAccountId(), instanceBillingDataList);
+          getClusterBillingDataForBatch(jobConstants.getAccountId(), batchJobType, instanceBillingDataList);
       log.debug("clusterBillingDataList size: {}", clusterBillingDataList.size());
       writeDataToAvro(
           jobConstants.getAccountId(), clusterBillingDataList, billingDataFileName, avroFileWithSchemaExists);
@@ -144,7 +144,7 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
 
   @VisibleForTesting
   public List<ClusterBillingData> getClusterBillingDataForBatch(
-      String accountId, List<InstanceBillingData> instanceBillingDataList) {
+      String accountId, BatchJobType batchJobType, List<InstanceBillingData> instanceBillingDataList) {
     List<ClusterBillingData> clusterBillingDataList = new ArrayList<>();
 
     Map<String, Map<String, String>> instanceIdToLabelMapping = new HashMap<>();
@@ -164,10 +164,15 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
     Map<Key, List<InstanceBillingData>> instanceBillingDataGrouped =
         instanceBillingDataList.stream().collect(Collectors.groupingBy(Key::getKeyFromInstanceData));
 
+    log.info("Started Querying data");
     for (Key key : instanceBillingDataGrouped.keySet()) {
       List<InstanceBillingData> instances = instanceBillingDataGrouped.get(key);
-      Map<K8SWorkloadService.CacheKey, Map<String, String>> labelMap = getLabelMapForGroup(instances, key);
-      log.debug("labelMap: {}", labelMap);
+      Map<K8SWorkloadService.CacheKey, Map<String, String>> labelMap = new HashMap<>();
+      if (!(batchJobType == BatchJobType.CLUSTER_DATA_HOURLY_TO_BIG_QUERY
+              && accountId.equals("fuWKs4a9RXqvFrsjdKTl-w"))) {
+        labelMap = getLabelMapForGroup(instances, key);
+      }
+      log.info("labelMap: {}", labelMap.size());
 
       for (InstanceBillingData instanceBillingData : instances) {
         Map<String, String> labels = labelMap.get(
