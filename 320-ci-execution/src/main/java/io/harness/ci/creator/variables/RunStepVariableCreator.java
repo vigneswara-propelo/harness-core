@@ -10,6 +10,8 @@ package io.harness.ci.creator.variables;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.nodes.RunStepNode;
+import io.harness.beans.steps.outcome.CIStepOutcome;
+import io.harness.pms.contracts.plan.YamlExtraProperties;
 import io.harness.pms.contracts.plan.YamlOutputProperties;
 import io.harness.pms.contracts.plan.YamlProperties;
 import io.harness.pms.sdk.core.pipeline.variables.GenericStepVariableCreator;
@@ -18,9 +20,12 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.yaml.core.variables.OutputNGVariable;
 
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,6 +49,41 @@ public class RunStepVariableCreator extends GenericStepVariableCreator<RunStepNo
     }
   }
 
+  @Override
+  public Class<RunStepNode> getFieldClass() {
+    return RunStepNode.class;
+  }
+
+  @Override
+  public YamlExtraProperties getStepExtraProperties(String fqnPrefix, String localNamePrefix, RunStepNode config) {
+    YamlExtraProperties stepExtraProperties = super.getStepExtraProperties(fqnPrefix, localNamePrefix, config);
+
+    Map<String, String> outputVariablesMap = new HashMap<>();
+    if (config.getRunStepInfo().getOutputVariables().getValue() != null) {
+      List<OutputNGVariable> outputNGVariables = config.getRunStepInfo().getOutputVariables().getValue();
+      for (OutputNGVariable outputVariable : outputNGVariables) {
+        outputVariablesMap.put(outputVariable.getName(), "variable");
+      }
+    }
+
+    CIStepOutcome ciStepOutcome = CIStepOutcome.builder().outputVariables(outputVariablesMap).build();
+
+    List<String> outputExpressions = VariableCreatorHelper.getExpressionsInObject(ciStepOutcome, "output");
+    List<YamlProperties> outputProperties = new LinkedList<>();
+    for (String outputExpression : outputExpressions) {
+      outputProperties.add(YamlProperties.newBuilder()
+                               .setFqn(fqnPrefix + "." + outputExpression)
+                               .setLocalName(localNamePrefix + "." + outputExpression)
+                               .setVisible(true)
+                               .build());
+    }
+
+    return YamlExtraProperties.newBuilder()
+        .addAllProperties(stepExtraProperties.getPropertiesList())
+        .addAllOutputProperties(outputProperties)
+        .build();
+  }
+
   protected void addVariablesForOutputVariables(
       YamlField outputVariablesField, Map<String, YamlOutputProperties> yamlOutputPropertiesMap) {
     List<YamlNode> variableNodes = outputVariablesField.getNode().asArray();
@@ -63,15 +103,6 @@ public class RunStepVariableCreator extends GenericStepVariableCreator<RunStepNo
             uuidNode.getNode().asText(), YamlOutputProperties.newBuilder().setLocalName(localName).setFqn(fqn).build());
       }
     });
-  }
-
-  protected void addFieldToPropertiesMapForOutputVariables(
-      YamlField fieldNode, Map<String, YamlProperties> yamlPropertiesMap) {
-    String fqn = YamlUtils.getFullyQualifiedName(fieldNode.getNode());
-    String localName = YamlUtils.getQualifiedNameTillGivenField(fieldNode.getNode(), YAMLFieldNameConstants.EXECUTION);
-
-    yamlPropertiesMap.put(fieldNode.getNode().getCurrJsonNode().textValue(),
-        YamlProperties.newBuilder().setLocalName(localName).setFqn(fqn).build());
   }
 
   private void addVariablesInComplexObjectRecursive(Map<String, YamlProperties> yamlPropertiesMap, YamlNode yamlNode) {

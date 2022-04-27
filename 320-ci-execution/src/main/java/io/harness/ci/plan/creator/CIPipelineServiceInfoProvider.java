@@ -11,9 +11,22 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.beans.steps.StepSpecTypeConstants;
+import io.harness.ci.creator.variables.ArtifactoryUploadStepVariableCreator;
+import io.harness.ci.creator.variables.BuildAndPushECRStepVariableCreator;
+import io.harness.ci.creator.variables.BuildAndPushGCRStepVariableCreator;
 import io.harness.ci.creator.variables.CIStageVariableCreator;
 import io.harness.ci.creator.variables.CIStepVariableCreator;
+import io.harness.ci.creator.variables.DockerStepVariableCreator;
+import io.harness.ci.creator.variables.GCSUploadStepVariableCreator;
+import io.harness.ci.creator.variables.PluginStepVariableCreator;
+import io.harness.ci.creator.variables.RestoreCacheGCSStepVariableCreator;
+import io.harness.ci.creator.variables.RestoreCacheS3StepVariableCreator;
 import io.harness.ci.creator.variables.RunStepVariableCreator;
+import io.harness.ci.creator.variables.RunTestStepVariableCreator;
+import io.harness.ci.creator.variables.S3UploadStepVariableCreator;
+import io.harness.ci.creator.variables.SaveCacheGCSStepVariableCreator;
+import io.harness.ci.creator.variables.SaveCacheS3StepVariableCreator;
+import io.harness.ci.creator.variables.SecurityStepVariableCreator;
 import io.harness.ci.plan.creator.filter.CIStageFilterJsonCreator;
 import io.harness.ci.plan.creator.stage.IntegrationStagePMSPlanCreator;
 import io.harness.ci.plan.creator.step.CIPMSStepFilterJsonCreator;
@@ -101,6 +114,21 @@ public class CIPipelineServiceInfoProvider implements PipelineServiceInfoProvide
     variableCreators.add(new ExecutionVariableCreator());
     variableCreators.add(new CIStepVariableCreator());
     variableCreators.add(new RunStepVariableCreator());
+
+    variableCreators.add(new RunTestStepVariableCreator());
+    variableCreators.add(new S3UploadStepVariableCreator());
+    variableCreators.add(new SaveCacheGCSStepVariableCreator());
+    variableCreators.add(new GCSUploadStepVariableCreator());
+    variableCreators.add(new RestoreCacheGCSStepVariableCreator());
+    variableCreators.add(new RestoreCacheS3StepVariableCreator());
+    variableCreators.add(new PluginStepVariableCreator());
+    variableCreators.add(new DockerStepVariableCreator());
+    variableCreators.add(new ArtifactoryUploadStepVariableCreator());
+    variableCreators.add(new BuildAndPushECRStepVariableCreator());
+    variableCreators.add(new BuildAndPushGCRStepVariableCreator());
+    variableCreators.add(new SaveCacheS3StepVariableCreator());
+    variableCreators.add(new SecurityStepVariableCreator());
+
     return variableCreators;
   }
 

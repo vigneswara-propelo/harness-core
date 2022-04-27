@@ -27,11 +27,14 @@ import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModelProperty;
@@ -55,7 +58,12 @@ import org.springframework.data.annotation.TypeAlias;
 @OwnedBy(CI)
 @RecasterAlias("io.harness.beans.steps.stepinfo.PluginStepInfo")
 public class PluginStepInfo implements CIStepInfo, WithConnectorRef {
-  public static final int DEFAULT_RETRY = 1;
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
+
+  @VariableExpression(skipVariableExpression = true) public static final int DEFAULT_RETRY = 1;
 
   @JsonIgnore public static final TypeInfo typeInfo = TypeInfo.builder().stepInfoType(CIStepInfoType.PLUGIN).build();
   @JsonIgnore
@@ -63,9 +71,11 @@ public class PluginStepInfo implements CIStepInfo, WithConnectorRef {
       StepType.newBuilder().setType(CIStepInfoType.PLUGIN.getDisplayName()).setStepCategory(StepCategory.STEP).build();
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) private String identifier;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) private String name;
-  @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
+  @VariableExpression(skipVariableExpression = true) @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
 
-  @YamlSchemaTypes(value = {string}) private ParameterField<Map<String, JsonNode>> settings;
+  @VariableExpression(skipVariableExpression = true)
+  @YamlSchemaTypes(value = {string})
+  private ParameterField<Map<String, JsonNode>> settings;
   @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> image;
   @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> connectorRef;
   private ContainerResource resources;

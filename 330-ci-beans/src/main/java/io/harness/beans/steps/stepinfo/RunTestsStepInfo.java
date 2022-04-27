@@ -29,11 +29,14 @@ import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.core.variables.OutputNGVariable;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
 import java.beans.ConstructorProperties;
@@ -54,9 +57,13 @@ import org.springframework.data.annotation.TypeAlias;
 @OwnedBy(CI)
 @RecasterAlias("io.harness.beans.steps.stepinfo.RunTestsStepInfo")
 public class RunTestsStepInfo implements CIStepInfo {
-  public static final int DEFAULT_RETRY = 0;
+  @VariableExpression(skipVariableExpression = true) public static final int DEFAULT_RETRY = 0;
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
   // Keeping the timeout to a day as its a test step and might take lot of time
-  public static final int DEFAULT_TIMEOUT = 60 * 60 * 24; // 24 hour;
+  @VariableExpression(skipVariableExpression = true) public static final int DEFAULT_TIMEOUT = 60 * 60 * 24; // 24 hour;
 
   @JsonIgnore public static final TypeInfo typeInfo = TypeInfo.builder().stepInfoType(CIStepInfoType.RUN_TESTS).build();
 
@@ -68,7 +75,7 @@ public class RunTestsStepInfo implements CIStepInfo {
 
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) private String identifier;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) private String name;
-  @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
+  @VariableExpression(skipVariableExpression = true) @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
 
   @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> args;
   @NotNull
@@ -92,6 +99,7 @@ public class RunTestsStepInfo implements CIStepInfo {
   @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> connectorRef;
   private ContainerResource resources;
   @YamlSchemaTypes(value = {runtime})
+  @VariableExpression(skipVariableExpression = true)
   @ApiModelProperty(dataType = "[Lio.harness.yaml.core.variables.OutputNGVariable;")
   private ParameterField<List<OutputNGVariable>> outputVariables;
   @YamlSchemaTypes(value = {string})

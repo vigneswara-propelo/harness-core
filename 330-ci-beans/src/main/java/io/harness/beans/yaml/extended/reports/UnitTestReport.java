@@ -7,10 +7,15 @@
 
 package io.harness.beans.yaml.extended.reports;
 
+import io.harness.pms.yaml.YamlNode;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -19,6 +24,10 @@ import org.springframework.data.annotation.TypeAlias;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @TypeAlias("junit_report")
 public class UnitTestReport {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
   private UnitTestReportType type;
   @JsonTypeInfo(
       use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)

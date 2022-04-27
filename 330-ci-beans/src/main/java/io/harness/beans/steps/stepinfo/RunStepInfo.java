@@ -29,12 +29,15 @@ import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.core.variables.OutputNGVariable;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
 import java.beans.ConstructorProperties;
@@ -57,7 +60,11 @@ import org.springframework.data.annotation.TypeAlias;
 @OwnedBy(CI)
 @RecasterAlias("io.harness.beans.steps.stepinfo.RunStepInfo")
 public class RunStepInfo implements CIStepInfo, WithConnectorRef {
-  public static final int DEFAULT_RETRY = 1;
+  @VariableExpression(skipVariableExpression = true) public static final int DEFAULT_RETRY = 1;
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
 
   @JsonIgnore public static final TypeInfo typeInfo = TypeInfo.builder().stepInfoType(CIStepInfoType.RUN).build();
   @JsonIgnore
@@ -66,11 +73,12 @@ public class RunStepInfo implements CIStepInfo, WithConnectorRef {
 
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) private String identifier;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) private String name;
-  @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
+  @VariableExpression(skipVariableExpression = true) @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
 
   @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> command;
   @YamlSchemaTypes(value = {runtime})
   @ApiModelProperty(dataType = "[Lio.harness.yaml.core.variables.OutputNGVariable;")
+  @VariableExpression(skipVariableExpression = true)
   private ParameterField<List<OutputNGVariable>> outputVariables;
   @YamlSchemaTypes(value = {string})
   @ApiModelProperty(dataType = STRING_MAP_CLASSPATH)
