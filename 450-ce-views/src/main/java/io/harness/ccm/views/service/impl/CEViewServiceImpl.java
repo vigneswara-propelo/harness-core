@@ -8,6 +8,7 @@
 package io.harness.ccm.views.service.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.CE;
+import static io.harness.ccm.commons.constants.ViewFieldConstants.AWS_ACCOUNT_FIELD;
 import static io.harness.ccm.commons.utils.BigQueryHelper.UNIFIED_TABLE;
 import static io.harness.ccm.views.entities.ViewFieldIdentifier.CLUSTER;
 import static io.harness.ccm.views.graphql.QLCEViewTimeFilterOperator.AFTER;
@@ -51,6 +52,7 @@ import io.harness.ccm.views.helper.ViewTimeRangeHelper;
 import io.harness.ccm.views.service.CEViewService;
 import io.harness.ccm.views.service.ViewCustomFieldService;
 import io.harness.ccm.views.service.ViewsBillingService;
+import io.harness.ccm.views.utils.AwsAccountFieldUtils;
 import io.harness.exception.InvalidRequestException;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -218,20 +220,24 @@ public class CEViewServiceImpl implements CEViewService {
     if (ceView.getViewRules() != null) {
       for (ViewRule rule : ceView.getViewRules()) {
         for (ViewCondition condition : rule.getViewConditions()) {
-          if (((ViewIdCondition) condition).getViewField().getIdentifier() == CLUSTER) {
+          ViewIdCondition viewIdCondition = (ViewIdCondition) condition;
+          if (viewIdCondition.getViewField().getIdentifier() == CLUSTER) {
             viewFieldIdentifierSet.add(CLUSTER);
           }
-          if (((ViewIdCondition) condition).getViewField().getIdentifier() == ViewFieldIdentifier.AWS) {
+          if (viewIdCondition.getViewField().getIdentifier() == ViewFieldIdentifier.AWS) {
             viewFieldIdentifierSet.add(ViewFieldIdentifier.AWS);
+            if (AWS_ACCOUNT_FIELD.equals(viewIdCondition.getViewField().getFieldName())) {
+              viewIdCondition.setValues(removeAccountNameFromValues(viewIdCondition.getValues()));
+            }
           }
-          if (((ViewIdCondition) condition).getViewField().getIdentifier() == ViewFieldIdentifier.GCP) {
+          if (viewIdCondition.getViewField().getIdentifier() == ViewFieldIdentifier.GCP) {
             viewFieldIdentifierSet.add(ViewFieldIdentifier.GCP);
           }
-          if (((ViewIdCondition) condition).getViewField().getIdentifier() == ViewFieldIdentifier.AZURE) {
+          if (viewIdCondition.getViewField().getIdentifier() == ViewFieldIdentifier.AZURE) {
             viewFieldIdentifierSet.add(ViewFieldIdentifier.AZURE);
           }
-          if (((ViewIdCondition) condition).getViewField().getIdentifier() == ViewFieldIdentifier.CUSTOM) {
-            String viewId = ((ViewIdCondition) condition).getViewField().getFieldId();
+          if (viewIdCondition.getViewField().getIdentifier() == ViewFieldIdentifier.CUSTOM) {
+            String viewId = viewIdCondition.getViewField().getFieldId();
             List<ViewField> customFieldViewFields = viewCustomFieldService.get(viewId).getViewFields();
             for (ViewField field : customFieldViewFields) {
               viewFieldIdentifierSet.add(field.getIdentifier());
@@ -242,9 +248,11 @@ public class CEViewServiceImpl implements CEViewService {
       }
     }
 
-    List<ViewFieldIdentifier> viewFieldIdentifierList = new ArrayList<>();
-    viewFieldIdentifierList.addAll(viewFieldIdentifierSet);
-    ceView.setDataSources(viewFieldIdentifierList);
+    ceView.setDataSources(new ArrayList<>(viewFieldIdentifierSet));
+  }
+
+  private List<String> removeAccountNameFromValues(List<String> values) {
+    return values.stream().map(AwsAccountFieldUtils::removeAwsAccountNameFromValue).collect(Collectors.toList());
   }
 
   @Override

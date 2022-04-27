@@ -137,6 +137,7 @@ import io.harness.ccm.views.graphql.ViewsQueryMetadata;
 import io.harness.ccm.views.helper.InstanceDetailsHelper;
 import io.harness.ccm.views.service.CEViewService;
 import io.harness.ccm.views.service.ViewsBillingService;
+import io.harness.ccm.views.utils.AwsAccountFieldUtils;
 import io.harness.ccm.views.utils.ViewFieldUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ff.FeatureFlagService;
@@ -150,7 +151,6 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableResult;
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
@@ -177,8 +177,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -211,7 +209,6 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
   private static final Double defaultDoubleValue = 0D;
   private static final String STANDARD_TIME_ZONE = "GMT";
   private static final long OBSERVATION_PERIOD = 29 * ONE_DAY_MILLIS;
-  private static final Pattern ACCOUNT_ID_EXTRACT_PATTERN = Pattern.compile("\\((.*?)\\)");
 
   @Override
   public List<String> getFilterValueStats(BigQuery bigQuery, List<QLCEViewFilterWrapper> filters,
@@ -280,18 +277,10 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
           entityMetadataService.getEntityIdToNameMapping(filterValuesData, harnessAccountId, AWS_ACCOUNT_FIELD);
       filterValuesData.forEach(filterValueData
           -> updatedFilterValuesData.add(
-              mergeAWSAccountIdAndName(filterValueData, entityIdToName.get(filterValueData))));
+              AwsAccountFieldUtils.mergeAwsAccountIdAndName(filterValueData, entityIdToName.get(filterValueData))));
       filterValuesData = updatedFilterValuesData;
     }
     return filterValuesData;
-  }
-
-  public static String mergeAWSAccountIdAndName(final String accountId, final String accountName) {
-    String accountDetails = accountId;
-    if (!Strings.isNullOrEmpty(accountName)) {
-      accountDetails = accountName + " (" + accountId + ")";
-    }
-    return accountDetails;
   }
 
   private boolean isDataFilteredByAwsAccount(final List<QLCEViewFilter> idFilters) {
@@ -884,7 +873,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
           if (Objects.nonNull(condition.getField()) && AWS_ACCOUNT_FIELD.equals(condition.getField().getFieldName())
               && Objects.nonNull(condition.getValues())) {
             final String[] updatedValues = Arrays.stream(condition.getValues())
-                                               .map(ViewsBillingServiceImpl::removeAWSAccountNameFromValue)
+                                               .map(AwsAccountFieldUtils::removeAwsAccountNameFromValue)
                                                .toArray(String[] ::new);
             updatedConditions.add(QLCEViewFilter.builder()
                                       .field(condition.getField())
@@ -909,7 +898,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
       if (Objects.nonNull(idFilter.getField()) && AWS_ACCOUNT_FIELD.equals(idFilter.getField().getFieldName())
           && Objects.nonNull(idFilter.getValues())) {
         final String[] updatedValues = Arrays.stream(idFilter.getValues())
-                                           .map(ViewsBillingServiceImpl::removeAWSAccountNameFromValue)
+                                           .map(AwsAccountFieldUtils::removeAwsAccountNameFromValue)
                                            .toArray(String[] ::new);
         updatedIdFilters.add(QLCEViewFilter.builder()
                                  .field(idFilter.getField())
@@ -921,15 +910,6 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
       }
     });
     return updatedIdFilters;
-  }
-
-  private static String removeAWSAccountNameFromValue(final String value) {
-    String accountId = value;
-    final Matcher matcher = ACCOUNT_ID_EXTRACT_PATTERN.matcher(value);
-    if (matcher.find()) {
-      accountId = matcher.group(1);
-    }
-    return accountId;
   }
 
   public static List<ViewRule> convertQLCEViewRuleToViewRule(@NotNull List<QLCEViewRule> ruleList) {
@@ -1857,8 +1837,8 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
           .cost(dataPoint.getCost())
           .costTrend(dataPoint.getCostTrend());
       if (AWS_ACCOUNT_FIELD.equals(fieldName)) {
-        qlceViewEntityStatsDataPointBuilder.name(
-            mergeAWSAccountIdAndName(dataPoint.getName(), entityIdToName.get(dataPoint.getName())));
+        qlceViewEntityStatsDataPointBuilder.name(AwsAccountFieldUtils.mergeAwsAccountIdAndName(
+            dataPoint.getName(), entityIdToName.get(dataPoint.getName())));
       }
       updatedDataPoints.add(qlceViewEntityStatsDataPointBuilder.build());
     });
