@@ -85,6 +85,7 @@ import software.wings.delegatetasks.rancher.RancherResolveClustersTaskParameters
 import software.wings.delegatetasks.validation.capabilities.BasicValidationInfo;
 import software.wings.delegatetasks.validation.capabilities.ClusterMasterUrlValidationCapability;
 import software.wings.delegatetasks.validation.capabilities.GitConnectionCapability;
+import software.wings.delegatetasks.validation.capabilities.SSHHostValidationCapability;
 import software.wings.delegatetasks.validation.capabilities.ShellConnectionCapability;
 import software.wings.delegatetasks.validation.capabilities.WinrmHostValidationCapability;
 import software.wings.helpers.ext.azure.devops.AzureArtifactsFeed;
@@ -376,5 +377,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(EcsSteadyStateCheckResponse.class, 5371);
     kryo.register(KubernetesSteadyStateCheckParams.class, 5276);
     kryo.register(KubernetesSwapServiceSelectorsParams.class, 5365);
+    kryo.register(SSHHostValidationCapability.class, 7326);
   }
 }

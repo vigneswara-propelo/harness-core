@@ -359,7 +359,6 @@ import software.wings.delegatetasks.event.EventsDeliveryCallback;
 import software.wings.delegatetasks.manifest.ManifestCollectionExecutionResponse;
 import software.wings.delegatetasks.manifest.ManifestCollectionResponse;
 import software.wings.delegatetasks.validation.capabilities.HelmCommandCapability;
-import software.wings.delegatetasks.validation.capabilities.SSHHostValidationCapability;
 import software.wings.expression.ShellScriptEnvironmentVariables;
 import software.wings.helpers.ext.cloudformation.CloudFormationCompletionFlag;
 import software.wings.helpers.ext.cloudformation.request.CloudFormationCommandRequest;
@@ -1120,7 +1119,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(InstanaAnalyzeMetrics.Item.class, 7316);
 
     kryo.register(SkipStateExecutionData.class, 7322);
-    kryo.register(SSHHostValidationCapability.class, 7326);
 
     kryo.register(InstanceInfoVariables.class, 7331);
     kryo.register(AppDynamicsDataCollectionInfoV2.class, 7332);
