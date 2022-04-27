@@ -124,7 +124,7 @@ public class Http {
           .build(new CacheLoader<String, Integer>() {
             @Override
             public Integer load(String url) throws IOException {
-              log.info("Testing connectivity");
+              log.info("Testing connectivity without follow redirect");
 
               // Create a trust manager that does not validate certificate chains
               // Install the all-trusting trust manager
