@@ -69,7 +69,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @PrepareForTest({NGRestUtils.class})
 public class NextGenAuthenticationFilterTest extends ApiKeyFilterTestBase {
   private static final String accountIdentifier = "accountIdentifier";
-
+  private static final String incorrectAccountIdentifier = "incorrectAccountIdentifier";
   private TokenClient tokenClient;
   private ContainerRequestContext containerRequestContext;
   private String apiKey;
@@ -266,6 +266,15 @@ public class NextGenAuthenticationFilterTest extends ApiKeyFilterTestBase {
     tokenDTO.setValid(false);
     assertThatThrownBy(() -> authenticationFilter.filter(containerRequestContext))
         .isInstanceOf(InvalidRequestException.class);
+
+    // new API token containing incorrect accountId
+    newApiKey = "sat" + delimiter + incorrectAccountIdentifier + delimiter + uuid + delimiter + rawPassword;
+    when(containerRequestContext.getHeaderString(X_API_KEY)).thenReturn(newApiKey);
+    when(NGRestUtils.getResponse(any())).thenReturn(tokenDTO);
+    assertThatThrownBy(() -> authenticationFilter.filter(containerRequestContext))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining("Invalid accountId in token " + uuid)
+        .hasMessageContaining(uuid);
   }
 
   @Test
@@ -404,6 +413,15 @@ public class NextGenAuthenticationFilterTest extends ApiKeyFilterTestBase {
     assertThatThrownBy(() -> authenticationFilter.filter(containerRequestContext))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessageContaining("Token not found")
+        .hasMessageContaining(uuid);
+
+    // new API token containing incorrect accountId
+    newApiKey = "pat" + delimiter + incorrectAccountIdentifier + delimiter + uuid + delimiter + rawPassword;
+    when(containerRequestContext.getHeaderString(X_API_KEY)).thenReturn(newApiKey);
+    when(NGRestUtils.getResponse(any())).thenReturn(tokenDTO);
+    assertThatThrownBy(() -> authenticationFilter.filter(containerRequestContext))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining("Invalid accountId in token " + uuid)
         .hasMessageContaining(uuid);
   }
 }
