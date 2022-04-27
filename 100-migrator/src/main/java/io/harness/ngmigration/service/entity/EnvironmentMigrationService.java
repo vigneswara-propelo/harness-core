@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import static io.harness.beans.EnvironmentType.PROD;
 import static io.harness.ng.core.environment.beans.EnvironmentType.PreProduction;
@@ -17,14 +17,19 @@ import io.harness.beans.MigratedEntityMapping;
 import io.harness.cdng.environment.yaml.EnvironmentYaml;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.encryption.Scope;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigratorInputType;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.service.MigratorMappingService;
+import io.harness.ngmigration.service.MigratorUtility;
+import io.harness.ngmigration.service.NgMigrationService;
 
 import software.wings.beans.Environment;
 import software.wings.infra.InfrastructureDefinition;
@@ -35,7 +40,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.EnvironmentService;
 import software.wings.service.intfc.InfrastructureDefinitionService;
 
@@ -52,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class EnvironmentMigrationService implements NgMigrationService {
+public class EnvironmentMigrationService extends NgMigrationService {
   @Inject private EnvironmentService environmentService;
   @Inject private InfrastructureDefinitionService infrastructureDefinitionService;
 
@@ -121,9 +125,20 @@ public class EnvironmentMigrationService implements NgMigrationService {
   }
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     return new ArrayList<>();
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    return null;
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return false;
   }
 
   @Override

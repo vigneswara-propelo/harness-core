@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
@@ -28,14 +28,18 @@ import io.harness.cdng.service.beans.ServiceYaml;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
 import io.harness.encryption.Scope;
 import io.harness.exception.UnsupportedOperationException;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigratorInputType;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.expressions.MigratorExpressionUtils;
+import io.harness.ngmigration.service.MigratorUtility;
+import io.harness.ngmigration.service.NgMigrationService;
 import io.harness.pms.yaml.ParameterField;
 
 import software.wings.beans.Service;
@@ -46,7 +50,6 @@ import software.wings.ngmigration.CgEntityNode;
 import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.ArtifactStreamService;
 import software.wings.service.intfc.ServiceResourceService;
 
@@ -60,7 +63,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @OwnedBy(HarnessTeam.CDC)
-public class ServiceMigrationService implements NgMigrationService {
+public class ServiceMigrationService extends NgMigrationService {
   @Inject private ServiceResourceService serviceResourceService;
   @Inject private ArtifactStreamService artifactStreamService;
   @Inject private ManifestMigrationService manifestMigrationService;
@@ -163,9 +166,20 @@ public class ServiceMigrationService implements NgMigrationService {
       NGYamlFile yamlFile) throws IOException {}
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     return new ArrayList<>();
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    return null;
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return false;
   }
 
   @Override

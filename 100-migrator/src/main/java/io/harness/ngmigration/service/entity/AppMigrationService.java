@@ -5,14 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import io.harness.beans.MigratedEntityMapping;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.service.NgMigrationService;
 import io.harness.persistence.HPersistence;
 
 import software.wings.beans.Application;
@@ -24,7 +27,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.AppService;
 
 import com.google.inject.Inject;
@@ -35,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class AppMigrationService implements NgMigrationService {
+public class AppMigrationService extends NgMigrationService {
   @Inject private AppService appService;
   @Inject private HPersistence hPersistence;
 
@@ -87,9 +89,20 @@ public class AppMigrationService implements NgMigrationService {
   }
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     return new ArrayList<>();
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    return null;
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return false;
   }
 
   @Override

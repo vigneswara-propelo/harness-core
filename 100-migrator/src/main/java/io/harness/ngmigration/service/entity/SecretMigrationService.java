@@ -5,13 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EncryptedData;
 import io.harness.beans.MigratedEntityMapping;
 import io.harness.beans.SecretManagerConfig;
+import io.harness.exception.InvalidRequestException;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.dto.secrets.SecretDTOV2;
 import io.harness.ng.core.dto.secrets.SecretRequestWrapper;
@@ -21,12 +23,18 @@ import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigratorInputType;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
+import io.harness.ngmigration.service.MigratorMappingService;
+import io.harness.ngmigration.service.MigratorUtility;
+import io.harness.ngmigration.service.NgMigrationService;
+import io.harness.remote.client.NGRestUtils;
 import io.harness.secretmanagerclient.SecretType;
 import io.harness.secretmanagerclient.ValueType;
 import io.harness.secrets.SecretService;
+import io.harness.secrets.remote.SecretNGManagerClient;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.ngmigration.CgBasicInfo;
@@ -36,7 +44,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 
 import com.google.inject.Inject;
 import java.io.IOException;
@@ -50,8 +57,9 @@ import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class SecretMigrationService implements NgMigrationService {
+public class SecretMigrationService extends NgMigrationService {
   @Inject private SecretService secretService;
+  @Inject private SecretNGManagerClient secretNGManagerClient;
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -112,8 +120,9 @@ public class SecretMigrationService implements NgMigrationService {
   }
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     EncryptedData encryptedData = (EncryptedData) entities.get(entityId).getEntity();
     SecretManagerConfig secretManagerConfig =
         (SecretManagerConfig) entities
@@ -157,6 +166,26 @@ public class SecretMigrationService implements NgMigrationService {
             .build());
 
     return files;
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    try {
+      SecretResponseWrapper response =
+          NGRestUtils.getResponse(secretNGManagerClient.getSecret(ngEntityDetail.getIdentifier(), accountIdentifier,
+              ngEntityDetail.getOrgIdentifier(), ngEntityDetail.getProjectIdentifier()));
+      return response == null ? null : SecretRequestWrapper.builder().secret(response.getSecret()).build();
+    } catch (InvalidRequestException ex) {
+      log.error("Error when getting connector - ", ex);
+      return null;
+    } catch (Exception ex) {
+      throw ex;
+    }
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return true;
   }
 
   @Override

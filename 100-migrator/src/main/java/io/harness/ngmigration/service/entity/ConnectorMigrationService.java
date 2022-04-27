@@ -5,25 +5,32 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.MigratedEntityMapping;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
+import io.harness.connector.ConnectorResourceClient;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.encryption.Scope;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.BaseProvidedInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigratorInputType;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.connector.ConnectorFactory;
+import io.harness.ngmigration.service.MigratorMappingService;
+import io.harness.ngmigration.service.MigratorUtility;
+import io.harness.ngmigration.service.NgMigrationService;
+import io.harness.remote.client.NGRestUtils;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.SettingAttribute;
@@ -34,7 +41,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.SettingsService;
 
 import com.google.inject.Inject;
@@ -43,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -50,8 +57,9 @@ import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class ConnectorMigrationService implements NgMigrationService {
+public class ConnectorMigrationService extends NgMigrationService {
   @Inject private SettingsService settingsService;
+  @Inject private ConnectorResourceClient connectorResourceClient;
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -114,8 +122,9 @@ public class ConnectorMigrationService implements NgMigrationService {
   }
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     SettingAttribute settingAttribute = (SettingAttribute) entities.get(entityId).getEntity();
     String name = settingAttribute.getName();
     String identifier = MigratorUtility.generateIdentifier(settingAttribute.getName());
@@ -174,6 +183,24 @@ public class ConnectorMigrationService implements NgMigrationService {
             .projectIdentifier(projectIdentifier)
             .build());
     return files;
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    try {
+      Optional<ConnectorDTO> response =
+          NGRestUtils.getResponse(connectorResourceClient.get(ngEntityDetail.getIdentifier(), accountIdentifier,
+              ngEntityDetail.getOrgIdentifier(), ngEntityDetail.getProjectIdentifier()));
+      return response.orElse(null);
+    } catch (Exception ex) {
+      log.error("Error when getting connector - ", ex);
+      return null;
+    }
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return true;
   }
 
   @Override

@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import static software.wings.api.CloudProviderType.KUBERNETES_CLUSTER;
 import static software.wings.ngmigration.NGMigrationEntityType.CONNECTOR;
@@ -16,14 +16,18 @@ import io.harness.beans.MigratedEntityMapping;
 import io.harness.cdng.infra.InfrastructureDef;
 import io.harness.cdng.infra.yaml.InfrastructureType;
 import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigratorInputType;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.expressions.MigratorExpressionUtils;
+import io.harness.ngmigration.service.MigratorUtility;
+import io.harness.ngmigration.service.NgMigrationService;
 import io.harness.pms.yaml.ParameterField;
 
 import software.wings.infra.DirectKubernetesInfrastructure;
@@ -34,7 +38,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.InfrastructureDefinitionService;
 
 import com.google.inject.Inject;
@@ -46,7 +49,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.CDC)
-public class InfraMigrationService implements NgMigrationService {
+public class InfraMigrationService extends NgMigrationService {
   @Inject private InfrastructureDefinitionService infrastructureDefinitionService;
   @Inject private MigratorExpressionUtils migratorExpressionUtils;
 
@@ -88,9 +91,20 @@ public class InfraMigrationService implements NgMigrationService {
       NGYamlFile yamlFile) throws IOException {}
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     return new ArrayList<>();
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    return null;
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return false;
   }
 
   @Override

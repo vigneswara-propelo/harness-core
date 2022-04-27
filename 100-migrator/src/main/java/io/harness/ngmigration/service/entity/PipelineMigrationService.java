@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import static java.lang.String.format;
 
@@ -14,21 +14,25 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.MigratedEntityMapping;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
-import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.BaseProvidedInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigratorInputType;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.expressions.MigratorExpressionUtils;
+import io.harness.ngmigration.service.MigratorMappingService;
+import io.harness.ngmigration.service.MigratorUtility;
+import io.harness.ngmigration.service.NgMigrationService;
 import io.harness.plancreator.pipeline.PipelineConfig;
 import io.harness.plancreator.pipeline.PipelineInfoConfig;
 import io.harness.plancreator.stages.StageElementWrapperConfig;
-import io.harness.pms.governance.PipelineSaveResponse;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.remote.client.NGRestUtils;
 
 import software.wings.beans.Pipeline;
 import software.wings.beans.PipelineStage;
@@ -39,7 +43,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.PipelineService;
 import software.wings.sm.StateType;
 
@@ -55,11 +58,10 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
-import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class PipelineMigrationService implements NgMigrationService {
+public class PipelineMigrationService extends NgMigrationService {
   @Inject private PipelineService pipelineService;
   @Inject private WorkflowMigrationService workflowMigrationService;
   @Inject private MigratorExpressionUtils migratorExpressionUtils;
@@ -137,18 +139,20 @@ public class PipelineMigrationService implements NgMigrationService {
       log.info("Skipping creation of Pipeline entity as it already exists");
       return;
     }
-    Response<ResponseDTO<PipelineSaveResponse>> resp =
-        pmsClient
-            .createPipeline(auth, inputDTO.getAccountIdentifier(), inputDTO.getOrgIdentifier(),
-                inputDTO.getProjectIdentifier(),
-                RequestBody.create(MediaType.parse("application/yaml"), YamlUtils.write(yamlFile.getYaml())))
-            .execute();
-    log.info("Pipeline creation Response details {} {}", resp.code(), resp.message());
+    try {
+      NGRestUtils.getResponse(pmsClient.createPipeline(auth, inputDTO.getAccountIdentifier(),
+          inputDTO.getOrgIdentifier(), inputDTO.getProjectIdentifier(),
+          RequestBody.create(MediaType.parse("application/yaml"), YamlUtils.write(yamlFile.getYaml()))));
+      log.info("Pipeline creation successful");
+    } catch (Exception ex) {
+      log.error("Pipeline creation failed - ", ex);
+    }
   }
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     Pipeline pipeline = (Pipeline) entities.get(entityId).getEntity();
     migratorExpressionUtils.render(pipeline);
     String name = pipeline.getName();
@@ -215,6 +219,17 @@ public class PipelineMigrationService implements NgMigrationService {
             .build());
 
     return allFiles;
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    // TODO: get pipeline
+    return null;
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return true;
   }
 
   @Override

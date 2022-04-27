@@ -22,6 +22,7 @@ import io.harness.ngmigration.beans.DiscoverEntityInput;
 import io.harness.ngmigration.beans.DiscoveryInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigrationInputResult;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
@@ -34,7 +35,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.DiscoveryResult;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
-import software.wings.ngmigration.NGYamlFile;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -289,6 +289,10 @@ public class DiscoveryService {
     zipFile.getParentFile().mkdirs();
     try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile))) {
       for (NGYamlFile file : ngYamlFiles) {
+        if (file.isExists()) {
+          // TODO: @vaibhav.si Add the mapping to the response
+          continue;
+        }
         ZipEntry e = new ZipEntry(file.getFilename());
         out.putNextEntry(e);
         byte[] data = NGYamlUtils.getYamlString(file.getYaml()).getBytes();
@@ -339,7 +343,7 @@ public class DiscoveryService {
       List<CgEntityId> leafNodes = getLeafNodes(leafTracker);
       for (CgEntityId entry : leafNodes) {
         List<NGYamlFile> currentEntity =
-            migrationFactory.getMethod(entry.getType()).getYamls(inputDTO, entities, graph, entry, migratedEntities);
+            migrationFactory.getMethod(entry.getType()).getYaml(inputDTO, entities, graph, entry, migratedEntities);
         if (isNotEmpty(currentEntity)) {
           files.addAll(currentEntity);
         }

@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ngmigration.service;
+package io.harness.ngmigration.service.entity;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -13,16 +13,23 @@ import io.harness.beans.MigratedEntityMapping;
 import io.harness.beans.SecretManagerConfig;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
+import io.harness.connector.ConnectorResourceClient;
 import io.harness.encryption.Scope;
+import io.harness.exception.InvalidRequestException;
+import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.BaseProvidedInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.MigratorInputType;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.connector.SecretFactory;
+import io.harness.ngmigration.service.MigratorUtility;
+import io.harness.ngmigration.service.NgMigrationService;
+import io.harness.remote.client.NGRestUtils;
 
 import software.wings.ngmigration.CgBasicInfo;
 import software.wings.ngmigration.CgEntityId;
@@ -31,7 +38,6 @@ import software.wings.ngmigration.DiscoveryNode;
 import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.ngmigration.NGMigrationStatus;
-import software.wings.ngmigration.NGYamlFile;
 import software.wings.service.intfc.security.SecretManager;
 
 import com.google.inject.Inject;
@@ -40,32 +46,20 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+@Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class SecretManagerMigrationService implements NgMigrationService {
+public class SecretManagerMigrationService extends NgMigrationService {
   @Inject private SecretManager secretManager;
+  @Inject private ConnectorResourceClient connectorResourceClient;
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
-    CgBasicInfo basicInfo = yamlFile.getCgBasicInfo();
-    ConnectorInfoDTO secretManagerInfo = ((ConnectorDTO) yamlFile.getYaml()).getConnectorInfo();
-    return MigratedEntityMapping.builder()
-        .appId(basicInfo.getAppId())
-        .accountId(basicInfo.getAccountId())
-        .cgEntityId(basicInfo.getId())
-        .entityType(NGMigrationEntityType.SECRET_MANAGER.name())
-        .accountIdentifier(basicInfo.getAccountId())
-        .orgIdentifier(secretManagerInfo.getOrgIdentifier())
-        .projectIdentifier(secretManagerInfo.getProjectIdentifier())
-        .identifier(secretManagerInfo.getIdentifier())
-        .scope(MigratorMappingService.getScope(
-            secretManagerInfo.getOrgIdentifier(), secretManagerInfo.getProjectIdentifier()))
-        .fullyQualifiedIdentifier(MigratorMappingService.getFullyQualifiedIdentifier(basicInfo.getAccountId(),
-            secretManagerInfo.getOrgIdentifier(), secretManagerInfo.getProjectIdentifier(),
-            secretManagerInfo.getIdentifier()))
-        .build();
+    return null;
   }
 
   @Override
@@ -99,8 +93,9 @@ public class SecretManagerMigrationService implements NgMigrationService {
       NGYamlFile yamlFile) throws IOException {}
 
   @Override
-  public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
+  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+      Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities,
+      NgEntityDetail ngEntityDetail) {
     SecretManagerConfig secretManagerConfig = (SecretManagerConfig) entities.get(entityId).getEntity();
     String name = secretManagerConfig.getName();
     String identifier = MigratorUtility.generateIdentifier(secretManagerConfig.getName());
@@ -157,6 +152,26 @@ public class SecretManagerMigrationService implements NgMigrationService {
             .build());
 
     return files;
+  }
+
+  @Override
+  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+    try {
+      Optional<ConnectorDTO> response =
+          NGRestUtils.getResponse(connectorResourceClient.get(ngEntityDetail.getIdentifier(), accountIdentifier,
+              ngEntityDetail.getOrgIdentifier(), ngEntityDetail.getProjectIdentifier()));
+      return response.orElse(null);
+    } catch (InvalidRequestException ex) {
+      log.error("Error when getting connector - ", ex);
+      return null;
+    } catch (Exception ex) {
+      throw ex;
+    }
+  }
+
+  @Override
+  protected boolean isNGEntityExists() {
+    return true;
   }
 
   @Override

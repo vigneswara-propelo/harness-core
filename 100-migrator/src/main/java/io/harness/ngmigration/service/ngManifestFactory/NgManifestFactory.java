@@ -11,7 +11,12 @@ import software.wings.beans.appmanifest.AppManifestKind;
 import software.wings.beans.appmanifest.ApplicationManifest;
 import software.wings.beans.appmanifest.StoreType;
 
+import com.google.inject.Inject;
+
 public class NgManifestFactory {
+  @Inject K8sManifestRemoteStoreService k8sManifestRemoteStoreService;
+  @Inject ValuesManifestRemoteStoreService valuesManifestRemoteStoreService;
+
   public NgManifestService getNgManifestService(ApplicationManifest applicationManifest) {
     if (applicationManifest.getKind() == null) {
       throw new UnsupportedOperationException("Empty appManifest kind is not supported for migration");
@@ -23,7 +28,7 @@ public class NgManifestFactory {
       case K8S_MANIFEST:
         switch (storeType) {
           case Remote:
-            return new K8sManifestRemoteStoreService();
+            return k8sManifestRemoteStoreService;
           default:
             throw new UnsupportedOperationException(String.format(
                 "%s storetype is currently not supported for %s appManifestKind", storeType, appManifestKind));
@@ -31,7 +36,7 @@ public class NgManifestFactory {
       case VALUES:
         switch (storeType) {
           case Remote:
-            return new ValuesManifestRemoteStoreService();
+            return valuesManifestRemoteStoreService;
           default:
             throw new UnsupportedOperationException(String.format(
                 "%s storetype is currently not supported for %s appManifestKind", storeType, appManifestKind));

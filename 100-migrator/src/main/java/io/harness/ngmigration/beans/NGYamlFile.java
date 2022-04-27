@@ -5,11 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package software.wings.ngmigration;
+package io.harness.ngmigration.beans;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.beans.YamlDTO;
+
+import software.wings.ngmigration.CgBasicInfo;
+import software.wings.ngmigration.NGMigrationEntityType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,4 +30,5 @@ public class NGYamlFile {
   private YamlDTO yaml;
   private boolean exists;
   private CgBasicInfo cgBasicInfo;
+  private NgEntityDetail ngEntityDetail;
 }
