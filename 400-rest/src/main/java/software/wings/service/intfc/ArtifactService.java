@@ -57,6 +57,10 @@ public interface ArtifactService extends OwnedByArtifactStream {
   PageResponse<Artifact> listArtifactsForService(
       @NotEmpty String appId, String serviceId, @NotNull PageRequest<Artifact> pageRequest);
 
+  // List artifacts for artifact streams having collection enabled, sorted by build no.
+  PageResponse<Artifact> listArtifactsForServiceWithCollectionEnabled(
+      @NotEmpty String appId, String serviceId, @NotNull PageRequest<Artifact> pageRequest);
+
   /***
    * List artifacts sorted by build no.
    * @param serviceId

@@ -1348,6 +1348,21 @@ public class ArtifactStreamServiceImpl implements ArtifactStreamService {
   }
 
   @Override
+  public List<ArtifactStream> getArtifactStreamsForService(String appId, String serviceId, List<String> projections) {
+    Query<ArtifactStream> query = wingsPersistence.createQuery(ArtifactStream.class)
+                                      .filter(ArtifactStreamKeys.appId, appId)
+                                      .filter(ArtifactStreamKeys.serviceId, serviceId);
+
+    if (isNotEmpty(projections)) {
+      for (String projectionKey : projections) {
+        query.project(projectionKey, true);
+      }
+    }
+
+    return query.asList();
+  }
+
+  @Override
   public Map<String, String> fetchArtifactSourceProperties(String accountId, String artifactStreamId) {
     ArtifactStream artifactStream = wingsPersistence.get(ArtifactStream.class, artifactStreamId);
     Map<String, String> artifactSourceProperties = new HashMap<>();
@@ -1737,6 +1752,7 @@ public class ArtifactStreamServiceImpl implements ArtifactStreamService {
         .uuid(artifact.getUuid())
         .uiDisplayName(artifact.getUiDisplayName())
         .buildNo(artifact.getBuildNo())
+        .artifactStreamId(artifact.getArtifactStreamId())
         .build();
   }
 }

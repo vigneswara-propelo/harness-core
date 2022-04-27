@@ -57,6 +57,7 @@ import io.harness.beans.FeatureName;
 import io.harness.beans.PageRequest;
 import io.harness.beans.PageResponse;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.ff.FeatureFlagService;
 import io.harness.persistence.HIterator;
@@ -178,6 +179,34 @@ public class ArtifactServiceImpl implements ArtifactService {
     }
 
     return listArtifactsForService(pageRequest);
+  }
+
+  @Override
+  public PageResponse<Artifact> listArtifactsForServiceWithCollectionEnabled(
+      String appId, String serviceId, PageRequest<Artifact> pageRequest) {
+    if (isEmpty(serviceId)) {
+      throw new InvalidRequestException("ServiceId is required");
+    }
+
+    List<String> projections = new ArrayList<>();
+    projections.add(ArtifactStreamKeys.uuid);
+    projections.add(ArtifactStreamKeys.collectionEnabled);
+    List<ArtifactStream> artifactStreams =
+        artifactStreamService.getArtifactStreamsForService(appId, serviceId, projections);
+
+    List<String> artifactStreamIds = new ArrayList<>();
+    for (ArtifactStream artifactStream : artifactStreams) {
+      if (!Boolean.FALSE.equals(artifactStream.getCollectionEnabled())) {
+        artifactStreamIds.add(artifactStream.getUuid());
+      }
+    }
+
+    if (isNotEmpty(artifactStreamIds)) {
+      pageRequest.addFilter(ArtifactKeys.artifactStreamId, IN, artifactStreamIds.toArray());
+      return listArtifactsForService(pageRequest);
+    } else {
+      return aPageResponse().withResponse(new ArrayList<Artifact>()).build();
+    }
   }
 
   @Override

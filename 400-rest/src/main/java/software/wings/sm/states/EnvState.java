@@ -24,6 +24,7 @@ import static software.wings.beans.alert.AlertType.DEPLOYMENT_FREEZE_EVENT;
 import static software.wings.sm.ExecutionInterrupt.ExecutionInterruptBuilder.anExecutionInterrupt;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -96,7 +97,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
@@ -174,6 +174,7 @@ public class EnvState extends State implements WorkflowState {
     DeploymentExecutionContext deploymentExecutionContext = (DeploymentExecutionContext) context;
     List<Artifact> artifacts = deploymentExecutionContext.getArtifacts();
     List<ArtifactVariable> artifactVariables = getArtifactVariables(deploymentExecutionContext, workflowStandardParams);
+    artifactVariables.addAll(getArtifactVariablesFromArtifactInputs(workflowStandardParams));
 
     ExecutionArgs executionArgs = new ExecutionArgs();
     executionArgs.setWorkflowType(WorkflowType.ORCHESTRATION);
@@ -233,6 +234,17 @@ public class EnvState extends State implements WorkflowState {
           .stateExecutionData(envStateExecutionData)
           .build();
     }
+  }
+
+  private List<ArtifactVariable> getArtifactVariablesFromArtifactInputs(WorkflowStandardParams workflowStandardParams) {
+    if (isEmpty(workflowStandardParams.getArtifactInputs())) {
+      return new ArrayList<>();
+    }
+
+    return workflowStandardParams.getArtifactInputs()
+        .stream()
+        .map(artifactInput -> ArtifactVariable.builder().artifactInput(artifactInput).build())
+        .collect(toList());
   }
 
   private Map<String, String> getPlaceHolderValues(ExecutionContext context) {
@@ -341,7 +353,7 @@ public class EnvState extends State implements WorkflowState {
       List<ArtifactVariable> overriddenArtifactVariables =
           artifactVariables.stream()
               .filter(artifactVariable -> artifactVariable.getName().equals(name))
-              .collect(Collectors.toList());
+              .collect(toList());
       if (isNotEmpty(overriddenArtifactVariables)) {
         artifactVariables.removeIf(artifactVariable -> artifactVariable.getName().equals(name));
       }

@@ -36,6 +36,7 @@ import software.wings.beans.PhaseStepType;
 import software.wings.beans.VMSSAuthType;
 import software.wings.beans.VMSSDeploymentType;
 import software.wings.beans.VariableType;
+import software.wings.beans.artifact.ArtifactInput;
 import software.wings.beans.artifact.ArtifactStreamSummary;
 import software.wings.beans.artifact.ArtifactSummary;
 import software.wings.beans.trigger.WebhookSource;
@@ -94,5 +95,7 @@ public class CgOrchestrationBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(GcbBuildDetails.class, 7411);
     kryo.register(GcbBuildStatus.class, 7412);
     kryo.register(BuildStep.class, 7423);
+
+    kryo.register(ArtifactInput.class, 7459);
   }
 }

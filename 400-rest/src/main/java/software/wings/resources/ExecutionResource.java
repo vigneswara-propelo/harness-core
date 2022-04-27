@@ -248,7 +248,8 @@ public class ExecutionResource {
     if (executionArgs != null) {
       if (isNotEmpty(executionArgs.getArtifactVariables())) {
         for (ArtifactVariable artifactVariable : executionArgs.getArtifactVariables()) {
-          if (isEmpty(artifactVariable.getValue()) && artifactVariable.getArtifactStreamMetadata() == null) {
+          if (isEmpty(artifactVariable.getValue()) && artifactVariable.getArtifactStreamMetadata() == null
+              && artifactVariable.getArtifactInput() == null) {
             throw new InvalidRequestException(
                 format("No value provided for artifact variable: [%s] ", artifactVariable.getName()), USER);
           }
@@ -275,7 +276,8 @@ public class ExecutionResource {
     // add auth
     if (executionArgs != null && isNotEmpty(executionArgs.getArtifactVariables())) {
       for (ArtifactVariable artifactVariable : executionArgs.getArtifactVariables()) {
-        if (isEmpty(artifactVariable.getValue()) && artifactVariable.getArtifactStreamMetadata() == null) {
+        if (isEmpty(artifactVariable.getValue()) && artifactVariable.getArtifactStreamMetadata() == null
+            && artifactVariable.getArtifactInput() == null) {
           throw new InvalidRequestException(
               format("No value provided for artifact variable: [%s] ", artifactVariable.getName()), USER);
         }

@@ -38,6 +38,7 @@ import software.wings.beans.ErrorStrategy;
 import software.wings.beans.ExecutionCredential;
 import software.wings.beans.appmanifest.HelmChart;
 import software.wings.beans.artifact.Artifact;
+import software.wings.beans.artifact.ArtifactInput;
 import software.wings.common.InstanceExpressionProcessor;
 import software.wings.helpers.ext.url.SubdomainUrlHelperIntfc;
 import software.wings.service.intfc.AccountService;
@@ -109,6 +110,7 @@ public class WorkflowStandardParams implements ExecutionContextAware, ContextEle
   private List<String> rollbackArtifactIds;
   private List<String> helmChartIds;
   private WorkflowElement workflowElement;
+  @Getter @Setter private List<ArtifactInput> artifactInputs;
 
   // TODO: centralized in-memory executionCredential and special encrypted mapping
   private ExecutionCredential executionCredential;

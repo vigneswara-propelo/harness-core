@@ -103,6 +103,28 @@ public class ArtifactResource {
     return new RestResponse<>(artifactService.listArtifactsForService(appId, serviceId, pageRequest));
   }
 
+  /**
+   * List artifacts for artifact streams having collection enabled.
+   *
+   * @param appId       the app id
+   * @param pageRequest the page request
+   * @return the rest response
+   */
+  @GET
+  @Path("/collection-enabled-artifacts")
+  @Timed
+  @ExceptionMetered
+  public RestResponse<PageResponse<Artifact>> listArtifactsWithCollectionEnabled(@QueryParam("appId") String appId,
+      @QueryParam("accountId") String accountId, @QueryParam("routingId") String routingId,
+      @QueryParam("serviceId") String serviceId, @BeanParam PageRequest<Artifact> pageRequest) {
+    pageRequest.addFilter("appId", EQ, appId);
+    if (StringUtils.isNoneBlank(accountId, routingId)) {
+      pageRequest.addFilter("accountId", EQ, StringUtils.isNotBlank(accountId) ? accountId : routingId);
+    }
+    return new RestResponse<>(
+        artifactService.listArtifactsForServiceWithCollectionEnabled(appId, serviceId, pageRequest));
+  }
+
   @GET
   @Path("/v2")
   @Timed
