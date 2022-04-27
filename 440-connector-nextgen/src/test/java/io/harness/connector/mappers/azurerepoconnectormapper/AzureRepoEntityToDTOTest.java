@@ -8,6 +8,7 @@
 package io.harness.connector.mappers.azurerepoconnectormapper;
 
 import static io.harness.delegate.beans.connector.scm.GitAuthType.HTTP;
+import static io.harness.delegate.beans.connector.scm.GitAuthType.SSH;
 import static io.harness.rule.OwnerRule.MANKRIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,6 +17,7 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoConnector;
 import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoHttpAuthentication;
+import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoSshAuthentication;
 import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoTokenApiAccess;
 import io.harness.connector.entities.embedded.azurerepoconnector.AzureRepoUsernameToken;
 import io.harness.connector.mappers.azurerepomapper.AzureRepoEntityToDTO;
@@ -26,6 +28,7 @@ import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoAuthentication
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectorDTO;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpAuthenticationType;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpCredentialsDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoSshCredentialsDTO;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoTokenSpecDTO;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoUsernameTokenDTO;
 import io.harness.encryption.SecretRefHelper;
@@ -95,6 +98,52 @@ public class AzureRepoEntityToDTOTest extends CategoryTest {
                     .type(AzureRepoHttpAuthenticationType.USERNAME_AND_TOKEN)
                     .auth(AzureRepoUsernameToken.builder().username(username).tokenRef(tokenRef).build())
                     .build())
+            .build();
+    final AzureRepoConnectorDTO azureRepoConnectorDTO1 = azureRepoEntityToDTO.createConnectorDTO(azureRepoConnector);
+    ObjectMapper objectMapper = new ObjectMapper();
+    assertThat(objectMapper.readTree(objectMapper.writeValueAsString(azureRepoConnectorDTO1)))
+        .isEqualTo(objectMapper.readTree(objectMapper.writeValueAsString(azureRepoConnectorDTO)));
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testToConnectorEntity_1() throws IOException {
+    final String url = "url";
+    final String tokenRef = "tokenRef";
+    final String validationRepo = "validationRepo";
+    final String sshKeyRef = "sshKeyRef";
+
+    final AzureRepoAuthenticationDTO azureRepoAuthenticationDTO =
+        AzureRepoAuthenticationDTO.builder()
+            .authType(SSH)
+            .credentials(
+                AzureRepoSshCredentialsDTO.builder().sshKeyRef(SecretRefHelper.createSecretRef(sshKeyRef)).build())
+            .build();
+
+    final AzureRepoApiAccessDTO azureRepoApiAccessDTO =
+        AzureRepoApiAccessDTO.builder()
+            .type(AzureRepoApiAccessType.TOKEN)
+            .spec(AzureRepoTokenSpecDTO.builder().tokenRef(SecretRefHelper.createSecretRef(tokenRef)).build())
+            .build();
+    final AzureRepoConnectorDTO azureRepoConnectorDTO = AzureRepoConnectorDTO.builder()
+                                                            .url(url)
+                                                            .validationRepo(validationRepo)
+                                                            .connectionType(GitConnectionType.ACCOUNT)
+                                                            .authentication(azureRepoAuthenticationDTO)
+                                                            .apiAccess(azureRepoApiAccessDTO)
+                                                            .build();
+
+    final AzureRepoConnector azureRepoConnector =
+        AzureRepoConnector.builder()
+            .hasApiAccess(true)
+            .url(url)
+            .validationRepo(validationRepo)
+            .azureRepoApiAccess(AzureRepoTokenApiAccess.builder().tokenRef(tokenRef).build())
+            .apiAccessType(AzureRepoApiAccessType.TOKEN)
+            .connectionType(GitConnectionType.ACCOUNT)
+            .authType(SSH)
+            .authenticationDetails(AzureRepoSshAuthentication.builder().sshKeyRef(sshKeyRef).build())
             .build();
     final AzureRepoConnectorDTO azureRepoConnectorDTO1 = azureRepoEntityToDTO.createConnectorDTO(azureRepoConnector);
     ObjectMapper objectMapper = new ObjectMapper();
