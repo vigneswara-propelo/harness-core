@@ -10,6 +10,7 @@ package software.wings.resources;
 import static io.harness.beans.SearchFilter.Operator.EQ;
 
 import static software.wings.security.PermissionAttribute.PermissionType.LOGGED_IN;
+import static software.wings.security.PermissionAttribute.PermissionType.MANAGE_CONFIG_AS_CODE;
 import static software.wings.security.PermissionAttribute.ResourceType.SETTING;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -21,6 +22,7 @@ import io.harness.rest.RestResponse;
 import software.wings.beans.GitDetail;
 import software.wings.beans.GitFileActivitySummary;
 import software.wings.security.PermissionAttribute.PermissionType;
+import software.wings.security.annotations.ApiKeyAuthorized;
 import software.wings.security.annotations.AuthRule;
 import software.wings.security.annotations.Scope;
 import software.wings.service.impl.yaml.GitToHarnessErrorCommitStats;
@@ -58,6 +60,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Path("git-sync")
 @Produces(APPLICATION_JSON)
 @Scope(SETTING)
+@ApiKeyAuthorized(permissionType = LOGGED_IN)
 @Slf4j
 public class GitSyncResource {
   private GitSyncService gitSyncService;
@@ -225,6 +228,7 @@ public class GitSyncResource {
   @POST
   @Path("errors/_discard")
   @AuthRule(permissionType = PermissionType.MANAGE_CONFIG_AS_CODE)
+  @ApiKeyAuthorized(permissionType = MANAGE_CONFIG_AS_CODE)
   public RestResponse discardGitSyncErrorV2(@QueryParam("accountId") String accountId, List<String> errors) {
     gitSyncErrorService.deleteGitSyncErrorAndLogFileActivity(errors, Status.DISCARDED, accountId);
     return RestResponse.Builder.aRestResponse().build();
