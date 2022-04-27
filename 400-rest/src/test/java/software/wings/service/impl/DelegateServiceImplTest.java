@@ -111,6 +111,7 @@ import software.wings.beans.Account;
 import software.wings.beans.CEDelegateStatus;
 import software.wings.beans.DelegateConnection;
 import software.wings.beans.DelegateConnection.DelegateConnectionKeys;
+import software.wings.beans.HttpStateExecutionResponse;
 import software.wings.beans.KmsConfig;
 import software.wings.beans.TaskType;
 import software.wings.beans.VaultConfig;
@@ -122,7 +123,6 @@ import software.wings.service.intfc.AssignDelegateService;
 import software.wings.service.intfc.DelegateProfileService;
 import software.wings.service.intfc.EmailNotificationService;
 import software.wings.service.intfc.SettingsService;
-import software.wings.sm.states.HttpState.HttpStateExecutionResponse;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;

@@ -40,6 +40,7 @@ import software.wings.beans.GitFetchFilesConfig;
 import software.wings.beans.GitFetchFilesTaskParams;
 import software.wings.beans.HostConnectionAttributes;
 import software.wings.beans.HostValidationTaskParameters;
+import software.wings.beans.HttpStateExecutionResponse;
 import software.wings.beans.InstanaConfig;
 import software.wings.beans.JiraConfig;
 import software.wings.beans.KmsConfig;
@@ -231,6 +232,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(PcfConfig.class, 5296);
     kryo.register(SmtpConfig.class, 5304);
     kryo.register(TimeSeriesMlAnalysisType.class, 5347);
+    kryo.register(HttpStateExecutionResponse.class, 5375);
     kryo.register(ElkLogFetchRequest.class, 5376);
     kryo.register(AwsRequest.class, 5380);
     kryo.register(AwsResponse.class, 5381);
