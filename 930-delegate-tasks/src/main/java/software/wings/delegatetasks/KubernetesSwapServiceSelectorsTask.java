@@ -7,8 +7,6 @@
 
 package software.wings.delegatetasks;
 
-import static software.wings.sm.states.KubernetesSwapServiceSelectors.KUBERNETES_SWAP_SERVICE_SELECTORS_COMMAND_NAME;
-
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.ExecutionStatus;
@@ -40,6 +38,8 @@ public class KubernetesSwapServiceSelectorsTask extends AbstractDelegateRunnable
   @Inject private DelegateLogService delegateLogService;
   @Inject private ContainerDeploymentDelegateHelper containerDeploymentDelegateHelper;
   @Inject private K8sSwapServiceSelectorsBaseHandler k8sSwapServiceSelectorsBaseHandler;
+
+  public static final String KUBERNETES_SWAP_SERVICE_SELECTORS_COMMAND_NAME = "Kubernetes Swap Service Selectors";
 
   public KubernetesSwapServiceSelectorsTask(DelegateTaskPackage delegateTaskPackage,
       ILogStreamingTaskClient logStreamingTaskClient, Consumer<DelegateTaskResponse> consumer,

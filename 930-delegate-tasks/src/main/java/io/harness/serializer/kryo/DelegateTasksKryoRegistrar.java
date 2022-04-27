@@ -69,6 +69,7 @@ import software.wings.beans.config.NexusConfig;
 import software.wings.beans.container.EcsSteadyStateCheckParams;
 import software.wings.beans.container.EcsSteadyStateCheckResponse;
 import software.wings.beans.container.KubernetesSteadyStateCheckParams;
+import software.wings.beans.container.KubernetesSwapServiceSelectorsParams;
 import software.wings.beans.delegation.ShellScriptParameters;
 import software.wings.beans.settings.azureartifacts.AzureArtifactsPATConfig;
 import software.wings.beans.trigger.WebHookTriggerResponseData;
@@ -374,5 +375,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(EcsSteadyStateCheckParams.class, 5370);
     kryo.register(EcsSteadyStateCheckResponse.class, 5371);
     kryo.register(KubernetesSteadyStateCheckParams.class, 5276);
+    kryo.register(KubernetesSwapServiceSelectorsParams.class, 5365);
   }
 }
