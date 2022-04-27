@@ -48,6 +48,7 @@ import static software.wings.utils.WingsTestConstants.CLUSTER_NAME;
 import static software.wings.utils.WingsTestConstants.COMPUTE_PROVIDER_ID;
 import static software.wings.utils.WingsTestConstants.ENV_ID;
 import static software.wings.utils.WingsTestConstants.ENV_NAME;
+import static software.wings.utils.WingsTestConstants.ENV_PROD_FIELD;
 import static software.wings.utils.WingsTestConstants.HOST_NAME;
 import static software.wings.utils.WingsTestConstants.INFRA_DEFINITION_ID;
 import static software.wings.utils.WingsTestConstants.INFRA_MAPPING_ID;
@@ -241,6 +242,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Before;
@@ -1048,10 +1050,14 @@ public class HelmDeployStateTest extends CategoryTest {
     doReturn("taskId").when(delegateService).queueTask(delegateTaskCaptor.capture());
     doReturn(true).when(applicationManifestUtils).isValuesInGit(appManifestMap);
     helmDeployState.handleAsyncResponse(context, responseDataMap);
-    assertThat(delegateTaskCaptor.getValue().getData().getTaskType()).isEqualTo(TaskType.GIT_FETCH_FILES_TASK.name());
-    assertThat(
-        ((GitFetchFilesTaskParams) delegateTaskCaptor.getValue().getData().getParameters()[0]).isOptimizedFilesFetch())
-        .isTrue();
+    DelegateTask task = delegateTaskCaptor.getValue();
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.APP_ID_FIELD)).isEqualTo(APP_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_ID_FIELD)).isEqualTo(ENV_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_TYPE_FIELD)).isEqualTo(ENV_PROD_FIELD);
+    assertThat(task.getData().isAsync()).isTrue();
+    assertThat(task.getData().getTimeout()).isEqualTo(TimeUnit.MINUTES.toMillis(10));
+    assertThat(task.getData().getTaskType()).isEqualTo(TaskType.GIT_FETCH_FILES_TASK.name());
+    assertThat(((GitFetchFilesTaskParams) task.getData().getParameters()[0]).isOptimizedFilesFetch()).isTrue();
   }
 
   private void testHandleAsyncResponseForHelmFetchTaskWithNoValuesInGit() {
@@ -1064,7 +1070,13 @@ public class HelmDeployStateTest extends CategoryTest {
 
     doReturn(false).when(applicationManifestUtils).isValuesInGit(appManifestMap);
     helmDeployState.handleAsyncResponse(context, responseDataMap);
-    assertThat(delegateTaskCaptor.getValue().getData().getTaskType()).isEqualTo(TaskType.HELM_COMMAND_TASK.name());
+    DelegateTask task = delegateTaskCaptor.getValue();
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.APP_ID_FIELD)).isEqualTo(APP_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_ID_FIELD)).isEqualTo(ENV_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_TYPE_FIELD)).isEqualTo(ENV_PROD_FIELD);
+    assertThat(task.getData().isAsync()).isTrue();
+    assertThat(task.getData().getTimeout()).isEqualTo(TimeUnit.MINUTES.toMillis(10));
+    assertThat(task.getData().getTaskType()).isEqualTo(TaskType.HELM_COMMAND_TASK.name());
   }
 
   @Test
@@ -1399,6 +1411,13 @@ public class HelmDeployStateTest extends CategoryTest {
     verify(delegateService, times(1)).queueTask(delegateTaskCaptor.capture());
 
     DelegateTask task = delegateTaskCaptor.getValue();
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.APP_ID_FIELD)).isEqualTo(APP_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_ID_FIELD)).isEqualTo(ENV_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_TYPE_FIELD)).isEqualTo(ENV_PROD_FIELD);
+    assertThat(task.getData().getTaskType()).isEqualTo(TaskType.HELM_VALUES_FETCH.name());
+    assertThat(task.getData().isAsync()).isTrue();
+    assertThat(task.getData().getTimeout()).isEqualTo(TimeUnit.MINUTES.toMillis(10));
+
     HelmValuesFetchTaskParameters taskParameters = (HelmValuesFetchTaskParameters) task.getData().getParameters()[0];
     assertThat(taskParameters.getHelmChartConfigTaskParams()).isNotNull();
     assertThat(taskParameters.getHelmChartConfigTaskParams().getRepoName()).isEqualTo("repoName");
@@ -2000,9 +2019,15 @@ public class HelmDeployStateTest extends CategoryTest {
         .executeHelmTask(any(ExecutionContext.class), anyString(), eq(appManifestMap), anyMap());
     assertThat(stateExecutionData.getValuesFiles()).isEqualTo(valuesMap);
     assertThat(stateExecutionData.getZippedManifestFileId()).isEqualTo("fileId");
-    HelmCommandRequest helmCommandRequest =
-        (HelmCommandRequest) delegateTaskCaptor.getValue().getData().getParameters()[0];
-    assertThat(delegateTaskCaptor.getValue().getData().getTaskType()).isEqualTo(TaskType.HELM_COMMAND_TASK.name());
+
+    DelegateTask task = delegateTaskCaptor.getValue();
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.APP_ID_FIELD)).isEqualTo(APP_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_ID_FIELD)).isEqualTo(ENV_ID);
+    assertThat(task.getSetupAbstractions().get(Cd1SetupFields.ENV_TYPE_FIELD)).isEqualTo(ENV_PROD_FIELD);
+    assertThat(task.getData().getTaskType()).isEqualTo(TaskType.HELM_COMMAND_TASK.name());
+    assertThat(task.getData().isAsync()).isTrue();
+    assertThat(task.getData().getTimeout()).isEqualTo(TimeUnit.MINUTES.toMillis(10));
+    HelmCommandRequest helmCommandRequest = (HelmCommandRequest) task.getData().getParameters()[0];
     assertThat(helmCommandRequest.getRepoConfig().getCustomManifestSource().getFilePaths())
         .isEqualTo(singletonList("path"));
     assertThat(helmCommandRequest.getRepoConfig().getCustomManifestSource().getScript()).isEqualTo("test script");
