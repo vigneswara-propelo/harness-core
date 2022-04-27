@@ -38,7 +38,7 @@ import software.wings.beans.infrastructure.instance.info.KubernetesContainerInfo
 import software.wings.cloudprovider.aws.AwsClusterService;
 import software.wings.cloudprovider.aws.EcsContainerService;
 import software.wings.cloudprovider.gke.GkeClusterService;
-import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.service.intfc.ContainerService;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.settings.SettingValue;
@@ -74,7 +74,7 @@ public class ContainerServiceImpl implements ContainerService {
   @Inject private KubernetesContainerService kubernetesContainerService;
   @Inject private AwsClusterService awsClusterService;
   @Inject private AwsHelperService awsHelperService;
-  @Inject private AzureHelperService azureHelperService;
+  @Inject private AzureDelegateHelperService azureDelegateHelperService;
   @Inject private EcsContainerService ecsContainerService;
   @Inject private EncryptionService encryptionService;
 
@@ -107,10 +107,10 @@ public class ContainerServiceImpl implements ContainerService {
           containerServiceParams.getNamespace(), isInstanceSync);
     } else if (containerServiceParams.getSettingAttribute().getValue() instanceof AzureConfig) {
       AzureConfig azureConfig = (AzureConfig) containerServiceParams.getSettingAttribute().getValue();
-      kubernetesConfig =
-          azureHelperService.getKubernetesClusterConfig(azureConfig, containerServiceParams.getEncryptionDetails(),
-              containerServiceParams.getSubscriptionId(), containerServiceParams.getResourceGroup(),
-              containerServiceParams.getClusterName(), containerServiceParams.getNamespace(), isInstanceSync);
+      kubernetesConfig = azureDelegateHelperService.getKubernetesClusterConfig(azureConfig,
+          containerServiceParams.getEncryptionDetails(), containerServiceParams.getSubscriptionId(),
+          containerServiceParams.getResourceGroup(), containerServiceParams.getClusterName(),
+          containerServiceParams.getNamespace(), isInstanceSync);
     } else {
       KubernetesClusterConfig kubernetesClusterConfig =
           (KubernetesClusterConfig) containerServiceParams.getSettingAttribute().getValue();
@@ -282,10 +282,10 @@ public class ContainerServiceImpl implements ContainerService {
       return true;
     } else if (value instanceof AzureConfig) {
       AzureConfig azureConfig = (AzureConfig) containerServiceParams.getSettingAttribute().getValue();
-      if (azureHelperService.isValidKubernetesCluster(azureConfig, containerServiceParams.getEncryptionDetails(),
-              containerServiceParams.getSubscriptionId(), containerServiceParams.getResourceGroup(),
-              containerServiceParams.getClusterName())) {
-        KubernetesConfig kubernetesConfig = azureHelperService.getKubernetesClusterConfig(azureConfig,
+      if (azureDelegateHelperService.isValidKubernetesCluster(azureConfig,
+              containerServiceParams.getEncryptionDetails(), containerServiceParams.getSubscriptionId(),
+              containerServiceParams.getResourceGroup(), containerServiceParams.getClusterName())) {
+        KubernetesConfig kubernetesConfig = azureDelegateHelperService.getKubernetesClusterConfig(azureConfig,
             containerServiceParams.getEncryptionDetails(), containerServiceParams.getSubscriptionId(),
             containerServiceParams.getResourceGroup(), containerServiceParams.getClusterName(), namespace, false);
         kubernetesContainerService.validate(kubernetesConfig, useNewKubectlVersion);
@@ -359,7 +359,7 @@ public class ContainerServiceImpl implements ContainerService {
       kubernetesConfig = gkeClusterService.getCluster(settingAttribute, edd, clusterName, namespace, false);
     } else if (value instanceof AzureConfig) {
       AzureConfig azureConfig = (AzureConfig) value;
-      kubernetesConfig = azureHelperService.getKubernetesClusterConfig(
+      kubernetesConfig = azureDelegateHelperService.getKubernetesClusterConfig(
           azureConfig, edd, subscriptionId, resourceGroup, clusterName, namespace, false);
     } else {
       throw new InvalidArgumentsException(

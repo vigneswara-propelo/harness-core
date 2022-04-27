@@ -22,7 +22,7 @@ import software.wings.beans.GcpConfig;
 import software.wings.beans.KubernetesClusterConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.cloudprovider.gke.GkeClusterService;
-import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.service.impl.ContainerServiceParams;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.settings.SettingValue;
@@ -40,7 +40,7 @@ public class ContainerValidationHelper {
   private static final String ALWAYS_TRUE_CRITERIA = "ALWAYS_TRUE_CRITERIA";
 
   @Inject @Transient private transient GkeClusterService gkeClusterService;
-  @Inject @Transient private transient AzureHelperService azureHelperService;
+  @Inject @Transient private transient AzureDelegateHelperService azureDelegateHelperService;
   @Inject @Transient private transient EncryptionService encryptionService;
 
   public String getK8sMasterUrl(ContainerServiceParams containerServiceParams) {
@@ -70,7 +70,7 @@ public class ContainerValidationHelper {
       kubernetesConfig = gkeClusterService.getCluster(settingAttribute, edd, clusterName, namespace, false);
     } else if (value instanceof AzureConfig) {
       AzureConfig azureConfig = (AzureConfig) value;
-      kubernetesConfig = azureHelperService.getKubernetesClusterConfig(
+      kubernetesConfig = azureDelegateHelperService.getKubernetesClusterConfig(
           azureConfig, edd, subscriptionId, resourceGroup, clusterName, namespace, false);
     } else if (value instanceof KubernetesClusterConfig) {
       return ((KubernetesClusterConfig) value).getMasterUrl();

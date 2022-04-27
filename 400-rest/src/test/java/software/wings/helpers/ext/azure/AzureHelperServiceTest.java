@@ -125,6 +125,7 @@ public class AzureHelperServiceTest extends WingsBaseTest {
   @Mock Call<AksGetCredentialsResponse> aksGetCredentialsCall;
 
   @InjectMocks private AzureHelperService azureHelperService;
+  @InjectMocks private AzureDelegateHelperService azureDelegateHelperService;
 
   @Test()
   @Owner(developers = ANSHUL)
@@ -399,7 +400,7 @@ public class AzureHelperServiceTest extends WingsBaseTest {
         + "    client-key-data: client-key-data\n";
 
     AzureConfig azureConfig = AzureConfig.builder().azureEnvironmentType(AZURE).build();
-    AzureHelperService spyOnAzureHelperService = spy(azureHelperService);
+    AzureDelegateHelperService spyOnAzureHelperService = spy(azureDelegateHelperService);
     AksGetCredentialsResponse credentials = new AksGetCredentialsResponse();
     AksGetCredentialProperties properties = credentials.new AksGetCredentialProperties();
     properties.setKubeConfig(encodeBase64(kubeConfig));

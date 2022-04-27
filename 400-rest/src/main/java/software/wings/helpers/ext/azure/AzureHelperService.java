@@ -9,11 +9,9 @@ package software.wings.helpers.ext.azure;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.beans.PageResponse.PageResponseBuilder.aPageResponse;
-import static io.harness.data.encoding.EncodingUtils.decodeBase64ToString;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.AZURE_SERVICE_EXCEPTION;
-import static io.harness.eraro.ErrorCode.CLUSTER_NOT_FOUND;
 import static io.harness.eraro.ErrorCode.INVALID_AZURE_VAULT_CONFIGURATION;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.network.Http.getOkHttpClientBuilder;
@@ -27,7 +25,6 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -35,12 +32,9 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.azure.AzureEnvironmentType;
 import io.harness.beans.PageResponse;
 import io.harness.exception.AzureServiceException;
-import io.harness.exception.ClusterNotFoundException;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
-import io.harness.k8s.KubeConfigHelper;
-import io.harness.k8s.model.KubernetesConfig;
 import io.harness.network.Http;
 import io.harness.security.encryption.EncryptedDataDetail;
 
@@ -52,7 +46,6 @@ import software.wings.beans.AzureImageDefinition;
 import software.wings.beans.AzureImageGallery;
 import software.wings.beans.AzureImageVersion;
 import software.wings.beans.AzureInfrastructureMapping;
-import software.wings.beans.AzureKubernetesCluster;
 import software.wings.beans.AzureTag;
 import software.wings.beans.AzureTagDetails;
 import software.wings.beans.AzureVaultConfig;
@@ -73,16 +66,13 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.Azure.Authenticated;
 import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azure.management.containerservice.KubernetesCluster;
 import com.microsoft.azure.management.containerservice.OSType;
 import com.microsoft.azure.management.keyvault.Vault;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
 import com.microsoft.rest.LogLevel;
-import io.kubernetes.client.util.KubeConfig;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,7 +84,6 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.http.HttpStatus;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -565,75 +554,6 @@ public class AzureHelperService {
       log.error("Error occurred while getting Tags for Repository :" + registryHostName + "/" + repositoryName, e);
       throw new AzureServiceException(
           "Failed to retrieve repository tags " + ExceptionUtils.getMessage(e), AZURE_SERVICE_EXCEPTION, USER);
-    }
-  }
-
-  public boolean isValidKubernetesCluster(AzureConfig azureConfig, List<EncryptedDataDetail> encryptionDetails,
-      String subscriptionId, String resourceGroup, String clusterName) {
-    encryptionService.decrypt(azureConfig, encryptionDetails, false);
-    KubernetesCluster cluster =
-        getAzureClient(azureConfig, subscriptionId).kubernetesClusters().getByResourceGroup(resourceGroup, clusterName);
-    return cluster != null;
-  }
-
-  public KubernetesConfig getKubernetesClusterConfig(AzureConfig azureConfig,
-      List<EncryptedDataDetail> encryptionDetails, AzureKubernetesCluster azureKubernetesCluster, String namespace,
-      boolean isInstanceSync) {
-    return getKubernetesClusterConfig(azureConfig, encryptionDetails, azureKubernetesCluster.getSubscriptionId(),
-        azureKubernetesCluster.getResourceGroup(), azureKubernetesCluster.getName(), namespace, isInstanceSync);
-  }
-
-  public KubernetesConfig getKubernetesClusterConfig(AzureConfig azureConfig,
-      List<EncryptedDataDetail> encryptionDetails, String subscriptionId, String resourceGroup, String clusterName,
-      String namespace, boolean isInstanceSync) {
-    encryptionService.decrypt(azureConfig, encryptionDetails, isInstanceSync);
-    try {
-      Response<AksGetCredentialsResponse> response =
-          getAzureManagementRestClient(azureConfig.getAzureEnvironmentType())
-              .getAdminCredentials(getAzureBearerAuthToken(azureConfig), subscriptionId, resourceGroup, clusterName)
-              .execute();
-
-      if (response.isSuccessful()) {
-        return parseConfig(
-            response.body().getProperties().getKubeConfig(), isNotBlank(namespace) ? namespace : "default");
-      } else {
-        String errorMessage =
-            "Error occurred while getting KubernetesClusterConfig from subscriptionId/resourceGroup/clusterName :"
-            + subscriptionId + "/" + resourceGroup + "/" + clusterName + response.raw();
-        log.error(errorMessage);
-        int statusCode = response.code();
-        if (statusCode == HttpStatus.SC_NOT_FOUND) {
-          throw new ClusterNotFoundException(errorMessage, CLUSTER_NOT_FOUND, USER);
-        } else {
-          throw new AzureServiceException(response.message(), AZURE_SERVICE_EXCEPTION, USER);
-        }
-      }
-    } catch (Exception e) {
-      handleAzureAuthenticationException(e);
-    }
-    return null;
-  }
-
-  private KubernetesConfig parseConfig(String configContent, String namespace) {
-    try {
-      KubeConfig kubeConfig = KubeConfig.loadKubeConfig(new StringReader(decodeBase64ToString(configContent)));
-      String masterUrl = kubeConfig.getServer();
-      String certificateAuthorityData = kubeConfig.getCertificateAuthorityData();
-      String username = KubeConfigHelper.getCurrentUser(kubeConfig);
-      String clientCertificateData = kubeConfig.getClientCertificateData();
-      String clientKeyData = kubeConfig.getClientKeyData();
-
-      return KubernetesConfig.builder()
-          .namespace(namespace)
-          .masterUrl(masterUrl)
-          .caCert(certificateAuthorityData.toCharArray())
-          .username(username != null ? username.toCharArray() : null)
-          .clientCert(clientCertificateData.toCharArray())
-          .clientKey(clientKeyData.toCharArray())
-          .build();
-    } catch (Exception e) {
-      throw new AzureServiceException(
-          "Failed to create kubernetes configuration " + ExceptionUtils.getMessage(e), AZURE_SERVICE_EXCEPTION, USER);
     }
   }
 

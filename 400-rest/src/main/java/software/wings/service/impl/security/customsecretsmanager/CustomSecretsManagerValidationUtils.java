@@ -13,9 +13,9 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.exception.WingsException.USER;
 
 import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
+import static software.wings.beans.ConnectionType.SSH;
+import static software.wings.beans.ConnectionType.WINRM;
 import static software.wings.settings.SettingVariableTypes.HOST_CONNECTION_ATTRIBUTES;
-import static software.wings.sm.states.ShellScriptState.ConnectionType.SSH;
-import static software.wings.sm.states.ShellScriptState.ConnectionType.WINRM;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;

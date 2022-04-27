@@ -20,13 +20,13 @@ import static io.harness.shell.ScriptType.BASH;
 import static io.harness.shell.ScriptType.POWERSHELL;
 
 import static software.wings.beans.Application.Builder.anApplication;
+import static software.wings.beans.ConnectionType.SSH;
+import static software.wings.beans.ConnectionType.WINRM;
 import static software.wings.beans.Environment.Builder.anEnvironment;
 import static software.wings.beans.HostConnectionAttributes.Builder.aHostConnectionAttributes;
 import static software.wings.beans.ServiceTemplate.Builder.aServiceTemplate;
 import static software.wings.beans.command.Command.Builder.aCommand;
 import static software.wings.service.intfc.ServiceTemplateService.EncryptedFieldComputeMode.OBTAIN_VALUE;
-import static software.wings.sm.states.ShellScriptState.ConnectionType.SSH;
-import static software.wings.sm.states.ShellScriptState.ConnectionType.WINRM;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
 import static software.wings.utils.WingsTestConstants.ACTIVITY_ID;
 import static software.wings.utils.WingsTestConstants.APP_ID;

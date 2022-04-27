@@ -35,7 +35,7 @@ import software.wings.beans.AzureConfig;
 import software.wings.beans.GcpConfig;
 import software.wings.beans.KubernetesClusterConfig;
 import software.wings.cloudprovider.gke.GkeClusterService;
-import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.service.intfc.security.EncryptionService;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -69,7 +69,7 @@ import org.mongodb.morphia.annotations.Transient;
 public class KubernetesResizeCommandUnit extends ContainerResizeCommandUnit {
   @Inject @Transient private transient GkeClusterService gkeClusterService;
   @Inject @Transient private transient KubernetesContainerService kubernetesContainerService;
-  @Inject @Transient private transient AzureHelperService azureHelperService;
+  @Inject @Transient private transient AzureDelegateHelperService azureDelegateHelperService;
   @Inject private EncryptionService encryptionService;
 
   public KubernetesResizeCommandUnit() {
@@ -227,9 +227,9 @@ public class KubernetesResizeCommandUnit extends ContainerResizeCommandUnit {
                              .createKubernetesConfig(resizeParams.getNamespace());
     } else if (contextData.settingAttribute.getValue() instanceof AzureConfig) {
       AzureConfig azureConfig = (AzureConfig) contextData.settingAttribute.getValue();
-      kubernetesConfig = azureHelperService.getKubernetesClusterConfig(azureConfig, contextData.encryptedDataDetails,
-          resizeParams.getSubscriptionId(), resizeParams.getResourceGroup(), resizeParams.getClusterName(),
-          resizeParams.getNamespace(), false);
+      kubernetesConfig = azureDelegateHelperService.getKubernetesClusterConfig(azureConfig,
+          contextData.encryptedDataDetails, resizeParams.getSubscriptionId(), resizeParams.getResourceGroup(),
+          resizeParams.getClusterName(), resizeParams.getNamespace(), false);
     } else if (contextData.settingAttribute.getValue() instanceof GcpConfig) {
       kubernetesConfig = gkeClusterService.getCluster(contextData.settingAttribute, contextData.encryptedDataDetails,
           resizeParams.getClusterName(), resizeParams.getNamespace(), false);

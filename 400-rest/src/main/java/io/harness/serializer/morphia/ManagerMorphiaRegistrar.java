@@ -426,7 +426,6 @@ import software.wings.delegatetasks.buildsource.BuildSourceCleanupCallback;
 import software.wings.delegatetasks.buildsource.BuildSourceExecutionResponse;
 import software.wings.delegatetasks.validation.capabilities.HelmCommandCapability;
 import software.wings.delegatetasks.validation.capabilities.SSHHostValidationCapability;
-import software.wings.delegatetasks.validation.capabilities.ShellConnectionCapability;
 import software.wings.helpers.ext.cloudformation.CloudFormationCompletionFlag;
 import software.wings.helpers.ext.cloudformation.response.CloudFormationCommandExecutionResponse;
 import software.wings.helpers.ext.cloudformation.response.CloudFormationCreateStackResponse;
@@ -1242,7 +1241,6 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("delegatetasks.buildsource.BuildSourceExecutionResponse", BuildSourceExecutionResponse.class);
     w.put("delegatetasks.validation.capabilities.HelmCommandCapability", HelmCommandCapability.class);
     w.put("delegatetasks.validation.capabilities.SSHHostValidationCapability", SSHHostValidationCapability.class);
-    w.put("delegatetasks.validation.capabilities.ShellConnectionCapability", ShellConnectionCapability.class);
     w.put("helpers.ext.cloudformation.CloudFormationCompletionFlag", CloudFormationCompletionFlag.class);
     w.put("helpers.ext.ecs.request.EcsBGListenerUpdateRequest", EcsBGListenerUpdateRequest.class);
     w.put("helpers.ext.ecs.response.EcsBGRoute53DNSWeightUpdateResponse", EcsBGRoute53DNSWeightUpdateResponse.class);

@@ -13,8 +13,9 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.AWS_SECRETS_MANAGER_OPERATION_ERROR;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.exception.WingsException.USER_SRE;
-import static io.harness.helpers.ext.vault.VaultRestClientFactory.getFullPath;
 import static io.harness.threading.Morpheus.sleep;
+
+import static software.wings.helpers.ext.vault.VaultRestClientFactory.getFullPath;
 
 import static java.time.Duration.ofMillis;
 

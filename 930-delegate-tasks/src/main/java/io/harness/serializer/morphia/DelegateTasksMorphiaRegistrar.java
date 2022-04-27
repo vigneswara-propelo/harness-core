@@ -53,6 +53,7 @@ import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.delegatetasks.validation.DelegateConnectionResult;
 import software.wings.delegatetasks.validation.capabilities.ClusterMasterUrlValidationCapability;
 import software.wings.delegatetasks.validation.capabilities.GitConnectionCapability;
+import software.wings.delegatetasks.validation.capabilities.ShellConnectionCapability;
 import software.wings.delegatetasks.validation.capabilities.WinrmHostValidationCapability;
 import software.wings.helpers.ext.helm.response.HelmCollectChartResponse;
 import software.wings.helpers.ext.mail.SmtpConfig;
@@ -136,5 +137,6 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("helpers.ext.mail.SmtpConfig", SmtpConfig.class);
     w.put("helpers.ext.helm.response.HelmCollectChartResponse", HelmCollectChartResponse.class);
     w.put("delegatetasks.validation.capabilities.WinrmHostValidationCapability", WinrmHostValidationCapability.class);
+    w.put("delegatetasks.validation.capabilities.ShellConnectionCapability", ShellConnectionCapability.class);
   }
 }

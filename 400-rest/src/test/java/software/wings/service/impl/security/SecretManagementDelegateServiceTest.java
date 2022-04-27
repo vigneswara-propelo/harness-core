@@ -21,12 +21,12 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.SecretManagementDelegateException;
 import io.harness.helpers.ext.azure.KeyVaultADALAuthenticator;
-import io.harness.helpers.ext.cyberark.CyberArkReadResponse;
-import io.harness.helpers.ext.cyberark.CyberArkRestClient;
-import io.harness.helpers.ext.cyberark.CyberArkRestClientFactory;
 import io.harness.rule.Owner;
 
 import software.wings.beans.CyberArkConfig;
+import software.wings.helpers.ext.cyberark.CyberArkReadResponse;
+import software.wings.helpers.ext.cyberark.CyberArkRestClient;
+import software.wings.helpers.ext.cyberark.CyberArkRestClientFactory;
 
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import java.io.IOException;

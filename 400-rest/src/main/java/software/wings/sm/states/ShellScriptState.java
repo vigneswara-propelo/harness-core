@@ -61,6 +61,7 @@ import software.wings.annotation.EncryptableSetting;
 import software.wings.api.ScriptStateExecutionData;
 import software.wings.beans.Activity.Type;
 import software.wings.beans.AwsConfig;
+import software.wings.beans.ConnectionType;
 import software.wings.beans.ContainerInfrastructureMapping;
 import software.wings.beans.HostConnectionAttributes;
 import software.wings.beans.InfrastructureMapping;
@@ -158,8 +159,6 @@ public class ShellScriptState extends State implements SweepingOutputStateMixin 
   public KryoSerializer getKryoSerializer() {
     return kryoSerializer;
   }
-
-  public enum ConnectionType { SSH, WINRM }
 
   @NotEmpty
   @Getter

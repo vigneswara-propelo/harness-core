@@ -316,7 +316,6 @@ import software.wings.beans.container.LogConfiguration;
 import software.wings.beans.container.PortMapping;
 import software.wings.beans.container.StorageConfiguration;
 import software.wings.beans.delegation.CommandParameters;
-import software.wings.beans.delegation.ShellScriptParameters;
 import software.wings.beans.delegation.TerraformProvisionParameters;
 import software.wings.beans.delegation.TerragruntProvisionParameters;
 import software.wings.beans.infrastructure.Host;
@@ -365,7 +364,6 @@ import software.wings.delegatetasks.manifest.ManifestCollectionExecutionResponse
 import software.wings.delegatetasks.manifest.ManifestCollectionResponse;
 import software.wings.delegatetasks.validation.capabilities.HelmCommandCapability;
 import software.wings.delegatetasks.validation.capabilities.SSHHostValidationCapability;
-import software.wings.delegatetasks.validation.capabilities.ShellConnectionCapability;
 import software.wings.expression.ShellScriptEnvironmentVariables;
 import software.wings.helpers.ext.cloudformation.CloudFormationCompletionFlag;
 import software.wings.helpers.ext.cloudformation.request.CloudFormationCommandRequest;
@@ -604,7 +602,6 @@ import software.wings.sm.states.HttpState.HttpStateExecutionResponse;
 import software.wings.sm.states.KubernetesSteadyStateCheckResponse;
 import software.wings.sm.states.KubernetesSwapServiceSelectorsResponse;
 import software.wings.sm.states.RepeatState.RepeatStateExecutionData;
-import software.wings.sm.states.ShellScriptState;
 import software.wings.sm.states.azure.AzureVMSSDeployExecutionSummary;
 import software.wings.sm.states.azure.AzureVMSSSetupContextElement;
 import software.wings.sm.states.azure.AzureVMSSSetupExecutionSummary;
@@ -807,7 +804,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(StorageConfiguration.class, 5164);
     kryo.register(DatadogYaml.class, 5468);
     kryo.register(DatadogConfig.class, 5467);
-    kryo.register(ShellScriptParameters.class, 5186);
     kryo.register(TerraformProvisionParameters.class, 5342);
     kryo.register(ElasticLoadBalancerConfig.class, 5020);
     kryo.register(ElementExecutionSummary.class, 5027);
@@ -966,7 +962,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(KubernetesSteadyStateCheckResponse.class, 5277);
     kryo.register(KubernetesSwapServiceSelectorsResponse.class, 5366);
     kryo.register(RepeatStateExecutionData.class, 4003);
-    kryo.register(ShellScriptState.ConnectionType.class, 5254);
     kryo.register(StateType.class, 4001);
     kryo.register(StepExecutionSummary.class, 5145);
     kryo.register(WorkflowStandardParams.class, 5227);
@@ -1165,7 +1160,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(ScriptType.class, 7386);
     kryo.register(AwsLambdaDetailsMetricsResponse.class, 7388);
     kryo.register(ServiceNowApprovalParams.class, 7389);
-    kryo.register(ShellConnectionCapability.class, 7390);
     kryo.register(GitValidationParameters.class, 7392);
     kryo.register(AppPermissionSummaryForUI.class, 7395);
     kryo.register(UserRestrictionInfo.class, 7396);

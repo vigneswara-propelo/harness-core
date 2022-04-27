@@ -29,16 +29,16 @@ import io.harness.encryptors.clients.HashicorpVaultEncryptor;
 import io.harness.exception.SecretManagementDelegateException;
 import io.harness.helpers.NGVaultTaskHelper;
 import io.harness.helpers.ext.vault.VaultAppRoleLoginResult;
-import io.harness.helpers.ext.vault.VaultK8sLoginResult;
-import io.harness.helpers.ext.vault.VaultRestClient;
-import io.harness.helpers.ext.vault.VaultRestClientFactory;
-import io.harness.helpers.ext.vault.VaultSysAuthRestClient;
 import io.harness.rule.Owner;
 import io.harness.security.encryption.EncryptedRecord;
 import io.harness.security.encryption.EncryptedRecordData;
 import io.harness.security.encryption.EncryptionType;
 
 import software.wings.beans.VaultConfig;
+import software.wings.helpers.ext.vault.VaultK8sLoginResult;
+import software.wings.helpers.ext.vault.VaultRestClient;
+import software.wings.helpers.ext.vault.VaultRestClientFactory;
+import software.wings.helpers.ext.vault.VaultSysAuthRestClient;
 
 import java.io.IOException;
 import java.util.ArrayList;

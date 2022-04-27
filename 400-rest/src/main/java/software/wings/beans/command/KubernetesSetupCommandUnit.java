@@ -83,7 +83,7 @@ import software.wings.beans.container.KubernetesServiceSpecification;
 import software.wings.beans.container.KubernetesServiceType;
 import software.wings.beans.container.Label;
 import software.wings.cloudprovider.gke.GkeClusterService;
-import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.service.impl.artifact.ArtifactCollectionUtils;
 import software.wings.service.intfc.security.EncryptionService;
 
@@ -202,7 +202,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
   @Inject private transient KubernetesContainerService kubernetesContainerService;
   @Inject private transient TimeLimiter timeLimiter;
   @Inject private transient Clock clock;
-  @Inject private transient AzureHelperService azureHelperService;
+  @Inject private transient AzureDelegateHelperService azureDelegateHelperService;
   @Inject private EncryptionService encryptionService;
 
   private Map<String, String> harnessAnnotations;
@@ -242,7 +242,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
       } else if (cloudProviderSetting.getValue() instanceof AzureConfig) {
         AzureConfig azureConfig = (AzureConfig) cloudProviderSetting.getValue();
         kubernetesConfig =
-            azureHelperService.getKubernetesClusterConfig(azureConfig, edd, setupParams.getSubscriptionId(),
+            azureDelegateHelperService.getKubernetesClusterConfig(azureConfig, edd, setupParams.getSubscriptionId(),
                 setupParams.getResourceGroup(), setupParams.getClusterName(), setupParams.getNamespace(), false);
       } else {
         kubernetesConfig = gkeClusterService.getCluster(
