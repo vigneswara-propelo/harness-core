@@ -62,7 +62,6 @@ import io.harness.lock.noop.PersistentNoopLocker;
 import io.harness.metrics.modules.MetricsModule;
 import io.harness.metrics.service.api.MetricsPublisher;
 import io.harness.mongo.MongoConfig;
-import io.harness.notification.module.NotificationClientModule;
 import io.harness.persistence.HPersistence;
 import io.harness.pricing.client.CloudInfoPricingClientModule;
 import io.harness.remote.client.ClientMode;
@@ -165,8 +164,6 @@ public class BatchProcessingModule extends AbstractModule {
 
     bindRetryOnExceptionInterceptor();
     bind(AWSOrganizationHelperService.class).to(AWSOrganizationHelperServiceImpl.class);
-
-    install(new NotificationClientModule(batchMainConfig.getNotificationClientConfiguration()));
   }
 
   private void bindPricingServices() {
