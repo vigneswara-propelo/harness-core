@@ -3730,6 +3730,20 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     addArtifactInputsToContext(executionArgs.getArtifactVariables(), workflowStandardParams);
 
     LinkedList<ContextElement> contextElements = stateExecutionInstance.getContextElements();
+
+    if (featureFlagService.isEnabled(RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION, pipelineExecution.getAccountId())
+        && workflowStandardParams.getWorkflowElement() != null) {
+      Map<String, Object> pipelineVars = workflowStandardParams.getWorkflowElement().getVariables();
+      Map<String, String> stagePipelineVars = executionArgs.getWorkflowVariables();
+
+      for (Map.Entry<String, String> entry : stagePipelineVars.entrySet()) {
+        if (pipelineVars == null) {
+          pipelineVars = new HashMap<>();
+        }
+        pipelineVars.put(entry.getKey(), entry.getValue());
+      }
+      workflowStandardParams.getWorkflowElement().setVariables(pipelineVars);
+    }
     contextElements.push(workflowStandardParams);
 
     UpdateOperations<StateExecutionInstance> ops =
