@@ -33,10 +33,10 @@ public class CFApi extends DefaultApi {
     int priority = startPriority;
     List<PatchInstruction> patchInstructions = new ArrayList<>();
     for (String account : accountIDs) {
-      PatchInstruction patchInstruction = PatchInstruction.builder()
-                                              .kind("addRule")
-                                              .parameters(AddRuleParam.getParamsForAccountID(account, priority))
-                                              .build();
+      List<String> accountIDList = new ArrayList<>(accountIDs);
+      AddTargetToVariationMapParams params = new AddTargetToVariationMapParams("true", accountIDList);
+      PatchInstruction patchInstruction =
+          PatchInstruction.builder().kind("addTargetsToVariationTargetMap").parameters(params).build();
       patchInstructions.add(patchInstruction);
       priority = priority + 100;
     }

@@ -266,3 +266,4 @@ Sahildeep Singh sahildeep.singh@harness.io
 Dhruv dhruv@harness.io
 Raghav raghav.gupta@harness.io
 Miloš Vasić milos.vasic@harness.io
+James Cox james.cox@harness.io

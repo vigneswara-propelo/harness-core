@@ -30,7 +30,9 @@ import io.harness.cf.openapi.model.InlineObject.KindEnum;
 import io.harness.cf.openapi.model.PatchInstruction;
 import io.harness.cf.openapi.model.PatchOperation;
 import io.harness.cf.openapi.model.ServingRule;
+import io.harness.cf.openapi.model.TargetMap;
 import io.harness.cf.openapi.model.Variation;
+import io.harness.cf.openapi.model.VariationMap;
 import io.harness.lock.AcquiredLock;
 import io.harness.lock.PersistentLocker;
 import io.harness.security.JWTTokenServiceUtils;
@@ -225,6 +227,7 @@ public class CfMigrationService {
       Set<String> rulesTobeDeleted = new HashSet<>();
       Set<String> tobeAddedAccountIds = new HashSet<>();
       final List<ServingRule> rules = cfFeature.getEnvProperties().getRules();
+      final List<VariationMap> variationMaps = cfFeature.getEnvProperties().getVariationMap();
       int maxPriority = 0;
       if (accountIds != null && accountIds.size() > 0) {
         tobeAddedAccountIds.addAll(accountIds);
@@ -254,6 +257,22 @@ public class CfMigrationService {
          */
         if (rules.size() > 0) {
           rules.forEach(rule -> rulesTobeDeleted.add(rule.getRuleId()));
+        }
+
+        if (variationMaps != null && variationMaps.size() > 0) {
+          for (VariationMap variationMap : variationMaps) {
+            List<String> targets = new ArrayList<>();
+
+            for (TargetMap targetMap : variationMap.getTargets()) {
+              if (!tobeAddedAccountIds.contains(targetMap.getIdentifier())) {
+                targets.add(targetMap.getIdentifier());
+              }
+            }
+
+            if (targets.size() > 0) {
+              instructions.add(cfAdminApi.getRemoveTargetToVariationMapParams("true", targets));
+            }
+          }
         }
       }
 
