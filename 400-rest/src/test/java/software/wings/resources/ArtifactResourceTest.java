@@ -9,6 +9,7 @@ package software.wings.resources;
 
 import static io.harness.rule.OwnerRule.ANUBHAW;
 import static io.harness.rule.OwnerRule.GARVIT;
+import static io.harness.rule.OwnerRule.INDER;
 import static io.harness.rule.OwnerRule.SRINIVAS;
 
 import static software.wings.beans.artifact.Artifact.Builder.anArtifact;
@@ -268,5 +269,19 @@ public class ArtifactResourceTest extends CategoryTest {
     Response response = RESOURCES.client().target("/artifacts/" + ARTIFACT_ID + "?appId=" + APP_ID).request().delete();
     verify(ARTIFACT_SERVICE).delete(ACCOUNT_ID, ARTIFACT_ID);
     assertThat(response.getStatus()).isEqualTo(200);
+  }
+
+  @Test
+  @Owner(developers = INDER)
+  @Category(UnitTests.class)
+  public void shouldListArtifactsWithCollectionEnabled() throws IOException {
+    RESOURCES.client()
+        .target("/artifacts/collection-enabled-artifacts?appId=" + APP_ID + "&serviceId=" + SERVICE_ID)
+        .request()
+        .get(new GenericType<RestResponse<PageResponse<Artifact>>>() {});
+    PageRequest<Artifact> expectedPageRequest = new PageRequest<>();
+    expectedPageRequest.addFilter("appId", Operator.EQ, APP_ID);
+    expectedPageRequest.setOffset("0");
+    verify(ARTIFACT_SERVICE).listArtifactsForServiceWithCollectionEnabled(APP_ID, SERVICE_ID, expectedPageRequest);
   }
 }

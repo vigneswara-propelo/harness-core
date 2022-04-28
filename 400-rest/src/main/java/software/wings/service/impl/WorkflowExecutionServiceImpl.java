@@ -1751,7 +1751,8 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
         workflowExecutionUpdate, stdParams, trigger, null, workflow);
   }
 
-  private OrchestrationWorkflow updateWorkflowWithArtifactCollectionSteps(
+  @VisibleForTesting
+  OrchestrationWorkflow updateWorkflowWithArtifactCollectionSteps(
       Workflow workflow, List<ArtifactInput> artifactInputs) {
     CanaryOrchestrationWorkflow canaryOrchestrationWorkflow =
         (CanaryOrchestrationWorkflow) workflow.getOrchestrationWorkflow();
@@ -3780,7 +3781,8 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     return true;
   }
 
-  private void addArtifactInputsToContext(
+  @VisibleForTesting
+  void addArtifactInputsToContext(
       List<ArtifactVariable> artifactVariables, WorkflowStandardParams workflowStandardParams) {
     List<ArtifactInput> artifactInputsFromArtifactVariables =
         artifactVariables.stream()

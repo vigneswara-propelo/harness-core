@@ -27,15 +27,21 @@ import io.harness.tasks.ResponseData;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.ArtifactCollectLoopParams;
+import software.wings.beans.artifact.Artifact;
 import software.wings.beans.artifact.ArtifactInput;
+import software.wings.service.impl.WorkflowExecutionServiceImpl;
+import software.wings.sm.ContextElement;
 import software.wings.sm.ExecutionContextImpl;
 import software.wings.sm.ExecutionResponse;
 import software.wings.sm.ExecutionStatusData;
 import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.StateExecutionInstanceHelper;
 import software.wings.sm.StateType;
+import software.wings.sm.WorkflowStandardParams;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +56,7 @@ public class ArtifactCollectLoopStateTest extends WingsBaseTest {
   private static final String ARTIFACT_STREAM_ID_2 = "ARTIFACT_STREAM_ID_2";
   @Mock private StateExecutionInstanceHelper instanceHelper;
   @Mock private ExecutionContextImpl context;
+  @Mock private WorkflowExecutionServiceImpl workflowExecutionService;
 
   @InjectMocks
   @Spy
@@ -115,11 +122,49 @@ public class ArtifactCollectLoopStateTest extends WingsBaseTest {
     Map<String, ResponseData> response = new HashMap<>();
     response.put("response1", ExecutionStatusData.builder().executionStatus(ExecutionStatus.SUCCESS).build());
     response.put("response2", ExecutionStatusData.builder().executionStatus(ExecutionStatus.SUCCESS).build());
-    doNothing().when(artifactCollectLoopState).updateArtifactsInContext(context);
+    String workflowExecutionId = "workflowExecutionId";
+    String appId = "appId";
+    List<Artifact> artifacts = Collections.singletonList(Artifact.Builder.anArtifact().build());
+    StateExecutionInstance stateExecutionInstance = StateExecutionInstance.Builder.aStateExecutionInstance().build();
+    when(context.getWorkflowExecutionId()).thenReturn(workflowExecutionId);
+    when(context.getAppId()).thenReturn(appId);
+    when(context.getStateExecutionInstance()).thenReturn(stateExecutionInstance);
+    when(workflowExecutionService.getArtifactsCollected(appId, workflowExecutionId)).thenReturn(artifacts);
+    doNothing().when(artifactCollectLoopState).addArtifactsToWorkflowExecution(appId, workflowExecutionId, artifacts);
+    doNothing()
+        .when(artifactCollectLoopState)
+        .addArtifactsToStateExecutionInstance(appId, stateExecutionInstance, artifacts);
+    doNothing()
+        .when(artifactCollectLoopState)
+        .addArtifactsToParentStateExecutionInstance(appId, stateExecutionInstance.getParentInstanceId(), artifacts);
 
     ExecutionResponse executionResponse = artifactCollectLoopState.handleAsyncResponse(context, response);
     assertThat(executionResponse).isNotNull();
     assertThat(executionResponse.getExecutionStatus()).isEqualTo(ExecutionStatus.SUCCESS);
     verify(artifactCollectLoopState).updateArtifactsInContext(context);
+    verify(artifactCollectLoopState).addArtifactsToWorkflowExecution(appId, workflowExecutionId, artifacts);
+    verify(artifactCollectLoopState).addArtifactsToStateExecutionInstance(appId, stateExecutionInstance, artifacts);
+    verify(artifactCollectLoopState)
+        .addArtifactsToParentStateExecutionInstance(appId, stateExecutionInstance.getParentInstanceId(), artifacts);
+  }
+
+  @Test
+  @Owner(developers = INDER)
+  @Category(UnitTests.class)
+  public void shouldAddArtifactIdsToWorkflowStandardParams() {
+    WorkflowStandardParams workflowStandardParams = WorkflowStandardParams.Builder.aWorkflowStandardParams().build();
+
+    StateExecutionInstance stateExecutionInstance =
+        StateExecutionInstance.Builder.aStateExecutionInstance().addContextElement(workflowStandardParams).build();
+
+    Artifact.Builder artifactBuilder = Artifact.Builder.anArtifact();
+    List<Artifact> artifacts =
+        asList(artifactBuilder.withUuid("uuid1").build(), artifactBuilder.withUuid("uuid2").build());
+    List<ContextElement> contextElements =
+        artifactCollectLoopState.addArtifactIdsToWorkflowStandardParams(stateExecutionInstance, artifacts);
+    assertThat(contextElements).isNotEmpty().hasSize(1);
+    assertThat(contextElements.get(0)).isInstanceOf(WorkflowStandardParams.class);
+    WorkflowStandardParams expected = (WorkflowStandardParams) contextElements.get(0);
+    assertThat(expected.getArtifactIds()).isNotEmpty().hasSize(2).isEqualTo(asList("uuid1", "uuid2"));
   }
 }

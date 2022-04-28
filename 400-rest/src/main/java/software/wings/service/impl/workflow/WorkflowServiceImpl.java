@@ -2634,7 +2634,8 @@ public class WorkflowServiceImpl implements WorkflowService {
     return deploymentMetadataBuilder.build();
   }
 
-  private void addArtifactInputToArtifactVariables(
+  @VisibleForTesting
+  void addArtifactInputToArtifactVariables(
       List<ArtifactVariable> artifactVariables, WorkflowExecution workflowExecution) {
     for (ArtifactVariable artifactVariable : artifactVariables) {
       if (isNotEmpty(artifactVariable.getArtifactStreamSummaries())

@@ -41,6 +41,7 @@ import software.wings.sm.StateType;
 import software.wings.sm.WorkflowStandardParams;
 import software.wings.sm.states.ForkState.ForkStateExecutionData;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,7 +153,7 @@ public class ArtifactCollectLoopState extends State {
     addArtifactsToParentStateExecutionInstance(appId, stateExecutionInstance.getParentInstanceId(), artifacts);
   }
 
-  private void addArtifactsToParentStateExecutionInstance(
+  void addArtifactsToParentStateExecutionInstance(
       String appId, String stateExecutionInstanceId, List<Artifact> artifacts) {
     StateExecutionInstance stateExecutionInstance = wingsPersistence.createQuery(StateExecutionInstance.class)
                                                         .filter(StateExecutionInstanceKeys.appId, appId)
@@ -164,7 +165,7 @@ public class ArtifactCollectLoopState extends State {
     addArtifactsToStateExecutionInstance(appId, stateExecutionInstance, artifacts);
   }
 
-  private void addArtifactsToWorkflowExecution(String appId, String workflowExecutionId, List<Artifact> artifacts) {
+  void addArtifactsToWorkflowExecution(String appId, String workflowExecutionId, List<Artifact> artifacts) {
     Query<WorkflowExecution> query = wingsPersistence.createQuery(WorkflowExecution.class)
                                          .filter(WorkflowExecutionKeys.appId, appId)
                                          .filter(WorkflowExecutionKeys.uuid, workflowExecutionId);
@@ -177,12 +178,23 @@ public class ArtifactCollectLoopState extends State {
     wingsPersistence.update(query, updateOps);
   }
 
-  private void addArtifactsToStateExecutionInstance(
+  void addArtifactsToStateExecutionInstance(
       String appId, StateExecutionInstance stateExecutionInstance, List<Artifact> artifacts) {
     Query<StateExecutionInstance> query = wingsPersistence.createQuery(StateExecutionInstance.class)
                                               .filter(StateExecutionInstanceKeys.appId, appId)
                                               .filter(ID_KEY, stateExecutionInstance.getUuid());
 
+    List<ContextElement> contextElements = addArtifactIdsToWorkflowStandardParams(stateExecutionInstance, artifacts);
+
+    UpdateOperations<StateExecutionInstance> updateOps =
+        wingsPersistence.createUpdateOperations(StateExecutionInstance.class).set("contextElements", contextElements);
+
+    wingsPersistence.update(query, updateOps);
+  }
+
+  @VisibleForTesting
+  List<ContextElement> addArtifactIdsToWorkflowStandardParams(
+      StateExecutionInstance stateExecutionInstance, List<Artifact> artifacts) {
     List<ContextElement> contextElements = stateExecutionInstance.getContextElements();
     WorkflowStandardParams workflowStandardParams =
         (WorkflowStandardParams) contextElements.stream()
@@ -203,11 +215,7 @@ public class ArtifactCollectLoopState extends State {
     } else {
       workflowStandardParams.setArtifactIds(artifactIds);
     }
-
-    UpdateOperations<StateExecutionInstance> updateOps =
-        wingsPersistence.createUpdateOperations(StateExecutionInstance.class).set("contextElements", contextElements);
-
-    wingsPersistence.update(query, updateOps);
+    return contextElements;
   }
 
   @Override

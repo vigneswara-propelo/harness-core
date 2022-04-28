@@ -47,14 +47,17 @@ import static software.wings.beans.WorkflowExecution.builder;
 import static software.wings.beans.deployment.DeploymentMetadata.Include.ARTIFACT_SERVICE;
 import static software.wings.beans.deployment.DeploymentMetadata.Include.DEPLOYMENT_TYPE;
 import static software.wings.beans.deployment.DeploymentMetadata.Include.ENVIRONMENT;
+import static software.wings.service.impl.workflow.WorkflowServiceTestHelper.constructCanaryWorkflowWithPhase;
 import static software.wings.sm.InstanceStatusSummary.InstanceStatusSummaryBuilder.anInstanceStatusSummary;
 import static software.wings.sm.StateExecutionInstance.Builder.aStateExecutionInstance;
 import static software.wings.sm.StateMachine.StateMachineBuilder.aStateMachine;
+import static software.wings.sm.StateType.ARTIFACT_COLLECT_LOOP_STATE;
 import static software.wings.utils.WingsTestConstants.ACCOUNT1_ID;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_NAME;
 import static software.wings.utils.WingsTestConstants.APP_ID;
 import static software.wings.utils.WingsTestConstants.APP_NAME;
+import static software.wings.utils.WingsTestConstants.ARTIFACT_STREAM_ID;
 import static software.wings.utils.WingsTestConstants.COMPANY_NAME;
 import static software.wings.utils.WingsTestConstants.DEFAULT_VERSION;
 import static software.wings.utils.WingsTestConstants.ENV_ID;
@@ -129,9 +132,13 @@ import software.wings.beans.ApiKeyEntry;
 import software.wings.beans.ApprovalDetails;
 import software.wings.beans.ApprovalDetails.Action;
 import software.wings.beans.ArtifactVariable;
+import software.wings.beans.CanaryOrchestrationWorkflow;
 import software.wings.beans.ElementExecutionSummary.ElementExecutionSummaryBuilder;
 import software.wings.beans.EntityType;
 import software.wings.beans.ExecutionArgs;
+import software.wings.beans.GraphNode;
+import software.wings.beans.OrchestrationWorkflow;
+import software.wings.beans.PhaseStep;
 import software.wings.beans.Pipeline;
 import software.wings.beans.PipelineExecution;
 import software.wings.beans.PipelineStage.PipelineStageElement;
@@ -144,6 +151,7 @@ import software.wings.beans.Workflow;
 import software.wings.beans.WorkflowExecution;
 import software.wings.beans.appmanifest.HelmChart;
 import software.wings.beans.artifact.Artifact;
+import software.wings.beans.artifact.ArtifactInput;
 import software.wings.beans.deployment.DeploymentMetadata;
 import software.wings.beans.security.UserGroup;
 import software.wings.beans.trigger.Trigger;
@@ -170,6 +178,7 @@ import software.wings.sm.StateExecutionInstance.StateExecutionInstanceKeys;
 import software.wings.sm.StateMachineExecutionSimulator;
 import software.wings.sm.StateMachineExecutor;
 import software.wings.sm.WorkflowStandardParams;
+import software.wings.sm.states.ArtifactCollectLoopState.ArtifactCollectLoopStateKeys;
 import software.wings.sm.states.ForkState.ForkStateExecutionData;
 import software.wings.utils.JsonUtils;
 
@@ -1826,6 +1835,51 @@ public class WorkflowExecutionServiceTest extends WingsBaseTest {
                                workflow.getUuid(), null, ExecutionArgs.builder().build(), null, null))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Environment is not provided in the workflow");
+  }
+
+  @Test
+  @Owner(developers = INDER)
+  @Category(UnitTests.class)
+  public void shouldUpdateWorkflowWithArtifactCollectionSteps() {
+    Workflow workflow = constructCanaryWorkflowWithPhase();
+    assertThat(workflow).isNotNull().hasFieldOrProperty("uuid");
+    List<ArtifactInput> artifactInputs =
+        Collections.singletonList(ArtifactInput.builder().buildNo("build1").artifactStreamId("id").build());
+
+    OrchestrationWorkflow orchestrationWorkflow =
+        workflowExecutionServiceSpy.updateWorkflowWithArtifactCollectionSteps(workflow, artifactInputs);
+    assertThat(orchestrationWorkflow).isNotNull().isInstanceOf(CanaryOrchestrationWorkflow.class);
+    CanaryOrchestrationWorkflow canaryOrchestrationWorkflow = (CanaryOrchestrationWorkflow) orchestrationWorkflow;
+    PhaseStep preDeploymentSteps = canaryOrchestrationWorkflow.getPreDeploymentSteps();
+    assertThat(preDeploymentSteps).isNotNull();
+    assertThat(preDeploymentSteps.getSteps()).isNotNull().isNotEmpty();
+
+    GraphNode graphNode = preDeploymentSteps.getSteps().get(0);
+    assertThat(graphNode.getType()).isEqualTo(ARTIFACT_COLLECT_LOOP_STATE.getType());
+    assertThat(graphNode.getName()).isEqualTo("Artifact Collection");
+    assertThat(graphNode.getProperties()).isNotNull().isNotEmpty();
+    assertThat(graphNode.getProperties().get(ArtifactCollectLoopStateKeys.artifactInputList)).isEqualTo(artifactInputs);
+  }
+
+  @Test
+  @Owner(developers = INDER)
+  @Category(UnitTests.class)
+  public void shouldAddArtifactInputsToContext() {
+    ArtifactVariable artifactVariable =
+        ArtifactVariable.builder()
+            .artifactInput(ArtifactInput.builder().buildNo("1").artifactStreamId(ARTIFACT_STREAM_ID + 1).build())
+            .build();
+    ArtifactVariable artifactVariable2 =
+        ArtifactVariable.builder()
+            .artifactInput(ArtifactInput.builder().buildNo("2").artifactStreamId(ARTIFACT_STREAM_ID + 2).build())
+            .build();
+    ArtifactVariable artifactVariable3 = ArtifactVariable.builder().build();
+    WorkflowStandardParams workflowStandardParams = new WorkflowStandardParams();
+    List<ArtifactVariable> artifactVariables = asList(artifactVariable, artifactVariable2, artifactVariable3);
+    workflowExecutionServiceSpy.addArtifactInputsToContext(artifactVariables, workflowStandardParams);
+    assertThat(workflowStandardParams.getArtifactInputs()).isNotNull().isNotEmpty().hasSize(2);
+    assertThat(workflowStandardParams.getArtifactInputs())
+        .isEqualTo(asList(artifactVariable.getArtifactInput(), artifactVariable2.getArtifactInput()));
   }
 
   private WorkflowExecution getFailedOrchestrationWorkflowExecution() {
