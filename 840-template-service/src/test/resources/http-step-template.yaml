@@ -9,7 +9,7 @@ template:
     type: Http
     spec:
       url: <+input>
-      method: <+input>
+      method: <+input>.allowedValues(POST, PUT, GET)
       headers: []
       outputVariables: []
       requestBody: <+input>
