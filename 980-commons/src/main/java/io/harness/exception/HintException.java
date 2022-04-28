@@ -18,6 +18,8 @@ import java.util.EnumSet;
 
 @OwnedBy(HarnessTeam.DX)
 public class HintException extends WingsException {
+  static final long serialVersionUID = 2819468924246216765L;
+
   public static final String HINT_AWS_IRSA_CHECK =
       "Check if the assumed IRSA role on delegate has the permissions to describe regions.";
   public static final String HINT_EMPTY_ACCESS_KEY = "Check if Access Key is empty";

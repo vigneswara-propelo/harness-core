@@ -17,6 +17,7 @@ import java.util.EnumSet;
 
 @OwnedBy(HarnessTeam.DX)
 public class ExplanationException extends WingsException {
+  static final long serialVersionUID = -1494201320263679028L;
   public static String EXPLANATION_IRSA_ROLE_CHECK =
       "IRSA capability for delegate doesn't exist or doesn't have required permissions to describe regions.";
   public static final String EXPLANATION_EMPTY_ACCESS_KEY = "Access Key cannot be empty";
