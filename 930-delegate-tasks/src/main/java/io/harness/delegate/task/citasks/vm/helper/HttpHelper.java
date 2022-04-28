@@ -7,8 +7,10 @@
 
 package io.harness.delegate.task.citasks.vm.helper;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.RUNNER_CONNECT_TIMEOUT_SECS;
 import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.RUNNER_URL;
+import static io.harness.delegate.task.citasks.vm.helper.CIVMConstants.RUNNER_URL_ENV;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -41,12 +43,21 @@ public class HttpHelper {
   private final int DELETION_MAX_ATTEMPTS = 15;
 
   public RunnerRestClient getRunnerClient(int timeoutInSecs) {
+    String runnerUrl = getRunnerUrl();
     Retrofit retrofit = new Retrofit.Builder()
-                            .baseUrl(RUNNER_URL)
+                            .baseUrl(runnerUrl)
                             .addConverterFactory(JacksonConverterFactory.create())
-                            .client(Http.getUnsafeOkHttpClient(RUNNER_URL, RUNNER_CONNECT_TIMEOUT_SECS, timeoutInSecs))
+                            .client(Http.getUnsafeOkHttpClient(runnerUrl, RUNNER_CONNECT_TIMEOUT_SECS, timeoutInSecs))
                             .build();
     return retrofit.create(RunnerRestClient.class);
+  }
+
+  private String getRunnerUrl() {
+    String url = System.getenv(RUNNER_URL_ENV);
+    if (isNotEmpty(url)) {
+      return url;
+    }
+    return RUNNER_URL;
   }
 
   public Response<SetupVmResponse> setupStageWithRetries(SetupVmRequest setupVmRequest) {

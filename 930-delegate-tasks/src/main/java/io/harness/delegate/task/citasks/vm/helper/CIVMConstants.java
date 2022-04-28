@@ -9,6 +9,7 @@ package io.harness.delegate.task.citasks.vm.helper;
 
 public class CIVMConstants {
   public static final String RUNNER_URL = "http://127.0.0.1:3000/";
+  public static final String RUNNER_URL_ENV = "RUNNER_URL";
   public static final int RUNNER_CONNECT_TIMEOUT_SECS = 1;
   public static final String RUN_STEP_KIND = "Run";
   public static final String RUNTEST_STEP_KIND = "RunTest";
