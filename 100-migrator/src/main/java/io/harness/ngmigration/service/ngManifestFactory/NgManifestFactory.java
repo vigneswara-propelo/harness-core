@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 
 public class NgManifestFactory {
   @Inject K8sManifestRemoteStoreService k8sManifestRemoteStoreService;
+  @Inject K8sManifestHelmSourceRepoStoreService k8sManifestHelmSourceRepoStoreService;
   @Inject ValuesManifestRemoteStoreService valuesManifestRemoteStoreService;
 
   public NgManifestService getNgManifestService(ApplicationManifest applicationManifest) {
@@ -29,6 +30,8 @@ public class NgManifestFactory {
         switch (storeType) {
           case Remote:
             return k8sManifestRemoteStoreService;
+          case HelmSourceRepo:
+            return k8sManifestHelmSourceRepoStoreService;
           default:
             throw new UnsupportedOperationException(String.format(
                 "%s storetype is currently not supported for %s appManifestKind", storeType, appManifestKind));
