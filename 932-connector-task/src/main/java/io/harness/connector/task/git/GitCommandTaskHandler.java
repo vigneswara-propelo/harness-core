@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.stripStart;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.PageRequestDTO;
 import io.harness.cistatus.service.GithubAppConfig;
 import io.harness.cistatus.service.GithubService;
 import io.harness.connector.ConnectivityStatus;
@@ -123,12 +124,13 @@ public class GitCommandTaskHandler {
     }
 
     GetUserReposResponse reposResponse;
+    PageRequestDTO pageRequest = PageRequestDTO.builder().pageIndex(0).build();
     try {
       if (executeOnDelegate == Boolean.FALSE) {
-        reposResponse = scmClient.getUserRepos(scmConnector);
+        reposResponse = scmClient.getUserRepos(scmConnector, pageRequest);
       } else {
         reposResponse = scmDelegateClient.processScmRequest(
-            c -> scmServiceClient.getUserRepos(scmConnector, SCMGrpc.newBlockingStub(c)));
+            c -> scmServiceClient.getUserRepos(scmConnector, pageRequest, SCMGrpc.newBlockingStub(c)));
       }
     } catch (InvalidRequestException e) {
       throw SCMRuntimeException.builder().message(e.getMessage()).errorCode(ErrorCode.INVALID_REQUEST).build();

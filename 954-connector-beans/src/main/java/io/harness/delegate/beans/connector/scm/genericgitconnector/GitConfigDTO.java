@@ -17,6 +17,7 @@ import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
+import io.harness.gitsync.beans.GitRepositoryDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -87,5 +88,10 @@ public class GitConfigDTO extends ConnectorConfigDTO implements ScmConnector, De
   @Override
   public String getGitConnectionUrl(String repoName) {
     return "";
+  }
+
+  @Override
+  public GitRepositoryDTO getGitRepositoryDetails() {
+    return GitRepositoryDTO.builder().build();
   }
 }

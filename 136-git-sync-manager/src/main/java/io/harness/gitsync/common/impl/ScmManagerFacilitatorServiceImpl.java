@@ -13,6 +13,7 @@ import static io.harness.eraro.ErrorCode.PR_CREATION_ERROR;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FileContentBatchResponse;
 import io.harness.beans.IdentifierRef;
+import io.harness.beans.PageRequestDTO;
 import io.harness.beans.gitsync.GitFileDetails.GitFileDetailsBuilder;
 import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
@@ -48,6 +49,7 @@ import io.harness.product.ci.scm.proto.CreateWebhookResponse;
 import io.harness.product.ci.scm.proto.DeleteFileResponse;
 import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
+import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.service.ScmClient;
 import io.harness.tasks.DecryptGitApiAccessHelper;
@@ -106,8 +108,8 @@ public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitat
   @Override
   public FileContent getFile(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String connectorRef, String repoName, String branchName, String filePath, String commitId) {
-    ScmConnector connector =
-        getScmConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName);
+    ScmConnector connector = gitSyncConnectorHelper.getDecryptedConnectorForGivenRepo(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName);
     final GitFilePathDetails gitFilePathDetails = getGitFilePathDetails(filePath, branchName, commitId);
     return scmClient.getFileContent(connector, gitFilePathDetails);
   }
@@ -270,6 +272,14 @@ public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitat
     final ScmConnector decryptedConnector = gitSyncConnectorHelper.getDecryptedConnector(yamlGitConfigIdentifier,
         infoForGitPush.getProjectIdentifier(), infoForGitPush.getOrgIdentifier(), infoForGitPush.getAccountId());
     return createBranch(infoForGitPush.getBranch(), infoForGitPush.getBaseBranch(), decryptedConnector);
+  }
+
+  @Override
+  public GetUserReposResponse listUserRepos(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, PageRequestDTO pageRequest) {
+    final ScmConnector decryptedConnector = gitSyncConnectorHelper.getDecryptedConnectorByRef(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef);
+    return scmClient.getUserRepos(decryptedConnector, pageRequest);
   }
 
   private CreateBranchResponse createBranch(String branch, String baseBranch, ScmConnector scmConnector) {

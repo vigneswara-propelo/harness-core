@@ -7,6 +7,7 @@
 
 package io.harness.gitsync.common.impl;
 
+import static io.harness.rule.OwnerRule.BHAVYA;
 import static io.harness.rule.OwnerRule.DEEPAK;
 import static io.harness.rule.OwnerRule.HARI;
 import static io.harness.rule.OwnerRule.MOHIT_GARG;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.when;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DelegateTaskRequest;
+import io.harness.beans.PageRequestDTO;
 import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.category.element.UnitTests;
@@ -43,7 +45,9 @@ import io.harness.gitsync.common.helper.GitSyncConnectorHelper;
 import io.harness.gitsync.common.service.YamlGitConfigService;
 import io.harness.ng.beans.PageRequest;
 import io.harness.product.ci.scm.proto.FileContent;
+import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.ListBranchesResponse;
+import io.harness.product.ci.scm.proto.Repository;
 import io.harness.rule.Owner;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.service.DelegateGrpcClientWrapper;
@@ -93,6 +97,9 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
     doReturn(Optional.of(ConnectorResponseDTO.builder().connector(connectorInfo).build()))
         .when(connectorService)
         .get(anyString(), anyString(), anyString(), anyString());
+    doReturn((ScmConnector) connectorInfo.getConnectorConfig())
+        .when(gitSyncConnectorHelper)
+        .getScmConnector(any(), any(), any(), any());
     when(yamlGitConfigService.get(anyString(), anyString(), anyString(), anyString()))
         .thenReturn(YamlGitConfigDTO.builder()
                         .accountIdentifier(accountIdentifier)
@@ -105,7 +112,7 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
         .thenReturn((ScmConnector) connectorInfo.getConnectorConfig());
     doReturn(githubConnector)
         .when(gitSyncConnectorHelper)
-        .getDecryptedConnectorByRef(anyString(), anyString(), anyString(), anyString());
+        .getScmConnectorForGivenRepo(anyString(), anyString(), anyString(), anyString(), anyString());
   }
 
   @Test
@@ -177,5 +184,20 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
         GitPRCreateRequest.builder().sourceBranch("branch").targetBranch("branch").build();
     assertThatThrownBy(() -> scmDelegateFacilitatorService.createPullRequest(createPRRequest))
         .isInstanceOf(InvalidRequestException.class);
+  }
+
+  @Test
+  @Owner(developers = BHAVYA)
+  @Category(UnitTests.class)
+  public void getListUserRepos() {
+    GetUserReposResponse getUserReposResponse =
+        GetUserReposResponse.newBuilder().addRepos(Repository.newBuilder().setName(repoName).build()).build();
+    when(delegateGrpcClientWrapper.executeSyncTask(any()))
+        .thenReturn(
+            ScmGitRefTaskResponseData.builder().getUserReposResponse(getUserReposResponse.toByteArray()).build());
+    getUserReposResponse = scmDelegateFacilitatorService.listUserRepos(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, PageRequestDTO.builder().build());
+    assertThat(getUserReposResponse.getReposCount()).isEqualTo(1);
+    assertThat(getUserReposResponse.getRepos(0).getName()).isEqualTo(repoName);
   }
 }

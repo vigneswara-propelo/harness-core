@@ -10,6 +10,7 @@ package io.harness.gitsync.common.service;
 import static io.harness.annotations.dev.HarnessTeam.DX;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.PageRequestDTO;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
 import io.harness.delegate.task.scm.GitWebhookTaskType;
@@ -26,6 +27,7 @@ import io.harness.product.ci.scm.proto.CreateFileResponse;
 import io.harness.product.ci.scm.proto.CreateWebhookResponse;
 import io.harness.product.ci.scm.proto.DeleteFileResponse;
 import io.harness.product.ci.scm.proto.FileContent;
+import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 
 import java.util.List;
@@ -78,4 +80,7 @@ public interface ScmClientFacilitatorService {
       UpsertWebhookRequestDTO upsertWebhookRequestDTO, String target, GitWebhookTaskType gitWebhookTaskType);
 
   CreateBranchResponse createBranch(InfoForGitPush infoForGitPush, String yamlGitConfigIdentifier);
+
+  GetUserReposResponse listUserRepos(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, PageRequestDTO pageRequest);
 }

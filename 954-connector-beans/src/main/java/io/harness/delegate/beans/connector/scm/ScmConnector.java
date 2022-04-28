@@ -11,6 +11,9 @@ import static io.harness.annotations.dev.HarnessTeam.DX;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.connector.ConnectorType;
+import io.harness.gitsync.beans.GitRepositoryDTO;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Marker interface for all scm connectors.
@@ -28,4 +31,6 @@ public interface ScmConnector {
    * If it is an ACCOUNT level connector, it should construct corresponding connection url for input repo
    */
   String getGitConnectionUrl(String repoName);
+
+  @JsonIgnore GitRepositoryDTO getGitRepositoryDetails();
 }

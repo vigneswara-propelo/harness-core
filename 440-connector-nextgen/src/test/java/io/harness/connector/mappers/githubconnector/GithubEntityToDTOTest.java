@@ -50,7 +50,7 @@ public class GithubEntityToDTOTest extends CategoryTest {
   @Owner(developers = ABHINAV)
   @Category(UnitTests.class)
   public void testToConnectorEntity_0() throws IOException {
-    final String url = "url";
+    final String url = "https://github.com/harness";
     final String passwordRef = "passwordRef";
     final String username = "username";
     final String appId = "appId";

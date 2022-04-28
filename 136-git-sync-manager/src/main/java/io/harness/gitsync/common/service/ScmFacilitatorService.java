@@ -9,6 +9,7 @@ package io.harness.gitsync.common.service;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.gitsync.common.dtos.GitRepositoryResponseDTO;
 import io.harness.ng.beans.PageRequest;
 
 import java.util.List;
@@ -17,4 +18,7 @@ import java.util.List;
 public interface ScmFacilitatorService {
   List<String> listBranchesUsingConnector(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String connectorIdentifierRef, String repoURL, PageRequest pageRequest, String searchTerm);
+
+  List<GitRepositoryResponseDTO> listReposByRefConnector(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String connectorRef, PageRequest pageRequest, String searchTerm);
 }
