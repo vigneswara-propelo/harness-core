@@ -194,7 +194,13 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
     String namespace = key.getNamespace();
     Set<String> workloadNames =
         instanceBillingDataList.stream().map(InstanceBillingData::getWorkloadName).collect(Collectors.toSet());
-    List<K8sWorkload> workloads = workloadRepository.getWorkload(accountId, clusterId, namespace, workloadNames);
+
+    List<K8sWorkload> workloads;
+    if (accountId.equals("hW63Ny6rQaaGsKkVjE0pJA")) {
+      workloads = workloadRepository.getWorkloadWithoutSorting(accountId, clusterId, namespace, workloadNames);
+    } else {
+      workloads = workloadRepository.getWorkload(accountId, clusterId, namespace, workloadNames);
+    }
     Map<K8SWorkloadService.CacheKey, Map<String, String>> labelMap = new HashMap<>();
     workloads.forEach(workload
         -> labelMap.put(new K8SWorkloadService.CacheKey(accountId, clusterId, namespace, workload.getName()),
