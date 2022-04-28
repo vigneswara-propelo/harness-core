@@ -44,6 +44,7 @@ import io.harness.pms.ngpipeline.inputset.helpers.InputSetErrorsHelper;
 import io.harness.pms.ngpipeline.inputset.helpers.InputSetSanitizer;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
+import io.harness.pms.pipeline.service.PMSPipelineServiceHelper;
 import io.harness.pms.pipeline.service.PMSPipelineTemplateHelper;
 import io.harness.pms.pipeline.service.PMSYamlSchemaService;
 import io.harness.pms.pipeline.service.PipelineEnforcementService;
@@ -82,6 +83,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExecutionHelper {
   PMSPipelineService pmsPipelineService;
+  PMSPipelineServiceHelper pmsPipelineServiceHelper;
   TriggeredByHelper triggeredByHelper;
   PlanExecutionService planExecutionService;
   PrincipalInfoHelper principalInfoHelper;
@@ -170,7 +172,7 @@ public class ExecutionHelper {
       } else {
         pipelineEnforcementService.validateExecutionEnforcementsBasedOnStage(pipelineEntity);
       }
-      String expandedJson = pmsPipelineService.fetchExpandedPipelineJSONFromYaml(pipelineEntity.getAccountId(),
+      String expandedJson = pmsPipelineServiceHelper.fetchExpandedPipelineJSONFromYaml(pipelineEntity.getAccountId(),
           pipelineEntity.getOrgIdentifier(), pipelineEntity.getProjectIdentifier(),
           stagesExecutionInfo.getPipelineYamlToRun());
       planExecutionMetadataBuilder.expandedPipelineJson(expandedJson);

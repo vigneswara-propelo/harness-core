@@ -39,6 +39,7 @@ import io.harness.pms.pipeline.PipelineEntity.PipelineEntityKeys;
 import io.harness.pms.pipeline.mappers.PMSPipelineDtoMapper;
 import io.harness.pms.pipeline.mappers.PipelineYamlDtoMapper;
 import io.harness.pms.pipeline.service.PMSPipelineService;
+import io.harness.pms.pipeline.service.PMSPipelineServiceHelper;
 import io.harness.pms.pipeline.service.PipelineCRUDErrorResponse;
 import io.harness.pms.pipeline.service.PipelineFullGitSyncHandler;
 
@@ -56,13 +57,16 @@ import lombok.extern.slf4j.Slf4j;
 public class PipelineEntityGitSyncHelper extends AbstractGitSdkEntityHandler<PipelineEntity, PipelineConfig>
     implements GitSdkEntityHandlerInterface<PipelineEntity, PipelineConfig> {
   private final PMSPipelineService pmsPipelineService;
+  private final PMSPipelineServiceHelper pipelineServiceHelper;
   private final PipelineFullGitSyncHandler pipelineFullGitSyncHandler;
   private final PmsFeatureFlagService pmsFeatureFlagService;
 
   @Inject
   public PipelineEntityGitSyncHelper(PMSPipelineService pmsPipelineService,
-      PipelineFullGitSyncHandler pipelineFullGitSyncHandler, PmsFeatureFlagService pmsFeatureFlagService) {
+      PMSPipelineServiceHelper pipelineServiceHelper, PipelineFullGitSyncHandler pipelineFullGitSyncHandler,
+      PmsFeatureFlagService pmsFeatureFlagService) {
     this.pmsPipelineService = pmsPipelineService;
+    this.pipelineServiceHelper = pipelineServiceHelper;
     this.pipelineFullGitSyncHandler = pipelineFullGitSyncHandler;
     this.pmsFeatureFlagService = pmsFeatureFlagService;
   }
@@ -107,7 +111,7 @@ public class PipelineEntityGitSyncHelper extends AbstractGitSdkEntityHandler<Pip
     boolean isGovernanceEnabled =
         pmsFeatureFlagService.isEnabled(accountIdentifier, FeatureName.OPA_PIPELINE_GOVERNANCE);
     GovernanceMetadata governanceMetadata =
-        pmsPipelineService.validatePipelineYamlAndSetTemplateRefIfAny(entity, isGovernanceEnabled);
+        pipelineServiceHelper.validatePipelineYamlAndSetTemplateRefIfAny(entity, isGovernanceEnabled);
     if (governanceMetadata.getDeny()) {
       List<String> denyingPolicySetIds = governanceMetadata.getDetailsList()
                                              .stream()

@@ -44,6 +44,7 @@ import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.PipelineEntity.PipelineEntityKeys;
 import io.harness.pms.pipeline.mappers.PMSPipelineDtoMapper;
 import io.harness.pms.pipeline.service.PMSPipelineService;
+import io.harness.pms.pipeline.service.PMSPipelineServiceHelper;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 
@@ -60,6 +61,7 @@ import org.mockito.MockitoAnnotations;
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PipelineEntityGitSyncHelperTest extends CategoryTest {
   @Mock private PMSPipelineService pipelineService;
+  @Mock private PMSPipelineServiceHelper pipelineServiceHelper;
   @Mock private PmsFeatureFlagService pmsFeatureFlagService;
   @InjectMocks PipelineEntityGitSyncHelper pipelineEntityGitSyncHelper;
   static String accountId = "accountId";
@@ -126,7 +128,7 @@ public class PipelineEntityGitSyncHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testSave() throws IOException {
     doReturn(GovernanceMetadata.newBuilder().setDeny(false).build())
-        .when(pipelineService)
+        .when(pipelineServiceHelper)
         .validatePipelineYamlAndSetTemplateRefIfAny(
             PMSPipelineDtoMapper.toPipelineEntity(accountId, pipelineYaml), false);
     doReturn(PipelineEntity.builder().orgIdentifier(orgId).projectIdentifier(projectId).yaml(pipelineYaml).build())
@@ -146,7 +148,7 @@ public class PipelineEntityGitSyncHelperTest extends CategoryTest {
         .create(any());
     doReturn(true).when(pmsFeatureFlagService).isEnabled(accountId, FeatureName.OPA_PIPELINE_GOVERNANCE);
     doReturn(GovernanceMetadata.newBuilder().setDeny(false).build())
-        .when(pipelineService)
+        .when(pipelineServiceHelper)
         .validatePipelineYamlAndSetTemplateRefIfAny(
             PMSPipelineDtoMapper.toPipelineEntity(accountId, pipelineYaml), true);
     PipelineConfig pipelineConfig = pipelineEntityGitSyncHelper.save(accountId, pipelineYaml);
@@ -159,7 +161,7 @@ public class PipelineEntityGitSyncHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testUpdate() throws IOException {
     doReturn(GovernanceMetadata.newBuilder().setDeny(false).build())
-        .when(pipelineService)
+        .when(pipelineServiceHelper)
         .validatePipelineYamlAndSetTemplateRefIfAny(
             PMSPipelineDtoMapper.toPipelineEntity(accountId, pipelineYaml), false);
     PipelineEntity pipelineEntity =

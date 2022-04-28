@@ -19,10 +19,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.FeatureName;
 import io.harness.data.structure.EmptyPredicate;
-import io.harness.data.structure.HarnessStringUtils;
-import io.harness.engine.GovernanceService;
 import io.harness.eventsframework.api.EventsFrameworkDownException;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.eventsframework.schemas.entity.IdentifierRefProtoDTO;
@@ -32,30 +29,15 @@ import io.harness.exception.ExplanationException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.InvalidYamlException;
 import io.harness.exception.ScmException;
-import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorDTO;
-import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorWrapperDTO;
 import io.harness.git.model.ChangeType;
 import io.harness.gitsync.common.utils.GitEntityFilePath;
 import io.harness.gitsync.common.utils.GitSyncFilePathUtils;
 import io.harness.gitsync.helpers.GitContextHelper;
-import io.harness.gitsync.interceptor.GitEntityInfo;
-import io.harness.gitsync.interceptor.GitSyncBranchContext;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.EntityObjectIdUtils;
 import io.harness.grpc.utils.StringValueUtils;
-import io.harness.ng.core.template.TemplateMergeResponseDTO;
-import io.harness.opaclient.model.OpaConstants;
-import io.harness.pms.PmsFeatureFlagService;
-import io.harness.pms.contracts.governance.ExpansionRequestMetadata;
-import io.harness.pms.contracts.governance.ExpansionResponseBatch;
-import io.harness.pms.contracts.governance.GovernanceMetadata;
 import io.harness.pms.contracts.steps.StepInfo;
 import io.harness.pms.gitsync.PmsGitSyncBranchContextGuard;
-import io.harness.pms.gitsync.PmsGitSyncHelper;
-import io.harness.pms.governance.ExpansionRequest;
-import io.harness.pms.governance.ExpansionRequestsExtractor;
-import io.harness.pms.governance.ExpansionsMerger;
-import io.harness.pms.governance.JsonExpander;
 import io.harness.pms.instrumentaion.PipelineInstrumentationConstants;
 import io.harness.pms.pipeline.CommonStepInfo;
 import io.harness.pms.pipeline.ExecutionSummaryInfo;
@@ -77,14 +59,12 @@ import io.harness.telemetry.TelemetryReporter;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.dao.DuplicateKeyException;
@@ -107,14 +87,7 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
   @Inject private GitSyncSdkService gitSyncSdkService;
   @Inject private CommonStepInfo commonStepInfo;
   @Inject private TelemetryReporter telemetryReporter;
-  @Inject private JsonExpander jsonExpander;
-  @Inject private ExpansionRequestsExtractor expansionRequestsExtractor;
-  @Inject private PmsGitSyncHelper gitSyncHelper;
-  @Inject private PmsFeatureFlagService pmsFeatureFlagService;
   @Inject private PipelineMetadataService pipelineMetadataService;
-  @Inject private PMSYamlSchemaService pmsYamlSchemaService;
-  @Inject private PMSPipelineTemplateHelper pipelineTemplateHelper;
-  @Inject private GovernanceService governanceService;
   public static String PIPELINE_SAVE = "pipeline_save";
   public static String PIPELINE_SAVE_ACTION_TYPE = "action";
   public static String CREATING_PIPELINE = "creating new pipeline";
@@ -361,61 +334,6 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
   }
 
   @Override
-  public GovernanceMetadata validatePipelineYamlAndSetTemplateRefIfAny(
-      PipelineEntity pipelineEntity, boolean checkAgainstOPAPolicies) {
-    try {
-      GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
-      if (gitEntityInfo != null && gitEntityInfo.isNewBranch()) {
-        GitSyncBranchContext gitSyncBranchContext =
-            GitSyncBranchContext.builder()
-                .gitBranchInfo(GitEntityInfo.builder()
-                                   .branch(gitEntityInfo.getBaseBranch())
-                                   .yamlGitConfigId(gitEntityInfo.getYamlGitConfigId())
-                                   .build())
-                .build();
-        try (PmsGitSyncBranchContextGuard ignored = new PmsGitSyncBranchContextGuard(gitSyncBranchContext, true)) {
-          return validatePipelineYamlAndSetTemplateRefIfAnyInternal(pipelineEntity, checkAgainstOPAPolicies);
-        }
-      } else {
-        return validatePipelineYamlAndSetTemplateRefIfAnyInternal(pipelineEntity, checkAgainstOPAPolicies);
-      }
-    } catch (io.harness.yaml.validator.InvalidYamlException ex) {
-      throw ex;
-    } catch (Exception ex) {
-      YamlSchemaErrorWrapperDTO errorWrapperDTO =
-          YamlSchemaErrorWrapperDTO.builder()
-              .schemaErrors(Collections.singletonList(
-                  YamlSchemaErrorDTO.builder().message(ex.getMessage()).fqn("$.pipeline").build()))
-              .build();
-      throw new io.harness.yaml.validator.InvalidYamlException(
-          HarnessStringUtils.emptyIfNull(ex.getMessage()), ex, errorWrapperDTO);
-    }
-  }
-
-  private GovernanceMetadata validatePipelineYamlAndSetTemplateRefIfAnyInternal(
-      PipelineEntity pipelineEntity, boolean checkAgainstOPAPolicies) {
-    String accountId = pipelineEntity.getAccountId();
-    String orgIdentifier = pipelineEntity.getOrgIdentifier();
-    String projectIdentifier = pipelineEntity.getProjectIdentifier();
-    // Apply all the templateRefs(if any) then check for schema validation.
-    TemplateMergeResponseDTO templateMergeResponseDTO =
-        pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity);
-    String resolveTemplateRefsInPipeline = templateMergeResponseDTO.getMergedPipelineYaml();
-    pmsYamlSchemaService.validateYamlSchema(accountId, orgIdentifier, projectIdentifier, resolveTemplateRefsInPipeline);
-    // validate unique fqn in resolveTemplateRefsInPipeline
-    pmsYamlSchemaService.validateUniqueFqn(resolveTemplateRefsInPipeline);
-    pipelineEntity.setTemplateReference(
-        EmptyPredicate.isNotEmpty(templateMergeResponseDTO.getTemplateReferenceSummaries()));
-    if (checkAgainstOPAPolicies) {
-      String expandedPipelineJSON =
-          fetchExpandedPipelineJSONFromYaml(accountId, orgIdentifier, projectIdentifier, resolveTemplateRefsInPipeline);
-      return governanceService.evaluateGovernancePolicies(expandedPipelineJSON, accountId, orgIdentifier,
-          projectIdentifier, OpaConstants.OPA_EVALUATION_ACTION_PIPELINE_SAVE, "");
-    }
-    return GovernanceMetadata.newBuilder().setDeny(false).build();
-  }
-
-  @Override
   public Long countAllPipelines(Criteria criteria) {
     return pmsPipelineRepository.countAllPipelines(criteria);
   }
@@ -584,27 +502,8 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
           orgIdentifier, projectIdentifier, pipelineIdentifier));
     }
 
-    return fetchExpandedPipelineJSONFromYaml(
+    return pmsPipelineServiceHelper.fetchExpandedPipelineJSONFromYaml(
         accountId, orgIdentifier, projectIdentifier, pipelineEntityOptional.get().getYaml());
-  }
-
-  @Override
-  public String fetchExpandedPipelineJSONFromYaml(
-      String accountId, String orgIdentifier, String projectIdentifier, String pipelineYaml) {
-    if (!pmsFeatureFlagService.isEnabled(accountId, FeatureName.OPA_PIPELINE_GOVERNANCE)) {
-      return pipelineYaml;
-    }
-    long start = System.currentTimeMillis();
-    ExpansionRequestMetadata expansionRequestMetadata =
-        getRequestMetadata(accountId, orgIdentifier, projectIdentifier, pipelineYaml);
-
-    Set<ExpansionRequest> expansionRequests = expansionRequestsExtractor.fetchExpansionRequests(pipelineYaml);
-    Set<ExpansionResponseBatch> expansionResponseBatches =
-        jsonExpander.fetchExpansionResponses(expansionRequests, expansionRequestMetadata);
-    String mergeExpansions = ExpansionsMerger.mergeExpansions(pipelineYaml, expansionResponseBatches);
-    log.info("[PMS_GOVERNANCE] Pipeline Json Expansion took {}ms for projectId {}, orgId {}, accountId {}",
-        System.currentTimeMillis() - start, projectIdentifier, orgIdentifier, accountId);
-    return mergeExpansions;
   }
 
   @Override
@@ -619,20 +518,5 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
                         .set(PipelineEntityKeys.rootFolder, gitEntityFilePath.getRootFolder());
     return updatePipelineMetadata(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
         pipelineEntity.getProjectIdentifier(), criteria, update);
-  }
-
-  ExpansionRequestMetadata getRequestMetadata(
-      String accountId, String orgIdentifier, String projectIdentifier, String pipelineYaml) {
-    ByteString gitSyncBranchContextBytes = gitSyncHelper.getGitSyncBranchContextBytesThreadLocal();
-    ExpansionRequestMetadata.Builder expansionRequestMetadataBuilder =
-        ExpansionRequestMetadata.newBuilder()
-            .setAccountId(accountId)
-            .setOrgId(orgIdentifier)
-            .setProjectId(projectIdentifier)
-            .setYaml(ByteString.copyFromUtf8(pipelineYaml));
-    if (gitSyncBranchContextBytes != null) {
-      expansionRequestMetadataBuilder.setGitSyncBranchContext(gitSyncBranchContextBytes);
-    }
-    return expansionRequestMetadataBuilder.build();
   }
 }
