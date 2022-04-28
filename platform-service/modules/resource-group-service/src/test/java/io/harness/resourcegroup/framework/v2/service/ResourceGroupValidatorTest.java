@@ -15,7 +15,11 @@ import static org.assertj.core.api.Assertions.fail;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.resourcegroup.ResourceGroupTestBase;
+import io.harness.resourcegroup.beans.ScopeFilterType;
 import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidatorImpl;
+import io.harness.resourcegroup.v2.model.ResourceFilter;
+import io.harness.resourcegroup.v2.model.ResourceSelector;
+import io.harness.resourcegroup.v2.model.ScopeSelector;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupDTO;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupRequest;
 import io.harness.rule.Owner;
@@ -25,6 +29,8 @@ import com.google.inject.Inject;
 import io.serializer.HObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +74,137 @@ public class ResourceGroupValidatorTest extends ResourceGroupTestBase {
     } catch (InvalidRequestException ex) {
       assertThat(ex.getParams().get("message"))
           .isEqualTo("Cannot provide specific resources when you include all resources");
+    }
+  }
+
+  @Test
+  @Owner(developers = REETIKA)
+  @Category(UnitTests.class)
+  public void validateProjectResourceGroup() {
+    ResourceGroupDTO resourceGroupDTO = ResourceGroupDTO.builder()
+                                            .accountIdentifier("testAcc1")
+                                            .orgIdentifier("testOrg1")
+                                            .projectIdentifier("proj1")
+                                            .build();
+    List<ScopeSelector> includedScopes = Arrays.asList(
+        ScopeSelector.builder().filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES).accountIdentifier("testAcc1").build(),
+        ScopeSelector.builder()
+            .filter(ScopeFilterType.INCLUDING_CHILD_SCOPES)
+            .accountIdentifier("testAcc1")
+            .orgIdentifier("testOrg1")
+            .build(),
+        ScopeSelector.builder()
+            .filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES)
+            .accountIdentifier("testAcc1")
+            .orgIdentifier("testOrg1")
+            .projectIdentifier("proj1")
+            .build());
+    ResourceFilter resourceFilter =
+        ResourceFilter.builder()
+            .includeAllResources(false)
+            .resources(Arrays.asList(ResourceSelector.builder().resourceType("R1").build(),
+                ResourceSelector.builder().resourceType("R2").build(),
+                ResourceSelector.builder().resourceType("R3").identifiers(Arrays.asList("1", "2", "3")).build()))
+            .build();
+    resourceGroupDTO.setResourceFilter(resourceFilter);
+    resourceGroupDTO.setIncludedScopes(includedScopes);
+
+    try {
+      resourceGroupValidator.validateResourceGroup(
+          ResourceGroupRequest.builder().resourceGroup(resourceGroupDTO).build());
+      fail("Expected failure as the included scopes are invalid");
+    } catch (InvalidRequestException ex) {
+      assertThat(ex.getParams().get("message"))
+          .isEqualTo("Scope of included scopes does not match with the scope of resource group");
+    }
+
+    resourceGroupDTO.setIncludedScopes(Arrays.asList(ScopeSelector.builder()
+                                                         .filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES)
+                                                         .accountIdentifier("testAcc1")
+                                                         .orgIdentifier("testOrg1")
+                                                         .projectIdentifier("proj1")
+                                                         .build()));
+    try {
+      resourceGroupValidator.validateResourceGroup(
+          ResourceGroupRequest.builder().resourceGroup(resourceGroupDTO).build());
+    } catch (InvalidRequestException ex) {
+      fail("Unexpected failure", ex);
+    }
+  }
+
+  @Test
+  @Owner(developers = REETIKA)
+  @Category(UnitTests.class)
+  public void testInvalidScopeForOrgResourceGroup() {
+    ResourceGroupDTO resourceGroupDTO =
+        ResourceGroupDTO.builder().accountIdentifier("testAcc1").orgIdentifier("testOrg").build();
+    List<ScopeSelector> includedScopes = Arrays.asList(
+        ScopeSelector.builder().filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES).accountIdentifier("testAcc1").build(),
+        ScopeSelector.builder()
+            .filter(ScopeFilterType.INCLUDING_CHILD_SCOPES)
+            .accountIdentifier("testAcc1")
+            .orgIdentifier("testOrg1")
+            .build(),
+        ScopeSelector.builder()
+            .filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES)
+            .accountIdentifier("testAcc1")
+            .orgIdentifier("testOrg1")
+            .projectIdentifier("proj1")
+            .build());
+    ResourceFilter resourceFilter =
+        ResourceFilter.builder()
+            .includeAllResources(false)
+            .resources(Arrays.asList(ResourceSelector.builder().resourceType("R1").build(),
+                ResourceSelector.builder().resourceType("R2").build(),
+                ResourceSelector.builder().resourceType("R3").identifiers(Arrays.asList("1", "2", "3")).build()))
+            .build();
+    resourceGroupDTO.setResourceFilter(resourceFilter);
+    resourceGroupDTO.setIncludedScopes(includedScopes);
+
+    try {
+      resourceGroupValidator.validateResourceGroup(
+          ResourceGroupRequest.builder().resourceGroup(resourceGroupDTO).build());
+      fail("Expected failure as the included scopes are invalid");
+    } catch (InvalidRequestException ex) {
+      assertThat(ex.getParams().get("message"))
+          .isEqualTo("Scope of included scopes does not match with the scope of resource group");
+    }
+  }
+
+  @Test
+  @Owner(developers = REETIKA)
+  @Category(UnitTests.class)
+  public void testInvalidResourceFillterForOrgResourceGroup() {
+    ResourceGroupDTO resourceGroupDTO =
+        ResourceGroupDTO.builder().accountIdentifier("testAcc1").orgIdentifier("testOrg").build();
+    List<ScopeSelector> includedScopes = Arrays.asList(ScopeSelector.builder()
+                                                           .filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES)
+                                                           .accountIdentifier("testAcc1")
+                                                           .orgIdentifier("testOrg")
+                                                           .build(),
+        ScopeSelector.builder()
+            .filter(ScopeFilterType.EXCLUDING_CHILD_SCOPES)
+            .accountIdentifier("testAcc1")
+            .orgIdentifier("testOrg")
+            .projectIdentifier("proj1")
+            .build());
+    ResourceFilter resourceFilter =
+        ResourceFilter.builder()
+            .includeAllResources(false)
+            .resources(Arrays.asList(ResourceSelector.builder().resourceType("R1").build(),
+                ResourceSelector.builder().resourceType("R2").build(),
+                ResourceSelector.builder().resourceType("R3").identifiers(Arrays.asList("1", "2", "3")).build()))
+            .build();
+    resourceGroupDTO.setResourceFilter(resourceFilter);
+    resourceGroupDTO.setIncludedScopes(includedScopes);
+
+    try {
+      resourceGroupValidator.validateResourceGroup(
+          ResourceGroupRequest.builder().resourceGroup(resourceGroupDTO).build());
+      fail("Expected failure as the resource filter is invalid");
+    } catch (InvalidRequestException ex) {
+      assertThat(ex.getParams().get("message"))
+          .isEqualTo("Cannot provide specific identifiers in resource filter for a dynamic scope");
     }
   }
 }
