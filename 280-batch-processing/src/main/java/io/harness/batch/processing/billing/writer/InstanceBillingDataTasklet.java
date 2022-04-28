@@ -424,7 +424,7 @@ public class InstanceBillingDataTasklet implements Tasklet {
         .memoryMbSeconds(billingData.getMemoryMbSeconds())
         .parentInstanceId(getParentInstanceId(instanceData))
         .launchType(getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.LAUNCH_TYPE, instanceData))
-        .taskId(getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.TASK_ID, instanceData))
+        .taskId(getTaskIdOrWorkloadId(instanceData))
         .namespace(namespace)
         .region(firstNonNull(region, "on_prem"))
         .clusterType(getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.CLUSTER_TYPE, instanceData))
@@ -462,6 +462,14 @@ public class InstanceBillingDataTasklet implements Tasklet {
         .maxStorageRequest(maxStorageRequest)
         .maxStorageUtilizationValue(maxStorageUtilization)
         .build();
+  }
+
+  private String getTaskIdOrWorkloadId(InstanceData instanceData) {
+    String taskId = getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.TASK_ID, instanceData);
+    if (ImmutableSet.of(InstanceType.K8S_POD, InstanceType.K8S_POD_FARGATE).contains(instanceData.getInstanceType())) {
+      taskId = getValueForKeyFromInstanceMetaData(InstanceMetaDataConstants.WORKLOAD_ID, instanceData);
+    }
+    return taskId;
   }
 
   private BigDecimal getStorageUnallocatedCost(

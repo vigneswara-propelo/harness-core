@@ -164,7 +164,7 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
     Map<Key, List<InstanceBillingData>> instanceBillingDataGrouped =
         instanceBillingDataList.stream().collect(Collectors.groupingBy(Key::getKeyFromInstanceData));
 
-    log.info("Started Querying data");
+    log.info("Started Querying data {}", instanceBillingDataGrouped.size());
     for (Key key : instanceBillingDataGrouped.keySet()) {
       List<InstanceBillingData> instances = instanceBillingDataGrouped.get(key);
       Map<K8SWorkloadService.CacheKey, Map<String, String>> labelMap = new HashMap<>();
@@ -172,8 +172,6 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
               && accountId.equals("fuWKs4a9RXqvFrsjdKTl-w"))) {
         labelMap = getLabelMapForGroup(instances, key);
       }
-      log.info("labelMap: {}", labelMap.size());
-
       for (InstanceBillingData instanceBillingData : instances) {
         Map<String, String> labels = labelMap.get(
             new K8SWorkloadService.CacheKey(instanceBillingData.getAccountId(), instanceBillingData.getClusterId(),
@@ -183,6 +181,7 @@ public class ClusterDataToBigQueryTasklet implements Tasklet {
         clusterBillingDataList.add(clusterBillingData);
       }
     }
+    log.info("Finished Querying data");
 
     return clusterBillingDataList;
   }
