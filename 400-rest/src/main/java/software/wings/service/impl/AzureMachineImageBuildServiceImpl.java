@@ -20,7 +20,7 @@ import software.wings.beans.AzureImageDefinition;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
 import software.wings.beans.artifact.ArtifactStreamType;
 import software.wings.beans.artifact.AzureMachineImageArtifactStream;
-import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.service.intfc.AzureMachineImageBuildService;
 
@@ -37,7 +37,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 @OwnedBy(CDC)
 @Singleton
 public class AzureMachineImageBuildServiceImpl implements AzureMachineImageBuildService {
-  @Inject private AzureHelperService azureHelperService;
+  @Inject private AzureDelegateHelperService azureHelperService;
 
   @Override
   public List<BuildDetails> getBuilds(String appId, ArtifactStreamAttributes streamAttributes, AzureConfig azureConfig,

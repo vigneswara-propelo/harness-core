@@ -23,7 +23,7 @@ import software.wings.beans.AzureResourceGroup;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
 import software.wings.beans.artifact.ArtifactStreamType;
 import software.wings.helpers.ext.azure.AcrService;
-import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.helpers.ext.jenkins.JobDetails;
 import software.wings.service.intfc.AcrBuildService;
@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AcrBuildServiceImpl implements AcrBuildService {
   @Inject private AcrService acrService;
-  @Inject private AzureHelperService azureHelperService;
+  @Inject private AzureDelegateHelperService azureDelegateHelperService;
   @Inject private EncryptionService encryptionService;
 
   @Override
@@ -72,7 +72,7 @@ public class AcrBuildServiceImpl implements AcrBuildService {
       AzureConfig azureConfig, List<EncryptedDataDetail> encryptionDetails, String subscriptionId) {
     log.info("[ACR Build Service] List registries for subscriptionId {}", subscriptionId);
     encryptionService.decrypt(azureConfig, encryptionDetails, false);
-    return azureHelperService.listContainerRegistries(azureConfig, subscriptionId);
+    return azureDelegateHelperService.listContainerRegistries(azureConfig, subscriptionId);
   }
 
   @Override
@@ -89,7 +89,7 @@ public class AcrBuildServiceImpl implements AcrBuildService {
     log.info("[ACR Build Service] List Repositories with subscriptionId {} & registry name {}", subscriptionId,
         registryName);
     encryptionService.decrypt(azureConfig, encryptionDetails, false);
-    return azureHelperService.listRepositories(azureConfig, subscriptionId, registryName);
+    return azureDelegateHelperService.listRepositories(azureConfig, subscriptionId, registryName);
   }
 
   @Override
@@ -148,21 +148,21 @@ public class AcrBuildServiceImpl implements AcrBuildService {
   @Override
   public List<AzureImageGallery> listImageGalleries(AzureConfig config, List<EncryptedDataDetail> encryptionDetails,
       String subscriptionId, String resourceGroupName) {
-    return azureHelperService.listImageGalleries(config, encryptionDetails, subscriptionId, resourceGroupName);
+    return azureDelegateHelperService.listImageGalleries(config, encryptionDetails, subscriptionId, resourceGroupName);
   }
 
   @Override
   public List<AzureImageDefinition> listImageDefinitions(AzureConfig config,
       List<EncryptedDataDetail> encryptionDetails, String subscriptionId, String resourceGroupName,
       String galleryName) {
-    return azureHelperService.listImageDefinitions(
+    return azureDelegateHelperService.listImageDefinitions(
         config, encryptionDetails, subscriptionId, resourceGroupName, galleryName);
   }
 
   @Override
   public List<AzureResourceGroup> listResourceGroups(
       AzureConfig config, List<EncryptedDataDetail> encryptionDetails, String subscriptionId) {
-    return azureHelperService.listResourceGroups(config, encryptionDetails, subscriptionId)
+    return azureDelegateHelperService.listResourceGroups(config, encryptionDetails, subscriptionId)
         .stream()
         .map(name -> AzureResourceGroup.builder().name(name).subscriptionId(subscriptionId).build())
         .collect(Collectors.toList());
@@ -170,6 +170,6 @@ public class AcrBuildServiceImpl implements AcrBuildService {
 
   @Override
   public Map<String, String> listSubscriptions(AzureConfig config, List<EncryptedDataDetail> encryptionDetails) {
-    return azureHelperService.listSubscriptions(config, encryptionDetails);
+    return azureDelegateHelperService.listSubscriptions(config, encryptionDetails);
   }
 }

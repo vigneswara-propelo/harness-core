@@ -105,7 +105,7 @@ import software.wings.delegatetasks.buildsource.BuildSourceParameters;
 import software.wings.delegatetasks.buildsource.BuildSourceParameters.BuildSourceParametersBuilder;
 import software.wings.delegatetasks.buildsource.BuildSourceParameters.BuildSourceRequestType;
 import software.wings.expression.SecretFunctor;
-import software.wings.helpers.ext.azure.AzureHelperService;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.helpers.ext.ecr.EcrClassicService;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.service.impl.AwsHelperService;
@@ -149,7 +149,7 @@ public class ArtifactCollectionUtils {
   @Inject private ManagerDecryptionService managerDecryptionService;
   @Inject private SecretManager secretManager;
   @Inject private AwsHelperService awsHelperService;
-  @Inject private AzureHelperService azureHelperService;
+  @Inject private AzureDelegateHelperService azureDelegateHelperService;
   @Inject private EcrClassicService ecrClassicService;
   @Inject private AwsEcrHelperServiceManager awsEcrHelperServiceManager;
   @Inject private ExpressionEvaluator evaluator;
@@ -462,11 +462,11 @@ public class ArtifactCollectionUtils {
             azureConfig, secretManager.getEncryptionDetails(azureConfig, null, workflowExecutionId));
         String loginServer = isNotEmpty(acrArtifactStream.getRegistryHostName())
             ? acrArtifactStream.getRegistryHostName()
-            : azureHelperService.getLoginServerForRegistry(azureConfig,
+            : azureDelegateHelperService.getLoginServerForRegistry(azureConfig,
                 secretManager.getEncryptionDetails(azureConfig, null, workflowExecutionId),
                 acrArtifactStream.getSubscriptionId(), acrArtifactStream.getRegistryName());
 
-        imageDetailsBuilder.registryUrl(azureHelperService.getUrl(loginServer))
+        imageDetailsBuilder.registryUrl(azureDelegateHelperService.getUrl(loginServer))
             .sourceName(acrArtifactStream.getRepositoryName())
             .name(loginServer + "/" + acrArtifactStream.getRepositoryName())
             .username(azureConfig.getClientId())

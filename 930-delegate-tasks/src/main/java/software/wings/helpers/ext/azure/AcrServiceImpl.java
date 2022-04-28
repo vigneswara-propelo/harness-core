@@ -39,17 +39,17 @@ import org.apache.commons.lang3.StringUtils;
 @Singleton
 @Slf4j
 public class AcrServiceImpl implements AcrService {
-  private AzureHelperService azureHelperService;
+  private AzureDelegateHelperService azureDelegateHelperService;
 
   @Inject
-  public AcrServiceImpl(AzureHelperService azureHelperService) {
-    this.azureHelperService = azureHelperService;
+  public AcrServiceImpl(AzureDelegateHelperService azureDelegateHelperService) {
+    this.azureDelegateHelperService = azureDelegateHelperService;
   }
 
   @Override
   public List<String> listRegistries(AzureConfig config, String subscriptionId) {
     try {
-      return azureHelperService.listContainerRegistryNames(config, subscriptionId);
+      return azureDelegateHelperService.listContainerRegistryNames(config, subscriptionId);
     } catch (Exception e) {
       throw new InvalidArtifactServerException(ExceptionUtils.getMessage(e), USER);
     }
@@ -61,13 +61,13 @@ public class AcrServiceImpl implements AcrService {
     try {
       String loginServer = StringUtils.isNotEmpty(artifactStreamAttributes.getRegistryHostName())
           ? artifactStreamAttributes.getRegistryHostName()
-          : azureHelperService.getLoginServerForRegistry(config, encryptionDetails,
+          : azureDelegateHelperService.getLoginServerForRegistry(config, encryptionDetails,
               artifactStreamAttributes.getSubscriptionId(), artifactStreamAttributes.getRegistryName());
 
       String repository = loginServer + "/" + artifactStreamAttributes.getRepositoryName();
 
       List<BuildDetails> buildDetails =
-          azureHelperService
+          azureDelegateHelperService
               .listRepositoryTags(config, encryptionDetails, loginServer, artifactStreamAttributes.getRepositoryName())
               .stream()
               .map(tag -> {
@@ -94,7 +94,7 @@ public class AcrServiceImpl implements AcrService {
   @Override
   public boolean verifyImageName(AzureConfig config, List<EncryptedDataDetail> encryptionDetails,
       ArtifactStreamAttributes artifactStreamAttributes) {
-    if (!azureHelperService.isValidSubscription(config, artifactStreamAttributes.getSubscriptionId())) {
+    if (!azureDelegateHelperService.isValidSubscription(config, artifactStreamAttributes.getSubscriptionId())) {
       log.info(
           "SubscriptionId [" + artifactStreamAttributes.getSubscriptionId() + "] does not exist in Azure account.");
       throw new WingsException(INVALID_ARGUMENT, USER)
@@ -102,7 +102,7 @@ public class AcrServiceImpl implements AcrService {
               "SubscriptionId [" + artifactStreamAttributes.getSubscriptionId() + "] does not exist in Azure account.");
     }
 
-    if (!azureHelperService.isValidContainerRegistry(
+    if (!azureDelegateHelperService.isValidContainerRegistry(
             config, artifactStreamAttributes.getSubscriptionId(), artifactStreamAttributes.getRegistryName())) {
       log.info("Registry [" + artifactStreamAttributes.getRegistryName() + "] does not exist in Azure subscription.");
       throw new WingsException(INVALID_ARGUMENT, USER)
@@ -110,7 +110,7 @@ public class AcrServiceImpl implements AcrService {
               "Registry [" + artifactStreamAttributes.getRegistryName() + "] does not exist in Azure subscription.");
     }
 
-    if (!azureHelperService
+    if (!azureDelegateHelperService
              .listRepositories(
                  config, artifactStreamAttributes.getSubscriptionId(), artifactStreamAttributes.getRegistryName())
              .contains(artifactStreamAttributes.getRepositoryName())) {
@@ -126,8 +126,9 @@ public class AcrServiceImpl implements AcrService {
   @Override
   public boolean validateCredentials(AzureConfig config, List<EncryptedDataDetail> encryptionDetails,
       ArtifactStreamAttributes artifactStreamAttributes) {
-    azureHelperService.listRepositoryTags(config, encryptionDetails, artifactStreamAttributes.getSubscriptionId(),
-        artifactStreamAttributes.getRegistryName(), artifactStreamAttributes.getRepositoryName());
+    azureDelegateHelperService.listRepositoryTags(config, encryptionDetails,
+        artifactStreamAttributes.getSubscriptionId(), artifactStreamAttributes.getRegistryName(),
+        artifactStreamAttributes.getRepositoryName());
     return true;
   }
 }

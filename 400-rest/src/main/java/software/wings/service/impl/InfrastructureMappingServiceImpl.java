@@ -143,6 +143,7 @@ import software.wings.common.InfrastructureConstants;
 import software.wings.delegatetasks.DelegateProxyFactory;
 import software.wings.dl.WingsPersistence;
 import software.wings.expression.ManagerExpressionEvaluator;
+import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.helpers.ext.azure.AzureHelperService;
 import software.wings.helpers.ext.container.ContainerMasterUrlHelper;
 import software.wings.prune.PruneEntityListener;
@@ -264,6 +265,7 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
   @Inject private AwsAsgHelperServiceManager awsAsgHelperServiceManager;
   @Inject private YamlPushService yamlPushService;
   @Inject private AzureHelperService azureHelperService;
+  @Inject private AzureDelegateHelperService azureDelegateHelperService;
   @Inject private TriggerService triggerService;
   @Inject private PipelineService pipelineService;
   @Inject private AuditServiceHelper auditServiceHelper;
@@ -1749,7 +1751,7 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
     if (AZURE.name().equals(computeProviderSetting.getValue().getType())) {
       try {
         AzureConfig azureConfig = validateAndGetAzureConfig(computeProviderSetting);
-        return azureHelperService.listTagsBySubscription(
+        return azureDelegateHelperService.listTagsBySubscription(
             subscriptionId, azureConfig, secretManager.getEncryptionDetails(azureConfig, null, null));
       } catch (Exception e) {
         log.warn(ExceptionUtils.getMessage(e), e);
@@ -1767,7 +1769,7 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
     if (AZURE.name().equals(computeProviderSetting.getValue().getType())) {
       try {
         AzureConfig azureConfig = validateAndGetAzureConfig(computeProviderSetting);
-        return azureHelperService.listResourceGroups(
+        return azureDelegateHelperService.listResourceGroups(
             azureConfig, secretManager.getEncryptionDetails(azureConfig, null, null), subscriptionId);
       } catch (Exception e) {
         log.warn(ExceptionUtils.getMessage(e), e);
