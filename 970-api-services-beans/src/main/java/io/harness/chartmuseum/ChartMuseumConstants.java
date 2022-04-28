@@ -47,4 +47,7 @@ public class ChartMuseumConstants {
 
   public final String GCS_COMMAND_TEMPLATE =
       " --port=${PORT} --storage=google --storage-google-bucket=${BUCKET_NAME} --storage-google-prefix=${FOLDER_PATH}";
+
+  public final String ADDRESS_BIND_ERROR = "Reason: Chartmuseum tried to start on port [%s] which is already in use.";
+  public final String ADDRESS_BIND_CODE = "bind: address already in use";
 }

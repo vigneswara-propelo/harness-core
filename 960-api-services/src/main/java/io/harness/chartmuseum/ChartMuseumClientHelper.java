@@ -8,6 +8,8 @@
 package io.harness.chartmuseum;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.chartmuseum.ChartMuseumConstants.ADDRESS_BIND_CODE;
+import static io.harness.chartmuseum.ChartMuseumConstants.ADDRESS_BIND_ERROR;
 import static io.harness.chartmuseum.ChartMuseumConstants.AMAZON_S3_COMMAND_TEMPLATE;
 import static io.harness.chartmuseum.ChartMuseumConstants.AWS_ACCESS_KEY_ID;
 import static io.harness.chartmuseum.ChartMuseumConstants.AWS_SECRET_ACCESS_KEY;
@@ -51,6 +53,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.StartedProcess;
@@ -60,6 +64,11 @@ import org.zeroturnaround.exec.StartedProcess;
 @Singleton
 public class ChartMuseumClientHelper {
   private static final SecureRandom random = new SecureRandom();
+  private static final String CHARTMUSEUM_SERVER_STARTUP_FAILURE_MESSAGE =
+      "Could not start chart museum server. Failed after %s retries %n";
+  private static final String ADDRESS_ALREADY_IN_USE_REGEX = "tcp :(\\d+): bind: address already in use";
+  private static final Pattern ADDRESS_ALREADY_IN_USE_PATTERN =
+      Pattern.compile(ADDRESS_ALREADY_IN_USE_REGEX, Pattern.MULTILINE);
 
   @Inject private K8sGlobalConfigService k8sGlobalConfigService;
 
@@ -264,10 +273,21 @@ public class ChartMuseumClientHelper {
       return errorPrefix + BUCKET_REGION_ERROR_CODE;
     }
 
-    return format("Could not start chart museum server. Failed after %s retries", CHART_MUSEUM_SERVER_START_RETRIES);
+    if (processOutput.contains(ADDRESS_BIND_CODE)) {
+      String port = extractPortFromAddressInUseMessage(processOutput);
+      return format(CHARTMUSEUM_SERVER_STARTUP_FAILURE_MESSAGE, CHART_MUSEUM_SERVER_START_RETRIES)
+          + format(ADDRESS_BIND_ERROR, port);
+    }
+
+    return format(CHARTMUSEUM_SERVER_STARTUP_FAILURE_MESSAGE, CHART_MUSEUM_SERVER_START_RETRIES);
   }
 
   private static boolean checkAddressInUseError(String processOutput, int port) {
     return processOutput.contains(format("listen tcp :%d: bind: address already in use", port));
+  }
+
+  private static String extractPortFromAddressInUseMessage(String errorMessage) {
+    Matcher matcher = ADDRESS_ALREADY_IN_USE_PATTERN.matcher(errorMessage);
+    return matcher.find() ? matcher.group(1) : "";
   }
 }

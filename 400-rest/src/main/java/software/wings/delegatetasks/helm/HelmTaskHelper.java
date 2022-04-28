@@ -207,10 +207,13 @@ public class HelmTaskHelper {
       throws Exception {
     String workingDirectory = createNewDirectoryAtPath(Paths.get(WORKING_DIR_BASE).toString());
     Map<String, List<String>> mapK8sValuesLocationToContents = new HashMap<>();
-
     try {
       fetchChartFiles(helmChartConfigParams, workingDirectory, timeoutInMillis, helmCommandFlag);
+    } catch (HelmClientException ex) {
+      throw new HelmClientRuntimeException((HelmClientException) ExceptionMessageSanitizer.sanitizeException(ex));
+    }
 
+    try {
       // Fetch chart version in case it is not specified in service to display in execution logs
       if (isBlank(helmChartConfigParams.getChartVersion())) {
         try {
@@ -261,8 +264,6 @@ public class HelmTaskHelper {
       return mapK8sValuesLocationToContents;
     } catch (InvalidArgumentsException ex) {
       throw ExceptionMessageSanitizer.sanitizeException(ex);
-    } catch (HelmClientException ex) {
-      throw new HelmClientRuntimeException((HelmClientException) ExceptionMessageSanitizer.sanitizeException(ex));
     } catch (Exception ex) {
       log.info("values yaml file not found", ExceptionMessageSanitizer.sanitizeException(ex));
       return null;
