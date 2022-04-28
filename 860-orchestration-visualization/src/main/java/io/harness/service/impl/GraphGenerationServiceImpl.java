@@ -174,9 +174,8 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
               && StatusUtils.isFinalStatus(nodeExecution.getStatus())) {
             pmsExecutionSummaryService.updateStageOfIdentityType(planExecutionId, executionSummaryUpdate);
           } else {
-            ExecutionSummaryUpdateUtils.addPipelineUpdateCriteria(
-                executionSummaryUpdate, planExecutionId, nodeExecution);
-            ExecutionSummaryUpdateUtils.addStageUpdateCriteria(executionSummaryUpdate, planExecutionId, nodeExecution);
+            ExecutionSummaryUpdateUtils.addPipelineUpdateCriteria(executionSummaryUpdate, nodeExecution);
+            ExecutionSummaryUpdateUtils.addStageUpdateCriteria(executionSummaryUpdate, nodeExecution);
           }
           orchestrationGraph = graphStatusUpdateHelper.handleEventV2(
               planExecutionId, nodeExecution, orchestrationEventType, orchestrationGraph);

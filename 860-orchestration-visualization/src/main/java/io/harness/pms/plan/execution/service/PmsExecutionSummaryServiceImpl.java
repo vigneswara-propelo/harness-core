@@ -53,7 +53,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
   public void regenerateStageLayoutGraph(String planExecutionId, List<NodeExecution> nodeExecutions) {
     Update update = new Update();
     for (NodeExecution nodeExecution : nodeExecutions) {
-      ExecutionSummaryUpdateUtils.addStageUpdateCriteria(update, planExecutionId, nodeExecution);
+      ExecutionSummaryUpdateUtils.addStageUpdateCriteria(update, nodeExecution);
     }
     Criteria criteria = Criteria.where(PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
     Query query = new Query(criteria);
@@ -103,7 +103,7 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
   private void updatePipelineLevelInfo(String planExecutionId, NodeExecution nodeExecution) {
     if (OrchestrationUtils.isPipelineNode(nodeExecution)) {
       Update update = new Update();
-      ExecutionSummaryUpdateUtils.addPipelineUpdateCriteria(update, planExecutionId, nodeExecution);
+      ExecutionSummaryUpdateUtils.addPipelineUpdateCriteria(update, nodeExecution);
       Criteria criteria = Criteria.where(PlanExecutionSummaryKeys.planExecutionId).is(planExecutionId);
       Query query = new Query(criteria);
       pmsExecutionSummaryRepository.update(query, update);

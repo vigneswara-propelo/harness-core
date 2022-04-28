@@ -25,6 +25,7 @@ import io.harness.pms.sdk.service.execution.PmsExecutionGrpcService;
 import io.harness.pms.template.EntityReferenceGrpcService;
 import io.harness.pms.template.VariablesServiceImpl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
 import com.google.inject.AbstractModule;
@@ -38,7 +39,6 @@ import io.grpc.BindableService;
 import io.grpc.Channel;
 import io.grpc.ServerInterceptor;
 import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.internal.GrpcUtil;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
@@ -124,16 +124,6 @@ public class PipelineServiceGrpcModule extends AbstractModule {
     return map;
   }
 
-  private static boolean isValidAuthority(String authority) {
-    try {
-      GrpcUtil.checkAuthority(authority);
-    } catch (Exception ignore) {
-      log.error("Exception occurred when checking for valid authority", ignore);
-      return false;
-    }
-    return true;
-  }
-
   private Channel getChannel(GrpcClientConfig clientConfig) throws SSLException {
     String authorityToUse = clientConfig.getAuthority();
     Channel channel;
@@ -175,7 +165,8 @@ public class PipelineServiceGrpcModule extends AbstractModule {
   }
 
   @Provides
-  private Set<BindableService> bindableServices(HealthStatusManager healthStatusManager,
+  @VisibleForTesting
+  Set<BindableService> bindableServices(HealthStatusManager healthStatusManager,
       PmsSdkInstanceService pmsSdkInstanceService, PmsExecutionGrpcService pmsExecutionGrpcService,
       SweepingOutputServiceImpl sweepingOutputService, OutcomeServiceGrpcServerImpl outcomeServiceGrpcServer,
       EngineExpressionGrpcServiceImpl engineExpressionGrpcService, InterruptGrpcService interruptGrpcService,

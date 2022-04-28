@@ -22,14 +22,16 @@ import io.harness.steps.StepSpecTypeConstants;
 
 import java.util.Objects;
 import java.util.Optional;
+import lombok.experimental.UtilityClass;
 import org.springframework.data.mongodb.core.query.Update;
 
 /**
  * A utility to generate updates for the layout graph used in the list api for stage layout
  */
 @OwnedBy(HarnessTeam.PIPELINE)
+@UtilityClass
 public class ExecutionSummaryUpdateUtils {
-  public static void addStageUpdateCriteria(Update update, String planExecutionId, NodeExecution nodeExecution) {
+  public static void addStageUpdateCriteria(Update update, NodeExecution nodeExecution) {
     Level level = Objects.requireNonNull(AmbianceUtils.obtainCurrentLevel(nodeExecution.getAmbiance()));
     ExecutionStatus status = ExecutionStatus.getExecutionStatus(nodeExecution.getStatus());
     if (Objects.equals(level.getStepType().getType(), StepSpecTypeConstants.BARRIER)) {
@@ -71,7 +73,7 @@ public class ExecutionSummaryUpdateUtils {
     }
   }
 
-  public static void addPipelineUpdateCriteria(Update update, String planExecutionId, NodeExecution nodeExecution) {
+  public static void addPipelineUpdateCriteria(Update update, NodeExecution nodeExecution) {
     if (OrchestrationUtils.isPipelineNode(nodeExecution)) {
       ExecutionStatus status = ExecutionStatus.getExecutionStatus(nodeExecution.getStatus());
       update.set(PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys.internalStatus, nodeExecution.getStatus());
