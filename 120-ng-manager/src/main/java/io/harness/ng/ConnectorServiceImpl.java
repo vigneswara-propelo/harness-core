@@ -481,11 +481,11 @@ public class ConnectorServiceImpl implements ConnectorService {
   public ConnectorValidationResult testConnection(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String connectorIdentifier) {
     ConnectorValidationResult connectorValidationResult = null;
+    Optional<ConnectorResponseDTO> connectorDTO = Optional.empty();
     try (AutoLogContext ignore1 =
              new NgAutoLogContext(projectIdentifier, orgIdentifier, accountIdentifier, OVERRIDE_ERROR);
          AutoLogContext ignore2 = new ConnectorLogContext(connectorIdentifier, OVERRIDE_ERROR)) {
-      Optional<ConnectorResponseDTO> connectorDTO =
-          get(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
+      connectorDTO = get(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
       if (connectorDTO.isPresent()) {
         ConnectorResponseDTO connectorResponse = connectorDTO.get();
         ConnectorInfoDTO connectorInfoDTO = connectorResponse.getConnector();
@@ -518,6 +518,10 @@ public class ConnectorServiceImpl implements ConnectorService {
       if (connectorValidationResult != null) {
         updateTheConnectorValidationResultInTheEntity(
             connectorValidationResult, accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
+        if (connectorDTO.isPresent()) {
+          instrumentationHelper.sendTestConnectionEvent(
+              connectorValidationResult, connectorDTO.get().getConnector(), accountIdentifier);
+        }
       }
     }
   }
