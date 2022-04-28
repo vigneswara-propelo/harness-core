@@ -150,7 +150,8 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
 
   @Override
   public List<HostValidationDTO> validateSSHHosts(@NotNull List<String> hosts, @Nullable String accountIdentifier,
-      @Nullable String orgIdentifier, @Nullable String projectIdentifier, @NotNull String secretIdentifierWithScope) {
+      @Nullable String orgIdentifier, @Nullable String projectIdentifier, @NotNull String secretIdentifierWithScope,
+      @Nullable Set<String> delegateSelectors) {
     if (hosts.isEmpty()) {
       return Collections.emptyList();
     }
@@ -162,7 +163,7 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
     for (String hostName : limitHosts(hosts)) {
       validateSSHHostTasks.supplyAsync(()
                                            -> validateSSHHost(hostName, accountIdentifier, orgIdentifier,
-                                               projectIdentifier, secretIdentifierWithScope));
+                                               projectIdentifier, secretIdentifierWithScope, delegateSelectors));
     }
 
     return executeParallelTasks(validateSSHHostTasks);
@@ -170,7 +171,8 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
 
   @Override
   public HostValidationDTO validateSSHHost(@NotNull String host, String accountIdentifier,
-      @Nullable String orgIdentifier, @Nullable String projectIdentifier, @NotNull String secretIdentifierWithScope) {
+      @Nullable String orgIdentifier, @Nullable String projectIdentifier, @NotNull String secretIdentifierWithScope,
+      @Nullable Set<String> delegateSelectors) {
     if (isBlank(host)) {
       throw new InvalidArgumentsException("SSH host cannot be null or empty", USER_SRE);
     }
@@ -212,23 +214,42 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
                                 .host(hostName)
                                 .encryptionDetails(encryptionDetails)
                                 .sshKeySpec(secretSpecDTO)
+                                .delegateSelectors(delegateSelectors)
                                 .build())
             .taskSetupAbstractions(setupTaskAbstractions(accountIdentifier, orgIdentifier, projectIdentifier))
             .executionTimeout(Duration.ofSeconds(PhysicalDataCenterConstants.EXECUTION_TIMEOUT_IN_SECONDS))
             .build();
 
-    log.info("Start validation host:{}, hostName:{}, secretIdent:{}, accountIdent:{}, orgIdent:{}, projIdent:{},", host,
-        hostName, secretIdentifierWithScope, accountIdentifier, orgIdentifier, projectIdentifier);
-    DelegateResponseData delegateResponseData = executeDelegateSyncTask(delegateTaskRequest);
+    log.info(
+        "Start validation host:{}, hostName:{}, secretIdent:{}, accountIdent:{}, orgIdent:{}, projIdent:{}, tags:{}",
+        host, hostName, secretIdentifierWithScope, accountIdentifier, orgIdentifier, projectIdentifier,
+        delegateSelectors);
+    DelegateResponseData delegateResponseData = executeSshDelegateSyncTask(delegateTaskRequest);
 
-    SSHConfigValidationTaskResponse responseData = (SSHConfigValidationTaskResponse) delegateResponseData;
+    if (delegateResponseData instanceof ErrorNotifyResponseData) {
+      ErrorNotifyResponseData errorResponseData = (ErrorNotifyResponseData) delegateResponseData;
 
-    return HostValidationDTO.builder()
-        .host(hostName)
-        .status(HostValidationDTO.HostValidationStatus.fromBoolean(responseData.isConnectionSuccessful()))
-        .error(responseData.isConnectionSuccessful() ? buildErrorDetails()
-                                                     : buildErrorDetails(responseData.getErrorMessage()))
-        .build();
+      return HostValidationDTO.builder()
+          .host(hostName)
+          .status(HostValidationDTO.HostValidationStatus.fromBoolean(false))
+          .error(buildErrorDetails(errorResponseData.getErrorMessage()))
+          .build();
+    } else if (delegateResponseData instanceof SSHConfigValidationTaskResponse) {
+      SSHConfigValidationTaskResponse responseData = (SSHConfigValidationTaskResponse) delegateResponseData;
+
+      return HostValidationDTO.builder()
+          .host(hostName)
+          .status(HostValidationDTO.HostValidationStatus.fromBoolean(responseData.isConnectionSuccessful()))
+          .error(responseData.isConnectionSuccessful() ? buildErrorDetails()
+                                                       : buildErrorDetails(responseData.getErrorMessage()))
+          .build();
+    } else {
+      return HostValidationDTO.builder()
+          .host(hostName)
+          .status(HostValidationDTO.HostValidationStatus.fromBoolean(false))
+          .error(buildErrorDetails("Host validation check failed"))
+          .build();
+    }
   }
 
   @NotNull
@@ -291,6 +312,18 @@ public class NGHostValidationServiceImpl implements NGHostValidationService {
       throw new HintException(
           String.format(HintException.DELEGATE_NOT_AVAILABLE, DocumentLinksConstants.DELEGATE_INSTALLATION_LINK),
           new DelegateNotAvailableException("Delegates are not available", WingsException.USER));
+    }
+    return delegateResponseData;
+  }
+
+  private DelegateResponseData executeSshDelegateSyncTask(DelegateTaskRequest delegateTaskRequest) {
+    final DelegateResponseData delegateResponseData;
+    try {
+      delegateResponseData = delegateGrpcClientWrapper.executeSyncTask(delegateTaskRequest);
+    } catch (DelegateServiceDriverException ex) {
+      throw new HintException(
+          String.format(HintException.DELEGATE_NOT_AVAILABLE, DocumentLinksConstants.DELEGATE_INSTALLATION_LINK),
+          new DelegateNotAvailableException(ex.getCause().getMessage(), ex, WingsException.USER));
     }
     return delegateResponseData;
   }
