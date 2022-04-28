@@ -43,3 +43,4 @@ io.harness.steps.section.chain.SectionChainStepParameters
 io.harness.steps.common.NGSectionStepParameters
 io.harness.steps.common.steps.stepgroup.StepGroupStepParameters
 io.harness.steps.fork.ForkStepParameters
+io.harness.pms.expressions.ExecutionSummaryUpdateUtilsTest$TestStepParameters
