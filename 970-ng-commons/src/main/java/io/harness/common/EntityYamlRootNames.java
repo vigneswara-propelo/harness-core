@@ -91,9 +91,10 @@ public class EntityYamlRootNames {
   public static final String ARTIFACTORY_UPLOAD = "ArtifactoryUpload";
   public static final String GCS_UPLOAD = "GCSUpload";
   public static final String S3_UPLOAD = "S3Upload";
-
   public static final String BUILD_AND_PUSH_GCR = "BuildAndPushGCR";
   public static final String BUILD_AND_PUSH_ECR = "BuildAndPushECR";
   public static final String BUILD_AND_PUSH_DOCKER_REGISTRY = "BuildAndPushDockerRegistry";
   public static final String NG_FILE = "NgFile";
+  public static final String SERVERLESS_AWS_LAMBDA_DEPLOY = "ServerlessAwsLambdaDeploy";
+  public static final String SERVERLESS_AWS_LAMBDA_ROLLBACK = "ServerlessAwsLambdaRollback";
 }

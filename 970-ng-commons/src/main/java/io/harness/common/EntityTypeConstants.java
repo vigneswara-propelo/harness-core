@@ -86,4 +86,6 @@ public interface EntityTypeConstants {
   String SERVICENOW_UPDATE = "ServiceNowUpdate";
   String ENVIRONMENT_GROUP = "EnvironmentGroup";
   String NG_FILE = "NgFile";
+  String SERVERLESS_AWS_LAMBDA_DEPLOY = "ServerlessAwsLambdaDeploy";
+  String SERVERLESS_AWS_LAMBDA_ROLLBACK = "ServerlessAwsLambdaRollback";
 }

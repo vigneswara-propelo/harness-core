@@ -9,11 +9,13 @@ package io.harness.serializer.kryo;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.artifact.outcome.ArtifactoryGenericArtifactOutcome;
 import io.harness.cdng.artifact.outcome.DockerArtifactOutcome;
 import io.harness.cdng.artifact.outcome.EcrArtifactOutcome;
 import io.harness.cdng.artifact.outcome.GcrArtifactOutcome;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sGcpInfrastructureOutcome;
+import io.harness.cdng.infra.beans.ServerlessAwsLambdaInfrastructureOutcome;
 import io.harness.cdng.instance.outcome.DeploymentInfoOutcome;
 import io.harness.cdng.manifest.yaml.HelmChartManifestOutcome;
 import io.harness.cdng.manifest.yaml.HelmCommandFlagType;
@@ -23,6 +25,7 @@ import io.harness.cdng.manifest.yaml.KustomizeManifestOutcome;
 import io.harness.cdng.manifest.yaml.KustomizePatchesManifestOutcome;
 import io.harness.cdng.manifest.yaml.OpenshiftManifestOutcome;
 import io.harness.cdng.manifest.yaml.OpenshiftParamManifestOutcome;
+import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.cdng.service.beans.ServiceOutcome;
@@ -56,5 +59,8 @@ public class NGBeanKryoRegistrar implements KryoRegistrar {
     kryo.register(DockerArtifactOutcome.class, 8007);
     kryo.register(GcrArtifactOutcome.class, 390006);
     kryo.register(EcrArtifactOutcome.class, 390007);
+    kryo.register(ServerlessAwsLambdaManifestOutcome.class, 390008);
+    kryo.register(ServerlessAwsLambdaInfrastructureOutcome.class, 390009);
+    kryo.register(ArtifactoryGenericArtifactOutcome.class, 390010);
   }
 }

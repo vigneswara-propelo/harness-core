@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ACASIAN;
 import static io.harness.rule.OwnerRule.FILIP;
+import static io.harness.rule.OwnerRule.PIYUSH_BHUWALKA;
 import static io.harness.rule.OwnerRule.VAIBHAV_SI;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,9 +24,11 @@ import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sGcpInfrastructureOutcome;
 import io.harness.cdng.infra.beans.PdcInfrastructureOutcome;
+import io.harness.cdng.infra.beans.ServerlessAwsLambdaInfrastructureOutcome;
 import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
 import io.harness.cdng.infra.yaml.K8sGcpInfrastructure;
 import io.harness.cdng.infra.yaml.PdcInfrastructure;
+import io.harness.cdng.infra.yaml.ServerlessAwsLambdaInfrastructure;
 import io.harness.cdng.service.steps.ServiceStepOutcome;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.ng.core.environment.beans.EnvironmentType;
@@ -149,6 +152,50 @@ public class InfrastructureMapperTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testServerlessAwsInfraMapper() {
+    ServerlessAwsLambdaInfrastructure serverlessAwsLambdaInfrastructure =
+        ServerlessAwsLambdaInfrastructure.builder()
+            .connectorRef(ParameterField.createValueField("connectorId"))
+            .region(ParameterField.createValueField("region"))
+            .stage(ParameterField.createValueField("stage"))
+            .build();
+
+    ServerlessAwsLambdaInfrastructureOutcome serverlessAwsLambdaInfrastructureOutcome =
+        ServerlessAwsLambdaInfrastructureOutcome.builder()
+            .connectorRef("connectorId")
+            .region("region")
+            .stage("stage")
+            .environment(environment)
+            .infrastructureKey("ad53b5ff347a533d21b0d02bab1ae1d62506068c")
+            .build();
+
+    InfrastructureOutcome infrastructureOutcome =
+        InfrastructureMapper.toOutcome(serverlessAwsLambdaInfrastructure, environment, serviceOutcome);
+    assertThat(infrastructureOutcome).isEqualTo(serverlessAwsLambdaInfrastructureOutcome);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testServerlessAwsInfraMapperEmptyValues() {
+    ServerlessAwsLambdaInfrastructure emptyRegion = ServerlessAwsLambdaInfrastructure.builder()
+                                                        .connectorRef(ParameterField.createValueField("connectorId"))
+                                                        .region(ParameterField.createValueField(""))
+                                                        .stage(ParameterField.createValueField("stage"))
+                                                        .build();
+    assertThatThrownBy(() -> InfrastructureMapper.toOutcome(emptyRegion, environment, serviceOutcome))
+        .isInstanceOf(InvalidArgumentsException.class);
+
+    ServerlessAwsLambdaInfrastructure emptyStage = ServerlessAwsLambdaInfrastructure.builder()
+                                                       .connectorRef(ParameterField.createValueField("connectorId"))
+                                                       .region(ParameterField.createValueField("region"))
+                                                       .stage(ParameterField.createValueField(""))
+                                                       .build();
+    assertThatThrownBy(() -> InfrastructureMapper.toOutcome(emptyStage, environment, serviceOutcome));
+  }
+
   @Owner(developers = FILIP)
   @Category(UnitTests.class)
   public void testPdcInfrastructureWithConnectorToOutcome() {

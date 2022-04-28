@@ -27,6 +27,7 @@ import io.harness.delegate.task.executioncapability.PcfAutoScalarCapabilityCheck
 import io.harness.delegate.task.executioncapability.PcfConnectivityCapabilityCheck;
 import io.harness.delegate.task.executioncapability.PcfInstallationCapabilityCheck;
 import io.harness.delegate.task.executioncapability.ProcessExecutorCapabilityCheck;
+import io.harness.delegate.task.executioncapability.ServerlessInstallationCapabilityCheck;
 import io.harness.delegate.task.executioncapability.SftpCapabilityCheck;
 import io.harness.delegate.task.executioncapability.SmbConnectionCapabilityCheck;
 import io.harness.delegate.task.executioncapability.SmtpCapabilityCheck;
@@ -76,6 +77,7 @@ public class CapabilityCheckFactory {
   @Inject GitConnectionNGCapabilityChecker gitConnectionNGCapabilityCheck;
   @Inject NoOpCapabilityCheck noOpCapabilityCheck;
   @Inject CIVmConnectionCapabilityCheck ciVmConnectionCapabilityCheck;
+  @Inject ServerlessInstallationCapabilityCheck serverlessInstallationCapabilityCheck;
 
   public CapabilityCheck obtainCapabilityCheck(CapabilityType capabilityCheckType) {
     switch (capabilityCheckType) {
@@ -129,6 +131,8 @@ public class CapabilityCheckFactory {
         return liteEngineConnectionCapabilityCheck;
       case CI_VM:
         return ciVmConnectionCapabilityCheck;
+      case SERVERLESS_INSTALL:
+        return serverlessInstallationCapabilityCheck;
       case SELECTORS:
         return noOpCapabilityCheck;
       default:

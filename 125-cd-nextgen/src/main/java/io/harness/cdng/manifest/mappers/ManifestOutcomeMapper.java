@@ -14,6 +14,7 @@ import static io.harness.cdng.manifest.ManifestType.Kustomize;
 import static io.harness.cdng.manifest.ManifestType.KustomizePatches;
 import static io.harness.cdng.manifest.ManifestType.OpenshiftParam;
 import static io.harness.cdng.manifest.ManifestType.OpenshiftTemplate;
+import static io.harness.cdng.manifest.ManifestType.ServerlessAwsLambda;
 import static io.harness.cdng.manifest.ManifestType.VALUES;
 
 import static java.lang.String.format;
@@ -28,6 +29,7 @@ import io.harness.cdng.manifest.yaml.ManifestAttributes;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.OpenshiftManifestOutcome;
 import io.harness.cdng.manifest.yaml.OpenshiftParamManifestOutcome;
+import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.cdng.manifest.yaml.kinds.HelmChartManifest;
 import io.harness.cdng.manifest.yaml.kinds.K8sManifest;
@@ -35,6 +37,7 @@ import io.harness.cdng.manifest.yaml.kinds.KustomizeManifest;
 import io.harness.cdng.manifest.yaml.kinds.KustomizePatchesManifest;
 import io.harness.cdng.manifest.yaml.kinds.OpenshiftManifest;
 import io.harness.cdng.manifest.yaml.kinds.OpenshiftParamManifest;
+import io.harness.cdng.manifest.yaml.kinds.ServerlessAwsLambdaManifest;
 import io.harness.cdng.manifest.yaml.kinds.ValuesManifest;
 
 import java.util.LinkedList;
@@ -73,6 +76,8 @@ public class ManifestOutcomeMapper {
         return getOpenshiftOutcome(manifestAttributes);
       case OpenshiftParam:
         return getOpenshiftParamOutcome(manifestAttributes, parameters);
+      case ServerlessAwsLambda:
+        return getServerlessAwsOutcome(manifestAttributes, parameters);
       default:
         throw new UnsupportedOperationException(
             format("Unknown Artifact Config type: [%s]", manifestAttributes.getKind()));
@@ -150,6 +155,17 @@ public class ManifestOutcomeMapper {
         .identifier(attributes.getIdentifier())
         .store(attributes.getStoreConfig())
         .order(params.getOrder())
+        .build();
+  }
+
+  private ServerlessAwsLambdaManifestOutcome getServerlessAwsOutcome(
+      ManifestAttributes manifestAttributes, ManifestStepParameters param) {
+    ServerlessAwsLambdaManifest attributes = (ServerlessAwsLambdaManifest) manifestAttributes;
+    return ServerlessAwsLambdaManifestOutcome.builder()
+        .identifier(attributes.getIdentifier())
+        .store(attributes.getStoreConfig())
+        .configOverridePath(attributes.getConfigOverridePath())
+        .order(param.getOrder())
         .build();
   }
 }

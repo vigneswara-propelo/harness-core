@@ -21,6 +21,12 @@ public interface ArtifactoryNgService {
   List<BuildDetails> getBuildDetails(
       ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, int maxVersions);
 
+  List<BuildDetails> getArtifactList(
+      ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, int maxVersions);
+
+  BuildDetails getLatestArtifact(ArtifactoryConfigRequest artifactoryConfig, String repositoryName,
+      String ArtifactPathDirectory, String artifactPathFilter, String artifactPath, int maxVersions);
+
   Map<String, String> getRepositories(ArtifactoryConfigRequest artifactoryConfig, String packageType);
 
   InputStream downloadArtifacts(ArtifactoryConfigRequest artifactoryConfig, String repoKey,

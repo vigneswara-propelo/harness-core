@@ -10,6 +10,7 @@ package io.harness.cdng.infra.beans;
 import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
 import io.harness.cdng.infra.yaml.K8sGcpInfrastructure;
 import io.harness.cdng.infra.yaml.PdcInfrastructure;
+import io.harness.cdng.infra.yaml.ServerlessAwsLambdaInfrastructure;
 import io.harness.persistence.PersistentEntity;
 import io.harness.persistence.UuidAware;
 import io.harness.pms.sdk.core.data.Outcome;
@@ -22,7 +23,8 @@ import org.mongodb.morphia.annotations.Entity;
 @JsonSubTypes({
   @JsonSubTypes.Type(value = K8SDirectInfrastructure.class, name = "kubernetes-direct")
   , @JsonSubTypes.Type(value = K8sGcpInfrastructure.class, name = "kubernetes-gcp"),
-      @JsonSubTypes.Type(value = PdcInfrastructure.class, name = "pdc")
+      @JsonSubTypes.Type(value = PdcInfrastructure.class, name = "pdc"),
+      @JsonSubTypes.Type(value = ServerlessAwsLambdaInfrastructure.class, name = "serverless-aws-lambda")
 })
 @Entity(value = "infrastructureMapping")
 public interface InfraMapping extends PersistentEntity, UuidAware, Outcome {

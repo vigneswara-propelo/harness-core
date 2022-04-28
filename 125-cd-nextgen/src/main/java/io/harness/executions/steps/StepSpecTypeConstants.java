@@ -32,4 +32,7 @@ public interface StepSpecTypeConstants {
 
   String HELM_DEPLOY = "HelmDeploy";
   String HELM_ROLLBACK = "HelmRollback";
+
+  String SERVERLESS_AWS_LAMBDA_DEPLOY = "ServerlessAwsLambdaDeploy";
+  String SERVERLESS_AWS_LAMBDA_ROLLBACK = "ServerlessAwsLambdaRollback";
 }

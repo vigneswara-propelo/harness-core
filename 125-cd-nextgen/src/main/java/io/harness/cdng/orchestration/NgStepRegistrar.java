@@ -42,6 +42,8 @@ import io.harness.cdng.rollback.steps.InfrastructureDefinitionStep;
 import io.harness.cdng.rollback.steps.InfrastructureProvisionerStep;
 import io.harness.cdng.rollback.steps.RollbackStepsStep;
 import io.harness.cdng.rollback.steps.StepGroupRollbackStep;
+import io.harness.cdng.serverless.ServerlessAwsLambdaDeployStep;
+import io.harness.cdng.serverless.ServerlessAwsLambdaRollbackStep;
 import io.harness.cdng.service.steps.ServiceConfigStep;
 import io.harness.cdng.service.steps.ServiceDefinitionStep;
 import io.harness.cdng.service.steps.ServiceSpecStep;
@@ -97,6 +99,8 @@ public class NgStepRegistrar {
     engineSteps.put(EnvironmentStep.STEP_TYPE, EnvironmentStep.class);
     engineSteps.put(HelmDeployStep.STEP_TYPE, HelmDeployStep.class);
     engineSteps.put(HelmRollbackStep.STEP_TYPE, HelmRollbackStep.class);
+    engineSteps.put(ServerlessAwsLambdaDeployStep.STEP_TYPE, ServerlessAwsLambdaDeployStep.class);
+    engineSteps.put(ServerlessAwsLambdaRollbackStep.STEP_TYPE, ServerlessAwsLambdaRollbackStep.class);
 
     engineSteps.putAll(NGCommonUtilStepsRegistrar.getEngineSteps());
     return engineSteps;

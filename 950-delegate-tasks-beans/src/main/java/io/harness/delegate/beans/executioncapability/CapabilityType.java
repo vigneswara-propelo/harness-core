@@ -48,5 +48,6 @@ public enum CapabilityType {
   GIT_INSTALLATION,
   LITE_ENGINE,
   CI_VM,
-  ARTIFACTORY;
+  ARTIFACTORY,
+  SERVERLESS_INSTALL;
 }

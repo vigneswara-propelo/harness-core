@@ -21,7 +21,6 @@ import io.harness.filters.ConnectorRefExtractorHelper;
 import io.harness.filters.WithConnectorRef;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
-import io.harness.validation.OneOfField;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
 
@@ -51,7 +50,6 @@ import org.springframework.data.annotation.TypeAlias;
 @JsonTypeName(ARTIFACTORY_REGISTRY_NAME)
 @SimpleVisitorHelper(helperClass = ConnectorRefExtractorHelper.class)
 @TypeAlias("artifactoryRegistryArtifactConfig")
-@OneOfField(fields = {"tag", "tagRegex"})
 @RecasterAlias("io.harness.cdng.artifact.bean.yaml.ArtifactoryRegistryArtifactConfig")
 public class ArtifactoryRegistryArtifactConfig implements ArtifactConfig, Visitable, WithConnectorRef {
   /**
@@ -65,12 +63,16 @@ public class ArtifactoryRegistryArtifactConfig implements ArtifactConfig, Visita
   /**
    * Images in repos need to be referenced via a path.
    */
-  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactPath;
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactPath;
+
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactPathFilter;
+
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactDirectory;
   /**
    * Repo format.
    */
   @NotNull
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH, allowableValues = "docker")
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH, allowableValues = "docker, generic")
   @Wither
   ParameterField<String> repositoryFormat;
   /**
@@ -128,6 +130,13 @@ public class ArtifactoryRegistryArtifactConfig implements ArtifactConfig, Visita
     }
     if (!ParameterField.isNull(artifactoryRegistryArtifactConfig.getTagRegex())) {
       resultantConfig = resultantConfig.withTagRegex(artifactoryRegistryArtifactConfig.getTagRegex());
+    }
+    if (!ParameterField.isNull(artifactoryRegistryArtifactConfig.getArtifactDirectory())) {
+      resultantConfig = resultantConfig.withArtifactDirectory(artifactoryRegistryArtifactConfig.getArtifactDirectory());
+    }
+    if (!ParameterField.isNull(artifactoryRegistryArtifactConfig.getArtifactPathFilter())) {
+      resultantConfig =
+          resultantConfig.withArtifactPathFilter(artifactoryRegistryArtifactConfig.getArtifactPathFilter());
     }
     return resultantConfig;
   }

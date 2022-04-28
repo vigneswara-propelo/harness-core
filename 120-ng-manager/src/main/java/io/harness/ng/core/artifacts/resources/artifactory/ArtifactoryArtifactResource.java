@@ -60,6 +60,11 @@ public class ArtifactoryArtifactResource {
   private final ArtifactoryResourceService artifactoryResourceService;
   private final PipelineServiceClient pipelineServiceClient;
 
+  /* Note:
+    This API is used for both Artifactory Docker and Artifactory Generic.
+    For Artifactory Generic this artfactPath Parameter will be artifactDirectory
+  */
+
   @GET
   @Path("getBuildDetails")
   @ApiOperation(value = "Gets artifactory artifact build details", nickname = "getBuildDetailsForArtifactoryArtifact")
@@ -77,6 +82,11 @@ public class ArtifactoryArtifactResource {
         artifactPath, repositoryFormat, artifactRepositoryUrl, orgIdentifier, projectIdentifier);
     return ResponseDTO.newResponse(buildDetails);
   }
+
+  /* Note:
+  This API is used for both Artifactory Docker and Artifactory Generic.
+  For Artifactory Generic this artfactPath Parameter will be artifactDirectory
+*/
 
   @POST
   @Path("getBuildDetailsV2")
@@ -101,7 +111,7 @@ public class ArtifactoryArtifactResource {
         artifactPath, repositoryFormat, artifactRepositoryUrl, orgIdentifier, projectIdentifier);
     return ResponseDTO.newResponse(buildDetails);
   }
-
+  // unuse
   @POST
   @Path("getLastSuccessfulBuild")
   @ApiOperation(value = "Gets artifactory artifact last successful build",

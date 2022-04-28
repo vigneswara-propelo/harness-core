@@ -17,11 +17,13 @@ import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sGcpInfrastructureOutcome;
 import io.harness.cdng.infra.beans.PdcInfrastructureOutcome;
+import io.harness.cdng.infra.beans.ServerlessAwsLambdaInfrastructureOutcome;
 import io.harness.cdng.infra.yaml.Infrastructure;
 import io.harness.cdng.infra.yaml.InfrastructureKind;
 import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
 import io.harness.cdng.infra.yaml.K8sGcpInfrastructure;
 import io.harness.cdng.infra.yaml.PdcInfrastructure;
+import io.harness.cdng.infra.yaml.ServerlessAwsLambdaInfrastructure;
 import io.harness.cdng.service.steps.ServiceStepOutcome;
 import io.harness.common.ParameterFieldHelper;
 import io.harness.exception.InvalidArgumentsException;
@@ -62,6 +64,18 @@ public class InfrastructureMapper {
             .environment(environmentOutcome)
             .infrastructureKey(InfrastructureKey.generate(
                 service, environmentOutcome, k8sGcpInfrastructure.getInfrastructureKeyValues()))
+            .build();
+      case InfrastructureKind.SERVERLESS_AWS_LAMBDA:
+        ServerlessAwsLambdaInfrastructure serverlessAwsLambdaInfrastructure =
+            (ServerlessAwsLambdaInfrastructure) infrastructure;
+        validateServerlessAwsInfrastructure(serverlessAwsLambdaInfrastructure);
+        return ServerlessAwsLambdaInfrastructureOutcome.builder()
+            .connectorRef(serverlessAwsLambdaInfrastructure.getConnectorRef().getValue())
+            .region(serverlessAwsLambdaInfrastructure.getRegion().getValue())
+            .stage(serverlessAwsLambdaInfrastructure.getStage().getValue())
+            .environment(environmentOutcome)
+            .infrastructureKey(InfrastructureKey.generate(
+                service, environmentOutcome, serverlessAwsLambdaInfrastructure.getInfrastructureKeyValues()))
             .build();
 
       case InfrastructureKind.PDC:
@@ -119,6 +133,16 @@ public class InfrastructureMapper {
       throw new InvalidArgumentsException(Pair.of("hosts", "cannot be empty"),
           Pair.of("connectorRef", "cannot be empty"),
           new IllegalArgumentException("hosts and connectorRef are not defined"));
+    }
+  }
+
+  private void validateServerlessAwsInfrastructure(ServerlessAwsLambdaInfrastructure infrastructure) {
+    if (ParameterField.isNull(infrastructure.getRegion())
+        || isEmpty(ParameterFieldHelper.getParameterFieldValue(infrastructure.getRegion()))) {
+      throw new InvalidArgumentsException(Pair.of("region", "cannot be empty"));
+    }
+    if (!hasValueOrExpression(infrastructure.getStage())) {
+      throw new InvalidArgumentsException(Pair.of("stage", "cannot be empty"));
     }
   }
 

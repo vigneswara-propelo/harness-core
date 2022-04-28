@@ -218,7 +218,13 @@ public enum EntityType {
       EntityYamlRootNames.BUILD_AND_PUSH_ECR),
   @JsonProperty(EntityTypeConstants.BUILD_AND_PUSH_DOCKER_REGISTRY)
   BUILD_AND_PUSH_DOCKER_REGISTRY(ModuleType.CI, EntityTypeConstants.BUILD_AND_PUSH_DOCKER_REGISTRY, IdentifierRef.class,
-      EntityYamlRootNames.BUILD_AND_PUSH_DOCKER_REGISTRY);
+      EntityYamlRootNames.BUILD_AND_PUSH_DOCKER_REGISTRY),
+  @JsonProperty(EntityTypeConstants.SERVERLESS_AWS_LAMBDA_DEPLOY)
+  SERVERLESS_AWS_LAMBDA_DEPLOY_STEP(ModuleType.CD, EntityTypeConstants.SERVERLESS_AWS_LAMBDA_DEPLOY,
+      IdentifierRef.class, EntityYamlRootNames.SERVERLESS_AWS_LAMBDA_DEPLOY),
+  @JsonProperty(EntityTypeConstants.SERVERLESS_AWS_LAMBDA_ROLLBACK)
+  SERVERLESS_AWS_LAMBDA_ROLLBACK_STEP(ModuleType.CD, EntityTypeConstants.SERVERLESS_AWS_LAMBDA_ROLLBACK,
+      IdentifierRef.class, EntityYamlRootNames.SERVERLESS_AWS_LAMBDA_ROLLBACK);
 
   private final ModuleType moduleType;
   String yamlName;

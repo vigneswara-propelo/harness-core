@@ -40,6 +40,8 @@ import io.harness.cdng.creator.plan.steps.TerraformApplyStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TerraformDestroyStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TerraformPlanStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TerraformRollbackStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.serverless.ServerlessAwsLambdaDeployStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.serverless.ServerlessAwsLambdaRollbackStepPlanCreator;
 import io.harness.cdng.creator.variables.DeploymentStageVariableCreator;
 import io.harness.cdng.creator.variables.HelmDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.HelmRollbackStepVariableCreator;
@@ -52,6 +54,7 @@ import io.harness.cdng.creator.variables.K8sDeleteStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sRollingRollbackStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sRollingStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sScaleStepVariableCreator;
+import io.harness.cdng.creator.variables.ServerlessStepVariableCreator;
 import io.harness.cdng.provision.terraform.variablecreator.TerraformApplyStepVariableCreator;
 import io.harness.cdng.provision.terraform.variablecreator.TerraformDestroyStepVariableCreator;
 import io.harness.cdng.provision.terraform.variablecreator.TerraformPlanStepVariableCreator;
@@ -116,6 +119,8 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new CDStepsPlanCreator());
     planCreators.add(new StepGroupPMSPlanCreator());
     planCreators.add(new ParallelPlanCreator());
+    planCreators.add(new ServerlessAwsLambdaDeployStepPlanCreator());
+    planCreators.add(new ServerlessAwsLambdaRollbackStepPlanCreator());
     injectorUtils.injectMembers(planCreators);
     return planCreators;
   }
@@ -151,6 +156,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     variableCreators.add(new TerraformRollbackStepVariableCreator());
     variableCreators.add(new HelmDeployStepVariableCreator());
     variableCreators.add(new HelmRollbackStepVariableCreator());
+    variableCreators.add(new ServerlessStepVariableCreator());
     return variableCreators;
   }
 
@@ -286,6 +292,24 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setFeatureFlag(FeatureName.NG_NATIVE_HELM.name())
             .build();
 
+    StepInfo serverlessDeploy =
+        StepInfo.newBuilder()
+            .setName("Serverless Lambda Deploy")
+            .setType(StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_DEPLOY)
+            .setStepMetaData(
+                StepMetaData.newBuilder().addCategory("ServerlessAwsLambda").setFolderPath("Serverless Lambda").build())
+            .setFeatureFlag(FeatureName.SERVERLESS_SUPPORT.name())
+            .build();
+
+    StepInfo serverlessRollback =
+        StepInfo.newBuilder()
+            .setName("Serverless Lambda Rollback")
+            .setType(StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_ROLLBACK)
+            .setStepMetaData(
+                StepMetaData.newBuilder().addCategory("ServerlessAwsLambda").setFolderPath("Serverless Lambda").build())
+            .setFeatureFlag(FeatureName.SERVERLESS_SUPPORT.name())
+            .build();
+
     List<StepInfo> stepInfos = new ArrayList<>();
 
     stepInfos.add(k8sRolling);
@@ -303,6 +327,8 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     stepInfos.add(terraformDestroy);
     stepInfos.add(helmDeploy);
     stepInfos.add(helmRollback);
+    stepInfos.add(serverlessDeploy);
+    stepInfos.add(serverlessRollback);
     return stepInfos;
   }
 }

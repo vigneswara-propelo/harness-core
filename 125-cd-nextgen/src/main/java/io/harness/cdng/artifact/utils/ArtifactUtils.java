@@ -9,6 +9,8 @@ package io.harness.cdng.artifact.utils;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
+import static software.wings.utils.RepositoryFormat.generic;
+
 import io.harness.NGConstants;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -40,6 +42,8 @@ import lombok.experimental.UtilityClass;
 public class ArtifactUtils {
   public final String PRIMARY_ARTIFACT = "primary";
   public final String SIDECAR_ARTIFACT = "sidecars";
+  public final String GENERIC_PLACEHOLDER = "type: %s, artifactDirectory: %s, artifactPath/artifactPathFilter: %s,"
+      + " connectorRef: %s%n";
 
   public String getArtifactKey(ArtifactConfig artifactConfig) {
     return artifactConfig.isPrimaryArtifact() ? artifactConfig.getIdentifier()
@@ -129,6 +133,14 @@ public class ArtifactUtils {
       case ARTIFACTORY_REGISTRY:
         ArtifactoryRegistryArtifactConfig artifactoryRegistryArtifactConfig =
             (ArtifactoryRegistryArtifactConfig) artifactConfig;
+        if (generic.name().equals(artifactoryRegistryArtifactConfig.getRepositoryFormat().getValue())) {
+          return String.format(GENERIC_PLACEHOLDER, sourceType,
+              artifactoryRegistryArtifactConfig.getArtifactDirectory().getValue(),
+              ParameterField.isNull(artifactoryRegistryArtifactConfig.getArtifactPath())
+                  ? artifactoryRegistryArtifactConfig.getArtifactPathFilter().getValue()
+                  : artifactoryRegistryArtifactConfig.getArtifactPath().getValue(),
+              artifactoryRegistryArtifactConfig.getConnectorRef().getValue());
+        }
         return String.format(placeholder, sourceType, artifactoryRegistryArtifactConfig.getArtifactPath().getValue(),
             ParameterField.isNull(artifactoryRegistryArtifactConfig.getTag())
                 ? artifactoryRegistryArtifactConfig.getTagRegex().getValue()

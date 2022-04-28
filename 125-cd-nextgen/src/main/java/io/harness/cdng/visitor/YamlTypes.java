@@ -43,6 +43,9 @@ public interface YamlTypes {
   String HELM_DEPLOY = StepSpecTypeConstants.HELM_DEPLOY;
   String HELM_ROLLBACK = StepSpecTypeConstants.HELM_ROLLBACK;
 
+  String SERVERLESS_AWS_LAMBDA_DEPLOY = StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_DEPLOY;
+  String SERVERLESS_AWS_LAMBDA_ROLLBACK = StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_ROLLBACK;
+
   String MANIFEST_LIST_CONFIG = "manifests";
   String MANIFEST_CONFIG = "manifest";
   String MANIFEST_OVERRIDE_SETS = "manifestOverrideSets";
@@ -81,6 +84,8 @@ public interface YamlTypes {
   String DELEGATE_SELECTORS = "delegateSelectors";
 
   String COMMAND_FLAGS_WRAPPER = "commandFlags";
+  String REGION = "region";
+  String STAGE = "stage";
   String SSH_KEY_REF = "sshKeyRef";
   String HOSTS = "hosts";
   String ATTRIBUTE_FILTERS = "attributeFilters";

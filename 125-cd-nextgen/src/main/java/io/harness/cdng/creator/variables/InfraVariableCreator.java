@@ -115,6 +115,10 @@ public class InfraVariableCreator {
           addVariablesForPhysicalDataCenterInfra(infraDefNode, yamlPropertiesMap);
           break;
 
+        case InfrastructureKind.SERVERLESS_AWS_LAMBDA:
+          addVariablesForServerlessAwsInfra(infraDefNode, yamlPropertiesMap);
+          break;
+
         default:
           throw new InvalidRequestException("Invalid infra definition type");
       }
@@ -158,6 +162,18 @@ public class InfraVariableCreator {
     addVariableForYamlType(YamlTypes.ATTRIBUTE_FILTERS, infraSpecNode, yamlPropertiesMap);
     addVariableForYamlType(YamlTypes.HOST_FILTERS, infraSpecNode, yamlPropertiesMap);
     addVariableForYamlType(YamlTypes.DELEGATE_SELECTORS, infraSpecNode, yamlPropertiesMap);
+  }
+
+  private void addVariablesForServerlessAwsInfra(
+      YamlField infraDefNode, Map<String, YamlProperties> yamlPropertiesMap) {
+    YamlField infraSpecNode = infraDefNode.getNode().getField(YamlTypes.SPEC);
+    if (infraSpecNode == null) {
+      return;
+    }
+
+    addVariableForYamlType(YamlTypes.CONNECTOR_REF, infraSpecNode, yamlPropertiesMap);
+    addVariableForYamlType(YamlTypes.REGION, infraSpecNode, yamlPropertiesMap);
+    addVariableForYamlType(YamlTypes.STAGE, infraSpecNode, yamlPropertiesMap);
   }
 
   private void addVariableForYamlType(

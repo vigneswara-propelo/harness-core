@@ -31,6 +31,7 @@ import io.harness.artifact.ArtifactMetadataKeys;
 import io.harness.artifact.ArtifactUtilities;
 import io.harness.artifacts.beans.BuildDetailsInternal;
 import io.harness.artifacts.comparator.BuildDetailsInternalComparatorAscending;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ArtifactoryRegistryException;
 import io.harness.exception.ArtifactoryServerException;
@@ -212,6 +213,41 @@ public class ArtifactoryClientImpl {
                                                                : artifactoryConfig.getArtifactoryUrl() + "/";
   }
 
+  public Map<String, String> getRepositoriesByRepoType(
+      ArtifactoryConfigRequest artifactoryConfig, PackageTypeImpl packageType) {
+    log.info("Retrieving repositories for package {}", packageType);
+    Map<String, String> repositories = new HashMap<>();
+    Artifactory artifactory = getArtifactoryClient(artifactoryConfig);
+    ArtifactoryRequest repositoryRequest = new ArtifactoryRequestImpl()
+                                               .apiUrl(format("api/repositories?packageType=%s", packageType))
+                                               .method(GET)
+                                               .responseType(JSON);
+
+    try {
+      ArtifactoryResponse response = artifactory.restCall(repositoryRequest);
+      handleErrorResponse(response);
+      List<Map<Object, Object>> responseList = response.parseBody(List.class);
+
+      for (Map<Object, Object> repository : responseList) {
+        repositories.put(repository.get(KEY).toString(), repository.get(KEY).toString());
+      }
+      if (EmptyPredicate.isEmpty(repositories)) {
+        log.warn("Repositories are not available of package type {} or User not authorized to access artifactory",
+            packageType);
+      } else {
+        log.info("Retrieving repositories for package {} success", packageType);
+      }
+
+    } catch (SocketTimeoutException e) {
+      log.error(ERROR_OCCURRED_WHILE_RETRIEVING_REPOSITORIES, e);
+      return repositories;
+    } catch (Exception e) {
+      log.error(ERROR_OCCURRED_WHILE_RETRIEVING_REPOSITORIES, e);
+      handleAndRethrow(e, USER);
+    }
+    return repositories;
+  }
+
   public Map<String, String> getRepositories(
       ArtifactoryConfigRequest artifactoryConfig, List<PackageTypeImpl> packageTypes) {
     log.info("Retrieving repositories for packages {}", packageTypes.toArray());
@@ -256,6 +292,17 @@ public class ArtifactoryClientImpl {
       handleAndRethrow(e, USER);
     }
     return repositories;
+  }
+
+  public List<BuildDetails> getArtifactList(
+      ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, int maxVersions) {
+    return getBuildDetails(artifactoryConfig, repositoryName, artifactPath, maxVersions)
+        .stream()
+        .map(buildDetail -> {
+          buildDetail.setArtifactPath(buildDetail.getArtifactPath().replaceFirst(repositoryName, "").substring(1));
+          return buildDetail;
+        })
+        .collect(toList());
   }
 
   public List<BuildDetails> getBuildDetails(

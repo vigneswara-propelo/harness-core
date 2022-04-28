@@ -39,6 +39,7 @@ import io.harness.cdng.infra.steps.InfraStepParameters;
 import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
 import io.harness.cdng.infra.yaml.K8sGcpInfrastructure;
 import io.harness.cdng.infra.yaml.PdcInfrastructure;
+import io.harness.cdng.infra.yaml.ServerlessAwsLambdaInfrastructure;
 import io.harness.cdng.k8s.DeleteResourcesWrapper;
 import io.harness.cdng.k8s.K8sBlueGreenOutcome;
 import io.harness.cdng.k8s.K8sCanaryOutcome;
@@ -80,6 +81,7 @@ import io.harness.cdng.manifest.yaml.kinds.KustomizeManifest;
 import io.harness.cdng.manifest.yaml.kinds.KustomizePatchesManifest;
 import io.harness.cdng.manifest.yaml.kinds.OpenshiftManifest;
 import io.harness.cdng.manifest.yaml.kinds.OpenshiftParamManifest;
+import io.harness.cdng.manifest.yaml.kinds.ServerlessAwsLambdaManifest;
 import io.harness.cdng.manifest.yaml.kinds.ValuesManifest;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
@@ -90,8 +92,19 @@ import io.harness.cdng.pipeline.beans.RollbackOptionalChildChainStepParameters;
 import io.harness.cdng.pipeline.executions.CDAccountExecutionMetadata;
 import io.harness.cdng.provision.terraform.TerraformApplyStepInfo;
 import io.harness.cdng.provision.terraform.TerraformPlanStepInfo;
+import io.harness.cdng.serverless.ServerlessAwsLambdaDeployStepInfo;
+import io.harness.cdng.serverless.ServerlessAwsLambdaDeployStepParameters;
+import io.harness.cdng.serverless.ServerlessAwsLambdaRollbackDataOutcome;
+import io.harness.cdng.serverless.ServerlessAwsLambdaRollbackStepInfo;
+import io.harness.cdng.serverless.ServerlessAwsLambdaRollbackStepParameters;
+import io.harness.cdng.serverless.ServerlessGitFetchOutcome;
+import io.harness.cdng.serverless.ServerlessStepPassThroughData;
+import io.harness.cdng.serverless.beans.ServerlessExecutionPassThroughData;
+import io.harness.cdng.serverless.beans.ServerlessGitFetchFailurePassThroughData;
+import io.harness.cdng.serverless.beans.ServerlessStepExceptionPassThroughData;
 import io.harness.cdng.service.beans.KubernetesServiceSpec;
 import io.harness.cdng.service.beans.NativeHelmServiceSpec;
+import io.harness.cdng.service.beans.ServerlessAwsLambdaServiceSpec;
 import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.cdng.service.beans.ServiceConfigOutcome;
 import io.harness.cdng.service.beans.ServiceDefinition;
@@ -220,8 +233,25 @@ public class NGKryoRegistrar implements KryoRegistrar {
     kryo.register(ManifestStepParameters.class, 12559);
     kryo.register(NGVariableOverrideSets.class, 12560);
     kryo.register(SshServiceSpec.class, 12561);
+
     kryo.register(WinRmServiceSpec.class, 12562);
+
     kryo.register(CustomArtifactConfig.class, 12563);
+
     kryo.register(AcrArtifactConfig.class, 12564);
+
+    kryo.register(ServerlessAwsLambdaDeployStepInfo.class, 12571);
+    kryo.register(ServerlessAwsLambdaDeployStepParameters.class, 12572);
+    kryo.register(ServerlessStepPassThroughData.class, 12573);
+    kryo.register(ServerlessAwsLambdaRollbackStepInfo.class, 12574);
+    kryo.register(ServerlessAwsLambdaRollbackStepParameters.class, 12575);
+    kryo.register(ServerlessAwsLambdaServiceSpec.class, 12576);
+    kryo.register(ServerlessExecutionPassThroughData.class, 12577);
+    kryo.register(ServerlessAwsLambdaManifest.class, 12578);
+    kryo.register(ServerlessAwsLambdaInfrastructure.class, 12579);
+    kryo.register(ServerlessStepExceptionPassThroughData.class, 12580);
+    kryo.register(ServerlessGitFetchFailurePassThroughData.class, 12581);
+    kryo.register(ServerlessGitFetchOutcome.class, 12582);
+    kryo.register(ServerlessAwsLambdaRollbackDataOutcome.class, 12583);
   }
 }

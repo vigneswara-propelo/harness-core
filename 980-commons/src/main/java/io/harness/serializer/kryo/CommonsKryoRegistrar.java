@@ -53,6 +53,8 @@ import io.harness.exception.ShellExecutionException;
 import io.harness.exception.TerraformCommandExecutionException;
 import io.harness.exception.UnresolvedExpressionsException;
 import io.harness.exception.VerificationOperationException;
+import io.harness.exception.runtime.serverless.ServerlessAwsLambdaRuntimeException;
+import io.harness.exception.runtime.serverless.ServerlessCommandExecutionException;
 import io.harness.logging.LogLevel;
 import io.harness.security.PrincipalContextData;
 import io.harness.security.SimpleEncryption;
@@ -130,11 +132,14 @@ public class CommonsKryoRegistrar implements KryoRegistrar {
     kryo.register(TerraformCommandExecutionException.class, 980018);
     kryo.register(SimpleEncryption.class, 980019);
     kryo.register(KubernetesCliTaskRuntimeException.class, 980020);
+
     kryo.register(AzureServerException.class, 980021);
     kryo.register(AzureAuthenticationException.class, 980022);
     kryo.register(AzureConfigException.class, 980023);
     kryo.register(AzureContainerRegistryException.class, 980024);
     kryo.register(DataProcessingException.class, 980025);
     kryo.register(NameValuePair.class, 5226);
+    kryo.register(ServerlessAwsLambdaRuntimeException.class, 980026);
+    kryo.register(ServerlessCommandExecutionException.class, 980027);
   }
 }

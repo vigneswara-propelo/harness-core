@@ -11,6 +11,8 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
 
+import software.wings.helpers.ext.jenkins.BuildDetails;
+
 import java.util.List;
 import lombok.Builder;
 import lombok.Singular;
@@ -24,4 +26,5 @@ public class ArtifactTaskExecutionResponse {
   boolean isArtifactServerValid;
   boolean isArtifactSourceValid;
   List<String> artifactImages;
+  List<BuildDetails> buildDetails;
 }

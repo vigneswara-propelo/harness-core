@@ -9,6 +9,7 @@ package io.harness.cdng.artifact.mappers;
 
 import static io.harness.rule.OwnerRule.ARCHIT;
 import static io.harness.rule.OwnerRule.MLUKIC;
+import static io.harness.rule.OwnerRule.PIYUSH_BHUWALKA;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +24,8 @@ import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryConne
 import io.harness.delegate.beans.connector.docker.DockerConnectorDTO;
 import io.harness.delegate.beans.connector.nexusconnector.NexusConnectorDTO;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
-import io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateRequest;
+import io.harness.delegate.task.artifacts.artifactory.ArtifactoryDockerArtifactDelegateRequest;
+import io.harness.delegate.task.artifacts.artifactory.ArtifactoryGenericArtifactDelegateRequest;
 import io.harness.delegate.task.artifacts.docker.DockerArtifactDelegateRequest;
 import io.harness.delegate.task.artifacts.nexus.NexusArtifactDelegateRequest;
 import io.harness.pms.yaml.ParameterField;
@@ -134,9 +136,9 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     ArtifactoryConnectorDTO connectorDTO = ArtifactoryConnectorDTO.builder().build();
     List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
 
-    ArtifactoryArtifactDelegateRequest delegateRequest =
-        ArtifactConfigToDelegateReqMapper.getArtifactoryArtifactDelegateRequest(
-            artifactConfig, connectorDTO, encryptedDataDetailList, "");
+    ArtifactoryDockerArtifactDelegateRequest delegateRequest =
+        (ArtifactoryDockerArtifactDelegateRequest) ArtifactConfigToDelegateReqMapper
+            .getArtifactoryArtifactDelegateRequest(artifactConfig, connectorDTO, encryptedDataDetailList, "");
 
     assertThat(delegateRequest.getArtifactoryConnectorDTO()).isEqualTo(connectorDTO);
     assertThat(delegateRequest.getRepositoryName()).isEqualTo(artifactConfig.getRepository().getValue());
@@ -148,6 +150,62 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(delegateRequest.getTag()).isEqualTo("");
     assertThat(delegateRequest.getConnectorRef()).isEqualTo("");
     assertThat(delegateRequest.getTagRegex()).isEqualTo("\\*");
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetArtifactoryDelegateRequestWhenGenericRequestTypeWhenArtifactPathAndArtifacDirectoryIsNotNull() {
+    ArtifactoryRegistryArtifactConfig artifactConfig =
+        ArtifactoryRegistryArtifactConfig.builder()
+            .repository(ParameterField.createValueField("TEST_REPO"))
+            .repositoryFormat(ParameterField.createValueField(RepositoryFormat.generic.name()))
+            .artifactPath(ParameterField.createValueField("IMAGE1"))
+            .artifactDirectory(ParameterField.createValueField("IMAGE"))
+            .build();
+    ArtifactoryConnectorDTO connectorDTO = ArtifactoryConnectorDTO.builder().build();
+    List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
+
+    ArtifactoryGenericArtifactDelegateRequest delegateRequest =
+        (ArtifactoryGenericArtifactDelegateRequest) ArtifactConfigToDelegateReqMapper
+            .getArtifactoryArtifactDelegateRequest(artifactConfig, connectorDTO, encryptedDataDetailList, "");
+
+    assertThat(delegateRequest.getArtifactoryConnectorDTO()).isEqualTo(connectorDTO);
+    assertThat(delegateRequest.getRepositoryName()).isEqualTo(artifactConfig.getRepository().getValue());
+    assertThat(delegateRequest.getRepositoryFormat()).isEqualTo(RepositoryFormat.generic.name());
+    assertThat(delegateRequest.getEncryptedDataDetails()).isEqualTo(encryptedDataDetailList);
+    assertThat(delegateRequest.getArtifactPath()).isEqualTo(artifactConfig.getArtifactPath().getValue());
+    assertThat(delegateRequest.getArtifactDirectory()).isEqualTo(artifactConfig.getArtifactDirectory().getValue());
+    assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.ARTIFACTORY_REGISTRY);
+    assertThat(delegateRequest.getConnectorRef()).isEqualTo("");
+    assertThat(delegateRequest.getArtifactPathFilter()).isEqualTo("");
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetArtifactoryDelegateRequestWhenGenericRequestTypeWhenArtifactPathAndArtifactDirectoryIsNull() {
+    ArtifactoryRegistryArtifactConfig artifactConfig =
+        ArtifactoryRegistryArtifactConfig.builder()
+            .repository(ParameterField.createValueField("TEST_REPO"))
+            .repositoryFormat(ParameterField.createValueField(RepositoryFormat.generic.name()))
+            .build();
+    ArtifactoryConnectorDTO connectorDTO = ArtifactoryConnectorDTO.builder().build();
+    List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
+
+    ArtifactoryGenericArtifactDelegateRequest delegateRequest =
+        (ArtifactoryGenericArtifactDelegateRequest) ArtifactConfigToDelegateReqMapper
+            .getArtifactoryArtifactDelegateRequest(artifactConfig, connectorDTO, encryptedDataDetailList, "");
+
+    assertThat(delegateRequest.getArtifactoryConnectorDTO()).isEqualTo(connectorDTO);
+    assertThat(delegateRequest.getRepositoryName()).isEqualTo(artifactConfig.getRepository().getValue());
+    assertThat(delegateRequest.getRepositoryFormat()).isEqualTo(RepositoryFormat.generic.name());
+    assertThat(delegateRequest.getEncryptedDataDetails()).isEqualTo(encryptedDataDetailList);
+    assertThat(delegateRequest.getArtifactPath()).isEqualTo("");
+    assertThat(delegateRequest.getArtifactDirectory()).isNull();
+    assertThat(delegateRequest.getSourceType()).isEqualTo(ArtifactSourceType.ARTIFACTORY_REGISTRY);
+    assertThat(delegateRequest.getConnectorRef()).isEqualTo("");
+    assertThat(delegateRequest.getArtifactPathFilter()).isEqualTo("");
   }
 
   @Test
@@ -163,9 +221,9 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     ArtifactoryConnectorDTO connectorDTO = ArtifactoryConnectorDTO.builder().build();
     List<EncryptedDataDetail> encryptedDataDetailList = Collections.emptyList();
 
-    ArtifactoryArtifactDelegateRequest delegateRequest =
-        ArtifactConfigToDelegateReqMapper.getArtifactoryArtifactDelegateRequest(
-            artifactConfig, connectorDTO, encryptedDataDetailList, "");
+    ArtifactoryDockerArtifactDelegateRequest delegateRequest =
+        (ArtifactoryDockerArtifactDelegateRequest) ArtifactConfigToDelegateReqMapper
+            .getArtifactoryArtifactDelegateRequest(artifactConfig, connectorDTO, encryptedDataDetailList, "");
 
     assertThat(delegateRequest.getArtifactoryConnectorDTO()).isEqualTo(connectorDTO);
     assertThat(delegateRequest.getRepositoryName()).isEqualTo(artifactConfig.getRepository().getValue());

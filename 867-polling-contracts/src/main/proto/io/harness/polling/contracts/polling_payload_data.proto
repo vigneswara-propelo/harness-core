@@ -84,4 +84,7 @@ message Nexus3RegistryPayload {
 
 message ArtifactoryRegistryPayload {
   string artifactPath = 1;
+  string repository = 2;
+  string artifactDirectory = 3;
+  string repositoryFormat = 4;
 }

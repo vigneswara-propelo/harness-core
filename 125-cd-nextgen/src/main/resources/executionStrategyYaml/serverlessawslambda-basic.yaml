@@ -1,0 +1,23 @@
+failureStrategies:
+  - onFailure:
+      errors:
+        - AllErrors
+      action:
+        type: StageRollback
+spec:
+  execution:
+    steps:
+      - step:
+          name: "Serverless Aws Lambda Deploy"
+          identifier: ServerlessAwsLambdaDeploy
+          type: ServerlessAwsLambdaDeploy
+          timeout: 10m
+          spec:
+            commandOptions: ""
+    rollbackSteps:
+      - step:
+          name: "Serverless Aws Lambda Rollback"
+          identifier: ServerlessAwsLambdaRollback
+          type: ServerlessAwsLambdaRollback
+          timeout: 10m
+          spec: {}
