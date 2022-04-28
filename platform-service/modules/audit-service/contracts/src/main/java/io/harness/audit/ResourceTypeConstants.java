@@ -39,4 +39,6 @@ public class ResourceTypeConstants {
   public static final String API_KEY = "API_KEY";
   public static final String TOKEN = "TOKEN";
   public static final String DELEGATE_TOKEN = "DELEGATE_TOKEN";
+  public static final String GOVERNANCE_POLICY = "GOVERNANCE_POLICY";
+  public static final String GOVERNANCE_POLICY_SET = "GOVERNANCE_POLICY_SET";
 }
