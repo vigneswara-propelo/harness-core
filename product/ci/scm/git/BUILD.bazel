@@ -26,6 +26,7 @@ go_test(
     ],
     data = [
         "testdata/branches.json",
+        "testdata/branches_with_default.json",
         "testdata/commit.json",
         "testdata/commits.json",
         "testdata/compare.json",
