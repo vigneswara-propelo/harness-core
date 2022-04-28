@@ -7,6 +7,7 @@
 
 package io.harness.telemetry.utils;
 
+import static io.harness.TelemetryConstants.SYSTEM_USER;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.security.SecurityContextBuilder;
@@ -45,7 +46,7 @@ public class TelemetryDataUtils {
     if (isEmpty(identity)) {
       log.debug("Failed to read identity from principal, use system user instead");
       // TODO add "-{accountId}" after "system" when accountId is provided in principal
-      identity = "system";
+      identity = SYSTEM_USER;
     }
     return identity;
   }
