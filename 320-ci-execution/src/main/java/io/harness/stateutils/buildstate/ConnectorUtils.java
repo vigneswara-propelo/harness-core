@@ -24,6 +24,7 @@ import io.harness.beans.IdentifierRef;
 import io.harness.beans.environment.K8BuildJobEnvInfo;
 import io.harness.beans.sweepingoutputs.K8StageInfraDetails;
 import io.harness.beans.sweepingoutputs.StageInfraDetails;
+import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
 import io.harness.ci.config.CIExecutionServiceConfig;
 import io.harness.connector.ConnectorDTO;
@@ -175,17 +176,21 @@ public class ConnectorUtils {
     OptionalSweepingOutput optionalSweepingOutput = executionSweepingOutputResolver.resolveOptional(
         ambiance, RefObjectUtils.getSweepingOutputRefObject(STAGE_INFRA_DETAILS));
     List<TaskSelector> taskSelectors = new ArrayList<>();
-    try {
-      if (optionalSweepingOutput.isFound()) {
-        StageInfraDetails stageInfraDetails = (StageInfraDetails) optionalSweepingOutput.getOutput();
-        if (stageInfraDetails.getType() == StageInfraDetails.Type.K8) {
-          K8StageInfraDetails k8StageInfraDetails = (K8StageInfraDetails) stageInfraDetails;
-          if (k8StageInfraDetails.getInfrastructure() == null
-              || ((K8sDirectInfraYaml) k8StageInfraDetails.getInfrastructure()).getSpec() == null) {
-            throw new CIStageExecutionException("Input infrastructure can not be empty");
-          }
 
-          // It should always resolved to K8sDirectInfraYaml
+    if (!optionalSweepingOutput.isFound()) {
+      return taskSelectors;
+    }
+
+    try {
+      StageInfraDetails stageInfraDetails = (StageInfraDetails) optionalSweepingOutput.getOutput();
+      if (stageInfraDetails.getType() == StageInfraDetails.Type.K8) {
+        K8StageInfraDetails k8StageInfraDetails = (K8StageInfraDetails) stageInfraDetails;
+        if (k8StageInfraDetails.getInfrastructure() == null
+            || ((K8sDirectInfraYaml) k8StageInfraDetails.getInfrastructure()).getSpec() == null) {
+          throw new CIStageExecutionException("Input infrastructure can not be empty");
+        }
+
+        if (k8StageInfraDetails.getInfrastructure().getType() == Infrastructure.Type.KUBERNETES_DIRECT) {
           K8sDirectInfraYaml k8sDirectInfraYaml = (K8sDirectInfraYaml) k8StageInfraDetails.getInfrastructure();
 
           final String clusterConnectorRef = k8sDirectInfraYaml.getSpec().getConnectorRef().getValue();

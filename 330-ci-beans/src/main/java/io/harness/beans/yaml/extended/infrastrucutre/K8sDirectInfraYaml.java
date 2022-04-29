@@ -20,8 +20,10 @@ import io.harness.beans.yaml.extended.infrastrucutre.k8.SecurityContext;
 import io.harness.beans.yaml.extended.infrastrucutre.k8.Toleration;
 import io.harness.beans.yaml.extended.volumes.CIVolume;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
@@ -30,6 +32,7 @@ import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -43,12 +46,19 @@ import org.springframework.data.annotation.TypeAlias;
 public class K8sDirectInfraYaml implements Infrastructure {
   @Builder.Default @NotNull private Type type = Type.KUBERNETES_DIRECT;
   @NotNull private K8sDirectInfraYamlSpec spec;
-
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  String uuid;
   @Data
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
   public static class K8sDirectInfraYamlSpec {
+    @JsonProperty(YamlNode.UUID_FIELD_NAME)
+    @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+    @ApiModelProperty(hidden = true)
+    String uuid;
     @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> connectorRef;
     @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> namespace;
     @YamlSchemaTypes(value = {string})
