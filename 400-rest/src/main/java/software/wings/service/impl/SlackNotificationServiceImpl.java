@@ -57,7 +57,7 @@ public class SlackNotificationServiceImpl implements SlackNotificationService {
   @Override
   public void sendMessage(SlackNotificationConfiguration slackConfig, String slackChannel, String senderName,
       String message, String accountId) {
-    if (Objects.requireNonNull(slackConfig, "slack Config can't be null")
+    if (Objects.requireNonNull(slackConfig, "Slack Config can't be null")
             .equals(SlackNotificationSetting.emptyConfig())) {
       return;
     }
