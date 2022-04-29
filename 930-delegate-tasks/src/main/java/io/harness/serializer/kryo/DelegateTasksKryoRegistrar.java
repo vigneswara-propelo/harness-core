@@ -8,6 +8,8 @@
 package io.harness.serializer.kryo;
 
 import io.harness.beans.SecretChangeLog;
+import io.harness.cvng.beans.SplunkSavedSearch;
+import io.harness.cvng.beans.SplunkValidationResponse;
 import io.harness.delegate.task.executioncapability.BatchCapabilityCheckTaskParameters;
 import io.harness.delegate.task.executioncapability.BatchCapabilityCheckTaskResponse;
 import io.harness.delegate.task.winrm.AuthenticationScheme;
@@ -339,6 +341,12 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(WebHookTriggerResponseData.class, 8552);
     kryo.register(AuthenticationScheme.class, 8600);
     kryo.register(DelegateStateType.class, 8601);
+    kryo.register(SplunkValidationResponse.Histogram.class, 9009);
+    kryo.register(SplunkValidationResponse.Histogram.Bar.class, 9010);
+    kryo.register(SplunkSavedSearch.class, 9014);
+    kryo.register(SplunkValidationResponse.SplunkSampleResponse.class, 9015);
+    kryo.register(SplunkValidationResponse.class, 9017);
+    kryo.register(SplunkValidationResponse.SampleLog.class, 9018);
 
     kryo.register(SSHVaultConfig.class, 15012);
     kryo.register(BaseVaultConfig.class, 15014);

@@ -72,6 +72,7 @@ java_library(
         "@maven//:com_hierynomus_sshj",
         "@maven//:com_jcraft_harness_jsch_0_1_54_harness_patch",
         "@maven//:com_microsoft_rest_client_runtime",
+        "@maven//:com_splunk_splunk",
         "@maven//:com_squareup_okhttp3_okhttp",
         "@maven//:com_sun_mail_javax_mail",
         "@maven//:commons_collections_commons_collections",
@@ -108,6 +109,7 @@ java_library(
         "@maven//:org_json_json_20160810",
         "@maven//:org_slf4j_slf4j_api",
         "@maven//:org_zeroturnaround_zt_exec",
+        "@maven//:xerces_xercesImpl",
     ],
 )
 
@@ -145,6 +147,7 @@ java_library(
         "@maven//:com_google_http_client_google_http_client",
         "@maven//:com_google_inject_guice",
         "@maven//:com_hierynomus_sshj",
+        "@maven//:com_splunk_splunk",
         "@maven//:com_squareup_okhttp3_okhttp",
         "@maven//:com_squareup_retrofit2_retrofit",
         "@maven//:commons_io_commons_io",
@@ -168,6 +171,7 @@ java_library(
         "@maven//:org_slf4j_slf4j_api",
         "@maven//:org_zeroturnaround_zt_exec",
         "@maven//:pl_pragmatists_JUnitParams",
+        "@maven//:xerces_xercesImpl",
     ],
 )
 

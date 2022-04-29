@@ -10,8 +10,8 @@ package software.wings.service.impl.splunk;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import static software.wings.common.VerificationConstants.DUMMY_HOST_NAME;
-import static software.wings.common.VerificationConstants.URL_STRING;
+import static software.wings.delegatetasks.cv.CVConstants.DUMMY_HOST_NAME;
+import static software.wings.delegatetasks.cv.CVConstants.URL_STRING;
 
 import io.harness.cvng.beans.SplunkSavedSearch;
 import io.harness.cvng.beans.SplunkValidationResponse;
