@@ -14,7 +14,6 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.beans.PageRequest;
 import io.harness.beans.PageResponse;
-import io.harness.configuration.DeployMode;
 
 import software.wings.beans.Application;
 import software.wings.beans.CanaryOrchestrationWorkflow;
@@ -102,10 +101,5 @@ public class MigrationUtils {
       log.info("Application migrated: {} - {}. Updated {} out of {} workflows", app.getUuid(), app.getName(),
           updateCount, workflows.size());
     }
-  }
-
-  public boolean isOnPrem() {
-    String deployMode = System.getenv(DeployMode.DEPLOY_MODE);
-    return DeployMode.isOnPrem(deployMode);
   }
 }
