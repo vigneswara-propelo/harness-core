@@ -532,7 +532,6 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
   }
 
   private List<SecretNGVariable> getSecretVariables(StageElementConfig stageElementConfig) {
-    IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageElementConfig);
     if (isEmpty(stageElementConfig.getVariables())) {
       return Collections.emptyList();
     }
@@ -604,8 +603,6 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
   }
 
   private Map<String, String> getEnvVariables(StageElementConfig stageElementConfig) {
-    IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageElementConfig);
-
     if (isEmpty(stageElementConfig.getVariables())) {
       return Collections.emptyMap();
     }

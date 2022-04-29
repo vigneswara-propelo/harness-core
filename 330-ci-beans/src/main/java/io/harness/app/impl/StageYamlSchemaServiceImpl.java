@@ -15,10 +15,8 @@ import io.harness.ModuleType;
 import io.harness.account.AccountClient;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.app.intfc.CIYamlSchemaService;
+import io.harness.app.intfc.StageYamlSchemaService;
 import io.harness.beans.FeatureFlag;
-import io.harness.beans.stages.IntegrationStageConfigImpl;
-import io.harness.beans.stages.IntegrationStageNode;
 import io.harness.encryption.Scope;
 import io.harness.jackson.JsonNodeUtils;
 import io.harness.plancreator.steps.ParallelStepElementConfig;
@@ -39,7 +37,6 @@ import io.harness.yaml.schema.beans.YamlSchemaRootClass;
 import io.harness.yaml.schema.beans.YamlSchemaWithDetails;
 import io.harness.yaml.utils.YamlSchemaUtils;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -56,11 +53,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @OwnedBy(HarnessTeam.CI)
-public class CIYamlSchemaServiceImpl implements CIYamlSchemaService {
-  private static final String INTEGRATION_STAGE_NODE = YamlSchemaUtils.getSwaggerName(IntegrationStageNode.class);
+public class StageYamlSchemaServiceImpl implements StageYamlSchemaService {
   private static final String STEP_ELEMENT_CONFIG = YamlSchemaUtils.getSwaggerName(StepElementConfig.class);
   private static final Class<StepElementConfig> STEP_ELEMENT_CONFIG_CLASS = StepElementConfig.class;
-  private static final String CI_NAMESPACE = "ci";
 
   private final YamlSchemaProvider yamlSchemaProvider;
   private final YamlSchemaGenerator yamlSchemaGenerator;
@@ -68,9 +63,14 @@ public class CIYamlSchemaServiceImpl implements CIYamlSchemaService {
   private final List<YamlSchemaRootClass> yamlSchemaRootClasses;
   private final AccountClient accountClient;
   private final FeatureRestrictionsGetter featureRestrictionsGetter;
+  public ModuleType moduleType;
+  public String namespace;
+  public EntityType stageEntityType;
+  public EntityType stepsEntityType;
+  public String stageName;
 
   @Inject
-  public CIYamlSchemaServiceImpl(YamlSchemaProvider yamlSchemaProvider, YamlSchemaGenerator yamlSchemaGenerator,
+  public StageYamlSchemaServiceImpl(YamlSchemaProvider yamlSchemaProvider, YamlSchemaGenerator yamlSchemaGenerator,
       @Named("yaml-schema-subtypes") Map<Class<?>, Set<Class<?>>> yamlSchemaSubtypes,
       List<YamlSchemaRootClass> yamlSchemaRootClasses, AccountClient accountClient,
       FeatureRestrictionsGetter featureRestrictionsGetter) {
@@ -85,19 +85,21 @@ public class CIYamlSchemaServiceImpl implements CIYamlSchemaService {
   @Override
   public PartialSchemaDTO getMergedStageYamlSchema(String accountIdentifier, String projectIdentifier,
       String orgIdentifier, Scope scope, List<YamlSchemaWithDetails> stepSchemaWithDetails) {
-    return getStageYamlSchemaUtil(accountIdentifier, projectIdentifier, orgIdentifier, scope, stepSchemaWithDetails);
+    return getIntegrationStageYamlSchemaUtil(
+        accountIdentifier, projectIdentifier, orgIdentifier, scope, stepSchemaWithDetails);
   }
 
   @Override
   public List<YamlSchemaWithDetails> getStageYamlSchemaWithDetails(
       String accountIdentifier, String projectIdentifier, String orgIdentifier, Scope scope) {
-    List<YamlSchemaWithDetails> yamlSchemaWithDetailsList = yamlSchemaProvider.getCrossFunctionalStepsSchemaDetails(
-        projectIdentifier, orgIdentifier, scope,
-        YamlSchemaUtils.getNodeEntityTypesByYamlGroup(yamlSchemaRootClasses, StepCategory.STEP.name()), ModuleType.CI);
+    List<YamlSchemaWithDetails> yamlSchemaWithDetailsList =
+        yamlSchemaProvider.getCrossFunctionalStepsSchemaDetails(projectIdentifier, orgIdentifier, scope,
+            YamlSchemaUtils.getNodeEntityTypesByYamlGroup(yamlSchemaRootClasses, StepCategory.STEP.name()),
+            this.moduleType);
     yamlSchemaWithDetailsList.addAll(
         yamlSchemaProvider.getCrossFunctionalStepsSchemaDetails(projectIdentifier, orgIdentifier, scope,
             YamlSchemaUtils.getNodeEntityTypesByYamlGroup(yamlSchemaRootClasses, StepCategory.STAGE.name()),
-            ModuleType.CI));
+            this.moduleType));
     return yamlSchemaWithDetailsList;
   }
 
@@ -109,15 +111,15 @@ public class CIYamlSchemaServiceImpl implements CIYamlSchemaService {
   @Override
   public PartialSchemaDTO getStageYamlSchema(
       String accountIdentifier, String projectIdentifier, String orgIdentifier, Scope scope) {
-    return getStageYamlSchemaUtil(accountIdentifier, projectIdentifier, orgIdentifier, scope, null);
+    return getIntegrationStageYamlSchemaUtil(accountIdentifier, projectIdentifier, orgIdentifier, scope, null);
   }
 
-  public PartialSchemaDTO getStageYamlSchemaUtil(String accountIdentifier, String projectIdentifier,
+  public PartialSchemaDTO getIntegrationStageYamlSchemaUtil(String accountIdentifier, String projectIdentifier,
       String orgIdentifier, Scope scope, List<YamlSchemaWithDetails> stepSchemaWithDetails) {
     JsonNode integrationStageSchema =
-        yamlSchemaProvider.getYamlSchema(EntityType.INTEGRATION_STAGE, orgIdentifier, projectIdentifier, scope);
+        yamlSchemaProvider.getYamlSchema(this.stageEntityType, orgIdentifier, projectIdentifier, scope);
     JsonNode integrationStageSteps =
-        yamlSchemaProvider.getYamlSchema(EntityType.INTEGRATION_STEPS, orgIdentifier, projectIdentifier, scope);
+        yamlSchemaProvider.getYamlSchema(this.stepsEntityType, orgIdentifier, projectIdentifier, scope);
 
     JsonNode definitions = integrationStageSchema.get(DEFINITIONS_NODE);
     JsonNode integrationStepDefinitions = integrationStageSteps.get(DEFINITIONS_NODE);
@@ -135,7 +137,7 @@ public class CIYamlSchemaServiceImpl implements CIYamlSchemaService {
     }
     removeUnwantedNodes(definitions);
 
-    yamlSchemaGenerator.modifyRefsNamespace(integrationStageSchema, CI_NAMESPACE);
+    yamlSchemaGenerator.modifyRefsNamespace(integrationStageSchema, this.namespace);
     Set<String> enabledFeatureFlags =
         RestClientUtils.getResponse(accountClient.listAllFeatureFlagsForAccount(accountIdentifier))
             .stream()
@@ -148,25 +150,29 @@ public class CIYamlSchemaServiceImpl implements CIYamlSchemaService {
     YamlSchemaUtils.addOneOfInExecutionWrapperConfig(integrationStageSchema.get(DEFINITIONS_NODE),
         YamlSchemaUtils.getNodeClassesByYamlGroup(
             yamlSchemaRootClasses, StepCategory.STEP.name(), enabledFeatureFlags, featureRestrictionsMap),
-        CI_NAMESPACE);
+        this.namespace);
     if (stepSchemaWithDetails != null) {
       YamlSchemaUtils.addOneOfInExecutionWrapperConfig(integrationStageSchema.get(DEFINITIONS_NODE),
           stepSchemaWithDetails, ModuleType.CD, enabledFeatureFlags, featureRestrictionsMap);
     }
 
     ObjectMapper mapper = SchemaGeneratorUtils.getObjectMapperForSchemaGeneration();
-    JsonNode node = mapper.createObjectNode().set(CI_NAMESPACE, definitions);
+    JsonNode node = mapper.createObjectNode().set(this.namespace, definitions);
 
     JsonNode partialCiSchema = ((ObjectNode) integrationStageSchema).set(DEFINITIONS_NODE, node);
 
     return PartialSchemaDTO.builder()
-        .namespace(CI_NAMESPACE)
-        .nodeName(INTEGRATION_STAGE_NODE)
+        .namespace(this.namespace)
+        .nodeName(this.stageName)
         .schema(partialCiSchema)
-        .nodeType(getIntegrationStageTypeName())
-        .moduleType(ModuleType.CI)
+        .nodeType(this.getNodeType())
+        .moduleType(this.moduleType)
         .skipStageSchema(false)
         .build();
+  }
+
+  public String getNodeType() {
+    return this.stageName;
   }
 
   private void modifyStepElementSchema(ObjectNode jsonNode) {
@@ -211,10 +217,5 @@ public class CIYamlSchemaServiceImpl implements CIYamlSchemaService {
         yamlSchemaGenerator.removeUnwantedNodes(jsonNode, YAMLFieldNameConstants.STEP_GROUP);
       }
     }
-  }
-
-  private String getIntegrationStageTypeName() {
-    JsonTypeName annotation = IntegrationStageConfigImpl.class.getAnnotation(JsonTypeName.class);
-    return annotation.value();
   }
 }

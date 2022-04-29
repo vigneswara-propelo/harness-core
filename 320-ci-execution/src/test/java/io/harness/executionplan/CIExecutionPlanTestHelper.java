@@ -54,6 +54,7 @@ import io.harness.beans.execution.WebhookExecutionSource;
 import io.harness.beans.executionargs.CIExecutionArgs;
 import io.harness.beans.script.ScriptInfo;
 import io.harness.beans.stages.IntegrationStageConfig;
+import io.harness.beans.stages.IntegrationStageConfigImpl;
 import io.harness.beans.steps.stepinfo.InitializeStepInfo;
 import io.harness.beans.yaml.extended.CustomSecretVariable;
 import io.harness.beans.yaml.extended.CustomTextVariable;
@@ -1276,7 +1277,7 @@ public class CIExecutionPlanTestHelper {
         .build();
   }
   public IntegrationStageConfig getIntegrationStageConfig() {
-    return IntegrationStageConfig.builder()
+    return IntegrationStageConfigImpl.builder()
         .execution(getExecutionElementConfig())
         .infrastructure(getInfrastructureWithVolume())
         .sharedPaths(createValueField(newArrayList("share/")))

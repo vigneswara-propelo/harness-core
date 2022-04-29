@@ -7,7 +7,7 @@
 
 package io.harness.beans.stages;
 
-import static io.harness.annotations.dev.HarnessTeam.CI;
+import static io.harness.annotations.dev.HarnessTeam.STO;
 
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.EXTERNAL_PROPERTY;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
@@ -30,28 +30,28 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName(StepSpecTypeConstants.CI_STAGE)
-@TypeAlias("IntegrationStageNode")
-@OwnedBy(CI)
-@RecasterAlias("io.harness.beans.stages.IntegrationStageNode")
-public class IntegrationStageNode extends IntegrationAbstractStageNode {
-  @JsonProperty("type") @NotNull StepType type = StepType.CI;
+@JsonTypeName(StepSpecTypeConstants.SECURITY_STAGE)
+@TypeAlias("SecurityStageNode")
+@OwnedBy(STO)
+@RecasterAlias("io.harness.beans.stages.SecurityStageNode")
+public class SecurityStageNode extends IntegrationAbstractStageNode {
+  @JsonProperty("type") @NotNull StepType type = StepType.SecurityTests;
 
   @JsonProperty("spec")
   @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
-  IntegrationStageConfigImpl integrationStageConfig;
+  SecurityStageConfigImpl securityStageConfig;
   @Override
   public String getType() {
-    return StepSpecTypeConstants.CI_STAGE;
+    return StepSpecTypeConstants.SECURITY_STAGE;
   }
 
   @Override
   public StageInfoConfig getStageInfoConfig() {
-    return integrationStageConfig;
+    return securityStageConfig;
   }
 
   public enum StepType {
-    CI(StepSpecTypeConstants.CI_STAGE);
+    SecurityTests(StepSpecTypeConstants.SECURITY_STAGE);
     @Getter String name;
     StepType(String name) {
       this.name = name;

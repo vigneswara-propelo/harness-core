@@ -83,6 +83,7 @@ import io.harness.serializer.KryoRegistrar;
 import io.harness.serializer.OrchestrationRegistrars;
 import io.harness.serializer.PersistenceRegistrars;
 import io.harness.serializer.PrimaryVersionManagerRegistrars;
+import io.harness.serializer.StoBeansRegistrars;
 import io.harness.serializer.YamlBeansModuleRegistrars;
 import io.harness.service.impl.DelegateAsyncServiceImpl;
 import io.harness.service.impl.DelegateProgressServiceImpl;
@@ -256,7 +257,10 @@ public class CIManagerApplication extends Application<CIManagerConfiguration> {
       @Provides
       @Singleton
       List<YamlSchemaRootClass> yamlSchemaRootClasses() {
-        return ImmutableList.<YamlSchemaRootClass>builder().addAll(CiBeansRegistrars.yamlSchemaRegistrars).build();
+        return ImmutableList.<YamlSchemaRootClass>builder()
+            .addAll(CiBeansRegistrars.yamlSchemaRegistrars)
+            .addAll(StoBeansRegistrars.yamlSchemaRegistrars)
+            .build();
       }
     });
 

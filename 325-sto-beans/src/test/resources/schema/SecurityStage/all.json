@@ -41,7 +41,7 @@
     "type": {
       "type": "string",
       "enum": [
-        "CI"
+        "SecurityTests"
       ]
     },
     "variables": {
@@ -70,14 +70,14 @@
       "if": {
         "properties": {
           "type": {
-            "const": "CI"
+            "const": "SecurityTests"
           }
         }
       },
       "then": {
         "properties": {
           "spec": {
-            "$ref": "#/definitions/IntegrationStageConfigImpl"
+            "$ref": "#/definitions/SecurityStageConfigImpl"
           }
         }
       }
@@ -1940,160 +1940,6 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "IntegrationStageConfigImpl": {
-      "type": "object",
-      "required": [
-        "infrastructure"
-      ],
-      "properties": {
-        "cloneCodebase": {
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
-              "minLength": 1
-            }
-          ]
-        },
-        "execution": {
-          "$ref": "#/definitions/ExecutionElementConfig"
-        },
-        "infrastructure": {
-          "oneOf": [
-            {
-              "$ref": "#/definitions/K8sDirectInfraYaml"
-            },
-            {
-              "$ref": "#/definitions/K8sHostedInfraYaml"
-            },
-            {
-              "$ref": "#/definitions/UseFromStageInfraYaml"
-            },
-            {
-              "$ref": "#/definitions/VmInfraYaml"
-            }
-          ]
-        },
-        "serviceDependencies": {
-          "oneOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/DependencyElement"
-              }
-            },
-            {
-              "type": "string",
-              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
-              "minLength": 1
-            }
-          ]
-        },
-        "sharedPaths": {
-          "oneOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "IntegrationStageNode": {
-      "type": "object",
-      "required": [
-        "identifier",
-        "name",
-        "type"
-      ],
-      "properties": {
-        "delegateSelectors": {
-          "oneOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "string",
-              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
-              "minLength": 1
-            }
-          ]
-        },
-        "description": {
-          "type": "string"
-        },
-        "identifier": {
-          "type": "string",
-          "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
-        },
-        "tags": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "CI"
-          ]
-        },
-        "variables": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              {
-                "$ref": "#/definitions/NumberNGVariable"
-              },
-              {
-                "$ref": "#/definitions/SecretNGVariable"
-              },
-              {
-                "$ref": "#/definitions/StringNGVariable"
-              }
-            ]
-          }
-        },
-        "when": {
-          "$ref": "#/definitions/StageWhenCondition"
-        }
-      },
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "CI"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "spec": {
-                "$ref": "#/definitions/IntegrationStageConfigImpl"
-              }
-            }
-          }
-        }
-      ]
     },
     "JUnitTestReport": {
       "allOf": [
@@ -4540,6 +4386,160 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "SecurityStageConfigImpl": {
+      "type": "object",
+      "required": [
+        "infrastructure"
+      ],
+      "properties": {
+        "cloneCodebase": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+              "minLength": 1
+            }
+          ]
+        },
+        "execution": {
+          "$ref": "#/definitions/ExecutionElementConfig"
+        },
+        "infrastructure": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/K8sDirectInfraYaml"
+            },
+            {
+              "$ref": "#/definitions/K8sHostedInfraYaml"
+            },
+            {
+              "$ref": "#/definitions/UseFromStageInfraYaml"
+            },
+            {
+              "$ref": "#/definitions/VmInfraYaml"
+            }
+          ]
+        },
+        "serviceDependencies": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DependencyElement"
+              }
+            },
+            {
+              "type": "string",
+              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+              "minLength": 1
+            }
+          ]
+        },
+        "sharedPaths": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "SecurityStageNode": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "name",
+        "type"
+      ],
+      "properties": {
+        "delegateSelectors": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string",
+              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+              "minLength": 1
+            }
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "SecurityTests"
+          ]
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/NumberNGVariable"
+              },
+              {
+                "$ref": "#/definitions/SecretNGVariable"
+              },
+              {
+                "$ref": "#/definitions/StringNGVariable"
+              }
+            ]
+          }
+        },
+        "when": {
+          "$ref": "#/definitions/StageWhenCondition"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "SecurityTests"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/SecurityStageConfigImpl"
+              }
+            }
+          }
+        }
+      ]
     },
     "SecurityStepInfo": {
       "allOf": [

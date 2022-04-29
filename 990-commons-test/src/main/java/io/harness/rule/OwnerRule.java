@@ -75,6 +75,7 @@ public class OwnerRule implements TestRule {
   public static final String SWAT = "SWAT";
   public static final String GTM = "GTM";
   public static final String SPG = "SPG";
+  public static final String STO = "STO";
 
   public static final String AADITI = "aaditi.joag";
   public static final String ABHIJEET = "abhijeet.sharma";
@@ -262,6 +263,7 @@ public class OwnerRule implements TestRule {
   public static final String SAHILDEEP = "sahildeep.singh";
   public static final String LUCAS_SALES = "lucas.sales";
   public static final String FERNANDOD = "fernando.dourado";
+  public static final String SERGEY = "sergey.bobrov";
   @Deprecated public static final String UNKNOWN = "unknown";
 
   private static UserInfoBuilder defaultUserInfo(String user) {
@@ -455,6 +457,7 @@ public class OwnerRule implements TestRule {
           .put(SAHILDEEP, defaultUserInfo(SAHILDEEP).slack("U036DV63D1V").team(CE).build())
           .put(LUCAS_SALES, defaultUserInfo(LUCAS_SALES).slack("U038PURJS69").team(SPG).build())
           .put(FERNANDOD, defaultUserInfo(FERNANDOD).slack("U039ESJUMFA").team(SPG).build())
+          .put(SERGEY, defaultUserInfo(SERGEY).slack("U02N2AF83FA").team(STO).build())
           .build();
 
   private static String prDeveloperId = findDeveloperId(System.getenv(GHPRB_PULL_AUTHOR_EMAIL));
@@ -473,6 +476,7 @@ public class OwnerRule implements TestRule {
           .put(SWAT, TeamInfo.builder().team(SWAT).leader(BRETT).build())
           .put(GTM, TeamInfo.builder().team(GTM).leader(RAMA).build())
           .put(SPG, TeamInfo.builder().team(SPG).leader(SRINIVAS).build())
+          .put(STO, TeamInfo.builder().team(STO).leader(SERGEY).build())
           .build();
 
   @Override
