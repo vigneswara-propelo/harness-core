@@ -131,6 +131,13 @@ public class DelegateMtlsEndpointInternalNgResource {
     }
   }
 
+  /**
+   * Checks whether the provided domain prefix is available.
+   *
+   * @param accountIdentifier required to be compliant with new internal OpenAPI specifications.
+   * @param domainPrefix The domain prefix to check.
+   * @return True if and only if there is no existing delegate mTLS endpoint that uses the provided domain prefix.
+   */
   @GET
   @Path(DelegateMtlsApiConstants.API_PATH_CHECK_AVAILABILITY)
   @Timed
@@ -138,6 +145,7 @@ public class DelegateMtlsEndpointInternalNgResource {
   @InternalApi
   @Hidden
   public RestResponse<Boolean> isDomainPrefixAvailable(
+      @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @NotNull String accountIdentifier,
       @QueryParam(DelegateMtlsApiConstants.API_PARAM_DOMAIN_PREFIX_NAME) @NotNull String domainPrefix) {
     return new RestResponse<>(this.delegateMtlsEndpointService.isDomainPrefixAvailable(domainPrefix));
   }

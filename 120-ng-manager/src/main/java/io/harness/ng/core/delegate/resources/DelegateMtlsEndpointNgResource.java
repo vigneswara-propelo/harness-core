@@ -233,10 +233,18 @@ public class DelegateMtlsEndpointNgResource {
     }
   }
 
+  /**
+   * Checks whether the provided domain prefix is available.
+   *
+   * @param accountIdentifier required to be compliant with new internal OpenAPI specifications.
+   * @param domainPrefix The domain prefix to check.
+   * @return True if and only if there is no existing delegate mTLS endpoint that uses the provided domain prefix.
+   */
   @GET
   @Path(DelegateMtlsApiConstants.API_PATH_CHECK_AVAILABILITY)
   @Timed
   @ExceptionMetered
+  //  @NGAccessControlCheck(resourceType = ResourceTypes.ACCOUNT, permission = VIEW_ACCOUNT_PERMISSION)
   @ApiOperation(nickname = DelegateMtlsApiConstants.API_OPERATION_ENDPOINT_CHECK_AVAILABILITY_NAME,
       value = DelegateMtlsApiConstants.API_OPERATION_ENDPOINT_CHECK_AVAILABILITY_DESC)
   @Operation(operationId = DelegateMtlsApiConstants.API_OPERATION_ENDPOINT_CHECK_AVAILABILITY_NAME,
@@ -248,13 +256,15 @@ public class DelegateMtlsEndpointNgResource {
                 "True if and only if the domain prefix is currently not in use by any existing delegate mTLS endpoint.")
       })
   public RestResponse<Boolean>
-  isDomainPrefixAvailable(
+  isDomainPrefixAvailable(@Parameter(required = true, description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE)
+                          @ApiParam(required = true, value = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
+                              NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @NotNull String accountIdentifier,
       @Parameter(required = true, description = DelegateMtlsApiConstants.API_PARAM_DOMAIN_PREFIX_DESC)
       @ApiParam(required = true, value = DelegateMtlsApiConstants.API_PARAM_DOMAIN_PREFIX_DESC) @QueryParam(
           DelegateMtlsApiConstants.API_PARAM_DOMAIN_PREFIX_NAME) @NotNull String domainPrefix) {
     this.ensureOperationIsExecutedByHarnessSupport();
-    return new RestResponse<>(
-        RestClientUtils.getResponse(this.delegateMtlsEndpointInternalClient.isDomainPrefixAvailable(domainPrefix)));
+    return new RestResponse<>(RestClientUtils.getResponse(
+        this.delegateMtlsEndpointInternalClient.isDomainPrefixAvailable(accountIdentifier, domainPrefix)));
   }
 
   /**

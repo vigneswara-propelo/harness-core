@@ -146,5 +146,6 @@ public interface DelegateNgManagerCgManagerClient {
 
   @GET(DELEGATE_MTLS_PREFIX_AVAILABLE_API)
   Call<RestResponse<Boolean>> isDomainPrefixAvailable(
+      @Query(NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
       @Query(DelegateMtlsApiConstants.API_PARAM_DOMAIN_PREFIX_NAME) @NotNull String domainPrefix);
 }
