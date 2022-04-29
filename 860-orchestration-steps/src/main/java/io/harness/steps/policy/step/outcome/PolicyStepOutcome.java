@@ -20,6 +20,7 @@ import lombok.Data;
 @Builder
 @OwnedBy(PIPELINE)
 public class PolicyStepOutcome implements Outcome {
+  String evaluationId;
   String status;
   Map<String, PolicySetOutcome> policySetDetails;
 }

@@ -33,6 +33,7 @@ public class PolicyStepOutcomeMapperTest extends CategoryTest {
   String policyName = "my Id";
   String policySetIdentifier = "myPSId";
   String policySetName = "my PS Id";
+  String evalId = "e1";
   PolicyData accountPolicy =
       PolicyData.builder().identifier(policyIdentifier).name(policyName).account_id(accountIdentifier).build();
   PolicyData orgPolicy = PolicyData.builder()
@@ -78,6 +79,7 @@ public class PolicyStepOutcomeMapperTest extends CategoryTest {
             .build();
 
     OpaEvaluationResponseHolder fullResponse = OpaEvaluationResponseHolder.builder()
+                                                   .id(evalId)
                                                    .account_id(accountIdentifier)
                                                    .org_id(orgIdentifier)
                                                    .project_id(projectIdentifier)
@@ -85,6 +87,7 @@ public class PolicyStepOutcomeMapperTest extends CategoryTest {
                                                    .details(Arrays.asList(successAccPSResponse, successProjPSResponse))
                                                    .build();
     PolicyStepOutcome policyStepOutcome = PolicyStepOutcomeMapper.toOutcome(fullResponse);
+    assertThat(policyStepOutcome.getEvaluationId()).isEqualTo("e1");
     assertThat(policyStepOutcome.getStatus()).isEqualTo("pass");
     assertThat(policyStepOutcome.getPolicySetDetails()).containsOnlyKeys("account.myPSId", "myPSId");
   }

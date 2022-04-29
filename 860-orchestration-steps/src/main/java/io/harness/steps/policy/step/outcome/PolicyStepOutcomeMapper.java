@@ -36,6 +36,7 @@ public class PolicyStepOutcomeMapper {
             .map(PolicyStepOutcomeMapper::toPolicySetOutcome)
             .collect(Collectors.toMap(PolicySetOutcome::getIdentifier, Function.identity()));
     return PolicyStepOutcome.builder()
+        .evaluationId(evaluationResponse.getId())
         .status(evaluationResponse.getStatus())
         .policySetDetails(policySetOutcomeMap)
         .build();
