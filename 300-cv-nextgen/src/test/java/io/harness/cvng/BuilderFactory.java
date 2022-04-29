@@ -341,7 +341,7 @@ public class BuilderFactory {
         .serviceIdentifier(context.getServiceIdentifier())
         .envIdentifier(context.getEnvIdentifier())
         .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
-        .identifier(generateUuid())
+        .identifier(context.getMonitoredServiceIdentifier() + "/" + generateUuid())
         .monitoringSourceName(generateUuid())
         .metricPack(
             MetricPack.builder().identifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER).dataCollectionDsl("dsl").build())
@@ -351,6 +351,7 @@ public class BuilderFactory {
         .tierName(generateUuid())
         .connectorIdentifier("AppDynamics Connector")
         .category(CVMonitoringCategory.PERFORMANCE)
+        .enabled(true)
         .productName(generateUuid());
   }
 
@@ -398,17 +399,20 @@ public class BuilderFactory {
         .projectIdentifier(context.getProjectIdentifier())
         .serviceIdentifier(context.getServiceIdentifier())
         .envIdentifier(context.getEnvIdentifier())
+        .identifier(context.getMonitoredServiceIdentifier() + "/" + generateUuid())
         .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier());
   }
 
   public DynatraceCVConfigBuilder dynatraceCVConfigBuilder() {
     return DynatraceCVConfig.builder()
+        .groupName("group")
         .accountId(context.getAccountId())
         .orgIdentifier(context.getOrgIdentifier())
         .projectIdentifier(context.getProjectIdentifier())
         .serviceIdentifier(context.getServiceIdentifier())
         .connectorIdentifier("DynatraceConnector")
         .envIdentifier(context.getEnvIdentifier())
+        .identifier(context.getMonitoredServiceIdentifier() + "/healthSourceIdentifier")
         .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier());
   }
 
@@ -420,6 +424,7 @@ public class BuilderFactory {
         .serviceIdentifier(context.getServiceIdentifier())
         .envIdentifier(context.getEnvIdentifier())
         .connectorIdentifier("connectorRef")
+        .identifier(context.getMonitoredServiceIdentifier() + "/" + generateUuid())
         .category(CVMonitoringCategory.PERFORMANCE);
   }
 
@@ -437,6 +442,7 @@ public class BuilderFactory {
         .monitoringSourceName(generateUuid())
         .connectorIdentifier("Error Tracking Connector")
         .category(CVMonitoringCategory.ERRORS)
+        .identifier(context.getMonitoredServiceIdentifier() + "/" + generateUuid())
         .productName(generateUuid());
   }
 
@@ -450,6 +456,7 @@ public class BuilderFactory {
         .envIdentifier(context.getEnvIdentifier())
         .connectorIdentifier("connectorRef")
         .dashboardName("dashboardName")
+        .identifier(context.getMonitoredServiceIdentifier() + "/" + generateUuid())
         .category(CVMonitoringCategory.PERFORMANCE);
   }
 
@@ -464,6 +471,7 @@ public class BuilderFactory {
         .connectorIdentifier("connectorRef")
         .dashboardId("dashboardId")
         .dashboardName("dashboardName")
+        .identifier(context.getMonitoredServiceIdentifier() + "/" + generateUuid())
         .category(CVMonitoringCategory.PERFORMANCE);
   }
 
@@ -475,14 +483,16 @@ public class BuilderFactory {
         .serviceIdentifier(context.getServiceIdentifier())
         .serviceInstanceIdentifier(randomAlphabetic(10))
         .envIdentifier(context.getEnvIdentifier())
+        .createdAt(clock.millis())
         .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
         .queryName(randomAlphabetic(10))
         .query(randomAlphabetic(10))
         .serviceInstanceIdentifier(randomAlphabetic(10))
-        .identifier(generateUuid())
+        .identifier(context.getMonitoredServiceIdentifier() + "/healthSourceIdentifier")
         .monitoringSourceName(generateUuid())
         .connectorIdentifier("Splunk Connector")
         .category(CVMonitoringCategory.ERRORS)
+        .enabled(true)
         .productName(generateUuid());
   }
 
@@ -977,7 +987,6 @@ public class BuilderFactory {
     testVerificationJob.setAccountId(context.getAccountId());
     testVerificationJob.setIdentifier("identifier");
     testVerificationJob.setJobName(generateUuid());
-    testVerificationJob.setMonitoringSources(Arrays.asList("monitoringIdentifier"));
     testVerificationJob.setSensitivity(Sensitivity.MEDIUM);
     testVerificationJob.setServiceIdentifier(context.getServiceIdentifier(), false);
     testVerificationJob.setEnvIdentifier(context.getEnvIdentifier(), false);

@@ -40,6 +40,8 @@ import io.harness.cvng.beans.MonitoredServiceType;
 import io.harness.cvng.beans.TimeSeriesMetricType;
 import io.harness.cvng.beans.change.ChangeSourceType;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
+import io.harness.cvng.beans.cvnglog.CVNGLogTag;
+import io.harness.cvng.beans.cvnglog.CVNGLogTag.TagType;
 import io.harness.cvng.beans.cvnglog.CVNGLogType;
 import io.harness.cvng.beans.cvnglog.ExecutionLogDTO;
 import io.harness.cvng.beans.cvnglog.ExecutionLogDTO.LogLevel;
@@ -1970,6 +1972,15 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(executionLogDTOS.getType()).isEqualTo(CVNGLogType.EXECUTION_LOG);
     assertThat(executionLogDTOS.getLogLevel()).isEqualTo(LogLevel.INFO);
     assertThat(executionLogDTOS.getLog()).isEqualTo("Data Collection successfully completed.");
+    assertThat(executionLogDTOS.getTags())
+        .contains(CVNGLogTag.builder().key("startTime").value("1595846995000").type(TagType.TIMESTAMP).build(),
+            CVNGLogTag.builder().key("endTime").value("1595847000000").type(TagType.TIMESTAMP).build(),
+            CVNGLogTag.builder()
+                .key("healthSourceIdentifier")
+                .value("healthSourceIdentifier")
+                .type(TagType.STRING)
+                .build(),
+            CVNGLogTag.builder().key("traceableId").value(verificationTaskIds.get(0)).type(TagType.DEBUG).build());
   }
 
   @Test

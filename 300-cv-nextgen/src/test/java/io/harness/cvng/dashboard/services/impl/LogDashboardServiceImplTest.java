@@ -31,6 +31,7 @@ import io.harness.cvng.analysis.entities.LogAnalysisResult;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.AnalysisResult;
 import io.harness.cvng.analysis.entities.LogAnalysisResult.LogAnalysisTag;
 import io.harness.cvng.analysis.services.api.LogAnalysisService;
+import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.TimeRangeParams;
 import io.harness.cvng.core.beans.params.filterParams.LiveMonitoringLogAnalysisFilter;
@@ -98,7 +99,8 @@ public class LogDashboardServiceImplTest extends CvNextGenTestBase {
     when(mockVerificationTaskService.getServiceGuardVerificationTaskId(anyString(), anyString()))
         .thenAnswer(invocation -> invocation.getArgumentAt(1, String.class));
 
-    when(mockVerificationTaskService.createLiveMonitoringVerificationTask(anyString(), anyString(), any()))
+    when(mockVerificationTaskService.createLiveMonitoringVerificationTask(
+             anyString(), anyString(), any(DataSourceType.class)))
         .thenAnswer(invocation -> invocation.getArgumentAt(1, String.class));
   }
 

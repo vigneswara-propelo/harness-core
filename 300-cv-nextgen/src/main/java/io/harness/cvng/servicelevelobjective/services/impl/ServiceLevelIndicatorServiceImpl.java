@@ -337,8 +337,8 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
 
   private void saveServiceLevelIndicatorEntity(ServiceLevelIndicator serviceLevelIndicator) {
     hPersistence.save(serviceLevelIndicator);
-    verificationTaskService.createSLIVerificationTask(
-        serviceLevelIndicator.getAccountId(), serviceLevelIndicator.getUuid());
+    verificationTaskService.createSLIVerificationTask(serviceLevelIndicator.getAccountId(),
+        serviceLevelIndicator.getUuid(), serviceLevelIndicator.getVerificationTaskTags());
   }
 
   private ServiceLevelIndicator convertDTOToEntity(ProjectParams projectParams,
