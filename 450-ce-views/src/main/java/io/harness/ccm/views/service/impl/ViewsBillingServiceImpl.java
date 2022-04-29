@@ -10,6 +10,7 @@ package io.harness.ccm.views.service.impl;
 import static io.harness.annotations.dev.HarnessTeam.CE;
 import static io.harness.beans.FeatureName.CE_BILLING_DATA_PRE_AGGREGATION;
 import static io.harness.ccm.commons.constants.ViewFieldConstants.AWS_ACCOUNT_FIELD;
+import static io.harness.ccm.commons.constants.ViewFieldConstants.AWS_ACCOUNT_FIELD_ID;
 import static io.harness.ccm.views.entities.ViewFieldIdentifier.CLUSTER;
 import static io.harness.ccm.views.entities.ViewFieldIdentifier.LABEL;
 import static io.harness.ccm.views.graphql.QLCEViewAggregateOperation.MAX;
@@ -1296,11 +1297,12 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
     return nullStringValueConstant;
   }
 
-  public List<QLCEViewTimeSeriesData> convertToQLViewTimeSeriesData(TableResult result) {
+  public List<QLCEViewTimeSeriesData> convertToQLViewTimeSeriesData(TableResult result, String accountId) {
     Schema schema = result.getSchema();
     FieldList fields = schema.getFields();
 
     Map<Long, List<QLCEViewDataPoint>> timeSeriesDataPointsMap = new HashMap<>();
+    Set<String> awsAccounts = new HashSet<>();
     for (FieldValueList row : result.iterateAll()) {
       QLCEViewDataPointBuilder billingDataPointBuilder = QLCEViewDataPoint.builder();
       Long startTimeTruncatedTimestamp = null;
@@ -1312,6 +1314,9 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
             break;
           case STRING:
             String stringValue = fetchStringValue(row, field);
+            if (AWS_ACCOUNT_FIELD_ID.equals(field.getName())) {
+              awsAccounts.add(stringValue);
+            }
             billingDataPointBuilder.name(stringValue).id(stringValue);
             break;
           case FLOAT64:
@@ -1331,7 +1336,36 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
       timeSeriesDataPointsMap.put(startTimeTruncatedTimestamp, dataPoints);
     }
 
-    return convertTimeSeriesPointsMapToList(timeSeriesDataPointsMap);
+    return convertTimeSeriesPointsMapToList(
+        modifyTimeSeriesDataPointsMap(timeSeriesDataPointsMap, awsAccounts, accountId));
+  }
+
+  private Map<Long, List<QLCEViewDataPoint>> modifyTimeSeriesDataPointsMap(
+      final Map<Long, List<QLCEViewDataPoint>> timeSeriesDataPointsMap, final Set<String> awsAccounts,
+      final String accountId) {
+    Map<Long, List<QLCEViewDataPoint>> updatedTimeSeriesDataPointsMap = timeSeriesDataPointsMap;
+    if (!awsAccounts.isEmpty()) {
+      final Map<String, String> entityIdToName =
+          entityMetadataService.getEntityIdToNameMapping(new ArrayList<>(awsAccounts), accountId, AWS_ACCOUNT_FIELD);
+      updatedTimeSeriesDataPointsMap =
+          timeSeriesDataPointsMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+              timeSeriesDataPoint -> getUpdatedTimeSeriesDataPoints(entityIdToName, timeSeriesDataPoint.getValue())));
+    }
+    return updatedTimeSeriesDataPointsMap;
+  }
+
+  private List<QLCEViewDataPoint> getUpdatedTimeSeriesDataPoints(
+      final Map<String, String> entityIdToName, final List<QLCEViewDataPoint> timeSeriesDataPoints) {
+    final List<QLCEViewDataPoint> updatedTimeSeriesDataPoints = new ArrayList<>();
+    timeSeriesDataPoints.forEach(timeSeriesDataPoint
+        -> updatedTimeSeriesDataPoints.add(
+            QLCEViewDataPoint.builder()
+                .id(timeSeriesDataPoint.getId())
+                .value(timeSeriesDataPoint.getValue())
+                .name(AwsAccountFieldUtils.mergeAwsAccountIdAndName(
+                    timeSeriesDataPoint.getId(), entityIdToName.get(timeSeriesDataPoint.getId())))
+                .build()));
+    return updatedTimeSeriesDataPoints;
   }
 
   public List<QLCEViewTimeSeriesData> convertTimeSeriesPointsMapToList(
