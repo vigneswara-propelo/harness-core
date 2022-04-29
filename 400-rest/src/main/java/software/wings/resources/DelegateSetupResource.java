@@ -38,6 +38,7 @@ import io.harness.beans.PageResponse;
 import io.harness.data.validator.Trimmed;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateApproval;
+import io.harness.delegate.beans.DelegateApprovalResponse;
 import io.harness.delegate.beans.DelegateSetupDetails;
 import io.harness.delegate.beans.DelegateSizeDetails;
 import io.harness.delegate.beans.DelegateTags;
@@ -53,6 +54,7 @@ import io.harness.service.intfc.DelegateCache;
 import software.wings.beans.CEDelegateStatus;
 import software.wings.beans.DelegateStatus;
 import software.wings.helpers.ext.url.SubdomainUrlHelperIntfc;
+import software.wings.security.annotations.ApiKeyAuthorized;
 import software.wings.security.annotations.AuthRule;
 import software.wings.security.annotations.Scope;
 import software.wings.service.intfc.DelegateScopeService;
@@ -499,6 +501,66 @@ public class DelegateSetupResource {
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR);
          AutoLogContext ignore2 = new DelegateLogContext(delegateId, OVERRIDE_ERROR)) {
       return new RestResponse<>(delegateService.updateApprovalStatus(accountId, delegateId, action));
+    }
+  }
+
+  @PUT
+  @Path("/delegate-profile/{delegateProfileId}/approve")
+  @Timed
+  @ExceptionMetered
+  @AuthRule(permissionType = MANAGE_DELEGATES)
+  @ApiKeyAuthorized(permissionType = MANAGE_DELEGATES)
+  public RestResponse<DelegateApprovalResponse> approveDelegatesUsingProfile(
+      @PathParam("delegateProfileId") @NotEmpty String delegateProfileId,
+      @QueryParam("accountId") @NotEmpty String accountId) {
+    try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+      return new RestResponse<>(
+          delegateService.approveDelegatesUsingProfile(accountId, delegateProfileId, DelegateApproval.ACTIVATE));
+    }
+  }
+
+  @PUT
+  @Path("/delegate-token/{delegateTokenName}/approve")
+  @Timed
+  @ExceptionMetered
+  @AuthRule(permissionType = MANAGE_DELEGATES)
+  @ApiKeyAuthorized(permissionType = MANAGE_DELEGATES)
+  public RestResponse<DelegateApprovalResponse> approveDelegatesUsingToken(
+      @PathParam("delegateTokenName") @NotEmpty String delegateTokenName,
+      @QueryParam("accountId") @NotEmpty String accountId) {
+    try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+      return new RestResponse<>(
+          delegateService.approveDelegatesUsingToken(accountId, delegateTokenName, DelegateApproval.ACTIVATE));
+    }
+  }
+
+  @PUT
+  @Path("/delegate-profile/{delegateProfileId}/reject")
+  @Timed
+  @ExceptionMetered
+  @AuthRule(permissionType = MANAGE_DELEGATES)
+  @ApiKeyAuthorized(permissionType = MANAGE_DELEGATES)
+  public RestResponse<DelegateApprovalResponse> rejectDelegatesUsingProfile(
+      @PathParam("delegateProfileId") @NotEmpty String delegateProfileId,
+      @QueryParam("accountId") @NotEmpty String accountId) {
+    try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+      return new RestResponse<>(
+          delegateService.approveDelegatesUsingProfile(accountId, delegateProfileId, DelegateApproval.REJECT));
+    }
+  }
+
+  @PUT
+  @Path("/delegate-token/{delegateTokenName}/reject")
+  @Timed
+  @ExceptionMetered
+  @AuthRule(permissionType = MANAGE_DELEGATES)
+  @ApiKeyAuthorized(permissionType = MANAGE_DELEGATES)
+  public RestResponse<DelegateApprovalResponse> rejectDelegatesUsingToken(
+      @PathParam("delegateTokenName") @NotEmpty String delegateTokenName,
+      @QueryParam("accountId") @NotEmpty String accountId) {
+    try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+      return new RestResponse<>(
+          delegateService.approveDelegatesUsingToken(accountId, delegateTokenName, DelegateApproval.REJECT));
     }
   }
 

@@ -93,6 +93,7 @@ import io.harness.delegate.beans.ConnectionMode;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.Delegate.DelegateKeys;
 import io.harness.delegate.beans.DelegateApproval;
+import io.harness.delegate.beans.DelegateApprovalResponse;
 import io.harness.delegate.beans.DelegateConfiguration;
 import io.harness.delegate.beans.DelegateConnectionDetails;
 import io.harness.delegate.beans.DelegateConnectionHeartbeat;
@@ -334,6 +335,8 @@ public class DelegateServiceImpl implements DelegateService {
   private static final String ENV_ENV_VAR = "ENV";
   private static final String SAMPLE_DELEGATE_NAME = "harness-sample-k8s-delegate";
   private static final String deployVersion = System.getenv(DEPLOY_VERSION);
+  private static final String DELEGATES_UPDATED_RESPONSE = "Following delegates have been updated";
+  private static final String NO_DELEGATES_UPDATED_RESPONSE = "No delegate is waiting for approval/rejection";
 
   private static final long MAX_GRPC_HB_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
 
@@ -936,9 +939,6 @@ public class DelegateServiceImpl implements DelegateService {
   @Override
   public Delegate updateApprovalStatus(String accountId, String delegateId, DelegateApproval action)
       throws InvalidRequestException {
-    DelegateInstanceStatus newDelegateStatus = mapApprovalActionToDelegateStatus(action);
-    Type actionEventType = mapActionToEventType(action);
-
     Delegate currentDelegate = persistence.createQuery(Delegate.class)
                                    .filter(DelegateKeys.accountId, accountId)
                                    .filter(DelegateKeys.uuid, delegateId)
@@ -950,23 +950,77 @@ public class DelegateServiceImpl implements DelegateService {
       throw new InvalidRequestException("Delegate is already in state " + currentDelegate.getStatus().name());
     }
 
+    return updateApprovalStatePerDelegate(currentDelegate, action);
+  }
+
+  @Override
+  public DelegateApprovalResponse approveDelegatesUsingProfile(
+      String accountId, String delegateProfileId, DelegateApproval action) throws InvalidRequestException {
+    List<Delegate> currentDelegates = persistence.createQuery(Delegate.class)
+                                          .filter(DelegateKeys.accountId, accountId)
+                                          .filter(DelegateKeys.delegateProfileId, delegateProfileId)
+                                          .asList();
+
+    if (currentDelegates.isEmpty()) {
+      throw new InvalidRequestException(format(
+          "Unable to fetch any delegate with accountId %s and delegateProfileId %s ", accountId, delegateProfileId));
+    }
+    List<String> updatedDelegates = new ArrayList<>();
+    for (Delegate currentDelegate : currentDelegates) {
+      if (DelegateInstanceStatus.WAITING_FOR_APPROVAL.equals(currentDelegate.getStatus())) {
+        updatedDelegates.add(currentDelegate.getUuid());
+        updateApprovalStatePerDelegate(currentDelegate, action);
+      }
+    }
+    return new DelegateApprovalResponse(
+        isNotEmpty(updatedDelegates) ? DELEGATES_UPDATED_RESPONSE : NO_DELEGATES_UPDATED_RESPONSE, updatedDelegates);
+  }
+
+  @Override
+  public DelegateApprovalResponse approveDelegatesUsingToken(
+      String accountId, String delegateTokenName, DelegateApproval action) throws InvalidRequestException {
+    List<Delegate> currentDelegates = persistence.createQuery(Delegate.class)
+                                          .filter(DelegateKeys.accountId, accountId)
+                                          .filter(DelegateKeys.delegateTokenName, delegateTokenName)
+                                          .asList();
+
+    if (currentDelegates.isEmpty()) {
+      throw new InvalidRequestException(
+          format("Unable to fetch any delegate with accountId %s and delegateToken %s ", accountId, delegateTokenName));
+    }
+    List<String> updatedDelegates = new ArrayList<>();
+    for (Delegate currentDelegate : currentDelegates) {
+      if (DelegateInstanceStatus.WAITING_FOR_APPROVAL.equals(currentDelegate.getStatus())) {
+        updatedDelegates.add(currentDelegate.getUuid());
+        updateApprovalStatePerDelegate(currentDelegate, action);
+      }
+    }
+    return new DelegateApprovalResponse(
+        isNotEmpty(updatedDelegates) ? DELEGATES_UPDATED_RESPONSE : NO_DELEGATES_UPDATED_RESPONSE, updatedDelegates);
+  }
+
+  private Delegate updateApprovalStatePerDelegate(Delegate currentDelegate, DelegateApproval action) {
+    DelegateInstanceStatus newDelegateStatus = mapApprovalActionToDelegateStatus(action);
+    Type actionEventType = mapActionToEventType(action);
+
     Query<Delegate> updateQuery = persistence.createQuery(Delegate.class)
-                                      .filter(DelegateKeys.accountId, accountId)
-                                      .filter(DelegateKeys.uuid, delegateId)
+                                      .filter(DelegateKeys.uuid, currentDelegate.getUuid())
                                       .filter(DelegateKeys.status, DelegateInstanceStatus.WAITING_FOR_APPROVAL);
 
     UpdateOperations<Delegate> updateOperations =
         persistence.createUpdateOperations(Delegate.class).set(DelegateKeys.status, newDelegateStatus);
 
-    log.debug("Updating approval status from {} to {}", currentDelegate.getStatus(), newDelegateStatus);
+    log.info("Updating approval status from {} to {}", currentDelegate.getStatus(), newDelegateStatus);
     Delegate updatedDelegate = persistence.findAndModify(updateQuery, updateOperations, HPersistence.returnNewOptions);
 
-    auditServiceHelper.reportForAuditingUsingAccountId(accountId, currentDelegate, updatedDelegate, actionEventType);
+    auditServiceHelper.reportForAuditingUsingAccountId(
+        currentDelegate.getAccountId(), currentDelegate, updatedDelegate, actionEventType);
 
     if (DelegateInstanceStatus.DELETED == newDelegateStatus) {
       delegateMetricsService.recordDelegateMetrics(currentDelegate, DELEGATE_DESTROYED);
-      broadcasterFactory.lookup(STREAM_DELEGATE + accountId, true).broadcast(SELF_DESTRUCT + delegateId);
-      log.warn("Sent self destruct command to rejected delegate {}.", delegateId);
+      broadcasterFactory.lookup(STREAM_DELEGATE + currentDelegate.getAccountId(), true)
+          .broadcast(SELF_DESTRUCT + currentDelegate.getUuid());
+      log.warn("Sent self destruct command to rejected delegate {}.", currentDelegate.getUuid());
     }
 
     return updatedDelegate;

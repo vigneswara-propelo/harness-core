@@ -19,6 +19,7 @@ import io.harness.beans.PageResponse;
 import io.harness.delegate.beans.ConnectionMode;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateApproval;
+import io.harness.delegate.beans.DelegateApprovalResponse;
 import io.harness.delegate.beans.DelegateConnectionHeartbeat;
 import io.harness.delegate.beans.DelegateDTO;
 import io.harness.delegate.beans.DelegateGroup;
@@ -214,4 +215,10 @@ public interface DelegateService extends OwnedByAccount {
   DelegateDTO updateDelegateTags(String accountId, String delegateId, DelegateTags delegateTags);
 
   DelegateDTO deleteDelegateTags(String accountId, String delegateId);
+
+  DelegateApprovalResponse approveDelegatesUsingProfile(
+      String accountId, String delegateProfileId, DelegateApproval action) throws InvalidRequestException;
+
+  DelegateApprovalResponse approveDelegatesUsingToken(
+      String accountId, String delegateTokenName, DelegateApproval action) throws InvalidRequestException;
 }
