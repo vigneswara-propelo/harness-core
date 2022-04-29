@@ -7,6 +7,8 @@
 
 package io.harness.licensing.services;
 
+import static io.harness.configuration.DeployMode.DEPLOY_MODE;
+import static io.harness.configuration.DeployVariant.DEPLOY_VERSION;
 import static io.harness.licensing.LicenseModule.LICENSE_CACHE_NAMESPACE;
 import static io.harness.licensing.interfaces.ModuleLicenseImpl.TRIAL_DURATION;
 import static io.harness.remote.client.RestClientUtils.getResponse;
@@ -18,6 +20,8 @@ import io.harness.account.services.AccountService;
 import io.harness.beans.EmbeddedUser;
 import io.harness.ccm.license.CeLicenseInfoDTO;
 import io.harness.ccm.license.remote.CeLicenseClient;
+import io.harness.configuration.DeployMode;
+import io.harness.configuration.DeployVariant;
 import io.harness.exception.InvalidRequestException;
 import io.harness.licensing.Edition;
 import io.harness.licensing.EditionAction;
@@ -352,7 +356,16 @@ public class DefaultLicenseServiceImpl implements LicenseService {
         });
 
     if (!highestEditionLicense.isPresent()) {
-      return Edition.FREE;
+      Edition edition = Edition.FREE;
+      if (DeployMode.isOnPrem(System.getenv().get(DEPLOY_MODE))) {
+        if (DeployVariant.isCommunity(System.getenv().get(DEPLOY_VERSION))) {
+          edition = Edition.COMMUNITY;
+        } else {
+          edition = Edition.ENTERPRISE;
+        }
+      }
+      log.warn("Account {} has no highest edition license, fallback to {}", accountIdentifier, edition);
+      return edition;
     }
     return highestEditionLicense.get().getEdition();
   }
