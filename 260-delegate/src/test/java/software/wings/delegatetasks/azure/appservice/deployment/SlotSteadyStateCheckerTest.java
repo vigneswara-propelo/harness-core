@@ -8,7 +8,6 @@
 package software.wings.delegatetasks.azure.appservice.deployment;
 
 import static io.harness.azure.model.AzureConstants.SLOT_SWAP;
-import static io.harness.azure.model.AzureConstants.SLOT_SWAP_JOB_PROCESSOR_STR;
 import static io.harness.azure.model.AzureConstants.START_DEPLOYMENT_SLOT;
 import static io.harness.azure.model.AzureConstants.STOP_DEPLOYMENT_SLOT;
 import static io.harness.rule.OwnerRule.ANIL;
@@ -28,7 +27,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 import io.harness.CategoryTest;
@@ -53,7 +51,6 @@ import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.monitor.EventData;
 import com.microsoft.azure.management.monitor.LocalizableString;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -210,16 +207,6 @@ public class SlotSteadyStateCheckerTest extends CategoryTest {
         .listEventDataWithAllPropertiesByResourceId(eq(azureWebClientContext.getAzureConfig()),
             eq(azureWebClientContext.getSubscriptionId()), any(), any(), eq(SLOT_ID));
     assertThat(statusVerifier.getSteadyState().equalsIgnoreCase(RUNNING.name())).isTrue();
-
-    reset(azureMonitorClient);
-    doReturn(Collections.emptyList())
-        .when(azureMonitorClient)
-        .listEventDataWithAllPropertiesByResourceId(eq(azureWebClientContext.getAzureConfig()),
-            eq(azureWebClientContext.getSubscriptionId()), any(), any(), eq(SLOT_ID));
-    slotSteadyStateChecker.waitUntilCompleteWithTimeout(10, 1, mockLogCallback, STOP_DEPLOYMENT_SLOT, statusVerifier);
-    verify(azureMonitorClient, Mockito.atLeast(1))
-        .listEventDataWithAllPropertiesByResourceId(eq(azureWebClientContext.getAzureConfig()),
-            eq(azureWebClientContext.getSubscriptionId()), any(), any(), eq(SLOT_ID));
   }
 
   @Test
@@ -268,7 +255,6 @@ public class SlotSteadyStateCheckerTest extends CategoryTest {
     EventData slotSwap = mock(EventData.class);
     LocalizableString slotSwapLocalizableString = mock(LocalizableString.class);
     LocalizableString slotSwapStatusLocalizableString = mock(LocalizableString.class);
-    doReturn(SLOT_SWAP_JOB_PROCESSOR_STR).when(slotSwap).caller();
     doReturn(slotSwapLocalizableString).when(slotSwap).operationName();
     doReturn(slotSwapStatusLocalizableString).when(slotSwap).status();
     doReturn("Succeeded").when(slotSwapStatusLocalizableString).localizedValue();
@@ -278,7 +264,6 @@ public class SlotSteadyStateCheckerTest extends CategoryTest {
     EventData endSlotWarmUp = mock(EventData.class);
     LocalizableString endSlotWarmUpLocalizableString = mock(LocalizableString.class);
     LocalizableString endSlotWarmUpStatusLocalizableString = mock(LocalizableString.class);
-    doReturn(SLOT_SWAP_JOB_PROCESSOR_STR).when(endSlotWarmUp).caller();
     doReturn(endSlotWarmUpLocalizableString).when(endSlotWarmUp).operationName();
     doReturn(endSlotWarmUpStatusLocalizableString).when(endSlotWarmUp).status();
     doReturn("Succeeded").when(endSlotWarmUpStatusLocalizableString).localizedValue();
@@ -288,7 +273,6 @@ public class SlotSteadyStateCheckerTest extends CategoryTest {
     EventData startSlotWarmUp = mock(EventData.class);
     LocalizableString startSlotWarmUpLocalizableString = mock(LocalizableString.class);
     LocalizableString startSlotWarmUpStatusLocalizableString = mock(LocalizableString.class);
-    doReturn(SLOT_SWAP_JOB_PROCESSOR_STR).when(startSlotWarmUp).caller();
     doReturn(startSlotWarmUpLocalizableString).when(startSlotWarmUp).operationName();
     doReturn(startSlotWarmUpStatusLocalizableString).when(startSlotWarmUp).status();
     doReturn("Succeeded").when(startSlotWarmUpStatusLocalizableString).localizedValue();
@@ -300,7 +284,6 @@ public class SlotSteadyStateCheckerTest extends CategoryTest {
     EventData applyConfig = mock(EventData.class);
     LocalizableString applyConfigLocalizableString = mock(LocalizableString.class);
     LocalizableString applyConfigStatusLocalizableString = mock(LocalizableString.class);
-    doReturn(SLOT_SWAP_JOB_PROCESSOR_STR).when(applyConfig).caller();
     doReturn(applyConfigLocalizableString).when(applyConfig).operationName();
     doReturn(applyConfigStatusLocalizableString).when(applyConfig).status();
     doReturn("Succeeded").when(applyConfigStatusLocalizableString).localizedValue();
@@ -310,12 +293,21 @@ public class SlotSteadyStateCheckerTest extends CategoryTest {
     EventData notStarted = mock(EventData.class);
     LocalizableString notStartedLocalizableString = mock(LocalizableString.class);
     LocalizableString notStartedStatusLocalizableString = mock(LocalizableString.class);
-    doReturn(SLOT_SWAP_JOB_PROCESSOR_STR).when(notStarted).caller();
     doReturn(notStartedLocalizableString).when(notStarted).operationName();
     doReturn(notStartedStatusLocalizableString).when(notStarted).status();
     doReturn("Succeeded").when(notStartedStatusLocalizableString).localizedValue();
     doReturn("Microsoft.Web/sites/slots/RandomAction/action").when(notStartedLocalizableString).localizedValue();
     eventDataList.add(notStarted);
+
+    EventData slotSwapWrapper = mock(EventData.class);
+    LocalizableString slotSwapWrapperLocalizableString = mock(LocalizableString.class);
+    LocalizableString slotSwapWrapperStatusLocalizableString = mock(LocalizableString.class);
+    doReturn(slotSwapLocalizableString).when(slotSwap).operationName();
+    doReturn(slotSwapStatusLocalizableString).when(slotSwap).status();
+    doReturn("Succeeded").when(slotSwapStatusLocalizableString).localizedValue();
+    doReturn("Swap Web App Slots").when(slotSwapLocalizableString).localizedValue();
+    eventDataList.add(slotSwap);
+
     return eventDataList;
   }
 

@@ -13,7 +13,6 @@ import io.harness.azure.client.AzureMonitorClient;
 import io.harness.azure.client.AzureWebClient;
 import io.harness.azure.context.AzureWebClientContext;
 import io.harness.azure.model.AzureConfig;
-import io.harness.azure.utility.AzureResourceUtility;
 import io.harness.logging.LogCallback;
 
 import software.wings.delegatetasks.azure.AzureServiceCallBack;
@@ -22,6 +21,7 @@ import software.wings.delegatetasks.azure.appservice.deployment.context.SwapSlot
 import com.microsoft.azure.management.monitor.EventData;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.joda.time.DateTime;
 
@@ -29,8 +29,8 @@ import org.joda.time.DateTime;
 public class SwapSlotStatusVerifier extends SlotStatusVerifier {
   private final DateTime startTime;
   private final AzureMonitorClient azureMonitorClient;
-  private final Set<SwapSlotStatus> seenBefore = new HashSet<>();
-  private SwapSlotStatus previousHighestStatus = SwapSlotStatus.NOT_STARTED;
+  private final Set<SwapSlotEvent> seenBefore = new HashSet<>();
+  private SwapSlotAction previousHighestAction = SwapSlotAction.NOT_STARTED;
 
   public SwapSlotStatusVerifier(LogCallback logCallback, String slotName, AzureWebClient azureWebClient,
       AzureMonitorClient azureMonitorClient, AzureWebClientContext azureWebClientContext,
@@ -54,26 +54,28 @@ public class SwapSlotStatusVerifier extends SlotStatusVerifier {
     String subscriptionId = azureWebClientContext.getSubscriptionId();
     List<EventData> eventData = azureMonitorClient.listEventDataWithAllPropertiesByResourceId(
         azureConfig, subscriptionId, startTime, DateTime.now(), slotId);
-
     if (eventData.isEmpty()) {
-      return previousHighestStatus == SwapSlotStatus.SLOT_SWAP_ACTION;
+      return false;
     }
 
     // the oldest event is at the end
     for (int index = eventData.size() - 1; index >= 0; index--) {
       EventData event = eventData.get(index);
-      if (AzureResourceUtility.isSlotSwapJobProcessor(event)) {
-        String action = event.operationName().localizedValue();
-        SwapSlotStatus currentStatus = SwapSlotStatus.getSlotStatus(action);
-        if (SwapSlotStatus.compare(currentStatus, previousHighestStatus) || !seenBefore.contains(currentStatus)) {
-          logCallback.saveExecutionLog(String.format("Operation name : [%s]%nStatus : [%s]%nDescription : [%s]", action,
-              event.status().localizedValue(), event.description()));
-          previousHighestStatus = currentStatus;
-          seenBefore.add(currentStatus);
+      SwapSlotEvent currentEvent = SwapSlotEvent.getSlotEvent(event);
+      if (SwapSlotEvent.isSuccessEvent(currentEvent)) {
+        return true;
+      }
+
+      if (!seenBefore.contains(currentEvent) || SwapSlotAction.compare(currentEvent.action, previousHighestAction)) {
+        if (SwapSlotAction.shouldLog(currentEvent.action)) {
+          logCallback.saveExecutionLog(String.format("Operation name : [%s]%nStatus : [%s]%nDescription : [%s]",
+              currentEvent.action, currentEvent.status, event.description()));
         }
+        previousHighestAction = currentEvent.action;
+        seenBefore.add(currentEvent);
       }
     }
-    return previousHighestStatus == SwapSlotStatus.SLOT_SWAP_ACTION;
+    return false;
   }
 
   @Override
@@ -81,29 +83,70 @@ public class SwapSlotStatusVerifier extends SlotStatusVerifier {
     return "Running";
   }
 
-  private enum SwapSlotStatus {
+  private static class SwapSlotEvent {
+    private static final String successStatus = "Succeeded";
+    private final SwapSlotAction action;
+    private final String status;
+
+    SwapSlotEvent(SwapSlotAction action, String status) {
+      this.action = action;
+      this.status = status;
+    }
+
+    public static SwapSlotEvent getSlotEvent(EventData event) {
+      String action = event.operationName().localizedValue();
+      String status = event.status().localizedValue();
+      return new SwapSlotEvent(SwapSlotAction.getSlotAction(action), status);
+    }
+
+    public static boolean isSuccessEvent(SwapSlotEvent slotEvent) {
+      return slotEvent.action == SwapSlotAction.SLOT_SWAP_WRAPPER && successStatus.equals(slotEvent.status);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(action, status);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj.getClass() != this.getClass()) {
+        return false;
+      }
+
+      final SwapSlotEvent other = (SwapSlotEvent) obj;
+      return Objects.equals(this.action, other.action) || Objects.equals(this.status, other.status);
+    }
+  }
+
+  private enum SwapSlotAction {
     NOT_STARTED(""),
     APPLY_SLOT_CONFIGURATION("Microsoft.Web/sites/slots/ApplySlotConfig/action"),
     START_SLOT_WARM_UP("Microsoft.Web/sites/slots/StartSlotWarmup/action"),
     END_SLOT_WARM_UP("Microsoft.Web/sites/slots/EndSlotWarmup/action"),
-    SLOT_SWAP_ACTION("Microsoft.Web/sites/slots/SlotSwap/action");
+    SLOT_SWAP_ACTION("Microsoft.Web/sites/slots/SlotSwap/action"),
+    SLOT_SWAP_WRAPPER("Swap Web App Slots");
 
     private final String action;
-    SwapSlotStatus(String action) {
+    SwapSlotAction(String action) {
       this.action = action;
     }
 
-    public static boolean compare(SwapSlotStatus status1, SwapSlotStatus status2) {
-      return status1.ordinal() >= status2.ordinal();
+    public static boolean compare(SwapSlotAction action1, SwapSlotAction action2) {
+      return action1.ordinal() >= action2.ordinal();
     }
 
-    public static SwapSlotStatus getSlotStatus(String action) {
-      for (SwapSlotStatus status : values()) {
-        if (status.action.contains(action)) {
-          return status;
+    public static SwapSlotAction getSlotAction(String localizedAction) {
+      for (SwapSlotAction actionEnum : values()) {
+        if (actionEnum.action.contains(localizedAction)) {
+          return actionEnum;
         }
       }
       return NOT_STARTED;
+    }
+
+    public static boolean shouldLog(SwapSlotAction action) {
+      return !NOT_STARTED.equals(action) && !SLOT_SWAP_WRAPPER.equals(action);
     }
   }
 }
