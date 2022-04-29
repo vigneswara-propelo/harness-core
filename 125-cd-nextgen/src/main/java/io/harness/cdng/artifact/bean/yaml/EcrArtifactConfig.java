@@ -24,6 +24,7 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.validation.OneOfField;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
@@ -76,11 +77,11 @@ public class EcrArtifactConfig implements ArtifactConfig, Visitable, WithConnect
   /**
    * Identifier for artifact.
    */
-  @EntityIdentifier String identifier;
+  @EntityIdentifier @VariableExpression(skipVariableExpression = true) String identifier;
   /**
    * Whether this config corresponds to primary artifact.
    */
-  boolean isPrimaryArtifact;
+  @VariableExpression(skipVariableExpression = true) boolean isPrimaryArtifact;
 
   @Override
   public ArtifactSourceType getSourceType() {

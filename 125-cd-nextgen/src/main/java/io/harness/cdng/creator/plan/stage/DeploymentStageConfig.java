@@ -19,6 +19,7 @@ import io.harness.walktree.beans.VisitableChild;
 import io.harness.walktree.beans.VisitableChildren;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,7 +53,7 @@ public class DeploymentStageConfig implements StageInfoConfig, Visitable {
 
   @NotNull ServiceConfig serviceConfig;
   @NotNull PipelineInfrastructure infrastructure;
-  @NotNull ExecutionElementConfig execution;
+  @NotNull @VariableExpression(skipVariableExpression = true) ExecutionElementConfig execution;
 
   // For Visitor Framework Impl
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;

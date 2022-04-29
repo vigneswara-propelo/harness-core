@@ -129,9 +129,6 @@
             "connectorRef": {
               "type": "string"
             },
-            "metadata": {
-              "type": "string"
-            },
             "registry": {
               "type": "string"
             },
@@ -386,9 +383,6 @@
     "ArtifactListConfig": {
       "type": "object",
       "properties": {
-        "metadata": {
-          "type": "string"
-        },
         "primary": {
           "$ref": "#/definitions/PrimaryArtifact"
         },
@@ -445,9 +439,6 @@
               "type": "string"
             },
             "connectorRef": {
-              "type": "string"
-            },
-            "metadata": {
               "type": "string"
             },
             "repository": {
@@ -1150,9 +1141,6 @@
             "imagePath": {
               "type": "string"
             },
-            "metadata": {
-              "type": "string"
-            },
             "tag": {
               "type": "string"
             },
@@ -1404,9 +1392,6 @@
               "type": "string"
             },
             "imagePath": {
-              "type": "string"
-            },
-            "metadata": {
               "type": "string"
             },
             "registryHostname": {
@@ -2926,11 +2911,7 @@
         },
         {
           "type": "object",
-          "properties": {
-            "metadata": {
-              "type": "string"
-            }
-          }
+          "properties": { }
         }
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -3317,11 +3298,7 @@
         },
         {
           "type": "object",
-          "properties": {
-            "metadata": {
-              "type": "string"
-            }
-          }
+          "properties": { }
         }
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -4606,11 +4583,7 @@
         },
         {
           "type": "object",
-          "properties": {
-            "metadata": {
-              "type": "string"
-            }
-          }
+          "properties": { }
         }
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -5513,11 +5486,7 @@
         },
         {
           "type": "object",
-          "properties": {
-            "metadata": {
-              "type": "string"
-            }
-          }
+          "properties": { }
         }
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -6946,11 +6915,7 @@
         },
         {
           "type": "object",
-          "properties": {
-            "metadata": {
-              "type": "string"
-            }
-          }
+          "properties": { }
         }
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"

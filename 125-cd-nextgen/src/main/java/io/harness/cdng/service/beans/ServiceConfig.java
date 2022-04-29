@@ -15,13 +15,16 @@ import io.harness.beans.SwaggerConstants;
 import io.harness.cdng.visitor.helpers.serviceconfig.ServiceConfigVisitorHelper;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.validation.OneOfField;
 import io.harness.walktree.beans.VisitableChildren;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.core.intfc.OverridesApplier;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,12 +43,17 @@ import lombok.experimental.Wither;
 @OwnedBy(CDC)
 @RecasterAlias("io.harness.cdng.service.beans.ServiceConfig")
 public class ServiceConfig implements OverridesApplier<ServiceConfig>, Visitable {
-  @Wither private ServiceUseFromStage useFromStage;
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  String uuid;
+
+  @Wither @VariableExpression(skipVariableExpression = true) private ServiceUseFromStage useFromStage;
 
   @Wither private ServiceYaml service;
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) private ParameterField<String> serviceRef;
   private ServiceDefinition serviceDefinition;
-  @Wither private StageOverridesConfig stageOverrides;
+  @Wither @VariableExpression(skipVariableExpression = true) private StageOverridesConfig stageOverrides;
 
   // For Visitor Framework Impl
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;

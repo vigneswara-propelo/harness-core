@@ -24,6 +24,7 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.validation.OneOfField;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
@@ -35,6 +36,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.experimental.Wither;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -79,14 +81,14 @@ public class GcrArtifactConfig implements ArtifactConfig, Visitable, WithConnect
   /**
    * Identifier for artifact.
    */
-  @EntityIdentifier String identifier;
+  @VariableExpression(skipVariableExpression = true) @EntityIdentifier String identifier;
   /**
    * Whether this config corresponds to primary artifact.
    */
-  boolean isPrimaryArtifact;
+  @VariableExpression(skipVariableExpression = true) boolean isPrimaryArtifact;
 
   // For Visitor Framework Impl
-  String metadata;
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
 
   @Override
   public ArtifactSourceType getSourceType() {

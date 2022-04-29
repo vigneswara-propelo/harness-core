@@ -14,11 +14,14 @@ import io.harness.beans.SwaggerConstants;
 import io.harness.cdng.visitor.helpers.serviceconfig.ServiceUseFromOverridesVisitorHelper;
 import io.harness.cdng.visitor.helpers.serviceconfig.ServiceUseFromStageVisitorHelper;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.walktree.beans.VisitableChild;
 import io.harness.walktree.beans.VisitableChildren;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
+import io.harness.yaml.core.VariableExpression;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
@@ -39,6 +42,11 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("serviceUseFromStage")
 @RecasterAlias("io.harness.cdng.service.beans.ServiceUseFromStage")
 public class ServiceUseFromStage implements Serializable, Visitable {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  String uuid;
+
   // Stage identifier of the stage to select from.
   @NotNull String stage;
   Overrides overrides;
@@ -62,6 +70,9 @@ public class ServiceUseFromStage implements Serializable, Visitable {
     @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> name;
     @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> description;
 
-    @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
+    @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+    @VariableExpression(skipVariableExpression = true)
+    @ApiModelProperty(hidden = true)
+    String metadata;
   }
 }

@@ -60,7 +60,7 @@ public class InfraVariableCreator {
         .build();
   }
 
-  private static Map<String, YamlField> addDependencyForProvisionerSteps(YamlField provisionerField) {
+  public static Map<String, YamlField> addDependencyForProvisionerSteps(YamlField provisionerField) {
     Map<String, YamlField> stepsDependencyMap = new HashMap<>();
     List<YamlField> stepYamlFields = VariableCreatorHelper.getStepYamlFields(provisionerField);
     for (YamlField stepYamlField : stepYamlFields) {

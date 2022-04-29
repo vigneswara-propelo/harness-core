@@ -19,6 +19,7 @@ import io.harness.data.validator.EntityIdentifier;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Collections;
@@ -42,14 +43,14 @@ public class CustomArtifactConfig implements ArtifactConfig {
   /**
    * Identifier for artifact.
    */
-  @EntityIdentifier private String identifier;
+  @EntityIdentifier @VariableExpression(skipVariableExpression = true) private String identifier;
   /**
    * Artifact build number.
    */
   @NotNull @YamlSchemaTypes({string}) @Wither private ParameterField<String> version;
 
   /** Whether this config corresponds to primary artifact.*/
-  private boolean primaryArtifact;
+  @VariableExpression(skipVariableExpression = true) private boolean primaryArtifact;
 
   @Override
   public ArtifactSourceType getSourceType() {

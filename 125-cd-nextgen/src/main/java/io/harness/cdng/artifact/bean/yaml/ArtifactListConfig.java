@@ -47,7 +47,7 @@ public class ArtifactListConfig implements Visitable {
   List<SidecarArtifactWrapper> sidecars;
 
   // For Visitor Framework Impl
-  String metadata;
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
 
   @Builder
   @ConstructorProperties({"uuid", "primary", "sidecars", "metadata"})

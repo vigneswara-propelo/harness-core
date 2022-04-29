@@ -26,6 +26,7 @@ import io.harness.validation.OneOfField;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
@@ -98,9 +99,9 @@ public class NexusRegistryArtifactConfig implements ArtifactConfig, Visitable, W
   /**
    * Identifier for artifact.
    */
-  @EntityIdentifier String identifier;
+  @EntityIdentifier @VariableExpression(skipVariableExpression = true) String identifier;
   /** Whether this config corresponds to primary artifact.*/
-  boolean primaryArtifact;
+  @VariableExpression(skipVariableExpression = true) boolean primaryArtifact;
 
   // For Visitor Framework Impl
   String metadata;

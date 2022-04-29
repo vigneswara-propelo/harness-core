@@ -20,6 +20,7 @@ import io.harness.cdng.visitor.helpers.manifest.ValuesManifestVisitorHelper;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.SkipAutoEvaluation;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.walktree.beans.VisitableChildren;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
@@ -31,6 +32,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
@@ -46,6 +48,11 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("valuesManifest")
 @RecasterAlias("io.harness.cdng.manifest.yaml.kinds.ValuesManifest")
 public class ValuesManifest implements ManifestAttributes, Visitable {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
+
   String identifier;
   @Wither
   @JsonProperty("store")
