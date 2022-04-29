@@ -22,6 +22,7 @@ import io.harness.grpc.DelegateServiceGrpcClient;
 
 import com.google.inject.Inject;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +43,13 @@ public class CIDelegateTaskExecutor {
     this.delegateCallbackTokenSupplier = delegateCallbackTokenSupplier;
   }
 
-  public String queueTask(Map<String, String> setupAbstractions, HDelegateTask task) {
+  public String queueTask(Map<String, String> setupAbstractions, HDelegateTask task, List<String> taskSelectorList) {
     String accountId = task.getAccountId();
     TaskData taskData = task.getData();
     final DelegateTaskRequest delegateTaskRequest = DelegateTaskRequest.builder()
                                                         .parked(taskData.isParked())
                                                         .accountId(accountId)
+                                                        .taskSelectors(taskSelectorList)
                                                         .taskType(taskData.getTaskType())
                                                         .taskParameters(extractTaskParameters(taskData))
                                                         .executionTimeout(Duration.ofHours(12))

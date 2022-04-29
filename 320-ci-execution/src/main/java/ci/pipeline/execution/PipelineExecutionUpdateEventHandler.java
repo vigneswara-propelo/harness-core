@@ -17,6 +17,7 @@ import static java.lang.String.format;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DelegateTaskRequest;
+import io.harness.delegate.TaskSelector;
 import io.harness.delegate.beans.ci.CICleanupTaskParams;
 import io.harness.encryption.Scope;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -33,8 +34,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
@@ -72,16 +75,19 @@ public class PipelineExecutionUpdateEventHandler implements OrchestrationEventHa
 
           log.info("Received event with status {} to clean planExecutionId {}, stage {}", status,
               ambiance.getPlanExecutionId(), level.getIdentifier());
+          List<TaskSelector> taskSelectors = stageCleanupUtility.fetchDelegateSelector(ambiance);
 
           Map<String, String> abstractions = buildAbstractions(ambiance, Scope.PROJECT);
-          DelegateTaskRequest delegateTaskRequest = DelegateTaskRequest.builder()
-                                                        .accountId(accountId)
-                                                        .taskSetupAbstractions(abstractions)
-                                                        .executionTimeout(java.time.Duration.ofSeconds(900))
-                                                        .taskType("CI_CLEANUP")
-                                                        .taskParameters(ciCleanupTaskParams)
-                                                        .taskDescription("CI cleanup pod task")
-                                                        .build();
+          DelegateTaskRequest delegateTaskRequest =
+              DelegateTaskRequest.builder()
+                  .accountId(accountId)
+                  .taskSelectors(taskSelectors.stream().map(TaskSelector::getSelector).collect(Collectors.toList()))
+                  .taskSetupAbstractions(abstractions)
+                  .executionTimeout(java.time.Duration.ofSeconds(900))
+                  .taskType("CI_CLEANUP")
+                  .taskParameters(ciCleanupTaskParams)
+                  .taskDescription("CI cleanup pod task")
+                  .build();
 
           String taskId = delegateGrpcClientWrapper.submitAsyncTask(delegateTaskRequest, Duration.ZERO);
           log.info("Submitted cleanup request with taskId {} for planExecutionId {}, stage {}", taskId,

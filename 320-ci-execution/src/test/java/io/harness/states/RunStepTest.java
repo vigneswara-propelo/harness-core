@@ -36,6 +36,8 @@ import io.harness.beans.sweepingoutputs.StageDetails;
 import io.harness.beans.sweepingoutputs.StepLogKeyDetails;
 import io.harness.beans.sweepingoutputs.StepTaskDetails;
 import io.harness.beans.sweepingoutputs.VmStageInfraDetails;
+import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
+import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml.K8sDirectInfraYamlSpec;
 import io.harness.category.element.UnitTests;
 import io.harness.ci.config.CIExecutionServiceConfig;
 import io.harness.ci.serializer.RunStepProtobufSerializer;
@@ -69,6 +71,7 @@ import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.product.ci.engine.proto.UnitStep;
 import io.harness.rule.Owner;
+import io.harness.stateutils.buildstate.ConnectorUtils;
 import io.harness.tasks.ResponseData;
 
 import java.util.ArrayList;
@@ -95,7 +98,7 @@ public class RunStepTest extends CIExecutionTestBase {
   public static final String ERROR = "Error executing run step";
   @Mock private ExecutionSweepingOutputService executionSweepingOutputResolver;
   @Mock private OutcomeService outcomeService;
-
+  @Mock private ConnectorUtils connectorUtils;
   @Mock private CIDelegateTaskExecutor ciDelegateTaskExecutor;
   @Mock private RunStepProtobufSerializer runStepProtobufSerializer;
   @Mock private CIExecutionServiceConfig ciExecutionServiceConfig;
@@ -169,11 +172,18 @@ public class RunStepTest extends CIExecutionTestBase {
 
     when(executionSweepingOutputResolver.resolveOptional(
              ambiance, RefObjectUtils.getSweepingOutputRefObject(STAGE_INFRA_DETAILS)))
-        .thenReturn(
-            OptionalSweepingOutput.builder()
-                .found(true)
-                .output(K8StageInfraDetails.builder().podName("podName").containerNames(new ArrayList<>()).build())
-                .build());
+        .thenReturn(OptionalSweepingOutput.builder()
+                        .found(true)
+                        .output(K8StageInfraDetails.builder()
+                                    .podName("podName")
+                                    .infrastructure(K8sDirectInfraYaml.builder()
+                                                        .spec(K8sDirectInfraYamlSpec.builder()
+                                                                  .connectorRef(ParameterField.createValueField("fd"))
+                                                                  .build())
+                                                        .build())
+                                    .containerNames(new ArrayList<>())
+                                    .build())
+                        .build());
     when(executionSweepingOutputResolver.resolve(eq(ambiance), eq(refObject1))).thenReturn(stepTaskDetails);
     when(executionSweepingOutputResolver.resolve(eq(ambiance), eq(refObject2))).thenReturn(stepLogKeyDetails);
     when(executionSweepingOutputResolver.resolve(eq(ambiance), eq(refObject3))).thenReturn(containerPortDetails);
@@ -182,7 +192,7 @@ public class RunStepTest extends CIExecutionTestBase {
     when(outcomeService.resolve(ambiance, RefObjectUtils.getOutcomeRefObject(POD_DETAILS_OUTCOME)))
         .thenReturn(liteEnginePodDetailsOutcome);
     when(ciExecutionServiceConfig.isLocal()).thenReturn(false);
-    when(ciDelegateTaskExecutor.queueTask(any(), any())).thenReturn(callbackId);
+    when(ciDelegateTaskExecutor.queueTask(any(), any(), any())).thenReturn(callbackId);
     when(runStepProtobufSerializer.serializeStepWithStepParameters(
              any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(UnitStep.newBuilder().build());
@@ -306,7 +316,7 @@ public class RunStepTest extends CIExecutionTestBase {
         .thenReturn(OptionalSweepingOutput.builder().found(true).output(VmStageInfraDetails.builder().build()).build());
 
     when(vmStepSerializer.serialize(any(), any(), any(), any())).thenReturn(VmRunStep.builder().build());
-    when(ciDelegateTaskExecutor.queueTask(any(), any())).thenReturn(callbackId);
+    when(ciDelegateTaskExecutor.queueTask(any(), any(), any())).thenReturn(callbackId);
 
     AsyncExecutableResponse asyncExecutableResponse =
         runStep.executeAsync(ambiance, stepElementParameters, stepInputPackage, null);

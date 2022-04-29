@@ -7,7 +7,9 @@
 
 package io.harness.stateutils.buildstate;
 
+import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DETAILS;
 import static io.harness.rule.OwnerRule.ALEKSANDAR;
+import static io.harness.rule.OwnerRule.HARSH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,10 +21,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.beans.DecryptableEntity;
+import io.harness.beans.sweepingoutputs.K8StageInfraDetails;
+import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
+import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml.K8sDirectInfraYamlSpec;
 import io.harness.category.element.UnitTests;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResourceClient;
+import io.harness.delegate.TaskSelector;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.docker.DockerAuthCredentialsDTO;
@@ -35,15 +41,22 @@ import io.harness.executionplan.CIExecutionTestBase;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.ng.core.NGAccess;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.pms.contracts.ambiance.Ambiance;
+import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
+import io.harness.pms.sdk.core.resolver.RefObjectUtils;
+import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import com.google.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -62,7 +75,7 @@ public class ConnectorUtilsTest extends CIExecutionTestBase {
   @Mock private ConnectorResourceClient connectorResourceClient;
   @Mock private SecretManagerClientService secretManagerClientService;
   @InjectMocks ConnectorUtils connectorUtils;
-
+  @Mock private ExecutionSweepingOutputService executionSweepingOutputResolver;
   private NGAccess ngAccess;
   private ConnectorDTO gitHubConnectorDto;
   private ConnectorDTO dockerConnectorDto;
@@ -82,9 +95,15 @@ public class ConnectorUtilsTest extends CIExecutionTestBase {
   private static final String unsupportedConnectorId = "k8sConnectorFromDelegate";
   private static final Set<String> connectorIdSet =
       new HashSet<>(Arrays.asList(connectorId01, connectorId02, connectorId03));
+  private Ambiance ambiance;
 
   @Before
   public void setUp() {
+    ambiance = Ambiance.newBuilder()
+                   .putSetupAbstractions("accountId", "accountId")
+                   .putSetupAbstractions("projectIdentifier", "projectId")
+                   .putSetupAbstractions("orgIdentifier", "orgIdentifier")
+                   .build();
     ngAccess =
         BaseNGAccess.builder().projectIdentifier(PROJ_ID).orgIdentifier(ORG_ID).accountIdentifier(ACCOUNT_ID).build();
     gitHubConnectorDto = ciExecutionPlanTestHelper.getGitHubConnectorDTO();
@@ -305,5 +324,34 @@ public class ConnectorUtilsTest extends CIExecutionTestBase {
         .isEqualTo(awsCodeCommitConnectorDto.getConnectorInfo().getProjectIdentifier());
     verify(connectorResourceClient, times(1)).get(eq(connectorId05), eq(ACCOUNT_ID), eq(ORG_ID), eq(PROJ_ID));
     verify(secretManagerClientService, times(1)).getEncryptionDetails(eq(ngAccess), any(GitAuthenticationDTO.class));
+  }
+
+  @Test
+  @Owner(developers = HARSH)
+  @Category(UnitTests.class)
+  public void shouldAddDelegateSelector() throws IOException {
+    Call<ResponseDTO<Optional<ConnectorDTO>>> getConnectorResourceCall = mock(Call.class);
+    ResponseDTO<Optional<ConnectorDTO>> responseDTO = ResponseDTO.newResponse(Optional.of(k8sConnectorFromDelegate));
+    when(getConnectorResourceCall.execute()).thenReturn(Response.success(responseDTO));
+    when(connectorResourceClient.get(any(), any(), any(), any())).thenReturn(getConnectorResourceCall);
+
+    when(executionSweepingOutputResolver.resolveOptional(
+             ambiance, RefObjectUtils.getSweepingOutputRefObject(STAGE_INFRA_DETAILS)))
+        .thenReturn(OptionalSweepingOutput.builder()
+                        .found(true)
+                        .output(K8StageInfraDetails.builder()
+                                    .podName("podName")
+                                    .infrastructure(K8sDirectInfraYaml.builder()
+                                                        .spec(K8sDirectInfraYamlSpec.builder()
+                                                                  .connectorRef(ParameterField.createValueField("fd"))
+                                                                  .build())
+                                                        .build())
+                                    .containerNames(new ArrayList<>())
+                                    .build())
+                        .build());
+
+    List<TaskSelector> taskSelectors = connectorUtils.fetchDelegateSelector(ambiance, executionSweepingOutputResolver);
+    assertThat(taskSelectors)
+        .isEqualTo(Arrays.asList(TaskSelector.newBuilder().setSelector("delegate").setOrigin("").build()));
   }
 }

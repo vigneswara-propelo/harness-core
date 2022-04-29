@@ -47,6 +47,7 @@ import io.harness.ci.serializer.RunStepProtobufSerializer;
 import io.harness.ci.serializer.RunTestsStepProtobufSerializer;
 import io.harness.ci.serializer.vm.VmStepSerializer;
 import io.harness.data.structure.CollectionUtils;
+import io.harness.delegate.TaskSelector;
 import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.beans.ci.CIExecuteStepTaskParams;
 import io.harness.delegate.beans.ci.k8s.CIK8ExecuteStepTaskParams;
@@ -98,6 +99,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -164,6 +166,10 @@ public abstract class AbstractStepExecutable implements AsyncExecutableWithRbac<
     } else {
       throw new CIStageExecutionException(format("Invalid infra type: %s", stageInfraType));
     }
+  }
+
+  public List<TaskSelector> fetchDelegateSelector(Ambiance ambiance) {
+    return connectorUtils.fetchDelegateSelector(ambiance, executionSweepingOutputResolver);
   }
 
   private AsyncExecutableResponse executeK8AsyncAfterRbac(Ambiance ambiance, String stepIdentifier, String runtimeId,
@@ -459,7 +465,10 @@ public abstract class AbstractStepExecutable implements AsyncExecutableWithRbac<
 
     HDelegateTask task = (HDelegateTask) StepUtils.prepareDelegateTaskInput(accountId, taskData, abstractions);
 
-    return executor.queueTask(abstractions, task);
+    List<TaskSelector> taskSelectors = fetchDelegateSelector(ambiance);
+
+    return executor.queueTask(
+        abstractions, task, taskSelectors.stream().map(TaskSelector::getSelector).collect(Collectors.toList()));
   }
 
   private String queueParkedDelegateTask(
@@ -475,7 +484,7 @@ public abstract class AbstractStepExecutable implements AsyncExecutableWithRbac<
     Map<String, String> abstractions = buildAbstractions(ambiance, Scope.PROJECT);
     HDelegateTask task = (HDelegateTask) StepUtils.prepareDelegateTaskInput(accountId, taskData, abstractions);
 
-    return executor.queueTask(abstractions, task);
+    return executor.queueTask(abstractions, task, new ArrayList<>());
   }
 
   private String getLogKey(Ambiance ambiance) {

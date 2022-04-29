@@ -20,6 +20,7 @@ import io.harness.beans.sweepingoutputs.StageInfraDetails;
 import io.harness.beans.sweepingoutputs.VmStageInfraDetails;
 import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
+import io.harness.delegate.TaskSelector;
 import io.harness.delegate.beans.ci.CICleanupTaskParams;
 import io.harness.delegate.beans.ci.k8s.CIK8CleanupTaskParams;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
@@ -45,6 +46,10 @@ import lombok.extern.slf4j.Slf4j;
 public class StageCleanupUtility {
   @Inject private ExecutionSweepingOutputService executionSweepingOutputResolver;
   @Inject private ConnectorUtils connectorUtils;
+
+  public List<TaskSelector> fetchDelegateSelector(Ambiance ambiance) {
+    return connectorUtils.fetchDelegateSelector(ambiance, executionSweepingOutputResolver);
+  }
 
   public CICleanupTaskParams buildAndfetchCleanUpParameters(Ambiance ambiance) {
     StageInfraDetails stageInfraDetails;
