@@ -134,10 +134,10 @@ import io.harness.ccm.views.graphql.ViewsMetaDataFields;
 import io.harness.ccm.views.graphql.ViewsQueryBuilder;
 import io.harness.ccm.views.graphql.ViewsQueryHelper;
 import io.harness.ccm.views.graphql.ViewsQueryMetadata;
+import io.harness.ccm.views.helper.AwsAccountFieldHelper;
 import io.harness.ccm.views.helper.InstanceDetailsHelper;
 import io.harness.ccm.views.service.CEViewService;
 import io.harness.ccm.views.service.ViewsBillingService;
-import io.harness.ccm.views.utils.AwsAccountFieldUtils;
 import io.harness.ccm.views.utils.ViewFieldUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ff.FeatureFlagService;
@@ -191,6 +191,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
   @Inject InstanceDetailsHelper instanceDetailsHelper;
   @Inject EntityMetadataService entityMetadataService;
   @Inject BusinessMappingService businessMappingService;
+  @Inject AwsAccountFieldHelper awsAccountFieldHelper;
 
   public static final String nullStringValueConstant = "Others";
   private static final String COST_DESCRIPTION = "of %s - %s";
@@ -272,13 +273,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
       final TableResult result, final List<QLCEViewFilter> idFilters) {
     List<String> filterValuesData = convertToFilterValuesData(result, viewsQueryMetadata.getFields());
     if (isDataFilteredByAwsAccount(idFilters)) {
-      final List<String> updatedFilterValuesData = new ArrayList<>();
-      final Map<String, String> entityIdToName =
-          entityMetadataService.getEntityIdToNameMapping(filterValuesData, harnessAccountId, AWS_ACCOUNT_FIELD);
-      filterValuesData.forEach(filterValueData
-          -> updatedFilterValuesData.add(
-              AwsAccountFieldUtils.mergeAwsAccountIdAndName(filterValueData, entityIdToName.get(filterValueData))));
-      filterValuesData = updatedFilterValuesData;
+      filterValuesData = awsAccountFieldHelper.mergeAwsAccountNameWithValues(filterValuesData, harnessAccountId);
     }
     return filterValuesData;
   }
@@ -873,7 +868,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
           if (Objects.nonNull(condition.getField()) && AWS_ACCOUNT_FIELD.equals(condition.getField().getFieldName())
               && Objects.nonNull(condition.getValues())) {
             final String[] updatedValues = Arrays.stream(condition.getValues())
-                                               .map(AwsAccountFieldUtils::removeAwsAccountNameFromValue)
+                                               .map(AwsAccountFieldHelper::removeAwsAccountNameFromValue)
                                                .toArray(String[] ::new);
             updatedConditions.add(QLCEViewFilter.builder()
                                       .field(condition.getField())
@@ -898,7 +893,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
       if (Objects.nonNull(idFilter.getField()) && AWS_ACCOUNT_FIELD.equals(idFilter.getField().getFieldName())
           && Objects.nonNull(idFilter.getValues())) {
         final String[] updatedValues = Arrays.stream(idFilter.getValues())
-                                           .map(AwsAccountFieldUtils::removeAwsAccountNameFromValue)
+                                           .map(AwsAccountFieldHelper::removeAwsAccountNameFromValue)
                                            .toArray(String[] ::new);
         updatedIdFilters.add(QLCEViewFilter.builder()
                                  .field(idFilter.getField())
@@ -1837,7 +1832,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
           .cost(dataPoint.getCost())
           .costTrend(dataPoint.getCostTrend());
       if (AWS_ACCOUNT_FIELD.equals(fieldName)) {
-        qlceViewEntityStatsDataPointBuilder.name(AwsAccountFieldUtils.mergeAwsAccountIdAndName(
+        qlceViewEntityStatsDataPointBuilder.name(AwsAccountFieldHelper.mergeAwsAccountIdAndName(
             dataPoint.getName(), entityIdToName.get(dataPoint.getName())));
       }
       updatedDataPoints.add(qlceViewEntityStatsDataPointBuilder.build());
