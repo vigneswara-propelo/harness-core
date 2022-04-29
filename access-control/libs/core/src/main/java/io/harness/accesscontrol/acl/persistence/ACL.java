@@ -90,6 +90,7 @@ public class ACL implements PersistentEntity {
                  .field(ACLKeys.permissionIdentifier)
                  .field(ACLKeys.principalIdentifier)
                  .field(ACLKeys.principalType)
+                 .field(ACLKeys.aclQueryString)
                  .unique(true)
                  .build())
         .add(CompoundMongoIndex.builder()
