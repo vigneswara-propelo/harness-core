@@ -12,4 +12,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class SCMExceptionHints {
   public static final String INVALID_CREDENTIALS = "Please check your credentials.";
+  public static final String BITBUCKET_INVALID_CREDENTIALS = "Please check your Bitbucket credentials.";
+  public static final String GITHUB_INVALID_CREDENTIALS = "Please check your Github credentials.";
 }
