@@ -69,25 +69,25 @@ public class ProvisionService {
       + "\"parameters\":{\"Environment\":\"%s\",\"delegate\":\"delegate-ci\","
       + "\"account_id\":\"%s\",\"account_id_short\":\"%s\",\"account_secret\":\"%s\"}}'";
 
-  public ProvisionResponse.Status provisionCIResources(String accountId) {
+  public ProvisionResponse.SetupStatus provisionCIResources(String accountId) {
     Boolean delegateUpsertStatus = updateDelegateGroup(accountId);
 
     if (!delegateUpsertStatus) {
-      return ProvisionResponse.Status.DELEGATE_PROVISION_FAILURE;
+      return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
 
     Boolean installConnector = installConnector(accountId);
 
     if (!installConnector) {
-      return ProvisionResponse.Status.DELEGATE_PROVISION_FAILURE;
+      return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
     Boolean delegateInstallStatus = installDelegate(accountId);
 
     if (delegateInstallStatus) {
-      return ProvisionResponse.Status.DELEGATE_PROVISION_FAILURE;
+      return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
 
-    return ProvisionResponse.Status.SUCCESS;
+    return ProvisionResponse.SetupStatus.SUCCESS;
   }
 
   private Boolean installDelegate(String accountId) {
