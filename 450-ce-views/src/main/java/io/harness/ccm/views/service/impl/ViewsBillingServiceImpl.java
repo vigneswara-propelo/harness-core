@@ -1362,7 +1362,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
             QLCEViewDataPoint.builder()
                 .id(timeSeriesDataPoint.getId())
                 .value(timeSeriesDataPoint.getValue())
-                .name(AwsAccountFieldUtils.mergeAwsAccountIdAndName(
+                .name(AwsAccountFieldHelper.mergeAwsAccountIdAndName(
                     timeSeriesDataPoint.getId(), entityIdToName.get(timeSeriesDataPoint.getId())))
                 .build()));
     return updatedTimeSeriesDataPoints;
