@@ -4573,10 +4573,19 @@
               ]
             },
             "outputVariables": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/OutputNGVariable"
-              }
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/OutputNGVariable"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+                  "minLength": 1
+                }
+              ]
             },
             "privileged": {
               "oneOf": [
