@@ -125,6 +125,7 @@ import software.wings.beans.AmazonClientSDKDefaultBackoffStrategy;
 import software.wings.beans.AwsCrossAccountAttributes;
 import software.wings.beans.AzureImageDefinition;
 import software.wings.beans.AzureImageGallery;
+import software.wings.beans.AzureKubernetesCluster;
 import software.wings.beans.ExecutionCredential;
 import software.wings.beans.GcpKubernetesCluster;
 import software.wings.helpers.ext.azure.devops.AzureArtifactsPackage;
@@ -409,5 +410,6 @@ public class ApiServiceBeansKryoRegister implements KryoRegistrar {
     kryo.register(ArtifactFileMetadata.class, 97112);
     kryo.register(GcpKubernetesCluster.class, 5537);
     kryo.register(KustomizeConfig.class, 7323);
+    kryo.register(AzureKubernetesCluster.class, 5538);
   }
 }
