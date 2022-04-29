@@ -25,6 +25,7 @@ import io.harness.steps.StepSpecTypeConstants;
 import io.harness.steps.approval.ApprovalFacilitator;
 import io.harness.steps.approval.step.beans.CriteriaSpecWrapper;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
@@ -49,8 +50,8 @@ public class ServiceNowApprovalStepInfo implements PMSStepInfo, WithConnectorRef
   @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> connectorRef;
   @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> ticketNumber;
   @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> ticketType;
-  @NotNull CriteriaSpecWrapper approvalCriteria;
-  CriteriaSpecWrapper rejectionCriteria;
+  @NotNull @VariableExpression(skipVariableExpression = true) CriteriaSpecWrapper approvalCriteria;
+  @VariableExpression(skipVariableExpression = true) CriteriaSpecWrapper rejectionCriteria;
 
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
   @YamlSchemaTypes(value = {runtime})

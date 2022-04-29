@@ -8,10 +8,12 @@
 package io.harness.steps.servicenow.beans;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.yaml.core.VariableExpression;
 
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
@@ -26,6 +28,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ServiceNowField {
-  @NotEmpty String name;
-  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> value;
+  @NotEmpty @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD) String name;
+  @NotNull
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
+  @VariableExpression(skipVariableExpression = true)
+  ParameterField<String> value;
 }

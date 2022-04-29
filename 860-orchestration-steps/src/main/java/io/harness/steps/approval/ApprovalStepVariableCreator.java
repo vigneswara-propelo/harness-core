@@ -10,6 +10,7 @@ package io.harness.steps.approval;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
+import io.harness.pms.contracts.plan.YamlExtraProperties;
 import io.harness.pms.contracts.plan.YamlOutputProperties;
 import io.harness.pms.contracts.plan.YamlProperties;
 import io.harness.pms.sdk.core.pipeline.variables.GenericStepVariableCreator;
@@ -24,13 +25,17 @@ import io.harness.steps.approval.step.harness.HarnessApprovalStepNode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @OwnedBy(HarnessTeam.CDC)
 public class ApprovalStepVariableCreator extends GenericStepVariableCreator<HarnessApprovalStepNode> {
+  private static final String APPROVER_INPUTS_EXPRESSION = "output.approverInputs.";
+
   @Override
   public Set<String> getSupportedStepTypes() {
     Set<String> strings = new HashSet<>();
@@ -56,6 +61,37 @@ public class ApprovalStepVariableCreator extends GenericStepVariableCreator<Harn
     if (VariableCreatorHelper.isNotYamlFieldEmpty(inputsField)) {
       addVariablesForInputs(inputsField, yamlPropertiesMap);
     }
+  }
+
+  @Override
+  public Class<HarnessApprovalStepNode> getFieldClass() {
+    return HarnessApprovalStepNode.class;
+  }
+
+  @Override
+  public YamlExtraProperties getStepExtraProperties(
+      String fqnPrefix, String localNamePrefix, HarnessApprovalStepNode config) {
+    YamlExtraProperties stepExtraProperties = super.getStepExtraProperties(fqnPrefix, localNamePrefix, config);
+
+    List<String> outputExpressions = config.getHarnessApprovalStepInfo()
+                                         .getApproverInputs()
+                                         .stream()
+                                         .map(entry -> APPROVER_INPUTS_EXPRESSION + entry.getName())
+                                         .collect(Collectors.toList());
+
+    List<YamlProperties> outputProperties = new LinkedList<>();
+    for (String outputExpression : outputExpressions) {
+      outputProperties.add(YamlProperties.newBuilder()
+                               .setFqn(fqnPrefix + "." + outputExpression)
+                               .setLocalName(localNamePrefix + "." + outputExpression)
+                               .setVisible(true)
+                               .build());
+    }
+
+    return YamlExtraProperties.newBuilder()
+        .addAllProperties(stepExtraProperties.getPropertiesList())
+        .addAllOutputProperties(outputProperties)
+        .build();
   }
 
   private void addVariablesForInputs(YamlField inputsField, Map<String, YamlProperties> yamlPropertiesMap) {

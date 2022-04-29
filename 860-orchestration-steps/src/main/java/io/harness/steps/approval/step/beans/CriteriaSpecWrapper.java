@@ -14,12 +14,15 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.pms.yaml.YamlNode;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.TypeAlias;
@@ -31,6 +34,10 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("criteriaSpecWrapper")
 @RecasterAlias("io.harness.steps.approval.step.jira.beans.CriteriaSpecWrapper")
 public class CriteriaSpecWrapper {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  String uuid;
   @NotNull CriteriaSpecType type;
 
   @NotNull

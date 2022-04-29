@@ -14,8 +14,10 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
@@ -24,6 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.springframework.data.annotation.TypeAlias;
 
 @OwnedBy(CDC)
@@ -35,6 +38,10 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("keyValuesCriteriaSpec")
 @RecasterAlias("io.harness.steps.approval.step.jira.beans.KeyValuesCriteriaSpec")
 public class KeyValuesCriteriaSpec implements CriteriaSpec {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  String uuid;
   @YamlSchemaTypes({string})
   @ApiModelProperty(dataType = SwaggerConstants.BOOLEAN_CLASSPATH)
   private ParameterField<Boolean> matchAnyCondition;

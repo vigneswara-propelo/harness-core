@@ -35,6 +35,11 @@ public class JiraStepVariableCreator extends GenericStepVariableCreator<JiraCrea
   }
 
   @Override
+  public Class<JiraCreateStepNode> getFieldClass() {
+    return JiraCreateStepNode.class;
+  }
+
+  @Override
   protected void addVariablesInComplexObject(Map<String, YamlProperties> yamlPropertiesMap,
       Map<String, YamlOutputProperties> yamlOutputPropertiesMap, YamlNode yamlNode) {
     List<String> complexFields = new ArrayList<>();

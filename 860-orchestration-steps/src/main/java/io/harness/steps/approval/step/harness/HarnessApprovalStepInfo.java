@@ -22,6 +22,7 @@ import io.harness.steps.approval.ApprovalFacilitator;
 import io.harness.steps.approval.step.harness.beans.ApproverInputInfo;
 import io.harness.steps.approval.step.harness.beans.Approvers;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
@@ -48,8 +49,8 @@ public class HarnessApprovalStepInfo implements PMSStepInfo {
   @ApiModelProperty(dataType = SwaggerConstants.BOOLEAN_CLASSPATH)
   ParameterField<Boolean> includePipelineExecutionHistory;
 
-  @NotNull Approvers approvers;
-  List<ApproverInputInfo> approverInputs;
+  @NotNull @VariableExpression(skipVariableExpression = true) Approvers approvers;
+  @VariableExpression(skipVariableExpression = true) List<ApproverInputInfo> approverInputs;
 
   @Override
   public StepType getStepType() {
