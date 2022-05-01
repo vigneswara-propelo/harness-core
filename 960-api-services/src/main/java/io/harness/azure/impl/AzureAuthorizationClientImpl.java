@@ -15,6 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.azure.AzureClient;
 import io.harness.azure.client.AzureAuthorizationClient;
+import io.harness.azure.model.AzureAuthenticationType;
 import io.harness.azure.model.AzureConfig;
 
 import com.google.inject.Singleton;
@@ -69,5 +70,26 @@ public class AzureAuthorizationClientImpl extends AzureClient implements AzureAu
     log.debug("Start getting role definition at scope: {}, subscriptionId: {}, roleName: {}", scope, roleName);
     PagedList<RoleAssignment> roleAssignments = azure.accessManagement().roleAssignments().listByScope(scope);
     return new ArrayList<>(roleAssignments.size());
+  }
+
+  @Override
+  public void validateAzureConnection(AzureConfig azureConfig) {
+    try {
+      getAzureClientWithDefaultSubscription(azureConfig);
+      AzureAuthenticationType azureCredentialType = azureConfig.getAzureAuthenticationType();
+      String message = "Azure connection validated for";
+      if (log.isDebugEnabled()) {
+        if (azureCredentialType == AzureAuthenticationType.SERVICE_PRINCIPAL_CERT
+            || azureCredentialType == AzureAuthenticationType.SERVICE_PRINCIPAL_SECRET) {
+          log.debug("{} clientId {} ", message, azureConfig.getClientId());
+        } else if (azureCredentialType == AzureAuthenticationType.MANAGED_IDENTITY_USER_ASSIGNED) {
+          log.debug("{} UserAssigned MSI [{}]", message, azureConfig.getClientId());
+        } else if (azureCredentialType == AzureAuthenticationType.MANAGED_IDENTITY_SYSTEM_ASSIGNED) {
+          log.debug("{} SystemAssigned MSI ", message);
+        }
+      }
+    } catch (Exception e) {
+      handleAzureAuthenticationException(e);
+    }
   }
 }

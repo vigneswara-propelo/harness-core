@@ -23,7 +23,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
       @JsonSubTypes.Type(value = EcrArtifactOutcome.class, name = "Ecr"),
       @JsonSubTypes.Type(value = NexusArtifactOutcome.class, name = "Nexus3Registry"),
       @JsonSubTypes.Type(value = ArtifactoryArtifactOutcome.class, name = "ArtifactoryDockerRegistryDocker"),
-      @JsonSubTypes.Type(value = ArtifactoryGenericArtifactOutcome.class, name = "ArtifactoryGenericRegistry")
+      @JsonSubTypes.Type(value = ArtifactoryGenericArtifactOutcome.class, name = "ArtifactoryGenericRegistry"),
+      @JsonSubTypes.Type(value = AcrArtifactOutcome.class, name = "Acr")
 })
 @OwnedBy(HarnessTeam.CDP)
 public interface ArtifactOutcome extends Outcome, WithIdentifier, WithArtifactSummary {

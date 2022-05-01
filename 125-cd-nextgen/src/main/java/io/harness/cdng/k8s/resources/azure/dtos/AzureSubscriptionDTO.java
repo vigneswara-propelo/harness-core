@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.azure;
+package io.harness.cdng.k8s.resources.azure.dtos;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -24,7 +24,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @OwnedBy(CDP)
-@Schema(name = "AzureClusterResponse", description = "Azure response for cluster")
-public class AzureClusterDTO {
-  @NotNull @Schema(description = "This is the cluster name") String cluster;
+@Schema(name = "AzureSubscriptionResponse", description = "Azure response for subscription")
+public class AzureSubscriptionDTO {
+  @NotNull @Schema(description = "This is the subscription user friendly name") String subscriptionName;
+  @NotNull @Schema(description = "This is subscription id") String subscriptionId;
 }

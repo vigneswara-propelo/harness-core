@@ -9,6 +9,7 @@ package io.harness.serializer.kryo;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.artifact.outcome.AcrArtifactOutcome;
 import io.harness.cdng.artifact.outcome.ArtifactoryGenericArtifactOutcome;
 import io.harness.cdng.artifact.outcome.DockerArtifactOutcome;
 import io.harness.cdng.artifact.outcome.EcrArtifactOutcome;
@@ -62,5 +63,6 @@ public class NGBeanKryoRegistrar implements KryoRegistrar {
     kryo.register(ServerlessAwsLambdaManifestOutcome.class, 390008);
     kryo.register(ServerlessAwsLambdaInfrastructureOutcome.class, 390009);
     kryo.register(ArtifactoryGenericArtifactOutcome.class, 390010);
+    kryo.register(AcrArtifactOutcome.class, 390011);
   }
 }

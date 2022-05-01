@@ -7,7 +7,6 @@
 
 package io.harness.azure;
 
-import static io.harness.azure.model.AzureConstants.SUBSCRIPTION_ID_NULL_VALIDATION_MSG;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.network.Http.getOkHttpClientBuilder;
 
@@ -22,13 +21,8 @@ import io.harness.azure.client.AzureManagementRestClient;
 import io.harness.azure.context.AzureClientContext;
 import io.harness.azure.model.AzureConfig;
 import io.harness.azure.model.AzureConstants;
-import io.harness.azure.model.AzureNGConfig;
-import io.harness.azure.model.AzureNGInheritDelegateCredentialsConfig;
-import io.harness.azure.model.AzureNGManualCredentialsConfig;
 import io.harness.azure.utility.AzureUtils;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.AzureAuthenticationException;
-import io.harness.exception.AzureConfigException;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.NestedExceptionUtils;
@@ -70,81 +64,20 @@ public class AzureClient {
   }
 
   protected Azure getAzureClientWithDefaultSubscription(AzureConfig azureConfig) {
-    try {
-      ApplicationTokenCredentials credentials = new ApplicationTokenCredentials(azureConfig.getClientId(),
-          azureConfig.getTenantId(), String.valueOf(azureConfig.getKey()),
-          AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType()));
-
-      return Azure.configure().withLogLevel(LogLevel.NONE).authenticate(credentials).withDefaultSubscription();
-    } catch (Exception e) {
-      handleAzureAuthenticationException(e);
-    }
-    return null;
+    return getAzureClient(azureConfig, null);
   }
 
   protected Azure getAzureClient(AzureConfig azureConfig, String subscriptionId) {
-    if (isBlank(subscriptionId)) {
-      throw new IllegalArgumentException(SUBSCRIPTION_ID_NULL_VALIDATION_MSG);
-    }
-
     try {
-      ApplicationTokenCredentials credentials = new ApplicationTokenCredentials(azureConfig.getClientId(),
-          azureConfig.getTenantId(), String.valueOf(azureConfig.getKey()),
-          AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType()));
+      Azure.Authenticated authenticated =
+          Azure.configure().withLogLevel(LogLevel.NONE).authenticate(getAuthenticationTokenCredentials(azureConfig));
+      return isBlank(subscriptionId) ? authenticated.withDefaultSubscription()
+                                     : authenticated.withSubscription(subscriptionId);
 
-      return Azure.configure().withLogLevel(LogLevel.NONE).authenticate(credentials).withSubscription(subscriptionId);
     } catch (Exception e) {
       handleAzureAuthenticationException(e);
       throw new InvalidRequestException("Failed to connect to Azure cluster. " + ExceptionUtils.getMessage(e), USER);
     }
-  }
-
-  protected Azure getAzureClientWithUserAssignedManagedIdentity(
-      String clientId, AzureEnvironmentType azureEnvironmentType) {
-    return getAzureClientWithManagedIdentity(true, clientId, azureEnvironmentType);
-  }
-
-  protected Azure getAzureClientWithSystemAssignedManagedIdentity(AzureEnvironmentType azureEnvironmentType) {
-    return getAzureClientWithManagedIdentity(false, null, azureEnvironmentType);
-  }
-
-  protected Azure getAzureClientWithManagedIdentity(
-      boolean isUserAssignedManagedIdentity, String clientId, AzureEnvironmentType azureEnvironmentType) {
-    return getAzureClientWithManagedIdentity(isUserAssignedManagedIdentity, clientId, null, azureEnvironmentType);
-  }
-
-  protected Azure getAzureClientWithManagedIdentity(boolean isUserAssignedManagedIdentity, String clientId,
-      String subscription, AzureEnvironmentType azureEnvironmentType) {
-    Azure azure = null;
-
-    try {
-      AzureTokenCredentials azureTokenCredentials =
-          getMSICredentials(isUserAssignedManagedIdentity, clientId, azureEnvironmentType);
-
-      if (EmptyPredicate.isEmpty(subscription)) {
-        azure =
-            Azure.configure().withLogLevel(LogLevel.NONE).authenticate(azureTokenCredentials).withDefaultSubscription();
-      } else {
-        azure = Azure.configure()
-                    .withLogLevel(LogLevel.NONE)
-                    .authenticate(azureTokenCredentials)
-                    .withSubscription(subscription);
-      }
-    } catch (Exception e) {
-      handleAzureAuthenticationException(e);
-    }
-
-    return azure;
-  }
-
-  private AzureTokenCredentials getMSICredentials(
-      boolean isUserAssignedManagedIdentity, String clientId, AzureEnvironmentType azureEnvironmentType) {
-    MSICredentials msiCredentials = new MSICredentials(AzureUtils.getAzureEnvironment(azureEnvironmentType));
-
-    if (isUserAssignedManagedIdentity) {
-      msiCredentials.withClientId(clientId);
-    }
-    return msiCredentials;
   }
 
   protected void handleAzureAuthenticationException(Exception e) {
@@ -197,12 +130,9 @@ public class AzureClient {
 
   protected String getAzureBearerAuthToken(AzureConfig azureConfig) {
     try {
-      AzureEnvironment azureEnvironment = AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType());
-      ApplicationTokenCredentials credentials = new ApplicationTokenCredentials(
-          azureConfig.getClientId(), azureConfig.getTenantId(), new String(azureConfig.getKey()), azureEnvironment);
-
-      String token = credentials.getToken(azureEnvironment.managementEndpoint());
-      return "Bearer " + token;
+      return "Bearer "
+          + getAuthenticationTokenCredentials(azureConfig)
+                .getToken(AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType()).managementEndpoint());
     } catch (Exception e) {
       handleAzureAuthenticationException(e);
     }
@@ -217,74 +147,20 @@ public class AzureClient {
     return format("https://%s%s", repositoryHost, repositoryHost.endsWith("/") ? "" : "/");
   }
 
-  protected ApplicationTokenCredentials getAuthenticationTokenCredentials(AzureNGConfig azureNGConfig) {
-    AzureNGManualCredentialsConfig azureConfig = (AzureNGManualCredentialsConfig) azureNGConfig;
-    if (azureConfig.getKey() != null) {
-      return new ApplicationTokenCredentials(azureConfig.getClientId(), azureConfig.getTenantId(),
-          String.valueOf(azureConfig.getKey()), AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType()));
+  protected AzureTokenCredentials getAuthenticationTokenCredentials(AzureConfig azureConfig) {
+    AzureEnvironment azureEnvironment = AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType());
+    switch (azureConfig.getAzureAuthenticationType()) {
+      case SERVICE_PRINCIPAL_CERT:
+        return new ApplicationTokenCredentials(
+            azureConfig.getClientId(), azureConfig.getTenantId(), azureConfig.getCert(), null, azureEnvironment);
+      case MANAGED_IDENTITY_SYSTEM_ASSIGNED:
+        return new MSICredentials(azureEnvironment);
+      case MANAGED_IDENTITY_USER_ASSIGNED:
+        return new MSICredentials(azureEnvironment).withClientId(azureConfig.getClientId());
+      default:
+        // by default, it should be SERVICE_PRINCIPAL_SECRET
+        return new ApplicationTokenCredentials(azureConfig.getClientId(), azureConfig.getTenantId(),
+            String.valueOf(azureConfig.getKey()), azureEnvironment);
     }
-    if (azureConfig.getCert() != null) {
-      return new ApplicationTokenCredentials(azureConfig.getClientId(), azureConfig.getTenantId(),
-          azureConfig.getCert(), null, AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType()));
-    }
-    throw new AzureAuthenticationException("Authentication details are not provided");
-  }
-
-  protected Azure getAzureClientNg(AzureNGConfig azureNGConfig, String subscriptionId) {
-    Azure azure = null;
-    try {
-      if (azureNGConfig instanceof AzureNGManualCredentialsConfig) {
-        AzureNGManualCredentialsConfig azureConfig = (AzureNGManualCredentialsConfig) azureNGConfig;
-        if (isBlank(subscriptionId)) {
-          azure = Azure.configure()
-                      .withLogLevel(LogLevel.NONE)
-                      .authenticate(getAuthenticationTokenCredentials(azureConfig))
-                      .withDefaultSubscription();
-        } else {
-          azure = Azure.configure()
-                      .withLogLevel(LogLevel.NONE)
-                      .authenticate(getAuthenticationTokenCredentials(azureConfig))
-                      .withSubscription(subscriptionId);
-        }
-      } else if (azureNGConfig instanceof AzureNGInheritDelegateCredentialsConfig) {
-        AzureNGInheritDelegateCredentialsConfig azureConfig = (AzureNGInheritDelegateCredentialsConfig) azureNGConfig;
-        azure = getAzureClientWithManagedIdentity(azureConfig.isUserAssignedManagedIdentity(),
-            azureConfig.getClientId(), subscriptionId, azureConfig.getAzureEnvironmentType());
-      } else {
-        throw new AzureConfigException(
-            format("AzureNGConfig not of expected type [%s]", azureNGConfig.getClass().getName()));
-      }
-    } catch (Exception e) {
-      handleAzureAuthenticationException(e);
-    }
-    return azure;
-  }
-
-  protected String getAzureNGBearerAuthToken(AzureNGConfig azureNGConfig) {
-    try {
-      if (azureNGConfig instanceof AzureNGManualCredentialsConfig) {
-        AzureNGManualCredentialsConfig azureConfig = (AzureNGManualCredentialsConfig) azureNGConfig;
-        return "Bearer "
-            + getAuthenticationTokenCredentials(azureConfig)
-                  .getToken(AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType()).managementEndpoint());
-      } else if (azureNGConfig instanceof AzureNGInheritDelegateCredentialsConfig) {
-        AzureNGInheritDelegateCredentialsConfig azureConfig = (AzureNGInheritDelegateCredentialsConfig) azureNGConfig;
-        AzureTokenCredentials azureTokenCredentials = getMSICredentials(azureConfig.isUserAssignedManagedIdentity(),
-            azureConfig.getClientId(), azureConfig.getAzureEnvironmentType());
-        return "Bearer "
-            + azureTokenCredentials.getToken(
-                AzureUtils.getAzureEnvironment(azureConfig.getAzureEnvironmentType()).managementEndpoint());
-      }
-    } catch (Exception e) {
-      handleAzureAuthenticationException(e);
-    }
-    return null;
-  }
-
-  protected String getRestAzureCredentials(AzureNGManualCredentialsConfig azureConfig) {
-    if (azureConfig.getKey() != null) {
-      return getAzureBasicAuthHeader(azureConfig.getClientId(), String.valueOf(azureConfig.getKey()));
-    }
-    throw new AzureAuthenticationException("Authentication details are not provided");
   }
 }

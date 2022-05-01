@@ -2047,6 +2047,7 @@
           "enum": [
             "KubernetesDirect",
             "KubernetesGcp",
+            "KubernetesAzure",
             "Pdc",
             "ServerlessAwsLambda"
           ]
@@ -2054,6 +2055,22 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#",
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "KubernetesAzure"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/K8sAzureInfrastructure"
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {
@@ -2482,6 +2499,51 @@
                   "type": "string"
                 }
               ]
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "K8sAzureInfrastructure": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Infrastructure"
+        },
+        {
+          "type": "object",
+          "required": [
+            "cluster",
+            "connectorRef",
+            "namespace",
+            "releaseName",
+            "resourceGroup",
+            "subscription"
+          ],
+          "properties": {
+            "cluster": {
+              "type": "string",
+              "minLength": 1
+            },
+            "connectorRef": {
+              "type": "string",
+              "minLength": 1
+            },
+            "namespace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "releaseName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "resourceGroup": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subscription": {
+              "type": "string",
+              "minLength": 1
             }
           }
         }

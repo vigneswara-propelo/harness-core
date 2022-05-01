@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.azure;
+package io.harness.cdng.artifact.resources.acr.dtos;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -22,8 +22,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Schema(description = "This contains details regarding ACR registry")
+@Schema(description = "This contains details regarding ACR repository")
 @OwnedBy(HarnessTeam.CDP)
-public class AcrRegistryDTO {
-  @NotNull @Schema(description = "This is the artifact registry name") String registry;
+public class AcrRepositoryDTO {
+  @NotNull @Schema(description = "This is the artifact repository name") String repository;
 }

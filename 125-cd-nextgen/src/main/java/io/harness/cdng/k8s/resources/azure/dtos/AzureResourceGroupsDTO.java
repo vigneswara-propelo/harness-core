@@ -5,9 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.azure;
+package io.harness.cdng.k8s.resources.azure.dtos;
 
-import io.harness.annotations.dev.HarnessTeam;
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
 import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -22,8 +23,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Schema(description = "This contains details regarding ACR registries")
-@OwnedBy(HarnessTeam.CDP)
-public class AcrRegistriesDTO {
-  List<AcrRegistryDTO> registries;
+@OwnedBy(CDP)
+@Schema(name = "AzureResourceGroupsResponse", description = "Azure response for resource groups")
+public class AzureResourceGroupsDTO {
+  List<AzureResourceGroupDTO> resourceGroups;
 }

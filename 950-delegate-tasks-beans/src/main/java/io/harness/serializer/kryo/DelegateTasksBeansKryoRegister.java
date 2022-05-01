@@ -385,6 +385,7 @@ import io.harness.delegate.task.http.HttpTaskParameters;
 import io.harness.delegate.task.http.HttpTaskParametersNg;
 import io.harness.delegate.task.jira.JiraTaskNGParameters;
 import io.harness.delegate.task.jira.JiraTaskNGResponse;
+import io.harness.delegate.task.k8s.AzureK8sInfraDelegateConfig;
 import io.harness.delegate.task.k8s.DeleteResourcesType;
 import io.harness.delegate.task.k8s.DirectK8sInfraDelegateConfig;
 import io.harness.delegate.task.k8s.GcpK8sInfraDelegateConfig;
@@ -1291,5 +1292,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(ServerlessAwsLambdaRollbackResult.class, 563529);
     kryo.register(ServerlessInstallationCapability.class, 563530);
     kryo.register(ArtifactoryBaseArtifactDelegateRequest.class, 563531);
+    kryo.register(AzureK8sInfraDelegateConfig.class, 563532);
   }
 }

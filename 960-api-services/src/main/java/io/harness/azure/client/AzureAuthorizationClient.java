@@ -36,4 +36,11 @@ public interface AzureAuthorizationClient {
    * @return
    */
   List<RoleAssignment> getRoleDefinition(AzureConfig azureConfig, String scope, String roleName);
+
+  /**
+   * Validate azure connection with a provided clientId, tenantId, secret and environment type. Will throw exception if
+   *  connection can't be made
+   * @param azureNGConfig all information required for Azure connection
+   */
+  void validateAzureConnection(AzureConfig azureNGConfig);
 }

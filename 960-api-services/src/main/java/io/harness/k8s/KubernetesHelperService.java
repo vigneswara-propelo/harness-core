@@ -129,6 +129,18 @@ public class KubernetesHelperService {
     }
   }
 
+  public static void validateSubscription(String subscription) {
+    if (isBlank(subscription)) {
+      throw new InvalidArgumentsException(Pair.of("Subscription", "Subscription cannot be empty"));
+    }
+  }
+
+  public static void validateResourceGroup(String resourceGroup) {
+    if (isBlank(resourceGroup)) {
+      throw new InvalidArgumentsException(Pair.of("ResourceGroup", "ResourceGroup cannot be empty"));
+    }
+  }
+
   public static void validateNamespace(String namespace) {
     if (isBlank(namespace)) {
       throw new InvalidArgumentsException(Pair.of("Namespace", "Namespace cannot be empty"));

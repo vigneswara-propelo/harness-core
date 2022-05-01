@@ -16,4 +16,5 @@ public interface InfrastructureKind {
   String KUBERNETES_GCP = "KubernetesGcp";
   String SERVERLESS_AWS_LAMBDA = "ServerlessAwsLambda";
   String PDC = "Pdc";
+  String KUBERNETES_AZURE = "KubernetesAzure";
 }

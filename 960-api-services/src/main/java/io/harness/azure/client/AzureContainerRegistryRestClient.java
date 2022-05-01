@@ -7,6 +7,7 @@
 
 package io.harness.azure.client;
 
+import software.wings.helpers.ext.azure.AcrGetRepositoriesResponse;
 import software.wings.helpers.ext.azure.AcrGetRepositoryTagsResponse;
 
 import retrofit2.Call;
@@ -14,10 +15,16 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface AzureContainerRegistryRestClient {
   @Headers({"Content-Type: application/json; charset=utf-8", "accept-language: en-US"})
   @GET("/v2/{repositoryName}/tags/list?n=500&orderby=timedesc")
   Call<AcrGetRepositoryTagsResponse> listRepositoryTags(@Header("Authorization") String basicAuthHeader,
       @Path(value = "repositoryName", encoded = true) String repositoryName);
+
+  @Headers({"Content-Type: application/json; charset=utf-8", "accept-language: en-US"})
+  @GET("/v2/_catalog")
+  Call<AcrGetRepositoriesResponse> listRepositories(
+      @Header("Authorization") String basicAuthHeader, @Query("last") String last);
 }

@@ -11,6 +11,7 @@ import static io.harness.azure.model.AzureConstants.ACR_REGISTRY_NAME_BLANK_VALI
 import static io.harness.azure.model.AzureConstants.REGISTRY_HOST_BLANK_VALIDATION_MSG;
 import static io.harness.azure.model.AzureConstants.REPOSITORY_NAME_BLANK_VALIDATION_MSG;
 import static io.harness.azure.model.AzureConstants.SUBSCRIPTION_ID_NULL_VALIDATION_MSG;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -20,7 +21,9 @@ import io.harness.azure.client.AzureContainerRegistryClient;
 import io.harness.azure.client.AzureContainerRegistryRestClient;
 import io.harness.azure.context.AzureContainerRegistryClientContext;
 import io.harness.azure.model.AzureConfig;
+import io.harness.exception.AzureContainerRegistryException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.NestedExceptionUtils;
 
 import software.wings.helpers.ext.azure.AcrGetRepositoryTagsResponse;
 
@@ -111,6 +114,33 @@ public class AzureContainerRegistryClientImpl extends AzureClient implements Azu
       throw new InvalidRequestException(
           format("Unable to list repository tags, registryHost: %s, repositoryName: %s", registryHost, repositoryName),
           e);
+    }
+  }
+
+  @Override
+  public List<String> listRepositories(AzureConfig azureConfig, String subscriptionId, String registryUrl) {
+    try {
+      AzureContainerRegistryRestClient acrRestClient =
+          getAzureRestClient(buildRepositoryHostUrl(registryUrl), AzureContainerRegistryRestClient.class);
+
+      String basicAuthHeader = getAzureBasicAuthHeader(azureConfig.getClientId(), String.valueOf(azureConfig.getKey()));
+      List<String> allRepositories = new ArrayList<>();
+      String last = null;
+      List<String> repositories;
+      do {
+        repositories = acrRestClient.listRepositories(basicAuthHeader, last).execute().body().getRepositories();
+
+        if (isNotEmpty(repositories)) {
+          allRepositories.addAll(repositories);
+          last = repositories.get(repositories.size() - 1);
+        }
+      } while (isNotEmpty(repositories));
+      return allRepositories;
+    } catch (Exception e) {
+      throw NestedExceptionUtils.hintWithExplanationException("Check Service Principal/Managed Identity permissions",
+          String.format("Error occurred while getting repositories for subscriptionId/registry: %s/%s", subscriptionId,
+              registryUrl),
+          new AzureContainerRegistryException(e.getMessage()));
     }
   }
 }
