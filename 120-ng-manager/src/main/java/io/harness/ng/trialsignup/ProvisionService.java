@@ -16,6 +16,7 @@ import static java.lang.String.format;
 
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
+import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
 import io.harness.delegate.beans.DelegateGroup;
 import io.harness.delegate.beans.DelegateSetupDetails;
@@ -36,6 +37,7 @@ import com.google.inject.name.Named;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
@@ -76,14 +78,14 @@ public class ProvisionService {
       return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
 
-    Boolean installConnector = installConnector(accountId);
+    Boolean installConnectorStatus = installConnector(accountId);
 
-    if (!installConnector) {
+    if (!installConnectorStatus) {
       return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
     Boolean delegateInstallStatus = installDelegate(accountId);
 
-    if (delegateInstallStatus) {
+    if (!delegateInstallStatus) {
       return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
 
@@ -147,28 +149,38 @@ public class ProvisionService {
   }
 
   private Boolean installConnector(String accountId) {
-    KubernetesCredentialDTO kubernetesCredentialDTO =
-        KubernetesCredentialDTO.builder()
-            .kubernetesCredentialType(KubernetesCredentialType.INHERIT_FROM_DELEGATE)
-            .build();
+    try {
+      Optional<ConnectorResponseDTO> connectorResponseDTO =
+          connectorService.get(accountId, null, null, K8S_CONNECTOR_IDENTIFIER);
+      if (connectorResponseDTO.isPresent()) {
+        return TRUE;
+      }
+      KubernetesCredentialDTO kubernetesCredentialDTO =
+          KubernetesCredentialDTO.builder()
+              .kubernetesCredentialType(KubernetesCredentialType.INHERIT_FROM_DELEGATE)
+              .build();
 
-    KubernetesClusterConfigDTO kubernetesClusterConfigDTO =
-        KubernetesClusterConfigDTO.builder()
-            .credential(kubernetesCredentialDTO)
-            .delegateSelectors(new HashSet<>(Collections.singletonList(K8S_DELEGATE_NAME)))
-            .build();
+      KubernetesClusterConfigDTO kubernetesClusterConfigDTO =
+          KubernetesClusterConfigDTO.builder()
+              .credential(kubernetesCredentialDTO)
+              .delegateSelectors(new HashSet<>(Collections.singletonList(K8S_DELEGATE_NAME)))
+              .build();
 
-    ConnectorInfoDTO connectorInfoDTO = ConnectorInfoDTO.builder()
-                                            .connectorType(ConnectorType.KUBERNETES_CLUSTER)
-                                            .identifier(K8S_CONNECTOR_IDENTIFIER)
-                                            .name(K8S_CONNECTOR_NAME)
-                                            .description(K8S_CONNECTOR_DESC)
-                                            .connectorConfig(kubernetesClusterConfigDTO)
-                                            .build();
+      ConnectorInfoDTO connectorInfoDTO = ConnectorInfoDTO.builder()
+                                              .connectorType(ConnectorType.KUBERNETES_CLUSTER)
+                                              .identifier(K8S_CONNECTOR_IDENTIFIER)
+                                              .name(K8S_CONNECTOR_NAME)
+                                              .description(K8S_CONNECTOR_DESC)
+                                              .connectorConfig(kubernetesClusterConfigDTO)
+                                              .build();
 
-    ConnectorDTO connectorDTO = ConnectorDTO.builder().connectorInfo(connectorInfoDTO).build();
+      ConnectorDTO connectorDTO = ConnectorDTO.builder().connectorInfo(connectorInfoDTO).build();
 
-    connectorService.create(connectorDTO, accountId);
+      connectorService.create(connectorDTO, accountId);
+    } catch (Exception e) {
+      log.error("Error adding hosted k8s connector", e);
+      return FALSE;
+    }
 
     return true;
   }

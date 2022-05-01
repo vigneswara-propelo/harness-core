@@ -49,8 +49,7 @@ public class CIProvisionResource {
   @ApiOperation(value = "Provision resources for signup", nickname = "provisionResourcesForCI")
   public ResponseDTO<ProvisionResponse.SetupStatus> provisionCIResources(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId) {
-    provisionService.provisionCIResources(accountId);
-    return null;
+    return ResponseDTO.newResponse(provisionService.provisionCIResources(accountId));
   }
 
   @GET
