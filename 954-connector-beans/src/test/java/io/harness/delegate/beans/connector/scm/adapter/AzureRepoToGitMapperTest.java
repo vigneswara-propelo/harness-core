@@ -16,6 +16,7 @@ import static io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoApiAcce
 import static io.harness.rule.OwnerRule.MANKRIT;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
@@ -34,6 +35,7 @@ import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitHTTPAuthenticationDTO;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitSSHAuthenticationDTO;
 import io.harness.encryption.SecretRefHelper;
+import io.harness.exception.InvalidRequestException;
 import io.harness.rule.Owner;
 
 import java.util.HashSet;
@@ -130,5 +132,28 @@ public class AzureRepoToGitMapperTest extends CategoryTest {
     assertThat(gitConfigDTO.getUrl()).isEqualTo(url);
     assertThat(gitConfigDTO.getDelegateSelectors()).isEqualTo(delegateSelectors);
     assertThat(gitConfigDTO.getGitConnectionType()).isEqualTo(REPO);
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testMappingToNull() {
+    final String url = "url";
+    final String sshKeyRef = "sshKeyRef";
+    final AzureRepoAuthenticationDTO azureRepoAuthenticationDTO =
+        AzureRepoAuthenticationDTO.builder()
+            .credentials(
+                AzureRepoSshCredentialsDTO.builder().sshKeyRef(SecretRefHelper.createSecretRef(sshKeyRef)).build())
+            .build();
+
+    final AzureRepoConnectorDTO azureRepoConnectorDTO = AzureRepoConnectorDTO.builder()
+                                                            .connectionType(GitConnectionType.REPO)
+                                                            .url(url)
+                                                            .authentication(azureRepoAuthenticationDTO)
+                                                            .delegateSelectors(delegateSelectors)
+                                                            .build();
+    assertThatThrownBy(() -> AzureRepoToGitMapper.mapToGitConfigDTO(azureRepoConnectorDTO))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Azure Repo DTO Auth Type not found");
   }
 }
