@@ -54,6 +54,7 @@ import io.harness.beans.SweepingOutputInstance.Scope;
 import io.harness.beans.TriggeredBy;
 import io.harness.beans.WorkflowType;
 import io.harness.context.ContextElementType;
+import io.harness.data.algorithm.HashGenerator;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.eraro.ErrorCode;
 import io.harness.eraro.Level;
@@ -62,9 +63,11 @@ import io.harness.exception.HarnessJiraException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.expression.ExpressionEvaluator;
+import io.harness.expression.ExpressionReflectionUtils;
 import io.harness.logging.Misc;
 import io.harness.scheduler.PersistentScheduler;
 import io.harness.serializer.KryoSerializer;
+import io.harness.shell.ScriptType;
 import io.harness.tasks.ResponseData;
 
 import software.wings.api.ApprovalStateExecutionData;
@@ -475,7 +478,18 @@ public class ApprovalState extends State implements SweepingOutputStateMixin {
 
   private ExecutionResponse executeShellScriptApproval(ExecutionContext context, String accountId, String appId,
       String approvalId, ShellScriptApprovalParams parameters, ApprovalStateExecutionData executionData) {
-    parameters.setScriptString(context.renderExpression(parameters.getScriptString()));
+    context.resetPreparedCache();
+    int expressionFunctorToken = HashGenerator.generateIntegerHash();
+
+    StateExecutionContext stateExecutionContext = StateExecutionContext.builder()
+                                                      .stateExecutionData(executionData)
+                                                      .scriptType(ScriptType.BASH)
+                                                      .adoptDelegateDecryption(true)
+                                                      .expressionFunctorToken(expressionFunctorToken)
+                                                      .build();
+    ExpressionReflectionUtils.applyExpression(
+        parameters, (secretMode, value) -> context.renderExpression(value, stateExecutionContext));
+
     parameters.setDelegateSelectors(getDelegateSelectors(context, parameters.fetchDelegateSelectors()));
 
     String activityId = createActivity(context);
@@ -495,6 +509,7 @@ public class ApprovalState extends State implements SweepingOutputStateMixin {
             .delegateSelectors(parameters.fetchDelegateSelectors())
             .approvalType(approvalStateType)
             .retryInterval(parameters.getRetryInterval())
+            .expressionFunctorToken(expressionFunctorToken)
             .build();
 
     try {
