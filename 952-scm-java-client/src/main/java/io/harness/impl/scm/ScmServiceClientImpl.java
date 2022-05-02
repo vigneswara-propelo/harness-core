@@ -18,6 +18,7 @@ import static java.util.stream.Collectors.toList;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FileContentBatchResponse;
+import io.harness.beans.PageRequestDTO;
 import io.harness.beans.gitsync.GitFileDetails;
 import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
@@ -76,6 +77,8 @@ import io.harness.product.ci.scm.proto.IsLatestFileRequest;
 import io.harness.product.ci.scm.proto.IsLatestFileResponse;
 import io.harness.product.ci.scm.proto.ListBranchesRequest;
 import io.harness.product.ci.scm.proto.ListBranchesResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultRequest;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.ListCommitsInPRRequest;
 import io.harness.product.ci.scm.proto.ListCommitsInPRResponse;
 import io.harness.product.ci.scm.proto.ListCommitsRequest;
@@ -293,6 +296,20 @@ public class ScmServiceClientImpl implements ScmServiceClient {
       pageNumber = branchListResponse.getPagination().getNext();
     } while (hasMoreBranches(branchListResponse));
     return ListBranchesResponse.newBuilder().addAllBranches(branchesList).build();
+  }
+
+  @Override
+  public ListBranchesWithDefaultResponse listBranchesWithDefault(
+      ScmConnector scmConnector, PageRequestDTO pageRequest, SCMGrpc.SCMBlockingStub scmBlockingStub) {
+    final String slug = scmGitProviderHelper.getSlug(scmConnector);
+    final Provider provider = scmGitProviderMapper.mapToSCMGitProvider(scmConnector);
+    ListBranchesWithDefaultRequest listBranchesRequest =
+        ListBranchesWithDefaultRequest.newBuilder()
+            .setSlug(slug)
+            .setProvider(provider)
+            .setPagination(PageRequest.newBuilder().setPage(pageRequest.getPageIndex() + 1).build())
+            .build();
+    return ScmGrpcClientUtils.retryAndProcessException(scmBlockingStub::listBranchesWithDefault, listBranchesRequest);
   }
 
   private boolean hasMoreBranches(ListBranchesResponse branchList) {
@@ -763,10 +780,6 @@ public class ScmServiceClientImpl implements ScmServiceClient {
           "Error encountered while getting latest commit of branch [{}] in slug [{}]", defaultBranchName, slug, ex);
       throw ex;
     }
-  }
-
-  private String getGithubToken(Provider gitProvider) {
-    return gitProvider.getGithub().getAccessToken();
   }
 
   private boolean isIdenticalTarget(WebhookResponse webhookResponse, GitWebhookDetails gitWebhookDetails) {

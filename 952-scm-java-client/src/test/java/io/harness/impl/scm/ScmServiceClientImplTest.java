@@ -13,22 +13,25 @@ import static io.harness.constants.Constants.SCM_INTERNAL_SERVER_ERROR_CODE;
 import static io.harness.constants.Constants.SCM_INTERNAL_SERVER_ERROR_MESSAGE;
 import static io.harness.delegate.beans.connector.ConnectorType.BITBUCKET;
 import static io.harness.delegate.beans.connector.ConnectorType.GITHUB;
+import static io.harness.rule.OwnerRule.DEEPAK;
 import static io.harness.rule.OwnerRule.MEET;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.PageRequestDTO;
 import io.harness.beans.gitsync.GitFileDetails;
 import io.harness.beans.gitsync.GitWebhookDetails;
 import io.harness.category.element.UnitTests;
-import io.harness.constants.Constants;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.exception.UnexpectedException;
 import io.harness.product.ci.scm.proto.Commit;
@@ -38,17 +41,21 @@ import io.harness.product.ci.scm.proto.CreateWebhookRequest;
 import io.harness.product.ci.scm.proto.CreateWebhookResponse;
 import io.harness.product.ci.scm.proto.GetLatestCommitOnFileResponse;
 import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultRequest;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.Provider;
 import io.harness.product.ci.scm.proto.SCMGrpc;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.rule.Owner;
 import io.harness.rule.OwnerRule;
 
+import java.util.Arrays;
 import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -107,6 +114,28 @@ public class ScmServiceClientImplTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = DEEPAK)
+  @Category(UnitTests.class)
+  public void testListBranchesWithDefault() {
+    ListBranchesWithDefaultResponse listBranchesWithDefaultResponse = ListBranchesWithDefaultResponse.newBuilder()
+                                                                          .addAllBranches(Arrays.asList("abc", "def"))
+                                                                          .setDefaultBranch("main")
+                                                                          .build();
+    when(scmGitProviderHelper.getSlug(any())).thenReturn(slug);
+    when(scmGitProviderMapper.mapToSCMGitProvider(any())).thenReturn(gitProvider);
+    when(scmBlockingStub.listBranchesWithDefault(any())).thenReturn(listBranchesWithDefaultResponse);
+    ArgumentCaptor<ListBranchesWithDefaultRequest> listBranchesRequestCaptor =
+        ArgumentCaptor.forClass(ListBranchesWithDefaultRequest.class);
+    ListBranchesWithDefaultResponse responseFromService = scmServiceClient.listBranchesWithDefault(
+        scmConnector, PageRequestDTO.builder().pageIndex(0).build(), scmBlockingStub);
+    verify(scmBlockingStub, times(1)).listBranchesWithDefault(listBranchesRequestCaptor.capture());
+    assertThat(responseFromService).isEqualTo(listBranchesWithDefaultResponse);
+    ListBranchesWithDefaultRequest listBranchRequest = listBranchesRequestCaptor.getValue();
+    assertThat(listBranchRequest.getSlug()).isEqualTo("slug");
+    assertThat(listBranchRequest.getPagination().getPage()).isEqualTo(1);
+  }
+
+  @Test
   @Owner(developers = OwnerRule.MOHIT_GARG)
   @Category(UnitTests.class)
   public void testUpdateFileOpsPreChecksGithub() {
@@ -131,9 +160,10 @@ public class ScmServiceClientImplTest extends CategoryTest {
     Optional<UpdateFileResponse> response = scmServiceClient.runUpdateFileOpsPreChecks(scmConnector, scmBlockingStub,
         GitFileDetails.builder().commitId(currentCommitId).branch(branch).filePath(filepath).build());
     assertThat(response).isNotNull();
-    assertThat(response.get().getStatus() == SCM_CONFLICT_ERROR_CODE).isTrue();
-    assertThat(response.get().getError().equals(SCM_CONFLICT_ERROR_MESSAGE)).isTrue();
-    assertThat(response.get().getCommitId().equals(newCommitId)).isTrue();
+    UpdateFileResponse updateFileResponse = response.orElseGet(() -> UpdateFileResponse.newBuilder().build());
+    assertThat(updateFileResponse.getStatus() == SCM_CONFLICT_ERROR_CODE).isTrue();
+    assertThat(updateFileResponse.getError().equals(SCM_CONFLICT_ERROR_MESSAGE)).isTrue();
+    assertThat(updateFileResponse.getCommitId().equals(newCommitId)).isTrue();
 
     // non-conflict commit id case
     when(scmBlockingStub.getLatestCommitOnFile(any()))
@@ -221,8 +251,8 @@ public class ScmServiceClientImplTest extends CategoryTest {
 
   private UpdateFileResponse getErrorUpdateFileResponse(String commitId) {
     return UpdateFileResponse.newBuilder()
-        .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
-        .setError(Constants.SCM_CONFLICT_ERROR_MESSAGE)
+        .setStatus(SCM_CONFLICT_ERROR_CODE)
+        .setError(SCM_CONFLICT_ERROR_MESSAGE)
         .setCommitId(commitId)
         .build();
   }

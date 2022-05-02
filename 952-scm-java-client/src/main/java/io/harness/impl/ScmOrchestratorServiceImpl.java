@@ -33,6 +33,7 @@ import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.IsLatestFileResponse;
 import io.harness.product.ci.scm.proto.ListBranchesResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.ListCommitsInPRResponse;
 import io.harness.product.ci.scm.proto.ListCommitsResponse;
 import io.harness.product.ci.scm.proto.ListWebhooksResponse;
@@ -108,6 +109,12 @@ public class ScmOrchestratorServiceImpl implements ScmOrchestratorService {
   @Override
   public ListBranchesResponse listBranches(ScmConnector scmConnector) {
     return scmServiceGitClient.listBranches(scmConnector);
+  }
+
+  @Override
+  public ListBranchesWithDefaultResponse listBranchesWithDefault(
+      ScmConnector scmConnector, PageRequestDTO pageRequest) {
+    return scmServiceGitClient.listBranchesWithDefault(scmConnector, pageRequest);
   }
 
   @Override

@@ -32,6 +32,7 @@ import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.IsLatestFileResponse;
 import io.harness.product.ci.scm.proto.ListBranchesResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.ListCommitsInPRResponse;
 import io.harness.product.ci.scm.proto.ListCommitsResponse;
 import io.harness.product.ci.scm.proto.ListWebhooksResponse;
@@ -65,6 +66,8 @@ public interface ScmClient {
   GetLatestCommitResponse getLatestCommit(ScmConnector scmConnector, String branchName, String ref);
 
   ListBranchesResponse listBranches(ScmConnector scmConnector);
+
+  ListBranchesWithDefaultResponse listBranchesWithDefault(ScmConnector scmConnector, PageRequestDTO pageRequest);
 
   ListCommitsResponse listCommits(ScmConnector scmConnector, String branchName);
 
