@@ -158,6 +158,7 @@ public class PMSPipelineServiceHelper {
         return validatePipelineYamlAndSetTemplateRefIfAnyInternal(pipelineEntity, checkAgainstOPAPolicies);
       }
     } catch (io.harness.yaml.validator.InvalidYamlException ex) {
+      ex.setYaml(pipelineEntity.getData());
       throw ex;
     } catch (Exception ex) {
       YamlSchemaErrorWrapperDTO errorWrapperDTO =
@@ -166,7 +167,7 @@ public class PMSPipelineServiceHelper {
                   YamlSchemaErrorDTO.builder().message(ex.getMessage()).fqn("$.pipeline").build()))
               .build();
       throw new io.harness.yaml.validator.InvalidYamlException(
-          HarnessStringUtils.emptyIfNull(ex.getMessage()), ex, errorWrapperDTO);
+          HarnessStringUtils.emptyIfNull(ex.getMessage()), ex, errorWrapperDTO, pipelineEntity.getData());
     }
   }
 
