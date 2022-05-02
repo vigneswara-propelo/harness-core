@@ -6144,6 +6144,21 @@
             "type"
           ],
           "properties": {
+            "os": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "Linux",
+                    "Osx",
+                    "Windows"
+                  ]
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
             "spec": {
               "oneOf": [
                 {
