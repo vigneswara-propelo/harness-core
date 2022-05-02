@@ -135,6 +135,7 @@ import io.harness.migrations.all.TimeSeriesThresholdsMigration;
 import io.harness.migrations.all.UpdateAccountEncryptionClassNames;
 import io.harness.migrations.all.UpdateCorruptedInstanceStatsMigration;
 import io.harness.migrations.all.UpdateInstanceInfoWithLastArtifactIdMigration;
+import io.harness.migrations.all.UpdateNameInAwsInfrastructureMappingMigration;
 import io.harness.migrations.all.UpdateStaleDefaultAccountIds;
 import io.harness.migrations.all.UpdateWorkflowExecutionAccountId;
 import io.harness.migrations.all.UpdateWorkflowExecutionDuration;
@@ -379,6 +380,7 @@ public class MigrationBackgroundList {
         .add(Pair.of(219, BaseMigration.class))
         .add(Pair.of(220, AddNotificationGroupReferenceToUserGroups.class))
         .add(Pair.of(221, UpdateCorruptedInstanceStatsMigration.class))
+        .add(Pair.of(222, UpdateNameInAwsInfrastructureMappingMigration.class))
         .build();
   }
 }
