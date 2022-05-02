@@ -133,6 +133,7 @@ import io.harness.migrations.all.TemplateLibraryYamlMigration;
 import io.harness.migrations.all.TerraformIsTemplatizedMigration;
 import io.harness.migrations.all.TimeSeriesThresholdsMigration;
 import io.harness.migrations.all.UpdateAccountEncryptionClassNames;
+import io.harness.migrations.all.UpdateCorruptedInstanceStatsMigration;
 import io.harness.migrations.all.UpdateInstanceInfoWithLastArtifactIdMigration;
 import io.harness.migrations.all.UpdateStaleDefaultAccountIds;
 import io.harness.migrations.all.UpdateWorkflowExecutionAccountId;
@@ -377,6 +378,7 @@ public class MigrationBackgroundList {
         .add(Pair.of(218, AlertCheckJobPollIntervalMigration.class))
         .add(Pair.of(219, BaseMigration.class))
         .add(Pair.of(220, AddNotificationGroupReferenceToUserGroups.class))
+        .add(Pair.of(221, UpdateCorruptedInstanceStatsMigration.class))
         .build();
   }
 }
