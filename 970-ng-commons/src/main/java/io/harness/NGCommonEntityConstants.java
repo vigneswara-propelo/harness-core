@@ -81,8 +81,9 @@ public class NGCommonEntityConstants {
 
   public static final String GCP_CONNECTOR_IDENTIFIER = "GCP Connector Identifier";
 
-  public static final String PAGE_PARAM_MESSAGE = "Number of pages.";
-  public static final String SIZE_PARAM_MESSAGE = "Number of Elements to fetch.";
+  public static final String PAGE_PARAM_MESSAGE = "Page Index of the results to fetch."
+      + "Default Value: 0";
+  public static final String SIZE_PARAM_MESSAGE = "Results per page";
   public static final String SORT_PARAM_MESSAGE = "Sort criteria for the elements.";
   public static final String BAD_REQUEST_PARAM_MESSAGE = "Bad Request";
   public static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal Server Error";
