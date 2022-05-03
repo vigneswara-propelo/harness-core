@@ -550,6 +550,8 @@ import software.wings.beans.TaskType;
 import software.wings.beans.command.CodeDeployParams;
 import software.wings.beans.command.GcbTaskParams;
 import software.wings.beans.command.JenkinsTaskParams;
+import software.wings.beans.infrastructure.instance.info.EcsContainerInfo;
+import software.wings.beans.infrastructure.instance.info.KubernetesContainerInfo;
 import software.wings.beans.s3.FetchS3FilesCommandParams;
 import software.wings.beans.s3.FetchS3FilesExecutionResponse;
 import software.wings.beans.s3.S3Bucket;
@@ -1252,8 +1254,9 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(SpotInstConfig.class, 7221);
     kryo.register(KubernetesSteadyStateCheckResponse.class, 5277);
     kryo.register(KubernetesSwapServiceSelectorsResponse.class, 5366);
+    kryo.register(EcsContainerInfo.class, 5166);
+    kryo.register(KubernetesContainerInfo.class, 5165);
     kryo.register(S3FileRequest.class, 8067);
-
     // WinRm
     kryo.register(WinRmCredentialsSpecDTO.class, 600001);
     kryo.register(WinRmAuthScheme.class, 600002);

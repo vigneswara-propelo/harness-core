@@ -100,6 +100,7 @@ import software.wings.helpers.ext.k8s.request.K8sClusterConfig;
 import software.wings.helpers.ext.mail.SmtpConfig;
 import software.wings.helpers.ext.pcf.request.CfCommandSetupRequest;
 import software.wings.service.impl.ContainerServiceParams;
+import software.wings.service.impl.MasterUrlFetchTaskParameter;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
 import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
@@ -388,5 +389,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(KubernetesSteadyStateCheckParams.class, 5276);
     kryo.register(KubernetesSwapServiceSelectorsParams.class, 5365);
     kryo.register(SSHHostValidationCapability.class, 7326);
+    kryo.register(MasterUrlFetchTaskParameter.class, 7226);
   }
 }

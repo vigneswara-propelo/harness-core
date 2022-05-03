@@ -60,6 +60,9 @@ import software.wings.beans.JenkinsConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SpotInstConfig;
 import software.wings.beans.config.ArtifactSourceable;
+import software.wings.beans.infrastructure.instance.info.EcsContainerInfo;
+import software.wings.beans.infrastructure.instance.info.K8sPodInfo;
+import software.wings.beans.infrastructure.instance.info.KubernetesContainerInfo;
 import software.wings.beans.settings.helm.HttpHelmRepoConfig;
 import software.wings.beans.yaml.GitCommandExecutionResponse;
 import software.wings.beans.yaml.GitCommitAndPushResult;
@@ -150,6 +153,9 @@ public class DelegateTasksBeansMorphiaRegistrar implements MorphiaRegistrar {
     w.put("beans.SpotInstConfig", SpotInstConfig.class);
     w.put("sm.states.KubernetesSteadyStateCheckResponse", KubernetesSteadyStateCheckResponse.class);
     w.put("sm.states.KubernetesSwapServiceSelectorsResponse", KubernetesSwapServiceSelectorsResponse.class);
+    w.put("beans.infrastructure.instance.info.EcsContainerInfo", EcsContainerInfo.class);
+    w.put("beans.infrastructure.instance.info.K8sPodInfo", K8sPodInfo.class);
+    w.put("beans.infrastructure.instance.info.KubernetesContainerInfo", KubernetesContainerInfo.class);
     h.put("waiter.ListNotifyResponseData", ListNotifyResponseData.class);
   }
 }
