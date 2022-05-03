@@ -71,6 +71,10 @@ if [[ "" != "$GCR_PUSH_IMAGE" ]]; then
   yq write -i $CONFIG_FILE ciExecutionServiceConfig.stepConfig.buildAndPushGCRConfig.image "$GCR_PUSH_IMAGE"
 fi
 
+if [[ "" != "$ENABLE_AUTH" ]]; then
+  yq write -i $CONFIG_FILE enableAuth "$ENABLE_AUTH"
+fi
+
 if [[ "" != "$GCS_UPLOAD_IMAGE" ]]; then
   yq write -i $CONFIG_FILE ciExecutionServiceConfig.stepConfig.gcsUploadConfig.image "$GCS_UPLOAD_IMAGE"
 fi

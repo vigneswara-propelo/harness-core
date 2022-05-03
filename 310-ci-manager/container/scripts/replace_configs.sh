@@ -220,6 +220,10 @@ if [[ "" != "$JWT_AUTH_SECRET" ]]; then
   yq write -i $CONFIG_FILE jwtAuthSecret "$JWT_AUTH_SECRET"
 fi
 
+if [[ "" != "$ENABLE_AUTH" ]]; then
+  yq write -i $CONFIG_FILE enableAuth "$ENABLE_AUTH"
+fi
+
 if [[ "" != "$JWT_IDENTITY_SERVICE_SECRET" ]]; then
   yq write -i $CONFIG_FILE jwtIdentityServiceSecret "$JWT_IDENTITY_SERVICE_SECRET"
 fi
