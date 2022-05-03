@@ -1009,6 +1009,7 @@
 8064:software.wings.beans.s3.S3Bucket
 8065:software.wings.beans.s3.S3FetchFileResult
 8066:software.wings.beans.s3.S3File
+8067:software.wings.beans.s3.S3FileRequest
 8068:software.wings.beans.s3.FetchS3FilesExecutionResponse
 8069:software.wings.beans.s3.FetchS3FilesCommandParams
 8070:software.wings.beans.s3.FetchS3FilesExecutionResponse$FetchS3FilesCommandStatus
