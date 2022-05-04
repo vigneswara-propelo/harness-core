@@ -277,9 +277,9 @@ public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitat
 
   @Override
   public GetUserReposResponse listUserRepos(String accountIdentifier, String orgIdentifier, String projectIdentifier,
-      String connectorRef, PageRequestDTO pageRequest) {
-    final ScmConnector decryptedConnector = gitSyncConnectorHelper.getDecryptedConnectorByRef(
-        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef);
+      ScmConnector scmConnector, PageRequestDTO pageRequest) {
+    ScmConnector decryptedConnector =
+        gitSyncConnectorHelper.getDecryptedConnector(accountIdentifier, orgIdentifier, projectIdentifier, scmConnector);
     return scmClient.getUserRepos(decryptedConnector, pageRequest);
   }
 

@@ -12,6 +12,9 @@ import io.harness.exception.ScmUnauthorizedException;
 import io.harness.exception.WingsException;
 import io.harness.gitsync.common.scmerrorhandling.handlers.ScmApiErrorHandler;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @OwnedBy(PL)
 public class BitbucketListRepoScmApiErrorHandler implements ScmApiErrorHandler {
   @Override
@@ -22,6 +25,7 @@ public class BitbucketListRepoScmApiErrorHandler implements ScmApiErrorHandler {
         throw NestedExceptionUtils.hintWithExplanationException(SCMExceptionHints.BITBUCKET_INVALID_CREDENTIALS,
             SCMExceptionExplanations.LIST_REPO_WITH_INVALID_CRED, new ScmUnauthorizedException(errorMessage));
       default:
+        log.error(String.format("Error while listing github repos: [%s: %s]", statusCode, errorMessage));
         throw new ScmException(UNEXPECTED);
     }
   }

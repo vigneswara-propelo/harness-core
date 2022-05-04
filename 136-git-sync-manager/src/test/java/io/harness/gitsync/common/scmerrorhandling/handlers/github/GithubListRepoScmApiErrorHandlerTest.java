@@ -27,6 +27,7 @@ public class GithubListRepoScmApiErrorHandlerTest extends GitSyncTestBase {
   @Owner(developers = BHAVYA)
   @Category(UnitTests.class)
   public void testHandleError() {
-    assertThatThrownBy(() -> githubListRepoScmApiErrorHandler.handleError(405, "")).isInstanceOf(ScmException.class);
+    assertThatThrownBy(() -> githubListRepoScmApiErrorHandler.handleError(405, "error"))
+        .isInstanceOf(ScmException.class);
   }
 }

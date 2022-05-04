@@ -86,6 +86,7 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
   String commitId = "commitId";
   String defaultBranch = "default";
   GithubConnectorDTO githubConnector;
+  ConnectorInfoDTO connectorInfo;
   final ListBranchesResponse listBranchesResponse =
       ListBranchesResponse.newBuilder().addBranches("master").addBranches("feature").build();
 
@@ -96,7 +97,7 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
         secretManagerClientService, delegateGrpcClientWrapper, null, gitSyncConnectorHelper);
     when(secretManagerClientService.getEncryptionDetails(any(), any())).thenReturn(Collections.emptyList());
     githubConnector = GithubConnectorDTO.builder().apiAccess(GithubApiAccessDTO.builder().build()).build();
-    ConnectorInfoDTO connectorInfo = ConnectorInfoDTO.builder().connectorConfig(githubConnector).build();
+    connectorInfo = ConnectorInfoDTO.builder().connectorConfig(githubConnector).build();
     doReturn(Optional.of(ConnectorResponseDTO.builder().connector(connectorInfo).build()))
         .when(connectorService)
         .get(anyString(), anyString(), anyString(), anyString());
@@ -198,8 +199,8 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
     when(delegateGrpcClientWrapper.executeSyncTask(any()))
         .thenReturn(
             ScmGitRefTaskResponseData.builder().getUserReposResponse(getUserReposResponse.toByteArray()).build());
-    getUserReposResponse = scmDelegateFacilitatorService.listUserRepos(
-        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, PageRequestDTO.builder().build());
+    getUserReposResponse = scmDelegateFacilitatorService.listUserRepos(accountIdentifier, orgIdentifier,
+        projectIdentifier, (ScmConnector) connectorInfo.getConnectorConfig(), PageRequestDTO.builder().build());
     assertThat(getUserReposResponse.getReposCount()).isEqualTo(1);
     assertThat(getUserReposResponse.getRepos(0).getName()).isEqualTo(repoName);
   }

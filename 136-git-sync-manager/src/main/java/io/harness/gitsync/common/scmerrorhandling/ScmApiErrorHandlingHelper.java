@@ -19,9 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(PL)
 public class ScmApiErrorHandlingHelper {
   public void processAndThrowError(ScmApis scmAPI, ConnectorType connectorType, int statusCode, String errorMessage) {
-    if (statusCode < 300) {
-      return;
-    }
     ScmApiErrorHandler scmAPIErrorHandler = getScmAPIErrorHandler(scmAPI, connectorType);
     scmAPIErrorHandler.handleError(statusCode, errorMessage);
   }

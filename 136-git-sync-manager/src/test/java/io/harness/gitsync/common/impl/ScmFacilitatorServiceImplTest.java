@@ -79,8 +79,7 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
             Repository.newBuilder().setName("repo2").setNamespace("harness").build(),
             Repository.newBuilder().setName("repo3").setNamespace("harnessxy").build());
     GetUserReposResponse getUserReposResponse = GetUserReposResponse.newBuilder().addAllRepos(repositories).build();
-    when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any(), any(), any(), any()))
-        .thenReturn(getUserReposResponse);
+    when(scmOrchestratorService.processScmRequestUsingConnector(any(), any())).thenReturn(getUserReposResponse);
     List<GitRepositoryResponseDTO> repositoryResponseDTOList = scmFacilitatorService.listReposByRefConnector(
         accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, pageRequest, "");
     assertThat(repositoryResponseDTOList.size()).isEqualTo(2);
