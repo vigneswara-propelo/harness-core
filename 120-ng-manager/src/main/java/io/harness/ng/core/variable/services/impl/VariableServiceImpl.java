@@ -14,6 +14,7 @@ import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_P
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.variable.dto.VariableDTO;
+import io.harness.ng.core.variable.dto.VariableResponseDTO;
 import io.harness.ng.core.variable.entity.Variable;
 import io.harness.ng.core.variable.mappers.VariableMapper;
 import io.harness.ng.core.variable.services.VariableService;
@@ -22,6 +23,9 @@ import io.harness.repositories.variable.spring.VariableRepository;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import net.jodah.failsafe.Failsafe;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -61,5 +65,21 @@ public class VariableServiceImpl implements VariableService {
               variableDTO.getIdentifier(), variableDTO.getOrgIdentifier(), variableDTO.getProjectIdentifier()),
           USER_SRE, de);
     }
+  }
+
+  @Override
+  public List<VariableDTO> list(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+    List<Variable> variables = variableRepository.findAllByAccountIdentifierAndOrgIdentifierAndProjectIdentifier(
+        accountIdentifier, orgIdentifier, projectIdentifier);
+    return variables.stream().map(variableMapper::writeDTO).collect(Collectors.toList());
+  }
+
+  @Override
+  public Optional<VariableResponseDTO> get(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier) {
+    Optional<Variable> variable =
+        variableRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
+            accountIdentifier, orgIdentifier, projectIdentifier, identifier);
+    return variable.map(variableMapper::toResponseWrapper);
   }
 }

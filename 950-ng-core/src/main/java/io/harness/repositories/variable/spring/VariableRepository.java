@@ -14,6 +14,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.variable.entity.Variable;
 import io.harness.repositories.variable.custom.VariableRepositoryCustom;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -22,4 +23,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface VariableRepository extends PagingAndSortingRepository<Variable, String>, VariableRepositoryCustom {
   Optional<Variable> findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier);
+  List<Variable> findAllByAccountIdentifierAndOrgIdentifierAndProjectIdentifier(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier);
 }

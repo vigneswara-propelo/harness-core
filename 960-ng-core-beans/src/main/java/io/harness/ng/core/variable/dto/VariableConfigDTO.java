@@ -28,6 +28,6 @@ public abstract class VariableConfigDTO {
   public static final String FIXED_SET_VALUE_FORMAT = "<+input>.allowedValues(%s)";
   public static final String REGEX_VALUE_FORMAT = "<+input>.regex(%s)";
   @NotNull VariableValueType valueType;
-  abstract String getValue();
+  public abstract Object getValue();
   public void validate(){};
 }
