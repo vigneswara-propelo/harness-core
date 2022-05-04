@@ -58,6 +58,8 @@ import io.harness.template.handler.TemplateYamlConversionHandlerRegistry;
 import io.harness.template.mappers.TemplateFilterPropertiesMapper;
 import io.harness.template.services.NGTemplateService;
 import io.harness.template.services.NGTemplateServiceImpl;
+import io.harness.template.services.TemplateMergeService;
+import io.harness.template.services.TemplateMergeServiceImpl;
 import io.harness.time.TimeModule;
 import io.harness.token.TokenClientModule;
 import io.harness.waiter.AbstractWaiterModule;
@@ -151,6 +153,7 @@ public class TemplateServiceModule extends AbstractModule {
     bind(OutboxEventHandler.class).to(TemplateOutboxEventHandler.class);
     bind(HPersistence.class).to(MongoPersistence.class);
     bind(NGTemplateService.class).to(NGTemplateServiceImpl.class);
+    bind(TemplateMergeService.class).to(TemplateMergeServiceImpl.class);
 
     install(EnforcementClientModule.getInstance(templateServiceConfiguration.getNgManagerServiceHttpClientConfig(),
         templateServiceConfiguration.getNgManagerServiceSecret(), TEMPLATE_SERVICE.getServiceId(),
