@@ -8,16 +8,12 @@
 package io.harness.pms.pipeline.service;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER_SRE;
-import static io.harness.ng.core.common.beans.NGTag.NGTagKeys;
 import static io.harness.pms.pipeline.service.PMSPipelineServiceStepHelper.LIBRARY;
 import static io.harness.telemetry.Destination.AMPLITUDE;
 
 import static java.lang.String.format;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
 
-import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.eventsframework.api.EventsFrameworkDownException;
@@ -66,7 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.Document;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -419,7 +414,7 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
   // Todo: Remove only if there are no references to the pipeline
   @Override
   public boolean deleteAllPipelinesInAProject(String accountId, String orgId, String projectId) {
-    Criteria criteria = formCriteria(
+    Criteria criteria = pmsPipelineServiceHelper.formCriteria(
         accountId, orgId, projectId, null, PipelineFilterPropertiesDto.builder().build(), false, null, null);
     Pageable pageRequest = PageRequest.of(0, 1000, Sort.by(Sort.Direction.DESC, PipelineEntityKeys.lastUpdatedAt));
 
@@ -429,54 +424,6 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       pmsPipelineRepository.deletePipeline(pipelineEntity.withDeleted(true));
     }
     return true;
-  }
-
-  @Override
-  public Criteria formCriteria(String accountId, String orgId, String projectId, String filterIdentifier,
-      PipelineFilterPropertiesDto filterProperties, boolean deleted, String module, String searchTerm) {
-    Criteria criteria = new Criteria();
-    if (isNotEmpty(accountId)) {
-      criteria.and(PipelineEntityKeys.accountId).is(accountId);
-    }
-    if (isNotEmpty(orgId)) {
-      criteria.and(PipelineEntityKeys.orgIdentifier).is(orgId);
-    }
-    if (isNotEmpty(projectId)) {
-      criteria.and(PipelineEntityKeys.projectIdentifier).is(projectId);
-    }
-
-    criteria.and(PipelineEntityKeys.deleted).is(deleted);
-
-    if (EmptyPredicate.isNotEmpty(filterIdentifier) && filterProperties != null) {
-      throw new InvalidRequestException("Can not apply both filter properties and saved filter together");
-    } else if (EmptyPredicate.isNotEmpty(filterIdentifier) && filterProperties == null) {
-      pmsPipelineServiceHelper.populateFilterUsingIdentifier(criteria, accountId, orgId, projectId, filterIdentifier);
-    } else if (EmptyPredicate.isEmpty(filterIdentifier) && filterProperties != null) {
-      PMSPipelineServiceHelper.populateFilter(criteria, filterProperties);
-    }
-
-    Criteria moduleCriteria = new Criteria();
-    if (EmptyPredicate.isNotEmpty(module)) {
-      // Check for pipeline with no filters also - empty pipeline or pipelines with only approval stage
-      // criteria = { "$or": [ { "filters": {} } , { "filters.MODULE": { $exists: true } } ] }
-      moduleCriteria.orOperator(where(PipelineEntityKeys.filters).is(new Document()),
-          where(String.format("%s.%s", PipelineEntityKeys.filters, module)).exists(true));
-    }
-
-    Criteria searchCriteria = new Criteria();
-    if (EmptyPredicate.isNotEmpty(searchTerm)) {
-      searchCriteria.orOperator(where(PipelineEntityKeys.identifier)
-                                    .regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS),
-          where(PipelineEntityKeys.name).regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS),
-          where(PipelineEntityKeys.tags + "." + NGTagKeys.key)
-              .regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS),
-          where(PipelineEntityKeys.tags + "." + NGTagKeys.value)
-              .regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS));
-    }
-
-    criteria.andOperator(moduleCriteria, searchCriteria);
-
-    return criteria;
   }
 
   // TODO(Brijesh): Make this async.
