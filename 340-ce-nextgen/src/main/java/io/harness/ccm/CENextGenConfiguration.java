@@ -148,7 +148,7 @@ public class CENextGenConfiguration extends Configuration {
     return logbackAccessRequestLogFactory;
   }
 
-  protected OpenAPIConfiguration getOasConfig() {
+  public OpenAPIConfiguration getOasConfig() {
     OpenAPI oas = new OpenAPI();
     Info info =
         new Info()
@@ -179,5 +179,13 @@ public class CENextGenConfiguration extends Configuration {
         .prettyPrint(true)
         .resourceClasses(resourceClasses)
         .scannerClass("io.swagger.v3.jaxrs2.integration.JaxrsAnnotationScanner");
+  }
+
+  public void setHostname(String hostname) {
+    this.hostname = hostname;
+  }
+
+  public void setBasePathPrefix(String basePathPrefix) {
+    this.basePathPrefix = basePathPrefix;
   }
 }
