@@ -57,6 +57,6 @@ public class CIProvisionResource {
   @ApiOperation(value = "Provision resources for signup", nickname = "getDelegateInstallStatus")
   public ResponseDTO<ProvisionResponse.DelegateStatus> getDelegateInstallStatus(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId) {
-    return null;
+    return ResponseDTO.newResponse(provisionService.getDelegateInstallStatus(accountId));
   }
 }

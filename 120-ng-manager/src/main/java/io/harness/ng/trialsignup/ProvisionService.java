@@ -8,12 +8,15 @@
 package io.harness.ng.trialsignup;
 
 import static io.harness.connector.ConnectorModule.DEFAULT_CONNECTOR_SERVICE;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.k8s.KubernetesConvention.getAccountIdentifier;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 
+import io.harness.account.ProvisionStep;
+import io.harness.account.ProvisionStep.ProvisionStepKeys;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
@@ -28,15 +31,24 @@ import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesClusterConfigDTO;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesCredentialDTO;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesCredentialType;
+import io.harness.exception.UnexpectedException;
+import io.harness.network.Http;
 import io.harness.ng.NextGenConfiguration;
 import io.harness.ng.core.delegate.client.DelegateNgManagerCgManagerClient;
+import io.harness.ng.trialsignup.ProvisionResponse.DelegateStatus;
 import io.harness.rest.RestResponse;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -71,24 +83,23 @@ public class ProvisionService {
       + "\"parameters\":{\"Environment\":\"%s\",\"delegate\":\"delegate-ci\","
       + "\"account_id\":\"%s\",\"account_id_short\":\"%s\",\"account_secret\":\"%s\"}}'";
 
+  private static final String SAMPLE_DELEGATE_STATUS_ENDPOINT_FORMAT_STRING = "http://%s/account-%s.txt";
+
   public ProvisionResponse.SetupStatus provisionCIResources(String accountId) {
     Boolean delegateUpsertStatus = updateDelegateGroup(accountId);
-
     if (!delegateUpsertStatus) {
       return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
 
     Boolean installConnectorStatus = installConnector(accountId);
-
     if (!installConnectorStatus) {
       return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
-    Boolean delegateInstallStatus = installDelegate(accountId);
 
+    Boolean delegateInstallStatus = installDelegate(accountId);
     if (!delegateInstallStatus) {
       return ProvisionResponse.SetupStatus.DELEGATE_PROVISION_FAILURE;
     }
-
     return ProvisionResponse.SetupStatus.SUCCESS;
   }
 
@@ -212,5 +223,48 @@ public class ProvisionService {
     }
 
     return TRUE;
+  }
+
+  /*
+      Response from the delegate status service is of format:
+      [{
+        step: 'Delegate Ready',
+        done: false / true
+      }]
+   */
+  public DelegateStatus getDelegateInstallStatus(String accountId) {
+    try {
+      String url = format(SAMPLE_DELEGATE_STATUS_ENDPOINT_FORMAT_STRING, configuration.getSignupTargetEnv(),
+          getAccountIdentifier(accountId));
+      log.info("Fetching delegate provisioning progress for account {} from {}", accountId, url);
+      String result = Http.getResponseStringFromUrl(url, 30, 10).trim();
+      if (isNotEmpty(result)) {
+        log.info("Provisioning progress for account {}: {}", accountId, result);
+        if (result.contains("<title>404 Not Found</title>")) {
+          return DelegateStatus.IN_PROGRESS;
+        }
+        List<ProvisionStep> steps = new ArrayList<>();
+        for (JsonElement element : new JsonParser().parse(result).getAsJsonArray()) {
+          JsonObject jsonObject = element.getAsJsonObject();
+          steps.add(ProvisionStep.builder()
+                        .step(jsonObject.get(ProvisionStepKeys.step).getAsString())
+                        .done(jsonObject.get(ProvisionStepKeys.done).getAsBoolean())
+                        .build());
+        }
+        if (steps.size() > 0 && steps.get(0).isDone()) {
+          return DelegateStatus.SUCCESS;
+        } else if (steps.size() > 0 && !steps.get(0).isDone()) {
+          return DelegateStatus.IN_PROGRESS;
+        }
+      }
+      return DelegateStatus.FAILURE;
+    } catch (SocketTimeoutException e) {
+      // Timed out for some reason. Return empty list to indicate unknown progress. UI can ignore and try again.
+      log.info(format("Timed out getting progress. Returning empty list for account: %s", accountId));
+      return DelegateStatus.IN_PROGRESS;
+    } catch (IOException e) {
+      throw new UnexpectedException(
+          format("Exception in fetching delegate provisioning progress for account %s", accountId), e);
+    }
   }
 }
