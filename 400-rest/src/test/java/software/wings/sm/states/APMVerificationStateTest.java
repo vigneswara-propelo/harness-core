@@ -42,6 +42,7 @@ import software.wings.api.PhaseElement;
 import software.wings.api.ServiceElement;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.SettingAttribute;
+import software.wings.beans.apm.Method;
 import software.wings.service.impl.apm.APMMetricInfo;
 import software.wings.service.impl.apm.CustomAPMDataCollectionInfo;
 import software.wings.service.intfc.MetricDataAnalysisService;
@@ -49,7 +50,6 @@ import software.wings.service.intfc.SettingsService;
 import software.wings.sm.ExecutionContextImpl;
 import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.WorkflowStandardParams;
-import software.wings.sm.states.APMVerificationState.Method;
 import software.wings.sm.states.APMVerificationState.MetricCollectionInfo;
 import software.wings.sm.states.APMVerificationState.ResponseMapping;
 

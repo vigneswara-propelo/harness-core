@@ -18,8 +18,8 @@ import io.harness.exception.WingsException;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.security.encryption.EncryptedDataDetail;
 
-import software.wings.sm.states.APMVerificationState.Method;
-import software.wings.utils.Utils;
+import software.wings.beans.apm.Method;
+import software.wings.utils.CVUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -62,7 +62,7 @@ public class APMValidateCollectorConfig implements ExecutionCapabilityDemander {
         encryptedDataDetails, maskingEvaluator));
     executionCapabilities.addAll(
         Collections.singletonList(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
-            Utils.appendPathToBaseUrl(baseUrl, getUrl()), QUERY, maskingEvaluator)));
+            CVUtils.appendPathToBaseUrl(baseUrl, getUrl()), QUERY, maskingEvaluator)));
     return executionCapabilities;
   }
 }

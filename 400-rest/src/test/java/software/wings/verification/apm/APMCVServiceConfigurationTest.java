@@ -15,9 +15,9 @@ import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
 import software.wings.WingsBaseTest;
+import software.wings.beans.apm.Method;
 import software.wings.metrics.MetricType;
 import software.wings.sm.StateType;
-import software.wings.sm.states.APMVerificationState.Method;
 import software.wings.sm.states.APMVerificationState.MetricCollectionInfo;
 
 import com.google.common.collect.Lists;

@@ -22,13 +22,13 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.annotation.EncryptableSetting;
 import software.wings.audit.ResourceType;
+import software.wings.beans.apm.Method;
 import software.wings.security.UsageRestrictions;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.security.SecretManager;
 import software.wings.settings.SettingValue;
 import software.wings.settings.SettingVariableTypes;
-import software.wings.sm.states.APMVerificationState.Method;
-import software.wings.utils.Utils;
+import software.wings.utils.CVUtils;
 import software.wings.yaml.setting.VerificationProviderYaml;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -192,7 +192,7 @@ public class APMVerificationConfig extends SettingValue implements EncryptableSe
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
     return Arrays.asList(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
-        Utils.appendPathToBaseUrl(getUrl(), getValidationUrl()), QUERY, maskingEvaluator));
+        CVUtils.appendPathToBaseUrl(getUrl(), getValidationUrl()), QUERY, maskingEvaluator));
   }
 
   @Override

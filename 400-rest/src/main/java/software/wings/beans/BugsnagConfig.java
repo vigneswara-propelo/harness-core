@@ -19,7 +19,7 @@ import software.wings.jersey.JsonViews;
 import software.wings.security.UsageRestrictions;
 import software.wings.settings.SettingValue;
 import software.wings.settings.SettingVariableTypes;
-import software.wings.utils.Utils;
+import software.wings.utils.CVUtils;
 import software.wings.yaml.setting.VerificationProviderYaml;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -98,7 +98,7 @@ public class BugsnagConfig extends SettingValue implements EncryptableSetting {
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
     return Arrays.asList(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
-        Utils.appendPathToBaseUrl(getUrl(), validationUrl), maskingEvaluator));
+        CVUtils.appendPathToBaseUrl(getUrl(), validationUrl), maskingEvaluator));
   }
 
   @Data

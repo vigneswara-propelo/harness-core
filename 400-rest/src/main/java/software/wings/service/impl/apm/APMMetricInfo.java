@@ -9,8 +9,8 @@ package software.wings.service.impl.apm;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
+import software.wings.beans.apm.Method;
 import software.wings.metrics.MetricType;
-import software.wings.sm.states.APMVerificationState.Method;
 
 import com.google.common.collect.Lists;
 import java.util.List;

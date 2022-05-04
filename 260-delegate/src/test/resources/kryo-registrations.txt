@@ -548,7 +548,7 @@
 5478:software.wings.service.impl.aws.model.AwsCFTemplateParamsData
 5479:software.wings.helpers.ext.cloudformation.response.ExistingStackInfo
 5480:software.wings.api.cloudformation.CloudFormationRollbackInfoElement
-5481:software.wings.sm.states.APMVerificationState$Method
+5481:software.wings.beans.apm.Method
 5482:software.wings.api.ResourceConstraintExecutionData
 5483:software.wings.api.ResourceConstraintStepExecutionSummary
 5486:software.wings.service.impl.analysis.LogElement

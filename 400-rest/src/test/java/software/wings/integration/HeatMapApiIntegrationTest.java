@@ -21,6 +21,8 @@ import software.wings.beans.Environment;
 import software.wings.beans.Service;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.SettingAttribute.SettingCategory;
+import software.wings.beans.apm.Method;
+import software.wings.beans.apm.ResponseType;
 import software.wings.common.VerificationConstants;
 import software.wings.dl.WingsPersistence;
 import software.wings.metrics.MetricType;
@@ -198,15 +200,15 @@ public class HeatMapApiIntegrationTest extends IntegrationTestBase {
         Lists.newArrayList(APMVerificationState.MetricCollectionInfo.builder()
                                .collectionUrl("URL1")
                                .metricName("METRIC1")
-                               .method(APMVerificationState.Method.GET)
-                               .responseType(APMVerificationState.ResponseType.JSON)
+                               .method(Method.GET)
+                               .responseType(ResponseType.JSON)
                                .metricType(MetricType.THROUGHPUT)
                                .build(),
             APMVerificationState.MetricCollectionInfo.builder()
                 .collectionUrl("URL2")
                 .metricName("METRIC2")
-                .method(APMVerificationState.Method.GET)
-                .responseType(APMVerificationState.ResponseType.JSON)
+                .method(Method.GET)
+                .responseType(ResponseType.JSON)
                 .metricType(MetricType.ERROR)
                 .build());
     apmcvServiceConfiguration = APMCVServiceConfiguration.builder().metricCollectionInfos(timeSeries).build();

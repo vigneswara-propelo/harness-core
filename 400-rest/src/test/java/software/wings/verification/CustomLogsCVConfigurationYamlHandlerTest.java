@@ -17,15 +17,15 @@ import static org.mockito.Mockito.when;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
+import software.wings.beans.apm.Method;
+import software.wings.beans.apm.ResponseType;
 import software.wings.beans.yaml.Change;
 import software.wings.beans.yaml.ChangeContext;
 import software.wings.service.impl.analysis.FeedbackPriority;
 import software.wings.sm.StateType;
 import software.wings.sm.states.CustomLogVerificationState;
 import software.wings.sm.states.CustomLogVerificationState.LogCollectionInfo;
-import software.wings.sm.states.CustomLogVerificationState.Method;
 import software.wings.sm.states.CustomLogVerificationState.ResponseMapping;
-import software.wings.sm.states.CustomLogVerificationState.ResponseType;
 import software.wings.verification.log.CustomLogCVServiceConfiguration;
 import software.wings.verification.log.CustomLogCVServiceConfiguration.CustomLogsCVConfigurationYaml;
 import software.wings.verification.log.LogsCVConfiguration.LogsCVConfigurationYaml;

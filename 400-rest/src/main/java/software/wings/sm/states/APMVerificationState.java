@@ -35,6 +35,8 @@ import io.harness.exception.WingsException;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.beans.apm.Method;
+import software.wings.beans.apm.ResponseType;
 import software.wings.delegatetasks.DelegateStateType;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.TimeSeriesMetricDefinition;
@@ -685,8 +687,4 @@ public class APMVerificationState extends AbstractMetricAnalysisState {
     private String timestampJsonPath;
     private String timeStampFormat;
   }
-
-  public enum ResponseType { JSON }
-
-  public enum Method { POST, GET }
 }

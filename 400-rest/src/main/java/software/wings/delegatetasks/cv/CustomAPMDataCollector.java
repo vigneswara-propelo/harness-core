@@ -19,6 +19,7 @@ import io.harness.network.Http;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.serializer.JsonUtils;
 
+import software.wings.beans.apm.Method;
 import software.wings.helpers.ext.apm.APMRestClient;
 import software.wings.service.impl.analysis.MetricElement;
 import software.wings.service.impl.apm.APMMetricInfo;
@@ -26,7 +27,6 @@ import software.wings.service.impl.apm.APMResponseParser;
 import software.wings.service.impl.apm.CustomAPMDataCollectionInfo;
 import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
 import software.wings.service.intfc.security.EncryptionService;
-import software.wings.sm.states.APMVerificationState;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -224,7 +224,7 @@ public class CustomAPMDataCollector implements MetricsDataCollector<CustomAPMDat
 
       Map<String, Object> bodyMap = isNotEmpty(resolvedBody) ? new JSONObject(resolvedBody).toMap() : new HashMap<>();
 
-      if (APMVerificationState.Method.POST.equals(metricInfo.getMethod())) {
+      if (Method.POST.equals(metricInfo.getMethod())) {
         callsToFetchData.add(getAPMRestClient(dataCollectionInfo.getApmConfig().getUrl())
                                  .postCollect(resolvedUrl, headersBiMap, optionsBiMap, bodyMap));
       } else {

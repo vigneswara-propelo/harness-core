@@ -21,6 +21,7 @@ import io.harness.helpers.ext.vault.VaultAppRoleLoginResult;
 import io.harness.serializer.KryoRegistrar;
 
 import software.wings.api.DeploymentType;
+import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.AppDynamicsConfig;
 import software.wings.beans.AwsSecretsManagerConfig;
 import software.wings.beans.AzureConfig;
@@ -60,6 +61,7 @@ import software.wings.beans.SplunkConfig;
 import software.wings.beans.SumoConfig;
 import software.wings.beans.VaultConfig;
 import software.wings.beans.WinRmConnectionAttributes;
+import software.wings.beans.apm.Method;
 import software.wings.beans.appmanifest.AppManifestKind;
 import software.wings.beans.appmanifest.HelmChart;
 import software.wings.beans.artifact.ArtifactFile;
@@ -241,6 +243,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(ElkQueryType.class, 5275);
     kryo.register(PcfConfig.class, 5296);
     kryo.register(SmtpConfig.class, 5304);
+    kryo.register(APMValidateCollectorConfig.class, 5323);
     kryo.register(TimeSeriesMlAnalysisType.class, 5347);
     kryo.register(HttpStateExecutionResponse.class, 5375);
     kryo.register(ElkLogFetchRequest.class, 5376);
@@ -294,6 +297,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(AwsAsgListInstancesResponse.class, 5429);
     kryo.register(AwsAsgListDesiredCapacitiesRequest.class, 5463);
     kryo.register(AwsAsgListDesiredCapacitiesResponse.class, 5464);
+    kryo.register(Method.class, 5481);
     kryo.register(LogElement.class, 5486);
     kryo.register(CustomLogDataCollectionInfo.class, 5492);
     kryo.register(CustomLogResponseMapper.class, 5493);

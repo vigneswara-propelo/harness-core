@@ -27,6 +27,8 @@ import io.harness.delegate.beans.TaskData;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.SettingAttribute;
 import software.wings.beans.TaskType;
+import software.wings.beans.apm.Method;
+import software.wings.beans.apm.ResponseType;
 import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
@@ -313,7 +315,4 @@ public class CustomLogVerificationState extends AbstractLogAnalysisState {
       return isNotEmpty(timestampFormat) ? timestampFormat : timeStampFormat;
     }
   }
-  public enum ResponseType { JSON }
-
-  public enum Method { POST, GET }
 }

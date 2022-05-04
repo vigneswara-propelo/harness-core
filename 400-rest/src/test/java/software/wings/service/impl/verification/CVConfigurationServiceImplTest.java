@@ -58,6 +58,8 @@ import software.wings.beans.alert.AlertType;
 import software.wings.beans.alert.UsageLimitExceededAlert;
 import software.wings.beans.alert.cv.ContinuousVerificationAlertData;
 import software.wings.beans.alert.cv.ContinuousVerificationDataCollectionAlert;
+import software.wings.beans.apm.Method;
+import software.wings.beans.apm.ResponseType;
 import software.wings.metrics.MetricType;
 import software.wings.metrics.TimeSeriesMetricDefinition;
 import software.wings.service.impl.analysis.AnalysisTolerance;
@@ -921,16 +923,14 @@ public class CVConfigurationServiceImplTest extends WingsBaseTest {
         "sometxnname", "somemetricjsonpath", "hostpath", "hostregex", "timestamppath", "formattimestamp");
 
     MetricCollectionInfo metricCollectionInfo = new MetricCollectionInfo("metricName", MetricType.INFRA, "randomtag",
-        "dummyuri", null, "bodycollection ${start_time} ${end_time}", APMVerificationState.ResponseType.JSON,
-        responseMapping, APMVerificationState.Method.POST);
+        "dummyuri", null, "bodycollection ${start_time} ${end_time}", ResponseType.JSON, responseMapping, Method.POST);
 
     APMVerificationState.ResponseMapping responseMapping2 =
         new APMVerificationState.ResponseMapping(null, "differentJsonPath", "sometxnname", "somemetricjsonpath",
             "hostpath", "hostregex", "timestamppath", "formattimestamp");
 
     MetricCollectionInfo metricCollectionInfo2 = new MetricCollectionInfo("metricName", MetricType.INFRA, "randomtag",
-        "dummyuri ${start_time} ${end_time}", null, "bodycollection", APMVerificationState.ResponseType.JSON,
-        responseMapping2, APMVerificationState.Method.POST);
+        "dummyuri ${start_time} ${end_time}", null, "bodycollection", ResponseType.JSON, responseMapping2, Method.POST);
 
     metricCollectionInfos.add(metricCollectionInfo);
     metricCollectionInfos.add(metricCollectionInfo2);
@@ -1329,9 +1329,9 @@ public class CVConfigurationServiceImplTest extends WingsBaseTest {
         new APMVerificationState.ResponseMapping("myhardcodedtxnName", null, "sometxnname",
             "series[*].pointlist[*].[1]", null, null, "series[*].pointlist[*].[0]", null);
 
-    MetricCollectionInfo metricCollectionInfo = new MetricCollectionInfo("metricName", MetricType.INFRA, "randomtag",
-        "dummyuri ${start_time} ${end_time}", null, "{\"bodycollection\":\"body\"}",
-        APMVerificationState.ResponseType.JSON, responseMapping, APMVerificationState.Method.POST);
+    MetricCollectionInfo metricCollectionInfo =
+        new MetricCollectionInfo("metricName", MetricType.INFRA, "randomtag", "dummyuri ${start_time} ${end_time}",
+            null, "{\"bodycollection\":\"body\"}", ResponseType.JSON, responseMapping, Method.POST);
 
     metricCollectionInfos.add(metricCollectionInfo);
     apmcvServiceConfiguration.setMetricCollectionInfos(metricCollectionInfos);
@@ -1346,12 +1346,10 @@ public class CVConfigurationServiceImplTest extends WingsBaseTest {
         "sometxnname", "somemetricjsonpath", "hostpath", "hostregex", "timestamppath", "formattimestamp");
 
     MetricCollectionInfo metricCollectionInfo = new MetricCollectionInfo("metricName", MetricType.INFRA, "randomtag",
-        "dummyuri ${start_time} ${end_time}", null, "bodycollection", APMVerificationState.ResponseType.JSON,
-        responseMapping, APMVerificationState.Method.POST);
+        "dummyuri ${start_time} ${end_time}", null, "bodycollection", ResponseType.JSON, responseMapping, Method.POST);
 
     MetricCollectionInfo metricCollectionInfo2 = new MetricCollectionInfo("metricName", MetricType.INFRA, "randomtag",
-        "dummyuri ${start_time} ${end_time}", null, "bodycollection", APMVerificationState.ResponseType.JSON,
-        responseMapping, APMVerificationState.Method.POST);
+        "dummyuri ${start_time} ${end_time}", null, "bodycollection", ResponseType.JSON, responseMapping, Method.POST);
 
     metricCollectionInfos.add(metricCollectionInfo);
     metricCollectionInfos.add(metricCollectionInfo2);

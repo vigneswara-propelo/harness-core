@@ -12,11 +12,11 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static org.apache.cxf.ws.addressing.ContextUtils.generateUUID;
 
 import software.wings.WingsBaseTest;
+import software.wings.beans.apm.Method;
+import software.wings.beans.apm.ResponseType;
 import software.wings.sm.StateType;
 import software.wings.sm.states.CustomLogVerificationState.LogCollectionInfo;
-import software.wings.sm.states.CustomLogVerificationState.Method;
 import software.wings.sm.states.CustomLogVerificationState.ResponseMapping;
-import software.wings.sm.states.CustomLogVerificationState.ResponseType;
 import software.wings.verification.log.CustomLogCVServiceConfiguration;
 
 import lombok.extern.slf4j.Slf4j;

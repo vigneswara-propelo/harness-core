@@ -153,7 +153,6 @@ import software.wings.api.terragrunt.TerragruntApplyMarkerParam;
 import software.wings.api.terragrunt.TerragruntExecutionData;
 import software.wings.api.terragrunt.TerragruntOutputVariables;
 import software.wings.api.terragrunt.TerragruntProvisionInheritPlanElement;
-import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.Account;
 import software.wings.beans.AccountEvent;
@@ -574,7 +573,6 @@ import software.wings.sm.StateMachineResumeCallback;
 import software.wings.sm.StateType;
 import software.wings.sm.StepExecutionSummary;
 import software.wings.sm.WorkflowStandardParams;
-import software.wings.sm.states.APMVerificationState;
 import software.wings.sm.states.ApprovalState;
 import software.wings.sm.states.ApprovalState.ApprovalStateType;
 import software.wings.sm.states.BambooState;
@@ -721,7 +719,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(WorkflowElement.class, 5086);
 
     kryo.register(Account.class, 5356);
-    kryo.register(APMValidateCollectorConfig.class, 5323);
     kryo.register(AppContainer.class, 5064);
     kryo.register(ManifestFile.class, 5539);
     kryo.register(Base.class, 5001);
@@ -927,7 +924,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(PhaseStepExecutionSummary.class, 5141);
     kryo.register(StateExecutionData.class, 5143);
     kryo.register(StateExecutionInstance.class, 5134);
-    kryo.register(APMVerificationState.Method.class, 5481);
     kryo.register(ApprovalStateType.class, 5617);
     kryo.register(BambooState.BambooExecutionResponse.class, 5374);
     kryo.register(ForkStateExecutionData.class, 4006);

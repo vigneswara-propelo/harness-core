@@ -27,6 +27,8 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.APMVerificationConfig;
+import software.wings.beans.apm.Method;
+import software.wings.beans.apm.ResponseType;
 import software.wings.delegatetasks.DelegateCVActivityLogService;
 import software.wings.metrics.MetricType;
 import software.wings.service.impl.ThirdPartyApiCallLog;
@@ -99,9 +101,9 @@ public class CustomAPMDataCollectorTest extends WingsBaseTest {
     APMVerificationState.ResponseMapping responseMapping = new APMVerificationState.ResponseMapping(
         "myhardcodedtxnName", null, null, "series[*].pointlist[*].[1]", null, null, "series[*].pointlist[*].[0]", null);
 
-    APMVerificationState.MetricCollectionInfo metricCollectionInfo = new APMVerificationState.MetricCollectionInfo(
-        "metricName", MetricType.INFRA, "randomtag", "dummyuri", null, "{\"bodycollection\":\"body\"}",
-        APMVerificationState.ResponseType.JSON, responseMapping, APMVerificationState.Method.POST);
+    APMVerificationState.MetricCollectionInfo metricCollectionInfo =
+        new APMVerificationState.MetricCollectionInfo("metricName", MetricType.INFRA, "randomtag", "dummyuri", null,
+            "{\"bodycollection\":\"body\"}", ResponseType.JSON, responseMapping, Method.POST);
 
     metricCollectionInfos.add(metricCollectionInfo);
     apmcvServiceConfiguration.setMetricCollectionInfos(metricCollectionInfos);

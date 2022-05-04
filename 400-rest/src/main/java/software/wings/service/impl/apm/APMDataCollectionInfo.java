@@ -20,7 +20,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.delegatetasks.DelegateStateType;
 import software.wings.service.impl.analysis.AnalysisComparisonStrategy;
-import software.wings.utils.Utils;
+import software.wings.utils.CVUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public class APMDataCollectionInfo implements TaskParameters, ExecutionCapabilit
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
     List<ExecutionCapability> executionCapabilities = new ArrayList<>();
     executionCapabilities.add(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
-        Utils.appendPathToBaseUrl(baseUrl, validationUrl), QUERY, maskingEvaluator));
+        CVUtils.appendPathToBaseUrl(baseUrl, validationUrl), QUERY, maskingEvaluator));
     executionCapabilities.addAll(EncryptedDataDetailsCapabilityHelper.fetchExecutionCapabilitiesForEncryptedDataDetails(
         encryptedDataDetails, maskingEvaluator));
     return executionCapabilities;

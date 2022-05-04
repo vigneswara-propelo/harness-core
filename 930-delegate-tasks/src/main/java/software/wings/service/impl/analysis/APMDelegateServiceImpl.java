@@ -10,21 +10,21 @@ package software.wings.service.impl.analysis;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import static software.wings.common.VerificationConstants.AZURE_BASE_URL;
-import static software.wings.common.VerificationConstants.AZURE_TOKEN_URL;
+import static software.wings.delegatetasks.cv.CVConstants.AZURE_BASE_URL;
+import static software.wings.delegatetasks.cv.CVConstants.AZURE_TOKEN_URL;
 
 import io.harness.network.Http;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.APMValidateCollectorConfig;
+import software.wings.beans.apm.Method;
 import software.wings.delegatetasks.DelegateLogService;
 import software.wings.delegatetasks.cv.DataCollectionException;
 import software.wings.delegatetasks.cv.RequestExecutor;
 import software.wings.helpers.ext.apm.APMRestClient;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.intfc.security.EncryptionService;
-import software.wings.sm.states.APMVerificationState.Method;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
