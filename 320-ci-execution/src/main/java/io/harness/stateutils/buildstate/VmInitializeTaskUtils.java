@@ -10,6 +10,7 @@ package io.harness.stateutils.buildstate;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveMapParameter;
 import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DETAILS;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static java.lang.String.format;
 
@@ -94,7 +95,7 @@ public class VmInitializeTaskUtils {
     }
     VmBuildJobInfo vmBuildJobInfo = (VmBuildJobInfo) initializeStepInfo.getBuildJobEnvInfo();
     VmPoolYaml vmPoolYaml = (VmPoolYaml) vmInfraYaml.getSpec();
-    String poolId = vmPoolYaml.getSpec().getIdentifier();
+    String poolId = getPoolName(vmPoolYaml);
     consumeSweepingOutput(ambiance,
         VmStageInfraDetails.builder()
             .poolId(poolId)
@@ -150,6 +151,19 @@ public class VmInitializeTaskUtils {
         .volToMountPath(vmBuildJobInfo.getVolToMountPath())
         .serviceDependencies(getServiceDependencies(ambiance, vmBuildJobInfo.getServiceDependencies()))
         .build();
+  }
+
+  private String getPoolName(VmPoolYaml vmPoolYaml) {
+    String poolName = vmPoolYaml.getSpec().getPoolName().getValue();
+    if (isNotEmpty(poolName)) {
+      return poolName;
+    }
+
+    String poolId = vmPoolYaml.getSpec().getIdentifier();
+    if (isEmpty(poolId)) {
+      throw new CIStageExecutionException("VM pool name should be set");
+    }
+    return poolId;
   }
 
   private List<VmServiceDependency> getServiceDependencies(

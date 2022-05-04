@@ -32,6 +32,7 @@ import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
 import io.harness.tiserviceclient.TIServiceUtils;
 
@@ -66,9 +67,53 @@ public class VmInitializeTaskUtilsTest extends CIExecutionTestBase {
   @Test
   @Owner(developers = SHUBHAM)
   @Category(UnitTests.class)
-  public void getInitializeTaskParams() {
+  public void getInitializeTaskParamsWithName() {
+    String poolName = "test";
+    VmPoolYaml vmPoolYaml =
+        VmPoolYaml.builder()
+            .spec(VmPoolYamlSpec.builder().poolName(ParameterField.createValueField(poolName)).build())
+            .build();
+
+    String stageRuntimeId = "test";
+    InitializeStepInfo initializeStepInfo = InitializeStepInfo.builder()
+                                                .infrastructure(VmInfraYaml.builder().spec(vmPoolYaml).build())
+                                                .buildJobEnvInfo(VmBuildJobInfo.builder().build())
+                                                .build();
+
+    when(executionSweepingOutputService.resolveOptional(any(), any()))
+        .thenReturn(OptionalSweepingOutput.builder().found(false).build());
+    when(executionSweepingOutputResolver.consume(any(), any(), any(), any())).thenReturn("");
+    when(executionSweepingOutputResolver.resolveOptional(
+             ambiance, RefObjectUtils.getSweepingOutputRefObject(ContextElement.stageDetails)))
+        .thenReturn(OptionalSweepingOutput.builder()
+                        .found(true)
+                        .output(StageDetails.builder().stageRuntimeID(stageRuntimeId).build())
+                        .build());
+
+    Map<String, String> m = new HashMap<>();
+    when(codebaseUtils.getGitConnector(AmbianceUtils.getNgAccess(ambiance), initializeStepInfo.getCiCodebase(),
+             initializeStepInfo.isSkipGitClone()))
+        .thenReturn(null);
+    when(codebaseUtils.getCodebaseVars(any(), any())).thenReturn(m);
+    when(codebaseUtils.getGitEnvVariables(null, initializeStepInfo.getCiCodebase())).thenReturn(m);
+    when(logServiceUtils.getLogServiceConfig()).thenReturn(LogServiceConfig.builder().baseUrl("1.1.1.1").build());
+    when(logServiceUtils.getLogServiceToken(any())).thenReturn("test");
+    when(tiServiceUtils.getTiServiceConfig()).thenReturn(TIServiceConfig.builder().baseUrl("1.1.1.2").build());
+    when(tiServiceUtils.getTIServiceToken(any())).thenReturn("test");
+    when(featureFlagService.isEnabled(any(), any())).thenReturn(false);
+    CIVmInitializeTaskParams response = vmInitializeTaskUtils.getInitializeTaskParams(initializeStepInfo, ambiance, "");
+    assertThat(response.getStageRuntimeId()).isEqualTo(stageRuntimeId);
+  }
+
+  @Test
+  @Owner(developers = SHUBHAM)
+  @Category(UnitTests.class)
+  public void getInitializeTaskParamsWithId() {
     String poolId = "test";
-    VmPoolYaml vmPoolYaml = VmPoolYaml.builder().spec(VmPoolYamlSpec.builder().identifier(poolId).build()).build();
+    VmPoolYaml vmPoolYaml =
+        VmPoolYaml.builder()
+            .spec(VmPoolYamlSpec.builder().identifier(poolId).poolName(ParameterField.createValueField(null)).build())
+            .build();
 
     String stageRuntimeId = "test";
     InitializeStepInfo initializeStepInfo = InitializeStepInfo.builder()

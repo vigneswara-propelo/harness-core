@@ -6208,11 +6208,11 @@
     },
     "VmPoolYamlSpec": {
       "type": "object",
-      "required": [
-        "identifier"
-      ],
       "properties": {
         "identifier": {
+          "type": "string"
+        },
+        "poolName": {
           "type": "string"
         }
       },
