@@ -74,7 +74,7 @@ import software.wings.service.intfc.datadog.DatadogService;
 import software.wings.service.intfc.prometheus.PrometheusAnalysisService;
 import software.wings.service.intfc.security.SecretManager;
 import software.wings.service.intfc.verification.CVActivityLogService;
-import software.wings.service.intfc.verification.CVActivityLogService.Logger;
+import software.wings.service.intfc.verification.CVActivityLogger;
 import software.wings.sm.StateType;
 import software.wings.sm.states.APMVerificationState;
 import software.wings.sm.states.APMVerificationState.MetricCollectionInfo;
@@ -141,9 +141,10 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
     FieldUtils.writeField(service, "cvActivityLogService", cvActivityLogService, true);
     FieldUtils.writeField(service, "prometheusAnalysisService", prometheusAnalysisService, true);
     when(featureFlagService.isEnabled(any(), anyString())).thenReturn(false);
-    when(cvActivityLogService.getLoggerByStateExecutionId(anyString(), anyString())).thenReturn(mock(Logger.class));
+    when(cvActivityLogService.getLoggerByStateExecutionId(anyString(), anyString()))
+        .thenReturn(mock(CVActivityLogger.class));
     when(cvActivityLogService.getLoggerByCVConfigId(anyString(), anyString(), anyLong()))
-        .thenReturn(mock(Logger.class));
+        .thenReturn(mock(CVActivityLogger.class));
     when(environmentService.get(anyString(), anyString()))
         .thenReturn(Environment.Builder.anEnvironment().environmentType(EnvironmentType.PROD).build());
   }

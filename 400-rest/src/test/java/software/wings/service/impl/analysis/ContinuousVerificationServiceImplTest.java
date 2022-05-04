@@ -89,7 +89,7 @@ import software.wings.service.intfc.SettingsService;
 import software.wings.service.intfc.datadog.DatadogService;
 import software.wings.service.intfc.security.SecretManager;
 import software.wings.service.intfc.verification.CVActivityLogService;
-import software.wings.service.intfc.verification.CVActivityLogService.Logger;
+import software.wings.service.intfc.verification.CVActivityLogger;
 import software.wings.service.intfc.verification.CVConfigurationService;
 import software.wings.sm.StateType;
 import software.wings.sm.states.APMVerificationState.MetricCollectionInfo;
@@ -171,7 +171,7 @@ public class ContinuousVerificationServiceImplTest extends WingsBaseTest {
   @Mock private EnvironmentService environmentService;
   @Inject private WorkflowVerificationResultService workflowVerificationResultService;
 
-  private Logger logger = mock(Logger.class);
+  private CVActivityLogger logger = mock(CVActivityLogger.class);
 
   @Before
   public void setupMocks() throws IllegalAccessException {

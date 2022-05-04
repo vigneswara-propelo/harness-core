@@ -185,12 +185,19 @@ import software.wings.service.impl.newrelic.NewRelicDataCollectionInfo;
 import software.wings.service.impl.newrelic.NewRelicMetricDataRecord;
 import software.wings.service.impl.newrelic.NewRelicSetupTestNodeData;
 import software.wings.service.impl.spotinst.SpotInstCommandRequest;
+import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
+import software.wings.service.impl.stackdriver.StackDriverLogDataCollectionInfo;
+import software.wings.service.impl.stackdriver.StackDriverMetric;
+import software.wings.service.impl.stackdriver.StackDriverSetupTestNodeData;
+import software.wings.service.impl.stackdriver.StackdriverGcpConfigTaskParams;
+import software.wings.service.impl.stackdriver.StackdriverLogGcpConfigTaskParams;
 import software.wings.service.impl.sumo.SumoDataCollectionInfo;
 import software.wings.service.intfc.analysis.ClusterLevel;
 import software.wings.settings.validation.ConnectivityValidationDelegateRequest;
 import software.wings.settings.validation.SshConnectionConnectivityValidationAttributes;
 import software.wings.settings.validation.WinRmConnectivityValidationAttributes;
 import software.wings.utils.ArtifactType;
+import software.wings.verification.stackdriver.StackDriverMetricDefinition;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -302,6 +309,9 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(AppdynamicsSetupTestNodeData.class, 5531);
     kryo.register(JiraConfig.JiraSetupType.class, 5569);
     kryo.register(SecretManagementDelegateException.class, 5585);
+    kryo.register(StackDriverSetupTestNodeData.class, 5592);
+    kryo.register(StackDriverMetric.class, 5593);
+    kryo.register(StackDriverDataCollectionInfo.class, 5594);
     kryo.register(AwsElbListListenerRequest.class, 5601);
     kryo.register(AwsElbListListenerResponse.class, 5602);
     kryo.register(GitFetchFilesFromMultipleRepoResult.class, 5615);
@@ -317,8 +327,10 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(ServiceNowConfig.class, 7155);
     kryo.register(AwsAsgGetRunningCountRequest.class, 7188);
     kryo.register(AwsAsgGetRunningCountResponse.class, 7189);
+    kryo.register(StackDriverLogDataCollectionInfo.class, 7191);
     kryo.register(AwsEcsListClusterServicesRequest.class, 7206);
     kryo.register(AwsEcsListClusterServicesResponse.class, 7207);
+    kryo.register(StackDriverMetricDefinition.class, 7249);
     kryo.register(AwsS3Request.class, 7266);
     kryo.register(AwsS3RequestType.class, 7267);
     kryo.register(AwsS3ListBucketNamesRequest.class, 7268);
@@ -332,6 +344,9 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(ClusterMasterUrlValidationCapability.class, 7345);
     kryo.register(NewRelicMetricDataRecord.class, 7347);
     kryo.register(ClusterLevel.class, 7348);
+    kryo.register(StackdriverLogGcpConfigTaskParams.class, 7360);
+    kryo.register(StackdriverGcpConfigTaskParams.class, 7361);
+    kryo.register(StackDriverMetricDefinition.Aggregation.class, 7380);
     kryo.register(GitConnectionCapability.class, 7391);
     kryo.register(SetupTestNodeData.Instance.class, 7470);
     kryo.register(DynaTraceApplication.class, 8074);

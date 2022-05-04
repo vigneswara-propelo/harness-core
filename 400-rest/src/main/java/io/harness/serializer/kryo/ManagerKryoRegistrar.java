@@ -549,12 +549,6 @@ import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowMe
 import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowTicketType;
 import software.wings.service.impl.splunk.SplunkDataCollectionInfoV2;
 import software.wings.service.impl.spotinst.SpotinstAllPhaseRollbackData;
-import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
-import software.wings.service.impl.stackdriver.StackDriverLogDataCollectionInfo;
-import software.wings.service.impl.stackdriver.StackDriverMetric;
-import software.wings.service.impl.stackdriver.StackDriverSetupTestNodeData;
-import software.wings.service.impl.stackdriver.StackdriverGcpConfigTaskParams;
-import software.wings.service.impl.stackdriver.StackdriverLogGcpConfigTaskParams;
 import software.wings.service.impl.trigger.TriggerCallback;
 import software.wings.service.impl.yaml.GitCommandCallback;
 import software.wings.service.impl.yaml.gitdiff.gitaudit.AuditYamlHelperForFailedChanges;
@@ -618,7 +612,6 @@ import software.wings.sm.status.StateStatusUpdateInfo;
 import software.wings.utils.ContainerFamily;
 import software.wings.verification.VerificationDataAnalysisResponse;
 import software.wings.verification.VerificationStateAnalysisExecutionData;
-import software.wings.verification.stackdriver.StackDriverMetricDefinition;
 
 import com.amazonaws.services.cloudformation.model.StackStatus;
 import com.amazonaws.services.cloudwatch.model.Datapoint;
@@ -919,9 +912,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(PrometheusMetricDataResponse.PrometheusMetricData.class, 5487);
     kryo.register(PrometheusMetricDataResponse.PrometheusMetricDataResult.class, 5488);
     kryo.register(PrometheusMetricDataResponse.class, 5315);
-    kryo.register(StackDriverDataCollectionInfo.class, 5594);
-    kryo.register(StackDriverMetric.class, 5593);
-    kryo.register(StackDriverSetupTestNodeData.class, 5592);
     kryo.register(WorkflowTree.class, 5369);
     kryo.register(WorkflowExecutionUpdate.class, 5126);
     kryo.register(ConnectivityValidationDelegateResponse.class, 5566);
@@ -1013,7 +1003,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(Tag.class, 7185);
     kryo.register(K8sApplyTaskParameters.class, 7186);
     kryo.register(K8sApplyResponse.class, 7187);
-    kryo.register(StackDriverLogDataCollectionInfo.class, 7191);
     kryo.register(Artifact.class, 7192);
     kryo.register(Artifact.ContentStatus.class, 7193);
     kryo.register(Artifact.Status.class, 7194);
@@ -1055,7 +1044,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(SpotinstDeployExecutionSummary.class, 7242);
     kryo.register(SpotinstAllPhaseRollbackData.class, 7245);
     kryo.register(NewRelicDataCollectionInfoV2.class, 7247);
-    kryo.register(StackDriverMetricDefinition.class, 7249);
     kryo.register(Dimension.class, 7251);
     kryo.register(Datapoint.class, 7252);
     kryo.register(AwsCloudWatchStatisticsResponse.class, 7253);
@@ -1124,14 +1112,11 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(ServiceArtifactVariableElements.class, 7343);
     kryo.register(SpotinstTrafficShiftAlbSwapRoutesExecutionData.class, 7344);
     kryo.register(HelmDeployContextElement.class, 7346);
-    kryo.register(StackdriverLogGcpConfigTaskParams.class, 7360);
-    kryo.register(StackdriverGcpConfigTaskParams.class, 7361);
     kryo.register(HarnessImportedTemplateDetails.class, 7373);
     kryo.register(ImportedTemplateMetadata.class, 7375);
     kryo.register(CopiedTemplateMetadata.class, 7376);
     kryo.register(CustomSecretsManagerConfig.class, 7378);
     kryo.register(CustomSecretsManagerShellScript.class, 7379);
-    kryo.register(StackDriverMetricDefinition.Aggregation.class, 7380);
     kryo.register(Criteria.class, 7382);
     kryo.register(ConditionalOperator.class, 7383);
     kryo.register(ContainerSyncResponse.class, 7384);

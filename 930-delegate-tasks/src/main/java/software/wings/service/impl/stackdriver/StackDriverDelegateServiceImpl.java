@@ -12,11 +12,11 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.ExceptionUtils.getMessage;
 import static io.harness.threading.Morpheus.sleep;
 
-import static software.wings.common.VerificationConstants.CV_DATA_COLLECTION_INTERVAL_IN_MINUTE;
-import static software.wings.common.VerificationConstants.RATE_LIMIT_STATUS;
-import static software.wings.common.VerificationConstants.STACKDRIVER_DEFAULT_HOST_NAME_FIELD;
-import static software.wings.common.VerificationConstants.STACKDRIVER_DEFAULT_LOG_MESSAGE_FIELD;
-import static software.wings.common.VerificationConstants.STACK_DRIVER_QUERY_SEPARATER;
+import static software.wings.delegatetasks.cv.CVConstants.CV_DATA_COLLECTION_INTERVAL_IN_MINUTE;
+import static software.wings.delegatetasks.cv.CVConstants.RATE_LIMIT_STATUS;
+import static software.wings.delegatetasks.cv.CVConstants.STACKDRIVER_DEFAULT_HOST_NAME_FIELD;
+import static software.wings.delegatetasks.cv.CVConstants.STACKDRIVER_DEFAULT_LOG_MESSAGE_FIELD;
+import static software.wings.delegatetasks.cv.CVConstants.STACK_DRIVER_QUERY_SEPARATER;
 import static software.wings.service.impl.ThirdPartyApiCallLog.createApiCallLog;
 
 import static java.time.Duration.ofSeconds;

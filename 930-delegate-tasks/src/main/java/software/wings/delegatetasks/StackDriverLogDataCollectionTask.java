@@ -11,9 +11,9 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.threading.Morpheus.sleep;
 
-import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
-import static software.wings.common.VerificationConstants.STACKDRIVER_DEFAULT_HOST_NAME_FIELD;
-import static software.wings.common.VerificationConstants.STACKDRIVER_DEFAULT_LOG_MESSAGE_FIELD;
+import static software.wings.delegatetasks.cv.CVConstants.DATA_COLLECTION_RETRY_SLEEP;
+import static software.wings.delegatetasks.cv.CVConstants.STACKDRIVER_DEFAULT_HOST_NAME_FIELD;
+import static software.wings.delegatetasks.cv.CVConstants.STACKDRIVER_DEFAULT_LOG_MESSAGE_FIELD;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
