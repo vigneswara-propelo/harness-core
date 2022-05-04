@@ -88,6 +88,7 @@ public class NextGenConfiguration extends Configuration {
   public static final String ARTIFACTS_PACKAGE = "io.harness.ng.core.artifacts.resources";
   public static final String AUTHENTICATION_SETTINGS_PACKAGE = "io.harness.ng.authenticationsettings.resources";
   public static final String SERVICE_PACKAGE = "io.harness.ng.core.service.resources";
+  public static final String VARIABLE_RESOURCE_PACKAGE = "io.harness.ng.core.variable.resources";
   public static final String CD_OVERVIEW_PACKAGE = "io.harness.ng.overview.resource";
   public static final String ACTIVITY_HISTORY_PACKAGE = "io.harness.ng.core.activityhistory.resource";
   public static final String SERVICE_ACCOUNTS_PACKAGE = "io.harness.ng.serviceaccounts.resource";
@@ -222,7 +223,7 @@ public class NextGenConfiguration extends Configuration {
                 SCHEMA_PACKAGE, DELEGATE_PACKAGE, ACCESS_CONTROL_PACKAGE, FEEDBACK_PACKAGE, INSTANCE_SYNC_PACKAGE,
                 INVITE_PACKAGE, USER_PACKAGE, INSTANCE_NG_PACKAGE, LICENSING_USAGE_PACKAGE, SMTP_NG_RESOURCE,
                 SERVICENOW_PACKAGE, SCIM_NG_RESOURCE, NG_GLOBAL_KMS_RESOURCE_PACKAGE, ACCOUNT_SETTING_PACKAGE,
-                ENV_GROUP_RESOURCE, AZURE_RESOURCES_PACKAGE, NG_TRIAL_SIGNUP_PACKAGE))
+                ENV_GROUP_RESOURCE, AZURE_RESOURCES_PACKAGE, NG_TRIAL_SIGNUP_PACKAGE, VARIABLE_RESOURCE_PACKAGE))
         .collect(Collectors.toSet());
   }
 

@@ -171,6 +171,8 @@ import io.harness.ng.core.user.service.NgUserService;
 import io.harness.ng.core.user.service.impl.LastAdminCheckServiceImpl;
 import io.harness.ng.core.user.service.impl.NgUserServiceImpl;
 import io.harness.ng.core.user.service.impl.UserEntityCrudStreamListener;
+import io.harness.ng.core.variable.services.VariableService;
+import io.harness.ng.core.variable.services.impl.VariableServiceImpl;
 import io.harness.ng.eventsframework.EventsFrameworkModule;
 import io.harness.ng.feedback.services.FeedbackService;
 import io.harness.ng.feedback.services.impls.FeedbackServiceImpl;
@@ -692,6 +694,8 @@ public class NextGenModule extends AbstractModule {
     registerEncryptors();
 
     bind(FeatureFlagHelperService.class).to(NGFeatureFlagHelperServiceImpl.class);
+
+    bind(VariableService.class).to(VariableServiceImpl.class);
     bindExceptionHandlers();
   }
 
