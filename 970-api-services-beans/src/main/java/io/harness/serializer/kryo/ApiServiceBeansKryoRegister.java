@@ -32,6 +32,7 @@ import io.harness.delegate.beans.artifact.ArtifactFileMetadata;
 import io.harness.deployment.InstanceDetails;
 import io.harness.ecs.EcsContainerDetails;
 import io.harness.exception.HelmClientException;
+import io.harness.exception.SecretManagementDelegateException;
 import io.harness.git.UsernamePasswordAuthRequest;
 import io.harness.git.model.AuthInfo;
 import io.harness.git.model.ChangeType;
@@ -412,6 +413,7 @@ public class ApiServiceBeansKryoRegister implements KryoRegistrar {
     kryo.register(GcpKubernetesCluster.class, 5537);
     kryo.register(KustomizeConfig.class, 7323);
     kryo.register(AzureKubernetesCluster.class, 5538);
+    kryo.register(SecretManagementDelegateException.class, 5585);
     kryo.register(ServiceNowTemplate.class, 97113);
   }
 }

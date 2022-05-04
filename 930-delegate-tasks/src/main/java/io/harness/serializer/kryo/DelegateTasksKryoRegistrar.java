@@ -13,7 +13,6 @@ import io.harness.cvng.beans.SplunkValidationResponse;
 import io.harness.delegate.task.executioncapability.BatchCapabilityCheckTaskParameters;
 import io.harness.delegate.task.executioncapability.BatchCapabilityCheckTaskResponse;
 import io.harness.delegate.task.winrm.AuthenticationScheme;
-import io.harness.exception.SecretManagementDelegateException;
 import io.harness.exception.SecretManagementException;
 import io.harness.helpers.ext.vault.SSHVaultAuthResult;
 import io.harness.helpers.ext.vault.SecretEngineSummary;
@@ -312,7 +311,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(SetupTestNodeData.class, 5530);
     kryo.register(AppdynamicsSetupTestNodeData.class, 5531);
     kryo.register(JiraConfig.JiraSetupType.class, 5569);
-    kryo.register(SecretManagementDelegateException.class, 5585);
     kryo.register(StackDriverSetupTestNodeData.class, 5592);
     kryo.register(StackDriverMetric.class, 5593);
     kryo.register(StackDriverDataCollectionInfo.class, 5594);
