@@ -1836,6 +1836,7 @@
 97110:software.wings.helpers.ext.jenkins.BuildDetails
 97111:software.wings.helpers.ext.jenkins.BuildDetails$BuildStatus
 97112:io.harness.delegate.beans.artifact.ArtifactFileMetadata
+97113:io.harness.servicenow.ServiceNowTemplate
 98399:io.harness.delegate.task.helm.HelmCommandRequestNG
 98400:io.harness.delegate.task.helm.HelmCommandRequestNG$HelmCommandType
 98401:io.harness.delegate.task.helm.HelmInstallCommandRequestNG

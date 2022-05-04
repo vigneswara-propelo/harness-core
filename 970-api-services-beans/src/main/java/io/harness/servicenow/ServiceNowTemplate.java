@@ -5,23 +5,23 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.task.servicenow;
+package io.harness.servicenow;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.delegate.beans.DelegateMetaInfo;
-import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
-import io.harness.servicenow.ServiceNowFieldNG;
-import io.harness.servicenow.ServiceNowTemplate;
-import io.harness.servicenow.ServiceNowTicketNG;
+import io.harness.servicenow.deserializer.ServiceNowTicketDeserializer;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.HashMap;
+import java.util.Map;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
@@ -30,11 +30,12 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ServiceNowTaskNGResponse implements DelegateTaskNotifyResponseData {
-  DelegateMetaInfo delegateMetaInfo;
-  List<ServiceNowFieldNG> serviceNowFieldNGList;
-  ServiceNowTicketNG ticket;
-  List<ServiceNowTemplate> serviceNowTemplateList;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(using = ServiceNowTicketDeserializer.class)
+public class ServiceNowTemplate {
+  @NotNull String sys_id;
+  @NotNull String name;
+  @NotNull Map<String, ServiceNowFieldValueNG> fields = new HashMap<>();
 }
