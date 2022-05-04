@@ -76,11 +76,12 @@ public class PlatformConfiguration extends Configuration {
   @JsonProperty("commonPoolConfig") private ThreadPoolConfig commonPoolConfig;
   @JsonProperty("auditServiceConfig")
   @ConfigSecret
-  private AuditServiceConfiguration auditServiceConfig = AuditServiceConfiguration.builder().build();
+  private AuditServiceConfiguration auditServiceConfig =
+      AuditServiceConfiguration.builder().hostname("localhost").basePathPrefix("").build();
   @JsonProperty("resourceGroupServiceConfig")
   @ConfigSecret
   private ResourceGroupServiceConfig resoureGroupServiceConfig =
-      ResourceGroupServiceConfig.builder().enableResourceGroup(true).build();
+      ResourceGroupServiceConfig.builder().hostname("localhost").basePathPrefix("").enableResourceGroup(true).build();
 
   @JsonProperty("allowedOrigins") private List<String> allowedOrigins = Lists.newArrayList();
   @JsonProperty("managerClientConfig") private ServiceHttpClientConfig managerServiceConfig;

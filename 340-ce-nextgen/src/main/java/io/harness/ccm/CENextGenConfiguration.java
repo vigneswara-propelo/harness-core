@@ -97,8 +97,8 @@ public class CENextGenConfiguration extends Configuration {
   @JsonProperty(value = "ceAzureSetupConfig") @ConfigSecret private CEAzureSetupConfig ceAzureSetupConfig;
   @JsonProperty(value = "awsConfig") @ConfigSecret private AwsConfig awsConfig;
 
-  @JsonProperty(value = "hostname") private String hostname;
-  @JsonProperty(value = "basePathPrefix") private String basePathPrefix;
+  @JsonProperty(value = "hostname") private String hostname = "localhost";
+  @JsonProperty(value = "basePathPrefix") private String basePathPrefix = "";
 
   @JsonProperty("secretsConfiguration") private SecretsConfiguration secretsConfiguration;
 
@@ -179,13 +179,5 @@ public class CENextGenConfiguration extends Configuration {
         .prettyPrint(true)
         .resourceClasses(resourceClasses)
         .scannerClass("io.swagger.v3.jaxrs2.integration.JaxrsAnnotationScanner");
-  }
-
-  public void setHostname(String hostname) {
-    this.hostname = hostname;
-  }
-
-  public void setBasePathPrefix(String basePathPrefix) {
-    this.basePathPrefix = basePathPrefix;
   }
 }
