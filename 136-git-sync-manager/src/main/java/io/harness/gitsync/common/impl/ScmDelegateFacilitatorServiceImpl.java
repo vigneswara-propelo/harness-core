@@ -80,6 +80,7 @@ import io.harness.product.ci.scm.proto.FindCommitResponse;
 import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.ListBranchesResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.ListCommitsResponse;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
@@ -621,6 +622,34 @@ public class ScmDelegateFacilitatorServiceImpl extends AbstractScmClientFacilita
     } catch (InvalidProtocolBufferException e) {
       String errorMsg =
           String.format(errorMessage, "listing repos", accountIdentifier, orgIdentifier, projectIdentifier);
+      log.error(errorMsg, e);
+      throw new UnexpectedException(errorMsg);
+    }
+  }
+
+  @Override
+  public ListBranchesWithDefaultResponse listBranches(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String connectorRef, String repoName, PageRequestDTO pageRequest) {
+    final ScmConnector scmConnector = gitSyncConnectorHelper.getScmConnectorForGivenRepo(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName);
+    final List<EncryptedDataDetail> encryptionDetails =
+        getEncryptedDataDetails(accountIdentifier, orgIdentifier, projectIdentifier, scmConnector);
+    final ScmGitRefTaskParams scmGitRefTaskParams = ScmGitRefTaskParams.builder()
+                                                        .gitRefType(GitRefType.BRANCH_LIST_WITH_DEFAULT_BRANCH)
+                                                        .scmConnector(scmConnector)
+                                                        .encryptedDataDetails(encryptionDetails)
+                                                        .pageRequest(pageRequest)
+                                                        .build();
+    DelegateTaskRequest delegateTaskRequest = getDelegateTaskRequest(
+        accountIdentifier, orgIdentifier, projectIdentifier, scmGitRefTaskParams, TaskType.SCM_GIT_REF_TASK);
+    final DelegateResponseData delegateResponseData = executeDelegateSyncTask(delegateTaskRequest);
+    ScmGitRefTaskResponseData scmGitRefTaskResponseData = (ScmGitRefTaskResponseData) delegateResponseData;
+    try {
+      return ListBranchesWithDefaultResponse.parseFrom(
+          scmGitRefTaskResponseData.getGetListBranchesWithDefaultResponse());
+    } catch (InvalidProtocolBufferException e) {
+      String errorMsg =
+          String.format(errorMessage, "listing branches", accountIdentifier, orgIdentifier, projectIdentifier);
       log.error(errorMsg, e);
       throw new UnexpectedException(errorMsg);
     }

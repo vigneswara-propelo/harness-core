@@ -43,6 +43,7 @@ import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.product.ci.scm.proto.GetLatestCommitResponse;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.ListBranchesResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.Repository;
 import io.harness.rule.Owner;
 import io.harness.service.ScmClient;
@@ -81,6 +82,7 @@ public class ScmManagerFacilitatorServiceImplTest extends GitSyncTestBase {
   final String branch = "branch";
   String repoName = "repoName";
   String commitId = "commitId";
+  String defaultBranch = "default";
   FileContent fileContent = FileContent.newBuilder().build();
   GithubConnectorDTO githubConnector;
   final ListBranchesResponse listBranchesResponse =
@@ -209,5 +211,21 @@ public class ScmManagerFacilitatorServiceImplTest extends GitSyncTestBase {
         accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, PageRequestDTO.builder().build());
     assertThat(userReposResponse.getReposCount()).isEqualTo(1);
     assertThat(userReposResponse.getRepos(0).getName()).isEqualTo(repoName);
+  }
+
+  @Test
+  @Owner(developers = BHAVYA)
+  @Category(UnitTests.class)
+  public void testListBranches() {
+    when(scmClient.listBranchesWithDefault(any(), any()))
+        .thenReturn(ListBranchesWithDefaultResponse.newBuilder()
+                        .addAllBranches(Arrays.asList(branch))
+                        .setDefaultBranch(defaultBranch)
+                        .build());
+    final ListBranchesWithDefaultResponse listBranchesWithDefaultResponse = scmManagerFacilitatorService.listBranches(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName, PageRequestDTO.builder().build());
+    assertThat(listBranchesWithDefaultResponse.getBranchesCount()).isEqualTo(1);
+    assertThat(listBranchesWithDefaultResponse.getDefaultBranch()).isEqualTo(defaultBranch);
+    assertThat(listBranchesWithDefaultResponse.getBranchesList().get(0)).isEqualTo(branch);
   }
 }

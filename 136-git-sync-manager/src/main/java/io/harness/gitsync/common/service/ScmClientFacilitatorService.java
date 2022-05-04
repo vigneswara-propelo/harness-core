@@ -28,6 +28,7 @@ import io.harness.product.ci.scm.proto.CreateWebhookResponse;
 import io.harness.product.ci.scm.proto.DeleteFileResponse;
 import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 
 import java.util.List;
@@ -83,4 +84,7 @@ public interface ScmClientFacilitatorService {
 
   GetUserReposResponse listUserRepos(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String connectorRef, PageRequestDTO pageRequest);
+
+  ListBranchesWithDefaultResponse listBranches(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, String repoName, PageRequestDTO pageRequest);
 }

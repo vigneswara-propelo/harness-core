@@ -15,12 +15,15 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.PageRequestDTO;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.gitsync.beans.GitRepositoryDTO;
+import io.harness.gitsync.common.dtos.GitBranchDetailsDTO;
+import io.harness.gitsync.common.dtos.GitBranchesResponseDTO;
 import io.harness.gitsync.common.dtos.GitRepositoryResponseDTO;
 import io.harness.gitsync.common.helper.GitSyncConnectorHelper;
 import io.harness.gitsync.common.service.ScmFacilitatorService;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
 import io.harness.ng.beans.PageRequest;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 
 import com.google.inject.Inject;
 import java.util.Collections;
@@ -54,6 +57,30 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
         projectIdentifier, orgIdentifier, accountIdentifier, connectorRef);
 
     return prepareListRepoResponse(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, response);
+  }
+
+  @Override
+  public GitBranchesResponseDTO listBranchesV2(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, String repoName, PageRequest pageRequest, String searchTerm) {
+    ListBranchesWithDefaultResponse listBranchesWithDefaultResponse =
+        scmOrchestratorService.processScmRequestUsingConnectorSettings(scmClientFacilitatorService
+            -> scmClientFacilitatorService.listBranches(accountIdentifier, orgIdentifier, projectIdentifier,
+                connectorRef, repoName,
+                PageRequestDTO.builder()
+                    .pageIndex(pageRequest.getPageIndex())
+                    .pageSize(pageRequest.getPageSize())
+                    .build()),
+            projectIdentifier, orgIdentifier, accountIdentifier, connectorRef);
+
+    List<GitBranchDetailsDTO> gitBranches =
+        emptyIfNull(listBranchesWithDefaultResponse.getBranchesList())
+            .stream()
+            .map(branchName -> GitBranchDetailsDTO.builder().name(branchName).build())
+            .collect(Collectors.toList());
+    return GitBranchesResponseDTO.builder()
+        .branches(gitBranches)
+        .defaultBranch(GitBranchDetailsDTO.builder().name(listBranchesWithDefaultResponse.getDefaultBranch()).build())
+        .build();
   }
 
   private List<GitRepositoryResponseDTO> prepareListRepoResponse(String accountIdentifier, String orgIdentifier,

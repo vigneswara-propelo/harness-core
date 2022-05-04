@@ -47,11 +47,13 @@ import io.harness.ng.beans.PageRequest;
 import io.harness.product.ci.scm.proto.FileContent;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.ListBranchesResponse;
+import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
 import io.harness.product.ci.scm.proto.Repository;
 import io.harness.rule.Owner;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.service.DelegateGrpcClientWrapper;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -82,6 +84,7 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
   String connectorRef = "connectorRef";
   String repoName = "repoName";
   String commitId = "commitId";
+  String defaultBranch = "default";
   GithubConnectorDTO githubConnector;
   final ListBranchesResponse listBranchesResponse =
       ListBranchesResponse.newBuilder().addBranches("master").addBranches("feature").build();
@@ -199,5 +202,24 @@ public class ScmDelegateFacilitatorServiceImplTest extends GitSyncTestBase {
         accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, PageRequestDTO.builder().build());
     assertThat(getUserReposResponse.getReposCount()).isEqualTo(1);
     assertThat(getUserReposResponse.getRepos(0).getName()).isEqualTo(repoName);
+  }
+
+  @Test
+  @Owner(developers = BHAVYA)
+  @Category(UnitTests.class)
+  public void testListBranches() {
+    ListBranchesWithDefaultResponse listBranchesWithDefaultResponse = ListBranchesWithDefaultResponse.newBuilder()
+                                                                          .addAllBranches(Arrays.asList(branch))
+                                                                          .setDefaultBranch(defaultBranch)
+                                                                          .build();
+    when(delegateGrpcClientWrapper.executeSyncTask(any()))
+        .thenReturn(ScmGitRefTaskResponseData.builder()
+                        .getListBranchesWithDefaultResponse(listBranchesWithDefaultResponse.toByteArray())
+                        .build());
+    listBranchesWithDefaultResponse = scmDelegateFacilitatorService.listBranches(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName, PageRequestDTO.builder().build());
+    assertThat(listBranchesWithDefaultResponse.getBranchesCount()).isEqualTo(1);
+    assertThat(listBranchesWithDefaultResponse.getDefaultBranch()).isEqualTo(defaultBranch);
+    assertThat(listBranchesWithDefaultResponse.getBranchesList().get(0)).isEqualTo(branch);
   }
 }
