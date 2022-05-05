@@ -25,6 +25,7 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ng.core.events.VariableCreateEvent;
 import io.harness.ng.core.variable.VariableValueType;
 import io.harness.ng.core.variable.dto.StringVariableConfigDTO;
 import io.harness.ng.core.variable.dto.StringVariableConfigDTO.StringVariableConfigDTOKeys;
@@ -46,6 +47,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DuplicateKeyException;
@@ -61,7 +64,7 @@ public class VariableServiceImplTest extends CategoryTest {
   private VariableServiceImpl variableService;
 
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
-  //@Captor private ArgumentCaptor<VariableCreateEvent> variableCreateEventArgumentCaptor;
+  @Captor private ArgumentCaptor<VariableCreateEvent> variableCreateEventArgumentCaptor;
 
   @Before
   public void setup() {
@@ -179,9 +182,9 @@ public class VariableServiceImplTest extends CategoryTest {
     verify(variableMapper, times(1)).toVariable(accountIdentifier, variableDTO);
     verify(transactionTemplate, times(1)).execute(any());
     verify(variableRepository, times(1)).save(variable);
-    // verify(outboxService, times(1)).save(variableCreateEventArgumentCaptor.capture());
-    // VariableCreateEvent capturedVariableCreateEvent = variableCreateEventArgumentCaptor.getValue();
-    // assertEquals(variableDTO, capturedVariableCreateEvent.getVariableDTO());
+    verify(outboxService, times(1)).save(variableCreateEventArgumentCaptor.capture());
+    VariableCreateEvent capturedVariableCreateEvent = variableCreateEventArgumentCaptor.getValue();
+    assertThat(variableDTO).isEqualTo(capturedVariableCreateEvent.getVariableDTO());
   }
 
   @Test(expected = DuplicateFieldException.class)

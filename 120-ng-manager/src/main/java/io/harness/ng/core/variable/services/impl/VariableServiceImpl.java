@@ -13,6 +13,7 @@ import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_P
 
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ng.core.events.VariableCreateEvent;
 import io.harness.ng.core.variable.dto.VariableDTO;
 import io.harness.ng.core.variable.dto.VariableResponseDTO;
 import io.harness.ng.core.variable.entity.Variable;
@@ -55,7 +56,7 @@ public class VariableServiceImpl implements VariableService {
       Variable variable = variableMapper.toVariable(accountIdentifier, variableDTO);
       return Failsafe.with(DEFAULT_TRANSACTION_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
         Variable savedVariable = variableRepository.save(variable);
-        // outboxService.save(new VariableCreateEvent(accountIdentifier, variableMapper.writeDTO(savedVariable)));
+        outboxService.save(new VariableCreateEvent(accountIdentifier, variableMapper.writeDTO(savedVariable)));
         return savedVariable;
       }));
     } catch (DuplicateKeyException de) {
