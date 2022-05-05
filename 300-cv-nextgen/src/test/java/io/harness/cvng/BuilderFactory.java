@@ -114,6 +114,9 @@ import io.harness.cvng.notification.beans.NotificationRuleType;
 import io.harness.cvng.notification.beans.SLONotificationRuleCondition;
 import io.harness.cvng.notification.beans.SLONotificationRuleCondition.SLONotificationRuleConditionSpec;
 import io.harness.cvng.notification.beans.SLONotificationRuleCondition.SLONotificationRuleConditionType;
+import io.harness.cvng.notification.channelDetails.CVNGEmailChannelSpec;
+import io.harness.cvng.notification.channelDetails.CVNGNotificationChannel;
+import io.harness.cvng.notification.channelDetails.CVNGNotificationChannelType;
 import io.harness.cvng.servicelevelobjective.beans.ErrorBudgetRisk;
 import io.harness.cvng.servicelevelobjective.beans.SLIMetricType;
 import io.harness.cvng.servicelevelobjective.beans.SLIMissingDataType;
@@ -156,7 +159,6 @@ import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
 import io.harness.ng.core.environment.dto.EnvironmentResponseDTO.EnvironmentResponseDTOBuilder;
 import io.harness.ng.core.service.dto.ServiceResponseDTO;
 import io.harness.ng.core.service.dto.ServiceResponseDTO.ServiceResponseDTOBuilder;
-import io.harness.notification.channelDetails.PmsEmailChannel;
 import io.harness.pms.yaml.ParameterField;
 
 import com.google.common.collect.Sets;
@@ -1109,9 +1111,12 @@ public class BuilderFactory {
                                       .conditionType(SLONotificationRuleConditionType.ERROR_BUDGET_REMAINING_PERCENTAGE)
                                       .spec(SLONotificationRuleConditionSpec.builder().threshold(10.0).build())
                                       .build()))
-        .notificationMethod(PmsEmailChannel.builder()
-                                .recipients(Arrays.asList("test@harness.io"))
-                                .userGroups(Arrays.asList("testUserGroup"))
+        .notificationMethod(CVNGNotificationChannel.builder()
+                                .type(CVNGNotificationChannelType.EMAIL)
+                                .spec(CVNGEmailChannelSpec.builder()
+                                          .recipients(Arrays.asList("test@harness.io"))
+                                          .userGroups(Arrays.asList("testUserGroup"))
+                                          .build())
                                 .build());
   }
 }

@@ -15,5 +15,6 @@ conditions:
       threshold: 5
 notificationMethod:
   type: Email
-  userGroups: [testUserGroup]
-  recipients: [test@harness.io]
+  spec:
+    userGroups: [testUserGroup]
+    recipients: [test@harness.io]
