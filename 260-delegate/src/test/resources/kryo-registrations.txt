@@ -1892,7 +1892,6 @@
 400125:software.wings.beans.AmiDeploymentType
 400126:software.wings.api.CloudProviderType
 400127:software.wings.beans.VMSSAuthType
-400128:software.wings.beans.artifact.AzureMachineImageArtifactStream$ImageType
 400129:software.wings.beans.command.CommandUnitDetails$CommandUnitType
 400130:software.wings.beans.Setup$SetupStatus
 400131:software.wings.beans.Activity$Type

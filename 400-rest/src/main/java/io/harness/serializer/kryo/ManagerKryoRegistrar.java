@@ -243,7 +243,6 @@ import software.wings.beans.artifact.Artifact;
 import software.wings.beans.artifact.ArtifactoryArtifactStream;
 import software.wings.beans.artifact.AzureArtifactsArtifactStream;
 import software.wings.beans.artifact.AzureMachineImageArtifactStream;
-import software.wings.beans.artifact.AzureMachineImageArtifactStream.ImageType;
 import software.wings.beans.artifact.AzureMachineImageArtifactStream.OSType;
 import software.wings.beans.artifact.BambooArtifactStream;
 import software.wings.beans.artifact.CustomArtifactStream;
@@ -1307,7 +1306,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(CodeDeployInfrastructureMapping.class, 400121);
     kryo.register(StateStatusUpdateInfo.class, 400122);
     kryo.register(ManifestCollectionStatus.class, 400123);
-    kryo.register(ImageType.class, 400128);
     kryo.register(CommandUnitDetails.CommandUnitType.class, 400129);
     kryo.register(SetupStatus.class, 400130);
     kryo.register(Type.class, 400131);

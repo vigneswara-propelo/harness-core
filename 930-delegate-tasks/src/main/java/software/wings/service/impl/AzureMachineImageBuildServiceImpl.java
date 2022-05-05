@@ -8,6 +8,7 @@
 package software.wings.service.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.delegate.beans.azure.AzureMachineImageArtifactDTO.ImageType.IMAGE_GALLERY;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.validation.Validator.equalCheck;
 
@@ -19,7 +20,6 @@ import software.wings.beans.AzureConfig;
 import software.wings.beans.AzureImageDefinition;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
 import software.wings.beans.artifact.ArtifactStreamType;
-import software.wings.beans.artifact.AzureMachineImageArtifactStream;
 import software.wings.helpers.ext.azure.AzureDelegateHelperService;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.service.intfc.AzureMachineImageBuildService;
@@ -72,8 +72,7 @@ public class AzureMachineImageBuildServiceImpl implements AzureMachineImageBuild
   public ArtifactStreamAttributes validateThenInferAttributes(AzureConfig config,
       List<EncryptedDataDetail> encryptionDetails, ArtifactStreamAttributes artifactStreamAttributes) {
     ArtifactStreamAttributes streamAttributes = artifactStreamAttributes.toBuilder().build();
-    if (Objects.equals(
-            AzureMachineImageArtifactStream.ImageType.IMAGE_GALLERY.name(), artifactStreamAttributes.getImageType())) {
+    if (Objects.equals(IMAGE_GALLERY.name(), artifactStreamAttributes.getImageType())) {
       final String imageName = artifactStreamAttributes.getAzureImageDefinition();
       // Note: Using list instead of get method as get method throws NULL pointer exception if fields are invalid
       final Optional<AzureImageDefinition> definition =
