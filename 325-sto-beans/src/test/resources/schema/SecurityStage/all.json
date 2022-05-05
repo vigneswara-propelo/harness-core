@@ -6146,21 +6146,6 @@
             "type"
           ],
           "properties": {
-            "os": {
-              "oneOf": [
-                {
-                  "type": "string",
-                  "enum": [
-                    "Linux",
-                    "Osx",
-                    "Windows"
-                  ]
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            },
             "spec": {
               "oneOf": [
                 {
@@ -6213,6 +6198,23 @@
       "properties": {
         "identifier": {
           "type": "string"
+        },
+        "os": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "Linux",
+                "Osx",
+                "Windows"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+              "minLength": 1
+            }
+          ]
         },
         "poolName": {
           "type": "string"
