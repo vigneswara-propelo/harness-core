@@ -24,7 +24,7 @@ import lombok.Value;
 @Value
 @EqualsAndHashCode(callSuper = false)
 @OwnedBy(HarnessTeam.CDP)
-public class ArtifactoryDockerArtifactDelegateResponse extends ArtifactDelegateResponse {
+public class ArtifactoryArtifactDelegateResponse extends ArtifactDelegateResponse {
   String repositoryName;
   /** Images in repos need to be referenced via a path */
   String artifactPath;
@@ -33,7 +33,7 @@ public class ArtifactoryDockerArtifactDelegateResponse extends ArtifactDelegateR
   String tag;
 
   @Builder
-  public ArtifactoryDockerArtifactDelegateResponse(ArtifactBuildDetailsNG buildDetails, ArtifactSourceType sourceType,
+  public ArtifactoryArtifactDelegateResponse(ArtifactBuildDetailsNG buildDetails, ArtifactSourceType sourceType,
       String repositoryName, String artifactPath, String repositoryFormat, String tag) {
     super(buildDetails, sourceType);
     this.repositoryName = repositoryName;

@@ -1472,8 +1472,8 @@
 19469:io.harness.delegate.beans.azure.registry.AzureRegistryType
 19470:io.harness.delegate.beans.azure.appservicesettings.AzureAppServiceApplicationSettingDTO
 19471:io.harness.delegate.beans.azure.appservicesettings.AzureAppServiceConnectionStringDTO
-19472:io.harness.delegate.task.artifacts.artifactory.ArtifactoryDockerArtifactDelegateRequest
-19473:io.harness.delegate.task.artifacts.artifactory.ArtifactoryDockerArtifactDelegateResponse
+19472:io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateRequest
+19473:io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateResponse
 19475:io.harness.delegate.task.azure.appservice.webapp.response.AzureWebAppSlotSetupResponse
 19476:io.harness.delegate.task.azure.appservice.AzureAppServicePreDeploymentData
 19477:io.harness.delegate.task.azure.appservice.webapp.response.AzureWebAppRollbackResponse

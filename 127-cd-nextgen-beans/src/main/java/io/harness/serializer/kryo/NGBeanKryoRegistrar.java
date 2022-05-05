@@ -60,9 +60,9 @@ public class NGBeanKryoRegistrar implements KryoRegistrar {
     kryo.register(DockerArtifactOutcome.class, 8007);
     kryo.register(GcrArtifactOutcome.class, 390006);
     kryo.register(EcrArtifactOutcome.class, 390007);
-    kryo.register(ServerlessAwsLambdaManifestOutcome.class, 390008);
     kryo.register(ServerlessAwsLambdaInfrastructureOutcome.class, 390009);
     kryo.register(ArtifactoryGenericArtifactOutcome.class, 390010);
     kryo.register(AcrArtifactOutcome.class, 390011);
+    kryo.register(ServerlessAwsLambdaManifestOutcome.class, 390012);
   }
 }

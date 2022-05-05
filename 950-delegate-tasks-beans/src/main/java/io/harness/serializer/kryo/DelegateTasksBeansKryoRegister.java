@@ -249,9 +249,9 @@ import io.harness.delegate.exception.TaskNGDataException;
 import io.harness.delegate.task.ListNotifyResponseData;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
 import io.harness.delegate.task.artifacts.ArtifactTaskType;
+import io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateRequest;
+import io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryBaseArtifactDelegateRequest;
-import io.harness.delegate.task.artifacts.artifactory.ArtifactoryDockerArtifactDelegateRequest;
-import io.harness.delegate.task.artifacts.artifactory.ArtifactoryDockerArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryGenericArtifactDelegateRequest;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryGenericArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.azure.AcrArtifactDelegateRequest;
@@ -887,8 +887,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(HttpStepResponse.class, 19439);
     kryo.register(NexusArtifactDelegateRequest.class, 19448);
     kryo.register(NexusArtifactDelegateResponse.class, 19456);
-    kryo.register(ArtifactoryDockerArtifactDelegateRequest.class, 19472);
-    kryo.register(ArtifactoryDockerArtifactDelegateResponse.class, 19473);
+    kryo.register(ArtifactoryArtifactDelegateRequest.class, 19472);
+    kryo.register(ArtifactoryArtifactDelegateResponse.class, 19473);
     kryo.register(ArtifactoryGenericArtifactDelegateRequest.class, 19483);
     kryo.register(ArtifactoryGenericArtifactDelegateResponse.class, 19484);
 
