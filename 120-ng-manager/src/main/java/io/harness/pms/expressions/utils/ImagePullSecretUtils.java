@@ -249,7 +249,7 @@ public class ImagePullSecretUtils {
     if (connectorConfig.getCredential() != null
         && connectorConfig.getCredential().getAzureCredentialType() == AzureCredentialType.MANUAL_CREDENTIALS) {
       AzureManualDetailsDTO config = (AzureManualDetailsDTO) connectorConfig.getCredential().getConfig();
-      if (config.getAuthDTO().getAzureSecretType() == AzureSecretType.SECRET_KEY) {
+      if (config.getAuthDTO().getAzureSecretType() != AzureSecretType.SECRET_KEY) {
         throw new InvalidRequestException(
             "Currently unable to use Service Principal with certificate for pulling docker images from ACR");
       } else {

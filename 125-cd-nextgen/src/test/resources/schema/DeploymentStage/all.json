@@ -2518,7 +2518,7 @@
             "namespace",
             "releaseName",
             "resourceGroup",
-            "subscription"
+            "subscriptionId"
           ],
           "properties": {
             "cluster": {
@@ -2541,7 +2541,7 @@
               "type": "string",
               "minLength": 1
             },
-            "subscription": {
+            "subscriptionId": {
               "type": "string",
               "minLength": 1
             }
