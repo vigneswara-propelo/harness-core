@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.annotations.ti;
+package io.harness.agent.sdk;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
