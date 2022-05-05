@@ -7,6 +7,7 @@
 
 package io.harness.ng.core.variable.services;
 
+import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.variable.dto.VariableDTO;
 import io.harness.ng.core.variable.dto.VariableResponseDTO;
 import io.harness.ng.core.variable.entity.Variable;
@@ -16,6 +17,8 @@ import java.util.Optional;
 
 public interface VariableService {
   Variable create(String accountIdentifier, VariableDTO variableDTO);
+  PageResponse<VariableResponseDTO> list(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      int page, int size, String searchTerm, boolean includeVariablesFromEverySubScope);
   List<VariableDTO> list(String accountIdentifier, String orgIdentifier, String projectIdentifier);
   Optional<VariableResponseDTO> get(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier);

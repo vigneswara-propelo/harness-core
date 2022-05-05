@@ -11,7 +11,9 @@ import static io.harness.ng.core.variable.VariableType.STRING;
 import static io.harness.ng.core.variable.VariableValueType.FIXED;
 import static io.harness.ng.core.variable.VariableValueType.FIXED_SET;
 import static io.harness.ng.core.variable.VariableValueType.REGEX;
+import static io.harness.rule.OwnerRule.MEENAKSHI;
 import static io.harness.rule.OwnerRule.NISHANT;
+import static io.harness.utils.PageTestUtils.getPage;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +27,7 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.events.VariableCreateEvent;
 import io.harness.ng.core.variable.VariableValueType;
 import io.harness.ng.core.variable.dto.StringVariableConfigDTO;
@@ -245,6 +248,90 @@ public class VariableServiceImplTest extends CategoryTest {
     assertThat(varList).hasOnlyElementsOfType(VariableDTO.class);
     assertThat(varList.size()).isEqualTo(variables.size());
     assertThat(varList).contains(varADTO);
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testPagedListForAccountScope() {
+    String accountIdentifier = randomAlphabetic(10);
+    String varID = randomAlphabetic(5);
+    Variable varA = getVariable(accountIdentifier, null, null, varID, varID);
+    List<Variable> varList = new ArrayList<>();
+    varList.add(varA);
+    VariableResponseDTO variableResponseDTO = getVariableResponseDTO(varID, null, null, varID);
+    when(variableRepository.findAll(any(), any())).thenReturn(getPage(varList, 1));
+    when(variableMapper.toResponseWrapper(varA)).thenReturn(variableResponseDTO);
+    PageResponse<VariableResponseDTO> list = variableService.list(accountIdentifier, null, null, 0, 10, null, false);
+    verify(variableRepository, times(1)).findAll(any(), any());
+    assertThat(list.getContent().size()).isEqualTo(varList.size());
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testPagedListForOrgScope() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    String varID = randomAlphabetic(5);
+    Variable varA = getVariable(accountIdentifier, orgIdentifier, null, varID, varID);
+    List<Variable> varList = new ArrayList<>();
+    varList.add(varA);
+    VariableResponseDTO variableResponseDTO = getVariableResponseDTO(varID, orgIdentifier, null, varID);
+    when(variableMapper.toResponseWrapper(varA)).thenReturn(variableResponseDTO);
+    when(variableRepository.findAll(any(), any())).thenReturn(getPage(varList, 1));
+    PageResponse<VariableResponseDTO> list =
+        variableService.list(accountIdentifier, orgIdentifier, null, 0, 10, null, false);
+    verify(variableRepository, times(1)).findAll(any(), any());
+    System.out.println(list.getContent().get(0));
+    assertThat(list.getContent().size()).isEqualTo(varList.size());
+    assertThat(list.getContent().get(0).getVariable().getOrgIdentifier()).isEqualTo(orgIdentifier);
+    assertThat(list.getContent().get(0).getVariable().getProjectIdentifier()).isEqualTo(null);
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testPagedListForProjectScope() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    String projectIdentifier = randomAlphabetic(10);
+    String varID = randomAlphabetic(5);
+    Variable varA = getVariable(accountIdentifier, orgIdentifier, projectIdentifier, varID, varID);
+    List<Variable> varList = new ArrayList<>();
+    varList.add(varA);
+    VariableResponseDTO variableResponseDTO = getVariableResponseDTO(varID, orgIdentifier, projectIdentifier, varID);
+    when(variableMapper.toResponseWrapper(varA)).thenReturn(variableResponseDTO);
+    when(variableRepository.findAll(any(), any())).thenReturn(getPage(varList, 1));
+    PageResponse<VariableResponseDTO> list =
+        variableService.list(accountIdentifier, orgIdentifier, projectIdentifier, 0, 10, null, false);
+    verify(variableRepository, times(1)).findAll(any(), any());
+    assertThat(list.getContent().size()).isEqualTo(varList.size());
+    assertThat(list.getContent().get(0).getVariable().getOrgIdentifier()).isEqualTo(orgIdentifier);
+    assertThat(list.getContent().get(0).getVariable().getProjectIdentifier()).isEqualTo(projectIdentifier);
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testPagedListForProjectScopeWithSearchTerm() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    String projectIdentifier = randomAlphabetic(10);
+    String varID = randomAlphabetic(5);
+    Variable varA = getVariable(accountIdentifier, orgIdentifier, projectIdentifier, varID, varID);
+    List<Variable> varList = new ArrayList<>();
+    varList.add(varA);
+    VariableResponseDTO variableResponseDTO = getVariableResponseDTO(varID, orgIdentifier, projectIdentifier, varID);
+    when(variableMapper.toResponseWrapper(varA)).thenReturn(variableResponseDTO);
+    when(variableRepository.findAll(any(), any())).thenReturn(getPage(varList, 1));
+    PageResponse<VariableResponseDTO> list =
+        variableService.list(accountIdentifier, orgIdentifier, projectIdentifier, 0, 10, varID, false);
+    verify(variableRepository, times(1)).findAll(any(), any());
+    assertThat(list.getContent().size()).isEqualTo(varList.size());
+    assertThat(list.getContent().get(0).getVariable().getOrgIdentifier()).isEqualTo(orgIdentifier);
+    assertThat(list.getContent().get(0).getVariable().getProjectIdentifier()).isEqualTo(projectIdentifier);
+    assertThat(list.getContent().get(0).getVariable().getIdentifier()).isEqualTo(varID);
   }
 
   @Test

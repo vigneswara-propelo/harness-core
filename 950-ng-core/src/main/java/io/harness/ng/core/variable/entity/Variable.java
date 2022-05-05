@@ -7,6 +7,7 @@
 
 package io.harness.ng.core.variable.entity;
 
+import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -15,6 +16,7 @@ import io.harness.data.validator.NGEntityName;
 import io.harness.data.validator.Trimmed;
 import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.MongoIndex;
+import io.harness.mongo.index.SortCompoundMongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.ng.core.NGAccountAccess;
 import io.harness.ng.core.variable.VariableType;
@@ -23,6 +25,7 @@ import io.harness.persistence.PersistentEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
@@ -43,6 +46,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("variables")
 @StoreIn(DbAliases.NG_MANAGER)
 @Persistent
+@HarnessEntity(exportable = true)
 public abstract class Variable implements PersistentEntity, NGAccountAccess {
   @Id @org.mongodb.morphia.annotations.Id String id;
   @NotEmpty @EntityIdentifier String identifier;
@@ -65,6 +69,12 @@ public abstract class Variable implements PersistentEntity, NGAccountAccess {
                  .field(VariableKeys.projectIdentifier)
                  .field(VariableKeys.identifier)
                  .unique(true)
+                 .build())
+        .add(SortCompoundMongoIndex.builder()
+                 .name("accountId_orgId_projectId_createdAt_decreasing_sort_Index")
+                 .fields(Arrays.asList(
+                     VariableKeys.accountIdentifier, VariableKeys.orgIdentifier, VariableKeys.projectIdentifier))
+                 .descSortField(VariableKeys.createdAt)
                  .build())
         .build();
   }

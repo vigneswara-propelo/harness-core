@@ -8,11 +8,19 @@
 package io.harness.ng.core.variable.services.impl;
 
 import static io.harness.exception.WingsException.USER_SRE;
+import static io.harness.ng.core.variable.entity.Variable.VariableKeys;
 import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
 import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_POLICY;
+import static io.harness.utils.PageUtils.getPageRequest;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import io.harness.NGResourceFilterConstants;
+import io.harness.beans.SortOrder;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ng.beans.PageRequest;
+import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.events.VariableCreateEvent;
 import io.harness.ng.core.variable.dto.VariableDTO;
 import io.harness.ng.core.variable.dto.VariableResponseDTO;
@@ -21,14 +29,20 @@ import io.harness.ng.core.variable.mappers.VariableMapper;
 import io.harness.ng.core.variable.services.VariableService;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.variable.spring.VariableRepository;
+import io.harness.utils.PageUtils;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import net.jodah.failsafe.Failsafe;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public class VariableServiceImpl implements VariableService {
@@ -66,6 +80,49 @@ public class VariableServiceImpl implements VariableService {
               variableDTO.getIdentifier(), variableDTO.getOrgIdentifier(), variableDTO.getProjectIdentifier()),
           USER_SRE, de);
     }
+  }
+
+  @Override
+  public PageResponse<VariableResponseDTO> list(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, int page, int size, String searchTerm, boolean includeVariablesFromEverySubScope) {
+    Criteria criteria = getCriteriaForVariableList(
+        accountIdentifier, orgIdentifier, projectIdentifier, searchTerm, includeVariablesFromEverySubScope);
+    Pageable pageable = getPageRequest(
+        PageRequest.builder()
+            .pageIndex(page)
+            .pageSize(size)
+            .sortOrders(Collections.singletonList(
+                SortOrder.Builder.aSortOrder().withField(VariableKeys.createdAt, SortOrder.OrderType.DESC).build()))
+            .build());
+    Page<Variable> variables = variableRepository.findAll(criteria, pageable);
+
+    return PageUtils.getNGPageResponse(
+        variables, variables.getContent().stream().map(variableMapper::toResponseWrapper).collect(Collectors.toList()));
+  }
+
+  private Criteria getCriteriaForVariableList(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String searchTerm, boolean includeVariablesFromEverySubScope) {
+    Criteria criteria = Criteria.where(VariableKeys.accountIdentifier).is(accountIdentifier);
+    if (!includeVariablesFromEverySubScope) {
+      criteria.and(VariableKeys.orgIdentifier)
+          .is(orgIdentifier)
+          .and(VariableKeys.projectIdentifier)
+          .is(projectIdentifier);
+    } else {
+      if (isNotBlank(orgIdentifier)) {
+        criteria.and(VariableKeys.orgIdentifier).is(orgIdentifier);
+        if (isNotBlank(projectIdentifier)) {
+          criteria.and(VariableKeys.projectIdentifier).is(projectIdentifier);
+        }
+      }
+    }
+    if (!StringUtils.isEmpty(searchTerm)) {
+      criteria = criteria.orOperator(
+          Criteria.where(VariableKeys.name).regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS),
+          Criteria.where(VariableKeys.identifier)
+              .regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS));
+    }
+    return criteria;
   }
 
   @Override
