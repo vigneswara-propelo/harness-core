@@ -33,6 +33,7 @@ import io.harness.pms.contracts.interrupts.InterruptConfig;
 import io.harness.pms.contracts.interrupts.IssuedBy;
 import io.harness.pms.contracts.interrupts.ManualIssuer;
 import io.harness.pms.execution.ExecutionStatus;
+import io.harness.pms.execution.TimeRange;
 import io.harness.pms.filter.utils.ModuleInfoFilterUtils;
 import io.harness.pms.gitsync.PmsGitSyncHelper;
 import io.harness.pms.helpers.TriggeredByHelper;
@@ -189,6 +190,21 @@ public class PMSExecutionServiceImpl implements PMSExecutionService {
           where(PlanExecutionSummaryKeys.pipelineIdentifier)
               .regex(piplineFilter.getPipelineName(), NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS));
     }
+    if (piplineFilter.getTimeRange() != null) {
+      TimeRange timeRange = piplineFilter.getTimeRange();
+      // Apply filter to criteria if StartTime and EndTime both are not null.
+      if (timeRange.getStartTime() != null && timeRange.getEndTime() != null) {
+        criteria.and(PlanExecutionSummaryKeys.createdAt).gte(timeRange.getStartTime()).lte(timeRange.getEndTime());
+
+      } else if ((timeRange.getStartTime() != null && timeRange.getEndTime() == null)
+          || (timeRange.getStartTime() == null && timeRange.getEndTime() != null)) {
+        // If any one of StartTime and EndTime is null. Throw exception.
+        throw new InvalidRequestException(
+            "startTime or endTime is not provided in TimeRange filter. Either add the missing field or remove the timeRange filter.");
+      }
+      // Ignore TimeRange filter if StartTime and EndTime both are null.
+    }
+
     if (EmptyPredicate.isNotEmpty(piplineFilter.getStatus())) {
       criteria.and(PlanExecutionSummaryKeys.status).in(piplineFilter.getStatus());
     }

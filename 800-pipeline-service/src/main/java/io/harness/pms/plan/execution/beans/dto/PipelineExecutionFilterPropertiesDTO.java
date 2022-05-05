@@ -12,6 +12,7 @@ import static io.harness.filter.FilterConstants.PIPELINE_EXECUTION_FILTER;
 import io.harness.filter.FilterType;
 import io.harness.filter.dto.FilterPropertiesDTO;
 import io.harness.pms.execution.ExecutionStatus;
+import io.harness.pms.execution.TimeRange;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -37,6 +38,7 @@ import lombok.experimental.FieldDefaults;
 public class PipelineExecutionFilterPropertiesDTO extends FilterPropertiesDTO {
   private List<ExecutionStatus> status;
   private String pipelineName;
+  private TimeRange timeRange;
   private org.bson.Document moduleProperties;
 
   @Override
