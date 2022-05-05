@@ -2010,6 +2010,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         log.warn("Delegate task data not available for task: {} - accountId: {}", delegateTaskId,
             delegateTaskEvent.getAccountId());
         return;
+      } else {
+        log.info("received task package {} for delegateInstance {}", delegateTaskPackage, delegateInstanceId);
       }
 
       if (isEmpty(delegateTaskPackage.getDelegateInstanceId())) {
