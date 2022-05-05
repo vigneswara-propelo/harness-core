@@ -1629,7 +1629,6 @@
 20103:io.harness.ng.core.account.AuthenticationMechanism
 20104:io.harness.ng.core.account.ServiceAccountConfig
 22001:io.harness.ng.core.common.beans.NGTag
-22002:io.harness.ng.core.service.entity.ServiceEntity
 22003:io.harness.ng.core.environment.beans.Environment
 22004:io.harness.ng.core.common.beans.KeyValuePair
 22005:io.harness.ng.core.ResourceScope

@@ -57,6 +57,7 @@ public class VariableResource {
 
   @GET
   @Path("{identifier}")
+  @ApiOperation(value = "Get a Variable", nickname = "getVariable")
   @Hidden
   public ResponseDTO<VariableResponseDTO> get(@PathParam(IDENTIFIER_KEY) @NotNull String identifier,
       @QueryParam(ACCOUNT_KEY) @NotNull String accountIdentifier, @QueryParam(ORG_KEY) String orgIdentifier,

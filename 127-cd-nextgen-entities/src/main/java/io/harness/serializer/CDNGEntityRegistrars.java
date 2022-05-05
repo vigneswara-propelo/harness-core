@@ -10,8 +10,8 @@ package io.harness.serializer;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.morphia.MorphiaRegistrar;
-import io.harness.serializer.kryo.NGBeanKryoRegistrar;
-import io.harness.serializer.morphia.NGBeanMorphiaRegistrar;
+import io.harness.serializer.kryo.NGEntitiesKryoRegistrar;
+import io.harness.serializer.morphia.NGEntitiesMorphiaRegistrar;
 import io.harness.yaml.schema.beans.YamlSchemaRootClass;
 
 import com.google.common.collect.ImmutableList;
@@ -20,17 +20,17 @@ import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.CDP)
 @UtilityClass
-public class CDNGBeanRegistrars {
+public class CDNGEntityRegistrars {
   public final ImmutableSet<Class<? extends KryoRegistrar>> kryoRegistrars =
       ImmutableSet.<Class<? extends KryoRegistrar>>builder()
           .addAll(ManagerRegistrars.kryoRegistrars)
-          .add(NGBeanKryoRegistrar.class)
+          .add(NGEntitiesKryoRegistrar.class)
           .build();
 
   public final ImmutableSet<Class<? extends MorphiaRegistrar>> morphiaRegistrars =
       ImmutableSet.<Class<? extends MorphiaRegistrar>>builder()
           .addAll(ManagerRegistrars.morphiaRegistrars)
-          .add(NGBeanMorphiaRegistrar.class)
+          .add(NGEntitiesMorphiaRegistrar.class)
           .build();
 
   public static final ImmutableList<YamlSchemaRootClass> yamlSchemaRegistrars =

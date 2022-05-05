@@ -13,7 +13,7 @@ java_binary(
         "//123-ng-core-user:module",
         "//125-cd-nextgen:module",
         "//126-instance:module",
-        "//127-cd-nextgen-beans:module",
+        "//127-cd-nextgen-entities:module",
         "//136-git-sync-manager:module",
         "//160-stress-tester:module",
         "//210-command-library-server:module",
