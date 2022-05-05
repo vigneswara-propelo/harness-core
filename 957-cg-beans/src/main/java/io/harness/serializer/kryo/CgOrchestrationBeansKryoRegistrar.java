@@ -33,6 +33,7 @@ import software.wings.beans.GitFileConfig;
 import software.wings.beans.LicenseInfo;
 import software.wings.beans.Log;
 import software.wings.beans.PhaseStepType;
+import software.wings.beans.ServiceVariableType;
 import software.wings.beans.VMSSAuthType;
 import software.wings.beans.VMSSDeploymentType;
 import software.wings.beans.VariableType;
@@ -97,5 +98,6 @@ public class CgOrchestrationBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(BuildStep.class, 7423);
 
     kryo.register(ArtifactInput.class, 7459);
+    kryo.register(ServiceVariableType.class, 5362);
   }
 }

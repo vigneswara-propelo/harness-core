@@ -32,7 +32,7 @@ import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.AwsConfig;
 import software.wings.beans.NameValuePair;
-import software.wings.beans.ServiceVariable.Type;
+import software.wings.beans.ServiceVariableType;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.helpers.ext.cloudformation.request.CloudFormationCommandRequest;
 import software.wings.helpers.ext.cloudformation.request.CloudFormationCreateStackRequest;
@@ -572,14 +572,14 @@ public class CloudFormationCreateStackHandler extends CloudFormationCommandTaskH
     List<NameValuePair> variables = newArrayList();
     if (isNotEmpty(cloudFormationCreateStackRequest.getVariables())) {
       for (Entry<String, String> variable : cloudFormationCreateStackRequest.getVariables().entrySet()) {
-        variables.add(new NameValuePair(variable.getKey(), variable.getValue(), Type.TEXT.name()));
+        variables.add(new NameValuePair(variable.getKey(), variable.getValue(), ServiceVariableType.TEXT.name()));
       }
     }
     if (isNotEmpty(cloudFormationCreateStackRequest.getEncryptedVariables())) {
       for (Entry<String, EncryptedDataDetail> encVariable :
           cloudFormationCreateStackRequest.getEncryptedVariables().entrySet()) {
-        variables.add(new NameValuePair(
-            encVariable.getKey(), encVariable.getValue().getEncryptedData().getUuid(), Type.ENCRYPTED_TEXT.name()));
+        variables.add(new NameValuePair(encVariable.getKey(), encVariable.getValue().getEncryptedData().getUuid(),
+            ServiceVariableType.ENCRYPTED_TEXT.name()));
       }
     }
 

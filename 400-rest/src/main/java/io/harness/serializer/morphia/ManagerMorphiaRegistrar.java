@@ -423,8 +423,6 @@ import software.wings.delegatetasks.buildsource.BuildSourceCleanupCallback;
 import software.wings.delegatetasks.buildsource.BuildSourceExecutionResponse;
 import software.wings.delegatetasks.validation.capabilities.HelmCommandCapability;
 import software.wings.helpers.ext.cloudformation.CloudFormationCompletionFlag;
-import software.wings.helpers.ext.cloudformation.response.CloudFormationCommandExecutionResponse;
-import software.wings.helpers.ext.cloudformation.response.CloudFormationCreateStackResponse;
 import software.wings.helpers.ext.ecs.request.EcsBGListenerUpdateRequest;
 import software.wings.helpers.ext.ecs.request.EcsRunTaskDeployRequest;
 import software.wings.helpers.ext.ecs.response.EcsBGRoute53DNSWeightUpdateResponse;
@@ -1483,8 +1481,6 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("yaml.gitSync.GitSyncMetadata", GitSyncMetadata.class);
     w.put("beans.template.ImportedTemplateMetadata", ImportedTemplateMetadata.class);
     w.put("beans.template.CopiedTemplateMetadata", CopiedTemplateMetadata.class);
-    w.put(cf + "response.CloudFormationCommandExecutionResponse", CloudFormationCommandExecutionResponse.class);
-    w.put(cf + "response.CloudFormationCreateStackResponse", CloudFormationCreateStackResponse.class);
     w.put("sm.states.customdeployment.InstanceFetchState", InstanceFetchState.class);
     w.put("api.customdeployment.InstanceFetchStateExecutionData", InstanceFetchStateExecutionData.class);
     w.put("api.InstanceFetchStateExecutionSummary", InstanceFetchStateExecutionSummary.class);

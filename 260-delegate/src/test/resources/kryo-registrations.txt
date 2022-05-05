@@ -436,7 +436,7 @@
 5359:software.wings.beans.ServiceVariable
 5360:software.wings.beans.EntityType
 5361:software.wings.beans.ServiceVariable$OverrideType
-5362:software.wings.beans.ServiceVariable$Type
+5362:software.wings.beans.ServiceVariableType
 5363:software.wings.beans.container.KubernetesServiceSpecification
 5364:software.wings.beans.container.KubernetesBlueGreenConfig
 5365:software.wings.beans.container.KubernetesSwapServiceSelectorsParams
