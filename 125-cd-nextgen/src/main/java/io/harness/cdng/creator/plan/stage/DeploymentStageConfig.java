@@ -11,6 +11,8 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.pipeline.PipelineInfrastructure;
 import io.harness.cdng.service.beans.ServiceConfig;
+import io.harness.cdng.service.beans.ServiceDefinitionType;
+import io.harness.cdng.service.beans.ServiceYamlV2;
 import io.harness.cdng.visitor.helpers.deploymentstage.DeploymentStageVisitorHelper;
 import io.harness.plancreator.execution.ExecutionElementConfig;
 import io.harness.plancreator.stages.stage.StageInfoConfig;
@@ -52,6 +54,24 @@ public class DeploymentStageConfig implements StageInfoConfig, Visitable {
   String uuid;
 
   @NotNull ServiceConfig serviceConfig;
+  /*
+  Have added Getter Annotation for service and deployment type since we do not want current users to get these fields as
+  suggestion from schema.
+  TODO: Need to remove this getter method along with hidden=true once we completely get rid of serviceConfig
+
+  Yaml for these fields
+
+       spec:
+         deploymentType: Kubernetes
+         service:
+            serviceConfigRef: ref
+   */
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) ServiceYamlV2 service;
+
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  ServiceDefinitionType deploymentType;
+
   @NotNull PipelineInfrastructure infrastructure;
   @NotNull @VariableExpression(skipVariableExpression = true) ExecutionElementConfig execution;
 
@@ -62,6 +82,7 @@ public class DeploymentStageConfig implements StageInfoConfig, Visitable {
   public VisitableChildren getChildrenToWalk() {
     List<VisitableChild> children = new ArrayList<>();
     children.add(VisitableChild.builder().value(serviceConfig).fieldName("serviceConfig").build());
+    children.add(VisitableChild.builder().value(service).fieldName("service").build());
     children.add(VisitableChild.builder().value(infrastructure).fieldName("infrastructure").build());
     return VisitableChildren.builder().visitableChildList(children).build();
   }

@@ -313,3 +313,4 @@ io.harness.cdng.infra.beans.ServerlessAwsLambdaInfrastructureOutcome
 io.harness.cdng.serverless.beans.ServerlessStepExceptionPassThroughData
 io.harness.cdng.serverless.beans.ServerlessGitFetchExceptionPassThroughData
 io.harness.steps.servicenow.ServiceNowTicketOutcome
+io.harness.cdng.service.beans.ServiceYamlV2
