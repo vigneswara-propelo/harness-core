@@ -7,17 +7,25 @@
 
 package io.harness.cdng.creator.variables;
 
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.serverless.ServerlessAwsLambdaDeployStepNode;
 import io.harness.executions.steps.StepSpecTypeConstants;
 import io.harness.pms.sdk.core.pipeline.variables.GenericStepVariableCreator;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
-public class ServerlessStepVariableCreator extends GenericStepVariableCreator {
+@OwnedBy(HarnessTeam.CDP)
+public class ServerlessAwsLambdaDeployStepVariableCreator
+    extends GenericStepVariableCreator<ServerlessAwsLambdaDeployStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
-    return new HashSet<>(Arrays.asList(
-        StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_DEPLOY, StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_ROLLBACK));
+    return Collections.singleton(StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_DEPLOY);
+  }
+
+  @Override
+  public Class<ServerlessAwsLambdaDeployStepNode> getFieldClass() {
+    return ServerlessAwsLambdaDeployStepNode.class;
   }
 }
