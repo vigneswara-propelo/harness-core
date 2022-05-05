@@ -60,6 +60,7 @@ import io.harness.migrations.timescaledb.CreateServiceTable;
 import io.harness.migrations.timescaledb.CreateServicesEnvPipelinesIndex;
 import io.harness.migrations.timescaledb.CreateServicesEnvPipelinesTable;
 import io.harness.migrations.timescaledb.CreateTaglinksTables;
+import io.harness.migrations.timescaledb.CreateUserTable;
 import io.harness.migrations.timescaledb.CreateUtilizationData;
 import io.harness.migrations.timescaledb.CreateWorkflowTable;
 import io.harness.migrations.timescaledb.DeploymentAdditionalColumns;
@@ -148,6 +149,7 @@ public class TimescaleDBMigrationList {
         .add(Pair.of(62, CreateWorkflowTable.class))
         .add(Pair.of(63, CreateTaglinksTables.class))
         .add(Pair.of(64, CreateEnvironmentTable.class))
+        .add(Pair.of(65, CreateUserTable.class))
         .build();
   }
 }
