@@ -12,6 +12,7 @@ import static io.harness.rule.OwnerRule.SAHIL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -34,6 +35,7 @@ import io.harness.pms.filter.creation.FilterCreatorMergeServiceResponse;
 import io.harness.pms.gitsync.PmsGitSyncHelper;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.PipelineSetupUsageHelper;
+import io.harness.pms.pipeline.service.PMSPipelineTemplateHelper;
 import io.harness.pms.plan.creation.PlanCreatorServiceInfo;
 import io.harness.pms.sdk.PmsSdkHelper;
 import io.harness.pms.yaml.DependenciesUtils;
@@ -113,12 +115,16 @@ public class FilterCreatorMergeServiceTest extends PipelineServiceTestBase {
   @Mock PmsSdkHelper pmsSdkHelper;
   @Mock PipelineSetupUsageHelper pipelineSetupUsageHelper;
   @Mock PmsGitSyncHelper pmsGitSyncHelper;
+  @Mock PMSPipelineTemplateHelper pmsPipelineTemplateHelper;
   FilterCreatorMergeService filterCreatorMergeService;
 
   @Before
   public void init() {
-    filterCreatorMergeService =
-        spy(new FilterCreatorMergeService(pmsSdkHelper, pipelineSetupUsageHelper, pmsGitSyncHelper));
+    filterCreatorMergeService = spy(new FilterCreatorMergeService(
+        pmsSdkHelper, pipelineSetupUsageHelper, pmsGitSyncHelper, pmsPipelineTemplateHelper));
+    when(
+        pmsPipelineTemplateHelper.getTemplateReferencesForGivenYaml(anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(new ArrayList<>());
   }
 
   @After
@@ -152,6 +158,9 @@ public class FilterCreatorMergeServiceTest extends PipelineServiceTestBase {
 
     verify(pmsSdkHelper).getServices();
     verify(pipelineSetupUsageHelper).publishSetupUsageEvent(pipelineEntity, new ArrayList<>());
+    verify(pmsPipelineTemplateHelper)
+        .getTemplateReferencesForGivenYaml(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
+            pipelineEntity.getProjectIdentifier(), pipelineEntity.getYaml());
   }
 
   @Test

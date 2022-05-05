@@ -29,11 +29,13 @@ import io.harness.EntityType;
 import io.harness.TemplateServiceTestBase;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.eventsframework.schemas.entity.IdentifierRefProtoDTO;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ff.FeatureFlagService;
 import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.entitydetail.EntityDetailProtoToRestMapper;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
@@ -79,6 +81,7 @@ public class TemplateReferenceHelperTest extends TemplateServiceTestBase {
   @Mock NGTemplateServiceHelper templateServiceHelper;
   @Inject TemplateYamlConversionHandlerRegistry templateYamlConversionHandlerRegistry;
   @Inject EntityDetailProtoToRestMapper entityDetailProtoToRestMapper;
+  @Mock FeatureFlagService featureFlagService;
 
   TemplateReferenceHelper templateReferenceHelper;
 
@@ -93,8 +96,10 @@ public class TemplateReferenceHelperTest extends TemplateServiceTestBase {
     entityReferenceServiceBlockingStub = EntityReferenceServiceGrpc.newBlockingStub(
         grpcCleanupRule.register(InProcessChannelBuilder.forName(serverName).directExecutor().build()));
 
-    templateReferenceHelper = new TemplateReferenceHelper(entityReferenceServiceBlockingStub,
-        templateYamlConversionHelper, pmsGitSyncHelper, templateServiceHelper, templateSetupUsageHelper);
+    templateReferenceHelper =
+        new TemplateReferenceHelper(entityReferenceServiceBlockingStub, templateYamlConversionHelper, pmsGitSyncHelper,
+            templateServiceHelper, templateSetupUsageHelper, featureFlagService);
+    when(featureFlagService.isEnabled(eq(FeatureName.NG_TEMPLATE_REFERENCES_SUPPORT), anyString())).thenReturn(true);
   }
 
   private String readFile(String filename) {

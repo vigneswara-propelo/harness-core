@@ -18,11 +18,13 @@ import static io.harness.template.beans.NGTemplateConstants.TEMPLATE_VERSION_LAB
 import io.harness.EntityType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
 import io.harness.common.NGExpressionUtils;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.eventsframework.schemas.entity.IdentifierRefProtoDTO;
+import io.harness.ff.FeatureFlagService;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.pms.contracts.service.EntityReferenceRequest;
@@ -64,8 +66,19 @@ public class TemplateReferenceHelper {
   PmsGitSyncHelper pmsGitSyncHelper;
   NGTemplateServiceHelper templateServiceHelper;
   TemplateSetupUsageHelper templateSetupUsageHelper;
+  FeatureFlagService featureFlagService;
+
+  public void deleteTemplateReferences(TemplateEntity templateEntity) {
+    if (!featureFlagService.isEnabled(FeatureName.NG_TEMPLATE_REFERENCES_SUPPORT, templateEntity.getAccountId())) {
+      return;
+    }
+    templateSetupUsageHelper.deleteExistingSetupUsages(templateEntity);
+  }
 
   public void populateTemplateReferences(TemplateEntity templateEntity) {
+    if (!featureFlagService.isEnabled(FeatureName.NG_TEMPLATE_REFERENCES_SUPPORT, templateEntity.getAccountId())) {
+      return;
+    }
     String pmsUnderstandableYaml =
         templateYamlConversionHelper.convertTemplateYamlToPMSUnderstandableYaml(templateEntity);
     EntityReferenceRequest.Builder entityReferenceRequestBuilder =
