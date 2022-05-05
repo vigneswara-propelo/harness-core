@@ -5,9 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.core.dto.filestore;
+package io.harness.ng.core.filestore.dto;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.beans.YamlDTO;
@@ -17,9 +17,9 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
-@OwnedBy(PL)
+@OwnedBy(CDP)
 @Data
 @Builder
-public class FileDtoYamlWrapper implements YamlDTO {
+public class FileStoreRequest implements YamlDTO {
   @Valid @NotNull private FileDTO file;
 }

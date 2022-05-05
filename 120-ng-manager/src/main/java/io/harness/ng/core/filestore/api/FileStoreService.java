@@ -5,16 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.core.filestore.service;
+package io.harness.ng.core.filestore.api;
 
 import io.harness.EntityType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.beans.SearchPageParams;
-import io.harness.ng.core.dto.filestore.FileDTO;
 import io.harness.ng.core.dto.filestore.filter.FilesFilterPropertiesDTO;
 import io.harness.ng.core.dto.filestore.node.FolderNodeDTO;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
+import io.harness.ng.core.filestore.dto.FileDTO;
+import io.harness.ng.core.filestore.dto.FileFilterDTO;
 
 import java.io.File;
 import java.io.InputStream;
@@ -94,8 +95,41 @@ public interface FileStoreService {
   Page<EntitySetupUsageDTO> listReferencedBy(SearchPageParams pageParams, @NotNull String accountIdentifier,
       String orgIdentifier, String projectIdentifier, @NotNull String identifier, EntityType entityType);
 
+  /**
+   *  List Files and Folders.
+   *
+   * @param accountIdentifier the account identifier
+   * @param orgIdentifier the organization identifier
+   * @param projectIdentifier the project identifier
+   * @param fileFilterDTO filter Files based on search criteria
+   * @param pageable the page request
+   * @return the list of files and folders.
+   */
+  Page<FileDTO> listFilesAndFolders(@NotNull String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      @NotNull FileFilterDTO fileFilterDTO, Pageable pageable);
+
+  /**
+   * List NG files by pages based on filter criteria.
+   *
+   * @param accountIdentifier the account identifier
+   * @param orgIdentifier the organization identifier
+   * @param projectIdentifier the project identifier
+   * @param filterIdentifier the filter identifier
+   * @param searchTerm the search term
+   * @param filesFilterPropertiesDTO the filter properties
+   * @param pageable the page
+   * @return filtered list of NG files by pages
+   */
   Page<FileDTO> listFilesWithFilter(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String filterIdentifier, String searchTerm, FilesFilterPropertiesDTO filesFilterPropertiesDTO, Pageable pageable);
 
+  /**
+   * Get the list of created by principals.
+   *
+   * @param accountIdentifier the account identifier
+   * @param orgIdentifier the organization identifier
+   * @param projectIdentifier the project identifier
+   * @return the list of created by principals.
+   */
   Set<String> getCreatedByList(String accountIdentifier, String orgIdentifier, String projectIdentifier);
 }

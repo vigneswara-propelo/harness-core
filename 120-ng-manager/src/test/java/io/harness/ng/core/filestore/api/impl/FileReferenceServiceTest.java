@@ -5,16 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.core.filestore.utils;
+package io.harness.ng.core.filestore.api.impl;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.VLAD;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.harness.CategoryTest;
 import io.harness.EntityType;
-import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.ng.core.beans.SearchPageParams;
@@ -32,21 +33,21 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
-@OwnedBy(HarnessTeam.CDP)
+@OwnedBy(CDP)
 @RunWith(MockitoJUnitRunner.class)
-public class FileReferencedByHelperTest {
+public class FileReferenceServiceTest extends CategoryTest {
   private static final String ACCOUNT_IDENTIFIER = "accountIdentifier";
 
   @Mock private EntitySetupUsageService entitySetupUsageService;
 
-  @InjectMocks private FileReferencedByHelper fileReferencedByHelper;
+  @InjectMocks private FileReferenceServiceImpl fileReferenceService;
 
   @Test
   @Owner(developers = VLAD)
   @Category(UnitTests.class)
   public void shouldVerifyFileNotReferencedByOtherEntities() {
     NGFile file = NGFile.builder().identifier("testFile").accountIdentifier(ACCOUNT_IDENTIFIER).build();
-    boolean result = fileReferencedByHelper.isFileReferencedByOtherEntities(file);
+    boolean result = fileReferenceService.isFileReferencedByOtherEntities(file);
     assertThat(result).isFalse();
   }
 
@@ -59,7 +60,7 @@ public class FileReferencedByHelperTest {
     when(entitySetupUsageService.isEntityReferenced(
              ACCOUNT_IDENTIFIER, ACCOUNT_IDENTIFIER + "/" + identifier, EntityType.FILES))
         .thenReturn(true);
-    boolean result = fileReferencedByHelper.isFileReferencedByOtherEntities(file);
+    boolean result = fileReferenceService.isFileReferencedByOtherEntities(file);
     assertThat(result).isTrue();
   }
 
@@ -74,11 +75,10 @@ public class FileReferencedByHelperTest {
     when(entitySetupUsageService.listAllEntityUsage(searchPageParams.getPage(), searchPageParams.getSize(),
              file.getAccountIdentifier(), ACCOUNT_IDENTIFIER + "/" + identifier, EntityType.FILES, EntityType.PIPELINES,
              searchPageParams.getSearchTerm(),
-             Sort.by(Sort.Direction.ASC,
-                 io.harness.ng.core.filestore.utils.FileReferencedByHelper.REFFERED_BY_IDENTIFIER_KEY)))
+             Sort.by(Sort.Direction.ASC, FileReferenceServiceImpl.REFERRED_BY_IDENTIFIER_KEY)))
         .thenReturn(references);
     Page<EntitySetupUsageDTO> result =
-        fileReferencedByHelper.getReferencedBy(searchPageParams, file, EntityType.PIPELINES);
+        fileReferenceService.getReferencedBy(searchPageParams, file, EntityType.PIPELINES);
     assertThat(result).isEqualTo(references);
   }
 }

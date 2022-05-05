@@ -7,11 +7,17 @@
 
 package io.harness.filestore;
 
-import io.harness.annotations.dev.HarnessTeam;
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
 import io.harness.annotations.dev.OwnedBy;
 
 import lombok.experimental.UtilityClass;
 
-@OwnedBy(HarnessTeam.CDP)
 @UtilityClass
-public class FileStoreUtils {}
+@OwnedBy(CDP)
+public class FilePermissionConstants {
+  public static final String FILE_VIEW_PERMISSION = "core_file_view";
+  public static final String FILE_DELETE_PERMISSION = "core_file_delete";
+  public static final String FILE_ACCESS_PERMISSION = "core_file_access";
+  public static final String FILE_EDIT_PERMISSION = "core_file_edit";
+}

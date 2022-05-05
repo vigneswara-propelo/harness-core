@@ -5,13 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.filestore;
+package io.harness;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
 @OwnedBy(HarnessTeam.CDP)
 public final class FileStoreConstants {
+  public static final String CREATED_AT = "This is the time at which File was created.";
+  public static final String LAST_MODIFIED_AT = "This is the time at which File was last modified.";
   public static final String ROOT_FOLDER_NAME = "Root";
   public static final String ROOT_FOLDER_IDENTIFIER = "Root";
 
