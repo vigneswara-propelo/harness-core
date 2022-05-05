@@ -3292,6 +3292,28 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "ModuleSource": {
+      "type": "object",
+      "required": [
+        "useConnectorCredentials"
+      ],
+      "properties": {
+        "useConnectorCredentials": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/ParameterFieldBoolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "NGVariable": {
       "type": "object",
       "discriminator": "type",
@@ -6519,6 +6541,9 @@
         "store"
       ],
       "properties": {
+        "moduleSource": {
+          "$ref": "#/definitions/ModuleSource"
+        },
         "store": {
           "$ref": "#/definitions/StoreConfigWrapper"
         }

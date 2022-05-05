@@ -292,6 +292,7 @@ io.harness.cdng.envGroup.beans.EnvironmentGroupConfig
 io.harness.cdng.service.beans.WinRmServiceSpec
 io.harness.cdng.artifact.CustomArtifactSummary
 io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig
+io.harness.cdng.manifest.yaml.storeConfig.moduleSource.ModuleSource
 io.harness.cdng.infra.beans.ServerlessAwsLambdaInfraMapping
 io.harness.cdng.service.beans.ServerlessAwsLambdaServiceSpec
 io.harness.cdng.infra.yaml.ServerlessAwsLambdaInfrastructure
