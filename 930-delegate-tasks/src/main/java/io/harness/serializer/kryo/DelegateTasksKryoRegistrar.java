@@ -94,10 +94,14 @@ import software.wings.delegatetasks.validation.capabilities.ShellConnectionCapab
 import software.wings.delegatetasks.validation.capabilities.WinrmHostValidationCapability;
 import software.wings.helpers.ext.azure.devops.AzureArtifactsFeed;
 import software.wings.helpers.ext.azure.devops.AzureArtifactsPackageVersion;
+import software.wings.helpers.ext.external.comm.CollaborationProviderRequest;
+import software.wings.helpers.ext.external.comm.CollaborationProviderResponse;
+import software.wings.helpers.ext.external.comm.EmailRequest;
 import software.wings.helpers.ext.helm.request.HelmChartCollectionParams;
 import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
 import software.wings.helpers.ext.helm.response.HelmCollectChartResponse;
 import software.wings.helpers.ext.k8s.request.K8sClusterConfig;
+import software.wings.helpers.ext.mail.EmailData;
 import software.wings.helpers.ext.mail.SmtpConfig;
 import software.wings.helpers.ext.pcf.request.CfCommandSetupRequest;
 import software.wings.service.impl.ContainerServiceParams;
@@ -407,5 +411,10 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(KubernetesSwapServiceSelectorsParams.class, 5365);
     kryo.register(SSHHostValidationCapability.class, 7326);
     kryo.register(MasterUrlFetchTaskParameter.class, 7226);
+    kryo.register(EmailData.class, 5303);
+    kryo.register(EmailRequest.class, 5309);
+    kryo.register(CollaborationProviderRequest.CommunicationType.class, 5307);
+    kryo.register(CollaborationProviderRequest.class, 5306);
+    kryo.register(CollaborationProviderResponse.class, 5308);
   }
 }

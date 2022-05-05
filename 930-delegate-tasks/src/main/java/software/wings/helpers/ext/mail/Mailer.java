@@ -9,8 +9,6 @@ package software.wings.helpers.ext.mail;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import static software.wings.common.Constants.HARNESS_NAME;
-
 import static freemarker.template.Configuration.VERSION_2_3_23;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -45,6 +43,7 @@ import org.apache.commons.mail.SimpleEmail;
 @Slf4j
 public class Mailer {
   private final Configuration cfg = new Configuration(VERSION_2_3_23);
+  private static final String HARNESS_NAME = "Harness";
 
   @Inject private EncryptionService encryptionService;
   /**

@@ -382,9 +382,6 @@ import software.wings.helpers.ext.ecs.response.EcsDeployRollbackDataFetchRespons
 import software.wings.helpers.ext.ecs.response.EcsListenerUpdateCommandResponse;
 import software.wings.helpers.ext.ecs.response.EcsRunTaskDeployResponse;
 import software.wings.helpers.ext.ecs.response.EcsServiceSetupResponse;
-import software.wings.helpers.ext.external.comm.CollaborationProviderRequest;
-import software.wings.helpers.ext.external.comm.CollaborationProviderResponse;
-import software.wings.helpers.ext.external.comm.EmailRequest;
 import software.wings.helpers.ext.helm.HelmCommandExecutionResponse;
 import software.wings.helpers.ext.helm.request.HelmCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmInstallCommandRequest;
@@ -419,7 +416,6 @@ import software.wings.helpers.ext.k8s.response.K8sTaskResponse;
 import software.wings.helpers.ext.k8s.response.K8sTrafficSplitResponse;
 import software.wings.helpers.ext.k8s.response.PodStatus;
 import software.wings.helpers.ext.ldap.LdapResponse;
-import software.wings.helpers.ext.mail.EmailData;
 import software.wings.helpers.ext.trigger.request.TriggerDeploymentNeededRequest;
 import software.wings.helpers.ext.trigger.request.TriggerRequest;
 import software.wings.helpers.ext.trigger.response.TriggerDeploymentNeededResponse;
@@ -837,10 +833,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(EcsBGListenerUpdateRequest.class, 5605);
     kryo.register(EcsListenerUpdateRequestConfigData.class, 5610);
     kryo.register(EcsListenerUpdateCommandResponse.class, 5613);
-    kryo.register(CollaborationProviderRequest.CommunicationType.class, 5307);
-    kryo.register(CollaborationProviderRequest.class, 5306);
-    kryo.register(CollaborationProviderResponse.class, 5308);
-    kryo.register(EmailRequest.class, 5309);
     kryo.register(HelmCommandExecutionResponse.class, 5260);
     kryo.register(HelmCommandRequest.HelmCommandType.class, 5262);
     kryo.register(HelmInstallCommandRequest.class, 5259);
@@ -849,7 +841,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(HelmReleaseHistoryCommandResponse.class, 5266);
     kryo.register(LdapResponse.Status.class, 5505);
     kryo.register(LdapResponse.class, 5504);
-    kryo.register(EmailData.class, 5303);
     kryo.register(TriggerDeploymentNeededRequest.class, 5553);
     kryo.register(TriggerRequest.class, 5557);
     kryo.register(TriggerDeploymentNeededResponse.class, 5554);

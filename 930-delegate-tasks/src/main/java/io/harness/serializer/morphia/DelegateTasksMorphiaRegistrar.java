@@ -56,7 +56,9 @@ import software.wings.delegatetasks.validation.capabilities.GitConnectionCapabil
 import software.wings.delegatetasks.validation.capabilities.SSHHostValidationCapability;
 import software.wings.delegatetasks.validation.capabilities.ShellConnectionCapability;
 import software.wings.delegatetasks.validation.capabilities.WinrmHostValidationCapability;
+import software.wings.helpers.ext.external.comm.CollaborationProviderResponse;
 import software.wings.helpers.ext.helm.response.HelmCollectChartResponse;
+import software.wings.helpers.ext.mail.EmailData;
 import software.wings.helpers.ext.mail.SmtpConfig;
 import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
@@ -88,6 +90,7 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     set.add(SecretManagerConfig.class);
     set.add(SSHVaultConfig.class);
     set.add(SecretChangeLog.class);
+    set.add(EmailData.class);
   }
 
   @Override
@@ -142,6 +145,7 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("delegatetasks.validation.capabilities.WinrmHostValidationCapability", WinrmHostValidationCapability.class);
     w.put("delegatetasks.validation.capabilities.ShellConnectionCapability", ShellConnectionCapability.class);
     w.put("delegatetasks.validation.capabilities.SSHHostValidationCapability", SSHHostValidationCapability.class);
+    w.put("helpers.ext.external.comm.CollaborationProviderResponse", CollaborationProviderResponse.class);
     w.put("service.impl.stackdriver.StackDriverLogDataCollectionInfo", StackDriverLogDataCollectionInfo.class);
     w.put("service.impl.stackdriver.StackDriverDataCollectionInfo", StackDriverDataCollectionInfo.class);
   }
