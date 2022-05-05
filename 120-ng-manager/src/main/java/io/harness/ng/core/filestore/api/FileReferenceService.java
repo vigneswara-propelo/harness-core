@@ -16,12 +16,12 @@ import org.springframework.data.domain.Page;
 
 public interface FileReferenceService {
   /**
-   * Check whether the file is references by other entities
+   * Check how many other entities have reference to the file
    *
    * @param file the file
    * @return if the file is referenced by other entities
    */
-  boolean isFileReferencedByOtherEntities(NGFile file);
+  Long countEntitiesReferencingFile(NGFile file);
 
   /**
    * The list of entities where the file is referenced
@@ -32,4 +32,14 @@ public interface FileReferenceService {
    * @return the list of usage DTOs where the file is referenced by
    */
   Page<EntitySetupUsageDTO> getReferencedBy(SearchPageParams pageParams, NGFile file, EntityType entityType);
+
+  /**
+   * Validates if file is referenced by other entities
+   *
+   * @param fileOrFolder the file to check reference
+   * @param entityType the entity type
+   * @return number of other entities file is referenced by
+   * @throws InvalidArgumentsException in case file is referenced by other entities
+   */
+  Long validateIsReferencedBy(NGFile fileOrFolder);
 }

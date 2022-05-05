@@ -164,7 +164,7 @@ public class FileStoreServiceImpl implements FileStoreService {
     }
 
     NGFile file = fetchFileOrThrow(accountIdentifier, orgIdentifier, projectIdentifier, identifier);
-    validateIsReferencedBy(file);
+    fileReferenceService.validateIsReferencedBy(file);
 
     return deleteFileOrFolder(file);
   }
@@ -321,41 +321,6 @@ public class FileStoreServiceImpl implements FileStoreService {
         createCriteriaByScopeAndParentIdentifier(
             Scope.of(accountIdentifier, orgIdentifier, projectIdentifier), parentIdentifier),
         createSortByLastModifiedAtDesc());
-  }
-
-  private void validateIsReferencedBy(NGFile fileOrFolder) {
-    if (NGFileType.FOLDER.equals(fileOrFolder.getType())) {
-      if (anyFileInFolderHasReferences(fileOrFolder)) {
-        throw new InvalidArgumentsException(format(
-            "Folder [%s], or its subfolders, contain file(s) referenced by other entities and can not be deleted.",
-            fileOrFolder.getIdentifier()));
-      }
-    } else {
-      if (isFileReferencedByOtherEntities(fileOrFolder)) {
-        throw new InvalidArgumentsException(
-            format("File [%s] is referenced by other entities and can not be deleted.", fileOrFolder.getIdentifier()));
-      }
-    }
-  }
-
-  private boolean anyFileInFolderHasReferences(NGFile folder) {
-    List<NGFile> childrenFiles = listFilesByParent(folder);
-    if (isEmpty(childrenFiles)) {
-      return false;
-    }
-    return childrenFiles.stream().filter(Objects::nonNull).anyMatch(this::isReferencedByOtherEntities);
-  }
-
-  private boolean isReferencedByOtherEntities(NGFile fileOrFolder) {
-    if (NGFileType.FOLDER.equals(fileOrFolder.getType())) {
-      return anyFileInFolderHasReferences(fileOrFolder);
-    } else {
-      return isFileReferencedByOtherEntities(fileOrFolder);
-    }
-  }
-
-  private boolean isFileReferencedByOtherEntities(NGFile file) {
-    return fileReferenceService.isFileReferencedByOtherEntities(file);
   }
 
   private boolean deleteFileOrFolder(NGFile fileOrFolder) {

@@ -106,6 +106,13 @@ public class EntitySetupUsageServiceImpl implements EntitySetupUsageService {
   }
 
   @Override
+  public Long referredByEntityCount(String accountIdentifier, String referredEntityFQN, EntityType referredEntityType) {
+    Criteria criteria = entitySetupUsageFilterHelper.createCriteriaToCheckWhetherThisEntityIsReferred(
+        accountIdentifier, referredEntityFQN, referredEntityType);
+    return entityReferenceRepository.countAll(criteria);
+  }
+
+  @Override
   public EntitySetupUsageDTO save(EntitySetupUsageDTO entitySetupUsageDTO) {
     EntitySetupUsage entitySetupUsage = entitySetupUsageDTOtoEntity.toEntityReference(entitySetupUsageDTO);
     EntitySetupUsage savedEntitySetupUsage = null;

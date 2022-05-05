@@ -107,7 +107,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
 
     givenThatDatabaseIsEmpty();
 
-    when(fileReferenceService.isFileReferencedByOtherEntities(any())).thenReturn(false);
+    when(fileReferenceService.countEntitiesReferencingFile(any())).thenReturn(0l);
   }
 
   @Test
@@ -415,6 +415,41 @@ public class FileStoreServiceImplTest extends CategoryTest {
     verify(fileFailsafeService).deleteAndPublish(file);
     verify(fileFailsafeService).deleteAndPublish(parentFolder);
     verify(fileService).deleteFile(fileUuid, FileBucket.FILE_STORE);
+  }
+
+  @Test
+  @Owner(developers = VLAD)
+  @Category(UnitTests.class)
+  public void shouldNotDeleteFolderWithReferences() {
+    String fileUuid = "fileUUID";
+    NGFile file = builder().name(IDENTIFIER).fileUuid(fileUuid).build();
+    String folder1 = "folder1";
+    NGFile parentFolder = builder()
+                              .name(folder1)
+                              .identifier(folder1)
+                              .type(NGFileType.FOLDER)
+                              .accountIdentifier(ACCOUNT_IDENTIFIER)
+                              .orgIdentifier(ORG_IDENTIFIER)
+                              .projectIdentifier(PROJECT_IDENTIFIER)
+                              .build();
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
+             ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, IDENTIFIER))
+        .thenReturn(Optional.of(file));
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
+             ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, folder1))
+        .thenReturn(Optional.of(parentFolder));
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndParentIdentifier(
+             ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, folder1))
+        .thenReturn(Arrays.asList(file));
+    when(fileFailsafeService.deleteAndPublish(any())).thenReturn(true);
+    when(fileReferenceService.validateIsReferencedBy(parentFolder))
+        .thenThrow(new InvalidArgumentsException(format(
+            "Folder [%s], or its subfolders, contain file(s) referenced by %s other entities and can not be deleted.",
+            parentFolder.getIdentifier(), 1L)));
+    assertThatThrownBy(() -> fileStoreService.delete(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, folder1))
+        .isInstanceOf(InvalidArgumentsException.class)
+        .hasMessage(
+            "Folder [folder1], or its subfolders, contain file(s) referenced by 1 other entities and can not be deleted.");
   }
 
   @Test
