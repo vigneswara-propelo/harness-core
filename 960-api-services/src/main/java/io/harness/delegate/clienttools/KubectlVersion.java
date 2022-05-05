@@ -5,12 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.exception;
+package io.harness.delegate.clienttools;
 
-import io.harness.eraro.ErrorCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-public class ScmUnauthorizedException extends ScmException {
-  public ScmUnauthorizedException(String errorMessage) {
-    super(errorMessage, null, ErrorCode.SCM_UNAUTHORIZED);
-  }
+@RequiredArgsConstructor
+@Getter
+@Slf4j
+public enum KubectlVersion implements ClientToolVersion {
+  V1_13("v1.13.2"),
+  V1_19("v1.19.2");
+
+  private final String version;
 }

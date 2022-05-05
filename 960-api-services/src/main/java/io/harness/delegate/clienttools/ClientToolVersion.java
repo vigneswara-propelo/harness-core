@@ -5,12 +5,8 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.exception;
+package io.harness.delegate.clienttools;
 
-import io.harness.eraro.ErrorCode;
-
-public class ScmUnauthorizedException extends ScmException {
-  public ScmUnauthorizedException(String errorMessage) {
-    super(errorMessage, null, ErrorCode.SCM_UNAUTHORIZED);
-  }
+public interface ClientToolVersion {
+  String getVersion();
 }

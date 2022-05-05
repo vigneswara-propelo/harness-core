@@ -12,17 +12,8 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateTimeBasedUuid;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.delegate.app.DelegateApplication.getProcessId;
-import static io.harness.delegate.configuration.InstallUtils.installChartMuseum;
-import static io.harness.delegate.configuration.InstallUtils.installGoTemplateTool;
-import static io.harness.delegate.configuration.InstallUtils.installHarnessPywinrm;
-import static io.harness.delegate.configuration.InstallUtils.installHelm;
-import static io.harness.delegate.configuration.InstallUtils.installKubectl;
-import static io.harness.delegate.configuration.InstallUtils.installKustomize;
-import static io.harness.delegate.configuration.InstallUtils.installOc;
-import static io.harness.delegate.configuration.InstallUtils.installScm;
-import static io.harness.delegate.configuration.InstallUtils.installTerraformConfigInspect;
-import static io.harness.delegate.configuration.InstallUtils.setupDefaultPaths;
-import static io.harness.delegate.configuration.InstallUtils.validateCfCliExists;
+import static io.harness.delegate.clienttools.InstallUtils.areClientToolsInstalled;
+import static io.harness.delegate.clienttools.InstallUtils.setupClientTools;
 import static io.harness.delegate.message.ManagerMessageConstants.JRE_VERSION;
 import static io.harness.delegate.message.ManagerMessageConstants.MIGRATE;
 import static io.harness.delegate.message.ManagerMessageConstants.SELF_DESTRUCT;
@@ -91,7 +82,6 @@ import static lombok.AccessLevel.PACKAGE;
 import static org.apache.commons.io.filefilter.FileFilterUtils.falseFileFilter;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
@@ -330,7 +320,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private final double RESOURCE_USAGE_THRESHOLD = 0.75;
 
   private static volatile String delegateId;
-  private static volatile String delegateInstanceId = generateUuid();
+  private static final String delegateInstanceId = generateUuid();
 
   @Inject
   @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting }))
@@ -344,8 +334,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Inject @Named("inputExecutor") private ScheduledExecutorService inputExecutor;
   @Inject @Named("backgroundExecutor") private ExecutorService backgroundExecutor;
   @Inject @Named("taskPollExecutor") private ScheduledExecutorService taskPollExecutor;
-  @Inject @Named("taskExecutor") private ExecutorService taskExecutor;
-  @Inject @Named("timeoutExecutor") private ExecutorService timeoutEnforcement;
+  @Inject @Named("taskExecutor") private ThreadPoolExecutor taskExecutor;
+  @Inject @Named("timeoutExecutor") private ThreadPoolExecutor timeoutEnforcement;
   @Inject @Named("grpcServiceExecutor") private ExecutorService grpcServiceExecutor;
   @Inject @Named("taskProgressExecutor") private ExecutorService taskProgressExecutor;
 
@@ -441,16 +431,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     }
   }
 
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean kubectlInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean goTemplateInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean harnessPywinrmInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean helmInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean chartMuseumInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean tfConfigInspectInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean ocInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean kustomizeInstalled;
-  @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting })) private boolean scmInstalled;
-
   @Override
   @SuppressWarnings("unchecked")
   public void run(final boolean watched, final boolean isImmutableDelegate) {
@@ -503,34 +483,11 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       }
 
       if (!delegateConfiguration.isInstallClientToolsInBackground()) {
-        log.info("Client tools will be installed synchronously, before delegate registers");
-        if (delegateConfiguration.isClientToolsDownloadDisabled()) {
-          setupDefaultPaths(delegateConfiguration);
-          kubectlInstalled = true;
-          goTemplateInstalled = true;
-          harnessPywinrmInstalled = true;
-          helmInstalled = true;
-          chartMuseumInstalled = true;
-          tfConfigInspectInstalled = true;
-          ocInstalled = true;
-          kustomizeInstalled = true;
-          scmInstalled = true;
-        } else {
-          kubectlInstalled = installKubectl(delegateConfiguration);
-          goTemplateInstalled = installGoTemplateTool(delegateConfiguration);
-          harnessPywinrmInstalled = installHarnessPywinrm(delegateConfiguration);
-          helmInstalled = installHelm(delegateConfiguration);
-          chartMuseumInstalled = installChartMuseum(delegateConfiguration);
-          tfConfigInspectInstalled = installTerraformConfigInspect(delegateConfiguration);
-          ocInstalled = installOc(delegateConfiguration);
-          kustomizeInstalled = installKustomize(delegateConfiguration);
-          scmInstalled = installScm(delegateConfiguration);
-        }
+        log.info("Client tools will be setup synchronously, before delegate registers");
+        setupClientTools(delegateConfiguration);
       } else {
-        log.info("Client tools will be installed in the background, while delegate registers");
+        log.info("Client tools will be setup in the background, while delegate registers");
       }
-
-      logCfCliConfiguration();
 
       long start = clock.millis();
       String descriptionFromConfigFile = isBlank(delegateDescription) ? "" : delegateDescription;
@@ -664,70 +621,14 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       if (!isImmutableDelegate || !delegateNg || isNotBlank(delegateProfile)) {
         startProfileCheck();
       }
-      if (delegateConfiguration.isClientToolsDownloadDisabled()) {
-        setupDefaultPaths(delegateConfiguration);
-      }
+
       if (!isClientToolsInstallationFinished()) {
         backgroundExecutor.submit(() -> {
           int retries = CLIENT_TOOL_RETRIES;
           while (!isClientToolsInstallationFinished() && retries > 0) {
+            setupClientTools(delegateConfiguration);
             sleep(ofSeconds(15L));
-            if (!kubectlInstalled) {
-              kubectlInstalled = installKubectl(delegateConfiguration);
-            }
-            if (!goTemplateInstalled) {
-              goTemplateInstalled = installGoTemplateTool(delegateConfiguration);
-            }
-            if (!harnessPywinrmInstalled) {
-              harnessPywinrmInstalled = installHarnessPywinrm(delegateConfiguration);
-            }
-            if (!helmInstalled) {
-              helmInstalled = installHelm(delegateConfiguration);
-            }
-            if (!chartMuseumInstalled) {
-              chartMuseumInstalled = installChartMuseum(delegateConfiguration);
-            }
-            if (!tfConfigInspectInstalled) {
-              tfConfigInspectInstalled = installTerraformConfigInspect(delegateConfiguration);
-            }
-            if (!ocInstalled) {
-              ocInstalled = installOc(delegateConfiguration);
-            }
-            if (!kustomizeInstalled) {
-              kustomizeInstalled = installKustomize(delegateConfiguration);
-            }
-            if (!scmInstalled) {
-              scmInstalled = installScm(delegateConfiguration);
-            }
             retries--;
-          }
-
-          if (!kubectlInstalled) {
-            log.error("Failed to install kubectl after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!goTemplateInstalled) {
-            log.error("Failed to install go-template after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!harnessPywinrmInstalled) {
-            log.error("Failed to install harness-pywinrm after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!helmInstalled) {
-            log.error("Failed to install helm after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!chartMuseumInstalled) {
-            log.error("Failed to install chartMuseum after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!tfConfigInspectInstalled) {
-            log.error("Failed to install tf-config-inspect after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!ocInstalled) {
-            log.error("Failed to install oc after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!kustomizeInstalled) {
-            log.error("Failed to install kustomize after {} retries", CLIENT_TOOL_RETRIES);
-          }
-          if (!scmInstalled) {
-            log.error("Failed to install scm after {} retries", CLIENT_TOOL_RETRIES);
           }
         });
       }
@@ -789,10 +690,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   public boolean isClientToolsInstallationFinished() {
-    return getDelegateConfiguration().isClientToolsDownloadDisabled()
-        || (this.isKubectlInstalled() && this.isGoTemplateInstalled() && this.isHelmInstalled()
-            && this.isChartMuseumInstalled() && this.isTfConfigInspectInstalled() && this.isOcInstalled()
-            && this.isKustomizeInstalled() && this.isHarnessPywinrmInstalled() && this.isScmInstalled());
+    return getDelegateConfiguration().isClientToolsDownloadDisabled() || areClientToolsInstalled();
   }
 
   private RequestBuilder prepareRequestBuilder() {
@@ -809,7 +707,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       URI uri = uriBuilder.build();
 
       // Stream the request body
-      RequestBuilder requestBuilder = client.newRequestBuilder().method(METHOD.GET).uri(uri.toString());
+      final RequestBuilder requestBuilder = client.newRequestBuilder().method(METHOD.GET).uri(uri.toString());
 
       requestBuilder
           .encoder(new Encoder<Delegate, Reader>() { // Do not change this, wasync doesn't like lambdas
@@ -858,26 +756,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     String[] suffixes = nonProxyHostsString.split("\\|");
     List<String> nonProxyHosts = Stream.of(suffixes).map(suffix -> suffix.substring(1)).collect(toList());
     log.info("No proxy for hosts with suffix in: {}", nonProxyHosts);
-  }
-
-  private void logCfCliConfiguration() {
-    String cfCli6Path = delegateConfiguration.getCfCli6Path();
-    if (isNoneBlank(cfCli6Path)) {
-      log.info(format("Found custom CF CLI6 binary path: %s", cfCli6Path));
-      if (Files.notExists(Paths.get(cfCli6Path).normalize().toAbsolutePath())) {
-        log.warn(format("Not exists CF CLI6 binary file: %s", cfCli6Path));
-      }
-    }
-
-    String cfCli7Path = delegateConfiguration.getCfCli7Path();
-    if (isNoneBlank(cfCli7Path)) {
-      log.info(format("Found custom CF CLI7 binary path: %s", cfCli7Path));
-      if (Files.notExists(Paths.get(cfCli7Path).normalize().toAbsolutePath())) {
-        log.warn(format("Not exists CF CLI7 binary file: %s", cfCli7Path));
-      }
-    }
-
-    validateCfCliExists();
   }
 
   private void handleOpen(Object o) {
@@ -1650,7 +1528,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         || (multiVersionRestartNeeded && multiVersionWatcherStarted.compareAndSet(false, true))) {
       String watcherProcess = messageService.getData(WATCHER_DATA, WATCHER_PROCESS, String.class);
       log.warn("Watcher process {} needs restart", watcherProcess);
-      healthMonitorExecutor.submit(() -> { performWatcherUpgrade(watcherProcess, multiVersionRestartNeeded); });
+      healthMonitorExecutor.submit(() -> performWatcherUpgrade(watcherProcess, multiVersionRestartNeeded));
     }
   }
 
@@ -1882,11 +1760,10 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   @Getter(lazy = true)
-  private final Map<String, ThreadPoolExecutor> logExecutors =
+  private final ImmutableMap<String, ThreadPoolExecutor> logExecutors =
       NullSafeImmutableMap.<String, ThreadPoolExecutor>builder()
           .putIfNotNull("taskExecutor", taskExecutor)
           .putIfNotNull("timeoutEnforcement", timeoutEnforcement)
-          .putIfNotNull("taskPollExecutor", taskPollExecutor)
           .build();
 
   public Map<String, String> obtainPerformance() {
@@ -1954,7 +1831,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
     DelegateTaskExecutionData taskExecutionData = DelegateTaskExecutionData.builder().build();
     if (currentlyExecutingFutures.putIfAbsent(delegateTaskId, taskExecutionData) == null) {
-      Future taskFuture = taskExecutor.submit(() -> dispatchDelegateTask(delegateTaskEvent));
+      final Future<?> taskFuture = taskExecutor.submit(() -> dispatchDelegateTask(delegateTaskEvent));
       log.info("TaskId: {} submitted for execution", delegateTaskId);
       taskExecutionData.setTaskFuture(taskFuture);
       updateCounterIfLessThanCurrent(maxExecutingFuturesCount, currentlyExecutingFutures.size());
@@ -1993,11 +1870,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       if (currentlyValidatingTasks.containsKey(delegateTaskId)) {
         log.info("Task [DelegateTaskEvent: {}] already validating. Don't validate again", delegateTaskEvent);
         return;
-      }
-
-      int perpetualTaskCount = 0;
-      if (perpetualTaskWorker != null) {
-        perpetualTaskCount = perpetualTaskWorker.getCurrentlyExecutingPerpetualTasksCount().intValue();
       }
 
       currentlyAcquiringTasks.add(delegateTaskId);
@@ -2052,7 +1924,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     return delegateConnectionResults -> {
       try (AutoLogContext ignored = new TaskLogContext(taskId, OVERRIDE_ERROR)) {
         // Tools might be installed asynchronously, so get the flag early on
-        final boolean areAllClientToolsInstalled = isClientToolsInstallationFinished();
         currentlyValidatingTasks.remove(taskId);
         log.info("Removed from validating futures on post validation");
         List<DelegateConnectionResult> results = Optional.ofNullable(delegateConnectionResults).orElse(emptyList());
@@ -2387,7 +2258,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     long startingTime = currentlyExecutingFutures.get(taskId).getExecutionStartTime();
     boolean stillRunning = true;
     long timeout = taskData.getTimeout() + TimeUnit.SECONDS.toMillis(30L);
-    Future taskFuture = null;
+    Future<?> taskFuture = null;
     while (stillRunning && clock.millis() - startingTime < timeout) {
       log.info("Task time remaining for {}, taskype {}: {} ms", taskId, taskData.getTaskType(),
           startingTime + timeout - clock.millis());
@@ -2655,11 +2526,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       if (isEmpty(encryptionConfigs) || isEmpty(secretDetails)) {
         return;
       }
-      List<EncryptedRecord> encryptedRecordList = new ArrayList<>();
+
       Map<EncryptionConfig, List<EncryptedRecord>> encryptionConfigListMap = new HashMap<>();
       secretDetails.forEach((key, secretDetail) -> {
-        encryptedRecordList.add(secretDetail.getEncryptedRecord());
-        // encryptionConfigListMap.put(encryptionConfigs.get(secretDetail.getConfigUuid()), encryptedRecordList);
         addToEncryptedConfigListMap(encryptionConfigListMap, encryptionConfigs.get(secretDetail.getConfigUuid()),
             secretDetail.getEncryptedRecord());
       });
@@ -2717,7 +2586,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             .build();
     log.info("Sending error response for task{}", taskId);
     try {
-      Response<ResponseBody> resp = null;
+      Response<ResponseBody> resp;
       int retries = 5;
       for (int attempt = 0; attempt < retries; attempt++) {
         resp = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
@@ -2725,8 +2594,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
           log.info("Task {} response sent to manager", taskId);
           return;
         }
-        log.warn("Failed to send response for task {}: {}. {}", taskId, resp == null ? "null" : resp.code(),
-            retries > 0 ? "Retrying." : "Giving up.");
+        log.warn(
+            "Failed to send response for task {}: {}. {}", taskId, resp == null ? "null" : resp.code(), "Retrying.");
         sleep(ofSeconds(FibonacciBackOff.getFibonacciElement(attempt)));
       }
     } catch (Exception e) {
