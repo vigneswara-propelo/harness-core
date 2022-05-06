@@ -15,9 +15,12 @@ import static io.harness.NGResourceFilterConstants.PAGE_KEY;
 import static io.harness.NGResourceFilterConstants.SEARCH_TERM_KEY;
 import static io.harness.NGResourceFilterConstants.SIZE_KEY;
 
+import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.beans.PageResponse;
+import io.harness.ng.core.OrgIdentifier;
+import io.harness.ng.core.ProjectIdentifier;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.variable.dto.VariableRequestDTO;
 import io.harness.ng.core.variable.dto.VariableResponseDTO;
@@ -33,16 +36,19 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 
 @OwnedBy(HarnessTeam.PL)
 @Api("/variables")
@@ -92,5 +98,27 @@ public class VariableResource {
           "false") boolean includeVariablesFromEverySubScope) {
     return ResponseDTO.newResponse(variableService.list(accountIdentifier, orgIdentifier, projectIdentifier, page, size,
         searchTerm, includeVariablesFromEverySubScope));
+  }
+
+  @PUT
+  @ApiOperation(value = "Update a Variable", nickname = "updateVariable")
+  @Hidden
+  public ResponseDTO<VariableResponseDTO> update(@QueryParam(ACCOUNT_KEY) @NotNull String accountIdentifier,
+      @NotNull @Valid VariableRequestDTO variableRequestDTO) {
+    // TODO: access control check
+    Variable updatedVariable = variableService.update(accountIdentifier, variableRequestDTO.getVariable());
+    return ResponseDTO.newResponse(variableMapper.toResponseWrapper(updatedVariable));
+  }
+
+  @DELETE
+  @Path("{identifier}")
+  @ApiOperation(value = "Delete a Variable", nickname = "deleteVariable")
+  @Hidden
+  public ResponseDTO<Boolean> delete(@QueryParam(ACCOUNT_KEY) @NotNull String accountIdentifier,
+      @QueryParam(ORG_KEY) @OrgIdentifier String orgIdentifier,
+      @QueryParam(PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
+      @PathParam(IDENTIFIER_KEY) @NotBlank @ResourceIdentifier String variableIdentifier) {
+    boolean deleted = variableService.delete(accountIdentifier, orgIdentifier, projectIdentifier, variableIdentifier);
+    return ResponseDTO.newResponse(deleted);
   }
 }
