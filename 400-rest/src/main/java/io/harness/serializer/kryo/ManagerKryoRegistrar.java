@@ -153,7 +153,6 @@ import software.wings.api.terragrunt.TerragruntApplyMarkerParam;
 import software.wings.api.terragrunt.TerragruntExecutionData;
 import software.wings.api.terragrunt.TerragruntOutputVariables;
 import software.wings.api.terragrunt.TerragruntProvisionInheritPlanElement;
-import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.Account;
 import software.wings.beans.AccountEvent;
 import software.wings.beans.AccountEventType;
@@ -444,9 +443,6 @@ import software.wings.service.impl.analysis.DataCollectionCallback;
 import software.wings.service.impl.analysis.MLAnalysisType;
 import software.wings.service.impl.analysis.TimeSeries;
 import software.wings.service.impl.apm.APMDataCollectionInfo;
-import software.wings.service.impl.apm.APMMetricInfo;
-import software.wings.service.impl.apm.CustomAPMDataCollectionInfo;
-import software.wings.service.impl.appdynamics.AppDynamicsDataCollectionInfoV2;
 import software.wings.service.impl.aws.model.AwsAmiAllPhaseRollbackData;
 import software.wings.service.impl.aws.model.AwsAmiRequest;
 import software.wings.service.impl.aws.model.AwsAmiRequest.AwsAmiRequestType;
@@ -505,24 +501,8 @@ import software.wings.service.impl.aws.model.response.AwsLambdaDetailsResponse;
 import software.wings.service.impl.azure.manager.AzureVMSSAllPhaseRollbackData;
 import software.wings.service.impl.bugsnag.BugsnagApplication;
 import software.wings.service.impl.bugsnag.BugsnagSetupTestData;
-import software.wings.service.impl.cloudwatch.AwsNameSpace;
-import software.wings.service.impl.cloudwatch.CloudWatchDataCollectionInfo;
-import software.wings.service.impl.cloudwatch.CloudWatchMetric;
-import software.wings.service.impl.cloudwatch.CloudWatchSetupTestNodeData;
-import software.wings.service.impl.elk.ElkDataCollectionInfoV2;
 import software.wings.service.impl.email.EmailNotificationCallBack;
-import software.wings.service.impl.instana.InstanaAnalyzeMetricRequest;
-import software.wings.service.impl.instana.InstanaAnalyzeMetrics;
-import software.wings.service.impl.instana.InstanaDataCollectionInfo;
-import software.wings.service.impl.instana.InstanaInfraMetricMetadata;
-import software.wings.service.impl.instana.InstanaInfraMetricRequest;
-import software.wings.service.impl.instana.InstanaInfraMetrics;
-import software.wings.service.impl.instana.InstanaMetricItem;
-import software.wings.service.impl.instana.InstanaMetricValues;
-import software.wings.service.impl.instana.InstanaTagFilter;
-import software.wings.service.impl.instana.InstanaTimeFrame;
 import software.wings.service.impl.instance.sync.response.ContainerSyncResponse;
-import software.wings.service.impl.newrelic.NewRelicDataCollectionInfoV2;
 import software.wings.service.impl.newrelic.NewRelicMarkerExecutionData;
 import software.wings.service.impl.prometheus.PrometheusDataCollectionInfo;
 import software.wings.service.impl.prometheus.PrometheusMetricDataResponse;
@@ -530,7 +510,6 @@ import software.wings.service.impl.servicenow.ServiceNowDelegateServiceImpl;
 import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowFieldType;
 import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowMetaDTO;
 import software.wings.service.impl.servicenow.ServiceNowServiceImpl.ServiceNowTicketType;
-import software.wings.service.impl.splunk.SplunkDataCollectionInfoV2;
 import software.wings.service.impl.spotinst.SpotinstAllPhaseRollbackData;
 import software.wings.service.impl.trigger.TriggerCallback;
 import software.wings.service.impl.yaml.GitCommandCallback;
@@ -826,8 +805,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(TwoFactorAuthenticationMechanism.class, 5358);
     kryo.register(TimeSeries.class, 5312);
     kryo.register(APMDataCollectionInfo.class, 5320);
-    kryo.register(APMMetricInfo.ResponseMapper.class, 5322);
-    kryo.register(APMMetricInfo.class, 5321);
 
     kryo.register(AwsAmiRequestType.class, 5458);
     kryo.register(AwsAmiRequest.class, 5457);
@@ -866,11 +843,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AwsLambdaRequestType.class, 5447);
     kryo.register(AwsLambdaRequest.class, 5446);
     kryo.register(BugsnagApplication.class, 5491);
-    kryo.register(AwsNameSpace.class, 5319);
-    kryo.register(CloudWatchDataCollectionInfo.class, 5317);
-    kryo.register(CloudWatchMetric.class, 5318);
-    kryo.register(CloudWatchSetupTestNodeData.class, 5494);
-
     kryo.register(NewRelicMarkerExecutionData.class, 5243);
     kryo.register(PrometheusDataCollectionInfo.class, 5311);
     kryo.register(PrometheusMetricDataResponse.PrometheusMetric.class, 5489);
@@ -997,13 +969,11 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(MonitoredResource.class, 7233);
     kryo.register(LogEntrySourceLocation.class, 7234);
     kryo.register(Instant.class, 7235);
-    kryo.register(SplunkDataCollectionInfoV2.class, 7236);
     kryo.register(PcfSetupStateExecutionData.class, 7237);
     kryo.register(AssignmentTaskResponse.class, 7238);
     kryo.register(SpotInstSetupStateExecutionData.class, 7241);
     kryo.register(SpotinstDeployExecutionSummary.class, 7242);
     kryo.register(SpotinstAllPhaseRollbackData.class, 7245);
-    kryo.register(NewRelicDataCollectionInfoV2.class, 7247);
     kryo.register(Dimension.class, 7251);
     kryo.register(Datapoint.class, 7252);
     kryo.register(AwsCloudWatchStatisticsResponse.class, 7253);
@@ -1030,38 +1000,15 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(SwapRouteRollbackSweepingOutputPcf.class, 7280);
     kryo.register(DeploySweepingOutputPcf.class, 7281);
     kryo.register(InfraMappingSweepingOutput.class, 7282);
-    kryo.register(ElkDataCollectionInfoV2.class, 7283);
     kryo.register(UtmInfo.class, 7291);
 
     kryo.register(TerraformApplyMarkerParam.class, 7292);
-    kryo.register(InstanaInfraMetricMetadata.class, 7294);
-    kryo.register(InstanaInfraMetricRequest.class, 7295);
-    kryo.register(InstanaTimeFrame.class, 7296);
-    kryo.register(InstanaInfraMetrics.class, 7297);
-    kryo.register(InstanaMetricItem.class, 7299);
-    kryo.register(InstanaMetricValues.class, 7300);
-    kryo.register(InstanaDataCollectionInfo.class, 7301);
-    kryo.register(InstanaTagFilter.class, 7304);
-
-    kryo.register(CustomAPMDataCollectionInfo.class, 7305);
-    kryo.register(APMVerificationConfig.class, 7306);
-    kryo.register(APMVerificationConfig.KeyValues.class, 7307);
-
     kryo.register(HttpException.class, 7308);
     kryo.register(SumoException.class, 7309);
     kryo.register(SumoClientException.class, 7310);
 
-    kryo.register(InstanaAnalyzeMetricRequest.class, 7311);
-    kryo.register(InstanaAnalyzeMetricRequest.Group.class, 7312);
-    kryo.register(InstanaAnalyzeMetricRequest.Metric.class, 7313);
-    kryo.register(InstanaTagFilter.Operator.class, 7314);
-    kryo.register(InstanaAnalyzeMetrics.class, 7315);
-    kryo.register(InstanaAnalyzeMetrics.Item.class, 7316);
-
     kryo.register(SkipStateExecutionData.class, 7322);
-
     kryo.register(InstanceInfoVariables.class, 7331);
-    kryo.register(AppDynamicsDataCollectionInfoV2.class, 7332);
     kryo.register(ScalyrConfig.class, 7334);
 
     kryo.register(HelmCommandCapability.class, 7336);

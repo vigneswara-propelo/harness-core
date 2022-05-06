@@ -10,7 +10,6 @@ package software.wings.service.impl.instana;
 import io.harness.serializer.YamlUtils;
 
 import software.wings.metrics.TimeSeriesMetricDefinition;
-import software.wings.sm.states.InstanaState;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
@@ -49,7 +48,7 @@ public class InstanaUtils {
 
   private static Map<String, List<InstanaMetricTemplate>> getMetricTypeToTempleteMap() throws IOException {
     String yaml = IOUtils.toString(
-        InstanaState.class.getResourceAsStream(INSTANA_METRICS_YAML_PATH), StandardCharsets.UTF_8.name());
+        InstanaUtils.class.getResourceAsStream(INSTANA_METRICS_YAML_PATH), StandardCharsets.UTF_8.name());
     return new YamlUtils().read(yaml, new TypeReference<Map<String, List<InstanaMetricTemplate>>>() {});
   }
 

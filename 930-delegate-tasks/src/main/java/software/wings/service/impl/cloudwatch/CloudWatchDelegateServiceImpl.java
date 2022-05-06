@@ -10,9 +10,9 @@ package software.wings.service.impl.cloudwatch;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.govern.Switch.unhandled;
 
-import static software.wings.common.VerificationConstants.DURATION_TO_ASK_MINUTES;
 import static software.wings.delegatetasks.AbstractDelegateDataCollectionTask.PREDECTIVE_HISTORY_MINUTES;
 import static software.wings.delegatetasks.cv.CVConstants.CONTROL_HOST_NAME;
+import static software.wings.delegatetasks.cv.CVConstants.DURATION_TO_ASK_MINUTES;
 import static software.wings.delegatetasks.cv.CVConstants.TEST_HOST_NAME;
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_CURRENT;
 import static software.wings.service.impl.analysis.AnalysisComparisonStrategy.COMPARE_WITH_PREVIOUS;
@@ -26,9 +26,9 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.beans.AwsConfig;
-import software.wings.common.VerificationConstants;
 import software.wings.delegatetasks.DelegateLogService;
 import software.wings.delegatetasks.DelegateStateType;
+import software.wings.delegatetasks.cv.CVConstants;
 import software.wings.service.impl.AwsHelperService;
 import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.service.impl.ThirdPartyApiCallLog.FieldType;
@@ -271,7 +271,7 @@ public class CloudWatchDelegateServiceImpl implements CloudWatchDelegateService 
     delegateLogService.save(dataCollectionInfo.getAwsConfig().getAccountId(), apiCallLog);
     List<Datapoint> datapoints = metricStatistics.getDatapoints();
     String metricName = awsNameSpace == AwsNameSpace.EC2 ? "EC2 Metrics/" + dimensionValue : dimensionValue;
-    String hostNameForRecord = awsNameSpace == AwsNameSpace.LAMBDA ? VerificationConstants.LAMBDA_HOST_NAME : host;
+    String hostNameForRecord = awsNameSpace == AwsNameSpace.LAMBDA ? CVConstants.LAMBDA_HOST_NAME : host;
     datapoints.forEach(datapoint -> {
       NewRelicMetricDataRecord newRelicMetricDataRecord =
           NewRelicMetricDataRecord.builder()
@@ -318,13 +318,13 @@ public class CloudWatchDelegateServiceImpl implements CloudWatchDelegateService 
         case Bytes:
           switch (cloudWatchMetric.getUnit()) {
             case Kilobytes:
-              value = value / VerificationConstants.KB;
+              value = value / CVConstants.KB;
               break;
             case Megabytes:
-              value = value / VerificationConstants.MB;
+              value = value / CVConstants.MB;
               break;
             case Gigabytes:
-              value = value / VerificationConstants.GB;
+              value = value / CVConstants.GB;
               break;
             default:
               unhandled(cloudWatchMetric.getUnit());

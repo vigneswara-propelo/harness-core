@@ -9,7 +9,7 @@ package software.wings.delegatetasks.cv;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
+import static software.wings.delegatetasks.cv.CVConstants.VERIFICATION_HOST_PLACEHOLDER;
 import static software.wings.service.impl.newrelic.NewRelicMetricDataRecord.DEFAULT_GROUP_NAME;
 
 import io.harness.annotations.dev.HarnessModule;

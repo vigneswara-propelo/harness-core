@@ -7,15 +7,14 @@
 
 package software.wings.delegatetasks.cv;
 
-import static software.wings.common.VerificationConstants.DEFAULT_GROUP_NAME;
-import static software.wings.common.VerificationConstants.INSTANA_DOCKER_PLUGIN;
-import static software.wings.common.VerificationConstants.INSTANA_GROUPBY_TAG_TRACE_NAME;
-import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
+import static software.wings.delegatetasks.cv.CVConstants.DEFAULT_GROUP_NAME;
+import static software.wings.delegatetasks.cv.CVConstants.INSTANA_DOCKER_PLUGIN;
+import static software.wings.delegatetasks.cv.CVConstants.INSTANA_GROUPBY_TAG_TRACE_NAME;
+import static software.wings.delegatetasks.cv.CVConstants.VERIFICATION_HOST_PLACEHOLDER;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
 
-import software.wings.common.VerificationConstants;
 import software.wings.service.impl.analysis.MetricElement;
 import software.wings.service.impl.instana.InstanaAnalyzeMetricRequest;
 import software.wings.service.impl.instana.InstanaAnalyzeMetrics;
@@ -210,7 +209,7 @@ public class InstanaDataCollector implements MetricsDataCollector<InstanaDataCol
         dataCollectionInfo.getInstanaConfig(), dataCollectionInfo.getEncryptedDataDetails(),
         instanaAnalyzeMetricRequest, dataCollectionExecutionContext.createApiCallLog());
     List<MetricElement> metricElements = new ArrayList<>();
-    metricElements.addAll(getMetricElements(instanaAnalyzeMetrics, VerificationConstants.DUMMY_HOST_NAME));
+    metricElements.addAll(getMetricElements(instanaAnalyzeMetrics, CVConstants.DUMMY_HOST_NAME));
     return metricElements;
   }
 }

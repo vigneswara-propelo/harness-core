@@ -9,7 +9,7 @@ package software.wings.service.impl.instana;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
-import static software.wings.common.VerificationConstants.VERIFICATION_HOST_PLACEHOLDER;
+import static software.wings.delegatetasks.cv.CVConstants.VERIFICATION_HOST_PLACEHOLDER;
 
 import java.util.List;
 import java.util.Map;
