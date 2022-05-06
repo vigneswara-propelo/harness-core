@@ -32,14 +32,14 @@ import org.hibernate.validator.constraints.Range;
 @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 @AdminPortalAuth
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class AdminAccountVersionResource {
+public class AdminVersionOverrideResource {
   private final AdminDelegateVersionService adminDelegateVersionService;
 
   @PUT
   @Path("/{accountId}/delegate-tag")
   public RestResponse<Void> setDelegateTagOverride(@NotEmpty @PathParam("accountId") final String accountId,
       @NotEmpty @FormParam("delegateTag") final String delegateTag,
-      @Range @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
+      @Range(max = 90) @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
     log.info("Setting delegate image tag override for account {} to {}", accountId, delegateTag);
     adminDelegateVersionService.setDelegateImageTag(delegateTag, accountId, validForDays);
     return new RestResponse<>();
@@ -49,7 +49,7 @@ public class AdminAccountVersionResource {
   @Path("/{accountId}/upgrader-tag")
   public RestResponse<Void> setUpgraderTagOverride(@NotEmpty @PathParam("accountId") final String accountId,
       @NotEmpty @FormParam("upgraderTag") final String upgraderTag,
-      @Range @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
+      @Range(max = 90) @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
     log.info("Setting upgrader image tag override for account {} to {}", accountId, upgraderTag);
     adminDelegateVersionService.setUpgraderImageTag(upgraderTag, accountId, validForDays);
     return new RestResponse<>();
@@ -59,7 +59,7 @@ public class AdminAccountVersionResource {
   @Path("/{accountId}/delegate-version")
   public RestResponse<Void> setDelegateVersionOverride(@NotEmpty @PathParam("accountId") final String accountId,
       @NotEmpty @FormParam("delegateVersion") final String delegateVersion,
-      @Range @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
+      @Range(max = 90) @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
     log.info("Setting delegate.jar version override for account {} to {}", accountId, delegateVersion);
     adminDelegateVersionService.setDelegateVersion(delegateVersion, accountId, validForDays);
     return new RestResponse<>();
@@ -69,7 +69,7 @@ public class AdminAccountVersionResource {
   @Path("/{accountId}/watcher-version")
   public RestResponse<Void> setWatcherVersionOverride(@NotEmpty @PathParam("accountId") final String accountId,
       @NotEmpty @FormParam("watcherVersion") final String watcherVersion,
-      @Range @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
+      @Range(max = 90) @FormParam("validForDays") @DefaultValue("30") final int validForDays) {
     log.info("Setting watcher.jar version override for account {} to {}", accountId, watcherVersion);
     adminDelegateVersionService.setWatcherVersion(watcherVersion, accountId, validForDays);
     return new RestResponse<>();

@@ -7,14 +7,15 @@
 
 package io.harness.delegate.beans;
 
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
+
 import io.harness.annotation.HarnessEntity;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.persistence.PersistentEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
@@ -24,20 +25,19 @@ import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@FieldNameConstants(innerTypeName = "AccountVersionOverrideKeys")
+@FieldNameConstants(innerTypeName = "VersionOverrideKeys")
 @Data
 @Builder
-@Entity(value = "accountVersionOverride", noClassnameStored = true)
+@Entity(value = "versionOverride", noClassnameStored = true)
 @HarnessEntity(exportable = true)
-public class AccountVersionOverride implements PersistentEntity {
-  @Id @NotEmpty private final String accountId;
-  private final String delegateImageTag;
-  private final String upgraderImageTag;
-  @Builder.Default private final List<String> delegateJarVersions = new ArrayList<>();
-  @Builder.Default private final List<String> watcherJarVersions = new ArrayList<>();
+public class VersionOverride implements PersistentEntity {
+  @Id @NotNull @Builder.Default private final String uuid = generateUuid();
+  @NotEmpty private final String accountId;
+  private final String version;
+  private final VersionOverrideType overrideType;
   @FdTtlIndex @Builder.Default private final Date validUntil = DateTime.now().toDate();
 
-  public static AccountVersionOverrideBuilder builder(final String accountId) {
-    return new AccountVersionOverrideBuilder().accountId(accountId);
+  public static VersionOverrideBuilder builder(final String accountId) {
+    return new VersionOverrideBuilder().accountId(accountId);
   }
 }
