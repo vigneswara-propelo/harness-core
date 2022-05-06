@@ -9,7 +9,9 @@ package io.harness.cvng.notification.beans;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public enum NotificationRuleType {
-  @JsonProperty("MonitoredService") MONITORED_SERVICE,
-  @JsonProperty("ServiceLevelObjective") SLO;
+public enum MonitoredServiceChangeEventType {
+  // TODO: use ChangeCategory.java instead, once Alert is changed to Incident.
+  @JsonProperty("Deployment") DEPLOYMENT,
+  @JsonProperty("Infrastructure") INFRASTRUCTURE,
+  @JsonProperty("Incident") INCIDENT;
 }

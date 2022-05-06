@@ -8,20 +8,26 @@
 package io.harness.cvng.notification.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.List;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
-@JsonSubTypes({
-  @JsonSubTypes.Type(value = SLONotificationRuleCondition.class, name = "ServiceLevelObjective")
-  , @JsonSubTypes.Type(value = MonitoredServiceNotificationRuleCondition.class, name = "MonitoredService")
-})
-public abstract class NotificationRuleCondition {}
+public class MonitoredServiceChangeImpactConditionSpec extends MonitoredServiceNotificationRuleConditionSpec {
+  @NonNull List<MonitoredServiceChangeEventType> changeEventTypes;
+  @NonNull Double threshold;
+  @NonNull String period;
+
+  @Override
+  public MonitoredServiceNotificationRuleConditionType getConditionType() {
+    return MonitoredServiceNotificationRuleConditionType.CHANGE_IMPACT;
+  }
+}

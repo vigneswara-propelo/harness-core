@@ -11,6 +11,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.cvng.beans.MonitoredServiceType;
 import io.harness.cvng.core.beans.dependency.ServiceDependencyMetadata;
+import io.harness.cvng.notification.beans.NotificationRuleRefDTO;
 import io.harness.data.validator.EntityIdentifier;
 import io.harness.data.validator.NGEntityName;
 import io.harness.gitsync.beans.YamlDTO;
@@ -48,6 +49,7 @@ public class MonitoredServiceDTO implements YamlDTO {
   @ApiModelProperty(required = true) @NotNull @Size(max = 128) Map<String, String> tags;
   @Valid Sources sources;
   @Valid Set<ServiceDependencyDTO> dependencies;
+  List<NotificationRuleRefDTO> notificationRuleRefs;
 
   public List<String> getEnvironmentRefList() {
     // For migration. Remove once envRefList is populated from UI.
@@ -63,6 +65,13 @@ public class MonitoredServiceDTO implements YamlDTO {
       return environmentRefList.get(0);
     }
     return environmentRef;
+  }
+
+  public List<NotificationRuleRefDTO> getNotificationRuleRefs() {
+    if (notificationRuleRefs == null) {
+      return Collections.emptyList();
+    }
+    return notificationRuleRefs;
   }
 
   @Data

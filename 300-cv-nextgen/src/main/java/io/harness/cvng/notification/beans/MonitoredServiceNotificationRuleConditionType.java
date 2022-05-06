@@ -9,7 +9,8 @@ package io.harness.cvng.notification.beans;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public enum NotificationRuleType {
-  @JsonProperty("MonitoredService") MONITORED_SERVICE,
-  @JsonProperty("ServiceLevelObjective") SLO;
+public enum MonitoredServiceNotificationRuleConditionType {
+  @JsonProperty("ChangeImpact") CHANGE_IMPACT,
+  @JsonProperty("HealthScore") HEALTH_SCORE,
+  @JsonProperty("ChangeObserved") CHANGE_OBSERVED;
 }

@@ -244,10 +244,12 @@ import io.harness.cvng.dashboard.services.impl.TimeSeriesDashboardServiceImpl;
 import io.harness.cvng.migration.impl.CVNGMigrationServiceImpl;
 import io.harness.cvng.migration.service.CVNGMigrationService;
 import io.harness.cvng.notification.beans.NotificationRuleType;
+import io.harness.cvng.notification.entities.MonitoredServiceNotificationRule.MonitoredServiceNotificationRuleUpdatableEntity;
 import io.harness.cvng.notification.entities.NotificationRule.NotificationRuleUpdatableEntity;
 import io.harness.cvng.notification.entities.SLONotificationRule.SLONotificationRuleUpdatableEntity;
 import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.cvng.notification.services.impl.NotificationRuleServiceImpl;
+import io.harness.cvng.notification.transformer.MonitoredServiceNotificationRuleConditionTransformer;
 import io.harness.cvng.notification.transformer.NotificationRuleConditionTransformer;
 import io.harness.cvng.notification.transformer.SLONotificationRuleConditionTransformer;
 import io.harness.cvng.servicelevelobjective.beans.SLIMetricType;
@@ -777,11 +779,17 @@ public class CVServiceModule extends AbstractModule {
     notificationRuleTypeNotificationRuleConditionTransformerMapBinder.addBinding(NotificationRuleType.SLO)
         .to(SLONotificationRuleConditionTransformer.class)
         .in(Scopes.SINGLETON);
+    notificationRuleTypeNotificationRuleConditionTransformerMapBinder.addBinding(NotificationRuleType.MONITORED_SERVICE)
+        .to(MonitoredServiceNotificationRuleConditionTransformer.class)
+        .in(Scopes.SINGLETON);
 
     MapBinder<NotificationRuleType, NotificationRuleUpdatableEntity> notificationRuleMapBinder =
         MapBinder.newMapBinder(binder(), NotificationRuleType.class, NotificationRuleUpdatableEntity.class);
     notificationRuleMapBinder.addBinding(NotificationRuleType.SLO)
         .to(SLONotificationRuleUpdatableEntity.class)
+        .in(Scopes.SINGLETON);
+    notificationRuleMapBinder.addBinding(NotificationRuleType.MONITORED_SERVICE)
+        .to(MonitoredServiceNotificationRuleUpdatableEntity.class)
         .in(Scopes.SINGLETON);
     bindRetryOnExceptionInterceptor();
   }
