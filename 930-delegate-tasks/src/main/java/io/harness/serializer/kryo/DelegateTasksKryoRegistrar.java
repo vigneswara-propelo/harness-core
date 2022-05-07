@@ -113,6 +113,7 @@ import software.wings.service.impl.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.analysis.LogElement;
 import software.wings.service.impl.analysis.SetupTestNodeData;
 import software.wings.service.impl.analysis.TimeSeriesMlAnalysisType;
+import software.wings.service.impl.apm.APMDataCollectionInfo;
 import software.wings.service.impl.apm.APMMetricInfo;
 import software.wings.service.impl.apm.CustomAPMDataCollectionInfo;
 import software.wings.service.impl.appdynamics.AppDynamicsDataCollectionInfoV2;
@@ -270,6 +271,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(CloudWatchDataCollectionInfo.class, 5317);
     kryo.register(CloudWatchMetric.class, 5318);
     kryo.register(AwsNameSpace.class, 5319);
+    kryo.register(APMDataCollectionInfo.class, 5320);
     kryo.register(APMMetricInfo.class, 5321);
     kryo.register(APMMetricInfo.ResponseMapper.class, 5322);
     kryo.register(APMValidateCollectorConfig.class, 5323);

@@ -442,7 +442,6 @@ import software.wings.service.impl.WorkflowTree;
 import software.wings.service.impl.analysis.DataCollectionCallback;
 import software.wings.service.impl.analysis.MLAnalysisType;
 import software.wings.service.impl.analysis.TimeSeries;
-import software.wings.service.impl.apm.APMDataCollectionInfo;
 import software.wings.service.impl.aws.model.AwsAmiAllPhaseRollbackData;
 import software.wings.service.impl.aws.model.AwsAmiRequest;
 import software.wings.service.impl.aws.model.AwsAmiRequest.AwsAmiRequestType;
@@ -804,7 +803,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(TriggerResponse.class, 5556);
     kryo.register(TwoFactorAuthenticationMechanism.class, 5358);
     kryo.register(TimeSeries.class, 5312);
-    kryo.register(APMDataCollectionInfo.class, 5320);
 
     kryo.register(AwsAmiRequestType.class, 5458);
     kryo.register(AwsAmiRequest.class, 5457);

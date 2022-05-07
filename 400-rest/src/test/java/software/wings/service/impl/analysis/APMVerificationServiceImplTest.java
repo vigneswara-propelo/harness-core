@@ -43,6 +43,8 @@ import software.wings.APMFetchConfig;
 import software.wings.WingsBaseTest;
 import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.APMVerificationConfig;
+import software.wings.beans.ApmMetricCollectionInfo;
+import software.wings.beans.ApmResponseMapping;
 import software.wings.beans.AppDynamicsConfig;
 import software.wings.beans.AwsConfig;
 import software.wings.beans.DatadogConfig;
@@ -77,8 +79,6 @@ import software.wings.service.intfc.security.SecretManager;
 import software.wings.service.intfc.verification.CVActivityLogService;
 import software.wings.service.intfc.verification.CVActivityLogger;
 import software.wings.sm.StateType;
-import software.wings.sm.states.APMVerificationState.MetricCollectionInfo;
-import software.wings.sm.states.APMVerificationState.ResponseMapping;
 import software.wings.sm.states.CustomLogVerificationState;
 import software.wings.sm.states.CustomLogVerificationState.LogCollectionInfo;
 import software.wings.sm.states.DatadogState;
@@ -164,10 +164,10 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
 
     APMSetupTestNodeData nodeData = APMSetupTestNodeData.builder()
                                         .fetchConfig(fetchConfig)
-                                        .apmMetricCollectionInfo(MetricCollectionInfo.builder()
+                                        .apmMetricCollectionInfo(ApmMetricCollectionInfo.builder()
                                                                      .metricName("name")
                                                                      .collectionUrl("testURL")
-                                                                     .responseMapping(ResponseMapping.builder()
+                                                                     .responseMapping(ApmResponseMapping.builder()
                                                                                           .metricValueJsonPath("key1")
                                                                                           .timestampJsonPath("time")
                                                                                           .txnNameFieldValue("txnName")
@@ -323,7 +323,7 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
         APMSetupTestNodeData.builder()
             .fetchConfig(fetchConfig)
             .apmMetricCollectionInfo(
-                MetricCollectionInfo.builder().responseMapping(ResponseMapping.builder().build()).build())
+                ApmMetricCollectionInfo.builder().responseMapping(ApmResponseMapping.builder().build()).build())
             .build();
     nodeData.setGuid(generateUuid());
 
@@ -745,7 +745,7 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
     APMSetupTestNodeData nodeData =
         APMSetupTestNodeData.builder()
             .fetchConfig(fetchConfig)
-            .apmMetricCollectionInfo(MetricCollectionInfo.builder().method(Method.POST).build())
+            .apmMetricCollectionInfo(ApmMetricCollectionInfo.builder().method(Method.POST).build())
             .build();
 
     // setup
