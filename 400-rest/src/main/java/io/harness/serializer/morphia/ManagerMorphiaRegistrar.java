@@ -175,7 +175,6 @@ import software.wings.beans.BarrierInstance;
 import software.wings.beans.Base;
 import software.wings.beans.BasicOrchestrationWorkflow;
 import software.wings.beans.BlueGreenOrchestrationWorkflow;
-import software.wings.beans.BugsnagConfig;
 import software.wings.beans.BuildWorkflow;
 import software.wings.beans.CanaryOrchestrationWorkflow;
 import software.wings.beans.CanaryWorkflowExecutionAdvisor;
@@ -1127,7 +1126,6 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("beans.alert.UsageLimitExceededAlert", UsageLimitExceededAlert.class);
     w.put("beans.BasicOrchestrationWorkflow", BasicOrchestrationWorkflow.class);
     w.put("beans.BlueGreenOrchestrationWorkflow", BlueGreenOrchestrationWorkflow.class);
-    w.put("beans.BugsnagConfig", BugsnagConfig.class);
     w.put("beans.BuildWorkflow", BuildWorkflow.class);
     w.put("beans.CanaryOrchestrationWorkflow", CanaryOrchestrationWorkflow.class);
     w.put("beans.CanaryWorkflowExecutionAdvisor", CanaryWorkflowExecutionAdvisor.class);

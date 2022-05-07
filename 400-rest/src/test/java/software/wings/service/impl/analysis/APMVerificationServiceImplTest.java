@@ -50,6 +50,8 @@ import software.wings.beans.AwsConfig;
 import software.wings.beans.DatadogConfig;
 import software.wings.beans.Environment;
 import software.wings.beans.GcpConfig;
+import software.wings.beans.LogCollectionInfo;
+import software.wings.beans.LogResponseMapping;
 import software.wings.beans.NewRelicConfig;
 import software.wings.beans.PrometheusConfig;
 import software.wings.beans.SettingAttribute;
@@ -79,8 +81,6 @@ import software.wings.service.intfc.security.SecretManager;
 import software.wings.service.intfc.verification.CVActivityLogService;
 import software.wings.service.intfc.verification.CVActivityLogger;
 import software.wings.sm.StateType;
-import software.wings.sm.states.CustomLogVerificationState;
-import software.wings.sm.states.CustomLogVerificationState.LogCollectionInfo;
 import software.wings.sm.states.DatadogState;
 import software.wings.verification.appdynamics.AppDynamicsCVServiceConfiguration;
 import software.wings.verification.cloudwatch.CloudWatchCVServiceConfiguration;
@@ -708,7 +708,7 @@ public class APMVerificationServiceImplTest extends WingsBaseTest {
             .logCollectionInfo(LogCollectionInfo.builder()
                                    .collectionUrl("testURL")
                                    .method(Method.GET)
-                                   .responseMapping(CustomLogVerificationState.ResponseMapping.builder()
+                                   .responseMapping(LogResponseMapping.builder()
                                                         .hostJsonPath("host")
                                                         .logMessageJsonPath("logMessage")
                                                         .timestampJsonPath("time")

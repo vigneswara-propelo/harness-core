@@ -44,4 +44,6 @@ public class CVConstants {
   public static final long MB = KB * KB;
   public static final long GB = MB * MB;
   public static final String LAMBDA_HOST_NAME = "LAMBDA_HOST";
+  public static final String NON_HOST_PREVIOUS_ANALYSIS = "NON_HOST_PREVIOUS_ANALYSIS";
+  public static final String URL_BODY_APPENDER = "__harness-body__";
 }

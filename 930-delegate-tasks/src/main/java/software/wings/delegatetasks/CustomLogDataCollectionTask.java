@@ -12,11 +12,11 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.threading.Morpheus.sleep;
 
-import static software.wings.common.VerificationConstants.AZURE_BASE_URL;
-import static software.wings.common.VerificationConstants.AZURE_TOKEN_URL;
-import static software.wings.common.VerificationConstants.DATA_COLLECTION_RETRY_SLEEP;
-import static software.wings.common.VerificationConstants.NON_HOST_PREVIOUS_ANALYSIS;
-import static software.wings.common.VerificationConstants.URL_BODY_APPENDER;
+import static software.wings.delegatetasks.cv.CVConstants.AZURE_BASE_URL;
+import static software.wings.delegatetasks.cv.CVConstants.AZURE_TOKEN_URL;
+import static software.wings.delegatetasks.cv.CVConstants.DATA_COLLECTION_RETRY_SLEEP;
+import static software.wings.delegatetasks.cv.CVConstants.NON_HOST_PREVIOUS_ANALYSIS;
+import static software.wings.delegatetasks.cv.CVConstants.URL_BODY_APPENDER;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;

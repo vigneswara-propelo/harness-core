@@ -175,7 +175,6 @@ import software.wings.beans.AzureKubernetesInfrastructureMapping;
 import software.wings.beans.AzureVMSSInfrastructureMapping;
 import software.wings.beans.AzureWebAppInfrastructureMapping;
 import software.wings.beans.Base;
-import software.wings.beans.BugsnagConfig;
 import software.wings.beans.CanaryWorkflowExecutionAdvisor;
 import software.wings.beans.CodeDeployInfrastructureMapping;
 import software.wings.beans.ConfigFile;
@@ -498,8 +497,6 @@ import software.wings.service.impl.aws.model.response.AwsCloudWatchStatisticsRes
 import software.wings.service.impl.aws.model.response.AwsLambdaDetailsMetricsResponse;
 import software.wings.service.impl.aws.model.response.AwsLambdaDetailsResponse;
 import software.wings.service.impl.azure.manager.AzureVMSSAllPhaseRollbackData;
-import software.wings.service.impl.bugsnag.BugsnagApplication;
-import software.wings.service.impl.bugsnag.BugsnagSetupTestData;
 import software.wings.service.impl.email.EmailNotificationCallBack;
 import software.wings.service.impl.instance.sync.response.ContainerSyncResponse;
 import software.wings.service.impl.newrelic.NewRelicMarkerExecutionData;
@@ -684,7 +681,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AppContainer.class, 5064);
     kryo.register(ManifestFile.class, 5539);
     kryo.register(Base.class, 5001);
-    kryo.register(BugsnagConfig.class, 5490);
     kryo.register(CanaryWorkflowExecutionAdvisor.class, 5024);
     kryo.register(AbstractCommandUnit.class, 5030);
     kryo.register(CleanupPowerShellCommandUnit.class, 5273);
@@ -840,7 +836,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(AwsLambdaFunctionResult.class, 5452);
     kryo.register(AwsLambdaRequestType.class, 5447);
     kryo.register(AwsLambdaRequest.class, 5446);
-    kryo.register(BugsnagApplication.class, 5491);
     kryo.register(NewRelicMarkerExecutionData.class, 5243);
     kryo.register(PrometheusDataCollectionInfo.class, 5311);
     kryo.register(PrometheusMetricDataResponse.PrometheusMetric.class, 5489);
@@ -928,7 +923,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(ServiceNowMetaDTO.class, 7164);
     kryo.register(HelmValuesFetchTaskParameters.class, 7165);
     kryo.register(HelmValuesFetchTaskResponse.class, 7166);
-    kryo.register(BugsnagSetupTestData.class, 7168);
     kryo.register(ServiceNowExecutionData.class, 7170);
     kryo.register(MLAnalysisType.class, 7175);
     kryo.register(GCSHelmRepoConfig.class, 7176);

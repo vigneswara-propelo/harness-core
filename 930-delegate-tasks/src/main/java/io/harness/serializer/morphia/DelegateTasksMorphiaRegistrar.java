@@ -24,6 +24,7 @@ import software.wings.beans.AzureVaultConfig;
 import software.wings.beans.BambooConfig;
 import software.wings.beans.BaseVaultConfig;
 import software.wings.beans.BastionConnectionAttributes;
+import software.wings.beans.BugsnagConfig;
 import software.wings.beans.CyberArkConfig;
 import software.wings.beans.DockerConfig;
 import software.wings.beans.DynaTraceConfig;
@@ -164,5 +165,6 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("service.impl.instana.InstanaDataCollectionInfo", InstanaDataCollectionInfo.class);
     w.put("service.impl.elk.ElkDataCollectionInfoV2", ElkDataCollectionInfoV2.class);
     w.put("service.impl.cloudwatch.CloudWatchMetric", CloudWatchMetric.class);
+    w.put("beans.BugsnagConfig", BugsnagConfig.class);
   }
 }
