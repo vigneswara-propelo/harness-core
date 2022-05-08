@@ -218,6 +218,7 @@ import software.wings.beans.Setup;
 import software.wings.beans.Setup.SetupStatus;
 import software.wings.beans.SlackConfig;
 import software.wings.beans.SlackMessage;
+import software.wings.beans.SlackMessageJSON;
 import software.wings.beans.StringValue;
 import software.wings.beans.Tag;
 import software.wings.beans.TechStack;
@@ -976,6 +977,7 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(K8sSwapServiceElement.class, 7260);
     kryo.register(SlackMessage.class, 7261);
     kryo.register(SlackMessageSenderImpl.class, 7262);
+    kryo.register(SlackMessageJSON.class, 7263);
 
     kryo.register(PcfPluginExecutionSummary.class, 7264);
     kryo.register(PcfPluginStateExecutionData.class, 7265);
