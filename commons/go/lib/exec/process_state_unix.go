@@ -3,6 +3,8 @@
 // that can be found in the licenses directory at the root of this repository, also available at
 // https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
 
+//go:build aix || darwin || dragonfly || freebsd || (js && wasm) || linux || netbsd || openbsd || solaris
+
 package exec
 
 import (
@@ -14,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:generate mockgen -source process_state.go -destination process_state_mock.go -package exec ProcessState
+//go:generate mockgen -source process_state_unix.go -destination process_state_mock.go -package exec ProcessState
 
 var _ ProcessState = &osProcessState{}
 
@@ -27,6 +29,7 @@ type ProcessState interface {
 	Success() bool
 	SystemTime() time.Duration
 	UserTime() time.Duration
+	MaxRss() (int64, error)
 
 	// SysUnix calls Sys and attempts to convert the result into syscall.WaitStatus
 	// If not on a Unix system, always returns an error
@@ -55,6 +58,15 @@ func (o *osProcessState) SysUsageUnit() (*syscall.Rusage, error) {
 		return nil, errors.New("unable to get unix rusage")
 	}
 	return rusage, nil
+}
+
+func (o *osProcessState) MaxRss() (int64, error) {
+	rusage, err := o.SysUsageUnit()
+	if err != nil {
+		return 0, err
+	}
+
+	return rusage.Maxrss, nil
 }
 
 //ProcessStateLogFields returns interesting log fields for the given process state
@@ -119,4 +131,8 @@ func (n *nullProcessState) SysUnix() (syscall.WaitStatus, error) {
 
 func (n *nullProcessState) SysUsageUnit() (*syscall.Rusage, error) {
 	return &syscall.Rusage{}, nil
+}
+
+func (n *nullProcessState) MaxRss() (int64, error) {
+	return 0, nil
 }
