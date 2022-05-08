@@ -66,7 +66,7 @@ func TestExecuteSuccess(t *testing.T) {
 	cmd.EXPECT().Start().Return(nil)
 	cmd.EXPECT().Pid().Return(int(1))
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(nil)
 
 	o, retries, err := e.Run(ctx)
@@ -305,7 +305,7 @@ func TestExecuteNonZeroStatus(t *testing.T) {
 	cmd.EXPECT().WithEnvVarsMap(gomock.Any()).Return(cmd)
 	cmd.EXPECT().Start().Return(nil)
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(&exec.ExitError{})
 
 	o, retries, err := e.Run(ctx)
@@ -362,7 +362,7 @@ func TestExecuteSuccessWithOutput(t *testing.T) {
 	cmd.EXPECT().WithEnvVarsMap(gomock.Any()).Return(cmd)
 	cmd.EXPECT().Start().Return(nil)
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(nil)
 	fs.EXPECT().Open(gomock.Any()).Return(f1, nil)
 
@@ -414,7 +414,7 @@ func TestExecuteErrorWithOutput(t *testing.T) {
 	cmd.EXPECT().WithEnvVarsMap(gomock.Any()).Return(cmd)
 	cmd.EXPECT().Start().Return(nil)
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(nil)
 
 	fs.EXPECT().Open(gomock.Any()).Return(nil, fmt.Errorf("Error while opening file"))

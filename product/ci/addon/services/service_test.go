@@ -51,7 +51,7 @@ func TestIntegrationSvcSuccess(t *testing.T) {
 	cmd.EXPECT().Start().Return(nil)
 	// cmd.EXPECT().Pid().Return(int(1))
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(nil)
 
 	err := svc.Run()
@@ -89,7 +89,7 @@ func TestIntegrationSvcNonZeroStatus(t *testing.T) {
 	cmd.EXPECT().WithEnvVarsMap(nil).Return(cmd)
 	cmd.EXPECT().Start().Return(nil)
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(&exec.ExitError{})
 
 	err := svc.Run()

@@ -58,7 +58,7 @@ func TestPluginSuccess(t *testing.T) {
 	cmd.EXPECT().WithEnvVarsMap(gomock.Any()).Return(cmd)
 	cmd.EXPECT().Start().Return(nil)
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(nil)
 	fs.EXPECT().Stat("step1.out").Return(nil, nil)
 
@@ -103,7 +103,7 @@ func TestPluginNonZeroStatus(t *testing.T) {
 	cmd.EXPECT().WithEnvVarsMap(gomock.Any()).Return(cmd)
 	cmd.EXPECT().Start().Return(nil)
 	cmd.EXPECT().ProcessState().Return(pstate)
-	pstate.EXPECT().MaxRss().Return(100, nil)
+	pstate.EXPECT().MaxRss().Return(int64(100), nil)
 	cmd.EXPECT().Wait().Return(&exec.ExitError{})
 	fs.EXPECT().Stat("step1.out").Return(nil, nil)
 
