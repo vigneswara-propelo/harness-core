@@ -10,16 +10,15 @@ import io.harness.security.dto.UserPrincipal;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
-@EnableMongoAuditing
 @OwnedBy(HarnessTeam.CDP)
 @Slf4j
 public class SpringSecurityAuditorAware implements AuditorAware<EmbeddedUser> {
   @Override
   public Optional<EmbeddedUser> getCurrentAuditor() {
     try {
-      if (!PrincipalType.USER.equals(SecurityContextBuilder.getPrincipal().getType())) {
+      if (SecurityContextBuilder.getPrincipal() == null
+          || !PrincipalType.USER.equals(SecurityContextBuilder.getPrincipal().getType())) {
         return Optional.empty();
       }
       UserPrincipal principal = (UserPrincipal) SecurityContextBuilder.getPrincipal();
