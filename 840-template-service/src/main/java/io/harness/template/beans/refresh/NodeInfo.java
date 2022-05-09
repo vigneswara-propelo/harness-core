@@ -5,13 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.template.services;
+package io.harness.template.beans.refresh;
 
-import static io.harness.annotations.dev.HarnessTeam.CDC;
-
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-@OwnedBy(CDC)
-public interface TemplateMergeService {
-  String refreshLinkedTemplateInputs(String accountId, String orgId, String projectId, String yaml);
+@OwnedBy(HarnessTeam.CDC)
+public class NodeInfo {
+  String identifier;
+  String name;
+  String localFqn;
 }

@@ -20,8 +20,8 @@ import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 import io.harness.template.entity.TemplateEntity;
+import io.harness.template.helpers.TemplateInputsRefreshHelper;
 import io.harness.template.helpers.TemplateMergeServiceHelper;
-import io.harness.template.refresh.RefreshTemplateInputs;
 
 import com.google.common.io.Resources;
 import java.io.IOException;
@@ -34,10 +34,10 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-public class TemplateMergeServiceTest extends TemplateServiceTestBase {
+public class TemplateInputsRefreshHelperTest extends TemplateServiceTestBase {
   @Mock private NGTemplateService templateService;
 
-  @InjectMocks RefreshTemplateInputs refreshTemplateInputs;
+  @InjectMocks TemplateInputsRefreshHelper templateInputsRefreshHelper;
   @InjectMocks TemplateMergeServiceHelper templateMergeServiceHelper;
 
   private static final String ACCOUNT_ID = "accountId";
@@ -54,7 +54,7 @@ public class TemplateMergeServiceTest extends TemplateServiceTestBase {
   @Before
   public void setup() throws IllegalAccessException {
     on(templateMergeServiceHelper).set("templateService", templateService);
-    on(refreshTemplateInputs).set("templateMergeServiceHelper", templateMergeServiceHelper);
+    on(templateInputsRefreshHelper).set("templateMergeServiceHelper", templateMergeServiceHelper);
   }
 
   @Test
@@ -86,7 +86,7 @@ public class TemplateMergeServiceTest extends TemplateServiceTestBase {
     String expectedPipelineYamlFile = "pipeline-with-two-runtime-inputs.yaml";
     String expectedPipelineYaml = readFile(expectedPipelineYamlFile);
 
-    String refreshedYaml = refreshTemplateInputs.refreshTemplates(accountId, orgId, projId, pipelineYaml);
+    String refreshedYaml = templateInputsRefreshHelper.refreshTemplates(accountId, orgId, projId, pipelineYaml);
 
     YamlNode yamlNode = null, expectedYamlNode = null;
     try {
@@ -127,7 +127,7 @@ public class TemplateMergeServiceTest extends TemplateServiceTestBase {
     String expectedPipelineYamlFile = "pipeline-with-one-runtime-input.yaml";
     String expectedPipelineYaml = readFile(expectedPipelineYamlFile);
 
-    String refreshedYaml = refreshTemplateInputs.refreshTemplates(accountId, orgId, projId, pipelineYaml);
+    String refreshedYaml = templateInputsRefreshHelper.refreshTemplates(accountId, orgId, projId, pipelineYaml);
 
     YamlNode yamlNode = null, expectedYamlNode = null;
     try {
@@ -168,7 +168,7 @@ public class TemplateMergeServiceTest extends TemplateServiceTestBase {
     String expectedPipelineYamlFile = "pipeline-with-zero-runtime-inputs.yaml";
     String expectedPipelineYaml = readFile(expectedPipelineYamlFile);
 
-    String refreshedYaml = refreshTemplateInputs.refreshTemplates(accountId, orgId, projId, pipelineYaml);
+    String refreshedYaml = templateInputsRefreshHelper.refreshTemplates(accountId, orgId, projId, pipelineYaml);
 
     YamlNode yamlNode = null, expectedYamlNode = null;
     try {
@@ -209,7 +209,7 @@ public class TemplateMergeServiceTest extends TemplateServiceTestBase {
     String expectedPipelineYamlFile = "pipeline-with-two-runtime-inputs.yaml";
     String expectedPipelineYaml = readFile(expectedPipelineYamlFile);
 
-    String refreshedYaml = refreshTemplateInputs.refreshTemplates(accountId, orgId, projId, pipelineYaml);
+    String refreshedYaml = templateInputsRefreshHelper.refreshTemplates(accountId, orgId, projId, pipelineYaml);
 
     YamlNode yamlNode = null, expectedYamlNode = null;
     try {
@@ -250,7 +250,7 @@ public class TemplateMergeServiceTest extends TemplateServiceTestBase {
     String expectedPipelineYamlFile = "pipeline-with-zero-runtime-inputs.yaml";
     String expectedPipelineYaml = readFile(expectedPipelineYamlFile);
 
-    String refreshedYaml = refreshTemplateInputs.refreshTemplates(accountId, orgId, projId, pipelineYaml);
+    String refreshedYaml = templateInputsRefreshHelper.refreshTemplates(accountId, orgId, projId, pipelineYaml);
 
     YamlNode yamlNode = null, expectedYamlNode = null;
     try {
