@@ -417,7 +417,6 @@ import software.wings.collect.ArtifactCollectionCallback;
 import software.wings.collect.CollectEvent;
 import software.wings.delegatetasks.buildsource.BuildSourceCallback;
 import software.wings.delegatetasks.buildsource.BuildSourceCleanupCallback;
-import software.wings.delegatetasks.buildsource.BuildSourceExecutionResponse;
 import software.wings.delegatetasks.validation.capabilities.HelmCommandCapability;
 import software.wings.helpers.ext.cloudformation.CloudFormationCompletionFlag;
 import software.wings.helpers.ext.ecs.request.EcsBGListenerUpdateRequest;
@@ -1211,7 +1210,6 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("collect.ArtifactCollectionCallback", ArtifactCollectionCallback.class);
     w.put("delegatetasks.buildsource.BuildSourceCallback", BuildSourceCallback.class);
     w.put("delegatetasks.buildsource.BuildSourceCleanupCallback", BuildSourceCleanupCallback.class);
-    w.put("delegatetasks.buildsource.BuildSourceExecutionResponse", BuildSourceExecutionResponse.class);
     w.put("delegatetasks.validation.capabilities.HelmCommandCapability", HelmCommandCapability.class);
     w.put("helpers.ext.cloudformation.CloudFormationCompletionFlag", CloudFormationCompletionFlag.class);
     w.put("helpers.ext.ecs.request.EcsBGListenerUpdateRequest", EcsBGListenerUpdateRequest.class);

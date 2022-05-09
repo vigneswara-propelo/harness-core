@@ -53,6 +53,7 @@ import software.wings.beans.config.LogzConfig;
 import software.wings.beans.config.NexusConfig;
 import software.wings.beans.settings.azureartifacts.AzureArtifactsPATConfig;
 import software.wings.beans.yaml.GitFetchFilesFromMultipleRepoResult;
+import software.wings.delegatetasks.buildsource.BuildSourceExecutionResponse;
 import software.wings.delegatetasks.cv.beans.CustomLogResponseMapper;
 import software.wings.delegatetasks.validation.DelegateConnectionResult;
 import software.wings.delegatetasks.validation.capabilities.ClusterMasterUrlValidationCapability;
@@ -166,5 +167,6 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("service.impl.elk.ElkDataCollectionInfoV2", ElkDataCollectionInfoV2.class);
     w.put("service.impl.cloudwatch.CloudWatchMetric", CloudWatchMetric.class);
     w.put("beans.BugsnagConfig", BugsnagConfig.class);
+    w.put("delegatetasks.buildsource.BuildSourceExecutionResponse", BuildSourceExecutionResponse.class);
   }
 }
