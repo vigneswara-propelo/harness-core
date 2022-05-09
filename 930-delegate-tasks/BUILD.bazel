@@ -50,6 +50,7 @@ java_library(
         "@maven//:com_amazonaws_aws_java_sdk_ecs",
         "@maven//:com_amazonaws_aws_java_sdk_elasticloadbalancing",
         "@maven//:com_amazonaws_aws_java_sdk_elasticloadbalancingv2",
+        "@maven//:com_amazonaws_aws_java_sdk_route53",
         "@maven//:com_amazonaws_aws_java_sdk_secretsmanager",
         "@maven//:com_esotericsoftware_kryo",
         "@maven//:com_esotericsoftware_yamlbeans_yamlbeans",

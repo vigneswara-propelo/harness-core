@@ -108,7 +108,6 @@ java_library(
         "@maven//:com_amazonaws_aws_java_sdk_marketplaceentitlement",
         "@maven//:com_amazonaws_aws_java_sdk_marketplacemeteringservice",
         "@maven//:com_amazonaws_aws_java_sdk_organizations",
-        "@maven//:com_amazonaws_aws_java_sdk_route53",
         "@maven//:com_amazonaws_aws_java_sdk_s3",
         "@maven//:com_amazonaws_aws_java_sdk_secretsmanager",
         "@maven//:com_amazonaws_aws_java_sdk_servicediscovery",
