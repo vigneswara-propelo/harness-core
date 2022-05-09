@@ -10,6 +10,7 @@ package io.harness.ng.core.service.yaml;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
+import io.harness.cdng.service.beans.ServiceDefinition;
 import io.harness.data.validator.EntityIdentifier;
 import io.harness.data.validator.EntityName;
 import io.harness.validator.NGRegexValidatorConstants;
@@ -49,4 +50,5 @@ public class NGServiceV2InfoConfig {
   String projectIdentifier;
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) String description;
   Map<String, String> tags;
+  ServiceDefinition serviceDefinition;
 }
