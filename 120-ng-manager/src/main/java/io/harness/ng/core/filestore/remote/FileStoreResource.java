@@ -145,7 +145,7 @@ public class FileStoreResource {
 
     validate(file);
 
-    return ResponseDTO.newResponse(fileStoreService.create(file, content, null));
+    return ResponseDTO.newResponse(fileStoreService.create(file, content));
   }
 
   @PUT
@@ -290,8 +290,9 @@ public class FileStoreResource {
     file.setAccountIdentifier(accountIdentifier);
     file.setOrgIdentifier(orgIdentifier);
     file.setProjectIdentifier(projectIdentifier);
+    file.setDraft(true);
 
-    return ResponseDTO.newResponse(fileStoreService.create(file, null, true));
+    return ResponseDTO.newResponse(fileStoreService.create(file, null));
   }
 
   @PUT
@@ -316,6 +317,7 @@ public class FileStoreResource {
     file.setOrgIdentifier(orgIdentifier);
     file.setProjectIdentifier(projectIdentifier);
     file.setIdentifier(identifier);
+    file.setDraft(true);
 
     return ResponseDTO.newResponse(fileStoreService.update(file, null, identifier));
   }

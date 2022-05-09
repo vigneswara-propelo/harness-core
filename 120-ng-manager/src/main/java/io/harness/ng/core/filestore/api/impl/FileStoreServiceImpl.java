@@ -96,7 +96,7 @@ public class FileStoreServiceImpl implements FileStoreService {
   private final FileFailsafeService fileFailsafeService;
 
   @Override
-  public FileDTO create(@NotNull FileDTO fileDto, InputStream content, Boolean draft) {
+  public FileDTO create(@NotNull FileDTO fileDto, InputStream content) {
     log.info("Creating {}: {}", fileDto.getType().name().toLowerCase(), fileDto);
 
     if (isFileExistsByIdentifier(fileDto)) {
@@ -107,7 +107,7 @@ public class FileStoreServiceImpl implements FileStoreService {
       throw new DuplicateFieldException(getDuplicateEntityNameMessage(fileDto));
     }
 
-    NGFile ngFile = FileDTOMapper.getNGFileFromDTO(fileDto, draft);
+    NGFile ngFile = FileDTOMapper.getNGFileFromDTO(fileDto);
 
     if (shouldStoreFileContent(content, ngFile)) {
       log.info("Start creating file in file system, identifier: {}", fileDto.getIdentifier());
@@ -312,7 +312,6 @@ public class FileStoreServiceImpl implements FileStoreService {
     ngFile.setFileUuid(ngBaseFile.getFileUuid());
     ngFile.setChecksumType(ngBaseFile.getChecksumType());
     ngFile.setChecksum(ngBaseFile.getChecksum());
-    ngFile.setDraft(false);
   }
 
   // in the case when we need to return the whole folder structure, create recursion on this method

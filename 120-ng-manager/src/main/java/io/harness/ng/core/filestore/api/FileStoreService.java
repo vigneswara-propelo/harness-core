@@ -32,10 +32,9 @@ public interface FileStoreService {
    *
    * @param fileDto the file DTO object
    * @param content file content
-   * @param draft whether file is draft or not
    * @return created file DTO object
    */
-  FileDTO create(@NotNull FileDTO fileDto, InputStream content, Boolean draft);
+  FileDTO create(@NotNull FileDTO fileDto, InputStream content);
 
   /**
    * Update file.
