@@ -12,8 +12,8 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;
 
 @OwnedBy(HarnessTeam.PL)
-public class ScmResourceNotFoundException extends ScmException {
-  public ScmResourceNotFoundException(String errorMessage) {
-    super(errorMessage, ErrorCode.SCM_NOT_FOUND_ERROR);
+public class ScmUnexpectedException extends ScmException {
+  public ScmUnexpectedException(String errorMessage) {
+    super(errorMessage, ErrorCode.SCM_INTERNAL_SERVER_ERROR);
   }
 }

@@ -8,37 +8,34 @@
 package io.harness.gitsync.common.scmerrorhandling.handlers.github;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.gitsync.common.scmerrorhandling.handlers.github.ScmErrorHints.INVALID_CREDENTIALS;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.NestedExceptionUtils;
+import io.harness.exception.SCMExceptionErrorMessages;
 import io.harness.exception.ScmResourceNotFoundException;
 import io.harness.exception.ScmUnauthorizedException;
 import io.harness.exception.ScmUnexpectedException;
 import io.harness.exception.WingsException;
 import io.harness.gitsync.common.scmerrorhandling.handlers.ScmApiErrorHandler;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @OwnedBy(PL)
-public class GithubListBranchesScmApiErrorHandler implements ScmApiErrorHandler {
-  public static final String LIST_BRANCH_WITH_INVALID_CREDS =
-      "Listing branches from Github failed. " + ScmErrorExplanations.INVALID_CONNECTOR_CREDS;
-  public static final String LIST_BRANCH_WHEN_REPO_NOT_EXIST =
-      "Listing branches failed on Github as given Github repo does not exist or has been deleted.";
+public class GithubCreateBranchScmApiErrorHandler implements ScmApiErrorHandler {
+  public static final String CREATE_BRANCH_WITH_INVALID_CREDS =
+      "The requested branch could not be created on Github. " + ScmErrorExplanations.INVALID_CONNECTOR_CREDS;
 
   @Override
   public void handleError(int statusCode, String errorMessage) throws WingsException {
     switch (statusCode) {
       case 401:
       case 403:
-        throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.INVALID_CREDENTIALS,
-            LIST_BRANCH_WITH_INVALID_CREDS, new ScmUnauthorizedException(errorMessage));
+        throw NestedExceptionUtils.hintWithExplanationException(
+            INVALID_CREDENTIALS, CREATE_BRANCH_WITH_INVALID_CREDS, new ScmUnauthorizedException(errorMessage));
       case 404:
-        throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.REPO_NOT_FOUND,
-            LIST_BRANCH_WHEN_REPO_NOT_EXIST, new ScmResourceNotFoundException(errorMessage));
+        throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.FILE_NOT_FOUND,
+            ScmErrorExplanations.FILE_NOT_FOUND,
+            new ScmResourceNotFoundException(SCMExceptionErrorMessages.FILE_NOT_FOUND_ERROR));
       default:
-        log.error(String.format("Error while listing github branches: [%s: %s]", statusCode, errorMessage));
         throw new ScmUnexpectedException(errorMessage);
     }
   }

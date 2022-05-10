@@ -12,25 +12,29 @@ import static io.harness.eraro.ErrorCode.UNEXPECTED;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.NestedExceptionUtils;
+import io.harness.exception.SCMExceptionErrorMessages;
+import io.harness.exception.SCMExceptionExplanations;
+import io.harness.exception.SCMExceptionHints;
 import io.harness.exception.ScmException;
+import io.harness.exception.ScmResourceNotFoundException;
 import io.harness.exception.ScmUnauthorizedException;
 import io.harness.exception.WingsException;
 import io.harness.gitsync.common.scmerrorhandling.handlers.ScmApiErrorHandler;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @OwnedBy(PL)
-public class BitbucketListRepoScmApiErrorHandler implements ScmApiErrorHandler {
+public class BitbucketGetFileScmApiErrorHandler implements ScmApiErrorHandler {
   @Override
   public void handleError(int statusCode, String errorMessage) throws WingsException {
     switch (statusCode) {
       case 401:
       case 403:
-        throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.INVALID_CREDENTIALS,
-            ScmErrorExplanations.LIST_REPO_WITH_INVALID_CRED, new ScmUnauthorizedException(errorMessage));
+        throw NestedExceptionUtils.hintWithExplanationException(SCMExceptionHints.BITBUCKET_INVALID_CREDENTIALS,
+            SCMExceptionExplanations.GET_FILE_WITH_INVALID_CREDS, new ScmUnauthorizedException(errorMessage));
+      case 404:
+        throw NestedExceptionUtils.hintWithExplanationException(SCMExceptionHints.FILE_NOT_FOUND,
+            SCMExceptionExplanations.FILE_NOT_FOUND,
+            new ScmResourceNotFoundException(SCMExceptionErrorMessages.FILE_NOT_FOUND_ERROR));
       default:
-        log.error(String.format("Error while listing bitbucket repos: [%s: %s]", statusCode, errorMessage));
         throw new ScmException(UNEXPECTED);
     }
   }
