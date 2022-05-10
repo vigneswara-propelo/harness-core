@@ -85,6 +85,7 @@ import software.wings.beans.trigger.TriggerCommand.TriggerCommandType;
 import software.wings.beans.trigger.WebHookTriggerResponseData;
 import software.wings.beans.trigger.WebhookTriggerParameters;
 import software.wings.beans.yaml.GitFetchFilesFromMultipleRepoResult;
+import software.wings.delegatetasks.BambooTask;
 import software.wings.delegatetasks.DelegateStateType;
 import software.wings.delegatetasks.buildsource.BuildCollectParameters;
 import software.wings.delegatetasks.buildsource.BuildSourceExecutionResponse;
@@ -316,6 +317,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(APMMetricInfo.ResponseMapper.class, 5322);
     kryo.register(APMValidateCollectorConfig.class, 5323);
     kryo.register(TimeSeriesMlAnalysisType.class, 5347);
+    kryo.register(BambooTask.BambooExecutionResponse.class, 5374);
     kryo.register(HttpStateExecutionResponse.class, 5375);
     kryo.register(ElkLogFetchRequest.class, 5376);
     kryo.register(AwsRequest.class, 5380);

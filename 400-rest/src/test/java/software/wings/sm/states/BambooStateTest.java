@@ -44,6 +44,7 @@ import software.wings.api.BambooExecutionData;
 import software.wings.api.JenkinsExecutionData;
 import software.wings.beans.Activity;
 import software.wings.beans.BambooConfig;
+import software.wings.delegatetasks.BambooTask.BambooExecutionResponse;
 import software.wings.service.impl.SettingServiceHelper;
 import software.wings.service.intfc.ActivityService;
 import software.wings.service.intfc.DelegateService;
@@ -126,7 +127,7 @@ public class BambooStateTest extends CategoryTest {
     when(executionContext.getStateExecutionData()).thenReturn(BambooExecutionData.builder().build());
     bambooState.handleAsyncResponse(executionContext,
         ImmutableMap.of(ACTIVITY_ID,
-            BambooState.BambooExecutionResponse.builder()
+            BambooExecutionResponse.builder()
                 .errorMessage("Err")
                 .executionStatus(ExecutionStatus.FAILED)
                 .buildStatus("SUCCESS")
