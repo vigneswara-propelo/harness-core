@@ -5,17 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.cdng.environment.helper;
+package io.harness.cdng.envgroup.helper;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.environment.yaml.EnvironmentYamlV2;
+import io.harness.cdng.envgroup.yaml.EnvironmentGroupYaml;
 import io.harness.walktree.visitor.validation.ConfigValidator;
 import io.harness.walktree.visitor.validation.ValidationVisitor;
 
 @OwnedBy(CDC)
-public class EnvironmentYamlV2VisitorHelper implements ConfigValidator {
+public class EnvironmentGroupYamlVisitorHelper implements ConfigValidator {
   @Override
   public void validate(Object object, ValidationVisitor visitor) {
     // Nothing to validate.
@@ -23,6 +23,6 @@ public class EnvironmentYamlV2VisitorHelper implements ConfigValidator {
 
   @Override
   public Object createDummyVisitableElement(Object originalElement) {
-    return EnvironmentYamlV2.builder().build();
+    return EnvironmentGroupYaml.builder().build();
   }
 }
