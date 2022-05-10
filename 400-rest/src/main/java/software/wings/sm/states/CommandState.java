@@ -128,6 +128,7 @@ import software.wings.sm.State;
 import software.wings.sm.StateExecutionContext;
 import software.wings.sm.StateExecutionContext.StateExecutionContextBuilder;
 import software.wings.sm.WorkflowStandardParams;
+import software.wings.sm.WorkflowStandardParamsExtensionService;
 import software.wings.stencils.Expand;
 import software.wings.utils.MappingUtils;
 
@@ -185,6 +186,7 @@ public class CommandState extends State {
   @Inject @Transient private transient ServiceTemplateHelper serviceTemplateHelper;
   @Inject @Transient private transient TemplateExpressionProcessor templateExpressionProcessor;
   @Inject @Transient private transient SSHVaultService sshVaultService;
+  @Inject @Transient private transient WorkflowStandardParamsExtensionService workflowStandardParamsExtensionService;
 
   @Attributes(title = "Command") @Expand(dataProvider = CommandStateEnumDataProvider.class) private String commandName;
 
@@ -1116,7 +1118,7 @@ public class CommandState extends State {
     if (isRollback()) {
       if (context.getContextElement(ContextElementType.INSTANCE) == null) {
         WorkflowStandardParams contextElement = context.getContextElement(ContextElementType.STANDARD);
-        return contextElement.getRollbackArtifactForService(serviceId);
+        return workflowStandardParamsExtensionService.getRollbackArtifactForService(contextElement, serviceId);
       }
       Artifact previousArtifact = serviceResourceService.findPreviousArtifact(
           context.getAppId(), context.getWorkflowExecutionId(), context.getContextElement(ContextElementType.INSTANCE));

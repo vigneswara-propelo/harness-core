@@ -25,6 +25,7 @@ import io.harness.perpetualtask.internal.AssignmentTaskResponse;
 import io.harness.serializer.KryoRegistrar;
 
 import software.wings.api.DeploymentType;
+import software.wings.api.WorkflowElement;
 import software.wings.beans.APMValidateCollectorConfig;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.AppDynamicsConfig;
@@ -264,6 +265,7 @@ import software.wings.settings.validation.SlackConnectivityValidationAttributes;
 import software.wings.settings.validation.SmtpConnectivityValidationAttributes;
 import software.wings.settings.validation.SshConnectionConnectivityValidationAttributes;
 import software.wings.settings.validation.WinRmConnectivityValidationAttributes;
+import software.wings.sm.WorkflowStandardParams;
 import software.wings.utils.ArtifactType;
 import software.wings.verification.stackdriver.StackDriverMetricDefinition;
 
@@ -284,6 +286,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(HostConnectionAttributes.ConnectionType.class, 5071);
     kryo.register(BastionConnectionAttributes.class, 5073);
     kryo.register(AppDynamicsConfig.class, 5074);
+    kryo.register(WorkflowElement.class, 5086);
     kryo.register(ArtifactType.class, 5117);
     kryo.register(EncryptedData.class, 5124);
     kryo.register(AppdynamicsDataCollectionInfo.class, 5168);
@@ -299,6 +302,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(DataCollectionTaskResult.class, 5184);
     kryo.register(DataCollectionTaskResult.DataCollectionTaskStatus.class, 5185);
     kryo.register(ShellScriptParameters.class, 5186);
+    kryo.register(WorkflowStandardParams.class, 5227);
     kryo.register(DynaTraceConfig.class, 5237);
     kryo.register(DynaTraceDataCollectionInfo.class, 5238);
     kryo.register(DynaTraceTimeSeries.class, 5239);

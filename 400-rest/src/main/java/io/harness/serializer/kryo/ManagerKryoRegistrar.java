@@ -86,7 +86,6 @@ import software.wings.api.ScriptStateExecutionData;
 import software.wings.api.ScriptStateExecutionSummary;
 import software.wings.api.SelectNodeStepExecutionSummary;
 import software.wings.api.SelectedNodeExecutionData;
-import software.wings.api.ServiceElement;
 import software.wings.api.ServiceInstanceArtifactParam;
 import software.wings.api.ServiceInstanceIdsParam;
 import software.wings.api.ServiceNowExecutionData;
@@ -104,7 +103,6 @@ import software.wings.api.TerraformExecutionData;
 import software.wings.api.TerraformOutputInfoElement;
 import software.wings.api.WaitStateExecutionData;
 import software.wings.api.WingsTimestamp;
-import software.wings.api.WorkflowElement;
 import software.wings.api.arm.ARMOutputVariables;
 import software.wings.api.arm.ARMPreExistingTemplate;
 import software.wings.api.artifact.ServiceArtifactElement;
@@ -161,8 +159,6 @@ import software.wings.beans.Activity.Type;
 import software.wings.beans.ApiKeyEntry;
 import software.wings.beans.AppContainer;
 import software.wings.beans.ApprovalDetails.Action;
-import software.wings.beans.ArtifactStreamMetadata;
-import software.wings.beans.ArtifactVariable;
 import software.wings.beans.AuthToken;
 import software.wings.beans.AwsAmiInfrastructureMapping;
 import software.wings.beans.AwsElbConfig;
@@ -227,7 +223,6 @@ import software.wings.beans.User;
 import software.wings.beans.UserGroupEntityReference;
 import software.wings.beans.UserInvite;
 import software.wings.beans.UserInviteSource;
-import software.wings.beans.Variable;
 import software.wings.beans.appmanifest.ApplicationManifest;
 import software.wings.beans.appmanifest.ApplicationManifest.ManifestCollectionStatus;
 import software.wings.beans.appmanifest.ManifestFile;
@@ -497,7 +492,6 @@ import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.StateMachineResumeCallback;
 import software.wings.sm.StateType;
 import software.wings.sm.StepExecutionSummary;
-import software.wings.sm.WorkflowStandardParams;
 import software.wings.sm.states.ApprovalState;
 import software.wings.sm.states.ApprovalState.ApprovalStateType;
 import software.wings.sm.states.CVNGState.CVNGStateExecutionData;
@@ -630,7 +624,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(SelectedNodeExecutionData.class, 5110);
     kryo.register(SelectNodeStepExecutionSummary.class, 5111);
     kryo.register(ServiceArtifactElement.class, 5231);
-    kryo.register(ServiceElement.class, 5083);
     kryo.register(ServiceInstanceArtifactParam.class, 5112);
     kryo.register(ServiceInstanceIdsParam.class, 5113);
     kryo.register(ServiceTemplateElement.class, 5084);
@@ -640,7 +633,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(TerraformOutputInfoElement.class, 5523);
     kryo.register(WaitStateExecutionData.class, 5116);
     kryo.register(WingsTimestamp.class, 5085);
-    kryo.register(WorkflowElement.class, 5086);
 
     kryo.register(Account.class, 5356);
     kryo.register(AppContainer.class, 5064);
@@ -736,7 +728,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(UserInvite.class, 5182);
     kryo.register(UserInviteSource.SourceType.class, 5507);
     kryo.register(UserInviteSource.class, 5506);
-    kryo.register(Variable.class, 5378);
     kryo.register(ChangeContext.class, 5199);
     kryo.register(GitPullResult.class, 5209);
     kryo.register(YamlType.class, 5211);
@@ -801,7 +792,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(RepeatStateExecutionData.class, 4003);
     kryo.register(StateType.class, 4001);
     kryo.register(StepExecutionSummary.class, 5145);
-    kryo.register(WorkflowStandardParams.class, 5227);
     kryo.register(ContainerFamily.class, 5118);
     kryo.register(VerificationStateAnalysisExecutionData.class, 5552);
     kryo.register(EcsBGRoute53ServiceSetupRequest.class, 7101);
@@ -864,7 +854,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(Tag.class, 7185);
     kryo.register(K8sApplyTaskParameters.class, 7186);
     kryo.register(K8sApplyResponse.class, 7187);
-    kryo.register(ArtifactVariable.class, 7195);
     kryo.register(UserLockoutInfo.class, 7196);
     kryo.register(ManifestCollectionExecutionResponse.class, 71104);
     kryo.register(ManifestCollectionResponse.class, 71105);
@@ -1042,7 +1031,6 @@ public class ManagerKryoRegistrar implements KryoRegistrar {
     kryo.register(TerragruntExecutionData.class, 8507);
     kryo.register(TerragruntOutputVariables.class, 8508);
     kryo.register(ApiException.class, 8125);
-    kryo.register(ArtifactStreamMetadata.class, 8126);
     kryo.register(CommandParameters.class, 8509);
 
     kryo.register(StateMachineResumeCallback.class, 40001);

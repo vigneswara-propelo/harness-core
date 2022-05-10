@@ -51,6 +51,7 @@ import software.wings.sm.ExecutionContextImpl;
 import software.wings.sm.ExecutionResponse;
 import software.wings.sm.State;
 import software.wings.sm.WorkflowStandardParams;
+import software.wings.sm.WorkflowStandardParamsExtensionService;
 import software.wings.stencils.DefaultValue;
 
 import com.github.reinert.jjschema.Attributes;
@@ -87,6 +88,7 @@ public class BambooState extends State {
   @Inject @Transient private InfrastructureMappingService infrastructureMappingService;
   @Inject private SecretManager secretManager;
   @Inject private SettingServiceHelper settingServiceHelper;
+  @Inject private WorkflowStandardParamsExtensionService workflowStandardParamsExtensionService;
 
   public BambooState(String name) {
     super(name, BAMBOO.name());
@@ -153,9 +155,10 @@ public class BambooState extends State {
 
   protected ExecutionResponse executeInternal(ExecutionContext context, String activityId) {
     WorkflowStandardParams workflowStandardParams = context.getContextElement(ContextElementType.STANDARD);
-    String envId = (workflowStandardParams == null || workflowStandardParams.getEnv() == null)
+    String envId = (workflowStandardParams == null
+                       || workflowStandardParamsExtensionService.getEnv(workflowStandardParams) == null)
         ? null
-        : workflowStandardParams.getEnv().getUuid();
+        : workflowStandardParamsExtensionService.getEnv(workflowStandardParams).getUuid();
     notNullCheck("Application cannot be null", context.getApp());
     String accountId = ((ExecutionContextImpl) context).getApp().getAccountId();
 

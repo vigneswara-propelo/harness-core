@@ -81,6 +81,7 @@ import software.wings.service.impl.splunk.SplunkDataCollectionInfoV2;
 import software.wings.service.impl.stackdriver.StackDriverDataCollectionInfo;
 import software.wings.service.impl.stackdriver.StackDriverLogDataCollectionInfo;
 import software.wings.service.impl.sumo.SumoDataCollectionInfo;
+import software.wings.sm.WorkflowStandardParams;
 
 import java.util.Set;
 
@@ -169,6 +170,7 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("service.impl.instana.InstanaDataCollectionInfo", InstanaDataCollectionInfo.class);
     w.put("service.impl.elk.ElkDataCollectionInfoV2", ElkDataCollectionInfoV2.class);
     w.put("service.impl.cloudwatch.CloudWatchMetric", CloudWatchMetric.class);
+    w.put("sm.WorkflowStandardParams", WorkflowStandardParams.class);
     w.put("beans.BugsnagConfig", BugsnagConfig.class);
     w.put("delegatetasks.buildsource.BuildSourceExecutionResponse", BuildSourceExecutionResponse.class);
     w.put("service.impl.aws.model.AwsAmiServiceDeployResponse", AwsAmiServiceDeployResponse.class);
