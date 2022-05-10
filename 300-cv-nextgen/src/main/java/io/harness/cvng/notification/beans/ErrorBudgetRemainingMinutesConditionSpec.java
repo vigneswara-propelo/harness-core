@@ -8,25 +8,23 @@
 package io.harness.cvng.notification.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
+@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
-public class NotificationRuleCondition {
-  @JsonProperty("type") NotificationRuleConditionType type;
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ErrorBudgetRemainingMinutesConditionSpec extends NotificationRuleConditionSpec {
+  @NonNull Double threshold;
 
-  @JsonTypeInfo(
-      use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type", visible = true)
-  @Valid
-  @NotNull
-  NotificationRuleConditionSpec spec;
+  @Override
+  public NotificationRuleConditionType getType() {
+    return NotificationRuleConditionType.ERROR_BUDGET_REMAINING_MINUTES;
+  }
 }

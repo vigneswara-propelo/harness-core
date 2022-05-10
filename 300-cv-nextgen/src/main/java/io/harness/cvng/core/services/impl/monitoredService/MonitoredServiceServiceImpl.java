@@ -309,7 +309,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                       .projectIdentifier(monitoredService.getProjectIdentifier())
                                       .build();
     updateOperations.set(MonitoredServiceKeys.notificationRuleRefs,
-        notificationRuleService.update(projectParams, monitoredServiceDTO.getNotificationRuleRefs()));
+        notificationRuleService.getNotificationRuleRefs(monitoredServiceDTO.getNotificationRuleRefs()));
     validateDependencyMetadata(projectParams, monitoredServiceDTO.getDependencies());
     serviceDependencyService.updateDependencies(
         projectParams, monitoredService.getIdentifier(), monitoredServiceDTO.getDependencies());
@@ -452,11 +452,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                     .projectIdentifier(projectParams.getProjectIdentifier())
                     .build(),
                 monitoredServiceEntity.getIdentifier()))
-            .notificationRuleRefs(notificationRuleService.getNotificationRuleRefs(projectParams,
-                monitoredServiceEntity.getNotificationRuleRefs()
-                    .stream()
-                    .map(ref -> ref.getNotificationRuleRef())
-                    .collect(Collectors.toList())))
+            .notificationRuleRefs(
+                notificationRuleService.getNotificationRuleRefDTOs(monitoredServiceEntity.getNotificationRuleRefs()))
             .build();
     return MonitoredServiceResponse.builder()
         .monitoredService(monitoredServiceDTO)
@@ -738,7 +735,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .enabled(getMonitoredServiceEnableStatus())
             .tags(TagMapper.convertToList(monitoredServiceDTO.getTags()))
             .notificationRuleRefs(
-                notificationRuleService.update(projectParams, monitoredServiceDTO.getNotificationRuleRefs()))
+                notificationRuleService.getNotificationRuleRefs(monitoredServiceDTO.getNotificationRuleRefs()))
             .build();
     if (monitoredServiceDTO.getSources() != null) {
       monitoredServiceEntity.setHealthSourceIdentifiers(monitoredServiceDTO.getSources()

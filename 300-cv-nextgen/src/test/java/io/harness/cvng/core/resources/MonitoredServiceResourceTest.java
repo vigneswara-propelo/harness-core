@@ -35,7 +35,7 @@ import io.harness.cvng.core.services.api.MetricPackService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.notification.beans.NotificationRuleDTO;
-import io.harness.cvng.notification.beans.NotificationRuleRefDTO;
+import io.harness.cvng.notification.beans.NotificationRuleResponse;
 import io.harness.cvng.notification.beans.NotificationRuleType;
 import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.rest.RestResponse;
@@ -407,8 +407,8 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
   public void testCreate_withNotificationRules() throws IOException {
     NotificationRuleDTO notificationRuleDTO =
         builderFactory.getNotificationRuleDTOBuilder(NotificationRuleType.MONITORED_SERVICE).build();
-    List<NotificationRuleRefDTO> notificationRuleRefs = notificationRuleService.create(
-        builderFactory.getContext().getProjectParams(), Arrays.asList(notificationRuleDTO));
+    NotificationRuleResponse notificationRuleResponse =
+        notificationRuleService.create(builderFactory.getContext().getProjectParams(), notificationRuleDTO);
 
     String monitoredServiceYaml = getResource("monitoredservice/monitored-service-with-notification-rule.yaml");
     monitoredServiceYaml =
@@ -416,9 +416,8 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
     monitoredServiceYaml =
         monitoredServiceYaml.replace("$projectIdentifier", builderFactory.getContext().getProjectIdentifier());
     monitoredServiceYaml =
-        monitoredServiceYaml.replace("$identifier", notificationRuleRefs.get(0).getNotificationRuleRef());
-    monitoredServiceYaml =
-        monitoredServiceYaml.replace("$enabled", String.valueOf(notificationRuleRefs.get(0).isEnabled()));
+        monitoredServiceYaml.replace("$identifier", notificationRuleResponse.getNotificationRule().getIdentifier());
+    monitoredServiceYaml = monitoredServiceYaml.replace("$enabled", "false");
     Response response = RESOURCES.client()
                             .target("http://localhost:9998/monitored-service/")
                             .queryParam("accountId", builderFactory.getContext().getAccountId())
@@ -435,17 +434,16 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
   public void testUpdateMonitoredServiceData_withNotificationRules() throws IOException {
     NotificationRuleDTO notificationRuleDTO =
         builderFactory.getNotificationRuleDTOBuilder(NotificationRuleType.MONITORED_SERVICE).build();
-    List<NotificationRuleRefDTO> notificationRuleRefs = notificationRuleService.create(
-        builderFactory.getContext().getProjectParams(), Arrays.asList(notificationRuleDTO));
+    NotificationRuleResponse notificationRuleResponse =
+        notificationRuleService.create(builderFactory.getContext().getProjectParams(), notificationRuleDTO);
     String monitoredServiceYaml = getResource("monitoredservice/monitored-service-with-notification-rule.yaml");
     monitoredServiceYaml =
         monitoredServiceYaml.replace("$orgIdentifier", builderFactory.getContext().getOrgIdentifier());
     monitoredServiceYaml =
         monitoredServiceYaml.replace("$projectIdentifier", builderFactory.getContext().getProjectIdentifier());
     monitoredServiceYaml =
-        monitoredServiceYaml.replace("$identifier", notificationRuleRefs.get(0).getNotificationRuleRef());
-    monitoredServiceYaml =
-        monitoredServiceYaml.replace("$enabled", String.valueOf(notificationRuleRefs.get(0).isEnabled()));
+        monitoredServiceYaml.replace("$identifier", notificationRuleResponse.getNotificationRule().getIdentifier());
+    monitoredServiceYaml = monitoredServiceYaml.replace("$enabled", "false");
 
     Response response = RESOURCES.client()
                             .target("http://localhost:9998/monitored-service/")
@@ -462,9 +460,8 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
     monitoredServiceYaml =
         monitoredServiceYaml.replace("$projectIdentifier", builderFactory.getContext().getProjectIdentifier());
     monitoredServiceYaml =
-        monitoredServiceYaml.replace("$identifier", notificationRuleRefs.get(0).getNotificationRuleRef());
-    monitoredServiceYaml =
-        monitoredServiceYaml.replace("$enabled", String.valueOf(!notificationRuleRefs.get(0).isEnabled()));
+        monitoredServiceYaml.replace("$identifier", notificationRuleResponse.getNotificationRule().getIdentifier());
+    monitoredServiceYaml = monitoredServiceYaml.replace("$enabled", "true");
 
     response = RESOURCES.client()
                    .target("http://localhost:9998/monitored-service/"
