@@ -188,8 +188,20 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   @Override
-  @SneakyThrows
   public MonitoredServiceResponse createFromYaml(ProjectParams projectParams, String yaml) {
+    MonitoredServiceDTO monitoredServiceDTO = getExpandedMonitoredServiceYaml(projectParams, yaml);
+    return create(projectParams.getAccountIdentifier(), monitoredServiceDTO);
+  }
+
+  @Override
+  public MonitoredServiceResponse updateFromYaml(ProjectParams projectParams, String identifier, String yaml) {
+    MonitoredServiceDTO monitoredServiceDTO = getExpandedMonitoredServiceYaml(projectParams, yaml);
+    monitoredServiceDTO.setIdentifier(identifier);
+    return update(projectParams.getAccountIdentifier(), monitoredServiceDTO);
+  }
+
+  @SneakyThrows
+  private MonitoredServiceDTO getExpandedMonitoredServiceYaml(ProjectParams projectParams, String yaml) {
     String templateResolvedYaml = templateFacade.resolveYaml(projectParams, yaml);
     MonitoredServiceYamlExpressionEvaluator yamlExpressionEvaluator =
         new MonitoredServiceYamlExpressionEvaluator(templateResolvedYaml);
@@ -198,7 +210,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     monitoredServiceDTO = (MonitoredServiceDTO) yamlExpressionEvaluator.resolve(monitoredServiceDTO, false);
     monitoredServiceDTO.setProjectIdentifier(projectParams.getProjectIdentifier());
     monitoredServiceDTO.setOrgIdentifier(projectParams.getOrgIdentifier());
-    return create(projectParams.getAccountIdentifier(), monitoredServiceDTO);
+    return monitoredServiceDTO;
   }
 
   private void validateDependencyMetadata(ProjectParams projectParams, Set<ServiceDependencyDTO> dependencyDTOs) {

@@ -34,6 +34,7 @@ import io.harness.cvng.core.services.api.CVNGLogService;
 import io.harness.cvng.core.services.api.MetricPackService;
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
+import io.harness.cvng.core.utils.template.TemplateFacade;
 import io.harness.cvng.notification.beans.NotificationRuleDTO;
 import io.harness.cvng.notification.beans.NotificationRuleResponse;
 import io.harness.cvng.notification.beans.NotificationRuleType;
@@ -62,6 +63,7 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 import org.yaml.snakeyaml.Yaml;
 
 public class MonitoredServiceResourceTest extends CvNextGenTestBase {
@@ -74,6 +76,8 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private CVConfigService cvConfigService;
   @Inject NotificationRuleService notificationRuleService;
+  @Inject TemplateFacade templateFacade;
+
   private MonitoredServiceDTO monitoredServiceDTO;
 
   @ClassRule
@@ -87,6 +91,94 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
         builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier());
     monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder().build();
     monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+  }
+
+  @Test
+  @Owner(developers = ABHIJITH)
+  @Category(UnitTests.class)
+  public void testCreateFromYaml() throws IOException {
+    String yaml = "monitoredService:\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRefList:\n"
+        + "   - env1\n"
+        + "  tags: {}\n"
+        + "  sources:\n"
+        + "    healthSources:\n"
+        + "    changeSources: \n";
+    Mockito.when(templateFacade.resolveYaml(Mockito.any(), Mockito.eq(yaml))).thenReturn(yaml);
+    Response createResponse = RESOURCES.client()
+                                  .target("http://localhost:9998/monitored-service/yaml")
+                                  .queryParam("accountId", builderFactory.getContext().getAccountId())
+                                  .queryParam("projectIdentifier", builderFactory.getContext().getProjectIdentifier())
+                                  .queryParam("orgIdentifier", builderFactory.getContext().getOrgIdentifier())
+                                  .request(MediaType.APPLICATION_JSON_TYPE)
+                                  .post(Entity.text(yaml));
+
+    assertThat(createResponse.getStatus()).isEqualTo(200);
+    RestResponse<MonitoredServiceResponse> restResponse =
+        createResponse.readEntity(new GenericType<RestResponse<MonitoredServiceResponse>>() {});
+    MonitoredServiceDTO monitoredServiceDTO = restResponse.getResource().getMonitoredServiceDTO();
+    assertThat(monitoredServiceDTO.getIdentifier()).isEqualTo("service1");
+    assertThat(monitoredServiceDTO.getProjectIdentifier())
+        .isEqualTo(builderFactory.getContext().getProjectIdentifier());
+    assertThat(monitoredServiceDTO.getOrgIdentifier()).isEqualTo(builderFactory.getContext().getOrgIdentifier());
+  }
+
+  @Test
+  @Owner(developers = ABHIJITH)
+  @Category(UnitTests.class)
+  public void testUpdateFromYaml() throws IOException {
+    String yaml = "monitoredService:\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRefList:\n"
+        + "   - env1\n"
+        + "  tags: {}\n"
+        + "  sources:\n"
+        + "    healthSources:\n"
+        + "    changeSources: \n";
+    Mockito.when(templateFacade.resolveYaml(Mockito.any(), Mockito.eq(yaml))).thenReturn(yaml);
+    Response createResponse = RESOURCES.client()
+                                  .target("http://localhost:9998/monitored-service/yaml")
+                                  .queryParam("accountId", builderFactory.getContext().getAccountId())
+                                  .queryParam("projectIdentifier", builderFactory.getContext().getProjectIdentifier())
+                                  .queryParam("orgIdentifier", builderFactory.getContext().getOrgIdentifier())
+                                  .request(MediaType.APPLICATION_JSON_TYPE)
+                                  .post(Entity.text(yaml));
+    assertThat(createResponse.getStatus()).isEqualTo(200);
+
+    String updateYaml = "monitoredService:\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  type: Application\n"
+        + "  description: description345\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRefList:\n"
+        + "   - env1\n"
+        + "  tags: {}\n"
+        + "  sources:\n"
+        + "    healthSources:\n"
+        + "    changeSources: \n";
+    Mockito.when(templateFacade.resolveYaml(Mockito.any(), Mockito.eq(updateYaml))).thenReturn(updateYaml);
+    Response updateResponse = RESOURCES.client()
+                                  .target("http://localhost:9998/monitored-service/service1/yaml")
+                                  .queryParam("accountId", builderFactory.getContext().getAccountId())
+                                  .queryParam("projectIdentifier", builderFactory.getContext().getProjectIdentifier())
+                                  .queryParam("orgIdentifier", builderFactory.getContext().getOrgIdentifier())
+                                  .request(MediaType.APPLICATION_JSON_TYPE)
+                                  .put(Entity.text(updateYaml));
+    assertThat(updateResponse.getStatus()).isEqualTo(200);
+    RestResponse<MonitoredServiceResponse> restResponse =
+        updateResponse.readEntity(new GenericType<RestResponse<MonitoredServiceResponse>>() {});
+    MonitoredServiceDTO monitoredServiceDTO = restResponse.getResource().getMonitoredServiceDTO();
+    assertThat(monitoredServiceDTO.getDescription()).isEqualTo("description345");
   }
 
   @Test
