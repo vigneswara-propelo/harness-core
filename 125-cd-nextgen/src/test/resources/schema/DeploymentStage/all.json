@@ -3587,12 +3587,16 @@
         {
           "type": "object",
           "required": [
-            "sshKeyRef",
+            "credentialsRef",
             "connectorRef"
           ],
           "properties": {
             "connectorRef": {
               "type": "string"
+            },
+            "credentialsRef": {
+              "type": "string",
+              "minLength": 1
             },
             "delegateSelectors": {
               "oneOf": [
@@ -3608,10 +3612,6 @@
                   "minLength": 1
                 }
               ]
-            },
-            "sshKeyRef": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "additionalProperties": false
@@ -3619,10 +3619,14 @@
         {
           "type": "object",
           "required": [
-            "sshKeyRef",
+            "credentialsRef",
             "hosts"
           ],
           "properties": {
+            "credentialsRef": {
+              "type": "string",
+              "minLength": 1
+            },
             "delegateSelectors": {
               "oneOf": [
                 {
@@ -3652,10 +3656,6 @@
                   "minLength": 1
                 }
               ]
-            },
-            "sshKeyRef": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "additionalProperties": false
@@ -3663,13 +3663,17 @@
         {
           "type": "object",
           "required": [
-            "sshKeyRef",
+            "credentialsRef",
             "connectorRef",
             "hostFilters"
           ],
           "properties": {
             "connectorRef": {
               "type": "string"
+            },
+            "credentialsRef": {
+              "type": "string",
+              "minLength": 1
             },
             "delegateSelectors": {
               "oneOf": [
@@ -3700,10 +3704,6 @@
                   "minLength": 1
                 }
               ]
-            },
-            "sshKeyRef": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "additionalProperties": false
@@ -3711,7 +3711,7 @@
         {
           "type": "object",
           "required": [
-            "sshKeyRef",
+            "credentialsRef",
             "connectorRef",
             "attributeFilters"
           ],
@@ -3734,6 +3734,10 @@
             "connectorRef": {
               "type": "string"
             },
+            "credentialsRef": {
+              "type": "string",
+              "minLength": 1
+            },
             "delegateSelectors": {
               "oneOf": [
                 {
@@ -3748,10 +3752,6 @@
                   "minLength": 1
                 }
               ]
-            },
-            "sshKeyRef": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "additionalProperties": false

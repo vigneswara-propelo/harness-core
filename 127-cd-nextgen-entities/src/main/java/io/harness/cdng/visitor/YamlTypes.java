@@ -86,7 +86,7 @@ public interface YamlTypes {
   String COMMAND_FLAGS_WRAPPER = "commandFlags";
   String REGION = "region";
   String STAGE = "stage";
-  String SSH_KEY_REF = "sshKeyRef";
+  String CREDENTIALS_REF = "credentialsRef";
   String HOSTS = "hosts";
   String ATTRIBUTE_FILTERS = "attributeFilters";
   String HOST_FILTERS = "hostFilters";
