@@ -104,7 +104,6 @@ import software.wings.api.SimpleWorkflowParam;
 import software.wings.api.SkipStateExecutionData;
 import software.wings.api.SpotinstAmiDeploymentInfo;
 import software.wings.api.TerraformApplyMarkerParam;
-import software.wings.api.TerraformExecutionData;
 import software.wings.api.TerraformOutputInfoElement;
 import software.wings.api.arm.ARMOutputVariables;
 import software.wings.api.artifact.ServiceArtifactElement;
@@ -1086,7 +1085,6 @@ public class ManagerMorphiaRegistrar implements MorphiaRegistrar {
     w.put("api.terragrunt.TerragruntProvisionInheritPlanElement", TerragruntProvisionInheritPlanElement.class);
     w.put("api.terragrunt.TerragruntApplyMarkerParam", TerragruntApplyMarkerParam.class);
     w.put("api.TerraformApplyMarkerParam", TerraformApplyMarkerParam.class);
-    w.put("api.TerraformExecutionData", TerraformExecutionData.class);
     w.put("api.TerraformOutputInfoElement", TerraformOutputInfoElement.class);
     w.put("api.EcsSetupElement", EcsSetupElement.class);
     w.put("audit.EntityAuditRecord", EntityAuditRecord.class);

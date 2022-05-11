@@ -18,6 +18,7 @@ import io.harness.morphia.MorphiaRegistrarHelperPut;
 
 import software.wings.api.AwsLambdaContextElement;
 import software.wings.api.AwsLambdaExecutionData;
+import software.wings.api.TerraformExecutionData;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.AppDynamicsConfig;
 import software.wings.beans.AwsSecretsManagerConfig;
@@ -183,6 +184,7 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("service.impl.aws.model.AwsLambdaExecuteWfResponse", AwsLambdaExecuteWfResponse.class);
     w.put("beans.BugsnagConfig", BugsnagConfig.class);
     w.put("delegatetasks.buildsource.BuildSourceExecutionResponse", BuildSourceExecutionResponse.class);
+    w.put("api.TerraformExecutionData", TerraformExecutionData.class);
     w.put("service.impl.aws.model.AwsAmiServiceDeployResponse", AwsAmiServiceDeployResponse.class);
     w.put("service.impl.aws.model.AwsAmiServiceSetupResponse", AwsAmiServiceSetupResponse.class);
     w.put("service.impl.aws.model.AwsAmiSwitchRoutesResponse", AwsAmiSwitchRoutesResponse.class);
