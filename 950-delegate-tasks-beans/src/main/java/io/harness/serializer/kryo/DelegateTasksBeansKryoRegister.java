@@ -607,6 +607,7 @@ import software.wings.service.impl.appdynamics.AppdynamicsTier;
 import software.wings.service.impl.aws.model.AwsAmiPreDeploymentData;
 import software.wings.service.impl.aws.model.AwsAsgGetRunningCountData;
 import software.wings.service.impl.aws.model.AwsCFTemplateParamsData;
+import software.wings.service.impl.aws.model.AwsLambdaFunctionParams;
 import software.wings.service.impl.aws.model.AwsLambdaVpcConfig;
 import software.wings.service.impl.aws.model.AwsSecurityGroup;
 import software.wings.service.impl.aws.model.AwsSubnet;
@@ -667,6 +668,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(GitPushResult.class, 5210);
     kryo.register(GitPushResult.RefUpdate.class, 5215);
     kryo.register(JenkinsTaskParams.class, 5234);
+    kryo.register(AwsLambdaFunctionParams.class, 5449);
     kryo.register(GitFetchFilesRequest.class, 5470);
     kryo.register(GitFetchFilesResult.class, 5471);
     kryo.register(JenkinsSubTaskType.class, 5515);

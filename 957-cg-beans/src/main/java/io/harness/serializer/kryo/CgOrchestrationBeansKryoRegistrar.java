@@ -38,6 +38,7 @@ import software.wings.beans.LicenseInfo;
 import software.wings.beans.Log;
 import software.wings.beans.PhaseStepType;
 import software.wings.beans.ServiceVariableType;
+import software.wings.beans.Tag;
 import software.wings.beans.VMSSAuthType;
 import software.wings.beans.VMSSDeploymentType;
 import software.wings.beans.Variable;
@@ -57,6 +58,7 @@ import software.wings.service.impl.ThirdPartyApiCallLog;
 import software.wings.sm.ExecutionInterruptEffect;
 import software.wings.sm.PipelineSummary;
 import software.wings.sm.StateTypeScope;
+import software.wings.sm.StepExecutionSummary;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -95,6 +97,7 @@ public class CgOrchestrationBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(ExecutionInterruptEffect.class, 5236);
     kryo.register(PipelineSummary.class, 5142);
     kryo.register(StateTypeScope.class, 5144);
+    kryo.register(StepExecutionSummary.class, 5145);
     kryo.register(WebhookSource.class, 8551);
     kryo.register(ApiCallLogDTO.class, 9048);
     kryo.register(ApiCallLogDTOField.class, 9049);
@@ -112,6 +115,7 @@ public class CgOrchestrationBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(ArtifactInput.class, 7459);
     kryo.register(ServiceVariableType.class, 5362);
     kryo.register(ArtifactFile.class, 5066);
+    kryo.register(Tag.class, 7185);
     kryo.register(Artifact.class, 7192);
     kryo.register(HelmChart.class, 71106);
     kryo.register(Artifact.ContentStatus.class, 7193);
