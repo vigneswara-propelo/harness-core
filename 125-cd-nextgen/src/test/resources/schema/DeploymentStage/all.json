@@ -4720,31 +4720,13 @@
       "type": "object",
       "discriminator": "type",
       "properties": {
-        "artifactOverrideSets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ArtifactOverrideSetWrapper"
-          }
-        },
         "artifacts": {
           "$ref": "#/definitions/ArtifactListConfig"
-        },
-        "manifestOverrideSets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ManifestOverrideSetWrapper"
-          }
         },
         "manifests": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/ManifestConfigWrapper"
-          }
-        },
-        "variableOverrideSets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/NGVariableOverrideSetWrapper"
           }
         },
         "variables": {
@@ -5275,24 +5257,6 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/ManifestConfigWrapper"
-          }
-        },
-        "useArtifactOverrideSets": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "useManifestOverrideSets": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "useVariableOverrideSets": {
-          "type": "array",
-          "items": {
-            "type": "string"
           }
         },
         "variables": {
@@ -6632,7 +6596,26 @@
         },
         {
           "type": "object",
-          "properties": { }
+          "properties": {
+            "artifactOverrideSets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ArtifactOverrideSetWrapper"
+              }
+            },
+            "manifestOverrideSets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ManifestOverrideSetWrapper"
+              }
+            },
+            "variableOverrideSets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/NGVariableOverrideSetWrapper"
+              }
+            }
+          }
         }
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
