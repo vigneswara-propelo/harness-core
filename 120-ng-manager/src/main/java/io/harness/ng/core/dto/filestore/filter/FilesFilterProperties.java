@@ -8,19 +8,14 @@
 package io.harness.ng.core.dto.filestore.filter;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.filter.FilterConstants.FILE_STORE_FILTER;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.filter.FilterType;
-import io.harness.filter.dto.FilterPropertiesDTO;
+import io.harness.filter.entity.FilterProperties;
 import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.dto.EmbeddedUserDetailsDTO;
 import io.harness.ng.core.filestore.FileUsage;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.swagger.annotations.ApiModel;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,24 +23,19 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.TypeAlias;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeName(FILE_STORE_FILTER)
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ApiModel("FilesFilterProperties")
+@JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@TypeAlias("io.harness.ng.core.dto.filestore.filter.FilesFilterProperties")
 @OwnedBy(CDP)
-public class FilesFilterPropertiesDTO extends FilterPropertiesDTO {
-  @Schema(description = "This specifies the file usage") FileUsage fileUsage;
-  @Schema(description = "File created by user") EmbeddedUserDetailsDTO createdBy;
-  @Schema(description = "File referenced by other entity") EntityDetail referencedBy;
-
-  @Override
-  public FilterType getFilterType() {
-    return FilterType.FILESTORE;
-  }
+public class FilesFilterProperties extends FilterProperties {
+  private FileUsage fileUsage;
+  private EmbeddedUserDetailsDTO createdBy;
+  private EntityDetail referencedBy;
 }
