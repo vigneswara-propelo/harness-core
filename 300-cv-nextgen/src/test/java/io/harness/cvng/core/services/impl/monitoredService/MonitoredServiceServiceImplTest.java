@@ -326,8 +326,9 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(monitoredServiceResponse.getMonitoredServiceDTO()).isNotNull();
     assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getName()).isEqualTo("service1");
     assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getEnvironmentRef()).isEqualTo("env3");
-    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplateIdentifier()).isEqualTo("templateRef123");
-    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplateVersionLabel())
+    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplate().getTemplateRef())
+        .isEqualTo("templateRef123");
+    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplate().getVersionLabel())
         .isEqualTo("versionLabel123");
   }
 
