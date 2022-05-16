@@ -5,16 +5,16 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.beans.appmanifest;
+package software.wings.beans.dto;
 
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class ManifestFileDTO {
-  private String fileName;
-  private String fileContent;
-  private String applicationManifestId;
-  private String accountId;
+public class HelmChartSpecification {
+  @NotNull private String chartUrl;
+  @NotNull private String chartName;
+  @NotNull private String chartVersion;
 }

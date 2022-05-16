@@ -85,7 +85,6 @@ import software.wings.beans.VaultConfig;
 import software.wings.beans.WinRmConnectionAttributes;
 import software.wings.beans.apm.Method;
 import software.wings.beans.appmanifest.AppManifestKind;
-import software.wings.beans.appmanifest.ManifestFileDTO;
 import software.wings.beans.approval.ConditionalOperator;
 import software.wings.beans.approval.Criteria;
 import software.wings.beans.approval.ServiceNowApprovalParams;
@@ -100,12 +99,13 @@ import software.wings.beans.config.NexusConfig;
 import software.wings.beans.container.AwsAutoScalarConfig;
 import software.wings.beans.container.EcsSteadyStateCheckParams;
 import software.wings.beans.container.EcsSteadyStateCheckResponse;
-import software.wings.beans.container.HelmChartSpecificationDTO;
 import software.wings.beans.container.KubernetesSteadyStateCheckParams;
 import software.wings.beans.container.KubernetesSwapServiceSelectorsParams;
 import software.wings.beans.delegation.ShellScriptParameters;
 import software.wings.beans.delegation.TerraformProvisionParameters;
 import software.wings.beans.delegation.TerragruntProvisionParameters;
+import software.wings.beans.dto.HelmChartSpecification;
+import software.wings.beans.dto.ManifestFile;
 import software.wings.beans.jira.JiraTaskParameters;
 import software.wings.beans.servicenow.ServiceNowFieldType;
 import software.wings.beans.servicenow.ServiceNowMetaDTO;
@@ -778,7 +778,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(EcsResizeParams.class, 5181);
     kryo.register(AwsAutoScalarConfig.class, 5559);
     kryo.register(EcsDeployRollbackDataFetchRequest.class, 8086);
-    kryo.register(HelmChartSpecificationDTO.class, 5269);
-    kryo.register(ManifestFileDTO.class, 5539);
+    kryo.register(HelmChartSpecification.class, 5269);
+    kryo.register(ManifestFile.class, 5539);
   }
 }
