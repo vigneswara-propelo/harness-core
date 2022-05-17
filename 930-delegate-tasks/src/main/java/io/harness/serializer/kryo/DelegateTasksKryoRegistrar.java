@@ -82,6 +82,7 @@ import software.wings.beans.SplunkConfig;
 import software.wings.beans.SumoConfig;
 import software.wings.beans.TerraformInputVariablesTaskResponse;
 import software.wings.beans.VaultConfig;
+import software.wings.beans.WinRmCommandParameter;
 import software.wings.beans.WinRmConnectionAttributes;
 import software.wings.beans.apm.Method;
 import software.wings.beans.appmanifest.AppManifestKind;
@@ -705,6 +706,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(VaultConfig.class, 5214);
     kryo.register(WinrmHostValidationCapability.class, 7327);
     kryo.register(WinRmConnectionAttributes.class, 5255);
+    kryo.register(WinRmCommandParameter.class, 5256);
     kryo.register(SecretEngineSummary.class, 7239);
     kryo.register(VaultAppRoleLoginResult.class, 7240);
     kryo.register(SSHVaultAuthResult.class, 15013);
