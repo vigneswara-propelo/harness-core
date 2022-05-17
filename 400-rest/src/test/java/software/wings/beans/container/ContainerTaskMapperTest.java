@@ -32,6 +32,8 @@ public class ContainerTaskMapperTest extends CategoryTest {
 
     software.wings.beans.dto.KubernetesContainerTask containerTaskDTO =
         ContainerTaskMapper.toKubernetesContainerTaskDTO(containerTask);
+
+    assertThat(containerTaskDTO).isNotNull();
     assertThat(containerTaskDTO.getDeploymentType()).isEqualTo(containerTask.getDeploymentType());
     assertThat(containerTaskDTO.getServiceId()).isEqualTo(containerTask.getServiceId());
     assertThat(containerTaskDTO.getAdvancedConfig()).isEqualTo(containerTask.getAdvancedConfig());
@@ -57,6 +59,8 @@ public class ContainerTaskMapperTest extends CategoryTest {
 
     software.wings.beans.dto.EcsContainerTask containerTaskDTO =
         ContainerTaskMapper.toEcsContainerTaskDTO(containerTask);
+
+    assertThat(containerTaskDTO).isNotNull();
     assertThat(containerTaskDTO.getDeploymentType()).isEqualTo(containerTask.getDeploymentType());
     assertThat(containerTaskDTO.getServiceId()).isEqualTo(containerTask.getServiceId());
     assertThat(containerTaskDTO.getAdvancedConfig()).isEqualTo(containerTask.getAdvancedConfig());

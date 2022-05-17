@@ -67,16 +67,9 @@ public class EcsServiceSpecificationKryoDtoTest extends CategoryTest {
     assertThat(ecsServiceSpecification.getServiceSpecJson()).isEqualTo(ecsServiceSpecificationDto.getServiceSpecJson());
   }
 
-  public static void registerCommons(Kryo kryo) {
-    // These IDs are not related to prod IDs.
-    int id = 10000;
-    //    kryo.register(ContainerDefinition.class, id++);
-  }
-
   public static class OriginalRegistrar implements KryoRegistrar {
     @Override
     public void register(Kryo kryo) {
-      registerCommons(kryo);
       kryo.register(EcsServiceSpecification.class, REGISTRATION_ID);
     }
   }
@@ -84,7 +77,6 @@ public class EcsServiceSpecificationKryoDtoTest extends CategoryTest {
   public static class DtoRegistrar implements KryoRegistrar {
     @Override
     public void register(Kryo kryo) {
-      registerCommons(kryo);
       kryo.register(software.wings.beans.dto.EcsServiceSpecification.class, REGISTRATION_ID);
     }
   }

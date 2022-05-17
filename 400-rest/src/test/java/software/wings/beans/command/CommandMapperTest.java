@@ -41,6 +41,8 @@ public class CommandMapperTest extends CategoryTest {
     command.setCommandUnitType(CommandUnitType.CODE_DEPLOY);
 
     software.wings.beans.dto.Command commandDTO = CommandMapper.toCommandDTO(command);
+
+    assertThat(commandDTO).isNotNull();
     assertThat(commandDTO.isArtifactNeeded()).isEqualTo(command.isArtifactNeeded());
     assertThat(commandDTO.getCommandExecutionStatus()).isEqualTo(command.getCommandExecutionStatus());
     assertThat(commandDTO.getCommandType()).isEqualTo(command.getCommandType());

@@ -104,7 +104,8 @@ public class HKryo extends Kryo {
   /**
    * Creates a new HKryo instance.
    * @param classResolver the class resolver.
-   * @param skipHarnessClassOriginRegistrarCheck if true, classes can be registered by registrars from other sources.
+   * @param skipHarnessClassOriginRegistrarCheck if true, classes can be registered by registrars from other sources -
+   *     only meant for UTs.
    */
   public HKryo(ClassResolver classResolver, boolean skipHarnessClassOriginRegistrarCheck) {
     super(classResolver, new MapReferenceResolver(), new DefaultStreamFactory());

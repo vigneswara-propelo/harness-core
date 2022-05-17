@@ -28,6 +28,8 @@ public class EcsServiceSpecificationMapperTest extends CategoryTest {
 
     software.wings.beans.dto.EcsServiceSpecification ecsServiceSpecificationDTO =
         EcsServiceSpecificationMapper.toEcsServiceSpecificationDTO(ecsServiceSpecification);
+
+    assertThat(ecsServiceSpecificationDTO).isNotNull();
     assertThat(ecsServiceSpecificationDTO.getServiceId()).isEqualTo(ecsServiceSpecification.getServiceId());
     assertThat(ecsServiceSpecificationDTO.getServiceSpecJson()).isEqualTo(ecsServiceSpecification.getServiceSpecJson());
   }
