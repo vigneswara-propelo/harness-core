@@ -50,6 +50,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.artifact.ArtifactCollectionResponseHandler;
 import io.harness.artifact.ArtifactUtilities;
+import io.harness.artifacts.docker.service.DockerRegistryUtils;
 import io.harness.beans.ArtifactMetadata;
 import io.harness.beans.Cd1SetupFields;
 import io.harness.beans.DelegateTask;
@@ -137,7 +138,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.annotations.Transient;
 
 @TargetModule(_870_CG_ORCHESTRATION)
 @OwnedBy(CDC)
@@ -180,10 +180,6 @@ public class ArtifactCollectionUtils {
     }
     return System.currentTimeMillis() + timeout;
   }
-
-  @Transient
-  private static final String DOCKER_REGISTRY_CREDENTIAL_TEMPLATE =
-      "{\"%s\":{\"username\":\"%s\",\"password\":\"%s\"}}";
 
   public Artifact getArtifact(ArtifactStream artifactStream, BuildDetails buildDetails) {
     String accountId = null;
@@ -314,14 +310,9 @@ public class ArtifactCollectionUtils {
     ImageDetails imageDetails = getDockerImageDetailsInternal(artifactStream, null);
     if (isNotBlank(imageDetails.getRegistryUrl()) && isNotBlank(imageDetails.getUsername())
         && isNotBlank(imageDetails.getPassword())) {
-      return encodeBase64(getDockerRegistryCredentials(imageDetails));
+      return encodeBase64(DockerRegistryUtils.getDockerRegistryCredentials(imageDetails));
     }
     return "";
-  }
-
-  public static String getDockerRegistryCredentials(ImageDetails imageDetails) {
-    return format(DOCKER_REGISTRY_CREDENTIAL_TEMPLATE, imageDetails.getRegistryUrl(), imageDetails.getUsername(),
-        imageDetails.getPassword().replaceAll("\"", "\\\\\""));
   }
 
   public DelegateTaskBuilder fetchCustomDelegateTask(String waitId, ArtifactStream artifactStream,

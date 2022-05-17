@@ -95,9 +95,22 @@ import org.objenesis.strategy.StdInstantiatorStrategy;
 @OwnedBy(HarnessTeam.PL)
 public class HKryo extends Kryo {
   @Setter private String currentLocation;
+  private final boolean skipHarnessClassOriginRegistrarCheck;
 
   public HKryo(ClassResolver classResolver) {
+    this(classResolver, false);
+  }
+
+  /**
+   * Creates a new HKryo instance.
+   * @param classResolver the class resolver.
+   * @param skipHarnessClassOriginRegistrarCheck if true, classes can be registered by registrars from other sources.
+   */
+  public HKryo(ClassResolver classResolver, boolean skipHarnessClassOriginRegistrarCheck) {
     super(classResolver, new MapReferenceResolver(), new DefaultStreamFactory());
+
+    this.skipHarnessClassOriginRegistrarCheck = skipHarnessClassOriginRegistrarCheck;
+
     setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
     setDefaultSerializer(CompatibleFieldSerializer.class);
     getFieldSerializerConfig().setCachedFieldNameStrategy(FieldSerializer.CachedFieldNameStrategy.EXTENDED);
@@ -223,7 +236,7 @@ public class HKryo extends Kryo {
   }
 
   private Registration check(Registration registration, int id) {
-    if (CodeUtils.isHarnessClass(registration.getType())) {
+    if (CodeUtils.isHarnessClass(registration.getType()) && !this.skipHarnessClassOriginRegistrarCheck) {
       final String location = CodeUtils.location(registration.getType());
       if (currentLocation != null && !currentLocation.equals(location)) {
         throw new IllegalStateException(format("The class %s in %s is registered from registrar from module %s",
