@@ -20,6 +20,7 @@ import io.harness.walktree.visitor.Visitable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
@@ -32,11 +33,14 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("infraStructureDefinition")
 @OwnedBy(CDC)
 @RecasterAlias("io.harness.cdng.infra.yaml.InfraStructureDefinition")
-public class InfraStructureDefinition implements Visitable {
+public class InfraStructureDefinitionYaml implements Visitable {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
   @ApiModelProperty(hidden = true)
   private String uuid;
 
   @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) private ParameterField<String> ref;
+
+  // inputs
+  Map<String, Object> inputs;
 }

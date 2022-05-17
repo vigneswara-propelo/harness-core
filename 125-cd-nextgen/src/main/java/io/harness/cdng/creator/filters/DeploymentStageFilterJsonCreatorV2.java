@@ -17,7 +17,7 @@ import io.harness.cdng.creator.plan.stage.DeploymentStageConfig;
 import io.harness.cdng.creator.plan.stage.DeploymentStageNode;
 import io.harness.cdng.envgroup.yaml.EnvironmentGroupYaml;
 import io.harness.cdng.environment.yaml.EnvironmentYamlV2;
-import io.harness.cdng.infra.yaml.InfraStructureDefinition;
+import io.harness.cdng.infra.yaml.InfraStructureDefinitionYaml;
 import io.harness.cdng.pipeline.PipelineInfrastructure;
 import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.cdng.service.beans.ServiceDefinition;
@@ -122,7 +122,7 @@ public class DeploymentStageFilterJsonCreatorV2 extends GenericStageFilterJsonCr
         final Environment entity = environmentEntityOptional.get();
         filterBuilder.environmentName(entity.getName());
 
-        List<InfraStructureDefinition> infraList = env.getInfrastructureDefinitions();
+        List<InfraStructureDefinitionYaml> infraList = env.getInfrastructureDefinitions();
         if (isNotEmpty(infraList)) {
           if (infraList.size() > 1) {
             throw new InvalidYamlRuntimeException(format(
