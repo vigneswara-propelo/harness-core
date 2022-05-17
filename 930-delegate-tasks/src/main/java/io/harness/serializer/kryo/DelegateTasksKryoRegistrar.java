@@ -105,6 +105,7 @@ import software.wings.beans.delegation.ShellScriptParameters;
 import software.wings.beans.delegation.TerraformProvisionParameters;
 import software.wings.beans.delegation.TerragruntProvisionParameters;
 import software.wings.beans.dto.HelmChartSpecification;
+import software.wings.beans.dto.LdapSettings;
 import software.wings.beans.dto.ManifestFile;
 import software.wings.beans.jira.JiraTaskParameters;
 import software.wings.beans.servicenow.ServiceNowFieldType;
@@ -119,7 +120,6 @@ import software.wings.beans.settings.helm.HelmRepoConfigValidationTaskParams;
 import software.wings.beans.settings.helm.OciHelmRepoConfig;
 import software.wings.beans.sso.LdapConnectionSettings;
 import software.wings.beans.sso.LdapGroupResponse;
-import software.wings.beans.sso.LdapSettingsDTO;
 import software.wings.beans.sso.LdapUserResponse;
 import software.wings.beans.sso.LdapUserSettings;
 import software.wings.beans.trigger.TriggerCommand.TriggerCommandType;
@@ -769,7 +769,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(LdapGroupResponse.class, 5501);
     kryo.register(LdapUserResponse.class, 5502);
     kryo.register(LdapUserSettings.class, 5497);
-    kryo.register(LdapSettingsDTO.class, 5495);
+    kryo.register(LdapSettings.class, 5495);
 
     kryo.register(ResizeCommandUnitExecutionData.class, 5053);
     kryo.register(EcsServiceDeployRequest.class, 7148);
