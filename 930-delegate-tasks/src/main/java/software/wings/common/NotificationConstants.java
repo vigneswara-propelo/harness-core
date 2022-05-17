@@ -36,4 +36,27 @@ public interface NotificationConstants {
    * The constant BLUE_COLOR.
    */
   String BLUE_COLOR = "0078D7";
+
+  String FAILED_STATUS = "failed";
+
+  String SLACK_WEBHOOK_URL_PREFIX = "https://hooks.slack.com/services/";
+
+  static String getThemeColor(String status, String defaultColor) {
+    switch (status) {
+      case "completed":
+        return COMPLETED_COLOR;
+      case "expired":
+      case "rejected":
+      case FAILED_STATUS:
+        return FAILED_COLOR;
+      case "paused":
+        return PAUSED_COLOR;
+      case "resumed":
+        return RESUMED_COLOR;
+      case "aborted":
+        return ABORTED_COLOR;
+      default:
+        return defaultColor;
+    }
+  }
 }

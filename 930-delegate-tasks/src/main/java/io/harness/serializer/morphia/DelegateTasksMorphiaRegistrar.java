@@ -118,6 +118,7 @@ import software.wings.helpers.ext.k8s.response.K8sTaskExecutionResponse;
 import software.wings.helpers.ext.k8s.response.K8sTrafficSplitResponse;
 import software.wings.helpers.ext.mail.EmailData;
 import software.wings.helpers.ext.mail.SmtpConfig;
+import software.wings.security.encryption.secretsmanagerconfigs.CustomSecretsManagerConfig;
 import software.wings.service.impl.analysis.CustomLogDataCollectionInfo;
 import software.wings.service.impl.analysis.DataCollectionTaskResult;
 import software.wings.service.impl.aws.model.AwsAmiServiceDeployResponse;
@@ -165,6 +166,7 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     set.add(SecretKey.class);
     set.add(EmailData.class);
     set.add(CommandUnit.class);
+    set.add(CustomSecretsManagerConfig.class);
   }
 
   @Override
@@ -289,5 +291,6 @@ public class DelegateTasksMorphiaRegistrar implements MorphiaRegistrar {
     w.put("helpers.ext.k8s.response.K8sTaskExecutionResponse", K8sTaskExecutionResponse.class);
     w.put("helpers.ext.k8s.response.K8sTrafficSplitResponse", K8sTrafficSplitResponse.class);
     w.put("helpers.ext.k8s.response.K8sRollingDeployRollbackResponse", K8sRollingDeployRollbackResponse.class);
+    w.put("security.encryption.secretsmanagerconfigs.CustomSecretsManagerConfig", CustomSecretsManagerConfig.class);
   }
 }

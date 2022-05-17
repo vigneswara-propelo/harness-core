@@ -852,7 +852,6 @@
 7259:software.wings.api.jira.JiraExecutionData$JiraIssueData
 7260:software.wings.api.k8s.K8sSwapServiceElement
 7261:software.wings.beans.SlackMessage
-7262:software.wings.service.impl.SlackMessageSenderImpl
 7263:software.wings.beans.SlackMessageJSON
 7264:software.wings.api.pcf.PcfPluginExecutionSummary
 7265:software.wings.api.pcf.PcfPluginStateExecutionData

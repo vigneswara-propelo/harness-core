@@ -612,12 +612,14 @@ import software.wings.helpers.ext.cloudformation.response.CloudFormationListStac
 import software.wings.helpers.ext.cloudformation.response.CloudFormationRollbackInfo;
 import software.wings.helpers.ext.cloudformation.response.ExistingStackInfo;
 import software.wings.helpers.ext.cloudformation.response.StackSummaryInfo;
+import software.wings.helpers.ext.ecs.request.EcsBGListenerUpdateRequest;
 import software.wings.helpers.ext.ecs.request.EcsCommandRequest;
 import software.wings.helpers.ext.ecs.request.EcsRunTaskDeployRequest;
 import software.wings.helpers.ext.ecs.response.EcsBGRoute53ServiceSetupResponse;
 import software.wings.helpers.ext.ecs.response.EcsCommandExecutionResponse;
 import software.wings.helpers.ext.ecs.response.EcsCommandResponse;
 import software.wings.helpers.ext.ecs.response.EcsDeployRollbackDataFetchResponse;
+import software.wings.helpers.ext.ecs.response.EcsListenerUpdateCommandResponse;
 import software.wings.helpers.ext.ecs.response.EcsRunTaskDeployResponse;
 import software.wings.helpers.ext.ecs.response.EcsServiceDeployResponse;
 import software.wings.helpers.ext.ecs.response.EcsServiceSetupResponse;
@@ -711,6 +713,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AwsAutoScalarConfig.class, 5559);
     kryo.register(ConnectivityValidationAttributes.class, 5567);
     kryo.register(AwsElbListener.class, 5600);
+    kryo.register(EcsBGListenerUpdateRequest.class, 5605);
+    kryo.register(EcsListenerUpdateCommandResponse.class, 5613);
     kryo.register(EcsBGRoute53ServiceSetupResponse.class, 7102);
     kryo.register(EcsServiceSetupResponse.class, 7122);
     kryo.register(ShellScriptProvisionParameters.class, 7151);

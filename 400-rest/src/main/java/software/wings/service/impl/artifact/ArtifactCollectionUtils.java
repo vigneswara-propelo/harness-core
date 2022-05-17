@@ -123,7 +123,6 @@ import software.wings.utils.ArtifactType;
 import software.wings.utils.DelegateArtifactCollectionUtils;
 import software.wings.utils.RepositoryType;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.Duration;
@@ -159,11 +158,6 @@ public class ArtifactCollectionUtils {
   @Inject private ArtifactStreamPTaskHelper artifactStreamPTaskHelper;
   @Inject private MainConfiguration mainConfiguration;
 
-  public static final List<String> SUPPORTED_ARTIFACT_CLEANUP_LIST =
-      Lists.newArrayList(DOCKER, AMI, ARTIFACTORY, GCR, ECR, ACR, NEXUS, AZURE_MACHINE_IMAGE, CUSTOM)
-          .stream()
-          .map(Enum::name)
-          .collect(Collectors.toList());
   public static final Long DELEGATE_QUEUE_TIMEOUT = Duration.ofSeconds(60).toMillis();
 
   static final List<String> metadataOnlyStreams = Collections.unmodifiableList(
@@ -1005,9 +999,5 @@ public class ArtifactCollectionUtils {
     return builds.stream()
         .map(buildDetails -> artifactService.create(getArtifact(artifactStream, buildDetails)))
         .collect(Collectors.toList());
-  }
-
-  public static boolean supportsCleanup(String artifactStreamType) {
-    return SUPPORTED_ARTIFACT_CLEANUP_LIST.stream().anyMatch(x -> x.equals(artifactStreamType));
   }
 }

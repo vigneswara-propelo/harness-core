@@ -10,8 +10,8 @@ package software.wings.service.impl;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
+import static software.wings.common.NotificationConstants.SLACK_WEBHOOK_URL_PREFIX;
 import static software.wings.common.NotificationConstants.WHITE_COLOR;
-import static software.wings.service.impl.SlackNotificationServiceImpl.SLACK_WEBHOOK_URL_PREFIX;
 
 import static java.lang.String.format;
 
@@ -21,7 +21,7 @@ import io.harness.network.Http;
 
 import software.wings.beans.SlackMessage;
 import software.wings.beans.SlackMessageJSON;
-import software.wings.common.NotificationMessageResolver;
+import software.wings.common.NotificationConstants;
 import software.wings.service.intfc.SlackMessageSender;
 
 import allbegray.slack.SlackClientFactory;
@@ -63,7 +63,7 @@ public class SlackMessageSenderImpl implements SlackMessageSender {
       payload.setText(processText(parts[0]));
       attachment.setText(processText(parts[1]));
       attachment.setFooter(processText(parts[2]));
-      attachment.setColor(NotificationMessageResolver.getThemeColor(parts[3], WHITE_COLOR));
+      attachment.setColor(NotificationConstants.getThemeColor(parts[3], WHITE_COLOR));
       attachment.setFooter_icon(format("https://s3.amazonaws.com/wings-assets/slackicons/%s.png", parts[3]));
       attachment.setMrkdwn_in(ImmutableList.of("text"));
       payload.setAttachments(ImmutableList.of(attachment));
