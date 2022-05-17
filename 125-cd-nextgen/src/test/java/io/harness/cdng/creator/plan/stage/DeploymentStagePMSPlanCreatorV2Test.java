@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @OwnedBy(HarnessTeam.CDC)
-public class DeploymentStagePMSPlanCreatorTest extends CDNGTestBase {
+public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
   @Inject DeploymentStagePMSPlanCreatorV2 deploymentStagePMSPlanCreator;
   @Test
   @Owner(developers = PRASHANTSHARMA)
@@ -47,8 +47,8 @@ public class DeploymentStagePMSPlanCreatorTest extends CDNGTestBase {
     YamlField serviceField = YamlUtils.readTree(yaml);
 
     String serviceNodeId = serviceField.getNode().getUuid();
-    Dependencies dependencies = deploymentStagePMSPlanCreator.getDependenciesForService(
-        serviceField, serviceNodeId, PipelineInfrastructure.builder().build());
+    Dependencies dependencies =
+        deploymentStagePMSPlanCreator.getDependenciesForService(serviceField, PipelineInfrastructure.builder().build());
     assertThat(dependencies).isNotEqualTo(null);
     assertThat(dependencies.getDependenciesMap().containsKey(serviceNodeId)).isEqualTo(true);
     assertThat(dependencies.getDependencyMetadataMap()
