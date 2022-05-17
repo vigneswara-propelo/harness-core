@@ -379,8 +379,9 @@ public class MigrationBackgroundList {
         .add(Pair.of(218, AlertCheckJobPollIntervalMigration.class))
         .add(Pair.of(219, BaseMigration.class))
         .add(Pair.of(220, AddNotificationGroupReferenceToUserGroups.class))
-        .add(Pair.of(221, UpdateCorruptedInstanceStatsMigration.class))
+        .add(Pair.of(221, BaseMigration.class))
         .add(Pair.of(222, UpdateNameInAwsInfrastructureMappingMigration.class))
+        .add(Pair.of(223, UpdateCorruptedInstanceStatsMigration.class))
         .build();
   }
 }
