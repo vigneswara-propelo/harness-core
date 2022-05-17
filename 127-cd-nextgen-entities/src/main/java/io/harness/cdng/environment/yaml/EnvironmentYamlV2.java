@@ -13,6 +13,7 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
 import io.harness.cdng.environment.helper.EnvironmentYamlV2VisitorHelper;
+import io.harness.cdng.gitops.yaml.ClusterYaml;
 import io.harness.cdng.infra.yaml.InfraStructureDefinitionYaml;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
@@ -50,4 +51,6 @@ public class EnvironmentYamlV2 implements Visitable {
 
   // environmentInputs
   Map<String, Object> environmentInputs;
+
+  List<ClusterYaml> gitopsClusters;
 }
