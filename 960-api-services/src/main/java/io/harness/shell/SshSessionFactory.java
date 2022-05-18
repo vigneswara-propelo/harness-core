@@ -179,8 +179,10 @@ public class SshSessionFactory {
 
     final String ssh_network_proxy = System.getenv(SSH_NETWORK_PROXY);
     boolean enableProxy = "true".equals(ssh_network_proxy);
+    log.info("proxy enabled: " + enableProxy + ". Connecting host: " + config.getHost());
     if (enableProxy) {
       if (Http.getProxyHostName() != null && !Http.shouldUseNonProxy(config.getHost())) {
+        log.info("Using proxy");
         ProxyHTTP proxyHTTP = getProxy(config, logCallback);
         session.setProxy(proxyHTTP);
       }
