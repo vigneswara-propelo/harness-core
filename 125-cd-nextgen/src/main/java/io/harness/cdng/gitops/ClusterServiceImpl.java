@@ -106,6 +106,13 @@ public class ClusterServiceImpl implements ClusterService {
     return delete.wasAcknowledged() && delete.getDeletedCount() == 1;
   }
 
+  @Override
+  public DeleteResult deleteFromAllEnv(
+      String accountId, String orgIdentifier, String projectIdentifier, String identifier) {
+    Criteria criteria = getClusterEqualityCriteria(accountId, orgIdentifier, projectIdentifier, identifier);
+    return clusterRepository.delete(criteria);
+  }
+
   public Page<Cluster> list(int page, int size, String accountIdentifier, String orgIdentifier,
       String projectIdentifier, String envRef, String searchTerm, List<String> identifiers, List<String> sort) {
     Criteria criteria =
@@ -141,6 +148,17 @@ public class ClusterServiceImpl implements ClusterService {
         .is(identifier)
         .and(ClusterKeys.envRef)
         .is(envIdentifier);
+  }
+
+  private Criteria getClusterEqualityCriteria(String accountId, String orgId, String projectId, String identifier) {
+    return where(ClusterKeys.accountId)
+        .is(accountId)
+        .and(ClusterKeys.orgIdentifier)
+        .is(orgId)
+        .and(ClusterKeys.projectIdentifier)
+        .is(projectId)
+        .and(ClusterKeys.identifier)
+        .is(identifier);
   }
 
   private String getDuplicateExistsErrorMessage(
