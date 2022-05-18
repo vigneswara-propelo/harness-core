@@ -450,7 +450,8 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
     return true;
   }
 
-  private boolean canAssignSelectors(Delegate delegate, List<ExecutionCapability> executionCapabilities) {
+  @VisibleForTesting
+  protected boolean canAssignSelectors(Delegate delegate, List<ExecutionCapability> executionCapabilities) {
     if (isEmpty(executionCapabilities)) {
       return true;
     }
@@ -1069,14 +1070,15 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
 
   private List<SelectorCapability> selectorCapabilitiesWithHierarchyApplied(
       List<SelectorCapability> selectorCapabilities) {
-    List<SelectorCapability> selectorsAtStepGroup =
+    List<SelectorCapability> selectors =
         selectorCapabilities.stream()
+            .filter(sel -> Objects.nonNull(sel.getSelectorOrigin()))
             .filter(c
                 -> c.getSelectorOrigin().equals(STEP) || c.getSelectorOrigin().equals(STEP_GROUP)
                     || c.getSelectorOrigin().equals(STAGE) || c.getSelectorOrigin().equals(PIPELINE))
             .collect(toList());
-    if (!Lists.isNullOrEmpty(selectorsAtStepGroup)) {
-      return selectorsAtStepGroup;
+    if (!Lists.isNullOrEmpty(selectors)) {
+      return selectors;
     }
     return selectorCapabilities;
   }
