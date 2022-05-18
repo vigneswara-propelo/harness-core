@@ -831,6 +831,12 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
 
   @Override
   public List<String> getEligibleDelegatesToExecuteTask(DelegateTask task) {
+    // if task comes with eligibleToExecuteDelegateIds then no need to do assignment logic
+    if (isNotEmpty(task.getEligibleToExecuteDelegateIds())) {
+      log.info(
+          "Task {} has eligibleToExecuteDelegateIds:  {} ", task.getUuid(), task.getEligibleToExecuteDelegateIds());
+      return task.getEligibleToExecuteDelegateIds();
+    }
     List<String> eligibleDelegateIds = new ArrayList<>();
     task.setNonAssignableDelegates(new HashMap<>());
     try {
