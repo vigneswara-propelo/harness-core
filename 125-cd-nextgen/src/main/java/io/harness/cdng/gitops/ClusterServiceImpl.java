@@ -67,7 +67,7 @@ public class ClusterServiceImpl implements ClusterService {
     } catch (DuplicateKeyException ex) {
       throw new DuplicateFieldException(
           getDuplicateExistsErrorMessage(cluster.getAccountId(), cluster.getOrgIdentifier(),
-              cluster.getProjectIdentifier(), cluster.getIdentifier()),
+              cluster.getProjectIdentifier(), cluster.getClusterRef()),
           USER, ex);
     }
   }
@@ -78,7 +78,7 @@ public class ClusterServiceImpl implements ClusterService {
     Cluster updated = clusterRepository.update(criteria, cluster);
     if (updated == null) {
       throw new InvalidRequestException(String.format(
-          CLUSTER_DOES_NOT_EXIST, cluster.getIdentifier(), cluster.getProjectIdentifier(), cluster.getOrgIdentifier()));
+          CLUSTER_DOES_NOT_EXIST, cluster.getClusterRef(), cluster.getProjectIdentifier(), cluster.getOrgIdentifier()));
     }
     return updated;
   }
@@ -91,9 +91,8 @@ public class ClusterServiceImpl implements ClusterService {
     } catch (DuplicateKeyException ex) {
       throw new DuplicateFieldException(getDuplicateExistsErrorMessage(accountId, ex.getMessage()), USER, ex);
     } catch (Exception ex) {
-      String serviceNames = entities.stream().map(Cluster::getName).collect(Collectors.joining(","));
-      log.info(
-          "Encountered exception while saving the Cluster entity records of [{}], with exception", serviceNames, ex);
+      String clusters = entities.stream().map(Cluster::getClusterRef).collect(Collectors.joining(","));
+      log.info("Encountered exception while saving the Cluster entity records of [{}], with exception", clusters, ex);
       throw new UnexpectedException("Encountered exception while saving the Cluster entity records.");
     }
   }
@@ -113,7 +112,7 @@ public class ClusterServiceImpl implements ClusterService {
         createCriteriaForGetList(accountIdentifier, orgIdentifier, projectIdentifier, envRef, searchTerm);
     Pageable pageRequest;
     if (isNotEmpty(identifiers)) {
-      criteria.and(ClusterKeys.identifier).in(identifiers);
+      criteria.and(ClusterKeys.clusterRef).in(identifiers);
     }
     if (isEmpty(sort)) {
       pageRequest = org.springframework.data.domain.PageRequest.of(
@@ -127,7 +126,7 @@ public class ClusterServiceImpl implements ClusterService {
 
   private Criteria getClusterEqualityCriteria(@Valid Cluster cluster) {
     return getClusterEqualityCriteria(cluster.getAccountId(), cluster.getOrgIdentifier(),
-        cluster.getProjectIdentifier(), cluster.getEnvRef(), cluster.getIdentifier());
+        cluster.getProjectIdentifier(), cluster.getEnvRef(), cluster.getClusterRef());
   }
 
   private Criteria getClusterEqualityCriteria(
@@ -138,7 +137,7 @@ public class ClusterServiceImpl implements ClusterService {
         .is(orgId)
         .and(ClusterKeys.projectIdentifier)
         .is(projectId)
-        .and(ClusterKeys.identifier)
+        .and(ClusterKeys.clusterRef)
         .is(identifier)
         .and(ClusterKeys.envRef)
         .is(envIdentifier);
@@ -182,8 +181,7 @@ public class ClusterServiceImpl implements ClusterService {
     criteria.and(ClusterKeys.envRef).is(envRef);
     if (isNotEmpty(searchTerm)) {
       Criteria searchCriteria = new Criteria().orOperator(
-          where(ClusterKeys.name).regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS),
-          where(ClusterKeys.identifier).regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS));
+          where(ClusterKeys.clusterRef).regex(searchTerm, NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS));
       criteria.andOperator(searchCriteria);
     }
     return criteria;
