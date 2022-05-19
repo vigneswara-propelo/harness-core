@@ -469,7 +469,7 @@ public class AzureAsyncTaskHelperTest extends CategoryTest {
     when(azureKubernetesClient.listKubernetesClusters(any(), any())).thenReturn(Collections.singletonList(cluster));
     when(cluster.name()).thenReturn("cluster");
     when(cluster.resourceGroupName()).thenReturn("resource-group");
-    when(cluster.userKubeConfigContent())
+    when(cluster.adminKubeConfigContent())
         .thenReturn(readResourceFileContent("azure/kubeConfigContent.yaml").getBytes());
 
     KubernetesConfig clusterConfig = azureAsyncTaskHelper.getClusterConfig(
