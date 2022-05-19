@@ -1743,7 +1743,6 @@ public class LogDashboardServiceImplTest extends CvNextGenTestBase {
   private CVConfig createCvConfig(String cvConfigId, String serviceIdentifier) {
     SplunkCVConfig splunkCVConfig = new SplunkCVConfig();
     splunkCVConfig.setUuid(cvConfigId);
-    splunkCVConfig.setServiceIdentifier(serviceIdentifier);
     return splunkCVConfig;
   }
 
