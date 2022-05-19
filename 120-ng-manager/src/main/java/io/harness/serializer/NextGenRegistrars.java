@@ -11,6 +11,7 @@ import io.harness.EntityType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupWrapperConfig;
+import io.harness.cdng.infra.yaml.InfrastructureConfig;
 import io.harness.morphia.MorphiaRegistrar;
 import io.harness.ng.core.dto.secrets.SecretRequestWrapper;
 import io.harness.ng.core.environment.yaml.NGEnvironmentConfig;
@@ -114,6 +115,13 @@ public class NextGenRegistrars {
                    .availableAtOrgLevel(true)
                    .availableAtAccountLevel(true)
                    .clazz(FileStoreRequest.class)
+                   .build())
+          .add(YamlSchemaRootClass.builder()
+                   .entityType(EntityType.INFRASTRUCTURE)
+                   .availableAtProjectLevel(true)
+                   .availableAtAccountLevel(true)
+                   .availableAtOrgLevel(true)
+                   .clazz(InfrastructureConfig.class)
                    .build())
           .build();
 
