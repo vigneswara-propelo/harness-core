@@ -347,3 +347,4 @@ io.harness.cdng.envgroup.yaml.EnvironmentGroupYaml
 io.harness.steps.customstage.CustomStageNode
 io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig
 io.harness.cdng.gitops.yaml.ClusterYaml
+io.harness.cdng.provision.cloudformation.CloudformationCreateStackStepConfigurationParameters

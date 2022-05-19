@@ -109,8 +109,8 @@ public class CloudformationCreateStackStep
     }
 
     // Parameters file connectors
-    if (isNotEmpty(cloudformationCreateStackStepParameters.getConfiguration().getParametersFilesSpecs())) {
-      cloudformationCreateStackStepParameters.getConfiguration().getParametersFilesSpecs().forEach(
+    if (isNotEmpty(cloudformationCreateStackStepParameters.getConfiguration().getParameters())) {
+      cloudformationCreateStackStepParameters.getConfiguration().getParameters().values().forEach(
           cloudformationParametersFileSpec -> {
             String connectorRef =
                 getParameterFieldValue(cloudformationParametersFileSpec.getStore().getSpec().getConnectorReference());
@@ -145,7 +145,7 @@ public class CloudformationCreateStackStep
       PassThroughData passThroughData, ThrowingSupplier<ResponseData> responseDataSupplier) throws Exception {
     CloudformationCreateStackStepParameters cloudformationCreateStackStepParameters =
         (CloudformationCreateStackStepParameters) stepParameters.getSpec();
-    CloudformationCreateStackStepConfiguration stepConfiguration =
+    CloudformationCreateStackStepConfigurationParameters stepConfiguration =
         cloudformationCreateStackStepParameters.getConfiguration();
     if (passThroughData instanceof StepExceptionPassThroughData) {
       StepExceptionPassThroughData stepExceptionPassThroughData = (StepExceptionPassThroughData) passThroughData;
