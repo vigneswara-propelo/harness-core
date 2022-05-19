@@ -197,6 +197,12 @@ public class ScmDelegateFacilitatorServiceImpl extends AbstractScmClientFacilita
   }
 
   @Override
+  public CreatePRResponse createPullRequest(
+      Scope scope, String connectorRef, String repoName, String sourceBranch, String targetBranch, String title) {
+    return null;
+  }
+
+  @Override
   public CreatePRDTO createPullRequest(GitPRCreateRequest gitCreatePRRequest) {
     validateTheCreatePRRequest(gitCreatePRRequest);
     YamlGitConfigDTO yamlGitConfigDTO =
