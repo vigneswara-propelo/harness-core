@@ -393,6 +393,8 @@ import io.harness.delegate.task.helm.HelmCommandFlag;
 import io.harness.delegate.task.helm.HelmCommandRequestNG;
 import io.harness.delegate.task.helm.HelmCommandResponse;
 import io.harness.delegate.task.helm.HelmCommandResponseNG;
+import io.harness.delegate.task.helm.HelmFetchFileConfig;
+import io.harness.delegate.task.helm.HelmFetchFileResult;
 import io.harness.delegate.task.helm.HelmInstallCmdResponseNG;
 import io.harness.delegate.task.helm.HelmInstallCommandRequestNG;
 import io.harness.delegate.task.helm.HelmListReleaseResponseNG;
@@ -1313,6 +1315,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(S3FileDetailRequest.class, 543516);
     kryo.register(S3FileDetailResponse.class, 543517);
     kryo.register(AwsCFTaskResponse.class, 543518);
+    kryo.register(HelmFetchFileConfig.class, 543519);
+    kryo.register(HelmFetchFileResult.class, 543520);
     kryo.register(HostValidationResponse.class, 5167);
     kryo.register(HostReachabilityInfo.class, 5172);
     kryo.register(HttpHelmRepoConfig.class, 7159);

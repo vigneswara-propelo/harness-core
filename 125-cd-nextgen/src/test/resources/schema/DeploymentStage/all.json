@@ -2184,6 +2184,21 @@
             },
             "store": {
               "$ref": "#/definitions/StoreConfigWrapper"
+            },
+            "valuesPaths": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+                  "minLength": 1
+                }
+              ]
             }
           }
         }
@@ -2544,6 +2559,34 @@
           }
         }
       ]
+    },
+    "InheritFromManifestStoreConfig": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StoreConfig"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "paths": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+                  "minLength": 1
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "InheritedCloudformationDeleteStackStepConfiguration": {
       "allOf": [
@@ -3313,6 +3356,21 @@
             },
             "store": {
               "$ref": "#/definitions/StoreConfigWrapper"
+            },
+            "valuesPaths": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+                  "minLength": 1
+                }
+              ]
             }
           }
         }
@@ -3508,6 +3566,21 @@
           "properties": {
             "metadata": {
               "type": "string"
+            },
+            "patchesPaths": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+                  "minLength": 1
+                }
+              ]
             },
             "pluginPath": {
               "type": "string"
@@ -4156,6 +4229,21 @@
           "properties": {
             "metadata": {
               "type": "string"
+            },
+            "paramsPaths": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+                  "minLength": 1
+                }
+              ]
             },
             "skipResourceVersioning": {
               "oneOf": [
@@ -6927,7 +7015,8 @@
             "Gcs",
             "Inline",
             "Artifactory",
-            "S3Url"
+            "S3Url",
+            "InheritFromManifest"
           ]
         }
       },
@@ -7041,6 +7130,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/HttpStoreConfig"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "InheritFromManifest"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/InheritFromManifestStoreConfig"
               }
             }
           }

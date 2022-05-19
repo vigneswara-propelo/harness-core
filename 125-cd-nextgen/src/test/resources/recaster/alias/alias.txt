@@ -72,6 +72,7 @@ io.harness.cdng.manifest.yaml.GithubStore
 io.harness.plancreator.steps.resourceconstraint.ResourceConstraintStepInfo
 io.harness.steps.environment.EnvironmentOutcome
 io.harness.cdng.manifest.yaml.HttpStoreConfig
+io.harness.cdng.manifest.yaml.InheritFromManifestStoreConfig
 io.harness.cdng.manifest.yaml.KustomizeManifestOutcome
 io.harness.cdng.manifest.yaml.GitLabStore
 io.harness.cdng.provision.terraform.TerraformPlanExecutionDataParameters
