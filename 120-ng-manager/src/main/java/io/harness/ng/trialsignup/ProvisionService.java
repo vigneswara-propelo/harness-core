@@ -33,10 +33,8 @@ import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesClusterConfigDTO;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesCredentialDTO;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesCredentialType;
-import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.UnexpectedException;
-import io.harness.gitsync.common.helper.GitSyncConnectorHelper;
 import io.harness.network.Http;
 import io.harness.ng.NextGenConfiguration;
 import io.harness.ng.core.api.SecretCrudService;
@@ -77,7 +75,7 @@ public class ProvisionService {
   @Inject NextGenConfiguration configuration;
   @Inject @Named(CONNECTOR_DECORATOR_SERVICE) private ConnectorService connectorService;
   @Inject private ScmClient scmClient;
-  @Inject private GitSyncConnectorHelper gitSyncConnectorHelper;
+  //  @Inject private GitSyncConnectorHelper gitSyncConnectorHelper;
 
   private static final String K8S_CONNECTOR_NAME = "Harness Kubernetes Cluster";
   private static final String K8S_CONNECTOR_DESC =
@@ -340,9 +338,9 @@ public class ProvisionService {
         connectorService.getByRef(accountId, orgIdentifier, projectIdentifier, repoRef);
     connector.orElseThrow(
         () -> new InvalidArgumentsException(format("connector %s was not found in account %s", repoRef, accountId)));
-    ScmConnector decryptedConnector = gitSyncConnectorHelper.getDecryptedConnector(
-        accountId, null, null, (ScmConnector) connector.get().getConnector().getConnectorConfig());
-    return convertToUserRepo(scmClient.getAllUserRepos(decryptedConnector));
+    //    ScmConnector decryptedConnector = gitSyncConnectorHelper.getDecryptedConnector(
+    //        accountId, null, null, (ScmConnector) connector.get().getConnector().getConnectorConfig());
+    return convertToUserRepo(scmClient.getAllUserRepos(null));
   }
 
   private List<UserRepoResponse> convertToUserRepo(GetUserReposResponse allUserRepos) {
