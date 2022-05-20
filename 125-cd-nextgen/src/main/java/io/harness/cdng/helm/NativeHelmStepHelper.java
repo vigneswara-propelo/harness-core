@@ -578,9 +578,14 @@ public class NativeHelmStepHelper extends CDStepHelper {
           HelmFetchFileResult.builder().valuesFileContents(new ArrayList<>(Arrays.asList(valuesFileContent))).build());
     }
 
-    // TODO Achyuth: Handle the case of k8sApply Inline store when we only have helm chart and helm chart with values
-    // manifest.
-    List<ValuesManifestOutcome> aggregatedValuesManifest = nativeHelmStepPassThroughData.getValuesManifestOutcomes();
+    List<ValuesManifestOutcome> aggregatedValuesManifest = new ArrayList<>();
+    aggregatedValuesManifest.addAll(nativeHelmStepPassThroughData.getValuesManifestOutcomes());
+    List<ManifestOutcome> stepOverrides = getStepLevelManifestOutcomes(stepElementParameters);
+    if (!isEmpty(stepOverrides)) {
+      for (ManifestOutcome manifestOutcome : stepOverrides) {
+        aggregatedValuesManifest.add((ValuesManifestOutcome) manifestOutcome);
+      }
+    }
     if (isNotEmpty(aggregatedValuesManifest)) {
       return executeValuesFetchTask(ambiance, stepElementParameters, nativeHelmStepPassThroughData.getInfrastructure(),
           nativeHelmStepPassThroughData.getHelmChartManifestOutcome(), aggregatedValuesManifest,

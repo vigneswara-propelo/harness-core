@@ -123,7 +123,15 @@ public class GitFetchTaskNG extends AbstractDelegateRunnableTask {
           throw ex;
         }
 
-        filesFromMultipleRepo.put(gitFetchFilesConfig.getIdentifier(), gitFetchFilesResult);
+        if (filesFromMultipleRepo.containsKey(gitFetchFilesConfig.getIdentifier())) {
+          FetchFilesResult fetchFilesResult = filesFromMultipleRepo.get(gitFetchFilesConfig.getIdentifier());
+          if (fetchFilesResult.getFiles() != null && gitFetchFilesResult.getFiles() != null) {
+            fetchFilesResult.getFiles().addAll(gitFetchFilesResult.getFiles());
+            filesFromMultipleRepo.put(gitFetchFilesConfig.getIdentifier(), fetchFilesResult);
+          }
+        } else {
+          filesFromMultipleRepo.put(gitFetchFilesConfig.getIdentifier(), gitFetchFilesResult);
+        }
       }
       executionLogCallback.saveExecutionLog(
           color(format("%nGit Fetch Files completed successfully."), LogColor.White, LogWeight.Bold), INFO);

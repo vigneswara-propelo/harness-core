@@ -528,13 +528,14 @@ public class K8sStepHelper extends CDStepHelper {
       StepElementParameters stepElementParameters, InfrastructureOutcome infrastructure,
       ManifestOutcome k8sManifestOutcome, List<ValuesManifestOutcome> aggregatedValuesManifests) {
     String accountId = AmbianceUtils.getAccountId(ambiance);
-    LinkedList<ValuesManifestOutcome> orderedValuesManifests = new LinkedList<>(aggregatedValuesManifests);
     HelmChartManifestOutcome helmChartManifestOutcome = (HelmChartManifestOutcome) k8sManifestOutcome;
     HelmChartManifestDelegateConfig helmManifest =
         (HelmChartManifestDelegateConfig) getManifestDelegateConfig(k8sManifestOutcome, ambiance);
+
     List<HelmFetchFileConfig> helmFetchFileConfigList =
         mapHelmChartManifestsToHelmFetchFileConfig(k8sManifestOutcome.getIdentifier(),
             getParameterFieldValue(helmChartManifestOutcome.getValuesPaths()), k8sManifestOutcome.getType());
+
     helmFetchFileConfigList.addAll(mapValuesManifestsToHelmFetchFileConfig(aggregatedValuesManifests));
     HelmValuesFetchRequest helmValuesFetchRequest = HelmValuesFetchRequest.builder()
                                                         .accountId(accountId)
@@ -909,9 +910,14 @@ public class K8sStepHelper extends CDStepHelper {
           HelmFetchFileResult.builder().valuesFileContents(new ArrayList<>(Arrays.asList(valuesFileContent))).build());
     }
 
-    // TODO Achyuth: Handle the case of k8sApply Inline store when we only have helm chart and helm chart with values
-    // manifest.
-    List<ValuesManifestOutcome> aggregatedValuesManifest = k8sStepPassThroughData.getValuesManifestOutcomes();
+    List<ValuesManifestOutcome> aggregatedValuesManifest = new ArrayList<>();
+    aggregatedValuesManifest.addAll(k8sStepPassThroughData.getValuesManifestOutcomes());
+    List<ManifestOutcome> stepOverrides = getStepLevelManifestOutcomes(stepElementParameters);
+    if (!isEmpty(stepOverrides)) {
+      for (ManifestOutcome manifestOutcome : stepOverrides) {
+        aggregatedValuesManifest.add((ValuesManifestOutcome) manifestOutcome);
+      }
+    }
     if (isNotEmpty(aggregatedValuesManifest)) {
       return executeValuesFetchTask(ambiance, stepElementParameters, k8sStepPassThroughData.getInfrastructure(),
           k8sStepPassThroughData.getK8sManifestOutcome(), aggregatedValuesManifest,
