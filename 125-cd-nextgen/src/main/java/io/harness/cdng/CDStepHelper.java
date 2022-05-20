@@ -842,6 +842,9 @@ public class CDStepHelper {
     if (!(stepElementParameters.getSpec() instanceof K8sApplyStepParameters)) {
       return Collections.emptyList();
     }
+    if (((K8sApplyStepParameters) stepElementParameters.getSpec()).getOverrides() == null) {
+      return Collections.emptyList();
+    }
     List<ManifestOutcome> manifestOutcomes = new ArrayList<>();
     List<ManifestAttributes> manifestAttributesList =
         ((K8sApplyStepParameters) stepElementParameters.getSpec())
