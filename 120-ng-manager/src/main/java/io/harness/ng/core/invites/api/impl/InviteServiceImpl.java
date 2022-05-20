@@ -650,10 +650,11 @@ public class InviteServiceImpl implements InviteService {
     // flush all events so that event queue is empty
     telemetryReporter.flush();
 
+    properties.put("platform", "NG");
     // Wait 20 seconds, to ensure identify is sent before track
     ScheduledExecutorService tempExecutor = Executors.newSingleThreadScheduledExecutor();
     tempExecutor.schedule(()
-                              -> telemetryReporter.sendTrackEvent("Invited Accepted", userEmail, accountId, properties,
+                              -> telemetryReporter.sendTrackEvent("Invite  Accepted", userEmail, accountId, properties,
                                   ImmutableMap.<Destination, Boolean>builder()
                                       .put(Destination.MARKETO, true)
                                       .put(Destination.AMPLITUDE, true)
