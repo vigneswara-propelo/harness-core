@@ -80,7 +80,7 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
   String content = "content";
   ConnectorInfoDTO connectorInfo;
   PageRequest pageRequest;
-
+  Scope scope;
   @Before
   public void setup() throws Exception {
     MockitoAnnotations.initMocks(this);
@@ -92,6 +92,7 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
                                              .url(repoURL)
                                              .build();
     connectorInfo = ConnectorInfoDTO.builder().connectorConfig(githubConnector).build();
+    scope = getDefaultScope();
     when(gitSyncConnectorHelper.getScmConnector(any(), any(), any(), any()))
         .thenReturn((ScmConnector) connectorInfo.getConnectorConfig());
     when(gitSyncConnectorHelper.getScmConnectorForGivenRepo(any(), any(), any(), any(), any()))
@@ -155,8 +156,8 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
         CreateBranchResponse.newBuilder().setStatus(404).setError(errorMessage).build();
     when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any())).thenReturn(createBranchResponse);
     try {
-      scmFacilitatorService.createNewBranch(accountIdentifier, orgIdentifier, projectIdentifier,
-          (ScmConnector) connectorInfo.getConnectorConfig(), branch, defaultBranch);
+      scmFacilitatorService.createNewBranch(
+          scope, (ScmConnector) connectorInfo.getConnectorConfig(), branch, defaultBranch);
     } catch (Exception ex) {
       WingsException exception = ExceptionUtils.cause(ScmResourceNotFoundException.class, ex);
       assertThat(exception).isNotNull();
