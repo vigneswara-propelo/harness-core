@@ -43,6 +43,7 @@ import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.GitClientException;
 import io.harness.exception.GitConnectionDelegateException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.exception.NonPersistentLockException;
 import io.harness.exception.YamlException;
 import io.harness.filesystem.FileIo;
@@ -75,6 +76,7 @@ import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.TransportException;
+import org.jetbrains.annotations.NotNull;
 
 @OwnedBy(CDP)
 @Singleton
@@ -451,5 +453,14 @@ public class GitClientHelper {
         unhandled(gitDiffChangeType);
     }
     return null;
+  }
+
+  public static void validateURL(@NotNull String url) {
+    Matcher m = GIT_URL_NO_OWNER.matcher(url);
+    log.info("url==" + url);
+    if (!(m.find())) {
+      throw new InvalidRequestException(
+          format("Invalid repo url  %s,should start with either http:// , https:// , ssh:// or git@", url));
+    }
   }
 }
