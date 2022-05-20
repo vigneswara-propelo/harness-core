@@ -115,6 +115,11 @@ public class CloudformationRollbackStep extends TaskExecutableWithRollbackAndRba
           cloudformationTaskNGResponse.getErrorMessage());
     }
 
+    String provisionerId = getParameterFieldValue(((CloudformationRollbackStepParameters) stepParameters.getSpec())
+                                                      .getConfiguration()
+                                                      .getProvisionerIdentifier());
+    cloudformationConfigDAL.clearStoredCloudformationConfig(ambiance, provisionerId);
+
     StepResponseBuilder stepResponseBuilder =
         StepResponse.builder()
             .unitProgressList(cloudformationTaskNGResponse.getUnitProgressData().getUnitProgresses())

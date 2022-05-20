@@ -300,7 +300,7 @@ public class CloudformationStepHelper {
         .projectId(AmbianceUtils.getProjectIdentifier(ambiance))
         .provisionerIdentifier(
             getParameterFieldValue(cloudformationCreateStackStepParameters.getProvisionerIdentifier()))
-        .pipelineExecutionId(ambiance.getPlanExecutionId())
+        .stageExecutionId(ambiance.getStageExecutionId())
         .connectorRef(getParameterFieldValue(stepConfiguration.getConnectorRef()))
         .region(getParameterFieldValue(stepConfiguration.getRegion()))
         .templateUrl(passThroughData.getTemplateUrl())

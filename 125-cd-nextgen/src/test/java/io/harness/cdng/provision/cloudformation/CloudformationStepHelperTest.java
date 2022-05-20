@@ -901,7 +901,7 @@ public class CloudformationStepHelperTest extends CategoryTest {
     assertThat(cloudformationConfig.getAccountId()).isEqualTo("account");
     assertThat(cloudformationConfig.getOrgId()).isEqualTo("org");
     assertThat(cloudformationConfig.getProjectId()).isEqualTo("project");
-    assertThat(cloudformationConfig.getPipelineExecutionId()).isEqualTo("executionId");
+    assertThat(cloudformationConfig.getStageExecutionId()).isEqualTo("stageExecutionId");
     assertThat(cloudformationConfig.getProvisionerIdentifier()).isEqualTo("provisionerIdentifier");
     assertThat(cloudformationConfig.getTemplateBody()).isEqualTo("templateBody");
     assertThat(cloudformationConfig.getTemplateUrl()).isEqualTo("templateUrl");
@@ -1085,6 +1085,9 @@ public class CloudformationStepHelperTest extends CategoryTest {
     setupAbstractions.put(SetupAbstractionKeys.orgIdentifier, "org");
     setupAbstractions.put(SetupAbstractionKeys.projectIdentifier, "project");
 
-    return Ambiance.newBuilder().putAllSetupAbstractions(setupAbstractions).setPlanExecutionId("executionId").build();
+    return Ambiance.newBuilder()
+        .putAllSetupAbstractions(setupAbstractions)
+        .setStageExecutionId("stageExecutionId")
+        .build();
   }
 }
