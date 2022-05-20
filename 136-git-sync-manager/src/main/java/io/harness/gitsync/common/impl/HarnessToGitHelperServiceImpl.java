@@ -54,6 +54,7 @@ import io.harness.gitsync.common.dtos.ScmCreatePRResponseDTO;
 import io.harness.gitsync.common.dtos.ScmGetFileByBranchRequestDTO;
 import io.harness.gitsync.common.dtos.ScmGetFileResponseDTO;
 import io.harness.gitsync.common.dtos.ScmUpdateFileRequestDTO;
+import io.harness.gitsync.common.helper.GitFilePathHelper;
 import io.harness.gitsync.common.helper.GitSyncConnectorHelper;
 import io.harness.gitsync.common.helper.ScmExceptionUtils;
 import io.harness.gitsync.common.helper.ScopeIdentifierMapper;
@@ -345,6 +346,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   @Override
   public GetFileResponse getFileByBranch(GetFileRequest getFileRequest) {
     try {
+      GitFilePathHelper.validateFilePath(getFileRequest.getFilePath());
       ScmGetFileResponseDTO scmGetFileResponseDTO = scmFacilitatorService.getFileByBranch(
           ScmGetFileByBranchRequestDTO.builder()
               .branchName(getFileRequest.getBranchName())
@@ -372,6 +374,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   @Override
   public io.harness.gitsync.CreateFileResponse createFile(CreateFileRequest createFileRequest) {
     try {
+      GitFilePathHelper.validateFilePath(createFileRequest.getFilePath());
       ScmCommitFileResponseDTO scmCommitFileResponseDTO = scmFacilitatorService.createFile(
           ScmCreateFileRequestDTO.builder()
               .repoName(createFileRequest.getRepoName())
@@ -403,6 +406,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   @Override
   public io.harness.gitsync.UpdateFileResponse updateFile(UpdateFileRequest updateFileRequest) {
     try {
+      GitFilePathHelper.validateFilePath(updateFileRequest.getFilePath());
       ScmCommitFileResponseDTO scmCommitFileResponseDTO = scmFacilitatorService.updateFile(
           ScmUpdateFileRequestDTO.builder()
               .repoName(updateFileRequest.getRepoName())
@@ -556,6 +560,10 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   }
 
   private ErrorDetails prepareDefaultErrorDetails(WingsException ex) {
-    return ErrorDetails.newBuilder().setErrorMessage(ExceptionUtils.getMessage(ex)).build();
+    return ErrorDetails.newBuilder()
+        .setErrorMessage(ExceptionUtils.getMessage(ex))
+        .setExplanationMessage(ScmExceptionUtils.getExplanationMessage(ex))
+        .setHintMessage(ScmExceptionUtils.getHintMessage(ex))
+        .build();
   }
 }

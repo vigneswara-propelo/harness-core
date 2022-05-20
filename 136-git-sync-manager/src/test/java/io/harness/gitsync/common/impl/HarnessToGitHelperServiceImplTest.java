@@ -80,7 +80,7 @@ public class HarnessToGitHelperServiceImplTest extends GitSyncTestBase {
   String identifier = "identifier";
   String fileContent = "fileContent";
   String blobId = "blobId";
-  String filePath = "filePath";
+  String filePath = ".harness/filePath.yaml";
   String repoName = "repoName";
   String hintMessage = "hintMessage";
   String explanationMessage = "explanationMessage";
