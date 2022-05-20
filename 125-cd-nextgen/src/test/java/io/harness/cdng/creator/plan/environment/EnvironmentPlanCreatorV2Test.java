@@ -18,7 +18,6 @@ import io.harness.cdng.CDNGTestBase;
 import io.harness.cdng.creator.plan.PlanCreatorConstants;
 import io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig;
 import io.harness.cdng.infra.steps.EnvironmentStep;
-import io.harness.cdng.infra.steps.InfraSectionStepParameters;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.pms.contracts.plan.Dependency;
@@ -43,9 +42,9 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 
 @OwnedBy(HarnessTeam.CDC)
-public class EnvironmentPlanCreatorTest extends CDNGTestBase {
+public class EnvironmentPlanCreatorV2Test extends CDNGTestBase {
   @Inject KryoSerializer kryoSerializer;
-  @Inject @InjectMocks EnvironmentPlanCreator environmentPlanCreator;
+  @Inject @InjectMocks EnvironmentPlanCreatorV2 environmentPlanCreator;
 
   @Test
   @Owner(developers = PRASHANTSHARMA)
@@ -80,8 +79,6 @@ public class EnvironmentPlanCreatorTest extends CDNGTestBase {
     YamlField environmentYaml = YamlUtils.readTree(yaml);
 
     HashMap<String, ByteString> metadataDependency = new HashMap<>();
-    metadataDependency.put(YamlTypes.INFRASTRUCTURE_STEP_PARAMETERS,
-        ByteString.copyFrom(kryoSerializer.asDeflatedBytes(InfraSectionStepParameters.builder().build())));
     metadataDependency.put(YamlTypes.SERVICE_SPEC, ByteString.copyFrom(kryoSerializer.asDeflatedBytes("service_spec")));
     PlanCreationContext ctx = PlanCreationContext.builder()
                                   .currentField(environmentYaml)

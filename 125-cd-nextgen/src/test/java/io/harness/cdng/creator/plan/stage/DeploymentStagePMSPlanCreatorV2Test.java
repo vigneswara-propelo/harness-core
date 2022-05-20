@@ -99,7 +99,7 @@ public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
     assertThat(updatedEnvironmentYamlField).isNotNull();
     assertThat(updatedEnvironmentYamlField.getNode().getFieldName()).isEqualTo(YamlTypes.ENVIRONMENT_YAML);
     assertThat(updatedEnvironmentYamlField.getNode().getField("environmentRef").getNode().asText())
-        .isEqualTo(environmentPlanCreatorConfig.getEnvironmentRef());
+        .isEqualTo(environmentPlanCreatorConfig.getEnvironmentRef().getValue());
     List<YamlNode> infrastructureDefinitions =
         updatedEnvironmentYamlField.getNode().getField("infrastructureDefinitions").getNode().asArray();
     assertThat(infrastructureDefinitions.size()).isEqualTo(2);

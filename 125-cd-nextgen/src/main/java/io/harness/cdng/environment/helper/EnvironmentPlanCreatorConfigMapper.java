@@ -16,6 +16,7 @@ import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.environment.mappers.EnvironmentMapper;
 import io.harness.ng.core.environment.yaml.NGEnvironmentInfoConfig;
 import io.harness.ng.core.infrastructure.entity.InfrastructureEntity;
+import io.harness.pms.yaml.ParameterField;
 
 import java.util.List;
 import lombok.experimental.UtilityClass;
@@ -28,7 +29,7 @@ public class EnvironmentPlanCreatorConfigMapper {
     NGEnvironmentInfoConfig ngEnvironmentInfoConfig =
         EnvironmentMapper.toNGEnvironmentConfig(environment).getNgEnvironmentInfoConfig();
     return EnvironmentPlanCreatorConfig.builder()
-        .environmentRef(ngEnvironmentInfoConfig.getIdentifier())
+        .environmentRef(ParameterField.createValueField(ngEnvironmentInfoConfig.getIdentifier()))
         .identifier(ngEnvironmentInfoConfig.getIdentifier())
         .projectIdentifier(ngEnvironmentInfoConfig.getProjectIdentifier())
         .orgIdentifier(ngEnvironmentInfoConfig.getOrgIdentifier())
