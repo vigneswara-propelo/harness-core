@@ -5,21 +5,33 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.serverless;
+package io.harness.entities.instanceinfo;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-@OwnedBy(HarnessTeam.CDP)
+@OwnedBy(HarnessTeam.DX)
 @Data
 @Builder
-public class ServerlessAwsLambdaFunction {
-  private String functionName;
+@EqualsAndHashCode(callSuper = true)
+public class ServerlessAwsLambdaInstanceInfo extends InstanceInfo {
+  // serverless details
+  @NotNull private String serviceName;
+  @NotNull private String stage;
+
+  // lambda function details
+  @NotNull private String functionName;
+  @NotNull private String region;
   private String handler;
   private String memorySize;
   private String runTime;
   private Integer timeout;
+
+  // harness
+  private String infraStructureKey;
 }
