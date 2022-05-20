@@ -173,9 +173,11 @@ public class CloudformationCreateStackStep
     cloudformationStepHelper.saveCloudFormationInheritOutput(stepConfiguration,
         getParameterFieldValue(cloudformationCreateStackStepParameters.getProvisionerIdentifier()), ambiance,
         cloudFormationCreateStackNGResponse.isExistentStack());
-    CloudformationConfig cloudformationConfig = cloudformationStepHelper.getCloudformationConfig(
-        ambiance, stepParameters, (CloudFormationCreateStackPassThroughData) passThroughData);
-    cloudformationConfigDAL.saveCloudformationConfig(cloudformationConfig);
+    if (!cloudformationTaskNGResponse.isUpdatedNotPerformed()) {
+      CloudformationConfig cloudformationConfig = cloudformationStepHelper.getCloudformationConfig(
+          ambiance, stepParameters, (CloudFormationCreateStackPassThroughData) passThroughData);
+      cloudformationConfigDAL.saveCloudformationConfig(cloudformationConfig);
+    }
     return StepResponse.builder()
         .unitProgressList(cloudformationTaskNGResponse.getUnitProgressData().getUnitProgresses())
         .stepOutcome(StepResponse.StepOutcome.builder()
