@@ -16,9 +16,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.CDNGTestBase;
 import io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig;
-import io.harness.cdng.pipeline.PipelineInfrastructure;
 import io.harness.cdng.visitor.YamlTypes;
-import io.harness.pms.contracts.plan.Dependencies;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
@@ -48,28 +46,12 @@ public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
     return YamlUtils.readTree(yaml);
   }
 
-  private String getYamlFromPath(String path) throws IOException {
+  private String getYamlFromPath(String path) {
     ClassLoader classLoader = this.getClass().getClassLoader();
     InputStream yamlFile = classLoader.getResourceAsStream(path);
     assertThat(yamlFile).isNotNull();
 
     return new Scanner(yamlFile, "UTF-8").useDelimiter("\\A").next();
-  }
-  @Test
-  @Owner(developers = PRASHANTSHARMA)
-  @Category(UnitTests.class)
-  public void testGetDependenciesForService() throws IOException {
-    YamlField serviceField = getYamlFieldFromPath("cdng/plan/service.yml");
-
-    String serviceNodeId = serviceField.getNode().getUuid();
-    Dependencies dependencies =
-        deploymentStagePMSPlanCreator.getDependenciesForService(serviceField, PipelineInfrastructure.builder().build());
-    assertThat(dependencies).isNotEqualTo(null);
-    assertThat(dependencies.getDependenciesMap().containsKey(serviceNodeId)).isEqualTo(true);
-    assertThat(dependencies.getDependencyMetadataMap()
-                   .get(serviceNodeId)
-                   .containsMetadata(YamlTypes.INFRASTRUCTURE_STEP_PARAMETERS))
-        .isEqualTo(true);
   }
 
   @Test
