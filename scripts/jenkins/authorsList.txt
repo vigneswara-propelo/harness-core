@@ -172,6 +172,7 @@ Shalini Agrawal shalini.agarwal@harness.io
 Shashank Singh shashank.singh@harness.io
 Shaswat Deep shaswat.deep@harness.io
 Shivakumar Ningappa shivakumar.ningappa@harness.io
+Shreyas Singh shreyas.singh@harness.io
 Shubham Agrawal shubham.agrawal@harness.io
 Shubhanshu Verma shubhanshu.verma@harness.io
 Sowmya K sowmya.k@harness.io
