@@ -7,17 +7,16 @@
 
 package io.harness.exception;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
-
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ErrorCode;
 
-@OwnedBy(PL)
-public class ScmBadRequestException extends ScmException {
+@OwnedBy(HarnessTeam.PL)
+public class ScmConflictV2Exception extends ScmException {
   private static final String MESSAGE_ARG = "message";
 
-  public ScmBadRequestException(String errorMessage) {
-    super(errorMessage, null, ErrorCode.SCM_BAD_REQUEST);
+  public ScmConflictV2Exception(String errorMessage) {
+    super(errorMessage, ErrorCode.SCM_CONFLICT_ERROR_V2);
     super.param(MESSAGE_ARG, errorMessage);
   }
 }
