@@ -26,6 +26,7 @@ import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.cvng.notification.transformer.NotificationRuleConditionTransformer;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
 import io.harness.exception.DuplicateFieldException;
+import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageResponse;
 import io.harness.persistence.HPersistence;
@@ -165,8 +166,18 @@ public class NotificationRuleServiceImpl implements NotificationRuleService {
   }
 
   @Override
-  public List<NotificationRuleRef> getNotificationRuleRefs(
-      List<NotificationRuleRefDTO> notificationRuleRefDTOS, Instant lastSuccessfullNotificationTime) {
+  public List<NotificationRuleRef> getNotificationRuleRefs(ProjectParams projectParams,
+      List<NotificationRuleRefDTO> notificationRuleRefDTOS, NotificationRuleType type,
+      Instant lastSuccessfullNotificationTime) {
+    List<NotificationRule> notificationRules = getEntities(projectParams,
+        notificationRuleRefDTOS.stream().map(ref -> ref.getNotificationRuleRef()).collect(Collectors.toList()));
+    for (NotificationRule rule : notificationRules) {
+      if (rule.getType() != type) {
+        throw new InvalidArgumentsException(
+            String.format("NotificationRule with identifier %s is of type %s and cannot be added into %s",
+                rule.getIdentifier(), rule.getType(), type));
+      }
+    }
     return notificationRuleRefDTOS.stream()
         .map(notificationRuleRefDTO
             -> NotificationRuleRef.builder()

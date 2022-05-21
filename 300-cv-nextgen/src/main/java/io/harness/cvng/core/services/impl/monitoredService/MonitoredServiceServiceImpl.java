@@ -76,6 +76,7 @@ import io.harness.cvng.dashboard.services.api.TimeSeriesDashboardService;
 import io.harness.cvng.notification.beans.NotificationRuleRef;
 import io.harness.cvng.notification.beans.NotificationRuleRefDTO;
 import io.harness.cvng.notification.beans.NotificationRuleResponse;
+import io.harness.cvng.notification.beans.NotificationRuleType;
 import io.harness.cvng.notification.entities.MonitoredServiceNotificationRule;
 import io.harness.cvng.notification.entities.MonitoredServiceNotificationRule.MonitoredServiceChangeImpactCondition;
 import io.harness.cvng.notification.entities.MonitoredServiceNotificationRule.MonitoredServiceChangeObservedCondition;
@@ -360,8 +361,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                       .projectIdentifier(monitoredService.getProjectIdentifier())
                                       .build();
     updateOperations.set(MonitoredServiceKeys.notificationRuleRefs,
-        notificationRuleService.getNotificationRuleRefs(
-            monitoredServiceDTO.getNotificationRuleRefs(), Instant.ofEpochSecond(0)));
+        notificationRuleService.getNotificationRuleRefs(projectParams, monitoredServiceDTO.getNotificationRuleRefs(),
+            NotificationRuleType.MONITORED_SERVICE, Instant.ofEpochSecond(0)));
     validateDependencyMetadata(projectParams, monitoredServiceDTO.getDependencies());
     serviceDependencyService.updateDependencies(
         projectParams, monitoredService.getIdentifier(), monitoredServiceDTO.getDependencies());
@@ -797,8 +798,9 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .type(monitoredServiceDTO.getType())
             .enabled(getMonitoredServiceEnableStatus())
             .tags(TagMapper.convertToList(monitoredServiceDTO.getTags()))
-            .notificationRuleRefs(notificationRuleService.getNotificationRuleRefs(
-                monitoredServiceDTO.getNotificationRuleRefs(), Instant.ofEpochSecond(0)))
+            .notificationRuleRefs(notificationRuleService.getNotificationRuleRefs(projectParams,
+                monitoredServiceDTO.getNotificationRuleRefs(), NotificationRuleType.MONITORED_SERVICE,
+                Instant.ofEpochSecond(0)))
             .build();
     if (monitoredServiceDTO.getTemplate() != null) {
       monitoredServiceEntity.setTemplateIdentifier(monitoredServiceDTO.getTemplate().getTemplateRef());
@@ -1442,14 +1444,14 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
   @Override
   public void sendNotification(MonitoredService monitoredService) {
+    ProjectParams projectParams = ProjectParams.builder()
+                                      .accountIdentifier(monitoredService.getAccountId())
+                                      .orgIdentifier(monitoredService.getOrgIdentifier())
+                                      .projectIdentifier(monitoredService.getProjectIdentifier())
+                                      .build();
     List<NotificationRule> notificationRules = getNotificationRules(monitoredService);
     Map<String, String> templateData =
-        getNotificationTemplateData(ProjectParams.builder()
-                                        .accountIdentifier(monitoredService.getAccountId())
-                                        .orgIdentifier(monitoredService.getOrgIdentifier())
-                                        .projectIdentifier(monitoredService.getProjectIdentifier())
-                                        .build(),
-            templateIdentifierName, monitoredService.getName());
+        getNotificationTemplateData(projectParams, templateIdentifierName, monitoredService.getName());
     Set<String> notificationRuleRefsWithChange = new HashSet<>();
 
     for (NotificationRule notificationRule : notificationRules) {
@@ -1468,7 +1470,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         }
       }
     }
-    updateNotificationRuleRefInMonitoredService(monitoredService, new ArrayList<>(notificationRuleRefsWithChange));
+    updateNotificationRuleRefInMonitoredService(
+        projectParams, monitoredService, new ArrayList<>(notificationRuleRefsWithChange));
   }
 
   @Override
@@ -1531,7 +1534,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   private void updateNotificationRuleRefInMonitoredService(
-      MonitoredService monitoredService, List<String> notificationRuleRefs) {
+      ProjectParams projectParams, MonitoredService monitoredService, List<String> notificationRuleRefs) {
     List<NotificationRuleRef> allNotificationRuleRefs = new ArrayList<>();
     List<NotificationRuleRef> notificationRuleRefsWithoutChange =
         monitoredService.getNotificationRuleRefs()
@@ -1543,8 +1546,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .map(notificationRuleRef
                 -> NotificationRuleRefDTO.builder().notificationRuleRef(notificationRuleRef).enabled(true).build())
             .collect(Collectors.toList());
-    List<NotificationRuleRef> notificationRuleRefsWithChange =
-        notificationRuleService.getNotificationRuleRefs(notificationRuleRefDTOs, clock.instant());
+    List<NotificationRuleRef> notificationRuleRefsWithChange = notificationRuleService.getNotificationRuleRefs(
+        projectParams, notificationRuleRefDTOs, NotificationRuleType.MONITORED_SERVICE, clock.instant());
     allNotificationRuleRefs.addAll(notificationRuleRefsWithChange);
     allNotificationRuleRefs.addAll(notificationRuleRefsWithoutChange);
     UpdateOperations<MonitoredService> updateOperations = hPersistence.createUpdateOperations(MonitoredService.class);
