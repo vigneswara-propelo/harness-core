@@ -14,8 +14,10 @@ import static io.harness.ngtriggers.beans.source.NGTriggerType.MANIFEST;
 import static io.harness.polling.contracts.HelmVersion.V2;
 import static io.harness.rule.OwnerRule.ADWAIT;
 import static io.harness.rule.OwnerRule.BUHA;
+import static io.harness.rule.OwnerRule.HARSH;
 import static io.harness.rule.OwnerRule.PIYUSH_BHUWALKA;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -33,6 +35,9 @@ import io.harness.ngtriggers.beans.source.artifact.EcrSpec;
 import io.harness.ngtriggers.beans.source.artifact.HelmManifestSpec;
 import io.harness.ngtriggers.beans.source.artifact.ManifestTriggerConfig;
 import io.harness.ngtriggers.buildtriggers.helpers.BuildTriggerHelper;
+import io.harness.pms.inputset.InputSetErrorDTOPMS;
+import io.harness.pms.inputset.InputSetErrorResponseDTOPMS;
+import io.harness.pms.inputset.InputSetErrorWrapperDTOPMS;
 import io.harness.polling.contracts.AcrPayload;
 import io.harness.polling.contracts.ArtifactoryRegistryPayload;
 import io.harness.polling.contracts.DockerHubPayload;
@@ -47,6 +52,9 @@ import io.harness.polling.contracts.S3HelmPayload;
 import io.harness.rule.Owner;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.Before;
 import org.junit.Test;
@@ -504,6 +512,30 @@ public class BuildTriggerHelperTest extends CategoryTest {
                                TriggerDetails.builder().ngTriggerConfigV2(ngTriggerConfigV2).build(), "artifactRef"))
         .isInstanceOf(InvalidArgumentsException.class)
         .hasMessage("stageIdentifier can not be blank/missing. artifactRef can not be blank/missing. ");
+  }
+
+  @Test
+  @Owner(developers = HARSH)
+  @Category(UnitTests.class)
+  public void testErrorMapGeneration() {
+    Map<String, InputSetErrorResponseDTOPMS> map = new HashMap<>();
+    map.put("path.abc",
+        InputSetErrorResponseDTOPMS.builder()
+            .errors(Arrays.asList(InputSetErrorDTOPMS.builder()
+                                      .identifierOfErrorSource("identifierOfErrorSource")
+                                      .message("message1")
+                                      .fieldName("fieldName1")
+                                      .build()))
+            .build());
+
+    Map<String, Map<String, String>> expectedErrorMap = new HashMap<>();
+    Map<String, String> fields = new HashMap<>();
+    fields.put("fieldName", "fieldName1");
+    fields.put("message", "message1");
+    expectedErrorMap.put("path.abc", fields);
+    assertThat(
+        buildTriggerHelper.generateErrorMap(InputSetErrorWrapperDTOPMS.builder().uuidToErrorResponseMap(map).build()))
+        .isEqualTo(expectedErrorMap);
   }
 
   @Test
