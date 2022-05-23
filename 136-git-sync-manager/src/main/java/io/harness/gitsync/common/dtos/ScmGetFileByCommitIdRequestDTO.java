@@ -9,6 +9,7 @@ package io.harness.gitsync.common.dtos;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Scope;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -19,9 +20,10 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class ScmGetFileResponseDTO {
-  String fileContent;
+public class ScmGetFileByCommitIdRequestDTO {
+  Scope scope;
+  String repoName;
   String commitId;
-  String blobId;
-  String branchName;
+  String filePath;
+  String connectorRef;
 }
