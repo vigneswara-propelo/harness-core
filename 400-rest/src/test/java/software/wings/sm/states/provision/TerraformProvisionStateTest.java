@@ -2054,6 +2054,9 @@ public class TerraformProvisionStateTest extends WingsBaseTest {
         .when(executionContext)
         .prepareSweepingOutputBuilder(any(SweepingOutputInstance.Scope.class));
     doReturn(true).when(featureFlagService).isEnabled(eq(FeatureName.OPTIMIZED_TF_PLAN), anyString());
+    doReturn(false)
+        .when(featureFlagService)
+        .isEnabled(eq(FeatureName.SAVE_TERRAFORM_APPLY_SWEEPING_OUTPUT_TO_WORKFLOW), anyString());
 
     if (replaceExistingInstance) {
       doReturn(SweepingOutputInstance.builder()
@@ -2078,5 +2081,11 @@ public class TerraformProvisionStateTest extends WingsBaseTest {
     TerraformPlanParam savedPlanParam = (TerraformPlanParam) savedInstance.getValue();
     assertThat(savedPlanParam.getTfplan()).isNull();
     assertThat(savedPlanParam.getTfPlanJsonFileId()).isEqualTo("fileId");
+
+    doReturn(true)
+        .when(featureFlagService)
+        .isEnabled(eq(FeatureName.SAVE_TERRAFORM_APPLY_SWEEPING_OUTPUT_TO_WORKFLOW), anyString());
+    state.handleAsyncResponse(executionContext, response);
+    verify(executionContext, times(1)).prepareSweepingOutputBuilder(eq(Scope.WORKFLOW));
   }
 }
