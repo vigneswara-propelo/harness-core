@@ -150,7 +150,7 @@ public class TriggerExecutionHelper {
 
       ByteString gitSyncBranchContextByteString;
       if (isEmpty(ngTriggerEntity.getPipelineBranchName())
-          && isNotEmpty(triggerDetails.getNgTriggerConfigV2().getInputYaml())) {
+          && isEmpty(triggerDetails.getNgTriggerConfigV2().getInputSetRefs())) {
         pipelineEntityToExecute = pmsPipelineService.get(ngTriggerEntity.getAccountId(),
             ngTriggerEntity.getOrgIdentifier(), ngTriggerEntity.getProjectIdentifier(), targetIdentifier, false);
         if (!pipelineEntityToExecute.isPresent()) {
@@ -172,11 +172,13 @@ public class TriggerExecutionHelper {
             new ServicePrincipal(AuthorizationServiceHeader.PIPELINE_SERVICE.getServiceId()));
         SourcePrincipalContextBuilder.setSourcePrincipal(
             new ServicePrincipal(AuthorizationServiceHeader.PIPELINE_SERVICE.getServiceId()));
-        String branch;
-        if (isBranchExpr(ngTriggerEntity.getPipelineBranchName())) {
-          branch = resolveBranchExpression(ngTriggerEntity.getPipelineBranchName(), triggerWebhookEvent);
-        } else {
-          branch = ngTriggerEntity.getPipelineBranchName();
+        String branch = null;
+        if (isNotEmpty(ngTriggerEntity.getPipelineBranchName())) {
+          if (isBranchExpr(ngTriggerEntity.getPipelineBranchName())) {
+            branch = resolveBranchExpression(ngTriggerEntity.getPipelineBranchName(), triggerWebhookEvent);
+          } else {
+            branch = ngTriggerEntity.getPipelineBranchName();
+          }
         }
 
         GitSyncBranchContext gitSyncBranchContext =
@@ -213,7 +215,7 @@ public class TriggerExecutionHelper {
 
       String runtimeInputYaml = null;
       if (isEmpty(ngTriggerEntity.getPipelineBranchName())
-          && isNotEmpty(triggerDetails.getNgTriggerConfigV2().getInputYaml())) {
+          && isEmpty(triggerDetails.getNgTriggerConfigV2().getInputSetRefs())) {
         runtimeInputYaml = triggerDetails.getNgTriggerConfigV2().getInputYaml();
       } else {
         runtimeInputYaml = fetchInputSetYAML(triggerDetails, triggerWebhookEvent);

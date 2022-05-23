@@ -135,7 +135,7 @@ public class TriggerEventExecutionHelper {
     NGTriggerEntity ngTriggerEntity = triggerDetails.getNgTriggerEntity();
     try {
       if (isEmpty(ngTriggerEntity.getPipelineBranchName())
-          && isNotEmpty(triggerDetails.getNgTriggerConfigV2().getInputYaml())) {
+          && isEmpty(triggerDetails.getNgTriggerConfigV2().getInputSetRefs())) {
         runtimeInputYaml = triggerDetails.getNgTriggerConfigV2().getInputYaml();
       } else {
         SecurityContextBuilder.setContext(
@@ -194,7 +194,7 @@ public class TriggerEventExecutionHelper {
                                           .build();
     try {
       if (isEmpty(ngTriggerEntity.getPipelineBranchName())
-          && isNotEmpty(triggerDetails.getNgTriggerConfigV2().getInputYaml())) {
+          && isEmpty(triggerDetails.getNgTriggerConfigV2().getInputSetRefs())) {
         runtimeInputYaml = triggerDetails.getNgTriggerConfigV2().getInputYaml();
       } else {
         SecurityContextBuilder.setContext(
