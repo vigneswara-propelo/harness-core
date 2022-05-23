@@ -14,6 +14,8 @@ import static java.lang.String.format;
 import io.harness.batch.processing.YamlPropertyLoaderFactory;
 import io.harness.batch.processing.billing.timeseries.service.impl.BillingDataServiceImpl;
 import io.harness.batch.processing.billing.timeseries.service.impl.K8sUtilizationGranularDataServiceImpl;
+import io.harness.batch.processing.billing.timeseries.service.impl.PodCountComputationServiceImpl;
+import io.harness.batch.processing.billing.timeseries.service.impl.UtilizationDataServiceImpl;
 import io.harness.batch.processing.billing.timeseries.service.impl.WeeklyReportServiceImpl;
 import io.harness.batch.processing.budgets.service.impl.BudgetAlertsServiceImpl;
 import io.harness.batch.processing.budgets.service.impl.BudgetCostUpdateService;
@@ -91,6 +93,8 @@ public class EventJobScheduler {
   @Autowired private ConnectorsHealthUpdateService connectorsHealthUpdateService;
   @Autowired private K8SWorkloadService k8SWorkloadService;
   @Autowired private AwsAccountTagsCollectionService awsAccountTagsCollectionService;
+  @Autowired private UtilizationDataServiceImpl utilizationDataService;
+  @Autowired private PodCountComputationServiceImpl podCountComputationService;
 
   @PostConstruct
   public void orderJobs() {
@@ -170,6 +174,24 @@ public class EventJobScheduler {
     if (masterPod) {
       try {
         k8sUtilizationGranularDataService.purgeOldKubernetesUtilData();
+      } catch (Exception ex) {
+        log.error("Exception while running runTimescalePurgeJob", ex);
+      }
+
+      try {
+        utilizationDataService.purgeUtilisationData();
+      } catch (Exception ex) {
+        log.error("Exception while running runTimescalePurgeJob", ex);
+      }
+
+      try {
+        podCountComputationService.purgeActivePodCount();
+      } catch (Exception ex) {
+        log.error("Exception while running runTimescalePurgeJob", ex);
+      }
+
+      try {
+        billingDataService.purgeOldBillingData();
       } catch (Exception ex) {
         log.error("Exception while running runTimescalePurgeJob", ex);
       }
