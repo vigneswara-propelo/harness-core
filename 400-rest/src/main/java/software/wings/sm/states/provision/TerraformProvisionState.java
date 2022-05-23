@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.beans.EnvironmentType.ALL;
 import static io.harness.beans.ExecutionStatus.FAILED;
 import static io.harness.beans.ExecutionStatus.SUCCESS;
+import static io.harness.beans.FeatureName.ACTIVITY_ID_BASED_TF_BASE_DIR;
 import static io.harness.beans.FeatureName.GIT_HOST_CONNECTIVITY;
 import static io.harness.beans.FeatureName.TERRAFORM_AWS_CP_AUTHENTICATION;
 import static io.harness.beans.OrchestrationWorkflowType.BUILD;
@@ -790,7 +791,9 @@ public abstract class TerraformProvisionState extends State {
             .useTfClient(
                 featureFlagService.isEnabled(FeatureName.USE_TF_CLIENT, executionContext.getApp().getAccountId()))
             .isGitHostConnectivityCheck(
-                featureFlagService.isEnabled(GIT_HOST_CONNECTIVITY, executionContext.getApp().getAccountId()));
+                featureFlagService.isEnabled(GIT_HOST_CONNECTIVITY, executionContext.getApp().getAccountId()))
+            .useActivityIdBasedTfBaseDir(
+                featureFlagService.isEnabled(ACTIVITY_ID_BASED_TF_BASE_DIR, context.getAccountId()));
 
     if (featureFlagService.isEnabled(TERRAFORM_AWS_CP_AUTHENTICATION, context.getAccountId())) {
       setAWSAuthParamsIfPresent(context, terraformProvisionParametersBuilder);
@@ -1036,7 +1039,9 @@ public abstract class TerraformProvisionState extends State {
             .useTfClient(
                 featureFlagService.isEnabled(FeatureName.USE_TF_CLIENT, executionContext.getApp().getAccountId()))
             .isGitHostConnectivityCheck(
-                featureFlagService.isEnabled(GIT_HOST_CONNECTIVITY, executionContext.getApp().getAccountId()));
+                featureFlagService.isEnabled(GIT_HOST_CONNECTIVITY, executionContext.getApp().getAccountId()))
+            .useActivityIdBasedTfBaseDir(
+                featureFlagService.isEnabled(ACTIVITY_ID_BASED_TF_BASE_DIR, context.getAccountId()));
 
     if (featureFlagService.isEnabled(TERRAFORM_AWS_CP_AUTHENTICATION, context.getAccountId())) {
       setAWSAuthParamsIfPresent(context, terraformProvisionParametersBuilder);
