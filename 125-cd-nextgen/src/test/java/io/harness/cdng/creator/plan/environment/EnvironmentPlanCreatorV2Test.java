@@ -16,8 +16,8 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.CDNGTestBase;
 import io.harness.cdng.creator.plan.PlanCreatorConstants;
+import io.harness.cdng.creator.plan.environment.steps.EnvironmentStepV2;
 import io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig;
-import io.harness.cdng.infra.steps.EnvironmentStep;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.pms.contracts.plan.Dependency;
@@ -90,7 +90,7 @@ public class EnvironmentPlanCreatorV2Test extends CDNGTestBase {
     assertThat(planForField).isNotNull();
     assertThat(planForField.getPlanNode()).isNotNull();
     PlanNode planNode = planForField.getPlanNode();
-    assertThat(planNode.getStepType()).isEqualTo(EnvironmentStep.STEP_TYPE);
+    assertThat(planNode.getStepType()).isEqualTo(EnvironmentStepV2.STEP_TYPE);
     assertThat(planNode.getName()).isEqualTo(PlanCreatorConstants.ENVIRONMENT_NODE_NAME);
     assertThat(planNode.getIdentifier()).isEqualTo(YamlTypes.ENVIRONMENT_YAML);
   }

@@ -19,18 +19,47 @@ import io.harness.cdng.environment.steps.EnvironmentStepParameters;
 import io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.yaml.core.variables.NGServiceOverrides;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @OwnedBy(HarnessTeam.CDC)
-public class EnvPlanCreatorConfigHelperTest extends CDNGTestBase {
+public class EnvironmentMapperTest extends CDNGTestBase {
   @Test
   @Owner(developers = PRASHANTSHARMA)
   @Category(UnitTests.class)
-  public void testGetFieldClass() {
+  public void toOutcome() {
+    Map<String, Object> serviceOverrides = new HashMap<>();
+    serviceOverrides.put("service", NGServiceOverrides.builder().build());
+
+    Map<String, Object> variables = new HashMap<>();
+    variables.put("variable", NGServiceOverrides.builder().build());
+
+    EnvironmentStepParameters environmentStepParameters = EnvironmentStepParameters.builder()
+                                                              .name("name")
+                                                              .environmentRef(ParameterField.createValueField("ref"))
+                                                              .identifier("identifier")
+                                                              .description("desc")
+                                                              .serviceOverrides(serviceOverrides)
+                                                              .variables(variables)
+                                                              .build();
+    EnvironmentOutcome environmentOutcome = EnvironmentMapper.toEnvironmentOutcome(environmentStepParameters);
+    assertThat(environmentOutcome.getEnvironmentRef()).isEqualTo("ref");
+    assertThat(environmentOutcome.getName()).isEqualTo("name");
+    assertThat(environmentOutcome.getDescription()).isEqualTo("desc");
+    assertThat(environmentOutcome.getIdentifier()).isEqualTo("identifier");
+    assertThat(environmentOutcome.getVariables().containsKey("variable")).isTrue();
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testToEnvironmentStepParameters() {
     EnvironmentPlanCreatorConfig environmentPlanCreatorConfig =
         EnvironmentPlanCreatorConfig.builder()
             .environmentRef(ParameterField.createValueField("ref"))
@@ -40,7 +69,7 @@ public class EnvPlanCreatorConfigHelperTest extends CDNGTestBase {
             .serviceOverrides(Arrays.asList(NGServiceOverrides.builder().serviceRef("ser").build()))
             .build();
     EnvironmentStepParameters environmentStepParameters =
-        EnvironmentPlanCreatorConfigHelper.toEnvironmentStepParameters(environmentPlanCreatorConfig);
+        EnvironmentMapper.toEnvironmentStepParameters(environmentPlanCreatorConfig);
     assertThat(environmentStepParameters.getEnvironmentRef().getValue()).isEqualTo("ref");
     assertThat(environmentStepParameters.getIdentifier()).isEqualTo("identifier");
     assertThat(environmentStepParameters.getName()).isEqualTo("name");

@@ -10,9 +10,9 @@ package io.harness.cdng.creator.plan.environment;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.creator.plan.PlanCreatorConstants;
+import io.harness.cdng.creator.plan.environment.steps.EnvironmentStepV2;
 import io.harness.cdng.environment.steps.EnvironmentStepParameters;
 import io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig;
-import io.harness.cdng.infra.steps.EnvironmentStep;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
@@ -58,7 +58,7 @@ public class EnvironmentPlanCreatorV2 implements PartialPlanCreator<EnvironmentP
     EnvironmentPlanCreator is dependent on infraSectionStepParameters and serviceSpecNodeUuid which is used as advisor
      */
     EnvironmentStepParameters environmentStepParameters =
-        EnvironmentPlanCreatorConfigHelper.toEnvironmentStepParameters(environmentPlanCreatorConfig);
+        EnvironmentMapper.toEnvironmentStepParameters(environmentPlanCreatorConfig);
 
     String serviceSpecNodeUuid = (String) kryoSerializer.asInflatedObject(
         ctx.getDependency().getMetadataMap().get(YamlTypes.SERVICE_SPEC).toByteArray());
@@ -69,7 +69,7 @@ public class EnvironmentPlanCreatorV2 implements PartialPlanCreator<EnvironmentP
     PlanNode planNode =
         PlanNode.builder()
             .uuid(ctx.getCurrentField().getNode().getUuid())
-            .stepType(EnvironmentStep.STEP_TYPE) // TODO: change this step type once EnvironmentStepV2 is created
+            .stepType(EnvironmentStepV2.STEP_TYPE)
             .name(PlanCreatorConstants.ENVIRONMENT_NODE_NAME)
             .identifier(YamlTypes.ENVIRONMENT_YAML)
             .stepParameters(environmentStepParameters)
