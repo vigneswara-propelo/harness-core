@@ -734,7 +734,7 @@ public class DelegateModule extends AbstractModule {
   @Singleton
   @Named("backgroundExecutor")
   public ExecutorService backgroundExecutor() {
-    return ThreadPool.create(1, 1, 5, TimeUnit.SECONDS,
+    return ThreadPool.create(1, 5, 5, TimeUnit.SECONDS,
         new ThreadFactoryBuilder().setNameFormat("background-%d").setPriority(Thread.MIN_PRIORITY).build());
   }
 

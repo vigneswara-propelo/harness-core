@@ -438,6 +438,32 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @SuppressWarnings("unchecked")
   public void run(final boolean watched, final boolean isImmutableDelegate) {
     this.isImmutableDelegate = isImmutableDelegate;
+
+    try {
+      // Initialize delegate process in background.
+      backgroundExecutor.submit(() -> { initDelegateProcess(watched); });
+
+      if (!this.isImmutableDelegate) {
+        // Wait till we receive notify event.
+        log.info("Waiting indefinitely for stop event");
+        synchronized (waiter) {
+          while (waiter.get()) {
+            waiter.wait();
+          }
+        }
+        log.info("Got stop message from watcher, shutting down now");
+        clearData();
+      }
+
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      log.error("Exception while starting/running delegate", e);
+    } catch (Exception e) {
+      log.error("Exception while starting/running delegate", e);
+    }
+  }
+
+  private void initDelegateProcess(final boolean watched) {
     try {
       accountId = delegateConfiguration.getAccountId();
       if (perpetualTaskWorker != null) {
@@ -644,20 +670,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
           delegateLogService.registerLogSanitizer(new GenericLogSanitizer(new HashSet<>(localSecrets.values())));
         }
       }
-
-      if (!this.isImmutableDelegate) {
-        synchronized (waiter) {
-          while (waiter.get()) {
-            waiter.wait();
-          }
-        }
-
-        clearData();
-      }
-
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      log.error("Exception while starting/running delegate", e);
     } catch (RuntimeException | IOException e) {
       log.error("Exception while starting/running delegate", e);
     }
