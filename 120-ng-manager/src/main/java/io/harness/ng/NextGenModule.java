@@ -87,6 +87,7 @@ import io.harness.exception.exceptionmanager.exceptionhandler.ExceptionHandler;
 import io.harness.file.NGFileServiceModule;
 import io.harness.filter.FilterType;
 import io.harness.filter.mapper.FilterPropertiesMapper;
+import io.harness.gitops.GitopsResourceClientModule;
 import io.harness.gitsync.GitSyncConfigClientModule;
 import io.harness.gitsync.GitSyncModule;
 import io.harness.gitsync.common.events.FullSyncMessageListener;
@@ -617,6 +618,7 @@ public class NextGenModule extends AbstractModule {
         appConfig.getResourceGroupClientConfig().getSecret(), NG_MANAGER.getServiceId()));
     install(new NGFileServiceModule(appConfig.getFileServiceConfiguration().getFileStorageMode(),
         appConfig.getFileServiceConfiguration().getClusterName()));
+    install(new GitopsResourceClientModule(appConfig.getGitopsResourceClientConfig(), NG_MANAGER.getServiceId()));
     if (TRUE.equals(appConfig.getAccessControlAdminClientConfiguration().getMockAccessControlService())) {
       AccessControlAdminClientConfiguration accessControlAdminClientConfiguration =
           AccessControlAdminClientConfiguration.builder()
