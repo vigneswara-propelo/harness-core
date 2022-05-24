@@ -15,6 +15,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.CDNGTestBase;
+import io.harness.cdng.creator.plan.environment.EnvironmentPlanCreatorHelper;
 import io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
@@ -76,7 +77,7 @@ public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
         getYamlFromPath("cdng/plan/environment/environmentPlanCreatorConfigWithInfra.yml");
     EnvironmentPlanCreatorConfig environmentPlanCreatorConfig =
         YamlUtils.read(envPlanCreatorConfigYaml, EnvironmentPlanCreatorConfig.class);
-    YamlField updatedEnvironmentYamlField = deploymentStagePMSPlanCreator.fetchEnvironmentPlanCreatorConfigYaml(
+    YamlField updatedEnvironmentYamlField = EnvironmentPlanCreatorHelper.fetchEnvironmentPlanCreatorConfigYaml(
         environmentPlanCreatorConfig, environmentYamlV2);
     assertThat(updatedEnvironmentYamlField).isNotNull();
     assertThat(updatedEnvironmentYamlField.getNode().getFieldName()).isEqualTo(YamlTypes.ENVIRONMENT_YAML);
