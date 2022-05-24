@@ -17,20 +17,16 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.context.ContextElementType;
-import io.harness.ff.FeatureFlagService;
 
 import software.wings.beans.NameValuePair;
-import software.wings.service.intfc.ArtifactService;
 import software.wings.sm.ContextElement;
 
-import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
-import org.mongodb.morphia.annotations.Transient;
 
 /**
  * The Class PhaseElement.
@@ -44,9 +40,6 @@ import org.mongodb.morphia.annotations.Transient;
 @TargetModule(_957_CG_BEANS)
 public class PhaseElement implements ContextElement {
   public static final String PHASE_PARAM = "PHASE_PARAM";
-
-  @Inject @Transient private transient ArtifactService artifactService;
-  @Inject @Transient private transient FeatureFlagService featureFlagService;
 
   private String uuid;
   private String phaseName;

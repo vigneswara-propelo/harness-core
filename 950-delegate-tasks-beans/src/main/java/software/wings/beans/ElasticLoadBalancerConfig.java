@@ -26,7 +26,6 @@ import software.wings.jersey.JsonViews;
 import software.wings.security.UsageRestrictions;
 import software.wings.settings.SettingVariableTypes;
 import software.wings.stencils.DefaultValue;
-import software.wings.stencils.EnumData;
 import software.wings.yaml.setting.LoadBalancerProviderYaml;
 
 import com.amazonaws.regions.Regions;
@@ -53,10 +52,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @OwnedBy(CDP)
 @TargetModule(_957_CG_BEANS)
 public class ElasticLoadBalancerConfig extends LoadBalancerConfig implements EncryptableSetting {
-  @Attributes(title = "Region", required = true)
-  @DefaultValue(AWS_DEFAULT_REGION)
-  @EnumData(enumDataProvider = AwsRegionDataProvider.class)
-  private Regions region;
+  @Attributes(title = "Region", required = true) @DefaultValue(AWS_DEFAULT_REGION) private Regions region;
 
   @NotEmpty @Attributes(title = "Elastic Load Balancer Name", required = true) private String loadBalancerName;
 

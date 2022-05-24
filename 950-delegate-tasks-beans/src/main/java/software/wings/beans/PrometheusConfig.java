@@ -7,6 +7,9 @@
 
 package software.wings.beans;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator;
@@ -19,15 +22,15 @@ import software.wings.beans.apm.Method;
 import software.wings.jersey.JsonViews;
 import software.wings.security.UsageRestrictions;
 import software.wings.settings.SettingValue;
-import software.wings.sm.StateType;
+import software.wings.settings.SettingVariableTypes;
 import software.wings.yaml.setting.VerificationProviderYaml;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,34 +38,36 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
-import lombok.experimental.FieldNameConstants;
+import org.apache.commons.codec.binary.Base64;
 import org.hibernate.validator.constraints.NotEmpty;
 
-@JsonTypeName("SCALYR")
+/**
+ * Created by rsingh on 3/15/18.
+ */
 @Data
+@JsonTypeName("PROMETHEUS")
 @Builder
-@ToString(exclude = "apiToken")
-@FieldNameConstants(innerTypeName = "ScalyrConfigKeys")
 @EqualsAndHashCode(callSuper = false)
-public class ScalyrConfig extends SettingValue implements EncryptableSetting, ExecutionCapabilityDemander {
-  public static final String VALIDATION_URL = "query?queryType=log&maxCount=1";
-  public static final String QUERY_URL = "query";
-  @SchemaIgnore @NotEmpty private String accountId;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class PrometheusConfig extends SettingValue implements EncryptableSetting, ExecutionCapabilityDemander {
+  public static final String VALIDATION_URL = "api/v1/query?query=up";
   @Attributes(title = "URL", required = true) private String url;
-  @Attributes(title = "API Token", required = true) @Encrypted(fieldName = "api_token") private char[] apiToken;
-  @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedApiToken;
+  @Attributes(title = "Username") private String username;
+  @Attributes(title = "Password") @Encrypted(fieldName = "password") private char[] password;
+  @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedPassword;
+  @SchemaIgnore @NotEmpty private String accountId;
 
-  public ScalyrConfig() {
-    super(StateType.SCALYR.name());
+  public PrometheusConfig() {
+    super(SettingVariableTypes.PROMETHEUS.name());
   }
 
-  private ScalyrConfig(String accountId, String url, char apiToken[], String encryptedApiToken) {
+  public PrometheusConfig(String url, String accountId, char[] password, String username, String encryptedPassword) {
     this();
-    this.accountId = accountId;
     this.url = url;
-    this.apiToken = apiToken;
-    this.encryptedApiToken = encryptedApiToken;
+    this.accountId = accountId;
+    this.username = username;
+    this.encryptedPassword = encryptedPassword;
+    this.password = password;
   }
 
   @Override
@@ -85,35 +90,46 @@ public class ScalyrConfig extends SettingValue implements EncryptableSetting, Ex
         .baseUrl(url)
         .url(urlToFetch)
         .collectionMethod(Method.GET)
-        .headers(new HashMap<>())
-        .options(Collections.singletonMap("token", String.valueOf(apiToken)))
+        .headers(generateHeaders())
+        .options(new HashMap<>())
         .build();
   }
 
-  public Map<String, Object> fetchLogBodyMap(boolean isServiceLevel) {
-    Map<String, Object> body = new HashMap<>();
-    body.put("queryType", "log");
-    body.put("token", "${apiToken}");
-    body.put("startTime", "${start_time}");
-    body.put("endTime", "${end_time}");
-    body.put("filter", "${query}");
-    body.put("maxCount", isServiceLevel ? "10000" : "1000");
-    return body;
+  public Map<String, String> generateHeaders() {
+    HashMap<String, String> headersMap = new HashMap();
+
+    if (isEmpty(username)) {
+      return headersMap;
+    }
+
+    if (isNotEmpty(password)) {
+      headersMap.put("Authorization",
+          String.format("Basic %s",
+              Base64.encodeBase64String(String.format("%s:%s", username, new String(password)).getBytes())));
+    } else if (isNotEmpty(encryptedPassword)) {
+      headersMap.put("Authorization", String.format("Basic encodeWithBase64(%s:${password})", username));
+    }
+
+    return headersMap;
+  }
+
+  public boolean usesBasicAuth() {
+    return isNotEmpty(username) && (isNotEmpty(password) || isNotEmpty(encryptedPassword));
   }
 
   @Data
   @NoArgsConstructor
   @EqualsAndHashCode(callSuper = true)
-  public static final class ScalyrYaml extends VerificationProviderYaml {
-    private String scalyrUrl;
-    private String apiToken;
+  public static final class PrometheusYaml extends VerificationProviderYaml {
+    private String prometheusUrl;
+    private String username;
+    private String password;
 
     @Builder
-    public ScalyrYaml(String type, String harnessApiVersion, String scalyrUrl, String apiToken,
-        UsageRestrictions.Yaml usageRestrictions) {
+    public PrometheusYaml(
+        String type, String harnessApiVersion, String prometheusUrl, UsageRestrictions.Yaml usageRestrictions) {
       super(type, harnessApiVersion, usageRestrictions);
-      this.scalyrUrl = scalyrUrl;
-      this.apiToken = apiToken;
+      this.prometheusUrl = prometheusUrl;
     }
   }
 }
