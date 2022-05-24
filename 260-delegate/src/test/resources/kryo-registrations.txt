@@ -589,7 +589,6 @@
 7108:software.wings.service.impl.aws.model.AwsRoute53ListHostedZonesRequest
 7109:software.wings.service.impl.aws.model.AwsRoute53ListHostedZonesResponse
 7110:software.wings.service.impl.aws.model.AwsRoute53HostedZoneData
-7111:software.wings.beans.ApprovalDetails$Action
 7112:software.wings.api.ShellScriptApprovalExecutionData
 7113:software.wings.helpers.ext.k8s.request.K8sDeleteTaskParameters
 7114:software.wings.helpers.ext.k8s.response.K8sDeleteResponse
@@ -828,6 +827,7 @@
 7458:io.harness.beans.terraform.TerraformPlanParam
 7459:software.wings.beans.artifact.ArtifactInput
 7460:software.wings.beans.GitConfig$UrlType
+7461:software.wings.beans.ApprovalDetails$Action
 7464:software.wings.helpers.ext.gcb.models.GcbArtifactObjects
 7467:software.wings.sm.states.azure.AzureVMSSSetupContextElement
 7470:software.wings.service.impl.analysis.SetupTestNodeData$Instance

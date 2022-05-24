@@ -5,6 +5,6 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.beans.apm;
+package io.harness.aws;
 
-public enum ResponseType { JSON }
+public class DeployStackRequest {}

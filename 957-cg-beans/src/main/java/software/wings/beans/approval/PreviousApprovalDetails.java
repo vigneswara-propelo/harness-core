@@ -5,21 +5,23 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.serverless.model;
+package software.wings.beans.approval;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@OwnedBy(HarnessTeam.CDP)
 @Data
 @Builder
-public class AwsLambdaFunctionDetails {
-  private String functionName;
-  private String handler;
-  private String memorySize;
-  private String runTime;
-  private Integer timeout;
+@NoArgsConstructor
+@AllArgsConstructor
+@OwnedBy(HarnessTeam.CDC)
+public class PreviousApprovalDetails {
+  private List<ApprovalInfo> previousApprovals;
+  private int size;
 }

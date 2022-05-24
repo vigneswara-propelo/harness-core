@@ -76,7 +76,6 @@ import software.wings.api.terragrunt.TerragruntExecutionData;
 import software.wings.api.terragrunt.TerragruntProvisionInheritPlanElement;
 import software.wings.beans.APMVerificationConfig;
 import software.wings.beans.AppDynamicsConfig;
-import software.wings.beans.ApprovalDetails;
 import software.wings.beans.AwsSecretsManagerConfig;
 import software.wings.beans.AzureConfig;
 import software.wings.beans.AzureContainerRegistry;
@@ -755,7 +754,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(AwsRoute53ListHostedZonesRequest.class, 7108);
     kryo.register(AwsRoute53ListHostedZonesResponse.class, 7109);
     kryo.register(AwsRoute53HostedZoneData.class, 7110);
-    kryo.register(ApprovalDetails.Action.class, 7111);
     kryo.register(ShellScriptApprovalExecutionData.class, 7112);
     kryo.register(K8sDeleteTaskParameters.class, 7113);
     kryo.register(K8sDeleteResponse.class, 7114);
