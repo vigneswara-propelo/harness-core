@@ -53,6 +53,7 @@ import io.harness.yaml.core.failurestrategy.FailureStrategyConfig;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
@@ -211,36 +212,39 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       planCreationResponseMap.putAll(InfrastructurePmsPlanCreator.createPlanForInfraSection(
           infraNode, infraDefPlanNode.getUuid(), pipelineInfrastructure, kryoSerializer));
     } else {
-      if (environmentV2 != null) {
-        // TODO: need to fetch gitOpsEnabled from serviceDefinition for gitOps cluster. Currently  passing hard coded
-        // value as false
-        boolean gitOpsEnabled = false;
-        EnvironmentPlanCreatorConfig environmentPlanCreatorConfig = EnvironmentPlanCreatorHelper.getResolvedEnvRefs(
-            ctx.getMetadata().getAccountIdentifier(), ctx.getMetadata().getOrgIdentifier(),
-            ctx.getMetadata().getProjectIdentifier(), environmentV2, gitOpsEnabled, environmentService, infrastructure);
-        addEnvironmentV2Dependency(planCreationResponseMap, environmentPlanCreatorConfig,
-            specField.getNode().getField(YamlTypes.ENVIRONMENT_YAML));
-      } else {
-        throw new InvalidRequestException(
-            "Environment section cannot be empty in stage - " + stageNode.getIdentifier());
-      }
+      // TODO: need to fetch gitOpsEnabled from serviceDefinition for gitOps cluster. Currently  passing hard coded
+      // value as false
+      boolean gitOpsEnabled = false;
+      EnvironmentPlanCreatorConfig environmentPlanCreatorConfig = EnvironmentPlanCreatorHelper.getResolvedEnvRefs(
+          ctx.getMetadata().getAccountIdentifier(), ctx.getMetadata().getOrgIdentifier(),
+          ctx.getMetadata().getProjectIdentifier(), environmentV2, gitOpsEnabled, environmentService, infrastructure);
+      addEnvironmentV2Dependency(planCreationResponseMap, environmentPlanCreatorConfig,
+          specField.getNode().getField(YamlTypes.ENVIRONMENT_YAML), gitOpsEnabled);
     }
   }
 
   @VisibleForTesting
   void addEnvironmentV2Dependency(LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap,
-      EnvironmentPlanCreatorConfig environmentPlanCreatorConfig, YamlField originalEnvironmentField)
-      throws IOException {
+      EnvironmentPlanCreatorConfig environmentPlanCreatorConfig, YamlField originalEnvironmentField,
+      boolean gitOpsEnabled) throws IOException {
     YamlField updatedEnvironmentYamlField = EnvironmentPlanCreatorHelper.fetchEnvironmentPlanCreatorConfigYaml(
         environmentPlanCreatorConfig, originalEnvironmentField);
     Map<String, YamlField> environmentYamlFieldMap = new HashMap<>();
     String environmentUuid = updatedEnvironmentYamlField.getNode().getUuid();
     environmentYamlFieldMap.put(environmentUuid, updatedEnvironmentYamlField);
 
-    // TODO: Need to pass serviceSpecNode uuid as dependency)
+    // TODO: Need to pass serviceSpecNode uuid as dependency
+    final Dependency envDependency = Dependency.newBuilder()
+                                         .putAllMetadata(ImmutableMap.of(YAMLFieldNameConstants.GITOPS_ENABLED,
+                                             ByteString.copyFrom(kryoSerializer.asDeflatedBytes(gitOpsEnabled))))
+                                         .build();
+
     planCreationResponseMap.put(updatedEnvironmentYamlField.getNode().getUuid(),
         PlanCreationResponse.builder()
-            .dependencies(DependenciesUtils.toDependenciesProto(environmentYamlFieldMap))
+            .dependencies(DependenciesUtils.toDependenciesProto(environmentYamlFieldMap)
+                              .toBuilder()
+                              .putDependencyMetadata(updatedEnvironmentYamlField.getNode().getUuid(), envDependency)
+                              .build())
             .yamlUpdates(YamlUpdates.newBuilder()
                              .putFqnToYaml(updatedEnvironmentYamlField.getYamlPath(),
                                  YamlUtils.writeYamlString(updatedEnvironmentYamlField).replace("---\n", ""))

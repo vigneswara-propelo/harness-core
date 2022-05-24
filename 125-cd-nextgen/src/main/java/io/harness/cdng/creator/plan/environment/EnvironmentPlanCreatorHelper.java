@@ -83,7 +83,6 @@ public class EnvironmentPlanCreatorHelper {
               projectIdentifier, orgIdentifier, accountIdentifier));
     }
 
-    // if gitOpsEnabled = false, then  handle infrastructure
     if (!gitOpsEnabled) {
       List<InfrastructureEntity> infrastructureEntityList = getInfraStructureEntityList(
           accountIdentifier, orgIdentifier, projectIdentifier, environmentV2, infrastructure);
