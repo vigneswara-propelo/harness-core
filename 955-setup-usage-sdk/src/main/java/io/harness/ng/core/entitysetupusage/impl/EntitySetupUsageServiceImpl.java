@@ -273,6 +273,9 @@ public class EntitySetupUsageServiceImpl implements EntitySetupUsageService {
   @Override
   public Page<EntitySetupUsageDTO> listAllEntityUsagePerEntityScope(int page, int size, String accountIdentifier,
       String referredEntityFQScope, EntityType referredEntityType, EntityType referredByEntityType, Sort sort) {
+    if (null == referredByEntityType) {
+      return Page.empty();
+    }
     Criteria criteria = entitySetupUsageFilterHelper.createCriteriaForEntitiesInScope(
         accountIdentifier, referredEntityFQScope, referredEntityType, referredByEntityType);
 
