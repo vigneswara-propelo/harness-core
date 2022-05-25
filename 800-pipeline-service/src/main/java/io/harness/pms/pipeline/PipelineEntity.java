@@ -165,8 +165,4 @@ public class PipelineEntity
   public String getInvalidYamlString() {
     return yaml;
   }
-
-  public boolean shouldAllowStageExecutions() {
-    return allowStageExecutions != null && allowStageExecutions;
-  }
 }
