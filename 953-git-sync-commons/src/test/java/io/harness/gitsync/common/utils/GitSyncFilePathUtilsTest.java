@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.gitsync.common.utils;
+package io.harness.gitsync.common.utils;
 
 import static io.harness.rule.OwnerRule.BHAVYA;
 import static io.harness.rule.OwnerRule.MOHIT_GARG;
@@ -16,8 +16,6 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.gitsync.common.utils.GitEntityFilePath;
-import io.harness.gitsync.common.utils.GitSyncFilePathUtils;
 import io.harness.rule.Owner;
 
 import org.junit.Test;
