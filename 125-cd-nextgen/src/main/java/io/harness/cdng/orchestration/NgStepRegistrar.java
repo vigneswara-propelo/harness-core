@@ -14,6 +14,8 @@ import io.harness.cdng.artifact.steps.ArtifactStep;
 import io.harness.cdng.artifact.steps.ArtifactSyncStep;
 import io.harness.cdng.artifact.steps.ArtifactsStep;
 import io.harness.cdng.artifact.steps.SidecarsStep;
+import io.harness.cdng.configfile.steps.ConfigFilesStep;
+import io.harness.cdng.configfile.steps.IndividualConfigFileStep;
 import io.harness.cdng.creator.plan.environment.steps.EnvironmentStepV2;
 import io.harness.cdng.helm.HelmDeployStep;
 import io.harness.cdng.helm.HelmRollbackStep;
@@ -113,6 +115,8 @@ public class NgStepRegistrar {
     engineSteps.put(CloudformationRollbackStep.STEP_TYPE, CloudformationRollbackStep.class);
     engineSteps.put(ServerlessAwsLambdaDeployStep.STEP_TYPE, ServerlessAwsLambdaDeployStep.class);
     engineSteps.put(ServerlessAwsLambdaRollbackStep.STEP_TYPE, ServerlessAwsLambdaRollbackStep.class);
+    engineSteps.put(IndividualConfigFileStep.STEP_TYPE, IndividualConfigFileStep.class);
+    engineSteps.put(ConfigFilesStep.STEP_TYPE, ConfigFilesStep.class);
     engineSteps.putAll(NGCommonUtilStepsRegistrar.getEngineSteps());
     return engineSteps;
   }

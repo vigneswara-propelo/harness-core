@@ -69,6 +69,8 @@ public interface YamlTypes {
   String RELEASE_NAME = "releaseName";
   String CLUSTER = "cluster";
   String STORE_CONFIG_WRAPPER = "store";
+  String CONFIG_FILES = "configFiles";
+  String CONFIG_FILE = "configFile";
 
   String SKIP_DRY_RUN = "skipDryRun";
   String OUTPUT = "output";
