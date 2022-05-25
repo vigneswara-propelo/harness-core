@@ -26,6 +26,8 @@ public class YAMLFieldNameConstants {
   public final String SPEC = "spec";
   public final String STAGE = "stage";
   public final String STAGES = "stages";
+  public final String STRATEGY = "strategy";
+
   public final String STEP = "step";
   public final String STEPS = "steps";
   public final String STEP_GROUP = "stepGroup";
