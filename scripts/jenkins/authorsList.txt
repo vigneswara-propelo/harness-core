@@ -273,3 +273,8 @@ James Cox james.cox@harness.io
 Soumyajit Das soumyajit.das@harness.io
 smjt-h soumyajit.das@harness.io
 Avinash Madhwani avinash.m@harness.io
+Raj Das rajbabu.das@harness.io
+Vansh Bhatia vansh.bhatia@harness.io
+Saranya Jena saranya.jena@harness.io
+Amit Kumar Das amit.das@harness.io
+Sarthak Jain sarthak.jain@harness.io
