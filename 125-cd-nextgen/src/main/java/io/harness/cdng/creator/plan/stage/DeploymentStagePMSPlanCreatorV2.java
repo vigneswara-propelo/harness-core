@@ -8,6 +8,7 @@
 package io.harness.cdng.creator.plan.stage;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.creator.plan.environment.EnvironmentPlanCreatorHelper;
@@ -20,11 +21,13 @@ import io.harness.cdng.pipeline.PipelineInfrastructure;
 import io.harness.cdng.pipeline.beans.DeploymentStageStepParameters;
 import io.harness.cdng.pipeline.steps.CdStepParametersUtils;
 import io.harness.cdng.pipeline.steps.DeploymentStageStep;
+import io.harness.cdng.service.beans.ServiceYamlV2;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
+import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.services.ServiceEntityService;
 import io.harness.plancreator.stages.AbstractStagePlanCreator;
 import io.harness.plancreator.steps.GenericStepPMSPlanCreator;
@@ -62,6 +65,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import lombok.SneakyThrows;
 
@@ -220,9 +224,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       planCreationResponseMap.putAll(InfrastructurePmsPlanCreator.createPlanForInfraSection(
           infraNode, infraDefPlanNode.getUuid(), pipelineInfrastructure, kryoSerializer));
     } else {
-      // TODO: need to fetch gitOpsEnabled from serviceDefinition for gitOps cluster. Currently  passing hard coded
-      // value as false
-      boolean gitOpsEnabled = false;
+      final boolean gitOpsEnabled = isGitopsEnabled(ctx, stageNode.getDeploymentStageConfig().getService());
       EnvironmentPlanCreatorConfig environmentPlanCreatorConfig = EnvironmentPlanCreatorHelper.getResolvedEnvRefs(
           ctx.getMetadata().getAccountIdentifier(), ctx.getMetadata().getOrgIdentifier(),
           ctx.getMetadata().getProjectIdentifier(), environmentV2, gitOpsEnabled, environmentService, infrastructure);
@@ -314,7 +316,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     // Failure strategy should be present.
     List<FailureStrategyConfig> stageFailureStrategies = stageNode.getFailureStrategies();
     if (EmptyPredicate.isEmpty(stageFailureStrategies)) {
-      throw new InvalidRequestException("There should be atleast one failure strategy configured at stage level.");
+      throw new InvalidRequestException("There should be at least one failure strategy configured at stage level.");
     }
 
     // checking stageFailureStrategies is having one strategy with error type as AllErrors and along with that no
@@ -323,5 +325,18 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       throw new InvalidRequestException(
           "There should be a Failure strategy that contains one error type as AllErrors, with no other error type along with it in that Failure Strategy.");
     }
+  }
+
+  private boolean isGitopsEnabled(PlanCreationContext ctx, ServiceYamlV2 yaml) {
+    Optional<ServiceEntity> serviceEntity = fetchServiceEntity(ctx, yaml);
+    return serviceEntity.map(ServiceEntity::getGitOpsEnabled).orElse(false);
+  }
+
+  private Optional<ServiceEntity> fetchServiceEntity(PlanCreationContext ctx, ServiceYamlV2 yaml) {
+    if (yaml == null || isEmpty((String) yaml.getServiceRef().fetchFinalValue())) {
+      return Optional.empty();
+    }
+    return serviceEntityService.get(ctx.getMetadata().getAccountIdentifier(), ctx.getMetadata().getOrgIdentifier(),
+        ctx.getMetadata().getProjectIdentifier(), (String) yaml.getServiceRef().fetchFinalValue(), false);
   }
 }
