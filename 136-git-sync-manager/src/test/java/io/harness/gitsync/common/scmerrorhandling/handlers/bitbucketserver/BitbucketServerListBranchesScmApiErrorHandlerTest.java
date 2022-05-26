@@ -5,10 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucket;
+package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketserver;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
-import static io.harness.rule.OwnerRule.BHAVYA;
+import static io.harness.rule.OwnerRule.DEEPAK;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -16,7 +16,6 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.HintException;
 import io.harness.gitsync.GitSyncTestBase;
-import io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketcloud.BitbucketListRepoScmApiErrorHandler;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
@@ -26,8 +25,8 @@ import org.junit.experimental.categories.Category;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(PL)
-public class BitbucketListRepoScmApiErrorHandlerTest extends GitSyncTestBase {
-  @Inject BitbucketListRepoScmApiErrorHandler bitbucketListRepoScmApiErrorHandler;
+public class BitbucketServerListBranchesScmApiErrorHandlerTest extends GitSyncTestBase {
+  @Inject BitbucketServerListBranchesScmApiErrorHandler bitbucketServerListBranchesScmApiErrorHandler;
 
   @Before
   public void setup() {
@@ -35,10 +34,10 @@ public class BitbucketListRepoScmApiErrorHandlerTest extends GitSyncTestBase {
   }
 
   @Test
-  @Owner(developers = BHAVYA)
+  @Owner(developers = DEEPAK)
   @Category(UnitTests.class)
   public void testHandleError() {
-    assertThatThrownBy(() -> bitbucketListRepoScmApiErrorHandler.handleError(401, "Not Authorised"))
+    assertThatThrownBy(() -> bitbucketServerListBranchesScmApiErrorHandler.handleError(401, "Not Authorised"))
         .isInstanceOf(HintException.class);
   }
 }

@@ -5,12 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucket;
+package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketserver;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.NestedExceptionUtils;
+import io.harness.exception.ScmBadRequestException;
 import io.harness.exception.ScmUnauthorizedException;
 import io.harness.exception.ScmUnexpectedException;
 import io.harness.exception.WingsException;
@@ -20,17 +21,22 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(PL)
-public class BitbucketListRepoScmApiErrorHandler implements ScmApiErrorHandler {
-  public static final String LIST_REPO_FAILED_MESSAGE = "Listing repositories from Github failed. ";
+public class BitbucketServerListBranchesScmApiErrorHandler implements ScmApiErrorHandler {
+  public static final String LIST_BRANCH_FAILED_MESSAGE = "Listing branches from Bitbucket failed. ";
+
   @Override
   public void handleError(int statusCode, String errorMessage) throws WingsException {
     switch (statusCode) {
       case 401:
       case 403:
         throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.INVALID_CREDENTIALS,
-            LIST_REPO_FAILED_MESSAGE + ScmErrorExplanations.REPO_NOT_FOUND, new ScmUnauthorizedException(errorMessage));
+            LIST_BRANCH_FAILED_MESSAGE + ScmErrorExplanations.INVALID_CONNECTOR_CREDS,
+            new ScmUnauthorizedException(errorMessage));
+      case 404:
+        throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.REPO_NOT_FOUND,
+            LIST_BRANCH_FAILED_MESSAGE + ScmErrorExplanations.REPO_NOT_FOUND, new ScmBadRequestException(errorMessage));
       default:
-        log.error(String.format("Error while listing bitbucket repos: [%s: %s]", statusCode, errorMessage));
+        log.error(String.format("Error while listing bitbucket branches: [%s: %s]", statusCode, errorMessage));
         throw new ScmUnexpectedException(errorMessage);
     }
   }

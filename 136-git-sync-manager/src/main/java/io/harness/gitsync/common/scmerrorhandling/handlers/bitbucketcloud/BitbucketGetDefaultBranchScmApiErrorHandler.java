@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucket;
+package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketcloud;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 

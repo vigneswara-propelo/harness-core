@@ -19,6 +19,7 @@ import io.harness.exception.ScmBadRequestException;
 import io.harness.exception.ScmUnauthorizedException;
 import io.harness.exception.WingsException;
 import io.harness.gitsync.GitSyncTestBase;
+import io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketcloud.BitbucketGetDefaultBranchScmApiErrorHandler;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;

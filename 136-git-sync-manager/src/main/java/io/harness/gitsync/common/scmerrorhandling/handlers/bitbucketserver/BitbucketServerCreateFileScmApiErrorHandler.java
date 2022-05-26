@@ -5,11 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucket;
+package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketserver;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
-import static io.harness.gitsync.common.scmerrorhandling.handlers.bitbucket.ScmErrorHints.INVALID_CREDENTIALS;
-import static io.harness.gitsync.common.scmerrorhandling.handlers.bitbucket.ScmErrorHints.REPO_NOT_FOUND;
+import static io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketcloud.ScmErrorExplanations.INVALID_CONNECTOR_CREDS;
+import static io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketcloud.ScmErrorHints.INVALID_CREDENTIALS;
+import static io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketcloud.ScmErrorHints.REPO_NOT_FOUND;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.NestedExceptionUtils;
@@ -20,23 +21,23 @@ import io.harness.exception.WingsException;
 import io.harness.gitsync.common.scmerrorhandling.handlers.ScmApiErrorHandler;
 
 @OwnedBy(PL)
-public class BitbucketCreatePullRequestScmApiErrorHandler implements ScmApiErrorHandler {
-  public static final String CREATE_PULL_REQUEST_FAILURE = "The pull request could not be created in Bitbucket. ";
+public class BitbucketServerCreateFileScmApiErrorHandler implements ScmApiErrorHandler {
+  public static final String CREATE_FILE_REQUEST_FAILURE = "The requested file couldn't be created in Bitbucket. ";
 
   @Override
   public void handleError(int statusCode, String errorMessage) throws WingsException {
     switch (statusCode) {
-      case 400:
-        // bitbucket already throws well formatted error messages, so no need of any hints/explanations here
-        throw new ScmBadRequestException(errorMessage);
       case 401:
       case 403:
         throw NestedExceptionUtils.hintWithExplanationException(INVALID_CREDENTIALS,
-            CREATE_PULL_REQUEST_FAILURE + ScmErrorExplanations.INVALID_CONNECTOR_CREDS,
-            new ScmUnauthorizedException(errorMessage));
+            CREATE_FILE_REQUEST_FAILURE + INVALID_CONNECTOR_CREDS, new ScmUnauthorizedException(errorMessage));
       case 404:
         throw NestedExceptionUtils.hintWithExplanationException(REPO_NOT_FOUND,
-            CREATE_PULL_REQUEST_FAILURE + ScmErrorExplanations.REPO_NOT_FOUND,
+            CREATE_FILE_REQUEST_FAILURE + ScmErrorExplanations.REPO_NOT_FOUND,
+            new ScmBadRequestException(errorMessage));
+      case 409:
+        throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.FILE_ALREADY_EXISTS,
+            CREATE_FILE_REQUEST_FAILURE + ScmErrorExplanations.FILE_ALREADY_EXISTS,
             new ScmBadRequestException(errorMessage));
       default:
         throw new ScmUnexpectedException(errorMessage);

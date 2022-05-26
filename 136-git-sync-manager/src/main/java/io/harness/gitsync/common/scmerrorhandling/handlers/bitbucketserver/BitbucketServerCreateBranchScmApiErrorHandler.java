@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucket;
+package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketserver;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
@@ -21,8 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(PL)
-public class BitbucketCreateBranchScmApiErrorHandler implements ScmApiErrorHandler {
-  public static final String CREATE_BRANCH_FAILED_MESSAGE = "The requested branch could not be created on Bitbucket. ";
+public class BitbucketServerCreateBranchScmApiErrorHandler implements ScmApiErrorHandler {
+  public static final String CREATE_BRANCH_FAILED_MESSAGE =
+      "The requested branch could not be created on Bitbucket Server. ";
   public static final String CREATE_BRANCH_UNPROCESSABLE_ENTITY_ERROR_HINT =
       "Please check that the requested Bitbucket branch name is valid and does not already exist.";
   public static final String CREATE_BRANCH_UNPROCESSABLE_ENTITY_ERROR_EXPLANATION = "Possible reasons can be:\n"
@@ -49,8 +50,12 @@ public class BitbucketCreateBranchScmApiErrorHandler implements ScmApiErrorHandl
         throw NestedExceptionUtils.hintWithExplanationException(CREATE_BRANCH_NOT_FOUND_ERROR_HINT,
             CREATE_BRANCH_FAILED_MESSAGE + CREATE_BRANCH_NOT_FOUND_ERROR_EXPLANATION,
             new ScmBadRequestException(errorMessage));
+      case 409:
+        throw NestedExceptionUtils.hintWithExplanationException(ScmErrorHints.BRANCH_ALREADY_EXISTS,
+            CREATE_BRANCH_FAILED_MESSAGE + ScmErrorExplanations.BRANCH_ALREADY_EXISTS,
+            new ScmBadRequestException(errorMessage));
       default:
-        log.error(String.format("Error while creating bitbucket branch: [%s: %s]", statusCode, errorMessage));
+        log.error(String.format("Error while creating bitbucket(server) branch: [%s: %s] ", statusCode, errorMessage));
         throw new ScmUnexpectedException(errorMessage);
     }
   }
