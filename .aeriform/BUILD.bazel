@@ -84,6 +84,10 @@ aeriform("//310-ci-manager:module")
 
 aeriform("//310-ci-manager:tests")
 
+aeriform("//315-sto-manager:module")
+
+aeriform("//315-sto-manager:tests")
+
 aeriform("//320-ci-execution:module")
 
 aeriform("//320-ci-execution:tests")
