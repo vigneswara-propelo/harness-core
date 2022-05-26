@@ -147,7 +147,6 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
                                     .withDescription(pipelineEntity.getDescription())
                                     .withTags(pipelineEntity.getTags())
                                     .withIsEntityInvalid(false)
-                                    .withTemplateReference(pipelineEntity.getTemplateReference())
                                     .withAllowStageExecutions(pipelineEntity.getAllowStageExecutions());
 
     return makePipelineUpdateCall(tempEntity, entityToUpdate, changeType);

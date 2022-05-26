@@ -56,14 +56,14 @@ public class PipelineRefreshServiceTest extends PipelineServiceTestBase {
   private final PipelineEntity pipelineEntityWithTemplates = PipelineEntity.builder()
                                                                  .identifier(PIPELINE_IDENTIFIER_WITH_TEMPLATES)
                                                                  .name(PIPELINE_IDENTIFIER_WITH_TEMPLATES)
-                                                                 .templateReference(true)
-                                                                 .yaml("some pipeline yaml with templates")
+                                                                 .yaml("pipeline:\n"
+                                                                     + "  template:\n"
+                                                                     + "    templateRef: hasRef")
                                                                  .build();
   private final PipelineEntity pipelineEntityWithoutTemplates = PipelineEntity.builder()
                                                                     .identifier(PIPELINE_IDENTIFIER_WITHOUT_TEMPLATES)
                                                                     .name(PIPELINE_IDENTIFIER_WITHOUT_TEMPLATES)
-                                                                    .templateReference(false)
-                                                                    .yaml("some pipeline yaml without templates")
+                                                                    .yaml("pipeline: noTemplateRef\n")
                                                                     .build();
 
   @InjectMocks PipelineRefreshServiceImpl pipelineRefreshService;
