@@ -24,7 +24,7 @@ import com.google.inject.name.Named;
 // This step only produces an Outcome for service expressions to work
 public class ServiceStepV2 implements SyncExecutable<ServiceStepParametersV2> {
   public static final StepType STEP_TYPE =
-      StepType.newBuilder().setType(ExecutionNodeType.SERVICE.getName()).setStepCategory(StepCategory.STEP).build();
+      StepType.newBuilder().setType(ExecutionNodeType.SERVICE_V2.getName()).setStepCategory(StepCategory.STEP).build();
   @Inject private EntityReferenceExtractorUtils entityReferenceExtractorUtils;
   @Inject @Named("PRIVILEGED") private AccessControlClient accessControlClient;
   @Inject private PipelineRbacHelper pipelineRbacHelper;

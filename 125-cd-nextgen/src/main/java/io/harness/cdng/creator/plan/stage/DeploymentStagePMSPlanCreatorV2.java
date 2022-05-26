@@ -76,7 +76,9 @@ import lombok.SneakyThrows;
  *                spec
  *                  artifacts
  *                  manifests
- *          infrastructure. envRef
+ *          infrastructureSection(UI visible)
+ *            infraDefinition
+ *              spec
  *          execution
  *
  * Stage plan graph V2 -
@@ -89,7 +91,9 @@ import lombok.SneakyThrows;
  *                spec
  *                  artifacts
  *                  manifests
- *          infrastructure/Gitops
+ *          infrastructureSection(UI visible)/Gitops(UI visible)
+ *            infraDefinition
+ *              spec
  *          execution
  */
 
