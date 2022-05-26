@@ -63,6 +63,7 @@ import io.harness.gitsync.common.scmerrorhandling.ScmErrorCodeToHttpStatusCodeMa
 import io.harness.gitsync.common.service.GitBranchService;
 import io.harness.gitsync.common.service.GitBranchSyncService;
 import io.harness.gitsync.common.service.GitEntityService;
+import io.harness.gitsync.common.service.GitSyncSettingsService;
 import io.harness.gitsync.common.service.HarnessToGitHelperService;
 import io.harness.gitsync.common.service.ScmFacilitatorService;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
@@ -118,6 +119,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   private final GitSyncConnectorHelper gitSyncConnectorHelper;
   private final FullSyncJobService fullSyncJobService;
   private final ScmFacilitatorService scmFacilitatorService;
+  private final GitSyncSettingsService gitSyncSettingsService;
 
   @Inject
   public HarnessToGitHelperServiceImpl(@Named("connectorDecoratorService") ConnectorService connectorService,
@@ -127,7 +129,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
       ScmOrchestratorService scmOrchestratorService, GitBranchSyncService gitBranchSyncService,
       GitCommitService gitCommitService, UserProfileHelper userProfileHelper, GitSyncErrorService gitSyncErrorService,
       GitSyncConnectorHelper gitSyncConnectorHelper, FullSyncJobService fullSyncJobService,
-      ScmFacilitatorService scmFacilitatorService) {
+      ScmFacilitatorService scmFacilitatorService, GitSyncSettingsService gitSyncSettingsService) {
     this.connectorService = connectorService;
     this.decryptScmApiAccess = decryptScmApiAccess;
     this.gitEntityService = gitEntityService;
@@ -144,6 +146,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
     this.gitSyncConnectorHelper = gitSyncConnectorHelper;
     this.fullSyncJobService = fullSyncJobService;
     this.scmFacilitatorService = scmFacilitatorService;
+    this.gitSyncSettingsService = gitSyncSettingsService;
   }
 
   private Optional<ConnectorResponseDTO> getConnector(
@@ -244,6 +247,12 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   public Boolean isGitSyncEnabled(EntityScopeInfo entityScopeInfo) {
     return yamlGitConfigService.isGitSyncEnabled(entityScopeInfo.getAccountId(), entityScopeInfo.getOrgId().getValue(),
         entityScopeInfo.getProjectId().getValue());
+  }
+
+  @Override
+  public Boolean isGitSimplificationEnabled(EntityScopeInfo entityScopeInfo) {
+    return gitSyncSettingsService.getGitSimplificationStatus(entityScopeInfo.getAccountId(),
+        entityScopeInfo.getOrgId().getValue(), entityScopeInfo.getProjectId().getValue());
   }
 
   private void createGitBranch(

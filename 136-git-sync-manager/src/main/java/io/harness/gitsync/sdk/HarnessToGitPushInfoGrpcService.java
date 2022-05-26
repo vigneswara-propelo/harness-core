@@ -24,6 +24,7 @@ import io.harness.gitsync.FileInfo;
 import io.harness.gitsync.GetFileRequest;
 import io.harness.gitsync.GetFileResponse;
 import io.harness.gitsync.HarnessToGitPushInfoServiceGrpc.HarnessToGitPushInfoServiceImplBase;
+import io.harness.gitsync.IsGitSimplificationEnabled;
 import io.harness.gitsync.IsGitSyncEnabled;
 import io.harness.gitsync.PushFileResponse;
 import io.harness.gitsync.PushInfo;
@@ -215,6 +216,14 @@ public class HarnessToGitPushInfoGrpcService extends HarnessToGitPushInfoService
     responseObserver.onNext(IsGitSyncEnabled.newBuilder().setEnabled(gitSyncEnabled).build());
     responseObserver.onCompleted();
     log.debug("Grpc request completed for isGitSyncEnabledForScope");
+  }
+
+  @Override
+  public void isGitSimplificationEnabledForScope(
+      EntityScopeInfo request, StreamObserver<IsGitSimplificationEnabled> responseObserver) {
+    final Boolean isGitSimplificationEnabled = harnessToGitHelperService.isGitSimplificationEnabled(request);
+    responseObserver.onNext(IsGitSimplificationEnabled.newBuilder().setEnabled(isGitSimplificationEnabled).build());
+    responseObserver.onCompleted();
   }
 
   @Override
