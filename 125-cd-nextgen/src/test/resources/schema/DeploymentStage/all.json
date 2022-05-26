@@ -4893,7 +4893,8 @@
             "Nexus3Registry",
             "ArtifactoryRegistry",
             "CustomArtifact",
-            "Acr"
+            "Acr",
+            "Jenkins"
           ]
         }
       },
@@ -6272,7 +6273,8 @@
             "Nexus3Registry",
             "ArtifactoryRegistry",
             "CustomArtifact",
-            "Acr"
+            "Acr",
+            "Jenkins"
           ]
         }
       },

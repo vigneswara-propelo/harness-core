@@ -7,37 +7,33 @@
 
 package software.wings.helpers.ext.jenkins;
 
-import static io.harness.annotations.dev.HarnessModule._960_API_SERVICES;
-
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 
-import java.util.List;
+import com.offbytwo.jenkins.model.BaseModel;
 
 /**
  * Created by peeyushaggarwal on 5/12/16.
  */
 @OwnedBy(HarnessTeam.CDC)
-@TargetModule(_960_API_SERVICES)
-public class SvnChangeSet {
-  private List<SvnRevision> revisions;
+public class SvnBuildDetails extends BaseModel {
+  private SvnChangeSet changeSet;
 
   /**
-   * Gets revisions.
+   * Gets change set.
    *
-   * @return the revisions
+   * @return the change set
    */
-  public List<SvnRevision> getRevisions() {
-    return revisions;
+  public SvnChangeSet getChangeSet() {
+    return changeSet;
   }
 
   /**
-   * Sets revisions.
+   * Sets change set.
    *
-   * @param revisions the revisions
+   * @param changeSet the change set
    */
-  public void setRevisions(List<SvnRevision> revisions) {
-    this.revisions = revisions;
+  public void setChangeSet(SvnChangeSet changeSet) {
+    this.changeSet = changeSet;
   }
 }
