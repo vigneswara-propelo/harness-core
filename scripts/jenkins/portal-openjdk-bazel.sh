@@ -200,6 +200,7 @@ if [ ! -z ${PURPOSE} ]
 then
     echo ${PURPOSE} > purpose.txt
 fi
+cd ../..
 
 mkdir -p dist/sto-manager
 cd dist/sto-manager
