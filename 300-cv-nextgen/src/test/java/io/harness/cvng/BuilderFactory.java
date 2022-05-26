@@ -738,9 +738,8 @@ public class BuilderFactory {
         .activityStartTime(clock.instant())
         .activityName("K8 Activity")
         .resourceVersion("resource-version")
-        .relatedAppServices(Arrays.asList(RelatedAppMonitoredService.builder()
-                                              .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
-                                              .build()));
+        .relatedAppServices(Arrays.asList(
+            RelatedAppMonitoredService.builder().monitoredServiceIdentifier("dependent_service").build()));
   }
 
   public ChangeEventDTOBuilder harnessCDChangeEventDTOBuilder() {
