@@ -211,6 +211,12 @@ public class TriggerExecutionHelper {
                 .build();
         gitSyncBranchContextByteString =
             pmsGitSyncHelper.serializeGitSyncBranchContext(gitSyncContextWithRepoAndFilePath);
+
+        log.info(
+            "Triggering execution for pipeline with identifier:  {} , in org: {} , ProjectId: {} , accountIdentifier: {} , For Trigger: {},  in branch {}, repo {} , filePath {}",
+            ngTriggerEntity.getTargetIdentifier(), ngTriggerEntity.getOrgIdentifier(),
+            ngTriggerEntity.getProjectIdentifier(), ngTriggerEntity.getAccountId(), ngTriggerEntity.getIdentifier(),
+            branch, pipelineEntityToExecute.get().getRepo(), pipelineEntityToExecute.get().getFilePath());
       }
       PipelineEntity pipelineEntity = pipelineEntityToExecute.get();
 
