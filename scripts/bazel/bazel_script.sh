@@ -64,7 +64,7 @@ BAZEL_MODULES="\
   //310-ci-manager:module \
   //315-sto-manager:module \
   //320-ci-execution:module \
-  //323-sto-execution:module \
+  //323-sto-utilities:module \
   //325-sto-beans:module \
   //330-ci-beans:module \
   //340-ce-nextgen:module \
@@ -296,6 +296,8 @@ build_protocol_info(){
 
 build_bazel_module 100-migrator
 build_bazel_module 320-ci-execution
+build_bazel_module 323-sto-utilities
+build_bazel_module 325-sto-beans
 build_bazel_module 330-ci-beans
 build_bazel_module 380-cg-graphql
 build_bazel_module 400-rest
