@@ -26,10 +26,14 @@ import io.harness.category.element.UnitTests;
 import io.harness.dto.OrchestrationAdjacencyListDTO;
 import io.harness.dto.OrchestrationGraphDTO;
 import io.harness.engine.executions.node.NodeExecutionService;
+import io.harness.engine.governance.PolicyEvaluationFailureException;
 import io.harness.exception.EntityNotFoundException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.JsonSchemaValidationException;
+import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorDTO;
+import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorWrapperDTO;
 import io.harness.git.model.ChangeType;
+import io.harness.gitsync.interceptor.GitImportInfoDTO;
 import io.harness.gitsync.sdk.EntityGitDetails;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
@@ -44,6 +48,7 @@ import io.harness.pms.pipeline.service.PMSPipelineTemplateHelper;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.pms.variables.VariableCreatorMergeService;
 import io.harness.rule.Owner;
+import io.harness.yaml.validator.InvalidYamlException;
 
 import com.google.common.io.Resources;
 import java.io.IOException;
@@ -205,6 +210,48 @@ public class PipelineResourceTest extends CategoryTest {
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, null, true);
     assertThat(responseDTO.getData().getVersion()).isEqualTo(1L);
     assertThat(responseDTO.getData().getYamlPipeline()).isEqualTo(yaml);
+    assertThat(responseDTO.getData().getYamlSchemaErrorWrapper()).isNull();
+    assertThat(responseDTO.getData().getGovernanceMetadata()).isNull();
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testGetPipelineWithInvalidYAML() {
+    YamlSchemaErrorWrapperDTO errorWrapper =
+        YamlSchemaErrorWrapperDTO.builder()
+            .schemaErrors(Collections.singletonList(YamlSchemaErrorDTO.builder().fqn("fqn").message("msg").build()))
+            .build();
+    doThrow(new InvalidYamlException("errorMsg", null, errorWrapper, yaml))
+        .when(pmsPipelineService)
+        .get(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, false);
+
+    ResponseDTO<PMSPipelineResponseDTO> responseDTO = pipelineResource.getPipelineByIdentifier(
+        ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, null, true);
+    PMSPipelineResponseDTO data = responseDTO.getData();
+    assertThat(data.getEntityValidityDetails().isValid()).isFalse();
+    assertThat(data.getEntityValidityDetails().getInvalidYaml()).isEqualTo(yaml);
+    assertThat(data.getYamlPipeline()).isEqualTo(yaml);
+    assertThat(data.getYamlSchemaErrorWrapper()).isEqualTo(errorWrapper);
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testGetPipelineWithGovernanceErrors() {
+    GovernanceMetadata governanceMetadata =
+        GovernanceMetadata.newBuilder().setDeny(true).setAccountId(ACCOUNT_ID).build();
+    doThrow(new PolicyEvaluationFailureException("errorMsg", governanceMetadata, yaml))
+        .when(pmsPipelineService)
+        .get(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, false);
+
+    ResponseDTO<PMSPipelineResponseDTO> responseDTO = pipelineResource.getPipelineByIdentifier(
+        ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, null, true);
+    PMSPipelineResponseDTO data = responseDTO.getData();
+    assertThat(data.getEntityValidityDetails().isValid()).isFalse();
+    assertThat(data.getEntityValidityDetails().getInvalidYaml()).isEqualTo(yaml);
+    assertThat(data.getYamlPipeline()).isEqualTo(yaml);
+    assertThat(data.getGovernanceMetadata()).isEqualTo(governanceMetadata);
   }
 
   @Test
@@ -302,7 +349,7 @@ public class PipelineResourceTest extends CategoryTest {
   public void testGetPipelineSummary() {
     doReturn(Optional.of(entityWithVersion))
         .when(pmsPipelineService)
-        .get(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, false);
+        .getWithoutPerformingValidations(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, false);
     ResponseDTO<PMSPipelineSummaryResponseDTO> pipelineSummary =
         pipelineResource.getPipelineSummary(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, null);
     assertThat(pipelineSummary.getData().getName()).isEqualTo(PIPELINE_IDENTIFIER);
@@ -322,7 +369,8 @@ public class PipelineResourceTest extends CategoryTest {
 
     doReturn(Optional.empty())
         .when(pmsPipelineService)
-        .get(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, incorrectPipelineIdentifier, false);
+        .getWithoutPerformingValidations(
+            ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, incorrectPipelineIdentifier, false);
 
     assertThatThrownBy(()
                            -> pipelineResource.getPipelineSummary(
@@ -365,5 +413,35 @@ public class PipelineResourceTest extends CategoryTest {
     ResponseDTO<ExpandedPipelineJsonDTO> expandedPipelineJson = pipelineResource.getExpandedPipelineJson(
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, null);
     assertThat(expandedPipelineJson.getData().getExpandedJson()).isEqualTo("look, a JSON");
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testImportPipelineFromGit() {
+    GitImportInfoDTO gitImportInfoDTO = GitImportInfoDTO.builder().branch("br").build();
+    PipelineImportRequestDTO pipelineImportRequestDTO = PipelineImportRequestDTO.builder().build();
+    doReturn(yaml)
+        .when(pmsPipelineService)
+        .importPipelineFromRemote(
+            ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, pipelineImportRequestDTO);
+    ResponseDTO<PMSPipelineResponseDTO> importPipelineFromGit = pipelineResource.importPipelineFromGit(
+        ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, gitImportInfoDTO, pipelineImportRequestDTO);
+    assertThat(importPipelineFromGit.getData().getYamlPipeline()).isEqualTo(yaml);
+    assertThat(importPipelineFromGit.getData().getYamlSchemaErrorWrapper()).isNull();
+
+    YamlSchemaErrorWrapperDTO errorWrapper =
+        YamlSchemaErrorWrapperDTO.builder()
+            .schemaErrors(Collections.singletonList(YamlSchemaErrorDTO.builder().fqn("fqn").message("msg").build()))
+            .build();
+    doThrow(new InvalidYamlException("errorMsg", null, errorWrapper, yaml))
+        .when(pmsPipelineService)
+        .importPipelineFromRemote(
+            ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, pipelineImportRequestDTO);
+
+    importPipelineFromGit = pipelineResource.importPipelineFromGit(
+        ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, gitImportInfoDTO, pipelineImportRequestDTO);
+    assertThat(importPipelineFromGit.getData().getYamlPipeline()).isEqualTo(yaml);
+    assertThat(importPipelineFromGit.getData().getYamlSchemaErrorWrapper()).isEqualTo(errorWrapper);
   }
 }

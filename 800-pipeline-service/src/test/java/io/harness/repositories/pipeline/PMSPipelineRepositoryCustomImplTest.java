@@ -36,6 +36,7 @@ import io.harness.pms.pipeline.service.PipelineMetadataService;
 import io.harness.rule.Owner;
 import io.harness.springdata.TransactionHelper;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.Data;
 import org.junit.Before;
@@ -46,6 +47,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(PIPELINE)
 public class PMSPipelineRepositoryCustomImplTest extends CategoryTest {
@@ -189,6 +191,152 @@ public class PMSPipelineRepositoryCustomImplTest extends CategoryTest {
     // to check if the supplier is actually called
     assertThat(dummy.getVal()).isEqualTo(10);
     verify(gitAwareEntityHelper, times(1)).createEntityOnGit(pipelineToSave, pipelineYaml, scope);
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testFindInlinePipeline() {
+    PipelineEntity inlinePipelineEntity = PipelineEntity.builder()
+                                              .accountId(accountIdentifier)
+                                              .orgIdentifier(orgIdentifier)
+                                              .projectIdentifier(projectIdentifier)
+                                              .identifier(pipelineId)
+                                              .yaml(pipelineYaml)
+                                              .storeType(StoreType.INLINE)
+                                              .build();
+    Criteria criteria = Criteria.where(PipelineEntityKeys.deleted)
+                            .is(false)
+                            .and(PipelineEntityKeys.identifier)
+                            .is(pipelineId)
+                            .and(PipelineEntityKeys.projectIdentifier)
+                            .is(projectIdentifier)
+                            .and(PipelineEntityKeys.orgIdentifier)
+                            .is(orgIdentifier)
+                            .and(PipelineEntityKeys.accountId)
+                            .is(accountIdentifier);
+    Query query = new Query(criteria);
+    doReturn(inlinePipelineEntity).when(mongoTemplate).findOne(query, PipelineEntity.class);
+    Optional<PipelineEntity> optionalPipelineEntity =
+        pipelineRepository.find(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, true, false);
+    assertThat(optionalPipelineEntity.isPresent()).isTrue();
+    assertThat(optionalPipelineEntity.get()).isEqualTo(inlinePipelineEntity);
+    verify(gitAwareEntityHelper, times(0)).fetchEntityFromRemote(any(), any(), any(), any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testFindRemotePipeline() {
+    PipelineEntity remotePipelineFromDB = PipelineEntity.builder()
+                                              .accountId(accountIdentifier)
+                                              .orgIdentifier(orgIdentifier)
+                                              .projectIdentifier(projectIdentifier)
+                                              .identifier(pipelineId)
+                                              .storeType(StoreType.REMOTE)
+                                              .connectorRef(connectorRef)
+                                              .repo(repoName)
+                                              .filePath(filePath)
+                                              .build();
+    PipelineEntity remotePipelineWithYAML = remotePipelineFromDB.withYaml(pipelineYaml);
+    doReturn(remotePipelineFromDB).when(mongoTemplate).findOne(query, PipelineEntity.class);
+    doReturn(remotePipelineWithYAML).when(gitAwareEntityHelper).fetchEntityFromRemote(any(), any(), any(), any());
+    Optional<PipelineEntity> optionalPipelineEntity =
+        pipelineRepository.find(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, true, false);
+    assertThat(optionalPipelineEntity.isPresent()).isTrue();
+    assertThat(optionalPipelineEntity.get()).isEqualTo(remotePipelineWithYAML);
+    verify(gitAwareEntityHelper, times(1)).fetchEntityFromRemote(any(), any(), any(), any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testUpdateInlinePipeline() {
+    PipelineEntity oldPipelineInDB = PipelineEntity.builder()
+                                         .accountId(accountIdentifier)
+                                         .orgIdentifier(orgIdentifier)
+                                         .projectIdentifier(projectIdentifier)
+                                         .identifier(pipelineId)
+                                         .name("old name")
+                                         .description("old desc")
+                                         .yaml(pipelineYaml)
+                                         .storeType(StoreType.INLINE)
+                                         .build();
+    String newYaml = "pipeline: new yaml";
+    PipelineEntity pipelineToUpdate = PipelineEntity.builder()
+                                          .accountId(accountIdentifier)
+                                          .orgIdentifier(orgIdentifier)
+                                          .projectIdentifier(projectIdentifier)
+                                          .identifier(pipelineId)
+                                          .name("new name")
+                                          .description("new desc")
+                                          .yaml(newYaml)
+                                          .storeType(StoreType.INLINE)
+                                          .build();
+    doReturn(oldPipelineInDB).when(mongoTemplate).findAndModify(any(), any(), any(), any(Class.class));
+    PipelineEntity updatedEntity = pipelineRepository.updatePipelineYaml(pipelineToUpdate);
+    assertThat(updatedEntity.getYaml()).isEqualTo(newYaml);
+    assertThat(updatedEntity.getName()).isEqualTo("new name");
+    assertThat(updatedEntity.getDescription()).isEqualTo("new desc");
+    verify(mongoTemplate, times(1)).findAndModify(any(), any(), any(), any(Class.class));
+    verify(gitAwareEntityHelper, times(0)).updateEntityOnGit(any(), any(), any());
+    verify(outboxService, times(1)).save(any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testUpdateRemotePipeline() {
+    PipelineEntity oldPipelineInDB = PipelineEntity.builder()
+                                         .accountId(accountIdentifier)
+                                         .orgIdentifier(orgIdentifier)
+                                         .projectIdentifier(projectIdentifier)
+                                         .identifier(pipelineId)
+                                         .name("old name")
+                                         .description("old desc")
+                                         .yaml(pipelineYaml)
+                                         .storeType(StoreType.REMOTE)
+                                         .build();
+    String newYaml = "pipeline: new yaml";
+    PipelineEntity pipelineToUpdate = PipelineEntity.builder()
+                                          .accountId(accountIdentifier)
+                                          .orgIdentifier(orgIdentifier)
+                                          .projectIdentifier(projectIdentifier)
+                                          .identifier(pipelineId)
+                                          .name("new name")
+                                          .description("new desc")
+                                          .yaml(newYaml)
+                                          .storeType(StoreType.REMOTE)
+                                          .build();
+    doReturn(oldPipelineInDB).when(mongoTemplate).findAndModify(any(), any(), any(), any(Class.class));
+    PipelineEntity updatedEntity = pipelineRepository.updatePipelineYaml(pipelineToUpdate);
+    assertThat(updatedEntity.getYaml()).isEqualTo(newYaml);
+    assertThat(updatedEntity.getName()).isEqualTo("new name");
+    assertThat(updatedEntity.getDescription()).isEqualTo("new desc");
+    verify(mongoTemplate, times(1)).findAndModify(any(), any(), any(), any(Class.class));
+    verify(gitAwareEntityHelper, times(1)).updateEntityOnGit(any(), any(), any());
+    verify(outboxService, times(1)).save(any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testDeletePipeline() {
+    Update update = new Update();
+    update.set(PipelineEntityKeys.deleted, true);
+    PipelineEntity pipelineEntity = PipelineEntity.builder()
+                                        .accountId(accountIdentifier)
+                                        .orgIdentifier(orgIdentifier)
+                                        .projectIdentifier(projectIdentifier)
+                                        .identifier(pipelineId)
+                                        .yaml(pipelineYaml)
+                                        .deleted(true)
+                                        .build();
+    doReturn(pipelineEntity).when(mongoTemplate).findAndModify(any(), any(), any(), any(Class.class));
+    PipelineEntity deletedEntity =
+        pipelineRepository.delete(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId);
+    assertThat(deletedEntity).isEqualTo(pipelineEntity);
+    verify(outboxService, times(1)).save(any());
   }
 
   @Data

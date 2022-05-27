@@ -14,13 +14,18 @@ import static org.mockito.Mockito.verify;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.exception.EntityNotFoundException;
 import io.harness.exception.HintException;
+import io.harness.exception.InvalidRequestException;
+import io.harness.gitsync.beans.StoreType;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.repositories.pipeline.PMSPipelineRepository;
 import io.harness.rule.Owner;
+import io.harness.yaml.validator.InvalidYamlException;
 
 import java.io.IOException;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -89,5 +94,124 @@ public class PMSPipelineServiceImplSimplifiedGitExpTest extends CategoryTest {
         .isInstanceOf(HintException.class)
         .hasMessage("this is a hint");
     verify(pipelineServiceHelper, times(0)).sendPipelineSaveTelemetryEvent(any(), any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testGetInlinePipeline() {
+    PipelineEntity pipelineEntity = PipelineEntity.builder()
+                                        .accountId(accountIdentifier)
+                                        .orgIdentifier(orgIdentifier)
+                                        .projectIdentifier(projectIdentifier)
+                                        .identifier(pipelineId)
+                                        .yaml(pipelineYaml)
+                                        .storeType(StoreType.INLINE)
+                                        .build();
+    doReturn(Optional.of(pipelineEntity))
+        .when(pipelineRepository)
+        .find(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, true, false);
+    Optional<PipelineEntity> optionalPipelineEntity =
+        pipelineService.get(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, false);
+    assertThat(optionalPipelineEntity.isPresent()).isTrue();
+    assertThat(optionalPipelineEntity.get()).isEqualTo(pipelineEntity);
+    verify(pipelineServiceHelper, times(0)).validatePipelineFromRemote(any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testGetRemotePipeline() {
+    PipelineEntity pipelineEntity = PipelineEntity.builder()
+                                        .accountId(accountIdentifier)
+                                        .orgIdentifier(orgIdentifier)
+                                        .projectIdentifier(projectIdentifier)
+                                        .identifier(pipelineId)
+                                        .yaml(pipelineYaml)
+                                        .storeType(StoreType.REMOTE)
+                                        .build();
+    doReturn(Optional.of(pipelineEntity))
+        .when(pipelineRepository)
+        .find(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, true, false);
+    Optional<PipelineEntity> optionalPipelineEntity =
+        pipelineService.get(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, false);
+    assertThat(optionalPipelineEntity.isPresent()).isTrue();
+    assertThat(optionalPipelineEntity.get()).isEqualTo(pipelineEntity);
+    verify(pipelineServiceHelper, times(1)).validatePipelineFromRemote(any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testGetRemotePipelineWithNoData() {
+    PipelineEntity pipelineEntity = PipelineEntity.builder()
+                                        .accountId(accountIdentifier)
+                                        .orgIdentifier(orgIdentifier)
+                                        .projectIdentifier(projectIdentifier)
+                                        .identifier(pipelineId)
+                                        .storeType(StoreType.REMOTE)
+                                        .build();
+    doReturn(Optional.of(pipelineEntity))
+        .when(pipelineRepository)
+        .find(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, true, false);
+    assertThatThrownBy(
+        () -> pipelineService.get(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, false))
+        .isInstanceOf(InvalidYamlException.class);
+    verify(pipelineServiceHelper, times(0)).validatePipelineFromRemote(any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testGetNonExistentPipeline() {
+    doReturn(Optional.empty())
+        .when(pipelineRepository)
+        .find(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, true, false);
+    assertThatThrownBy(
+        () -> pipelineService.get(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, false))
+        .isInstanceOf(EntityNotFoundException.class);
+    verify(pipelineServiceHelper, times(0)).validatePipelineFromRemote(any());
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testUpdatePipeline() throws IOException {
+    PipelineEntity pipelineToUpdate = PipelineEntity.builder()
+                                          .accountId(accountIdentifier)
+                                          .orgIdentifier(orgIdentifier)
+                                          .projectIdentifier(projectIdentifier)
+                                          .identifier(pipelineId)
+                                          .yaml(pipelineYaml)
+                                          .build();
+    PipelineEntity pipelineToSaveWithUpdatedInfo = pipelineToUpdate.withStageCount(0);
+    doReturn(pipelineToSaveWithUpdatedInfo).when(pipelineServiceHelper).updatePipelineInfo(pipelineToUpdate);
+
+    PipelineEntity pipelineEntityUpdated = pipelineToSaveWithUpdatedInfo.withVersion(0L);
+    doReturn(pipelineEntityUpdated).when(pipelineRepository).updatePipelineYaml(pipelineToSaveWithUpdatedInfo);
+
+    PipelineEntity pipelineEntity = pipelineService.updatePipelineYaml(pipelineToUpdate, null);
+    assertThat(pipelineEntity).isEqualTo(pipelineEntityUpdated);
+    verify(pipelineServiceHelper, times(1))
+        .sendPipelineSaveTelemetryEvent(pipelineEntityUpdated, "updating existing pipeline");
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testDeletePipeline() {
+    PipelineEntity deleted = PipelineEntity.builder().deleted(true).build();
+    doReturn(deleted).when(pipelineRepository).delete(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId);
+    boolean delete = pipelineService.delete(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, null);
+    assertThat(delete).isTrue();
+
+    PipelineEntity notDeleted = PipelineEntity.builder().deleted(false).build();
+    doReturn(notDeleted)
+        .when(pipelineRepository)
+        .delete(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId);
+
+    assertThatThrownBy(
+        () -> pipelineService.delete(accountIdentifier, orgIdentifier, projectIdentifier, pipelineId, null))
+        .isInstanceOf(InvalidRequestException.class);
   }
 }

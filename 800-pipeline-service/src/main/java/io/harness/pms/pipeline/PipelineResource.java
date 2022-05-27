@@ -23,14 +23,18 @@ import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.ExecutionNode;
 import io.harness.engine.executions.node.NodeExecutionService;
+import io.harness.engine.governance.PolicyEvaluationFailureException;
 import io.harness.exception.EntityNotFoundException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorWrapperDTO;
 import io.harness.git.model.ChangeType;
+import io.harness.gitaware.helper.GitAwareContextHelper;
 import io.harness.gitsync.interceptor.GitEntityCreateInfoDTO;
 import io.harness.gitsync.interceptor.GitEntityDeleteInfoDTO;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
 import io.harness.gitsync.interceptor.GitEntityUpdateInfoDTO;
 import io.harness.gitsync.interceptor.GitImportInfoDTO;
+import io.harness.gitsync.sdk.EntityValidityDetails;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -56,6 +60,7 @@ import io.harness.steps.template.stage.TemplateStageNode;
 import io.harness.utils.PageUtils;
 import io.harness.yaml.core.StepSpecType;
 import io.harness.yaml.schema.YamlSchemaResource;
+import io.harness.yaml.validator.InvalidYamlException;
 
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
@@ -324,7 +329,26 @@ public class PipelineResource implements YamlSchemaResource {
     log.info(String.format("Retrieving pipeline with identifier %s in project %s, org %s, account %s", pipelineId,
         projectId, orgId, accountId));
 
-    Optional<PipelineEntity> pipelineEntity = pmsPipelineService.get(accountId, orgId, projectId, pipelineId, false);
+    Optional<PipelineEntity> pipelineEntity;
+    try {
+      pipelineEntity = pmsPipelineService.get(accountId, orgId, projectId, pipelineId, false);
+    } catch (PolicyEvaluationFailureException pe) {
+      return ResponseDTO.newResponse(
+          PMSPipelineResponseDTO.builder()
+              .yamlPipeline(pe.getYaml())
+              .governanceMetadata(pe.getGovernanceMetadata())
+              .entityValidityDetails(EntityValidityDetails.builder().valid(false).invalidYaml(pe.getYaml()).build())
+              .gitDetails(GitAwareContextHelper.getEntityGitDetailsFromScmGitMetadata())
+              .build());
+    } catch (InvalidYamlException e) {
+      return ResponseDTO.newResponse(
+          PMSPipelineResponseDTO.builder()
+              .yamlPipeline(e.getYaml())
+              .entityValidityDetails(EntityValidityDetails.builder().valid(false).invalidYaml(e.getYaml()).build())
+              .gitDetails(GitAwareContextHelper.getEntityGitDetailsFromScmGitMetadata())
+              .yamlSchemaErrorWrapper((YamlSchemaErrorWrapperDTO) e.getMetadata())
+              .build());
+    }
     String version = "0";
     if (pipelineEntity.isPresent()) {
       version = pipelineEntity.get().getVersion().toString();
@@ -505,7 +529,7 @@ public class PipelineResource implements YamlSchemaResource {
 
     Page<PMSPipelineSummaryResponseDTO> pipelines =
         pmsPipelineService.list(criteria, pageRequest, accountId, orgId, projectId, getDistinctFromBranches)
-            .map(PMSPipelineDtoMapper::preparePipelineSummary);
+            .map(PMSPipelineDtoMapper::preparePipelineSummaryForListView);
 
     return ResponseDTO.newResponse(pipelines);
   }
@@ -534,11 +558,14 @@ public class PipelineResource implements YamlSchemaResource {
         String.format("Get pipeline summary for pipeline with with identifier %s in project %s, org %s, account %s",
             pipelineId, projectId, orgId, accountId));
 
-    PMSPipelineSummaryResponseDTO pipelineSummary = PMSPipelineDtoMapper.preparePipelineSummary(
-        pmsPipelineService.get(accountId, orgId, projectId, pipelineId, false)
-            .orElseThrow(()
-                             -> new EntityNotFoundException(String.format(
-                                 "Pipeline with the given ID: %s does not exist or has been deleted", pipelineId))));
+    Optional<PipelineEntity> pipelineEntity;
+    pipelineEntity = pmsPipelineService.getWithoutPerformingValidations(accountId, orgId, projectId, pipelineId, false);
+
+    PMSPipelineSummaryResponseDTO pipelineSummary =
+        PMSPipelineDtoMapper.preparePipelineSummary(pipelineEntity.orElseThrow(
+            ()
+                -> new EntityNotFoundException(
+                    String.format("Pipeline with the given ID: %s does not exist or has been deleted", pipelineId))));
 
     return ResponseDTO.newResponse(pipelineSummary);
   }
@@ -564,7 +591,16 @@ public class PipelineResource implements YamlSchemaResource {
       @PathParam(NGCommonEntityConstants.PIPELINE_KEY) @ResourceIdentifier @Parameter(
           description = PipelineResourceConstants.PIPELINE_ID_PARAM_MESSAGE) String pipelineId,
       @BeanParam GitImportInfoDTO gitImportInfoDTO, PipelineImportRequestDTO pipelineImportRequestDTO) {
-    return ResponseDTO.newResponse(null);
+    try {
+      String importedPipeline = pmsPipelineService.importPipelineFromRemote(
+          accountId, orgId, projectId, pipelineId, pipelineImportRequestDTO);
+      return ResponseDTO.newResponse(PMSPipelineResponseDTO.builder().yamlPipeline(importedPipeline).build());
+    } catch (InvalidYamlException e) {
+      return ResponseDTO.newResponse(PMSPipelineResponseDTO.builder()
+                                         .yamlPipeline(e.getYaml())
+                                         .yamlSchemaErrorWrapper((YamlSchemaErrorWrapperDTO) e.getMetadata())
+                                         .build());
+    }
   }
 
   @GET
