@@ -34,9 +34,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-public class ResourceRestraintOrchestrationEndObserverTest extends OrchestrationStepsTestBase {
+public class ResourceRestraintObserverTest extends OrchestrationStepsTestBase {
   @Mock ResourceRestraintInstanceService restraintInstanceService;
-  @Inject @InjectMocks ResourceRestraintOrchestrationEndObserver observer;
+  @Inject @InjectMocks ResourceRestraintObserver observer;
 
   @Test
   @Owner(developers = PRASHANT)
