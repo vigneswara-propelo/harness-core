@@ -2459,7 +2459,7 @@
               "type": "string",
               "enum": [
                 "Linux",
-                "Osx",
+                "MacOS",
                 "Windows"
               ]
             },
@@ -6198,7 +6198,7 @@
               "type": "string",
               "enum": [
                 "Linux",
-                "Osx",
+                "MacOS",
                 "Windows"
               ]
             },
