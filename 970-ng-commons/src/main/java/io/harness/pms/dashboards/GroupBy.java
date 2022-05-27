@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.dashboards;
+package io.harness.pms.dashboards;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 

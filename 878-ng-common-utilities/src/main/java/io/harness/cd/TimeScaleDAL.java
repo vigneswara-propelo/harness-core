@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ng.overview.service;
+package io.harness.cd;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.timescaledb.Tables.ENVIRONMENTS;
@@ -14,12 +14,15 @@ import static io.harness.timescaledb.Tables.PIPELINE_EXECUTION_SUMMARY_CD;
 import static io.harness.timescaledb.Tables.SERVICES;
 import static io.harness.timescaledb.Tables.SERVICE_INFRA_INFO;
 
+import io.harness.aggregates.AggregateNgServiceInstanceStats;
+import io.harness.aggregates.AggregateNgServiceInstanceStats.AggregateNgServiceInstanceStatsKeys;
+import io.harness.aggregates.AggregateProjectInfo;
+import io.harness.aggregates.AggregateServiceInfo;
+import io.harness.aggregates.TimeWiseExecutionSummary;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.dashboards.GroupBy;
-import io.harness.ng.overview.dto.AggregateProjectInfo;
-import io.harness.ng.overview.dto.AggregateServiceInfo;
-import io.harness.ng.overview.dto.TimeWiseExecutionSummary;
+import io.harness.pms.dashboards.GroupBy;
 import io.harness.timescaledb.tables.pojos.PipelineExecutionSummaryCd;
+import io.harness.timescaledb.tables.pojos.ServiceInfraInfo;
 import io.harness.timescaledb.tables.pojos.Services;
 
 import com.google.inject.Inject;
@@ -40,6 +43,42 @@ public class TimeScaleDAL {
   public static final String SERVICE_ID = "serviceId";
 
   @Inject private DSLContext dsl;
+
+  public List<AggregateNgServiceInstanceStats> getServiceWith95PercentileServiceInstanceCount(String accountIdentifier,
+      double percentile, long startInterval, long endInterval,
+      Table<Record3<String, String, String>> orgProjectServiceTable) {
+    Field<Long> reportedAtEpoch = DSL.epoch(NG_INSTANCE_STATS.REPORTEDAT).cast(Long.class).mul(1000);
+    return dsl
+        .select(NG_INSTANCE_STATS.ORGID, NG_INSTANCE_STATS.PROJECTID, NG_INSTANCE_STATS.SERVICEID,
+            DSL.percentileDisc(percentile)
+                .withinGroupOrderBy(NG_INSTANCE_STATS.INSTANCECOUNT)
+                .as(AggregateNgServiceInstanceStatsKeys.aggregateServiceInstanceCount))
+        .from(NG_INSTANCE_STATS)
+        .where(NG_INSTANCE_STATS.ACCOUNTID.eq(accountIdentifier)
+                   .and(reportedAtEpoch.greaterOrEqual(startInterval))
+                   .and(reportedAtEpoch.lessOrEqual(endInterval)))
+        .andExists(
+            dsl.selectOne()
+                .from(orgProjectServiceTable)
+                .where(
+                    NG_INSTANCE_STATS.ORGID.eq((Field<String>) orgProjectServiceTable.field(ORG_ID))
+                        .and(NG_INSTANCE_STATS.PROJECTID.eq((Field<String>) orgProjectServiceTable.field(PROJECT_ID)))
+                        .and(NG_INSTANCE_STATS.SERVICEID.eq((Field<String>) orgProjectServiceTable.field(SERVICE_ID)))))
+        .groupBy(NG_INSTANCE_STATS.ORGID, NG_INSTANCE_STATS.PROJECTID, NG_INSTANCE_STATS.SERVICEID)
+        .fetchInto(AggregateNgServiceInstanceStats.class);
+  }
+
+  public List<ServiceInfraInfo> getDistinctServiceWithExecutionInTimeRange(
+      @NotNull final String accountId, Long startIntervalInMillis, Long endIntervalInMillis) {
+    return dsl
+        .selectDistinct(
+            SERVICE_INFRA_INFO.ORGIDENTIFIER, SERVICE_INFRA_INFO.PROJECTIDENTIFIER, SERVICE_INFRA_INFO.SERVICE_ID)
+        .from(SERVICE_INFRA_INFO)
+        .where(SERVICE_INFRA_INFO.ACCOUNTID.eq(accountId)
+                   .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.greaterOrEqual(startIntervalInMillis))
+                   .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.lessOrEqual(endIntervalInMillis)))
+        .fetchInto(ServiceInfraInfo.class);
+  }
 
   public List<AggregateServiceInfo> getTopServicesByDeploymentCount(@NotNull String accountIdentifier,
       Long startInterval, Long endInterval, Table<Record2<String, String>> orgProjectTable, List<String> statusList) {
