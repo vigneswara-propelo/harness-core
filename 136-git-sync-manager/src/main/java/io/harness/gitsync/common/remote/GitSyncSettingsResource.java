@@ -148,7 +148,7 @@ public class GitSyncSettingsResource {
   @POST
   @Hidden
   @Path("/git-simplification")
-  @ApiOperation(value = "Enable Git Simplification for a project", nickname = "postGitSyncSetting")
+  @ApiOperation(value = "Enable Git Simplification for a project", nickname = "enableGitSimplification")
   public ResponseDTO<Boolean> enableGitSimplification(
       @Parameter(required = true) @NotEmpty @QueryParam(ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @Parameter(required = true) @NotEmpty @QueryParam(ORG_KEY) @OrgIdentifier String orgIdentifier,
@@ -163,7 +163,7 @@ public class GitSyncSettingsResource {
   @GET
   @Hidden
   @Path("/git-simplification")
-  @ApiOperation(value = "Get Git Simplification status for a project", nickname = "postGitSyncSetting")
+  @ApiOperation(value = "Get Git Simplification status for a project", nickname = "getGitSimplification")
   public ResponseDTO<Boolean> getGitSimplificationStatus(
       @Parameter(required = true) @NotEmpty @QueryParam(ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @Parameter(required = true) @NotEmpty @QueryParam(ORG_KEY) @OrgIdentifier String orgIdentifier,
