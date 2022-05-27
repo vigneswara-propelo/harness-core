@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.resourcegroup.resourceclient.chaoshub;
+package io.harness.resourcegroup.resourceclient.chaos;
 
 import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE;
 import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE_INCLUDING_CHILD_SCOPES;
@@ -65,6 +65,7 @@ public class ChaosHubResourceImpl implements Resource {
     if (Objects.isNull(entityChangeDTO)) {
       return null;
     }
+
     return ResourceInfo.builder()
         .accountIdentifier(stripToNull(entityChangeDTO.getAccountIdentifier().getValue()))
         .orgIdentifier(stripToNull(entityChangeDTO.getOrgIdentifier().getValue()))
