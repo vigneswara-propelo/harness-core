@@ -642,16 +642,11 @@
         {
           "type": "object",
           "required": [
-            "steps"
+            "execution"
           ],
           "properties": {
-            "steps": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ExecutionWrapperConfig"
-              },
-              "maxItems": 2147483647,
-              "minItems": 1
+            "execution": {
+              "$ref": "#/definitions/ExecutionElementConfig"
             }
           }
         }
