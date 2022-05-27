@@ -94,7 +94,7 @@ public class StrategyConfigPlanCreatorTest extends NGCommonUtilitiesTestBase {
                 FacilitatorObtainment.newBuilder()
                     .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILDREN).build())
                     .build())
-            .skipExpressionChain(false)
+            .skipExpressionChain(true)
             .build();
     assertThat(strategyConfigPlanCreator.createPlanForParentNode(context, strategyConfig, new ArrayList<>()))
         .isEqualTo(planNode);
