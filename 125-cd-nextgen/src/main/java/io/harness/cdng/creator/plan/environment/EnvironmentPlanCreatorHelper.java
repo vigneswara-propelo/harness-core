@@ -26,19 +26,28 @@ import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdviserType;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
+import io.harness.pms.contracts.plan.Dependency;
+import io.harness.pms.contracts.plan.YamlUpdates;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.sdk.core.adviser.OrchestrationAdviserTypes;
 import io.harness.pms.sdk.core.plan.PlanNode;
+import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.sdk.core.steps.io.StepParameters;
+import io.harness.pms.yaml.DependenciesUtils;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.serializer.KryoSerializer;
 import io.harness.utils.YamlPipelineUtils;
 
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
@@ -127,5 +136,47 @@ public class EnvironmentPlanCreatorHelper {
     } catch (IOException e) {
       throw new InvalidRequestException("Invalid environment yaml", e);
     }
+  }
+
+  public static Map<String, ByteString> prepareMetadata(String serviceSpecNodeId, String infraSectionUuid,
+      String environmentUuid, boolean gitOpsEnabled, KryoSerializer kryoSerializer) {
+    Map<String, ByteString> metadataDependency = new HashMap<>();
+
+    metadataDependency.put(YamlTypes.NEXT_UUID, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(serviceSpecNodeId)));
+    metadataDependency.put(
+        YamlTypes.INFRA_SECTION_UUID, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(infraSectionUuid)));
+    metadataDependency.put(YamlTypes.UUID, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(environmentUuid)));
+    metadataDependency.put(
+        YAMLFieldNameConstants.GITOPS_ENABLED, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(gitOpsEnabled)));
+
+    return metadataDependency;
+  }
+
+  public void addEnvironmentV2Dependency(LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap,
+      EnvironmentPlanCreatorConfig environmentPlanCreatorConfig, YamlField originalEnvironmentField,
+      boolean gitOpsEnabled, String environmentUuid, String infraSectionUuid, String serviceSpecNodeUuid,
+      KryoSerializer kryoSerializer) throws IOException {
+    YamlField updatedEnvironmentYamlField = EnvironmentPlanCreatorHelper.fetchEnvironmentPlanCreatorConfigYaml(
+        environmentPlanCreatorConfig, originalEnvironmentField);
+    Map<String, YamlField> environmentYamlFieldMap = new HashMap<>();
+    environmentYamlFieldMap.put(environmentUuid, updatedEnvironmentYamlField);
+
+    // preparing meta data
+    final Dependency envDependency = Dependency.newBuilder()
+                                         .putAllMetadata(prepareMetadata(environmentUuid, infraSectionUuid,
+                                             serviceSpecNodeUuid, gitOpsEnabled, kryoSerializer))
+                                         .build();
+
+    planCreationResponseMap.put(environmentUuid,
+        PlanCreationResponse.builder()
+            .dependencies(DependenciesUtils.toDependenciesProto(environmentYamlFieldMap)
+                              .toBuilder()
+                              .putDependencyMetadata(environmentUuid, envDependency)
+                              .build())
+            .yamlUpdates(YamlUpdates.newBuilder()
+                             .putFqnToYaml(updatedEnvironmentYamlField.getYamlPath(),
+                                 YamlUtils.writeYamlString(updatedEnvironmentYamlField).replace("---\n", ""))
+                             .build())
+            .build());
   }
 }
