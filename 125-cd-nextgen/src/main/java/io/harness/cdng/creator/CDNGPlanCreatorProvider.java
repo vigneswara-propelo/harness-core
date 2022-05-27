@@ -98,7 +98,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
   private static final List<String> CLOUDFORMATION_CATEGORY =
       Arrays.asList("Kubernetes", "Provisioner", "Cloudformation");
   private static final String CLOUDFORMATION_STEP_METADATA = "Cloudformation";
-  private static final List<String> TERRAFORM_CATEGORY = Arrays.asList("Kubernetes", "Provisioner");
+  private static final List<String> TERRAFORM_CATEGORY = Arrays.asList("Kubernetes", "Provisioner", "Helm");
 
   @Inject InjectorUtils injectorUtils;
   @Override
