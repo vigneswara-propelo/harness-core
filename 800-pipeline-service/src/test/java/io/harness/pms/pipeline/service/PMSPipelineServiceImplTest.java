@@ -68,6 +68,7 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
   @Inject private PipelineMetadataService pipelineMetadataService;
   @InjectMocks private PMSPipelineServiceImpl pmsPipelineService;
   @Inject private PMSPipelineRepository pmsPipelineRepository;
+
   StepCategory library;
   StepCategory cv;
 

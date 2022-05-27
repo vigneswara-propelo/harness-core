@@ -40,6 +40,7 @@ import io.harness.plancreator.steps.http.PmsAbstractStepNode;
 import io.harness.pms.annotations.PipelineServiceAuth;
 import io.harness.pms.contracts.governance.GovernanceMetadata;
 import io.harness.pms.governance.PipelineSaveResponse;
+import io.harness.pms.helpers.PipelineCloneHelper;
 import io.harness.pms.helpers.PmsFeatureFlagHelper;
 import io.harness.pms.pipeline.PipelineEntity.PipelineEntityKeys;
 import io.harness.pms.pipeline.mappers.NodeExecutionToExecutioNodeMapper;
@@ -133,6 +134,7 @@ public class PipelineResource implements YamlSchemaResource {
   private final PMSPipelineTemplateHelper pipelineTemplateHelper;
   private final PmsFeatureFlagHelper pmsFeatureFlagHelper;
   private final VariableCreatorMergeService variableCreatorMergeService;
+  private final PipelineCloneHelper pipelineCloneHelper;
 
   @POST
   @ApiOperation(value = "Create a Pipeline", nickname = "createPipeline")
@@ -207,6 +209,29 @@ public class PipelineResource implements YamlSchemaResource {
             .governanceMetadata(governanceMetadata)
             .identifier(createdEntity.getIdentifier())
             .build());
+  }
+
+  @POST
+  @Path("/clone")
+  @ApiOperation(value = "Clone a Pipeline", nickname = "clonePipeline")
+  @Operation(operationId = "clonePipeline", summary = "Clone a Pipeline API",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Returns cloned pipeline with metadata")
+      })
+  @Hidden
+  public ResponseDTO<PipelineSaveResponse>
+  clonePipeline(@Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE, required = true) @NotNull
+                @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
+      @BeanParam GitEntityCreateInfoDTO gitEntityCreateInfo,
+      @RequestBody(required = true,
+          description = "Request Body for Cloning a pipeline") @NotNull ClonePipelineDTO clonePipelineDTO) {
+    pipelineCloneHelper.checkAccess(clonePipelineDTO, accountId);
+
+    PipelineSaveResponse pipelineSaveResponse = pmsPipelineService.clone(clonePipelineDTO, accountId);
+
+    return ResponseDTO.newResponse(pipelineSaveResponse);
   }
 
   @POST

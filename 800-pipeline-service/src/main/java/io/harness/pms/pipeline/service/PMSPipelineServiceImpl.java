@@ -14,6 +14,7 @@ import static io.harness.pms.pipeline.service.PMSPipelineServiceStepHelper.LIBRA
 import static java.lang.String.format;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.eventsframework.api.EventsFrameworkDownException;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
@@ -32,8 +33,13 @@ import io.harness.gitsync.helpers.GitContextHelper;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.EntityObjectIdUtils;
 import io.harness.grpc.utils.StringValueUtils;
+import io.harness.pms.PmsFeatureFlagService;
+import io.harness.pms.contracts.governance.GovernanceMetadata;
 import io.harness.pms.contracts.steps.StepInfo;
 import io.harness.pms.gitsync.PmsGitSyncBranchContextGuard;
+import io.harness.pms.governance.PipelineSaveResponse;
+import io.harness.pms.helpers.PipelineCloneHelper;
+import io.harness.pms.pipeline.ClonePipelineDTO;
 import io.harness.pms.pipeline.CommonStepInfo;
 import io.harness.pms.pipeline.ExecutionSummaryInfo;
 import io.harness.pms.pipeline.PipelineEntity;
@@ -43,6 +49,7 @@ import io.harness.pms.pipeline.StepCategory;
 import io.harness.pms.pipeline.StepPalleteFilterWrapper;
 import io.harness.pms.pipeline.StepPalleteInfo;
 import io.harness.pms.pipeline.StepPalleteModuleInfo;
+import io.harness.pms.pipeline.mappers.PMSPipelineDtoMapper;
 import io.harness.pms.sdk.PmsSdkInstanceService;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.repositories.pipeline.PMSPipelineRepository;
@@ -56,6 +63,7 @@ import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,12 +77,15 @@ import org.springframework.data.mongodb.core.query.Update;
 @Slf4j
 @OwnedBy(PIPELINE)
 public class PMSPipelineServiceImpl implements PMSPipelineService {
-  @Inject private final PMSPipelineRepository pmsPipelineRepository;
-  @Inject private final PmsSdkInstanceService pmsSdkInstanceService;
-  @Inject private final PMSPipelineServiceHelper pmsPipelineServiceHelper;
-  @Inject private final PMSPipelineServiceStepHelper pmsPipelineServiceStepHelper;
-  @Inject private final GitSyncSdkService gitSyncSdkService;
-  @Inject private final CommonStepInfo commonStepInfo;
+  @Inject private PMSPipelineRepository pmsPipelineRepository;
+  @Inject private PmsSdkInstanceService pmsSdkInstanceService;
+  @Inject private PMSPipelineServiceHelper pmsPipelineServiceHelper;
+  @Inject private PMSPipelineServiceStepHelper pmsPipelineServiceStepHelper;
+  @Inject private GitSyncSdkService gitSyncSdkService;
+  @Inject private CommonStepInfo commonStepInfo;
+  @Inject private PmsFeatureFlagService pmsFeatureFlagService;
+  @Inject private PipelineCloneHelper pipelineCloneHelper;
+
   public static String CREATING_PIPELINE = "creating new pipeline";
   public static String UPDATING_PIPELINE = "updating existing pipeline";
 
@@ -118,6 +129,54 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       throw new InvalidRequestException(String.format(
           "Error while saving pipeline [%s]: %s", pipelineEntity.getIdentifier(), ExceptionUtils.getMessage(e)));
     }
+  }
+
+  @Override
+  public PipelineSaveResponse clone(ClonePipelineDTO clonePipelineDTO, String accountId) {
+    PipelineEntity sourcePipelineEntity = getSourcePipelineEntity(clonePipelineDTO, accountId);
+
+    String sourcePipelineEntityYaml = sourcePipelineEntity.getYaml();
+
+    String destYaml =
+        pipelineCloneHelper.updatePipelineMetadataInSourceYaml(clonePipelineDTO, sourcePipelineEntityYaml, accountId);
+    PipelineEntity destPipelineEntity =
+        PMSPipelineDtoMapper.toPipelineEntity(accountId, clonePipelineDTO.getDestinationConfig().getOrgIdentifier(),
+            clonePipelineDTO.getDestinationConfig().getProjectIdentifier(), destYaml);
+
+    boolean isGovernanceEnabled =
+        pmsFeatureFlagService.isEnabled(destPipelineEntity.getAccountId(), FeatureName.OPA_PIPELINE_GOVERNANCE);
+    GovernanceMetadata destGovernanceMetadata =
+        pmsPipelineServiceHelper.validatePipelineYamlAndSetTemplateRefIfAny(destPipelineEntity, isGovernanceEnabled);
+    if (destGovernanceMetadata.getDeny()) {
+      return PipelineSaveResponse.builder().governanceMetadata(destGovernanceMetadata).build();
+    }
+    PipelineEntity clonedPipelineEntity = create(destPipelineEntity);
+
+    return PipelineSaveResponse.builder()
+        .governanceMetadata(destGovernanceMetadata)
+        .identifier(clonedPipelineEntity.getIdentifier())
+        .build();
+  }
+
+  @NotNull
+  private PipelineEntity getSourcePipelineEntity(ClonePipelineDTO clonePipelineDTO, String accountId) {
+    Optional<PipelineEntity> sourcePipelineEntity =
+        get(accountId, clonePipelineDTO.getSourceConfig().getOrgIdentifier(),
+            clonePipelineDTO.getSourceConfig().getProjectIdentifier(),
+            clonePipelineDTO.getSourceConfig().getPipelineIdentifier(), false);
+
+    if (!sourcePipelineEntity.isPresent()) {
+      log.error(String.format("Pipeline with id [%s] in org [%s] in project [%s] is not present or deleted",
+          clonePipelineDTO.getSourceConfig().getPipelineIdentifier(),
+          clonePipelineDTO.getSourceConfig().getOrgIdentifier(),
+          clonePipelineDTO.getSourceConfig().getProjectIdentifier()));
+      throw new InvalidRequestException(
+          String.format("Pipeline with id [%s] in org [%s] in project [%s] is not present or deleted",
+              clonePipelineDTO.getSourceConfig().getPipelineIdentifier(),
+              clonePipelineDTO.getSourceConfig().getOrgIdentifier(),
+              clonePipelineDTO.getSourceConfig().getProjectIdentifier()));
+    }
+    return sourcePipelineEntity.get();
   }
 
   @Override
