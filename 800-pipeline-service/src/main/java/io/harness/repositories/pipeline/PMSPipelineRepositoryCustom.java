@@ -26,6 +26,12 @@ public interface PMSPipelineRepositoryCustom {
 
   Long countAllPipelines(Criteria criteria);
 
+  PipelineEntity saveForOldGitSync(PipelineEntity pipelineToSave);
+
+  /**
+   * this method is to be used for new git experience, and for all pipelines that are not git synced in both old and new
+   * flows
+   */
   PipelineEntity save(PipelineEntity pipelineToSave);
 
   Optional<PipelineEntity> findByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifierAndDeletedNot(

@@ -23,6 +23,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.git.model.ChangeType;
+import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.outbox.OutboxEvent;
 import io.harness.outbox.api.impl.OutboxServiceImpl;
 import io.harness.pms.contracts.steps.StepInfo;
@@ -63,6 +64,7 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
   @Mock private PMSPipelineServiceStepHelper pmsPipelineServiceStepHelper;
   @Mock private PMSPipelineServiceHelper pmsPipelineServiceHelper;
   @Mock private OutboxServiceImpl outboxService;
+  @Mock private GitSyncSdkService gitSyncSdkService;
   @Inject private PipelineMetadataService pipelineMetadataService;
   @InjectMocks private PMSPipelineServiceImpl pmsPipelineService;
   @Inject private PMSPipelineRepository pmsPipelineRepository;
@@ -130,6 +132,8 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
                          .build();
 
     updatedPipelineEntity = pipelineEntity.withStageCount(1).withStageNames(Collections.singletonList("qaStage"));
+
+    doReturn(false).when(gitSyncSdkService).isGitSyncEnabled(accountId, ORG_IDENTIFIER, PROJ_IDENTIFIER);
   }
 
   @Test

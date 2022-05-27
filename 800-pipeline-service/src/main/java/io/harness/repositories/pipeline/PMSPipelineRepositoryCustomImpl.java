@@ -10,9 +10,15 @@ package io.harness.repositories.pipeline;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Scope;
 import io.harness.exception.InvalidRequestException;
 import io.harness.git.model.ChangeType;
+import io.harness.gitaware.helper.GitAwareContextHelper;
+import io.harness.gitaware.helper.GitAwareEntityHelper;
+import io.harness.gitsync.beans.StoreType;
 import io.harness.gitsync.common.helper.EntityDistinctElementHelper;
+import io.harness.gitsync.helpers.GitContextHelper;
+import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.persistance.GitAwarePersistence;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.persistance.GitSyncableHarnessRepo;
@@ -21,13 +27,13 @@ import io.harness.outbox.api.OutboxService;
 import io.harness.pms.events.PipelineCreateEvent;
 import io.harness.pms.events.PipelineDeleteEvent;
 import io.harness.pms.events.PipelineUpdateEvent;
-import io.harness.pms.gitsync.PmsGitSyncHelper;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.PipelineEntity.PipelineEntityKeys;
 import io.harness.pms.pipeline.PipelineMetadataV2;
 import io.harness.pms.pipeline.service.PipelineMetadataService;
 import io.harness.springdata.TransactionHelper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import java.time.Duration;
 import java.util.List;
@@ -50,17 +56,17 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.repository.support.PageableExecutionUtils;
 
 @GitSyncableHarnessRepo
-@AllArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({ @Inject }))
+@AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @Slf4j
 @OwnedBy(PIPELINE)
 public class PMSPipelineRepositoryCustomImpl implements PMSPipelineRepositoryCustom {
   private final MongoTemplate mongoTemplate;
   private final GitAwarePersistence gitAwarePersistence;
-  private final GitSyncSdkService gitSyncSdkService;
   private final TransactionHelper transactionHelper;
   private final PipelineMetadataService pipelineMetadataService;
-  private final PmsGitSyncHelper pmsGitSyncHelper;
-  OutboxService outboxService;
+  private final GitAwareEntityHelper gitAwareEntityHelper;
+  private final OutboxService outboxService;
+  private final GitSyncSdkService gitSyncSdkService;
 
   @Override
   public Page<PipelineEntity> findAll(Criteria criteria, Pageable pageable, String accountIdentifier,
@@ -85,6 +91,22 @@ public class PMSPipelineRepositoryCustomImpl implements PMSPipelineRepositoryCus
   }
 
   @Override
+  public PipelineEntity saveForOldGitSync(PipelineEntity pipelineToSave) {
+    String accountIdentifier = pipelineToSave.getAccountIdentifier();
+    String orgIdentifier = pipelineToSave.getOrgIdentifier();
+    String projectIdentifier = pipelineToSave.getProjectIdentifier();
+
+    return transactionHelper.performTransaction(() -> {
+      PipelineEntity savedEntity = gitAwarePersistence.save(
+          pipelineToSave, pipelineToSave.getYaml(), ChangeType.ADD, PipelineEntity.class, null);
+      outboxService.save(
+          new PipelineCreateEvent(accountIdentifier, orgIdentifier, projectIdentifier, pipelineToSave, true));
+      checkForMetadataAndSaveIfAbsent(savedEntity);
+      return savedEntity;
+    });
+  }
+
+  @Override
   public PipelineEntity save(PipelineEntity pipelineToSave) {
     String accountIdentifier = pipelineToSave.getAccountIdentifier();
     String orgIdentifier = pipelineToSave.getOrgIdentifier();
@@ -92,31 +114,70 @@ public class PMSPipelineRepositoryCustomImpl implements PMSPipelineRepositoryCus
     Supplier<OutboxEvent> supplier = ()
         -> outboxService.save(
             new PipelineCreateEvent(accountIdentifier, orgIdentifier, projectIdentifier, pipelineToSave));
-    Supplier<OutboxEvent> supplierWithGitSyncTrue = ()
-        -> outboxService.save(
-            new PipelineCreateEvent(accountIdentifier, orgIdentifier, projectIdentifier, pipelineToSave, true));
-    return transactionHelper.performTransaction(() -> {
-      PipelineEntity savedEntity = gitAwarePersistence.save(
-          pipelineToSave, pipelineToSave.getYaml(), ChangeType.ADD, PipelineEntity.class, supplier);
-      makeSupplierCallIfGitSyncIsEnabled(accountIdentifier, orgIdentifier, projectIdentifier, supplierWithGitSyncTrue);
+    return transactionHelper.performTransaction(() -> savePipelineOperations(pipelineToSave, supplier));
+  }
 
-      // checking if PipelineMetadata exists or not, if exists don't re-save the entity, as only one entry across git
-      // repos should be there.
-      Optional<PipelineMetadataV2> metadataOptional =
-          pipelineMetadataService.getMetadata(savedEntity.getAccountIdentifier(), savedEntity.getOrgIdentifier(),
-              savedEntity.getProjectIdentifier(), savedEntity.getIdentifier());
-      if (!metadataOptional.isPresent()) {
-        PipelineMetadataV2 metadata = PipelineMetadataV2.builder()
-                                          .accountIdentifier(savedEntity.getAccountIdentifier())
-                                          .orgIdentifier(savedEntity.getOrgIdentifier())
-                                          .projectIdentifier(savedEntity.getProjectIdentifier())
-                                          .runSequence(0)
-                                          .identifier(savedEntity.getIdentifier())
-                                          .build();
-        pipelineMetadataService.save(metadata);
+  @VisibleForTesting
+  PipelineEntity savePipelineOperations(PipelineEntity pipelineToSave, Supplier<OutboxEvent> supplier) {
+    PipelineEntity savedEntity = savePipelineEntity(pipelineToSave, supplier);
+    checkForMetadataAndSaveIfAbsent(savedEntity);
+    return savedEntity;
+  }
+
+  @VisibleForTesting
+  PipelineEntity savePipelineEntity(PipelineEntity pipelineToSave, Supplier<OutboxEvent> supplier) {
+    GitAwareContextHelper.initDefaultScmGitMetaData();
+    GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
+    if (gitEntityInfo == null || gitEntityInfo.getStoreType().equals(StoreType.INLINE)) {
+      pipelineToSave.setStoreType(StoreType.INLINE);
+      PipelineEntity savedPipelineEntity = mongoTemplate.save(pipelineToSave);
+      if (supplier != null) {
+        supplier.get();
       }
-      return savedEntity;
-    });
+      return savedPipelineEntity;
+    }
+    if (gitSyncSdkService.isGitSimplificationEnabled(pipelineToSave.getAccountIdentifier(),
+            pipelineToSave.getOrgIdentifier(), pipelineToSave.getProjectIdentifier())) {
+      Scope scope = Scope.builder()
+                        .accountIdentifier(pipelineToSave.getAccountIdentifier())
+                        .orgIdentifier(pipelineToSave.getOrgIdentifier())
+                        .projectIdentifier(pipelineToSave.getProjectIdentifier())
+                        .build();
+      String yamlToPush = pipelineToSave.getYaml();
+      pipelineToSave.setYaml("");
+      pipelineToSave.setStoreType(StoreType.REMOTE);
+      pipelineToSave.setConnectorRef(gitEntityInfo.getConnectorRef());
+      pipelineToSave.setRepo(gitEntityInfo.getRepoName());
+      pipelineToSave.setFilePath(gitEntityInfo.getFilePath());
+
+      gitAwareEntityHelper.createEntityOnGit(pipelineToSave, yamlToPush, scope);
+    } else {
+      log.info(String.format(
+          "Marking storeType as INLINE for Pipeline with ID [%s] because Git simplification was not enabled for Project [%s] in Account [%s]",
+          pipelineToSave.getIdentifier(), pipelineToSave.getProjectIdentifier(),
+          pipelineToSave.getAccountIdentifier()));
+      pipelineToSave.setStoreType(StoreType.INLINE);
+    }
+    supplier.get();
+    return mongoTemplate.save(pipelineToSave);
+  }
+
+  void checkForMetadataAndSaveIfAbsent(PipelineEntity savedEntity) {
+    // checking if PipelineMetadata exists or not, if exists don't re-save the entity, as only one entry across git
+    // repos should be there.
+    Optional<PipelineMetadataV2> metadataOptional =
+        pipelineMetadataService.getMetadata(savedEntity.getAccountIdentifier(), savedEntity.getOrgIdentifier(),
+            savedEntity.getProjectIdentifier(), savedEntity.getIdentifier());
+    if (!metadataOptional.isPresent()) {
+      PipelineMetadataV2 metadata = PipelineMetadataV2.builder()
+                                        .accountIdentifier(savedEntity.getAccountIdentifier())
+                                        .orgIdentifier(savedEntity.getOrgIdentifier())
+                                        .projectIdentifier(savedEntity.getProjectIdentifier())
+                                        .runSequence(0)
+                                        .identifier(savedEntity.getIdentifier())
+                                        .build();
+      pipelineMetadataService.save(metadata);
+    }
   }
 
   @Override

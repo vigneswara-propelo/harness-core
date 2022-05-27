@@ -21,6 +21,7 @@ import io.harness.eventsframework.schemas.entity.IdentifierRefProtoDTO;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.ExplanationException;
+import io.harness.exception.HintException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.InvalidYamlException;
 import io.harness.exception.ScmException;
@@ -52,6 +53,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
@@ -62,15 +65,16 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
 
 @Singleton
+@AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @Slf4j
 @OwnedBy(PIPELINE)
 public class PMSPipelineServiceImpl implements PMSPipelineService {
-  @Inject private PMSPipelineRepository pmsPipelineRepository;
-  @Inject private PmsSdkInstanceService pmsSdkInstanceService;
-  @Inject private PMSPipelineServiceHelper pmsPipelineServiceHelper;
-  @Inject private PMSPipelineServiceStepHelper pmsPipelineServiceStepHelper;
-  @Inject private GitSyncSdkService gitSyncSdkService;
-  @Inject private CommonStepInfo commonStepInfo;
+  @Inject private final PMSPipelineRepository pmsPipelineRepository;
+  @Inject private final PmsSdkInstanceService pmsSdkInstanceService;
+  @Inject private final PMSPipelineServiceHelper pmsPipelineServiceHelper;
+  @Inject private final PMSPipelineServiceStepHelper pmsPipelineServiceStepHelper;
+  @Inject private final GitSyncSdkService gitSyncSdkService;
+  @Inject private final CommonStepInfo commonStepInfo;
   public static String CREATING_PIPELINE = "creating new pipeline";
   public static String UPDATING_PIPELINE = "updating existing pipeline";
 
@@ -85,7 +89,13 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
           pipelineEntity.getIdentifier());
 
       PipelineEntity entityWithUpdatedInfo = pmsPipelineServiceHelper.updatePipelineInfo(pipelineEntity);
-      PipelineEntity createdEntity = pmsPipelineRepository.save(entityWithUpdatedInfo);
+      PipelineEntity createdEntity;
+      if (gitSyncSdkService.isGitSyncEnabled(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
+              pipelineEntity.getProjectIdentifier())) {
+        createdEntity = pmsPipelineRepository.saveForOldGitSync(entityWithUpdatedInfo);
+      } else {
+        createdEntity = pmsPipelineRepository.save(entityWithUpdatedInfo);
+      }
       pmsPipelineServiceHelper.sendPipelineSaveTelemetryEvent(createdEntity, CREATING_PIPELINE);
       return createdEntity;
     } catch (DuplicateKeyException ex) {
@@ -100,8 +110,8 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       log.error(format("Invalid yaml in node [%s]", YamlUtils.getErrorNodePartialFQN(ex)), ex);
       throw new InvalidYamlException(format("Invalid yaml in node [%s]", YamlUtils.getErrorNodePartialFQN(ex)), ex);
 
-    } catch (ExplanationException | ScmException e) {
-      log.error("Error while updating pipeline " + pipelineEntity.getIdentifier(), e);
+    } catch (ExplanationException | HintException | ScmException e) {
+      log.error("Error while creating pipeline " + pipelineEntity.getIdentifier(), e);
       throw e;
     } catch (Exception e) {
       log.error(String.format("Error while saving pipeline [%s]", pipelineEntity.getIdentifier()), e);
@@ -168,7 +178,10 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       throw new InvalidRequestException(
           PipelineCRUDErrorResponse.errorMessageForPipelineNotFound(orgId, projectId, pipelineId));
     }
-    return makePipelineUpdateCall(optionalPipelineEntity.get(), optionalPipelineEntity.get(), ChangeType.ADD);
+    // Non Git synced Pipelines are being marked as INLINE. Marking storeType as null here so that pipelines in old git
+    // sync don't have any value for storeType.
+    return makePipelineUpdateCall(
+        optionalPipelineEntity.get().withStoreType(null), optionalPipelineEntity.get(), ChangeType.ADD);
   }
 
   private PipelineEntity makePipelineUpdateCall(
