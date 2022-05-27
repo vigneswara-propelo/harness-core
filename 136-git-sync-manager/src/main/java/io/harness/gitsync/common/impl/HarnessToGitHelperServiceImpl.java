@@ -588,7 +588,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
 
   private ErrorDetails prepareDefaultErrorDetails(WingsException ex) {
     return ErrorDetails.newBuilder()
-        .setErrorMessage(ExceptionUtils.getMessage(ex))
+        .setErrorMessage(ScmExceptionUtils.getMessage(ex))
         .setExplanationMessage(ScmExceptionUtils.getExplanationMessage(ex))
         .setHintMessage(ScmExceptionUtils.getHintMessage(ex))
         .build();
