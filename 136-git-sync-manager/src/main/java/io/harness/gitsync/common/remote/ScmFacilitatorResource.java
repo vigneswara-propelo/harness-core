@@ -22,13 +22,21 @@ import static io.harness.annotations.dev.HarnessTeam.DX;
 
 import io.harness.NGCommonEntityConstants;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Scope;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.gitsync.common.YamlConstants;
 import io.harness.gitsync.common.dtos.CreatePRDTO;
+import io.harness.gitsync.common.dtos.CreatePRRequest;
+import io.harness.gitsync.common.dtos.CreatePRResponse;
+import io.harness.gitsync.common.dtos.GetFileResponseDTO;
 import io.harness.gitsync.common.dtos.GitBranchesResponseDTO;
 import io.harness.gitsync.common.dtos.GitFileContent;
 import io.harness.gitsync.common.dtos.GitRepositoryResponseDTO;
 import io.harness.gitsync.common.dtos.SaasGitDTO;
+import io.harness.gitsync.common.dtos.ScmCreatePRRequestDTO;
+import io.harness.gitsync.common.dtos.ScmCreatePRResponseDTO;
+import io.harness.gitsync.common.dtos.ScmGetFileByBranchRequestDTO;
+import io.harness.gitsync.common.dtos.ScmGetFileResponseDTO;
 import io.harness.gitsync.common.impl.GitUtils;
 import io.harness.gitsync.common.service.HarnessToGitHelperService;
 import io.harness.gitsync.common.service.ScmFacilitatorService;
@@ -226,6 +234,74 @@ public class ScmFacilitatorResource {
         -> scmClientFacilitatorService.createPullRequest(gitCreatePRRequest),
         gitCreatePRRequest.getProjectIdentifier(), gitCreatePRRequest.getOrgIdentifier(),
         gitCreatePRRequest.getAccountIdentifier()));
+  }
+
+  @POST
+  @Hidden
+  @Path("create-pull-request")
+  @ApiOperation(value = "creates a pull request", nickname = "createPRV2")
+  @Operation(operationId = "createPR", summary = "creates a Pull Request",
+      responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully created a PR") })
+  public ResponseDTO<CreatePRResponse>
+  createPRV2(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotBlank @NotNull @QueryParam(
+                 NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
+      @RequestBody(
+          description = "Details to create a PR", required = true) @Valid @NotNull CreatePRRequest createPRRequest) {
+    ScmCreatePRResponseDTO scmCreatePRResponseDTO =
+        scmFacilitatorService.createPR(ScmCreatePRRequestDTO.builder()
+                                           .title(createPRRequest.getTitle())
+                                           .scope(Scope.builder()
+                                                      .accountIdentifier(accountIdentifier)
+                                                      .orgIdentifier(createPRRequest.getOrgIdentifier())
+                                                      .projectIdentifier(createPRRequest.getProjectIdentifier())
+                                                      .build())
+                                           .connectorRef(createPRRequest.getConnectorRef())
+                                           .repoName(createPRRequest.getRepoName())
+                                           .targetBranch(createPRRequest.getTargetBranchName())
+                                           .sourceBranch(createPRRequest.getSourceBranchName())
+                                           .build());
+    return ResponseDTO.newResponse(CreatePRResponse.builder().prNumber(scmCreatePRResponseDTO.getPrNumber()).build());
+  }
+
+  @GET
+  @Path("get-file-by-branch")
+  @ApiOperation(value = "get file by branch", nickname = "getFileByBranch")
+  @Hidden
+  @Operation(operationId = "getFile", summary = "get file",
+      responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Get file by branch") },
+      hidden = true)
+  public ResponseDTO<GetFileResponseDTO>
+  getFileByBranch(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotBlank @NotNull @QueryParam(
+                      NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
+      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
+      @Parameter(description = GitSyncApiConstants.REPO_NAME) @QueryParam(
+          "RepoName") @NotBlank @NotNull String repoName,
+      @Parameter(description = GitSyncApiConstants.FILE_PATH_KEY) @QueryParam(
+          YamlConstants.FILE_PATH) @NotBlank @NotNull String filePath,
+      @Parameter(description = GitSyncApiConstants.BRANCH_KEY) @QueryParam(
+          YamlConstants.BRANCH) @NotBlank String branch,
+      @Parameter(description = GitSyncApiConstants.CONNECTOR_REF) @QueryParam(
+          "ConnectorRef") @NotBlank String connectorRef) {
+    ScmGetFileResponseDTO scmGetFileResponseDTO =
+        scmFacilitatorService.getFileByBranch(ScmGetFileByBranchRequestDTO.builder()
+                                                  .scope(Scope.builder()
+                                                             .accountIdentifier(accountIdentifier)
+                                                             .orgIdentifier(orgIdentifier)
+                                                             .projectIdentifier(projectIdentifier)
+                                                             .build())
+                                                  .branchName(branch)
+                                                  .filePath(filePath)
+                                                  .connectorRef(connectorRef)
+                                                  .repoName(repoName)
+                                                  .build());
+    return ResponseDTO.newResponse(GetFileResponseDTO.builder()
+                                       .commitId(scmGetFileResponseDTO.getCommitId())
+                                       .fileContent(scmGetFileResponseDTO.getFileContent())
+                                       .blobId(scmGetFileResponseDTO.getBlobId())
+                                       .build());
   }
 
   @GET
