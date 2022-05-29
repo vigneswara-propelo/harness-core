@@ -215,14 +215,14 @@ public class PMSPipelineServiceHelper {
     String projectIdentifier = pipelineEntity.getProjectIdentifier();
     // Apply all the templateRefs(if any) then check for schema validation.
     TemplateMergeResponseDTO templateMergeResponseDTO =
-        pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity);
+        pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity, checkAgainstOPAPolicies);
     String resolveTemplateRefsInPipeline = templateMergeResponseDTO.getMergedPipelineYaml();
     pmsYamlSchemaService.validateYamlSchema(accountId, orgIdentifier, projectIdentifier, resolveTemplateRefsInPipeline);
     // validate unique fqn in resolveTemplateRefsInPipeline
     pmsYamlSchemaService.validateUniqueFqn(resolveTemplateRefsInPipeline);
     if (checkAgainstOPAPolicies) {
-      String expandedPipelineJSON =
-          fetchExpandedPipelineJSONFromYaml(accountId, orgIdentifier, projectIdentifier, resolveTemplateRefsInPipeline);
+      String expandedPipelineJSON = fetchExpandedPipelineJSONFromYaml(
+          accountId, orgIdentifier, projectIdentifier, templateMergeResponseDTO.getMergedPipelineYamlWithTemplateRef());
       return governanceService.evaluateGovernancePolicies(expandedPipelineJSON, accountId, orgIdentifier,
           projectIdentifier, OpaConstants.OPA_EVALUATION_ACTION_PIPELINE_SAVE, "");
     }

@@ -147,6 +147,12 @@ public class ExecutionHelperTest extends CategoryTest {
       + "      identifier: \"s2\"\n"
       + "      description: \"desc\"\n"
       + "  allowStageExecutions: true\n";
+  String mergedPipelineYamlForS2WithExpression = "pipeline:\n"
+      + "  stages:\n"
+      + "  - stage:\n"
+      + "      identifier: \"s2\"\n"
+      + "      description: \"<+pipeline.stages.s1.description>\"\n"
+      + "  allowStageExecutions: true\n";
   String originalExecutionId = "originalExecutionId";
   String generatedExecutionId = "newExecId";
 
@@ -252,7 +258,7 @@ public class ExecutionHelperTest extends CategoryTest {
     doReturn(templateMergeResponseDTO)
         .when(pipelineTemplateHelper)
         .resolveTemplateRefsInPipeline(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
-            pipelineEntity.getProjectIdentifier(), mergedYaml, true);
+            pipelineEntity.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs =
         executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml, Collections.emptyList(), null,
             executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
@@ -281,7 +287,7 @@ public class ExecutionHelperTest extends CategoryTest {
     doReturn(templateMergeResponseDTO)
         .when(pipelineTemplateHelper)
         .resolveTemplateRefsInPipeline(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
-            pipelineEntity.getProjectIdentifier(), mergedYaml, true);
+            pipelineEntity.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs =
         executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml, Collections.emptyList(), null,
             executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
@@ -319,7 +325,7 @@ public class ExecutionHelperTest extends CategoryTest {
     doReturn(templateMergeResponseDTO)
         .when(pipelineTemplateHelper)
         .resolveTemplateRefsInPipeline(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
-            pipelineEntity.getProjectIdentifier(), mergedYaml, true);
+            pipelineEntity.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs = executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml,
         Collections.singletonList("s2"), null, executionTriggerInfo, null,
         RetryExecutionParameters.builder().isRetry(false).build());
@@ -348,12 +354,15 @@ public class ExecutionHelperTest extends CategoryTest {
     buildExecutionArgsMocks();
 
     TemplateMergeResponseDTO templateMergeResponseDTO =
-        TemplateMergeResponseDTO.builder().mergedPipelineYaml(pipelineYamlWithExpressions).build();
+        TemplateMergeResponseDTO.builder()
+            .mergedPipelineYaml(pipelineYamlWithExpressions)
+            .mergedPipelineYamlWithTemplateRef(pipelineYamlWithExpressions)
+            .build();
     doReturn(templateMergeResponseDTO)
         .when(pipelineTemplateHelper)
         .resolveTemplateRefsInPipeline(pipelineEntityWithExpressions.getAccountId(),
             pipelineEntityWithExpressions.getOrgIdentifier(), pipelineEntityWithExpressions.getProjectIdentifier(),
-            pipelineYamlWithExpressions, true);
+            pipelineYamlWithExpressions, true, true);
     ExecArgs execArgs = executionHelper.buildExecutionArgs(pipelineEntityWithExpressions, moduleType, null,
         Collections.singletonList("s2"), expressionValues, executionTriggerInfo, null,
         RetryExecutionParameters.builder().isRetry(false).build());
@@ -379,7 +388,7 @@ public class ExecutionHelperTest extends CategoryTest {
             accountId, orgId, projectId, pipelineId, pipelineYamlWithExpressions);
     verify(planExecutionMetadataService, times(0)).findByPlanExecutionId(anyString());
     verify(pmsPipelineServiceHelper, times(1))
-        .fetchExpandedPipelineJSONFromYaml(accountId, orgId, projectId, mergedPipelineYamlForS2);
+        .fetchExpandedPipelineJSONFromYaml(accountId, orgId, projectId, mergedPipelineYamlForS2WithExpression);
   }
 
   private void buildExecutionArgsMocks() {
@@ -430,7 +439,8 @@ public class ExecutionHelperTest extends CategoryTest {
         + "      identifier: s2\n"
         + "      name: s2\n"
         + "      description: desc\n";
-    assertThatThrownBy(() -> executionHelper.getPipelineYamlAndValidate(wrongRuntimeInputYaml, pipelineEntity))
+    assertThatThrownBy(
+        () -> executionHelper.getPipelineYamlAndValidate(wrongRuntimeInputYaml, pipelineEntity).getMergedPipelineYaml())
         .isInstanceOf(InvalidRequestException.class);
   }
 
