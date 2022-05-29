@@ -37,6 +37,7 @@ import io.harness.gitsync.common.dtos.ScmCreatePRRequestDTO;
 import io.harness.gitsync.common.dtos.ScmCreatePRResponseDTO;
 import io.harness.gitsync.common.dtos.ScmGetFileByBranchRequestDTO;
 import io.harness.gitsync.common.dtos.ScmGetFileResponseDTO;
+import io.harness.gitsync.common.dtos.UserRepoResponse;
 import io.harness.gitsync.common.impl.GitUtils;
 import io.harness.gitsync.common.service.HarnessToGitHelperService;
 import io.harness.gitsync.common.service.ScmFacilitatorService;
@@ -336,6 +337,32 @@ public class ScmFacilitatorResource {
     return ResponseDTO.newResponse(
         scmFacilitatorService.listReposByRefConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef,
             PageRequest.builder().pageIndex(pageNum).pageSize(pageSize).build(), searchTerm));
+  }
+
+  @GET
+  @Path("list-all-repos-by-connector")
+  @ApiOperation(value = "Lists All Git Repos corresponding to given reference connector",
+      nickname = "getListOfAllReposByRefConnector")
+  @Hidden
+  @Operation(operationId = "listReposByRefConnector",
+      summary = "Lists All Git Repos corresponding to given reference connector",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(description = "This contains list of All Git Repos specific to given reference connector.")
+      },
+      hidden = true)
+  public ResponseDTO<List<UserRepoResponse>>
+  getAllUserRepos(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotBlank @QueryParam(
+                      NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
+      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
+      @Parameter(description = GitSyncApiConstants.GIT_CONNECTOR_REF_PARAM_MESSAGE) @NotBlank @QueryParam(
+          GitSyncApiConstants.CONNECTOR_REF) String connectorRef) {
+    return ResponseDTO.newResponse(scmFacilitatorService.listAllReposByRefConnector(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef));
   }
 
   @GET
