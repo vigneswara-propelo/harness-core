@@ -65,6 +65,7 @@ public class StrategyConfigPlanCreator extends ChildrenPlanCreator<StrategyConfi
                 .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILDREN).build())
                 .build())
         .skipExpressionChain(true)
+        .adviserObtainments(metadata.getAdviserObtainments())
         .build();
   }
 

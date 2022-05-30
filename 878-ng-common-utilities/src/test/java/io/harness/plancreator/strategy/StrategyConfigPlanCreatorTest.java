@@ -70,8 +70,11 @@ public class StrategyConfigPlanCreatorTest extends NGCommonUtilitiesTestBase {
     String strategyNodeId = approvalStageYamlField.getNode().getField("strategy").getNode().getUuid();
     String childNodeId = "childNodeId";
     Map<String, ByteString> metadataMap = new HashMap<>();
-    StrategyMetadata strategyMetadata =
-        StrategyMetadata.builder().childNodeId(childNodeId).strategyNodeId(strategyNodeId).build();
+    StrategyMetadata strategyMetadata = StrategyMetadata.builder()
+                                            .childNodeId(childNodeId)
+                                            .strategyNodeId(strategyNodeId)
+                                            .adviserObtainments(new ArrayList<>())
+                                            .build();
     metadataMap.put(StrategyConstants.STRATEGY_METADATA + strategyNodeId, ByteString.EMPTY);
     Mockito.when(kryoSerializer.asInflatedObject(Mockito.any())).thenReturn(strategyMetadata);
     PlanCreationContext context = PlanCreationContext.builder()
@@ -95,6 +98,7 @@ public class StrategyConfigPlanCreatorTest extends NGCommonUtilitiesTestBase {
                     .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILDREN).build())
                     .build())
             .skipExpressionChain(true)
+            .adviserObtainments(new ArrayList<>())
             .build();
     assertThat(strategyConfigPlanCreator.createPlanForParentNode(context, strategyConfig, new ArrayList<>()))
         .isEqualTo(planNode);
