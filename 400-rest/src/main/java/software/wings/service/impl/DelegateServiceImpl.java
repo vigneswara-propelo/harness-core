@@ -2642,7 +2642,6 @@ public class DelegateServiceImpl implements DelegateService {
         .delegateId(delegate.getUuid())
         .sequenceNum(delegate.getSequenceNum())
         .delegateRandomToken(delegate.getDelegateRandomToken())
-        .delegateTokenName(delegate.getDelegateTokenName())
         .build();
   }
 
