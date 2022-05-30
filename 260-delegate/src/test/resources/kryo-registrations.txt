@@ -1107,6 +1107,7 @@
 9701:io.harness.logging.UnitProgress
 9702:io.harness.logging.UnitStatus
 9709:io.harness.jira.JiraIssueTypeNG
+9710:io.harness.jira.JiraUserData
 10001:io.harness.capability.CapabilityParameters
 10002:io.harness.capability.CapabilitySubjectPermission.PermissionResult
 10003:com.google.protobuf.UnknownFieldSet
