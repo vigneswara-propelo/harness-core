@@ -56,11 +56,16 @@ import io.harness.cvng.analysis.services.impl.VerificationJobInstanceAnalysisSer
 import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.beans.activity.ActivityType;
 import io.harness.cvng.beans.change.ChangeSourceType;
+import io.harness.cvng.cdng.beans.MonitoredServiceSpec.MonitoredServiceSpecType;
 import io.harness.cvng.cdng.services.api.CVNGStepService;
 import io.harness.cvng.cdng.services.api.CVNGStepTaskService;
 import io.harness.cvng.cdng.services.api.VerifyStepDemoService;
+import io.harness.cvng.cdng.services.api.VerifyStepMonitoredServiceResolutionService;
 import io.harness.cvng.cdng.services.impl.CVNGStepServiceImpl;
 import io.harness.cvng.cdng.services.impl.CVNGStepTaskServiceImpl;
+import io.harness.cvng.cdng.services.impl.ConfiguredVerifyStepMonitoredServiceResolutionServiceImpl;
+import io.harness.cvng.cdng.services.impl.DefaultVerifyStepMonitoredServiceResolutionServiceImpl;
+import io.harness.cvng.cdng.services.impl.TemplateVerifyStepMonitoredServiceResolutionServiceImpl;
 import io.harness.cvng.cdng.services.impl.VerifyStepDemoServiceImpl;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.client.NextGenServiceImpl;
@@ -517,6 +522,19 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
     dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.DYNATRACE)
         .to(DynatraceDataCollectionInfoMapper.class)
+        .in(Scopes.SINGLETON);
+
+    MapBinder<MonitoredServiceSpecType, VerifyStepMonitoredServiceResolutionService>
+        verifyStepCvConfigServiceMapBinder = MapBinder.newMapBinder(
+            binder(), MonitoredServiceSpecType.class, VerifyStepMonitoredServiceResolutionService.class);
+    verifyStepCvConfigServiceMapBinder.addBinding(MonitoredServiceSpecType.CONFIGURED)
+        .to(ConfiguredVerifyStepMonitoredServiceResolutionServiceImpl.class)
+        .in(Scopes.SINGLETON);
+    verifyStepCvConfigServiceMapBinder.addBinding(MonitoredServiceSpecType.DEFAULT)
+        .to(DefaultVerifyStepMonitoredServiceResolutionServiceImpl.class)
+        .in(Scopes.SINGLETON);
+    verifyStepCvConfigServiceMapBinder.addBinding(MonitoredServiceSpecType.TEMPLATE)
+        .to(TemplateVerifyStepMonitoredServiceResolutionServiceImpl.class)
         .in(Scopes.SINGLETON);
 
     bind(MetricPackService.class).to(MetricPackServiceImpl.class);
