@@ -346,6 +346,7 @@ public class CVNGStep extends AsyncExecutableWithRollback {
     deploymentActivity.setMonitoredServiceIdentifier(monitoredServiceIdentifier);
     deploymentActivity.setActivityName(getActivityName(stepParameters));
     deploymentActivity.setType(ActivityType.DEPLOYMENT);
+    deploymentActivity.setAnalysisStatus(ActivityVerificationStatus.NOT_STARTED);
     return deploymentActivity;
   }
 
