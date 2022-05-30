@@ -22,7 +22,6 @@ import io.harness.rule.Owner;
 import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.yaml.core.variables.NGServiceOverrides;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
@@ -66,7 +65,7 @@ public class EnvironmentMapperTest extends CDNGTestBase {
             .name("name")
             .identifier("identifier")
             .description("description")
-            .serviceOverrides(Arrays.asList(NGServiceOverrides.builder().serviceRef("ser").build()))
+            .serviceOverrides(NGServiceOverrides.builder().serviceRef("ser").build())
             .build();
     EnvironmentStepParameters environmentStepParameters =
         EnvironmentMapper.toEnvironmentStepParameters(environmentPlanCreatorConfig);
