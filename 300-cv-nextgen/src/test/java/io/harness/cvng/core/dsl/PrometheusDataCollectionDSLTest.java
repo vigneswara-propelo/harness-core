@@ -52,6 +52,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -124,6 +125,7 @@ public class PrometheusDataCollectionDSLTest extends HoverflyCVNextGenTestBase {
   @Test
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
+  @Ignore("Ignore till delegate is deployed with new Data collection Info and DSL Changes")
   public void testExecute_prometheusDSLWithTooLargeHostData() throws IOException {
     DataCollectionDSLService dataCollectionDSLService = new DataCollectionServiceImpl();
     dataCollectionDSLService.registerDatacollectionExecutorService(executorService);
