@@ -72,10 +72,11 @@ public class CustomStageYamlSchemaServiceImpl implements CustomStageYamlSchemaSe
         pmsYamlSchemaHelper.getEnabledFeatureFlags(accountIdentifier, yamlSchemaWithDetailsList);
     Map<String, Boolean> featureRestrictionsMap =
         featureRestrictionsGetter.getFeatureRestrictionsAvailability(yamlSchemaWithDetailsList, accountIdentifier);
-    YamlSchemaUtils.addOneOfInExecutionWrapperConfig(customStageSchema.get(DEFINITIONS_NODE),
-        YamlSchemaUtils.getNodeClassesByYamlGroup(
-            yamlSchemaRootClasses, StepCategory.STEP.name(), enabledFeatureFlags, featureRestrictionsMap),
-        "");
+
+    if (yamlSchemaWithDetailsList != null) {
+      YamlSchemaUtils.addOneOfInExecutionWrapperConfig(customStageSchema.get(DEFINITIONS_NODE),
+          yamlSchemaWithDetailsList, ModuleType.PMS, enabledFeatureFlags, featureRestrictionsMap);
+    }
 
     yamlSchemaGenerator.modifyRefsNamespace(customStageSchema, CUSTOM_NAMESPACE);
     ObjectMapper mapper = SchemaGeneratorUtils.getObjectMapperForSchemaGeneration();
