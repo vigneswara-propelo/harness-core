@@ -1466,7 +1466,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
               notificationClient.sendNotificationAsync(notificationChannel.toNotificationChannel(
                   monitoredService.getAccountId(), monitoredService.getOrgIdentifier(),
                   monitoredService.getProjectIdentifier(), templateId, templateData));
-          log.info("Notification with Notification ID {} sent", notificationResult.getNotificationId());
+          log.info(
+              "Notification with Notification ID {}, Notification Rule {}, Condition {} for Monitored Service {} sent",
+              notificationResult.getNotificationId(), notificationRule.getName(), condition.getType().getDisplayName(),
+              monitoredService.getName());
           notificationRuleRefsWithChange.add(notificationRule.getIdentifier());
         }
       }
