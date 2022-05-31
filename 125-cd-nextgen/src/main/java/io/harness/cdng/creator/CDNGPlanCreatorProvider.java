@@ -96,7 +96,7 @@ import java.util.List;
 public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
   private static final String TERRAFORM_STEP_METADATA = "Terraform";
   private static final List<String> CLOUDFORMATION_CATEGORY =
-      Arrays.asList("Kubernetes", "Provisioner", "Cloudformation");
+      Arrays.asList("Kubernetes", "Provisioner", "Cloudformation", "Helm");
   private static final String CLOUDFORMATION_STEP_METADATA = "Cloudformation";
   private static final List<String> TERRAFORM_CATEGORY = Arrays.asList("Kubernetes", "Provisioner", "Helm");
 
