@@ -41,6 +41,7 @@ import io.harness.plan.Plan;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
 import io.harness.pms.contracts.plan.ExecutionPrincipalInfo;
 import io.harness.pms.contracts.plan.ExecutionTriggerInfo;
+import io.harness.pms.contracts.plan.PipelineStoreType;
 import io.harness.pms.contracts.plan.PlanCreationBlobResponse;
 import io.harness.pms.contracts.plan.RerunInfo;
 import io.harness.pms.contracts.plan.RetryExecutionInfo;
@@ -263,6 +264,8 @@ public class ExecutionHelperTest extends CategoryTest {
         executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml, Collections.emptyList(), null,
             executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
     executionMetadataAssertions(execArgs.getMetadata());
+    assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
+    assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
 
     PlanExecutionMetadata planExecutionMetadata = execArgs.getPlanExecutionMetadata();
     assertThat(planExecutionMetadata.getPlanExecutionId()).isEqualTo(generatedExecutionId);
@@ -273,7 +276,73 @@ public class ExecutionHelperTest extends CategoryTest {
     verify(pmsPipelineServiceHelper, times(1))
         .fetchExpandedPipelineJSONFromYaml(accountId, orgId, projectId, mergedPipelineYaml);
 
-    buildExecutionMetadataVerifications();
+    buildExecutionMetadataVerifications(pipelineEntity);
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testBuildExecutionArgsForInlinePipeline() throws IOException {
+    buildExecutionArgsMocks();
+    PipelineEntity inlinePipeline = pipelineEntity.withStoreType(StoreType.INLINE);
+
+    TemplateMergeResponseDTO templateMergeResponseDTO =
+        TemplateMergeResponseDTO.builder().mergedPipelineYaml(mergedPipelineYaml).build();
+    String mergedYaml = InputSetMergeHelper.mergeInputSetIntoPipeline(inlinePipeline.getYaml(), runtimeInputYaml, true);
+    doReturn(templateMergeResponseDTO)
+        .when(pipelineTemplateHelper)
+        .resolveTemplateRefsInPipeline(inlinePipeline.getAccountId(), inlinePipeline.getOrgIdentifier(),
+            inlinePipeline.getProjectIdentifier(), mergedYaml, true, false);
+    ExecArgs execArgs =
+        executionHelper.buildExecutionArgs(inlinePipeline, moduleType, runtimeInputYaml, Collections.emptyList(), null,
+            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
+    executionMetadataAssertions(execArgs.getMetadata());
+    assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.INLINE);
+    assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
+
+    PlanExecutionMetadata planExecutionMetadata = execArgs.getPlanExecutionMetadata();
+    assertThat(planExecutionMetadata.getPlanExecutionId()).isEqualTo(generatedExecutionId);
+    assertThat(planExecutionMetadata.getInputSetYaml()).isEqualTo(runtimeInputYaml);
+    assertThat(planExecutionMetadata.getYaml()).isEqualTo(mergedPipelineYaml);
+    assertThat(planExecutionMetadata.getStagesExecutionMetadata().isStagesExecution()).isEqualTo(false);
+    assertThat(planExecutionMetadata.getProcessedYaml()).isEqualTo(YamlUtils.injectUuid(mergedPipelineYaml));
+    verify(pmsPipelineServiceHelper, times(1))
+        .fetchExpandedPipelineJSONFromYaml(accountId, orgId, projectId, mergedPipelineYaml);
+
+    buildExecutionMetadataVerifications(inlinePipeline);
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testBuildExecutionArgsForRemotePipeline() throws IOException {
+    buildExecutionArgsMocks();
+    PipelineEntity remotePipeline = pipelineEntity.withStoreType(StoreType.REMOTE).withConnectorRef("conn");
+
+    TemplateMergeResponseDTO templateMergeResponseDTO =
+        TemplateMergeResponseDTO.builder().mergedPipelineYaml(mergedPipelineYaml).build();
+    String mergedYaml = InputSetMergeHelper.mergeInputSetIntoPipeline(remotePipeline.getYaml(), runtimeInputYaml, true);
+    doReturn(templateMergeResponseDTO)
+        .when(pipelineTemplateHelper)
+        .resolveTemplateRefsInPipeline(remotePipeline.getAccountId(), remotePipeline.getOrgIdentifier(),
+            remotePipeline.getProjectIdentifier(), mergedYaml, true, false);
+    ExecArgs execArgs =
+        executionHelper.buildExecutionArgs(remotePipeline, moduleType, runtimeInputYaml, Collections.emptyList(), null,
+            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
+    executionMetadataAssertions(execArgs.getMetadata());
+    assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.REMOTE);
+    assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEqualTo("conn");
+
+    PlanExecutionMetadata planExecutionMetadata = execArgs.getPlanExecutionMetadata();
+    assertThat(planExecutionMetadata.getPlanExecutionId()).isEqualTo(generatedExecutionId);
+    assertThat(planExecutionMetadata.getInputSetYaml()).isEqualTo(runtimeInputYaml);
+    assertThat(planExecutionMetadata.getYaml()).isEqualTo(mergedPipelineYaml);
+    assertThat(planExecutionMetadata.getStagesExecutionMetadata().isStagesExecution()).isEqualTo(false);
+    assertThat(planExecutionMetadata.getProcessedYaml()).isEqualTo(YamlUtils.injectUuid(mergedPipelineYaml));
+    verify(pmsPipelineServiceHelper, times(1))
+        .fetchExpandedPipelineJSONFromYaml(accountId, orgId, projectId, mergedPipelineYaml);
+
+    buildExecutionMetadataVerifications(remotePipeline);
   }
 
   @Test
@@ -292,6 +361,8 @@ public class ExecutionHelperTest extends CategoryTest {
         executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml, Collections.emptyList(), null,
             executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
     executionMetadataAssertions(execArgs.getMetadata());
+    assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
+    assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
 
     PlanExecutionMetadata planExecutionMetadata = execArgs.getPlanExecutionMetadata();
     assertThat(planExecutionMetadata.getPlanExecutionId()).isEqualTo(generatedExecutionId);
@@ -330,6 +401,8 @@ public class ExecutionHelperTest extends CategoryTest {
         Collections.singletonList("s2"), null, executionTriggerInfo, null,
         RetryExecutionParameters.builder().isRetry(false).build());
     executionMetadataAssertions(execArgs.getMetadata());
+    assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
+    assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
 
     PlanExecutionMetadata planExecutionMetadata = execArgs.getPlanExecutionMetadata();
     assertThat(planExecutionMetadata.getPlanExecutionId()).isEqualTo(generatedExecutionId);
@@ -344,7 +417,7 @@ public class ExecutionHelperTest extends CategoryTest {
     verify(pmsPipelineServiceHelper, times(1))
         .fetchExpandedPipelineJSONFromYaml(accountId, orgId, projectId, mergedPipelineYamlForS2);
 
-    buildExecutionMetadataVerifications();
+    buildExecutionMetadataVerifications(pipelineEntity);
   }
 
   @Test
@@ -367,6 +440,8 @@ public class ExecutionHelperTest extends CategoryTest {
         Collections.singletonList("s2"), expressionValues, executionTriggerInfo, null,
         RetryExecutionParameters.builder().isRetry(false).build());
     executionMetadataAssertions(execArgs.getMetadata());
+    assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
+    assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
 
     PlanExecutionMetadata planExecutionMetadata = execArgs.getPlanExecutionMetadata();
     assertThat(planExecutionMetadata.getPlanExecutionId()).isEqualTo(generatedExecutionId);
@@ -414,13 +489,16 @@ public class ExecutionHelperTest extends CategoryTest {
     assertThat(metadata.getGitSyncBranchContext().size()).isEqualTo(0);
   }
 
-  private void buildExecutionMetadataVerifications() {
+  private void buildExecutionMetadataVerifications(PipelineEntity pipelineEntity) {
     verify(principalInfoHelper, times(1)).getPrincipalInfoFromSecurityContext();
-    verify(pmsGitSyncHelper, times(1)).getGitSyncBranchContextBytesThreadLocal(pipelineEntity, null, null);
+    verify(pmsGitSyncHelper, times(1))
+        .getGitSyncBranchContextBytesThreadLocal(pipelineEntity, pipelineEntity.getStoreType(), null);
     verify(pmsYamlSchemaService, times(0)).validateYamlSchema(accountId, orgId, projectId, pipelineYaml);
     verify(pmsYamlSchemaService, times(1)).validateYamlSchema(accountId, orgId, projectId, mergedPipelineYaml);
-    verify(pipelineRbacServiceImpl, times(1))
-        .extractAndValidateStaticallyReferredEntities(accountId, orgId, projectId, pipelineId, mergedPipelineYaml);
+    if (pipelineEntity.getStoreType() != StoreType.REMOTE) {
+      verify(pipelineRbacServiceImpl, times(1))
+          .extractAndValidateStaticallyReferredEntities(accountId, orgId, projectId, pipelineId, mergedPipelineYaml);
+    }
     verify(pipelineRbacServiceImpl, times(0))
         .extractAndValidateStaticallyReferredEntities(accountId, orgId, projectId, pipelineId, pipelineYaml);
     verify(planExecutionMetadataService, times(0)).findByPlanExecutionId(anyString());
