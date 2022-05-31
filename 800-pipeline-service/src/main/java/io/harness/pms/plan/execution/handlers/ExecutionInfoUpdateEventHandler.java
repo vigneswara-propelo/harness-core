@@ -9,6 +9,7 @@ package io.harness.pms.plan.execution.handlers;
 
 import io.harness.engine.executions.plan.PlanExecutionService;
 import io.harness.engine.observers.PlanStatusUpdateObserver;
+import io.harness.exception.ExceptionUtils;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.execution.ExecutionStatus;
@@ -25,8 +26,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class ExecutionInfoUpdateEventHandler implements PlanStatusUpdateObserver {
   private final PMSPipelineService pmsPipelineService;
   private final PlanExecutionService planExecutionService;
@@ -67,7 +70,9 @@ public class ExecutionInfoUpdateEventHandler implements PlanStatusUpdateObserver
       }
       pmsPipelineService.saveExecutionInfo(accountId, orgId, projectId, pipelineId, executionSummaryInfo);
     } catch (Exception e) {
-      // ignore
+      log.error("Error while updating Plan Status for execution with ID " + ambiance.getPlanExecutionId() + ": "
+              + ExceptionUtils.getMessage(e),
+          e);
     }
   }
 }
