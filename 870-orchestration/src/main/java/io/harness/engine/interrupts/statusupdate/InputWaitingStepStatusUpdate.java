@@ -7,10 +7,9 @@
 
 package io.harness.engine.interrupts.statusupdate;
 
-import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.pms.contracts.execution.Status.INPUT_WAITING;
-import static io.harness.pms.contracts.execution.Status.PAUSED;
-import static io.harness.pms.contracts.execution.Status.RUNNING;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.engine.executions.node.NodeExecutionService;
@@ -19,34 +18,29 @@ import io.harness.engine.observers.NodeStatusUpdateHandler;
 import io.harness.engine.observers.NodeUpdateInfo;
 import io.harness.execution.NodeExecution;
 import io.harness.pms.contracts.execution.Status;
-import io.harness.pms.execution.utils.StatusUtils;
 
 import com.google.inject.Inject;
 import java.util.EnumSet;
+import java.util.List;
 
-@OwnedBy(PIPELINE)
-public class ResumeStepStatusUpdate implements NodeStatusUpdateHandler {
+@OwnedBy(CDC)
+public class InputWaitingStepStatusUpdate implements NodeStatusUpdateHandler {
   @Inject private NodeExecutionService nodeExecutionService;
   @Inject private PlanExecutionService planExecutionService;
 
   @Override
   public void handleNodeStatusUpdate(NodeUpdateInfo nodeStatusUpdateInfo) {
-    boolean resumePlan = resumeParents(nodeStatusUpdateInfo.getNodeExecution());
-    if (resumePlan) {
-      Status planStatus = planExecutionService.calculateStatusExcluding(
-          nodeStatusUpdateInfo.getPlanExecutionId(), nodeStatusUpdateInfo.getNodeExecutionId());
-      if (!StatusUtils.isFinalStatus(planStatus)) {
-        planExecutionService.updateStatus(nodeStatusUpdateInfo.getPlanExecutionId(), planStatus);
-      }
-    }
-  }
-
-  private boolean resumeParents(NodeExecution nodeExecution) {
+    NodeExecution nodeExecution = nodeStatusUpdateInfo.getNodeExecution();
     if (nodeExecution.getParentId() == null) {
-      return true;
+      planExecutionService.updateCalculatedStatus(nodeStatusUpdateInfo.getPlanExecutionId());
+      return;
     }
-    NodeExecution parentNodeExecution = nodeExecutionService.updateStatusWithOps(
-        nodeExecution.getParentId(), RUNNING, null, EnumSet.of(INPUT_WAITING, PAUSED));
-    return parentNodeExecution != null && resumeParents(parentNodeExecution);
+    List<NodeExecution> flowingChildren =
+        nodeExecutionService.findByParentIdAndStatusIn(nodeExecution.getParentId(), EnumSet.noneOf(Status.class));
+    if (isEmpty(flowingChildren)) {
+      nodeExecutionService.updateStatusWithOps(
+          nodeExecution.getParentId(), INPUT_WAITING, null, EnumSet.noneOf(Status.class));
+    }
+    planExecutionService.updateCalculatedStatus(nodeStatusUpdateInfo.getPlanExecutionId());
   }
 }
