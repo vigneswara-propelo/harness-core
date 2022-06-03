@@ -609,6 +609,7 @@ public class PipelineResource implements YamlSchemaResource {
             description = "Gets Pipeline JSON with extra info for some fields as required for Pipeline Governance")
       })
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
+  @Hidden
   public ResponseDTO<ExpandedPipelineJsonDTO>
   getExpandedPipelineJson(@NotNull @Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE)
                           @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
@@ -659,6 +660,7 @@ public class PipelineResource implements YamlSchemaResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns Execution Node if it exists, else returns Null.")
       })
+  @Hidden
   public ResponseDTO<ExecutionNode>
   getExecutionNode(@NotNull @Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE, required = true)
                    @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,

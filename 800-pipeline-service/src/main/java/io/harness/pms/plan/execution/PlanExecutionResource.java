@@ -480,6 +480,7 @@ public class PlanExecutionResource {
             description = "Takes a possible Interrupt value and applies it onto the given stage in the execution")
       })
   @Path("/interrupt/{planExecutionId}/{nodeExecutionId}")
+  @Hidden
   public ResponseDTO<InterruptDTO>
   handleStageInterrupt(@NotNull @Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE,
                            required = true) @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
