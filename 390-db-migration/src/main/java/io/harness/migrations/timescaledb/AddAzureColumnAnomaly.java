@@ -5,13 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ccm.commons.constants;
+package io.harness.migrations.timescaledb;
 
-public interface AnomalyFieldConstants {
-  String CLUSTER = "cluster";
-  String NAMESPACE = "namespace";
-  String WORKLOAD = "workload";
-  String AWS = "AWS";
-  String GCP = "GCP";
-  String AZURE = "AZURE";
+public class AddAzureColumnAnomaly extends AbstractTimeScaleDBMigration {
+  @Override
+  public String getFileName() {
+    return "timescaledb/add_azure_column_anomaly_table.sql";
+  }
 }
