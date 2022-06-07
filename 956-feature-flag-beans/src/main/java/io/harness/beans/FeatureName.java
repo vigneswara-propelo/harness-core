@@ -366,7 +366,8 @@ public enum FeatureName {
   NG_FILE_STORE,
   ACCOUNT_BASIC_ROLE,
   CVNG_TEMPLATE_MONITORED_SERVICE,
-  CVNG_TEMPLATE_VERIFY_STEP;
+  CVNG_TEMPLATE_VERIFY_STEP,
+  USE_PAGINATED_ENCRYPT_SERVICE; // To be only used by UI for safeguarding encrypt component changes in CG
 
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
