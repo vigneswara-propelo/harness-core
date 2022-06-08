@@ -142,8 +142,7 @@ public class ExecutionDetailsResource {
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
     log.info("Get List of executions");
     ByteString gitSyncBranchContext = pmsGitSyncHelper.getGitSyncBranchContextBytesThreadLocal();
-    if (EmptyPredicate.isEmpty(gitEntityBasicInfo.getBranch())
-        || EmptyPredicate.isEmpty(gitEntityBasicInfo.getYamlGitConfigId())) {
+    if (EmptyPredicate.isEmpty(gitEntityBasicInfo.getBranch())) {
       gitSyncBranchContext = null;
     }
     Criteria criteria = pmsExecutionService.formCriteria(accountId, orgId, projectId, pipelineIdentifier,
