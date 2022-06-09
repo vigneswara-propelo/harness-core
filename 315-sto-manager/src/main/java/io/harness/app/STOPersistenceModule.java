@@ -17,7 +17,7 @@ import com.google.inject.Singleton;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public class CIPersistenceModule extends SpringPersistenceModule {
+public class STOPersistenceModule extends SpringPersistenceModule {
   @Override
   protected Class<?>[] getConfigClasses() {
     return new Class<?>[] {SpringPersistenceConfig.class};

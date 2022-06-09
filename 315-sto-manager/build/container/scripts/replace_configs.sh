@@ -156,10 +156,6 @@ if [[ "" != "$ALLOWED_ORIGINS" ]]; then
   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
 fi
 
-if [[ "" != "$MONGO_URI" ]]; then
-  yq write -i $CONFIG_FILE harness-mongo.uri "${MONGO_URI//\\&/&}"
-fi
-
 if [[ "" != "$MANAGER_TARGET" ]]; then
   yq write -i $CONFIG_FILE managerTarget $MANAGER_TARGET
 fi
@@ -170,10 +166,6 @@ fi
 
 if [[ "" != "$STOMANAGER_MONGO_URI" ]]; then
   yq write -i $CONFIG_FILE stomanager-mongo.uri "$STOMANAGER_MONGO_URI"
-fi
-
-if [[ "" != "$SCM_SERVICE_URI" ]]; then
-  yq write -i $CONFIG_FILE scmConnectionConfig.url "$SCM_SERVICE_URI"
 fi
 
 if [[ "" != "$LOG_SERVICE_ENDPOINT" ]]; then
@@ -206,10 +198,6 @@ fi
 
 if [[ "" != "$SHOULD_CONFIGURE_WITH_PMS" ]]; then
   yq write -i $CONFIG_FILE shouldConfigureWithPMS $SHOULD_CONFIGURE_WITH_PMS
-fi
-
-if [[ "" != "$PMS_MONGO_URI" ]]; then
-  yq write -i $CONFIG_FILE pmsMongo.uri "${PMS_MONGO_URI//\\&/&}"
 fi
 
 if [[ "" != "$GRPC_SERVER_PORT" ]]; then
