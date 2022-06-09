@@ -370,7 +370,9 @@ public enum FeatureName {
   ACCOUNT_BASIC_ROLE,
   CVNG_TEMPLATE_MONITORED_SERVICE,
   CVNG_TEMPLATE_VERIFY_STEP,
-  USE_PAGINATED_ENCRYPT_SERVICE; // To be only used by UI for safeguarding encrypt component changes in CG
+  USE_PAGINATED_ENCRYPT_SERVICE, // To be only used by UI for safeguarding encrypt component changes in CG
+  DEPLOYMENT_SUBFORMIK_PIPELINE_DROPDOWN,
+  DEPLOYMENT_SUBFORMIK_WORKFLOW_DROPDOWN;
 
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
