@@ -5,10 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.helpers.ext.azure;
+package io.harness.azure.model.tag;
 
+import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.TargetModule;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
@@ -17,6 +19,7 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @OwnedBy(HarnessTeam.CDC)
-public class TagList {
-  private List<TagDetails> details;
+@TargetModule(HarnessModule._970_API_SERVICES_BEANS)
+public class AzureListTagsResponse {
+  private List<TagDetails> value;
 }
