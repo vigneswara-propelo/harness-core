@@ -109,7 +109,7 @@ public class CIModuleInfoProviderTest extends CIExecutionTestBase {
                                     .build())
                         .build());
     List<CIBuildCommit> ciBuildCommits = new ArrayList<>(
-            Arrays.asList(CIBuildCommit.builder().id("1").build(), CIBuildCommit.builder().id("2").build()));
+        Arrays.asList(CIBuildCommit.builder().id("1").build(), CIBuildCommit.builder().id("2").build()));
     CIPipelineModuleInfo ciPipelineModuleInfo =
         (CIPipelineModuleInfo) ciModuleInfoProvider.getPipelineLevelModuleInfo(event);
     assertThat(ciPipelineModuleInfo.getRepoName()).isEqualTo("test/_git/test");

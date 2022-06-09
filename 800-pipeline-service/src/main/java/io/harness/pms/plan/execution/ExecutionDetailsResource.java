@@ -113,8 +113,7 @@ public class ExecutionDetailsResource {
   @Path("/summary")
   @ApiOperation(value = "Gets Executions list", nickname = "getListOfExecutions")
   @Operation(operationId = "getListOfExecutions",
-      description = "Returns a List of Pipeline Executions with Specific Filters",
-      summary = "List Executions",
+      description = "Returns a List of Pipeline Executions with Specific Filters", summary = "List Executions",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
@@ -174,8 +173,7 @@ public class ExecutionDetailsResource {
   @Path("/v2/{planExecutionId}")
   @ApiOperation(value = "Gets Execution Detail V2", nickname = "getExecutionDetailV2")
   @Operation(operationId = "getExecutionDetailV2",
-      description =
-          "Returns the Pipeline Execution Details for a Given PlanExecution ID",
+      description = "Returns the Pipeline Execution Details for a Given PlanExecution ID",
       summary = "Fetch Pipeline Execution Details",
       responses =
       {

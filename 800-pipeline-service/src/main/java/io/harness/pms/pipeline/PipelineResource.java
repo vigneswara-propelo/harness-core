@@ -181,8 +181,7 @@ public class PipelineResource implements YamlSchemaResource {
   @POST
   @Path("/v2")
   @ApiOperation(value = "Create a Pipeline", nickname = "createPipelineV2")
-  @Operation(operationId = "postPipelineV2", description = "Creates a Pipeline",
-      summary = "Create a Pipeline",
+  @Operation(operationId = "postPipelineV2", description = "Creates a Pipeline", summary = "Create a Pipeline",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
@@ -497,7 +496,8 @@ public class PipelineResource implements YamlSchemaResource {
   @POST
   @Path("/list")
   @ApiOperation(value = "Gets Pipeline list", nickname = "getPipelineList")
-  @Operation(operationId = "getPipelineList", description = "Returns List of Pipelines in the Given Project", summary = "List Pipelines",
+  @Operation(operationId = "getPipelineList", description = "Returns List of Pipelines in the Given Project",
+      summary = "List Pipelines",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.

@@ -5,20 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.filestore.dto.filter;
+package io.harness.cvng.events.servicelevelobjective;
 
-import io.harness.EntityType;
+import io.harness.ng.core.Resource;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public class ServiceLevelObjectiveUpdateEvent extends AbstractServiceLevelObjectiveEvent {
+  @Override
+  public Resource getResource() {
+    return null;
+  }
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ReferencedByDTO {
-  EntityType type;
-  String name;
+  @Override
+  public String getEventType() {
+    return null;
+  }
 }
