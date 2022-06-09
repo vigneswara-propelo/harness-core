@@ -4,8 +4,7 @@
 # that can be found in the licenses directory at the root of this repository, also available at
 # https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
 
-mkdir -p /opt/harness/logs
-touch /opt/harness/logs/sto-manager.log
+set -x
 
 if [[ -v "{hostname}" ]]; then
    export HOSTNAME=$(hostname)
@@ -37,11 +36,8 @@ if [[ "${ENABLE_APPDYNAMICS}" == "true" ]]; then
     echo "Using Appdynamics java agent"
 fi
 
-JAVA_BINARY=""
-if type -p java; then
-  JAVA_BINARY="java"
+if [[ "${DEPLOY_MODE}" == "KUBERNETES" ]] || [[ "${DEPLOY_MODE}" == "KUBERNETES_ONPREM" ]]; then
+    java $JAVA_OPTS -jar $CAPSULE_JAR $COMMAND /opt/harness/sto-manager-config.yml
 else
-  JAVA_BINARY="jdk8u242-b08-jre/bin/java" # This will not work going forward STO team should review on priority
+    java $JAVA_OPTS -jar $CAPSULE_JAR $COMMAND /opt/harness/sto-manager-config.yml > /opt/harness/logs/sto-manager.log 2>&1
 fi
-
-$JAVA_BINARY $JAVA_OPTS -jar $CAPSULE_JAR $COMMAND /opt/harness/sto-manager-config.yml

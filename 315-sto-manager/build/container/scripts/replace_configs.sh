@@ -16,10 +16,10 @@ replace_key_value () {
   fi
 }
 
-yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+yq delete -i $CONFIG_FILE server.applicationConnectors[0]
 yq write -i $CONFIG_FILE server.adminConnectors "[]"
 
-yq delete -i $CONFIG_FILE 'pmsSdkGrpcServerConfig.connectors.(secure==true)'
+yq delete -i $CONFIG_FILE pmsSdkGrpcServerConfig.connectors[0]
 
 if [[ "" != "$LOGGING_LEVEL" ]]; then
     yq write -i $CONFIG_FILE logging.level "$LOGGING_LEVEL"
@@ -69,10 +69,6 @@ fi
 
 if [[ "" != "$GCR_PUSH_IMAGE" ]]; then
   yq write -i $CONFIG_FILE ciExecutionServiceConfig.stepConfig.buildAndPushGCRConfig.image "$GCR_PUSH_IMAGE"
-fi
-
-if [[ "" != "$ENABLE_AUTH" ]]; then
-  yq write -i $CONFIG_FILE enableAuth "$ENABLE_AUTH"
 fi
 
 if [[ "" != "$GCS_UPLOAD_IMAGE" ]]; then
@@ -236,6 +232,10 @@ if [[ "" != "$JWT_AUTH_SECRET" ]]; then
   yq write -i $CONFIG_FILE jwtAuthSecret "$JWT_AUTH_SECRET"
 fi
 
+if [[ "" != "$ENABLE_AUTH" ]]; then
+  yq write -i $CONFIG_FILE enableAuth "$ENABLE_AUTH"
+fi
+
 if [[ "" != "$JWT_IDENTITY_SERVICE_SECRET" ]]; then
   yq write -i $CONFIG_FILE jwtIdentityServiceSecret "$JWT_IDENTITY_SERVICE_SECRET"
 fi
@@ -249,10 +249,10 @@ if [[ "" != "$MANAGER_SECRET" ]]; then
 fi
 
 if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
-  yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
-  yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  yq delete -i $CONFIG_FILE logging.appenders[0]
+  yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
 else
-  yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  yq delete -i $CONFIG_FILE logging.appenders[1]
 fi
 
 replace_key_value accessControlClient.enableAccessControl "$ACCESS_CONTROL_ENABLED"
@@ -293,7 +293,7 @@ if [[ "" != "$CACHE_CONFIG_REDIS_SENTINELS" ]]; then
   IFS=',' read -ra SENTINEL_URLS <<< "$CACHE_CONFIG_REDIS_SENTINELS"
   INDEX=0
   for REDIS_SENTINEL_URL in "${SENTINEL_URLS[@]}"; do
-    yq write -i $REDISSON_CACHE_FILE sentinelServersConfig.sentinelAddresses.[$INDEX] "${REDIS_SENTINEL_URL}"
+    yq write -i $REDISSON_CACHE_FILE sentinelServersConfig.sentinelAddresses.[+] "${REDIS_SENTINEL_URL}"
     INDEX=$(expr $INDEX + 1)
   done
 fi
@@ -305,6 +305,11 @@ fi
 replace_key_value cacheConfig.cacheNamespace $CACHE_NAMESPACE
 replace_key_value cacheConfig.cacheBackend $CACHE_BACKEND
 
+replace_key_value segmentConfiguration.enabled "$SEGMENT_ENABLED"
+replace_key_value segmentConfiguration.url "$SEGMENT_URL"
+replace_key_value segmentConfiguration.apiKey "$SEGMENT_APIKEY"
+replace_key_value segmentConfiguration.certValidationRequired "$SEGMENT_VERIFY_CERT"
+
 replace_key_value eventsFramework.redis.sentinel $EVENTS_FRAMEWORK_USE_SENTINEL
 replace_key_value eventsFramework.redis.envNamespace $EVENTS_FRAMEWORK_ENV_NAMESPACE
 replace_key_value eventsFramework.redis.redisUrl $EVENTS_FRAMEWORK_REDIS_URL
@@ -314,3 +319,4 @@ replace_key_value eventsFramework.redis.password $EVENTS_FRAMEWORK_REDIS_PASSWOR
 replace_key_value eventsFramework.redis.sslConfig.enabled $EVENTS_FRAMEWORK_REDIS_SSL_ENABLED
 replace_key_value eventsFramework.redis.sslConfig.CATrustStorePath $EVENTS_FRAMEWORK_REDIS_SSL_CA_TRUST_STORE_PATH
 replace_key_value eventsFramework.redis.sslConfig.CATrustStorePassword $EVENTS_FRAMEWORK_REDIS_SSL_CA_TRUST_STORE_PASSWORD
+
