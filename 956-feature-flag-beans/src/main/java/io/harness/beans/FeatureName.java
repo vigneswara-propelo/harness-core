@@ -373,7 +373,8 @@ public enum FeatureName {
   CVNG_TEMPLATE_VERIFY_STEP,
   USE_PAGINATED_ENCRYPT_SERVICE, // To be only used by UI for safeguarding encrypt component changes in CG
   DEPLOYMENT_SUBFORMIK_PIPELINE_DROPDOWN,
-  DEPLOYMENT_SUBFORMIK_WORKFLOW_DROPDOWN;
+  DEPLOYMENT_SUBFORMIK_WORKFLOW_DROPDOWN,
+  TI_DOTNET;
 
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
