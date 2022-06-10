@@ -174,6 +174,8 @@ import io.harness.delegate.beans.connector.gcpkmsconnector.GcpKmsValidationParam
 import io.harness.delegate.beans.connector.helm.HttpHelmConnectivityTaskParams;
 import io.harness.delegate.beans.connector.helm.HttpHelmConnectivityTaskResponse;
 import io.harness.delegate.beans.connector.helm.HttpHelmValidationParams;
+import io.harness.delegate.beans.connector.helm.OciHelmConnectivityTaskParams;
+import io.harness.delegate.beans.connector.helm.OciHelmConnectivityTaskResponse;
 import io.harness.delegate.beans.connector.jenkins.JenkinsCapabilityHelper;
 import io.harness.delegate.beans.connector.jenkins.JenkinsTestConnectionTaskParams;
 import io.harness.delegate.beans.connector.jenkins.JenkinsTestConnectionTaskResponse;
@@ -265,6 +267,7 @@ import io.harness.delegate.beans.storeconfig.FetchType;
 import io.harness.delegate.beans.storeconfig.GcsHelmStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.GitStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.HttpHelmStoreDelegateConfig;
+import io.harness.delegate.beans.storeconfig.OciHelmStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.S3HelmStoreDelegateConfig;
 import io.harness.delegate.command.CommandExecutionResult;
 import io.harness.delegate.exception.DelegateRetryableException;
@@ -1480,5 +1483,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(JenkinsCapabilityHelper.class, 29302);
     kryo.register(JenkinsValidationParams.class, 29303);
     kryo.register(JenkinsArtifactDelegateRequest.class, 29304);
+    kryo.register(OciHelmConnectivityTaskParams.class, 29306);
+    kryo.register(OciHelmConnectivityTaskResponse.class, 29307);
+    kryo.register(OciHelmStoreDelegateConfig.class, 29308);
   }
 }
