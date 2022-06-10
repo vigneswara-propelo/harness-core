@@ -1484,6 +1484,7 @@
 19549:io.harness.delegate.beans.connector.helm.HttpHelmValidationParams
 19550:io.harness.delegate.beans.executioncapability.GitInstallationCapability
 19551:io.harness.delegate.beans.connector.ConnectorValidationParameterResponse
+19552:io.harness.delegate.beans.connector.scm.github.GithubOauthDTO
 19640:io.harness.delegate.beans.connector.helm.HttpHelmConnectivityTaskParams
 19641:io.harness.delegate.beans.connector.helm.HttpHelmConnectivityTaskResponse
 19642:io.harness.delegate.beans.storeconfig.HttpHelmStoreDelegateConfig
