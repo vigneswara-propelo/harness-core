@@ -93,7 +93,7 @@ public class TemplateVerifyStepMonitoredServiceResolutionServiceImplTest extends
   public void testGetMonitoredServiceIdentifier() {
     String actualIdentifier = templateService.getResolvedCVConfigInfo(serviceEnvironmentParams, monitoredServiceNode)
                                   .getMonitoredServiceIdentifier();
-    assertThat(actualIdentifier).isNull();
+    assertThat(actualIdentifier).isNotBlank();
   }
 
   @Test

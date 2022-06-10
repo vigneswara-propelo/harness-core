@@ -63,7 +63,10 @@ public class TemplateVerifyStepMonitoredServiceResolutionServiceImpl
   public ResolvedCVConfigInfo getResolvedCVConfigInfo(
       ServiceEnvironmentParams serviceEnvironmentParams, MonitoredServiceNode monitoredServiceNode) {
     ResolvedCVConfigInfoBuilder resolvedCVConfigInfoBuilder = ResolvedCVConfigInfo.builder();
-    populateSourceDataFromTemplate(serviceEnvironmentParams, monitoredServiceNode, resolvedCVConfigInfoBuilder);
+    String executionIdentifier = generateUuid();
+    resolvedCVConfigInfoBuilder.monitoredServiceIdentifier(executionIdentifier);
+    populateSourceDataFromTemplate(
+        serviceEnvironmentParams, monitoredServiceNode, resolvedCVConfigInfoBuilder, executionIdentifier);
     return resolvedCVConfigInfoBuilder.build();
   }
 
@@ -74,8 +77,8 @@ public class TemplateVerifyStepMonitoredServiceResolutionServiceImpl
     if (CollectionUtils.isNotEmpty(healthSources)) {
       List<String> sourceIdentifiersToCleanUp = new ArrayList<>();
       healthSources.forEach(healthSource -> {
-        String sourceIdentifier =
-            HealthSourceService.getNameSpacedIdentifier(verificationJobInstanceId, healthSource.getIdentifier());
+        String sourceIdentifier = HealthSourceService.getNameSpacedIdentifier(
+            resolvedCVConfigInfo.getMonitoredServiceIdentifier(), healthSource.getIdentifier());
         monitoringSourcePerpetualTaskService.createTask(serviceEnvironmentParams.getAccountIdentifier(),
             serviceEnvironmentParams.getOrgIdentifier(), serviceEnvironmentParams.getProjectIdentifier(),
             healthSource.getConnectorRef(), sourceIdentifier, healthSource.isDemoEnabledForAnyCVConfig());
@@ -93,7 +96,8 @@ public class TemplateVerifyStepMonitoredServiceResolutionServiceImpl
   }
 
   private void populateSourceDataFromTemplate(ServiceEnvironmentParams serviceEnvironmentParams,
-      MonitoredServiceNode monitoredServiceNode, ResolvedCVConfigInfoBuilder resolvedCVConfigInfoBuilder) {
+      MonitoredServiceNode monitoredServiceNode, ResolvedCVConfigInfoBuilder resolvedCVConfigInfoBuilder,
+      String executionIdentifier) {
     TemplateMonitoredServiceSpec templateMonitoredServiceSpec =
         (TemplateMonitoredServiceSpec) monitoredServiceNode.getSpec();
     MonitoredServiceDTO monitoredServiceDTO = monitoredServiceService.getExpandedMonitoredServiceFromYaml(
@@ -105,8 +109,8 @@ public class TemplateVerifyStepMonitoredServiceResolutionServiceImpl
         getTemplateYaml(templateMonitoredServiceSpec));
     if (Objects.nonNull(monitoredServiceDTO) && Objects.nonNull(monitoredServiceDTO.getSources())
         && CollectionUtils.isNotEmpty(monitoredServiceDTO.getSources().getHealthSources())) {
-      populateCvConfigAndHealSourceData(
-          serviceEnvironmentParams, monitoredServiceDTO.getSources().getHealthSources(), resolvedCVConfigInfoBuilder);
+      populateCvConfigAndHealSourceData(serviceEnvironmentParams, monitoredServiceDTO.getSources().getHealthSources(),
+          resolvedCVConfigInfoBuilder, executionIdentifier);
     } else {
       resolvedCVConfigInfoBuilder.cvConfigs(Collections.emptyList()).healthSources(Collections.emptyList());
     }
@@ -139,16 +143,16 @@ public class TemplateVerifyStepMonitoredServiceResolutionServiceImpl
   }
 
   private void populateCvConfigAndHealSourceData(ServiceEnvironmentParams serviceEnvironmentParams,
-      Set<HealthSource> healthSources, ResolvedCVConfigInfoBuilder resolvedCVConfigInfoBuilder) {
+      Set<HealthSource> healthSources, ResolvedCVConfigInfoBuilder resolvedCVConfigInfoBuilder,
+      String executionIdentifier) {
     List<CVConfig> allCvConfigs = new ArrayList<>();
     List<ResolvedCVConfigInfo.HealthSourceInfo> healthSourceInfoList = new ArrayList<>();
     healthSources.forEach(healthSource -> {
       HealthSource.CVConfigUpdateResult cvConfigUpdateResult = healthSource.getSpec().getCVConfigUpdateResult(
           serviceEnvironmentParams.getAccountIdentifier(), serviceEnvironmentParams.getOrgIdentifier(),
           serviceEnvironmentParams.getProjectIdentifier(), serviceEnvironmentParams.getEnvironmentIdentifier(),
-          serviceEnvironmentParams.getServiceIdentifier(), VerifyStepConstants.NULL_MONITORED_SERVICE_IDENTIFIER,
-          HealthSourceService.getNameSpacedIdentifier(
-              VerifyStepConstants.NULL_MONITORED_SERVICE_IDENTIFIER, healthSource.getIdentifier()),
+          serviceEnvironmentParams.getServiceIdentifier(), executionIdentifier,
+          HealthSourceService.getNameSpacedIdentifier(executionIdentifier, healthSource.getIdentifier()),
           healthSource.getName(), Collections.emptyList(), metricPackService);
 
       boolean isDemoEnabledForAnyCVConfig = false;
