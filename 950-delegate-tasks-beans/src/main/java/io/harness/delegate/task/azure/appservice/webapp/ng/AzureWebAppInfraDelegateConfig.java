@@ -11,20 +11,20 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.connector.azureconnector.AzureConnectorDTO;
 import io.harness.security.encryption.EncryptedDataDetail;
-import lombok.Builder;
-import lombok.Data;
 
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder
 @OwnedBy(HarnessTeam.CDP)
 public class AzureWebAppInfraDelegateConfig {
-    private AzureConnectorDTO azureConnectorDTO;
+  private AzureConnectorDTO azureConnectorDTO;
 
-    private String appName;
-    private String subscription;
-    private String resourceGroup;
-    private String deploymentSlot;
-    private List<EncryptedDataDetail> encryptionDataDetails;
+  private String appName;
+  private String subscription;
+  private String resourceGroup;
+  private String deploymentSlot;
+  private List<EncryptedDataDetail> encryptionDataDetails;
 }
