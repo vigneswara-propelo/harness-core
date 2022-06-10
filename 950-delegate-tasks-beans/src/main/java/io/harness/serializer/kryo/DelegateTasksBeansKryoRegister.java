@@ -314,6 +314,10 @@ import io.harness.delegate.task.azure.appservice.AzureAppServiceTaskParameters;
 import io.harness.delegate.task.azure.appservice.AzureAppServiceTaskParameters.AzureAppServiceTaskType;
 import io.harness.delegate.task.azure.appservice.AzureAppServiceTaskParameters.AzureAppServiceType;
 import io.harness.delegate.task.azure.appservice.AzureAppServiceTaskResponse;
+import io.harness.delegate.task.azure.appservice.webapp.ng.AzureWebAppInfraDelegateConfig;
+import io.harness.delegate.task.azure.appservice.webapp.ng.AzureWebAppRequestType;
+import io.harness.delegate.task.azure.appservice.webapp.ng.request.AzureWebAppTaskRequest;
+import io.harness.delegate.task.azure.appservice.webapp.ng.response.AzureWebAppTaskResponse;
 import io.harness.delegate.task.azure.appservice.webapp.request.AzureWebAppListWebAppDeploymentSlotsParameters;
 import io.harness.delegate.task.azure.appservice.webapp.request.AzureWebAppListWebAppInstancesParameters;
 import io.harness.delegate.task.azure.appservice.webapp.request.AzureWebAppListWebAppNamesParameters;
@@ -1486,5 +1490,9 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(OciHelmConnectivityTaskParams.class, 29306);
     kryo.register(OciHelmConnectivityTaskResponse.class, 29307);
     kryo.register(OciHelmStoreDelegateConfig.class, 29308);
+    kryo.register(AzureWebAppTaskRequest.class, 55300);
+    kryo.register(AzureWebAppRequestType.class, 55301);
+    kryo.register(AzureWebAppTaskResponse.class, 55302);
+    kryo.register(AzureWebAppInfraDelegateConfig.class, 55303);
   }
 }
