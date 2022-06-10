@@ -9,6 +9,7 @@ package io.harness.ng.core.service.services.impl;
 
 import static io.harness.rule.OwnerRule.ARCHIT;
 import static io.harness.rule.OwnerRule.DEEPAK;
+import static io.harness.rule.OwnerRule.HINGER;
 import static io.harness.rule.OwnerRule.MOHIT_GARG;
 import static io.harness.rule.OwnerRule.PRABU;
 
@@ -35,10 +36,14 @@ import io.harness.ng.core.utils.CoreCriteriaUtils;
 import io.harness.rule.Owner;
 import io.harness.utils.PageUtils;
 
+import com.google.common.io.Resources;
 import com.google.inject.Inject;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.joor.Reflect;
@@ -330,6 +335,39 @@ public class ServiceEntityServiceImplTest extends NGCoreTestBase {
         .isInstanceOf(ReferencedEntityException.class)
         .hasMessage(
             "The service SERVICE cannot be deleted because it is being referenced in 2 entities. To delete your service, please remove the reference service from these entities.");
+  }
+
+  @Test
+  @Owner(developers = HINGER)
+  @Category(UnitTests.class)
+  public void testCreateServiceInputsForServiceWithNoRuntimeInputs() {
+    String filename = "service-without-runtime-inputs.yaml";
+    String yaml = readFile(filename);
+    String templateYaml = serviceEntityService.createServiceInputsYaml(yaml);
+    assertThat(templateYaml).isNullOrEmpty();
+  }
+
+  @Test
+  @Owner(developers = HINGER)
+  @Category(UnitTests.class)
+  public void testCreateServiceInputsForServiceWithRuntimeInputs() {
+    String filename = "service-with-runtime-inputs.yaml";
+    String yaml = readFile(filename);
+    String templateYaml = serviceEntityService.createServiceInputsYaml(yaml);
+    assertThat(templateYaml).isNotNull();
+
+    String resFile = "service-with-runtime-inputs-res.yaml";
+    String resTemplate = readFile(resFile);
+    assertThat(templateYaml).isEqualTo(resTemplate);
+  }
+
+  private String readFile(String filename) {
+    ClassLoader classLoader = getClass().getClassLoader();
+    try {
+      return Resources.toString(Objects.requireNonNull(classLoader.getResource(filename)), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new InvalidRequestException("Could not read resource file: " + filename);
+    }
   }
 
   private EntitySetupUsageDTO getEntitySetupUsageDTO() {

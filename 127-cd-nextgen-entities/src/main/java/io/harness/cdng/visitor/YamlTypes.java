@@ -62,6 +62,7 @@ public interface YamlTypes {
   String SERVICE_DEFINITION = "serviceDefinition";
   String SERVICE_SPEC = "spec";
   String SERVICE_OVERRIDE = "serviceOverrides";
+  String SERVICE_INPUTS = "serviceInputs";
   String STAGE_OVERRIDES_CONFIG = "stageOverrides";
   String PATH_CONNECTOR = VisitorParentPathUtils.PATH_CONNECTOR;
   String CONNECTOR_REF = "connectorRef";

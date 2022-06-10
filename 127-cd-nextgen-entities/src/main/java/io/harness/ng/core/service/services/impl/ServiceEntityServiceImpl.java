@@ -16,11 +16,13 @@ import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_P
 import io.harness.EntityType;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
+import io.harness.cdng.visitor.YamlTypes;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ReferencedEntityException;
 import io.harness.exception.UnexpectedException;
+import io.harness.exception.YamlException;
 import io.harness.ng.DuplicateKeyExceptionParser;
 import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
@@ -33,17 +35,26 @@ import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.entity.ServiceEntity.ServiceEntityKeys;
 import io.harness.ng.core.service.services.ServiceEntityService;
 import io.harness.outbox.api.OutboxService;
+import io.harness.pms.merger.helpers.RuntimeInputFormHelper;
+import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.repositories.service.spring.ServiceRepository;
+import io.harness.utils.YamlPipelineUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.mongodb.client.result.UpdateResult;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -318,6 +329,32 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
   public ServiceEntity find(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String serviceIdentifier, boolean deleted) {
     return serviceRepository.find(accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, deleted);
+  }
+
+  @Override
+  public String createServiceInputsYaml(String yaml) {
+    Map<String, Object> serviceInputs = new HashMap<>();
+
+    try {
+      YamlField serviceYamlField = YamlUtils.readTree(yaml).getNode().getField(YamlTypes.SERVICE_ENTITY);
+      if (serviceYamlField == null) {
+        throw new YamlException("Yaml provided is not a service yaml.");
+      }
+      ObjectNode serviceNode = (ObjectNode) serviceYamlField.getNode().getCurrJsonNode();
+      String serviceDefinition = serviceNode.retain(YamlTypes.SERVICE_DEFINITION).toString();
+      if (isEmpty(serviceDefinition)) {
+        throw new YamlException("Service yaml provided does not have service definition in it.");
+      }
+      String serviceDefinitionInputs = RuntimeInputFormHelper.createTemplateFromYaml(serviceDefinition);
+      if (isEmpty(serviceDefinitionInputs)) {
+        return serviceDefinitionInputs;
+      }
+      JsonNode serviceDefinitionNode = YamlUtils.readTree(serviceDefinitionInputs).getNode().getCurrJsonNode();
+      serviceInputs.put(YamlTypes.SERVICE_INPUTS, serviceDefinitionNode);
+      return YamlPipelineUtils.writeYamlString(serviceInputs);
+    } catch (IOException e) {
+      throw new InvalidRequestException("Error occurred while creating service inputs ", e);
+    }
   }
 
   String getDuplicateServiceExistsErrorMessage(
