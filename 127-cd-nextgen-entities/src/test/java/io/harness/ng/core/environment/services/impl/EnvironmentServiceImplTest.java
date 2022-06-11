@@ -71,6 +71,7 @@ public class EnvironmentServiceImplTest extends CDNGEntitiesTestBase {
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void testForceDeleteAll() {
+    doReturn(true).when(featureFlagHelperService).isEnabled("ACCOUNT_ID", FeatureName.HARD_DELETE_ENTITIES);
     Environment e1 = Environment.builder()
                          .accountId("ACCOUNT_ID")
                          .identifier(UUIDGenerator.generateUuid())
@@ -116,6 +117,7 @@ public class EnvironmentServiceImplTest extends CDNGEntitiesTestBase {
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void testForceDeleteAllIdentifiersMustBeSpecified() {
+    doReturn(true).when(featureFlagHelperService).isEnabled("ACCOUNT_ID", FeatureName.HARD_DELETE_ENTITIES);
     Environment e1 = Environment.builder()
                          .accountId("ACCOUNT_ID")
                          .identifier(UUIDGenerator.generateUuid())

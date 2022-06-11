@@ -274,6 +274,11 @@ public class EnvironmentServiceImpl implements EnvironmentService {
   @Override
   public boolean forceDeleteAllInProject(String accountId, String orgIdentifier, String projectIdentifier) {
     checkArgument(isNotEmpty(accountId), "accountId must be present");
+    final boolean shouldHardDelete = ngFeatureFlagHelperService.isEnabled(accountId, HARD_DELETE_ENTITIES);
+    if (!shouldHardDelete) {
+      return false;
+    }
+
     checkArgument(isNotEmpty(orgIdentifier), "orgIdentifier must be present");
     checkArgument(isNotEmpty(projectIdentifier), "project Identifier must be present");
 

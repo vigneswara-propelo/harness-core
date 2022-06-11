@@ -51,4 +51,6 @@ public interface ServiceEntityService {
       boolean deleted);
 
   String createServiceInputsYaml(String yaml);
+
+  boolean forceDeleteAllInProject(String accountId, String orgIdentifier, String projectIdentifier);
 }
