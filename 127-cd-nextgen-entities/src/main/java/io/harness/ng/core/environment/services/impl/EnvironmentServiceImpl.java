@@ -46,6 +46,7 @@ import io.harness.outbox.api.OutboxService;
 import io.harness.pms.merger.helpers.RuntimeInputFormHelper;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.repositories.UpsertOptions;
 import io.harness.repositories.environment.spring.EnvironmentRepository;
 import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.utils.YamlPipelineUtils;
@@ -194,7 +195,7 @@ public class EnvironmentServiceImpl implements EnvironmentService {
   }
 
   @Override
-  public Environment upsert(Environment requestEnvironment) {
+  public Environment upsert(Environment requestEnvironment, UpsertOptions upsertOptions) {
     validatePresenceOfRequiredFields(requestEnvironment.getAccountId(), requestEnvironment.getIdentifier());
     setName(requestEnvironment);
     Criteria criteria = getEnvironmentEqualityCriteria(requestEnvironment, requestEnvironment.getDeleted());
@@ -206,12 +207,14 @@ public class EnvironmentServiceImpl implements EnvironmentService {
             requestEnvironment.getIdentifier(), requestEnvironment.getProjectIdentifier(),
             requestEnvironment.getOrgIdentifier()));
       }
-      outboxService.save(EnvironmentUpsertEvent.builder()
-                             .accountIdentifier(requestEnvironment.getAccountId())
-                             .orgIdentifier(requestEnvironment.getOrgIdentifier())
-                             .projectIdentifier(requestEnvironment.getProjectIdentifier())
-                             .environment(requestEnvironment)
-                             .build());
+      if (upsertOptions.isSendOutboxEvent()) {
+        outboxService.save(EnvironmentUpsertEvent.builder()
+                               .accountIdentifier(requestEnvironment.getAccountId())
+                               .orgIdentifier(requestEnvironment.getOrgIdentifier())
+                               .projectIdentifier(requestEnvironment.getProjectIdentifier())
+                               .environment(requestEnvironment)
+                               .build());
+      }
       return tempResult;
     }));
     publishEvent(requestEnvironment.getAccountId(), requestEnvironment.getOrgIdentifier(),
