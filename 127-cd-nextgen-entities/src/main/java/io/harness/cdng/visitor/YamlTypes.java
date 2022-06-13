@@ -104,6 +104,10 @@ public interface YamlTypes {
   String INFRA_SECTION_UUID = "infra_section_uuid";
   String NEXT_UUID = "nextUuid";
 
+  String CLOUD_PROVIDER = "cloudProvider";
+  String LOAD_BALANCER = "loadBalancer";
+  String HOST_NAME_CONVENTION = "hostNameConvention";
+
   String APP_SERVICE = "appService";
   String DEPLOYMENT_SLOT = "deploymentSlot";
   String TARGET_SLOT = "targetSlot";

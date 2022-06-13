@@ -17,6 +17,7 @@ import static io.harness.rule.OwnerRule.NAVNEET;
 import static io.harness.rule.OwnerRule.SAHIL;
 import static io.harness.rule.OwnerRule.TMACARI;
 import static io.harness.rule.OwnerRule.VAIBHAV_SI;
+import static io.harness.rule.OwnerRule.VITALIE;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -48,6 +49,8 @@ import io.harness.cdng.infra.yaml.K8SDirectInfrastructure.K8SDirectInfrastructur
 import io.harness.cdng.infra.yaml.K8sAzureInfrastructure;
 import io.harness.cdng.infra.yaml.K8sGcpInfrastructure;
 import io.harness.cdng.infra.yaml.PdcInfrastructure;
+import io.harness.cdng.infra.yaml.SshWinRmAwsInfrastructure;
+import io.harness.cdng.infra.yaml.SshWinRmAwsInfrastructure.SshWinRmAwsInfrastructureBuilder;
 import io.harness.cdng.infra.yaml.SshWinRmAzureInfrastructure;
 import io.harness.cdng.k8s.K8sStepHelper;
 import io.harness.cdng.pipeline.PipelineInfrastructure;
@@ -608,6 +611,31 @@ public class InfrastructureStepTest extends CategoryTest {
 
     InfraMapping infraMapping = infrastructureStep.createInfraMappingObject(infrastructureSpec);
     assertThat(infraMapping).isEqualTo(expectedInfraMapping);
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void testValidateSshWinRmAwsInfrastructure() {
+    SshWinRmAwsInfrastructureBuilder builder = SshWinRmAwsInfrastructure.builder();
+
+    infrastructureStep.validateInfrastructure(builder.build(), null);
+
+    builder.credentialsRef(new ParameterField<>(null, null, true, "expression1", null, true))
+        .connectorRef(ParameterField.createValueField("value"))
+        .build();
+
+    assertThatThrownBy(() -> infrastructureStep.validateInfrastructure(builder.build(), null))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining("Unresolved Expression : [expression1]");
+
+    builder.connectorRef(new ParameterField<>(null, null, true, "expression2", null, true))
+        .credentialsRef(ParameterField.createValueField("value"))
+        .build();
+
+    assertThatThrownBy(() -> infrastructureStep.validateInfrastructure(builder.build(), null))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining("Unresolved Expression : [expression2]");
   }
 
   @Test

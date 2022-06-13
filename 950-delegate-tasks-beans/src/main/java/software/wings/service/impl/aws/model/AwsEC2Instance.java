@@ -5,21 +5,20 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.awsconnector;
+package software.wings.service.impl.aws.model;
 
-import io.harness.annotations.dev.HarnessTeam;
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
 import io.harness.annotations.dev.OwnedBy;
 
-@OwnedBy(HarnessTeam.CDP)
-public enum AwsTaskType {
-  VALIDATE,
-  LIST_S3_BUCKETS,
-  LIST_IAM_ROLES,
-  CF_LIST_PARAMS,
-  LIST_EC2_INSTANCES,
-  LIST_ASG_INSTANCES,
-  LIST_ASG_NAMES,
-  LIST_VPC,
-  LIST_TAGS,
-  LIST_LOAD_BALANCERS
+import java.io.Serializable;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+@OwnedBy(CDP)
+public class AwsEC2Instance implements Serializable {
+  private String instanceId;
+  private String publicDnsName;
 }
