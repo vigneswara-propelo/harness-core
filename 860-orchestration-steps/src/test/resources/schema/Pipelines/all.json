@@ -907,6 +907,10 @@
         "iteration": {
           "type": "integer",
           "format": "int32"
+        },
+        "maxConcurrency": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -1300,15 +1304,31 @@
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "MatrixConfig": {
-      "type": "object",
-      "properties": {
-        "exclude": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExcludeConfig"
+      "allOf": [
+        {
+          "$ref": "#/definitions/MatrixConfigInterface"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "exclude": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExcludeConfig"
+              }
+            },
+            "maxConcurrency": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         }
-      },
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "MatrixConfigInterface": {
+      "type": "object",
+      "discriminator": "type",
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "NGProperties": {
@@ -3288,21 +3308,31 @@
     "StrategyConfig": {
       "type": "object",
       "properties": {
-        "batchSize": {
-          "type": "integer",
-          "format": "int32"
-        },
         "for": {
           "$ref": "#/definitions/HarnessForConfig"
         },
         "matrix": {
-          "$ref": "#/definitions/MatrixConfig"
+          "oneOf": [
+            {
+              "$ref": "#/definitions/MatrixConfig"
+            }
+          ]
+        },
+        "parallelism": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#",
       "allOf": [
         {
-          "oneOf": [ ]
+          "oneOf": [
+            {
+              "required": [
+                "parallelism"
+              ]
+            }
+          ]
         }
       ]
     },
