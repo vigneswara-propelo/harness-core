@@ -24,11 +24,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.CDNGEntitiesTestBase;
+import io.harness.cdng.gitops.service.ClusterService;
 import io.harness.data.structure.UUIDGenerator;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
 import io.harness.ng.core.environment.mappers.EnvironmentMapper;
+import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
 import io.harness.ng.core.utils.CoreCriteriaUtils;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.UpsertOptions;
@@ -55,14 +57,18 @@ import org.springframework.data.mongodb.core.query.Criteria;
 
 @OwnedBy(HarnessTeam.CDC)
 public class EnvironmentServiceImplTest extends CDNGEntitiesTestBase {
+  @Mock private InfrastructureEntityService infrastructureEntityService;
   @Mock private OutboxService outboxService;
   @Mock private NGFeatureFlagHelperService featureFlagHelperService;
-  @Inject EnvironmentServiceImpl environmentService;
+  @Mock private ClusterService clusterService;
+  @Inject private EnvironmentServiceImpl environmentService;
 
   @Before
   public void setUp() throws Exception {
     Reflect.on(environmentService).set("ngFeatureFlagHelperService", featureFlagHelperService);
     Reflect.on(environmentService).set("outboxService", outboxService);
+    Reflect.on(environmentService).set("infrastructureEntityService", infrastructureEntityService);
+    Reflect.on(environmentService).set("clusterService", clusterService);
   }
 
   @Test

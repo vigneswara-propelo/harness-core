@@ -95,8 +95,7 @@ public class InfrastructurePmsPlanCreator {
         getAdviserObtainmentFromMetaDataToExecution(infraSectionNode.getParentNode(), kryoSerializer);
 
     // adding RC dependency
-    boolean allowSimultaneousDeployments = ResourceConstraintUtility.isSimultaneousDeploymentsAllowed(
-        infrastructureDefinitionConfig.getAllowSimultaneousDeployments());
+    boolean allowSimultaneousDeployments = infrastructureDefinitionConfig.isAllowSimultaneousDeployments();
 
     if (!allowSimultaneousDeployments) {
       // Passing infra section parent node since rbac will be created parallel to environment node
