@@ -10,21 +10,21 @@ package io.harness.cdng.creator.plan.steps;
 import static io.harness.annotations.dev.HarnessTeam.GITOPS;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.gitops.CreatePRStepNode;
+import io.harness.cdng.gitops.MergePRStepNode;
 import io.harness.executions.steps.StepSpecTypeConstants;
 
 import com.google.common.collect.Sets;
 import java.util.Set;
 
 @OwnedBy(GITOPS)
-public class GitOpsCreatePRStepPlanCreatorV2 extends CDPMSStepPlanCreatorV2<CreatePRStepNode> {
+public class GitOpsMergePRStepPlanCreatorV2 extends CDPMSStepPlanCreatorV2<MergePRStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
-    return Sets.newHashSet(StepSpecTypeConstants.GITOPS_CREATE_PR);
+    return Sets.newHashSet(StepSpecTypeConstants.GITOPS_MERGE_PR);
   }
 
   @Override
-  public Class<CreatePRStepNode> getFieldClass() {
-    return CreatePRStepNode.class;
+  public Class<MergePRStepNode> getFieldClass() {
+    return MergePRStepNode.class;
   }
 }
