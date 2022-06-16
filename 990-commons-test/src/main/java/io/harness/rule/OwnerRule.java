@@ -275,6 +275,8 @@ public class OwnerRule implements TestRule {
   public static final String RAGHAV_GUPTA = "raghav.gupta";
   public static final String SOUMYAJIT = "soumyajit.das";
   public static final String vivekveman = "vivek.karnati";
+  public static final String ERSHAD_MOHAMMAD = "ershad.ali";
+  public static final String TARUN_UBA = "tarun.uba";
   public static final String NAVEEN = "naveen.shukla";
   public static final String RUTVIJ_MEHTA = "rutvij.mehta";
   @Deprecated public static final String UNKNOWN = "unknown";
@@ -426,6 +428,7 @@ public class OwnerRule implements TestRule {
           .put(ARCHIT, defaultUserInfo(ARCHIT).slack("U012QGPR9N0").team(CDC).build())
           .put(IVAN, defaultUserInfo(IVAN).slack("U014BFQ9PJS").team(CDP).build())
           .put(TATHAGAT, defaultUserInfo(TATHAGAT).slack("U015DTMJLA2").team(CDP).build())
+          .put(TARUN_UBA, defaultUserInfo(TARUN_UBA).slack("U03H95DUV99").team(CDP).build())
           .put(NAMAN_TALAYCHA, defaultUserInfo(NAMAN_TALAYCHA).slack("U021UU5UT46").team(CDP).build())
           .put(LOVISH_BANSAL, defaultUserInfo(LOVISH_BANSAL).slack("U03GC1235B2").team(CDP).build())
           .put(PIYUSH_BHUWALKA, defaultUserInfo(PIYUSH_BHUWALKA).slack("U034L7HGQ9E").team(CDP).build())
