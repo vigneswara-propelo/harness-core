@@ -455,6 +455,8 @@ public class GitClientHelperTest extends CategoryTest {
         .isEqualTo("https://api.github.com/");
     assertThat(GitClientHelper.getGithubApiURL("git@www.github.com:harness/harness-core.git"))
         .isEqualTo("https://api.github.com/");
+    assertThat(GitClientHelper.getGithubApiURL("http://10.67.0.1/devkimittal/harness-core"))
+            .isEqualTo("http://10.67.0.1/api/v3/");
   }
 
   @Test
@@ -475,6 +477,8 @@ public class GitClientHelperTest extends CategoryTest {
         .isEqualTo("https://gitlab.com/");
     assertThat(GitClientHelper.getGitlabApiURL("git@www.gitlab.com:devki.mittal/test.git"))
         .isEqualTo("https://gitlab.com/");
+    assertThat(GitClientHelper.getGitlabApiURL("http://10.67.0.1/devkimittal/harness-core"))
+            .isEqualTo("http://10.67.0.1/");
   }
 
   @Test
@@ -496,6 +500,8 @@ public class GitClientHelperTest extends CategoryTest {
         .isEqualTo("https://api.bitbucket.org/");
     assertThat(GitClientHelper.getBitBucketApiURL("git@www.bitbucket.org:devmittalciv16/ci_3446.git"))
         .isEqualTo("https://api.bitbucket.org/");
+    assertThat(GitClientHelper.getBitBucketApiURL("http://10.67.0.1/devkimittal/harness-core"))
+            .isEqualTo("http://10.67.0.1/");
   }
 
   @Test

@@ -199,15 +199,27 @@ public class GitClientHelper {
       return "https://api.github.com/";
     } else {
       String domain = GitClientHelper.getGitSCM(url);
-      return "https://" + domain + "/api/v3/";
+      return getHttpProtocolPrefix(url) + domain + "/api/v3/";
     }
   }
+
+  private static boolean isUrlHTTP(String url) {
+    return url.startsWith("http") && !url.startsWith("https");
+  }
+
+  private static String getHttpProtocolPrefix(String url) {
+    if (isUrlHTTP(url)) {
+      return "http://";
+    }
+    return "https://";
+  }
+
   public static String getGitlabApiURL(String url) {
     if (GitClientHelper.isGitlabSAAS(url)) {
       return "https://gitlab.com/";
     } else {
       String domain = GitClientHelper.getGitSCM(url);
-      return "https://" + domain + "/";
+      return getHttpProtocolPrefix(url) + domain + "/";
     }
   }
 
@@ -216,7 +228,7 @@ public class GitClientHelper {
       return "https://api.bitbucket.org/";
     } else {
       String domain = GitClientHelper.getGitSCM(url);
-      return "https://" + domain + "/";
+      return getHttpProtocolPrefix(url) + domain + "/";
     }
   }
 
@@ -225,7 +237,7 @@ public class GitClientHelper {
       return "https://dev.azure.com/";
     } else {
       String domain = GitClientHelper.getGitSCM(url);
-      return "https://" + domain + "/";
+      return getHttpProtocolPrefix(url) + domain + "/";
     }
   }
 
