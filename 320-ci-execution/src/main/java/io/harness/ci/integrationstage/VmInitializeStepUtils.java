@@ -64,6 +64,7 @@ import org.apache.commons.lang3.StringUtils;
 @Deprecated
 public class VmInitializeStepUtils {
   @Inject CIFeatureFlagService featureFlagService;
+  @Inject ValidationUtils validationUtils;
 
   public BuildJobEnvInfo getInitializeStepInfoBuilder(StageElementConfig stageElementConfig,
       Infrastructure infrastructure, CIExecutionArgs ciExecutionArgs, List<ExecutionWrapperConfig> steps,
@@ -102,7 +103,7 @@ public class VmInitializeStepUtils {
     if (integrationStageConfig.getServiceDependencies() != null
         && integrationStageConfig.getServiceDependencies().getValue() != null) {
       serviceDependencies = integrationStageConfig.getServiceDependencies().getValue();
-      ValidationUtils.validateVmInfraDependencies(serviceDependencies);
+      validationUtils.validateVmInfraDependencies(serviceDependencies);
     }
 
     OSType os = getVmOS(infrastructure);
