@@ -171,7 +171,7 @@ public class InfrastructureMapper {
         validateAzureWebAppInfrastructure(azureWebAppInfrastructure);
         return AzureWebAppInfrastructureOutcome.builder()
             .connectorRef(azureWebAppInfrastructure.getConnectorRef().getValue())
-            .appService(azureWebAppInfrastructure.getAppService().getValue())
+            .webApp(azureWebAppInfrastructure.getWebApp().getValue())
             .deploymentSlot(azureWebAppInfrastructure.getDeploymentSlot().getValue())
             .environment(environmentOutcome)
             .infrastructureKey(InfrastructureKey.generate(
@@ -249,8 +249,8 @@ public class InfrastructureMapper {
       throw new InvalidArgumentsException(Pair.of("deploymentSlot", "cannot be empty"));
     }
 
-    if (ParameterField.isNull(infrastructure.getAppService())
-        || isEmpty(ParameterFieldHelper.getParameterFieldValue(infrastructure.getAppService()))) {
+    if (ParameterField.isNull(infrastructure.getWebApp())
+        || isEmpty(ParameterFieldHelper.getParameterFieldValue(infrastructure.getWebApp()))) {
       throw new InvalidArgumentsException(Pair.of("appService", "cannot be empty"));
     }
 
