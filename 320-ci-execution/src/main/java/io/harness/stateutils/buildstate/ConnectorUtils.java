@@ -299,6 +299,9 @@ public class ConnectorUtils {
     } else if (gitConnector.getConnectorType() == BITBUCKET) {
       BitbucketConnectorDTO gitConfigDTO = (BitbucketConnectorDTO) gitConnector.getConnectorConfig();
       return fetchUserNameFromBitbucketConnector(gitConfigDTO, gitConnector.getIdentifier());
+    } else if (gitConnector.getConnectorType() == AZURE_REPO) {
+      // Username not needed for Azure.
+      return null;
     } else {
       throw new CIStageExecutionException("Unsupported git connector " + gitConnector.getConnectorType());
     }

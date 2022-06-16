@@ -83,12 +83,12 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public class GitClientHelper {
   private static final String GIT_URL_REGEX =
-      "(http|https|git|ssh)(:\\/\\/|@)([^\\/:]+(:\\d+)?)[\\/:]([^\\/:]+)\\/(.+)?(.git)?";
+      "(http|https|git|ssh)(:\\/\\/|@)([^\\/:]+(:\\d+)?)[\\/:](v\\d\\/)?([^\\/:]+)\\/(.+)?(.git)?";
   private static final String GIT_URL_REGEX_NO_OWNER = "(http|https|git|ssh)(:\\/\\/|@)([^\\/:]+(:\\d+)?)";
   private static final Pattern GIT_URL = Pattern.compile(GIT_URL_REGEX);
   private static final Pattern GIT_URL_NO_OWNER = Pattern.compile(GIT_URL_REGEX_NO_OWNER);
-  private static final Integer OWNER_GROUP = 5;
-  private static final Integer REPO_GROUP = 6;
+  private static final Integer OWNER_GROUP = 6;
+  private static final Integer REPO_GROUP = 7;
   private static final Integer SCM_GROUP = 3;
   private static final Integer PROTOCOL_GROUP = 1;
 
@@ -243,7 +243,7 @@ public class GitClientHelper {
 
   public static String getAzureRepoOrgAndProjectHTTP(String url) {
     String temp = StringUtils.substringBeforeLast(url, "/_git/");
-    return StringUtils.substringAfter(temp, "dev.azure.com/");
+    return StringUtils.substringAfter(temp, "azure.com/");
   }
 
   public static String getAzureRepoOrg(String orgAndProject) {

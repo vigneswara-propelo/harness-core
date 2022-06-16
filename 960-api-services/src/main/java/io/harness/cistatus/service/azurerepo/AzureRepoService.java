@@ -5,6 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.task.ci;
+package io.harness.cistatus.service.azurerepo;
 
-public enum GitSCMType { GITHUB, GITLAB, BITBUCKET, AZURE_REPO }
+import java.util.Map;
+
+public interface AzureRepoService {
+    boolean sendStatus(AzureRepoConfig azureRepoConfig, String userName, String token, String sha, String org,
+        String project, String repo, Map<String, Object> bodyObjectMap);
+}
