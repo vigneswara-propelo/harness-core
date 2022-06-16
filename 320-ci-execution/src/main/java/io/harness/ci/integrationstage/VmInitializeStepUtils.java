@@ -105,7 +105,7 @@ public class VmInitializeStepUtils {
       ValidationUtils.validateVmInfraDependencies(serviceDependencies);
     }
 
-    OSType os = getOS(infrastructure);
+    OSType os = getVmOS(infrastructure);
     Map<String, String> volumeToMountPath = getVolumeToMountPath(integrationStageConfig.getSharedPaths(), os);
     return VmBuildJobInfo.builder()
         .ciExecutionArgs(ciExecutionArgs)
@@ -124,7 +124,7 @@ public class VmInitializeStepUtils {
     return STEP_MOUNT_PATH;
   }
 
-  private OSType getOS(Infrastructure infrastructure) {
+  public static OSType getVmOS(Infrastructure infrastructure) {
     if (infrastructure.getType() != Infrastructure.Type.VM) {
       throw new CIStageExecutionException(format("Invalid infrastructure type: %s", infrastructure.getType()));
     }
