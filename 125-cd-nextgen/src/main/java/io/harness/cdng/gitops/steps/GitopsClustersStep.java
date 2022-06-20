@@ -103,9 +103,9 @@ public class GitopsClustersStep implements SyncExecutableWithRbac<ClusterStepPar
       StepInputPackage inputPackage, PassThroughData passThroughData) {
     final StepResponseBuilder stepResponseBuilder = StepResponse.builder();
     CommandExecutionStatus status = FAILURE;
-    if (logger == null) {
-      logger = new NGLogCallback(logStreamingStepClientFactory, ambiance, null, true);
-    }
+
+    logger = new NGLogCallback(logStreamingStepClientFactory, ambiance, null, true);
+
     log.info("Starting execution for GitopsClustersStep [{}]", stepParameters);
 
     OptionalSweepingOutput optionalSweepingOutput = executionSweepingOutputResolver.resolveOptional(
