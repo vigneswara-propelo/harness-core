@@ -46,7 +46,7 @@ function create_and_push_docker_build(){
    --build-arg REPO_PATH="${REPO_PATH}" --build-arg SERVICE_NAME="${local_service_name}" \
    --build-arg APPD_AGENT="${APPD_AGENT##*/}" --build-arg TAKIPI_AGENT="${TAKIPI_AGENT##*/}" \
    --build-arg OCELET_AGENT="${OCELET_AGENT##*/}" --build-arg ET_AGENT="${ET_AGENT##*/}" \
-   -f Dockerfile .; STATUS1=$?
+   -f featureBuilds.dockerfile .; STATUS1=$?
 
   echo "INFO: Pushing APM IMAGE...."
 	docker push "${local_feature_image_path}"; STATUS2=$?
