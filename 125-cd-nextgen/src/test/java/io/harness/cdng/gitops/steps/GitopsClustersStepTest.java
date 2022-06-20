@@ -221,15 +221,13 @@ public class GitopsClustersStepTest extends CategoryTest {
 
   // Test cases
   private Object[][] getData() {
-    final Object[] set1 =
-        new Object[] {ClusterStepParameters.builder().build(), new GitopsClustersOutcome(new ArrayList<>())};
     final Object[] set2 = new Object[] {
         ClusterStepParameters.builder().envGroupRef("envGroupId").deployToAllEnvs(true).build(),
         new GitopsClustersOutcome(new ArrayList<>())
-            .appendCluster("envGroupId", "env2", "c3-name")
-            .appendCluster("envGroupId", "env2", "c4-name")
-            .appendCluster("envGroupId", "env1", "c1-name")
-            .appendCluster("envGroupId", "env1", "c2-name"),
+            .appendCluster(new Metadata("envGroupId", null), new Metadata("env2", null), new Metadata("c3", "c3-name"))
+            .appendCluster(new Metadata("envGroupId", null), new Metadata("env2", null), new Metadata("c4", "c4-name"))
+            .appendCluster(new Metadata("envGroupId", null), new Metadata("env1", null), new Metadata("c1", "c1-name"))
+            .appendCluster(new Metadata("envGroupId", null), new Metadata("env1", null), new Metadata("c2", "c2-name")),
 
     };
     final Object[] set3 = new Object[] {
@@ -237,7 +235,9 @@ public class GitopsClustersStepTest extends CategoryTest {
             .envClusterRefs(asList(EnvClusterRefs.builder().envRef("env1").deployToAll(true).build()))
             .deployToAllEnvs(false)
             .build(),
-        new GitopsClustersOutcome(new ArrayList<>()).appendCluster("env1", "c1-name").appendCluster("env1", "c2-name"),
+        new GitopsClustersOutcome(new ArrayList<>())
+            .appendCluster(new Metadata("env1", null), new Metadata("c1", "c1-name"))
+            .appendCluster(new Metadata("env1", null), new Metadata("c2", "c2-name")),
 
     };
 
@@ -246,7 +246,9 @@ public class GitopsClustersStepTest extends CategoryTest {
             .envClusterRefs(asList(EnvClusterRefs.builder().envRef("env2").deployToAll(true).build()))
             .deployToAllEnvs(false)
             .build(),
-        new GitopsClustersOutcome(new ArrayList<>()).appendCluster("env2", "c3-name").appendCluster("env2", "c4-name"),
+        new GitopsClustersOutcome(new ArrayList<>())
+            .appendCluster(new Metadata("env2", null), new Metadata("c3", "c3-name"))
+            .appendCluster(new Metadata("env2", null), new Metadata("c4", "c4-name")),
     };
 
     final Object[] set5 = new Object[] {
@@ -255,7 +257,8 @@ public class GitopsClustersStepTest extends CategoryTest {
                 asList(EnvClusterRefs.builder().envRef("env2").deployToAll(false).clusterRefs(Set.of("c4")).build()))
             .deployToAllEnvs(false)
             .build(),
-        new GitopsClustersOutcome(new ArrayList<>()).appendCluster("env2", "c4-name"),
+        new GitopsClustersOutcome(new ArrayList<>())
+            .appendCluster(new Metadata("env2", null), new Metadata("c4", "c4-name")),
     };
 
     return new Object[][] {set2, set3, set4, set5};
@@ -265,15 +268,17 @@ public class GitopsClustersStepTest extends CategoryTest {
   private Object[][] getDataForExceptions() {
     final Object[] set1 =
         new Object[] {ClusterStepParameters.builder().build(), new GitopsClustersOutcome(new ArrayList<>())};
-    final Object[] set2 = new Object[] {
-        ClusterStepParameters.builder().envGroupRef("envGroupId").deployToAllEnvs(true).build(),
-        new GitopsClustersOutcome(new ArrayList<>())
-            .appendCluster("envGroupId", "env2", "c3-name")
-            .appendCluster("envGroupId", "env2", "c4-name")
-            .appendCluster("envGroupId", "env1", "c1-name")
-            .appendCluster("envGroupId", "env1", "c2-name"),
-
-    };
+    final Object[] set2 =
+        new Object[] {ClusterStepParameters.builder().envGroupRef("envGroupId").deployToAllEnvs(true).build(),
+            new GitopsClustersOutcome(new ArrayList<>())
+                .appendCluster(new Metadata("envGroupId", "envGroupId"), new Metadata("env2", "env2"),
+                    new Metadata("c3-name", "c3-name"))
+                .appendCluster(new Metadata("envGroupId", "envGroupId"), new Metadata("env2", "env2"),
+                    new Metadata("c4-name", "c4-name"))
+                .appendCluster(new Metadata("envGroupId", "envGroupId"), new Metadata("env1", "env1"),
+                    new Metadata("c1-name", "c1-name"))
+                .appendCluster(new Metadata("envGroupId", "envGroupId"), new Metadata("env1", "env1"),
+                    new Metadata("c2-name", "c2-name"))};
     return new Object[][] {set1};
   }
 
