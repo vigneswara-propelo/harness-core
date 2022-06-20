@@ -15,7 +15,7 @@ function download_apm_binaries(){
 	curl ${APPD_AGENT} --output ${APPD_AGENT##*/}; STATUS3=$?
 	echo "INFO: Download Status: ${APPD_AGENT##*/}: $STATUS3"
 
-	curl ${OCELET_AGENT} --output ${OCELET_AGENT##*/}; STATUS4=$?
+	curl -L ${OCELET_AGENT} --output ${OCELET_AGENT##*/}; STATUS4=$?
 	echo "INFO: Download Status: ${OCELET_AGENT##*/}: $STATUS4"
 
 	if [ "${STATUS1}" -eq 0 ] && [ "${STATUS2}" -eq 0 ] && [ "${STATUS3}" -eq 0 ] && [ "${STATUS4}" -eq 0 ]; then
