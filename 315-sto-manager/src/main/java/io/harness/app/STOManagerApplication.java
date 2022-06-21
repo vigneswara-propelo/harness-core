@@ -16,6 +16,7 @@ import static java.util.Collections.singletonList;
 import io.harness.AuthorizationServiceHeader;
 import io.harness.ModuleType;
 import io.harness.PipelineServiceUtilityModule;
+import io.harness.SCMGrpcClientModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cache.CacheModule;
 import io.harness.ci.plan.creator.CIModuleInfoProvider;
@@ -178,6 +179,7 @@ public class STOManagerApplication extends Application<STOManagerConfiguration> 
     log.info("Leaving startup maintenance mode");
     List<Module> modules = new ArrayList<>();
     modules.add(KryoModule.getInstance());
+    modules.add(new SCMGrpcClientModule(configuration.getScmConnectionConfig()));
     modules.add(new ProviderModule() {
       @Provides
       @Singleton
