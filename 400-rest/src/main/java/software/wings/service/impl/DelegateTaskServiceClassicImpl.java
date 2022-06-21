@@ -35,7 +35,7 @@ import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_N
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_VALIDATION;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
-import static software.wings.app.ManagerCacheRegistrar.SECRET_TOKEN_CACHE;
+import static software.wings.app.ManagerCacheRegistrar.SECRET_CACHE;
 import static software.wings.service.impl.DelegateSelectionLogsServiceImpl.NO_ELIGIBLE_DELEGATES;
 
 import static java.lang.System.currentTimeMillis;
@@ -259,7 +259,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
   @Inject private DelegateSetupService delegateSetupService;
   @Inject private AuditHelper auditHelper;
   @Inject private DelegateMetricsService delegateMetricsService;
-  @Inject @Named(SECRET_TOKEN_CACHE) Cache<String, EncryptedDataDetails> secretsCache;
+  @Inject @Named(SECRET_CACHE) Cache<String, EncryptedDataDetails> secretsCache;
   @Inject @Getter private Subject<DelegateObserver> subject = new Subject<>();
 
   private static final SecureRandom random = new SecureRandom();
