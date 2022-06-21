@@ -45,7 +45,8 @@ public enum ResourceType {
   PERSPECTIVE(ResourceTypeConstants.PERSPECTIVE),
   PERSPECTIVE_BUDGET(ResourceTypeConstants.PERSPECTIVE_BUDGET),
   PERSPECTIVE_REPORT(ResourceTypeConstants.PERSPECTIVE_REPORT),
-  COST_CATEGORY(ResourceTypeConstants.COST_CATEGORY);
+  COST_CATEGORY(ResourceTypeConstants.COST_CATEGORY),
+  SMTP(ResourceTypeConstants.SMTP);
 
   ResourceType(String resourceType) {
     if (!this.name().equals(resourceType)) {

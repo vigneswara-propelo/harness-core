@@ -52,4 +52,5 @@ public class ResourceTypeConstants {
   public static final String PERSPECTIVE_BUDGET = "PERSPECTIVE_BUDGET";
   public static final String PERSPECTIVE_REPORT = "PERSPECTIVE_REPORT";
   public static final String COST_CATEGORY = "COST_CATEGORY";
+  public static final String SMTP = "SMTP";
 }
