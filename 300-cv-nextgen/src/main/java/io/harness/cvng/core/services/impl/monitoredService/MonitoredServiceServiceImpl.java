@@ -810,7 +810,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
               .filter(MonitoredServiceKeys.orgIdentifier, serviceEnvironmentParams.getOrgIdentifier())
               .filter(MonitoredServiceKeys.projectIdentifier, serviceEnvironmentParams.getProjectIdentifier())
               .filter(MonitoredServiceKeys.serviceIdentifier, serviceEnvironmentParams.getServiceIdentifier())
-              .filter(MonitoredServiceKeys.environmentIdentifier, serviceEnvironmentParams.getEnvironmentIdentifier())
+              .field(MonitoredServiceKeys.environmentIdentifierList)
+              .hasThisOne(serviceEnvironmentParams.getEnvironmentIdentifier())
               .get();
       if (monitoredServiceEntity != null) {
         throw new DuplicateFieldException(String.format(
@@ -833,7 +834,6 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .accountId(projectParams.getAccountIdentifier())
             .orgIdentifier(projectParams.getOrgIdentifier())
             .projectIdentifier(projectParams.getProjectIdentifier())
-            .environmentIdentifier(monitoredServiceDTO.getEnvironmentRef())
             .environmentIdentifierList(monitoredServiceDTO.getEnvironmentRefList())
             .serviceIdentifier(monitoredServiceDTO.getServiceRef())
             .identifier(monitoredServiceDTO.getIdentifier())
@@ -880,10 +880,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
             .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier());
     if (environmentIdentifier != null) {
-      query.filter(MonitoredServiceKeys.environmentIdentifier, environmentIdentifier);
+      query = query.field(MonitoredServiceKeys.environmentIdentifierList).hasThisOne(environmentIdentifier);
     }
     if (serviceIdentifier != null) {
-      query.filter(MonitoredServiceKeys.serviceIdentifier, serviceIdentifier);
+      query = query.filter(MonitoredServiceKeys.serviceIdentifier, serviceIdentifier);
     }
     return query.asList();
   }
