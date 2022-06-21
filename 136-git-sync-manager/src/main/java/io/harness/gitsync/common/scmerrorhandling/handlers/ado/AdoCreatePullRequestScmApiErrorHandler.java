@@ -5,11 +5,8 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.github;
+package io.harness.gitsync.common.scmerrorhandling.handlers.ado;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
-
-import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.NestedExceptionUtils;
 import io.harness.exception.SCMExceptionErrorMessages;
 import io.harness.exception.ScmBadRequestException;
@@ -23,42 +20,44 @@ import io.harness.gitsync.common.scmerrorhandling.util.ErrorMessageFormatter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@OwnedBy(PL)
-public class GithubCreatePullRequestScmApiErrorHandler implements ScmApiErrorHandler {
-  public static final String CREATE_PULL_REQUEST_FAILURE = "The pull request could not be created in Github. ";
-  public static final String CREATE_PULL_REQUEST_VALIDATION_FAILED_HINT = "Please check the following:\n"
-      + "1. If already a pull request exists for request source branch<BRANCH> to target branch<TARGET_BRANCH>.\n"
-      + "2. If source branch<BRANCH> and target branch<TARGET_BRANCH> both exists in Github repository.\n"
-      + "3. If title of the pull request is empty.";
-  public static final String CREATE_PULL_REQUEST_VALIDATION_FAILED_EXPLANATION =
-      "There was issue while creating pull request. Possible reasons can be:\n"
-      + "1. There is already an open pull request from source branch<BRANCH> to target branch<TARGET_BRANCH> for given Github repository.\n"
-      + "2. The source branch<BRANCH> or target branch<TARGET_BRANCH> doesn't exist for given Github repository.\n"
-      + "3. The title of the pull request is empty";
+public class AdoCreatePullRequestScmApiErrorHandler implements ScmApiErrorHandler {
+  public static final String CREATE_PULL_REQUEST_FAILURE = "The pull request could not be created in Azure. ";
+  public static final String CREATE_PULL_REQUEST_CONFLICT_ERROR_EXPLANATION =
+      "The pull request could not be created in Azure repo<REPO> as there is already an open pull request from source branch<BRANCH> to target branch<TARGET_BRANCH>.";
+  public static final String CREATE_PULL_REQUEST_CONFLICT_ERROR_HINT =
+      "Please check if there is already an open pull request from source branch<BRANCH> to target branch<TARGET_BRANCH> for given Azure repo<REPO>.";
+  public static final String CREATE_PULL_REQUEST_BAD_REQUEST_ERROR_EXPLANATION =
+      "The pull request could not be created in Azure repo<REPO> as the source branch<BRANCH> or target branch<TARGET_BRANCH> doesn't exist for given Azure repository.";
+  public static final String CREATE_PULL_REQUEST_BAD_REQUEST_ERROR_HINT =
+      "Please check If source branch<BRANCH> and target branch<TARGET_BRANCH> both exists in the given Azure repository";
 
   @Override
   public void handleError(int statusCode, String errorMessage, ErrorMetadata errorMetadata) throws WingsException {
     switch (statusCode) {
-      case 401:
-      case 403:
+      case 203:
         throw NestedExceptionUtils.hintWithExplanationException(
             ErrorMessageFormatter.formatMessage(ScmErrorHints.INVALID_CREDENTIALS, errorMetadata),
             ErrorMessageFormatter.formatMessage(
                 CREATE_PULL_REQUEST_FAILURE + ScmErrorExplanations.INVALID_CONNECTOR_CREDS, errorMetadata),
             new ScmUnauthorizedException(errorMessage));
+      case 400:
+        throw NestedExceptionUtils.hintWithExplanationException(
+            ErrorMessageFormatter.formatMessage(CREATE_PULL_REQUEST_BAD_REQUEST_ERROR_HINT, errorMetadata),
+            ErrorMessageFormatter.formatMessage(CREATE_PULL_REQUEST_BAD_REQUEST_ERROR_EXPLANATION, errorMetadata),
+            new ScmBadRequestException(SCMExceptionErrorMessages.CREATE_PULL_REQUEST_FAILURE));
       case 404:
         throw NestedExceptionUtils.hintWithExplanationException(
             ErrorMessageFormatter.formatMessage(ScmErrorHints.REPO_NOT_FOUND, errorMetadata),
             ErrorMessageFormatter.formatMessage(
                 CREATE_PULL_REQUEST_FAILURE + ScmErrorExplanations.REPO_NOT_FOUND, errorMetadata),
             new ScmBadRequestException(SCMExceptionErrorMessages.REPOSITORY_NOT_FOUND_ERROR));
-      case 422:
+      case 409:
         throw NestedExceptionUtils.hintWithExplanationException(
-            ErrorMessageFormatter.formatMessage(CREATE_PULL_REQUEST_VALIDATION_FAILED_HINT, errorMetadata),
-            ErrorMessageFormatter.formatMessage(CREATE_PULL_REQUEST_VALIDATION_FAILED_EXPLANATION, errorMetadata),
+            ErrorMessageFormatter.formatMessage(CREATE_PULL_REQUEST_CONFLICT_ERROR_HINT, errorMetadata),
+            ErrorMessageFormatter.formatMessage(CREATE_PULL_REQUEST_CONFLICT_ERROR_EXPLANATION, errorMetadata),
             new ScmBadRequestException(SCMExceptionErrorMessages.CREATE_PULL_REQUEST_FAILURE));
       default:
-        log.error(String.format("Error while creating github pull request: [%s: %s]", statusCode, errorMessage));
+        log.error(String.format("Error while creating ADO pull request: [%s: %s]", statusCode, errorMessage));
         throw new ScmUnexpectedException(errorMessage);
     }
   }

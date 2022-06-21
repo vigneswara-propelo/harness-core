@@ -5,14 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.github;
+package io.harness.gitsync.common.scmerrorhandling.handlers.ado;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.rule.OwnerRule.MOHIT_GARG;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.SCMExceptionErrorMessages;
@@ -30,9 +28,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.MockitoAnnotations;
 
-@OwnedBy(PL)
-public class GithubCreatePullRequestScmApiErrorHandlerTest extends GitSyncTestBase {
-  @Inject GithubCreatePullRequestScmApiErrorHandler githubCreatePullRequestScmApiErrorHandler;
+public class AdoGetFileScmApiErrorHandlerTest extends GitSyncTestBase {
+  @Inject AdoGetFileScmApiErrorHandler errorHandler;
 
   private static final String errorMessage = "errorMessage";
 
@@ -46,20 +43,7 @@ public class GithubCreatePullRequestScmApiErrorHandlerTest extends GitSyncTestBa
   @Category(UnitTests.class)
   public void testHandleErrorOnUnauthorizedResponse() {
     try {
-      githubCreatePullRequestScmApiErrorHandler.handleError(401, errorMessage, ErrorMetadata.builder().build());
-    } catch (Exception ex) {
-      WingsException exception = ExceptionUtils.cause(ScmUnauthorizedException.class, ex);
-      assertThat(exception).isNotNull();
-      assertThat(exception.getMessage()).isEqualTo(errorMessage);
-    }
-  }
-
-  @Test
-  @Owner(developers = MOHIT_GARG)
-  @Category(UnitTests.class)
-  public void testHandleErrorOnUnauthenticatedResponse() {
-    try {
-      githubCreatePullRequestScmApiErrorHandler.handleError(403, errorMessage, ErrorMetadata.builder().build());
+      errorHandler.handleError(203, errorMessage, ErrorMetadata.builder().build());
     } catch (Exception ex) {
       WingsException exception = ExceptionUtils.cause(ScmUnauthorizedException.class, ex);
       assertThat(exception).isNotNull();
@@ -72,24 +56,11 @@ public class GithubCreatePullRequestScmApiErrorHandlerTest extends GitSyncTestBa
   @Category(UnitTests.class)
   public void testHandleErrorOnResourceNotFoundResponse() {
     try {
-      githubCreatePullRequestScmApiErrorHandler.handleError(404, errorMessage, ErrorMetadata.builder().build());
+      errorHandler.handleError(404, errorMessage, ErrorMetadata.builder().build());
     } catch (Exception ex) {
       WingsException exception = ExceptionUtils.cause(ScmBadRequestException.class, ex);
       assertThat(exception).isNotNull();
-      assertThat(exception.getMessage()).isEqualTo(SCMExceptionErrorMessages.REPOSITORY_NOT_FOUND_ERROR);
-    }
-  }
-
-  @Test
-  @Owner(developers = MOHIT_GARG)
-  @Category(UnitTests.class)
-  public void testHandleErrorOnUnprocessableEntityResponse() {
-    try {
-      githubCreatePullRequestScmApiErrorHandler.handleError(422, errorMessage, ErrorMetadata.builder().build());
-    } catch (Exception ex) {
-      WingsException exception = ExceptionUtils.cause(ScmBadRequestException.class, ex);
-      assertThat(exception).isNotNull();
-      assertThat(exception.getMessage()).isEqualTo(SCMExceptionErrorMessages.CREATE_PULL_REQUEST_FAILURE);
+      assertThat(exception.getMessage()).isEqualTo(SCMExceptionErrorMessages.FILE_NOT_FOUND_ERROR);
     }
   }
 
@@ -98,7 +69,7 @@ public class GithubCreatePullRequestScmApiErrorHandlerTest extends GitSyncTestBa
   @Category(UnitTests.class)
   public void testHandleErrorWhenUnexpectedStatusCode() {
     try {
-      githubCreatePullRequestScmApiErrorHandler.handleError(405, errorMessage, ErrorMetadata.builder().build());
+      errorHandler.handleError(405, errorMessage, ErrorMetadata.builder().build());
     } catch (Exception ex) {
       WingsException exception = ExceptionUtils.cause(ScmUnexpectedException.class, ex);
       assertThat(exception).isNotNull();

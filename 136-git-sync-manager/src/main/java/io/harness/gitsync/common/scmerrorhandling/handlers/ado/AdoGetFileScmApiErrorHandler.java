@@ -5,12 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.scmerrorhandling.handlers.bitbucketserver;
+package io.harness.gitsync.common.scmerrorhandling.handlers.ado;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.gitsync.common.scmerrorhandling.handlers.ado.ScmErrorHints.FILE_NOT_FOUND;
 
-import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.NestedExceptionUtils;
+import io.harness.exception.SCMExceptionErrorMessages;
+import io.harness.exception.ScmBadRequestException;
 import io.harness.exception.ScmUnauthorizedException;
 import io.harness.exception.ScmUnexpectedException;
 import io.harness.exception.WingsException;
@@ -21,22 +22,28 @@ import io.harness.gitsync.common.scmerrorhandling.util.ErrorMessageFormatter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@OwnedBy(PL)
-public class BitbucketServerListRepoScmApiErrorHandler implements ScmApiErrorHandler {
-  public static final String LIST_REPO_FAILED_MESSAGE = "Listing repositories from Bitbucket failed. ";
+public class AdoGetFileScmApiErrorHandler implements ScmApiErrorHandler {
+  public static final String GET_FILE_REQUEST_FAILURE =
+      "The requested file<FILEPATH> could not be fetched from Azure. ";
 
   @Override
   public void handleError(int statusCode, String errorMessage, ErrorMetadata errorMetadata) throws WingsException {
     switch (statusCode) {
-      case 401:
-      case 403:
+      case 203:
         throw NestedExceptionUtils.hintWithExplanationException(
             ErrorMessageFormatter.formatMessage(ScmErrorHints.INVALID_CREDENTIALS, errorMetadata),
-            ErrorMessageFormatter.formatMessage(
-                LIST_REPO_FAILED_MESSAGE + ScmErrorExplanations.REPO_NOT_FOUND, errorMetadata),
+            ErrorMessageFormatter.formatMessage(GET_FILE_REQUEST_FAILURE
+                    + io.harness.gitsync.common.scmerrorhandling.handlers.ado.ScmErrorExplanations
+                          .INVALID_CONNECTOR_CREDS,
+                errorMetadata),
             new ScmUnauthorizedException(errorMessage));
+      case 404:
+        throw NestedExceptionUtils.hintWithExplanationException(
+            ErrorMessageFormatter.formatMessage(FILE_NOT_FOUND, errorMetadata),
+            ErrorMessageFormatter.formatMessage(ScmErrorExplanations.FILE_NOT_FOUND, errorMetadata),
+            new ScmBadRequestException(SCMExceptionErrorMessages.FILE_NOT_FOUND_ERROR));
       default:
-        log.error(String.format("Error while listing bitbucket(server) repos: [%s: %s]", statusCode, errorMessage));
+        log.error(String.format("Error while getting Azure file: [%s: %s]", statusCode, errorMessage));
         throw new ScmUnexpectedException(errorMessage);
     }
   }
