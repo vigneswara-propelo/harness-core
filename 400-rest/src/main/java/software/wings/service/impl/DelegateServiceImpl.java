@@ -4112,12 +4112,27 @@ public class DelegateServiceImpl implements DelegateService {
 
     Query<Delegate> delegateQuery = persistence.createQuery(Delegate.class)
                                         .filter(DelegateKeys.accountId, accountId)
-                                        .filter(DelegateKeys.delegateName, delegateName);
+                                        .filter(DelegateKeys.delegateName, delegateName)
+                                        .field(DelegateKeys.status)
+                                        .notEqual(DelegateInstanceStatus.DELETED);
     if (delegateQuery.get() != null) {
       throw new InvalidRequestException(
           "Delegate with same name exists. Delegate name must be unique across account.", USER);
     }
   }
+
+  @Override
+  public void markDelegatesAsDeletedOnDeletingOwner(String accountId, DelegateEntityOwner owner) {
+    Query<Delegate> query = persistence.createQuery(Delegate.class)
+                                .filter(DelegateKeys.accountId, accountId)
+                                .filter(DelegateKeys.owner, owner);
+
+    UpdateOperations<Delegate> updateOperations =
+        persistence.createUpdateOperations(Delegate.class).set(DelegateKeys.status, DelegateInstanceStatus.DELETED);
+
+    persistence.update(query, updateOperations);
+  }
+
   private String getDelegateXmx(String delegateType) {
     // TODO: ARPIT remove this community and null check once new delegate and watcher goes in prod.
     return (DeployVariant.isCommunity(deployVersion) || (delegateType != null && (delegateType.equals(DOCKER))))
