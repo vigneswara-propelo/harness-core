@@ -95,6 +95,7 @@ import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
 import io.harness.cvng.servicelevelobjective.services.api.SLODashboardService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOHealthIndicatorService;
+import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
@@ -188,6 +189,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Inject private ActivityService activityService;
   @Inject private OutboxService outboxService;
   @Inject private NotificationRuleCommonUtils notificationRuleCommonUtils;
+  @Inject private ServiceLevelIndicatorService serviceLevelIndicatorService;
 
   @Override
   public MonitoredServiceResponse create(String accountId, MonitoredServiceDTO monitoredServiceDTO) {
@@ -1200,7 +1202,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     healthSourceService.setHealthMonitoringFlag(projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
         projectParams.getProjectIdentifier(), monitoredService.getIdentifier(),
         monitoredService.getHealthSourceIdentifiers(), enable);
-
+    serviceLevelObjectiveService.setMonitoredServiceSLOsEnableFlag(
+        projectParams, monitoredService.getIdentifier(), enable);
+    serviceLevelIndicatorService.setMonitoredServiceSLIsEnableFlag(
+        projectParams, monitoredService.getIdentifier(), enable);
     hPersistence.update(
         hPersistence.createQuery(MonitoredService.class).filter(MonitoredServiceKeys.uuid, monitoredService.getUuid()),
         hPersistence.createUpdateOperations(MonitoredService.class).set(MonitoredServiceKeys.enabled, enable));
