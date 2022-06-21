@@ -6365,7 +6365,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     return PreviousApprovalDetails.builder().previousApprovals(emptyList()).size(0).build();
   }
 
-   List<String> getPreviousApprovalIdsWithSameServicesAndInfraForWorkflow(WorkflowExecution currentExecution,
+  List<String> getPreviousApprovalIdsWithSameServicesAndInfraForWorkflow(WorkflowExecution currentExecution,
       List<WorkflowExecution> pausedExecutions, List<String> serviceIds, List<String> infraIds,
       String currentApprovalId) {
     List<WorkflowExecution> executionsWithSameServiceAndInfra =

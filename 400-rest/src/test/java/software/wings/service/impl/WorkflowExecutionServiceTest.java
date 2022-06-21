@@ -54,28 +54,6 @@ import static software.wings.sm.InstanceStatusSummary.InstanceStatusSummaryBuild
 import static software.wings.sm.StateExecutionInstance.Builder.aStateExecutionInstance;
 import static software.wings.sm.StateMachine.StateMachineBuilder.aStateMachine;
 import static software.wings.sm.StateType.ARTIFACT_COLLECT_LOOP_STATE;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static software.wings.utils.WingsTestConstants.ACCOUNT1_ID;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_NAME;
@@ -108,6 +86,28 @@ import static software.wings.utils.WingsTestConstants.WORKFLOW_EXECUTION_ID;
 import static software.wings.utils.WingsTestConstants.WORKFLOW_ID;
 import static software.wings.utils.WingsTestConstants.WORKFLOW_NAME;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
@@ -129,7 +129,6 @@ import io.harness.rule.Owner;
 import io.harness.tasks.ResponseData;
 import io.harness.waiter.WaitNotifyEngine;
 
-import org.mockito.Spy;
 import software.wings.WingsBaseTest;
 import software.wings.api.ApprovalStateExecutionData;
 import software.wings.api.DeploymentType;
@@ -219,6 +218,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mongodb.morphia.query.FieldEnd;
 import org.mongodb.morphia.query.FindOptions;
 import org.mongodb.morphia.query.MorphiaIterator;
@@ -237,7 +237,8 @@ import org.mongodb.morphia.query.UpdateResults;
 @TargetModule(HarnessModule._870_CG_ORCHESTRATION)
 public class WorkflowExecutionServiceTest extends WingsBaseTest {
   @InjectMocks @Inject private WorkflowExecutionService workflowExecutionService;
-  @InjectMocks @Spy
+  @InjectMocks
+  @Spy
   private software.wings.service.impl.WorkflowExecutionServiceImpl workflowExecutionServiceSpy =
       spy(software.wings.service.impl.WorkflowExecutionServiceImpl.class);
 
@@ -2058,7 +2059,9 @@ public class WorkflowExecutionServiceTest extends WingsBaseTest {
     assertThat(((ApprovalStateExecutionData) captor1.getValue()).getStatus()).isEqualTo(SUCCESS);
     assertThat(((ApprovalStateExecutionData) captor2.getValue()).getStatus()).isEqualTo(REJECTED);
     assertThat(((ApprovalStateExecutionData) captor3.getValue()).getStatus()).isEqualTo(REJECTED);
-    assertThat(((ApprovalStateExecutionData) captor2.getValue()).getComments()).isEqualTo("Pipeline rejected when the following execution was approved: https://dummyurl/#/account/ACCOUNT_ID/app/APP_ID/pipeline-execution/WORKFLOW_EXECUTION_ID/workflow-execution/undefined/details");
+    assertThat(((ApprovalStateExecutionData) captor2.getValue()).getComments())
+        .isEqualTo(
+            "Pipeline rejected when the following execution was approved: https://dummyurl/#/account/ACCOUNT_ID/app/APP_ID/pipeline-execution/WORKFLOW_EXECUTION_ID/workflow-execution/undefined/details");
     UserThreadLocal.unset();
   }
 
@@ -2134,43 +2137,47 @@ public class WorkflowExecutionServiceTest extends WingsBaseTest {
   public void testGetPreviousApprovalDetailsForWorkflow() {
     String approvalStateIdentifier = generateUuid();
     WorkflowExecution currentWorkflowExecution =
-            builder()
-                    .uuid(WORKFLOW_EXECUTION_ID)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
-                    .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
-                    .appId(APP_ID)
-                    .build();
+        builder()
+            .uuid(WORKFLOW_EXECUTION_ID)
+            .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
+            .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
+            .appId(APP_ID)
+            .build();
 
     WorkflowExecution previousWorkflowExecution1 =
-            builder()
-                    .appId(APP_ID)
-                    .uuid(WORKFLOW_EXECUTION_ID+2)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
-                    .serviceIds(asList(SERVICE1_ID))
-                    .build();
+        builder()
+            .appId(APP_ID)
+            .uuid(WORKFLOW_EXECUTION_ID + 2)
+            .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
+            .serviceIds(asList(SERVICE1_ID))
+            .build();
 
-    WorkflowExecution previousWorkflowExecution2 =
-            builder()
-                    .appId(APP_ID)
-                    .uuid(WORKFLOW_EXECUTION_ID+3)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID))
-                    .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
-                    .build();
+    WorkflowExecution previousWorkflowExecution2 = builder()
+                                                       .appId(APP_ID)
+                                                       .uuid(WORKFLOW_EXECUTION_ID + 3)
+                                                       .infraDefinitionIds(asList(INFRA_DEFINITION_ID))
+                                                       .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
+                                                       .build();
 
     WorkflowExecution previousWorkflowExecution3 =
-            builder()
-                    .appId(APP_ID)
-                    .uuid(WORKFLOW_EXECUTION_ID+4)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
-                    .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
-                    .build();
-    ApprovalStateExecutionData approvalStateExecutionData = ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build();
+        builder()
+            .appId(APP_ID)
+            .uuid(WORKFLOW_EXECUTION_ID + 4)
+            .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
+            .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
+            .build();
+    ApprovalStateExecutionData approvalStateExecutionData =
+        ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build();
     approvalStateExecutionData.setApprovalStateIdentifier(approvalStateIdentifier);
-    doReturn(asList(approvalStateExecutionData, ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build())).when(workflowExecutionServiceSpy).fetchApprovalStateExecutionsDataFromWorkflowExecution(any(), any());
-
+    doReturn(asList(approvalStateExecutionData,
+                 ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build()))
+        .when(workflowExecutionServiceSpy)
+        .fetchApprovalStateExecutionsDataFromWorkflowExecution(any(), any());
 
     List<String> approvalIds = workflowExecutionServiceSpy.getPreviousApprovalIdsWithSameServicesAndInfraForWorkflow(
-            currentWorkflowExecution, asList(previousWorkflowExecution1, previousWorkflowExecution2, previousWorkflowExecution3), asList(SERVICE1_ID, SERVICE2_ID), asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2), APPROVAL_EXECUTION_ID);
+        currentWorkflowExecution,
+        asList(previousWorkflowExecution1, previousWorkflowExecution2, previousWorkflowExecution3),
+        asList(SERVICE1_ID, SERVICE2_ID), asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2), APPROVAL_EXECUTION_ID);
     assertThat(approvalIds).hasSize(1);
     assertThat(approvalIds.get(0)).isEqualTo(APPROVAL_EXECUTION_ID);
   }
@@ -2181,47 +2188,61 @@ public class WorkflowExecutionServiceTest extends WingsBaseTest {
   public void testShouldNotGetApprovalIdsForWorkflowInSamePipelineExecution() {
     String approvalStateIdentifier = generateUuid();
     WorkflowExecution currentWorkflowExecution =
-            builder()
-                    .uuid(WORKFLOW_EXECUTION_ID)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
-                    .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
-                    .pipelineExecutionId(PIPELINE_EXECUTION_ID)
-                    .appId(APP_ID)
-                    .build();
+        builder()
+            .uuid(WORKFLOW_EXECUTION_ID)
+            .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
+            .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
+            .pipelineExecutionId(PIPELINE_EXECUTION_ID)
+            .appId(APP_ID)
+            .build();
 
     WorkflowExecution previousWorkflowExecution1 =
-            builder()
-                    .appId(APP_ID)
-                    .uuid(WORKFLOW_EXECUTION_ID+2)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
-                    .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
-                    .pipelineExecutionId(PIPELINE_EXECUTION_ID)
-                    .build();
+        builder()
+            .appId(APP_ID)
+            .uuid(WORKFLOW_EXECUTION_ID + 2)
+            .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
+            .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
+            .pipelineExecutionId(PIPELINE_EXECUTION_ID)
+            .build();
 
     WorkflowExecution previousWorkflowExecution2 =
-            builder()
-                    .appId(APP_ID)
-                    .uuid(WORKFLOW_EXECUTION_ID+3)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID+2))
-                    .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
-                    .build();
+        builder()
+            .appId(APP_ID)
+            .uuid(WORKFLOW_EXECUTION_ID + 3)
+            .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
+            .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
+            .build();
 
     WorkflowExecution previousWorkflowExecution3 =
-            builder()
-                    .appId(APP_ID)
-                    .uuid(WORKFLOW_EXECUTION_ID+4)
-                    .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
-                    .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
-                    .build();
-    ApprovalStateExecutionData approvalStateExecutionData = ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build();
+        builder()
+            .appId(APP_ID)
+            .uuid(WORKFLOW_EXECUTION_ID + 4)
+            .infraDefinitionIds(asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2))
+            .serviceIds(asList(SERVICE1_ID, SERVICE2_ID))
+            .build();
+    ApprovalStateExecutionData approvalStateExecutionData =
+        ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build();
     approvalStateExecutionData.setApprovalStateIdentifier(approvalStateIdentifier);
-    doReturn(asList(approvalStateExecutionData, ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID+4).build())).when(workflowExecutionServiceSpy).fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID);
-    doReturn(asList(approvalStateExecutionData, ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID+3).build())).when(workflowExecutionServiceSpy).fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID+2);
-    doReturn(asList(ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID+2).build())).when(workflowExecutionServiceSpy).fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID+3);
-    doReturn(asList(approvalStateExecutionData, ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build())).when(workflowExecutionServiceSpy).fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID+4);
+    doReturn(asList(approvalStateExecutionData,
+                 ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID + 4).build()))
+        .when(workflowExecutionServiceSpy)
+        .fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID);
+    doReturn(asList(approvalStateExecutionData,
+                 ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID + 3).build()))
+        .when(workflowExecutionServiceSpy)
+        .fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID + 2);
+    doReturn(asList(ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID + 2).build()))
+        .when(workflowExecutionServiceSpy)
+        .fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID + 3);
+    doReturn(asList(approvalStateExecutionData,
+                 ApprovalStateExecutionData.builder().approvalId(APPROVAL_EXECUTION_ID).build()))
+        .when(workflowExecutionServiceSpy)
+        .fetchApprovalStateExecutionsDataFromWorkflowExecution(APP_ID, WORKFLOW_EXECUTION_ID + 4);
 
     List<String> approvalIds = workflowExecutionServiceSpy.getPreviousApprovalIdsWithSameServicesAndInfraForWorkflow(
-            currentWorkflowExecution, asList(previousWorkflowExecution1, previousWorkflowExecution2, previousWorkflowExecution3), asList(SERVICE1_ID, SERVICE2_ID), asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2), APPROVAL_EXECUTION_ID);
+        currentWorkflowExecution,
+        asList(previousWorkflowExecution1, previousWorkflowExecution2, previousWorkflowExecution3),
+        asList(SERVICE1_ID, SERVICE2_ID), asList(INFRA_DEFINITION_ID, INFRA_DEFINITION_ID + 2), APPROVAL_EXECUTION_ID);
     assertThat(approvalIds).hasSize(1);
     assertThat(approvalIds.get(0)).isEqualTo(APPROVAL_EXECUTION_ID);
   }
