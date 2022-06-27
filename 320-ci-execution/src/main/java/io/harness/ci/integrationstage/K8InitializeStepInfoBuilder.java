@@ -18,6 +18,7 @@ import static io.harness.common.CIExecutionConstants.ADDON_VOLUME;
 import static io.harness.common.CIExecutionConstants.ADDON_VOL_MOUNT_PATH;
 import static io.harness.common.CIExecutionConstants.DEFAULT_CONTAINER_CPU_POV;
 import static io.harness.common.CIExecutionConstants.DEFAULT_CONTAINER_MEM_POV;
+import static io.harness.common.CIExecutionConstants.ETC_DIR;
 import static io.harness.common.CIExecutionConstants.PORT_STARTING_RANGE;
 import static io.harness.common.CIExecutionConstants.PVC_DEFAULT_STORAGE_CLASS;
 import static io.harness.common.CIExecutionConstants.SHARED_VOLUME_PREFIX;
@@ -261,8 +262,8 @@ public class K8InitializeStepInfoBuilder implements InitializeStepInfoBuilder {
         }
 
         String volumeName = format("%s%d", SHARED_VOLUME_PREFIX, index);
-        if (path.equals(STEP_MOUNT_PATH) || path.equals(ADDON_VOL_MOUNT_PATH)) {
-          throw new InvalidRequestException(format("Shared path: %s is a reserved keyword ", path));
+        if (path.equals(STEP_MOUNT_PATH) || path.equals(ADDON_VOL_MOUNT_PATH) || path.equals(ETC_DIR)) {
+          throw new InvalidRequestException(format("Shared path: %s is a reserved keyword", path));
         }
         volumeToMountPath.put(volumeName, path);
         index++;
