@@ -45,7 +45,7 @@ for PROJ in ${PROJSPLIT[@]}
       echo "Skipping $PROJ - it has been archived or is not applicable"
     else
       # Call CURL and store http response code into $response
-      response=$(curl -X POST https://harness.atlassian.net/rest/api/2/version/ --write-out '%{http_code}' --output /dev/null --silent --user ${JIRA_USERNAME}:${JIRA_PASSWORD} -H "Content-Type: application/json" -d '{
+      response=$(curl -v -X POST https://harness.atlassian.net/rest/api/2/version/ --write-out '%{http_code}' --output /dev/null --silent --user ${JIRA_USERNAME}:${JIRA_PASSWORD} -H "Content-Type: application/json" -d '{
         "name": "'"$NEXT_VERSION"'",
         "releaseDate": "'"$RELDATE"'",
         "archived": false,
