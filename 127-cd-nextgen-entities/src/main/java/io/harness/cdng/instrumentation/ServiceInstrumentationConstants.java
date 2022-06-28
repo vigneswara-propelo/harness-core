@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.instrumentation;
+package io.harness.cdng.instrumentation;
 
 public final class ServiceInstrumentationConstants {
   public static String ACTIVE_SERVICES_COUNT_EVENT = "cd_active_services_count";

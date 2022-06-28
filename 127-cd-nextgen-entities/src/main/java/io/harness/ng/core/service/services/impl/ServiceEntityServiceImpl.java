@@ -7,7 +7,6 @@
 
 package io.harness.ng.core.service.services.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.beans.FeatureName.HARD_DELETE_ENTITIES;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
@@ -15,6 +14,8 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER_SRE;
 import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
 import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_POLICY;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 import io.harness.EntityType;
 import io.harness.annotations.dev.OwnedBy;

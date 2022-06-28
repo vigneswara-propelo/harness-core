@@ -184,7 +184,7 @@ public class K8InitializeStepInfoBuilderTest extends CIExecutionTestBase {
                                K8sDirectInfraYaml.builder()
                                    .spec(K8sDirectInfraYamlSpec.builder().volumes(new ParameterField<>()).build())
                                    .build(),
-            null, stageElementConfig.getStageType().getExecution().getSteps(), ambiance))
+                               null, stageElementConfig.getStageType().getExecution().getSteps(), ambiance))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(String.format("Shared path: %s is a reserved keyword", path));
   }
