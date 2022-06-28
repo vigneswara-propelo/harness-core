@@ -99,6 +99,7 @@ public class YamlSchemaValidator {
       List<YamlSchemaErrorDTO> errorDTOS = new ArrayList<>();
       for (ValidationMessage validationMessage : processValidationMessages) {
         errorDTOS.add(YamlSchemaErrorDTO.builder()
+                          .messageWithFQN(validationMessage.getMessage())
                           .message(removeFqnFromErrorMessage(validationMessage.getMessage()))
                           .stageInfo(SchemaValidationUtils.getStageErrorInfo(validationMessage.getPath(), jsonNode))
                           .stepInfo(SchemaValidationUtils.getStepErrorInfo(validationMessage.getPath(), jsonNode))

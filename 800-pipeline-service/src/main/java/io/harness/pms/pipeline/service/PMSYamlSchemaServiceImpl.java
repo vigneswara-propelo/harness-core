@@ -26,8 +26,7 @@ import io.harness.beans.FeatureName;
 import io.harness.encryption.Scope;
 import io.harness.exception.InvalidYamlException;
 import io.harness.exception.JsonSchemaException;
-import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorDTO;
-import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorWrapperDTO;
+import io.harness.exception.JsonSchemaValidationException;
 import io.harness.jackson.JsonNodeUtils;
 import io.harness.licensing.remote.NgLicenseHttpClient;
 import io.harness.manage.ManagedExecutorService;
@@ -58,7 +57,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -136,12 +134,7 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
       throw e;
     } catch (Exception ex) {
       log.error(ex.getMessage(), ex);
-      YamlSchemaErrorWrapperDTO errorWrapperDTO =
-          YamlSchemaErrorWrapperDTO.builder()
-              .schemaErrors(Collections.singletonList(
-                  YamlSchemaErrorDTO.builder().message(ex.getMessage()).fqn("$.pipeline").build()))
-              .build();
-      throw new io.harness.yaml.validator.InvalidYamlException(ex.getMessage(), ex, errorWrapperDTO);
+      throw new JsonSchemaValidationException(ex.getMessage(), ex);
     }
   }
 
