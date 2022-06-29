@@ -370,7 +370,7 @@ public class DeploymentStageVariableCreator extends AbstractStageVariableCreator
           environmentYamlV2.getInfrastructureDefinitions();
       if (EmptyPredicate.isNotEmpty(infraStructureDefinitionYamls)) {
         return infraStructureDefinitionYamls.stream()
-            .map(InfraStructureDefinitionYaml::getRef)
+            .map(InfraStructureDefinitionYaml::getIdentifier)
             .collect(Collectors.toList());
       }
     }
