@@ -364,7 +364,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("Helm Deploy")
             .setType(StepSpecTypeConstants.HELM_DEPLOY)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("Helm").setFolderPath("Helm").build())
-            .setFeatureFlag(FeatureName.NG_NATIVE_HELM.name())
             .build();
 
     StepInfo helmRollback =
@@ -372,7 +371,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("Helm Rollback")
             .setType(StepSpecTypeConstants.HELM_ROLLBACK)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("Helm").setFolderPath("Helm").build())
-            .setFeatureFlag(FeatureName.NG_NATIVE_HELM.name())
             .build();
 
     StepInfo executeCommand =
