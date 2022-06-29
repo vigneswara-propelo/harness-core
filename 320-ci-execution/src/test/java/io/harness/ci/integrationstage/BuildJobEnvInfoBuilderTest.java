@@ -7,8 +7,8 @@
 
 package io.harness.ci.integrationstage;
 
-import static io.harness.ci.common.CIExecutionConstants.OSX_STEP_MOUNT_PATH;
-import static io.harness.ci.common.CIExecutionConstants.STEP_WORK_DIR;
+import static io.harness.ci.commonconstants.CIExecutionConstants.OSX_STEP_MOUNT_PATH;
+import static io.harness.ci.commonconstants.CIExecutionConstants.STEP_WORK_DIR;
 import static io.harness.rule.OwnerRule.ALEKSANDAR;
 import static io.harness.rule.OwnerRule.SHUBHAM;
 
