@@ -14,6 +14,7 @@ import io.harness.ng.core.infrastructure.InfrastructureKind;
 import io.harness.steps.environment.EnvironmentOutcome;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.harness.yaml.core.VariableExpression;
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.data.annotation.TypeAlias;
@@ -34,7 +35,7 @@ public class SshWinRmAwsInfrastructureOutcome implements InfrastructureOutcome {
   private String autoScalingGroupName;
   private AwsInstanceFilter awsInstanceFilter;
 
-  private EnvironmentOutcome environment;
+  @VariableExpression(skipVariableExpression = true) private EnvironmentOutcome environment;
   private String infrastructureKey;
 
   @Override
