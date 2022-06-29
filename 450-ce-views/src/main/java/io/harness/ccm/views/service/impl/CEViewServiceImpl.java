@@ -345,8 +345,8 @@ public class CEViewServiceImpl implements CEViewService {
 
   private List<QLCEView> getQLCEViewsFromCEViews(List<CEView> viewList, List<CEViewFolder> folderList) {
     List<QLCEView> graphQLViewObjList = new ArrayList<>();
-    Map<String, String> folderIdToNameMapping = folderList.stream()
-            .collect(Collectors.toMap(CEViewFolder::getUuid, CEViewFolder::getName));
+    Map<String, String> folderIdToNameMapping =
+        folderList.stream().collect(Collectors.toMap(CEViewFolder::getUuid, CEViewFolder::getName));
     for (CEView view : viewList) {
       List<CEReportSchedule> reportSchedules =
           ceReportScheduleDao.getReportSettingByView(view.getUuid(), view.getAccountId());
@@ -356,29 +356,30 @@ public class CEViewServiceImpl implements CEViewService {
         vChartType = view.getViewVisualization().getChartType();
       }
       ViewField groupBy = view.getViewVisualization().getGroupBy();
-      graphQLViewObjList.add(QLCEView.builder()
-                                 .id(view.getUuid())
-                                 .name(view.getName())
-                                 .folderId(view.getFolderId())
-                                 .folderName((view.getFolderId() != null) ? folderIdToNameMapping.get(view.getFolderId()) : null)
-                                 .totalCost(view.getTotalCost())
-                                 .createdBy(null != view.getCreatedBy() ? view.getCreatedBy().getEmail() : "")
-                                 .createdAt(view.getCreatedAt())
-                                 .lastUpdatedAt(view.getLastUpdatedAt())
-                                 .chartType(vChartType)
-                                 .viewType(view.getViewType())
-                                 .viewState(view.getViewState())
-                                 .groupBy(QLCEViewField.builder()
-                                              .fieldId(groupBy.getFieldId())
-                                              .fieldName(groupBy.getFieldName())
-                                              .identifier(groupBy.getIdentifier())
-                                              .identifierName(groupBy.getIdentifier().getDisplayName())
-                                              .build())
-                                 .timeRange(view.getViewTimeRange().getViewTimeRangeType())
-                                 .dataSources(view.getDataSources())
-                                 .viewPreferences(view.getViewPreferences())
-                                 .isReportScheduledConfigured(!reportSchedules.isEmpty())
-                                 .build());
+      graphQLViewObjList.add(
+          QLCEView.builder()
+              .id(view.getUuid())
+              .name(view.getName())
+              .folderId(view.getFolderId())
+              .folderName((view.getFolderId() != null) ? folderIdToNameMapping.get(view.getFolderId()) : null)
+              .totalCost(view.getTotalCost())
+              .createdBy(null != view.getCreatedBy() ? view.getCreatedBy().getEmail() : "")
+              .createdAt(view.getCreatedAt())
+              .lastUpdatedAt(view.getLastUpdatedAt())
+              .chartType(vChartType)
+              .viewType(view.getViewType())
+              .viewState(view.getViewState())
+              .groupBy(QLCEViewField.builder()
+                           .fieldId(groupBy.getFieldId())
+                           .fieldName(groupBy.getFieldName())
+                           .identifier(groupBy.getIdentifier())
+                           .identifierName(groupBy.getIdentifier().getDisplayName())
+                           .build())
+              .timeRange(view.getViewTimeRange().getViewTimeRangeType())
+              .dataSources(view.getDataSources())
+              .viewPreferences(view.getViewPreferences())
+              .isReportScheduledConfigured(!reportSchedules.isEmpty())
+              .build());
     }
     return graphQLViewObjList;
   }
