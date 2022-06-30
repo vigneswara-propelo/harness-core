@@ -136,7 +136,7 @@ public class StageStrategyUtils {
   public void validateStrategyNode(StrategyConfig config) {
     if (config.getMatrixConfig() != null) {
       Map<String, AxisConfig> axisConfig = ((MatrixConfig) config.getMatrixConfig()).getAxes();
-      if (axisConfig.size() == 0) {
+      if (axisConfig == null || axisConfig.size() == 0) {
         throw new InvalidYamlException("No Axes defined in matrix. Please define at least one axis");
       }
       if (!ParameterField.isBlank(((MatrixConfig) config.getMatrixConfig()).getExclude())
