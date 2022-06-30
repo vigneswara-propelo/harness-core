@@ -289,7 +289,8 @@ public class JiraTaskTest extends CategoryTest {
             .build();
     DelegateResponseData delegateResponseData = spyJiraTask.run(new Object[] {taskParameters});
     verify(jiraNGClient).getUsers(taskParameters.getUserQuery(), null, null);
-    verify(jiraNGClient).createIssue(eq(taskParameters.getProject()), eq(taskParameters.getIssueType()), anyMap(), anyBoolean());
+    verify(jiraNGClient)
+        .createIssue(eq(taskParameters.getProject()), eq(taskParameters.getIssueType()), anyMap(), anyBoolean());
     assertThat(delegateResponseData).isEqualToComparingFieldByField(jiraExecutionData);
   }
   @Test
