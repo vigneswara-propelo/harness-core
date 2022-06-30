@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 @OwnedBy(CI)
-public class GitlabIssueCommentTriggerFilter implements TriggerFilter {
+public class BitbucketPRCommentTriggerFilter implements TriggerFilter {
   private PayloadConditionsTriggerFilter payloadConditionsTriggerFilter;
   private WebhookParserSCMService webhookParserSCMService;
 

@@ -5,37 +5,37 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngtriggers.beans.source.webhook.v2.gitlab.event;
+package io.harness.ngtriggers.beans.source.webhook.v2.bitbucket.event;
 
 import static io.harness.annotations.dev.HarnessTeam.CI;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.ngtriggers.beans.source.webhook.v2.gitlab.event.GitlabTriggerEvent.ISSUE_COMMENT;
+import static io.harness.ngtriggers.beans.source.webhook.v2.bitbucket.event.BitbucketTriggerEvent.PR_COMMENT;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ngtriggers.beans.source.webhook.v2.TriggerEventDataCondition;
+import io.harness.ngtriggers.beans.source.webhook.v2.bitbucket.action.BitbucketPRCommentAction;
 import io.harness.ngtriggers.beans.source.webhook.v2.git.GitAction;
 import io.harness.ngtriggers.beans.source.webhook.v2.git.GitEvent;
-import io.harness.ngtriggers.beans.source.webhook.v2.gitlab.action.GitlabIssueCommentAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.experimental.FieldDefaults;
 
-@Data
+@Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(CI)
-public class GitlabIssueCommentSpec implements GitlabEventSpec {
+public class BitbucketPRCommentSpec implements BitbucketEventSpec {
   String connectorRef;
   String repoName;
-  List<GitlabIssueCommentAction> actions;
+  List<BitbucketPRCommentAction> actions;
   List<TriggerEventDataCondition> headerConditions;
   List<TriggerEventDataCondition> payloadConditions;
   String jexlCondition;
@@ -53,7 +53,7 @@ public class GitlabIssueCommentSpec implements GitlabEventSpec {
 
   @Override
   public GitEvent fetchEvent() {
-    return ISSUE_COMMENT;
+    return PR_COMMENT;
   }
 
   @Override
