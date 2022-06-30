@@ -37,7 +37,6 @@ import io.harness.cdng.creator.plan.service.ServicePlanCreatorV2;
 import io.harness.cdng.creator.plan.stage.DeploymentStagePMSPlanCreatorV2;
 import io.harness.cdng.creator.plan.steps.CDPMSStepFilterJsonCreator;
 import io.harness.cdng.creator.plan.steps.CDPMSStepFilterJsonCreatorV2;
-import io.harness.cdng.creator.plan.steps.CDPMSStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.CloudformationCreateStackStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.CloudformationDeleteStackStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.CloudformationRollbackStackStepPlanCreator;
@@ -131,7 +130,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new GitOpsMergePRStepPlanCreatorV2());
     planCreators.add(new DeploymentStagePMSPlanCreatorV2());
     planCreators.add(new ServicePlanCreatorV2());
-    planCreators.add(new CDPMSStepPlanCreator());
     planCreators.add(new K8sCanaryStepPlanCreator());
     planCreators.add(new K8sApplyStepPlanCreator());
     planCreators.add(new K8sBlueGreenStepPlanCreator());
@@ -147,7 +145,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new TerraformRollbackStepPlanCreator());
     planCreators.add(new HelmDeployStepPlanCreatorV2());
     planCreators.add(new HelmRollbackStepPlanCreatorV2());
-    planCreators.add(new HelmRollbackStepPlanCreator());
     planCreators.add(new CDExecutionPMSPlanCreator());
     planCreators.add(new ExecutionStepsRollbackPMSPlanCreator());
     planCreators.add(new ServicePlanCreator());
