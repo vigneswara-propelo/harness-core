@@ -33,6 +33,7 @@ public class AzureWebAppInfrastructureOutcome extends InfrastructureDetailsAbstr
   String resourceGroup;
   String webApp;
   String deploymentSlot;
+  String targetSlot;
 
   @Override
   public String getKind() {

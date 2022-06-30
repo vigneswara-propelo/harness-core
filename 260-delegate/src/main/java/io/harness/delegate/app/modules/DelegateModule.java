@@ -174,6 +174,7 @@ import io.harness.delegate.task.azure.appservice.webapp.handler.AzureWebAppSlotD
 import io.harness.delegate.task.azure.appservice.webapp.handler.AzureWebAppSlotSwapRequestHandler;
 import io.harness.delegate.task.azure.appservice.webapp.handler.AzureWebAppTrafficShiftRequestHandler;
 import io.harness.delegate.task.azure.appservice.webapp.ng.AzureWebAppRequestType;
+import io.harness.delegate.task.azure.appservice.webapp.ng.request.AzureWebAppTaskRequest;
 import io.harness.delegate.task.azure.arm.AzureARMTaskParameters;
 import io.harness.delegate.task.azure.resource.operation.AzureResourceProvider;
 import io.harness.delegate.task.cek8s.CEKubernetesTestConnectionDelegateTask;
@@ -1285,8 +1286,9 @@ public class DelegateModule extends AbstractModule {
         .to(ServerlessAwsLambdaPrepareRollbackCommandTaskHandler.class);
 
     // Azure Web App NG
-    MapBinder<String, AzureWebAppRequestHandler> azureWebAppRequestTypeToRequestHandlerMap =
-        MapBinder.newMapBinder(binder(), String.class, AzureWebAppRequestHandler.class);
+    MapBinder<String, AzureWebAppRequestHandler<? extends AzureWebAppTaskRequest>>
+        azureWebAppRequestTypeToRequestHandlerMap = MapBinder.newMapBinder(binder(), new TypeLiteral<String>() {},
+            new TypeLiteral<AzureWebAppRequestHandler<? extends AzureWebAppTaskRequest>>() {});
     azureWebAppRequestTypeToRequestHandlerMap.addBinding(AzureWebAppRequestType.SLOT_DEPLOYMENT.name())
         .to(AzureWebAppSlotDeploymentRequestHandler.class);
     azureWebAppRequestTypeToRequestHandlerMap.addBinding(AzureWebAppRequestType.ROLLBACK.name())

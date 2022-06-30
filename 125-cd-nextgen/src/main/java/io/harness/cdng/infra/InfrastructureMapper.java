@@ -13,6 +13,7 @@ import static java.lang.String.format;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.azure.utility.AzureResourceUtility;
 import io.harness.cdng.infra.beans.AwsInstanceFilter;
 import io.harness.cdng.infra.beans.AzureWebAppInfrastructureOutcome;
 import io.harness.cdng.infra.beans.InfrastructureDetailsAbstract;
@@ -203,17 +204,24 @@ public class InfrastructureMapper {
 
       case InfrastructureKind.AZURE_WEB_APP:
         AzureWebAppInfrastructure azureWebAppInfrastructure = (AzureWebAppInfrastructure) infrastructure;
+        String targetSlot = !ParameterField.isBlank(azureWebAppInfrastructure.getTargetSlot())
+            ? azureWebAppInfrastructure.getTargetSlot().getValue()
+            : null;
         validateAzureWebAppInfrastructure(azureWebAppInfrastructure);
         AzureWebAppInfrastructureOutcome azureWebAppInfrastructureOutcome =
             AzureWebAppInfrastructureOutcome.builder()
                 .connectorRef(azureWebAppInfrastructure.getConnectorRef().getValue())
                 .webApp(azureWebAppInfrastructure.getWebApp().getValue())
-                .deploymentSlot(azureWebAppInfrastructure.getDeploymentSlot().getValue())
+                .deploymentSlot(
+                    AzureResourceUtility.fixDeploymentSlotName(azureWebAppInfrastructure.getDeploymentSlot().getValue(),
+                        azureWebAppInfrastructure.getWebApp().getValue()))
                 .environment(environmentOutcome)
                 .infrastructureKey(InfrastructureKey.generate(
                     service, environmentOutcome, azureWebAppInfrastructure.getInfrastructureKeyValues()))
                 .subscription(azureWebAppInfrastructure.getSubscriptionId().getValue())
                 .resourceGroup(azureWebAppInfrastructure.getResourceGroup().getValue())
+                .targetSlot(AzureResourceUtility.fixDeploymentSlotName(
+                    targetSlot, azureWebAppInfrastructure.getWebApp().getValue()))
                 .build();
         setInfraIdentifierAndName(azureWebAppInfrastructureOutcome, azureWebAppInfrastructure.getInfraIdentifier(),
             azureWebAppInfrastructure.getInfraName());
