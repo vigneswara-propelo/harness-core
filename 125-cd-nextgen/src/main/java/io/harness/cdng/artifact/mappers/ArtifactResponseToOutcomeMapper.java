@@ -122,7 +122,7 @@ public class ArtifactResponseToOutcomeMapper {
       S3ArtifactDelegateResponse s3ArtifactDelegateResponse, boolean useDelegateResponse) {
     return S3ArtifactOutcome.builder()
         .bucketName(amazonS3ArtifactConfig.getBucketName().getValue())
-        .filePath(amazonS3ArtifactConfig.getArtifactPath().getValue())
+        .filePath(amazonS3ArtifactConfig.getFilePath().getValue())
         .connectorRef(amazonS3ArtifactConfig.getConnectorRef().getValue())
         .type(ArtifactSourceType.AMAZONS3.getDisplayName())
         .identifier(amazonS3ArtifactConfig.getIdentifier())
