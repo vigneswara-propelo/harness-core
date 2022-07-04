@@ -114,6 +114,7 @@ import io.harness.delegate.task.helm.HelmFetchFileConfig;
 import io.harness.delegate.task.helm.HelmFetchFileResult;
 import io.harness.delegate.task.k8s.K8sInfraDelegateConfig;
 import io.harness.delegate.task.ssh.SshInfraDelegateConfig;
+import io.harness.delegate.task.ssh.WinRmInfraDelegateConfig;
 import io.harness.encryption.SecretRefData;
 import io.harness.eraro.Level;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
@@ -687,6 +688,10 @@ public class CDStepHelper {
 
   public SshInfraDelegateConfig getSshInfraDelegateConfig(InfrastructureOutcome infrastructure, Ambiance ambiance) {
     return sshEntityHelper.getSshInfraDelegateConfig(infrastructure, ambiance);
+  }
+
+  public WinRmInfraDelegateConfig getWinRmInfraDelegateConfig(InfrastructureOutcome infrastructure, Ambiance ambiance) {
+    return sshEntityHelper.getWinRmInfraDelegateConfig(infrastructure, ambiance);
   }
 
   public boolean isUseLatestKustomizeVersion(String accountId) {
