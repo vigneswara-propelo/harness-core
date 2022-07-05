@@ -667,7 +667,8 @@
             "shell": {
               "type": "string",
               "enum": [
-                "Bash"
+                "Bash",
+                "PowerShell"
               ]
             },
             "source": {
@@ -2568,7 +2569,8 @@
             "shell": {
               "type": "string",
               "enum": [
-                "Bash"
+                "Bash",
+                "PowerShell"
               ]
             },
             "source": {
