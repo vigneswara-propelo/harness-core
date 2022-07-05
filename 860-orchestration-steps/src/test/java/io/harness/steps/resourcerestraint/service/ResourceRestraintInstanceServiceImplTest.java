@@ -52,14 +52,17 @@ import io.harness.steps.resourcerestraint.beans.ResourceRestraintInstance;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import io.fabric8.utils.Lists;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 
 @OwnedBy(HarnessTeam.PIPELINE)
@@ -290,6 +293,28 @@ public class ResourceRestraintInstanceServiceImplTest extends OrchestrationSteps
         HoldingScope.valueOf(instance.getReleaseEntityType()), instance.getReleaseEntityId(),
         instance.getResourceUnit());
     assertThat(maxOrder).isEqualTo(2);
+  }
+
+  /**
+   * Verify that the right repository access is made during service execution.
+   */
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldGetAllCurrentlyAcquiredPermitsVerifyRepositoryUsage() throws IllegalAccessException {
+    ResourceRestraintInstanceServiceImpl service = new ResourceRestraintInstanceServiceImpl();
+    ResourceRestraintInstanceRepository repository = Mockito.mock(ResourceRestraintInstanceRepository.class);
+
+    Field field = FieldUtils.getField(ResourceRestraintInstanceServiceImpl.class, "restraintInstanceRepository", true);
+    FieldUtils.writeField(field, service, repository);
+
+    // WE DON'T CARE ABOUT SERVICE RESULT, THE FOCUS IS THE REPOSITORY ACCESS.
+    String releaseEntityId = generateUuid();
+    service.getAllCurrentlyAcquiredPermits(HoldingScope.PIPELINE, releaseEntityId, RESOURCE_UNIT);
+
+    verify(repository)
+        .findByReleaseEntityTypeAndReleaseEntityIdAndResourceUnitAndState(
+            HoldingScope.PIPELINE.name(), releaseEntityId, RESOURCE_UNIT, ACTIVE);
   }
 
   @Test

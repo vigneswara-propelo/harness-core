@@ -218,9 +218,11 @@ public class ResourceRestraintInstanceServiceImpl implements ResourceRestraintIn
   public int getAllCurrentlyAcquiredPermits(HoldingScope scope, String releaseEntityId, String resourceUnit) {
     int currentPermits = 0;
 
+    // THE PERMITS SHOULD BE CONSIDERED FOR THE SAME releaseEntityType, releaseEntityId AND resourceUnit ONLY FOR THE
+    // ACTIVE STATE. WHEN STATE IS BLOCKED IT DOES NOT HOLD A PERMITS YET.
     List<ResourceRestraintInstance> instances =
-        restraintInstanceRepository.findByReleaseEntityTypeAndReleaseEntityIdAndResourceUnit(
-            scope.name(), releaseEntityId, resourceUnit);
+        restraintInstanceRepository.findByReleaseEntityTypeAndReleaseEntityIdAndResourceUnitAndState(
+            scope.name(), releaseEntityId, resourceUnit, ACTIVE);
     if (isNotEmpty(instances)) {
       for (ResourceRestraintInstance instance : instances) {
         currentPermits += instance.getPermits();

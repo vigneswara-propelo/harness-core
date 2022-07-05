@@ -23,8 +23,8 @@ import org.springframework.data.repository.CrudRepository;
 @HarnessRepo
 public interface ResourceRestraintInstanceRepository extends CrudRepository<ResourceRestraintInstance, String> {
   Optional<ResourceRestraintInstance> findFirstByResourceRestraintIdOrderByOrderDesc(String resourceRestraintId);
-  List<ResourceRestraintInstance> findByReleaseEntityTypeAndReleaseEntityIdAndResourceUnit(
-      String releaseEntityType, String releaseEntityId, String resourceUnit);
+  List<ResourceRestraintInstance> findByReleaseEntityTypeAndReleaseEntityIdAndResourceUnitAndState(
+      String releaseEntityType, String releaseEntityId, String resourceUnit, Consumer.State state);
   Optional<ResourceRestraintInstance> findByUuidAndResourceUnitAndStateIn(
       String uuid, String resourceUnit, List<Consumer.State> states);
 
