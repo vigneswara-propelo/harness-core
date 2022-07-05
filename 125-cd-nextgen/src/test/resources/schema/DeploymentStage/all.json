@@ -1562,99 +1562,45 @@
       ]
     },
     "DeploymentStageConfig": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "execution",
-            "serviceConfig",
-            "infrastructure"
-          ],
-          "properties": {
-            "execution": {
-              "$ref": "#/definitions/ExecutionElementConfig"
-            },
-            "infrastructure": {
-              "$ref": "#/definitions/PipelineInfrastructure"
-            },
-            "serviceConfig": {
-              "$ref": "#/definitions/ServiceConfig"
-            }
-          },
-          "additionalProperties": false
+      "type": "object",
+      "required": [
+        "execution"
+      ],
+      "properties": {
+        "deploymentType": {
+          "type": "string",
+          "enum": [
+            "Kubernetes",
+            "NativeHelm",
+            "Ssh",
+            "WinRm",
+            "ServerlessAwsLambda",
+            "AzureWebApps"
+          ]
         },
-        {
-          "type": "object",
-          "required": [
-            "execution",
-            "deploymentType",
-            "environmentGroup",
-            "service"
-          ],
-          "properties": {
-            "deploymentType": {
-              "type": "string",
-              "enum": [
-                "Kubernetes",
-                "NativeHelm",
-                "Ssh",
-                "WinRm",
-                "ServerlessAwsLambda",
-                "AzureWebApps"
-              ]
-            },
-            "environmentGroup": {
-              "$ref": "#/definitions/EnvironmentGroupYaml"
-            },
-            "execution": {
-              "$ref": "#/definitions/ExecutionElementConfig"
-            },
-            "gitOpsEnabled": {
-              "type": "boolean"
-            },
-            "service": {
-              "$ref": "#/definitions/ServiceYamlV2"
-            }
-          },
-          "additionalProperties": false
+        "environment": {
+          "$ref": "#/definitions/EnvironmentYamlV2"
         },
-        {
-          "type": "object",
-          "required": [
-            "execution",
-            "deploymentType",
-            "environment",
-            "service"
-          ],
-          "properties": {
-            "deploymentType": {
-              "type": "string",
-              "enum": [
-                "Kubernetes",
-                "NativeHelm",
-                "Ssh",
-                "WinRm",
-                "ServerlessAwsLambda",
-                "AzureWebApps"
-              ]
-            },
-            "environment": {
-              "$ref": "#/definitions/EnvironmentYamlV2"
-            },
-            "execution": {
-              "$ref": "#/definitions/ExecutionElementConfig"
-            },
-            "gitOpsEnabled": {
-              "type": "boolean"
-            },
-            "service": {
-              "$ref": "#/definitions/ServiceYamlV2"
-            }
-          },
-          "additionalProperties": false
+        "environmentGroup": {
+          "$ref": "#/definitions/EnvironmentGroupYaml"
+        },
+        "execution": {
+          "$ref": "#/definitions/ExecutionElementConfig"
+        },
+        "gitOpsEnabled": {
+          "type": "boolean"
+        },
+        "infrastructure": {
+          "$ref": "#/definitions/PipelineInfrastructure"
+        },
+        "service": {
+          "$ref": "#/definitions/ServiceYamlV2"
+        },
+        "serviceConfig": {
+          "$ref": "#/definitions/ServiceConfig"
         }
-      ]
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "DeploymentStageNode": {
       "type": "object",
