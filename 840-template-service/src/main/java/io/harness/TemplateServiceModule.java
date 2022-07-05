@@ -65,6 +65,8 @@ import io.harness.template.services.NGTemplateSchemaService;
 import io.harness.template.services.NGTemplateSchemaServiceImpl;
 import io.harness.template.services.NGTemplateService;
 import io.harness.template.services.NGTemplateServiceImpl;
+import io.harness.template.services.TemplateMergeService;
+import io.harness.template.services.TemplateMergeServiceImpl;
 import io.harness.template.services.TemplateRefreshService;
 import io.harness.template.services.TemplateRefreshServiceImpl;
 import io.harness.time.TimeModule;
@@ -173,6 +175,7 @@ public class TemplateServiceModule extends AbstractModule {
     bind(NGTemplateService.class).to(NGTemplateServiceImpl.class);
     bind(NGTemplateSchemaService.class).to(NGTemplateSchemaServiceImpl.class);
     bind(TemplateRefreshService.class).to(TemplateRefreshServiceImpl.class);
+    bind(TemplateMergeService.class).to(TemplateMergeServiceImpl.class).in(Singleton.class);
 
     install(EnforcementClientModule.getInstance(templateServiceConfiguration.getNgManagerServiceHttpClientConfig(),
         templateServiceConfiguration.getNgManagerServiceSecret(), TEMPLATE_SERVICE.getServiceId(),
