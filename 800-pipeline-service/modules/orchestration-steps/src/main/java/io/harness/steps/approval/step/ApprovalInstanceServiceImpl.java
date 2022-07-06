@@ -110,6 +110,16 @@ public class ApprovalInstanceServiceImpl implements ApprovalInstanceService {
   }
 
   @Override
+  public void abortByNodeExecutionId(@NotNull String nodeExecutionId) {
+    // Only allow waiting instances to be aborted. This is to prevent race condition between
+    // instance expiry/aborted and instance approval/rejection.
+    approvalInstanceRepository.updateFirst(
+        new Query(Criteria.where(ApprovalInstanceKeys.nodeExecutionId).is(nodeExecutionId))
+            .addCriteria(Criteria.where(ApprovalInstanceKeys.status).is(ApprovalStatus.WAITING)),
+        new Update().set(ApprovalInstanceKeys.status, ApprovalStatus.ABORTED));
+  }
+
+  @Override
   public void expireByNodeExecutionId(@NotNull String nodeExecutionId) {
     // Only allow waiting instances to be expired. This is to prevent race condition between instance expiry and
     // instance approval/rejection.

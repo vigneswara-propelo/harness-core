@@ -21,13 +21,14 @@ public enum ApprovalStatus {
   APPROVED,
   REJECTED,
   FAILED,
+  ABORTED,
   EXPIRED;
 
   // FINAL_STATUSES is a list of statuses which when set change the orchestration status of the step also.
   // NOTE: EXPIRED is not a final status as handling of expired steps is done separately by pipeline service
   // independent of the approval instance status. The EXPIRED status is there just to ensure we don't keep on
   // iterating on instances which have expired.
-  private static final Set<ApprovalStatus> FINAL_STATUSES = EnumSet.of(APPROVED, REJECTED, FAILED);
+  private static final Set<ApprovalStatus> FINAL_STATUSES = EnumSet.of(APPROVED, REJECTED, FAILED, ABORTED);
 
   public boolean isFinalStatus() {
     return FINAL_STATUSES.contains(this);
@@ -41,6 +42,8 @@ public enum ApprovalStatus {
         return Status.APPROVAL_REJECTED;
       case FAILED:
         return Status.FAILED;
+      case ABORTED:
+        return Status.ABORTED;
       default:
         throw new UnsupportedOperationException(String.format("Invalid status: %s", name()));
     }

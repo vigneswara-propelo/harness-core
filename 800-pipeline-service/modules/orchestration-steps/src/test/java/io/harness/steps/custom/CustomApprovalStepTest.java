@@ -153,7 +153,7 @@ public class CustomApprovalStepTest extends CategoryTest {
   public void testAbort() {
     Ambiance ambiance = Ambiance.newBuilder().setMetadata(ExecutionMetadata.newBuilder().build()).build();
     customApprovalStep.handleAbort(ambiance, null, null);
-    verify(approvalInstanceService).expireByNodeExecutionId(any());
+    verify(approvalInstanceService).abortByNodeExecutionId(any());
     verify(logStreamingStepClient).closeStream(ShellScriptTaskNG.COMMAND_UNIT);
   }
 }

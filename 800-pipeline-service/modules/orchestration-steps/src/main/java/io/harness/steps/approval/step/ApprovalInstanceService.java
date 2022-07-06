@@ -33,6 +33,8 @@ public interface ApprovalInstanceService {
 
   void resetNextIterations(@NotNull String approvalInstanceId, List<Long> nextIterations);
 
+  void abortByNodeExecutionId(@NotNull String nodeExecutionId);
+
   void expireByNodeExecutionId(@NotNull String approvalInstanceId);
 
   void markExpiredInstances();
