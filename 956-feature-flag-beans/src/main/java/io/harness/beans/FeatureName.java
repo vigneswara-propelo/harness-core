@@ -396,7 +396,8 @@ public enum FeatureName {
   QUEUED_COUNT_FOR_QUEUEKEY("Used to display the count of the queue in CG git sync", HarnessTeam.SPG),
   NG_EMAIL_STEP,
   PRUNE_KUBERNETES_RESOURCES_NG,
-  CI_STEP_GROUP_ENABLED;
+  CI_STEP_GROUP_ENABLED,
+  GIT_SIMPLIFICATION_DISABLED;
 
   @Deprecated
   FeatureName() {
