@@ -256,6 +256,7 @@ public interface AzureConstants {
 
   String REQUEST_TRAFFIC_SHIFT = "Sending request to shift [%.2f] traffic to deployment slot: [%s]";
   String SUCCESS_TRAFFIC_SHIFT = "Traffic percentage updated successfully";
+  String NO_TRAFFIC_SHIFT_REQUIRED = "Traffic percentage update not required";
 
   String UPDATE_STARTUP_COMMAND = "Start updating slot configuration with startup command, %n"
       + "App name: [%s]%nSlot name: [%s]";
