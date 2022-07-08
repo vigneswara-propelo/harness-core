@@ -235,6 +235,8 @@ import io.harness.delegate.task.k8s.exception.KubernetesApiExceptionHandler;
 import io.harness.delegate.task.k8s.exception.KubernetesCliRuntimeExceptionHandler;
 import io.harness.delegate.task.ldap.NGLdapGroupSearchTask;
 import io.harness.delegate.task.ldap.NGLdapValidateConnectionSettingTask;
+import io.harness.delegate.task.ldap.NGLdapValidateGroupQuerySettingTask;
+import io.harness.delegate.task.ldap.NGLdapValidateUserQuerySettingTask;
 import io.harness.delegate.task.manifests.CustomManifestFetchTask;
 import io.harness.delegate.task.manifests.CustomManifestValuesFetchTask;
 import io.harness.delegate.task.nexus.NexusDelegateTask;
@@ -1467,6 +1469,8 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.LDAP_SEARCH_GROUPS).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.LDAP_FETCH_GROUP).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.NG_LDAP_TEST_CONN_SETTINGS).toInstance(NGLdapValidateConnectionSettingTask.class);
+    mapBinder.addBinding(TaskType.NG_LDAP_TEST_USER_SETTINGS).toInstance(NGLdapValidateUserQuerySettingTask.class);
+    mapBinder.addBinding(TaskType.NG_LDAP_TEST_GROUP_SETTINGS).toInstance(NGLdapValidateGroupQuerySettingTask.class);
     mapBinder.addBinding(TaskType.APM_VALIDATE_CONNECTOR_TASK).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.CUSTOM_LOG_VALIDATE_CONNECTOR_TASK).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.APM_GET_TASK).toInstance(ServiceImplDelegateTask.class);
