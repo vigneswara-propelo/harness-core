@@ -27,6 +27,7 @@ import io.harness.cdng.visitor.YamlTypes;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.environment.beans.Environment;
+import io.harness.ng.core.environment.mappers.EnvironmentMapper;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.contracts.plan.PlanCreationContextValue;
@@ -96,7 +97,7 @@ public class EnvGroupPlanCreatorHelper {
         // TODO: need to remove this once we have the migration for old env
         if (EmptyPredicate.isEmpty(originalEnvYaml)) {
           try {
-            originalEnvYaml = YamlPipelineUtils.getYamlString(environment);
+            originalEnvYaml = YamlPipelineUtils.getYamlString(EnvironmentMapper.toNGEnvironmentConfig(environment));
           } catch (JsonProcessingException e) {
             throw new InvalidRequestException("Unable to convert environment to yaml");
           }
