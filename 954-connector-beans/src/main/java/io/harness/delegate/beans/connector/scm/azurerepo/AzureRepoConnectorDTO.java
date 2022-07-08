@@ -7,7 +7,6 @@
 
 package io.harness.delegate.beans.connector.scm.azurerepo;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.utils.FilePathUtils.removeStartingAndEndingSlash;
 
@@ -70,7 +69,7 @@ public class AzureRepoConnectorDTO extends ConnectorConfigDTO implements ScmConn
   AzureRepoApiAccessDTO apiAccess;
   @Schema(description = "Selected Connectivity Modes") Set<String> delegateSelectors;
   @Schema(description = "Connection URL for connecting Azure Repo") String gitConnectionUrl;
-  private static final String AZURE_REPO_NAME_SEPARATOR = "/_git/";
+  private static final String AZURE_REPO_NAME_SEPARATOR = "_git/";
 
   @Builder
   public AzureRepoConnectorDTO(AzureRepoConnectionTypeDTO connectionType, String url, String validationRepo,
@@ -128,14 +127,9 @@ public class AzureRepoConnectorDTO extends ConnectorConfigDTO implements ScmConn
             String.format("Provided repoName [%s] does not match with the repoName [%s] provided in connector.",
                 gitRepositoryDTO.getName(), linkedRepo));
       }
-      return getUrl();
-    } else if (isEmpty(gitRepositoryDTO.getName()) && isNotEmpty(gitRepositoryDTO.getProjectName())) {
-      // this is for project level connection url. In case RepoName is empty for Account Type Connector, Project level
-      // connection url is returned.
-      return FilePathUtils.addEndingSlashIfMissing(getUrl()) + gitRepositoryDTO.getProjectName();
+      return url;
     }
-    return FilePathUtils.addEndingSlashIfMissing(getUrl()) + gitRepositoryDTO.getProjectName()
-        + AZURE_REPO_NAME_SEPARATOR + gitRepositoryDTO.getName();
+    return FilePathUtils.addEndingSlashIfMissing(url) + AZURE_REPO_NAME_SEPARATOR + gitRepositoryDTO.getName();
   }
 
   @Override
@@ -164,8 +158,9 @@ public class AzureRepoConnectorDTO extends ConnectorConfigDTO implements ScmConn
     final String FILE_URL_FORMAT = "%s?path=%s&version=GB%s";
     ScmConnectorHelper.validateGetFileUrlParams(branchName, filePath);
     String repoUrl = removeStartingAndEndingSlash(getGitConnectionUrl(gitRepositoryDTO));
+    String httpRepoUrl = GitClientHelper.getCompleteHTTPRepoUrlForAzureRepoSaas(repoUrl);
     filePath = removeStartingAndEndingSlash(filePath);
-    return String.format(FILE_URL_FORMAT, repoUrl, filePath, branchName);
+    return String.format(FILE_URL_FORMAT, httpRepoUrl, filePath, branchName);
   }
 
   @Override
