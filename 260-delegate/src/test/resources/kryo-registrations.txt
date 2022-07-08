@@ -1576,6 +1576,7 @@
 19809:io.harness.delegate.beans.connector.azureconnector.AzureSystemAssignedMSIAuthDTO
 19810:io.harness.delegate.beans.connector.azureconnector.AzureMSIAuthUADTO
 19811:io.harness.delegate.beans.connector.azureconnector.AzureMSIAuthSADTO
+19854:io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectionTypeDTO
 20001:io.harness.delegate.task.shell.ShellScriptApprovalTaskParameters
 20002:io.harness.delegate.task.http.HttpTaskParameters
 20100:io.harness.ng.core.environment.beans.EnvironmentType
