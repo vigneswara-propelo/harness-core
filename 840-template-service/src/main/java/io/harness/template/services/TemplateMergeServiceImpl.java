@@ -104,8 +104,8 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
         templateInputsValidator.validateNestedTemplateInputsForGivenYaml(
             accountId, orgId, projectId, yaml, templateCacheMap);
     if (!validateTemplateInputsResponse.isValidYaml()) {
-      // TODO: Send ValidateTemplateInputsResponseDTO as ErrorMetadata
-      throw new NGTemplateResolveExceptionV2("Exception in resolving template refs in given yaml.", USER);
+      throw new NGTemplateResolveExceptionV2(
+          "Exception in resolving template refs in given yaml.", USER, validateTemplateInputsResponse);
     }
     return getTemplateMergeResponseDTO(
         accountId, orgId, projectId, yaml, getMergedYamlWithTemplateField, yamlNode, templateCacheMap);
