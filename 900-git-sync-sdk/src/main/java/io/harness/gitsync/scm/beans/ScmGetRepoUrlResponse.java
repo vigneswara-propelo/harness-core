@@ -5,16 +5,20 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.common.beans;
+package io.harness.gitsync.scm.beans;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
-
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-@OwnedBy(PL)
-public enum GitOperation {
-  CREATE_FILE,
-  UPDATE_FILE,
-  GET_FILE,
-  GET_REPO_URL;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
+
+@OwnedBy(HarnessTeam.PL)
+@Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
+public class ScmGetRepoUrlResponse {
+  String repoUrl;
 }
