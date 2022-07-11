@@ -13,8 +13,10 @@ import io.harness.annotations.dev.BreakDependencyOn;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.PageRequest;
 import io.harness.beans.PageResponse;
+import io.harness.delegate.beans.DelegateDTO;
 import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateProfile;
+import io.harness.delegate.beans.DelegateProfileDetails;
 import io.harness.delegate.beans.DelegateProfileScopingRule;
 
 import software.wings.service.intfc.ownership.OwnedByAccount;
@@ -45,4 +47,8 @@ public interface DelegateProfileService extends OwnedByAccount {
   DelegateProfile updateProfileSelectorsV2(
       String accountId, DelegateEntityOwner owner, String delegateProfileIdentifier, List<String> selectors);
   void deleteAllProfileOnDeletingOwner(String accountId, DelegateEntityOwner owner);
+
+  List<DelegateDTO> listDelegatesUsingProfile(String accountId, String delegateProfileId);
+
+  List<DelegateProfileDetails> listDelegateProfiles(String accountId);
 }
