@@ -26,6 +26,7 @@ import io.harness.logging.AutoLogContext;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.interrupts.InterruptType;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import java.util.EnumSet;
 import java.util.List;
@@ -68,7 +69,8 @@ public class AbortInterruptHandler implements InterruptHandler {
     }
   }
 
-  private Interrupt validateAndSave(Interrupt interrupt) {
+  @VisibleForTesting
+  Interrupt validateAndSave(Interrupt interrupt) {
     if (isEmpty(interrupt.getNodeExecutionId())) {
       log.error("Failed to abort node with nodeExecutionId: null. NodeExecutionId cannot be null");
       throw new InterruptProcessingFailedException(
