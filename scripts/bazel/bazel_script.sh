@@ -105,7 +105,6 @@ BAZEL_MODULES="\
   //865-cg-events:module \
   //867-polling-contracts:module \
   //870-cg-orchestration:module \
-  //870-orchestration/contracts:module \
   //874-orchestration-delay:module \
   //876-orchestration-beans:module \
   //877-filestore:module \
