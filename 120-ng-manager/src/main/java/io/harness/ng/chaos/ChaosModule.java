@@ -1,7 +1,6 @@
 package io.harness.ng.chaos;
 
 import io.harness.persistence.HPersistence;
-import io.harness.waiter.WaiterModule;
 
 import com.google.inject.AbstractModule;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,7 +18,6 @@ public class ChaosModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(ChaosService.class).to(ChaosServiceImpl.class);
-    install(new WaiterModule());
   }
 
   private void registerRequiredBindings() {
