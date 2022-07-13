@@ -405,7 +405,9 @@ public enum FeatureName {
   USE_K8S_API_FOR_STEADY_STATE_CHECK,
   WINRM_ASG_ROLLBACK("Used for Collect remaining instances rollback step", HarnessTeam.CDP),
   CI_DISABLE_RESOURCE_OPTIMIZATION(
-      "Used for disabling the resource optimization, AXA had asked this flag", HarnessTeam.CI);
+      "Used for disabling the resource optimization, AXA had asked this flag", HarnessTeam.CI),
+  ENABLE_EXPERIMENTAL_STEP_FAILURE_STRATEGIES(
+      "Used to enable rollback workflow strategy on step failure", HarnessTeam.SPG);
 
   @Deprecated
   FeatureName() {
