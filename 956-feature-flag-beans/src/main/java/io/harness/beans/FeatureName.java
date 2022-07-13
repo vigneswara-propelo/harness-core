@@ -402,7 +402,9 @@ public enum FeatureName {
   CI_STEP_GROUP_ENABLED,
   GIT_SIMPLIFICATION_DISABLED,
   USE_K8S_API_FOR_STEADY_STATE_CHECK,
-  WINRM_ASG_ROLLBACK("Used for Collect remaining instances rollback step", HarnessTeam.CDP);
+  WINRM_ASG_ROLLBACK("Used for Collect remaining instances rollback step", HarnessTeam.CDP),
+  CI_DISABLE_RESOURCE_OPTIMIZATION(
+      "Used for disabling the resource optimization, AXA had asked this flag", HarnessTeam.CI);
 
   @Deprecated
   FeatureName() {
