@@ -74,7 +74,7 @@ import retrofit2.Response;
     "com.sun.org.apache.xalan.*", "javax.activation.*", "jdk.internal.reflect.*"})
 @OwnedBy(PIPELINE)
 @PrepareForTest(NGRestUtils.class)
-public class ApprovalResourceServiceImplTest extends CategoryTest {
+public class ApprovalResourceImplServiceImplTest extends CategoryTest {
   @Mock private ApprovalInstanceService approvalInstanceService;
   @Mock private ApprovalInstanceResponseMapper approvalInstanceResponseMapper;
   @Mock private PlanExecutionService planExecutionService;

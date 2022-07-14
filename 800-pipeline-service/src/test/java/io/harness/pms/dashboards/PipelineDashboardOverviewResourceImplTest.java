@@ -20,7 +20,7 @@ import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.pms.Dashboard.DashboardPipelineExecutionInfo;
 import io.harness.pms.Dashboard.DashboardPipelineHealthInfo;
 import io.harness.pms.Dashboard.PipelineCountInfo;
-import io.harness.pms.Dashboard.PipelineDashboardOverviewResourceV2;
+import io.harness.pms.Dashboard.PipelineDashboardOverviewResourceV2Impl;
 import io.harness.pms.Dashboard.PipelineExecutionInfo;
 import io.harness.pms.Dashboard.PipelineHealthInfo;
 import io.harness.pms.Dashboard.TotalHealthInfo;
@@ -36,8 +36,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(PIPELINE)
-public class PipelineDashboardOverviewResourceTest {
-  @InjectMocks PipelineDashboardOverviewResourceV2 pipelineDashboardOverviewResourceV2;
+public class PipelineDashboardOverviewResourceImplTest {
+  @InjectMocks PipelineDashboardOverviewResourceV2Impl pipelineDashboardOverviewResourceV2Impl;
   @Mock PipelineDashboardService pipelineDashboardService;
 
   private String ACC_ID = "acc_id";
@@ -61,7 +61,7 @@ public class PipelineDashboardOverviewResourceTest {
         .when(pipelineDashboardService)
         .getDashboardPipelineHealthInfo(ACC_ID, ORG_ID, PRO_ID, "pip", START_TIME, END_TIME,
             START_TIME - (END_TIME - START_TIME) - DAY_IN_MS, "cd");
-    ResponseDTO<DashboardPipelineHealthInfo> healthDto = pipelineDashboardOverviewResourceV2.fetchPipelinedHealth(
+    ResponseDTO<DashboardPipelineHealthInfo> healthDto = pipelineDashboardOverviewResourceV2Impl.fetchPipelinedHealth(
         ACC_ID, ORG_ID, PRO_ID, "pip", "cd", START_TIME, END_TIME);
 
     assertThat(healthDto.getData().getExecutions().getTotal().getCount()).isEqualTo(5L);
@@ -84,7 +84,7 @@ public class PipelineDashboardOverviewResourceTest {
         .when(pipelineDashboardService)
         .getDashboardPipelineExecutionInfo(ACC_ID, ORG_ID, PRO_ID, "pip", START_TIME, END_TIME, "cd");
     ResponseDTO<DashboardPipelineExecutionInfo> executionDto =
-        pipelineDashboardOverviewResourceV2.getPipelineDashboardExecution(
+        pipelineDashboardOverviewResourceV2Impl.getPipelineDashboardExecution(
             ACC_ID, ORG_ID, PRO_ID, "pip", "cd", START_TIME, END_TIME);
     assertThat(executionDto.getData().getPipelineExecutionInfoList().get(0).getDate()).isEqualTo(10L);
     assertThat(executionDto.getData().getPipelineExecutionInfoList().get(0).getCount().getTotal()).isEqualTo(3L);

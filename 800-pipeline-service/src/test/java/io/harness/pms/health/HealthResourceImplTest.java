@@ -33,8 +33,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(PIPELINE)
-public class HealthResourceTest extends CategoryTest {
-  @InjectMocks HealthResource healthResource;
+public class HealthResourceImplTest extends CategoryTest {
+  @InjectMocks HealthResourceImpl healthResourceImpl;
   @Mock HealthService healthService;
 
   @Before
@@ -47,17 +47,17 @@ public class HealthResourceTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGet() throws Exception {
     MaintenanceController.forceMaintenance(true);
-    assertThatThrownBy(() -> healthResource.get())
+    assertThatThrownBy(() -> healthResourceImpl.get())
         .hasMessage("in maintenance mode")
         .isInstanceOf(NoResultFoundException.class);
 
     MaintenanceController.forceMaintenance(false);
     doReturn(HealthCheck.Result.builder().healthy().build()).when(healthService).check();
-    RestResponse<String> healthyResponse = healthResource.get();
+    RestResponse<String> healthyResponse = healthResourceImpl.get();
     assertThat(healthyResponse.getResource()).isEqualTo("healthy");
 
     HealthCheck.Result unhealthy = HealthCheck.Result.builder().unhealthy().withMessage("any").build();
     doReturn(unhealthy).when(healthService).check();
-    assertThatThrownBy(() -> healthResource.get()).isInstanceOf(HealthException.class).hasMessage("HEALTH_ERROR");
+    assertThatThrownBy(() -> healthResourceImpl.get()).isInstanceOf(HealthException.class).hasMessage("HEALTH_ERROR");
   }
 }

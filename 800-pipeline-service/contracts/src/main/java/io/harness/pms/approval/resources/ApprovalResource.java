@@ -12,15 +12,12 @@ import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.pms.annotations.PipelineServiceAuth;
-import io.harness.pms.approval.ApprovalResourceService;
 import io.harness.pms.pipeline.PipelineResourceConstants;
 import io.harness.steps.approval.step.beans.ApprovalInstanceResponseDTO;
 import io.harness.steps.approval.step.beans.ApprovalType;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivityRequestDTO;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalInstanceAuthorizationDTO;
 
-import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -41,7 +38,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Tag(name = "Approvals", description = "This contains APIs related to Pipeline approvals")
@@ -74,17 +70,8 @@ import org.hibernate.validator.constraints.NotEmpty;
           @Content(mediaType = NGCommonEntityConstants.APPLICATION_YAML_MEDIA_TYPE,
               schema = @Schema(implementation = ErrorDTO.class))
     })
-@PipelineServiceAuth
-@Slf4j
-public class ApprovalResource {
-  private final ApprovalResourceService approvalResourceService;
-
-  public static final String APPROVAL_PARAM_MESSAGE = "Approval Identifier for the entity";
-
-  @Inject
-  public ApprovalResource(ApprovalResourceService approvalResourceService) {
-    this.approvalResourceService = approvalResourceService;
-  }
+public interface ApprovalResource {
+  String APPROVAL_PARAM_MESSAGE = "Approval Identifier for the entity";
 
   @GET
   @Path("/{approvalInstanceId}")
@@ -96,11 +83,9 @@ public class ApprovalResource {
         ApiResponse(responseCode = "default", description = "Returns the saved Approval Instance")
       })
   @Hidden
-  public ResponseDTO<ApprovalInstanceResponseDTO>
+  ResponseDTO<ApprovalInstanceResponseDTO>
   getApprovalInstance(@Parameter(description = APPROVAL_PARAM_MESSAGE) @NotEmpty @PathParam(
-      "approvalInstanceId") String approvalInstanceId) {
-    return ResponseDTO.newResponse(approvalResourceService.get(approvalInstanceId));
-  }
+      "approvalInstanceId") String approvalInstanceId);
 
   @POST
   @Path("/{approvalInstanceId}/harness/activity")
@@ -112,16 +97,14 @@ public class ApprovalResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns a newly added Harness Approval activity")
       })
-  public ResponseDTO<ApprovalInstanceResponseDTO>
+  ResponseDTO<ApprovalInstanceResponseDTO>
   addHarnessApprovalActivity(
       @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @Parameter(
           description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE) @AccountIdentifier String accountId,
       @Parameter(description = APPROVAL_PARAM_MESSAGE) @NotEmpty @PathParam(
           "approvalInstanceId") String approvalInstanceId,
       @Parameter(
-          description = "Details of approval activity") @NotNull @Valid HarnessApprovalActivityRequestDTO request) {
-    return ResponseDTO.newResponse(approvalResourceService.addHarnessApprovalActivity(approvalInstanceId, request));
-  }
+          description = "Details of approval activity") @NotNull @Valid HarnessApprovalActivityRequestDTO request);
 
   @GET
   @Path("/{approvalInstanceId}/harness/authorization")
@@ -135,19 +118,15 @@ public class ApprovalResource {
             description = "Returns the Harness Approval instance authorization for the current user")
       })
   @Hidden
-  public ResponseDTO<HarnessApprovalInstanceAuthorizationDTO>
+  ResponseDTO<HarnessApprovalInstanceAuthorizationDTO>
   getHarnessApprovalInstanceAuthorization(@Parameter(description = APPROVAL_PARAM_MESSAGE) @NotEmpty @PathParam(
-      "approvalInstanceId") String approvalInstanceId) {
-    return ResponseDTO.newResponse(approvalResourceService.getHarnessApprovalInstanceAuthorization(approvalInstanceId));
-  }
+      "approvalInstanceId") String approvalInstanceId);
 
   @GET
   @Path("/stage-yaml-snippet")
   @ApiOperation(value = "Gets the initial yaml snippet for Approval stage", nickname = "getInitialStageYamlSnippet")
   @Hidden
-  public ResponseDTO<String> getInitialStageYamlSnippet(
+  ResponseDTO<String> getInitialStageYamlSnippet(
       @Parameter(description = "Approval Type") @NotNull @QueryParam("approvalType") ApprovalType approvalType,
-      @QueryParam("routingId") String routingId) throws IOException {
-    return ResponseDTO.newResponse(approvalResourceService.getYamlSnippet(approvalType, routingId));
-  }
+      @QueryParam("routingId") String routingId) throws IOException;
 }
