@@ -429,7 +429,9 @@ public class PMSPipelineServiceHelper {
     if (!changedFields.isEmpty()) {
       InvalidFieldsDTO invalidFields = InvalidFieldsDTO.builder().expectedValues(changedFields).build();
       throw new InvalidRequestException(
-          "Requested metadata params do not match the values found in the YAML on Git", invalidFields);
+          "Requested metadata params do not match the values found in the YAML on Git for these fields: "
+              + changedFields.keySet(),
+          invalidFields);
     }
   }
 }

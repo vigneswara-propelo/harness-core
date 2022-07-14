@@ -501,7 +501,9 @@ public class PMSInputSetServiceImpl implements PMSInputSetService {
     if (!changedFields.isEmpty()) {
       InvalidFieldsDTO invalidFields = InvalidFieldsDTO.builder().expectedValues(changedFields).build();
       throw new InvalidRequestException(
-          "Requested Input Set params do not match the values found in the Input Set on Git", invalidFields);
+          "Requested metadata params do not match the values found in the YAML on Git for these fields: "
+              + changedFields.keySet(),
+          invalidFields);
     }
   }
 
