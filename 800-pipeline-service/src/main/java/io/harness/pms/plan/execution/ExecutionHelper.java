@@ -42,9 +42,10 @@ import io.harness.pms.gitsync.PmsGitSyncHelper;
 import io.harness.pms.helpers.PmsFeatureFlagHelper;
 import io.harness.pms.helpers.PrincipalInfoHelper;
 import io.harness.pms.helpers.TriggeredByHelper;
+import io.harness.pms.merger.YamlConfig;
 import io.harness.pms.merger.fqn.FQN;
 import io.harness.pms.merger.helpers.InputSetMergeHelper;
-import io.harness.pms.merger.helpers.InputSetTemplateHelper;
+import io.harness.pms.merger.helpers.MergeHelper;
 import io.harness.pms.ngpipeline.inputset.helpers.InputSetErrorsHelper;
 import io.harness.pms.ngpipeline.inputset.helpers.InputSetSanitizer;
 import io.harness.pms.pipeline.PipelineEntity;
@@ -63,6 +64,7 @@ import io.harness.pms.rbac.validator.PipelineRbacService;
 import io.harness.pms.stages.StagesExpressionExtractor;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.repositories.executions.PmsExecutionSummaryRespository;
+import io.harness.template.yaml.TemplateRefHelper;
 import io.harness.threading.Morpheus;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -234,27 +236,33 @@ public class ExecutionHelper {
 
   @VisibleForTesting
   TemplateMergeResponseDTO getPipelineYamlAndValidate(String mergedRuntimeInputYaml, PipelineEntity pipelineEntity) {
-    String pipelineYaml;
+    YamlConfig pipelineYamlConfig;
+
     long start = System.currentTimeMillis();
     if (isEmpty(mergedRuntimeInputYaml)) {
-      pipelineYaml = pipelineEntity.getYaml();
+      pipelineYamlConfig = new YamlConfig(pipelineEntity.getYaml());
     } else {
-      Map<FQN, String> invalidFQNsInInputSet = InputSetErrorsHelper.getInvalidFQNsInInputSet(
-          InputSetTemplateHelper.createTemplateFromPipeline(pipelineEntity.getYaml()), mergedRuntimeInputYaml);
+      YamlConfig pipelineEntityYamlConfig = new YamlConfig(pipelineEntity.getYaml());
+      YamlConfig runtimeInputYamlConfig = new YamlConfig(mergedRuntimeInputYaml);
+      Map<FQN, String> invalidFQNsInInputSet =
+          InputSetErrorsHelper.getInvalidFQNsInInputSet(pipelineEntityYamlConfig, runtimeInputYamlConfig);
       if (EmptyPredicate.isNotEmpty(invalidFQNsInInputSet)) {
         throw new InvalidRequestException("Some fields are not valid: "
             + invalidFQNsInInputSet.entrySet()
                   .stream()
                   .map(o -> o.getKey().getExpressionFqn() + ": " + o.getValue())
-                  .collect(Collectors.toList())
-                  .toString());
+                  .collect(Collectors.toList()));
       }
-      pipelineYaml =
-          InputSetMergeHelper.mergeInputSetIntoPipeline(pipelineEntity.getYaml(), mergedRuntimeInputYaml, true);
+      pipelineYamlConfig =
+          MergeHelper.mergeRuntimeInputValuesIntoOriginalYaml(pipelineEntityYamlConfig, runtimeInputYamlConfig, true);
     }
+    pipelineYamlConfig = InputSetSanitizer.trimValues(pipelineYamlConfig);
+
+    String pipelineYaml = pipelineYamlConfig.getYaml();
     log.info("[PMS_EXECUTE] Pipeline input set merge total time took {}ms", System.currentTimeMillis() - start);
+
     String pipelineYamlWithTemplateRef = pipelineYaml;
-    if (Boolean.TRUE.equals(pipelineEntity.getTemplateReference())) {
+    if (Boolean.TRUE.equals(TemplateRefHelper.hasTemplateRef(pipelineYamlConfig))) {
       TemplateMergeResponseDTO templateMergeResponseDTO =
           pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity.getAccountId(),
               pipelineEntity.getOrgIdentifier(), pipelineEntity.getProjectIdentifier(), pipelineYaml, true,
@@ -265,8 +273,6 @@ public class ExecutionHelper {
           ? pipelineYaml
           : templateMergeResponseDTO.getMergedPipelineYamlWithTemplateRef();
     }
-    pipelineYaml = InputSetSanitizer.trimValues(pipelineYaml);
-    pipelineYamlWithTemplateRef = InputSetSanitizer.trimValues(pipelineYamlWithTemplateRef);
     pmsYamlSchemaService.validateYamlSchema(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
         pipelineEntity.getProjectIdentifier(), pipelineYaml);
     if (pipelineEntity.getStoreType() == null || pipelineEntity.getStoreType() == StoreType.INLINE) {

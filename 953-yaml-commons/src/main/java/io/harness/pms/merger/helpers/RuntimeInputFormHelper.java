@@ -30,7 +30,16 @@ public class RuntimeInputFormHelper {
   }
 
   public String createRuntimeInputForm(String yaml, boolean keepInput) {
+    YamlConfig runtimeInputFormYamlConfig = createRuntimeInputFormYamlConfig(yaml, keepInput);
+    return runtimeInputFormYamlConfig.getYaml();
+  }
+
+  private YamlConfig createRuntimeInputFormYamlConfig(String yaml, boolean keepInput) {
     YamlConfig yamlConfig = new YamlConfig(yaml);
+    return createRuntimeInputFormYamlConfig(yamlConfig, keepInput);
+  }
+
+  public YamlConfig createRuntimeInputFormYamlConfig(YamlConfig yamlConfig, boolean keepInput) {
     Map<FQN, Object> fullMap = yamlConfig.getFqnToValueMap();
     Map<FQN, Object> templateMap = new LinkedHashMap<>();
     fullMap.keySet().forEach(key -> {
@@ -41,7 +50,8 @@ public class RuntimeInputFormHelper {
         templateMap.put(key, fullMap.get(key));
       }
     });
-    return (new YamlConfig(templateMap, yamlConfig.getYamlMap())).getYaml();
+
+    return new YamlConfig(templateMap, yamlConfig.getYamlMap());
   }
 
   public String createExecutionInputFormAndUpdateYamlField(JsonNode jsonNode) {

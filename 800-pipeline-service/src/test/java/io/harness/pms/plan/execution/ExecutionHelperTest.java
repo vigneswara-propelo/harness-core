@@ -167,7 +167,7 @@ public class ExecutionHelperTest extends CategoryTest {
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    MockitoAnnotations.openMocks(this);
     pipelineEntity = PipelineEntity.builder()
                          .accountId(accountId)
                          .orgIdentifier(orgId)
@@ -519,8 +519,7 @@ public class ExecutionHelperTest extends CategoryTest {
         + "      identifier: s2\n"
         + "      name: s2\n"
         + "      description: desc\n";
-    assertThatThrownBy(
-        () -> executionHelper.getPipelineYamlAndValidate(wrongRuntimeInputYaml, pipelineEntity).getMergedPipelineYaml())
+    assertThatThrownBy(() -> executionHelper.getPipelineYamlAndValidate(wrongRuntimeInputYaml, pipelineEntity))
         .isInstanceOf(InvalidRequestException.class);
   }
 
@@ -561,11 +560,11 @@ public class ExecutionHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGetPipelineYamlAndValidateWhenOPAFFisOff() {
     String yamlWithTempRef = "pipeline:\n"
-        + "    name: ww\n"
-        + "    template:\n"
-        + "        templateRef: new_pipeline_template_name\n"
-        + "        versionLabel: v1\n"
-        + "    tags: {}\n";
+        + "  name: \"ww\"\n"
+        + "  template:\n"
+        + "    templateRef: \"new_pipeline_template_name\"\n"
+        + "    versionLabel: \"v1\"\n"
+        + "  tags: {}\n";
     PipelineEntity pipelineEntity = PipelineEntity.builder()
                                         .accountId(accountId)
                                         .orgIdentifier(orgId)
