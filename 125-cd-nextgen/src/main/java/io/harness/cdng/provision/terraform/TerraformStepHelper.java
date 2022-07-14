@@ -170,7 +170,7 @@ public class TerraformStepHelper {
     GitStoreConfig gitStoreConfig = (GitStoreConfig) store;
     cdStepHelper.validateGitStoreConfig(gitStoreConfig);
     String connectorId = gitStoreConfig.getConnectorRef().getValue();
-    ConnectorInfoDTO connectorDTO = k8sStepHelper.getConnector(connectorId, ambiance);
+    ConnectorInfoDTO connectorDTO = cdStepHelper.getConnector(connectorId, ambiance);
     String validationMessage = "";
     if (identifier.equals(TerraformStepHelper.TF_CONFIG_FILES)) {
       validationMessage = "Config Files";
@@ -178,7 +178,7 @@ public class TerraformStepHelper {
       validationMessage = format("Var Files with identifier: %s", identifier);
     }
     // TODO: fix manifest part, remove k8s dependency
-    k8sStepHelper.validateManifest(store.getKind(), connectorDTO, validationMessage);
+    cdStepHelper.validateManifest(store.getKind(), connectorDTO, validationMessage);
     GitConfigDTO gitConfigDTO = ScmConnectorMapper.toGitConfigDTO((ScmConnector) connectorDTO.getConnectorConfig());
     NGAccess basicNGAccessObject = AmbianceUtils.getNgAccess(ambiance);
     SSHKeySpecDTO sshKeySpecDTO =
@@ -224,7 +224,7 @@ public class TerraformStepHelper {
     ArtifactoryStoreConfig artifactoryStoreConfig = (ArtifactoryStoreConfig) store;
     validateArtifactoryStoreConfig(artifactoryStoreConfig);
     String connectorId = ParameterFieldHelper.getParameterFieldValue(artifactoryStoreConfig.getConnectorRef());
-    ConnectorInfoDTO connectorDTO = k8sStepHelper.getConnector(connectorId, ambiance);
+    ConnectorInfoDTO connectorDTO = cdStepHelper.getConnector(connectorId, ambiance);
     String validationMessage = "";
     if (identifier.equals(TerraformStepHelper.TF_CONFIG_FILES)) {
       if (ParameterFieldHelper.getParameterFieldValue(artifactoryStoreConfig.getArtifactPaths()).size() > 1) {
@@ -234,7 +234,7 @@ public class TerraformStepHelper {
     } else {
       validationMessage = format("Var Files with identifier: %s", identifier);
     }
-    k8sStepHelper.validateManifest(store.getKind(), connectorDTO, validationMessage);
+    cdStepHelper.validateManifest(store.getKind(), connectorDTO, validationMessage);
     NGAccess basicNGAccessObject = AmbianceUtils.getNgAccess(ambiance);
     List<EncryptedDataDetail> encryptedDataDetails = secretManagerClientService.getEncryptionDetails(
         basicNGAccessObject, ((ArtifactoryConnectorDTO) connectorDTO.getConnectorConfig()).getAuth().getCredentials());
