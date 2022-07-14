@@ -237,10 +237,12 @@ public class ExecutionHelper {
   @VisibleForTesting
   TemplateMergeResponseDTO getPipelineYamlAndValidate(String mergedRuntimeInputYaml, PipelineEntity pipelineEntity) {
     YamlConfig pipelineYamlConfig;
+    YamlConfig pipelineYamlConfigForSchemaValidations;
 
     long start = System.currentTimeMillis();
     if (isEmpty(mergedRuntimeInputYaml)) {
       pipelineYamlConfig = new YamlConfig(pipelineEntity.getYaml());
+      pipelineYamlConfigForSchemaValidations = pipelineYamlConfig;
     } else {
       YamlConfig pipelineEntityYamlConfig = new YamlConfig(pipelineEntity.getYaml());
       YamlConfig runtimeInputYamlConfig = new YamlConfig(mergedRuntimeInputYaml);
@@ -255,10 +257,21 @@ public class ExecutionHelper {
       }
       pipelineYamlConfig =
           MergeHelper.mergeRuntimeInputValuesIntoOriginalYaml(pipelineEntityYamlConfig, runtimeInputYamlConfig, true);
+
+      /*
+      For schema validations, we don't want input set validators to be appended. For example, if some timeout field in
+      the pipeline is <+input>.allowedValues(12h, 1d), and the runtime input gives a value 12h, the value for this field
+      in pipelineYamlConfig will be 12h.allowedValues(12h, 1d) for validation during execution. However, this value will
+      give an error in schema validation. That's why we need a value that doesn't have this validator appended.
+       */
+      pipelineYamlConfigForSchemaValidations =
+          MergeHelper.mergeRuntimeInputValuesIntoOriginalYaml(pipelineEntityYamlConfig, runtimeInputYamlConfig, false);
     }
     pipelineYamlConfig = InputSetSanitizer.trimValues(pipelineYamlConfig);
+    pipelineYamlConfigForSchemaValidations = InputSetSanitizer.trimValues(pipelineYamlConfigForSchemaValidations);
 
     String pipelineYaml = pipelineYamlConfig.getYaml();
+    String pipelineYamlForSchemaValidations = pipelineYamlConfigForSchemaValidations.getYaml();
     log.info("[PMS_EXECUTE] Pipeline input set merge total time took {}ms", System.currentTimeMillis() - start);
 
     String pipelineYamlWithTemplateRef = pipelineYaml;
@@ -274,7 +287,7 @@ public class ExecutionHelper {
           : templateMergeResponseDTO.getMergedPipelineYamlWithTemplateRef();
     }
     pmsYamlSchemaService.validateYamlSchema(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
-        pipelineEntity.getProjectIdentifier(), pipelineYaml);
+        pipelineEntity.getProjectIdentifier(), pipelineYamlForSchemaValidations);
     if (pipelineEntity.getStoreType() == null || pipelineEntity.getStoreType() == StoreType.INLINE) {
       // For REMOTE Pipelines, entity setup usage framework cannot be relied upon. That is because the setup usages can
       // be outdated wrt the YAML we find on Git during execution. This means the fail fast approach that we have for

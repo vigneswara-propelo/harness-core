@@ -526,6 +526,43 @@ public class ExecutionHelperTest extends CategoryTest {
   @Test
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
+  public void testGetPipelineYamlAndValidateForPipelineWithAllowedValues() {
+    String pipelineYamlWithAllowedValues = "pipeline:\n"
+        + "  stages:\n"
+        + "  - stage:\n"
+        + "      identifier: \"s1\"\n"
+        + "      description: \"<+input>.allowedValues(a, b)\"\n";
+    String runtimeInputYaml = "pipeline:\n"
+        + "  stages:\n"
+        + "  - stage:\n"
+        + "      identifier: \"s1\"\n"
+        + "      description: \"a\"\n";
+    String mergedYamlWithoutValidators = "pipeline:\n"
+        + "  stages:\n"
+        + "  - stage:\n"
+        + "      identifier: \"s1\"\n"
+        + "      description: \"a\"\n";
+    String mergedYamlWithValidators = "pipeline:\n"
+        + "  stages:\n"
+        + "  - stage:\n"
+        + "      identifier: \"s1\"\n"
+        + "      description: \"a.allowedValues(a, b)\"\n";
+    PipelineEntity pipelineEntity = PipelineEntity.builder()
+                                        .accountId(accountId)
+                                        .orgIdentifier(orgId)
+                                        .projectIdentifier(projectId)
+                                        .yaml(pipelineYamlWithAllowedValues)
+                                        .build();
+    TemplateMergeResponseDTO response = executionHelper.getPipelineYamlAndValidate(runtimeInputYaml, pipelineEntity);
+    assertThat(response.getMergedPipelineYaml()).isEqualTo(mergedYamlWithValidators);
+    assertThat(response.getMergedPipelineYamlWithTemplateRef()).isEqualTo(mergedYamlWithValidators);
+    verify(pmsYamlSchemaService, times(1)).validateYamlSchema(accountId, orgId, projectId, mergedYamlWithoutValidators);
+    verify(pmsYamlSchemaService, times(0)).validateYamlSchema(accountId, orgId, projectId, mergedYamlWithValidators);
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
   public void testGetPipelineYamlAndValidateForInlineAndRemotePipelines() {
     PipelineEntity inline = PipelineEntity.builder()
                                 .accountId(accountId)
