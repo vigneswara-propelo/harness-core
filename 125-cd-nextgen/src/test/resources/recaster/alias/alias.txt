@@ -243,6 +243,7 @@ io.harness.cdng.artifact.bean.yaml.ArtifactoryRegistryArtifactConfig
 io.harness.cdng.artifact.bean.yaml.AcrArtifactConfig
 io.harness.cdng.artifact.ArtifactoryArtifactSummary
 io.harness.cdng.artifact.ArtifactoryGenericArtifactSummary
+io.harness.telemetry.beans.CdTelemetrySentStatus
 io.harness.cdng.service.beans.SshServiceSpec
 io.harness.cdng.ssh.CommandStepInfo
 io.harness.cdng.ssh.CommandStepNode

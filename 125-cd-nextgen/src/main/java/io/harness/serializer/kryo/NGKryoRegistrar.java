@@ -85,6 +85,7 @@ import io.harness.cdng.ssh.CommandStepInfo;
 import io.harness.cdng.tasks.manifestFetch.step.ManifestFetchOutcome;
 import io.harness.cdng.tasks.manifestFetch.step.ManifestFetchParameters;
 import io.harness.serializer.KryoRegistrar;
+import io.harness.telemetry.beans.CdTelemetrySentStatus;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -151,6 +152,7 @@ public class NGKryoRegistrar implements KryoRegistrar {
     kryo.register(HelmDeployStepParams.class, 13002);
     kryo.register(HelmRollbackStepInfo.class, 13004);
     kryo.register(HelmRollbackStepParams.class, 13005);
+    kryo.register(CdTelemetrySentStatus.class, 13006);
 
     kryo.register(K8sExecutionPassThroughData.class, 12546);
     kryo.register(CDAccountExecutionMetadata.class, 12550);
