@@ -90,6 +90,8 @@ BAZEL_MODULES="\
   //800-pipeline-service/modules/orchestration-visualization:module \
   //800-pipeline-service/modules/orchestration:module \
   //800-pipeline-service/modules/orchestration/contracts:module \
+  //800-pipeline-service/modules/orchestration-beans:module \
+  //800-pipeline-service/modules/pms-contracts:module \
   //815-cg-triggers:module \
   //platform-service/service:module \
   //platform-service/service:module_deploy.jar \
@@ -106,7 +108,6 @@ BAZEL_MODULES="\
   //867-polling-contracts:module \
   //870-cg-orchestration:module \
   //874-orchestration-delay:module \
-  //876-orchestration-beans:module \
   //877-filestore:module \
   //878-ng-common-utilities:module \
   //879-pms-sdk:module \
@@ -167,7 +168,6 @@ BAZEL_MODULES="\
   //953-git-sync-commons:module \
   //953-yaml-commons:module \
   //954-connector-beans:module \
-  //954-pms-contracts:module \
   //955-cg-yaml:module \
   //955-delegate-beans/src/main/proto:all \
   //955-delegate-beans:module \
@@ -317,7 +317,6 @@ build_bazel_module 865-cg-events
 build_bazel_module 867-polling-contracts
 build_bazel_module 870-cg-orchestration
 build_bazel_module 874-orchestration-delay
-build_bazel_module 876-orchestration-beans
 build_bazel_module 878-ng-common-utilities
 build_bazel_module 879-pms-sdk
 build_bazel_module 880-pipeline-cd-commons
@@ -352,7 +351,6 @@ build_bazel_module 953-events-api
 build_bazel_module 953-git-sync-commons
 build_bazel_module 953-yaml-commons
 build_bazel_module 954-connector-beans
-build_bazel_module 954-pms-contracts
 build_bazel_module 955-cg-yaml
 build_bazel_module 955-delegate-beans
 build_bazel_module 955-filters-sdk
