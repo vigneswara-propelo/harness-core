@@ -161,7 +161,6 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
   private static final String NON_DIGITS_REGEX = "\\D+";
   private static final int VERSION_LENGTH = 3;
   private static final int KUBERNETESS_116_VERSION = 116;
-
   @Override
   public void setLogStreamingClient(ILogStreamingTaskClient iLogStreamingTaskClient) {
     this.logStreamingTaskClient = iLogStreamingTaskClient;
@@ -178,6 +177,10 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
       HelmInstallCmdResponseNG commandResponse;
       logCallback.saveExecutionLog(
           "List all existing deployed releases for release name: " + commandRequest.getReleaseName());
+
+      if (HelmVersion.V380.equals(commandRequest.getHelmVersion())) {
+        helmTaskHelperBase.revokeReadPermission(commandRequest.getKubeConfigLocation());
+      }
 
       HelmCliResponse helmCliResponse =
           helmClient.releaseHistory(HelmCommandDataMapperNG.getHelmCmdDataNG(commandRequest), true);
