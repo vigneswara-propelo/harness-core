@@ -500,9 +500,6 @@
             }
           ]
         },
-        "projectName": {
-          "type": "string"
-        },
         "repoName": {
           "type": "string"
         },

@@ -220,9 +220,8 @@ public class GitBuildStatusUtility {
     ConnectorDetails gitConnector = getGitConnector(ngAccess, buildStatusUpdateParameter.getConnectorIdentifier());
     validateSCMType(gitConnector.getConnectorType());
 
-    String projectName = buildStatusUpdateParameter.getProjectName();
     String repoName = buildStatusUpdateParameter.getRepoName();
-    String url = CodebaseUtils.getCompleteURLFromConnector(gitConnector, projectName, repoName);
+    String url = CodebaseUtils.getCompleteURLFromConnector(gitConnector, repoName);
 
     url = StringUtils.join(StringUtils.stripEnd(url, PATH_SEPARATOR), PATH_SEPARATOR);
 

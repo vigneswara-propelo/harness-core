@@ -222,7 +222,9 @@ public class GitStatusCheckHelper {
 
       if (gitConfigDTO.getConnectionType() == AzureRepoConnectionTypeDTO.PROJECT) {
         completeUrl = StringUtils.join(
-            StringUtils.stripEnd(completeUrl, PATH_SEPARATOR), PATH_SEPARATOR, gitStatusCheckParams.getRepo());
+            StringUtils.stripEnd(
+                StringUtils.substringBeforeLast(completeUrl, gitStatusCheckParams.getOwner()), PATH_SEPARATOR),
+            PATH_SEPARATOR, gitStatusCheckParams.getOwner(), PATH_SEPARATOR, gitStatusCheckParams.getRepo());
       }
 
       String orgAndProject;
