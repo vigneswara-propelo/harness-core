@@ -5,7 +5,7 @@
 
 syntax = "proto3";
 
-package io.harness.pms.contracts.governance;
+package io.harness.governance;
 
 option java_multiple_files = true;
 

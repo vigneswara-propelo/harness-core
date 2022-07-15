@@ -12,6 +12,7 @@ java_library(
     deps = [
         "//:lombok",
         "//800-pipeline-service/modules/pms-contracts/src/main/proto:pms_contracts_java_proto",
+        "//951-opa-contracts:opa_contracts_java_proto",
         "//955-filters-sdk:module",
         "//970-ng-commons:module",
         "//980-commons:module",

@@ -13,6 +13,7 @@ import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_NESTS;
 import io.harness.annotation.StoreIn;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.execution.NodeExecution.NodeExecutionKeys;
+import io.harness.governance.GovernanceMetadata;
 import io.harness.iterator.PersistentRegularIterable;
 import io.harness.logging.AutoLogContext;
 import io.harness.mongo.index.CompoundMongoIndex;
@@ -23,7 +24,6 @@ import io.harness.ng.DbAliases;
 import io.harness.persistence.UuidAccess;
 import io.harness.plan.NodeType;
 import io.harness.pms.contracts.execution.Status;
-import io.harness.pms.contracts.governance.GovernanceMetadata;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -10,15 +10,15 @@ package io.harness.pms.serializer.json;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.governance.GovernanceMetadata;
+import io.harness.governance.PolicyMetadata;
+import io.harness.governance.PolicySetMetadata;
 import io.harness.logging.UnitProgress;
 import io.harness.pms.contracts.execution.ExecutableResponse;
 import io.harness.pms.contracts.execution.ExecutionErrorInfo;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.run.NodeRunInfo;
 import io.harness.pms.contracts.execution.skip.SkipInfo;
-import io.harness.pms.contracts.governance.GovernanceMetadata;
-import io.harness.pms.contracts.governance.PolicyMetadata;
-import io.harness.pms.contracts.governance.PolicySetMetadata;
 import io.harness.pms.contracts.interrupts.InterruptConfig;
 import io.harness.pms.contracts.interrupts.InterruptEffectProto;
 import io.harness.pms.contracts.plan.ExecutionMetadata;

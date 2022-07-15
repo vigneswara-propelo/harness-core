@@ -6,9 +6,7 @@ directories:
   867-polling-contracts
   874-orchestration-delay
   878-ng-common-utilities
-  879-pms-sdk
   880-pipeline-cd-commons
-  882-pms-sdk-core
   884-pms-commons
   890-sm-core
   900-git-sync-sdk
@@ -76,8 +74,6 @@ targets:
   800-pipeline-service:module
   874-orchestration-delay:module
   878-ng-common-utilities:module
-  879-pms-sdk:module
-  882-pms-sdk-core:module
   884-pms-commons:module
   953-yaml-commons:module
   937-persistence-tracer:module

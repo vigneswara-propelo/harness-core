@@ -92,6 +92,9 @@ BAZEL_MODULES="\
   //800-pipeline-service/modules/orchestration/contracts:module \
   //800-pipeline-service/modules/orchestration-beans:module \
   //800-pipeline-service/modules/pms-contracts:module \
+  //clients/pipeline-service/pms-client:module \
+  //clients/pipeline-service/pms-sdk-core:module \
+  //clients/pipeline-service/pms-sdk:module \
   //815-cg-triggers:module \
   //platform-service/service:module \
   //platform-service/service:module_deploy.jar \
@@ -110,9 +113,7 @@ BAZEL_MODULES="\
   //874-orchestration-delay:module \
   //877-filestore:module \
   //878-ng-common-utilities:module \
-  //879-pms-sdk:module \
   //880-pipeline-cd-commons:module \
-  //882-pms-sdk-core:module \
   //884-pms-commons:module \
   //890-sm-core:module \
   //900-git-sync-sdk:module \
@@ -160,6 +161,7 @@ BAZEL_MODULES="\
   //950-ng-signup-beans:module \
   //950-telemetry:module \
   //950-wait-engine:module \
+  //951-opa-contracts:all \
   //952-remote-observers:module \
   //952-scm-java-client:module \
   //953-events-api/src/main/proto:all \
@@ -318,9 +320,7 @@ build_bazel_module 867-polling-contracts
 build_bazel_module 870-cg-orchestration
 build_bazel_module 874-orchestration-delay
 build_bazel_module 878-ng-common-utilities
-build_bazel_module 879-pms-sdk
 build_bazel_module 880-pipeline-cd-commons
-build_bazel_module 882-pms-sdk-core
 build_bazel_module 884-pms-commons
 build_bazel_module 890-sm-core
 build_bazel_module 900-git-sync-sdk

@@ -9,7 +9,7 @@ package io.harness.pms.serializer.json.serializers;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.pms.contracts.governance.PolicySetMetadata;
+import io.harness.governance.PolicySetMetadata;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PolicySetMetadataSerializer extends ProtoJsonSerializer<PolicySetMetadata> {

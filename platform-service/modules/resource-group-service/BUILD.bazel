@@ -18,7 +18,6 @@ java_library(
     ],
     deps = [
         "//:lombok",
-        "//800-pipeline-service/modules/pms-contracts:module",
         "//890-sm-core:module",
         "//930-ng-core-clients:module",
         "//940-feature-flag:module",

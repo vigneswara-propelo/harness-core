@@ -208,19 +208,9 @@ aeriform("//878-ng-common-utilities:module")
 
 aeriform("//878-ng-common-utilities:tests")
 
-aeriform("//879-pms-sdk:module")
-
-aeriform("//879-pms-sdk:tests")
-
 aeriform("//880-pipeline-cd-commons:module")
 
 aeriform("//880-pipeline-cd-commons:tests")
-
-aeriform("//882-pms-sdk-core:module")
-
-aeriform("//882-pms-sdk-core:supporter-test")
-
-aeriform("//882-pms-sdk-core:tests")
 
 aeriform("//884-pms-commons:module")
 
