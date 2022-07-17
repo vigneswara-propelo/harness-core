@@ -4283,13 +4283,16 @@ public class DelegateServiceImpl implements DelegateService {
         persistence.createQuery(Delegate.class).filter(DelegateKeys.accountId, accountId).asList();
     return delegateList.stream()
         .filter(delegate -> checkForDelegateHavingAllTags(delegate, tags))
-        .map(delegate -> DelegateDTO.convertToDTO(delegate, null))
+        .map(delegate
+            -> DelegateDTO.convertToDTO(delegate, delegateSetupService.listDelegateImplicitSelectors(delegate)))
         .collect(Collectors.toList());
   }
 
   private boolean checkForDelegateHavingAllTags(Delegate delegate, DelegateTags tags) {
-    List<String> delegateTags = delegate.getTags();
-    delegateTags.addAll(delegateSetupService.listDelegateImplicitSelectors(delegate));
+    List<String> delegateTags = delegateSetupService.listDelegateImplicitSelectors(delegate);
+    if (isNotEmpty(delegate.getTags())) {
+      delegateTags.addAll(delegate.getTags());
+    }
     return delegateTags.containsAll(tags.getTags());
   }
 
