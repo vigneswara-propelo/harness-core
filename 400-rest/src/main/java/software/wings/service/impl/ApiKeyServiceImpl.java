@@ -45,14 +45,12 @@ import software.wings.beans.ApiKeyEntry;
 import software.wings.beans.ApiKeyEntry.ApiKeyEntryKeys;
 import software.wings.beans.Base;
 import software.wings.beans.Event.Type;
-import software.wings.beans.User;
 import software.wings.beans.security.UserGroup;
 import software.wings.dl.WingsPersistence;
 import software.wings.features.ApiKeysFeature;
 import software.wings.features.api.RestrictedApi;
 import software.wings.security.UserPermissionInfo;
 import software.wings.security.UserRestrictionInfo;
-import software.wings.security.UserThreadLocal;
 import software.wings.service.impl.security.auth.AuthHandler;
 import software.wings.service.intfc.AccountService;
 import software.wings.service.intfc.ApiKeyService;
@@ -261,10 +259,6 @@ public class ApiKeyServiceImpl implements ApiKeyService {
                             .filter(ApiKeyEntryKeys.accountId, accountId)
                             .filter(ID_KEY, uuid)
                             .get();
-    User user = UserThreadLocal.get();
-    if (user != null && !userService.isUserAssignedToAccount(user, accountId)) {
-      throw new InvalidRequestException("The user is not part of the account to view API key data");
-    }
     return buildApiKeyEntry(uuid, entry, true);
   }
 
