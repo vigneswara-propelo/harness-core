@@ -58,7 +58,6 @@ import io.harness.utils.RetryUtils;
 
 import com.amazonaws.util.StringUtils;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.time.Duration;
@@ -199,11 +198,8 @@ public class GitopsClustersStep implements SyncExecutableWithRbac<ClusterStepPar
                                                     .collect(Collectors.toSet());
     final Set<String> orgLevelClustersIds = individualClusters.keySet()
                                                 .stream()
-                                                .filter(ref -> StringUtils.beginsWithIgnoreCase(ref, "org."))
+                                                .filter(ref -> StringUtils.beginsWithIgnoreCase(ref, "organization."))
                                                 .collect(Collectors.toSet());
-
-    final Set<String> projectLevelClustersIds =
-        Sets.difference(individualClusters.keySet(), Sets.union(accountLevelClustersIds, orgLevelClustersIds));
 
     final Map<String, IndividualClusterInternal> accountLevelClusters = new HashMap<>();
     final Map<String, IndividualClusterInternal> orgLevelClusters = new HashMap<>();
@@ -228,7 +224,7 @@ public class GitopsClustersStep implements SyncExecutableWithRbac<ClusterStepPar
     final Map<String, IndividualClusterInternal> accountLevelFilteredClusters =
         filterClustersFromGitopsService(getAccountId(ambiance), "", "", accountLevelClusters);
 
-    return combine(projectLevelClusters, orgLevelClusters, accountLevelClusters);
+    return combine(projectLevelFilteredClusters, orgLevelFilteredClusters, accountLevelFilteredClusters);
   }
 
   private Map<String, IndividualClusterInternal> filterClustersFromGitopsService(
