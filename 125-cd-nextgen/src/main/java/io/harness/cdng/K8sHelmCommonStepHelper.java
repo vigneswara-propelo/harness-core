@@ -1117,14 +1117,14 @@ public class K8sHelmCommonStepHelper {
 
   public LocalStoreFetchFilesResult getFileContentsFromManifest(NGAccess ngAccess, List<String> fileContents,
       List<String> scopedFilePathList, String manifestType, String manifestIdentifier, LogCallback logCallback) {
-    logCallback.saveExecutionLog(
-        color(format("%nFetching %s files with identifier: %s", manifestType, manifestIdentifier), LogColor.White,
-            LogWeight.Bold));
-    logCallback.saveExecutionLog(color(format("Fetching following Files :"), LogColor.White));
-    printFilesFetchedFromHarnessStore(scopedFilePathList, logCallback);
-    logCallback.saveExecutionLog(
-        color(format("Successfully fetched following files: "), LogColor.White, LogWeight.Bold));
     if (isNotEmpty(scopedFilePathList)) {
+      logCallback.saveExecutionLog(
+          color(format("%nFetching %s files with identifier: %s", manifestType, manifestIdentifier), LogColor.White,
+              LogWeight.Bold));
+      logCallback.saveExecutionLog(color(format("Fetching following Files :"), LogColor.White));
+      printFilesFetchedFromHarnessStore(scopedFilePathList, logCallback);
+      logCallback.saveExecutionLog(
+          color(format("Successfully fetched following files: "), LogColor.White, LogWeight.Bold));
       for (String scopedFilePath : scopedFilePathList) {
         Optional<FileStoreNodeDTO> valuesFile =
             validateAndFetchFileFromHarnessStore(scopedFilePath, ngAccess, manifestIdentifier);
