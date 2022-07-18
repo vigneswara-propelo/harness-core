@@ -195,7 +195,7 @@ public class GitClientHelper {
 
   public static boolean isBitBucketSAAS(String url) {
     String host = getGitSCM(url);
-    return host.equals("bitbucket.org") || host.equals("www.bitbucket.org");
+    return host.equals("bitbucket.org") || host.equals("www.bitbucket.org") || host.equals("api.bitbucket.org");
   }
 
   public static boolean isAzureRepoSAAS(String url) {
