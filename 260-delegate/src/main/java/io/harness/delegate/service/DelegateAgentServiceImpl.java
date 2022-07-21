@@ -69,6 +69,9 @@ import static io.harness.network.SafeHttpCall.execute;
 import static io.harness.threading.Morpheus.sleep;
 import static io.harness.utils.MemoryPerformanceUtils.memoryUsage;
 
+import static software.wings.beans.TaskType.SCRIPT;
+import static software.wings.beans.TaskType.SHELL_SCRIPT_TASK_NG;
+
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.time.Duration.ofMinutes;
@@ -323,6 +326,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private String MANAGER_PROXY_CURL = System.getenv().get("MANAGER_PROXY_CURL");
   private String MANAGER_HOST_AND_PORT = System.getenv().get("MANAGER_HOST_AND_PORT");
 
+  private final boolean BLOCK_SHELL_TASK = Boolean.parseBoolean(System.getenv().get("BLOCK_SHELL_TASK"));
+
   private static volatile String delegateId;
   private static final String delegateInstanceId = generateUuid();
 
@@ -543,6 +548,13 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       // Remove tasks which are in TaskTypeV2 and only specified with onlyV2 as true
       final List<String> unsupportedTasks =
           Arrays.stream(TaskType.values()).filter(element -> element.isUnsupported()).map(Enum::name).collect(toList());
+
+      if (BLOCK_SHELL_TASK) {
+        log.info("Delegate is blocked from executing shell script tasks.");
+        unsupportedTasks.add(SCRIPT.name());
+        unsupportedTasks.add(SHELL_SCRIPT_TASK_NG.name());
+      }
+
       supportedTasks.removeAll(unsupportedTasks);
 
       if (isNotBlank(DELEGATE_TYPE)) {
