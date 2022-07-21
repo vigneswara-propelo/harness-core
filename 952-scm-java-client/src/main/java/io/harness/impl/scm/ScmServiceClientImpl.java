@@ -956,6 +956,16 @@ public class ScmServiceClientImpl implements ScmServiceClient {
                                .setCommitId(latestCommitResponse.getCommitId())
                                .build());
       }
+    } else if (ConnectorType.AZURE_REPO.equals(scmConnector.getConnectorType())) {
+      GetLatestCommitOnFileResponse latestCommitResponse = getLatestCommitOnFile(
+          scmConnector, scmBlockingStub, gitFileDetails.getBranch(), gitFileDetails.getFilePath());
+      if (!latestCommitResponse.getCommitId().equals(gitFileDetails.getCommitId())) {
+        return Optional.of(UpdateFileResponse.newBuilder()
+                               .setStatus(Constants.SCM_CONFLICT_ERROR_CODE)
+                               .setError(Constants.SCM_CONFLICT_ERROR_MESSAGE)
+                               .setCommitId(latestCommitResponse.getCommitId())
+                               .build());
+      }
     }
     return Optional.empty();
   }
