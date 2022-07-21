@@ -24,6 +24,7 @@ import static java.lang.String.format;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.azure.utility.AzureResourceUtility;
+import io.harness.beans.DecryptableEntity;
 import io.harness.beans.FileReference;
 import io.harness.beans.IdentifierRef;
 import io.harness.cdng.CDStepHelper;
@@ -55,6 +56,7 @@ import io.harness.delegate.task.azure.appservice.settings.EncryptedAppSettingsFi
 import io.harness.delegate.task.azure.appservice.webapp.ng.AzureWebAppInfraDelegateConfig;
 import io.harness.delegate.task.azure.artifact.AzureArtifactConfig;
 import io.harness.delegate.task.azure.artifact.AzureContainerArtifactConfig;
+import io.harness.delegate.task.azure.artifact.AzureContainerArtifactConfig.AzureContainerArtifactConfigBuilder;
 import io.harness.delegate.task.git.GitFetchFilesConfig;
 import io.harness.delegate.task.git.GitFetchRequest;
 import io.harness.delegate.task.git.GitFetchResponse;
@@ -271,31 +273,31 @@ public class AzureWebAppStepHelper {
 
   private AzureArtifactConfig getAzureContainerArtifactConfig(Ambiance ambiance, ArtifactOutcome artifactOutcome) {
     ConnectorInfoDTO connectorInfo;
-    AzureRegistryType azureRegistryType;
-    String image;
-    String tag;
+    AzureContainerArtifactConfigBuilder artifactConfigBuilder = AzureContainerArtifactConfig.builder();
 
     switch (artifactOutcome.getArtifactType()) {
       case DOCKER_REGISTRY_NAME:
         DockerArtifactOutcome dockerArtifactOutcome = (DockerArtifactOutcome) artifactOutcome;
         connectorInfo = cdStepHelper.getConnector(dockerArtifactOutcome.getConnectorRef(), ambiance);
-        azureRegistryType = getAzureRegistryType((DockerConnectorDTO) connectorInfo.getConnectorConfig());
-        image = dockerArtifactOutcome.getImage();
-        tag = dockerArtifactOutcome.getTag();
+        artifactConfigBuilder.registryType(
+            getAzureRegistryType((DockerConnectorDTO) connectorInfo.getConnectorConfig()));
+        artifactConfigBuilder.image(dockerArtifactOutcome.getImage());
+        artifactConfigBuilder.tag(dockerArtifactOutcome.getTag());
         break;
       case ACR_NAME:
         AcrArtifactOutcome acrArtifactOutcome = (AcrArtifactOutcome) artifactOutcome;
         connectorInfo = cdStepHelper.getConnector(acrArtifactOutcome.getConnectorRef(), ambiance);
-        azureRegistryType = AzureRegistryType.ACR;
-        image = acrArtifactOutcome.getImage();
-        tag = acrArtifactOutcome.getTag();
+        artifactConfigBuilder.registryType(AzureRegistryType.ACR);
+        artifactConfigBuilder.image(acrArtifactOutcome.getImage());
+        artifactConfigBuilder.tag(acrArtifactOutcome.getTag());
+        artifactConfigBuilder.registryHostname(acrArtifactOutcome.getRegistry());
         break;
       case ARTIFACTORY_REGISTRY_NAME:
         ArtifactoryArtifactOutcome artifactoryArtifactOutcome = (ArtifactoryArtifactOutcome) artifactOutcome;
         connectorInfo = cdStepHelper.getConnector(artifactoryArtifactOutcome.getConnectorRef(), ambiance);
-        azureRegistryType = AzureRegistryType.ARTIFACTORY_PRIVATE_REGISTRY;
-        image = artifactoryArtifactOutcome.getImage();
-        tag = artifactoryArtifactOutcome.getTag();
+        artifactConfigBuilder.registryType(AzureRegistryType.ARTIFACTORY_PRIVATE_REGISTRY);
+        artifactConfigBuilder.image(artifactoryArtifactOutcome.getImage());
+        artifactConfigBuilder.tag(artifactoryArtifactOutcome.getTag());
         break;
       default:
         throw new InvalidArgumentsException(
@@ -303,14 +305,16 @@ public class AzureWebAppStepHelper {
     }
 
     NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
+    List<EncryptedDataDetail> encryptedDataDetails = new ArrayList<>();
+    List<DecryptableEntity> decryptableEntities = connectorInfo.getConnectorConfig().getDecryptableEntities();
+    if (decryptableEntities != null) {
+      for (DecryptableEntity decryptableEntity : decryptableEntities) {
+        encryptedDataDetails.addAll(secretManagerClientService.getEncryptionDetails(ngAccess, decryptableEntity));
+      }
+    }
 
-    return AzureContainerArtifactConfig.builder()
-        .connectorConfig(connectorInfo.getConnectorConfig())
-        .registryType(azureRegistryType)
-        .image(image)
-        .tag(tag)
-        .encryptedDataDetails(
-            secretManagerClientService.getEncryptionDetails(ngAccess, connectorInfo.getConnectorConfig()))
+    return artifactConfigBuilder.connectorConfig(connectorInfo.getConnectorConfig())
+        .encryptedDataDetails(encryptedDataDetails)
         .build();
   }
 
