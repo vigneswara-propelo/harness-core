@@ -871,6 +871,12 @@ public class ScmServiceClientImpl implements ScmServiceClient {
             .build());
   }
 
+  @Override
+  public GetLatestCommitOnFileResponse getLatestCommitOnFile(
+      ScmConnector scmConnector, String branchName, String filepath, SCMGrpc.SCMBlockingStub scmBlockingStub) {
+    return getLatestCommitOnFile(scmConnector, scmBlockingStub, branchName, filepath);
+  }
+
   private FileContentBatchResponse processListFilesByFilePaths(ScmConnector connector, List<String> filePaths,
       String branch, String commitId, SCMGrpc.SCMBlockingStub scmBlockingStub) {
     Provider gitProvider = scmGitProviderMapper.mapToSCMGitProvider(connector);
