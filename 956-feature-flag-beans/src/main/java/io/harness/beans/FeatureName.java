@@ -400,7 +400,8 @@ public enum FeatureName {
   REMOVE_USERGROUP_CHECK(
       "Customers started facing NPE due to migration of usergroup reference, removed null check behind FF - ticket ID - CDS-39770, CG",
       HarnessTeam.SPG),
-  HOSTED_BUILDS("Used to enabled Hosted builds in paid accounts", HarnessTeam.CI);
+  HOSTED_BUILDS("Used to enabled Hosted builds in paid accounts", HarnessTeam.CI),
+  CD_ONBOARDING_ENABLED;
 
   @Deprecated
   FeatureName() {
