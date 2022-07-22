@@ -1636,7 +1636,16 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   private String findExpectedWatcherVersion() {
     try {
-      // TODO - if multiVersion, get versions from manager endpoint
+      RestResponse<String> restResponse =
+          executeRestCall(delegateAgentManagerClient.getWatcherVersion(delegateConfiguration.getAccountId()));
+      if (restResponse != null) {
+        return restResponse.getResource();
+      }
+    } catch (Exception e) {
+      log.warn("Encountered error while fetching watcher version from manager ", e);
+    }
+    try {
+      // Try fetching watcher version from gcp
       String watcherMetadata = Http.getResponseStringFromUrl(delegateConfiguration.getWatcherCheckLocation(), 10, 10);
       return substringBefore(watcherMetadata, " ").trim();
     } catch (IOException e) {
