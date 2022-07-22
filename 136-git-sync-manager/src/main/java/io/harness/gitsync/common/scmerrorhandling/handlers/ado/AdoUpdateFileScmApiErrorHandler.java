@@ -47,6 +47,12 @@ public class AdoUpdateFileScmApiErrorHandler implements ScmApiErrorHandler {
             ErrorMessageFormatter.formatMessage(UPDATE_FILE_BAD_REQUEST_ERROR_HINT, errorMetadata),
             ErrorMessageFormatter.formatMessage(UPDATE_FILE_BAD_REQUEST_ERROR_EXPLANATION, errorMetadata),
             new ScmBadRequestException(errorMessage));
+      case 401:
+        throw NestedExceptionUtils.hintWithExplanationException(
+            ErrorMessageFormatter.formatMessage(ScmErrorHints.MISSING_PERMISSION_CREDS_HINTS, errorMetadata),
+            ErrorMessageFormatter.formatMessage(
+                ScmErrorExplanations.MISSING_PERMISSION_CREDS_EXPLANATION, errorMetadata),
+            new ScmBadRequestException(errorMessage));
       case 404:
         throw NestedExceptionUtils.hintWithExplanationException(
             ErrorMessageFormatter.formatMessage(REPO_NOT_FOUND, errorMetadata),
