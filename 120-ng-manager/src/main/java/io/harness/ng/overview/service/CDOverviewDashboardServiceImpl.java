@@ -1906,6 +1906,7 @@ public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardServic
       final String envName = deploymentInfo.getEnvName();
       final String pipelineExecutionId = deploymentInfo.getPipelineExecutionId();
       final String infrastructureIdentifier = deploymentInfo.getInfrastructureIdentifier();
+      final String infrastructureName = deploymentInfo.getInfrastructureName();
       String lastPipelineExecutionId = null;
       String lastPipelineExecutionName = null;
       String lastDeployedAt = null;
@@ -1923,6 +1924,7 @@ public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardServic
               .lastPipelineExecutionName(lastPipelineExecutionName)
               .lastDeployedAt(lastDeployedAt)
               .infraIdentifier(infrastructureIdentifier)
+              .infraName(infrastructureName)
               .build();
       buildEnvInfraMap.putIfAbsent(artifact, new HashMap<>());
       buildEnvInfraMap.get(artifact).putIfAbsent(envId, new ArrayList<>());
@@ -1947,7 +1949,7 @@ public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardServic
   }
 
   public String queryActiveServiceDeploymentsInfo(String accountId, String orgId, String projectId, String serviceId) {
-    return "select distinct on (env_id,infrastructureIdentifier) tag, env_id, env_name, infrastructureIdentifier, pipeline_execution_summary_cd_id"
+    return "select distinct on (env_id,infrastructureIdentifier) tag, env_id, env_name, infrastructureIdentifier, infrastructureName, pipeline_execution_summary_cd_id"
         + " from " + tableNameServiceAndInfra + " where " + String.format("accountid='%s' and ", accountId)
         + String.format("orgidentifier='%s' and ", orgId) + String.format("projectidentifier='%s' and ", projectId)
         + String.format("service_id='%s'", serviceId)
@@ -2003,6 +2005,7 @@ public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardServic
                   .tag(resultSet.getString("tag"))
                   .pipelineExecutionId(resultSet.getString("pipeline_execution_summary_cd_id"))
                   .infrastructureIdentifier(resultSet.getString("infrastructureIdentifier"))
+                  .infrastructureName(resultSet.getString("infrastructureName"))
                   .build();
           activeServiceDeploymentsInfoList.add(activeServiceDeploymentsInfo);
         }
