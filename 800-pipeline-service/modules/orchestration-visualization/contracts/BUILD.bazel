@@ -1,5 +1,4 @@
 load("//:tools/bazel/harness.bzl", "java_library")
-load("//:tools/bazel/GenTestRules.bzl", "run_tests")
 load("//:tools/bazel/macros.bzl", "run_analysis")
 
 java_library(
@@ -9,11 +8,9 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
-        "//800-pipeline-service/modules/orchestration-steps/contracts:module",
-        "//800-pipeline-service/modules/orchestration-visualization/contracts:module",
-        "//884-pms-commons:module",
-        "//970-ng-commons:module",
-        "//clients/access-control/sdk:module",
+        "//800-pipeline-service/modules/orchestration-beans/contracts:module",
+        "//800-pipeline-service/modules/orchestration/contracts:module",
+        "//800-pipeline-service/modules/pms-contracts:module",
         "@maven//:io_swagger_swagger_annotations",
         "@maven//:javax_validation_validation_api",
     ],
