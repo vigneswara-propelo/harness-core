@@ -131,7 +131,14 @@ public class ShellScriptStep extends TaskExecutableWithRollback<ShellScriptTaskR
   }
 
   private void closeLogStream(Ambiance ambiance) {
-    ILogStreamingStepClient logStreamingStepClient = logStreamingStepClientFactory.getLogStreamingStepClient(ambiance);
-    logStreamingStepClient.closeStream(ShellScriptTaskNG.COMMAND_UNIT);
+    try {
+      Thread.sleep(100, 0);
+    } catch (InterruptedException e) {
+      log.error("Close Log Stream was interrupted", e);
+    } finally {
+      ILogStreamingStepClient logStreamingStepClient =
+          logStreamingStepClientFactory.getLogStreamingStepClient(ambiance);
+      logStreamingStepClient.closeStream(ShellScriptTaskNG.COMMAND_UNIT);
+    }
   }
 }
