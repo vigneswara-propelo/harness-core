@@ -7,7 +7,7 @@
 
 package io.harness.steps.approval.stage;
 
-import static io.harness.steps.StepUtils.createStepResponseFromChildResponse;
+import static io.harness.steps.SdkCoreStepUtils.createStepResponseFromChildResponse;
 
 import io.harness.OrchestrationStepTypes;
 import io.harness.annotations.dev.HarnessTeam;

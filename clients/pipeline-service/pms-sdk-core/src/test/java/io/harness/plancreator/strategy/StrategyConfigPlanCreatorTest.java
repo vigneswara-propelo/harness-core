@@ -11,13 +11,13 @@ import static io.harness.rule.OwnerRule.SAHIL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.harness.NGCommonUtilitiesTestBase;
 import io.harness.category.element.UnitTests;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
 import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.plan.creation.PlanCreatorUtils;
+import io.harness.pms.sdk.core.PmsSdkCoreTestBase;
 import io.harness.pms.sdk.core.plan.PlanNode;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
@@ -51,7 +51,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-public class StrategyConfigPlanCreatorTest extends NGCommonUtilitiesTestBase {
+public class StrategyConfigPlanCreatorTest extends PmsSdkCoreTestBase {
   @Mock KryoSerializer kryoSerializer;
   @InjectMocks StrategyConfigPlanCreator strategyConfigPlanCreator;
 

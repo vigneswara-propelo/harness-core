@@ -10,7 +10,6 @@ package io.harness.plancreator.steps;
 import io.harness.advisers.rollback.OnFailRollbackParameters;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.common.ParameterFieldHelper;
 import io.harness.data.structure.CollectionUtils;
 import io.harness.plancreator.stages.stage.StageElementConfig;
 import io.harness.plancreator.steps.common.StageElementParameters;
@@ -19,6 +18,7 @@ import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.plancreator.steps.common.StepElementParameters.StepElementParametersBuilder;
 import io.harness.pms.tags.TagUtils;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.steps.SdkCoreStepUtils;
 import io.harness.utils.TimeoutUtils;
 import io.harness.yaml.utils.NGVariablesUtils;
 
@@ -56,8 +56,7 @@ public class StepParameterCommonUtils {
     StageElementParametersBuilder stageBuilder = StageElementParameters.builder();
     stageBuilder.name(stageElementConfig.getName());
     stageBuilder.identifier(stageElementConfig.getIdentifier());
-    stageBuilder.description(
-        ParameterFieldHelper.getParameterFieldHandleValueNull(stageElementConfig.getDescription()));
+    stageBuilder.description(SdkCoreStepUtils.getParameterFieldHandleValueNull(stageElementConfig.getDescription()));
     stageBuilder.failureStrategies(stageElementConfig.getFailureStrategies());
     stageBuilder.skipCondition(stageElementConfig.getSkipCondition());
     stageBuilder.when(stageElementConfig.getWhen());

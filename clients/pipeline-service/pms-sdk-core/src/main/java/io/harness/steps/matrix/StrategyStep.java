@@ -7,7 +7,7 @@
 
 package io.harness.steps.matrix;
 
-import static io.harness.steps.StepUtils.createStepResponseFromChildResponse;
+import static io.harness.steps.SdkCoreStepUtils.createStepResponseFromChildResponse;
 
 import io.harness.enforcement.beans.metadata.RestrictionMetadataDTO;
 import io.harness.enforcement.beans.metadata.StaticLimitRestrictionMetadataDTO;

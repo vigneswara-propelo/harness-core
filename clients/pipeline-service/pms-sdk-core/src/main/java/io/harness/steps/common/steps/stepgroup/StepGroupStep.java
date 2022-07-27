@@ -5,10 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.steps.common;
+package io.harness.steps.common.steps.stepgroup;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-import static io.harness.steps.StepUtils.createStepResponseFromChildResponse;
+import static io.harness.steps.SdkCoreStepUtils.createStepResponseFromChildResponse;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.plancreator.NGCommonUtilPlanCreationConstants;
@@ -16,9 +16,9 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.ChildExecutableResponse;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
-import io.harness.pms.sdk.core.steps.executables.ChildExecutable;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
+import io.harness.steps.executable.ChildExecutableWithRollbackAndRbac;
 import io.harness.tasks.ResponseData;
 
 import java.util.Map;
@@ -26,28 +26,34 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(PIPELINE)
-public class NGSectionStep implements ChildExecutable<NGSectionStepParameters> {
+public class StepGroupStep extends ChildExecutableWithRollbackAndRbac<StepGroupStepParameters> {
   public static final StepType STEP_TYPE = StepType.newBuilder()
-                                               .setType(NGCommonUtilPlanCreationConstants.NG_SECTION)
+                                               .setType(NGCommonUtilPlanCreationConstants.STEP_GROUP)
                                                .setStepCategory(StepCategory.STEP)
                                                .build();
 
   @Override
-  public ChildExecutableResponse obtainChild(
-      Ambiance ambiance, NGSectionStepParameters stepParameters, StepInputPackage inputPackage) {
-    log.info("Starting execution for " + stepParameters.getLogMessage() + " Step [{}]", stepParameters);
-    return ChildExecutableResponse.newBuilder().setChildNodeId(stepParameters.getChildNodeId()).build();
+  public void validateResources(Ambiance ambiance, StepGroupStepParameters stepParameters) {
+    // do nothing
   }
 
   @Override
-  public StepResponse handleChildResponse(
-      Ambiance ambiance, NGSectionStepParameters stepParameters, Map<String, ResponseData> responseDataMap) {
-    log.info("Completed execution for " + stepParameters.getLogMessage() + " Step [{}]", stepParameters);
+  public ChildExecutableResponse obtainChildAfterRbac(
+      Ambiance ambiance, StepGroupStepParameters stepParameters, StepInputPackage inputPackage) {
+    log.info("Starting StepGroup for Pipeline Step [{}]", stepParameters);
+    final String stepNodeId = stepParameters.getChildNodeID();
+    return ChildExecutableResponse.newBuilder().setChildNodeId(stepNodeId).build();
+  }
+
+  @Override
+  public StepResponse handleChildResponseInternal(
+      Ambiance ambiance, StepGroupStepParameters stepParameters, Map<String, ResponseData> responseDataMap) {
+    log.info("Executed StepGroup Step =[{}]", stepParameters);
     return createStepResponseFromChildResponse(responseDataMap);
   }
 
   @Override
-  public Class<NGSectionStepParameters> getStepParametersClass() {
-    return NGSectionStepParameters.class;
+  public Class<StepGroupStepParameters> getStepParametersClass() {
+    return StepGroupStepParameters.class;
   }
 }

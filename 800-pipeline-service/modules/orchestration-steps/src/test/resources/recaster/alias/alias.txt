@@ -27,7 +27,6 @@ io.harness.steps.http.HttpOutcome
 io.harness.steps.resourcerestraint.ResourceRestraintPassThroughData
 io.harness.plancreator.steps.common.StepElementParameters
 io.harness.steps.approval.step.harness.beans.Approvers
-io.harness.beans.common.VariablesSweepingOutput
 io.harness.steps.approval.step.harness.HarnessApprovalSpecParameters
 io.harness.steps.jira.create.JiraCreateStepInfo
 io.harness.steps.shellscript.ExecutionTarget
@@ -120,7 +119,6 @@ io.harness.plancreator.strategy.MatrixConfig
 io.harness.plancreator.strategy.StrategyConfig
 io.harness.plancreator.strategy.HarnessForConfig
 io.harness.steps.customstage.CustomStageSpecParams
-io.harness.ng.core.envGroup.EnvironmentGroupOutcome
 io.harness.plancreator.steps.resourceconstraint.QueueStepNode
 io.harness.steps.resourcerestraint.beans.QueueHoldingScope
 io.harness.plancreator.steps.resourceconstraint.QueueStepInfo

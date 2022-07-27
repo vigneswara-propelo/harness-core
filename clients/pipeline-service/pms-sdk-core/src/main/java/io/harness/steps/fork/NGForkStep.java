@@ -8,7 +8,7 @@
 package io.harness.steps.fork;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-import static io.harness.steps.StepUtils.createStepResponseFromChildResponse;
+import static io.harness.steps.SdkCoreStepUtils.createStepResponseFromChildResponse;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.plancreator.NGCommonUtilPlanCreationConstants;

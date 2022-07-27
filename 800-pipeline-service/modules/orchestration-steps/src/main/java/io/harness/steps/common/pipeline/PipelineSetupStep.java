@@ -8,7 +8,7 @@
 package io.harness.steps.common.pipeline;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-import static io.harness.steps.StepUtils.createStepResponseFromChildResponse;
+import static io.harness.steps.SdkCoreStepUtils.createStepResponseFromChildResponse;
 
 import io.harness.OrchestrationStepTypes;
 import io.harness.annotations.dev.OwnedBy;

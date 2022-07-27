@@ -22,6 +22,7 @@ java_library(
         "//960-yaml-sdk:module",
         "//999-annotations:module",
         "//clients/notification:module",
+        "//clients/pipeline-service/pms-sdk-core:module",
         "//platform-service/modules/notification-service/contracts:module",
         "@maven//:com_esotericsoftware_kryo",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",

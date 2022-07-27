@@ -11,7 +11,6 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.common.ParameterFieldHelper;
 import io.harness.data.structure.CollectionUtils;
 import io.harness.plancreator.flowcontrol.FlowControlConfig;
 import io.harness.plancreator.pipeline.PipelineInfoConfig;
@@ -22,6 +21,7 @@ import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.tags.TagUtils;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.SkipAutoEvaluation;
+import io.harness.steps.SdkCoreStepUtils;
 import io.harness.yaml.core.properties.NGProperties;
 import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.utils.NGVariablesUtils;
@@ -83,7 +83,7 @@ public class PipelineSetupStepParameters implements StepParameters {
     TagUtils.removeUuidFromTags(infoConfig.getTags());
 
     return new PipelineSetupStepParameters(childNodeID, infoConfig.getName(), infoConfig.getIdentifier(),
-        infoConfig.getFlowControl(), ParameterFieldHelper.getParameterFieldHandleValueNull(infoConfig.getDescription()),
+        infoConfig.getFlowControl(), SdkCoreStepUtils.getParameterFieldHandleValueNull(infoConfig.getDescription()),
         infoConfig.getTags(), infoConfig.getProperties(), infoConfig.getVariables(),
         executionMetadata.getExecutionUuid(), executionMetadata.getRunSequence());
   }

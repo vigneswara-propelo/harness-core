@@ -7,59 +7,40 @@
 
 package io.harness.steps.common;
 
-import static io.harness.steps.StepUtils.createStepResponseFromChildResponse;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import static io.harness.steps.SdkCoreStepUtils.createStepResponseFromChildResponse;
 
-import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.plancreator.NGCommonUtilPlanCreationConstants;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.ChildExecutableResponse;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
-import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
+import io.harness.pms.sdk.core.steps.executables.ChildExecutable;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
-import io.harness.steps.executable.ChildExecutableWithRollbackAndRbac;
 import io.harness.tasks.ResponseData;
 
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- *
- * Flow for rollback execution:
- * - If a step fails, onFailRollbackAdviser publishes the information of the nextNodeId to run which is the
- * rollbackSteps
- * - The failed node id traverses to the parent using RollbackUtility#publishRollbackInformation, till the parent on
- * which the RollbackCustomAdviser is attached.
- * - RollbackCustomAdviser gets called and the rollbackSteps start executing
- */
 @Slf4j
-@OwnedBy(HarnessTeam.PIPELINE)
-public class NGSectionStepWithRollbackInfo extends ChildExecutableWithRollbackAndRbac<NGSectionStepParameters> {
+@OwnedBy(PIPELINE)
+public class NGSectionStep implements ChildExecutable<NGSectionStepParameters> {
   public static final StepType STEP_TYPE = StepType.newBuilder()
-                                               .setType(NGCommonUtilPlanCreationConstants.NG_SECTION_WITH_ROLLBACK_INFO)
+                                               .setType(NGCommonUtilPlanCreationConstants.NG_SECTION)
                                                .setStepCategory(StepCategory.STEP)
                                                .build();
 
-  public String getGroupType() {
-    return StepOutcomeGroup.EXECUTION.name();
-  }
-
   @Override
-  public void validateResources(Ambiance ambiance, NGSectionStepParameters stepParameters) {
-    // Do Nothing
-  }
-
-  @Override
-  public ChildExecutableResponse obtainChildAfterRbac(
+  public ChildExecutableResponse obtainChild(
       Ambiance ambiance, NGSectionStepParameters stepParameters, StepInputPackage inputPackage) {
     log.info("Starting execution for " + stepParameters.getLogMessage() + " Step [{}]", stepParameters);
     return ChildExecutableResponse.newBuilder().setChildNodeId(stepParameters.getChildNodeId()).build();
   }
 
   @Override
-  public StepResponse handleChildResponseInternal(
+  public StepResponse handleChildResponse(
       Ambiance ambiance, NGSectionStepParameters stepParameters, Map<String, ResponseData> responseDataMap) {
     log.info("Completed execution for " + stepParameters.getLogMessage() + " Step [{}]", stepParameters);
     return createStepResponseFromChildResponse(responseDataMap);
