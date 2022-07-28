@@ -132,10 +132,14 @@ public class StripeHelperImpl implements StripeHelper {
     }
 
     if (!Strings.isNullOrEmpty(billingParams.getCreditCardId())) {
-      paramsBuilder.setSource(billingParams.getCreditCardId());
+      paramsBuilder.setInvoiceSettings(CustomerUpdateParams.InvoiceSettings.builder()
+                                           .setDefaultPaymentMethod(billingParams.getCreditCardId())
+                                           .build());
     }
 
     paramsBuilder.setAddress(newAddress.build());
+
+    stripeHandler.linkPaymentMethodToCustomer(billingParams.getCustomerId(), billingParams.getCreditCardId());
 
     Customer customer = stripeHandler.updateCustomer(billingParams.getCustomerId(), paramsBuilder.build());
     return toCustomerDetailDTO(customer);
