@@ -397,7 +397,10 @@ public enum FeatureName {
   HOSTED_BUILDS("Used to enabled Hosted builds in paid accounts", HarnessTeam.CI),
   CD_ONBOARDING_ENABLED,
   ATTRIBUTE_TYPE_ACL_ENABLED("Enable attribute filter on NG UI for ACL", HarnessTeam.PL),
-  CREATE_DEFAULT_PROJECT("Enables auto create default project after user signup", HarnessTeam.GTM);
+  CREATE_DEFAULT_PROJECT("Enables auto create default project after user signup", HarnessTeam.GTM),
+  ANALYSE_TF_PLAN_SUMMARY(
+      "Enables parsing of the Terraform plan/apply/destroy summary [add/change/destroy] and exposing them as expressions",
+      HarnessTeam.CDP);
 
   @Deprecated
   FeatureName() {
