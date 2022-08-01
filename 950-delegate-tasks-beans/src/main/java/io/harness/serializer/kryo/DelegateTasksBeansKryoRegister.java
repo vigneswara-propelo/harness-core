@@ -592,6 +592,9 @@ import io.harness.delegate.task.spotinst.response.SpotInstTaskExecutionResponse;
 import io.harness.delegate.task.spotinst.response.SpotInstTaskResponse;
 import io.harness.delegate.task.spotinst.response.SpotinstTrafficShiftAlbDeployResponse;
 import io.harness.delegate.task.spotinst.response.SpotinstTrafficShiftAlbSetupResponse;
+import io.harness.delegate.task.ssh.AzureInfraDelegateConfig;
+import io.harness.delegate.task.ssh.AzureSshInfraDelegateConfig;
+import io.harness.delegate.task.ssh.AzureWinrmInfraDelegateConfig;
 import io.harness.delegate.task.ssh.CopyCommandUnit;
 import io.harness.delegate.task.ssh.NGCommandUnitType;
 import io.harness.delegate.task.ssh.NgCleanupCommandUnit;
@@ -1634,5 +1637,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AzurePackageArtifactConfig.class, 55410);
     kryo.register(AzureArtifactRequestDetails.class, 55411);
     kryo.register(ArtifactoryAzureArtifactRequestDetails.class, 55412);
+    kryo.register(AzureInfraDelegateConfig.class, 55413);
+    kryo.register(AzureSshInfraDelegateConfig.class, 55414);
+    kryo.register(AzureWinrmInfraDelegateConfig.class, 55415);
   }
 }
