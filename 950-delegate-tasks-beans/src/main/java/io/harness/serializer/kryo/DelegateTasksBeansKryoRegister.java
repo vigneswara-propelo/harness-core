@@ -380,9 +380,12 @@ import io.harness.delegate.task.azure.arm.response.AzureARMListManagementGroupRe
 import io.harness.delegate.task.azure.arm.response.AzureARMListSubscriptionLocationsResponse;
 import io.harness.delegate.task.azure.arm.response.AzureARMRollbackResponse;
 import io.harness.delegate.task.azure.arm.response.AzureBlueprintDeploymentResponse;
+import io.harness.delegate.task.azure.artifact.ArtifactoryAzureArtifactRequestDetails;
 import io.harness.delegate.task.azure.artifact.AzureArtifactConfig;
+import io.harness.delegate.task.azure.artifact.AzureArtifactRequestDetails;
 import io.harness.delegate.task.azure.artifact.AzureArtifactType;
 import io.harness.delegate.task.azure.artifact.AzureContainerArtifactConfig;
+import io.harness.delegate.task.azure.artifact.AzurePackageArtifactConfig;
 import io.harness.delegate.task.azure.request.AzureLoadBalancerDetailForBGDeployment;
 import io.harness.delegate.task.azure.request.AzureVMSSDeployTaskParameters;
 import io.harness.delegate.task.azure.request.AzureVMSSGetVirtualMachineScaleSetParameters;
@@ -1614,6 +1617,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AzureWebAppTrafficShiftResponse.class, 55331);
     kryo.register(AzureWebAppSwapSlotsRequest.class, 55332);
     kryo.register(AzureWebAppSwapSlotsResponseNG.class, 55333);
+
     kryo.register(SerializedResponseData.class, 55401);
     kryo.register(SerializationFormat.class, 55402);
     kryo.register(SecretConfigFile.class, 55334);
@@ -1627,5 +1631,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AppSettingsFile.class, 55407);
     kryo.register(EncryptedAppSettingsFile.class, 55408);
     kryo.register(AzureWebAppSlotDeploymentExceptionData.class, 55409);
+    kryo.register(AzurePackageArtifactConfig.class, 55410);
+    kryo.register(AzureArtifactRequestDetails.class, 55411);
+    kryo.register(ArtifactoryAzureArtifactRequestDetails.class, 55412);
   }
 }
