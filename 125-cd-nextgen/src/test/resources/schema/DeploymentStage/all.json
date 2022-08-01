@@ -548,10 +548,12 @@
               ]
             },
             "deploymentSlot": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             },
             "webApp": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           }
         }
@@ -585,7 +587,8 @@
               ]
             },
             "targetSlot": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           }
         }
@@ -629,7 +632,8 @@
                 {
                   "type": "number"
                 }
-              ]
+              ],
+              "minLength": 1
             }
           }
         }
