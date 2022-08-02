@@ -5,13 +5,22 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.service.instancesynchandlerfactory;
+package io.harness.entities.instanceinfo;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.service.instancesynchandler.AbstractInstanceSyncHandler;
+
+import javax.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @OwnedBy(HarnessTeam.DX)
-public interface InstanceSyncHandlerFactoryService {
-  AbstractInstanceSyncHandler getInstanceSyncHandler(String deploymentType, String infraKind);
+@Data
+@Builder
+@EqualsAndHashCode(callSuper = true)
+public class PdcInstanceInfo extends InstanceInfo {
+  @NotNull private String host;
+  @NotNull private String serviceType;
+  private String infrastructureKey;
 }
