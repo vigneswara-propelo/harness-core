@@ -15,7 +15,6 @@ import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.joor.Reflect.on;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -24,9 +23,7 @@ import static org.mockito.Mockito.when;
 
 import io.harness.TemplateServiceTestBase;
 import io.harness.accesscontrol.clients.AccessControlClient;
-import io.harness.account.AccountClient;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.encryption.Scope;
 import io.harness.enforcement.client.services.EnforcementClientService;
@@ -89,7 +86,6 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
   @Mock private ProjectClient projectClient;
   @Mock private OrganizationClient organizationClient;
   @Mock private TemplateReferenceHelper templateReferenceHelper;
-  @Mock AccountClient accountClient;
 
   @InjectMocks NGTemplateServiceImpl templateService;
 
@@ -129,7 +125,6 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     on(templateService).set("projectClient", projectClient);
     on(templateService).set("organizationClient", organizationClient);
     on(templateService).set("templateReferenceHelper", templateReferenceHelper);
-    on(templateService).set("accountClient", accountClient);
 
     doNothing().when(enforcementClientService).checkAvailability(any(), any());
     entity = TemplateEntity.builder()
@@ -158,8 +153,6 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
         .thenReturn(Response.success(ResponseDTO.newResponse(Optional.of(OrganizationResponse.builder().build()))));
 
     Call<RestResponse<Boolean>> ffCall = mock(Call.class);
-    when(accountClient.isFeatureFlagEnabled(eq(FeatureName.HARD_DELETE_ENTITIES.name()), anyString()))
-        .thenReturn(ffCall);
     when(ffCall.execute()).thenReturn(Response.success(new RestResponse<>(false)));
   }
 

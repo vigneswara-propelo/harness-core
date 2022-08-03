@@ -57,6 +57,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(PL)
 public class NGTemplateRepositoryCustomImplTest {
@@ -539,5 +540,25 @@ public class NGTemplateRepositoryCustomImplTest {
     assertThat(templateEntities.getContent()).isNotNull();
     assertThat(templateEntities.getContent().size()).isEqualTo(1);
     assertThat(templateEntities.getContent().get(0).getIdentifier()).isEqualTo(templateId);
+  }
+
+  @Test
+  @Owner(developers = ADITHYA)
+  @Category(UnitTests.class)
+  public void testDeleteTemplate() {
+    Update update = new Update();
+    update.set(TemplateEntityKeys.deleted, true);
+    TemplateEntity templateEntity = TemplateEntity.builder()
+                                        .accountId(accountIdentifier)
+                                        .orgIdentifier(orgIdentifier)
+                                        .projectIdentifier(projectIdentifier)
+                                        .identifier(templateId)
+                                        .yaml(pipelineYaml)
+                                        .deleted(true)
+                                        .build();
+    doReturn(templateEntity).when(mongoTemplate).findAndRemove(any(), any());
+    ngTemplateRepositoryCustom.deleteTemplate(templateEntity, "");
+    verify(mongoTemplate, times(1)).findAndRemove(any(), any());
+    verify(outboxService, times(1)).save(any());
   }
 }

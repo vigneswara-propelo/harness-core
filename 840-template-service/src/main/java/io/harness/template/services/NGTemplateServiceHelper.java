@@ -21,6 +21,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.ExplanationException;
 import io.harness.exception.HintException;
@@ -46,6 +47,7 @@ import io.harness.template.entity.TemplateEntity;
 import io.harness.template.entity.TemplateEntity.TemplateEntityKeys;
 import io.harness.template.events.TemplateUpdateEventType;
 import io.harness.template.gitsync.TemplateGitSyncBranchContextGuard;
+import io.harness.template.utils.NGTemplateFeatureFlagHelperService;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -73,6 +75,7 @@ public class NGTemplateServiceHelper {
   private final FilterService filterService;
   private final NGTemplateRepository templateRepository;
   private GitSyncSdkService gitSyncSdkService;
+  private final NGTemplateFeatureFlagHelperService ngTemplateFeatureFlagHelperService;
 
   public Optional<TemplateEntity> getOrThrowExceptionIfInvalid(String accountId, String orgIdentifier,
       String projectIdentifier, String templateIdentifier, String versionLabel, boolean deleted) {
@@ -479,5 +482,32 @@ public class NGTemplateServiceHelper {
     } else {
       return templateRepository.findAll(accountIdentifier, orgIdentifier, projectIdentifier, criteria, pageable);
     }
+  }
+
+  public boolean deleteTemplate(String accountId, String orgIdentifier, String projectIdentifier,
+      String templateIdentifier, TemplateEntity templateToDelete, String versionLabel, TemplateEntity withDeleted,
+      String comments) {
+    if (isOldGitSync(templateToDelete)) {
+      if (isHardDeleteEntitiesFeatureFlagEnabled(accountId)) {
+        templateRepository.hardDeleteTemplateForOldGitSync(templateToDelete, comments);
+        return true;
+      } else {
+        TemplateEntity deletedTemplate = templateRepository.deleteTemplateForOldGitSync(withDeleted, comments);
+        if (deletedTemplate.getDeleted()) {
+          return true;
+        } else {
+          throw new InvalidRequestException(format(
+              "Template with identifier [%s] and versionLabel [%s], under Project[%s], Organization [%s] couldn't be deleted.",
+              templateIdentifier, versionLabel, projectIdentifier, orgIdentifier));
+        }
+      }
+    } else {
+      templateRepository.deleteTemplate(templateToDelete, comments);
+      return true;
+    }
+  }
+
+  public boolean isHardDeleteEntitiesFeatureFlagEnabled(String accountId) {
+    return ngTemplateFeatureFlagHelperService.isEnabled(accountId, FeatureName.HARD_DELETE_ENTITIES);
   }
 }
