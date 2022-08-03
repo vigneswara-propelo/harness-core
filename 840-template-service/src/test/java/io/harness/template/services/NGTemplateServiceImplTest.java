@@ -728,6 +728,29 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
   @Test
   @Owner(developers = INDER)
   @Category(UnitTests.class)
+  public void shouldThrowExceptionOnTemplateTypeAndChildTypeChange() {
+    TemplateEntity shellStepTemplate =
+        entity.withTemplateEntityType(TemplateEntityType.STEP_TEMPLATE).withChildType("ShellScript");
+
+    templateService.create(shellStepTemplate, false, "");
+
+    TemplateEntity stageTemplate =
+        entity.withVersionLabel("v2").withTemplateEntityType(TemplateEntityType.STAGE_TEMPLATE);
+    assertThatThrownBy(() -> templateService.create(stageTemplate, false, ""))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(
+            "Error while saving template [template1] of versionLabel [v2]: Template should have same template entity type Step as other template versions");
+
+    TemplateEntity httpStepTemplate = shellStepTemplate.withVersionLabel("v3").withChildType("Http");
+    assertThatThrownBy(() -> templateService.create(httpStepTemplate, false, ""))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(
+            "Error while saving template [template1] of versionLabel [v3]: Template should have same child type ShellScript as other template versions");
+  }
+
+  @Test
+  @Owner(developers = INDER)
+  @Category(UnitTests.class)
   public void shouldThrowExceptionIfTemplateAlreadyExists() {
     TemplateEntity createdEntity = templateService.create(entity, false, "");
     assertThat(createdEntity).isNotNull();

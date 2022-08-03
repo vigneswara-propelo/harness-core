@@ -38,6 +38,7 @@ import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.gitsync.scm.EntityObjectIdUtils;
 import io.harness.grpc.utils.StringValueUtils;
+import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.organization.remote.OrganizationClient;
 import io.harness.project.remote.ProjectClient;
 import io.harness.remote.client.RestClientUtils;
@@ -59,6 +60,7 @@ import com.google.inject.name.Named;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -114,10 +116,11 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       templateReferenceHelper.populateTemplateReferences(templateEntity);
 
       // Check if this is template identifier first entry, for marking it as stable template.
-      boolean firstVersionEntry =
+      List<TemplateEntity> templates =
           getAllTemplatesForGivenIdentifier(templateEntity.getAccountId(), templateEntity.getOrgIdentifier(),
-              templateEntity.getProjectIdentifier(), templateEntity.getIdentifier(), false)
-              .isEmpty();
+              templateEntity.getProjectIdentifier(), templateEntity.getIdentifier(), false);
+      boolean firstVersionEntry = EmptyPredicate.isEmpty(templates);
+      validateTemplateTypeAndChildTypeOfTemplate(templateEntity, templates);
       if (firstVersionEntry || setStableTemplate) {
         templateEntity = templateEntity.withStableTemplate(true);
       }
@@ -167,6 +170,22 @@ public class NGTemplateServiceImpl implements NGTemplateService {
           e);
       throw new InvalidRequestException(String.format("Error while saving template [%s] of versionLabel [%s]: %s",
           templateEntity.getIdentifier(), templateEntity.getVersionLabel(), e.getMessage()));
+    }
+  }
+
+  private void validateTemplateTypeAndChildTypeOfTemplate(
+      TemplateEntity templateEntity, List<TemplateEntity> templates) {
+    if (EmptyPredicate.isNotEmpty(templates)) {
+      TemplateEntityType templateEntityType = templates.get(0).getTemplateEntityType();
+      String childType = templates.get(0).getChildType();
+      if (!Objects.equals(templateEntityType, templateEntity.getTemplateEntityType())) {
+        throw new InvalidRequestException(String.format(
+            "Template should have same template entity type %s as other template versions", templateEntityType));
+      }
+      if (!Objects.equals(childType, templateEntity.getChildType())) {
+        throw new InvalidRequestException(
+            String.format("Template should have same child type %s as other template versions", childType));
+      }
     }
   }
 
