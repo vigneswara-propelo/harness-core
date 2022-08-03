@@ -45,6 +45,8 @@ import io.harness.remote.client.RestClientUtils;
 import io.harness.repositories.NGTemplateRepository;
 import io.harness.springdata.TransactionHelper;
 import io.harness.template.TemplateFilterPropertiesDTO;
+import io.harness.template.beans.FilterParamsDTO;
+import io.harness.template.beans.PageParamsDTO;
 import io.harness.template.beans.yaml.NGTemplateConfig;
 import io.harness.template.entity.TemplateEntity;
 import io.harness.template.entity.TemplateEntity.TemplateEntityKeys;
@@ -52,11 +54,13 @@ import io.harness.template.events.TemplateUpdateEventType;
 import io.harness.template.gitsync.TemplateGitSyncBranchContextGuard;
 import io.harness.template.helpers.TemplateReferenceHelper;
 import io.harness.template.mappers.NGTemplateDtoMapper;
+import io.harness.utils.PageUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -449,6 +453,30 @@ public class NGTemplateServiceImpl implements NGTemplateService {
   }
 
   @Override
+  public Page<TemplateEntity> listTemplateMetadata(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, FilterParamsDTO filterParamsDTO, PageParamsDTO pageParamsDTO) {
+    enforcementClientService.checkAvailability(FeatureRestrictionName.TEMPLATE_SERVICE, accountIdentifier);
+    Criteria criteria = templateServiceHelper.formCriteria(accountIdentifier, orgIdentifier, projectIdentifier,
+        filterParamsDTO.getFilterIdentifier(), false, filterParamsDTO.getTemplateFilterProperties(),
+        filterParamsDTO.getSearchTerm(), filterParamsDTO.isIncludeAllTemplatesAccessibleAtScope());
+
+    // Adding criteria needed for ui homepage
+    if (filterParamsDTO.getTemplateListType() != null) {
+      criteria = templateServiceHelper.formCriteria(criteria, filterParamsDTO.getTemplateListType());
+    }
+    Pageable pageable;
+    if (EmptyPredicate.isEmpty(pageParamsDTO.getSort())) {
+      pageable = PageRequest.of(pageParamsDTO.getPage(), pageParamsDTO.getSize(),
+          Sort.by(Sort.Direction.DESC, TemplateEntityKeys.lastUpdatedAt));
+    } else {
+      pageable = PageUtils.getPageRequest(pageParamsDTO.getPage(), pageParamsDTO.getSize(), pageParamsDTO.getSort());
+    }
+
+    return templateServiceHelper.listTemplate(accountIdentifier, orgIdentifier, projectIdentifier, criteria, pageable,
+        filterParamsDTO.isGetDistinctFromBranches());
+  }
+
+  @Override
   public TemplateEntity updateStableTemplateVersion(String accountIdentifier, String orgIdentifier,
       String projectIdentifier, String templateIdentifier, String newStableTemplateVersion, String comments) {
     enforcementClientService.checkAvailability(FeatureRestrictionName.TEMPLATE_SERVICE, accountIdentifier);
@@ -680,6 +708,7 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
   // Current scope is template original scope, updatedScope is new scope.
   // TODO: Change implementation to new requirements. Handle template last updated flag false gracefully.
+  // TODO: ListMetadata will not be sending out the yaml in this case
   private boolean updateTemplateScope(String accountId, String orgIdentifier, String projectIdentifier,
       String templateIdentifier, Scope currentScope, Scope updatedScope, String updateStableTemplateVersion,
       Boolean getDistinctFromBranches) {
@@ -814,13 +843,15 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
   private List<TemplateEntity> getAllTemplatesForGivenIdentifier(String accountId, String orgIdentifier,
       String projectIdentifier, String templateIdentifier, Boolean getDistinctFromBranches) {
-    Criteria criteria = templateServiceHelper.formCriteria(accountId, orgIdentifier, projectIdentifier, "",
-        TemplateFilterPropertiesDTO.builder()
-            .templateIdentifiers(Collections.singletonList(templateIdentifier))
-            .build(),
-        false, "", false);
-    PageRequest pageRequest = PageRequest.of(0, 1000, Sort.by(Sort.Direction.DESC, TemplateEntityKeys.lastUpdatedAt));
-    return list(criteria, pageRequest, accountId, orgIdentifier, projectIdentifier, getDistinctFromBranches)
+    FilterParamsDTO filterParamsDTO = NGTemplateDtoMapper.prepareFilterParamsDTO("", "", null,
+        NGTemplateDtoMapper.toTemplateFilterProperties(
+            TemplateFilterPropertiesDTO.builder()
+                .templateIdentifiers(Collections.singletonList(templateIdentifier))
+                .build()),
+        false, getDistinctFromBranches);
+    PageParamsDTO pageParamsDTO = NGTemplateDtoMapper.preparePageParamsDTO(0, 1000, new ArrayList<>());
+
+    return listTemplateMetadata(accountId, orgIdentifier, projectIdentifier, filterParamsDTO, pageParamsDTO)
         .getContent();
   }
 

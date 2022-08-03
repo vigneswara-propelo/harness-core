@@ -343,6 +343,15 @@ public class NGTemplateRepositoryCustomImpl implements NGTemplateRepositoryCusto
   }
 
   @Override
+  public Page<TemplateEntity> findAll(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, Criteria criteria, Pageable pageable) {
+    Query query = new Query(criteria).with(pageable);
+    List<TemplateEntity> templateEntities = mongoTemplate.find(query, TemplateEntity.class);
+    return PageableExecutionUtils.getPage(templateEntities, pageable,
+        () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), TemplateEntity.class));
+  }
+
+  @Override
   public boolean existsByAccountIdAndOrgIdAndProjectIdAndIdentifierAndVersionLabel(String accountId,
       String orgIdentifier, String projectIdentifier, String templateIdentifier, String versionLabel) {
     return gitAwarePersistence.exists(Criteria.where(TemplateEntityKeys.identifier)
