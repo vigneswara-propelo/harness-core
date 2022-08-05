@@ -411,7 +411,9 @@ public enum FeatureName {
       "Enables PaginatedComponent & Formik for VariableOverrides in CG-UI", HarnessTeam.PL),
   ON_DEMAND_ROLLBACK_WITH_DIFFERENT_ARTIFACT(
       "Used to do on demand rollback to previously deployed different artifact on same inframapping", HarnessTeam.CDC),
-  CG_GIT_POLLING("Poll git based on account config for git sync in CG.", HarnessTeam.SPG);
+  CG_GIT_POLLING("Poll git based on account config for git sync in CG.", HarnessTeam.SPG),
+  GRAPHQL_WORKFLOW_EXECUTION_OPTIMIZATION(
+      "Making multiple optimizations for workflow execution graphql in CG", HarnessTeam.SPG);
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
