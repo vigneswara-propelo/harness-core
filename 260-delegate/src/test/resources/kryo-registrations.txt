@@ -1817,6 +1817,7 @@
 97114:io.harness.aws.AwsCFTemplatesType
 97115:io.harness.ssh.FileSourceType
 98399:io.harness.delegate.task.helm.HelmCommandRequestNG
+98400:io.harness.helm.HelmCommandType
 98401:io.harness.delegate.task.helm.HelmInstallCommandRequestNG
 98402:io.harness.delegate.task.helm.HelmRollbackCommandRequestNG
 98403:io.harness.delegate.task.helm.HelmReleaseHistoryCommandRequestNG
@@ -2253,6 +2254,5 @@
 980029:io.harness.exception.runtime.SshCommandExecutionException
 980030:io.harness.exception.InterruptedRuntimeException
 980031:io.harness.exception.InvalidIdentifierRefException
-980032:io.harness.helm.HelmCommandType
 9800001:io.harness.beans.RecasterMap
 9800002:io.harness.licensing.beans.modules.ChaosModuleLicenseDTO
