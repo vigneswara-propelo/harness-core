@@ -207,6 +207,9 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
         SshInfraDelegateConfigOutput.builder().sshInfraDelegateConfig(sshInfraDelegateConfig).build();
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.SSH_INFRA_DELEGATE_CONFIG_OUTPUT_NAME,
         sshInfraDelegateConfigOutput, StepCategory.STAGE.name());
+    if (EmptyPredicate.isEmpty(sshInfraDelegateConfig.getHosts())) {
+      throw new InvalidRequestException("No hosts were provided for specified infrastructure");
+    }
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.OUTPUT,
         HostsOutput.builder().hosts(sshInfraDelegateConfig.getHosts()).build(), StepCategory.STAGE.name());
   }
@@ -219,6 +222,9 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
         WinRmInfraDelegateConfigOutput.builder().winRmInfraDelegateConfig(winRmInfraDelegateConfig).build();
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.WINRM_INFRA_DELEGATE_CONFIG_OUTPUT_NAME,
         winRmInfraDelegateConfigOutput, StepCategory.STAGE.name());
+    if (EmptyPredicate.isEmpty(winRmInfraDelegateConfig.getHosts())) {
+      throw new InvalidRequestException("No hosts were provided for specified infrastructure");
+    }
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.OUTPUT,
         HostsOutput.builder().hosts(winRmInfraDelegateConfig.getHosts()).build(), StepCategory.STAGE.name());
   }
