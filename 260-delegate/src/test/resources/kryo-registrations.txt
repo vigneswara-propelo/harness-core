@@ -2254,5 +2254,6 @@
 980029:io.harness.exception.runtime.SshCommandExecutionException
 980030:io.harness.exception.InterruptedRuntimeException
 980031:io.harness.exception.InvalidIdentifierRefException
+980032:io.harness.exception.ngexception.AzureAppServiceTaskException
 9800001:io.harness.beans.RecasterMap
 9800002:io.harness.licensing.beans.modules.ChaosModuleLicenseDTO
