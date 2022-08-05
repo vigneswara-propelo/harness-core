@@ -422,7 +422,6 @@
 5259:software.wings.helpers.ext.helm.request.HelmInstallCommandRequest
 5260:software.wings.helpers.ext.helm.HelmCommandExecutionResponse
 5261:io.harness.delegate.task.helm.HelmCommandResponse
-5262:software.wings.helpers.ext.helm.request.HelmCommandRequest.HelmCommandType
 5263:software.wings.helpers.ext.helm.response.HelmInstallCommandResponse
 5265:software.wings.helpers.ext.helm.request.HelmReleaseHistoryCommandRequest
 5266:software.wings.helpers.ext.helm.response.HelmReleaseHistoryCommandResponse
@@ -1815,7 +1814,6 @@
 97114:io.harness.aws.AwsCFTemplatesType
 97115:io.harness.ssh.FileSourceType
 98399:io.harness.delegate.task.helm.HelmCommandRequestNG
-98400:io.harness.delegate.task.helm.HelmCommandRequestNG.HelmCommandType
 98401:io.harness.delegate.task.helm.HelmInstallCommandRequestNG
 98402:io.harness.delegate.task.helm.HelmRollbackCommandRequestNG
 98403:io.harness.delegate.task.helm.HelmReleaseHistoryCommandRequestNG
@@ -2252,4 +2250,5 @@
 980029:io.harness.exception.runtime.SshCommandExecutionException
 980030:io.harness.exception.InterruptedRuntimeException
 980031:io.harness.exception.InvalidIdentifierRefException
+980032:io.harness.helm.HelmCommandType
 9800001:io.harness.beans.RecasterMap

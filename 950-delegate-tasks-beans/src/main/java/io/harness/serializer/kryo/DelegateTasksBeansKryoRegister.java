@@ -1369,7 +1369,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(ReleaseInfo.class, 543439);
 
     kryo.register(HelmCommandRequestNG.class, 98399);
-    kryo.register(HelmCommandRequestNG.HelmCommandType.class, 98400);
     kryo.register(HelmInstallCommandRequestNG.class, 98401);
     kryo.register(HelmRollbackCommandRequestNG.class, 98402);
     kryo.register(HelmReleaseHistoryCommandRequestNG.class, 98403);
