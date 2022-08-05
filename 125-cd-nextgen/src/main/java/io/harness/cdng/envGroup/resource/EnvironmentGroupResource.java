@@ -98,8 +98,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @Consumes({"application/json", "application/yaml"})
 @AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @Tag(name = "EnvironmentGroup",
-    description =
-        "This contains APIs related to EnvironmentGroup. Please enable Feature flag \"ENV_GROUP\" to use them")
+    description = "This contains APIs related to EnvironmentGroup. Please enable Feature flag ENV_GROUP to use them")
 @ApiResponses(value =
     {
       @ApiResponse(code = 400, response = FailureDTO.class, message = "Bad Request")
