@@ -125,22 +125,22 @@ if [[ "$EXECUTE_NEW_CODE" == "true" ]]; then
     print_err "$?" "Pushing Tag to master failed"
 fi
 
-# Bumping version in patchVersion.properties in develop branch.
-echo "STEP2: INFO: Bumping version in patchVersion.properties in develop branch."
+# Bumping version in build.properties in develop branch.
+echo "STEP2: INFO: Bumping version in build.properties in develop branch."
 
 export SHA=`git rev-parse HEAD`
-export VERSION_FILE=pipeline-service/patchVersion.properties
+export VERSION_FILE=pipeline-service/build.properties
 
-export VERSION=`cat ${VERSION_FILE} | grep 'patchVersion.number=' | sed -e 's: *patchVersion.number=::g'`
+export VERSION=`cat ${VERSION_FILE} | grep 'build.number=' | sed -e 's: *build.number=::g'`
 export VERSION=${VERSION%??}
 export NEW_VERSION=$(( ${VERSION}+1 ))
 
-sed -i "s:patchVersion.number=${VERSION}00:patchVersion.number=${NEW_VERSION}00:g" ${VERSION_FILE}
+sed -i "s:build.number=${VERSION}00:build.number=${NEW_VERSION}00:g" ${VERSION_FILE}
 
 git add ${VERSION_FILE}
 git commit -m "Branching to release/${PURPOSE}/${VERSION}xx. New version ${NEW_VERSION}xx"
 git push origin develop
-print_err "$?" "Pushing patchVersion.properties to develop branch failed"
+print_err "$?" "Pushing build.properties to develop branch failed"
 
 
 echo "STEP3: INFO: Creating a release branch for ${PURPOSE}"
@@ -148,7 +148,7 @@ echo "STEP3: INFO: Creating a release branch for ${PURPOSE}"
 git checkout ${SHA}
 git checkout -b release/${PURPOSE}/${VERSION}xx
 
-sed -i "s:patchVersion.number=???00:patchVersion.number=${VERSION}00:g" ${VERSION_FILE}
+sed -i "s:build.number=???00:build.number=${VERSION}00:g" ${VERSION_FILE}
 
 git add ${VERSION_FILE}
 git commit --allow-empty -m "Set the proper version branch release/${PURPOSE}/${VERSION}xx"
