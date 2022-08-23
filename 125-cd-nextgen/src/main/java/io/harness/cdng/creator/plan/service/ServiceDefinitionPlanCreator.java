@@ -257,7 +257,7 @@ public class ServiceDefinitionPlanCreator extends ChildrenPlanCreator<YamlField>
 
   private boolean isEnvGlobalManifestOverridePresent(NGEnvironmentConfig ngEnvironmentConfig) {
     if (ngEnvironmentConfig == null || ngEnvironmentConfig.getNgEnvironmentInfoConfig() == null
-        || ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride() != null) {
+        || ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride() == null) {
       return false;
     }
     return isNotEmpty(ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getManifests());
