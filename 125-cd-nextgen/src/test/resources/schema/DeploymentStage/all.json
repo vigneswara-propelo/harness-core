@@ -4773,6 +4773,9 @@
         },
         {
           "type": "object",
+          "required": [
+            "deleteSourceBranch"
+          ],
           "properties": {
             "delegateSelectors": {
               "oneOf": [
@@ -4786,6 +4789,16 @@
                   "type": "string",
                   "pattern": "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
                   "minLength": 1
+                }
+              ]
+            },
+            "deleteSourceBranch": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string"
                 }
               ]
             }
