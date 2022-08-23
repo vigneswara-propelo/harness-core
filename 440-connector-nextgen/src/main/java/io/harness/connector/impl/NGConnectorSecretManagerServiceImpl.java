@@ -11,26 +11,34 @@ import static io.harness.ConnectorConstants.CONNECTOR_DECORATOR_SERVICE;
 import static io.harness.NGConstants.HARNESS_SECRET_MANAGER_IDENTIFIER;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.helpers.GlobalSecretManagerUtils.GLOBAL_ACCOUNT_ID;
+import static io.harness.security.encryption.EncryptionType.CUSTOM_NG;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
+import io.harness.connector.helper.CustomSecretManagerHelper;
 import io.harness.connector.helper.HarnessManagedConnectorHelper;
 import io.harness.connector.services.ConnectorService;
 import io.harness.connector.services.NGConnectorSecretManagerService;
+import io.harness.encryptors.CustomEncryptor;
+import io.harness.encryptors.CustomEncryptorsRegistry;
 import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.interceptor.GitSyncBranchContext;
 import io.harness.manage.GlobalContextManager;
 import io.harness.ng.SecretManagerConfigDTOMapper;
+import io.harness.secretmanagerclient.dto.CustomSecretManagerConfigDTO;
 import io.harness.secretmanagerclient.dto.SecretManagerConfigDTO;
+import io.harness.security.encryption.EncryptedDataParams;
 
+import software.wings.beans.CustomSecretNGManagerConfig;
 import software.wings.service.impl.security.NGEncryptorService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.util.Optional;
+import java.util.Set;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,13 +49,18 @@ public class NGConnectorSecretManagerServiceImpl implements NGConnectorSecretMan
   private final ConnectorService connectorService;
   private final NGEncryptorService ngEncryptorService;
   private final HarnessManagedConnectorHelper harnessManagedConnectorHelper;
+  private final CustomSecretManagerHelper customSecretManagerHelper;
+  private final CustomEncryptorsRegistry customEncryptorsRegistry;
 
   @Inject
   public NGConnectorSecretManagerServiceImpl(@Named(CONNECTOR_DECORATOR_SERVICE) ConnectorService connectorService,
-      NGEncryptorService ngEncryptorService, HarnessManagedConnectorHelper harnessManagedConnectorHelper) {
+      NGEncryptorService ngEncryptorService, HarnessManagedConnectorHelper harnessManagedConnectorHelper,
+      CustomSecretManagerHelper customSecretManagerHelper, CustomEncryptorsRegistry customEncryptorsRegistry) {
     this.connectorService = connectorService;
     this.ngEncryptorService = ngEncryptorService;
     this.harnessManagedConnectorHelper = harnessManagedConnectorHelper;
+    this.customSecretManagerHelper = customSecretManagerHelper;
+    this.customEncryptorsRegistry = customEncryptorsRegistry;
   }
 
   @Override
@@ -99,5 +112,20 @@ public class NGConnectorSecretManagerServiceImpl implements NGConnectorSecretMan
 
     ConnectorInfoDTO connectorInfoDTO = connectorResponseDTO.get().getConnector();
     return ConnectorDTO.builder().connectorInfo(connectorInfoDTO).build();
+  }
+
+  @Override
+  public void resolveSecretManagerScriptSecrets(String accountIdentifier, String path,
+      CustomSecretNGManagerConfig encryptionConfig, SecretManagerConfigDTO secretManagerConfigDTO) {
+    // use this path to replace secret var input
+    CustomSecretManagerConfigDTO customNGSecretManagerConfigDTO = (CustomSecretManagerConfigDTO) secretManagerConfigDTO;
+    // Preparing encrypted data for custom secret manager.
+    Set<EncryptedDataParams> encryptedDataParamsSet =
+        customSecretManagerHelper.prepareEncryptedDataParamsSet(customNGSecretManagerConfigDTO);
+    encryptionConfig.setEncryptionType(CUSTOM_NG);
+    CustomEncryptor customEncryptor = customEncryptorsRegistry.getCustomEncryptor(CUSTOM_NG);
+    String script =
+        customEncryptor.resolveSecretManagerConfig(accountIdentifier, encryptedDataParamsSet, encryptionConfig);
+    encryptionConfig.setScript(script);
   }
 }
