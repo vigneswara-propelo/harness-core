@@ -77,22 +77,70 @@ then
     exit 1
 fi
 
-# Bumping version in build.properties in develop branch.
-echo "STEP2: INFO: Bumping version in build.properties in develop branch."
+#Get Previous Tag and Tagging Master Branch according to type of release.
+echo "INFO: Get Previous Tag and Tagging Master Branch according to type of release."
+if [[ "$EXECUTE_NEW_CODE" == "true" ]]; then
+    #Getting Latest Tag on master branch
+    TAG=$(git describe --tags --abbrev=0 --match "[0-9]*" 2> /dev/null || echo 0.0.0)
+
+    # break down the version number into it's components
+    regex="([0-9]+).([0-9]+).([0-9]+)"
+    if [[ $TAG =~ $regex ]]; then
+        major="${BASH_REMATCH[1]}"
+        minor="${BASH_REMATCH[2]}"
+        patchVersion="${BASH_REMATCH[4]}"
+    fi
+    echo "INFO: Current Tag: $TAG: major.minor.patchVersion: ${major}.${minor}.${patchVersion}"
+
+    # check ENV paramater RELEASE_TYPE to see which number to increment
+    echo "INFO: Release Type: $RELEASE_TYPE"
+    case $RELEASE_TYPE in
+      major)
+        echo "INFO: Incrementing major version."
+        major=$(($major+1))
+        minor=0
+        patchVersion=0
+        ;;
+      minor)
+        echo "INFO: Incrementing minor version."
+        minor=$(($minor + 1))
+        patchVersion=0
+        ;;
+      patchVersion)
+        echo "INFO: Incrementing patchVersion version."
+        patchVersion=$(($patchVersion + 1))
+        ;;
+      *)
+        echo "ERROR: Invalid Release Type. Release type can be [major,minor,patchVersion]. Exiting..."
+        exit 1
+        ;;
+    esac
+
+    # echo the new version number
+    export NEW_TAG=${major}.${minor}.${patchVersion}
+    echo "New version: major.minor.patchVersion: $NEW_TAG"
+    git tag -a ${NEW_TAG} ${SHA} -m "Release Tag: v${NEW_TAG}"
+    print_err "$?" "Tagging Failed"
+    git push origin ${NEW_TAG}
+    print_err "$?" "Pushing Tag to master failed"
+fi
+
+# Bumping version in patchVersion.properties in develop branch.
+echo "STEP2: INFO: Bumping version in patchVersion.properties in develop branch."
 
 export SHA=`git rev-parse HEAD`
-export VERSION_FILE=pipeline-service/build.properties
+export VERSION_FILE=pipeline-service/patchVersion.properties
 
-export VERSION=`cat ${VERSION_FILE} | grep 'build.number=' | sed -e 's: *build.number=::g'`
+export VERSION=`cat ${VERSION_FILE} | grep 'patchVersion.number=' | sed -e 's: *patchVersion.number=::g'`
 export VERSION=${VERSION%??}
 export NEW_VERSION=$(( ${VERSION}+1 ))
 
-sed -i "s:build.number=${VERSION}00:build.number=${NEW_VERSION}00:g" ${VERSION_FILE}
+sed -i "s:patchVersion.number=${VERSION}00:patchVersion.number=${NEW_VERSION}00:g" ${VERSION_FILE}
 
 git add ${VERSION_FILE}
 git commit -m "Branching to release/${PURPOSE}/${VERSION}xx. New version ${NEW_VERSION}xx"
 git push origin develop
-print_err "$?" "Pushing build.properties to develop branch failed"
+print_err "$?" "Pushing patchVersion.properties to develop branch failed"
 
 
 echo "STEP3: INFO: Creating a release branch for ${PURPOSE}"
@@ -100,7 +148,7 @@ echo "STEP3: INFO: Creating a release branch for ${PURPOSE}"
 git checkout ${SHA}
 git checkout -b release/${PURPOSE}/${VERSION}xx
 
-sed -i "s:build.number=???00:build.number=${VERSION}00:g" ${VERSION_FILE}
+sed -i "s:patchVersion.number=???00:patchVersion.number=${VERSION}00:g" ${VERSION_FILE}
 
 git add ${VERSION_FILE}
 git commit --allow-empty -m "Set the proper version branch release/${PURPOSE}/${VERSION}xx"
