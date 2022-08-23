@@ -12,7 +12,7 @@ import io.harness.connector.mappers.ConnectorDTOToEntityMapper;
 import io.harness.delegate.beans.connector.customsecretmanager.CustomSecretManagerConnectorDTO;
 import io.harness.encryption.SecretRefHelper;
 
-public class CustomSecretManagerDTOtoEntity
+public class CustomSecretManagerDTOToEntity
     implements ConnectorDTOToEntityMapper<CustomSecretManagerConnectorDTO, CustomSecretManagerConnector> {
   @Override
   public CustomSecretManagerConnector toConnectorEntity(CustomSecretManagerConnectorDTO connectorDTO) {

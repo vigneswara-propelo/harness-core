@@ -7,8 +7,10 @@
 
 package io.harness.connector.helper;
 
+import io.harness.connector.ConnectorDTO;
 import io.harness.connector.services.NGConnectorSecretManagerService;
 import io.harness.data.algorithm.HashGenerator;
+import io.harness.delegate.beans.connector.customsecretmanager.CustomSecretManagerConnectorDTO;
 import io.harness.engine.expressions.ShellScriptBaseDTO;
 import io.harness.engine.expressions.ShellScriptYamlDTO;
 import io.harness.engine.expressions.ShellScriptYamlExpressionEvaluator;
@@ -65,9 +67,15 @@ public class CustomSecretManagerHelper {
 
   public Set<EncryptedDataParams> prepareEncryptedDataParamsSet(
       CustomSecretManagerConfigDTO customNGSecretManagerConfigDTO) {
-    String yaml = YamlUtils.write(ngConnectorSecretManagerService.getConnectorDTO(
+    // Get connector DTO
+    ConnectorDTO connectorDTO = ngConnectorSecretManagerService.getConnectorDTO(
         customNGSecretManagerConfigDTO.getAccountIdentifier(), customNGSecretManagerConfigDTO.getOrgIdentifier(),
-        customNGSecretManagerConfigDTO.getProjectIdentifier(), customNGSecretManagerConfigDTO.getIdentifier()));
+        customNGSecretManagerConfigDTO.getProjectIdentifier(), customNGSecretManagerConfigDTO.getIdentifier());
+    // Set the template input in connector dto from the inputs received from secret.
+    ((CustomSecretManagerConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig())
+        .getTemplate()
+        .setTemplateInputs(customNGSecretManagerConfigDTO.getTemplate().getTemplateInputs());
+    String yaml = YamlUtils.write(connectorDTO);
     return prepareEncryptedDataParamsSet(customNGSecretManagerConfigDTO, yaml);
   }
 }

@@ -1580,7 +1580,7 @@
 19854:io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectionTypeDTO
 19875:io.harness.delegate.beans.connector.customsecretmanager.CustomSecretManagerConnectorDTO
 19876:io.harness.delegate.beans.connector.customsecretmanager.CustomSecretManagerValidationParams
-19877:io.harness.delegate.beans.connector.customsecretmanager.TemplateLinkConfig
+19877:io.harness.delegate.beans.connector.customsecretmanager.TemplateLinkConfigForCustomSecretManager
 20001:io.harness.delegate.task.shell.ShellScriptApprovalTaskParameters
 20002:io.harness.delegate.task.http.HttpTaskParameters
 20100:io.harness.ng.core.environment.beans.EnvironmentType
@@ -1862,6 +1862,10 @@
 150021:io.harness.delegatetasks.NGVaultRenewalAppRoleTaskResponse
 150022:io.harness.delegatetasks.NGAzureKeyVaultFetchEngineTaskParameters
 150023:io.harness.delegatetasks.NGAzureKeyVaultFetchEngineResponse
+150024:io.harness.delegatetasks.ValidateCustomSecretManagerSecretReferenceTaskResponse
+150025:io.harness.delegatetasks.ValidateCustomSecretManagerSecretReferenceTaskParameters
+150026:io.harness.delegatetasks.FetchCustomSecretTaskResponse
+150027:io.harness.delegatetasks.FetchCustomSecretTaskParameters
 193418:io.harness.delegate.beans.ci.pod.ConnectorDetails
 400101:software.wings.beans.ce.CEAwsConfig
 400102:software.wings.beans.ce.CEGcpConfig

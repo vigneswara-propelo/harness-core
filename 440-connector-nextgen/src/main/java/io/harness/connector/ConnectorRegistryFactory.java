@@ -101,8 +101,8 @@ import io.harness.connector.mappers.secretmanagermapper.AwsSecretManagerDTOToEnt
 import io.harness.connector.mappers.secretmanagermapper.AwsSecretManagerEntityToDTO;
 import io.harness.connector.mappers.secretmanagermapper.AzureKeyVaultDTOToEntity;
 import io.harness.connector.mappers.secretmanagermapper.AzureKeyVaultEntityToDTO;
-import io.harness.connector.mappers.secretmanagermapper.CustomSecretManagerDTOtoEntity;
-import io.harness.connector.mappers.secretmanagermapper.CustomSecretManagerEntitytoDTO;
+import io.harness.connector.mappers.secretmanagermapper.CustomSecretManagerDTOToEntity;
+import io.harness.connector.mappers.secretmanagermapper.CustomSecretManagerEntityToDTO;
 import io.harness.connector.mappers.secretmanagermapper.GcpKmsDTOToEntity;
 import io.harness.connector.mappers.secretmanagermapper.GcpKmsEntityToDTO;
 import io.harness.connector.mappers.secretmanagermapper.LocalDTOToEntity;
@@ -316,8 +316,8 @@ public class ConnectorRegistryFactory {
             NotSupportedValidationHandler.class));
     registrar.put(ConnectorType.CUSTOM_SECRET_MANAGER,
         new ConnectorRegistrar(ConnectorCategory.SECRET_MANAGER, SecretManagerConnectorValidator.class,
-            CustomSecretManagerValidationParamProvider.class, CustomSecretManagerDTOtoEntity.class,
-            CustomSecretManagerEntitytoDTO.class, NotSupportedValidationHandler.class));
+            CustomSecretManagerValidationParamProvider.class, CustomSecretManagerDTOToEntity.class,
+            CustomSecretManagerEntityToDTO.class, NotSupportedValidationHandler.class));
   }
 
   public static Class<? extends ConnectionValidator> getConnectorValidator(ConnectorType connectorType) {

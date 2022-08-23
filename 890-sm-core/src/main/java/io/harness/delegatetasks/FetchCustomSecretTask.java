@@ -18,9 +18,9 @@ import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.encryptors.CustomEncryptor;
 import io.harness.encryptors.CustomEncryptorsRegistry;
-import io.harness.security.encryption.EncryptedDataParams;
 import io.harness.security.encryption.EncryptedRecord;
-import io.harness.security.encryption.EncryptionConfig;
+
+import software.wings.beans.CustomSecretNGManagerConfig;
 
 import com.google.inject.Inject;
 import java.util.function.BooleanSupplier;
@@ -44,11 +44,11 @@ public class FetchCustomSecretTask extends AbstractDelegateRunnableTask {
   @Override
   public DelegateResponseData run(TaskParameters parameters) {
     FetchCustomSecretTaskParameters fetchSecretTaskParameters = (FetchCustomSecretTaskParameters) parameters;
-    EncryptionConfig encryptionConfig = fetchSecretTaskParameters.getEncryptionConfig();
+    CustomSecretNGManagerConfig encryptionConfig =
+        (CustomSecretNGManagerConfig) fetchSecretTaskParameters.getEncryptionConfig();
     EncryptedRecord encryptedRecord = fetchSecretTaskParameters.getEncryptedRecord();
     String resolvedScript = fetchSecretTaskParameters.getScript();
-    encryptedRecord.getParameters().add(
-        EncryptedDataParams.builder().name("resolvedScript").value(resolvedScript).build());
+    encryptionConfig.setScript(resolvedScript);
     CustomEncryptor customEncryptor = customEncryptorsRegistry.getCustomEncryptor(encryptionConfig.getEncryptionType());
     char[] result =
         customEncryptor.fetchSecretValue(encryptionConfig.getAccountId(), encryptedRecord, encryptionConfig);

@@ -2693,7 +2693,7 @@
               "type": "boolean"
             },
             "template": {
-              "$ref": "#/definitions/TemplateLinkConfig"
+              "$ref": "#/definitions/TemplateLinkConfigForCustomSecretManager"
             },
             "workingDirectory": {
               "type": "string"
@@ -5194,7 +5194,7 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
-    "TemplateLinkConfig": {
+    "TemplateLinkConfigForCustomSecretManager": {
       "type": "object",
       "required": [
         "templateRef",

@@ -18,9 +18,9 @@ import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.encryptors.CustomEncryptor;
 import io.harness.encryptors.CustomEncryptorsRegistry;
-import io.harness.security.encryption.EncryptedDataParams;
 import io.harness.security.encryption.EncryptedRecord;
-import io.harness.security.encryption.EncryptionConfig;
+
+import software.wings.beans.CustomSecretNGManagerConfig;
 
 import com.google.inject.Inject;
 import java.util.function.BooleanSupplier;
@@ -47,10 +47,10 @@ public class ValidateCustomSecretManagerSecretReferenceTask extends AbstractDele
     ValidateCustomSecretManagerSecretReferenceTaskParameters validateCustomSecretManagerSecretReferenceTaskParameters =
         (ValidateCustomSecretManagerSecretReferenceTaskParameters) parameters;
     EncryptedRecord encryptedRecord = validateCustomSecretManagerSecretReferenceTaskParameters.getEncryptedRecord();
-    EncryptionConfig encryptionConfig = validateCustomSecretManagerSecretReferenceTaskParameters.getEncryptionConfig();
+    CustomSecretNGManagerConfig encryptionConfig =
+        (CustomSecretNGManagerConfig) validateCustomSecretManagerSecretReferenceTaskParameters.getEncryptionConfig();
     String resolvedScript = validateCustomSecretManagerSecretReferenceTaskParameters.getScript();
-    encryptedRecord.getParameters().add(
-        EncryptedDataParams.builder().name("resolvedScript").value(resolvedScript).build());
+    encryptionConfig.setScript(resolvedScript);
     CustomEncryptor customEncryptor = customEncryptorsRegistry.getCustomEncryptor(encryptionConfig.getEncryptionType());
     boolean isReferenceValid = customEncryptor.validateReference(
         encryptionConfig.getAccountId(), encryptedRecord.getParameters(), encryptionConfig);

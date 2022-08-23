@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.connector.entities.embedded.customsecretmanager.CustomSecretManagerConnector;
-import io.harness.connector.mappers.secretmanagermapper.CustomSecretManagerDTOtoEntity;
+import io.harness.connector.mappers.secretmanagermapper.CustomSecretManagerDTOToEntity;
 import io.harness.delegate.beans.connector.customsecretmanager.CustomSecretManagerConnectorDTO;
 import io.harness.rule.Owner;
 
@@ -30,7 +30,7 @@ import org.mockito.MockitoAnnotations;
 public class CustomSecretManagerDTOToEntityTest extends CategoryTest {
   HashMap<String, Object> defaultFieldNamesToValue;
 
-  @InjectMocks CustomSecretManagerDTOtoEntity customSecretManagerDTOtoEntity;
+  @InjectMocks CustomSecretManagerDTOToEntity customSecretManagerDTOtoEntity;
 
   @Before
   public void setup() {

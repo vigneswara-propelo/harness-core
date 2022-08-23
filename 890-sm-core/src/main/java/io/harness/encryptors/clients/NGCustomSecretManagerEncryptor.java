@@ -72,7 +72,8 @@ public class NGCustomSecretManagerEncryptor implements CustomEncryptor {
       } catch (Exception e) {
         failedAttempts++;
         if (failedAttempts == NUM_OF_RETRIES) {
-          String message = "Failed to decrypt " + encryptedRecord.getName() + " after " + NUM_OF_RETRIES + " retries";
+          String message =
+              String.format("Failed to decrypt %s after %s retries", encryptedRecord.getName(), NUM_OF_RETRIES);
           throw new SecretManagementDelegateException(SECRET_MANAGEMENT_ERROR, message, e, USER);
         }
         sleep(ofMillis(1000));

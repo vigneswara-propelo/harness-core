@@ -59,7 +59,7 @@ public class CustomSecretManagerConnectorDTO extends ConnectorConfigDTO implemen
 
   private String host;
   private String workingDirectory;
-  @NotNull private TemplateLinkConfig template;
+  @NotNull private TemplateLinkConfigForCustomSecretManager template;
   @Override
   public List<DecryptableEntity> getDecryptableEntities() {
     return Collections.singletonList(this);
