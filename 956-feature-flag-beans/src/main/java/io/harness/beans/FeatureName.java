@@ -420,8 +420,8 @@ public enum FeatureName {
   TRIGGERS_REFACTOR("Enable NG Triggers UI refactoring", HarnessTeam.CDP),
   NG_SERVICE_MANIFEST_OVERRIDE("Enable Service Manifests override from Environment", HarnessTeam.CDP),
   ENABLE_CHECK_STATE_EXECUTION_STARTING(
-      "Used to allow create retry state execution when event is status equals to STARTING", HarnessTeam.SPG);
-
+      "Used to allow create retry state execution when event is status equals to STARTING", HarnessTeam.SPG),
+  CI_TI_DASHBOARDS_ENABLED;
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
