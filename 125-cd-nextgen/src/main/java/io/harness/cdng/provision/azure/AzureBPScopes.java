@@ -7,21 +7,28 @@
 
 package io.harness.cdng.provision.azure;
 
-import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.pms.yaml.ParameterField;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
 
-@Data
-@Builder
 @OwnedBy(HarnessTeam.CDP)
-@RecasterAlias("io.harness.cdng.provision.azure.AzureCreateARMResourceStepConfigurationParameters")
-public class AzureCreateARMResourceStepConfigurationParameters {
-  ParameterField<String> connectorRef;
-  AzureTemplateFile templateFile;
-  AzureCreateARMResourceParameterFile parameters;
-  AzureCreateARMResourceStepScope scope;
+@AllArgsConstructor
+public enum AzureBPScopes {
+  @JsonProperty("Subscription") SUBSCRIPTION("Subscription"),
+  @JsonProperty("ManagementGroup") MANAGEMENT_GROUP("ManagementGroup");
+
+  private final String scope;
+
+  @JsonValue
+  public String getValue() {
+    return scope;
+  }
+
+  @Override
+  public String toString() {
+    return this.scope;
+  }
 }
