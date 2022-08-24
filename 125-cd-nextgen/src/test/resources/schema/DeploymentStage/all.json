@@ -3906,9 +3906,6 @@
             "jobName"
           ],
           "properties": {
-            "captureEnvironmentVariable": {
-              "type": "boolean"
-            },
             "connectorRef": {
               "type": "string"
             },
@@ -3950,6 +3947,9 @@
             },
             "unstableStatusAsSuccess": {
               "type": "boolean"
+            },
+            "useConnectorUrlForJobExecution": {
+              "type": "boolean"
             }
           }
         }
@@ -3962,9 +3962,11 @@
         "value"
       ],
       "properties": {
+        "metadata": {
+          "type": "string"
+        },
         "name": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "value": {
           "type": "string"
