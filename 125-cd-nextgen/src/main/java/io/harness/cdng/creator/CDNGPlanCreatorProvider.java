@@ -406,7 +406,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setType(StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_DEPLOY)
             .setStepMetaData(
                 StepMetaData.newBuilder().addCategory("ServerlessAwsLambda").setFolderPath("Serverless Lambda").build())
-            .setFeatureFlag(FeatureName.SERVERLESS_SUPPORT.name())
             .build();
 
     StepInfo serverlessRollback =
@@ -415,7 +414,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setType(StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_ROLLBACK)
             .setStepMetaData(
                 StepMetaData.newBuilder().addCategory("ServerlessAwsLambda").setFolderPath("Serverless Lambda").build())
-            .setFeatureFlag(FeatureName.SERVERLESS_SUPPORT.name())
             .build();
 
     StepInfo createStack = StepInfo.newBuilder()
