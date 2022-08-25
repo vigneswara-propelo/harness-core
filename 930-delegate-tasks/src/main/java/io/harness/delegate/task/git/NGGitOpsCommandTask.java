@@ -458,7 +458,7 @@ public class NGGitOpsCommandTask extends AbstractDelegateRunnableTask {
       stringObjectMap.forEach(
           (k, v)
               -> logCallback.saveExecutionLog(
-                  format("Modifying %s with value %s", color(k, White, Bold), color(k, White, Bold)), INFO));
+                  format("Modifying %s with value %s", color(k, White, Bold), color(v, White, Bold)), INFO));
       if (gitFile.getFilePath().contains(".yaml") || gitFile.getFilePath().contains(".yml")) {
         updatedFiles.add(replaceFields(convertYamlToJson(gitFile.getFileContent()), stringObjectMap));
       } else if (gitFile.getFilePath().contains(".json")) {
