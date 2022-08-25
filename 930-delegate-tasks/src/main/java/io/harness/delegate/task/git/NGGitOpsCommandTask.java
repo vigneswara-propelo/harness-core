@@ -158,6 +158,17 @@ public class NGGitOpsCommandTask extends AbstractDelegateRunnableTask {
       switch (connectorType) {
         case GITHUB:
           responseData = (GitApiTaskResponse) githubApiClient.mergePR(taskParams);
+          if (responseData.getCommandExecutionStatus() == CommandExecutionStatus.SUCCESS
+              && taskParams.isDeleteSourceBranch()) {
+            GitApiTaskResponse resp = (GitApiTaskResponse) githubApiClient.deleteRef(taskParams);
+            if (resp.getCommandExecutionStatus() == CommandExecutionStatus.FAILURE) {
+              // Not failing the command unit for failure to delete source branch
+              logCallback.saveExecutionLog(
+                  format("Error encountered when deleting source branch %s of the pull request",
+                      gitOpsTaskParams.getGitApiTaskParams().getRef()),
+                  INFO);
+            }
+          }
           break;
         case GITLAB:
           responseData = (GitApiTaskResponse) gitlabApiClient.mergePR(taskParams);
@@ -275,6 +286,7 @@ public class NGGitOpsCommandTask extends AbstractDelegateRunnableTask {
           .commitId(gitCommitAndPushResult.getGitCommitResult().getCommitId())
           .prNumber(createPRResponse.getNumber())
           .prLink(prLink)
+          .ref(newBranch)
           .taskStatus(TaskStatus.SUCCESS)
           .unitProgressData(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress))
           .build();
