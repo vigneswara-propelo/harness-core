@@ -1,4 +1,4 @@
-package io.harness.mongo;
+package io.harness.mongo.helper;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
