@@ -19,6 +19,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogLevel;
 import io.harness.shell.AbstractScriptExecutor;
+import io.harness.shell.ExecuteCommandResponse;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -30,7 +31,7 @@ public class SshScriptCommandHandler implements CommandHandler {
   @Inject private SshScriptExecutorFactory sshScriptExecutorFactory;
 
   @Override
-  public CommandExecutionStatus handle(CommandTaskParameters parameters, NgCommandUnit commandUnit,
+  public ExecuteCommandResponse handle(CommandTaskParameters parameters, NgCommandUnit commandUnit,
       ILogStreamingTaskClient logStreamingTaskClient, CommandUnitsProgress commandUnitsProgress,
       Map<String, Object> taskContext) {
     if (!(parameters instanceof SshCommandTaskParameters)) {
@@ -62,15 +63,15 @@ public class SshScriptCommandHandler implements CommandHandler {
 
     AbstractScriptExecutor executor = sshScriptExecutorFactory.getExecutor(context);
 
-    CommandExecutionStatus commandExecutionStatus =
-        executor.executeCommandString(scriptCommandUnit.getCommand(), sshCommandTaskParameters.getOutputVariables())
-            .getStatus();
+    ExecuteCommandResponse executeCommandResponse =
+        executor.executeCommandString(scriptCommandUnit.getCommand(), sshCommandTaskParameters.getOutputVariables());
+    CommandExecutionStatus commandExecutionStatus = executeCommandResponse.getStatus();
 
     if (parameters.isExecuteOnDelegate()) {
       executor.getLogCallback().saveExecutionLog(
           "Command finished with status " + commandExecutionStatus, LogLevel.INFO, commandExecutionStatus);
     }
 
-    return commandExecutionStatus;
+    return executeCommandResponse;
   }
 }

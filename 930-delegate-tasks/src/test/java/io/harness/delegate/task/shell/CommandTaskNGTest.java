@@ -42,6 +42,7 @@ import io.harness.delegate.task.ssh.ScriptCommandUnit;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.ng.core.dto.secrets.SSHKeySpecDTO;
 import io.harness.rule.Owner;
+import io.harness.shell.ExecuteCommandResponse;
 import io.harness.shell.ScriptType;
 
 import com.google.inject.Inject;
@@ -122,13 +123,16 @@ public class CommandTaskNGTest extends CategoryTest {
             .host("host1")
             .build();
 
-    doReturn(CommandExecutionStatus.SUCCESS)
+    ExecuteCommandResponse executeCommandResponse =
+        ExecuteCommandResponse.builder().status(CommandExecutionStatus.SUCCESS).build();
+
+    doReturn(executeCommandResponse)
         .when(sshInitCommandHandler)
         .handle(eq(taskParameters), eq(initCommandUnit), eq(logStreamingTaskClient), any(), any());
-    doReturn(CommandExecutionStatus.SUCCESS)
+    doReturn(executeCommandResponse)
         .when(sshScriptCommandHandler)
         .handle(eq(taskParameters), eq(scriptCommandUnit), eq(logStreamingTaskClient), any(), any());
-    doReturn(CommandExecutionStatus.SUCCESS)
+    doReturn(executeCommandResponse)
         .when(sshCleanupCommandHandler)
         .handle(eq(taskParameters), eq(cleanupCommandUnit), eq(logStreamingTaskClient), any(), any());
 
@@ -164,7 +168,10 @@ public class CommandTaskNGTest extends CategoryTest {
             .host("host1")
             .build();
 
-    doReturn(CommandExecutionStatus.SUCCESS)
+    ExecuteCommandResponse executeCommandResponse =
+        ExecuteCommandResponse.builder().status(CommandExecutionStatus.SUCCESS).build();
+
+    doReturn(executeCommandResponse)
         .when(sshInitCommandHandler)
         .handle(eq(taskParameters), any(NgCommandUnit.class), eq(logStreamingTaskClient), any(), any());
     lenient()

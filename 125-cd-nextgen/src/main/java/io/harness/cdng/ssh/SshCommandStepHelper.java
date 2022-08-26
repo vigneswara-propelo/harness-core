@@ -35,6 +35,7 @@ import io.harness.cdng.service.steps.ServiceStepOutcome;
 import io.harness.cdng.ssh.rollback.CommandStepRollbackHelper;
 import io.harness.cdng.ssh.rollback.SshWinRmRollbackData;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.exception.TaskNGDataException;
 import io.harness.delegate.task.shell.CommandTaskParameters;
@@ -67,6 +68,7 @@ import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.steps.OutputExpressionConstants;
 import io.harness.steps.shellscript.ShellScriptInlineSource;
@@ -77,6 +79,7 @@ import io.harness.steps.shellscript.WinRmInfraDelegateConfigOutput;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -395,5 +398,19 @@ public class SshCommandStepHelper extends CDStepHelper {
   private String getShellScript(@Nonnull ShellScriptSourceWrapper shellScriptSourceWrapper) {
     ShellScriptInlineSource shellScriptInlineSource = (ShellScriptInlineSource) shellScriptSourceWrapper.getSpec();
     return (String) shellScriptInlineSource.getScript().fetchFinalValue();
+  }
+
+  public Map<String, String> prepareOutputVariables(
+      Map<String, String> sweepingOutputEnvVariables, Map<String, Object> outputVariables) {
+    if (EmptyPredicate.isEmpty(outputVariables) || EmptyPredicate.isEmpty(sweepingOutputEnvVariables)) {
+      return Collections.EMPTY_MAP;
+    }
+
+    Map<String, String> resolvedOutputVariables = new HashMap<>();
+    outputVariables.keySet().forEach(name -> {
+      Object value = ((ParameterField<?>) outputVariables.get(name)).getValue();
+      resolvedOutputVariables.put(name, sweepingOutputEnvVariables.get(value));
+    });
+    return resolvedOutputVariables;
   }
 }
