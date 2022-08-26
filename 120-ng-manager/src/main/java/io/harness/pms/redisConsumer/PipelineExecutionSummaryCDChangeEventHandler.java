@@ -15,7 +15,6 @@ import io.harness.timescaledb.Tables;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
-import com.mongodb.DBObject;
 import java.util.HashMap;
 import java.util.List;
 import lombok.SneakyThrows;
@@ -109,7 +108,7 @@ public class PipelineExecutionSummaryCDChangeEventHandler extends RedisAbstractH
       }
 
       if (ciExecutionInfo != null) {
-        DBObject branch = (DBObject) (ciExecutionInfo.get(PipelineExecutionSummaryKeys.branch));
+        JsonNode branch = ciExecutionInfo.get(PipelineExecutionSummaryKeys.branch);
 
         HashMap firstCommit;
         String commits = PipelineExecutionSummaryKeys.commits;
@@ -126,7 +125,7 @@ public class PipelineExecutionSummaryCDChangeEventHandler extends RedisAbstractH
             }
           }
         } else if (ciExecutionInfo.get(PipelineExecutionSummaryKeys.pullRequest) != null) {
-          DBObject pullRequestObject = (DBObject) ciExecutionInfo.get(PipelineExecutionSummaryKeys.pullRequest);
+          JsonNode pullRequestObject = ciExecutionInfo.get(PipelineExecutionSummaryKeys.pullRequest);
 
           if (pullRequestObject.get(PipelineExecutionSummaryKeys.sourceBranch) != null) {
             record.set(Tables.PIPELINE_EXECUTION_SUMMARY_CD.SOURCE_BRANCH,
@@ -147,7 +146,7 @@ public class PipelineExecutionSummaryCDChangeEventHandler extends RedisAbstractH
             }
           }
         }
-        DBObject author = (DBObject) (ciExecutionInfo.get(PipelineExecutionSummaryKeys.author));
+        JsonNode author = ciExecutionInfo.get(PipelineExecutionSummaryKeys.author);
         if (author != null) {
           record.set(Tables.PIPELINE_EXECUTION_SUMMARY_CD.MODULEINFO_AUTHOR_ID,
               author.get(PipelineExecutionSummaryKeys.commitId).toString());
