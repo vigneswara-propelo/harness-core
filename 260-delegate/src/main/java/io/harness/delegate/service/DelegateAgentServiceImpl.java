@@ -99,7 +99,6 @@ import io.harness.data.structure.NullSafeImmutableMap;
 import io.harness.data.structure.UUIDGenerator;
 import io.harness.delegate.DelegateAgentCommonVariables;
 import io.harness.delegate.DelegateServiceAgentClient;
-import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateConnectionHeartbeat;
 import io.harness.delegate.beans.DelegateInstanceStatus;
 import io.harness.delegate.beans.DelegateParams;
@@ -747,9 +746,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       final RequestBuilder requestBuilder = client.newRequestBuilder().method(METHOD.GET).uri(uri.toString());
 
       requestBuilder
-          .encoder(new Encoder<Delegate, Reader>() { // Do not change this, wasync doesn't like lambdas
+          .encoder(new Encoder<DelegateParams, Reader>() { // Do not change this, wasync doesn't like lambdas
             @Override
-            public Reader encode(Delegate s) {
+            public Reader encode(DelegateParams s) {
               return new StringReader(JsonUtils.asJson(s));
             }
           })
