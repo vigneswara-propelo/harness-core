@@ -426,8 +426,9 @@ public enum FeatureName {
   FIX_CORRUPTED_INSTANCES("Used to fix instances mapped to old/wrong infrastructure mapping", HarnessTeam.CDP),
   VALIDATE_PHASES_AND_ROLLBACK("Validate that each phase has your own rollback phase", HarnessTeam.SPG),
   OPTIMIZED_TF_PLAN_NG(
-      "Enables uploading Terraform plan to GCS/MongoGridFS instead of saving to sweeping output", HarnessTeam.CDP);
+      "Enables uploading Terraform plan to GCS/MongoGridFS instead of saving to sweeping output", HarnessTeam.CDP),
 
+  ENABLE_CLOUDFORMATION_AS_EXPRESSION("Used to enabled solve cloud formation by expression", HarnessTeam.SPG);
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
