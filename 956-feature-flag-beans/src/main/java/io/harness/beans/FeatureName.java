@@ -420,6 +420,9 @@ public enum FeatureName {
       "Used to allow create retry state execution when event is status equals to STARTING", HarnessTeam.SPG),
   NG_DEFAULT_K8S_MANIFESTS("Sample k8s manifests at account level file store", HarnessTeam.CDP, Scope.GLOBAL),
   CI_TI_DASHBOARDS_ENABLED,
+
+  PERSIST_MONITORED_SERVICE_TEMPLATE_STEP(
+      "Enables saving of monitored service created during template verify step", HarnessTeam.CV),
   FIX_CORRUPTED_INSTANCES("Used to fix instances mapped to old/wrong infrastructure mapping", HarnessTeam.CDP),
   VALIDATE_PHASES_AND_ROLLBACK("Validate that each phase has your own rollback phase", HarnessTeam.SPG),
   OPTIMIZED_TF_PLAN_NG(
