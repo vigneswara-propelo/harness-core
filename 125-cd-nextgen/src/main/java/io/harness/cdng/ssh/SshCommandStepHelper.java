@@ -18,6 +18,7 @@ import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.HarnessStringUtils.emptyIfNull;
 import static io.harness.eraro.ErrorCode.GENERAL_ERROR;
+import static io.harness.utils.IdentifierRefHelper.getIdentifierRef;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -28,6 +29,7 @@ import io.harness.beans.common.VariablesSweepingOutput;
 import io.harness.cdng.CDStepHelper;
 import io.harness.cdng.artifact.outcome.ArtifactOutcome;
 import io.harness.cdng.configfile.steps.ConfigFilesOutcome;
+import io.harness.cdng.expressions.CDExpressionResolver;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.cdng.service.steps.ServiceOutcomeHelper;
@@ -50,12 +52,16 @@ import io.harness.delegate.task.ssh.ScriptCommandUnit;
 import io.harness.delegate.task.ssh.artifact.SshWinRmArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.config.FileDelegateConfig;
 import io.harness.eraro.Level;
+import io.harness.exception.EntityNotFoundException;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.SkipRollbackException;
+import io.harness.expression.EngineExpressionEvaluator;
 import io.harness.logging.UnitProgress;
 import io.harness.logging.UnitStatus;
+import io.harness.ng.core.api.NGSecretServiceV2;
 import io.harness.ng.core.k8s.ServiceSpecType;
+import io.harness.ng.core.models.Secret;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
@@ -63,13 +69,13 @@ import io.harness.pms.contracts.execution.failure.FailureData;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.failure.FailureType;
 import io.harness.pms.execution.utils.AmbianceUtils;
-import io.harness.pms.expression.EngineExpressionService;
 import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.secretmanagerclient.SecretType;
 import io.harness.steps.OutputExpressionConstants;
 import io.harness.steps.shellscript.ShellScriptInlineSource;
 import io.harness.steps.shellscript.ShellScriptSourceWrapper;
@@ -85,6 +91,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -95,12 +103,15 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(CDP)
 @Slf4j
 public class SshCommandStepHelper extends CDStepHelper {
+  private static final Pattern SECRETS_GET_VALUE_PATTERN = Pattern.compile("\\<\\+secrets\\.getValue\\(\"(.*?)\"\\)");
+
   @Inject protected CDFeatureFlagHelper cdFeatureFlagHelper;
   @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
   @Inject private CommandStepRollbackHelper commandStepRollbackHelper;
   @Inject private SshWinRmConfigFileHelper sshWinRmConfigFileHelper;
   @Inject private SshWinRmArtifactHelper sshWinRmArtifactHelper;
-  @Inject private EngineExpressionService engineExpressionService;
+  @Inject private CDExpressionResolver cdExpressionResolver;
+  @Inject private NGSecretServiceV2 ngSecretServiceV2;
 
   public CommandTaskParameters buildCommandTaskParameters(
       @Nonnull Ambiance ambiance, @Nonnull CommandStepParameters commandStepParameters) {
@@ -193,20 +204,61 @@ public class SshCommandStepHelper extends CDStepHelper {
 
   private Map<String, String> getMergedEnvVariablesMap(
       Ambiance ambiance, CommandStepParameters commandStepParameters, InfrastructureOutcome infrastructure) {
+    LinkedHashMap<String, Object> evaluatedStageVariables =
+        cdExpressionResolver.evaluateExpression(ambiance, "<+stage.variables>", LinkedHashMap.class);
+
     Map<String, String> finalEnvVariables = new HashMap<>();
-
-    Object evaluatedStageVariables = engineExpressionService.evaluateExpression(ambiance, "<+stage.variables>");
-    if (evaluatedStageVariables instanceof LinkedHashMap) {
-      finalEnvVariables =
-          mergeEnvironmentVariables((LinkedHashMap<String, Object>) evaluatedStageVariables, finalEnvVariables);
-    }
-
-    VariablesSweepingOutput serviceVariablesOutput = ServiceOutcomeHelper.getVariablesSweepingOutput(
-        ambiance, executionSweepingOutputService, YAMLFieldNameConstants.SERVICE_VARIABLES);
-    finalEnvVariables = mergeEnvironmentVariables(serviceVariablesOutput, finalEnvVariables);
-
+    finalEnvVariables = mergeEnvironmentVariables(evaluatedStageVariables, finalEnvVariables);
+    finalEnvVariables = mergeEnvironmentVariables(getServiceVariables(ambiance), finalEnvVariables);
     finalEnvVariables = mergeEnvironmentVariables(infrastructure.getEnvironment().getVariables(), finalEnvVariables);
     return mergeEnvironmentVariables(commandStepParameters.getEnvironmentVariables(), finalEnvVariables);
+  }
+
+  private HashMap<String, Object> getServiceVariables(Ambiance ambiance) {
+    HashMap<String, Object> serviceVariablesMap = new HashMap<>();
+    VariablesSweepingOutput serviceVariablesOutput = ServiceOutcomeHelper.getVariablesSweepingOutput(
+        ambiance, executionSweepingOutputService, YAMLFieldNameConstants.SERVICE_VARIABLES);
+
+    serviceVariablesOutput.entrySet().stream().filter(e -> e.getValue() instanceof String).forEach(entry -> {
+      String value = (String) entry.getValue();
+
+      if (EngineExpressionEvaluator.hasExpressions(value)) {
+        serviceVariablesMap.putAll(evaluateExpression(ambiance, entry, value));
+      } else {
+        serviceVariablesMap.put(entry.getKey(), value);
+      }
+    });
+    return serviceVariablesMap;
+  }
+
+  private HashMap<String, Object> evaluateExpression(Ambiance ambiance, Map.Entry<String, Object> entry, String value) {
+    String accountId = AmbianceUtils.getAccountId(ambiance);
+    String orgIdentifier = AmbianceUtils.getOrgIdentifier(ambiance);
+    String projectIdentifier = AmbianceUtils.getProjectIdentifier(ambiance);
+    Optional<String> scopedIdentifier = extractIdentifier(value);
+    HashMap<String, Object> serviceVariablesMap = new HashMap<>();
+    if (scopedIdentifier.isPresent()) {
+      Secret secret =
+          ngSecretServiceV2.get(getIdentifierRef(scopedIdentifier.get(), accountId, orgIdentifier, projectIdentifier))
+              .orElseThrow(
+                  () -> new EntityNotFoundException(format("Secret with id: %s not found.", scopedIdentifier.get())));
+
+      if (!secret.getType().equals(SecretType.SecretFile)) {
+        serviceVariablesMap.put(entry.getKey(), cdExpressionResolver.renderExpression(ambiance, value));
+      }
+    }
+    return serviceVariablesMap;
+  }
+
+  private Optional<String> extractIdentifier(String expression) {
+    if (isEmpty(expression)) {
+      return Optional.empty();
+    }
+    Matcher matcher = SECRETS_GET_VALUE_PATTERN.matcher(expression);
+    if (matcher.find()) {
+      return Optional.of(matcher.group(1));
+    }
+    return Optional.empty();
   }
 
   private SshCommandTaskParameters createSshTaskParameters(Ambiance ambiance,
