@@ -252,7 +252,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                           .accountIdentifier(accountIdentifier)
                                           .customerId(stripeCustomer.getCustomerId())
                                           .subscriptionId(subscription.getSubscriptionId())
-                                          .status(subscription.getStatus())
+                                          .status("incomplete")
                                           .latestInvoice(subscription.getLatestInvoice())
                                           .moduleType(ModuleType.CF)
                                           .build());
