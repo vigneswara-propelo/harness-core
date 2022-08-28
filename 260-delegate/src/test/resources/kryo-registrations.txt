@@ -394,6 +394,7 @@
 5229:software.wings.api.AwsLambdaContextElement.FunctionMeta
 5230:software.wings.api.AwsLambdaFunctionElement
 5231:software.wings.api.artifact.ServiceArtifactElement
+5232:software.wings.beans.NameValuePairWithDefault
 5233:io.harness.eraro.ErrorCode
 5234:software.wings.beans.command.JenkinsTaskParams
 5235:software.wings.api.ScriptStateExecutionData
