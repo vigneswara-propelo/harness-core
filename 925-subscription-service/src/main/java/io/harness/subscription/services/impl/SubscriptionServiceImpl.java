@@ -13,12 +13,8 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnsupportedOperationException;
 import io.harness.licensing.Edition;
 import io.harness.licensing.LicenseType;
-import io.harness.licensing.entities.modules.CDModuleLicense;
-import io.harness.licensing.entities.modules.CEModuleLicense;
 import io.harness.licensing.entities.modules.CFModuleLicense;
-import io.harness.licensing.entities.modules.CIModuleLicense;
 import io.harness.licensing.entities.modules.ModuleLicense;
-import io.harness.licensing.entities.modules.STOModuleLicense;
 import io.harness.licensing.helpers.ModuleLicenseHelper;
 import io.harness.repositories.ModuleLicenseRepository;
 import io.harness.repositories.StripeCustomerRepository;
@@ -84,64 +80,38 @@ public class SubscriptionServiceImpl implements SubscriptionService {
   }
 
   @Override
-  public EnumMap<UsageKey, Long> getRecommendation(
-      String accountIdentifier, ModuleType moduleType, EnumMap<UsageKey, Long> usage) {
+  public EnumMap<UsageKey, Long> getRecommendation(String accountIdentifier, long numberOfMAUs, long numberOfUsers) {
     List<ModuleLicense> currentLicenses =
-        licenseRepository.findByAccountIdentifierAndModuleType(accountIdentifier, moduleType);
+        licenseRepository.findByAccountIdentifierAndModuleType(accountIdentifier, ModuleType.CF);
 
     if (currentLicenses.isEmpty()) {
       throw new InvalidRequestException(
-          String.format("Cannot provide recommendation. No active license detected for module %s.", moduleType));
+          String.format("Cannot provide recommendation. No active license detected for module %s.", ModuleType.CF));
     }
 
     ModuleLicense latestLicense = ModuleLicenseHelper.getLatestLicense(currentLicenses);
 
-    EnumMap<UsageKey, Long> baseValues = new EnumMap<>(UsageKey.class);
-
-    switch (moduleType) {
-      case CD:
-        CDModuleLicense cdLicense = (CDModuleLicense) latestLicense;
-        baseValues.put(UsageKey.WORKLOADS, (long) cdLicense.getWorkloads());
-        baseValues.put(UsageKey.SERVICE_INSTANCE, (long) cdLicense.getServiceInstances());
-        break;
-      case CE:
-        CEModuleLicense ceLicense = (CEModuleLicense) latestLicense;
-        baseValues.put(UsageKey.SPEND_LIMIT, ceLicense.getSpendLimit());
-        break;
-      case CF:
-        CFModuleLicense cfLicense = (CFModuleLicense) latestLicense;
-        baseValues.put(UsageKey.NUMBER_OF_USERS, (long) cfLicense.getNumberOfUsers());
-        baseValues.put(UsageKey.NUMBER_OF_MAUS, cfLicense.getNumberOfClientMAUs());
-        break;
-      case CI:
-        CIModuleLicense ciLicense = (CIModuleLicense) latestLicense;
-        baseValues.put(UsageKey.NUMBER_OF_COMMITTERS, (long) ciLicense.getNumberOfCommitters());
-        break;
-      case STO:
-        STOModuleLicense stoLicense = (STOModuleLicense) latestLicense;
-        baseValues.put(UsageKey.NUMBER_OF_DEVELOPERS, (long) stoLicense.getNumberOfDevelopers());
-        break;
-      default:
-        throw new InvalidRequestException(String.format("Cannot get recommendation for module %s,", moduleType));
-    }
+    CFModuleLicense cfLicense = (CFModuleLicense) latestLicense;
 
     EnumMap<UsageKey, Long> recommendedValues = new EnumMap<>(UsageKey.class);
 
     LicenseType licenseType = latestLicense.getLicenseType();
     Edition edition = latestLicense.getEdition();
     if (licenseType.equals(LicenseType.TRIAL)) {
-      baseValues.forEach((key, value) -> {
-        double recommendedValue = Math.max(value, usage.get(key)) * RECOMMENDATION_MULTIPLIER;
-        recommendedValues.put(key, (long) recommendedValue);
-      });
+      double recommendedUsers = Math.max(cfLicense.getNumberOfUsers(), numberOfUsers) * RECOMMENDATION_MULTIPLIER;
+      double recommendedMAUs = Math.max(cfLicense.getNumberOfClientMAUs(), numberOfMAUs) * RECOMMENDATION_MULTIPLIER;
+
+      recommendedValues.put(UsageKey.NUMBER_OF_USERS, (long) recommendedUsers);
+      recommendedValues.put(UsageKey.NUMBER_OF_MAUS, (long) recommendedMAUs);
     } else if (licenseType.equals(LicenseType.PAID) || edition.equals(Edition.FREE)) {
-      baseValues.forEach((key, value) -> {
-        double recommendedValue = usage.get(key) * RECOMMENDATION_MULTIPLIER;
-        recommendedValues.put(key, (long) recommendedValue);
-      });
+      double recommendedUsers = Math.max(cfLicense.getNumberOfUsers(), numberOfUsers);
+      double recommendedMAUs = Math.max(cfLicense.getNumberOfClientMAUs(), numberOfMAUs);
+
+      recommendedValues.put(UsageKey.NUMBER_OF_USERS, (long) recommendedUsers);
+      recommendedValues.put(UsageKey.NUMBER_OF_MAUS, (long) recommendedMAUs);
     } else {
       throw new InvalidRequestException(
-          String.format("Cannot provide recommendation. No active license detected for module %s.", moduleType));
+          String.format("Cannot provide recommendation. No active license detected for module %s.", ModuleType.CF));
     }
 
     return recommendedValues;
