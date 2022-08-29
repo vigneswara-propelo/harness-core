@@ -217,8 +217,8 @@ public class InfrastructureTaskExecutableStep implements TaskExecutableWithRbac<
   private StepResponse publishAzureHosts(AzureHostsResponse azureHostsResponse, Ambiance ambiance,
       NGLogCallback logCallback, InfrastructureOutcome infrastructureOutcome, ExecutionInfoKey executionInfoKey,
       long startTime) {
-    List<String> hostNames =
-        azureHostsResponse.getHosts().stream().map(AzureHostResponse::getHostName).collect(Collectors.toList());
+    Set<String> hostNames =
+        azureHostsResponse.getHosts().stream().map(AzureHostResponse::getHostName).collect(Collectors.toSet());
     if (EmptyPredicate.isEmpty(hostNames)) {
       infrastructureStepHelper.saveExecutionLog(logCallback,
           color("No host(s) found for specified infrastructure or filter did not match any instance(s)", Red));
@@ -238,10 +238,10 @@ public class InfrastructureTaskExecutableStep implements TaskExecutableWithRbac<
   private StepResponse publishAwsHosts(AwsListEC2InstancesTaskResponse awsListEC2InstancesTaskResponse,
       Ambiance ambiance, NGLogCallback logCallback, InfrastructureOutcome infrastructureOutcome,
       ExecutionInfoKey executionInfoKey, long startTime) {
-    List<String> hostNames = awsListEC2InstancesTaskResponse.getInstances()
-                                 .stream()
-                                 .map(AwsEC2Instance::getPublicDnsName)
-                                 .collect(Collectors.toList());
+    Set<String> hostNames = awsListEC2InstancesTaskResponse.getInstances()
+                                .stream()
+                                .map(AwsEC2Instance::getPublicDnsName)
+                                .collect(Collectors.toSet());
     if (EmptyPredicate.isEmpty(hostNames)) {
       infrastructureStepHelper.saveExecutionLog(logCallback,
           color("No host(s) found for specified infrastructure or filter did not match any instance(s)", Red));

@@ -227,7 +227,7 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
         SshInfraDelegateConfigOutput.builder().sshInfraDelegateConfig(sshInfraDelegateConfig).build();
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.SSH_INFRA_DELEGATE_CONFIG_OUTPUT_NAME,
         sshInfraDelegateConfigOutput, StepCategory.STAGE.name());
-    List<String> hosts = sshInfraDelegateConfig.getHosts();
+    Set<String> hosts = sshInfraDelegateConfig.getHosts();
     if (EmptyPredicate.isEmpty(hosts)) {
       infrastructureStepHelper.saveExecutionLog(logCallback,
           color("No host(s) were provided for specified infrastructure or filter did not match any instance(s)", Red));
@@ -250,7 +250,7 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
         WinRmInfraDelegateConfigOutput.builder().winRmInfraDelegateConfig(winRmInfraDelegateConfig).build();
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.WINRM_INFRA_DELEGATE_CONFIG_OUTPUT_NAME,
         winRmInfraDelegateConfigOutput, StepCategory.STAGE.name());
-    List<String> hosts = winRmInfraDelegateConfig.getHosts();
+    Set<String> hosts = winRmInfraDelegateConfig.getHosts();
     if (EmptyPredicate.isEmpty(hosts)) {
       infrastructureStepHelper.saveExecutionLog(logCallback,
           color("No host(s) were provided for specified infrastructure or filter did not match any instance(s)", Red));
