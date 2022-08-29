@@ -7,7 +7,7 @@
 
 package software.wings.beans.loginSettings.events;
 
-import static software.wings.beans.loginSettings.LoginSettingsConstants.WHITELISTED_DOMAINS_UPDATED;
+import static software.wings.beans.loginSettings.LoginSettingsConstants.OAUTH_PROVIDER_UPDATED;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -22,12 +22,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LoginSettingsWhitelistedDomainsUpdateEvent extends LoginSettingsAbstractEvent {
-  private WhitelistedDomainsYamlDTO oldWhitelistedDomainsYamlDTO;
-  private WhitelistedDomainsYamlDTO newWhitelistedDomainsYamlDTO;
-
+public class LoginSettingsOAuthUpdateEvent extends LoginSettingsAbstractOAuthConfigurationEvent {
   @Override
   public String getEventType() {
-    return WHITELISTED_DOMAINS_UPDATED;
+    return OAUTH_PROVIDER_UPDATED;
   }
 }

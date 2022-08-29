@@ -7,7 +7,7 @@
 
 package software.wings.beans.loginSettings.events;
 
-import static software.wings.beans.loginSettings.LoginSettingsConstants.WHITELISTED_DOMAINS_UPDATED;
+import static software.wings.beans.loginSettings.LoginSettingsConstants.TWO_FACTOR_AUTH_UPDATED;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -22,12 +22,12 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LoginSettingsWhitelistedDomainsUpdateEvent extends LoginSettingsAbstractEvent {
-  private WhitelistedDomainsYamlDTO oldWhitelistedDomainsYamlDTO;
-  private WhitelistedDomainsYamlDTO newWhitelistedDomainsYamlDTO;
+public class LoginSettingsTwoFactorAuthEvent extends LoginSettingsAbstractEvent {
+  private TwoFactorAuthYamlDTO oldTwoFactorAuthYamlDTO;
+  private TwoFactorAuthYamlDTO newTwoFactorAuthYamlDTO;
 
   @Override
   public String getEventType() {
-    return WHITELISTED_DOMAINS_UPDATED;
+    return TWO_FACTOR_AUTH_UPDATED;
   }
 }
