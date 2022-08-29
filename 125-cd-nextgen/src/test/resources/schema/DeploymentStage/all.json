@@ -3159,7 +3159,7 @@
             }
           ]
         },
-        "partitions": {
+        "partitionSize": {
           "oneOf": [
             {
               "type": "integer",
