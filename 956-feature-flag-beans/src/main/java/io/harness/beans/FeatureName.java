@@ -428,7 +428,9 @@ public enum FeatureName {
   OPTIMIZED_TF_PLAN_NG(
       "Enables uploading Terraform plan to GCS/MongoGridFS instead of saving to sweeping output", HarnessTeam.CDP),
 
-  ENABLE_CLOUDFORMATION_AS_EXPRESSION("Used to enabled solve cloud formation by expression", HarnessTeam.SPG);
+  ENABLE_CLOUDFORMATION_AS_EXPRESSION("Used to enabled solve cloud formation by expression", HarnessTeam.SPG),
+  SERVICE_V2_EXPRESSION(
+      "Allow service reference to be an expression in a pipeline for the new service entity", HarnessTeam.CDC);
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
