@@ -434,12 +434,12 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
     String planName =
         terraformCommand == APPLY ? TERRAFORM_PLAN_FILE_OUTPUT_NAME : TERRAFORM_DESTROY_PLAN_FILE_OUTPUT_NAME;
     logCallback.saveExecutionLog(
-        format("%nGenerating json representation of %s %n", planName), INFO, CommandExecutionStatus.RUNNING);
+        format("%nGenerating JSON representation of %s %n", planName), INFO, CommandExecutionStatus.RUNNING);
     CliResponse response =
         terraformClient.show(planName, timeoutInMillis, envVars, scriptDirectory, logCallback, planJsonLogOutputStream);
     if (!useOptimizedTfPlan && response.getCommandExecutionStatus().equals(CommandExecutionStatus.SUCCESS)) {
       logCallback.saveExecutionLog(
-          format("%nJson representation of %s is exported as a variable %s %n", planName,
+          format("%nJSON representation of %s is exported as a variable %s %n", planName,
               terraformCommand == APPLY ? TERRAFORM_APPLY_PLAN_FILE_VAR_NAME : TERRAFORM_DESTROY_PLAN_FILE_VAR_NAME),
           INFO, CommandExecutionStatus.RUNNING);
     }
