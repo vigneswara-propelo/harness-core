@@ -11,22 +11,23 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.DelegateMetaInfo;
+import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.logging.CommandExecutionStatus;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.NonFinal;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 @OwnedBy(CDP)
-public class AzureBlueprintTaskNGResponse extends AzureResourceCreationTaskNGResponse {
-  String outputs;
-  @Builder
-  public AzureBlueprintTaskNGResponse(CommandExecutionStatus commandExecutionStatus, UnitProgressData unitProgressData,
-      DelegateMetaInfo delegateMetaInfo, String errorMsg, String outputs) {
-    super(commandExecutionStatus, unitProgressData, delegateMetaInfo, errorMsg);
-    this.outputs = outputs;
-  }
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class AzureResourceCreationTaskNGResponse implements DelegateTaskNotifyResponseData {
+  CommandExecutionStatus commandExecutionStatus;
+  @NonFinal @Setter UnitProgressData unitProgressData;
+  @NonFinal @Setter DelegateMetaInfo delegateMetaInfo;
+  String errorMsg;
 }
