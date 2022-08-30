@@ -58,6 +58,8 @@ public class StrategyStep extends ChildrenExecutableWithRollbackAndRbac<Strategy
   @Override
   public ChildrenExecutableResponse obtainChildrenAfterRbac(
       Ambiance ambiance, StrategyStepParameters stepParameters, StepInputPackage inputPackage) {
+    boolean shouldProceedIfFailed =
+        stepParameters.getShouldProceedIfFailed() != null && stepParameters.getShouldProceedIfFailed();
     int maxConcurrencyLimitBasedOnPlan = 10000;
     try {
       if (enforcementClientService.isEnforcementEnabled()) {
@@ -88,7 +90,11 @@ public class StrategyStep extends ChildrenExecutableWithRollbackAndRbac<Strategy
       if (maxConcurrency > maxConcurrencyLimitBasedOnPlan) {
         maxConcurrency = maxConcurrencyLimitBasedOnPlan;
       }
-      return ChildrenExecutableResponse.newBuilder().addAllChildren(children).setMaxConcurrency(maxConcurrency).build();
+      return ChildrenExecutableResponse.newBuilder()
+          .addAllChildren(children)
+          .setMaxConcurrency(maxConcurrency)
+          .setShouldProceedIfFailed(shouldProceedIfFailed)
+          .build();
     }
     if (stepParameters.getStrategyConfig().getRepeat() != null) {
       int maxConcurrency = 0;
@@ -103,7 +109,11 @@ public class StrategyStep extends ChildrenExecutableWithRollbackAndRbac<Strategy
       if (maxConcurrency > maxConcurrencyLimitBasedOnPlan) {
         maxConcurrency = maxConcurrencyLimitBasedOnPlan;
       }
-      return ChildrenExecutableResponse.newBuilder().addAllChildren(children).setMaxConcurrency(maxConcurrency).build();
+      return ChildrenExecutableResponse.newBuilder()
+          .addAllChildren(children)
+          .setMaxConcurrency(maxConcurrency)
+          .setShouldProceedIfFailed(shouldProceedIfFailed)
+          .build();
     }
     if (stepParameters.getStrategyConfig().getParallelism() != null) {
       List<Child> children = parallelismStrategyConfigService.fetchChildren(
@@ -112,7 +122,11 @@ public class StrategyStep extends ChildrenExecutableWithRollbackAndRbac<Strategy
       if (maxConcurrency > maxConcurrencyLimitBasedOnPlan) {
         maxConcurrency = maxConcurrencyLimitBasedOnPlan;
       }
-      return ChildrenExecutableResponse.newBuilder().addAllChildren(children).setMaxConcurrency(maxConcurrency).build();
+      return ChildrenExecutableResponse.newBuilder()
+          .addAllChildren(children)
+          .setMaxConcurrency(maxConcurrency)
+          .setShouldProceedIfFailed(shouldProceedIfFailed)
+          .build();
     }
     return ChildrenExecutableResponse.newBuilder()
         .addChildren(

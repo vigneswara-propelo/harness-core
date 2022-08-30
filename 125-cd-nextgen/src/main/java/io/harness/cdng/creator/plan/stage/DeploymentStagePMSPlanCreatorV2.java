@@ -221,8 +221,9 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       }
       addCDExecutionDependencies(planCreationResponseMap, executionField);
 
-      // Adds the strategy field as dependency in planCreationResponseMap if present else ignores
-      addStrategyFieldDependencyIfPresent(ctx, stageNode, planCreationResponseMap, metadataMap);
+      StrategyUtils.addStrategyFieldDependencyIfPresent(kryoSerializer, ctx, stageNode.getUuid(), stageNode.getName(),
+          stageNode.getIdentifier(), planCreationResponseMap, metadataMap,
+          StrategyUtils.getAdviserObtainments(ctx.getCurrentField(), kryoSerializer, false), false);
 
       return planCreationResponseMap;
     } catch (IOException e) {

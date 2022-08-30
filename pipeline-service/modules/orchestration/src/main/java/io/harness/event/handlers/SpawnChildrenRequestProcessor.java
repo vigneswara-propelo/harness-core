@@ -92,7 +92,7 @@ public class SpawnChildrenRequestProcessor implements SdkResponseProcessor {
             initiateMode = InitiateMode.CREATE_AND_START;
           }
           createAndStart(ambiance, nodeExecutionId, uuid, child.getChildNodeId(), child.getStrategyMetadata(),
-              maxConcurrency, initiateMode);
+              maxConcurrency, initiateMode, request.getChildren().getShouldProceedIfFailed());
         } else {
           initiateNodeHelper.publishEvent(ambiance, child.getChildNodeId(), uuid);
         }
@@ -127,13 +127,16 @@ public class SpawnChildrenRequestProcessor implements SdkResponseProcessor {
    * @param initiateMode
    */
   private void createAndStart(Ambiance ambiance, String parentNodeExecutionId, String childNodeExecutionId,
-      String childNodeId, StrategyMetadata strategyMetadata, int maxConcurrency, InitiateMode initiateMode) {
+      String childNodeId, StrategyMetadata strategyMetadata, int maxConcurrency, InitiateMode initiateMode,
+      Boolean proceedIfFailed) {
     initiateNodeHelper.publishEvent(ambiance, childNodeId, childNodeExecutionId, strategyMetadata, initiateMode);
     MaxConcurrentChildCallback maxConcurrentChildCallback = MaxConcurrentChildCallback.builder()
                                                                 .parentNodeExecutionId(parentNodeExecutionId)
                                                                 .ambiance(ambiance)
                                                                 .maxConcurrency(maxConcurrency)
+                                                                .proceedIfFailed(proceedIfFailed)
                                                                 .build();
+
     waitNotifyEngine.waitForAllOn(publisherName, maxConcurrentChildCallback, childNodeExecutionId);
   }
 }
