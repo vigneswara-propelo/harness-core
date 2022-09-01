@@ -21,6 +21,8 @@ import io.harness.cdng.artifact.resources.ecr.service.EcrResourceService;
 import io.harness.cdng.artifact.resources.ecr.service.EcrResourceServiceImpl;
 import io.harness.cdng.artifact.resources.gcr.service.GcrResourceService;
 import io.harness.cdng.artifact.resources.gcr.service.GcrResourceServiceImpl;
+import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceService;
+import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceServiceImpl;
 import io.harness.cdng.artifact.resources.jenkins.service.JenkinsResourceService;
 import io.harness.cdng.artifact.resources.jenkins.service.JenkinsResourceServiceImpl;
 import io.harness.cdng.artifact.resources.nexus.service.NexusResourceService;
@@ -134,7 +136,7 @@ public class NGModule extends AbstractModule {
                 .build()));
     bind(StageExecutionInfoService.class).to(StageExecutionInfoServiceImpl.class);
     bind(InstanceDeploymentInfoService.class).to(InstanceDeploymentInfoServiceImpl.class);
-
+    bind(GARResourceService.class).to(GARResourceServiceImpl.class);
     MapBinder<String, FilterPropertiesMapper> filterPropertiesMapper =
         MapBinder.newMapBinder(binder(), String.class, FilterPropertiesMapper.class);
     filterPropertiesMapper.addBinding(FilterType.ENVIRONMENTGROUP.toString())
