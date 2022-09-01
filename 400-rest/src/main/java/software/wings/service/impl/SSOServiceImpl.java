@@ -234,7 +234,7 @@ public class SSOServiceImpl implements SSOService {
               .newAuthMechanismYamlDTO(AuthMechanismYamlDTO.builder().authenticationMechanism(newAuthMechanism).build())
               .build());
     } catch (Exception ex) {
-      log.error("For account {} Audit trails for Authentication Mechanism Update event failed with exception: {}",
+      log.error("For account {} Audit trails for Authentication Mechanism Update event failed with exception: ",
           accountIdentifier, ex);
     }
   }
