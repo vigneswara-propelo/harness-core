@@ -51,12 +51,14 @@ import io.harness.steps.environment.EnvironmentOutcome;
 
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.tuple.Pair;
 
 @UtilityClass
 @OwnedBy(HarnessTeam.CDP)
 public class InfrastructureMapper {
+  @NotNull
   public InfrastructureOutcome toOutcome(
       @Nonnull Infrastructure infrastructure, EnvironmentOutcome environmentOutcome, ServiceStepOutcome service) {
     switch (infrastructure.getKind()) {

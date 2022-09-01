@@ -206,8 +206,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       if (useNewFlow(ctx)) {
         List<AdviserObtainment> adviserObtainments =
             addResourceConstraintDependencyWithWhenCondition(planCreationResponseMap, specField);
-        String infraNodeId =
-            addInfrastructureNode(ctx, planCreationResponseMap, specField, stageNode, adviserObtainments);
+        String infraNodeId = addInfrastructureNode(planCreationResponseMap, stageNode, adviserObtainments);
         String serviceNodeId = addServiceNode(planCreationResponseMap, stageNode, infraNodeId);
         addSpecNode(planCreationResponseMap, specField, serviceNodeId);
       } else {
@@ -464,8 +463,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
         kryoSerializer, service, environment, serviceNodeId, nextNodeId, serviceType));
     return serviceNodeId;
   }
-  private String addInfrastructureNode(PlanCreationContext ctx,
-      LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap, YamlField specField,
+  private String addInfrastructureNode(LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap,
       DeploymentStageNode stageNode, List<AdviserObtainment> adviserObtainments) throws IOException {
     PlanNode node = InfrastructurePmsPlanCreator.getInfraTaskExecutableStepV2PlanNode(
         stageNode.getDeploymentStageConfig().getEnvironment(), adviserObtainments);
