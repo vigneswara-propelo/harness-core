@@ -189,7 +189,7 @@ public class StageExecutionHelper {
 
     if (skipInstances) {
       Set<String> tempHosts = hosts;
-      hosts = excludeHostsWithSameArtifactDeployed(ambiance, executionInfoKey, new ArrayList<>(hosts));
+      hosts = excludeHostsWithSameArtifactDeployed(ambiance, executionInfoKey, hosts);
       Sets.SetView<String> difference = Sets.difference(tempHosts, hosts);
       if (!difference.isEmpty()) {
         saveExecutionLogSafely(logCallback,
@@ -210,37 +210,45 @@ public class StageExecutionHelper {
   }
 
   public Set<String> excludeHostsWithSameArtifactDeployed(
-      Ambiance ambiance, ExecutionInfoKey executionInfoKey, List<String> infrastructureHosts) {
-    ArtifactDetails artifactDetails = getArtifactDetails(ambiance);
+      Ambiance ambiance, ExecutionInfoKey executionInfoKey, Set<String> infrastructureHosts) {
+    Optional<ArtifactDetails> artifactDetailsOptional = getArtifactDetails(ambiance);
+    Set<String> hosts = isEmpty(infrastructureHosts) ? new HashSet<>() : infrastructureHosts;
+    if (artifactDetailsOptional.isPresent()) {
+      List<String> hostsWithSameArtifactFromDB =
+          instanceDeploymentInfoService
+              .getByHostsAndArtifact(executionInfoKey, new ArrayList<>(hosts), artifactDetailsOptional.get(),
+                  InstanceDeploymentInfoStatus.SUCCEEDED)
+              .stream()
+              .map(InstanceDeploymentInfo::getInstanceInfo)
+              .filter(instanceDeploymentInfo -> instanceDeploymentInfo instanceof SshWinrmInstanceInfo)
+              .map(SshWinrmInstanceInfo.class ::cast)
+              .map(SshWinrmInstanceInfo::getHost)
+              .collect(Collectors.toList());
 
-    List<String> hostsWithSameArtifactFromDB =
-        instanceDeploymentInfoService
-            .getByHostsAndArtifact(
-                executionInfoKey, infrastructureHosts, artifactDetails, InstanceDeploymentInfoStatus.SUCCEEDED)
-            .stream()
-            .map(InstanceDeploymentInfo::getInstanceInfo)
-            .filter(instanceDeploymentInfo -> instanceDeploymentInfo instanceof SshWinrmInstanceInfo)
-            .map(SshWinrmInstanceInfo.class ::cast)
-            .map(SshWinrmInstanceInfo::getHost)
-            .collect(Collectors.toList());
-
-    log.info("Excluded hosts list: {}", join(", ", hostsWithSameArtifactFromDB));
-    return infrastructureHosts.stream()
-        .filter(host -> !hostsWithSameArtifactFromDB.contains(host))
-        .collect(Collectors.toSet());
+      log.info("Excluded hosts list: {}", join(", ", hostsWithSameArtifactFromDB));
+      return infrastructureHosts.stream()
+          .filter(host -> !hostsWithSameArtifactFromDB.contains(host))
+          .collect(Collectors.toSet());
+    } else {
+      return hosts;
+    }
   }
 
   public void saveInstances(Ambiance ambiance, ExecutionInfoKey executionInfoKey,
       InfrastructureOutcome infrastructureOutcome, List<String> hosts, String serviceType) {
-    ArtifactDetails artifactDetails = getArtifactDetails(ambiance);
-    List<InstanceInfo> instanceInfoList = hosts.stream()
-                                              .map(host
-                                                  -> getSshWinRmInstanceInfo(infrastructureOutcome.getKind(),
-                                                      serviceType, infrastructureOutcome.getInfrastructureKey(), host))
-                                              .collect(Collectors.toList());
+    Optional<ArtifactDetails> artifactDetailsOptional = getArtifactDetails(ambiance);
 
-    instanceDeploymentInfoService.createAndUpdate(
-        executionInfoKey, instanceInfoList, artifactDetails, ambiance.getStageExecutionId());
+    if (artifactDetailsOptional.isPresent()) {
+      List<InstanceInfo> instanceInfoList =
+          hosts.stream()
+              .map(host
+                  -> getSshWinRmInstanceInfo(
+                      infrastructureOutcome.getKind(), serviceType, infrastructureOutcome.getInfrastructureKey(), host))
+              .collect(Collectors.toList());
+
+      instanceDeploymentInfoService.createAndUpdate(
+          executionInfoKey, instanceInfoList, artifactDetailsOptional.get(), ambiance.getStageExecutionId());
+    }
   }
 
   private void saveStageExecutionInfo(
@@ -282,14 +290,17 @@ public class StageExecutionHelper {
     return null;
   }
 
-  private ArtifactDetails getArtifactDetails(Ambiance ambiance) {
-    ArtifactOutcome artifactOutcome = cdStepHelper.resolveArtifactsOutcome(ambiance).orElseThrow(
-        () -> new InvalidRequestException("Artifact not found"));
-    return ArtifactDetails.builder()
-        .artifactId(artifactOutcome.getIdentifier())
-        .tag(artifactOutcome.getTag())
-        .displayName(artifactOutcome.getArtifactSummary().getDisplayName())
-        .build();
+  private Optional<ArtifactDetails> getArtifactDetails(Ambiance ambiance) {
+    ArtifactOutcome artifactOutcome = cdStepHelper.resolveArtifactsOutcome(ambiance).orElse(null);
+    if (artifactOutcome == null) {
+      return Optional.empty();
+    } else {
+      return Optional.of(ArtifactDetails.builder()
+                             .artifactId(artifactOutcome.getIdentifier())
+                             .tag(artifactOutcome.getTag())
+                             .displayName(artifactOutcome.getArtifactSummary().getDisplayName())
+                             .build());
+    }
   }
 
   private SshWinrmInstanceInfo getSshWinRmInstanceInfo(
