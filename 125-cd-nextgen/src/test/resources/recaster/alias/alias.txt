@@ -418,3 +418,4 @@ io.harness.cdng.provision.azure.AzureARMRollback
 io.harness.cdng.provision.azure.AzureARMRollbackStepParameters
 io.harness.cdng.steps.EmptyStepParameters
 io.harness.cdng.service.steps.ServiceSweepingOutput
+io.harness.cdng.artifact.steps.ArtifactsStepV2SweepingOutput
