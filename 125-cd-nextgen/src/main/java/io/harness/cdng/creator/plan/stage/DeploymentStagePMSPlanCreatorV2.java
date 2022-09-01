@@ -164,7 +164,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     YamlField specField =
         Preconditions.checkNotNull(ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC));
     stageParameters.specConfig(getSpecParameters(specField.getNode().getUuid(), ctx, stageNode));
-    String uuid = MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(config);
+    String uuid = MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(stageNode);
 
     // We need to swap the ids if strategy is present
     PlanNodeBuilder builder =
@@ -250,7 +250,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       YamlField siblingField = yamlField.getNode().nextSiblingFromParentArray(
           yamlField.getName(), Arrays.asList(YAMLFieldNameConstants.STAGE, YAMLFieldNameConstants.PARALLEL));
       EdgeLayoutList edgeLayoutList;
-      String planNodeId = MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(config.getDeploymentStageConfig());
+      String planNodeId = MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(config);
       if (siblingField == null) {
         edgeLayoutList = EdgeLayoutList.newBuilder().addCurrentNodeChildren(planNodeId).build();
       } else {
@@ -406,7 +406,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     MultiDeploymentStepParameters stepParameters =
         MultiDeploymentStepParameters.builder()
             .strategyType(StrategyType.MATRIX)
-            .childNodeId(MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(stageConfig))
+            .childNodeId(MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(stageNode))
             .environments(stageConfig.getEnvironments())
             .environmentGroup(stageConfig.getEnvironmentGroup())
             .services(stageConfig.getServices())
