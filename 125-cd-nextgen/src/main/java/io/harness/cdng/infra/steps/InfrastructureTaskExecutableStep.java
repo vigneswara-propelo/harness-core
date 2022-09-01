@@ -220,7 +220,7 @@ public class InfrastructureTaskExecutableStep implements TaskExecutableWithRbac<
       Ambiance ambiance, NGLogCallback logCallback, InfrastructureOutcome infrastructureOutcome,
       ExecutionInfoKey executionInfoKey, long startTime) {
     Set<String> hostNames =
-        azureHostsResponse.getHosts().stream().map(AzureHostResponse::getHostName).collect(Collectors.toSet());
+        azureHostsResponse.getHosts().stream().map(AzureHostResponse::getPublicAddress).collect(Collectors.toSet());
     if (EmptyPredicate.isEmpty(hostNames)) {
       saveExecutionLogSafely(logCallback,
           color("No host(s) found for specified infrastructure or filter did not match any instance(s)", Red));
@@ -418,6 +418,8 @@ public class InfrastructureTaskExecutableStep implements TaskExecutableWithRbac<
     additionalParams.put(AzureAdditionalParams.SUBSCRIPTION_ID, azureInfraDelegateConfig.getSubscriptionId());
     additionalParams.put(AzureAdditionalParams.RESOURCE_GROUP, azureInfraDelegateConfig.getResourceGroup());
     additionalParams.put(AzureAdditionalParams.OS_TYPE, azureInfraDelegateConfig.getOsType());
+    additionalParams.put(
+        AzureAdditionalParams.USE_PUBLIC_DNS, Boolean.toString(azureInfraDelegateConfig.isUsePublicDns()));
 
     Map<String, Object> params = new HashMap<>();
     params.put("tags", azureInfraDelegateConfig.getTags());
