@@ -428,7 +428,10 @@ public enum FeatureName {
       "Enables uploading Terraform plan to GCS/MongoGridFS instead of saving to sweeping output", HarnessTeam.CDP),
 
   SERVICE_V2_EXPRESSION(
-      "Allow service reference to be an expression in a pipeline for the new service entity", HarnessTeam.CDC);
+      "Allow service reference to be an expression in a pipeline for the new service entity", HarnessTeam.CDC),
+  CIE_HOSTED_VMS(
+      "Enabled hosted VMs in favor of hosted K8s for CIE. This flag will be deprecated once all the feature work has been checked in",
+      HarnessTeam.CI);
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
