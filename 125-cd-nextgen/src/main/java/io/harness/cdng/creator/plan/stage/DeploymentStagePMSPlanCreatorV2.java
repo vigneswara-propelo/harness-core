@@ -201,7 +201,6 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
 
       YamlField specField =
           Preconditions.checkNotNull(ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC));
-      logStepYamlField(specField);
 
       if (useNewFlow(ctx)) {
         List<AdviserObtainment> adviserObtainments =
@@ -296,24 +295,6 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     //    return featureFlagHelperService.isEnabled(
     //        ctx.getMetadata().getAccountIdentifier(), FeatureName.SERVICE_V2_EXPRESSION);
     return false;
-  }
-
-  private void logStepYamlField(YamlField specField) {
-    try {
-      YamlField infraField = specField.getNode().getField(YAMLFieldNameConstants.PIPELINE_INFRASTRUCTURE);
-      if (infraField != null) {
-        log.info("infraField : {}", infraField.getNode().getCurrJsonNode());
-        YamlField infrastructureDefField =
-            Preconditions.checkNotNull(infraField.getNode().getField(YamlTypes.INFRASTRUCTURE_DEF));
-        YamlField provisionerYamlField = infrastructureDefField.getNode().getField(YAMLFieldNameConstants.PROVISIONER);
-        if (provisionerYamlField != null) {
-          YamlField stepsYamlField = provisionerYamlField.getNode().getField(YAMLFieldNameConstants.STEPS);
-          log.info("stepsYamlField before : {}", stepsYamlField.getNode().getCurrJsonNode());
-        }
-      }
-    } catch (Exception e) {
-      // Ignoring
-    }
   }
 
   private void addEnvAndInfraDependency(PlanCreationContext ctx, DeploymentStageNode stageNode,
