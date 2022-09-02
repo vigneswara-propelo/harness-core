@@ -184,7 +184,7 @@ abstract class AbstractInfrastructureTaskExecutableStep {
 
   protected StepResponse handleTaskResult(Ambiance ambiance,
       InfrastructureTaskExecutableStepSweepingOutput stepSweepingOutput,
-      ThrowingSupplier<DelegateResponseData> responseDataSupplier) throws Exception {
+      ThrowingSupplier<DelegateResponseData> responseDataSupplier, NGLogCallback logCallback) throws Exception {
     log.info("Handling Task Result With Security Context for the Infrastructure Step");
     long startTime = System.currentTimeMillis() - DEFAULT_START_TIME_INTERVAL;
 
@@ -193,7 +193,6 @@ abstract class AbstractInfrastructureTaskExecutableStep {
         ExecutionInfoKeyMapper.getExecutionInfoKey(ambiance, outcomeSet.getEnvironmentOutcome(),
             outcomeSet.getServiceStepOutcome(), stepSweepingOutput.getInfrastructureOutcome());
 
-    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, "Execute");
     DelegateResponseData responseData;
     try {
       responseData = responseDataSupplier.get();
@@ -684,6 +683,12 @@ abstract class AbstractInfrastructureTaskExecutableStep {
   void saveExecutionLog(NGLogCallback logCallback, String line) {
     if (logCallback != null) {
       logCallback.saveExecutionLog(line);
+    }
+  }
+
+  void saveExecutionLog(NGLogCallback logCallback, String line, LogLevel logLevel, CommandExecutionStatus status) {
+    if (logCallback != null) {
+      logCallback.saveExecutionLog(line, logLevel, status);
     }
   }
 }

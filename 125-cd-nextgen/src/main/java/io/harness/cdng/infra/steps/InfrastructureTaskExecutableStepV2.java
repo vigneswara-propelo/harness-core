@@ -96,15 +96,16 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
     final InfrastructureConfig infrastructureConfig = fetchInfraConfigFromDB(ambiance, stepParameters);
     final Infrastructure infraSpec = infrastructureConfig.getInfrastructureDefinitionConfig().getSpec();
 
-    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true, "Execute");
     validateResources(ambiance, infraSpec);
+
+    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true, "Execute");
     // Create delegate task for infra if needed
     if (isTaskStep(infraSpec.getKind())) {
       return obtainTaskInternal(ambiance, infraSpec, logCallback);
     }
 
     // If delegate task is not needed, just validate the infra spec
-    executeSync(ambiance, infraSpec);
+    executeSync(ambiance, infraSpec, logCallback);
     return null;
   }
 
@@ -113,20 +114,19 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
       ThrowingSupplier<DelegateResponseData> responseDataSupplier) throws Exception {
     final InfrastructureTaskExecutableStepSweepingOutput infraOutput = fetchInfraStepOutputOrThrow(ambiance);
 
+    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, "Execute");
     // handle response from delegate if task was created
     if (isTaskStep(infraOutput.getInfrastructureOutcome().getKind())) {
-      return handleTaskResult(ambiance, infraOutput, responseDataSupplier);
+      return handleTaskResult(ambiance, infraOutput, responseDataSupplier, logCallback);
     }
 
     // just produce step response. Sync flow
-    return produceStepResponseForNonTaskStepInfra(ambiance, infraOutput);
+    return produceStepResponseForNonTaskStepInfra(ambiance, infraOutput, logCallback);
   }
 
   private StepResponse produceStepResponseForNonTaskStepInfra(
-      Ambiance ambiance, InfrastructureTaskExecutableStepSweepingOutput stepSweepingOutput) {
+      Ambiance ambiance, InfrastructureTaskExecutableStepSweepingOutput stepSweepingOutput, NGLogCallback logCallback) {
     final long startTime = System.currentTimeMillis();
-
-    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true);
 
     final OutcomeSet outcomeSet = fetchRequiredOutcomes(ambiance);
     final EnvironmentOutcome environmentOutcome = outcomeSet.getEnvironmentOutcome();
@@ -149,10 +149,8 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
       }
     }
 
-    if (logCallback != null) {
-      logCallback.saveExecutionLog(
-          color("Completed infrastructure step", Green), LogLevel.INFO, CommandExecutionStatus.SUCCESS);
-    }
+    saveExecutionLog(
+        logCallback, color("Completed infrastructure step", Green), LogLevel.INFO, CommandExecutionStatus.SUCCESS);
 
     return stepResponseBuilder.status(Status.SUCCEEDED)
         .stepOutcome(StepResponse.StepOutcome.builder()
@@ -182,8 +180,7 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
     pipelineRbacHelper.checkRuntimePermissions(ambiance, entityDetails);
   }
 
-  private void executeSync(Ambiance ambiance, Infrastructure infrastructure) {
-    NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true);
+  private void executeSync(Ambiance ambiance, Infrastructure infrastructure, NGLogCallback logCallback) {
     validateConnector(infrastructure, ambiance);
     saveExecutionLog(logCallback, "Fetching environment information...");
     validateInfrastructure(infrastructure, ambiance);
