@@ -90,6 +90,7 @@ io.harness.cdng.k8s.K8sRollingStepParameters
 io.harness.advisers.rollback.OnFailRollbackOutput
 io.harness.cdng.provision.terraform.TerraformStepConfiguration
 io.harness.steps.shellscript.ShellScriptInlineSource
+io.harness.steps.shellscript.HarnessFileStoreSource
 io.harness.steps.shellscript.CreatePRStepUpdateConfigScriptInlineSource
 io.harness.steps.shellscript.CreatePRStepUpdateConfigScriptWrapper
 io.harness.cdng.k8s.K8sDeleteStepInfo
