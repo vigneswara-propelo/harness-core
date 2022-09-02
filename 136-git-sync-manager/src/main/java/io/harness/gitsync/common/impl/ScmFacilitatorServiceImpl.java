@@ -67,16 +67,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor(onConstructor = @__({ @Inject }))
 @Slf4j
 @OwnedBy(HarnessTeam.PL)
 public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
   GitSyncConnectorHelper gitSyncConnectorHelper;
   @Named("connectorDecoratorService") ConnectorService connectorService;
   ScmOrchestratorService scmOrchestratorService;
+
+  @Inject
+  public ScmFacilitatorServiceImpl(GitSyncConnectorHelper gitSyncConnectorHelper,
+      @Named("connectorDecoratorService") ConnectorService connectorService,
+      ScmOrchestratorService scmOrchestratorService) {
+    this.gitSyncConnectorHelper = gitSyncConnectorHelper;
+    this.connectorService = connectorService;
+    this.scmOrchestratorService = scmOrchestratorService;
+  }
 
   @Override
   public List<String> listBranchesUsingConnector(String accountIdentifier, String orgIdentifier,
