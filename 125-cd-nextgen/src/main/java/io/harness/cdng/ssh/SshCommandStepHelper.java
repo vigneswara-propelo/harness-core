@@ -176,9 +176,7 @@ public class SshCommandStepHelper extends CDStepHelper {
     if (!optionalInfraOutput.isFound()) {
       throw new InvalidRequestException("No infrastructure output found.");
     }
-    // Rollback Logic
-    // Get the rollback data from the latest successful deployment, getting it from DB.
-    // If there are no rollback data, use the artifact and config files from the current deployment (the same in CG)
+
     SshInfraDelegateConfigOutput delegateConfig = (SshInfraDelegateConfigOutput) optionalInfraOutput.getOutput();
     if (commandStepParameters.isRollback) {
       return createRollbackSshTaskParameters(ambiance, commandStepParameters, mergedEnvVariables, delegateConfig);
@@ -195,9 +193,6 @@ public class SshCommandStepHelper extends CDStepHelper {
       throw new InvalidRequestException("No infrastructure output found.");
     }
 
-    // Rollback Logic
-    // Get the rollback data from the latest successful deployment, getting it from DB.
-    // If there are no rollback data, use the artifact and config files from the current deployment (the same in CG)
     WinRmInfraDelegateConfigOutput delegateConfig = (WinRmInfraDelegateConfigOutput) optionalInfraOutput.getOutput();
     if (commandStepParameters.isRollback) {
       return createRollbackWinRmTaskParameters(ambiance, commandStepParameters, mergedEnvVariables, delegateConfig);
@@ -289,6 +284,8 @@ public class SshCommandStepHelper extends CDStepHelper {
   private SshCommandTaskParameters createRollbackSshTaskParameters(Ambiance ambiance,
       CommandStepParameters commandStepParameters, Map<String, String> mergedEnvVariables,
       SshInfraDelegateConfigOutput sshInfraDelegateConfigOutput) {
+    // Rollback Logic
+    // Get the rollback data from the latest successful deployment, getting it from DB.
     SshWinRmRollbackData sshWinRmRollbackData = getSshWinRmRollbackData(ambiance, mergedEnvVariables);
     Boolean onDelegate = getBooleanParameterFieldValue(commandStepParameters.onDelegate);
     return SshCommandTaskParameters.builder()
@@ -332,6 +329,8 @@ public class SshCommandStepHelper extends CDStepHelper {
   private WinrmTaskParameters createRollbackWinRmTaskParameters(Ambiance ambiance,
       CommandStepParameters commandStepParameters, Map<String, String> mergedEnvVariables,
       WinRmInfraDelegateConfigOutput winRmInfraDelegateConfigOutput) {
+    // Rollback Logic
+    // Get the rollback data from the latest successful deployment, getting it from DB.
     SshWinRmRollbackData sshWinRmRollbackData = getSshWinRmRollbackData(ambiance, mergedEnvVariables);
     Boolean onDelegate = getBooleanParameterFieldValue(commandStepParameters.onDelegate);
     String accountId = AmbianceUtils.getAccountId(ambiance);
