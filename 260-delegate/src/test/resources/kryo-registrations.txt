@@ -1721,6 +1721,10 @@
 55343:io.harness.delegate.task.azure.arm.AzureBlueprintTaskNGResponse
 55344:io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGParameters
 55345:io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGResponse
+55346:io.harness.delegate.task.jira.JiraSearchUserParams
+55347:io.harness.delegate.task.jira.JiraSearchUserData
+
+
 55401:io.harness.delegate.beans.SerializedResponseData
 55402:software.wings.beans.SerializationFormat
 55403:io.harness.delegate.beans.gitapi.GitApiMergePRTaskResponse
