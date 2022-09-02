@@ -2275,3 +2275,5 @@
 9800003:io.harness.delegate.task.ssh.artifact.JenkinsArtifactDelegateConfig
 9800004:io.harness.delegate.task.ssh.artifact.SkipCopyArtifactDelegateConfig
 9800005:io.harness.delegate.task.ssh.artifact.ArtifactoryDockerArtifactDelegateConfig
+10000001:io.harness.delegate.beans.connector.elkconnector.ELKConnectorDTO
+10000002:io.harness.delegate.beans.connector.elkconnector.ELKAuthType
