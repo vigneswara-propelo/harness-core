@@ -3,6 +3,7 @@ package io.harness.cdng.infra.steps;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants.INFRA_TASK_EXECUTABLE_STEP_V2;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static software.wings.beans.LogColor.Green;
 import static software.wings.beans.LogHelper.color;
@@ -22,6 +23,7 @@ import io.harness.cdng.infra.yaml.Infrastructure;
 import io.harness.cdng.infra.yaml.InfrastructureConfig;
 import io.harness.cdng.service.steps.ServiceStepOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
+import io.harness.cdng.visitor.YamlTypes;
 import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.task.k8s.K8sInfraDelegateConfig;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
@@ -43,6 +45,7 @@ import io.harness.pms.contracts.plan.ExecutionPrincipalInfo;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
+import io.harness.pms.merger.helpers.MergeHelper;
 import io.harness.pms.rbac.PipelineRbacHelper;
 import io.harness.pms.sdk.core.steps.executables.TaskExecutable;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
@@ -54,9 +57,12 @@ import io.harness.steps.OutputExpressionConstants;
 import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.steps.shellscript.K8sInfraDelegateConfigOutput;
 import io.harness.supplier.ThrowingSupplier;
+import io.harness.utils.YamlPipelineUtils;
 
 import com.google.inject.Inject;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -204,16 +210,22 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
 
   private InfrastructureConfig fetchInfraConfigFromDB(
       Ambiance ambiance, InfrastructureTaskExecutableStepV2Params stepParameters) {
-    Optional<InfrastructureEntity> infrastructureEntity =
+    Optional<InfrastructureEntity> infrastructureEntityOpt =
         infrastructureEntityService.get(AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
             AmbianceUtils.getProjectIdentifier(ambiance), stepParameters.getEnvRef().getValue(),
             stepParameters.getInfraRef().getValue());
-    if (infrastructureEntity.isEmpty()) {
+    if (infrastructureEntityOpt.isEmpty()) {
       throw new InvalidRequestException(String.format("Infrastructure definition %s not found in environment %s",
           stepParameters.getInfraRef().getValue(), stepParameters.getEnvRef().getValue()));
     }
 
-    return InfrastructureEntityConfigMapper.toInfrastructureConfig(infrastructureEntity.get());
+    final InfrastructureEntity infrastructureEntity = infrastructureEntityOpt.get();
+    if (isNotEmpty(stepParameters.getInfraInputs())) {
+      String mergedYaml = mergeInfraInputs(infrastructureEntity.getYaml(), stepParameters.getInfraInputs());
+      infrastructureEntity.setYaml(mergedYaml);
+    }
+
+    return InfrastructureEntityConfigMapper.toInfrastructureConfig(infrastructureEntity);
   }
 
   private void publishInfraDelegateConfigOutput(
@@ -259,5 +271,14 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
       throw new InvalidRequestException(
           "Infrastructure Definition reference" + stepParameters.getInfraRef().getExpressionValue() + " not resolved");
     }
+  }
+
+  private String mergeInfraInputs(String originalYaml, Map<String, Object> inputs) {
+    if (isEmpty(inputs)) {
+      return originalYaml;
+    }
+    Map<String, Object> inputMap = new HashMap<>();
+    inputMap.put(YamlTypes.INFRASTRUCTURE_DEF, inputs);
+    return MergeHelper.mergeInputSetFormatYamlToOriginYaml(originalYaml, YamlPipelineUtils.writeYamlString(inputMap));
   }
 }

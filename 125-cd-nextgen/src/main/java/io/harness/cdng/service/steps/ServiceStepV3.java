@@ -94,10 +94,10 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
   public ChildrenExecutableResponse obtainChildren(
       Ambiance ambiance, ServiceStepV3Parameters stepParameters, StepInputPackage inputPackage) {
     try {
-      NGLogCallback logCallback = serviceStepsHelper.getServiceLogCallback(ambiance, true);
+      final NGLogCallback logCallback = serviceStepsHelper.getServiceLogCallback(ambiance, true);
       logCallback.saveExecutionLog("Starting service step...");
 
-      final ServicePartResponse servicePartResponse = executeServicePart(ambiance, stepParameters, logCallback);
+      final ServicePartResponse servicePartResponse = executeServicePart(ambiance, stepParameters);
       executeEnvironmentPart(ambiance, stepParameters, servicePartResponse, logCallback);
       return ChildrenExecutableResponse.newBuilder()
           .addAllLogKeys(CollectionUtils.emptyIfNull(
@@ -134,14 +134,14 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
         throw new InvalidRequestException("Environment " + envRef.getValue() + " not found");
       }
 
-      Optional<NGServiceOverridesEntity> ngServiceOverridesEntity =
+      final Optional<NGServiceOverridesEntity> ngServiceOverridesEntity =
           serviceOverrideService.get(AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
               AmbianceUtils.getProjectIdentifier(ambiance), envRef.getValue(), parameters.getServiceRef().getValue());
 
-      NGEnvironmentConfig ngEnvironmentConfig =
+      final NGEnvironmentConfig ngEnvironmentConfig =
           mergeEnvironmentInputs(environment.get().getYaml(), envInputs.getValue());
 
-      EnvironmentOutcome environmentOutcome =
+      final EnvironmentOutcome environmentOutcome =
           EnvironmentMapper.toEnvironmentOutcome(environment.get(), ngEnvironmentConfig,
               NGServiceOverrideEntityConfigMapper.toNGServiceOverrideConfig(
                   ngServiceOverridesEntity.orElse(NGServiceOverridesEntity.builder().build())));
@@ -232,9 +232,7 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
     return stepResponse.withStepOutcomes(stepOutcomes);
   }
 
-  private ServicePartResponse executeServicePart(
-      Ambiance ambiance, ServiceStepV3Parameters stepParameters, NGLogCallback logCallback) {
-    // Todo: check if service ref is resolved
+  private ServicePartResponse executeServicePart(Ambiance ambiance, ServiceStepV3Parameters stepParameters) {
     final Optional<ServiceEntity> serviceOpt =
         serviceEntityService.get(AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
             AmbianceUtils.getProjectIdentifier(ambiance), stepParameters.getServiceRef().getValue(), false);

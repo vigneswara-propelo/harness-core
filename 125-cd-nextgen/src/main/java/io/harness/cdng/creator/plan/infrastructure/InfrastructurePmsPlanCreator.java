@@ -94,13 +94,17 @@ public class InfrastructurePmsPlanCreator {
 
   public PlanNode getInfraTaskExecutableStepV2PlanNode(
       EnvironmentYamlV2 environmentYamlV2, List<AdviserObtainment> adviserObtainments) {
+    final ParameterField<String> infraRef = ParameterField.isNotNull(environmentYamlV2.getInfrastructureDefinitions())
+            && isNotEmpty(environmentYamlV2.getInfrastructureDefinitions().getValue())
+        ? environmentYamlV2.getInfrastructureDefinitions().getValue().get(0).getIdentifier()
+        : ParameterField.createValueField(null);
     InfrastructureTaskExecutableStepV2Params params =
         InfrastructureTaskExecutableStepV2Params.builder()
             .envRef(environmentYamlV2.getEnvironmentRef())
-            .infraRef(ParameterField.isNotNull(environmentYamlV2.getInfrastructureDefinitions())
-                        && isNotEmpty(environmentYamlV2.getInfrastructureDefinitions().getValue())
-                    ? environmentYamlV2.getInfrastructureDefinitions().getValue().get(0).getIdentifier()
-                    : ParameterField.createValueField(null))
+            .infraRef(infraRef)
+            .infraInputs(ParameterField.isNotNull(infraRef)
+                    ? environmentYamlV2.getInfrastructureDefinitions().getValue().get(0).getInputs()
+                    : null)
             .build();
     return PlanNode.builder()
         .uuid(UUIDGenerator.generateUuid())
