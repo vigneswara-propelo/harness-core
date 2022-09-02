@@ -258,9 +258,8 @@ public class NexusThreeServiceImpl {
             "Failed to fetch the names for package [" + packageName + "]", WingsException.USER);
       }
     } while (!StringUtils.isBlank(continuationToken));
-    log.info("Names come from nexus server {}", names);
     names = names.stream().sorted(new AlphanumComparator()).collect(toList());
-    log.info("After sorting alphanumerically names {}", names);
+    log.info("After sorting alphanumerically names coming from nexus server {}", names);
 
     return names.stream()
         .map(name -> {
