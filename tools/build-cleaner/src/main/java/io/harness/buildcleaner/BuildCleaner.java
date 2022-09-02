@@ -201,7 +201,7 @@ public class BuildCleaner {
     // Find main files in the folder and create java binary targets.
     for (String className : classpathParser.getMainClasses()) {
       JavaBinary javaBinary = new JavaBinary(className, DEFAULT_VISIBILITY,
-          getPackageName(classpathParser) + "." + className, Collections.singleton(":" + path.getFileName().toString()),
+          getPackageName(classpathParser) + "." + className, /*runTimeDeps=*/Collections.singleton(":module"),
           /*deps=*/Collections.emptySet());
       buildFile.addJavaBinary(javaBinary);
     }
