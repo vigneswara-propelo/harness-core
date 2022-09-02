@@ -369,6 +369,7 @@
 5198:software.wings.beans.yaml.Change
 5200:software.wings.beans.yaml.GitCheckoutResult
 5201:software.wings.beans.yaml.GitCloneResult
+5202:io.harness.delegate.beans.ldap.LdapSettingsWithEncryptedDataAndPasswordDetail
 5203:software.wings.beans.yaml.GitCommandRequest
 5204:software.wings.beans.yaml.GitCommandResult
 5205:software.wings.beans.yaml.GitCommitAndPushResult
@@ -388,6 +389,7 @@
 5222:software.wings.beans.container.PortMapping
 5223:software.wings.beans.container.LogConfiguration.LogOption
 5224:io.harness.rest.RestResponse
+5225:io.harness.delegate.beans.ldap.LDAPTestAuthenticationRequest
 5226:software.wings.beans.NameValuePair
 5227:software.wings.sm.WorkflowStandardParams
 5228:software.wings.api.AwsLambdaContextElement
@@ -519,6 +521,8 @@
 5393:software.wings.service.impl.aws.model.AwsElbListClassicElbsResponse
 5394:software.wings.service.impl.aws.model.AwsElbListTargetGroupsRequest
 5395:software.wings.service.impl.aws.model.AwsElbListTargetGroupsResponse
+5396:io.harness.delegate.beans.ldap.NGLdapTestAuthenticationTaskParameters
+5397:io.harness.delegate.beans.ldap.NGLdapTestAuthenticationTaskResponse
 5398:software.wings.service.impl.aws.model.AwsEcsRequest
 5399:software.wings.service.impl.aws.model.AwsEcsRequest.AwsEcsRequestType
 5400:software.wings.service.impl.aws.model.AwsEcsListClustersRequest

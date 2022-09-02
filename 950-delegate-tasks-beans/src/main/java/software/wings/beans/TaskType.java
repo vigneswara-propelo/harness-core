@@ -385,7 +385,8 @@ public enum TaskType {
   DLITE_CI_VM_EXECUTE_TASK(TaskGroup.CI, DliteVmExecuteStepTaskParams.class, VmTaskExecutionResponse.class, true),
   DLITE_CI_VM_CLEANUP_TASK(TaskGroup.CI, DliteVmCleanupTaskParams.class, VmTaskExecutionResponse.class, true),
   NG_LDAP_GROUPS_SYNC(TaskGroup.LDAP),
-  AZURE_NG_ARM(TaskGroup.AZURE_NG_ARM_BLUEPRINT, "Azure ARM");
+  AZURE_NG_ARM(TaskGroup.AZURE_NG_ARM_BLUEPRINT, "Azure ARM"),
+  NG_LDAP_TEST_AUTHENTICATION(TaskGroup.LDAP);
 
   private final TaskGroup taskGroup;
   private final String displayName;
