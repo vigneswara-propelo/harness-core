@@ -3,6 +3,8 @@ package io.harness.ng.core;
 import static io.harness.AuthorizationServiceHeader.NG_MANAGER;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
+import static java.lang.Boolean.FALSE;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
@@ -10,7 +12,9 @@ import io.harness.lock.AcquiredLock;
 import io.harness.lock.PersistentLocker;
 import io.harness.ng.core.api.DefaultUserGroupService;
 import io.harness.ng.core.entities.Organization;
+import io.harness.ng.core.entities.Organization.OrganizationKeys;
 import io.harness.ng.core.entities.Project;
+import io.harness.ng.core.entities.Project.ProjectKeys;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
 import io.harness.security.SecurityContextBuilder;
@@ -100,7 +104,7 @@ public class DefaultUserGroupCreationService implements Runnable {
     try {
       do {
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
-        Criteria criteria = Criteria.where("accountIdentifier").is(accountId);
+        Criteria criteria = Criteria.where("accountIdentifier").is(accountId).and(OrganizationKeys.deleted).is(FALSE);
         List<Organization> organizations = organizationService.list(criteria, pageable).getContent();
         if (isEmpty(organizations)) {
           break;
@@ -133,7 +137,12 @@ public class DefaultUserGroupCreationService implements Runnable {
     try {
       do {
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
-        Criteria criteria = Criteria.where("accountIdentifier").is(accountId).and("orgIdentifier").is(orgIdentifier);
+        Criteria criteria = Criteria.where("accountIdentifier")
+                                .is(accountId)
+                                .and("orgIdentifier")
+                                .is(orgIdentifier)
+                                .and(ProjectKeys.deleted)
+                                .is(FALSE);
         List<Project> projects = projectService.list(criteria, pageable).getContent();
         if (isEmpty(projects)) {
           break;
