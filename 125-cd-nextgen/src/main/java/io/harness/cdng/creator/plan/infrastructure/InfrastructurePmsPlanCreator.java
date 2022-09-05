@@ -115,8 +115,8 @@ public class InfrastructurePmsPlanCreator {
                                                           .build();
     return PlanNode.builder()
         .uuid(UUIDGenerator.generateUuid())
-        .name(PlanCreatorConstants.INFRA_NODE_NAME)
-        .identifier(PlanCreatorConstants.INFRA_DEFINITION_NODE_IDENTIFIER)
+        .name(PlanCreatorConstants.INFRA_SECTION_NODE_NAME)
+        .identifier(PlanCreatorConstants.INFRA_SECTION_NODE_IDENTIFIER)
         .stepType(InfrastructureTaskExecutableStepV2.STEP_TYPE)
         .group(OutcomeExpressionConstants.INFRASTRUCTURE_GROUP)
         .stepParameters(params)

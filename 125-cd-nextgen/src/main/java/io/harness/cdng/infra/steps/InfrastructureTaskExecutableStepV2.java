@@ -158,6 +158,7 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
                          .name(OutcomeExpressionConstants.OUTPUT)
                          .group(OutcomeExpressionConstants.INFRASTRUCTURE_GROUP)
                          .build())
+
         .unitProgressList(Collections.singletonList(UnitProgress.newBuilder()
                                                         .setUnitName("Execute")
                                                         .setStatus(UnitStatus.SUCCESS)
