@@ -48,6 +48,7 @@ import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.service.dto.ServiceRequestDTO;
 import io.harness.ng.core.service.dto.ServiceResponse;
+import io.harness.ng.core.service.entity.ArtifactSourcesResponseDTO;
 import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.entity.ServiceEntity.ServiceEntityKeys;
 import io.harness.ng.core.service.mappers.NGServiceEntityMapper;
@@ -445,6 +446,36 @@ public class ServiceResourceV2 {
           serviceEntity.get().getYaml(), serviceEntity.get().getIdentifier());
       return ResponseDTO.newResponse(
           NGEntityTemplateResponseDTO.builder().inputSetTemplateYaml(serviceInputYaml).build());
+    } else {
+      throw new NotFoundException(String.format("Service with identifier [%s] in project [%s], org [%s] not found",
+          serviceIdentifier, projectIdentifier, orgIdentifier));
+    }
+  }
+
+  @GET
+  @Path("/artifactSourceInputs/{serviceIdentifier}")
+  @ApiOperation(value = "This api returns artifact source identifiers and their runtime inputs YAML",
+      nickname = "getArtifactSourceInputs")
+  @Hidden
+  public ResponseDTO<ArtifactSourcesResponseDTO>
+  getArtifactSourceInputs(@Parameter(description = SERVICE_PARAM_MESSAGE) @PathParam(
+                              "serviceIdentifier") @ResourceIdentifier String serviceIdentifier,
+      @Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
+          NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier) {
+    Optional<ServiceEntity> serviceEntity =
+        serviceEntityService.get(accountId, orgIdentifier, projectIdentifier, serviceIdentifier, false);
+
+    if (serviceEntity.isPresent()) {
+      if (EmptyPredicate.isEmpty(serviceEntity.get().getYaml())) {
+        throw new InvalidRequestException(String.format(
+            "Service %s is not configured with a Service definition. Service Yaml is empty", serviceIdentifier));
+      }
+      return ResponseDTO.newResponse(
+          serviceEntityService.getArtifactSourceInputs(serviceEntity.get().getYaml(), serviceIdentifier));
     } else {
       throw new NotFoundException(String.format("Service with identifier [%s] in project [%s], org [%s] not found",
           serviceIdentifier, projectIdentifier, orgIdentifier));
