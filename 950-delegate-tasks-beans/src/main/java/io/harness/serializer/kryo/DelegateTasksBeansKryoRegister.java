@@ -403,6 +403,7 @@ import io.harness.delegate.task.azure.arm.response.AzureARMListSubscriptionLocat
 import io.harness.delegate.task.azure.arm.response.AzureARMRollbackResponse;
 import io.harness.delegate.task.azure.arm.response.AzureBlueprintDeploymentResponse;
 import io.harness.delegate.task.azure.artifact.ArtifactoryAzureArtifactRequestDetails;
+import io.harness.delegate.task.azure.artifact.AwsS3AzureArtifactRequestDetails;
 import io.harness.delegate.task.azure.artifact.AzureArtifactConfig;
 import io.harness.delegate.task.azure.artifact.AzureArtifactRequestDetails;
 import io.harness.delegate.task.azure.artifact.AzureArtifactType;
@@ -1735,6 +1736,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AwsInfraDelegateConfig.class, 55416);
     kryo.register(AwsSshInfraDelegateConfig.class, 55417);
     kryo.register(AwsWinrmInfraDelegateConfig.class, 55418);
+    kryo.register(AwsS3AzureArtifactRequestDetails.class, 55422);
     kryo.register(PdcServerInstanceInfo.class, 55501);
     kryo.register(AzureSshWinrmServerInstanceInfo.class, 55502);
     kryo.register(AwsSshWinrmServerInstanceInfo.class, 55503);
