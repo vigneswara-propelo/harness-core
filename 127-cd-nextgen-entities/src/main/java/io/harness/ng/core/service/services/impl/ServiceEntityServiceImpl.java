@@ -19,6 +19,7 @@ import static io.harness.springdata.TransactionUtils.DEFAULT_TRANSACTION_RETRY_P
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import io.harness.EntityType;
@@ -420,6 +421,26 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
   public List<ServiceEntity> getAllNonDeletedServices(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, List<String> sort) {
     return getAllServices(accountIdentifier, orgIdentifier, projectIdentifier, QUERY_PAGE_SIZE, false, sort);
+  }
+
+  @Override
+  public List<ServiceEntity> getServices(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, List<String> serviceIdentifiers) {
+    if (isEmpty(serviceIdentifiers)) {
+      return emptyList();
+    }
+    List<ServiceEntity> serviceEntityList = new ArrayList<>();
+
+    Criteria criteria = Criteria.where(ServiceEntityKeys.accountId)
+                            .is(accountIdentifier)
+                            .and(ServiceEntityKeys.orgIdentifier)
+                            .is(orgIdentifier)
+                            .and(ServiceEntityKeys.projectIdentifier)
+                            .is(projectIdentifier)
+                            .and(ServiceEntityKeys.identifier)
+                            .in(serviceEntityList);
+
+    return serviceRepository.findAll(criteria);
   }
 
   @Override
