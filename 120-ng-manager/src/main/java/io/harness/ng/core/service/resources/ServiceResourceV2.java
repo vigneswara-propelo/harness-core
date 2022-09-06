@@ -464,7 +464,7 @@ public class ServiceResourceV2 {
       value = "This api returns service YAML and runtime input YAML", nickname = "getServicesYamlAndRuntimeInputs")
   @Hidden
   public ResponseDTO<ServicesV2YamlMetadataDTO>
-  getServicesYamlAndRuntimeInputs(@Parameter(description = SERVICE_YAML_METADATA_INPUT_PARAM_MESSAGE)
+  getServicesYamlAndRuntimeInputs(@Parameter(description = SERVICE_YAML_METADATA_INPUT_PARAM_MESSAGE) @Valid
                                   @NotNull ServicesYamlMetadataApiInput servicesYamlMetadataApiInput,
       @Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
