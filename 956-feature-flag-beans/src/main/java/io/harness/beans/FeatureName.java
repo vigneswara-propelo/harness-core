@@ -428,7 +428,6 @@ public enum FeatureName {
   VALIDATE_PHASES_AND_ROLLBACK("Validate that each phase has your own rollback phase", HarnessTeam.SPG),
   OPTIMIZED_TF_PLAN_NG(
       "Enables uploading Terraform plan to GCS/MongoGridFS instead of saving to sweeping output", HarnessTeam.CDP),
-
   SERVICE_V2_EXPRESSION(
       "Allow service reference to be an expression in a pipeline for the new service entity", HarnessTeam.CDC),
   CIE_HOSTED_VMS(
@@ -436,7 +435,9 @@ public enum FeatureName {
       HarnessTeam.CI),
   CHANGE_INSTANCE_QUERY_OPERATOR_TO_NE("Change instance service query operator from $exists to $ne", HarnessTeam.SPG),
   NEXUS3_RAW_REPOSITORY("Enable support for Nexus3 raw repository format on CG", HarnessTeam.SPG),
-  NG_ARTIFACT_SOURCES("Flag to support multi artifact sources for service V2", HarnessTeam.CDC);
+  NG_ARTIFACT_SOURCES("Flag to support multi artifact sources for service V2", HarnessTeam.CDC),
+  UPDATE_EMAILS_VIA_SCIM("Will enable updating emails in Harness via SCIM", HarnessTeam.PL);
+
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;
