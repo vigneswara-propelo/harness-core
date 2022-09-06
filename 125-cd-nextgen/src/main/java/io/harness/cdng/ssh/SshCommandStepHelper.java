@@ -218,13 +218,23 @@ public class SshCommandStepHelper extends CDStepHelper {
     VariablesSweepingOutput serviceVariablesOutput = ServiceOutcomeHelper.getVariablesSweepingOutput(
         ambiance, executionSweepingOutputService, YAMLFieldNameConstants.SERVICE_VARIABLES);
 
-    serviceVariablesOutput.entrySet().stream().filter(e -> e.getValue() instanceof String).forEach(entry -> {
-      String value = (String) entry.getValue();
+    serviceVariablesOutput.entrySet().stream().forEach(entry -> {
+      String value = null;
+      if (entry.getValue() instanceof ParameterField) {
+        ParameterField<?> parameterFieldValue = (ParameterField<?>) entry.getValue();
+        if (parameterFieldValue.getValue() != null) {
+          value = parameterFieldValue.getValue().toString();
+        }
+      } else if (entry.getValue() instanceof String) {
+        value = (String) entry.getValue();
+      }
 
-      if (EngineExpressionEvaluator.hasExpressions(value)) {
-        serviceVariablesMap.putAll(evaluateExpression(ambiance, entry, value));
-      } else {
-        serviceVariablesMap.put(entry.getKey(), value);
+      if (value != null) {
+        if (EngineExpressionEvaluator.hasExpressions(value)) {
+          serviceVariablesMap.putAll(evaluateExpression(ambiance, entry, value));
+        } else {
+          serviceVariablesMap.put(entry.getKey(), value);
+        }
       }
     });
     return serviceVariablesMap;
