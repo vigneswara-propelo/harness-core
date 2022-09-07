@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.sm.states.customdeployment;
+package software.wings.sm.states.customdeploymentng;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 

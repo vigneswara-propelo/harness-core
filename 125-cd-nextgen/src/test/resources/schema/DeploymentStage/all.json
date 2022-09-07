@@ -2080,6 +2080,54 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "CustomDeploymentInfrastructure": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Infrastructure"
+        },
+        {
+          "type": "object",
+          "required": [
+            "variables"
+          ],
+          "properties": {
+            "metadata": {
+              "type": "string"
+            },
+            "variables": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/NumberNGVariable"
+                  },
+                  {
+                    "$ref": "#/definitions/SecretNGVariable"
+                  },
+                  {
+                    "$ref": "#/definitions/StringNGVariable"
+                  }
+                ]
+              },
+              "minLength": 1
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "CustomDeploymentServiceSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ServiceSpec"
+        },
+        {
+          "type": "object",
+          "properties": { }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "CustomRemoteStoreConfig": {
       "allOf": [
         {
@@ -2314,6 +2362,7 @@
             "WinRm",
             "ServerlessAwsLambda",
             "AzureWebApp",
+            "CustomDeployment",
             "ECS"
           ]
         },
@@ -4059,6 +4108,7 @@
             "ServerlessAwsLambda",
             "AzureWebApp",
             "SshWinRmAws",
+            "CustomDeployment",
             "ECS"
           ]
         }
@@ -4077,6 +4127,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/AzureWebAppInfrastructure"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "CustomDeployment"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/CustomDeploymentInfrastructure"
               }
             }
           }
@@ -7207,6 +7273,7 @@
             "WinRm",
             "ServerlessAwsLambda",
             "AzureWebApp",
+            "CustomDeployment",
             "ECS"
           ]
         }
@@ -7225,6 +7292,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/AzureWebAppServiceSpec"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "CustomDeployment"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/CustomDeploymentServiceSpec"
               }
             }
           }
