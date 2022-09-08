@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.buildcleaner;
+package io.harness.buildcleaner.common;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Optional;
 
-class SymbolDependencyMap implements Serializable {
+public class SymbolDependencyMap implements Serializable {
   private final HashMap<String, String> symbolToTargetMap;
 
   public SymbolDependencyMap() {
@@ -41,7 +41,7 @@ class SymbolDependencyMap implements Serializable {
     }
     // Keep nesting inside to search for package. Assumption is that imported symbol starts with Capital character.
     while (!symbol.isEmpty() && Character.isUpperCase(symbol.substring(symbol.lastIndexOf('.') + 1).toCharArray()[0])) {
-      symbol = symbol.substring(0, symbol.lastIndexOf("."));
+      symbol = symbol.substring(0, symbol.lastIndexOf('.'));
       if (symbolToTargetMap.containsKey(symbol)) {
         return Optional.of(symbolToTargetMap.get(symbol));
       }
