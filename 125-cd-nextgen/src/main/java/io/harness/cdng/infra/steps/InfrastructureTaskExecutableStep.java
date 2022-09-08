@@ -61,7 +61,7 @@ public class InfrastructureTaskExecutableStep extends AbstractInfrastructureTask
   public TaskRequest obtainTaskAfterRbac(
       Ambiance ambiance, Infrastructure infrastructureSpec, StepInputPackage inputPackage) {
     final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true, "Execute");
-    return obtainTaskInternal(ambiance, infrastructureSpec, logCallback);
+    return obtainTaskInternal(ambiance, infrastructureSpec, logCallback, null);
   }
 
   @Override
