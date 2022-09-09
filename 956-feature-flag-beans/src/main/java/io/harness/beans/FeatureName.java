@@ -394,13 +394,12 @@ public enum FeatureName {
       HarnessTeam.CDP),
   TERRAFORM_REMOTE_BACKEND_CONFIG("Enables storing Terraform backend configuration in a remote repo", HarnessTeam.CDP),
   NG_OPTIMIZE_FETCH_FILES_KUSTOMIZE("Used to Optimize kustomize Manifest files fetch in NG", HarnessTeam.CDP),
-  FIXED_INSTANCE_ZERO_ALLOW("To allow user to set the fixed instance count to 0 for ECS Deployments", HarnessTeam.CDP),
   REMOVE_HINT_YAML_GIT_COMMITS("Removes the hint usage in GitCommits collection", HarnessTeam.SPG),
+  FIXED_INSTANCE_ZERO_ALLOW("To allow user to set the fixed instance count to 0 for ECS Deployments", HarnessTeam.CDP),
   USE_PAGINATED_ENCRYPT_FOR_VARIABLE_OVERRIDES(
       "Enables PaginatedComponent & Formik for VariableOverrides in CG-UI", HarnessTeam.PL),
   ON_DEMAND_ROLLBACK_WITH_DIFFERENT_ARTIFACT(
       "Used to do on demand rollback to previously deployed different artifact on same inframapping", HarnessTeam.CDC),
-
   CG_GIT_POLLING("Poll git based on account config for git sync in CG.", HarnessTeam.SPG),
   GRAPHQL_WORKFLOW_EXECUTION_OPTIMIZATION(
       "Making multiple optimizations for workflow execution graphql in CG", HarnessTeam.SPG),
@@ -411,6 +410,7 @@ public enum FeatureName {
   GIT_WEBHOOK_POLLING("Used to poll git webhook recent delivery events", HarnessTeam.CDP),
   MULTI_SERVICE_INFRA("Enable multiple service/environment support in NG", HarnessTeam.CDP),
   TRIGGERS_REFACTOR("Enable NG Triggers UI refactoring", HarnessTeam.CDP),
+  SORT_ARTIFACTS_IN_UPDATED_ORDER("Sort the collected artifacts by lastUpdatedAt", HarnessTeam.SPG),
   NG_SERVICE_MANIFEST_OVERRIDE("Enable Service Manifests override from Environment", HarnessTeam.CDP),
   NG_SERVICE_CONFIG_FILES_OVERRIDE("Enable Service Config Files override from Environment", HarnessTeam.CDP),
   ENABLE_CHECK_STATE_EXECUTION_STARTING(
