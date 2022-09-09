@@ -86,9 +86,11 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
       return ChildrenExecutableResponse.newBuilder().addAllChildren(children).setMaxConcurrency(maxConcurrency).build();
     }
 
-    boolean isServiceParallel = stepParameters.getServices().getServicesMetadata().getParallel() != null
+    boolean isServiceParallel = stepParameters.getServices().getServicesMetadata() != null
+        && stepParameters.getServices().getServicesMetadata().getParallel() != null
         && stepParameters.getServices().getServicesMetadata().getParallel();
-    boolean isEnvironmentParallel = stepParameters.getEnvironments().getEnvironmentsMetadata().getParallel() != null
+    boolean isEnvironmentParallel = stepParameters.getEnvironments().getEnvironmentsMetadata() != null
+        && stepParameters.getEnvironments().getEnvironmentsMetadata().getParallel() != null
         && stepParameters.getEnvironments().getEnvironmentsMetadata().getParallel();
     int currentIteration = 0;
     int totalIterations = servicesMap.size() + environmentsMapList.size();
@@ -117,6 +119,13 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
       }
     } else {
       maxConcurrency = 1;
+      for (Map<String, String> environmentMap : environmentsMapList) {
+        for (Map<String, String> serviceMap : servicesMap) {
+          children.add(
+              getChildForMultiServiceInfra(childNodeId, currentIteration, totalIterations, serviceMap, environmentMap));
+          currentIteration++;
+        }
+      }
     }
     // Todo: Add support for environment group
     return ChildrenExecutableResponse.newBuilder().addAllChildren(children).setMaxConcurrency(maxConcurrency).build();
