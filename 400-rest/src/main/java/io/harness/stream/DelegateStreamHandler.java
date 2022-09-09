@@ -120,7 +120,7 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
               try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR);
                    AutoLogContext ignore2 = new DelegateLogContext(delegateId, OVERRIDE_ERROR);
                    AutoLogContext ignore3 = new WebsocketLogContext(event.getResource().uuid(), OVERRIDE_ERROR)) {
-                log.info("delegate socket disconnected");
+                log.info("delegate socket disconnected {}", event);
                 Delegate delegate = delegateCache.get(accountId, delegateId, true);
                 delegateService.register(delegate);
                 delegateService.delegateDisconnected(accountId, delegateId, delegateConnectionId);
@@ -132,7 +132,7 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
               try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR);
                    AutoLogContext ignore2 = new DelegateLogContext(delegateId, OVERRIDE_ERROR);
                    AutoLogContext ignore3 = new WebsocketLogContext(event.getResource().uuid(), OVERRIDE_ERROR)) {
-                log.info("delegate socket closed");
+                log.info("delegate socket closed {}", event);
               }
             }
           });
