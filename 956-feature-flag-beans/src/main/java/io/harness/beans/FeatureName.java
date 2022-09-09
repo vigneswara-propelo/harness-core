@@ -436,7 +436,9 @@ public enum FeatureName {
   UPDATE_EMAILS_VIA_SCIM("Will enable updating emails in Harness via SCIM", HarnessTeam.PL),
   WAIT_STEP(
       "Automatically pause a pipeline execution for a specific amount of time, after time expires the pipeline proceeds and eventually completes",
-      HarnessTeam.PIPELINE);
+      HarnessTeam.PIPELINE),
+  MERGE_RUNTIME_VARIABLES_IN_RESUME(
+      "merge context elements workflow variables while resuming pipeline from a stage", HarnessTeam.SPG);
 
   @Deprecated
   FeatureName() {
