@@ -4665,6 +4665,7 @@ plain_artifacts = [
     "io.gsonfire:gson-fire:1.8.3",
     "io.harness.cv:data-collection-dsl:0.39-RELEASE",
     "io.harness:ff-java-server-sdk:1.0.5.1",
+    "io.harness:access-control-server-spec:1.0.7",
     "io.harness:ng-manager-server-spec:1.0.10",
     "io.jsonwebtoken:jjwt:0.9.1",
     "io.kubernetes:client-java-api:16.0.0",
