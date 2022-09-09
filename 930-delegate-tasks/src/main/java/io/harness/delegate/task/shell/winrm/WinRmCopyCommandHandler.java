@@ -17,6 +17,9 @@ import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.NO_CO
 import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.NO_DESTINATION_PATH_SPECIFIED;
 import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.NO_DESTINATION_PATH_SPECIFIED_EXPLANATION;
 import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.NO_DESTINATION_PATH_SPECIFIED_HINT;
+import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.UNDECRYPTABLE_CONFIG_FILE_PROVIDED;
+import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.UNDECRYPTABLE_CONFIG_FILE_PROVIDED_EXPLANATION;
+import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.UNDECRYPTABLE_CONFIG_FILE_PROVIDED_HINT;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 
 import static software.wings.common.Constants.WINDOWS_HOME_DIR;
@@ -45,6 +48,7 @@ import io.harness.delegate.task.winrm.WinRmSessionConfig;
 import io.harness.delegate.task.winrm.WinRmSessionConfig.WinRmSessionConfigBuilder;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.NestedExceptionUtils;
+import io.harness.exception.runtime.SshCommandExecutionException;
 import io.harness.exception.runtime.WinRmCommandExecutionException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogLevel;
@@ -126,8 +130,17 @@ public class WinRmCopyCommandHandler implements CommandHandler {
     for (ConfigFileParameters configFile : configFiles) {
       log.info(format("Copying config file : %s, isEncrypted: %b", configFile.getFileName(), configFile.isEncrypted()));
       if (configFile.isEncrypted()) {
-        SecretConfigFile secretConfigFile = (SecretConfigFile) secretDecryptionService.decrypt(
-            configFile.getSecretConfigFile(), configFile.getEncryptionDataDetails());
+        SecretConfigFile secretConfigFile;
+        try {
+          secretConfigFile = (SecretConfigFile) secretDecryptionService.decrypt(
+              configFile.getSecretConfigFile(), configFile.getEncryptionDataDetails());
+        } catch (Exception e) {
+          throw NestedExceptionUtils.hintWithExplanationException(
+              format(UNDECRYPTABLE_CONFIG_FILE_PROVIDED_HINT, configFile.getFileName()),
+              format(UNDECRYPTABLE_CONFIG_FILE_PROVIDED_EXPLANATION, configFile.getFileName()),
+              new SshCommandExecutionException(format(UNDECRYPTABLE_CONFIG_FILE_PROVIDED, configFile.getFileName())));
+        }
+
         String fileData = new String(secretConfigFile.getEncryptedConfigFile().getDecryptedValue());
         configFile.setFileContent(fileData);
         configFile.setFileSize(fileData.getBytes(StandardCharsets.UTF_8).length);
