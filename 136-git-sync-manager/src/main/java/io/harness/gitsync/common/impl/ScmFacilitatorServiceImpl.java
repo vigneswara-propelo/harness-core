@@ -173,6 +173,7 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
         emptyIfNull(listBranchesWithDefaultResponse.getBranchesList())
             .stream()
             .map(branchName -> GitBranchDetailsDTO.builder().name(branchName).build())
+            .distinct()
             .collect(Collectors.toList());
     return GitBranchesResponseDTO.builder()
         .branches(gitBranches)
