@@ -19,7 +19,11 @@ java_library(
 java_binary(
     name = "build_cleaner",
     main_class = "io.harness.buildcleaner.BuildCleaner",
-    resources = [],
+    resources = ["//tools/build-cleaner/src/main/java/io/harness/buildcleaner/resources:resource"],
     visibility = ["//visibility:public"],
-    runtime_deps = [":module"],
+    runtime_deps = [
+        ":module",
+        "//tools/build-cleaner/src/main/java/io/harness/buildcleaner/resources",
+        "@maven//:ch_qos_logback_logback_classic",
+    ],
 )
