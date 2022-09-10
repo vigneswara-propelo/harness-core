@@ -201,6 +201,13 @@ public class DeploymentStageFilterJsonCreatorV2 extends GenericStageFilterJsonCr
         throw new InvalidYamlRuntimeException(
             "Deploy to all environments is not supported yet. Please select a specific infrastructure and try again");
       }
+
+      if (ParameterField.isNull(env.getInfrastructureDefinition())
+          && ParameterField.isNull(env.getInfrastructureDefinitions())) {
+        throw new InvalidYamlRuntimeException(format(
+            "InfrastructureDefinition or InfrastructureDefinitions must be specified for environment in stage [%s]",
+            YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
+      }
     }
 
     if (!environmentRef.isExpression()) {
@@ -213,12 +220,15 @@ public class DeploymentStageFilterJsonCreatorV2 extends GenericStageFilterJsonCr
 
         List<InfraStructureDefinitionYaml> infraList = new ArrayList<>();
         if (ParameterField.isNotNull(env.getInfrastructureDefinitions())) {
-          infraList.addAll(env.getInfrastructureDefinitions().getValue());
-        } else {
+          if (!env.getInfrastructureDefinitions().isExpression()) {
+            infraList.addAll(env.getInfrastructureDefinitions().getValue());
+          }
+        } else if (ParameterField.isNotNull(env.getInfrastructureDefinition())) {
           if (!env.getInfrastructureDefinition().isExpression()) {
             infraList.add(env.getInfrastructureDefinition().getValue());
           }
         }
+
         if (isNotEmpty(infraList)) {
           List<InfrastructureEntity> infrastructureEntities = infraService.getAllInfrastructureFromIdentifierList(
               filterCreationContext.getSetupMetadata().getAccountId(),
@@ -242,12 +252,14 @@ public class DeploymentStageFilterJsonCreatorV2 extends GenericStageFilterJsonCr
     }
 
     if (gitOpsEnabled && !deployToAll.isExpression()) {
-      if (deployToAll.getValue() && env.getGitOpsClusters().fetchFinalValue() != null) {
+      if (deployToAll.getValue() && env.getGitOpsClusters() != null
+          && env.getGitOpsClusters().fetchFinalValue() != null) {
         throw new InvalidYamlRuntimeException(format(
             "When deploying to all, individual gitops clusters must not be provided in stage [%s]. Please remove the gitOpsClusters property and try again",
             YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
       }
-      if (!deployToAll.getValue() && env.getGitOpsClusters().fetchFinalValue() == null) {
+      if (!deployToAll.getValue() && env.getGitOpsClusters() != null
+          && env.getGitOpsClusters().fetchFinalValue() == null) {
         throw new InvalidYamlRuntimeException(format(
             "When deploy to all is false, list of gitops clusters must be provided  in stage [%s].  Please specify the gitOpsClusters property and try again",
             YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
