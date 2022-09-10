@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package software.wings.graphql.datafetcher.ce.recommendation.entity;
+package io.harness.ccm;
 
 import io.harness.event.payloads.HistogramProto;
 import io.harness.grpc.utils.HTimestamps;

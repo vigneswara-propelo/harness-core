@@ -7,8 +7,8 @@
 
 package io.harness.perpetualtask.k8s.watch;
 
-import static io.harness.ccm.commons.constants.Constants.CLUSTER_ID_IDENTIFIER;
-import static io.harness.ccm.commons.constants.Constants.UID;
+import static io.harness.ccm.CcmConstants.CLUSTER_ID_IDENTIFIER;
+import static io.harness.ccm.CcmConstants.UID;
 import static io.harness.perpetualtask.k8s.watch.PVEvent.EventType.EVENT_TYPE_EXPANSION;
 import static io.harness.perpetualtask.k8s.watch.PVEvent.EventType.EVENT_TYPE_STOP;
 
