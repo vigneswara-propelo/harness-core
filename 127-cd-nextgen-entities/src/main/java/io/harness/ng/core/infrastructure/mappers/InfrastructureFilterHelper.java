@@ -53,6 +53,7 @@ public class InfrastructureFilterHelper {
     update.set(InfrastructureEntityKeys.lastModifiedAt, System.currentTimeMillis());
     update.set(InfrastructureEntityKeys.yaml, infrastructureEntity.getYaml());
     update.set(InfrastructureEntityKeys.envIdentifier, infrastructureEntity.getEnvIdentifier());
+    update.set(InfrastructureEntityKeys.deploymentType, infrastructureEntity.getDeploymentType());
     return update;
   }
 }
