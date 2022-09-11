@@ -56,12 +56,12 @@ import io.harness.security.encryption.SecretDecryptionService;
 import io.harness.shell.ExecuteCommandResponse;
 import io.harness.ssh.FileSourceType;
 
-import com.google.api.client.util.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -192,8 +192,7 @@ public class WinRmCopyCommandHandler implements CommandHandler {
         .stream()
         .filter(storeDelegateConfig -> StoreDelegateConfigType.HARNESS.equals(storeDelegateConfig.getType()))
         .map(storeDelegateConfig -> (HarnessStoreDelegateConfig) storeDelegateConfig)
-        .findFirst()
-        .map(harnessStoreDelegateConfig -> Lists.newArrayList(harnessStoreDelegateConfig.getConfigFiles()))
-        .orElse(Lists.newArrayList());
+        .flatMap(harnessStoreDelegateConfig -> harnessStoreDelegateConfig.getConfigFiles().stream())
+        .collect(Collectors.toList());
   }
 }
