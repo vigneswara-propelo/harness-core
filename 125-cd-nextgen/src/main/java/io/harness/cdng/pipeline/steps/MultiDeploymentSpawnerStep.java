@@ -73,7 +73,8 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
         maxConcurrency = 0;
       }
       for (Map<String, String> environmentMap : environmentsMapList) {
-        children.add(getChild(childNodeId, currentIteration, totalIterations, environmentMap));
+        children.add(getChild(childNodeId, currentIteration, totalIterations, environmentMap,
+            MultiDeploymentSpawnerUtils.MULTI_ENV_DEPLOYMENT));
         currentIteration++;
       }
       return ChildrenExecutableResponse.newBuilder().addAllChildren(children).setMaxConcurrency(maxConcurrency).build();
@@ -89,7 +90,8 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
         maxConcurrency = 0;
       }
       for (Map<String, String> serviceMap : servicesMap) {
-        children.add(getChild(childNodeId, currentIteration, totalIterations, serviceMap));
+        children.add(getChild(childNodeId, currentIteration, totalIterations, serviceMap,
+            MultiDeploymentSpawnerUtils.MULTI_SERVICE_DEPLOYMENT));
         currentIteration++;
       }
       return ChildrenExecutableResponse.newBuilder().addAllChildren(children).setMaxConcurrency(maxConcurrency).build();
@@ -141,14 +143,16 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
   }
 
   private ChildrenExecutableResponse.Child getChild(
-      String childNodeId, int currentIteration, int totalIterations, Map<String, String> serviceMap) {
+      String childNodeId, int currentIteration, int totalIterations, Map<String, String> serviceMap, String subType) {
     return ChildrenExecutableResponse.Child.newBuilder()
         .setChildNodeId(childNodeId)
-        .setStrategyMetadata(StrategyMetadata.newBuilder()
-                                 .setCurrentIteration(currentIteration)
-                                 .setTotalIterations(totalIterations)
-                                 .setMatrixMetadata(MatrixMetadata.newBuilder().putAllMatrixValues(serviceMap).build())
-                                 .build())
+        .setStrategyMetadata(
+            StrategyMetadata.newBuilder()
+                .setCurrentIteration(currentIteration)
+                .setTotalIterations(totalIterations)
+                .setMatrixMetadata(
+                    MatrixMetadata.newBuilder().setSubType(subType).putAllMatrixValues(serviceMap).build())
+                .build())
         .build();
   }
 
@@ -157,7 +161,15 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
     Map<String, String> matrixMetadataMap = new HashMap<>();
     matrixMetadataMap.putAll(serviceMap);
     matrixMetadataMap.putAll(environmentMap);
-    return getChild(childNodeId, currentIteration, totalIterations, matrixMetadataMap);
+    String subType;
+    if (environmentMap.isEmpty()) {
+      subType = MultiDeploymentSpawnerUtils.MULTI_SERVICE_DEPLOYMENT;
+    } else if (serviceMap.isEmpty()) {
+      subType = MultiDeploymentSpawnerUtils.MULTI_ENV_DEPLOYMENT;
+    } else {
+      subType = MultiDeploymentSpawnerUtils.MULTI_SERVICE_ENV_DEPLOYMENT;
+    }
+    return getChild(childNodeId, currentIteration, totalIterations, matrixMetadataMap, subType);
   }
 
   private List<Map<String, String>> getEnvironmentMapList(EnvironmentsYaml environmentsYaml) {

@@ -12,6 +12,7 @@ import io.harness.cdng.creator.plan.stage.DeploymentStageNode;
 import io.harness.cdng.environment.yaml.EnvironmentYamlV2;
 import io.harness.cdng.infra.yaml.InfraStructureDefinitionYaml;
 import io.harness.cdng.service.beans.ServiceYamlV2;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.data.structure.UUIDGenerator;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.serializer.JsonUtils;
@@ -47,11 +48,19 @@ public class MultiDeploymentSpawnerUtils {
   public static final String SERVICE_INPUTS_EXPRESSION = "<+matrix." + SERVICE_INPUTS + ">";
   public static final String USE_FROM_STAGE_EXPRESSION = "<+matrix." + USE_FROM_STAGE + ">";
 
+  public static final String MULTI_SERVICE_DEPLOYMENT = "Multiple Services";
+  public static final String MULTI_ENV_DEPLOYMENT = "Multiple Environments";
+  public static final String MULTI_SERVICE_ENV_DEPLOYMENT = "Multiple Services and Environments";
+
   Map<String, String> getMapFromServiceYaml(ServiceYamlV2 service) {
     Map<String, String> matrixMetadataMap = new HashMap<>();
     matrixMetadataMap.put(SERVICE_REF, service.getServiceRef().getValue());
-    matrixMetadataMap.put(SERVICE_INPUTS, JsonUtils.asJson(service.getServiceInputs().getValue()));
-    matrixMetadataMap.put(USE_FROM_STAGE, JsonUtils.asJson(service.getUseFromStage()));
+    if (EmptyPredicate.isNotEmpty(service.getServiceInputs().getValue())) {
+      matrixMetadataMap.put(SERVICE_INPUTS, JsonUtils.asJson(service.getServiceInputs().getValue()));
+    }
+    if (service.getUseFromStage() != null) {
+      matrixMetadataMap.put(USE_FROM_STAGE, JsonUtils.asJson(service.getUseFromStage()));
+    }
     return matrixMetadataMap;
   }
 
@@ -59,7 +68,9 @@ public class MultiDeploymentSpawnerUtils {
       EnvironmentYamlV2 environmentYamlV2, InfraStructureDefinitionYaml infraStructureDefinitionYaml) {
     Map<String, String> matrixMetadataMap = new HashMap<>();
     matrixMetadataMap.put(ENVIRONMENT_REF, environmentYamlV2.getEnvironmentRef().getValue());
-    matrixMetadataMap.put(ENVIRONMENT_INPUTS, JsonUtils.asJson(environmentYamlV2.getEnvironmentInputs().getValue()));
+    if (EmptyPredicate.isNotEmpty(environmentYamlV2.getEnvironmentInputs().getValue())) {
+      matrixMetadataMap.put(ENVIRONMENT_INPUTS, JsonUtils.asJson(environmentYamlV2.getEnvironmentInputs().getValue()));
+    }
     matrixMetadataMap.put(
         SERVICE_OVERRIDE_INPUTS, JsonUtils.asJson(environmentYamlV2.getServiceOverrideInputs().getValue()));
     matrixMetadataMap.put(GIT_OPS_CLUSTERS, JsonUtils.asJson(environmentYamlV2.getGitOpsClusters().getValue()));
