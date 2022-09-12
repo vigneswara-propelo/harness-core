@@ -434,6 +434,7 @@ public enum FeatureName {
   NEXUS3_RAW_REPOSITORY("Enable support for Nexus3 raw repository format on CG", HarnessTeam.SPG),
   NG_ARTIFACT_SOURCES("Flag to support multi artifact sources for service V2", HarnessTeam.CDC),
   UPDATE_EMAILS_VIA_SCIM("Will enable updating emails in Harness via SCIM", HarnessTeam.PL),
+  ELK_HEALTH_SOURCE("Will enable ELK health source in SRM", HarnessTeam.CV),
   WAIT_STEP(
       "Automatically pause a pipeline execution for a specific amount of time, after time expires the pipeline proceeds and eventually completes",
       HarnessTeam.PIPELINE),
