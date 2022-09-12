@@ -1272,6 +1272,9 @@
             "issueType": {
               "type": "string"
             },
+            "projectKey": {
+              "type": "string"
+            },
             "rejectionCriteria": {
               "$ref": "#/definitions/CriteriaSpecWrapper"
             }
