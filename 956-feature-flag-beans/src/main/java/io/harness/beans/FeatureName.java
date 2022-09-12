@@ -437,6 +437,8 @@ public enum FeatureName {
   WAIT_STEP(
       "Automatically pause a pipeline execution for a specific amount of time, after time expires the pipeline proceeds and eventually completes",
       HarnessTeam.PIPELINE),
+
+  PIPELINE_CHAINING("UI flag to enable/disable Pipeline Chaining feature", HarnessTeam.PIPELINE),
   MERGE_RUNTIME_VARIABLES_IN_RESUME(
       "merge context elements workflow variables while resuming pipeline from a stage", HarnessTeam.SPG);
 
