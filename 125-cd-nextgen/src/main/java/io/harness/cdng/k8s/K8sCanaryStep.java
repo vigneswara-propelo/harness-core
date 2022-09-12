@@ -140,12 +140,8 @@ public class K8sCanaryStep extends TaskChainExecutableWithRollbackAndRbac implem
     TaskChainResponse response =
         k8sStepHelper.queueK8sTask(stepElementParameters, k8sCanaryDeployRequest, ambiance, executionPassThroughData);
 
-    OptionalSweepingOutput optionalSweepingOutput = executionSweepingOutputService.resolveOptional(
-        ambiance, RefObjectUtils.getSweepingOutputRefObject(K8sCanaryExecutionOutput.OUTPUT_NAME));
-    if (optionalSweepingOutput == null || !optionalSweepingOutput.isFound()) {
-      executionSweepingOutputService.consume(ambiance, K8sCanaryExecutionOutput.OUTPUT_NAME,
-          K8sCanaryExecutionOutput.builder().build(), StepOutcomeGroup.STAGE.name());
-    }
+    executionSweepingOutputService.consume(ambiance, K8sCanaryExecutionOutput.OUTPUT_NAME,
+        K8sCanaryExecutionOutput.builder().build(), StepOutcomeGroup.STEP.name());
 
     return response;
   }
