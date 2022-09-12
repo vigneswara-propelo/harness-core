@@ -42,6 +42,7 @@ import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.cdng.service.beans.ServiceDefinition;
 import io.harness.cdng.service.beans.ServiceUseFromStage;
 import io.harness.cdng.service.beans.StageOverridesConfig;
+import io.harness.cdng.service.steps.ServiceStepOverrideHelper;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.data.structure.UUIDGenerator;
 import io.harness.exception.InvalidRequestException;
@@ -640,8 +641,8 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
                     .build())
             .build();
 
-    final List<ManifestConfigWrapper> finalManifests = ServiceDefinitionPlanCreatorHelper.prepareFinalManifests(
-        serviceInfoConfig, serviceOverrideConfig, environmentConfig);
+    final List<ManifestConfigWrapper> finalManifests =
+        ServiceStepOverrideHelper.prepareFinalManifests(serviceInfoConfig, serviceOverrideConfig, environmentConfig);
 
     assertThat(finalManifests).hasSize(3);
     assertThat(finalManifests).containsExactly(valuesManifest1, valuesManifest3, valuesManifest2);
@@ -682,8 +683,8 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
                                            .build())
             .build();
 
-    final List<ConfigFileWrapper> finalConfigFiles = ServiceDefinitionPlanCreatorHelper.prepareFinalConfigFiles(
-        serviceInfoConfig, serviceOverrideConfig, environmentConfig);
+    final List<ConfigFileWrapper> finalConfigFiles =
+        ServiceStepOverrideHelper.prepareFinalConfigFiles(serviceInfoConfig, serviceOverrideConfig, environmentConfig);
 
     assertThat(finalConfigFiles).hasSize(3);
     assertThat(finalConfigFiles).containsExactlyInAnyOrder(configFile1a, configFile2b, configFile3b);
@@ -719,7 +720,7 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
             .build();
     // service overrides manifest type validation
     assertThatThrownBy(()
-                           -> ServiceDefinitionPlanCreatorHelper.prepareFinalManifests(
+                           -> ServiceStepOverrideHelper.prepareFinalManifests(
                                serviceInfoConfig, serviceOverrideConfig, environmentConfig))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Unsupported Manifest Types: [K8sManifest] found for service overrides");
@@ -729,7 +730,7 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
     environmentConfig.getNgEnvironmentInfoConfig().setNgEnvironmentGlobalOverride(
         NGEnvironmentGlobalOverride.builder().manifests(Arrays.asList(k8sManifest, valuesManifest3)).build());
     assertThatThrownBy(()
-                           -> ServiceDefinitionPlanCreatorHelper.prepareFinalManifests(
+                           -> ServiceStepOverrideHelper.prepareFinalManifests(
                                serviceInfoConfig, serviceOverrideConfig, environmentConfig))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Unsupported Manifest Types: [K8sManifest] found for environment global overrides");
@@ -767,7 +768,7 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
 
     // service overrides manifest identifier duplication
     assertThatThrownBy(()
-                           -> ServiceDefinitionPlanCreatorHelper.prepareFinalManifests(
+                           -> ServiceStepOverrideHelper.prepareFinalManifests(
                                serviceInfoConfig, serviceOverrideConfig, environmentConfig))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(
@@ -778,7 +779,7 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
     environmentConfig.getNgEnvironmentInfoConfig().setNgEnvironmentGlobalOverride(
         NGEnvironmentGlobalOverride.builder().manifests(Arrays.asList(valuesManifest1, valuesManifest2)).build());
     assertThatThrownBy(()
-                           -> ServiceDefinitionPlanCreatorHelper.prepareFinalManifests(
+                           -> ServiceStepOverrideHelper.prepareFinalManifests(
                                serviceInfoConfig, serviceOverrideConfig, environmentConfig))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(
@@ -812,8 +813,8 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
                                          .build())
             .build();
 
-    final List<ManifestConfigWrapper> finalManifests = ServiceDefinitionPlanCreatorHelper.prepareFinalManifests(
-        serviceInfoConfig, serviceOverrideConfig, environmentConfig);
+    final List<ManifestConfigWrapper> finalManifests =
+        ServiceStepOverrideHelper.prepareFinalManifests(serviceInfoConfig, serviceOverrideConfig, environmentConfig);
     assertThat(finalManifests).hasSize(3);
     assertThat(finalManifests).containsExactly(k8sManifest, valuesManifest1, valuesManifest2);
   }
@@ -845,8 +846,8 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
                                          .build())
             .build();
 
-    final List<ConfigFileWrapper> finalConfigFiles = ServiceDefinitionPlanCreatorHelper.prepareFinalConfigFiles(
-        serviceInfoConfig, serviceOverrideConfig, environmentConfig);
+    final List<ConfigFileWrapper> finalConfigFiles =
+        ServiceStepOverrideHelper.prepareFinalConfigFiles(serviceInfoConfig, serviceOverrideConfig, environmentConfig);
     assertThat(finalConfigFiles).hasSize(3);
     assertThat(finalConfigFiles).containsExactlyInAnyOrder(configFile1a, configFile2a, configFile3a);
   }
@@ -878,8 +879,8 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
                     .build())
             .build();
 
-    final List<ManifestConfigWrapper> finalManifests = ServiceDefinitionPlanCreatorHelper.prepareFinalManifests(
-        serviceInfoConfig, serviceOverrideConfig, environmentConfig);
+    final List<ManifestConfigWrapper> finalManifests =
+        ServiceStepOverrideHelper.prepareFinalManifests(serviceInfoConfig, serviceOverrideConfig, environmentConfig);
     assertThat(finalManifests).hasSize(2);
     assertThat(finalManifests).containsExactly(valuesManifest2, valuesManifest1);
   }
@@ -912,8 +913,8 @@ public class ServiceDefinitionPlanCreatorHelperTest extends CategoryTest {
                     .build())
             .build();
 
-    final List<ConfigFileWrapper> finalConfigFiles = ServiceDefinitionPlanCreatorHelper.prepareFinalConfigFiles(
-        serviceInfoConfig, serviceOverrideConfig, environmentConfig);
+    final List<ConfigFileWrapper> finalConfigFiles =
+        ServiceStepOverrideHelper.prepareFinalConfigFiles(serviceInfoConfig, serviceOverrideConfig, environmentConfig);
     assertThat(finalConfigFiles).hasSize(3);
     assertThat(finalConfigFiles).containsExactlyInAnyOrder(configFile3a, configFile1a, configFile2a);
   }
