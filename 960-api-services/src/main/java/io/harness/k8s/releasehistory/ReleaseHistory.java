@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.k8s.model;
+package io.harness.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -14,7 +14,9 @@ import static java.util.stream.Collectors.toList;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.WingsException;
 import io.harness.k8s.manifest.ObjectYamlUtils;
-import io.harness.k8s.model.Release.Status;
+import io.harness.k8s.model.KubernetesResource;
+import io.harness.k8s.model.KubernetesResourceId;
+import io.harness.k8s.releasehistory.IK8sRelease.Status;
 import io.harness.serializer.YamlUtils;
 
 import com.esotericsoftware.yamlbeans.YamlException;
@@ -36,7 +38,7 @@ public class ReleaseHistory {
   public static final String defaultVersion = "v1";
 
   private String version;
-  private List<Release> releases;
+  private List<K8sLegacyRelease> releases;
 
   public static ReleaseHistory createNew() {
     ReleaseHistory releaseHistory = new ReleaseHistory();
@@ -49,26 +51,24 @@ public class ReleaseHistory {
     return new YamlUtils().read(releaseHistory, ReleaseHistory.class);
   }
 
-  public Release createNewRelease(List<KubernetesResourceId> resources) {
-    int releaseNumber = 1;
-    if (!this.getReleases().isEmpty()) {
-      releaseNumber = getLatestRelease().getNumber() + 1;
-    }
-    this.getReleases().add(
-        0, Release.builder().number(releaseNumber).status(Status.InProgress).resources(resources).build());
+  public K8sLegacyRelease createNewRelease(List<KubernetesResourceId> resources) {
+    int releaseNumber = getCurrentReleaseNumber();
+    this.getReleases().add(0,
+        K8sLegacyRelease.builder()
+            .number(releaseNumber)
+            .status(IK8sRelease.Status.InProgress)
+            .resources(resources)
+            .build());
 
     return getLatestRelease();
   }
 
-  public Release createNewReleaseWithResourceMap(List<KubernetesResource> resources) {
-    int releaseNumber = 1;
-    if (!this.getReleases().isEmpty()) {
-      releaseNumber = getLatestRelease().getNumber() + 1;
-    }
+  public K8sLegacyRelease createNewReleaseWithResourceMap(List<KubernetesResource> resources) {
+    int releaseNumber = getCurrentReleaseNumber();
     this.getReleases().add(0,
-        Release.builder()
+        K8sLegacyRelease.builder()
             .number(releaseNumber)
-            .status(Status.InProgress)
+            .status(IK8sRelease.Status.InProgress)
             .resources(resources.stream().map(KubernetesResource::getResourceId).collect(toList()))
             .resourcesWithSpec(resources)
             .build());
@@ -76,7 +76,15 @@ public class ReleaseHistory {
     return getLatestRelease();
   }
 
-  public Release getLatestRelease() {
+  public int getCurrentReleaseNumber() {
+    int releaseNumber = 1;
+    if (!this.getReleases().isEmpty()) {
+      releaseNumber = getLatestRelease().getNumber() + 1;
+    }
+    return releaseNumber;
+  }
+
+  public K8sLegacyRelease getLatestRelease() {
     if (this.getReleases().isEmpty()) {
       throw new WingsException("No existing release found.");
     }
@@ -92,18 +100,18 @@ public class ReleaseHistory {
     this.getLatestRelease().setNumber(releaseNumber);
   }
 
-  public Release getLastSuccessfulRelease() {
-    for (Release release : this.getReleases()) {
-      if (release.getStatus() == Status.Succeeded) {
+  public K8sLegacyRelease getLastSuccessfulRelease() {
+    for (K8sLegacyRelease release : this.getReleases()) {
+      if (release.getStatus() == IK8sRelease.Status.Succeeded) {
         return release;
       }
     }
     return null;
   }
 
-  public Release getPreviousRollbackEligibleRelease(int currentReleaseNumber) {
-    for (Release release : this.getReleases()) {
-      if (release.getNumber() < currentReleaseNumber && release.getStatus() == Status.Succeeded) {
+  public K8sLegacyRelease getPreviousRollbackEligibleRelease(int currentReleaseNumber) {
+    for (K8sLegacyRelease release : this.getReleases()) {
+      if (release.getNumber() < currentReleaseNumber && release.getStatus() == IK8sRelease.Status.Succeeded) {
         return release;
       }
     }
@@ -111,8 +119,8 @@ public class ReleaseHistory {
   }
 
   @Nullable
-  public Release getRelease(int releaseNumber) {
-    for (Release release : this.getReleases()) {
+  public K8sLegacyRelease getRelease(int releaseNumber) {
+    for (K8sLegacyRelease release : this.getReleases()) {
       if (release.getNumber() == releaseNumber) {
         return release;
       }
@@ -126,10 +134,10 @@ public class ReleaseHistory {
   }
 
   public void cleanup() {
-    Release lastSuccessfulRelease = this.getLastSuccessfulRelease();
+    K8sLegacyRelease lastSuccessfulRelease = this.getLastSuccessfulRelease();
     int lastSuccessfulReleaseNumber = lastSuccessfulRelease != null ? lastSuccessfulRelease.getNumber() : 0;
-    releases.removeIf(
-        release -> release.getNumber() < lastSuccessfulReleaseNumber || Status.Failed == release.getStatus());
+    releases.removeIf(release
+        -> release.getNumber() < lastSuccessfulReleaseNumber || IK8sRelease.Status.Failed == release.getStatus());
   }
 
   public ReleaseHistory cloneInternal() {

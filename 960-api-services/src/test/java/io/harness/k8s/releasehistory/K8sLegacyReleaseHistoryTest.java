@@ -5,9 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.k8s.manifest;
+package io.harness.k8s.releasehistory;
 
-import static io.harness.k8s.model.ReleaseHistory.createFromData;
+import static io.harness.k8s.releasehistory.ReleaseHistory.createFromData;
 import static io.harness.rule.OwnerRule.PUNEET;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,16 +17,13 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.WingsException;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.Release;
-import io.harness.k8s.model.Release.Status;
-import io.harness.k8s.model.ReleaseHistory;
 import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-public class ReleaseHistoryTest extends CategoryTest {
+public class K8sLegacyReleaseHistoryTest extends CategoryTest {
   @Test
   @Owner(developers = PUNEET)
   @Category(UnitTests.class)
@@ -55,7 +52,7 @@ public class ReleaseHistoryTest extends CategoryTest {
     }
 
     try {
-      releaseHistory.setReleaseStatus(Status.Succeeded);
+      releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
       fail("Should not reach here.");
     } catch (WingsException e) {
       assertThat(e.getMessage()).isEqualTo("No existing release found.");
@@ -69,25 +66,25 @@ public class ReleaseHistoryTest extends CategoryTest {
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
     releaseHistory.createNewRelease(
         ImmutableList.of(KubernetesResourceId.builder().kind("Deployment").name("nginx").namespace("default").build()));
-    Release release = releaseHistory.getLatestRelease();
+    K8sLegacyRelease release = releaseHistory.getLatestRelease();
 
     assertThat(release.getNumber()).isEqualTo(1);
-    assertThat(release.getStatus()).isEqualTo(Status.InProgress);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.InProgress);
     assertThat(release.getResources()).hasSize(1);
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("kind", "Deployment");
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("name", "nginx");
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("namespace", "default");
 
-    releaseHistory.setReleaseStatus(Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
     release = releaseHistory.getLatestRelease();
-    assertThat(release.getStatus()).isEqualTo(Status.Succeeded);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.Succeeded);
 
     releaseHistory.createNewRelease(ImmutableList.of(
         KubernetesResourceId.builder().kind("Deployment").name("nginx-1").namespace("default").build()));
     release = releaseHistory.getLatestRelease();
 
     assertThat(release.getNumber()).isEqualTo(2);
-    assertThat(release.getStatus()).isEqualTo(Status.InProgress);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.InProgress);
     assertThat(release.getResources()).hasSize(1);
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("kind", "Deployment");
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("name", "nginx-1");
@@ -100,7 +97,7 @@ public class ReleaseHistoryTest extends CategoryTest {
   public void getLastSuccessfulReleaseTest() {
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
 
-    Release release = releaseHistory.getLastSuccessfulRelease();
+    K8sLegacyRelease release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNull();
 
     releaseHistory.createNewRelease(
@@ -109,12 +106,12 @@ public class ReleaseHistoryTest extends CategoryTest {
     release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNull();
 
-    releaseHistory.setReleaseStatus(Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
     release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNotNull();
-    assertThat(release.getStatus()).isEqualTo(Status.Succeeded);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.Succeeded);
 
-    releaseHistory.setReleaseStatus(Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
     release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNull();
   }
