@@ -61,7 +61,6 @@ import io.harness.cvng.servicelevelobjective.SLORiskCountResponse;
 import io.harness.cvng.servicelevelobjective.beans.DayOfWeek;
 import io.harness.cvng.servicelevelobjective.beans.ErrorBudgetRisk;
 import io.harness.cvng.servicelevelobjective.beans.SLIMetricType;
-import io.harness.cvng.servicelevelobjective.beans.SLIMissingDataType;
 import io.harness.cvng.servicelevelobjective.beans.SLOCalenderType;
 import io.harness.cvng.servicelevelobjective.beans.SLODashboardApiFilter;
 import io.harness.cvng.servicelevelobjective.beans.SLOTarget;
@@ -376,42 +375,6 @@ public class ServiceLevelObjectiveServiceImplTest extends CvNextGenTestBase {
         sloHealthIndicatorService.getBySLOIdentifier(projectParams, sloDTO.getIdentifier());
     assertThat(updatedSloHealthIndicator.getLastUpdatedAt())
         .isGreaterThan(existingSloHealthIndicator.getLastUpdatedAt());
-  }
-
-  @Test
-  @Owner(developers = DEEPAK_CHHIKARA)
-  @Category(UnitTests.class)
-  public void testUpdate_SLIUpdateSuccess() {
-    ServiceLevelObjectiveDTO sloDTO = createSLOBuilder();
-    createMonitoredService();
-    ServiceLevelObjectiveResponse serviceLevelObjectiveResponse =
-        serviceLevelObjectiveService.create(projectParams, sloDTO);
-    assertThat(serviceLevelObjectiveResponse.getServiceLevelObjectiveDTO()).isEqualTo(sloDTO);
-    ServiceLevelIndicatorDTO serviceLevelIndicatorDTO1 = sloDTO.getServiceLevelIndicators().get(0);
-    serviceLevelIndicatorDTO1.setType(ServiceLevelIndicatorType.AVAILABILITY);
-    RatioSLIMetricSpec ratioSLIMetricSpec = (RatioSLIMetricSpec) serviceLevelIndicatorDTO1.getSpec().getSpec();
-    ratioSLIMetricSpec.setMetric1("newMetric");
-    serviceLevelIndicatorDTO1.getSpec().setSpec(ratioSLIMetricSpec);
-    ServiceLevelIndicatorDTO serviceLevelIndicatorDTO2 = builderFactory.getServiceLevelIndicatorDTOBuilder();
-    serviceLevelIndicatorDTO2.setSliMissingDataType(SLIMissingDataType.GOOD);
-    serviceLevelIndicatorDTO2.setSpec(ServiceLevelIndicatorSpec.builder()
-                                          .type(SLIMetricType.RATIO)
-                                          .spec(RatioSLIMetricSpec.builder()
-                                                    .thresholdValue(20.0)
-                                                    .thresholdType(ThresholdType.GREATER_THAN)
-                                                    .eventType(RatioSLIMetricEventType.BAD)
-                                                    .metric1("metric4")
-                                                    .metric2("metric5")
-                                                    .build())
-                                          .build());
-    List<ServiceLevelIndicatorDTO> serviceLevelIndicatorDTOList = new ArrayList<>();
-    serviceLevelIndicatorDTOList.add(serviceLevelIndicatorDTO1);
-    serviceLevelIndicatorDTOList.add(serviceLevelIndicatorDTO2);
-    sloDTO.setServiceLevelIndicators(serviceLevelIndicatorDTOList);
-    ServiceLevelObjectiveResponse updateServiceLevelObjectiveResponse =
-        serviceLevelObjectiveService.update(projectParams, sloDTO.getIdentifier(), sloDTO);
-    assertThat(updateServiceLevelObjectiveResponse.getServiceLevelObjectiveDTO().getServiceLevelIndicators())
-        .isEqualTo(serviceLevelIndicatorDTOList);
   }
 
   @Test

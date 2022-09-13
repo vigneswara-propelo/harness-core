@@ -659,6 +659,7 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
     updateOperations.set(ServiceLevelObjectiveKeys.notificationRuleRefs,
         getNotificationRuleRefs(projectParams, serviceLevelObjective, serviceLevelObjectiveDTO));
     hPersistence.update(serviceLevelObjective, updateOperations);
+    serviceLevelObjective = getEntity(projectParams, serviceLevelObjectiveDTO.getIdentifier());
     return serviceLevelObjective;
   }
 
