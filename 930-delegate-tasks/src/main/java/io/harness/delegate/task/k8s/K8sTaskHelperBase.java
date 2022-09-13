@@ -1001,15 +1001,17 @@ public class K8sTaskHelperBase {
       ProcessResult result = executeDeleteCommand(client, k8sDelegateTaskParams, executionLogCallback, resourceId);
       if (result.getExitValue() != 0) {
         log.warn("Failed to delete resource {}. Error {}", resourceId.kindNameRef(), result.getOutput());
-        String reultOutput = result.outputUTF8().toLowerCase();
+        String resultOutput = result.outputUTF8().toLowerCase();
         // if result contains "not found" then we don't fail else we fail the step
-        if (!reultOutput.contains(NOT_FOUND)) {
-          denoteOverallSuccess = false;
+        if (!resultOutput.contains(NOT_FOUND)) {
+          executionLogCallback.saveExecutionLog(resultOutput, ERROR, FAILURE);
+          throw new KubernetesCliTaskRuntimeException(resultOutput, KubernetesCliCommandType.DELETE);
         }
       }
     }
-
-    executionLogCallback.saveExecutionLog("Done", INFO, denoteOverallSuccess == true ? SUCCESS : FAILURE);
+    if (denoteOverallSuccess) {
+      executionLogCallback.saveExecutionLog("Done", INFO, SUCCESS);
+    }
   }
 
   public List<KubernetesResourceId> executeDeleteHandlingPartialExecution(Kubectl client,
