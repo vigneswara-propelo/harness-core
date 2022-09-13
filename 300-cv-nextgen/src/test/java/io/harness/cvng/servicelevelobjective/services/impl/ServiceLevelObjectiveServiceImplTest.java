@@ -15,6 +15,7 @@ import static io.harness.rule.OwnerRule.DEEPAK_CHHIKARA;
 import static io.harness.rule.OwnerRule.DHRUVX;
 import static io.harness.rule.OwnerRule.KAPIL;
 import static io.harness.rule.OwnerRule.NAVEEN;
+import static io.harness.rule.OwnerRule.VARSHA_LALWANI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -645,6 +646,56 @@ public class ServiceLevelObjectiveServiceImplTest extends CvNextGenTestBase {
                                              .getIdentifier())
                                      .getUuid();
     assertThat(sliIndicator).isNotEqualTo(updatedSliIndicator);
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testUpdate_HealthSourceUpdate() {
+    ServiceLevelObjectiveDTO sloDTO = createSLOBuilder();
+    createMonitoredService();
+    ServiceLevelObjectiveResponse serviceLevelObjectiveResponse =
+        serviceLevelObjectiveService.create(projectParams, sloDTO);
+    assertThat(serviceLevelObjectiveResponse.getServiceLevelObjectiveDTO()).isEqualTo(sloDTO);
+    sloDTO.setHealthSourceRef("newHealthSourceRef");
+    ServiceLevelObjectiveResponse updateServiceLevelObjectiveResponse =
+        serviceLevelObjectiveService.update(projectParams, sloDTO.getIdentifier(), sloDTO);
+    assertThat(updateServiceLevelObjectiveResponse.getServiceLevelObjectiveDTO()).isEqualTo(sloDTO);
+    ServiceLevelIndicator updatedSliIndicator =
+        serviceLevelIndicatorService.getServiceLevelIndicator(builderFactory.getProjectParams(),
+            updateServiceLevelObjectiveResponse.getServiceLevelObjectiveDTO()
+                .getServiceLevelIndicators()
+                .get(0)
+                .getIdentifier());
+    assertThat(updatedSliIndicator.getHealthSourceIdentifier()).isEqualTo("newHealthSourceRef");
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testUpdate_MonitoredServiceUpdate() {
+    ServiceLevelObjectiveDTO sloDTO = createSLOBuilder();
+    createMonitoredService();
+    ServiceLevelObjectiveResponse serviceLevelObjectiveResponse =
+        serviceLevelObjectiveService.create(projectParams, sloDTO);
+    assertThat(serviceLevelObjectiveResponse.getServiceLevelObjectiveDTO()).isEqualTo(sloDTO);
+    MonitoredServiceDTO monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder().build();
+    monitoredServiceDTO.setServiceRef("service1");
+    monitoredServiceDTO.setEnvironmentRef("env1");
+    monitoredServiceDTO.setIdentifier("service1_env1");
+    monitoredServiceDTO.setSources(MonitoredServiceDTO.Sources.builder().build());
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+    sloDTO.setMonitoredServiceRef("service1_env1");
+    ServiceLevelObjectiveResponse updateServiceLevelObjectiveResponse =
+        serviceLevelObjectiveService.update(projectParams, sloDTO.getIdentifier(), sloDTO);
+    assertThat(updateServiceLevelObjectiveResponse.getServiceLevelObjectiveDTO()).isEqualTo(sloDTO);
+    ServiceLevelIndicator updatedSliIndicator =
+        serviceLevelIndicatorService.getServiceLevelIndicator(builderFactory.getProjectParams(),
+            updateServiceLevelObjectiveResponse.getServiceLevelObjectiveDTO()
+                .getServiceLevelIndicators()
+                .get(0)
+                .getIdentifier());
+    assertThat(updatedSliIndicator.getMonitoredServiceIdentifier()).isEqualTo("service1_env1");
   }
 
   @Test
