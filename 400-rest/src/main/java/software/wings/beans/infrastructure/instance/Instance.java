@@ -152,6 +152,13 @@ public class Instance extends Base implements AccountAccess, ApplicationAccess {
                  .field(InstanceKeys.infraMappingId)
                  .descSortField(InstanceKeys.lastUpdatedAt)
                  .build())
+        .add(SortCompoundMongoIndex.builder()
+                 .name("appid_inframapping_isdeleted_createdatdesc")
+                 .field(InstanceKeys.appId)
+                 .field(InstanceKeys.infraMappingId)
+                 .field(InstanceKeys.isDeleted)
+                 .descSortField(InstanceKeys.createdAt)
+                 .build())
         .build();
   }
 
