@@ -440,7 +440,9 @@ public enum FeatureName {
 
   PIPELINE_CHAINING("UI flag to enable/disable Pipeline Chaining feature", HarnessTeam.PIPELINE),
   MERGE_RUNTIME_VARIABLES_IN_RESUME(
-      "merge context elements workflow variables while resuming pipeline from a stage", HarnessTeam.SPG);
+      "merge context elements workflow variables while resuming pipeline from a stage", HarnessTeam.SPG),
+  USE_TEXT_SEARCH_FOR_EXECUTION(
+      "With this instead of using regex search we will use text search for CD page in CG", HarnessTeam.SPG);
 
   @Deprecated
   FeatureName() {
