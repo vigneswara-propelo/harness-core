@@ -109,6 +109,7 @@ io.harness.cdng.manifest.yaml.OpenshiftManifestOutcome
 io.harness.cdng.manifest.yaml.ReleaseRepoManifestOutcome
 io.harness.cdng.artifact.bean.yaml.EcrArtifactConfig
 io.harness.cdng.artifact.bean.yaml.AmazonS3ArtifactConfig
+io.harness.cdng.artifact.bean.yaml.AzureArtifactConfig
 io.harness.steps.shellscript.K8sInfraDelegateConfigOutput
 io.harness.steps.shellscript.SshInfraDelegateConfigOutput
 io.harness.steps.shellscript.WinRmInfraDelegateConfigOutput
