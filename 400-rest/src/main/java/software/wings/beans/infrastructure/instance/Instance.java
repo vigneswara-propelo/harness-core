@@ -88,6 +88,7 @@ public class Instance extends Base implements AccountAccess, ApplicationAccess {
                  .name("instance_index6")
                  .field(InstanceKeys.accountId)
                  .field(InstanceKeys.isDeleted)
+                 .field(InstanceKeys.serviceId)
                  .build())
         .add(CompoundMongoIndex.builder()
                  .name("instance_index7")
