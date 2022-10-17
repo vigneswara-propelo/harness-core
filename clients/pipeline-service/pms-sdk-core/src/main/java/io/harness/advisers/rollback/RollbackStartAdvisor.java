@@ -1,13 +1,6 @@
-/*
- * Copyright 2021 Harness Inc. All rights reserved.
- * Use of this source code is governed by the PolyForm Shield 1.0.0 license
- * that can be found in the licenses directory at the root of this repository, also available at
- * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
- */
+package io.harness.advisers.rollback;
 
-package io.harness.cdng.advisers;
-
-import io.harness.advisers.rollback.OnFailRollbackOutput;
+import io.harness.advisers.CommonAdviserTypes;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
@@ -30,13 +23,13 @@ import com.google.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 
-// todo: remove after one release
+// duplicate of RollbackCustomAdvisor
 @OwnedBy(HarnessTeam.PIPELINE)
-public class RollbackCustomAdviser implements Adviser {
+public class RollbackStartAdvisor implements Adviser {
   @Inject ExecutionSweepingOutputService executionSweepingOutputService;
 
   public static final AdviserType ADVISER_TYPE =
-      AdviserType.newBuilder().setType(CDAdviserTypes.ROLLBACK_CUSTOM.name()).build();
+      AdviserType.newBuilder().setType(CommonAdviserTypes.ROLLBACK_START.name()).build();
 
   @Inject private KryoSerializer kryoSerializer;
 
