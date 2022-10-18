@@ -2001,7 +2001,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
           executeTask(delegateTaskPackage);
         }
 
-      } catch (IOException e) {
+      } catch (Exception e) {
         log.error("Unable to get task for validation", e);
       } finally {
         currentlyAcquiringTasks.remove(delegateTaskId);
@@ -2714,7 +2714,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             .responseCode(DelegateTaskResponse.ResponseCode.FAILED)
             .response(ErrorNotifyResponseData.builder().errorMessage(ExceptionUtils.getMessage(exception)).build())
             .build();
-    log.info("Sending error response for task{}", taskId);
+    log.error("Sending error response for task{} due to exception", taskId, exception);
     try {
       Response<ResponseBody> resp;
       int retries = 5;
