@@ -462,6 +462,7 @@ public enum FeatureName {
   SYNC_GIT_CLONE_AND_COPY_TO_DEST_DIR(
       "This feature flag helps in synchronizing the git clone of repo and copying the files then to destination directory",
       HarnessTeam.CDP),
+  ECS_ROLLBACK_MAX_DESIRED_COUNT("Changes ECS Rollback Desired Count to Max(OldService, NewService)", HarnessTeam.CDP),
   CI_YAML_VERSIONING("Feature flag for yaml simplification", HarnessTeam.CI);
 
   @Deprecated
