@@ -69,6 +69,7 @@ import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.mongodb.morphia.query.Query;
@@ -113,6 +114,8 @@ public class LicenseServiceImpl implements LicenseService {
 
   private final Cache<String, CheckExpiryResultDTO> licenseExpiryCache;
   private final Subject<AccountLicenseObserver> accountLicenseObserverSubject;
+
+  @Getter private final Subject<AccountLicenseObserver> accountLicenseObserverSubject;
 
   @Inject
   public LicenseServiceImpl(AccountService accountService, AccountDao accountDao, WingsPersistence wingsPersistence,

@@ -205,6 +205,7 @@ import software.wings.filter.AuditResponseFilter;
 import software.wings.jersey.JsonViews;
 import software.wings.jersey.KryoFeature;
 import software.wings.licensing.LicenseService;
+import software.wings.licensing.LicenseServiceImpl;
 import software.wings.notification.EmailNotificationListener;
 import software.wings.prune.PruneEntityListener;
 import software.wings.resources.AppResource;
@@ -239,6 +240,7 @@ import software.wings.security.encryption.migration.SettingAttributesSecretsMigr
 import software.wings.service.impl.AccountServiceImpl;
 import software.wings.service.impl.AppManifestCloudProviderPTaskManager;
 import software.wings.service.impl.ApplicationManifestServiceImpl;
+import software.wings.service.impl.ArtifactCollectionLicenseListener;
 import software.wings.service.impl.ArtifactStreamServiceImpl;
 import software.wings.service.impl.AuditServiceHelper;
 import software.wings.service.impl.AuditServiceImpl;
@@ -1417,6 +1419,12 @@ public class WingsApplication extends Application<MainConfiguration> {
     ApplicationManifestServiceImpl applicationManifestService =
         (ApplicationManifestServiceImpl) injector.getInstance(Key.get(ApplicationManifestService.class));
     applicationManifestService.getSubject().register(injector.getInstance(Key.get(ManifestPerpetualTaskManger.class)));
+
+    accountService.getAccountLicenseObserverSubject().register(
+        injector.getInstance(Key.get(ArtifactCollectionLicenseListener.class)));
+    LicenseServiceImpl licenseService = (LicenseServiceImpl) injector.getInstance(Key.get(LicenseService.class));
+    licenseService.getAccountLicenseObserverSubject().register(
+        injector.getInstance(Key.get(ArtifactCollectionLicenseListener.class)));
 
     ObserversHelper.registerSharedObservers(injector);
   }
