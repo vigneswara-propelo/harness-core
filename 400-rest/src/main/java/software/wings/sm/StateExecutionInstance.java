@@ -247,6 +247,7 @@ public class StateExecutionInstance implements PersistentEntity, AccountDataRete
     private long lastUpdatedAt;
     private Long stateTimeout;
     private String accountId;
+    private boolean rollback;
 
     private Builder() {}
 
@@ -434,10 +435,16 @@ public class StateExecutionInstance implements PersistentEntity, AccountDataRete
       return this;
     }
 
+    public Builder rollback(boolean rollback) {
+      this.rollback = rollback;
+      return this;
+    }
+
     public Builder but() {
       return aStateExecutionInstance()
           .stateName(stateName)
           .displayName(displayName)
+          .rollback(rollback)
           .stateType(stateType)
           .contextElement(contextElement)
           .contextTransition(contextTransition)
@@ -499,6 +506,7 @@ public class StateExecutionInstance implements PersistentEntity, AccountDataRete
       stateExecutionInstance.setLastUpdatedAt(lastUpdatedAt);
       stateExecutionInstance.setStateTimeout(stateTimeout);
       stateExecutionInstance.setAccountId(accountId);
+      stateExecutionInstance.setRollback(rollback);
       return stateExecutionInstance;
     }
   }
