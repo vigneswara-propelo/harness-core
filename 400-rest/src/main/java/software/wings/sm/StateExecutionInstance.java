@@ -54,7 +54,6 @@ import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
-import org.simpleframework.xml.Transient;
 
 /**
  * Represents State Machine Instance.
@@ -177,12 +176,12 @@ public class StateExecutionInstance implements PersistentEntity, AccountDataRete
 
   private boolean hasInspection;
 
-  @Transient private String workflowId;
-  @Transient private String pipelineStageElementId;
-  @Transient private int pipelineStageParallelIndex;
-  @Transient private String stageName;
-  @Transient private String phaseSubWorkflowId;
-  @Transient private String stepId;
+  private String workflowId;
+  private String pipelineStageElementId;
+  private int pipelineStageParallelIndex;
+  private String stageName;
+  private String phaseSubWorkflowId;
+  private String stepId;
 
   private OrchestrationWorkflowType orchestrationWorkflowType;
   private Boolean isOnDemandRollback;
