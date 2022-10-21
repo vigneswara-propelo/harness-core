@@ -465,7 +465,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   ECS_ROLLBACK_MAX_DESIRED_COUNT("Changes ECS Rollback Desired Count to Max(OldService, NewService)", HarnessTeam.CDP),
   CI_YAML_VERSIONING("Feature flag for yaml simplification", HarnessTeam.CI),
-  SRM_ET_EXPERIMENTAL("Feature flag for SRM only Error Tracking development", HarnessTeam.CV);
+  SRM_ET_EXPERIMENTAL("Feature flag for SRM only Error Tracking development", HarnessTeam.CV),
+  SRM_ENABLE_HEALTHSOURCE_AWS_PROMETHEUS("UI FF to enable AWS Managed Prometheus healthsource", HarnessTeam.CV);
 
   @Deprecated
   FeatureName() {
