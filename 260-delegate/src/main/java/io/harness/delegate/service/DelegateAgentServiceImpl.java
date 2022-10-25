@@ -1087,6 +1087,10 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       log.warn(
           "Unable to check/start delegate profile, shouldContactManager :{}, currently executing profile :{}, isLocked :{}, frozen :{}.",
           shouldContactManager(), executingProfile.get(), isLocked(new File("profile")), frozen.get());
+      File profileLock = new File("profile.lock");
+      if (profileLock.lastModified() > TimeUnit.MINUTES.toMillis(10)) {
+        releaseLock(profileLock);
+      }
     }
   }
 
