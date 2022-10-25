@@ -444,8 +444,9 @@ public enum FeatureName {
       "Make the workflowExecutions listing better providing appId for children ids", HarnessTeam.SPG),
   CD_SERVICE_ENV_RECONCILIATION("Do reconciliation of service and env on pipeline/template save", HarnessTeam.CDC),
   CD_TRIGGER_CATALOG("Enables UI for Trigger catalog for Nexus ", HarnessTeam.CDC),
-  PL_CONNECTOR_ENCRYPTION_PRIVILEGED_CALL("make the encryption/decryption call as pirvileged call", HarnessTeam.PL),
+  SRM_HOST_SAMPLING_ENABLE("Enables Host Sampling feature for Learning Engine.", HarnessTeam.CV),
   CDS_SHOW_CREATE_PR("Start showing CreatePR step on the plan creator if enabled", HarnessTeam.GITOPS),
+  PL_CONNECTOR_ENCRYPTION_PRIVILEGED_CALL("make the encryption/decryption call as pirvileged call", HarnessTeam.PL),
   SPG_DASHBOARD_STATS_OPTIMIZE_DEPLOYMENTS(
       "Dashboard stats slow api call optimization. Also solves MOM issue in CG.", HarnessTeam.SPG),
   SPG_DASHBOARD_STATS_OPTIMIZE_ACTIVE_SERVICES(
