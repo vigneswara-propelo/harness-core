@@ -190,10 +190,10 @@ public class ArtifactUtils {
         AzureArtifactsConfig azureArtifactsConfig = (AzureArtifactsConfig) artifactConfig;
 
         return String.format(
-            "\ntype: %s \npackageName: %s \npackageType: %s \nproject: %s \nfeed: %s \nversion: %s \nversionRegex: %s \nconnectorRef: %s\n",
-            sourceType, azureArtifactsConfig.getPackageName().getValue(),
-            azureArtifactsConfig.getPackageType().getValue(), azureArtifactsConfig.getProject().getValue(),
-            azureArtifactsConfig.getFeed().getValue(), azureArtifactsConfig.getVersion().getValue(),
+            "\ntype: %s \nscope: %s \nproject: %s \nfeed: %s \npackageType: %s \npackageName: %s \nversion: %s \nversionRegex: %s \nconnectorRef: %s\n",
+            sourceType, azureArtifactsConfig.getScope().getValue(), azureArtifactsConfig.getProject().getValue(),
+            azureArtifactsConfig.getFeed().getValue(), azureArtifactsConfig.getPackageType().getValue(),
+            azureArtifactsConfig.getPackageName().getValue(), azureArtifactsConfig.getVersion().getValue(),
             azureArtifactsConfig.getVersionRegex().getValue(), azureArtifactsConfig.getConnectorRef().getValue());
       case GOOGLE_ARTIFACT_REGISTRY:
         GoogleArtifactRegistryConfig googleArtifactRegistryConfig = (GoogleArtifactRegistryConfig) artifactConfig;
