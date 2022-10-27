@@ -13,7 +13,7 @@
 #     -t <tag> \
 #     .
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6-854
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6-985
 CMD ["/bin/sh"]
 RUN microdnf install curl libstdc++.i686 make bash unzip hostname tar gzip procps
 
