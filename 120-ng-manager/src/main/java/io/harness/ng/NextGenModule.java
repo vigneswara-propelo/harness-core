@@ -277,6 +277,7 @@ import io.harness.subscription.SubscriptionModule;
 import io.harness.telemetry.AbstractTelemetryModule;
 import io.harness.telemetry.TelemetryConfiguration;
 import io.harness.template.TemplateResourceClientModule;
+import io.harness.threading.ThreadPool;
 import io.harness.time.TimeModule;
 import io.harness.timescaledb.JooqModule;
 import io.harness.timescaledb.TimeScaleDBConfig;
@@ -318,8 +319,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
@@ -357,6 +360,14 @@ public class NextGenModule extends AbstractModule {
   @Named("PSQLExecuteListener")
   ExecuteListener executeListener() {
     return HExecuteListener.getInstance();
+  }
+
+  @Provides
+  @Singleton
+  @Named("freezeTemplateRegistrationExecutorService")
+  public ExecutorService templateRegistrationExecutionServiceThreadPool() {
+    return ThreadPool.create(1, 1, 10, TimeUnit.SECONDS,
+        new ThreadFactoryBuilder().setNameFormat("FreezeTemplateRegistrationService-%d").build());
   }
 
   @Provides
