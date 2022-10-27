@@ -359,7 +359,7 @@ public class EcsDelegateRegistrationTest {
         .getDelegateUsingSequenceNum(any(), any(), any());
 
     mockWingsPersistanceForUpdateCall();
-    doNothing().when(underTest).delete(any(), any());
+    doReturn(null).when(underTest).delete(any(), any());
 
     DelegateSequenceConfig config =
         underTest.getInactiveDelegateSequenceConfigToReplace(delegate, existingDelegateSequenceConfigs);

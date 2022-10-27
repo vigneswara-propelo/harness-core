@@ -133,6 +133,8 @@ import io.harness.delegate.service.DelegateVersionService;
 import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.task.DelegateLogContext;
 import io.harness.delegate.telemetry.DelegateTelemetryPublisher;
+import io.harness.delegate.utilities.DelegateDeleteResponse;
+import io.harness.delegate.utilities.DelegateGroupDeleteResponse;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
 import io.harness.environment.SystemEnvironment;
 import io.harness.event.handler.impl.EventPublishHelper;
@@ -141,6 +143,7 @@ import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.eventsframework.api.Producer;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
 import io.harness.eventsframework.producer.Message;
+import io.harness.exception.ExceptionUtils;
 import io.harness.exception.GeneralException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
@@ -2306,7 +2309,7 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @Override
-  public void delete(String accountId, String delegateId) {
+  public DelegateDeleteResponse delete(String accountId, String delegateId) {
     Delegate existingDelegate = persistence.createQuery(Delegate.class)
                                     .filter(DelegateKeys.accountId, accountId)
                                     .filter(DelegateKeys.uuid, delegateId)
@@ -2347,6 +2350,7 @@ public class DelegateServiceImpl implements DelegateService {
     sendDelegateDeleteAuditEvent(existingDelegate, accountId);
     onDelegateDisconnected(accountId, delegateId);
     log.info("Delegate: {} deleted.", delegateId);
+    return new DelegateDeleteResponse("Successfully deleted delegate.");
   }
 
   @Override
@@ -2425,6 +2429,20 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @Override
+  public DelegateGroupDeleteResponse deleteDelegateGroupV3(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String groupIdentifier) {
+    try {
+      deleteDelegateGroupV2(accountIdentifier, orgIdentifier, projectIdentifier, groupIdentifier);
+    } catch (Exception ex) {
+      log.info(
+          "Unable to delete delegate group {} for accountIdentifier {} , orgIdentifier {} and projectIdentifier {}",
+          groupIdentifier, accountIdentifier, orgIdentifier, projectIdentifier, ex);
+      return new DelegateGroupDeleteResponse(ExceptionUtils.getMessage(ex), false);
+    }
+    return new DelegateGroupDeleteResponse("", true);
+  }
+
+  @Override
   public void deleteDelegateGroupV2(String accountId, String orgId, String projectId, String identifier) {
     log.info("Deleting delegate group: {} and all belonging delegates.", identifier);
     DelegateGroup delegateGroup =
@@ -2436,7 +2454,7 @@ public class DelegateServiceImpl implements DelegateService {
 
     if (delegateGroup == null) {
       log.info("Delegate group doesn't exist or it is already deleted.");
-      return;
+      throw new InvalidArgumentsException("Delegate doesn't exist or it is already deleted.");
     }
 
     String delegateGroupUuid = delegateGroup.getUuid();
