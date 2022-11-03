@@ -5,8 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.steps.common.noop;
+package io.harness.hsqs.client.auth;
 
-import io.harness.pms.sdk.core.steps.io.StepParameters;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
-public class NoopStepParameters implements StepParameters {}
+import io.harness.annotations.dev.OwnedBy;
+
+@OwnedBy(PIPELINE) public enum OAuthFlow { accessCode, implicit, password, application }
