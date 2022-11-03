@@ -296,7 +296,7 @@ public class ArtifactsStepV2 implements AsyncExecutable<EmptyStepParameters> {
         case SUCCESS:
 
           ArtifactDelegateResponse artifactDelegateResponses = null;
-          if (EmptyPredicate.isEmpty(taskResponse.getArtifactTaskExecutionResponse().getArtifactDelegateResponses())) {
+          if (!EmptyPredicate.isEmpty(taskResponse.getArtifactTaskExecutionResponse().getArtifactDelegateResponses())) {
             artifactDelegateResponses =
                 taskResponse.getArtifactTaskExecutionResponse().getArtifactDelegateResponses().get(0);
           }
