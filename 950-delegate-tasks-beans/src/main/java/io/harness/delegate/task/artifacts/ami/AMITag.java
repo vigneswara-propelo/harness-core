@@ -5,9 +5,8 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.artifact.bean.yaml.ami;
+package io.harness.delegate.task.artifacts.ami;
 
-import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
@@ -15,16 +14,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.TypeAlias;
 
 @OwnedBy(HarnessTeam.CDC)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("amiFilter")
-@RecasterAlias("io.harness.cdng.artifact.bean.yaml.ami.AMIFilter")
-public class AMIFilter {
+public class AMITag {
   String name;
+
   String value;
 }
