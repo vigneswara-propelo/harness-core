@@ -10,6 +10,7 @@ package io.harness.polling.artifact;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.task.artifacts.S3ArtifactDelegateResponse;
+import io.harness.delegate.task.artifacts.ami.AMIArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryGenericArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.azure.AcrArtifactDelegateResponse;
@@ -61,6 +62,8 @@ public class ArtifactCollectionUtilsNg {
         return ((GithubPackagesArtifactDelegateResponse) artifactDelegateResponse).getVersion();
       case AZURE_ARTIFACTS:
         return ((AzureArtifactsDelegateResponse) artifactDelegateResponse).getVersion();
+      case AMI:
+        return ((AMIArtifactDelegateResponse) artifactDelegateResponse).getVersion();
       default:
         throw new InvalidRequestException(
             String.format("Source type %s not supported", artifactDelegateResponse.getSourceType()));

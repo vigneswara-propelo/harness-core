@@ -12,6 +12,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.polling.contracts.Type.ACR;
 import static io.harness.polling.contracts.Type.AMAZON_S3;
+import static io.harness.polling.contracts.Type.AMI;
 import static io.harness.polling.contracts.Type.ARTIFACTORY;
 import static io.harness.polling.contracts.Type.AZURE_ARTIFACTS;
 import static io.harness.polling.contracts.Type.CUSTOM_ARTIFACT;
@@ -49,6 +50,7 @@ import io.harness.polling.artifact.ArtifactCollectionUtilsNg;
 import io.harness.polling.bean.PolledResponseResult;
 import io.harness.polling.bean.PolledResponseResult.PolledResponseResultBuilder;
 import io.harness.polling.bean.PollingDocument;
+import io.harness.polling.bean.artifact.AMIArtifactInfo;
 import io.harness.polling.bean.artifact.AcrArtifactInfo;
 import io.harness.polling.bean.artifact.ArtifactInfo;
 import io.harness.polling.bean.artifact.ArtifactPolledResponse;
@@ -394,10 +396,13 @@ public class PollingResponseHandler {
         polledResponseResultBuilder.name(((AzureArtifactsInfo) artifactInfo).getPackageName());
         polledResponseResultBuilder.type(AZURE_ARTIFACTS);
         break;
+      case AMI:
+        polledResponseResultBuilder.name(((AMIArtifactInfo) artifactInfo).getVersion());
+        polledResponseResultBuilder.type(AMI);
+        break;
       default:
         throw new InvalidRequestException("Unsupported Artifact Type " + artifactInfo.getType().getDisplayName());
     }
-
     return polledResponseResultBuilder.build();
   }
 }

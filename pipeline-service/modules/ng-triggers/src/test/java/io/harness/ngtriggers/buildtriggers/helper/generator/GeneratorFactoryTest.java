@@ -20,6 +20,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.ngtriggers.beans.dto.TriggerDetails;
 import io.harness.ngtriggers.buildtriggers.helpers.BuildTriggerHelper;
 import io.harness.ngtriggers.buildtriggers.helpers.dtos.BuildTriggerOpsData;
+import io.harness.ngtriggers.buildtriggers.helpers.generator.AMIPollingItemGenerator;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.AcrPollingItemGenerator;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.ArtifactoryRegistryPollingItemGenerator;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.AzureArtifactsPollingItemGenerator;
@@ -62,6 +63,7 @@ public class GeneratorFactoryTest extends CategoryTest {
   private DockerRegistryPollingItemGenerator dockerRegistryPollingItemGenerator;
   private ArtifactoryRegistryPollingItemGenerator artifactoryRegistryPollingItemGenerator;
   private JenkinsPollingItemGenerator jenkinsPollingItemGenerator;
+  private AMIPollingItemGenerator amiPollingItemGenerator;
 
   private GitPollingItemGenerator gitPollingItemGenerator;
   private GeneratorFactory generatorFactory;
@@ -91,11 +93,14 @@ public class GeneratorFactoryTest extends CategoryTest {
     AzureArtifactsPollingItemGenerator azureArtifactsPollingItemGenerator =
         new AzureArtifactsPollingItemGenerator(buildTriggerHelper);
 
-    generatorFactory = new GeneratorFactory(buildTriggerHelper, httpHelmPollingItemGenerator,
-        s3HelmPollingItemGenerator, s3PollingItemGenerator, gcsHelmPollingItemGenerator, gcrPollingItemGenerator,
-        ecrPollingItemGenerator, dockerRegistryPollingItemGenerator, artifactoryRegistryPollingItemGenerator,
-        acrPollingItemGenerator, jenkinsPollingItemGenerator, gitPollingItemGenerator, customPollingItemGenerator,
-        garPollingItemGenerator, githubPackagesPollingItemGenerator, azureArtifactsPollingItemGenerator);
+    AMIPollingItemGenerator amiPollingItemGenerator = new AMIPollingItemGenerator(buildTriggerHelper);
+    generatorFactory =
+        new GeneratorFactory(buildTriggerHelper, httpHelmPollingItemGenerator, s3HelmPollingItemGenerator,
+            s3PollingItemGenerator, gcsHelmPollingItemGenerator, gcrPollingItemGenerator, ecrPollingItemGenerator,
+            dockerRegistryPollingItemGenerator, artifactoryRegistryPollingItemGenerator, acrPollingItemGenerator,
+            jenkinsPollingItemGenerator, gitPollingItemGenerator, customPollingItemGenerator, garPollingItemGenerator,
+            githubPackagesPollingItemGenerator, azureArtifactsPollingItemGenerator, amiPollingItemGenerator);
+
     classLoader = getClass().getClassLoader();
   }
 
