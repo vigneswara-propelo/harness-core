@@ -283,7 +283,7 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
   @Test
   @Owner(developers = MOHIT_GARG)
   @Category(UnitTests.class)
-  @Ignore
+  @Ignore("Mohit will fix it, ignoring until it is fixed")
   public void testGetFileByBranchWhenSCMAPIsucceeds() {
     when(ngFeatureFlagHelperService.isEnabled(any(), any())).thenReturn(true);
     FileContent fileContent = FileContent.newBuilder()
@@ -307,7 +307,7 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
   @Test
   @Owner(developers = MOHIT_GARG)
   @Category(UnitTests.class)
-  @Ignore
+  @Ignore("Mohit will fix it, ignoring until it is fixed")
   public void testGetFileByBranchWhenSCMAPIfails() {
     when(ngFeatureFlagHelperService.isEnabled(any(), any())).thenReturn(true);
     FileContent fileContent = FileContent.newBuilder().setStatus(400).build();
@@ -325,7 +325,7 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
   @Test
   @Owner(developers = MOHIT_GARG)
   @Category(UnitTests.class)
-  @Ignore
+  @Ignore("Mohit will fix it, ignoring until it is fixed")
   public void testGetFileByBranchWhenGetLatestCommitOnFileSCMAPIfails() {
     when(ngFeatureFlagHelperService.isEnabled(any(), any())).thenReturn(true);
     FileContent fileContent = FileContent.newBuilder().setStatus(200).build();
