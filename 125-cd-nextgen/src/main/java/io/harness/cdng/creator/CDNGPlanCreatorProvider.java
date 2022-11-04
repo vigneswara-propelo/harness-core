@@ -744,7 +744,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setType(StepSpecTypeConstants.JENKINS_BUILD)
             .setFeatureRestrictionName(FeatureRestrictionName.JENKINS_BUILD.name())
             .setStepMetaData(StepMetaData.newBuilder().addCategory(BUILD_STEP).addFolderPaths("Builds").build())
-            .setFeatureFlag(FeatureName.JENKINS_ARTIFACT.name())
             .build();
 
     StepInfo azureCreateARMResources =
