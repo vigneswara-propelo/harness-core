@@ -5,19 +5,21 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.beans.request;
+package io.harness.gitsync.common.dtos;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import java.util.List;
+import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 @OwnedBy(HarnessTeam.PL)
-@Value
+@Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class GitFileRequest extends ScmBaseRequest {
-  String branch;
-  String commitId;
-  String filepath;
+public class ScmListFilesResponseDTO {
+  List<ScmFileGitDetailsDTO> fileGitDetailsDTOList;
 }

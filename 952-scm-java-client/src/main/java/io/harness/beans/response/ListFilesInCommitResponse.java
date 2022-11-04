@@ -5,19 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.beans.request;
+package io.harness.beans.response;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FileGitDetails;
 
-import lombok.Builder;
+import java.util.List;
 import lombok.Value;
+import lombok.experimental.SuperBuilder;
 
 @OwnedBy(HarnessTeam.PL)
 @Value
-@Builder
-public class GitFileRequest extends ScmBaseRequest {
-  String branch;
-  String commitId;
-  String filepath;
+@SuperBuilder
+public class ListFilesInCommitResponse extends ScmBaseResponse {
+  List<FileGitDetails> fileGitDetailsList;
 }
