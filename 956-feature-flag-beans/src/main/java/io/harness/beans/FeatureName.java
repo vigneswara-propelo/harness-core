@@ -474,7 +474,11 @@ public enum FeatureName {
   CI_MFE_ENABLED("Feature flag is needed to test/control the microfrontend architecture for CI UI", HarnessTeam.CI),
   CF_ROLLBACK_CUSTOM_STACK_NAME(
       "Use custom stack name and region to find lates successful couldformation rollback data", HarnessTeam.CDP),
-  AZURE_WEB_APP_NG_NEXUS_PACKAGE("Enable support for Nexus package artifact in Azure Web App NG", HarnessTeam.CDP);
+  AZURE_WEB_APP_NG_NEXUS_PACKAGE("Enable support for Nexus package artifact in Azure Web App NG", HarnessTeam.CDP),
+  USE_GET_FILE_V2_GIT_CALL(
+      "FF for customers on updated delegate to use GetFileV2 call which is more performance efficient",
+      HarnessTeam.PIPELINE),
+  ;
 
   @Deprecated
   FeatureName() {
