@@ -512,6 +512,8 @@ import io.harness.delegate.task.cloudformation.CloudformationCommandUnit;
 import io.harness.delegate.task.cloudformation.CloudformationTaskNGParameters;
 import io.harness.delegate.task.cloudformation.CloudformationTaskNGResponse;
 import io.harness.delegate.task.cloudformation.CloudformationTaskType;
+import io.harness.delegate.task.customdeployment.FetchInstanceScriptTaskNGRequest;
+import io.harness.delegate.task.customdeployment.FetchInstanceScriptTaskNGResponse;
 import io.harness.delegate.task.ecs.EcsCommandTypeNG;
 import io.harness.delegate.task.ecs.EcsGitFetchFileConfig;
 import io.harness.delegate.task.ecs.EcsGitFetchRunTaskFileConfig;
@@ -1892,6 +1894,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(JenkinsAzureArtifactRequestDetails.class, 55430);
     kryo.register(AzureDevOpsArtifactRequestDetails.class, 55431);
     kryo.register(SshConnectivityExecutionCapability.class, 55435);
+    kryo.register(FetchInstanceScriptTaskNGRequest.class, 55436);
+    kryo.register(FetchInstanceScriptTaskNGResponse.class, 55437);
     kryo.register(NoInstalledDelegatesException.class, 73988);
     kryo.register(NoEligibleDelegatesInAccountException.class, 73989);
     kryo.register(NoAvailableDelegatesException.class, 73990);
