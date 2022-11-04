@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @OwnedBy(PIPELINE)
-public class StepParametersUtilsTest extends CategoryTest {
+public class StepParametersCommonUtilsTest extends CategoryTest {
   ParameterField<String> nullField = ParameterField.createValueField(null);
   ParameterField<String> stringField = ParameterField.createValueField("value");
 
