@@ -473,6 +473,7 @@ public enum FeatureName {
   DEL_SECRET_EVALUATION_VERBOSE_LOGGING(
       "FF to enable verbose logging for the manager process when secret gets evaluated", HarnessTeam.DEL),
   CI_MFE_ENABLED("Feature flag is needed to test/control the microfrontend architecture for CI UI", HarnessTeam.CI),
+  INSTANCE_SYNC_V2_CG("Enable Instance Sync V2 framework in CG for direct K8s cloud provider", HarnessTeam.CDP),
   CF_ROLLBACK_CUSTOM_STACK_NAME(
       "Use custom stack name and region to find lates successful couldformation rollback data", HarnessTeam.CDP),
   AZURE_WEB_APP_NG_NEXUS_PACKAGE("Enable support for Nexus package artifact in Azure Web App NG", HarnessTeam.CDP),
