@@ -720,6 +720,7 @@ import io.harness.delegate.task.ssh.AzureInfraDelegateConfig;
 import io.harness.delegate.task.ssh.AzureSshInfraDelegateConfig;
 import io.harness.delegate.task.ssh.AzureWinrmInfraDelegateConfig;
 import io.harness.delegate.task.ssh.CopyCommandUnit;
+import io.harness.delegate.task.ssh.EmptyHostDelegateConfig;
 import io.harness.delegate.task.ssh.NGCommandUnitType;
 import io.harness.delegate.task.ssh.NgCleanupCommandUnit;
 import io.harness.delegate.task.ssh.NgCommandUnit;
@@ -1911,5 +1912,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AMIArtifactDelegateResponse.class, 60012);
     kryo.register(AMITag.class, 60013);
     kryo.register(AMIFilter.class, 60014);
+    kryo.register(EmptyHostDelegateConfig.class, 60015);
   }
 }
