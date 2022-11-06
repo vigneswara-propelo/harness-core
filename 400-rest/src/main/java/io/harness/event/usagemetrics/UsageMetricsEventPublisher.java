@@ -39,7 +39,6 @@ import com.google.inject.Singleton;
 import io.fabric8.utils.Lists;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,6 @@ public class UsageMetricsEventPublisher {
   SimpleDateFormat sdf;
 
   private String APPROVAL = "APPROVAL";
-  private final List<String> STATE_TYPES = Arrays.asList("PHASE_STEP", "PHASE", "ENV_STATE");
 
   public UsageMetricsEventPublisher() {
     sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
@@ -83,7 +81,7 @@ public class UsageMetricsEventPublisher {
     if (stateExecutionInstance == null) {
       return;
     }
-    for (String stateType : STATE_TYPES) {
+    for (String stateType : StepEventProcessor.STATE_TYPES) {
       if (stateType.equals(stateExecutionInstance.getStateType())) {
         return;
       }
@@ -101,7 +99,7 @@ public class UsageMetricsEventPublisher {
     });
   }
 
-  private DeploymentStepTimeSeriesEvent constructDeploymentStepTimeSeriesEvent(
+  public DeploymentStepTimeSeriesEvent constructDeploymentStepTimeSeriesEvent(
       String accountId, StateExecutionInstance stateExecutionInstance) {
     log.info("Reporting Step execution");
     Map<String, String> stringData = new HashMap<>();
@@ -204,7 +202,7 @@ public class UsageMetricsEventPublisher {
     });
   }
 
-  private ExecutionInterruptTimeSeriesEvent constructExecutionInterruptTimeSeriesEvent(
+  public ExecutionInterruptTimeSeriesEvent constructExecutionInterruptTimeSeriesEvent(
       String accountId, ExecutionInterrupt executionInterrupt) {
     log.info("Reporting execution interrupt");
     Map<String, String> stringData = new HashMap<>();
