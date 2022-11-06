@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface StepEventProcessor<T extends EventInfo> {
   int MAX_RETRY = 5;
+  Integer DEFAULT_MIGRATION_QUERY_BATCH_SIZE = 100;
 
   String ID = "ID";
   String ACCOUNT_ID = "ACCOUNT_ID";
