@@ -1814,6 +1814,7 @@
 60012:io.harness.delegate.task.artifacts.ami.AMIArtifactDelegateResponse
 60013:io.harness.delegate.task.artifacts.ami.AMITag
 60014:io.harness.delegate.task.artifacts.ami.AMIFilter
+60015:io.harness.delegate.task.ssh.EmptyHostDelegateConfig
 71100:software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField
 71101:software.wings.service.impl.ThirdPartyApiCallLog.FieldType
 71102:software.wings.beans.Log
