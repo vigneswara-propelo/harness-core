@@ -263,6 +263,7 @@ public class TriggerExecutionHelper {
               InputSetMergeHelper.mergeInputSetIntoPipeline(pipelineYamlBeforeMerge, sanitizedRuntimeInputYaml, true);
         }
       }
+      pipelineYaml = InputSetSanitizer.trimValues(pipelineYaml);
 
       try (PmsGitSyncBranchContextGuard ignore =
                pmsGitSyncHelper.createGitSyncBranchContextGuardFromBytes(gitSyncBranchContextByteString, false)) {
