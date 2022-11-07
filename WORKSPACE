@@ -28,6 +28,14 @@ load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
 
+load("//:tools/bazel/openapi.bzl", "openapi_repositories")
+
+openapi_repositories(
+    codegen_cli_provider = "harness-swagger-v3",
+    codegen_cli_sha256 = "8153719ed24ff1bdcf6d5bbe8713d26091ff85a3b253c2224f6e5c8490e9643d",
+    codegen_cli_version = "3.0.35-harness-SNAPSHOT",
+)
+
 # Download the Go rules
 http_archive(
     name = "io_bazel_rules_go",
