@@ -5438,7 +5438,7 @@ maven_install(
 maven_install(
     name = "batch",
     artifacts = [
-        "com.fasterxml.jackson.core:jackson-databind:2.13.3",
+        "com.fasterxml.jackson.core:jackson-databind:2.13.4.2",
         "com.azure:azure-core:1.29.1",
         "com.azure:azure-identity:1.5.0",
         "com.azure:azure-storage-blob:12.16.0",
