@@ -65,6 +65,7 @@ import io.harness.template.beans.FilterParamsDTO;
 import io.harness.template.beans.PageParamsDTO;
 import io.harness.template.beans.PermissionTypes;
 import io.harness.template.beans.TemplateImportRequestDTO;
+import io.harness.template.beans.TemplateListRepoResponse;
 import io.harness.template.beans.yaml.NGTemplateConfig;
 import io.harness.template.entity.TemplateEntity;
 import io.harness.template.entity.TemplateEntity.TemplateEntityKeys;
@@ -90,7 +91,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.ws.rs.InternalServerErrorException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.PredicateUtils;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -122,6 +126,10 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
   private static final String DUP_KEY_EXP_FORMAT_STRING =
       "Template [%s] of versionLabel [%s] under Project[%s], Organization [%s] already exists";
+
+  private static final int MAX_LIST_SIZE = 1000;
+
+  private static final String REPO_LIST_SIZE_EXCEPTION = "The size of unique repository list is greater than [%d]";
 
   @Override
   public TemplateEntity create(TemplateEntity templateEntity, boolean setStableTemplate, String comments) {
@@ -814,6 +822,20 @@ public class NGTemplateServiceImpl implements NGTemplateService {
               templateEntity.getProjectIdentifier(), templateEntity.getOrgIdentifier()),
           USER_SRE, ex);
     }
+  }
+
+  @Override
+  public TemplateListRepoResponse getListOfRepos(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, boolean includeAllTemplatesAccessibleAtScope) {
+    Criteria criteria = templateServiceHelper.formCriteriaForRepoListing(
+        accountIdentifier, orgIdentifier, projectIdentifier, includeAllTemplatesAccessibleAtScope);
+    List<String> uniqueRepos = templateRepository.getListOfRepos(criteria);
+    CollectionUtils.filter(uniqueRepos, PredicateUtils.notNullPredicate());
+    if (uniqueRepos.size() > MAX_LIST_SIZE) {
+      log.error(String.format(REPO_LIST_SIZE_EXCEPTION, MAX_LIST_SIZE));
+      throw new InternalServerErrorException(String.format(REPO_LIST_SIZE_EXCEPTION, MAX_LIST_SIZE));
+    }
+    return TemplateListRepoResponse.builder().repositories(new HashSet<>(uniqueRepos)).build();
   }
 
   private void checkGitXEnabled(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
