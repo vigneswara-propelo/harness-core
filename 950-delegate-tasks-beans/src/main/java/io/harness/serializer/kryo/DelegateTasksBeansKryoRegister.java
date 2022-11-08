@@ -298,6 +298,7 @@ import io.harness.delegate.beans.gitapi.GitApiResult;
 import io.harness.delegate.beans.gitapi.GitApiTaskParams;
 import io.harness.delegate.beans.gitapi.GitApiTaskResponse;
 import io.harness.delegate.beans.gitapi.GitRepoType;
+import io.harness.delegate.beans.helm.HelmChartVersionDetails;
 import io.harness.delegate.beans.instancesync.info.AwsSshWinrmServerInstanceInfo;
 import io.harness.delegate.beans.instancesync.info.AzureSshWinrmServerInstanceInfo;
 import io.harness.delegate.beans.instancesync.info.K8sServerInstanceInfo;
@@ -572,6 +573,8 @@ import io.harness.delegate.task.helm.HelmCommandFlag;
 import io.harness.delegate.task.helm.HelmCommandRequestNG;
 import io.harness.delegate.task.helm.HelmCommandResponse;
 import io.harness.delegate.task.helm.HelmCommandResponseNG;
+import io.harness.delegate.task.helm.HelmFetchChartVersionRequestNG;
+import io.harness.delegate.task.helm.HelmFetchChartVersionResponse;
 import io.harness.delegate.task.helm.HelmFetchFileConfig;
 import io.harness.delegate.task.helm.HelmFetchFileResult;
 import io.harness.delegate.task.helm.HelmInstallCmdResponseNG;
@@ -1909,6 +1912,10 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(NoAvailableDelegatesException.class, 73990);
     kryo.register(NoDelegatesException.class, 73991);
     kryo.register(NexusAzureArtifactRequestDetails.class, 73992);
+    kryo.register(HelmFetchChartVersionRequestNG.class, 73993);
+    kryo.register(HelmChartVersionDetails.class, 73994);
+    kryo.register(HelmFetchChartVersionResponse.class, 73995);
+
     kryo.register(DelegateTaskExpiredException.class, 980036);
     kryo.register(K8sPodInfo.class, 980100);
     kryo.register(K8sContainerInfo.class, 980101);
