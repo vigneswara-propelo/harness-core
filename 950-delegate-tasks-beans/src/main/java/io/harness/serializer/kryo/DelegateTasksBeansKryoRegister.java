@@ -49,6 +49,7 @@ import io.harness.delegate.beans.SecretDetail;
 import io.harness.delegate.beans.SerializedResponseData;
 import io.harness.delegate.beans.SlackTaskParams;
 import io.harness.delegate.beans.TaskData;
+import io.harness.delegate.beans.TaskDataV2;
 import io.harness.delegate.beans.artifactory.ArtifactoryFetchBuildsResponse;
 import io.harness.delegate.beans.artifactory.ArtifactoryFetchImagePathResponse;
 import io.harness.delegate.beans.artifactory.ArtifactoryFetchRepositoriesResponse;
@@ -923,12 +924,14 @@ import software.wings.yaml.gitSync.YamlGitConfig;
 import com.amazonaws.services.cloudformation.model.StackStatus;
 import com.esotericsoftware.kryo.Kryo;
 import com.google.protobuf.UnknownFieldSet;
+import lombok.SneakyThrows;
 import org.eclipse.jgit.api.GitCommand;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 @OwnedBy(DEL)
 public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
+  @SneakyThrows
   @Override
   public void register(Kryo kryo) {
     kryo.register(SettingAttribute.class, 5008);
@@ -1096,6 +1099,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(SpotinstTrafficShiftAlbSwapRoutesParameters.class, 19043);
     kryo.register(SystemEnvCheckerCapability.class, 19022);
     kryo.register(TaskData.class, 19002);
+    kryo.register(TaskDataV2.class, 19005);
     kryo.register(YamlGitConfigDTO.class, 19087);
     kryo.register(YamlGitConfigDTO.RootFolder.class, 19095);
     kryo.register(AzureVMSSPreDeploymentData.class, 19106);
@@ -1779,6 +1783,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
 
     kryo.register(SerializedResponseData.class, 55401);
     kryo.register(SerializationFormat.class, 55402);
+    kryo.register(io.harness.beans.SerializationFormat.class, 55499);
     kryo.register(SecretConfigFile.class, 55334);
     kryo.register(GitApiMergePRTaskResponse.class, 55403);
     kryo.register(CustomRemoteStoreDelegateConfig.class, 56403);

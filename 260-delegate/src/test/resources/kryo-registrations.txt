@@ -1155,6 +1155,7 @@
 19002:io.harness.delegate.beans.TaskData
 19003:io.harness.delegate.beans.executioncapability.HttpConnectionExecutionCapability
 19004:io.harness.delegate.beans.executioncapability.CapabilityType
+19005:io.harness.delegate.beans.TaskDataV2
 19007:io.harness.delegate.beans.executioncapability.ProcessExecutorCapability
 19008:io.harness.delegate.beans.executioncapability.AwsRegionCapability
 19009:io.harness.delegate.beans.executioncapability.SocketConnectivityExecutionCapability
@@ -1789,6 +1790,7 @@
 55436:io.harness.delegate.task.customdeployment.FetchInstanceScriptTaskNGRequest
 55437:io.harness.delegate.task.customdeployment.FetchInstanceScriptTaskNGResponse
 55470:io.harness.delegate.task.ssh.artifact.CustomArtifactDelegateConfig
+55499:io.harness.beans.SerializationFormat
 55501:io.harness.delegate.beans.instancesync.info.PdcServerInstanceInfo
 55502:io.harness.delegate.beans.instancesync.info.AzureSshWinrmServerInstanceInfo
 55503:io.harness.delegate.beans.instancesync.info.AwsSshWinrmServerInstanceInfo
