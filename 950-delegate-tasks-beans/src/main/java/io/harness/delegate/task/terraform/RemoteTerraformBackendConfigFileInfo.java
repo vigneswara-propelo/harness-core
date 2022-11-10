@@ -13,7 +13,7 @@ import io.harness.expression.ExpressionReflectionUtils.NestedAnnotationResolver;
 
 import lombok.experimental.SuperBuilder;
 
-@SuperBuilder
 @OwnedBy(HarnessTeam.CDP)
-public class RemoteTerraformVarFileInfo
-    extends RemoteTerraformFileInfo implements TerraformVarFileInfo, NestedAnnotationResolver {}
+@SuperBuilder
+public class RemoteTerraformBackendConfigFileInfo
+    extends RemoteTerraformFileInfo implements TerraformBackendConfigFileInfo, NestedAnnotationResolver {}

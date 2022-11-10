@@ -5,15 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.task.terraform;
+package io.harness.cdng.provision.terraform;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.expression.ExpressionReflectionUtils.NestedAnnotationResolver;
 
-import lombok.experimental.SuperBuilder;
-
-@SuperBuilder
 @OwnedBy(HarnessTeam.CDP)
-public class RemoteTerraformVarFileInfo
-    extends RemoteTerraformFileInfo implements TerraformVarFileInfo, NestedAnnotationResolver {}
+public interface TerraformBackendConfigFileConfig {}

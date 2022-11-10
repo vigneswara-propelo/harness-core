@@ -11,10 +11,9 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.SwaggerConstants;
-import io.harness.pms.yaml.ParameterField;
+import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 
-import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,11 +23,12 @@ import lombok.experimental.FieldDefaults;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@RecasterAlias("io.harness.cdng.provision.terraform.InlineTerraformBackendConfigSpec")
-public class InlineTerraformBackendConfigSpec implements TerraformBackendConfigSpec {
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> content;
+@RecasterAlias("io.harness.cdng.provision.terraform.RemoteTerraformBackendConfigSpec")
+public class RemoteTerraformBackendConfigSpec implements TerraformBackendConfigSpec {
+  @NotNull StoreConfigWrapper store;
+
   @Override
   public String getType() {
-    return TerraformVarFileTypes.Inline;
+    return TerraformVarFileTypes.Remote;
   }
 }
