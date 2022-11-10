@@ -149,7 +149,7 @@ public class ExecutionDetailsResourceTest extends CategoryTest {
         .getPipelineExecutionSummaryEntity(any(), any());
     doReturn(Optional.of(PipelineEntity.builder().build()))
         .when(pmsPipelineService)
-        .get(anyString(), anyString(), anyString(), anyString(), anyBoolean());
+        .getAndValidatePipeline(anyString(), anyString(), anyString(), anyString(), anyBoolean());
 
     doReturn(null).when(pmsGitSyncHelper).getGitSyncBranchContextBytesThreadLocal();
 
