@@ -5,14 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.plancreator.stages.parallel;
+package io.harness.plancreator.stages.parallel.v1;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.advisers.nextstep.NextStepAdviserParameters;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.plancreator.NGCommonUtilPlanCreationConstants;
-import io.harness.plancreator.strategy.StrategyUtils;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdviserType;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
@@ -33,7 +31,6 @@ import io.harness.pms.yaml.PipelineVersion;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
-import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.fork.ForkStepParameters;
 import io.harness.steps.fork.NGForkStep;
@@ -41,7 +38,6 @@ import io.harness.steps.fork.NGForkStep;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -51,7 +47,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @OwnedBy(PIPELINE)
-public class ParallelPlanCreator extends ChildrenPlanCreator<YamlField> {
+public class ParallelPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
   @Inject private KryoSerializer kryoSerializer;
 
   @Override
@@ -67,13 +63,19 @@ public class ParallelPlanCreator extends ChildrenPlanCreator<YamlField> {
   @Override
   public LinkedHashMap<String, PlanCreationResponse> createPlanForChildrenNodes(
       PlanCreationContext ctx, YamlField config) {
-    List<YamlField> dependencyNodeIdsList = PlanCreatorUtils.getDependencyNodeIdsForParallelNode(ctx.getCurrentField());
-
+    YamlNode specNode = config.getNode().getField(YAMLFieldNameConstants.SPEC).getNode();
+    YamlField childrenField = null;
+    if (specNode.getField(YAMLFieldNameConstants.STAGES) != null) {
+      childrenField = specNode.getField(YAMLFieldNameConstants.STAGES);
+    } else {
+      childrenField = specNode.getField(YAMLFieldNameConstants.STEPS);
+    }
     LinkedHashMap<String, PlanCreationResponse> responseMap = new LinkedHashMap<>();
-    for (YamlField yamlField : dependencyNodeIdsList) {
+
+    for (YamlNode yamlNode : childrenField.getNode().asArray()) {
       Map<String, YamlField> yamlFieldMap = new HashMap<>();
-      yamlFieldMap.put(yamlField.getNode().getUuid(), yamlField);
-      responseMap.put(yamlField.getNode().getUuid(),
+      yamlFieldMap.put(yamlNode.getUuid(), new YamlField(yamlNode));
+      responseMap.put(yamlNode.getUuid(),
           PlanCreationResponse.builder().dependencies(DependenciesUtils.toDependenciesProto(yamlFieldMap)).build());
     }
 
@@ -93,113 +95,73 @@ public class ParallelPlanCreator extends ChildrenPlanCreator<YamlField> {
             FacilitatorObtainment.newBuilder()
                 .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILDREN).build())
                 .build())
-        .adviserObtainments(getAdviserObtainmentFromMetaData(config))
+        .adviserObtainments(getAdviserObtainmentFromMetaData(ctx, config))
         .skipExpressionChain(true)
         .build();
   }
 
   @Override
   public GraphLayoutResponse getLayoutNodeInfo(PlanCreationContext ctx, YamlField config) {
-    List<String> possibleSiblings = new ArrayList<>();
-    possibleSiblings.add(YAMLFieldNameConstants.STAGE);
-    possibleSiblings.add(YAMLFieldNameConstants.PARALLEL);
-    YamlField nextSibling =
-        ctx.getCurrentField().getNode().nextSiblingFromParentArray(YAMLFieldNameConstants.PARALLEL, possibleSiblings);
-    YamlField previousSibling = ctx.getCurrentField().getNode().previousSiblingFromParentArray(
-        YAMLFieldNameConstants.PARALLEL, possibleSiblings);
-
-    List<YamlField> children = PlanCreatorUtils.getStageChildFields(ctx.getCurrentField());
+    YamlNode specNode = config.getNode().getField(YAMLFieldNameConstants.SPEC).getNode();
+    if (specNode.getField(YAMLFieldNameConstants.STAGES) == null) {
+      return GraphLayoutResponse.builder().build();
+    }
+    List<YamlField> children = specNode.getField(YAMLFieldNameConstants.STAGES)
+                                   .getNode()
+                                   .asArray()
+                                   .stream()
+                                   .map(YamlField::new)
+                                   .collect(Collectors.toList());
     if (children.isEmpty()) {
       return GraphLayoutResponse.builder().build();
     }
+    String nextNodeId = null;
+    if (ctx.getDependency() != null && ctx.getDependency().getMetadataMap().get("nextId") != null) {
+      nextNodeId = (String) kryoSerializer.asObject(ctx.getDependency().getMetadataMap().get("nextId").toByteArray());
+    }
     List<String> childrenUuids =
         children.stream().map(YamlField::getNode).map(YamlNode::getUuid).collect(Collectors.toList());
-    List<String> rollbackChildrenUuids = childrenUuids.stream()
-                                             .map(s -> s + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_UUID_SUFFIX)
-                                             .collect(Collectors.toList());
-
     EdgeLayoutList.Builder stagesEdgesBuilder = EdgeLayoutList.newBuilder().addAllCurrentNodeChildren(childrenUuids);
-    if (nextSibling != null) {
-      stagesEdgesBuilder.addNextIds(nextSibling.getNode().getUuid());
+    if (nextNodeId != null) {
+      stagesEdgesBuilder.addNextIds(nextNodeId);
     }
-    EdgeLayoutList.Builder rollbackStagesEdgesBuilder =
-        EdgeLayoutList.newBuilder().addAllCurrentNodeChildren(rollbackChildrenUuids);
-    if (previousSibling != null) {
-      rollbackStagesEdgesBuilder.addNextIds(
-          previousSibling.getNode().getUuid() + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_UUID_SUFFIX);
-    }
-
     Map<String, GraphLayoutNode> layoutNodeMap = children.stream().collect(Collectors.toMap(stageField
         -> stageField.getNode().getUuid(),
         stageField
         -> GraphLayoutNode.newBuilder()
                .setNodeUUID(stageField.getNode().getUuid())
                .setNodeGroup(StepOutcomeGroup.STAGE.name())
-               .setName(stageField.getNode().getName())
+               .setName(stageField.getNodeName())
                .setNodeType(stageField.getNode().getType())
-               .setNodeIdentifier(stageField.getNode().getIdentifier())
+               .setNodeIdentifier(stageField.getId())
                .setEdgeLayoutList(EdgeLayoutList.newBuilder().build())
                .build()));
-    Map<String, GraphLayoutNode> rollbackLayoutNodeMap = children.stream().collect(Collectors.toMap(stageField
-        -> stageField.getNode().getUuid() + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_UUID_SUFFIX,
-        stageField
-        -> GraphLayoutNode.newBuilder()
-               .setNodeUUID(
-                   stageField.getNode().getUuid() + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_UUID_SUFFIX)
-               .setNodeGroup(StepOutcomeGroup.STAGE.name())
-               .setName(
-                   stageField.getNode().getName() + " " + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_NODE_NAME)
-               .setNodeType(stageField.getNode().getType())
-               .setNodeIdentifier(
-                   stageField.getNode().getIdentifier() + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_UUID_SUFFIX)
-               .setEdgeLayoutList(EdgeLayoutList.newBuilder().build())
-               .setIsRollbackStageNode(true)
-               .build()));
-
     GraphLayoutNode parallelNode = GraphLayoutNode.newBuilder()
-                                       .setNodeUUID(config.getNode().getUuid())
+                                       .setNodeUUID(config.getUuid())
                                        .setNodeType(YAMLFieldNameConstants.PARALLEL)
                                        .setNodeGroup(StepOutcomeGroup.STAGE.name())
                                        .setNodeIdentifier(YAMLFieldNameConstants.PARALLEL + config.getNode().getUuid())
                                        .setEdgeLayoutList(stagesEdgesBuilder.build())
                                        .build();
-    GraphLayoutNode parallelRollbackNode =
-        GraphLayoutNode.newBuilder()
-            .setNodeUUID(config.getNode().getUuid() + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_UUID_SUFFIX)
-            .setNodeType(YAMLFieldNameConstants.PARALLEL)
-            .setNodeGroup(StepOutcomeGroup.STAGE.name())
-            .setNodeIdentifier(YAMLFieldNameConstants.PARALLEL + config.getNode().getUuid()
-                + NGCommonUtilPlanCreationConstants.ROLLBACK_STAGE_UUID_SUFFIX)
-            .setEdgeLayoutList(rollbackStagesEdgesBuilder.build())
-            .setIsRollbackStageNode(true)
-            .build();
     layoutNodeMap.put(config.getNode().getUuid(), parallelNode);
-    layoutNodeMap.put(parallelRollbackNode.getNodeUUID(), parallelRollbackNode);
-    layoutNodeMap.putAll(rollbackLayoutNodeMap);
     return GraphLayoutResponse.builder().layoutNodes(layoutNodeMap).build();
   }
 
-  private List<AdviserObtainment> getAdviserObtainmentFromMetaData(YamlField currentField) {
+  private List<AdviserObtainment> getAdviserObtainmentFromMetaData(PlanCreationContext ctx, YamlField currentField) {
     List<AdviserObtainment> adviserObtainments = new ArrayList<>();
+    String nextNodeId = null;
+    if (ctx.getDependency() != null && ctx.getDependency().getMetadataMap().get("nextId") != null) {
+      nextNodeId = (String) kryoSerializer.asObject(ctx.getDependency().getMetadataMap().get("nextId").toByteArray());
+    }
 
     if (currentField != null && currentField.getNode() != null) {
-      YamlField siblingField = currentField.getNode().nextSiblingFromParentArray(currentField.getName(),
-          Arrays.asList(YAMLFieldNameConstants.STAGE, YAMLFieldNameConstants.STEP, YAMLFieldNameConstants.STEP_GROUP,
-              YAMLFieldNameConstants.PARALLEL));
-      if (siblingField != null && siblingField.getNode().getUuid() != null) {
-        AdviserObtainment adviserObtainment;
-        YamlNode parallelNodeInStage = YamlUtils.findParentNode(currentField.getNode(), YAMLFieldNameConstants.STAGE);
-        if (parallelNodeInStage != null) {
-          adviserObtainment = StrategyUtils.getAdviserObtainmentsForParallelStepParent(
-              currentField, kryoSerializer, siblingField.getNode().getUuid());
-        } else {
-          adviserObtainment =
-              AdviserObtainment.newBuilder()
-                  .setType(AdviserType.newBuilder().setType(OrchestrationAdviserTypes.NEXT_STAGE.name()).build())
-                  .setParameters(ByteString.copyFrom(kryoSerializer.asBytes(
-                      NextStepAdviserParameters.builder().nextNodeId(siblingField.getNode().getUuid()).build())))
-                  .build();
-        }
+      if (nextNodeId != null) {
+        AdviserObtainment adviserObtainment =
+            AdviserObtainment.newBuilder()
+                .setType(AdviserType.newBuilder().setType(OrchestrationAdviserTypes.NEXT_STAGE.name()).build())
+                .setParameters(ByteString.copyFrom(
+                    kryoSerializer.asBytes(NextStepAdviserParameters.builder().nextNodeId(nextNodeId).build())))
+                .build();
         adviserObtainments.add(adviserObtainment);
       }
     }
@@ -208,6 +170,6 @@ public class ParallelPlanCreator extends ChildrenPlanCreator<YamlField> {
 
   @Override
   public Set<String> getSupportedYamlVersions() {
-    return Set.of(PipelineVersion.V0);
+    return Set.of(PipelineVersion.V1);
   }
 }
