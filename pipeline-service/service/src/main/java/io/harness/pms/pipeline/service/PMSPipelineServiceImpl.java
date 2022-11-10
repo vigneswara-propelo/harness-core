@@ -69,7 +69,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -655,7 +654,7 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       log.error(String.format(REPO_LIST_SIZE_EXCEPTION, MAX_LIST_SIZE));
       throw new InternalServerErrorException(String.format(REPO_LIST_SIZE_EXCEPTION, MAX_LIST_SIZE));
     }
-    return PMSPipelineListRepoResponse.builder().repositories(new HashSet<>(uniqueRepos)).build();
+    return PMSPipelineListRepoResponse.builder().repositories(uniqueRepos).build();
   }
 
   private void checkAndThrowIfLimitReached(String accountId) {

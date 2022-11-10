@@ -68,8 +68,8 @@ import io.harness.yaml.validator.InvalidYamlException;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -697,7 +697,7 @@ public class PipelineResourceTest extends CategoryTest {
   @Owner(developers = ADITHYA)
   @Category(UnitTests.class)
   public void testGetListRepos() {
-    HashSet<String> repos = new HashSet<>();
+    List<String> repos = new ArrayList<>();
     repos.add("testRepo");
     repos.add("testRepo2");
 
