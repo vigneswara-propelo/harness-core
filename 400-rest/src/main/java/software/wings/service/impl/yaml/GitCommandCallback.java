@@ -62,7 +62,6 @@ import software.wings.yaml.gitSync.GitFileActivity;
 import software.wings.yaml.gitSync.GitWebhookRequestAttributes;
 import software.wings.yaml.gitSync.YamlChangeSet;
 import software.wings.yaml.gitSync.YamlChangeSet.Status;
-import software.wings.yaml.gitSync.YamlGitConfig;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -210,7 +209,8 @@ public class GitCommandCallback implements NotifyCallbackWithErrorHandling {
     }
   }
 
-  private void addYamlChangeSetToFilesCommited(List<GitFileChange> gitFileChanges, YamlGitConfig yamlGitConfig) {
+  private void addYamlChangeSetToFilesCommited(
+      List<GitFileChange> gitFileChanges, software.wings.yaml.gitSync.YamlGitConfig yamlGitConfig) {
     if (isEmpty(gitFileChanges)) {
       return;
     }
@@ -288,7 +288,7 @@ public class GitCommandCallback implements NotifyCallbackWithErrorHandling {
   private void saveCommitFromHarness(GitCommitAndPushResult gitCommitAndPushResult, YamlChangeSet yamlChangeSet,
       List<String> yamlGitConfigIds, List<String> yamlSetIdsProcessed) {
     String commitId = gitCommitAndPushResult.getGitCommitResult().getCommitId();
-    YamlGitConfig yamlGitConfig = gitCommitAndPushResult.getYamlGitConfig();
+    software.wings.yaml.gitSync.YamlGitConfig yamlGitConfig = gitCommitAndPushResult.getYamlGitConfig();
     if (yamlGitConfig == null) {
       throw new UnexpectedException(String.format(
           "Error while saving commit for commitId=[%s],yamlChangeSetId=[%s] as the yamlGitConfig is null ", commitId,
