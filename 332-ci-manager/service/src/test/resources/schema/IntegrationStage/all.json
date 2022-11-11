@@ -3387,10 +3387,6 @@
         },
         {
           "type": "object",
-          "required": [
-            "connectorRef",
-            "image"
-          ],
           "properties": {
             "connectorRef": {
               "type": "string"
@@ -3475,6 +3471,9 @@
                   "type": "string"
                 }
               ]
+            },
+            "uses": {
+              "type": "string"
             }
           }
         }
