@@ -1,16 +1,10 @@
-/*
- * Copyright 2021 Harness Inc. All rights reserved.
- * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
- * that can be found in the licenses directory at the root of this repository, also available at
- * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
- */
+package io.harness.steps.plugin.infrastructure;
 
-package io.harness.beans.yaml.extended.infrastrucutre;
-
-import static io.harness.annotations.dev.HarnessTeam.CI;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYamlSpec;
 import io.harness.pms.yaml.YamlNode;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,11 +23,11 @@ import org.springframework.data.annotation.TypeAlias;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonTypeName("KubernetesDirect")
-@TypeAlias("k8sDirectInfraYaml")
-@OwnedBy(CI)
-@RecasterAlias("io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml")
-public class K8sDirectInfraYaml implements Infrastructure {
-  @Builder.Default @NotNull private Type type = Type.KUBERNETES_DIRECT;
+@TypeAlias("ContainerK8sInfra")
+@OwnedBy(PIPELINE)
+@RecasterAlias("io.harness.steps.plugin.infrastructure.ContainerK8sInfra")
+public class ContainerK8sInfra implements ContainerStepInfra {
+  @Builder.Default @NotNull @Getter private Type type = Type.KUBERNETES_DIRECT;
   @NotNull private K8sDirectInfraYamlSpec spec;
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
