@@ -492,7 +492,9 @@ public enum FeatureName {
       HarnessTeam.PL),
   CDS_OrgAccountLevelServiceEnvEnvGroup(
       "Support Creation and Use of Org and Account level Services and Environments", HarnessTeam.CDC),
-  CE_NET_AMORTISED_COST_ENABLED("Enable cost calculation through Net Amortised cost", HarnessTeam.CE);
+  CE_NET_AMORTISED_COST_ENABLED("Enable cost calculation through Net Amortised cost", HarnessTeam.CE),
+  GITOPS_DR_ENABLED("Enable disaster recovery feature", HarnessTeam.GITOPS),
+  GITOPS_RECONCILER_ENABLED("Enable reconcile processing", HarnessTeam.GITOPS);
 
   @Deprecated
   FeatureName() {
