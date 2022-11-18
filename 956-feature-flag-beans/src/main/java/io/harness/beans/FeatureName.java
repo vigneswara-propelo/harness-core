@@ -489,7 +489,8 @@ public enum FeatureName {
       "Enables User Group sync operation to fetch data from Ldap Server in Parallel. Enable only if Ldap Server can take the load",
       HarnessTeam.PL),
   CDS_OrgAccountLevelServiceEnvEnvGroup(
-      "Support Creation and Use of Org and Account level Services and Environments", HarnessTeam.CDC);
+      "Support Creation and Use of Org and Account level Services and Environments", HarnessTeam.CDC),
+  CE_NET_AMORTISED_COST_ENABLED("Enable cost calculation through Net Amortised cost", HarnessTeam.CE);
 
   @Deprecated
   FeatureName() {
