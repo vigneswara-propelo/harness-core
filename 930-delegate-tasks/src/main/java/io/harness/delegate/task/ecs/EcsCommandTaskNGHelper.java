@@ -78,6 +78,7 @@ import software.amazon.awssdk.services.ecs.model.CreateServiceRequest;
 import software.amazon.awssdk.services.ecs.model.CreateServiceResponse;
 import software.amazon.awssdk.services.ecs.model.DeleteServiceRequest;
 import software.amazon.awssdk.services.ecs.model.DeleteServiceResponse;
+import software.amazon.awssdk.services.ecs.model.Deployment;
 import software.amazon.awssdk.services.ecs.model.DescribeServicesRequest;
 import software.amazon.awssdk.services.ecs.model.DescribeServicesResponse;
 import software.amazon.awssdk.services.ecs.model.DescribeTasksResponse;
@@ -161,32 +162,59 @@ public class EcsCommandTaskNGHelper {
         : Optional.empty();
   }
 
-  public WaiterResponse<DescribeServicesResponse> ecsServiceSteadyStateCheck(LogCallback deployLogCallback,
-      AwsConnectorDTO awsConnectorDTO, String cluster, String serviceName, String region,
-      long serviceSteadyStateTimeout, List<ServiceEvent> eventsAlreadyProcessed) {
+  public void ecsServiceSteadyStateCheck(LogCallback deployLogCallback, AwsConnectorDTO awsConnectorDTO, String cluster,
+      String serviceName, String region, long serviceSteadyStateTimeout, List<ServiceEvent> eventsAlreadyProcessed) {
     deployLogCallback.saveExecutionLog(
         format("Waiting for Service %s to reach steady state %n", serviceName), LogLevel.INFO);
 
-    DescribeServicesRequest describeServicesRequest =
-        DescribeServicesRequest.builder().services(Collections.singletonList(serviceName)).cluster(cluster).build();
+    try {
+      HTimeLimiter.callInterruptible(timeLimiter, Duration.ofMillis(serviceSteadyStateTimeout), () -> {
+        Service service;
 
-    WaiterResponse<DescribeServicesResponse> describeServicesResponseWaiterResponse =
-        ecsV2Client.ecsServiceSteadyStateCheck(awsNgConfigMapper.createAwsInternalConfig(awsConnectorDTO),
-            describeServicesRequest, region, serviceSteadyStateTimeout);
+        do {
+          service = describeService(cluster, serviceName, region, awsConnectorDTO).get();
 
-    if (describeServicesResponseWaiterResponse.matched().exception().isPresent()) {
-      Throwable throwable = describeServicesResponseWaiterResponse.matched().exception().get();
-      deployLogCallback.saveExecutionLog(
-          format("Service %s failed to reach steady state %n", serviceName), LogLevel.ERROR);
-      throw new RuntimeException(format("Service %s failed to reach steady state %n", serviceName), throwable);
+          if (service == null) {
+            String msg = new StringBuilder()
+                             .append("Received empty response while describing service ")
+                             .append(serviceName)
+                             .toString();
+            deployLogCallback.saveExecutionLog(msg, LogLevel.ERROR);
+            throw new RuntimeException(msg);
+          }
+
+          printAwsEvent(service, eventsAlreadyProcessed, deployLogCallback);
+        } while (!hasServiceReachedSteadyState(service));
+
+        return true;
+      });
+    } catch (Exception e) {
+      String msg = new StringBuilder()
+                       .append("Timed out waiting for service: ")
+                       .append(serviceName)
+                       .append(" to reach steady state")
+                       .toString();
+      deployLogCallback.saveExecutionLog(msg, LogLevel.ERROR);
+      throw new RuntimeException(msg, e);
     }
 
-    Optional<Service> serviceOptional = describeService(cluster, serviceName, region, awsConnectorDTO);
-
-    printAwsEvent(serviceOptional.get(), eventsAlreadyProcessed, deployLogCallback);
-
     deployLogCallback.saveExecutionLog(format("Service %s reached steady state %n", serviceName), LogLevel.INFO);
-    return describeServicesResponseWaiterResponse;
+  }
+
+  boolean hasServiceReachedSteadyState(Service service) {
+    List<Deployment> deployments = service.deployments();
+    if (deployments.size() != 1) {
+      return false;
+    }
+    long deploymentTime = deployments.get(0).updatedAt().getEpochSecond();
+    long steadyStateMessageTime =
+        service.events()
+            .stream()
+            .filter(serviceEvent -> serviceEvent.message().endsWith("has reached a steady state."))
+            .map(serviceEvent -> serviceEvent.createdAt().getEpochSecond())
+            .max(Long::compare)
+            .orElse(0L);
+    return steadyStateMessageTime >= deploymentTime;
   }
 
   public WaiterResponse<DescribeServicesResponse> ecsServiceInactiveStateCheck(LogCallback deployLogCallback,
