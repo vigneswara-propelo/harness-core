@@ -11562,6 +11562,16 @@
             ]
           }
         },
+        "exportTerraformHumanReadablePlan": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
         "exportTerraformPlanJson": {
           "oneOf": [
             {
