@@ -466,10 +466,24 @@ public class EcsCommandTaskNGHelper {
         createServiceRequest.serviceName(), ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
 
     if (!(optionalService.isPresent() && isServiceActive(optionalService.get()))) {
+      if (optionalService.isPresent() && isServiceDraining(optionalService.get())) {
+        logCallback.saveExecutionLog(format("An existing Service with name %s draining, waiting for it to reach "
+                                             + "inactive state %n",
+                                         createServiceRequest.serviceName()),
+            LogLevel.INFO);
+        ecsServiceInactiveStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
+            createServiceRequest.serviceName(), ecsInfraConfig.getRegion(),
+            (int) TimeUnit.MILLISECONDS.toMinutes(timeoutInMillis));
+        logCallback.saveExecutionLog(
+            format("An existed Service with name %s reached inactive state %n", createServiceRequest.serviceName()),
+            LogLevel.INFO);
+      }
+
       logCallback.saveExecutionLog(format("Creating Service %s with task definition %s and desired count %s %n",
                                        createServiceRequest.serviceName(), createServiceRequest.taskDefinition(),
                                        createServiceRequest.desiredCount()),
           LogLevel.INFO);
+
       CreateServiceResponse createServiceResponse =
           createService(createServiceRequest, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
 
@@ -615,6 +629,17 @@ public class EcsCommandTaskNGHelper {
 
       logCallback.saveExecutionLog(
           format("Deleted existing Service with name %s %n", createServiceRequest.serviceName()), LogLevel.INFO);
+    } else if (optionalService.isPresent() && isServiceDraining(optionalService.get())) {
+      logCallback.saveExecutionLog(format("An existing Service with name %s draining, waiting for it to reach "
+                                           + "inactive state %n",
+                                       createServiceRequest.serviceName()),
+          LogLevel.INFO);
+      ecsServiceInactiveStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
+          createServiceRequest.serviceName(), ecsInfraConfig.getRegion(),
+          (int) TimeUnit.MILLISECONDS.toMinutes(timeoutInMillis));
+      logCallback.saveExecutionLog(
+          format("An existed Service with name %s reached inactive state %n", createServiceRequest.serviceName()),
+          LogLevel.INFO);
     }
 
     logCallback.saveExecutionLog(format("Creating Service %s with task definition %s and desired count %s %n",
@@ -742,6 +767,17 @@ public class EcsCommandTaskNGHelper {
           service.serviceName(), ecsInfraConfig.getRegion(), (int) TimeUnit.MILLISECONDS.toMinutes(timeoutInMillis));
       logCallback.saveExecutionLog(
           format("Deleted non-blue version Service: %s %n%n", service.serviceName()), LogLevel.INFO);
+    } else if (optionalService.isPresent() && isServiceDraining(optionalService.get())) {
+      logCallback.saveExecutionLog(
+          format("An existing non-blue version Service with name %s draining, waiting for it to reach "
+                  + "inactive state %n",
+              stageServiceName),
+          LogLevel.INFO);
+      ecsServiceInactiveStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), ecsInfraConfig.getCluster(),
+          stageServiceName, ecsInfraConfig.getRegion(), (int) TimeUnit.MILLISECONDS.toMinutes(timeoutInMillis));
+      logCallback.saveExecutionLog(
+          format("An existed non-blue version Service with name %s reached inactive state %n", stageServiceName),
+          LogLevel.INFO);
     }
 
     // add green tag in create service request
@@ -807,8 +843,8 @@ public class EcsCommandTaskNGHelper {
               CreateServiceRequest.serializableBuilderClass())
               .build();
 
-      // update desired count of old service to its earlier desired count if its not same
-      if (!oldService.desiredCount().equals(createServiceRequest.desiredCount())) {
+      // update desired count of old service to its maximum desired count if it is not less than that
+      if (oldService.desiredCount() < (createServiceRequest.desiredCount())) {
         logCallback.saveExecutionLog(
             format("Updating Old Service %s with task definition %s and desired count %s", oldService.serviceName(),
                 oldService.taskDefinition(), createServiceRequest.desiredCount()),
@@ -823,6 +859,19 @@ public class EcsCommandTaskNGHelper {
           parseYamlAsObject(ecsBlueGreenRollbackRequest.getOldServiceCreateRequestBuilderString(),
               CreateServiceRequest.serializableBuilderClass())
               .build();
+
+      if (oldOptionalService.isPresent() && isServiceDraining(oldOptionalService.get())) {
+        logCallback.saveExecutionLog(format("An existing old Service with name %s draining, waiting for it to reach "
+                                             + "inactive state %n",
+                                         ecsBlueGreenRollbackRequest.getOldServiceName()),
+            LogLevel.INFO);
+        ecsServiceInactiveStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), ecsInfraConfig.getCluster(),
+            ecsBlueGreenRollbackRequest.getOldServiceName(), ecsInfraConfig.getRegion(),
+            (int) TimeUnit.MILLISECONDS.toMinutes(timeoutInMillis));
+        logCallback.saveExecutionLog(format("An existed old Service with name %s reached inactive state %n",
+                                         ecsBlueGreenRollbackRequest.getOldServiceName()),
+            LogLevel.INFO);
+      }
 
       logCallback.saveExecutionLog(format("Creating Old Service %s with task definition %s and desired count %s",
                                        createServiceRequest.serviceName(), createServiceRequest.taskDefinition(),
@@ -1169,6 +1218,10 @@ public class EcsCommandTaskNGHelper {
 
   public boolean isServiceActive(Service service) {
     return service != null && service.status().equals("ACTIVE");
+  }
+
+  public boolean isServiceDraining(Service service) {
+    return service != null && service.status().equals("DRAINING");
   }
 
   public RunTaskResponse runTask(RunTaskRequest runTaskRequest, AwsConnectorDTO awsConnectorDTO, String region) {
