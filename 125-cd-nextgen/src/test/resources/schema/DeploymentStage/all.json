@@ -4634,13 +4634,15 @@
           ],
           "properties": {
             "connectorRef": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             },
             "org": {
               "type": "string"
             },
             "packageName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             },
             "packageType": {
               "type": "string",
