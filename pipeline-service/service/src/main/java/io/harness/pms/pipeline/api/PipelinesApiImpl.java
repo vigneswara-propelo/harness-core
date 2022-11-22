@@ -82,7 +82,7 @@ public class PipelinesApiImpl implements PipelinesApi {
         PipelinesApiUtils.mapCreateToRequestInfoDTO(requestBody), account, org, project, null);
     log.info(String.format("Creating a Pipeline with identifier %s in project %s, org %s, account %s",
         pipelineEntity.getIdentifier(), project, org, account));
-    PipelineCRUDResult pipelineCRUDResult = pmsPipelineService.validateAndCreatePipeline(pipelineEntity);
+    PipelineCRUDResult pipelineCRUDResult = pmsPipelineService.validateAndCreatePipeline(pipelineEntity, false);
     PipelineEntity createdEntity = pipelineCRUDResult.getPipelineEntity();
     GovernanceMetadata governanceMetadata = pipelineCRUDResult.getGovernanceMetadata();
     if (governanceMetadata.getDeny()) {
@@ -213,7 +213,7 @@ public class PipelinesApiImpl implements PipelinesApi {
     PipelineEntity pipelineEntity = PMSPipelineDtoMapper.toPipelineEntity(
         PipelinesApiUtils.mapUpdateToRequestInfoDTO(requestBody), account, org, project, null);
     PipelineCRUDResult pipelineCRUDResult =
-        pmsPipelineService.validateAndUpdatePipeline(pipelineEntity, ChangeType.MODIFY);
+        pmsPipelineService.validateAndUpdatePipeline(pipelineEntity, ChangeType.MODIFY, false);
     PipelineEntity updatedEntity = pipelineCRUDResult.getPipelineEntity();
     GovernanceMetadata governanceMetadata = pipelineCRUDResult.getGovernanceMetadata();
     if (governanceMetadata.getDeny()) {
