@@ -16,6 +16,7 @@ import io.harness.cdng.artifact.bean.ArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GithubPackagesArtifactConfig;
 import io.harness.cdng.artifact.resources.githubpackages.dtos.GithubPackagesResponseDTO;
 import io.harness.cdng.artifact.resources.githubpackages.service.GithubPackagesResourceService;
+import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
 import io.harness.ng.core.artifacts.resources.util.ArtifactResourceUtils;
 import io.harness.ng.core.dto.ErrorDTO;
@@ -61,6 +62,8 @@ public class GithubPackagesArtifactResource {
 
   private final ArtifactResourceUtils artifactResourceUtils;
 
+  private String emptyConnectorMessage = "Connector reference cannot be empty";
+
   // GET Api to fetch Github Packages from an account or an org
   @GET
   @Path("packages")
@@ -71,6 +74,10 @@ public class GithubPackagesArtifactResource {
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @NotNull @QueryParam("packageType") String packageType, @QueryParam("org") String org,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
+    if (StringUtils.isBlank(gitConnectorIdentifier)) {
+      throw new InvalidRequestException(emptyConnectorMessage);
+    }
+
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(gitConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
 
@@ -148,6 +155,10 @@ public class GithubPackagesArtifactResource {
       @NotNull @QueryParam("packageName") String packageName, @NotNull @QueryParam("packageType") String packageType,
       @QueryParam("versionRegex") String versionRegex, @QueryParam("org") String org,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
+    if (StringUtils.isBlank(gitConnectorIdentifier)) {
+      throw new InvalidRequestException(emptyConnectorMessage);
+    }
+
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(gitConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
 
@@ -242,6 +253,10 @@ public class GithubPackagesArtifactResource {
       @NotNull @QueryParam("packageName") String packageName, @NotNull @QueryParam("packageType") String packageType,
       @QueryParam("version") String version, @QueryParam("versionRegex") String versionRegex,
       @QueryParam("org") String org, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
+    if (StringUtils.isBlank(gitConnectorIdentifier)) {
+      throw new InvalidRequestException(emptyConnectorMessage);
+    }
+
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(gitConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
 
