@@ -10,7 +10,6 @@ package io.harness.cdng.creator.filters;
 import static io.harness.cdng.service.beans.ServiceDefinitionType.KUBERNETES;
 import static io.harness.rule.OwnerRule.YOGESH;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.doReturn;
@@ -20,6 +19,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.cdng.creator.plan.stage.DeploymentStageConfig;
 import io.harness.cdng.creator.plan.stage.DeploymentStageNode;
 import io.harness.cdng.envgroup.yaml.EnvironmentGroupYaml;
+import io.harness.cdng.environment.filters.FilterYaml;
 import io.harness.cdng.environment.yaml.EnvironmentYaml;
 import io.harness.cdng.environment.yaml.EnvironmentYamlV2;
 import io.harness.cdng.gitops.yaml.ClusterYaml;
@@ -60,6 +60,7 @@ import java.util.Optional;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.util.Lists;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -111,10 +112,17 @@ public class DeploymentStageFilterJsonCreatorV2Test extends CategoryTest {
                                                  .name("infra-name")
                                                  .type(InfrastructureType.KUBERNETES_DIRECT)
                                                  .build();
+  private AutoCloseable mocks;
+  @After
+  public void tearDown() throws Exception {
+    if (mocks != null) {
+      mocks.close();
+    }
+  }
 
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
+    mocks = MockitoAnnotations.openMocks(this);
 
     doReturn(Optional.of(serviceEntity))
         .when(serviceEntityService)
@@ -226,9 +234,9 @@ public class DeploymentStageFilterJsonCreatorV2Test extends CategoryTest {
                              // default to false
                              .deployToAll(ParameterField.createValueField(false))
                              .infrastructureDefinitions(ParameterField.createValueField(
-                                 asList(InfraStructureDefinitionYaml.builder()
-                                            .identifier(ParameterField.createValueField("some-random-infra"))
-                                            .build())))
+                                 List.of(InfraStructureDefinitionYaml.builder()
+                                             .identifier(ParameterField.createValueField("some-random-infra"))
+                                             .build())))
                              .build())
             .deploymentType(KUBERNETES)
             .build());
@@ -301,9 +309,9 @@ public class DeploymentStageFilterJsonCreatorV2Test extends CategoryTest {
                              // default to false
                              .deployToAll(ParameterField.createValueField(false))
                              .infrastructureDefinitions(ParameterField.createValueField(
-                                 asList(InfraStructureDefinitionYaml.builder()
-                                            .identifier(ParameterField.createValueField(infra.getIdentifier()))
-                                            .build())))
+                                 List.of(InfraStructureDefinitionYaml.builder()
+                                             .identifier(ParameterField.createValueField(infra.getIdentifier()))
+                                             .build())))
                              .build())
             .deploymentType(KUBERNETES)
             .build());
@@ -494,12 +502,48 @@ public class DeploymentStageFilterJsonCreatorV2Test extends CategoryTest {
             .deploymentType(KUBERNETES)
             .build());
 
-    return new Object[][] {{node1}, {node2}, {node3}, {node4}, {node5}, {node6}, {node7}, {node8}};
+    // environments/deployToAll/filters not specified
+    final DeploymentStageNode node9 = new DeploymentStageNode();
+    node9.setDeploymentStageConfig(
+        DeploymentStageConfig.builder()
+            .service(ServiceYamlV2.builder().serviceRef(ParameterField.<String>builder().value("svc").build()).build())
+            .environmentGroup(
+                EnvironmentGroupYaml.builder().envGroupRef(ParameterField.createValueField("envgroup")).build())
+            .deploymentType(KUBERNETES)
+            .build());
+
+    final DeploymentStageNode node10 = new DeploymentStageNode();
+    node10.setDeploymentStageConfig(
+        DeploymentStageConfig.builder()
+            .service(ServiceYamlV2.builder().serviceRef(ParameterField.<String>builder().value("svc").build()).build())
+            .environmentGroup(EnvironmentGroupYaml.builder()
+                                  .envGroupRef(ParameterField.createValueField("envgroup"))
+                                  .deployToAll(ParameterField.createValueField(true))
+                                  .filters(ParameterField.createValueField(List.of(FilterYaml.builder().build())))
+                                  .build())
+            .deploymentType(KUBERNETES)
+            .build());
+
+    final DeploymentStageNode node11 = new DeploymentStageNode();
+    node11.setDeploymentStageConfig(
+        DeploymentStageConfig.builder()
+            .service(ServiceYamlV2.builder().serviceRef(ParameterField.<String>builder().value("svc").build()).build())
+            .environmentGroup(
+                EnvironmentGroupYaml.builder()
+                    .envGroupRef(ParameterField.createValueField("envgroup"))
+                    .deployToAll(ParameterField.createValueField(true))
+                    .environments(ParameterField.createValueField(List.of(EnvironmentYamlV2.builder().build())))
+                    .build())
+            .deploymentType(KUBERNETES)
+            .build());
+
+    return new Object[][] {{node1}, {node2}, {node3}, {node4}, {node5}, {node6}, {node7}, {node8}, {node9}};
   }
   private Object[][] getDeploymentStageConfigEnvGroup() throws IOException {
     ClassLoader classLoader = this.getClass().getClassLoader();
     // Case1
     final URL testFile = classLoader.getResource("deployStageWithEnvironmentGroupAndFilters.yaml");
+    assertThat(testFile).isNotNull();
     String stageYaml = Resources.toString(testFile, Charsets.UTF_8);
     final DeploymentStageNode node1 = YamlPipelineUtils.read(stageYaml, DeploymentStageNode.class);
     return new Object[][] {{node1}};
