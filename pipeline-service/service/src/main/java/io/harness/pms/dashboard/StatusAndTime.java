@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.Dashboard;
+package io.harness.pms.dashboard;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -17,6 +17,7 @@ import lombok.Value;
 @Value
 @Builder
 public class StatusAndTime {
+  //  Do not change the order of the fields as they are being used by PipelineDashboardQueryService class
   private String status;
   private long startts;
 

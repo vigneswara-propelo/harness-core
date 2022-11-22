@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.Dashboard;
+package io.harness.pms.dashboard;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -17,8 +17,9 @@ import lombok.Value;
 @OwnedBy(HarnessTeam.PIPELINE)
 @Value
 @Builder
-@Schema(name = "TotalHealth", description = "This is the view of the total count of Executions for given Time Interval")
-public class TotalHealthInfo {
-  private long count;
+@Schema(name = "SuccessHealth",
+    description = "This is the view of the successful  count of Executions for given Time Interval")
+public class SuccessHealthInfo {
+  private double percent;
   private double rate;
 }

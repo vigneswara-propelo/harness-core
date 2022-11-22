@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.Dashboard;
+package io.harness.pms.dashboard;
 
 import io.harness.ng.core.OrgProjectIdentifier;
 import io.harness.pms.dashboards.PipelinesCount;
