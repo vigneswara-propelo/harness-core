@@ -11,13 +11,14 @@ import static io.harness.annotations.dev.HarnessTeam.CV;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.core.entities.DataCollectionTask;
 import io.harness.cvng.core.entities.VerificationTask;
+import io.harness.cvng.servicelevelobjective.entities.CompositeSLORecord;
+import io.harness.cvng.servicelevelobjective.entities.CompositeServiceLevelObjective;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
-import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
 import io.harness.cvng.servicelevelobjective.entities.SimpleServiceLevelObjective;
+import io.harness.cvng.statemachine.entities.AnalysisOrchestrator;
 import io.harness.cvng.statemachine.entities.AnalysisStateMachine;
 
 import java.util.List;
@@ -35,22 +36,24 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
-public class SLODebugResponse {
+public class CompositeSLODebugResponse {
   ProjectParams projectParams;
 
-  ServiceLevelObjective serviceLevelObjective;
+  CompositeServiceLevelObjective serviceLevelObjective;
 
-  SimpleServiceLevelObjective simpleServiceLevelObjective;
+  List<SimpleServiceLevelObjective> simpleServiceLevelObjectives;
 
-  List<ServiceLevelIndicator> serviceLevelIndicatorList;
+  List<ServiceLevelIndicator> serviceLevelIndicators;
+
+  Map<String, List<SLIRecord>> sliIdentifierToSLIRecordsMap;
 
   SLOHealthIndicator sloHealthIndicator;
 
-  Map<String, VerificationTask> sliIdentifierToVerificationTaskMap;
+  VerificationTask verificationTask;
 
-  Map<String, List<DataCollectionTask>> sliIdentifierToDataCollectionTaskMap;
+  AnalysisOrchestrator analysisOrchestrator;
 
-  Map<String, AnalysisStateMachine> sliIdentifierToAnalysisStateMachineMap;
+  AnalysisStateMachine analysisStateMachine;
 
-  Map<String, List<SLIRecord>> sliIdentifierToSLIRecordMap;
+  List<CompositeSLORecord> sloRecords;
 }
