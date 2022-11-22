@@ -678,6 +678,17 @@ public class PipelineServiceModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @Named("YamlSchemaExecutorService")
+  public ExecutorService yamlSchemaExecutorService() {
+    return ThreadPool.create(configuration.getYamlSchemaExecutorServiceConfig().getCorePoolSize(),
+        configuration.getYamlSchemaExecutorServiceConfig().getMaxPoolSize(),
+        configuration.getYamlSchemaExecutorServiceConfig().getIdleTime(),
+        configuration.getYamlSchemaExecutorServiceConfig().getTimeUnit(),
+        new ThreadFactoryBuilder().setNameFormat("YamlSchemaService-%d").build());
+  }
+
+  @Provides
+  @Singleton
   @Named("JsonExpansionExecutorService")
   public Executor jsonExpansionExecutorService() {
     return ThreadPool.create(configuration.getJsonExpansionPoolConfig().getCorePoolSize(),
