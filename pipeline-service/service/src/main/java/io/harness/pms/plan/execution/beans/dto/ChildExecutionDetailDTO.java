@@ -26,11 +26,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@ApiModel("PipelineExecutionDetail")
-@Schema(name = "PipelineExecutionDetail", description = "This contains the Pipeline Execution details.")
-public class PipelineExecutionDetailDTO {
+@ApiModel("ChildExecutionDetailDTO")
+@Schema(name = "ChildExecutionDetail", description = "This contains the Pipeline Execution details of Child Pipeline")
+public class ChildExecutionDetailDTO {
   PipelineExecutionSummaryDTO pipelineExecutionSummary;
   ExecutionGraph executionGraph;
-
-  ChildExecutionDetailDTO childGraph;
 }
