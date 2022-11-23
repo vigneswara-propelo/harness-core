@@ -473,6 +473,7 @@ public enum FeatureName {
       "Use custom stack name and region to find lates successful couldformation rollback data", HarnessTeam.CDP),
   IACM_MICRO_FE("Enable support for IACM micro front end capabilities", HarnessTeam.IACM),
   AZURE_WEB_APP_NG_NEXUS_PACKAGE("Enable support for Nexus package artifact in Azure Web App NG", HarnessTeam.CDP),
+  CODE_ENABLED("Enable Harness Code", HarnessTeam.CODE),
   BOOKING_RECOMMENDATIONS("Feature flag for booking.com recommendations", HarnessTeam.CE),
   USE_GET_FILE_V2_GIT_CALL(
       "FF for customers on updated delegate to use GetFileV2 call which is more performance efficient",
