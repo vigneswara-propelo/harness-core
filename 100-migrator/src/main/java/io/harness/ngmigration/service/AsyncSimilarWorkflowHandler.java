@@ -10,23 +10,22 @@ package io.harness.ngmigration.service;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.MigrationTrackRespPayload;
-import io.harness.ngmigration.beans.summary.BaseSummary;
-import io.harness.ngmigration.beans.summary.DiscoverySummaryResult;
+import io.harness.ngmigration.beans.summary.SimilarWorkflowResult;
+import io.harness.ngmigration.dto.SimilarWorkflowDetail;
 import io.harness.persistence.HPersistence;
 
-import software.wings.ngmigration.NGMigrationEntityType;
-
 import com.google.inject.Inject;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
-public class AsyncDiscoveryHandler extends AsyncTaskHandler {
-  @Inject DiscoveryService discoveryService;
+public class AsyncSimilarWorkflowHandler extends AsyncTaskHandler {
+  @Inject MigrationResourceService migrationResourceService;
   @Inject private HPersistence hPersistence;
 
-  private static final String TASK_TYPE = "DISCOVERY";
+  private static final String TASK_TYPE = "SIMILAR_WORKFLOWS";
 
   @Override
   String getTaskType() {
@@ -35,9 +34,8 @@ public class AsyncDiscoveryHandler extends AsyncTaskHandler {
 
   @Override
   MigrationTrackRespPayload processTask(String accountId, String requestId) {
-    Map<NGMigrationEntityType, BaseSummary> summary =
-        discoveryService.getSummary(accountId, null, accountId, NGMigrationEntityType.ACCOUNT);
-    return DiscoverySummaryResult.builder().summary(summary).build();
+    List<Set<SimilarWorkflowDetail>> similarWorkflows = migrationResourceService.listSimilarWorkflow(accountId);
+    return SimilarWorkflowResult.builder().similarWorkflows(similarWorkflows).build();
   }
 
   @Override

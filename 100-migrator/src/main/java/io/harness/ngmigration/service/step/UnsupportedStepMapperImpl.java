@@ -7,19 +7,17 @@
 
 package io.harness.ngmigration.service.step;
 
-import io.harness.cdng.k8s.K8sRollingStepInfo;
-import io.harness.cdng.k8s.K8sRollingStepNode;
-import io.harness.executions.steps.StepSpecTypeConstants;
 import io.harness.plancreator.steps.AbstractStepNode;
-import io.harness.pms.yaml.ParameterField;
 
 import software.wings.sm.State;
 import software.wings.yaml.workflow.StepYaml;
 
-public class K8sRollingStepMapperImpl implements StepMapper {
+import org.apache.commons.lang3.NotImplementedException;
+
+public class UnsupportedStepMapperImpl implements StepMapper {
   @Override
   public String getStepType(StepYaml stepYaml) {
-    return StepSpecTypeConstants.K8S_ROLLING_DEPLOY;
+    throw new NotImplementedException("Unsupported step");
   }
 
   @Override
@@ -29,15 +27,11 @@ public class K8sRollingStepMapperImpl implements StepMapper {
 
   @Override
   public AbstractStepNode getSpec(StepYaml stepYaml) {
-    K8sRollingStepNode k8sRollingStepNode = new K8sRollingStepNode();
-    baseSetup(stepYaml, k8sRollingStepNode);
-    k8sRollingStepNode.setK8sRollingStepInfo(
-        K8sRollingStepInfo.infoBuilder().skipDryRun(ParameterField.createValueField(false)).build());
-    return k8sRollingStepNode;
+    throw new NotImplementedException("Unsupported step");
   }
 
   @Override
   public boolean areSimilar(StepYaml stepYaml1, StepYaml stepYaml2) {
-    return true;
+    return false;
   }
 }
