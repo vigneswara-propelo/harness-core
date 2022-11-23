@@ -5,10 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.expression;
+package io.harness.reflection;
 
+import io.harness.expression.Expression;
 import io.harness.expression.Expression.SecretsMode;
-import io.harness.reflection.ReflectionUtils;
 
 import lombok.experimental.UtilityClass;
 
