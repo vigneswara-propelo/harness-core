@@ -17,23 +17,6 @@ service:
                   type: DockerRegistry
                   spec:
                     tag: latest
-            - name: publicdockernginx
-              identifier: fromtemp1
-              template:
-                templateRef: anotherRef1
-                versionLabel: v2
-                templateInputs:
-                  type: DockerRegistry
-                  spec:
-                    tag: latest
-            - spec:
-                connectorRef: cdplayGCP
-                imagePath: "hello-world"
-                tag: alpha-1.0
-                registryHostname: us.gcr.io
-              identifier: gcr
-              type: Gcr
-              name: gcr
         sidecars:
           - sidecar:
               identifier: sidecar1
