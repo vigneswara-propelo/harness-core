@@ -8,6 +8,7 @@
 package io.harness.pms.pipeline.mappers;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static java.lang.Long.parseLong;
@@ -60,6 +61,7 @@ import lombok.experimental.UtilityClass;
 @OwnedBy(PIPELINE)
 @UtilityClass
 public class PMSPipelineDtoMapper {
+  public static final String BOOLEAN_TRUE_VALUE = "true";
   public PMSPipelineResponseDTO writePipelineDto(PipelineEntity pipelineEntity) {
     return PMSPipelineResponseDTO.builder()
         .yamlPipeline(pipelineEntity.getYaml())
@@ -404,5 +406,13 @@ public class PMSPipelineDtoMapper {
                        .identifier(entity.getIdentifier())
                        .build())
         .build();
+  }
+
+  public boolean parseLoadFromCacheHeaderParam(String loadFromCache) {
+    if (isEmpty(loadFromCache)) {
+      return false;
+    } else {
+      return BOOLEAN_TRUE_VALUE.equalsIgnoreCase(loadFromCache);
+    }
   }
 }
