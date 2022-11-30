@@ -2018,6 +2018,7 @@
 50021:io.harness.event.reconciliation.DetectionStatus
 50022:io.harness.event.reconciliation.ReconciliationStatus
 50023:io.harness.event.reconciliation.ReconcilationAction
+50027:software.wings.delegatetasks.cv.RateLimitExceededException
 54320:io.harness.ng.core.entities.Organization
 54321:io.harness.ng.core.entities.Project
 54322:io.harness.ng.core.entities.SampleEncryptableSettingImplementation

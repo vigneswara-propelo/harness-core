@@ -1692,6 +1692,7 @@
 50008:software.wings.beans.ClusterSelectionCriteriaEntry
 50011:software.wings.helpers.ext.k8s.response.K8sRollingDeployRollbackResponse
 50012:software.wings.beans.settings.helm.OciHelmRepoConfig
+50027:software.wings.delegatetasks.cv.RateLimitExceededException
 54322:io.harness.ng.core.entities.SampleEncryptableSettingImplementation
 54323:io.harness.ng.core.NGAccessWithEncryptionConsumer
 54324:io.harness.ng.core.BaseNGAccess
