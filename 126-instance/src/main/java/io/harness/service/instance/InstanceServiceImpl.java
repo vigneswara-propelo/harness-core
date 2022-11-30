@@ -224,6 +224,15 @@ public class InstanceServiceImpl implements InstanceService {
     return instanceRepository.getActiveInstancesByServiceIdEnvIdAndBuildIds(
         accountIdentifier, orgIdentifier, projectIdentifier, serviceId, envId, buildIds, timestampInMs, limit);
   }
+
+  @Override
+  public List<Instance> getActiveInstanceDetails(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String serviceId, String envId, String infraId, String clusterIdentifier,
+      String pipelineExecutionId, String buildId, int limit) {
+    return instanceRepository.getActiveInstanceDetails(accountIdentifier, orgIdentifier, projectIdentifier, serviceId,
+        envId, infraId, clusterIdentifier, pipelineExecutionId, buildId, limit);
+  }
+
   /*
     Returns breakup of active instances by envType at a given timestamp for specified accountIdentifier,
     projectIdentifier, orgIdentifier and serviceIds

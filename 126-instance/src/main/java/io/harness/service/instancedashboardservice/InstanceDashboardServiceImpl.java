@@ -214,6 +214,19 @@ public class InstanceDashboardServiceImpl implements InstanceDashboardService {
     return buildIdAndInstancesList;
   }
 
+  @Override
+  public InstanceDetailsByBuildId getActiveInstanceDetails(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String serviceId, String envId, String infraId, String clusterIdentifier,
+      String pipelineExecutionId, String buildId) {
+    List<Instance> instancesByBuildId =
+        instanceService.getActiveInstanceDetails(accountIdentifier, orgIdentifier, projectIdentifier, serviceId, envId,
+            infraId, clusterIdentifier, pipelineExecutionId, buildId, InstanceSyncConstants.INSTANCE_LIMIT);
+
+    return InstanceDetailsByBuildId.builder()
+        .instances(instanceDetailsMapper.toInstanceDetailsDTOList(InstanceMapper.toDTO(instancesByBuildId)))
+        .build();
+  }
+
   /*
     Returns breakup of active instances by envType at a given timestamp for specified accountIdentifier,
     projectIdentifier, orgIdentifier and serviceIds
