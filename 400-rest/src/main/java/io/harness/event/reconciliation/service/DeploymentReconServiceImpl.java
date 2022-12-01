@@ -113,12 +113,13 @@ public class DeploymentReconServiceImpl implements DeploymentReconService {
 
   public boolean isStatusMismatchedAndUpdated(Map<String, String> tsdbRunningWFs) {
     boolean statusMismatch = false;
+    FindOptions options = persistence.analyticNodePreferenceOptions();
     Query<WorkflowExecution> query = persistence.createQuery(WorkflowExecution.class, excludeAuthority)
                                          .field(WorkflowExecutionKeys.uuid)
                                          .hasAnyOf(tsdbRunningWFs.keySet())
                                          .project(WorkflowExecutionKeys.serviceExecutionSummaries, false);
 
-    try (HIterator<WorkflowExecution> iterator = new HIterator<>(query.fetch())) {
+    try (HIterator<WorkflowExecution> iterator = new HIterator<>(query.fetch(options))) {
       for (WorkflowExecution workflowExecution : iterator) {
         if (isStatusMismatchedInMongoAndTSDB(
                 tsdbRunningWFs, workflowExecution.getUuid(), workflowExecution.getStatus().toString())) {
