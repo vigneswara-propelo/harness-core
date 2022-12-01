@@ -17,15 +17,16 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.cvng.BuilderFactory;
 import io.harness.cvng.analysis.beans.TimeSeriesRecordDTO;
-import io.harness.cvng.analysis.entities.LearningEngineTask.ExecutionStatus;
+import io.harness.cvng.analysis.entities.LearningEngineTask;
 import io.harness.cvng.analysis.entities.LearningEngineTask.LearningEngineTaskType;
 import io.harness.cvng.analysis.services.api.TimeSeriesAnalysisService;
 import io.harness.cvng.core.beans.TimeRange;
-import io.harness.cvng.core.services.api.TimeSeriesRecordService;
+import io.harness.cvng.core.services.api.HostRecordService;
 import io.harness.cvng.statemachine.beans.AnalysisInput;
 import io.harness.cvng.statemachine.beans.AnalysisState;
 import io.harness.cvng.statemachine.beans.AnalysisStatus;
 import io.harness.cvng.statemachine.entities.HostSamplingState;
+import io.harness.cvng.statemachine.services.api.DeploymentLogHostSamplingStateExecutor;
 import io.harness.cvng.statemachine.services.api.HostSamplingStateExecutor;
 import io.harness.cvng.verificationjob.entities.VerificationJobInstance;
 import io.harness.cvng.verificationjob.services.api.VerificationJobInstanceService;
@@ -34,7 +35,6 @@ import io.harness.rule.Owner;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,18 +50,19 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class HostSamplingStateExecutorTest extends CategoryTest {
+public class DeploymentLogHostSamplingStateExecutorTest extends CategoryTest {
   private String verificationTaskId;
   private Instant startTime;
   private Instant endTime;
   private BuilderFactory builderFactory;
 
   @Mock private VerificationJobInstanceService verificationJobInstanceService;
-  @Mock private TimeSeriesRecordService timeSeriesRecordService;
+  @Mock private HostRecordService hostRecordService;
   @Mock private TimeSeriesAnalysisService timeSeriesAnalysisService;
 
   private HostSamplingState hostSamplingState;
-  private HostSamplingStateExecutor hostSamplingStateExecutor = new HostSamplingStateExecutor();
+  private HostSamplingStateExecutor deploymentLogHostSamplingStateExecutor =
+      new DeploymentLogHostSamplingStateExecutor();
 
   public List<TimeSeriesRecordDTO> getTimeSeriesRecordDTO(List<String> hosts) {
     return hosts.stream().map(h -> TimeSeriesRecordDTO.builder().host(h).build()).collect(Collectors.toList());
@@ -82,9 +83,10 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     hostSamplingState = new HostSamplingState();
     hostSamplingState.setInputs(input);
     FieldUtils.writeField(
-        hostSamplingStateExecutor, "verificationJobInstanceService", verificationJobInstanceService, true);
-    FieldUtils.writeField(hostSamplingStateExecutor, "timeSeriesRecordService", timeSeriesRecordService, true);
-    FieldUtils.writeField(hostSamplingStateExecutor, "timeSeriesAnalysisService", timeSeriesAnalysisService, true);
+        deploymentLogHostSamplingStateExecutor, "verificationJobInstanceService", verificationJobInstanceService, true);
+    FieldUtils.writeField(deploymentLogHostSamplingStateExecutor, "hostRecordService", hostRecordService, true);
+    FieldUtils.writeField(
+        deploymentLogHostSamplingStateExecutor, "timeSeriesAnalysisService", timeSeriesAnalysisService, true);
   }
 
   @Test
@@ -103,22 +105,22 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
 
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
     assertThat(hostSamplingState.getRetryCount()).isEqualTo(0);
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEmpty();
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -137,16 +139,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(new ArrayList<>()));
+        .thenReturn(new HashSet<>(List.of()));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(new ArrayList<>()));
+        .thenReturn(new HashSet<>(List.of()));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
@@ -154,7 +156,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEmpty();
     assertThat(hostSamplingState.getTestHosts()).isEmpty();
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -173,16 +175,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2", "host3")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2", "host3")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -190,7 +192,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEqualTo(new HashSet<>(Arrays.asList("host3")));
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -209,16 +211,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host3", "host4")));
+        .thenReturn(new HashSet<>(Arrays.asList("host3", "host4")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -226,7 +228,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getTestHosts()).isEmpty();
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -245,16 +247,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -262,7 +264,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -281,16 +283,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2", "host3")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2", "host3")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -298,7 +300,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2", "host3")));
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -317,16 +319,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host3", "host4")));
+        .thenReturn(new HashSet<>(Arrays.asList("host3", "host4")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -334,7 +336,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEqualTo(new HashSet<>(Arrays.asList("host3", "host4")));
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -353,16 +355,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -370,7 +372,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -389,16 +391,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2", "host3")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2", "host3")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -406,7 +408,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEqualTo(new HashSet<>(Arrays.asList("host3")));
     assertThat(hostSamplingState.getInputs().getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.CANARY_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -425,16 +427,16 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
 
     Optional<TimeRange> preDeploymentTimeRange = verificationJobInstance.getResolvedJob().getPreActivityTimeRange(
         verificationJobInstance.getDeploymentStartTime());
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              preDeploymentTimeRange.get().getStartTime(), preDeploymentTimeRange.get().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host1", "host2")));
+        .thenReturn(new HashSet<>(Arrays.asList("host1", "host2")));
 
-    when(timeSeriesRecordService.getTimeSeriesRecordDTOs(hostSamplingState.getInputs().getVerificationTaskId(),
+    when(hostRecordService.get(hostSamplingState.getInputs().getVerificationTaskId(),
              hostSamplingState.getInputs().getStartTime(), hostSamplingState.getInputs().getEndTime()))
-        .thenReturn(getTimeSeriesRecordDTO(Arrays.asList("host3", "host4")));
+        .thenReturn(new HashSet<>(Arrays.asList("host3", "host4")));
 
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.execute(hostSamplingState);
-    AnalysisStatus analysisStatus = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.execute(hostSamplingState);
+    AnalysisStatus analysisStatus = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
 
     assertThat(analysisStatus).isEqualTo(AnalysisStatus.TRANSITION);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
@@ -442,7 +444,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     assertThat(hostSamplingState.getControlHosts()).isEqualTo(new HashSet<>(Arrays.asList("host1", "host2")));
     assertThat(hostSamplingState.getTestHosts()).isEqualTo(new HashSet<>(Arrays.asList("host3", "host4")));
     assertThat(hostSamplingState.getLearningEngineTaskType())
-        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_TIME_SERIES);
+        .isEqualTo(LearningEngineTaskType.BEFORE_AFTER_DEPLOYMENT_LOG);
   }
 
   @Test
@@ -458,9 +460,9 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     hostSamplingState.setVerificationJobInstanceId(verificationJobInstance.getUuid());
     String taskId = generateUuid();
     hostSamplingState.setStatus(AnalysisStatus.RUNNING);
-    Map<String, ExecutionStatus> taskStatusMap = new HashMap<>();
-    taskStatusMap.put(taskId, ExecutionStatus.SUCCESS);
-    AnalysisStatus status = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    Map<String, LearningEngineTask.ExecutionStatus> taskStatusMap = new HashMap<>();
+    taskStatusMap.put(taskId, LearningEngineTask.ExecutionStatus.SUCCESS);
+    AnalysisStatus status = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
     assertThat(status.name()).isEqualTo(AnalysisStatus.TRANSITION.name());
   }
 
@@ -479,9 +481,9 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     hostSamplingState.setStatus(AnalysisStatus.RUNNING);
     hostSamplingState.setTestHosts(new HashSet<>(Collections.singleton("abc")));
     hostSamplingState.setControlHosts(new HashSet<>(Collections.singleton("def")));
-    Map<String, ExecutionStatus> taskStatusMap = new HashMap<>();
-    taskStatusMap.put(taskId, ExecutionStatus.SUCCESS);
-    AnalysisStatus status = hostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
+    Map<String, LearningEngineTask.ExecutionStatus> taskStatusMap = new HashMap<>();
+    taskStatusMap.put(taskId, LearningEngineTask.ExecutionStatus.SUCCESS);
+    AnalysisStatus status = deploymentLogHostSamplingStateExecutor.getExecutionStatus(hostSamplingState);
     assertThat(status.name()).isEqualTo(AnalysisStatus.TRANSITION.name());
   }
 
@@ -500,7 +502,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
         .thenReturn(verificationJobInstance);
     hostSamplingState.setRetryCount(2);
     hostSamplingState.setStatus(AnalysisStatus.FAILED);
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.handleRerun(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.handleRerun(hostSamplingState);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
   }
 
@@ -509,7 +511,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testHandleRunning() {
     hostSamplingState.setStatus(AnalysisStatus.RUNNING);
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.handleRunning(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.handleRunning(hostSamplingState);
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
   }
 
@@ -517,7 +519,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
   @Owner(developers = NAVEEN)
   @Category(UnitTests.class)
   public void testHandleSuccess() {
-    AnalysisState state = hostSamplingStateExecutor.handleSuccess(hostSamplingState);
+    AnalysisState state = deploymentLogHostSamplingStateExecutor.handleSuccess(hostSamplingState);
     assertThat(state.getStatus().name()).isEqualTo(AnalysisStatus.SUCCESS.name());
   }
 
@@ -535,7 +537,7 @@ public class HostSamplingStateExecutorTest extends CategoryTest {
     when(verificationJobInstanceService.getVerificationJobInstance(hostSamplingState.getVerificationJobInstanceId()))
         .thenReturn(verificationJobInstance);
     hostSamplingState.setRetryCount(1);
-    hostSamplingState = (HostSamplingState) hostSamplingStateExecutor.handleRetry(hostSamplingState);
+    hostSamplingState = (HostSamplingState) deploymentLogHostSamplingStateExecutor.handleRetry(hostSamplingState);
 
     assertThat(hostSamplingState.getStatus().name()).isEqualTo(AnalysisStatus.RUNNING.name());
     assertThat(hostSamplingState.getRetryCount()).isEqualTo(2);
