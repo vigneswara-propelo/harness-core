@@ -136,7 +136,6 @@ containerTasks {"name": "appId_1", "background": true} {"appId": 1}
 containerTasks {"name": "createdAt_1", "background": true} {"createdAt": 1}
 containerTasks {"name": "service", "unique": true} {"serviceId": 1, "deploymentType": 1}
 cvActivityLogs {"name": "accountId_1", "background": true} {"accountId": 1}
-cvActivityLogs {"name": "cvConfigId_1", "background": true} {"cvConfigId": 1}
 cvActivityLogs {"name": "dataCollectionMinute_1", "background": true} {"dataCollectionMinute": 1}
 cvActivityLogs {"name": "service_guard_idx", "background": true} {"cvConfigId": 1, "dataCollectionMinute": -1, "createdAt": 1}
 cvActivityLogs {"name": "stateExecutionId_1", "background": true} {"stateExecutionId": 1}
@@ -449,7 +448,6 @@ learningEngineAnalysisTask {"name": "accountId_1", "background": true} {"account
 learningEngineAnalysisTask {"name": "appId_1", "background": true} {"appId": 1}
 learningEngineAnalysisTask {"name": "createdAt_1", "background": true} {"createdAt": 1}
 learningEngineAnalysisTask {"name": "cv_config_status_index", "background": true} {"cvConfigId": 1, "executionStatus": 1, "analysis_minute": -1}
-learningEngineAnalysisTask {"name": "executionStatus_1", "background": true} {"executionStatus": 1}
 learningEngineAnalysisTask {"name": "taskFetchPriorityIdx", "background": true} {"state_execution_id": 1, "priority": 1, "executionStatus": 1, "ml_analysis_type": 1, "cluster_level": 1, "group_name": 1, "version": 1, "createdAt": -1}
 learningEngineAnalysisTask {"name": "task_fetch_idx", "background": true} {"state_execution_id": 1, "analysis_minute": 1, "executionStatus": 1, "ml_analysis_type": 1, "cluster_level": 1, "group_name": 1, "version": 1, "createdAt": -1}
 learningEngineAnalysisTask {"name": "usageMetricsIndex", "background": true} {"executionStatus": 1, "ml_analysis_type": 1, "is24x7Task": 1, "createdAt": -1}
@@ -458,7 +456,6 @@ learningEngineExperimentalAnalysisTask {"name": "appId_1", "background": true} {
 learningEngineExperimentalAnalysisTask {"name": "createdAt_1", "background": true} {"createdAt": 1}
 learningEngineExperimentalAnalysisTask {"name": "cvConfigStatusIdx", "background": true} {"cvConfigId": 1, "executionStatus": 1, "analysis_minute": -1}
 learningEngineExperimentalAnalysisTask {"name": "executionStatus_1", "background": true} {"executionStatus": 1}
-learningEngineExperimentalAnalysisTask {"name": "state_execution_id_1", "background": true} {"state_execution_id": 1}
 learningEngineExperimentalAnalysisTask {"name": "taskFetchIdx", "background": true} {"experiment_name": 1, "executionStatus": 1, "retry": 1, "createdAt": -1}
 learningEngineExperimentalAnalysisTask {"name": "taskQueueIdx", "background": true} {"state_execution_id": 1, "executionStatus": 1, "ml_analysis_type": 1, "cluster_level": 1, "group_name": 1, "version": 1, "analysis_minute": -1, "createdAt": -1}
 learningEngineExperimentalAnalysisTask {"name": "usageMetricsIndex", "background": true} {"executionStatus": 1, "ml_analysis_type": 1, "is24x7Task": 1, "createdAt": -1}
@@ -475,7 +472,6 @@ logAnalysisRecords {"name": "appId_1", "background": true} {"appId": 1}
 logAnalysisRecords {"name": "createdAt_1", "background": true} {"createdAt": 1}
 logAnalysisRecords {"name": "cvConfigId_1_analysisStatus_1_logCollectionMinute_-1", "background": true} {"cvConfigId": 1, "analysisStatus": 1, "logCollectionMinute": -1}
 logAnalysisRecords {"name": "cvConfigId_1_deprecated_1_logCollectionMinute_-1_lastUpdatedAt_-1", "background": true} {"cvConfigId": 1, "deprecated": 1, "logCollectionMinute": -1, "lastUpdatedAt": -1}
-logAnalysisRecords {"name": "stateExecStatusIdx", "background": true} {"stateExecutionId": 1, "analysisStatus": 1}
 logAnalysisRecords {"name": "stateExecutionId_1_analysisStatus_1_logCollectionMinute_-1", "background": true} {"stateExecutionId": 1, "analysisStatus": 1, "logCollectionMinute": -1}
 logAnalysisRecords {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 logAnalysisRecords {"name": "workflowExecutionId_1", "background": true} {"workflowExecutionId": 1}
@@ -485,7 +481,6 @@ logDataRecords {"name": "createdAt_1", "background": true} {"createdAt": 1}
 logDataRecords {"name": "cvBumpIdx", "background": true} {"cvConfigId": 1, "clusterLevel": 1, "logCollectionMinute": 1, "host": 1, "createdAt": -1}
 logDataRecords {"name": "cvRawRecordIdx", "background": true} {"cvConfigId": 1, "logCollectionMinute": 1, "clusterLevel": 1}
 logDataRecords {"name": "cv_config_created_at_idx", "background": true} {"cvConfigId": 1, "createdAt": -1}
-logDataRecords {"name": "cv_raw_record_index", "background": true} {"cvConfigId": 1, "clusterLevel": 1, "logCollectionMinute": 1}
 logDataRecords {"name": "serviceId_1", "background": true} {"serviceId": 1}
 logDataRecords {"name": "stateBumpIndex", "background": true} {"stateExecutionId": 1, "clusterLevel": 1, "logCollectionMinute": 1, "host": 1}
 logDataRecords {"name": "stateHostIdx", "background": true} {"stateExecutionId": 1, "logCollectionMinute": 1}
@@ -851,7 +846,6 @@ verificationServiceTask {"name": "feedbackIteration_1", "background": true} {"fe
 verificationServiceTask {"name": "logAnalysisIterationIdx", "background": true} {"analysisType": 1, "executionStatus": 1, "logAnalysisIteration": 1}
 verificationServiceTask {"name": "logAnalysisIteration_1", "background": true} {"logAnalysisIteration": 1}
 verificationServiceTask {"name": "logClusterIteration_1", "background": true} {"logClusterIteration": 1}
-verificationServiceTask {"name": "stateExecutionId_1", "background": true} {"stateExecutionId": 1}
 verificationServiceTask {"name": "task_Unique_Idx", "unique": true} {"stateExecutionId": 1, "executionStatus": 1}
 verificationServiceTask {"name": "timeSeriesAnalysisIterationIdx", "background": true} {"analysisType": 1, "executionStatus": 1, "timeSeriesAnalysisIteration": 1}
 verificationServiceTask {"name": "timeSeriesAnalysisIteration_1", "background": true} {"timeSeriesAnalysisIteration": 1}
