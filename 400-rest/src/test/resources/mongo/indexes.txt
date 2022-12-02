@@ -23,7 +23,6 @@ accounts {"name": "secretManagerValidationIterator_1", "background": true} {"sec
 accounts {"name": "usageMetricsTaskIteration_1", "background": true} {"usageMetricsTaskIteration": 1}
 accounts {"name": "workflowDataCollectionIteration_1", "background": true} {"workflowDataCollectionIteration": 1}
 activities {"name": "accountId_1", "background": true} {"accountId": 1}
-activities {"name": "appId_1", "background": true} {"appId": 1}
 activities {"name": "appId_serviceId_environmentId_status_createdAt", "background": true} {"appId": 1, "serviceId": 1, "environmentId": 1, "status": 1, "createdAt": -1}
 activities {"name": "app_status_createdAt", "background": true} {"appId": 1, "serviceInstanceId": 1, "status": 1, "createdAt": -1}
 activities {"name": "createdAt_1", "background": true} {"createdAt": 1}
@@ -67,10 +66,8 @@ artifactStream {"name": "perpetualTaskId_1", "background": true} {"perpetualTask
 artifactStream {"name": "serviceId_1", "background": true} {"serviceId": 1}
 artifactStream {"name": "templateUuid_1", "background": true} {"templateUuid": 1}
 artifactStream {"name": "yaml", "unique": true} {"appId": 1, "serviceId": 1, "name": 1}
-artifacts {"name": "accountId_1", "background": true} {"accountId": 1}
 artifacts {"name": "accountId_artifactStreamId_createdAt", "background": true} {"accountId": 1, "artifactStreamId": 1, "createdAt": -1}
 artifacts {"name": "accountId_createdAt_artifactStreamIds", "background": true} {"accountId": 1, "createdAt": -1, "artifactStreamId": 1}
-artifacts {"name": "appId_1", "background": true} {"appId": 1}
 artifacts {"name": "appId_artifactStreamId_metadata_image", "background": true} {"appId": 1, "artifactStreamId": 1, "metadata.image": 1}
 artifacts {"name": "appId_artifactStreamId_status_createdAt", "background": true} {"appId": 1, "artifactStreamId": 1, "status": 1, "createdAt": -1}
 artifacts {"name": "artifactStream_artifactPath", "background": true} {"artifactStreamId": 1, "metadata.artifactPath": 1}
@@ -101,7 +98,6 @@ cache {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"va
 ceCommunications {"name": "account_email_type", "unique": true} {"accountId": 1, "emailId": 1, "type": 1}
 ceCommunications {"name": "account_enabled_type", "background": true} {"accountId": 1, "enabled": 1, "type": 1}
 cgEventConfig {"name": "accountId_1", "background": true} {"accountId": 1}
-cgEventConfig {"name": "appId_1", "background": true} {"appId": 1}
 cgEventConfig {"name": "createdAt_1", "background": true} {"createdAt": 1}
 cgEventConfig {"name": "yaml", "unique": true} {"appId": 1, "name": 1}
 cloudFormationRollbackConfig {"name": "accountId_1", "background": true} {"accountId": 1}
@@ -264,7 +260,6 @@ entityVersions {"name": "unique_locate", "unique": true} {"entityType": 1, "enti
 entityYamlRecord {"name": "index_1", "background": true} {"accountId": 1, "entityId": 1, "entityType": 1, "createdAt": -1}
 entityYamlRecord {"name": "index_2", "background": true} {"accountId": 1, "entityType": 1, "createdAt": -1}
 environments {"name": "accountIdCreatedAt", "background": true} {"accountId": 1, "createdAt": -1}
-environments {"name": "accountId_1", "background": true} {"accountId": 1}
 environments {"name": "accountId_name", "background": true} {"accountId": 1, "name": 1}
 environments {"name": "appId_1", "background": true} {"appId": 1}
 environments {"name": "createdAt_1", "background": true} {"createdAt": 1}
@@ -277,7 +272,6 @@ events {"name": "nextIteration_1", "background": true} {"nextIteration": 1}
 events {"name": "status_1", "background": true} {"status": 1}
 executionInterruptTimeSeriesEventQueue {"name": "earliestGet_1", "background": true, "expireAfterSeconds": 86400} {"earliestGet": 1}
 executionInterruptTimeSeriesEventQueue {"name": "next4", "background": true} {"topic": 1, "earliestGet": 1}
-executionInterrupts {"name": "accountId_1", "background": true} {"accountId": 1}
 executionInterrupts {"name": "accountId_lastUpdatedAt", "background": true} {"accountId": 1, "lastUpdatedAt": 1}
 executionInterrupts {"name": "appId_seized_executionUuid_createdAt", "background": true} {"appId": 1, "seized": 1, "executionUuid": 1, "createdAt": -1}
 executionInterrupts {"name": "createdAt_1", "background": true} {"createdAt": 1}
@@ -367,7 +361,6 @@ helmChartSpecifications {"name": "accountId_1", "background": true} {"accountId"
 helmChartSpecifications {"name": "appId_1", "background": true} {"appId": 1}
 helmChartSpecifications {"name": "createdAt_1", "background": true} {"createdAt": 1}
 helmChartSpecifications {"name": "serviceId_1", "unique": true} {"serviceId": 1}
-helmCharts {"name": "accountId_1", "background": true} {"accountId": 1}
 helmCharts {"name": "account_appManifestId", "background": true} {"accountId": 1, "applicationManifestId": 1}
 helmCharts {"name": "appId_appManifestId", "background": true} {"appId": 1, "applicationManifestId": 1}
 helmCharts {"name": "appId_serviceId", "background": true} {"appId": 1, "serviceId": 1}
@@ -648,7 +641,6 @@ serviceTemplates {"name": "createdAt_1", "background": true} {"createdAt": 1}
 serviceTemplates {"name": "yaml", "unique": true} {"appId": 1, "envId": 1, "name": 1}
 serviceVariables {"name": "appEntityIdx", "background": true} {"appId": 1, "entityId": 1, "createdAt": -1}
 serviceVariables {"name": "appId_1", "background": true} {"appId": 1}
-serviceVariables {"name": "app_entityId", "background": true} {"appId": 1, "entityId": 1}
 serviceVariables {"name": "app_env_templateId", "background": true} {"appId": 1, "envId": 1, "templateId": 1}
 serviceVariables {"name": "createdAt_1", "background": true} {"createdAt": 1}
 serviceVariables {"name": "encryptedValue_1", "background": true} {"encryptedValue": 1}
@@ -677,19 +669,16 @@ ssoSettings {"name": "appId_1", "background": true} {"appId": 1}
 ssoSettings {"name": "createdAt_1", "background": true} {"createdAt": 1}
 ssoSettings {"name": "nextIterations_1", "background": true} {"nextIterations": 1}
 ssoSettings {"name": "typeNextIterations", "background": true} {"type": 1, "nextIterations": 1}
-stateExecutionInstances {"name": "accountId_1", "background": true} {"accountId": 1}
 stateExecutionInstances {"name": "accountId_status_stateType", "background": true} {"accountId": 1, "status": 1, "stateType": 1}
 stateExecutionInstances {"name": "appIdExecutionIdStatus", "background": true} {"appId": 1, "executionUuid": 1, "status": 1}
 stateExecutionInstances {"name": "appId_endTs", "background": true} {"appId": 1, "endTs": 1}
 stateExecutionInstances {"name": "createdAt_1", "background": true} {"createdAt": 1}
-stateExecutionInstances {"name": "executionUuid_1", "background": true} {"executionUuid": 1}
 stateExecutionInstances {"name": "parentInstanceId_1", "background": true} {"parentInstanceId": 1}
 stateExecutionInstances {"name": "parentInstances2", "background": true} {"executionUuid": 1, "parentInstanceId": 1, "createdAt": 1}
 stateExecutionInstances {"name": "stateTypes2", "background": true} {"executionUuid": 1, "stateType": 1, "createdAt": 1}
 stateExecutionInstances {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 stateInspections {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 stateMachines {"name": "accountId_1", "background": true} {"accountId": 1}
-stateMachines {"name": "appId_1", "background": true} {"appId": 1}
 stateMachines {"name": "appId_origin", "background": true} {"appId": 1, "originId": 1, "originVersion": 1}
 stateMachines {"name": "createdAt_1", "background": true} {"createdAt": 1}
 stateMachines {"name": "originId_1", "background": true} {"originId": 1}
@@ -893,7 +882,6 @@ workflowExecutions {"name": "search", "background": true} {"workflowId": 1, "sta
 workflowExecutions {"name": "searchByServiceIds", "background": true} {"appId": 1, "workflowId": 1, "status": 1, "serviceIds": 1, "createdAt": -1}
 workflowExecutions {"name": "serviceIds_1", "background": true} {"serviceIds": 1}
 workflowExecutions {"name": "service_guard", "background": true} {"appId": 1, "startTs": 1}
-workflowExecutions {"name": "status_1", "background": true} {"status": 1}
 workflowExecutions {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 workflowExecutions {"name": "workflowExecutionMonitor", "background": true} {"status": 1, "nextIteration": 1}
 workflowVerificationResults {"name": "accountId_1", "background": true} {"accountId": 1}
