@@ -11,10 +11,10 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.caching.entity.GitFileCache;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(HarnessTeam.PIPELINE)
-public interface GitFileCacheRepository extends CrudRepository<GitFileCache, String>, GitFileCacheRepositoryCustom {
-  GitFileCache findByAccountIdentifierAndGitProviderAndRepoNameAndRefAndCompleteFilepath(
-      String accountIdentifier, String gitProvider, String repoName, String ref, String completeFilepath);
+public interface GitFileCacheRepositoryCustom {
+  GitFileCache upsert(Criteria criteria, Update update);
 }
