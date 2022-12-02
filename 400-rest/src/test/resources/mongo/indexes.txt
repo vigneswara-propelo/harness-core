@@ -194,7 +194,6 @@ delegateTokens {"name": "validUntil_1", "background": true, "expireAfterSeconds"
 delegateTokensNG {"name": "byAccountAndStatus", "background": true} {"accountId": 1, "owner": 1, "status": 1}
 delegateTokensNG {"name": "byAccountOwnerAndName", "unique": true} {"accountId": 1, "owner": 1, "name": 1}
 delegateTokensNG {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
-delegates {"name": "accountId_1", "background": true} {"accountId": 1}
 delegates {"name": "byAcctNgGroupIdOwner", "background": true} {"accountId": 1, "ng": 1, "delegateGroupId": 1, "owner": 1}
 delegates {"name": "capabilitiesCheckNextIteration_1", "background": true} {"capabilitiesCheckNextIteration": 1}
 delegates {"name": "createdAt_1", "background": true} {"createdAt": 1}
@@ -519,7 +518,6 @@ newRelicMetricAnalysisRecords {"name": "validUntil_1", "background": true, "expi
 newRelicMetricRecords {"name": "accountId_1", "background": true} {"accountId": 1}
 newRelicMetricRecords {"name": "appId_1", "background": true} {"appId": 1}
 newRelicMetricRecords {"name": "createdAt_1", "background": true} {"createdAt": 1}
-newRelicMetricRecords {"name": "cvConfigId_1", "background": true} {"cvConfigId": 1}
 newRelicMetricRecords {"name": "serviceGuardIndex", "background": true} {"cvConfigId": 1, "dataCollectionMinute": -1}
 newRelicMetricRecords {"name": "stateExIdx", "background": true} {"stateExecutionId": 1, "groupName": 1, "dataCollectionMinute": -1}
 newRelicMetricRecords {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
@@ -547,7 +545,6 @@ permits {"name": "expireAt_1", "background": true, "expireAfterSeconds": 0} {"ex
 permits {"name": "key_1", "unique": true} {"key": 1}
 perpetualTask {"name": "accountId_1", "background": true} {"accountId": 1}
 perpetualTask {"name": "assignIterator", "background": true} {"state": 1, "assignAfterMs": 1, "assignIteration": 1}
-perpetualTask {"name": "assignIterator_1", "background": true} {"state": 1, "assignIteration": 1}
 perpetualTask {"name": "delegateId_1", "background": true} {"delegateId": 1}
 perpetualTask {"name": "rebalanceIterator", "background": true} {"state": 1, "rebalanceIteration": 1}
 perpetualTask {"name": "state_assignIteration_assignAfterMs", "background": true} {"state": 1, "assignIteration": 1, "assignAfterMs": 1}
