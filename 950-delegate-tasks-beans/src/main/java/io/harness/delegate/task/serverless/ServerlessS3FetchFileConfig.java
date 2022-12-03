@@ -9,10 +9,10 @@ package io.harness.delegate.task.serverless;
 
 import static io.harness.expression.Expression.ALLOW_SECRETS;
 
-import io.harness.delegate.beans.storeconfig.GitStoreDelegateConfig;
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.storeconfig.S3StoreDelegateConfig;
 import io.harness.expression.Expression;
-import io.harness.reflection.ExpressionReflectionUtils.NestedAnnotationResolver;
 
 import lombok.Builder;
 import lombok.Value;
@@ -20,14 +20,11 @@ import lombok.experimental.NonFinal;
 
 @Value
 @Builder
-public class ServerlessAwsLambdaManifestConfig implements ServerlessManifestConfig, NestedAnnotationResolver {
-  @NonFinal @Expression(ALLOW_SECRETS) String manifestPath;
-  @NonFinal @Expression(ALLOW_SECRETS) String configOverridePath;
-  GitStoreDelegateConfig gitStoreDelegateConfig;
+@OwnedBy(HarnessTeam.CDP)
+public class ServerlessS3FetchFileConfig {
+  String identifier;
+  String manifestType;
   S3StoreDelegateConfig s3StoreDelegateConfig;
-
-  @Override
-  public ServerlessManifestType getServerlessManifestType() {
-    return ServerlessManifestType.SERVERLESS_AWS_LAMBDA_MANIFEST;
-  }
+  @NonFinal @Expression(ALLOW_SECRETS) String configOverridePath;
+  boolean succeedIfFileNotFound;
 }

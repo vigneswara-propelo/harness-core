@@ -5,11 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.task.serverless;
+package io.harness.delegate.beans.serverless;
 
-public enum ServerlessCommandType {
-  SERVERLESS_AWS_LAMBDA_DEPLOY,
-  SERVERLESS_AWS_LAMBDA_ROLLBACK,
-  SERVERLESS_AWS_LAMBDA_PREPARE_ROLLBACK,
-  SERVERLESS_S3_FETCH_TASK_NG
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+@OwnedBy(HarnessTeam.CDP)
+public class ServerlessS3FetchFileResult {
+  String filePath;
+  String fileContent;
 }
