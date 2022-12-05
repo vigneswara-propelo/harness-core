@@ -41,7 +41,7 @@ public class PmsSecurityContextGuardUtils {
   }
 
   @NotNull
-  private Principal getPrincipal(
+  public Principal getPrincipal(
       String accountId, ExecutionPrincipalInfo executionPrincipalInfo, TriggeredBy triggeredBy) {
     // NOTE: rbac should not be validated for triggers so all the resources should be validated with service principals
     if (!executionPrincipalInfo.getShouldValidateRbac()) {
