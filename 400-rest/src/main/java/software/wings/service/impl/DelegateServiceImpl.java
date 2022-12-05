@@ -1020,6 +1020,9 @@ public class DelegateServiceImpl implements DelegateService {
     if (delegate.getDelegateType() != null) {
       setUnset(updateOperations, DelegateKeys.delegateType, delegate.getDelegateType());
     }
+    if (delegate.getDelegateName() != null) {
+      setUnset(updateOperations, DelegateKeys.delegateName, delegate.getDelegateName());
+    }
     setUnset(updateOperations, DelegateKeys.delegateProfileId, delegate.getDelegateProfileId());
     setUnset(updateOperations, DelegateKeys.polllingModeEnabled, delegate.isPolllingModeEnabled());
     setUnset(updateOperations, DelegateKeys.proxy, delegate.isProxy());
