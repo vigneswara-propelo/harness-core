@@ -302,14 +302,17 @@ public class InstanceRepositoryCustomImplTest extends InstancesTestBase {
   public void getActiveInstancesByServiceIdEnvIdAndBuildIdsTest() {
     List<String> buildIds = Arrays.asList("build1", "build2");
     int limit = 5;
+    String pipelineExecutionId = "pipelineExecutionId";
+    String clusterId = "clusterId";
     Instance instance = Instance.builder().build();
     InstancesByBuildId instancesByBuildId = new InstancesByBuildId("buildId", Arrays.asList(instance));
     AggregationResults<InstancesByBuildId> aggregationResults =
         new AggregationResults<>(Arrays.asList(instancesByBuildId), new Document());
     when(secondaryMongoTemplate.aggregate(any(Aggregation.class), eq(Instance.class), eq(InstancesByBuildId.class)))
         .thenReturn(aggregationResults);
-    assertThat(instanceRepositoryCustom.getActiveInstancesByServiceIdEnvIdAndBuildIds(
-                   ACCOUNT_ID, ORGANIZATION_ID, PROJECT_ID, SERVICE_ID, ENVIRONMENT_ID, buildIds, TIMESTAMP, limit))
+    assertThat(instanceRepositoryCustom.getActiveInstancesByServiceIdEnvIdAndBuildIds(ACCOUNT_ID, ORGANIZATION_ID,
+                   PROJECT_ID, SERVICE_ID, ENVIRONMENT_ID, buildIds, TIMESTAMP, limit, null, clusterId,
+                   pipelineExecutionId, System.currentTimeMillis()))
         .isEqualTo(aggregationResults);
   }
 
