@@ -452,6 +452,7 @@ public class WorkflowExecution implements PersistentRegularIterable, AccountData
         + "displayName";
     public static final String serviceExecutionSummaries_instanceStatusSummaries_instanceElement_uuid =
         serviceExecutionSummaries + ".instanceStatusSummaries.instanceElement.uuid";
+    public static final String originalExecution_executionId = originalExecution + ".executionId";
   }
 
   @PrePersist
