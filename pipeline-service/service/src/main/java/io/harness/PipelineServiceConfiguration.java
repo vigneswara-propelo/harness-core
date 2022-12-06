@@ -31,6 +31,7 @@ import io.harness.pms.sdk.core.PipelineSdkRedisEventsConfig;
 import io.harness.redis.RedisConfig;
 import io.harness.reflection.HarnessReflections;
 import io.harness.remote.client.ServiceHttpClientConfig;
+import io.harness.steps.container.execution.ContainerExecutionConfig;
 import io.harness.telemetry.segment.SegmentConfiguration;
 import io.harness.threading.ThreadPoolConfig;
 import io.harness.timescaledb.TimeScaleDBConfig;
@@ -142,6 +143,7 @@ public class PipelineServiceConfiguration extends Configuration {
   @JsonProperty(value = "orchestrationRestrictionConfiguration")
   OrchestrationRestrictionConfiguration orchestrationRestrictionConfiguration;
   @JsonProperty("yamlSchemaExecutorServiceConfig") private ThreadPoolConfig yamlSchemaExecutorServiceConfig;
+  @JsonProperty(value = "containerStepConfig") ContainerExecutionConfig containerExecutionConfig;
 
   private String managerServiceSecret;
   private String managerTarget;

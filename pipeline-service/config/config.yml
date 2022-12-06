@@ -267,6 +267,17 @@ orchestrationStepConfig:
   ffServerBaseUrl: http://127.0.0.1:3000/api/1.0
   ffServerApiKey: secret
   ffServerSSLVerify: false
+  containerStepConfig:
+    addonImageTag: releaseBuild-30
+    liteEngineImageTag: releaseBuild-29
+    defaultMemoryLimit: 500
+    defaultCPULimit: 400
+    defaultInternalImageConnector: ''
+    pvcDefaultStorageSize: 25600
+    delegateServiceEndpointVariableValue: "delegate-service:8080"
+    addonImage: harness/ci-addon:1.14.19
+    liteEngineImage: harness/ci-lite-engine:1.14.22
+    isLocal: false
 
 shouldDeployWithGitSync: true
 
