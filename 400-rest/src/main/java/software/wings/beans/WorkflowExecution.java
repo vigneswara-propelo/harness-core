@@ -301,7 +301,7 @@ public class WorkflowExecution implements PersistentRegularIterable, AccountData
   private List<String> cloudProviderIds;
   @FdIndex private List<String> serviceIds;
   @FdIndex private List<String> infraMappingIds;
-  @FdIndex private List<String> infraDefinitionIds;
+  private List<String> infraDefinitionIds;
   private String appName;
   private String envName;
   private EnvironmentType envType;
