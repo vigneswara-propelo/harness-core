@@ -5,24 +5,16 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.caching.beans;
+package io.harness.gitsync.caching.entity;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.experimental.FieldDefaults;
-
-@Getter
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.PIPELINE)
-public class GitFileCacheKey {
-  String accountIdentifier;
-  GitProvider gitProvider;
-  String repoName;
-  String ref;
-  String completeFilePath;
+public enum GitProvider {
+  UNKNOWN,
+  GITHUB_SAAS,
+  BITBUCKET_SAAS,
+  BITBUCKET_ON_PREM,
+  AZURE_SAAS;
 }
