@@ -508,7 +508,8 @@ public enum FeatureName {
   LANDING_OVERVIEW_PAGE_V2("Supports new entities for landing overview page", HarnessTeam.SPG),
   CDS_STEPGROUP_TEMPLATE("Added support for Step group templates", HarnessTeam.CDC),
   CDS_FILTER_INFRA_CLUSTERS_ON_TAGS(
-      "For supporting filtering of infras and gitOps clusters based on tags", HarnessTeam.CDC);
+      "For supporting filtering of infras and gitOps clusters based on tags", HarnessTeam.CDC),
+  CCM_BUDGET_CASCADES("Enable to allow nested budgets for Financial Management", HarnessTeam.CE);
 
   @Deprecated
   FeatureName() {
