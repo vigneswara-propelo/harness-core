@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.util;
+package io.harness.gitsync.utils;
 
 import static io.harness.delegate.beans.connector.ConnectorType.AZURE;
 import static io.harness.delegate.beans.connector.ConnectorType.BITBUCKET;
@@ -26,7 +26,7 @@ import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 @UtilityClass
-public class GitProviderUtil {
+public class GitProviderUtils {
   public GitProvider getGitProvider(ScmConnector scmConnector) {
     if (isGithubSaas(scmConnector)) {
       return GITHUB_SAAS;

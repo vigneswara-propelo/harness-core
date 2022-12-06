@@ -62,7 +62,7 @@ import io.harness.gitsync.common.scmerrorhandling.ScmApiErrorHandlingHelper;
 import io.harness.gitsync.common.scmerrorhandling.dtos.ErrorMetadata;
 import io.harness.gitsync.common.service.ScmFacilitatorService;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
-import io.harness.gitsync.util.GitProviderUtil;
+import io.harness.gitsync.utils.GitProviderUtils;
 import io.harness.ng.beans.PageRequest;
 import io.harness.product.ci.scm.proto.CreateBranchResponse;
 import io.harness.product.ci.scm.proto.CreateFileResponse;
@@ -408,7 +408,7 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
       gitFileCacheService.upsertCache(GitFileCacheKey.builder()
                                           .accountIdentifier(scope.getAccountIdentifier())
                                           .completeFilePath(scmCreateFileRequestDTO.getFilePath())
-                                          .gitProvider(GitProviderUtil.getGitProvider(scmConnector))
+                                          .gitProvider(GitProviderUtils.getGitProvider(scmConnector))
                                           .repoName(scmCreateFileRequestDTO.getRepoName())
                                           .ref(scmCreateFileRequestDTO.getBranchName())
                                           .build(),
@@ -470,7 +470,7 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
       gitFileCacheService.upsertCache(GitFileCacheKey.builder()
                                           .accountIdentifier(scope.getAccountIdentifier())
                                           .completeFilePath(scmUpdateFileRequestDTO.getFilePath())
-                                          .gitProvider(GitProviderUtil.getGitProvider(scmConnector))
+                                          .gitProvider(GitProviderUtils.getGitProvider(scmConnector))
                                           .repoName(scmUpdateFileRequestDTO.getRepoName())
                                           .ref(scmUpdateFileRequestDTO.getBranchName())
                                           .build(),
