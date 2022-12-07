@@ -5,17 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.beans.environment;
+package io.harness.gitsync.common.beans;
 
-import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
 
-import java.util.Map;
-import lombok.Builder;
-import lombok.Data;
-
-@Data
-@Builder
-public final class ConnectorConversionInfo {
-  private String connectorRef;
-  private Map<EnvVariableEnum, String> envToSecretsMap;
+@OwnedBy(HarnessTeam.PIPELINE)
+public enum ScmCacheState {
+  VALID_CACHE,
+  STALE_CACHE,
+  ;
 }
