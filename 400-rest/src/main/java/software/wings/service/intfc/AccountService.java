@@ -110,7 +110,7 @@ public interface AccountService {
    */
   List<Account> list(@NotNull PageRequest<Account> request);
 
-  List<Account> listHarnessSupportAccounts(Set<String> excludedAccountIds);
+  List<Account> listHarnessSupportAccounts(Set<String> excludedAccountIds, Set<String> fieldsToBeIncluded);
 
   DelegateConfiguration getDelegateConfiguration(String accountId);
 

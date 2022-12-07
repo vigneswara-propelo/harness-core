@@ -3109,13 +3109,19 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void loadSupportAccounts(User user) {
+    loadSupportAccounts(user, Collections.EMPTY_SET);
+  }
+
+  @Override
+  public void loadSupportAccounts(User user, Set<String> fieldsToBeIncluded) {
     if (user == null) {
       return;
     }
 
     if (harnessUserGroupService.isHarnessSupportUser(user.getUuid())) {
       Set<String> excludeAccounts = user.getAccounts().stream().map(Account::getUuid).collect(Collectors.toSet());
-      List<Account> accountList = harnessUserGroupService.listAllowedSupportAccounts(excludeAccounts);
+      List<Account> accountList =
+          harnessUserGroupService.listAllowedSupportAccounts(excludeAccounts, fieldsToBeIncluded);
 
       Set<String> restrictedAccountsIds = accountService.getAccountsWithDisabledHarnessUserGroupAccess();
       restrictedAccountsIds.removeAll(excludeAccounts);
