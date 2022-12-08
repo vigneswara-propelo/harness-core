@@ -5,15 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.terragrunt.response;
+package io.harness.terragrunt.v2.request;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.security.encryption.EncryptedRecordData;
+import io.harness.logging.PlanLogOutputStream;
 
-import java.util.Map;
-import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
@@ -22,12 +20,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @OwnedBy(CDP)
 @EqualsAndHashCode(callSuper = true)
-public class TerragruntPlanTaskResponse extends AbstractTerragruntTaskResponse {
-  @Nullable EncryptedRecordData encryptedPlan;
-  @Nullable String stateFileId;
-  @Nullable String planJsonFileId;
-
-  @Nullable String configFilesSourceReference;
-  @Nullable String backendFileSourceReference;
-  @Nullable Map<String, String> varFilesSourceReference;
+public class TerragruntPlanCliRequest extends AbstractTerragruntCliRequest {
+  String tfPlanName;
+  PlanLogOutputStream planOutputStream;
+  boolean destroy;
 }

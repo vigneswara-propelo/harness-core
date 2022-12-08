@@ -357,6 +357,7 @@ import io.harness.delegate.beans.storeconfig.OciHelmStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.S3HelmStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.S3StoreDelegateConfig;
 import io.harness.delegate.beans.terragrunt.request.AbstractTerragruntTaskParameters;
+import io.harness.delegate.beans.terragrunt.request.TerragruntCommandType;
 import io.harness.delegate.beans.terragrunt.request.TerragruntPlanTaskParameters;
 import io.harness.delegate.beans.terragrunt.request.TerragruntRunConfiguration;
 import io.harness.delegate.beans.terragrunt.request.TerragruntTaskRunType;
@@ -2027,5 +2028,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(EcsS3FetchFileConfig.class, 573565);
     kryo.register(EcsS3FetchRunTaskRequest.class, 573566);
     kryo.register(EcsS3FetchRunTaskResponse.class, 573567);
+    kryo.register(TerragruntCommandType.class, 573568);
   }
 }
