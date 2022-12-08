@@ -47,10 +47,10 @@ import software.wings.beans.ExecutionArgs.ExecutionArgsKeys;
 import software.wings.beans.NameValuePair.NameValuePairKeys;
 import software.wings.beans.PipelineExecution.PipelineExecutionKeys;
 import software.wings.beans.appmanifest.HelmChart;
-import software.wings.beans.artifact.Artifact;
 import software.wings.beans.concurrency.ConcurrencyStrategy;
 import software.wings.beans.entityinterface.KeywordsAware;
 import software.wings.beans.execution.WorkflowExecutionInfo;
+import software.wings.persistence.artifact.Artifact;
 import software.wings.sm.PipelineSummary;
 import software.wings.sm.StateMachine;
 
