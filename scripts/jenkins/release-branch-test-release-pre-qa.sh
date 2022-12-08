@@ -20,8 +20,8 @@ check_file_present $PROJFILE
 PROJECTS=$(<$PROJFILE)
 
 git log --remotes=origin/release/* --pretty=oneline --abbrev-commit | grep -iE "\[(${PROJECTS})-[0-9]+]:" -o | sort | uniq | tr '[:lower:]' '[:upper:]' > release.txt
-git log --remotes=origin/develop* --pretty=oneline --abbrev-commit | grep -iE "\[(${PROJECTS})-[0-9]+]:" -o | sort | uniq | tr '[:lower:]' '[:upper:]' > develop.txt
-NOT_MERGED=`comm -23 release.txt develop.txt | tr '\n' ' '`
+git log --remotes=origin/pre_qa/portal* --pretty=oneline --abbrev-commit | grep -iE "\[(${PROJECTS})-[0-9]+]:" -o | sort | uniq | tr '[:lower:]' '[:upper:]' > pre_qa.txt
+NOT_MERGED=`comm -23 release.txt pre_qa.txt | tr '\n' ' '`
 
 if [ -z "$NOT_MERGED" ]
 then
