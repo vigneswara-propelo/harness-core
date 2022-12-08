@@ -196,9 +196,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     stageParameters.specConfig(getSpecParameters(specField.getNode().getUuid(), ctx, stageNode));
     String uuid = MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(stageNode);
     List<AdviserObtainment> adviserObtainments = new ArrayList<>();
-    DeploymentStageConfig stageConfig = stageNode.getDeploymentStageConfig();
-    if (stageConfig.getServices() == null && stageConfig.getEnvironments() == null
-        && stageConfig.getEnvironmentGroup() == null) {
+    if (!MultiDeploymentSpawnerUtils.hasMultiDeploymentConfigured(stageNode)) {
       adviserObtainments = getAdviserObtainmentFromMetaData(ctx.getCurrentField());
     }
     // We need to swap the ids if strategy is present
