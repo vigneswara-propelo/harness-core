@@ -52,6 +52,7 @@ import software.wings.beans.execution.WorkflowExecutionInfo;
 import software.wings.beans.trigger.Trigger;
 import software.wings.infra.InfrastructureDefinition;
 import software.wings.service.impl.WorkflowExecutionUpdate;
+import software.wings.service.intfc.deployment.PreDeploymentChecker;
 import software.wings.sm.ExecutionContext;
 import software.wings.sm.ExecutionInterrupt;
 import software.wings.sm.PhaseExecutionSummary;
@@ -365,4 +366,7 @@ public interface WorkflowExecutionService extends StateStatusUpdate {
 
   List<WorkflowExecution> getWorkflowExecutionsWithFailureDetails(
       String appId, List<WorkflowExecution> workflowExecutions);
+
+  void checkDeploymentFreezeRejectedExecution(
+      String accountId, PreDeploymentChecker deploymentFreezeChecker, WorkflowExecution workflowExecution);
 }

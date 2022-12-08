@@ -126,11 +126,6 @@ public class WorkflowExecution implements PersistentRegularIterable, AccountData
                  .field(WorkflowExecutionKeys.infraMappingIds)
                  .descSortField(WorkflowExecutionKeys.createdAt)
                  .build())
-        .add(SortCompoundMongoIndex.builder()
-                 .name("accountId_createdAt2")
-                 .field(WorkflowExecutionKeys.accountId)
-                 .descSortField(WorkflowExecutionKeys.createdAt)
-                 .build())
         .add(CompoundMongoIndex.builder()
                  .name("workflowExecutionMonitor")
                  .field(WorkflowExecutionKeys.status)
@@ -264,6 +259,12 @@ public class WorkflowExecution implements PersistentRegularIterable, AccountData
                  .descSortField(WorkflowExecutionKeys.createdAt)
                  .build())
         .add(SortCompoundMongoIndex.builder()
+                 .name("accountId_1_createdAt_-1_rejectedByFreezeWindowIds_1")
+                 .field(WorkflowExecutionKeys.accountId)
+                 .descSortField(WorkflowExecutionKeys.createdAt)
+                 .rangeField(WorkflowExecutionKeys.rejectedByFreezeWindowIds)
+                 .build())
+        .add(SortCompoundMongoIndex.builder()
                  .name("accountId_appId_onDemandRollback_createdAt")
                  .field(WorkflowExecutionKeys.accountId)
                  .field(WorkflowExecutionKeys.appId)
@@ -390,6 +391,9 @@ public class WorkflowExecution implements PersistentRegularIterable, AccountData
 
   @Transient private String failedStepNames;
   @Transient private String failedStepTypes;
+
+  private List<String> rejectedByFreezeWindowIds;
+  private List<String> rejectedByFreezeWindowNames;
 
   // Making this consistent with data retention default of 183 days instead of "6 months"
   @Default
