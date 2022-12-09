@@ -82,14 +82,12 @@ import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.SimpleServiceLevelObjective;
-import io.harness.cvng.servicelevelobjective.entities.TimePeriod;
+import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOHealthIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveV2Service;
 import io.harness.cvng.servicelevelobjective.transformer.servicelevelobjectivev2.SLOV2Transformer;
-import io.harness.cvng.statemachine.entities.AnalysisOrchestrator;
-import io.harness.cvng.statemachine.entities.AnalysisOrchestrator.AnalysisOrchestratorKeys;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageResponse;
 import io.harness.outbox.OutboxEvent;
@@ -102,11 +100,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.inject.Inject;
 import io.serializer.HObjectMapper;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,7 +132,7 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
   @Mock SideKickService sideKickService;
   @Inject private OutboxService outboxService;
   @Inject private Map<ServiceLevelObjectiveType, SLOV2Transformer> serviceLevelObjectiveTypeSLOV2TransformerMap;
-  @Inject private SLIRecordServiceImpl sliRecordService;
+  @Inject private SLIRecordService sliRecordService;
 
   private BuilderFactory builderFactory;
   ProjectParams projectParams;
@@ -1332,15 +1328,6 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
             .getUuid();
 
     assertThat(sliIndicator).isEqualTo(updatedSliIndicator);
-    String verificationTaskId =
-        verificationTaskService.createSLIVerificationTask(builderFactory.getContext().getAccountId(), sliIndicator);
-    AnalysisOrchestrator analysisOrchestrator =
-        hPersistence.createQuery(AnalysisOrchestrator.class)
-            .filter(AnalysisOrchestratorKeys.verificationTaskId, verificationTaskId)
-            .get();
-    assertThat(analysisOrchestrator.getAnalysisStateMachineQueue().size()).isEqualTo(14);
-    assertThat(analysisOrchestrator.getAnalysisStateMachineQueue().get(0).getStartTime())
-        .isEqualTo(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse("2020-07-20T12:00:00").toInstant());
   }
 
   @Test
@@ -1375,13 +1362,6 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
     assertThat(updateServiceLevelObjectiveResponse.getServiceLevelObjectiveV2DTO().getSloTarget())
         .isEqualTo(updatedSloTarget);
     assertThat(sliIndicator).isEqualTo(updatedSliIndicator);
-    String verificationTaskId =
-        verificationTaskService.createSLIVerificationTask(builderFactory.getContext().getAccountId(), sliIndicator);
-    AnalysisOrchestrator analysisOrchestrator =
-        hPersistence.createQuery(AnalysisOrchestrator.class)
-            .filter(AnalysisOrchestratorKeys.verificationTaskId, verificationTaskId)
-            .get();
-    assertThat(analysisOrchestrator.getAnalysisStateMachineQueue().size()).isEqualTo(121);
   }
 
   @Test
@@ -1422,19 +1402,6 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
             .getUuid();
 
     assertThat(sliIndicator).isEqualTo(updatedSliIndicator);
-    String verificationTaskId =
-        verificationTaskService.createSLIVerificationTask(builderFactory.getContext().getAccountId(), sliIndicator);
-    AnalysisOrchestrator analysisOrchestrator =
-        hPersistence.createQuery(AnalysisOrchestrator.class)
-            .filter(AnalysisOrchestratorKeys.verificationTaskId, verificationTaskId)
-            .get();
-    AbstractServiceLevelObjective serviceLevelObjective =
-        serviceLevelObjectiveV2Service.getEntity(projectParams, sloDTO.getIdentifier());
-    assertThat(analysisOrchestrator.getAnalysisStateMachineQueue().size()).isEqualTo(14);
-    LocalDateTime currentLocalDate = LocalDateTime.ofInstant(clock.instant(), serviceLevelObjective.getZoneOffset());
-    TimePeriod timePeriod = serviceLevelObjective.getCurrentTimeRange(currentLocalDate);
-    Instant startTime = timePeriod.getStartTime(serviceLevelObjective.getZoneOffset());
-    assertThat(analysisOrchestrator.getAnalysisStateMachineQueue().get(0).getAnalysisStartTime()).isBefore(startTime);
   }
 
   @Test
