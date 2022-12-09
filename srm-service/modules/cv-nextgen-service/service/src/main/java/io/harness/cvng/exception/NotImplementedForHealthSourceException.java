@@ -5,15 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cvng.core.beans.healthsource;
+package io.harness.cvng.exception;
 
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Builder;
-import lombok.Value;
-
-@Value
-@Builder
-public class MetricRecordsResponse {
-  @Builder.Default List<TimeSeries> timeSeriesData = new ArrayList<>();
+public class NotImplementedForHealthSourceException extends RuntimeException {
+  public NotImplementedForHealthSourceException(String message) {
+    super(message);
+  }
 }
