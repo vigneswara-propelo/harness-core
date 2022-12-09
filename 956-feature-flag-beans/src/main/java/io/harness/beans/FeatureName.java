@@ -516,7 +516,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   DISABLE_WINRM_COMMAND_ENCODING_NG(
       "To disable Base64 encoding done to WinRM command script which is sent to remote server for execution",
-      HarnessTeam.CDP);
+      HarnessTeam.CDP),
+  PURGE_DANGLING_APP_ENV_REFS("Explicitly purge dangling references of app/env", HarnessTeam.SPG);
 
   @Deprecated
   FeatureName() {
