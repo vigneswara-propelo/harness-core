@@ -661,7 +661,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsRollingDeploy =
         StepInfo.newBuilder()
-            .setName("Ecs Rolling Deploy")
+            .setName("ECS Rolling Deploy")
             .setType(StepSpecTypeConstants.ECS_ROLLING_DEPLOY)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
@@ -669,7 +669,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsRollingRollack =
         StepInfo.newBuilder()
-            .setName("Ecs Rolling Rollback")
+            .setName("ECS Rolling Rollback")
             .setType(StepSpecTypeConstants.ECS_ROLLING_ROLLBACK)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
@@ -677,7 +677,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsCanaryDeploy =
         StepInfo.newBuilder()
-            .setName("Ecs Canary Deploy")
+            .setName("ECS Canary Deploy")
             .setType(StepSpecTypeConstants.ECS_CANARY_DEPLOY)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
@@ -685,7 +685,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsCanaryDelete =
         StepInfo.newBuilder()
-            .setName("Ecs Canary Delete")
+            .setName("ECS Canary Delete")
             .setType(StepSpecTypeConstants.ECS_CANARY_DELETE)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
@@ -693,7 +693,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsBlueGreenCreateService =
         StepInfo.newBuilder()
-            .setName("Ecs Blue Green Create Service")
+            .setName("ECS Blue Green Create Service")
             .setType(StepSpecTypeConstants.ECS_BLUE_GREEN_CREATE_SERVICE)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
@@ -701,7 +701,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsBlueGreenSwapTargetGroups =
         StepInfo.newBuilder()
-            .setName("Ecs Blue Green Swap Target Groups")
+            .setName("ECS Blue Green Swap Target Groups")
             .setType(StepSpecTypeConstants.ECS_BLUE_GREEN_SWAP_TARGET_GROUPS)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
@@ -709,7 +709,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsBlueGreenRollback =
         StepInfo.newBuilder()
-            .setName("Ecs Blue Green Rollback")
+            .setName("ECS Blue Green Rollback")
             .setType(StepSpecTypeConstants.ECS_BLUE_GREEN_ROLLBACK)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
@@ -717,7 +717,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     StepInfo ecsRunTask =
         StepInfo.newBuilder()
-            .setName("Ecs Run Task")
+            .setName("ECS Run Task")
             .setType(StepSpecTypeConstants.ECS_RUN_TASK)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
             .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
