@@ -7,6 +7,8 @@
 
 package io.harness.delegate.events;
 
+import static io.harness.delegate.utils.DelegateOutboxEventConstants.DELEGATE_DELETE_EVENT;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.audit.ResourceTypeConstants;
@@ -26,23 +28,23 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DelegateGroupUpsertEvent extends AbstractDelegateConfigurationEvent {
+public class DelegateDeleteEvent extends AbstractDelegateConfigurationEvent {
   private DelegateSetupDetails delegateSetupDetails;
-  private String delegateGroupId;
+  private String delegateGroupIdentifier;
 
   @Override
   public Resource getResource() {
     Map<String, String> labels = new HashMap<>();
     labels.put(ResourceConstants.LABEL_KEY_RESOURCE_NAME, delegateSetupDetails.getName());
     return Resource.builder()
-        .identifier(delegateGroupId)
+        .identifier(delegateGroupIdentifier)
         .labels(labels)
-        .type(ResourceTypeConstants.DELEGATE_GROUPS)
+        .type(ResourceTypeConstants.DELEGATE)
         .build();
   }
 
   @Override
   public String getEventType() {
-    return "DelegateGroupUpsertEvent";
+    return DELEGATE_DELETE_EVENT;
   }
 }
