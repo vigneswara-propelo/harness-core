@@ -8,6 +8,8 @@
 package io.harness.serializer.morphia;
 
 import io.harness.app.beans.dto.CITaskDetails;
+import io.harness.app.beans.entities.PluginMetadataConfig;
+import io.harness.app.beans.entities.PluginMetadataStatus;
 import io.harness.beans.outcomes.VmDetailsOutcome;
 import io.harness.beans.sweepingoutputs.ContextElement;
 import io.harness.beans.sweepingoutputs.DliteVmStageInfraDetails;
@@ -48,6 +50,8 @@ public class CIBeansMorphiaRegistrar implements MorphiaRegistrar {
     set.add(CITelemetrySentStatus.class);
     set.add(DliteVmStageInfraDetails.class);
     set.add(CIExecutionMetadata.class);
+    set.add(PluginMetadataConfig.class);
+    set.add(PluginMetadataStatus.class);
   }
 
   @Override

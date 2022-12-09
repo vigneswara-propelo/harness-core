@@ -9,6 +9,8 @@ package io.harness.serializer.kryo;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.app.beans.entities.PluginMetadataConfig;
+import io.harness.app.beans.entities.PluginMetadataStatus;
 import io.harness.beans.build.BuildStatusUpdateParameter;
 import io.harness.beans.build.BuildUpdateType;
 import io.harness.beans.build.CIPipelineDetails;
@@ -108,5 +110,7 @@ public class CIBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(EncryptedDataDetails.class, 110111);
     kryo.register(BuildUpdateType.class, 390003);
     kryo.register(BuildStatusUpdateParameter.class, 390004);
+    kryo.register(PluginMetadataConfig.class, 110143);
+    kryo.register(PluginMetadataStatus.class, 110144);
   }
 }
