@@ -454,6 +454,8 @@ public enum FeatureName {
       "This feature flag enforces maximum time range for workflow execution queries without appId", HarnessTeam.SPG),
   SPG_REDUCE_KEYWORDS_PERSISTENCE_ON_EXECUTIONS(
       "Gradually reducing the amount of keywords being stored on workflow executions", HarnessTeam.SPG),
+  SPG_CG_END_OF_LIFE_BANNER(
+      "Shows the user a banner notifying about the End of Life of CG CD new features", HarnessTeam.SPG),
   SYNC_GIT_CLONE_AND_COPY_TO_DEST_DIR(
       "This feature flag helps in synchronizing the git clone of repo and copying the files then to destination directory",
       HarnessTeam.CDP),
