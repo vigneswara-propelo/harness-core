@@ -252,10 +252,16 @@ public class TriggerExecutionHelper {
               .setTriggerInfo(triggerInfo)
               .setRunSequence(pipelineMetadataService.incrementRunSequence(pipelineEntity))
               .setPipelineIdentifier(pipelineEntity.getIdentifier())
-              .setHarnessVersion(pipelineEntity.getHarnessVersion())
-              .setPipelineConnectorRef(pipelineEntityToExecute.get().getConnectorRef())
-              .setPipelineStoreType(getPipelineStoreType(pipelineEntityToExecute.get().getStoreType()));
+              .setHarnessVersion(pipelineEntity.getHarnessVersion());
 
+      if (isNotEmpty(pipelineEntity.getConnectorRef())) {
+        executionMetaDataBuilder.setPipelineConnectorRef(pipelineEntity.getConnectorRef());
+      }
+      if (pipelineEntity.getStoreType() != null) {
+        executionMetaDataBuilder.setPipelineStoreType(getPipelineStoreType(pipelineEntity.getStoreType()));
+      } else {
+        log.warn("The storeType is null for the pipeline: " + pipelineEntity.getIdentifier());
+      }
       if (gitSyncBranchContextByteString != null) {
         executionMetaDataBuilder.setGitSyncBranchContext(gitSyncBranchContextByteString);
       }
