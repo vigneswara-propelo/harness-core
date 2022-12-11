@@ -10,6 +10,7 @@ package io.harness.gitsync.caching.service;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.caching.beans.CacheDetails;
+import io.harness.gitsync.caching.beans.GitFileCacheDeleteResult;
 import io.harness.gitsync.caching.beans.GitFileCacheKey;
 import io.harness.gitsync.caching.beans.GitFileCacheObject;
 import io.harness.gitsync.caching.beans.GitFileCacheResponse;
@@ -21,6 +22,7 @@ import io.harness.gitsync.caching.mapper.GitProviderMapper;
 import io.harness.repositories.gitfilecache.GitFileCacheRepository;
 
 import com.google.inject.Inject;
+import com.mongodb.client.result.DeleteResult;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
 
@@ -72,7 +74,11 @@ public class GitFileCacheServiceImpl implements GitFileCacheService {
   }
 
   @Override
-  public void invalidateCache(GitFileCacheKey gitFileCacheKey) {}
+  public GitFileCacheDeleteResult invalidateCache(GitFileCacheKey gitFileCacheKey) {
+    Criteria criteria = getOptionalCriteria(gitFileCacheKey);
+    DeleteResult deleteResult = gitFileCacheRepository.delete(criteria);
+    return GitFileCacheDeleteResult.builder().count(deleteResult.getDeletedCount()).build();
+  }
 
   private Update getUpsertOperationUpdates(GitFileCacheKey gitFileCacheKey, GitFileCacheObject gitFileCacheObject) {
     long currentTime = System.currentTimeMillis();
@@ -104,5 +110,27 @@ public class GitFileCacheServiceImpl implements GitFileCacheService {
         .is(gitFileCacheKey.getRef())
         .and(GitFileCacheKeys.completeFilepath)
         .is(gitFileCacheKey.getCompleteFilePath());
+  }
+
+  private Criteria getOptionalCriteria(GitFileCacheKey gitFileCacheKey) {
+    Criteria criteria = new Criteria();
+    criteria =
+        addToCriteriaIfNotEmpty(criteria, GitFileCacheKeys.accountIdentifier, gitFileCacheKey.getAccountIdentifier());
+    criteria = addToCriteriaIfNotEmpty(criteria, GitFileCacheKeys.ref, gitFileCacheKey.getRef());
+    criteria = addToCriteriaIfNotEmpty(criteria, GitFileCacheKeys.repoName, gitFileCacheKey.getRepoName());
+    criteria =
+        addToCriteriaIfNotEmpty(criteria, GitFileCacheKeys.completeFilepath, gitFileCacheKey.getCompleteFilePath());
+    if (gitFileCacheKey.getGitProvider() != null) {
+      criteria =
+          criteria.and(GitFileCacheKeys.gitProvider).is(GitProviderMapper.toEntity(gitFileCacheKey.getGitProvider()));
+    }
+    return criteria;
+  }
+
+  private Criteria addToCriteriaIfNotEmpty(Criteria criteria, String key, String value) {
+    if (value != null) {
+      criteria = criteria.and(key).is(value);
+    }
+    return criteria;
   }
 }

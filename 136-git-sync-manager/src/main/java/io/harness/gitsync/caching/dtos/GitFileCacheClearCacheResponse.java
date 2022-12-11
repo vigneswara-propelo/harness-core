@@ -5,18 +5,20 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.repositories.gitfilecache;
+package io.harness.gitsync.caching.dtos;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.gitsync.caching.entity.GitFileCache;
 
-import com.mongodb.client.result.DeleteResult;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Update;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.experimental.FieldDefaults;
 
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @OwnedBy(HarnessTeam.PIPELINE)
-public interface GitFileCacheRepositoryCustom {
-  GitFileCache upsert(Criteria criteria, Update update);
-  DeleteResult delete(Criteria criteria);
+public class GitFileCacheClearCacheResponse {
+  long count;
 }
