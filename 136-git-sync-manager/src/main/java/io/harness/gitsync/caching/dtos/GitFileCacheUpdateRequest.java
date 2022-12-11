@@ -5,17 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.gitsync.caching.beans;
+package io.harness.gitsync.caching.dtos;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import lombok.Builder;
+import lombok.AccessLevel;
 import lombok.Value;
+import lombok.experimental.FieldDefaults;
 
 @Value
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.PIPELINE)
-public class GitFileCacheDeleteResult {
-  long count;
+public class GitFileCacheUpdateRequest {
+  GitFileCacheUpdateKey key;
+  GitFileCacheUpdateValues values;
 }

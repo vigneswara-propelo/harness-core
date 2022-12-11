@@ -16,6 +16,10 @@ import lombok.Value;
 @Value
 @Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-public class GitFileCacheDeleteResult {
-  long count;
+public class GitFileCacheUpdateRequestKey {
+  String accountIdentifier;
+  String ref;
+  String repoName;
+  String filepath;
+  GitProvider gitProvider;
 }

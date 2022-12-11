@@ -16,6 +16,6 @@ import lombok.Value;
 @Value
 @Builder
 @OwnedBy(HarnessTeam.PIPELINE)
-public class GitFileCacheDeleteResult {
+public class GitFileCacheUpdateResult {
   long count;
 }
