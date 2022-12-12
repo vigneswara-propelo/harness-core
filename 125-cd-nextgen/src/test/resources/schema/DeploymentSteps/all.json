@@ -6206,11 +6206,6 @@
     "TerragruntBackendConfigSpec": {
       "type": "object",
       "discriminator": "type",
-      "properties": {
-        "type": {
-          "type": "string"
-        }
-      },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "TerragruntConfigFilesWrapper": {
@@ -6329,6 +6324,7 @@
     "TerragruntModuleConfig": {
       "type": "object",
       "required": [
+        "path",
         "terragruntRunType"
       ],
       "properties": {

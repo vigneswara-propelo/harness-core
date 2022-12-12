@@ -604,6 +604,7 @@ io.harness.cdng.provision.terragrunt.InlineTerragruntBackendConfigSpec
 io.harness.cdng.provision.terragrunt.RemoteTerragruntBackendConfigSpec
 io.harness.cdng.provision.terragrunt.outcome.TerragruntPlanOutcome
 io.harness.cdng.provision.terragrunt.TerragruntInheritOutput
+io.harness.cdng.provision.terragrunt.TerragruntModuleConfig
 io.harness.cdng.serverless.beans.ServerlessS3FetchFailurePassThroughData
 io.harness.cdng.ecs.beans.EcsS3FetchPassThroughData
 io.harness.cdng.ecs.beans.EcsS3FetchFailurePassThroughData
