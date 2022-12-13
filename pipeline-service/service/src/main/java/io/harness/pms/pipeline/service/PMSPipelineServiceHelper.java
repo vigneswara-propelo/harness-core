@@ -452,9 +452,7 @@ public class PMSPipelineServiceHelper {
             .schemaErrors(
                 Collections.singletonList(YamlSchemaErrorDTO.builder().message(errorMessage).fqn("$.pipeline").build()))
             .build();
-    InvalidYamlException invalidYamlException = new InvalidYamlException(errorMessage, errorWrapperDTO);
-    invalidYamlException.setYaml(pipelineYaml);
-    return invalidYamlException;
+    return new InvalidYamlException(errorMessage, errorWrapperDTO, pipelineYaml);
   }
 
   public String importPipelineFromRemote(String accountId, String orgIdentifier, String projectIdentifier) {

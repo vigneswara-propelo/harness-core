@@ -143,7 +143,7 @@ public class PMSPipelineServiceImplSimplifiedGitExpTest extends CategoryTest {
                                         .identifier(pipelineId)
                                         .yaml(pipelineYaml)
                                         .build();
-    doThrow(new InvalidYamlException("msg", null))
+    doThrow(new InvalidYamlException("msg", null, pipelineYaml))
         .when(pipelineServiceHelper)
         .resolveTemplatesAndValidatePipeline(eq(pipelineToSave), anyBoolean(), anyBoolean());
     assertThatThrownBy(() -> pipelineService.validateAndCreatePipeline(pipelineToSave, true))
@@ -317,7 +317,7 @@ public class PMSPipelineServiceImplSimplifiedGitExpTest extends CategoryTest {
                                           .identifier(pipelineId)
                                           .yaml(pipelineYaml)
                                           .build();
-    doThrow(new InvalidYamlException("msg", null))
+    doThrow(new InvalidYamlException("msg", null, pipelineYaml))
         .when(pipelineServiceHelper)
         .resolveTemplatesAndValidatePipeline(eq(pipelineToUpdate), anyBoolean(), anyBoolean());
     assertThatThrownBy(() -> pipelineService.validateAndUpdatePipeline(pipelineToUpdate, null, true))

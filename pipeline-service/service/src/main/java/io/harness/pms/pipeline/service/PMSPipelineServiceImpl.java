@@ -261,7 +261,7 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
               .schemaErrors(Collections.singletonList(
                   YamlSchemaErrorDTO.builder().message(errorMessage).fqn("$.pipeline").build()))
               .build();
-      throw new io.harness.yaml.validator.InvalidYamlException(errorMessage, errorWrapperDTO);
+      throw new io.harness.yaml.validator.InvalidYamlException(errorMessage, errorWrapperDTO, pipelineEntity.getData());
     }
     pmsPipelineServiceHelper.resolveTemplatesAndValidatePipelineEntity(pipelineEntity, loadFromCache);
     return optionalPipelineEntity;
