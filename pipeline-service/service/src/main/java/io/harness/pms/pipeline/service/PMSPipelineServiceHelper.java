@@ -186,7 +186,7 @@ public class PMSPipelineServiceHelper {
 
   public void resolveTemplatesAndValidatePipelineEntity(PipelineEntity pipelineEntity, boolean loadFromCache) {
     long start = System.currentTimeMillis();
-    GovernanceMetadata governanceMetadata = resolveTemplatesAndValidatePipeline(pipelineEntity, loadFromCache);
+    GovernanceMetadata governanceMetadata = resolveTemplatesAndValidatePipeline(pipelineEntity, false, loadFromCache);
     log.info("[PMS_PipelineService] validating pipeline took {}ms for projectId {}, orgId {}, accountId {}",
         System.currentTimeMillis() - start, pipelineEntity.getProjectIdentifier(), pipelineEntity.getOrgIdentifier(),
         pipelineEntity.getAccountIdentifier());
