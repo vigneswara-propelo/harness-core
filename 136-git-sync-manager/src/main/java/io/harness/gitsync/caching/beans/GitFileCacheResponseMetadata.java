@@ -19,8 +19,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.PIPELINE)
-public class GitFileCacheResponse {
-  GitFileCacheObject gitFileCacheObject;
-  CacheDetails cacheDetails;
-  GitFileCacheResponseMetadata gitFileCacheResponseMetadata;
+public class GitFileCacheResponseMetadata {
+  String ref;
 }

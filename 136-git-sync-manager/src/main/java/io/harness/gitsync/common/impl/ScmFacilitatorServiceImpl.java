@@ -766,7 +766,8 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
       if (gitFileCacheResponse != null) {
         log.info("CACHE HIT for cacheKey : {}", cacheKey);
         return Optional.of(prepareScmGetFileCacheResponse(gitFileCacheResponse.getGitFileCacheObject().getFileContent(),
-            scmGetFileByBranchRequestDTO.getBranchName(), gitFileCacheResponse.getGitFileCacheObject().getCommitId(),
+            gitFileCacheResponse.getGitFileCacheResponseMetadata().getRef(),
+            gitFileCacheResponse.getGitFileCacheObject().getCommitId(),
             gitFileCacheResponse.getGitFileCacheObject().getObjectId(), gitFileCacheResponse.getCacheDetails()));
       }
     }

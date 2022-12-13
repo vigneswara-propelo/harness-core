@@ -14,6 +14,7 @@ import io.harness.gitsync.caching.beans.GitFileCacheDeleteResult;
 import io.harness.gitsync.caching.beans.GitFileCacheKey;
 import io.harness.gitsync.caching.beans.GitFileCacheObject;
 import io.harness.gitsync.caching.beans.GitFileCacheResponse;
+import io.harness.gitsync.caching.beans.GitFileCacheResponseMetadata;
 import io.harness.gitsync.caching.beans.GitFileCacheUpdateRequestKey;
 import io.harness.gitsync.caching.beans.GitFileCacheUpdateRequestValues;
 import io.harness.gitsync.caching.beans.GitFileCacheUpdateResult;
@@ -61,6 +62,7 @@ public class GitFileCacheServiceImpl implements GitFileCacheService {
     return GitFileCacheResponse.builder()
         .cacheDetails(cacheDetails)
         .gitFileCacheObject(GitFileCacheObjectMapper.fromEntity(gitFileCache.getGitFileObject()))
+        .gitFileCacheResponseMetadata(GitFileCacheResponseMetadata.builder().ref(gitFileCache.getRef()).build())
         .build();
   }
 
@@ -75,6 +77,7 @@ public class GitFileCacheServiceImpl implements GitFileCacheService {
     return GitFileCacheResponse.builder()
         .cacheDetails(cacheDetails)
         .gitFileCacheObject(GitFileCacheObjectMapper.fromEntity(gitFileCache.getGitFileObject()))
+        .gitFileCacheResponseMetadata(GitFileCacheResponseMetadata.builder().ref(gitFileCache.getRef()).build())
         .build();
   }
 
