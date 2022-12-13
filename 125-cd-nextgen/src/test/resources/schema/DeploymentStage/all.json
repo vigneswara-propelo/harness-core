@@ -4398,6 +4398,9 @@
             }
           ]
         },
+        "provisioner": {
+          "$ref": "#/definitions/ExecutionElementConfig"
+        },
         "serviceOverrideInputs": {
           "oneOf": [
             {

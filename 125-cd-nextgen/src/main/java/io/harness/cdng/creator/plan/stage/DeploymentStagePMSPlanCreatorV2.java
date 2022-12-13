@@ -101,6 +101,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
@@ -256,7 +257,10 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
           List<AdviserObtainment> adviserObtainments =
               addResourceConstraintDependencyWithWhenCondition(planCreationResponseMap, specField);
           String infraNodeId = addInfrastructureNode(planCreationResponseMap, stageNode, adviserObtainments);
-          String serviceNodeId = addServiceNode(specField, planCreationResponseMap, stageNode, infraNodeId);
+          Optional<String> provisionerIdOptional =
+              addProvisionerNode(specField, planCreationResponseMap, stageNode, infraNodeId);
+          String serviceNextNodeId = provisionerIdOptional.isEmpty() ? infraNodeId : provisionerIdOptional.get();
+          String serviceNodeId = addServiceNode(specField, planCreationResponseMap, stageNode, serviceNextNodeId);
           addSpecNode(planCreationResponseMap, specField, serviceNodeId);
         }
       } else {
@@ -643,7 +647,6 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
                              .build())
             .build());
   }
-
   private String addServiceNode(YamlField specField,
       LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap, DeploymentStageNode stageNode,
       String nextNodeId) throws IOException {
@@ -714,6 +717,28 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
         stageNode.getDeploymentStageConfig().getDeploymentType(), stageNode.skipInstances);
     planCreationResponseMap.put(node.getUuid(), PlanCreationResponse.builder().planNode(node).build());
     return node.getUuid();
+  }
+  private Optional<String> addProvisionerNode(YamlField specField,
+      LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap, DeploymentStageNode stageNode,
+      String infraNodeId) {
+    if (stageNode.getDeploymentStageConfig().getEnvironment() == null
+        || stageNode.getDeploymentStageConfig().getEnvironment().getProvisioner() == null) {
+      return Optional.empty();
+    }
+
+    YamlField envField = specField.getNode().getField(YAMLFieldNameConstants.ENVIRONMENT);
+    YamlField provisionerField = envField.getNode().getField(YAMLFieldNameConstants.PROVISIONER);
+    YamlField provisionerStepsField = provisionerField.getNode().getField(YAMLFieldNameConstants.STEPS);
+
+    Map<String, YamlField> stepsYamlFieldMap = new HashMap<>();
+    stepsYamlFieldMap.put(provisionerStepsField.getNode().getUuid(), provisionerStepsField);
+    planCreationResponseMap.put(provisionerStepsField.getNode().getUuid(),
+        PlanCreationResponse.builder().dependencies(DependenciesUtils.toDependenciesProto(stepsYamlFieldMap)).build());
+
+    PlanNode node = InfrastructurePmsPlanCreator.getProvisionerPlanNode(
+        provisionerField, provisionerStepsField.getUuid(), infraNodeId, kryoSerializer);
+    planCreationResponseMap.put(node.getUuid(), PlanCreationResponse.builder().planNode(node).build());
+    return Optional.of(node.getUuid());
   }
 
   private String addGitOpsClustersNode(PlanCreationContext ctx,
