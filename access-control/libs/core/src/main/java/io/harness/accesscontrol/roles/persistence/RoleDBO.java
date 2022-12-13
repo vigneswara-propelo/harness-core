@@ -65,7 +65,7 @@ public class RoleDBO implements PersistentEntity, AccessControlEntity {
   @NotEmpty final Set<String> allowedScopeLevels;
   @NotNull final Set<String> permissions;
   final boolean managed;
-  @Builder.Default final boolean internal = false;
+  @Builder.Default final Boolean internal = Boolean.FALSE;
   final String description;
   final Map<String, String> tags;
 
