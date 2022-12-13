@@ -206,8 +206,8 @@ gitSyncServerConfig:
 
 gitService:
   caching:
-    validCacheDurationInMillis: 600000
-    maxCacheDurationInMillis: 86400000
+    validCacheDurationInMillis: ${GIT_SERVICE_CACHING_VALID_CACHE_DURATION:-600000}
+    maxCacheDurationInMillis: ${GIT_SERVICE_CACHING_MAX_CACHE_DURATION:-86400000}
 
 shouldDeployWithGitSync: true
 
