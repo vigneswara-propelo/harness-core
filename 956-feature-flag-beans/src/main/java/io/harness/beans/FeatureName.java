@@ -510,6 +510,7 @@ public enum FeatureName {
       "Enable db hint on getInstancesForAccount for performance stability", HarnessTeam.SPG),
   TERRAGRUNT_PROVISION_NG("FF to enable Terragrunt provision in NG", HarnessTeam.CDP),
   LANDING_OVERVIEW_PAGE_V2("Supports new entities for landing overview page", HarnessTeam.SPG),
+  ASG_NG("Supports Amazon ASG in NG", HarnessTeam.CDP),
   CDS_STEPGROUP_TEMPLATE("Added support for Step group templates", HarnessTeam.CDC),
   CDS_FILTER_INFRA_CLUSTERS_ON_TAGS(
       "For supporting filtering of infras and gitOps clusters based on tags", HarnessTeam.CDC),
