@@ -112,8 +112,8 @@ public class GitFileCacheServiceImpl implements GitFileCacheService {
     update.setOnInsert(GitFileCacheKeys.repoName, gitFileCacheKey.getRepoName());
     update.setOnInsert(GitFileCacheKeys.ref, gitFileCacheKey.getRef());
     update.setOnInsert(GitFileCacheKeys.completeFilepath, gitFileCacheKey.getCompleteFilePath());
-    update.setOnInsert(GitFileCacheKeys.gitFileObject, GitFileCacheObjectMapper.toEntity(gitFileCacheObject));
     update.setOnInsert(GitFileCacheKeys.createdAt, currentTime);
+    update.set(GitFileCacheKeys.gitFileObject, GitFileCacheObjectMapper.toEntity(gitFileCacheObject));
     update.set(GitFileCacheKeys.validUntil, gitFileCacheTTLHelper.getValidUntilTime(currentTime));
     update.set(GitFileCacheKeys.lastUpdatedAt, currentTime);
     if (gitFileCacheKey.isDefaultBranch()) {
