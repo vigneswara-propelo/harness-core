@@ -29,13 +29,14 @@ public class CIExecutionServiceConfig extends ExecutionServiceConfig {
   ExecutionLimits executionLimits;
   String queueServiceToken;
   QueueServiceClient queueServiceClient;
+  HostedVmConfig hostedVmConfig;
 
   @Builder
   public CIExecutionServiceConfig(String addonImageTag, String liteEngineImageTag, String defaultInternalImageConnector,
       String delegateServiceEndpointVariableValue, Integer defaultMemoryLimit, Integer defaultCPULimit,
       Integer pvcDefaultStorageSize, String addonImage, String liteEngineImage, boolean isLocal, String ciImageTag,
       CIStepConfig stepConfig, CICacheIntelligenceConfig cacheIntelligenceConfig, ExecutionLimits executionLimits,
-      String queueServiceToken, QueueServiceClient queueServiceClient) {
+      String queueServiceToken, QueueServiceClient queueServiceClient, HostedVmConfig hostedVmConfig) {
     super(addonImageTag, liteEngineImageTag, defaultInternalImageConnector, delegateServiceEndpointVariableValue,
         defaultMemoryLimit, defaultCPULimit, pvcDefaultStorageSize, addonImage, liteEngineImage, isLocal);
     this.ciImageTag = ciImageTag;
@@ -44,5 +45,6 @@ public class CIExecutionServiceConfig extends ExecutionServiceConfig {
     this.executionLimits = executionLimits;
     this.queueServiceClient = queueServiceClient;
     this.queueServiceToken = queueServiceToken;
+    this.hostedVmConfig = hostedVmConfig;
   }
 }
