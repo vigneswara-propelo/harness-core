@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -314,6 +315,7 @@ public class ServiceAllInOnePlanCreatorUtils {
     return mergedServiceOverrideInputs;
   }
 
+  @NonNull
   private ServiceYamlV2 useServiceYamlFromStage(@NotNull ServiceUseFromStageV2 useFromStage, YamlField specField) {
     final YamlField serviceField = specField.getNode().getField(YamlTypes.SERVICE_ENTITY);
     String stage = useFromStage.getStage();
@@ -327,8 +329,17 @@ public class ServiceAllInOnePlanCreatorUtils {
       DeploymentStageConfig deploymentStage = stageElementConfig.getDeploymentStageConfig();
       if (deploymentStage != null) {
         if (deploymentStage.getService() != null && useFromStage(deploymentStage.getService())) {
-          throw new InvalidArgumentsException(
-              "Invalid identifier given in useFromStage. Cannot reference a stage which also has useFromStage parameter");
+          throw new InvalidArgumentsException("Invalid identifier [" + stage
+              + "] given in useFromStage. Cannot reference a stage which also has useFromStage parameter");
+        }
+
+        if (deploymentStage.getService() == null) {
+          if (deploymentStage.getServices() != null) {
+            throw new InvalidRequestException(
+                "Propagate from stage is not supported with multi service deployments, hence not possible to propagate service from that stage");
+          }
+          throw new InvalidRequestException(String.format(
+              "Could not find service in stage [%s], hence not possible to propagate service from that stage", stage));
         }
         return deploymentStage.getService();
       } else {
