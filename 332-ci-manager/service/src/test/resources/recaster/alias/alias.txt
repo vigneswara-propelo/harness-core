@@ -64,6 +64,8 @@ io.harness.beans.steps.nodes.BuildAndPushDockerNode
 io.harness.beans.execution.Repository
 io.harness.steps.common.NGSectionStepParameters
 io.harness.steps.fork.ForkStepParameters
+io.harness.sto.config.STOStepConfig
+io.harness.sto.config.STOImageConfig
 io.harness.beans.yaml.extended.volumes.PersistentVolumeClaimYaml
 io.harness.beans.steps.stepinfo.DockerStepInfo
 io.harness.plancreator.steps.StepElementConfig
