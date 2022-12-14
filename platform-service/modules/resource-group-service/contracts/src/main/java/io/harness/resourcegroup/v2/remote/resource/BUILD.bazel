@@ -3,31 +3,28 @@
 # that can be found in the licenses directory at the root of this repository, also available at
 # https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
 
-load("//:tools/bazel/GenTestRules.bzl", "run_tests")
-load("//:tools/bazel/harness.bzl", "java_library")
-load("//:tools/bazel/macros.bzl", "run_analysis")
+load("@rules_java//java:defs.bzl", "java_library")
+load("//:tools/bazel/macros.bzl", "run_analysis_per_module")
 
 java_library(
     name = "module",
-    srcs = glob(["api/src/main/java/**/*.java"]),
-    resources = [],
+    srcs = glob(["*.java"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//:lombok",
-        "//960-ng-core-beans:module",
+        "//942-enforcement-sdk:module",
+        "//943-enforcement-beans:module",
         "//970-ng-commons:module",
-        "//999-annotations:module",
-        "//access-control/contracts/openapi/v1:access-control-server-spec-module",
+        "//999-annotations/src/main/java/io/harness/annotations/dev:module",
+        "//access-control/contracts:module",
+        "//clients/access-control/sdk:module",
+        "//platform-service/modules/resource-group-service/contracts/src/main/java/io/harness/resourcegroup:module",
+        "//platform-service/modules/resource-group-service/contracts/src/main/java/io/harness/resourcegroup/v1/remote/dto:module",
         "//platform-service/modules/resource-group-service/contracts/src/main/java/io/harness/resourcegroup/v2/remote/dto:module",
-        "@maven//:com_google_code_findbugs_annotations",
         "@maven//:io_swagger_core_v3_swagger_annotations",
         "@maven//:io_swagger_swagger_annotations",
         "@maven//:javax_validation_validation_api",
-        "@maven//:org_hibernate_validator_hibernate_validator",
+        "@maven//:javax_ws_rs_javax_ws_rs_api",
     ],
 )
 
-run_analysis(
-    ["api/src/**/*"],
-    ["api/src/main/**/*"],
-)
+run_analysis_per_module()
