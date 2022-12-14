@@ -63,6 +63,7 @@ import io.harness.pms.inputset.MergeInputSetResponseDTOPMS;
 import io.harness.pms.inputset.MergeInputSetTemplateRequestDTO;
 import io.harness.pms.merger.YamlConfig;
 import io.harness.pms.merger.fqn.FQN;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
@@ -169,6 +170,52 @@ public class ArtifactResourceUtils {
       imagePath = CDYamlExpressionEvaluator.renderExpression(imagePath);
     }
     return imagePath;
+  }
+
+  public void resolveParameterFieldValues(String accountId, String orgIdentifier, String projectIdentifier,
+      String pipelineIdentifier, String runtimeInputYaml, List<ParameterField<String>> parameterFields, String fqnPath,
+      GitEntityFindInfoDTO gitEntityBasicInfo, String serviceId) {
+    boolean shouldResolveExpression = false;
+    for (ParameterField<String> param : parameterFields) {
+      if (isResolvableParameterField(param)) {
+        shouldResolveExpression = true;
+        break;
+      }
+    }
+    if (!shouldResolveExpression) {
+      return;
+    }
+    String mergedCompleteYaml = getMergedCompleteYaml(
+        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, runtimeInputYaml, gitEntityBasicInfo);
+    if (isNotEmpty(mergedCompleteYaml) && TemplateRefHelper.hasTemplateRef(mergedCompleteYaml)) {
+      mergedCompleteYaml = applyTemplatesOnGivenYaml(
+          accountId, orgIdentifier, projectIdentifier, mergedCompleteYaml, gitEntityBasicInfo);
+    }
+    String[] split = fqnPath.split("\\.");
+    String stageIdentifier = split[2];
+    YamlConfig yamlConfig = new YamlConfig(mergedCompleteYaml);
+    Map<FQN, Object> fqnObjectMap = yamlConfig.getFqnToValueMap();
+
+    if (isEmpty(serviceId)) {
+      // pipelines with inline service definitions
+      serviceId = getServiceRef(fqnObjectMap, stageIdentifier);
+    }
+    // get environment ref
+    String environmentId = getEnvironmentRef(fqnObjectMap, stageIdentifier);
+    List<YamlField> aliasYamlField =
+        getAliasYamlFields(accountId, orgIdentifier, projectIdentifier, serviceId, environmentId);
+    CDYamlExpressionEvaluator CDYamlExpressionEvaluator =
+        new CDYamlExpressionEvaluator(mergedCompleteYaml, fqnPath, aliasYamlField);
+    for (ParameterField<String> param : parameterFields) {
+      String paramValue = (String) param.fetchFinalValue();
+      if (isResolvableParameterField(param) && EngineExpressionEvaluator.hasExpressions(paramValue)) {
+        param.updateWithValue(CDYamlExpressionEvaluator.renderExpression(paramValue));
+      }
+    }
+  }
+
+  private boolean isResolvableParameterField(ParameterField<String> parameterField) {
+    return parameterField.isExpression() && !parameterField.isExecutionInput();
   }
 
   public String getResolvedExpression(String accountId, String orgIdentifier, String projectIdentifier,
