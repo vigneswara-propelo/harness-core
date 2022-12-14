@@ -363,6 +363,25 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     return environmentRepository.fetchesNonDeletedEnvironmentFromListOfIdentifiers(criteria);
   }
 
+  public String getScopedErrorMessageForInvalidEnvironments(
+      String accountId, String orgIdentifier, String projectIdentifier, String envIdentifier) {
+    String errorMessage;
+    if (isNotEmpty(projectIdentifier) && isNotEmpty(orgIdentifier) && isNotEmpty(accountId)) {
+      errorMessage =
+          String.format("Environment with identifier [%s] in project [%s], org [%s], account [%s] scope not found",
+              envIdentifier, projectIdentifier, orgIdentifier, accountId);
+    } else if (isNotEmpty(orgIdentifier) && isNotEmpty(accountId) && isEmpty(projectIdentifier)) {
+      errorMessage = String.format("Environment with identifier [%s] in org [%s], account [%s] scope not found",
+          envIdentifier, orgIdentifier, accountId);
+    } else if (isNotEmpty(accountId) && isEmpty(projectIdentifier) && isEmpty(orgIdentifier)) {
+      errorMessage =
+          String.format("Environment with identifier [%s] in account [%s] scope not found", envIdentifier, accountId);
+    } else {
+      errorMessage = String.format("Environment with identifier [%s] not found", envIdentifier);
+    }
+    return errorMessage;
+  }
+
   @Override
   public String createEnvironmentInputsYaml(
       String accountId, String orgIdentifier, String projectIdentifier, String envIdentifier) {
@@ -374,8 +393,9 @@ public class EnvironmentServiceImpl implements EnvironmentService {
       }
       yamlInputs = createEnvironmentInputsYamlInternal(environment.get().fetchNonEmptyYaml());
     } else {
-      throw new NotFoundException(String.format("Environment with identifier [%s] in project [%s], org [%s] not found",
-          envIdentifier, projectIdentifier, orgIdentifier));
+      String errorMessage =
+          getScopedErrorMessageForInvalidEnvironments(accountId, orgIdentifier, projectIdentifier, envIdentifier);
+      throw new NotFoundException(errorMessage);
     }
     if (isEmpty(yamlInputs)) {
       return null;

@@ -10,6 +10,7 @@ package io.harness.ng.core.environment.services.impl;
 import static io.harness.rule.OwnerRule.ARCHIT;
 import static io.harness.rule.OwnerRule.HINGER;
 import static io.harness.rule.OwnerRule.TATHAGAT;
+import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 import static io.harness.rule.OwnerRule.YOGESH;
 
 import static java.lang.String.format;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.ws.rs.NotFoundException;
 import org.joor.Reflect;
 import org.junit.Before;
 import org.junit.Test;
@@ -431,6 +433,29 @@ public class EnvironmentServiceImplTest extends CDNGEntitiesTestBase {
     String environmentInputsYaml2 =
         environmentService.createEnvironmentInputsYaml("ACCOUNT_ID", "ORG_ID", "PROJECT_ID", "IDENTIFIER");
     assertThat(environmentInputsYaml2).isNull();
+  }
+
+  @Test
+  @Owner(developers = UTKARSH_CHOUBEY)
+  @Category(UnitTests.class)
+  public void testCreateEnvironmentInputsErrorCases() throws IOException {
+    assertThatThrownBy(
+        () -> environmentService.createEnvironmentInputsYaml("ACCOUNT_ID", "ORG_ID", "PROJECT_ID", "IDENTIFIER"))
+        .isInstanceOf(NotFoundException.class)
+        .hasMessage(
+            "Environment with identifier [IDENTIFIER] in project [PROJECT_ID], org [ORG_ID], account [ACCOUNT_ID] scope not found");
+
+    assertThatThrownBy(() -> environmentService.createEnvironmentInputsYaml("ACCOUNT_ID", "ORG_ID", "", "IDENTIFIER"))
+        .isInstanceOf(NotFoundException.class)
+        .hasMessage("Environment with identifier [IDENTIFIER] in org [ORG_ID], account [ACCOUNT_ID] scope not found");
+
+    assertThatThrownBy(() -> environmentService.createEnvironmentInputsYaml("ACCOUNT_ID", null, "", "IDENTIFIER"))
+        .isInstanceOf(NotFoundException.class)
+        .hasMessage("Environment with identifier [IDENTIFIER] in account [ACCOUNT_ID] scope not found");
+
+    assertThatThrownBy(() -> environmentService.createEnvironmentInputsYaml("", null, "", "IDENTIFIER"))
+        .isInstanceOf(NotFoundException.class)
+        .hasMessage("Environment with identifier [IDENTIFIER] not found");
   }
 
   @Test
