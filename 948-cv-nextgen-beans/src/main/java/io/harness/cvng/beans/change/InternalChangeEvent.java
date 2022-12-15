@@ -13,7 +13,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class EventDetails {
+public class InternalChangeEvent {
   List<String> eventDescriptions;
   DeepLink internalLinkToEntity;
   DeepLink changeEventDetailsLink;
