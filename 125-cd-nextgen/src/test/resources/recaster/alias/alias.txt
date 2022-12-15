@@ -636,3 +636,4 @@ io.harness.cdng.aws.asg.AsgPrepareRollbackDataPassThroughData
 io.harness.cdng.aws.asg.AsgCanaryDeployStepNode
 io.harness.cdng.aws.asg.AsgCanaryDeployStepParameters
 io.harness.cdng.aws.asg.AsgCanaryDeployStepInfo
+io.harness.cdng.tas.outcome.TasSetupDataOutcome
