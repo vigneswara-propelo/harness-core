@@ -383,9 +383,9 @@ public class AzureArtifactsArtifactResource {
   public ResponseDTO<List<AzureDevopsProject>> listProjectsWithServiceV2(
       @QueryParam("connectorRef") String azureConnectorRef,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
-      @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
-      @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-      @NotNull @QueryParam(NGCommonEntityConstants.PIPELINE_KEY) String pipelineIdentifier,
+      @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @QueryParam(NGCommonEntityConstants.PIPELINE_KEY) String pipelineIdentifier,
       @NotNull @QueryParam("fqnPath") String fqnPath, @NotNull String runtimeInputYaml,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
