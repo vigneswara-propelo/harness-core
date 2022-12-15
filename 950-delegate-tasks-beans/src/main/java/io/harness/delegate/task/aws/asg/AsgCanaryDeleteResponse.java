@@ -20,12 +20,12 @@ import lombok.experimental.NonFinal;
 @Value
 @Builder
 @OwnedBy(HarnessTeam.CDP)
-public class AsgCanaryDeployResponse implements AsgCommandResponse {
+public class AsgCanaryDeleteResponse implements AsgCommandResponse {
   @NonFinal DelegateMetaInfo delegateMetaInfo;
   @NonFinal UnitProgressData unitProgressData;
   CommandExecutionStatus commandExecutionStatus;
   String errorMessage;
-  AsgCanaryDeployResult asgCanaryDeployResult;
+  AsgCanaryDeleteResult asgCanaryDeleteResult;
 
   @Override
   public void setDelegateMetaInfo(DelegateMetaInfo metaInfo) {
