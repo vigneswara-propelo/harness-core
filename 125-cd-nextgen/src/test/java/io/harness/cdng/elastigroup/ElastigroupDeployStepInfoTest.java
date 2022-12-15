@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.spot.elastigroup.deploy;
+package io.harness.cdng.elastigroup;
 
 import static io.harness.rule.OwnerRule.FILIP;
 
@@ -18,6 +18,9 @@ import io.harness.category.element.UnitTests;
 import io.harness.cdng.common.capacity.Capacity;
 import io.harness.cdng.common.capacity.CapacitySpecType;
 import io.harness.cdng.common.capacity.CountCapacitySpec;
+import io.harness.cdng.elastigroup.deploy.ElastigroupDeployStep;
+import io.harness.cdng.elastigroup.deploy.ElastigroupDeployStepInfo;
+import io.harness.cdng.elastigroup.deploy.ElastigroupDeployStepParameters;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.pms.execution.OrchestrationFacilitatorType;

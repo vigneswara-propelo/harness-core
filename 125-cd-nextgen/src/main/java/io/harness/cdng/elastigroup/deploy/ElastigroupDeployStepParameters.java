@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.cdng.spot.elastigroup.deploy;
+package io.harness.cdng.elastigroup.deploy;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -27,7 +27,7 @@ import org.springframework.data.annotation.TypeAlias;
 @NoArgsConstructor
 @EqualsAndHashCode
 @TypeAlias("ElastigroupDeployStepParameters")
-@RecasterAlias("io.harness.cdng.spot.elastigroup.deploy.ElastigroupDeployStepParameters")
+@RecasterAlias("io.harness.cdng.elastigroup.deploy.ElastigroupDeployStepParameters")
 public class ElastigroupDeployStepParameters implements ElastigroupSpecParameters {
   ParameterField<List<TaskSelectorYaml>> delegateSelectors;
   Capacity newService;

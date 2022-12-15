@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.cdng.spot.elastigroup.deploy;
+package io.harness.cdng.elastigroup.deploy;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -34,7 +34,7 @@ import org.springframework.data.annotation.TypeAlias;
 @JsonTypeName(StepSpecTypeConstants.ELASTIGROUP_DEPLOY)
 @TypeAlias("ElastigroupDeployStepNode")
 @OwnedBy(CDP)
-@RecasterAlias("io.harness.cdng.spot.elastigroup.deploy.ElastigroupDeployStepNode")
+@RecasterAlias("io.harness.cdng.elastigroup.deploy.ElastigroupDeployStepNode")
 public class ElastigroupDeployStepNode extends CdAbstractStepNode {
   @JsonProperty("type") @NotNull StepType type = StepType.ElastigroupDeploy;
   @JsonProperty("spec")
