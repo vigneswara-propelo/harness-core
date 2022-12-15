@@ -7250,10 +7250,8 @@
             {
               "type": "string",
               "enum": [
-                "repository",
-                "container",
-                "instance",
-                "configuration"
+                "apiKey",
+                "usernamePassword"
               ]
             },
             {
