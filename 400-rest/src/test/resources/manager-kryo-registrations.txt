@@ -2797,7 +2797,7 @@
 643311:io.harness.delegate.beans.connector.awssecretmanager.AwsSMCredentialSpecAssumeSTSDTO
 673567:java.util.concurrent.ConcurrentHashMap
 878001:io.harness.steps.matrix.StrategyMetadata
-878018:io.harness.pms.sdk.core.adviser.ProceedWithDefaultAdviserParameters
+878018:io.harness.pms.sdk.core.adviser.proceedwithdefault.ProceedWithDefaultAdviserParameters
 878019:io.harness.pms.sdk.core.execution.AsyncTimeoutResponseData
 930001:io.harness.licensing.beans.modules.CDModuleLicenseDTO
 930002:io.harness.licensing.beans.modules.CEModuleLicenseDTO

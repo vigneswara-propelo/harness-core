@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.advisers.rollback;
+package io.harness.pms.sdk.core.adviser.proceedwithdefault;
 
 import io.harness.pms.contracts.advisers.AdviseType;
 import io.harness.pms.contracts.advisers.AdviserResponse;
@@ -15,7 +15,6 @@ import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.sdk.core.adviser.Adviser;
 import io.harness.pms.sdk.core.adviser.AdvisingEvent;
 import io.harness.pms.sdk.core.adviser.OrchestrationAdviserTypes;
-import io.harness.pms.sdk.core.adviser.ProceedWithDefaultAdviserParameters;
 import io.harness.serializer.KryoSerializer;
 
 import com.google.common.base.Preconditions;
@@ -37,7 +36,8 @@ public class ProceedWithDefaultValueAdviser implements Adviser {
 
   @Override
   public boolean canAdvise(AdvisingEvent advisingEvent) {
-    return advisingEvent.getFromStatus().equals(Status.INPUT_WAITING);
+    return advisingEvent.getFromStatus().equals(Status.EXPIRED)
+        && advisingEvent.getToStatus().equals(Status.INPUT_WAITING);
   }
 
   @NotNull

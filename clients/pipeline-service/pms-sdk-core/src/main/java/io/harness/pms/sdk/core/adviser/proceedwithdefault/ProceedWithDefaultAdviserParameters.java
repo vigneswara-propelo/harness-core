@@ -5,12 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.sdk.core.adviser;
+package io.harness.pms.sdk.core.adviser.proceedwithdefault;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.pms.contracts.execution.failure.FailureType;
+import io.harness.pms.sdk.core.adviser.WithFailureTypes;
 
 import java.util.EnumSet;
 import java.util.Set;
