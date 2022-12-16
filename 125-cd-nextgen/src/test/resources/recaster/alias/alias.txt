@@ -658,3 +658,5 @@ io.harness.cdng.tas.TasCanaryAppSetupStepParameters
 io.harness.cdng.tas.TasBasicAppSetupStepParameters
 io.harness.cdng.tas.TasBGAppSetupStepParameters
 io.harness.cdng.tas.TasCanaryAppSetupStepInfo
+io.harness.cdng.tas.TasManifestFileContents
+io.harness.cdng.tas.TasStepPassThroughData
