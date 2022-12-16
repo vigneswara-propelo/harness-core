@@ -18,4 +18,6 @@ import retrofit2.http.Query;
 public interface IACMServiceClient {
   @GET(IACMCommonEndpointConstants.IACM_SERVICE_TOKEN_ENDPOINT)
   Call<JsonObject> generateToken(@Query("accountId") String accountId, @Header("X-Harness-Token") String globalToken);
+  @GET(IACMCommonEndpointConstants.IACM_SERVICE_GET_STACK_ENDPOINT)
+  Call<JsonObject> getStackInfo(@Query("stackId") String stackId, @Header("X-Harness-Token") String globalToken);
 }

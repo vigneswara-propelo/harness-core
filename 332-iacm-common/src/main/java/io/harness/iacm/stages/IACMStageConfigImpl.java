@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,10 +59,10 @@ public class IACMStageConfigImpl implements IntegrationStageConfig {
   @YamlSchemaTypes(value = {string})
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
   ParameterField<List<String>> sharedPaths;
+  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> stackID;
 
   ExecutionElementConfig execution;
 
-  // TODO: I Can't comment this values
   @JsonTypeInfo(
       use = JsonTypeInfo.Id.NAME, property = "type", visible = true, defaultImpl = UseFromStageInfraYaml.class)
   Infrastructure infrastructure;
@@ -76,7 +77,7 @@ public class IACMStageConfigImpl implements IntegrationStageConfig {
   @YamlSchemaTypes(value = {SupportedPossibleFieldTypes.runtime})
   @ApiModelProperty(dataType = "[Lio.harness.beans.dependencies.DependencyElement;")
   ParameterField<List<DependencyElement>> serviceDependencies;
-  // <==================== =which i think are unnecesary for our steps
+
   @YamlSchemaTypes(value = {SupportedPossibleFieldTypes.runtime})
   @ApiModelProperty(dataType = SwaggerConstants.BOOLEAN_CLASSPATH)
   private ParameterField<Boolean> cloneCodebase;

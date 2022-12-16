@@ -12,6 +12,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.GeneralException;
 import io.harness.iacm.beans.entities.IACMServiceConfig;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -27,7 +28,7 @@ import retrofit2.Response;
 @Setter
 @Slf4j
 @Singleton
-@OwnedBy(HarnessTeam.CI)
+@OwnedBy(HarnessTeam.IACM)
 public class IACMServiceUtils {
   private final IACMServiceClient iacmServiceClient;
   private final IACMServiceConfig iacmServiceConfig;
@@ -36,6 +37,41 @@ public class IACMServiceUtils {
   public IACMServiceUtils(IACMServiceClient iacmServiceClient, IACMServiceConfig iacmServiceConfig) {
     this.iacmServiceClient = iacmServiceClient;
     this.iacmServiceConfig = iacmServiceConfig;
+  }
+
+  public String getIACMConnector(String stackID) {
+    log.info("Initiating token request to IACM service: {}", this.iacmServiceConfig.getBaseUrl());
+    Call<JsonObject> connectorCall = iacmServiceClient.getStackInfo(stackID, this.iacmServiceConfig.getGlobalToken());
+    Response<JsonObject> response = null;
+
+    try {
+      response = connectorCall.execute();
+    } catch (Exception e) {
+      log.error("Error while trying to execute the query in the IACM Service: ", e);
+      throw new GeneralException("Connector request to IACM service call failed", e);
+    }
+    if (!response.isSuccessful()) {
+      String errorBody = null;
+      try {
+        errorBody = response.errorBody().string();
+      } catch (IOException e) {
+        log.error("Could not read error body {}", response.errorBody());
+      }
+
+      throw new GeneralException(String.format(
+          "Could not retrieve IACM Connector from the IACM service. status code = %s, message = %s, response = %s",
+          response.code(), response.message(), response.errorBody() == null ? "null" : errorBody));
+    }
+
+    if (response.body() == null) {
+      throw new GeneralException("Could not retrieve IACM Connector from the IACM service. Response body is null");
+    }
+    JsonElement providerConnector = response.body().get("provider_connector");
+    if (providerConnector == null) {
+      throw new GeneralException("Could not retrieve IACM Connector from the IACM service. The StackID: " + stackID
+          + " doesn't have a connector reference");
+    }
+    return providerConnector.getAsString();
   }
 
   @NotNull

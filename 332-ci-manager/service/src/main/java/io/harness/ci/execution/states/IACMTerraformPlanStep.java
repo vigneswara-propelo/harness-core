@@ -5,8 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.iacm.beans.steps;
+package io.harness.ci.states;
 
-public interface StepSpecTypeConstants {
-  String IACM_STAGE = "IACM";
+import io.harness.beans.steps.stepinfo.IACMTerraformPlanInfo;
+import io.harness.pms.contracts.steps.StepType;
+
+public class IACMTerraformPlanStep extends AbstractStepExecutable {
+  public static final StepType STEP_TYPE = IACMTerraformPlanInfo.STEP_TYPE;
 }
