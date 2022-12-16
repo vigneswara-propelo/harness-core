@@ -5,12 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.creator.plan.steps;
+package io.harness.cdng.creator.plan.steps.elastigroup;
 
-import static io.harness.annotations.dev.HarnessTeam.CDP;
-
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.elastigroup.rollback.ElastigroupRollbackStepNode;
+import io.harness.cdng.creator.plan.steps.CDPMSStepPlanCreatorV2;
+import io.harness.cdng.elastigroup.ElastigroupBGStageSetupStepNode;
 import io.harness.executions.steps.StepSpecTypeConstants;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
@@ -19,25 +19,25 @@ import io.harness.pms.sdk.core.steps.io.StepParameters;
 import com.google.common.collect.Sets;
 import java.util.Set;
 
-@OwnedBy(CDP)
-public class ElastigroupRollbackStepPlanCreator extends CDPMSStepPlanCreatorV2<ElastigroupRollbackStepNode> {
+@OwnedBy(HarnessTeam.CDP)
+public class ElastigroupBGStageSetupStepPlanCreator extends CDPMSStepPlanCreatorV2<ElastigroupBGStageSetupStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
-    return Sets.newHashSet(StepSpecTypeConstants.ELASTIGROUP_ROLLBACK);
+    return Sets.newHashSet(StepSpecTypeConstants.ELASTIGROUP_BG_STAGE_SETUP);
   }
 
   @Override
-  public Class<ElastigroupRollbackStepNode> getFieldClass() {
-    return ElastigroupRollbackStepNode.class;
+  public Class<ElastigroupBGStageSetupStepNode> getFieldClass() {
+    return ElastigroupBGStageSetupStepNode.class;
   }
 
   @Override
-  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, ElastigroupRollbackStepNode stepElement) {
+  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, ElastigroupBGStageSetupStepNode stepElement) {
     return super.createPlanForField(ctx, stepElement);
   }
 
   @Override
-  protected StepParameters getStepParameters(PlanCreationContext ctx, ElastigroupRollbackStepNode stepElement) {
+  protected StepParameters getStepParameters(PlanCreationContext ctx, ElastigroupBGStageSetupStepNode stepElement) {
     return super.getStepParameters(ctx, stepElement);
   }
 }

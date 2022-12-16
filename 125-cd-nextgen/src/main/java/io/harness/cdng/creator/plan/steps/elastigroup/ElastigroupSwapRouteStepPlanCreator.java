@@ -5,12 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.creator.plan.steps;
+package io.harness.cdng.creator.plan.steps.elastigroup;
 
-import static io.harness.annotations.dev.HarnessTeam.CDP;
-
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.elastigroup.rollback.ElastigroupRollbackStepNode;
+import io.harness.cdng.creator.plan.steps.CDPMSStepPlanCreatorV2;
+import io.harness.cdng.elastigroup.ElastigroupSwapRouteStepNode;
 import io.harness.executions.steps.StepSpecTypeConstants;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
@@ -19,25 +19,25 @@ import io.harness.pms.sdk.core.steps.io.StepParameters;
 import com.google.common.collect.Sets;
 import java.util.Set;
 
-@OwnedBy(CDP)
-public class ElastigroupRollbackStepPlanCreator extends CDPMSStepPlanCreatorV2<ElastigroupRollbackStepNode> {
+@OwnedBy(HarnessTeam.CDP)
+public class ElastigroupSwapRouteStepPlanCreator extends CDPMSStepPlanCreatorV2<ElastigroupSwapRouteStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
-    return Sets.newHashSet(StepSpecTypeConstants.ELASTIGROUP_ROLLBACK);
+    return Sets.newHashSet(StepSpecTypeConstants.ELASTIGROUP_SWAP_ROUTE);
   }
 
   @Override
-  public Class<ElastigroupRollbackStepNode> getFieldClass() {
-    return ElastigroupRollbackStepNode.class;
+  public Class<ElastigroupSwapRouteStepNode> getFieldClass() {
+    return ElastigroupSwapRouteStepNode.class;
   }
 
   @Override
-  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, ElastigroupRollbackStepNode stepElement) {
+  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, ElastigroupSwapRouteStepNode stepElement) {
     return super.createPlanForField(ctx, stepElement);
   }
 
   @Override
-  protected StepParameters getStepParameters(PlanCreationContext ctx, ElastigroupRollbackStepNode stepElement) {
+  protected StepParameters getStepParameters(PlanCreationContext ctx, ElastigroupSwapRouteStepNode stepElement) {
     return super.getStepParameters(ctx, stepElement);
   }
 }

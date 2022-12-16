@@ -598,6 +598,7 @@ import io.harness.delegate.task.elastigroup.request.ElastigroupParametersFetchRe
 import io.harness.delegate.task.elastigroup.request.ElastigroupPreFetchRequest;
 import io.harness.delegate.task.elastigroup.request.ElastigroupSetupCommandRequest;
 import io.harness.delegate.task.elastigroup.request.ElastigroupStartupScriptFetchRequest;
+import io.harness.delegate.task.elastigroup.request.ElastigroupSwapRouteCommandRequest;
 import io.harness.delegate.task.elastigroup.response.ElastigroupParametersFetchResponse;
 import io.harness.delegate.task.elastigroup.response.ElastigroupPreFetchResponse;
 import io.harness.delegate.task.elastigroup.response.ElastigroupSetupResponse;
@@ -2096,6 +2097,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(io.harness.delegate.task.elastigroup.response.SpotInstConfig.class, 573601);
     kryo.register(ElastigroupParametersFetchResponse.class, 573602);
     kryo.register(ElastigroupParametersFetchRequest.class, 573603);
+    kryo.register(ElastigroupSwapRouteCommandRequest.class, 573604);
     kryo.register(ElastigroupSwapRouteResponse.class, 573605);
     kryo.register(ElastigroupSwapRouteResult.class, 573606);
     kryo.register(ElastigroupPreFetchRequest.class, 573607);
