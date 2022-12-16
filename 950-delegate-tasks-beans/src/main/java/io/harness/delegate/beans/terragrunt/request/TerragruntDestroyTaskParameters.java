@@ -4,20 +4,26 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
-package io.harness.terragrunt.v2.request;
+
+package io.harness.delegate.beans.terragrunt.request;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.security.encryption.EncryptedRecordData;
 
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Value;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
-@Value
-@SuperBuilder
+@Data
 @OwnedBy(CDP)
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-public class TerragruntApplyCliRequest extends AbstractTerragruntCliRequest {
-  String terraformPlanName;
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class TerragruntDestroyTaskParameters extends AbstractTerragruntTaskParameters {
+  TerragruntCommandType commandType;
+  EncryptedRecordData encryptedTfPlan;
 }

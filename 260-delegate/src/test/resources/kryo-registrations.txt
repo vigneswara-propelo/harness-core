@@ -2362,6 +2362,7 @@
 573567:io.harness.delegate.task.ecs.response.EcsS3FetchRunTaskResponse
 573568:io.harness.delegate.beans.terragrunt.request.TerragruntCommandType
 573569:io.harness.delegate.beans.terragrunt.request.TerragruntApplyTaskParameters
+573570:io.harness.delegate.beans.terragrunt.request.TerragruntDestroyTaskParameters
 573571:io.harness.delegate.task.aws.asg.AsgCanaryDeployRequest
 573572:io.harness.delegate.task.aws.asg.AsgCanaryDeployResponse
 573600:io.harness.delegate.exception.ElastigroupNGException
