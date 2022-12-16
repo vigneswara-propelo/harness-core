@@ -531,7 +531,8 @@ public enum FeatureName {
   DO_NOT_LOAD_SUPPORT_ACCOUNTS_UNLESS_REQUIRED(
       "Avoid loading unnecessary support accounts unnecessarily. Enabling it will reduce memory pressure",
       HarnessTeam.PL),
-  ASG_NG("Supports Amazon ASG in NG", HarnessTeam.CDP);
+  ASG_NG("Supports Amazon ASG in NG", HarnessTeam.CDP),
+  CDP_UPDATE_INSTANCE_DETAILS_WITH_IMAGE_SUFFIX("Update instance details if image suffix matches", HarnessTeam.CDP);
 
   @Deprecated
   FeatureName() {
