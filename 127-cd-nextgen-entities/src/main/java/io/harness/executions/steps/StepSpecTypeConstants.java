@@ -89,6 +89,10 @@ public interface StepSpecTypeConstants {
 
   String TAS_CANARY_APP_SETUP = "CanaryAppSetup";
   String TAS_BG_APP_SETUP = "BGAppSetup";
+  String TAS_APP_RESIZE = "AppResize";
+  String TAS_ROLLBACK = "AppRollback";
+  String TAS_SWAP_ROUTES = "SwapRoutes";
   String TAS_BASIC_APP_SETUP = "BasicAppSetup";
+  String SWAP_ROLLBACK = "SwapRollback";
   String TANZU_COMMAND = "TanzuCommand";
 }

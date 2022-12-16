@@ -180,5 +180,9 @@ public interface YamlTypes {
   String TAS_CANARY_APP_SETUP = StepSpecTypeConstants.TAS_CANARY_APP_SETUP;
   String TAS_BG_APP_SETUP = StepSpecTypeConstants.TAS_BG_APP_SETUP;
   String TAS_BASIC_APP_SETUP = StepSpecTypeConstants.TAS_BASIC_APP_SETUP;
+  String TAS_APP_RESIZE = StepSpecTypeConstants.TAS_APP_RESIZE;
+  String TAS_SWAP_ROUTES = StepSpecTypeConstants.TAS_SWAP_ROUTES;
+  String TAS_ROLLBACK = StepSpecTypeConstants.TAS_ROLLBACK;
+  String SWAP_ROLLBACK = StepSpecTypeConstants.SWAP_ROLLBACK;
   String TANZU_COMMAND = StepSpecTypeConstants.TANZU_COMMAND;
 }

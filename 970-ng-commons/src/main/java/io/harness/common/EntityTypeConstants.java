@@ -184,6 +184,10 @@ public interface EntityTypeConstants {
   String ELASTIGROUP_SWAP_ROUTE = "ElastigroupSwapRoute";
   String ASG_CANARY_DEPLOY = "AsgCanaryDeploy";
   String ASG_CANARY_DELETE = "AsgCanaryDelete";
+  String TAS_SWAP_ROUTES_STEP = "SwapRoutes";
+  String TAS_SWAP_ROLLBACK_STEP = "SwapRollback";
+  String TAS_APP_RESIZE_STEP = "AppResize";
+  String TAS_ROLLBACK_STEP = "AppRollback";
   String TAS_CANARY_APP_SETUP_STEP = "CanaryAppSetup";
   String TAS_BG_APP_SETUP_STEP = "BGAppSetup";
   String TAS_BASIC_APP_SETUP_STEP = "BasicAppSetup";
