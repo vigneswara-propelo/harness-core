@@ -102,6 +102,7 @@ import io.harness.pms.contracts.plan.ExecutionPrincipalInfo;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.rbac.PipelineRbacHelper;
 import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
+import io.harness.pms.sdk.core.execution.SdkGraphVisualizationDataService;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
@@ -166,6 +167,7 @@ public class InitializeTaskStepV2 implements AsyncExecutableWithRbac<StepElement
   @Inject private HsqsServiceClient hsqsServiceClient;
   @Inject private CIExecutionServiceConfig ciExecutionServiceConfig;
 
+  @Inject SdkGraphVisualizationDataService sdkGraphVisualizationDataService;
   private static final String DEPENDENCY_OUTCOME = "dependencies";
 
   @Override
@@ -202,7 +204,11 @@ public class InitializeTaskStepV2 implements AsyncExecutableWithRbac<StepElement
     } else {
       taskId = executeBuild(ambiance, stepParameters);
     }
+    InitStepV2DelegateTaskInfo initStepV2DelegateTaskInfo =
+        InitStepV2DelegateTaskInfo.builder().taskID(taskId).taskName("INITIALIZATION_PHASE").build();
 
+    sdkGraphVisualizationDataService.publishStepDetailInformation(
+        ambiance, initStepV2DelegateTaskInfo, "initStepV2DelegateTaskInfo");
     return AsyncExecutableResponse.newBuilder()
         .addCallbackIds(taskId)
         .addAllLogKeys(CollectionUtils.emptyIfNull(singletonList(logKey)))
