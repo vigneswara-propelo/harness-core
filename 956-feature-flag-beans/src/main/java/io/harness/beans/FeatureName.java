@@ -492,6 +492,7 @@ public enum FeatureName {
       "Enables User Group sync operation to fetch data from Ldap Server in Parallel. Enable only if Ldap Server can take the load",
       HarnessTeam.PL),
   CDS_TAS_NG("FF for enabling TAS deployment in NG", HarnessTeam.CDP),
+  SPG_WFE_OPTIMIZE_UPDATE_PIPELINE_ESTIMATES("Optimization for updatePipelineEstimates method", HarnessTeam.SPG),
   CDS_OrgAccountLevelServiceEnvEnvGroup(
       "Support Creation and Use of Org and Account level Services and Environments", HarnessTeam.CDC),
   CE_NET_AMORTISED_COST_ENABLED("Enable cost calculation through Net Amortised cost", HarnessTeam.CE),
