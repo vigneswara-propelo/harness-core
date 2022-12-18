@@ -127,12 +127,12 @@ public class CfDeployCommandTaskHandlerNG extends CfCommandTaskNGHandler {
         executionLogCallback.saveExecutionLog("Upsize Application Successfully Completed", INFO, SUCCESS);
       } else {
         cfCommandTaskHelperNG.upsizeNewApplication(executionLogCallback, cfDeployCommandRequestNG, cfServiceDataUpdated,
-            cfRequestConfig, details, oldAppInstances, cfAppAutoscalarRequestData);
+            cfRequestConfig, details, newAppInstances, cfAppAutoscalarRequestData);
         executionLogCallback.saveExecutionLog("Upsize Application Successfully Completed", INFO, SUCCESS);
         executionLogCallback =
             tasTaskHelperBase.getLogCallback(iLogStreamingTaskClient, Downsize, true, commandUnitsProgress);
         cfCommandTaskHelperNG.downsizePreviousReleases(cfDeployCommandRequestNG, cfRequestConfig, executionLogCallback,
-            cfServiceDataUpdated, stepDecrease, newAppInstances, cfAppAutoscalarRequestData);
+            cfServiceDataUpdated, stepDecrease, oldAppInstances, cfAppAutoscalarRequestData);
         executionLogCallback.saveExecutionLog("Downsize Application Successfully Completed", INFO, SUCCESS);
       }
 
@@ -160,7 +160,8 @@ public class CfDeployCommandTaskHandlerNG extends CfCommandTaskNGHandler {
           FileIo.deleteDirectoryAndItsContentIfExists(workingDirectory.getAbsolutePath());
         }
       } catch (IOException e) {
-        log.warn("Failed to delete Temp Directory created for CF CLI login", e);
+        Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
+        log.warn("Failed to delete Temp Directory created for CF CLI login", sanitizedException);
       }
     }
     if (noExceptionOccured) {

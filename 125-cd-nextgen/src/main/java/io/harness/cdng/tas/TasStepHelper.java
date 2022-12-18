@@ -295,6 +295,11 @@ public class TasStepHelper {
       throw new InvalidRequestException("Only Inline and Harness Store supported for TAS Command Scripts", USER);
     }
 
+    if (isEmpty(scriptString)) {
+      logCallback.saveExecutionLog("Failed", INFO, FAILURE);
+      throw new InvalidRequestException("Script cannot be empty", USER);
+    }
+
     // Resolving expressions
     scriptString = engineExpressionService.renderExpression(ambiance, scriptString);
     String rawScript = removeCommentedLineFromScript(scriptString);
