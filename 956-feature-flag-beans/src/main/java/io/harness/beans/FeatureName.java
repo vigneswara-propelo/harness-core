@@ -383,8 +383,6 @@ public enum FeatureName {
   PERSIST_MONITORED_SERVICE_TEMPLATE_STEP(
       "Enables saving of monitored service created during template verify step", HarnessTeam.CV),
   VALIDATE_PHASES_AND_ROLLBACK("Validate that each phase has your own rollback phase", HarnessTeam.SPG),
-  OPTIMIZED_TF_PLAN_NG(
-      "Enables uploading Terraform plan to GCS/MongoGridFS instead of saving to sweeping output", HarnessTeam.CDP),
   CIE_HOSTED_VMS(
       "Enables hosted VMs in favor of hosted K8s for CIE. This flag will be deprecated once all the feature work has been checked in",
       HarnessTeam.CI),
