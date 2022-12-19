@@ -63,6 +63,9 @@ public interface CVNextGenConstants {
   String CHANGE_EVENT_PATH = PROJECT_PATH + "/change-event";
   String HEALTH_SOURCE_PATH = PROJECT_PATH + "/health-source";
   String VERIFY_STEP_PATH = PROJECT_PATH + "/verify-step";
-  String SLO_NG_PROJECT_PATH = "slo/v2/" + PROJECT_PATH;
+  String SLO_V2_PATH = SLASH_DELIMITER + "slo/v2";
+  String SLO_NG_ACCOUNT_PATH = ACCOUNT_PATH + SLO_V2_PATH;
+  String SLO_NG_ORG_PATH = ORG_PATH + SLO_V2_PATH;
+  String SLO_NG_PROJECT_PATH = PROJECT_PATH + SLO_V2_PATH;
   String MONITORED_SERVICE_YAML_ROOT = "monitoredService";
 }
