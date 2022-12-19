@@ -906,7 +906,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                                              .addAllCategory(SHELL_SCRIPT_PROVISIONER_CATEGORY)
                                                              .addFolderPaths(SHELL_SCRIPT_PROVISIONER_STEM_METADATA)
                                                              .build())
-                                        .setFeatureFlag(FeatureName.SHELL_SCRIPT_PROVISION_NG.name())
                                         .build();
 
     StepInfo chaosStep =
