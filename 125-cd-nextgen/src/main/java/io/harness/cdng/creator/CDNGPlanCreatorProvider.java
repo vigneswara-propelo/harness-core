@@ -863,7 +863,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                  .addAllCategory(AZURE_RESOURCE_CATEGORY)
                                  .addFolderPaths(AZURE_RESOURCE_STEP_METADATA)
                                  .build())
-            .setFeatureFlag(FeatureName.AZURE_ARM_BP_NG.name())
             .build();
 
     StepInfo azureCreateBPResources =
@@ -875,7 +874,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                  .addAllCategory(AZURE_RESOURCE_CATEGORY)
                                  .addFolderPaths(AZURE_RESOURCE_STEP_METADATA)
                                  .build())
-            .setFeatureFlag(FeatureName.AZURE_ARM_BP_NG.name())
             .build();
 
     StepInfo azureARMRollback =
@@ -887,7 +885,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                  .addAllCategory(AZURE_RESOURCE_CATEGORY)
                                  .addFolderPaths(AZURE_RESOURCE_STEP_METADATA)
                                  .build())
-            .setFeatureFlag(FeatureName.AZURE_ARM_BP_NG.name())
             .build();
 
     StepInfo fetchInstanceScript =

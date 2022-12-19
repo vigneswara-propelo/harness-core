@@ -370,7 +370,6 @@ public enum FeatureName {
       "Making multiple optimizations for workflow execution graphql in CG", HarnessTeam.SPG),
   NG_ENABLE_LDAP_CHECK("Enables NG Ldap in NG-UI", HarnessTeam.PL),
   CUSTOM_SECRET_MANAGER_NG("Enable Custom Secret Manager in NG", HarnessTeam.PL),
-  AZURE_ARM_BP_NG("Used to allow customers to access ARM/BP capabilities", HarnessTeam.CDP),
   CV_AWS_PROMETHEUS("Enable AWS Prometheus for CV State", HarnessTeam.CV),
   CD_GIT_WEBHOOK_POLLING("Used to poll git webhook recent delivery events", HarnessTeam.CDP),
   MULTI_SERVICE_INFRA("Enable multiple service/environment support in NG", HarnessTeam.CDP),
