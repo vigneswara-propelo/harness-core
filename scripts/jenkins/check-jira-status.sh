@@ -59,9 +59,9 @@ check_file_present $PROJFILE
 PROJECTS=$(<$PROJFILE)
 
 # Check commit message if there's a single commit
-if [ $(git rev-list --count $ghprbActualCommit ^origin/develop)  -eq 1 ]; then
-    ghprbPullTitle=$(git log -1 --format="%s" $ghprbActualCommit)
-fi
+#if [ $(git rev-list --count $ghprbActualCommit ^origin/develop)  -eq 1 ]; then
+#    ghprbPullTitle=$(git log -1 --format="%s" $ghprbActualCommit)
+#fi
 KEY=`echo "${ghprbPullTitle}" | grep -o -iE "\[(${PROJECTS})-[0-9]+]:" | grep -o -iE "(${PROJECTS})-[0-9]+"`
 
 echo "JIRA Key is : $KEY "
