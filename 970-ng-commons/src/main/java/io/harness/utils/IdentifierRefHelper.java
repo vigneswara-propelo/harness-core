@@ -132,7 +132,7 @@ public class IdentifierRefHelper {
     }
 
     if (isEmpty(scopedIdentifierConfig)) {
-      throw new InvalidIdentifierRefException("Empty identifier ref cannot be given");
+      throw new InvalidIdentifierRefException("Empty identifier values are not supported");
     }
     String[] identifierConfigStringSplit = scopedIdentifierConfig.split(IDENTIFIER_REF_DELIMITER);
 
