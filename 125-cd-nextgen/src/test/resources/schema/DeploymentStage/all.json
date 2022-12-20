@@ -1,6 +1,7 @@
 {
   "type": "object",
   "required": [
+    "failureStrategies",
     "identifier",
     "name",
     "type"
@@ -3424,6 +3425,7 @@
     "DeploymentStageNode": {
       "type": "object",
       "required": [
+        "failureStrategies",
         "identifier",
         "name",
         "type"
