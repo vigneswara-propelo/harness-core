@@ -21,6 +21,7 @@ import io.harness.pms.contracts.plan.PlanCreationContextValue;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.execution.utils.SkipInfoUtils;
+import io.harness.pms.merger.helpers.RuntimeInputFormHelper;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
 import io.harness.pms.pipelinestage.PipelineStageStepParameters;
@@ -70,6 +71,12 @@ public class PipelineStagePlanCreator implements PartialPlanCreator<PipelineStag
   public Map<String, Set<String>> getSupportedTypes() {
     return Collections.singletonMap(
         YAMLFieldNameConstants.STAGE, Collections.singleton(StepSpecTypeConstants.PIPELINE_STAGE));
+  }
+
+  @Override
+  public String getExecutionInputTemplateAndModifyYamlField(YamlField yamlField) {
+    return RuntimeInputFormHelper.createExecutionInputFormAndUpdateYamlFieldForStage(
+        yamlField.getNode().getParentNode().getCurrJsonNode());
   }
 
   public PipelineStageStepParameters getStepParameter(
