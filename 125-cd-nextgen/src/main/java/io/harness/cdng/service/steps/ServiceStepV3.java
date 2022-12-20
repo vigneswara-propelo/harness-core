@@ -526,7 +526,7 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
           "Service Definition is not defined for service : " + serviceEntity.getIdentifier());
     }
 
-    serviceStepsHelper.validateResources(ambiance, ngServiceConfig);
+    serviceStepsHelper.checkForVariablesAccessOrThrow(ambiance, ngServiceConfig);
 
     entityMap.put(FreezeEntityType.ORG, Lists.newArrayList(serviceEntity.getOrgIdentifier()));
     entityMap.put(FreezeEntityType.PROJECT, Lists.newArrayList(serviceEntity.getProjectIdentifier()));
