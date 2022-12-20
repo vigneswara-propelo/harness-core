@@ -1962,6 +1962,18 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
     return selectorCapabilities;
   }
 
+  @Override
+  public boolean saveAndBroadcastDelegateTaskV2(DelegateTask delegateTask) {
+    //@Todo: Add check if delegate task ia already saved in DB
+    persistence.save(delegateTask);
+    if (delegateTask.getTaskDataV2().isAsync()) {
+      broadcastHelper.broadcastNewDelegateTaskAsyncV2(delegateTask);
+    } else {
+      broadcastHelper.rebroadcastDelegateTaskV2(delegateTask);
+    }
+    return true;
+  }
+
   private void printErrorMessageOnTaskFailure(DelegateTask task) {
     log.info("Task Activity Log {}", task.getTaskActivityLogs().stream().collect(Collectors.joining("\n")));
   }
