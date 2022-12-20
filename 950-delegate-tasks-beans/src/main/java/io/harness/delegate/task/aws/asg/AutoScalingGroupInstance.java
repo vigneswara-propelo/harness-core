@@ -13,10 +13,12 @@ import io.harness.annotations.dev.OwnedBy;
 import lombok.Builder;
 import lombok.Data;
 
+@OwnedBy(HarnessTeam.CDP)
 @Data
 @Builder
-@OwnedBy(HarnessTeam.CDP)
-public class AsgCanaryDeployResult {
-  private String region;
-  private AutoScalingGroupContainer autoScalingGroupContainer;
+public class AutoScalingGroupInstance {
+  private String instanceId;
+  private String instanceType;
+  private String autoScalingGroupName;
+  private String launchTemplateVersion;
 }

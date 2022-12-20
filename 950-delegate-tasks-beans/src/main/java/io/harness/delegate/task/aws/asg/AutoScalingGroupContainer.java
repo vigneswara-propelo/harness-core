@@ -10,13 +10,16 @@ package io.harness.delegate.task.aws.asg;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
+@OwnedBy(HarnessTeam.CDP)
 @Data
 @Builder
-@OwnedBy(HarnessTeam.CDP)
-public class AsgCanaryDeployResult {
-  private String region;
-  private AutoScalingGroupContainer autoScalingGroupContainer;
+public class AutoScalingGroupContainer {
+  private String autoScalingGroupName;
+  private String launchTemplateName;
+  private String launchTemplateVersion;
+  private List<AutoScalingGroupInstance> autoScalingGroupInstanceList;
 }

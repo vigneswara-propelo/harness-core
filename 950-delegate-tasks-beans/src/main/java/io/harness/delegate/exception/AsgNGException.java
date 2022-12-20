@@ -5,18 +5,20 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.task.aws.asg;
+package io.harness.delegate.exception;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.exception.DataException;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
-@Data
-@Builder
 @OwnedBy(HarnessTeam.CDP)
-public class AsgCanaryDeployResult {
-  private String region;
-  private AutoScalingGroupContainer autoScalingGroupContainer;
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class AsgNGException extends DataException {
+  public AsgNGException(Throwable cause) {
+    super(cause);
+  }
 }
