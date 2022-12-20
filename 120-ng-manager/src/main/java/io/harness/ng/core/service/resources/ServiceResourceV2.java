@@ -531,6 +531,8 @@ public class ServiceResourceV2 {
           .serviceIdentifier(serviceEntity.getIdentifier())
           .serviceYaml("")
           .inputSetTemplateYaml("")
+          .projectIdentifier(serviceEntity.getProjectIdentifier())
+          .orgIdentifier(serviceEntity.getOrgIdentifier())
           .build();
     }
 
@@ -540,6 +542,8 @@ public class ServiceResourceV2 {
         .serviceIdentifier(serviceEntity.getIdentifier())
         .serviceYaml(serviceEntity.getYaml())
         .inputSetTemplateYaml(serviceInputSetYaml)
+        .orgIdentifier(serviceEntity.getOrgIdentifier())
+        .projectIdentifier(serviceEntity.getProjectIdentifier())
         .build();
   }
 
