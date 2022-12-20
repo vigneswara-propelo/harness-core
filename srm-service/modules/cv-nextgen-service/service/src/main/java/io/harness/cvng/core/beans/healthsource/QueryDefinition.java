@@ -7,25 +7,26 @@
 
 package io.harness.cvng.core.beans.healthsource;
 
+import io.harness.beans.WithIdentifier;
 import io.harness.cvng.core.beans.RiskProfile;
 import io.harness.cvng.core.beans.monitoredService.TimeSeriesMetricPackDTO;
 
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 @Builder
-public class QueryDefinitions {
+public class QueryDefinition implements WithIdentifier {
   String identifier;
   String name;
   String groupName;
   QueryParams queryParams;
-  boolean liveMonitoring;
-  boolean continuousVerification;
-  boolean sli;
+  Boolean liveMonitoringEnabled;
+  Boolean continuousVerificationEnabled;
+  Boolean sliEnabled;
   String query;
-  List<TimeSeriesMetricPackDTO.MetricThreshold> metricThresholds = new ArrayList<>();
+  @Builder.Default List<TimeSeriesMetricPackDTO.MetricThreshold> metricThresholds = new ArrayList<>();
   RiskProfile riskProfile;
 }

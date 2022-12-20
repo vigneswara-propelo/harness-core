@@ -12,6 +12,7 @@ import static io.harness.cvng.core.utils.ErrorMessageUtils.generateErrorMessageF
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import io.harness.cvng.beans.DataSourceType;
+import io.harness.cvng.core.beans.healthsource.QueryParams;
 import io.harness.cvng.exception.NotImplementedForHealthSourceException;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -25,37 +26,44 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import org.mongodb.morphia.query.UpdateOperations;
 
-@JsonTypeName("SUMOLOGIC_LOG")
+@JsonTypeName("NEXTGEN_LOG")
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @FieldNameConstants(innerTypeName = "CVConfigKeys")
 @EqualsAndHashCode(callSuper = true)
-public class SumologicLogCVConfig extends LogCVConfig {
-  private static final String DSL = readDSL();
-  String serviceInstanceIdentifier;
+public class NextGenLogCVConfig extends LogCVConfig {
+  QueryParams queryParams;
+  DataSourceType dataSourceType;
 
   @Override
   protected void validateParams() {
-    checkNotNull(serviceInstanceIdentifier, generateErrorMessageFromParam(CVConfigKeys.serviceInstanceIdentifier));
+    checkNotNull(queryParams, generateErrorMessageFromParam(CVConfigKeys.queryParams));
+    checkNotNull(queryParams.getServiceInstanceField(),
+        generateErrorMessageFromParam(QueryParams.QueryParamKeys.serviceInstanceField));
   }
 
   @Override
   public DataSourceType getType() {
-    return DataSourceType.SUMOLOGIC_LOG;
+    return dataSourceType;
   }
 
   @Override
   public String getDataCollectionDsl() {
-    return DSL;
+    return readLogDSL(dataSourceType);
   }
 
-  private static String readDSL() {
-    try {
-      return Resources.toString(
-          SumologicLogCVConfig.class.getResource("sumologic-log.datacollection"), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
+  public static String readLogDSL(DataSourceType dataSourceType) {
+    // TODO dont read repeatedly and also move it from here
+    if (dataSourceType == DataSourceType.SUMOLOGIC_LOG) {
+      try {
+        return Resources.toString(
+            NextGenLogCVConfig.class.getResource("sumologic-log.datacollection"), StandardCharsets.UTF_8);
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    } else {
+      throw new NotImplementedForHealthSourceException("Not Implemented.");
     }
   }
 
@@ -64,14 +72,12 @@ public class SumologicLogCVConfig extends LogCVConfig {
     throw new NotImplementedForHealthSourceException("Not implemented");
   }
 
-  public static class ConfigUpdatableEntity
-      extends LogCVConfigUpdatableEntity<SumologicLogCVConfig, SumologicLogCVConfig> {
+  public static class ConfigUpdatableEntity extends LogCVConfigUpdatableEntity<NextGenLogCVConfig, NextGenLogCVConfig> {
     @Override
     public void setUpdateOperations(
-        UpdateOperations<SumologicLogCVConfig> updateOperations, SumologicLogCVConfig sumologicLogCVConfig) {
-      setCommonOperations(updateOperations, sumologicLogCVConfig);
-      updateOperations.set(SumologicLogCVConfig.CVConfigKeys.serviceInstanceIdentifier,
-          sumologicLogCVConfig.getServiceInstanceIdentifier());
+        UpdateOperations<NextGenLogCVConfig> updateOperations, NextGenLogCVConfig nextGenLogCVConfig) {
+      setCommonOperations(updateOperations, nextGenLogCVConfig);
+      updateOperations.set(CVConfigKeys.queryParams, nextGenLogCVConfig.getQueryParams());
     }
   }
 }

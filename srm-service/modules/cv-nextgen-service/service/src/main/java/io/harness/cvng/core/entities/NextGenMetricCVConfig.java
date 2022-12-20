@@ -14,7 +14,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import io.harness.cvng.beans.CVMonitoringCategory;
 import io.harness.cvng.beans.DataSourceType;
 import io.harness.cvng.beans.TimeSeriesMetricType;
-import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricDefinition;
+import io.harness.cvng.core.beans.healthsource.HealthSourceParams;
+import io.harness.cvng.core.beans.healthsource.QueryDefinition;
 import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.utils.analysisinfo.AnalysisInfoUtility;
 import io.harness.cvng.core.utils.analysisinfo.DevelopmentVerificationTransformer;
@@ -37,16 +38,20 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import org.mongodb.morphia.query.UpdateOperations;
 
-@JsonTypeName("SUMOLOGIC_METRIC")
+@JsonTypeName("NEXTGEN_METRIC")
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @FieldNameConstants(innerTypeName = "CVConfigKeys")
 @EqualsAndHashCode(callSuper = true)
-public class SumologicMetricCVConfig extends MetricCVConfig<SumologicMetricInfo> {
+public class NextGenMetricCVConfig extends MetricCVConfig<NextGenMetricInfo> {
   @NotNull private String groupName;
 
-  @NotNull private List<SumologicMetricInfo> metricInfos;
+  @NotNull private DataSourceType dataSourceType;
+
+  @NotNull private List<NextGenMetricInfo> metricInfos;
+
+  HealthSourceParams healthSourceParams;
   @Override
   public boolean isSLIEnabled() {
     return AnalysisInfoUtility.anySLIEnabled(metricInfos);
@@ -64,13 +69,13 @@ public class SumologicMetricCVConfig extends MetricCVConfig<SumologicMetricInfo>
 
   @Override
   protected void validateParams() {
-    checkNotNull(groupName, generateErrorMessageFromParam(SumologicMetricCVConfig.CVConfigKeys.groupName));
-    checkNotNull(metricInfos, generateErrorMessageFromParam(SumologicMetricCVConfig.CVConfigKeys.metricInfos));
+    checkNotNull(groupName, generateErrorMessageFromParam(NextGenMetricCVConfig.CVConfigKeys.groupName));
+    checkNotNull(metricInfos, generateErrorMessageFromParam(NextGenMetricCVConfig.CVConfigKeys.metricInfos));
   }
 
   @Override
   public DataSourceType getType() {
-    return DataSourceType.SUMOLOGIC_METRICS;
+    return dataSourceType;
   }
 
   @Override
@@ -84,7 +89,7 @@ public class SumologicMetricCVConfig extends MetricCVConfig<SumologicMetricInfo>
   }
 
   @Override
-  public List<SumologicMetricInfo> getMetricInfos() {
+  public List<NextGenMetricInfo> getMetricInfos() {
     if (metricInfos == null) {
       return Collections.emptyList();
     }
@@ -92,59 +97,63 @@ public class SumologicMetricCVConfig extends MetricCVConfig<SumologicMetricInfo>
   }
 
   @Override
-  public void setMetricInfos(List<SumologicMetricInfo> metricInfos) {
+  public void setMetricInfos(List<NextGenMetricInfo> metricInfos) {
     this.metricInfos = metricInfos;
   }
 
-  public void populateFromMetricDefinitions(List<MetricDefinition> metricDefinitions, CVMonitoringCategory category) {
+  public void populateFromQueryDefinitions(List<QueryDefinition> queryDefinitions, CVMonitoringCategory category) {
     if (metricInfos == null) {
       metricInfos = new ArrayList<>();
     }
-    Preconditions.checkNotNull(metricDefinitions);
+    Preconditions.checkNotNull(queryDefinitions);
     MetricPack metricPack = MetricPack.builder()
                                 .category(category)
                                 .accountId(getAccountId())
+                                .orgIdentifier(getOrgIdentifier())
                                 .dataSourceType(DataSourceType.SUMOLOGIC_METRICS)
                                 .projectIdentifier(getProjectIdentifier())
                                 .identifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER)
                                 .build();
 
-    metricDefinitions.forEach(
-        (MetricDefinition metricDefinition) -> setMetricPackFromMetricDefinition(metricPack, metricDefinition));
+    queryDefinitions.forEach(
+        (QueryDefinition queryDefinition) -> setMetricPackFromQueryDefinition(metricPack, queryDefinition));
     this.setMetricPack(metricPack);
   }
 
-  private void setMetricPackFromMetricDefinition(MetricPack metricPack, MetricDefinition metricDefinition) {
-    TimeSeriesMetricType metricType = metricDefinition.getRiskProfile().getMetricType();
-    metricInfos.add(SumologicMetricInfo.builder()
-                        .metricName(metricDefinition.getMetricName())
-                        .query(metricDefinition.getQuery())
-                        .identifier(metricDefinition.getIdentifier())
-                        .sli(SLIMetricTransformer.transformDTOtoEntity(metricDefinition.getSli()))
-                        .liveMonitoring(LiveMonitoringTransformer.transformDTOtoEntity(metricDefinition.getAnalysis()))
+  private void setMetricPackFromQueryDefinition(MetricPack metricPack, QueryDefinition queryDefinition) {
+    TimeSeriesMetricType metricType = queryDefinition.getRiskProfile().getMetricType();
+    metricInfos.add(NextGenMetricInfo.builder()
+                        .metricName(queryDefinition.getName())
+                        .metricType(metricType)
+                        .query(queryDefinition.getQuery())
+                        .queryParams(queryDefinition.getQueryParams())
+                        .identifier(queryDefinition.getIdentifier())
+                        .sli(SLIMetricTransformer.transformQueryDefinitiontoEntity(queryDefinition))
+                        .liveMonitoring(LiveMonitoringTransformer.transformQueryDefinitiontoEntity(queryDefinition))
                         .deploymentVerification(
-                            DevelopmentVerificationTransformer.transformDTOtoEntity(metricDefinition.getAnalysis()))
+                            DevelopmentVerificationTransformer.transformQueryDefinitiontoEntity(queryDefinition))
                         .build());
 
     // add the relevant thresholds to metricPack
+    // TODO some funky business here , revisit
     Set<TimeSeriesThreshold> thresholds = getThresholdsToCreateOnSaveForCustomProviders(
-        metricDefinition.getMetricName(), metricType, metricDefinition.getRiskProfile().getThresholdTypes());
+        queryDefinition.getName(), metricType, queryDefinition.getRiskProfile().getThresholdTypes());
     metricPack.addToMetrics(MetricPack.MetricDefinition.builder()
                                 .thresholds(new ArrayList<>(thresholds))
                                 .type(metricType)
-                                .name(metricDefinition.getMetricName())
-                                .identifier(metricDefinition.getIdentifier())
+                                .name(queryDefinition.getName())
+                                .identifier(queryDefinition.getIdentifier())
                                 .included(true)
                                 .build());
   }
 
   public static class UpdatableEntity
-      extends MetricCVConfigUpdatableEntity<SumologicMetricCVConfig, SumologicMetricCVConfig> {
+      extends MetricCVConfigUpdatableEntity<NextGenMetricCVConfig, NextGenMetricCVConfig> {
     @Override
     public void setUpdateOperations(
-        UpdateOperations<SumologicMetricCVConfig> updateOperations, SumologicMetricCVConfig cvConfig) {
+        UpdateOperations<NextGenMetricCVConfig> updateOperations, NextGenMetricCVConfig cvConfig) {
       setCommonOperations(updateOperations, cvConfig);
-      updateOperations.set(SumologicMetricCVConfig.CVConfigKeys.groupName, cvConfig.getGroupName())
+      updateOperations.set(NextGenMetricCVConfig.CVConfigKeys.groupName, cvConfig.getGroupName())
           .set(CVConfigKeys.metricInfos, cvConfig.getMetricInfos());
     }
   }
@@ -163,28 +172,28 @@ public class SumologicMetricCVConfig extends MetricCVConfig<SumologicMetricInfo>
 
   // TODO remove
 
-  public void addMetricPackAndInfo(List<MetricDefinition> metricDefinitions) {
-    CVMonitoringCategory category = metricDefinitions.get(0).getRiskProfile().getCategory();
+  public void addMetricPackAndInfo(List<QueryDefinition> queryDefinitions) {
+    CVMonitoringCategory category = queryDefinitions.get(0).getRiskProfile().getCategory();
     MetricPack metricPack = createMetricPack(category);
     this.metricInfos =
-        metricDefinitions.stream()
-            .map((MetricDefinition metricDefinition) -> {
-              SumologicMetricInfo metricInfo =
-                  SumologicMetricInfo.builder()
-                      .identifier(metricDefinition.getIdentifier())
-                      .metricName(metricDefinition.getMetricName())
-                      .query(metricDefinition.getQuery())
-                      .responseMapping(metricDefinition.getResponseMapping())
-                      .sli(SLIMetricTransformer.transformDTOtoEntity(metricDefinition.getSli()))
-                      .liveMonitoring(LiveMonitoringTransformer.transformDTOtoEntity(metricDefinition.getAnalysis()))
+        queryDefinitions.stream()
+            .map((QueryDefinition queryDefinition) -> {
+              NextGenMetricInfo metricInfo =
+                  NextGenMetricInfo.builder()
+                      .identifier(queryDefinition.getIdentifier())
+                      .metricName(queryDefinition.getName())
+                      .query(queryDefinition.getQuery())
+                      .queryParams(queryDefinition.getQueryParams())
+                      .sli(SLIMetricTransformer.transformQueryDefinitiontoEntity(queryDefinition))
+                      .liveMonitoring(LiveMonitoringTransformer.transformQueryDefinitiontoEntity(queryDefinition))
                       .deploymentVerification(
-                          DevelopmentVerificationTransformer.transformDTOtoEntity(metricDefinition.getAnalysis()))
-                      .metricType(metricDefinition.getRiskProfile().getMetricType())
+                          DevelopmentVerificationTransformer.transformQueryDefinitiontoEntity(queryDefinition))
+                      .metricType(queryDefinition.getRiskProfile().getMetricType())
                       .build();
               // Setting default thresholds
               Set<TimeSeriesThreshold> thresholds =
                   getThresholdsToCreateOnSaveForCustomProviders(metricInfo.getMetricName(), metricInfo.getMetricType(),
-                      metricDefinition.getRiskProfile().getThresholdTypes());
+                      queryDefinition.getRiskProfile().getThresholdTypes());
 
               metricPack.addToMetrics(MetricPack.MetricDefinition.builder()
                                           .thresholds(new ArrayList<>(thresholds))

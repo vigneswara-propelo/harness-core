@@ -8,7 +8,7 @@
 package io.harness.cvng.core.entities;
 
 import io.harness.cvng.beans.TimeSeriesMetricType;
-import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.MetricResponseMapping;
+import io.harness.cvng.core.beans.healthsource.QueryParams;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -18,9 +18,9 @@ import lombok.experimental.SuperBuilder;
 @Value
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-@FieldNameConstants(innerTypeName = "SumologicMetricInfoKeys")
-public class SumologicMetricInfo extends AnalysisInfo {
+@FieldNameConstants(innerTypeName = "NextGenMetricInfoKeys")
+public class NextGenMetricInfo extends AnalysisInfo {
   String query;
   TimeSeriesMetricType metricType;
-  MetricResponseMapping responseMapping;
+  QueryParams queryParams; // TODO new entity define
 }

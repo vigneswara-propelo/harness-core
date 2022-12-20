@@ -18,12 +18,12 @@ import io.harness.rule.Owner;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-public class SumologicMetricCVConfigTest extends CategoryTest {
+public class NextGenMetricCVConfigTest extends CategoryTest {
   @Test
   @Owner(developers = ANSUMAN)
   @Category(UnitTests.class)
   public void testValidateParams_whenServiceInstanceIdentifierIsUndefined() {
-    assertThatThrownBy(() -> SumologicMetricCVConfig.builder().build().validateParams())
+    assertThatThrownBy(() -> NextGenMetricCVConfig.builder().build().validateParams())
         .isInstanceOf(NullPointerException.class)
         .hasMessage("groupName should not be null");
   }
