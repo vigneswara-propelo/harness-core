@@ -417,7 +417,6 @@ public enum FeatureName {
   STAGE_AND_STEP_LEVEL_DEPLOYMENT_DETAILS,
   NG_DEPLOYMENT_FREEZE("Enables Deployment freeze for NG", HarnessTeam.CDC),
   NG_DEPLOYMENT_FREEZE_OVERRIDE("Override freeze for NG", HarnessTeam.CDC),
-  PL_ENABLE_SWITCH_ACCOUNT_PAGINATION("Enables new API for Switch Account which is paginated", HarnessTeam.PL),
   NEW_EXECUTION_LIST_VIEW(
       "Enables the new UX for Executions list view for Pipelines and Projects", HarnessTeam.PIPELINE),
   PL_ACCESS_SECRET_DYNAMICALLY_BY_PATH(
