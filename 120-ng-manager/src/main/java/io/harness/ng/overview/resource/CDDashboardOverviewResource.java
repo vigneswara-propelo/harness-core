@@ -41,7 +41,7 @@ import io.harness.ng.overview.dto.EnvironmentDeploymentInfo;
 import io.harness.ng.overview.dto.ExecutionDeploymentInfo;
 import io.harness.ng.overview.dto.HealthDeploymentDashboard;
 import io.harness.ng.overview.dto.HealthDeploymentDashboardV2;
-import io.harness.ng.overview.dto.InstanceGroupedByArtifactList;
+import io.harness.ng.overview.dto.InstanceGroupedByServiceList;
 import io.harness.ng.overview.dto.InstancesByBuildIdList;
 import io.harness.ng.overview.dto.ServiceDeploymentInfoDTO;
 import io.harness.ng.overview.dto.ServiceDeploymentListInfo;
@@ -350,7 +350,7 @@ public class CDDashboardOverviewResource {
   @ApiOperation(
       value = "Get list of artifact version, last pipeline execution, environment, infrastructure with instance count",
       nickname = "getActiveServiceInstances")
-  public ResponseDTO<InstanceGroupedByArtifactList>
+  public ResponseDTO<InstanceGroupedByServiceList.InstanceGroupedByService>
   getEnvBuildInstanceCountV2(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
@@ -474,7 +474,7 @@ public class CDDashboardOverviewResource {
   @Path("/getActiveServiceDeployments")
   @ApiOperation(value = "Get Information about artifacts for a particular service, deployed to different environments",
       nickname = "getActiveServiceDeployments")
-  public ResponseDTO<InstanceGroupedByArtifactList>
+  public ResponseDTO<InstanceGroupedByServiceList.InstanceGroupedByService>
   getActiveServiceDeployments(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
