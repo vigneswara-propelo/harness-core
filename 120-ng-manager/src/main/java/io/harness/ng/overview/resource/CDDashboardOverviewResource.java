@@ -114,6 +114,7 @@ public class CDDashboardOverviewResource {
   @Path("/deploymentHealthV2")
   @ApiOperation(value = "Get deployment health V2", nickname = "getDeploymentHealthV2")
   @NGAccessControlCheck(resourceType = PROJECT, permission = VIEW_PROJECT_PERMISSION)
+  @Hidden
   public ResponseDTO<HealthDeploymentDashboardV2> getDeploymentHealthV2(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
@@ -162,6 +163,7 @@ public class CDDashboardOverviewResource {
   @GET
   @Path("/serviceDeploymentsInfoV2")
   @ApiOperation(value = "Get service deployments info v2", nickname = "getServiceDeploymentsInfoV2")
+  @Hidden
   public ResponseDTO<ServiceDeploymentListInfoV2> getDeploymentExecutionInfoV2(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @NotNull @OrgIdentifier @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -228,6 +230,7 @@ public class CDDashboardOverviewResource {
   @Path("/getWorkloadsV2")
   @ApiOperation(value = "Get workloads", nickname = "getWorkloadsV2")
   @NGAccessControlCheck(resourceType = PROJECT, permission = VIEW_PROJECT_PERMISSION)
+  @Hidden
   public ResponseDTO<DashboardWorkloadDeploymentV2> getWorkloadsV2(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
@@ -261,6 +264,7 @@ public class CDDashboardOverviewResource {
   @GET
   @Path("/serviceDetailsV2")
   @ApiOperation(value = "Get service details list v2", nickname = "getServiceDetailsV2")
+  @Hidden
   public ResponseDTO<ServiceDetailsInfoDTOV2> getServiceDeploymentsV2(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -317,6 +321,7 @@ public class CDDashboardOverviewResource {
   @GET
   @Path("/getActiveServiceInstanceSummaryV2")
   @ApiOperation(value = "Get active service instance summary v2", nickname = "getActiveServiceInstanceSummaryV2")
+  @Hidden
   public ResponseDTO<ActiveServiceInstanceSummaryV2> getActiveServiceInstanceSummaryV2(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
