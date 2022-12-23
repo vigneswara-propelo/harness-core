@@ -10,9 +10,10 @@ package io.harness.cdng.aws.asg;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.infra.beans.InfrastructureOutcome;
-import io.harness.pms.sdk.core.steps.io.PassThroughData;
+import io.harness.pms.sdk.core.data.ExecutionSweepingOutput;
+import io.harness.pms.sdk.core.data.Outcome;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.List;
 import java.util.Map;
 import lombok.Builder;
@@ -22,9 +23,10 @@ import org.springframework.data.annotation.TypeAlias;
 @OwnedBy(HarnessTeam.CDP)
 @Value
 @Builder
-@TypeAlias("asgPrepareRollbackDataPassThroughData")
-@RecasterAlias("io.harness.cdng.aws.asg.AsgPrepareRollbackDataPassThroughData")
-public class AsgPrepareRollbackDataPassThroughData implements PassThroughData {
+@TypeAlias("asgRollingPrepareRollbackDataOutcome")
+@JsonTypeName("asgRollingPrepareRollbackDataOutcome")
+@RecasterAlias("io.harness.cdng.aws.asg.AsgRollingPrepareRollbackDataOutcome")
+public class AsgRollingPrepareRollbackDataOutcome implements Outcome, ExecutionSweepingOutput {
+  String asgName;
   Map<String, List<String>> asgStoreManifestsContent;
-  InfrastructureOutcome infrastructureOutcome;
 }

@@ -7,18 +7,18 @@
 
 package io.harness.cdng.aws.asg;
 
-import static software.wings.beans.TaskType.AWS_ASG_CANARY_DEPLOY_TASK_NG;
+import static software.wings.beans.TaskType.AWS_ASG_PREPARE_ROLLBACK_DATA_TASK_NG;
+import static software.wings.beans.TaskType.AWS_ASG_ROLLING_DEPLOY_TASK_NG;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.CDStepHelper;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
-import io.harness.cdng.instance.info.InstanceInfoService;
-import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.beans.logstreaming.UnitProgressDataMapper;
-import io.harness.delegate.task.aws.asg.AsgCanaryDeployRequest;
-import io.harness.delegate.task.aws.asg.AsgCanaryDeployResponse;
+import io.harness.delegate.task.aws.asg.AsgPrepareRollbackDataRequest;
+import io.harness.delegate.task.aws.asg.AsgRollingDeployRequest;
+import io.harness.delegate.task.aws.asg.AsgRollingDeployResponse;
 import io.harness.executions.steps.ExecutionNodeType;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.plancreator.steps.common.StepElementParameters;
@@ -28,8 +28,6 @@ import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
-import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
-import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.executables.TaskChainResponse;
 import io.harness.pms.sdk.core.steps.io.PassThroughData;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
@@ -43,18 +41,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.CDP)
 @Slf4j
-public class AsgCanaryDeployStep extends TaskChainExecutableWithRollbackAndRbac implements AsgStepExecutor {
+public class AsgRollingDeployStep extends TaskChainExecutableWithRollbackAndRbac implements AsgStepExecutor {
   public static final StepType STEP_TYPE = StepType.newBuilder()
-                                               .setType(ExecutionNodeType.ASG_CANARY_DEPLOY.getYamlType())
+                                               .setType(ExecutionNodeType.ASG_ROLLING_DEPLOY.getYamlType())
                                                .setStepCategory(StepCategory.STEP)
                                                .build();
 
-  private static final String ASG_CANARY_DEPLOY_COMMAND_NAME = "AsgCanaryDeploy";
-  private static final String CANARY_SUFFIX = "Canary";
+  private static final String ASG_ROLLING_DEPLOY_COMMAND_NAME = "AsgRollingDeploy";
+  private static final String ASG_ROLLING_PREPARE_ROLLBACK_DATA_COMMAND_NAME = "AsgRollingPrepareRollbackData";
 
-  @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
-  @Inject private InstanceInfoService instanceInfoService;
   @Inject private AsgStepCommonHelper asgStepCommonHelper;
+  @Inject private AsgStepHelper asgStepHelper;
 
   @Override
   public void validateResources(Ambiance ambiance, StepElementParameters stepParameters) {
@@ -72,9 +69,8 @@ public class AsgCanaryDeployStep extends TaskChainExecutableWithRollbackAndRbac 
       StepInputPackage inputPackage, PassThroughData passThroughData, ThrowingSupplier<ResponseData> responseSupplier)
       throws Exception {
     log.info("Calling executeNextLink");
-
-    // TODO
-    return null;
+    return asgStepCommonHelper.executeNextLinkRolling(
+        this, ambiance, stepParameters, passThroughData, responseSupplier);
   }
 
   @Override
@@ -84,30 +80,43 @@ public class AsgCanaryDeployStep extends TaskChainExecutableWithRollbackAndRbac 
     InfrastructureOutcome infrastructureOutcome = executionPassThroughData.getInfrastructure();
     final String accountId = AmbianceUtils.getAccountId(ambiance);
 
-    AsgCanaryDeployStepParameters asgSpecParameters = (AsgCanaryDeployStepParameters) stepElementParameters.getSpec();
+    AsgRollingDeployStepParameters asgSpecParameters = (AsgRollingDeployStepParameters) stepElementParameters.getSpec();
 
-    AsgCanaryDeployRequest asgCanaryDeployRequest =
-        AsgCanaryDeployRequest.builder()
-            .commandName(ASG_CANARY_DEPLOY_COMMAND_NAME)
+    AsgRollingDeployRequest asgRollingDeployRequest =
+        AsgRollingDeployRequest.builder()
+            .commandName(ASG_ROLLING_DEPLOY_COMMAND_NAME)
             .accountId(accountId)
             .asgInfraConfig(asgStepCommonHelper.getAsgInfraConfig(infrastructureOutcome, ambiance))
             .commandUnitsProgress(UnitProgressDataMapper.toCommandUnitsProgress(unitProgressData))
             .timeoutIntervalInMin(CDStepHelper.getTimeoutInMin(stepElementParameters))
             .asgStoreManifestsContent(asgStepExecutorParams.getAsgStoreManifestsContent())
-            .serviceNameSuffix(CANARY_SUFFIX)
-            .unitValue(asgSpecParameters.getInstanceSelection().getSpec().getInstances())
-            .unitType(asgSpecParameters.getInstanceSelection().getSpec().getType())
+            .skipMatching(asgSpecParameters.getSkipMatching().getValue())
+            .useAlreadyRunningInstances(asgSpecParameters.getUseAlreadyRunningInstances().getValue())
+            .instanceWarmup(asgSpecParameters.getInstanceWarmup().getValue())
+            .minimumHealthyPercentage(asgSpecParameters.getMinimumHealthyPercentage().getValue())
             .build();
 
-    return asgStepCommonHelper.queueAsgTask(stepElementParameters, asgCanaryDeployRequest, ambiance,
-        executionPassThroughData, true, AWS_ASG_CANARY_DEPLOY_TASK_NG);
+    return asgStepCommonHelper.queueAsgTask(stepElementParameters, asgRollingDeployRequest, ambiance,
+        executionPassThroughData, true, AWS_ASG_ROLLING_DEPLOY_TASK_NG);
   }
 
   @Override
-  public TaskChainResponse executeAsgPrepareRollbackDataTask(Ambiance ambiance, StepElementParameters stepParameters,
-      AsgPrepareRollbackDataPassThroughData asgStepPassThroughData, UnitProgressData unitProgressData) {
-    // nothing to prepare
-    return null;
+  public TaskChainResponse executeAsgPrepareRollbackDataTask(Ambiance ambiance,
+      StepElementParameters stepElementParameters,
+      AsgPrepareRollbackDataPassThroughData asgPrepareRollbackDataPassThroughData, UnitProgressData unitProgressData) {
+    InfrastructureOutcome infrastructureOutcome = asgPrepareRollbackDataPassThroughData.getInfrastructureOutcome();
+    final String accountId = AmbianceUtils.getAccountId(ambiance);
+    AsgPrepareRollbackDataRequest asgPrepareRollbackDataRequest =
+        AsgPrepareRollbackDataRequest.builder()
+            .commandName(ASG_ROLLING_PREPARE_ROLLBACK_DATA_COMMAND_NAME)
+            .accountId(accountId)
+            .asgInfraConfig(asgStepCommonHelper.getAsgInfraConfig(infrastructureOutcome, ambiance))
+            .asgStoreManifestsContent(asgPrepareRollbackDataPassThroughData.getAsgStoreManifestsContent())
+            .commandUnitsProgress(UnitProgressDataMapper.toCommandUnitsProgress(unitProgressData))
+            .timeoutIntervalInMin(CDStepHelper.getTimeoutInMin(stepElementParameters))
+            .build();
+    return asgStepCommonHelper.queueAsgTask(stepElementParameters, asgPrepareRollbackDataRequest, ambiance,
+        asgPrepareRollbackDataPassThroughData, false, AWS_ASG_PREPARE_ROLLBACK_DATA_TASK_NG);
   }
 
   @Override
@@ -117,33 +126,21 @@ public class AsgCanaryDeployStep extends TaskChainExecutableWithRollbackAndRbac 
       return asgStepCommonHelper.handleStepExceptionFailure((AsgStepExceptionPassThroughData) passThroughData);
     }
 
-    log.info("Finalizing execution with passThroughData: " + passThroughData.getClass().getName());
-
     AsgExecutionPassThroughData asgExecutionPassThroughData = (AsgExecutionPassThroughData) passThroughData;
     InfrastructureOutcome infrastructureOutcome = asgExecutionPassThroughData.getInfrastructure();
-    AsgCanaryDeployResponse asgCanaryDeployResponse;
+    AsgRollingDeployResponse asgRollingDeployResponse;
     try {
-      asgCanaryDeployResponse = (AsgCanaryDeployResponse) responseDataSupplier.get();
+      asgRollingDeployResponse = (AsgRollingDeployResponse) responseDataSupplier.get();
     } catch (Exception e) {
       log.error("Error while processing asg task response: {}", e.getMessage(), e);
       return asgStepCommonHelper.handleTaskException(ambiance, asgExecutionPassThroughData, e);
     }
     StepResponseBuilder stepResponseBuilder =
-        StepResponse.builder().unitProgressList(asgCanaryDeployResponse.getUnitProgressData().getUnitProgresses());
+        StepResponse.builder().unitProgressList(asgRollingDeployResponse.getUnitProgressData().getUnitProgresses());
 
-    if (asgCanaryDeployResponse.getCommandExecutionStatus() != CommandExecutionStatus.SUCCESS) {
-      return AsgStepCommonHelper.getFailureResponseBuilder(asgCanaryDeployResponse, stepResponseBuilder).build();
+    if (asgRollingDeployResponse.getCommandExecutionStatus() != CommandExecutionStatus.SUCCESS) {
+      return AsgStepCommonHelper.getFailureResponseBuilder(asgRollingDeployResponse, stepResponseBuilder).build();
     }
-
-    AsgCanaryDeployOutcome asgCanaryDeployOutcome =
-        AsgCanaryDeployOutcome.builder()
-            .canaryAsgName(asgCanaryDeployResponse.getAsgCanaryDeployResult()
-                               .getAutoScalingGroupContainer()
-                               .getAutoScalingGroupName())
-            .build();
-
-    executionSweepingOutputService.consume(ambiance, OutcomeExpressionConstants.ASG_CANARY_DEPLOY_OUTCOME,
-        asgCanaryDeployOutcome, StepOutcomeGroup.STEP.name());
 
     return stepResponseBuilder.status(Status.SUCCEEDED).build();
   }
