@@ -9,9 +9,11 @@ package io.harness.cvng.core.beans.healthsource;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.FieldNameConstants;
 
 @Data
 @Builder
-public class HealthSourceQueryParams {
+@FieldNameConstants(innerTypeName = "QueryParamKeys")
+public class QueryParamsDTO {
   String serviceInstanceField;
 }

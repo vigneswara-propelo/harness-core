@@ -9,12 +9,9 @@ package io.harness.cvng.core.beans.healthsource;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.FieldNameConstants;
 
 @Data
 @Builder
-@FieldNameConstants(innerTypeName = "QueryParamKeys")
-public class QueryParams {
-  // TODO this is entity and needs to be moved and mapped from DTO layer
-  String serviceInstanceField;
+public class HealthSourceParamsDTO {
+  String region;
 }

@@ -5,12 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cvng.core.beans.healthsource;
+package io.harness.cvng.core.entities;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
 
-@Data
+@Value
+@Builder
 public class HealthSourceParams {
-  // TODO remove whats not required.
   String region;
 }
