@@ -16,6 +16,6 @@ import lombok.Data;
 @Data
 @Builder
 @OwnedBy(HarnessTeam.CDP)
-public class AsgRollingDeployResult {
+public class AsgRollingRollbackResult {
   private AutoScalingGroupContainer autoScalingGroupContainer;
 }
