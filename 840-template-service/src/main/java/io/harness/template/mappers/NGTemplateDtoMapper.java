@@ -25,7 +25,6 @@ import io.harness.gitsync.sdk.CacheResponse;
 import io.harness.gitsync.sdk.EntityGitDetails;
 import io.harness.gitsync.sdk.EntityGitDetailsMapper;
 import io.harness.gitsync.sdk.EntityValidityDetails;
-import io.harness.jackson.JsonNodeUtils;
 import io.harness.ng.core.mapper.TagMapper;
 import io.harness.ng.core.template.CacheResponseMetadataDTO;
 import io.harness.ng.core.template.TemplateListType;
@@ -199,9 +198,7 @@ public class NGTemplateDtoMapper {
         .templateEntityType(templateConfig.getTemplateInfoConfig().getType())
         .templateScope(getScopeFromTemplateDto(templateConfig.getTemplateInfoConfig()))
         .fullyQualifiedIdentifier(templateReference.getFullyQualifiedName())
-        .childType(templateConfig.getTemplateInfoConfig().getSpec() != null
-                ? JsonNodeUtils.getString(templateConfig.getTemplateInfoConfig().getSpec(), "type")
-                : null)
+        .childType(templateConfig.getTemplateInfoConfig().fetchChildType())
         .build();
   }
 
