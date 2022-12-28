@@ -2896,6 +2896,13 @@ public class K8sTaskHelperBase {
     } catch (KubernetesValuesException exception) {
       String message = exception.getParams().get("reason").toString();
       logCallback.saveExecutionLog(message, ERROR);
+      if (isNotEmpty(message) && message.contains(KubernetesExceptionExplanation.EXPECTED_BLOCK_END)) {
+        throw NestedExceptionUtils.hintWithExplanationException(KubernetesExceptionHints.INVALID_VALUES_YAML,
+            KubernetesExceptionExplanation.INVALID_VALUES_YAML,
+            NestedExceptionUtils.hintWithExplanationException(KubernetesExceptionHints.BASE_64_ENCODED_CHECK,
+                KubernetesExceptionExplanation.EXPECTED_BLOCK_END,
+                new KubernetesValuesException(message, exception.getCause())));
+      }
       throw NestedExceptionUtils.hintWithExplanationException(KubernetesExceptionHints.INVALID_VALUES_YAML,
           KubernetesExceptionExplanation.INVALID_VALUES_YAML,
           new KubernetesValuesException(message, exception.getCause()));
