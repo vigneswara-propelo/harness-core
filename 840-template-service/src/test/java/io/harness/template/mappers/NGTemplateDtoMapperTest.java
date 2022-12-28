@@ -16,6 +16,7 @@ import static io.harness.rule.OwnerRule.SOURABH;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.harness.CategoryTest;
@@ -185,6 +186,16 @@ public class NGTemplateDtoMapperTest extends CategoryTest {
     assertThat(ngTemplateConfig).isNotNull();
     assertThat(ngTemplateConfig.getTemplateInfoConfig().getIdentifier()).isEqualTo(entity.getIdentifier());
     assertThat(ngTemplateConfig.getTemplateInfoConfig().getVersionLabel()).isEqualTo(entity.getVersionLabel());
+
+    assertThatExceptionOfType(InvalidRequestException.class)
+        .isThrownBy(() -> NGTemplateDtoMapper.toDTO("    template:\n   name: \"some_name\""))
+        .withMessageContaining(
+            "The provided template yaml does not contain the \"template\" keyword at the root level");
+
+    assertThatExceptionOfType(InvalidRequestException.class)
+        .isThrownBy(() -> NGTemplateDtoMapper.toDTO("abc: qwe"))
+        .withMessageContaining(
+            "The provided template yaml does not contain the \"template\" keyword at the root level");
   }
 
   @Test
