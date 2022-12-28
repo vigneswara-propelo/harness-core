@@ -6656,6 +6656,13 @@
         "name": {
           "type": "string"
         },
+        "type": {
+          "type": "string",
+          "enum": [
+            "String",
+            "Number"
+          ]
+        },
         "value": {
           "type": "string"
         }
