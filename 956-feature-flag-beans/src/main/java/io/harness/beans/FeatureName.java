@@ -549,7 +549,9 @@ public enum FeatureName {
   CDS_ARTIFACTORY_REPOSITORY_URL_MANDATORY(
       "FF to make the Artifactory Repository Url as mandatory in case of docker repositoryFormat", HarnessTeam.CDC),
   VALIDATE_SERVICE_NAME_IN_FILE_PATH("Validate the service name in yaml file path", HarnessTeam.SPG),
-  NG_K8_COMMAND_FLAGS("Added Support for adding Command flags to K8s commands. PM Rohan", HarnessTeam.CDP);
+  NG_K8_COMMAND_FLAGS("Added Support for adding Command flags to K8s commands. PM Rohan", HarnessTeam.CDP),
+  CDP_PUBLISH_INSTANCE_STATS_FOR_ENV_NG(
+      "Publish instance stats at environment granularity in NG. PM Rohan", HarnessTeam.CDP);
 
   @Deprecated
   FeatureName() {
