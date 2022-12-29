@@ -75,6 +75,7 @@ public class EcsBlueGreenPrepareRollbackCommandTaskHandler extends EcsCommandTas
         iLogStreamingTaskClient, EcsCommandUnitConstants.prepareRollbackData.toString(), true, commandUnitsProgress);
 
     try {
+      prepareRollbackDataLogCallback.saveExecutionLog(format("Preparing Rollback Data..%n%n"), LogLevel.INFO);
       AwsInternalConfig awsInternalConfig =
           awsNgConfigMapper.createAwsInternalConfig(ecsInfraConfig.getAwsConnectorDTO());
 
@@ -191,6 +192,7 @@ public class EcsBlueGreenPrepareRollbackCommandTaskHandler extends EcsCommandTas
                 .build();
         prepareRollbackDataLogCallback.saveExecutionLog(
             "Preparing Rollback Data complete", LogLevel.INFO, CommandExecutionStatus.SUCCESS);
+        log.info("Completed task execution for command: {}", ecsCommandRequest.getEcsCommandType().name());
         return ecsBlueGreenPrepareRollbackDataResponse;
       } else { // If service doesn't exist
         return getFirstTimeDeploymentResponse(prepareRollbackDataLogCallback, prodTargetGroupArn,

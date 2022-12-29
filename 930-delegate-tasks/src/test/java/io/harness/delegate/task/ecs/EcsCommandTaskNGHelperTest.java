@@ -518,11 +518,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
     doReturn(awsInternalConfig).when(awsNgConfigMapper).createAwsInternalConfig(awsConnectorDTO);
 
     List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(createServiceResponse.service().events());
-    doNothing()
-        .when(ecsCommandTaskNGHelper)
-        .waitForTasksToBeInRunningState(awsInternalConfig, ecsInfraConfig.getCluster(),
-            createServiceRequest.serviceName(), ecsInfraConfig.getRegion(), eventsAlreadyProcessed, logCallback,
-            timeoutInMillis);
 
     doNothing()
         .when(ecsCommandTaskNGHelper)
@@ -545,10 +540,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
 
     verify(ecsCommandTaskNGHelper)
         .createService(createServiceRequest, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
-    verify(ecsCommandTaskNGHelper)
-        .waitForTasksToBeInRunningState(awsNgConfigMapper.createAwsInternalConfig(ecsInfraConfig.getAwsConnectorDTO()),
-            ecsInfraConfig.getCluster(), createServiceRequest.serviceName(), ecsInfraConfig.getRegion(),
-            eventsAlreadyProcessed, logCallback, timeoutInMillis);
 
     verify(ecsCommandTaskNGHelper)
         .ecsServiceSteadyStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
@@ -605,10 +596,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
         .updateService(updateServiceRequest, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
 
     List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(updateServiceResponse.service().events());
-    doNothing()
-        .when(ecsCommandTaskNGHelper)
-        .waitForTasksToBeInRunningState(awsInternalConfig, ecsInfraConfig.getCluster(), updateServiceRequest.service(),
-            ecsInfraConfig.getRegion(), eventsAlreadyProcessed, logCallback, timeoutInMillis);
 
     doNothing()
         .when(ecsCommandTaskNGHelper)
@@ -634,10 +621,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
             ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(), logCallback);
     verify(ecsCommandTaskNGHelper)
         .updateService(updateServiceRequest, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
-    verify(ecsCommandTaskNGHelper)
-        .waitForTasksToBeInRunningState(awsNgConfigMapper.createAwsInternalConfig(ecsInfraConfig.getAwsConnectorDTO()),
-            ecsInfraConfig.getCluster(), updateServiceRequest.service(), ecsInfraConfig.getRegion(),
-            eventsAlreadyProcessed, logCallback, timeoutInMillis);
 
     verify(ecsCommandTaskNGHelper)
         .ecsServiceSteadyStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
@@ -648,23 +631,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
     verify(ecsCommandTaskNGHelper)
         .attachScalingPolicies(ecsScalingPolicyManifestContentList, ecsInfraConfig.getAwsConnectorDTO(),
             service.serviceName(), ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(), logCallback);
-  }
-
-  @Test
-  @Owner(developers = ALLU_VAMSI)
-  @Category(UnitTests.class)
-  public void waitForTasksToBeInRunningStateTest() {
-    long timeOut = 100000L;
-    Service service = Service.builder().status("ACTIVE").build();
-    UpdateServiceResponse updateServiceResponse = UpdateServiceResponse.builder().service(service).build();
-    List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(updateServiceResponse.service().events());
-    DescribeServicesResponse describeServicesResponse =
-        DescribeServicesResponse.builder().services(Arrays.asList(Service.builder().build())).build();
-    doReturn(describeServicesResponse)
-        .when(ecsV2Client)
-        .describeService(awsInternalConfig, cluster, serviceName, region);
-    ecsCommandTaskNGHelper.waitForTasksToBeInRunningState(
-        awsInternalConfig, cluster, serviceName, region, eventsAlreadyProcessed, logCallback, timeOut);
   }
 
   @Test
@@ -707,11 +673,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
 
     List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(createServiceResponse.service().events());
     doReturn(awsInternalConfig).when(awsNgConfigMapper).createAwsInternalConfig(awsConnectorDTO);
-    doNothing()
-        .when(ecsCommandTaskNGHelper)
-        .waitForTasksToBeInRunningState(awsInternalConfig, ecsInfraConfig.getCluster(),
-            createServiceRequest.serviceName(), ecsInfraConfig.getRegion(), eventsAlreadyProcessed, logCallback,
-            timeoutInMillis);
     doNothing()
         .when(ecsCommandTaskNGHelper)
         .ecsServiceSteadyStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
@@ -894,10 +855,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
         .when(ecsCommandTaskNGHelper)
         .createService(any(), eq(ecsInfraConfig.getRegion()), eq(ecsInfraConfig.getAwsConnectorDTO()));
     List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(createServiceResponse.service().events());
-    doNothing()
-        .when(ecsCommandTaskNGHelper)
-        .waitForTasksToBeInRunningState(awsInternalConfig, ecsInfraConfig.getCluster(), stageServiceName,
-            ecsInfraConfig.getRegion(), eventsAlreadyProcessed, logCallback, timeoutInMillis);
 
     doNothing()
         .when(ecsCommandTaskNGHelper)
@@ -923,11 +880,6 @@ public class EcsCommandTaskNGHelperTest extends CategoryTest {
     verify(ecsCommandTaskNGHelper)
         .ecsServiceInactiveStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), ecsInfraConfig.getCluster(),
             service.serviceName(), ecsInfraConfig.getRegion(), (int) TimeUnit.MILLISECONDS.toMinutes(timeoutInMillis));
-
-    verify(ecsCommandTaskNGHelper)
-        .waitForTasksToBeInRunningState(awsNgConfigMapper.createAwsInternalConfig(ecsInfraConfig.getAwsConnectorDTO()),
-            ecsInfraConfig.getCluster(), stageServiceName, ecsInfraConfig.getRegion(), eventsAlreadyProcessed,
-            logCallback, timeoutInMillis);
   }
 
   @Test
