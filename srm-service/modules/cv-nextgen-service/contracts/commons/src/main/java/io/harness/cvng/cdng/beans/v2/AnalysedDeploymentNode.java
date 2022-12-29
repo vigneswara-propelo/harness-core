@@ -7,16 +7,17 @@
 
 package io.harness.cvng.cdng.beans.v2;
 
-import io.harness.cvng.beans.DataSourceType;
-
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
 
 @Value
+@EqualsAndHashCode(callSuper = false)
 @SuperBuilder
-public class HealthSource {
-  String healthSourceIdentifier;
-  String healthSourceName;
-  DataSourceType providerName;
-  ProviderType providerType;
+public class AnalysedDeploymentNode extends AbstractAnalysedNode {
+  String nodeIdentifier;
+  VerificationResult verificationResult;
+  Long failedMetrics;
+  Long failedLogClusters;
+  Long failedErrorClusters;
 }

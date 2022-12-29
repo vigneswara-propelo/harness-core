@@ -7,4 +7,13 @@
 
 package io.harness.cvng.cdng.beans.v2;
 
-public enum AnalysedNodeType { BASELINE_TEST, CANARY, CURRENT_TEST, POST_DEPLOYMENT, PRE_DEPLOYMENT, PRIMARY }
+import lombok.Value;
+import lombok.experimental.SuperBuilder;
+
+@Value
+@SuperBuilder
+public class ClusterAnalysisOverview {
+  int knownClustersCount;
+  int unknownClustersCount;
+  int unexpectedFrequencyClustersCount;
+}
