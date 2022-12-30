@@ -39,6 +39,7 @@ java_library(
         "@maven//:com_hubspot_jackson_jackson_datatype_protobuf",
         "@maven//:com_squareup_okhttp3_logging_interceptor",
         "@maven//:com_squareup_retrofit2_converter_jackson",
+        "@maven//:io_dropwizard_dropwizard_jersey",
         "@maven//:io_github_resilience4j_resilience4j_retrofit",
         "@maven//:io_opencensus_opencensus_exporter_stats_prometheus",
         "@maven//:io_opencensus_opencensus_exporter_stats_stackdriver",
