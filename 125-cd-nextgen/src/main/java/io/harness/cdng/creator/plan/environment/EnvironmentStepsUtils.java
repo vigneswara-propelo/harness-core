@@ -7,6 +7,8 @@
 
 package io.harness.cdng.creator.plan.environment;
 
+import static io.harness.utils.IdentifierRefHelper.MAX_RESULT_THRESHOLD_FOR_SPLIT;
+
 import io.harness.accesscontrol.acl.api.Principal;
 import io.harness.accesscontrol.acl.api.Resource;
 import io.harness.accesscontrol.acl.api.ResourceScope;
@@ -16,6 +18,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.environment.steps.EnvironmentStepParameters;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.encryption.Scope;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.plan.ExecutionPrincipalInfo;
 import io.harness.pms.execution.utils.AmbianceUtils;
@@ -23,6 +26,7 @@ import io.harness.pms.rbac.PrincipalTypeProtoToPrincipalTypeMapper;
 import io.harness.rbac.CDNGRbacPermissions;
 
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 
 @OwnedBy(HarnessTeam.CDC)
 @UtilityClass
@@ -52,6 +56,15 @@ public class EnvironmentStepsUtils {
           CDNGRbacPermissions.ENVIRONMENT_RUNTIME_PERMISSION,
           String.format(
               "Missing Access Permission for Environment: [%s]", stepParameters.getEnvironmentRef().getValue()));
+    }
+  }
+
+  public Scope getScopeForRef(String ref) {
+    String[] refSplit = StringUtils.split(ref, ".", MAX_RESULT_THRESHOLD_FOR_SPLIT);
+    if (refSplit == null || refSplit.length == 1) {
+      return Scope.PROJECT;
+    } else {
+      return Scope.fromString(refSplit[0]);
     }
   }
 }
