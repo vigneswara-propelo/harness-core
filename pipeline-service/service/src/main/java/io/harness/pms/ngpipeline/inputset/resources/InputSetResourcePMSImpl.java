@@ -40,6 +40,7 @@ import io.harness.pms.inputset.OverlayInputSetErrorWrapperDTOPMS;
 import io.harness.pms.ngpipeline.inputset.api.InputSetsApiUtils;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity.InputSetEntityKeys;
+import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetImportRequestDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetImportResponseDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetListTypePMS;
@@ -146,9 +147,9 @@ public class InputSetResourcePMSImpl implements InputSetResourcePMS {
       GitEntityCreateInfoDTO gitEntityCreateInfo, @NotNull String yaml) {
     final String pipelineYaml = inputSetsApiUtils.getPipelineYaml(accountId, orgIdentifier, projectIdentifier,
         pipelineIdentifier, pipelineBranch, pipelineRepoID, pipelineService, gitSyncSdkService);
-    yaml = removeRuntimeInputFromYaml(pipelineYaml, yaml);
-    InputSetEntity entity = PMSInputSetElementMapper.toInputSetEntity(
-        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, yaml);
+    String inputSetVersion = inputSetsApiUtils.inputSetVersion(accountId, yaml);
+    InputSetEntity entity = PMSInputSetElementMapper.toInputSetEntityFromVersion(accountId, orgIdentifier,
+        projectIdentifier, pipelineIdentifier, pipelineYaml, yaml, inputSetVersion, InputSetEntityType.INPUT_SET);
     log.info(String.format("Create input set with identifier %s for pipeline %s in project %s, org %s, account %s",
         entity.getIdentifier(), pipelineIdentifier, projectIdentifier, orgIdentifier, accountId));
 
@@ -183,10 +184,9 @@ public class InputSetResourcePMSImpl implements InputSetResourcePMS {
         inputSetIdentifier, pipelineIdentifier, projectIdentifier, orgIdentifier, accountId));
     final String pipelineYaml = inputSetsApiUtils.getPipelineYaml(accountId, orgIdentifier, projectIdentifier,
         pipelineIdentifier, pipelineBranch, pipelineRepoID, pipelineService, gitSyncSdkService);
-    yaml = removeRuntimeInputFromYaml(pipelineYaml, yaml);
-
-    InputSetEntity entity = PMSInputSetElementMapper.toInputSetEntity(
-        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, yaml);
+    String inputSetVersion = inputSetsApiUtils.inputSetVersion(accountId, yaml);
+    InputSetEntity entity = PMSInputSetElementMapper.toInputSetEntityFromVersion(accountId, orgIdentifier,
+        projectIdentifier, pipelineIdentifier, pipelineYaml, yaml, inputSetVersion, InputSetEntityType.INPUT_SET);
     InputSetEntity entityWithVersion = entity.withVersion(isNumeric(ifMatch) ? parseLong(ifMatch) : null);
     InputSetEntity updatedEntity =
         pmsInputSetService.update(ChangeType.MODIFY, pipelineBranch, pipelineRepoID, entityWithVersion, false);

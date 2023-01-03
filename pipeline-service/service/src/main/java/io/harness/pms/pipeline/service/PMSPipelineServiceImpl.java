@@ -64,8 +64,7 @@ import io.harness.pms.pipeline.filters.PMSPipelineFilterHelper;
 import io.harness.pms.pipeline.governance.service.PipelineGovernanceService;
 import io.harness.pms.pipeline.mappers.PMSPipelineDtoMapper;
 import io.harness.pms.sdk.PmsSdkInstanceService;
-import io.harness.pms.yaml.PipelineVersion;
-import io.harness.pms.yaml.YamlField;
+import io.harness.pms.utils.PipelineYamlHelper;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.repositories.pipeline.PMSPipelineRepository;
@@ -122,7 +121,6 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
 
   private static final String DUP_KEY_EXP_FORMAT_STRING =
       "Pipeline [%s] under Project[%s], Organization [%s] already exists or has been deleted.";
-  private static final String VERSION_FIELD_NAME = "version";
 
   private static final int MAX_LIST_SIZE = 1000;
   private static final String REPO_LIST_SIZE_EXCEPTION = "The size of unique repository list is greater than [%d]";
@@ -680,20 +678,8 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
 
   @Override
   public String pipelineVersion(String accountId, String yaml) {
-    String version;
-    try {
-      YamlField yamlField = YamlUtils.readTree(yaml);
-      version = yamlField.getNode().getProperty(VERSION_FIELD_NAME);
-    } catch (IOException ioException) {
-      throw new InvalidRequestException("Invalid yaml passed.");
-    }
     boolean isYamlSimplificationEnabled = pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CI_YAML_VERSIONING);
-
-    if (isYamlSimplificationEnabled && version != null) {
-      return version;
-    } else {
-      return PipelineVersion.V0;
-    }
+    return PipelineYamlHelper.getVersion(yaml, isYamlSimplificationEnabled);
   }
 
   @Override
