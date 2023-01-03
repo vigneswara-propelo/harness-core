@@ -386,7 +386,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
 
   @Override
   public NodeExecution update(@NonNull String nodeExecutionId, @NonNull Consumer<Update> ops) {
-    return updateNodeExecutionInternal(nodeExecutionId, ops, Collections.emptySet(), false);
+    return updateNodeExecutionInternal(nodeExecutionId, ops, new HashSet<>(), false);
   }
 
   @Override

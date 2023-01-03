@@ -16,8 +16,8 @@ import io.harness.plan.Node;
 import io.harness.pms.contracts.execution.Status;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -198,7 +198,7 @@ public interface NodeExecutionService {
    */
   default List<NodeExecution> findAllChildrenOnlyIds(String planExecutionId, String parentId, boolean includeParent) {
     return findAllChildrenWithStatusInAndWithoutOldRetries(
-        planExecutionId, parentId, EnumSet.noneOf(Status.class), includeParent, Collections.emptySet());
+        planExecutionId, parentId, EnumSet.noneOf(Status.class), includeParent, new HashSet<>());
   }
 
   /**
