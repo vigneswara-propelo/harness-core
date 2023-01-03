@@ -400,10 +400,10 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
     Query query = query(where(NodeExecutionKeys.uuid).is(nodeExecutionId));
     if (validateProjection) {
       validateNodeExecutionProjection(fieldsToBeIncluded);
-    }
-    fieldsToBeIncluded.addAll(NodeProjectionUtils.fieldsForNodeUpdateObserver);
-    for (String field : fieldsToBeIncluded) {
-      query.fields().include(field);
+      fieldsToBeIncluded.addAll(NodeProjectionUtils.fieldsForNodeUpdateObserver);
+      for (String field : fieldsToBeIncluded) {
+        query.fields().include(field);
+      }
     }
     Update updateOps = new Update().set(NodeExecutionKeys.lastUpdatedAt, System.currentTimeMillis());
     ops.accept(updateOps);

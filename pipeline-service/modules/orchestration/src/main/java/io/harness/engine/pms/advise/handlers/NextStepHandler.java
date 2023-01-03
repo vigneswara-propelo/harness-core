@@ -46,6 +46,7 @@ public class NextStepHandler implements AdviserResponseHandler {
           ops -> ops.set(NodeExecutionKeys.nextId, runtimeId).set(NodeExecutionKeys.endTs, System.currentTimeMillis()));
       Ambiance cloned = AmbianceUtils.cloneForFinish(
           prevNodeExecution.getAmbiance(), PmsLevelUtils.buildLevelFromNode(runtimeId, nextNode));
+      // prevNodeExecution will not contain nextId and endTs
       engine.runNextNode(cloned, nextNode, prevNodeExecution, null);
     } else {
       engine.endNodeExecution(prevNodeExecution.getAmbiance());
