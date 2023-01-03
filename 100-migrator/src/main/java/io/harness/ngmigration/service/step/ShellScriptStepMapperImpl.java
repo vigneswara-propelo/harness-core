@@ -23,10 +23,10 @@ import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.core.variables.NGVariableType;
 import io.harness.yaml.core.variables.StringNGVariable;
 
+import software.wings.beans.GraphNode;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.sm.State;
 import software.wings.sm.states.ShellScriptState;
-import software.wings.yaml.workflow.StepYaml;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,12 +37,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ShellScriptStepMapperImpl implements StepMapper {
   @Override
-  public String getStepType(StepYaml stepYaml) {
+  public String getStepType(GraphNode stepYaml) {
     return StepSpecTypeConstants.SHELL_SCRIPT;
   }
 
   @Override
-  public State getState(StepYaml stepYaml) {
+  public State getState(GraphNode stepYaml) {
     Map<String, Object> properties = StepMapper.super.getProperties(stepYaml);
     ShellScriptState state = new ShellScriptState(stepYaml.getName());
     state.parseProperties(properties);
@@ -50,10 +50,10 @@ public class ShellScriptStepMapperImpl implements StepMapper {
   }
 
   @Override
-  public AbstractStepNode getSpec(Map<CgEntityId, NGYamlFile> migratedEntities, StepYaml stepYaml) {
-    ShellScriptState state = (ShellScriptState) getState(stepYaml);
+  public AbstractStepNode getSpec(Map<CgEntityId, NGYamlFile> migratedEntities, GraphNode graphNode) {
+    ShellScriptState state = (ShellScriptState) getState(graphNode);
     ShellScriptStepNode shellScriptStepNode = new ShellScriptStepNode();
-    baseSetup(stepYaml, shellScriptStepNode);
+    baseSetup(graphNode, shellScriptStepNode);
 
     ExecutionTarget executionTarget = null;
 
@@ -108,7 +108,7 @@ public class ShellScriptStepMapperImpl implements StepMapper {
   }
 
   @Override
-  public boolean areSimilar(StepYaml stepYaml1, StepYaml stepYaml2) {
+  public boolean areSimilar(GraphNode stepYaml1, GraphNode stepYaml2) {
     ShellScriptState state1 = (ShellScriptState) getState(stepYaml1);
     ShellScriptState state2 = (ShellScriptState) getState(stepYaml2);
     if (!state1.getScriptType().equals(state2.getScriptType())) {

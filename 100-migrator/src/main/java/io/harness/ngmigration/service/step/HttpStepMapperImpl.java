@@ -21,10 +21,10 @@ import io.harness.steps.StepSpecTypeConstants;
 import io.harness.yaml.core.variables.NGVariableType;
 import io.harness.yaml.core.variables.StringNGVariable;
 
+import software.wings.beans.GraphNode;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.sm.State;
 import software.wings.sm.states.HttpState;
-import software.wings.yaml.workflow.StepYaml;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,12 +34,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class HttpStepMapperImpl implements StepMapper {
   @Override
-  public String getStepType(StepYaml stepYaml) {
+  public String getStepType(GraphNode stepYaml) {
     return StepSpecTypeConstants.HTTP;
   }
 
   @Override
-  public State getState(StepYaml stepYaml) {
+  public State getState(GraphNode stepYaml) {
     Map<String, Object> properties = StepMapper.super.getProperties(stepYaml);
     HttpState state = new HttpState(stepYaml.getName());
     state.parseProperties(properties);
@@ -47,10 +47,10 @@ public class HttpStepMapperImpl implements StepMapper {
   }
 
   @Override
-  public AbstractStepNode getSpec(Map<CgEntityId, NGYamlFile> migratedEntities, StepYaml stepYaml) {
-    HttpState state = (HttpState) getState(stepYaml);
+  public AbstractStepNode getSpec(Map<CgEntityId, NGYamlFile> migratedEntities, GraphNode graphNode) {
+    HttpState state = (HttpState) getState(graphNode);
     HttpStepNode httpStepNode = new HttpStepNode();
-    baseSetup(stepYaml, httpStepNode);
+    baseSetup(graphNode, httpStepNode);
     HttpStepInfoBuilder httpStepInfoBuilder =
         HttpStepInfo.infoBuilder()
             .url(ParameterField.createValueField(state.getUrl()))
@@ -90,7 +90,7 @@ public class HttpStepMapperImpl implements StepMapper {
   }
 
   @Override
-  public boolean areSimilar(StepYaml stepYaml1, StepYaml stepYaml2) {
+  public boolean areSimilar(GraphNode stepYaml1, GraphNode stepYaml2) {
     // Check URL, Method, Body, Headers, Assertion condition
     HttpState state1 = (HttpState) getState(stepYaml1);
     HttpState state2 = (HttpState) getState(stepYaml2);

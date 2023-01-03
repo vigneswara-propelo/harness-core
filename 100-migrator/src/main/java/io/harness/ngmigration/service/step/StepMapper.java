@@ -16,24 +16,24 @@ import io.harness.plancreator.steps.internal.PmsAbstractStepNode;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.core.timeout.Timeout;
 
+import software.wings.beans.GraphNode;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.sm.State;
-import software.wings.yaml.workflow.StepYaml;
 
 import java.util.Map;
 
 public interface StepMapper {
   int DEFAULT_TIMEOUT_MILLI = 600000;
 
-  String getStepType(StepYaml stepYaml);
+  String getStepType(GraphNode stepYaml);
 
-  State getState(StepYaml stepYaml);
+  State getState(GraphNode stepYaml);
 
-  AbstractStepNode getSpec(Map<CgEntityId, NGYamlFile> migratedEntities, StepYaml stepYaml);
+  AbstractStepNode getSpec(Map<CgEntityId, NGYamlFile> migratedEntities, GraphNode graphNode);
 
-  boolean areSimilar(StepYaml stepYaml1, StepYaml stepYaml2);
+  boolean areSimilar(GraphNode stepYaml1, GraphNode stepYaml2);
 
-  default ParameterField<Timeout> getTimeout(StepYaml stepYaml) {
+  default ParameterField<Timeout> getTimeout(GraphNode stepYaml) {
     Map<String, Object> properties = getProperties(stepYaml);
 
     String timeoutString = "10m";
@@ -48,26 +48,26 @@ public interface StepMapper {
     return MigratorUtility.getTimeout(state.getTimeoutMillis());
   }
 
-  default String getDescription(StepYaml stepYaml) {
+  default String getDescription(GraphNode stepYaml) {
     Map<String, Object> properties = getProperties(stepYaml);
     return properties.getOrDefault("description", "").toString();
   }
 
-  default Map<String, Object> getProperties(StepYaml stepYaml) {
+  default Map<String, Object> getProperties(GraphNode stepYaml) {
     return CollectionUtils.emptyIfNull(stepYaml.getProperties());
   }
 
-  default void baseSetup(StepYaml stepYaml, AbstractStepNode stepNode) {
-    stepNode.setIdentifier(MigratorUtility.generateIdentifier(stepYaml.getName()));
-    stepNode.setName(stepYaml.getName());
-    stepNode.setDescription(getDescription(stepYaml));
+  default void baseSetup(GraphNode graphNode, AbstractStepNode stepNode) {
+    stepNode.setIdentifier(MigratorUtility.generateIdentifier(graphNode.getName()));
+    stepNode.setName(graphNode.getName());
+    stepNode.setDescription(getDescription(graphNode));
     if (stepNode instanceof PmsAbstractStepNode) {
       PmsAbstractStepNode pmsAbstractStepNode = (PmsAbstractStepNode) stepNode;
-      pmsAbstractStepNode.setTimeout(getTimeout(stepYaml));
+      pmsAbstractStepNode.setTimeout(getTimeout(graphNode));
     }
     if (stepNode instanceof CdAbstractStepNode) {
       CdAbstractStepNode cdAbstractStepNode = (CdAbstractStepNode) stepNode;
-      cdAbstractStepNode.setTimeout(getTimeout(stepYaml));
+      cdAbstractStepNode.setTimeout(getTimeout(graphNode));
     }
   }
 
