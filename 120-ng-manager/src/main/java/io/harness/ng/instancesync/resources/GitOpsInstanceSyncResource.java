@@ -74,10 +74,13 @@ public class GitOpsInstanceSyncResource {
       @NotEmpty @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @NotEmpty @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @NotEmpty @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-      @NotEmpty @QueryParam(NGCommonEntityConstants.AGENT_KEY) String agentIdentifier,
+      @QueryParam(NGCommonEntityConstants.AGENT_KEY) String agentIdentifier,
       @NotNull @Valid List<GitOpsInstanceRequest> gitOpsInstanceRequestList) {
     if (isEmpty(gitOpsInstanceRequestList)) {
-      deleteInstances(accountId, orgIdentifier, projectIdentifier, agentIdentifier);
+      // TODO remove the condition after the params change in Gitops service is deployed
+      if (agentIdentifier != null) {
+        deleteInstances(accountId, orgIdentifier, projectIdentifier, agentIdentifier);
+      }
       return ResponseDTO.newResponse(Boolean.TRUE);
     } else {
       return processInstances(accountId, orgIdentifier, projectIdentifier, agentIdentifier, gitOpsInstanceRequestList)

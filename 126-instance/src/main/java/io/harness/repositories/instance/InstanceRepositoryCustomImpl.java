@@ -595,9 +595,11 @@ public class InstanceRepositoryCustomImpl implements InstanceRepositoryCustom {
       String projectIdentifier, String serviceIdentifier, String agentIdentifier) {
     Criteria criteria = getCriteriaForActiveInstances(accountIdentifier, orgIdentifier, projectIdentifier)
                             .and(InstanceKeys.serviceIdentifier)
-                            .is(serviceIdentifier)
-                            .and(InstanceKeysAdditional.instanceInfoAgentIdentifier)
-                            .is(agentIdentifier);
+                            .is(serviceIdentifier);
+
+    if (agentIdentifier != null) {
+      criteria.and(InstanceKeysAdditional.instanceInfoAgentIdentifier).is(agentIdentifier);
+    }
     Query query = new Query(criteria);
     return secondaryMongoTemplate.find(query, Instance.class);
   }
