@@ -363,6 +363,21 @@ public class InviteServiceImpl implements InviteService {
     }
   }
 
+  @Override
+  public void deleteAtAllScopes(Scope scope) {
+    Criteria criteria =
+        createScopeCriteria(scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier());
+    inviteRepository.deleteAll(criteria);
+  }
+
+  private Criteria createScopeCriteria(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+    Criteria criteria = new Criteria();
+    criteria.and(InviteKeys.accountIdentifier).is(accountIdentifier);
+    criteria.and(InviteKeys.orgIdentifier).is(orgIdentifier);
+    criteria.and(InviteKeys.projectIdentifier).is(projectIdentifier);
+    return criteria;
+  }
+
   private void checkUserLimit(String accountId, String emailId) {
     boolean limitHasBeenReached = CGRestUtils.getResponse(userClient.checkUserLimit(accountId, emailId));
     if (limitHasBeenReached) {
