@@ -531,8 +531,8 @@ public enum FeatureName {
   PL_SUPPORT_JWT_TOKEN_SCIM_API("Enable support for external OAuth JWT token for SCIM API calls", HarnessTeam.PL),
   CCM_INSTANCE_DATA_CLUSTERID_FILTER("Query from instanceData collection based on clusterId", HarnessTeam.CE),
   CDC_SEND_NOTIFICATION_FOR_FREEZE("Send notifications for deployment freeze", HarnessTeam.CDC),
-  CDS_SERVICE_ENV_SCHEMA_VALIDATION(
-      "Added support for Service Env schema validation for new service env redesign", HarnessTeam.CDC),
+  DISABLE_CDS_SERVICE_ENV_SCHEMA_VALIDATION(
+      "Used to disable Schema validation for Service Env for new service env redesign", HarnessTeam.CDC),
   DO_NOT_LOAD_SUPPORT_ACCOUNTS_UNLESS_REQUIRED(
       "Avoid loading unnecessary support accounts unnecessarily. Enabling it will reduce memory pressure",
       HarnessTeam.PL),
