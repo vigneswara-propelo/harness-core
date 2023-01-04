@@ -187,6 +187,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.reinert.jjschema.Attributes;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -209,7 +210,6 @@ import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.mongodb.morphia.query.Query;
 
 @FieldNameConstants(onlyExplicitlyIncluded = true, innerTypeName = "TerraformProvisionStateKeys")
 @Slf4j

@@ -26,7 +26,6 @@ import static io.harness.springdata.PersistenceUtils.getRetryPolicy;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
-import static java.util.regex.Pattern.quote;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -912,7 +911,7 @@ public class InviteServiceImpl implements InviteService {
       List<String> emailIds = userInfos.stream().map(UserInfo::getEmail).collect(toList());
       Criteria searchTermCriteria = new Criteria();
       searchTermCriteria.orOperator(
-          Criteria.where(InviteKeys.email).regex(quote(searchTerm)), Criteria.where(InviteKeys.email).in(emailIds));
+          Criteria.where(InviteKeys.email).regex(searchTerm), Criteria.where(InviteKeys.email).in(emailIds));
       criteria = new Criteria().andOperator(criteria, searchTermCriteria);
     }
     return getInvites(criteria, pageRequest);
