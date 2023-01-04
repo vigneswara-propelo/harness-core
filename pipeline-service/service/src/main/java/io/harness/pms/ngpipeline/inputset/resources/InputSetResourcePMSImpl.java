@@ -44,6 +44,8 @@ import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetImportRequestDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetImportResponseDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetListTypePMS;
+import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetMoveConfigRequestDTO;
+import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetMoveConfigResponseDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetResponseDTOPMS;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetSanitiseResponseDTO;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetSummaryResponseDTOPMS;
@@ -353,5 +355,11 @@ public class InputSetResourcePMSImpl implements InputSetResourcePMS {
             inputSetIdentifier, inputSetImportRequestDTO, gitImportInfoDTO.getIsForceImport());
     return ResponseDTO.newResponse(
         InputSetImportResponseDTO.builder().identifier(inputSetEntity.getIdentifier()).build());
+  }
+
+  @Override
+  public ResponseDTO<InputSetMoveConfigResponseDTO> moveConfig(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String inputSetIdentifier, InputSetMoveConfigRequestDTO inputSetMoveConfigRequestDTO) {
+    return ResponseDTO.newResponse(InputSetMoveConfigResponseDTO.builder().build());
   }
 }
