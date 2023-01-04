@@ -33,6 +33,7 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.validation.InputSetValidator;
 import io.harness.steps.customstage.CustomStageConfig;
 import io.harness.steps.customstage.CustomStageNode;
+import io.harness.steps.template.TemplateStepNode;
 import io.harness.steps.wait.WaitStepInfo;
 import io.harness.steps.wait.WaitStepNode;
 import io.harness.when.beans.StepWhenCondition;
@@ -50,11 +51,11 @@ import software.wings.beans.WorkflowPhase;
 import software.wings.beans.workflow.StepSkipStrategy;
 import software.wings.beans.workflow.StepSkipStrategy.Scope;
 import software.wings.ngmigration.CgEntityId;
-import software.wings.ngmigration.NGMigrationEntityType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,15 +68,15 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class WorkflowHandler {
   public static final String INPUT_EXPRESSION = "<+input>";
 
-  public List<CgEntityId> getReferencedEntities(Workflow workflow) {
+  public List<CgEntityId> getReferencedEntities(StepMapperFactory stepMapperFactory, Workflow workflow) {
     List<GraphNode> steps = getSteps(workflow);
     if (EmptyPredicate.isEmpty(steps)) {
       return Collections.emptyList();
     }
-    // Return all templates
     return steps.stream()
-        .filter(step -> StringUtils.isNotBlank(step.getTemplateUuid()))
-        .map(step -> CgEntityId.builder().id(step.getTemplateUuid()).type(NGMigrationEntityType.TEMPLATE).build())
+        .map(step -> stepMapperFactory.getStepMapper(step.getType()).getReferencedEntities(step))
+        .filter(EmptyPredicate::isNotEmpty)
+        .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
 
@@ -351,14 +352,18 @@ public abstract class WorkflowHandler {
             -> getStepElementConfig(
                 migratedEntities, stepMapperFactory, stepYaml, skipStrategies.getOrDefault(stepYaml.getId(), null)))
         .filter(Objects::nonNull)
-        .map(stepNode -> ExecutionWrapperConfig.builder().step(JsonPipelineUtils.asTree(stepNode)).build())
+        .map(stepNodeJson -> ExecutionWrapperConfig.builder().step(stepNodeJson).build())
         .collect(Collectors.toList());
   }
 
-  AbstractStepNode getStepElementConfig(Map<CgEntityId, NGYamlFile> migratedEntities,
-      StepMapperFactory stepMapperFactory, GraphNode step, String skipCondition) {
+  JsonNode getStepElementConfig(Map<CgEntityId, NGYamlFile> migratedEntities, StepMapperFactory stepMapperFactory,
+      GraphNode step, String skipCondition) {
     StepMapper stepMapper = stepMapperFactory.getStepMapper(step.getType());
     MigratorExpressionUtils.render(step, new HashMap<>());
+    TemplateStepNode templateStepNode = stepMapper.getTemplateSpec(migratedEntities, step);
+    if (templateStepNode != null) {
+      return JsonPipelineUtils.asTree(templateStepNode);
+    }
     AbstractStepNode stepNode = stepMapper.getSpec(migratedEntities, step);
     if (stepNode == null) {
       return null;
@@ -369,7 +374,7 @@ public abstract class WorkflowHandler {
                            .stageStatus(SUCCESS)
                            .build());
     }
-    return stepNode;
+    return JsonPipelineUtils.asTree(stepNode);
   }
 
   // We can infer the type based on the service, infra & sometimes based on the steps used.

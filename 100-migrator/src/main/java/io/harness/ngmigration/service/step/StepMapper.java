@@ -14,22 +14,54 @@ import io.harness.ngmigration.service.MigratorUtility;
 import io.harness.plancreator.steps.AbstractStepNode;
 import io.harness.plancreator.steps.internal.PmsAbstractStepNode;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.steps.template.TemplateStepNode;
+import io.harness.template.yaml.TemplateLinkConfig;
 import io.harness.yaml.core.timeout.Timeout;
 
 import software.wings.beans.GraphNode;
 import software.wings.ngmigration.CgEntityId;
+import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.sm.State;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
 public interface StepMapper {
-  int DEFAULT_TIMEOUT_MILLI = 600000;
+  default List<CgEntityId> getReferencedEntities(GraphNode graphNode) {
+    return Collections.emptyList();
+  }
 
   String getStepType(GraphNode stepYaml);
 
   State getState(GraphNode stepYaml);
 
   AbstractStepNode getSpec(Map<CgEntityId, NGYamlFile> migratedEntities, GraphNode graphNode);
+
+  default TemplateStepNode getTemplateSpec(Map<CgEntityId, NGYamlFile> migratedEntities, GraphNode graphNode) {
+    return null;
+  }
+
+  default TemplateStepNode defaultTemplateSpecMapper(
+      Map<CgEntityId, NGYamlFile> migratedEntities, GraphNode graphNode) {
+    String templateId = graphNode.getTemplateUuid();
+    if (StringUtils.isBlank(templateId)) {
+      return null;
+    }
+    NGYamlFile template =
+        migratedEntities.get(CgEntityId.builder().id(templateId).type(NGMigrationEntityType.TEMPLATE).build());
+    TemplateLinkConfig templateLinkConfig = new TemplateLinkConfig();
+    templateLinkConfig.setTemplateRef(MigratorUtility.getIdentifierWithScope(template.getNgEntityDetail()));
+    templateLinkConfig.setVersionLabel("v1");
+
+    TemplateStepNode templateStepNode = new TemplateStepNode();
+    templateStepNode.setIdentifier(MigratorUtility.generateIdentifier(graphNode.getName()));
+    templateStepNode.setName(graphNode.getName());
+    templateStepNode.setDescription(getDescription(graphNode));
+    templateStepNode.setTemplate(templateLinkConfig);
+    return templateStepNode;
+  }
 
   boolean areSimilar(GraphNode stepYaml1, GraphNode stepYaml2);
 

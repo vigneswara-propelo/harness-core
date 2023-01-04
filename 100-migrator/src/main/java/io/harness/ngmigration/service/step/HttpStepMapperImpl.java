@@ -18,11 +18,13 @@ import io.harness.plancreator.steps.http.HttpStepInfo.HttpStepInfoBuilder;
 import io.harness.plancreator.steps.http.HttpStepNode;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.steps.StepSpecTypeConstants;
+import io.harness.steps.template.TemplateStepNode;
 import io.harness.yaml.core.variables.NGVariableType;
 import io.harness.yaml.core.variables.StringNGVariable;
 
 import software.wings.beans.GraphNode;
 import software.wings.ngmigration.CgEntityId;
+import software.wings.ngmigration.NGMigrationEntityType;
 import software.wings.sm.State;
 import software.wings.sm.states.HttpState;
 
@@ -33,6 +35,21 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class HttpStepMapperImpl implements StepMapper {
+  @Override
+  public List<CgEntityId> getReferencedEntities(GraphNode graphNode) {
+    String templateId = graphNode.getTemplateUuid();
+    if (StringUtils.isNotBlank(templateId)) {
+      return Collections.singletonList(
+          CgEntityId.builder().id(templateId).type(NGMigrationEntityType.TEMPLATE).build());
+    }
+    return Collections.emptyList();
+  }
+
+  @Override
+  public TemplateStepNode getTemplateSpec(Map<CgEntityId, NGYamlFile> migratedEntities, GraphNode graphNode) {
+    return defaultTemplateSpecMapper(migratedEntities, graphNode);
+  }
+
   @Override
   public String getStepType(GraphNode stepYaml) {
     return StepSpecTypeConstants.HTTP;
