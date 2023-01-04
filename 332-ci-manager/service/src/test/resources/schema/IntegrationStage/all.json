@@ -7397,8 +7397,14 @@
         "failOnSeverity": {
           "oneOf": [
             {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "enum": [
+                "critical",
+                "high",
+                "medium",
+                "low",
+                "none"
+              ]
             },
             {
               "type": "string",
@@ -7423,18 +7429,6 @@
           "oneOf": [
             {
               "$ref": "#/definitions/STOYamlLog"
-            },
-            {
-              "type": "string",
-              "pattern": "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
-              "minLength": 1
-            }
-          ]
-        },
-        "ssl": {
-          "oneOf": [
-            {
-              "type": "boolean"
             },
             {
               "type": "string",
@@ -7510,6 +7504,18 @@
           "oneOf": [
             {
               "type": "string"
+            },
+            {
+              "type": "string",
+              "pattern": "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+              "minLength": 1
+            }
+          ]
+        },
+        "ssl": {
+          "oneOf": [
+            {
+              "type": "boolean"
             },
             {
               "type": "string",
@@ -8057,18 +8063,6 @@
           "oneOf": [
             {
               "type": "string"
-            },
-            {
-              "type": "string",
-              "pattern": "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
-              "minLength": 1
-            }
-          ]
-        },
-        "ssl": {
-          "oneOf": [
-            {
-              "type": "boolean"
             },
             {
               "type": "string",
