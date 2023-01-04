@@ -36,6 +36,8 @@ public class NextGenLogCVConfig extends LogCVConfig {
   QueryParams queryParams;
   @NotNull DataSourceType dataSourceType;
 
+  @NotNull String groupName;
+
   @Override
   protected void validateParams() {
     checkNotNull(queryParams, generateErrorMessageFromParam(CVConfigKeys.queryParams));
