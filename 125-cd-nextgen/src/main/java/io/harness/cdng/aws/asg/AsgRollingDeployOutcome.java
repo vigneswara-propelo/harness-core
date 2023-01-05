@@ -7,9 +7,11 @@
 
 package io.harness.cdng.aws.asg;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
 import io.harness.annotation.RecasterAlias;
-import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.delegate.task.aws.asg.AutoScalingGroupContainer;
 import io.harness.pms.sdk.core.data.ExecutionSweepingOutput;
 import io.harness.pms.sdk.core.data.Outcome;
 
@@ -20,12 +22,13 @@ import lombok.Builder;
 import lombok.Value;
 import org.springframework.data.annotation.TypeAlias;
 
-@OwnedBy(HarnessTeam.CDP)
+@OwnedBy(CDP)
 @Value
 @Builder
-@TypeAlias("asgRollingPrepareRollbackDataOutcome")
-@JsonTypeName("asgRollingPrepareRollbackDataOutcome")
-@RecasterAlias("io.harness.cdng.aws.asg.AsgRollingPrepareRollbackDataOutcome")
-public class AsgRollingPrepareRollbackDataOutcome implements Outcome, ExecutionSweepingOutput {
+@TypeAlias("asgRollingDeployOutcome")
+@JsonTypeName("asgRollingDeployOutcome")
+@RecasterAlias("io.harness.cdng.aws.asg.AsgRollingDeployOutcome")
+public class AsgRollingDeployOutcome implements Outcome, ExecutionSweepingOutput {
   Map<String, List<String>> asgStoreManifestsContent;
+  AutoScalingGroupContainer autoScalingGroupContainer;
 }
