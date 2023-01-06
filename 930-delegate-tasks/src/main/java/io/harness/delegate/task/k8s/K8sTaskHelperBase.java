@@ -2597,7 +2597,7 @@ public class K8sTaskHelperBase {
 
       throw new KubernetesTaskException(
           format("Failed while trying to fetch files from git connector: '%s' in manifest with identifier: %s",
-              gitStoreDelegateConfig.getConnectorName(), gitStoreDelegateConfig.getManifestId()),
+              gitStoreDelegateConfig.getConnectorId(), gitStoreDelegateConfig.getManifestId()),
           e.getCause());
     } catch (Exception e) {
       Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(e);
@@ -2608,7 +2608,7 @@ public class K8sTaskHelperBase {
 
       throw new KubernetesTaskException(
           format("Failed while trying to fetch files from git connector: '%s' in manifest with identifier: %s",
-              gitStoreDelegateConfig.getConnectorName(), gitStoreDelegateConfig.getManifestId()),
+              gitStoreDelegateConfig.getConnectorId(), gitStoreDelegateConfig.getManifestId()),
           e);
     }
   }

@@ -459,6 +459,7 @@ public class CDStepHelper {
         .branch(trim(getParameterFieldValue(gitstoreConfig.getBranch())))
         .commitId(trim(getParameterFieldValue(gitstoreConfig.getCommitId())))
         .paths(trimStrings(paths))
+        .connectorId(connectorDTO.getIdentifier())
         .connectorName(connectorDTO.getName())
         .manifestType(manifestType)
         .manifestId(manifestIdentifier)
