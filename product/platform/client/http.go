@@ -1,4 +1,4 @@
-// Copyright 2021 Harness Inc. All rights reserved.
+// Copyright 2022 Harness Inc. All rights reserved.
 // Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
 // that can be found in the licenses directory at the root of this repository, also available at
 // https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -6,35 +6,28 @@
 package client
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
-	"os"
-	"path/filepath"
-
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/harness/harness-core/product/log-service/logger"
-	"github.com/harness/harness-core/product/log-service/stream"
 )
 
-var _ Client = (*HTTPClient)(nil)
-
 const (
-	streamEndpoint       = "/stream?accountID=%s&key=%s"
-	infoEndpoint         = "/info/stream"
-	blobEndpoint         = "/blob?accountID=%s&key=%s"
-	uploadLinkEndpoint   = "/blob/link/upload?accountID=%s&key=%s"
-	downloadLinkEndpoint = "/blob/link/download?accountID=%s&key=%s"
+	apiKeyEndpoint   = "/ng/api/token/validate?accountIdentifier=%s"
+	authAPIKeyHeader = "x-api-key"
 )
 
 // defaultClient is the default http.Client.
@@ -45,11 +38,9 @@ var defaultClient = &http.Client{
 }
 
 // NewHTTPClient returns a new HTTPClient.
-func NewHTTPClient(endpoint, accountID, token string, skipverify bool, additionalCertsDir string) *HTTPClient {
+func NewHTTPClient(endpoint string, skipverify bool, additionalCertsDir string) *HTTPClient {
 	client := &HTTPClient{
 		Endpoint:   endpoint,
-		AccountID:  accountID,
-		Token:      token,
 		SkipVerify: skipverify,
 	}
 	if skipverify {
@@ -128,127 +119,39 @@ func clientWithRootCAs(skipverify bool, rootCAs *x509.CertPool) *http.Client {
 type HTTPClient struct {
 	Client     *http.Client
 	Endpoint   string // Example: http://localhost:port
-	Token      string // Per account token to validate against
-	AccountID  string
 	SkipVerify bool
 }
 
-// Upload uploads the file to remote storage.
-func (c *HTTPClient) Upload(ctx context.Context, key string, r io.Reader) error {
-	path := fmt.Sprintf(blobEndpoint, c.AccountID, key)
-	backoff := createInfiniteBackoff()
-	resp, err := c.retry(ctx, c.Endpoint+path, "POST", r, nil, true, backoff)
-	if resp != nil {
-		defer resp.Body.Close()
+// Validate apikey of an account for auth.
+func (c *HTTPClient) ValidateApiKey(ctx context.Context, accountID, routingId, apiKey string) error {
+	path := fmt.Sprintf(apiKeyEndpoint, accountID)
+	if routingId != "" {
+		path = path + "&routingId=" + routingId
 	}
-	return err
-}
 
-// UploadLink returns a secure link that can be used to
-// upload a file to remote storage.
-func (c *HTTPClient) UploadLink(ctx context.Context, key string) (*Link, error) {
-	path := fmt.Sprintf(uploadLinkEndpoint, c.AccountID, key)
-	out := new(Link)
 	backoff := createBackoff(60 * time.Second)
-	_, err := c.retry(ctx, c.Endpoint+path, "POST", nil, out, false, backoff)
-	return out, err
-}
-
-// Download downloads the file from remote storage.
-func (c *HTTPClient) Download(ctx context.Context, key string) (io.ReadCloser, error) {
-	path := fmt.Sprintf(blobEndpoint, c.AccountID, key)
-	resp, err := c.open(ctx, c.Endpoint+path, "GET", nil)
-	return resp.Body, err
-}
-
-// UploadUsingLink takes in a reader and a link object and uploads directly to
-// remote storage.
-func (c *HTTPClient) UploadUsingLink(ctx context.Context, link string, r io.Reader) error {
-	backoff := createBackoff(60 * time.Second)
-	_, err := c.retry(ctx, link, "PUT", r, nil, true, backoff)
-	return err
-}
-
-// DownloadLink returns a secure link that can be used to
-// download a file from remote storage.
-func (c *HTTPClient) DownloadLink(ctx context.Context, key string) (*Link, error) {
-	path := fmt.Sprintf(downloadLinkEndpoint, c.AccountID, key)
-	out := new(Link)
-	_, err := c.do(ctx, c.Endpoint+path, "POST", nil, out)
-	return out, err
-}
-
-// Open opens the data stream.
-func (c *HTTPClient) Open(ctx context.Context, key string) error {
-	path := fmt.Sprintf(streamEndpoint, c.AccountID, key)
-	backoff := createBackoff(10 * time.Second)
-	_, err := c.retry(ctx, c.Endpoint+path, "POST", nil, nil, false, backoff)
-	return err
-}
-
-// Close closes the data stream.
-func (c *HTTPClient) Close(ctx context.Context, key string) error {
-	path := fmt.Sprintf(streamEndpoint, c.AccountID, key)
-	_, err := c.do(ctx, c.Endpoint+path, "DELETE", nil, nil)
-	return err
-}
-
-// Write writes logs to the data stream.
-func (c *HTTPClient) Write(ctx context.Context, key string, lines []*stream.Line) error {
-	path := fmt.Sprintf(streamEndpoint, c.AccountID, key)
-	_, err := c.do(ctx, c.Endpoint+path, "PUT", &lines, nil)
-	return err
-}
-
-// Tail tails the data stream.
-func (c *HTTPClient) Tail(ctx context.Context, key string) (<-chan string, <-chan error) {
-	errc := make(chan error, 1)
-	outc := make(chan string, 100)
-
-	path := fmt.Sprintf(streamEndpoint, c.AccountID, key)
-	res, err := c.open(ctx, c.Endpoint+path, "GET", nil)
-	if err != nil {
-		errc <- err
-		return outc, errc
+	payload := strings.NewReader(apiKey)
+	out, err := c.retry(ctx, c.Endpoint+path, "POST", apiKey, payload, nil, true, backoff)
+	if err == nil && out.StatusCode != http.StatusOK {
+		err = fmt.Errorf("Error Authenticating Apikey, Response: ", out.StatusCode)
 	}
-	if res.StatusCode > 299 {
-		errc <- errors.New("cannot stream repository")
-		return outc, errc
-	}
-	go func(res *http.Response) {
-		reader := bufio.NewReader(res.Body)
-		defer res.Body.Close()
-		for {
-			line, err := reader.ReadBytes('\n')
-			if err != nil {
-				errc <- err
-			}
-			select {
-			case <-ctx.Done():
-				return
-			default:
-			}
-			outc <- string(line)
-		}
-	}(res)
-	return outc, errc
+	return err
 }
 
-// Info returns the stream information.
-func (c *HTTPClient) Info(ctx context.Context) (*stream.Info, error) {
-	out := new(stream.Info)
-	_, err := c.do(ctx, c.Endpoint+infoEndpoint, "GET", nil, out)
-	return out, err
+func createBackoff(maxElapsedTime time.Duration) *backoff.ExponentialBackOff {
+	exp := backoff.NewExponentialBackOff()
+	exp.MaxElapsedTime = maxElapsedTime
+	return exp
 }
 
-func (c *HTTPClient) retry(ctx context.Context, method, path string, in, out interface{}, isOpen bool, b backoff.BackOff) (*http.Response, error) {
+func (c *HTTPClient) retry(ctx context.Context, path, method, apiKey string, in, out interface{}, isOpen bool, b backoff.BackOff) (*http.Response, error) {
 	for {
 		var res *http.Response
 		var err error
 		if !isOpen {
-			res, err = c.do(ctx, method, path, in, out)
+			res, err = c.do(ctx, path, method, apiKey, in, out)
 		} else {
-			res, err = c.open(ctx, method, path, in.(io.Reader))
+			res, err = c.open(ctx, path, method, apiKey, in.(io.Reader))
 		}
 
 		// do not retry on Canceled or DeadlineExceeded
@@ -287,7 +190,7 @@ func (c *HTTPClient) retry(ctx context.Context, method, path string, in, out int
 
 // do is a helper function that posts a signed http request with
 // the input encoded and response decoded from json.
-func (c *HTTPClient) do(ctx context.Context, path, method string, in, out interface{}) (*http.Response, error) {
+func (c *HTTPClient) do(ctx context.Context, path, method, apiKey string, in, out interface{}) (*http.Response, error) {
 	var r io.Reader
 
 	if in != nil {
@@ -303,7 +206,9 @@ func (c *HTTPClient) do(ctx context.Context, path, method string, in, out interf
 
 	// the request should include the secret shared between
 	// the agent and server for authorization.
-	req.Header.Add("X-Harness-Token", c.Token)
+	if apiKey != "" {
+		req.Header.Add(authAPIKeyHeader, apiKey)
+	}
 	res, err := c.client().Do(req)
 	if res != nil {
 		defer func() {
@@ -355,12 +260,14 @@ func (c *HTTPClient) do(ctx context.Context, path, method string, in, out interf
 }
 
 // helper function to open an http request
-func (c *HTTPClient) open(ctx context.Context, path, method string, body io.Reader) (*http.Response, error) {
+func (c *HTTPClient) open(ctx context.Context, path, method, apiKey string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, path, body)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("X-Harness-Token", c.Token)
+	if apiKey != "" {
+		req.Header.Add(authAPIKeyHeader, apiKey)
+	}
 	return c.client().Do(req)
 }
 
@@ -371,14 +278,4 @@ func (c *HTTPClient) client() *http.Client {
 		return defaultClient
 	}
 	return c.Client
-}
-
-func createInfiniteBackoff() *backoff.ExponentialBackOff {
-	return createBackoff(0)
-}
-
-func createBackoff(maxElapsedTime time.Duration) *backoff.ExponentialBackOff {
-	exp := backoff.NewExponentialBackOff()
-	exp.MaxElapsedTime = maxElapsedTime
-	return exp
 }
