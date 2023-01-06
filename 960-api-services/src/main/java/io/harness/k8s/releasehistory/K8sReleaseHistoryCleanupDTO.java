@@ -7,19 +7,24 @@
 
 package io.harness.k8s.releasehistory;
 
+import io.harness.k8s.kubectl.Kubectl;
+import io.harness.k8s.model.K8sDelegateTaskParams;
 import io.harness.k8s.model.KubernetesConfig;
+import io.harness.logging.LogCallback;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class K8sReleasePersistDTO {
-  KubernetesConfig kubernetesConfig;
-  IK8sRelease release;
-
-  // legacy fields
+public class K8sReleaseHistoryCleanupDTO {
   IK8sReleaseHistory releaseHistory;
+  KubernetesConfig kubernetesConfig;
   String releaseName;
-  boolean storeInSecrets;
+  int currentReleaseNumber;
+  LogCallback logCallback;
+
+  // Used for legacy implementation, to be removed with corresponding FF
+  Kubectl client;
+  K8sDelegateTaskParams delegateTaskParams;
 }
