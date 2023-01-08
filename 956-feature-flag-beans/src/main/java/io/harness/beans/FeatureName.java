@@ -372,6 +372,8 @@ public enum FeatureName {
   GRAPHQL_WORKFLOW_EXECUTION_OPTIMIZATION(
       "Making multiple optimizations for workflow execution graphql in CG", HarnessTeam.SPG),
   NG_ENABLE_LDAP_CHECK("Enables NG Ldap in NG-UI", HarnessTeam.PL),
+  SPG_WFE_PROJECTIONS_GRAPHQL_DEPLOYMENTS_PAGE(
+      "Enable projection on deployments page and graphql executions", HarnessTeam.SPG),
   CUSTOM_SECRET_MANAGER_NG("Enable Custom Secret Manager in NG", HarnessTeam.PL),
   CV_AWS_PROMETHEUS("Enable AWS Prometheus for CV State", HarnessTeam.CV),
   CD_GIT_WEBHOOK_POLLING("Used to poll git webhook recent delivery events", HarnessTeam.CDP),
