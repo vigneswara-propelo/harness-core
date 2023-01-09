@@ -54,6 +54,7 @@ import io.harness.signup.dto.SignupDTO;
 import io.harness.signup.dto.SignupInviteDTO;
 import io.harness.signup.dto.VerifyTokenResponseDTO;
 import io.harness.signup.entities.SignupVerificationToken;
+import io.harness.signup.entities.SignupVerificationToken.signupVerificationTokensKeys;
 import io.harness.signup.notification.EmailType;
 import io.harness.signup.notification.SignupNotificationHelper;
 import io.harness.signup.services.SignupService;
@@ -93,6 +94,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 @Slf4j
@@ -565,6 +567,13 @@ public class SignupServiceImpl implements SignupService {
       throw new InvalidRequestException(VERIFY_URL_GENERATION_FAILED, e);
     }
     log.info("Resend verification email for {}", email);
+  }
+
+  @Override
+  public void deleteByAccount(String accountId) {
+    Criteria criteria = new Criteria();
+    criteria.and(signupVerificationTokensKeys.accountIdentifier).is(accountId);
+    verificationTokenRepository.deleteAll(verificationTokenRepository.findAllByAccountIdentifier(accountId));
   }
 
   private UserInfo createUser(SignupDTO signupDTO, AccountDTO account) {
