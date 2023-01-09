@@ -7,7 +7,13 @@
 
 package software.wings.instancesyncv2.model;
 
-public interface CgReleaseIdentifiers {
-  long getDeleteAfter();
-  void setDeleteAfter(long timestamp);
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+public class CgReleaseMetadata {
+  long deleteAfter;
 }
