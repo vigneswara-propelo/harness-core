@@ -23,12 +23,13 @@ import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.aws.CloseableAmazonWebServiceClient;
 import io.harness.concurrent.HTimeLimiter;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.logging.LogCallback;
+
+import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
 
 import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
