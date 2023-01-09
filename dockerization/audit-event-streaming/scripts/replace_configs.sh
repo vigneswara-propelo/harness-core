@@ -4,7 +4,7 @@
 # that can be found in the licenses directory at the root of this repository, also available at
 # https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
 
-CONFIG_FILE=/opt/harness/application.yml
+CONFIG_FILE=/opt/harness/audit-event-streaming-config.yml
 
 replace_key_value () {
   CONFIG_KEY="$1";
@@ -36,7 +36,7 @@ write_mongo_hosts_and_ports() {
   done
 }
 
-echo "Mongo URI: $MONGO_URI"
+echo "MONGO_URI="$MONGO_URI
 
 if [[ "" != "$MONGO_URI" ]]; then
   export MONGO_URI; yq -i '.auditDbConfig.uri=env(MONGO_URI)' $CONFIG_FILE
