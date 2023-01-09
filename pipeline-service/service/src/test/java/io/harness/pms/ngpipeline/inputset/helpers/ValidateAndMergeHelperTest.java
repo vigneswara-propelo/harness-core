@@ -26,7 +26,6 @@ import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetTemplateResponseDTOPMS;
-import io.harness.pms.ngpipeline.inputset.exceptions.InvalidInputSetException;
 import io.harness.pms.ngpipeline.inputset.service.PMSInputSetService;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
@@ -52,8 +51,6 @@ public class ValidateAndMergeHelperTest extends PipelineServiceTestBase {
   private static final String orgId = "orgId";
   private static final String projectId = "projectId";
   private static final String pipelineId = "Test_Pipline11";
-  private static final String branch = null;
-  private static final String repoId = null;
 
   @Test
   @Owner(developers = NAMAN)
@@ -87,60 +84,6 @@ public class ValidateAndMergeHelperTest extends PipelineServiceTestBase {
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(format("Pipeline [%s] under Project[%s], Organization [%s] doesn't exist or has been deleted.",
             pipelineId, projectId, orgId));
-  }
-
-  @Test
-  @Owner(developers = NAMAN)
-  @Category(UnitTests.class)
-  public void testMergeInputSetForInvalidInputSets() {
-    doReturn(false).when(gitSyncSdkService).isGitSyncEnabled(accountId, orgId, projectId);
-    String pipelineYaml = "pipeline:\n"
-        + "  stages:\n"
-        + "  - stage:\n"
-        + "      identifier: s1\n"
-        + "      description: <+input>\n"
-        + "  - stage:\n"
-        + "      identifier: s2\n"
-        + "      description: <+input>\n";
-    String validInputSetYaml = "inputSet:\n"
-        + "  pipeline:\n"
-        + "    stages:\n"
-        + "    - stage:\n"
-        + "        identifier: s1\n"
-        + "        description: desc\n";
-    PipelineEntity pipelineEntity = PipelineEntity.builder().yaml(pipelineYaml).storeType(StoreType.REMOTE).build();
-    doReturn(Optional.of(pipelineEntity))
-        .when(pmsPipelineService)
-        .getAndValidatePipeline(accountId, orgId, projectId, pipelineId, false);
-
-    String invalidIdentifier = "invalidIdentifier";
-    InputSetEntity invalidEntity = InputSetEntity.builder()
-                                       .isInvalid(true)
-                                       .identifier(invalidIdentifier)
-                                       .inputSetEntityType(InputSetEntityType.INPUT_SET)
-                                       .storeType(StoreType.REMOTE)
-                                       .build();
-    doReturn(Optional.of(invalidEntity))
-        .when(pmsInputSetService)
-        .getWithoutValidations(accountId, orgId, projectId, pipelineId, invalidIdentifier, false);
-
-    String validIdentifier = "validIdentifier";
-    InputSetEntity validEntity = InputSetEntity.builder()
-                                     .isInvalid(false)
-                                     .identifier(validIdentifier)
-                                     .inputSetEntityType(InputSetEntityType.INPUT_SET)
-                                     .yaml(validInputSetYaml)
-                                     .storeType(StoreType.REMOTE)
-                                     .build();
-    doReturn(Optional.of(validEntity))
-        .when(pmsInputSetService)
-        .getWithoutValidations(accountId, orgId, projectId, pipelineId, validIdentifier, false);
-
-    assertThatThrownBy(()
-                           -> validateAndMergeHelper.getMergeInputSetFromPipelineTemplate(accountId, orgId, projectId,
-                               pipelineId, Arrays.asList(invalidIdentifier, validIdentifier), branch, repoId, null))
-        .isInstanceOf(InvalidInputSetException.class)
-        .hasMessage("Some of the references provided are invalid");
   }
 
   @Test
@@ -191,6 +134,7 @@ public class ValidateAndMergeHelperTest extends PipelineServiceTestBase {
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
   public void testGetMergeInputSetFromPipelineTemplate() {
+    doReturn(false).when(gitSyncSdkService).isGitSyncEnabled(accountId, orgId, projectId);
     String pipelineYaml = "pipeline:\n"
         + "  stages:\n"
         + "  - stage:\n"

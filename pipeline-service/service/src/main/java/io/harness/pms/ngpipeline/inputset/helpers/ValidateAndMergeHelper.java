@@ -26,12 +26,10 @@ import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.interceptor.GitSyncBranchContext;
 import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.pms.gitsync.PmsGitSyncBranchContextGuard;
-import io.harness.pms.inputset.InputSetErrorWrapperDTOPMS;
 import io.harness.pms.merger.helpers.InputSetMergeHelper;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetTemplateResponseDTOPMS;
-import io.harness.pms.ngpipeline.inputset.exceptions.InvalidInputSetException;
 import io.harness.pms.ngpipeline.inputset.service.PMSInputSetService;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
@@ -43,11 +41,9 @@ import io.harness.pms.stages.StagesExpressionExtractor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -202,9 +198,8 @@ public class ValidateAndMergeHelper {
     PipelineEntity pipelineEntity = getPipelineEntity(
         accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, pipelineBranch, pipelineRepoID, false);
     String pipelineYaml = pipelineEntity.getYaml();
-    String pipelineTemplateForValidations = createTemplateFromPipeline(pipelineYaml);
     String pipelineTemplate = EmptyPredicate.isEmpty(stageIdentifiers)
-        ? pipelineTemplateForValidations
+        ? createTemplateFromPipeline(pipelineYaml)
         : createTemplateFromPipelineForGivenStages(pipelineYaml, stageIdentifiers);
 
     if (EmptyPredicate.isEmpty(pipelineTemplate)) {
@@ -212,20 +207,14 @@ public class ValidateAndMergeHelper {
           "Pipeline " + pipelineIdentifier + " does not have any runtime input. All existing input sets are invalid");
     }
 
-    Set<String> invalidReferences = new HashSet<>();
     List<String> inputSetYamlList = new ArrayList<>();
     inputSetReferences.forEach(identifier -> {
       Optional<InputSetEntity> entity = pmsInputSetService.getWithoutValidations(
           accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, identifier, false);
-      if (!entity.isPresent()) {
-        invalidReferences.add(identifier);
+      if (entity.isEmpty()) {
         return;
       }
       InputSetEntity inputSet = entity.get();
-      if (inputSet.getIsInvalid()) {
-        invalidReferences.add(identifier);
-        return;
-      }
       if (!pipelineEntity.getStoreType().equals(inputSet.getStoreType())) {
         throw NestedExceptionUtils.hintWithExplanationException(
             "Please move either the input-set inline to remote or pipeline remote to inline.",
@@ -237,34 +226,15 @@ public class ValidateAndMergeHelper {
       }
       if (inputSet.getInputSetEntityType() == InputSetEntityType.INPUT_SET) {
         inputSetYamlList.add(inputSet.getYaml());
-        if (InputSetErrorsHelper.getErrorMap(
-                pipelineTemplateForValidations, inputSet.getYaml(), inputSet.getIdentifier())
-            != null) {
-          invalidReferences.add(identifier);
-        }
       } else {
         List<String> overlayReferences = inputSet.getInputSetReferences();
         overlayReferences.forEach(id -> {
           Optional<InputSetEntity> entity2 = pmsInputSetService.getWithoutValidations(
               accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, id, false);
-          if (!entity2.isPresent()) {
-            invalidReferences.add(identifier);
-          } else {
-            inputSetYamlList.add(entity2.get().getYaml());
-            if (InputSetErrorsHelper.getErrorMap(
-                    pipelineTemplateForValidations, entity2.get().getYaml(), entity2.get().getIdentifier())
-                != null) {
-              invalidReferences.add(identifier);
-            }
-          }
+          entity2.ifPresent(inputSetEntity -> inputSetYamlList.add(inputSetEntity.getYaml()));
         });
       }
     });
-
-    if (EmptyPredicate.isNotEmpty(invalidReferences)) {
-      throw new InvalidInputSetException("Some of the references provided are invalid",
-          InputSetErrorWrapperDTOPMS.builder().invalidInputSetReferences(new ArrayList<>(invalidReferences)).build());
-    }
 
     if (EmptyPredicate.isEmpty(stageIdentifiers)) {
       return mergeInputSets(pipelineTemplate, inputSetYamlList, false);
