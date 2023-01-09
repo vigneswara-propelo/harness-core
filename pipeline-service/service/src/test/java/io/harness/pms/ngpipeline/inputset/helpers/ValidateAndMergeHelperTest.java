@@ -249,7 +249,59 @@ public class ValidateAndMergeHelperTest extends PipelineServiceTestBase {
                            -> validateAndMergeHelper.getMergeInputSetFromPipelineTemplate(accountId, orgId, projectId,
                                pipelineId, List.of("forS1"), null, null, Collections.singletonList("s2")))
         .isInstanceOf(WingsException.class)
-        .hasMessage("Please move either the input-set inline to remote or pipeline remote to inline.");
+        .hasMessage("Please move the input-set from inline to remote.");
+  }
+
+  @Test
+  @Owner(developers = ADITHYA)
+  @Category(UnitTests.class)
+  public void testGetMergeInputSetFromPipelineTemplateWhenPipelineIsRemoteAndOverlaidInputSetIsInline() {
+    String pipelineYaml = "pipeline:\n"
+        + "  stages:\n"
+        + "  - stage:\n"
+        + "      identifier: s1\n"
+        + "      key: <+input>\n"
+        + "  - stage:\n"
+        + "      identifier: s2\n"
+        + "      key1: <+input>";
+    PipelineEntity pipeline = PipelineEntity.builder().yaml(pipelineYaml).storeType(StoreType.REMOTE).build();
+    doReturn(Optional.of(pipeline))
+        .when(pmsPipelineService)
+        .getAndValidatePipeline(accountId, orgId, projectId, pipelineId, false);
+
+    String yamlForS1 = "inputSet:\n"
+        + "  pipeline:\n"
+        + "    stages:\n"
+        + "    - stage:\n"
+        + "        identifier: s1\n"
+        + "        key: s1Value1";
+
+    InputSetEntity forS1 = InputSetEntity.builder()
+                               .identifier("forS1")
+                               .yaml(yamlForS1)
+                               .inputSetEntityType(InputSetEntityType.INPUT_SET)
+                               .storeType(StoreType.INLINE)
+                               .build();
+
+    doReturn(Optional.of(forS1))
+        .when(pmsInputSetService)
+        .getWithoutValidations(accountId, orgId, projectId, pipelineId, "forS1", false);
+
+    InputSetEntity overlaidIS = InputSetEntity.builder()
+                                    .identifier("overlaidIS1")
+                                    .yaml(yamlForS1)
+                                    .storeType(StoreType.REMOTE)
+                                    .inputSetReferences(Collections.singletonList("forS1"))
+                                    .build();
+    doReturn(Optional.of(overlaidIS))
+        .when(pmsInputSetService)
+        .getWithoutValidations(accountId, orgId, projectId, pipelineId, "overlaidIS1", false);
+
+    assertThatThrownBy(()
+                           -> validateAndMergeHelper.getMergeInputSetFromPipelineTemplate(accountId, orgId, projectId,
+                               pipelineId, List.of("overlaidIS1"), null, null, Collections.singletonList("s2")))
+        .isInstanceOf(WingsException.class)
+        .hasMessage("Please move the input-set from inline to remote.");
   }
 
   private String getPipelineYamlWithNoRuntime() {

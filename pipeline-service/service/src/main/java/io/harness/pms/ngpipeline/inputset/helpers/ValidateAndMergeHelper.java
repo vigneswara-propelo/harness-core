@@ -215,15 +215,7 @@ public class ValidateAndMergeHelper {
         return;
       }
       InputSetEntity inputSet = entity.get();
-      if (!pipelineEntity.getStoreType().equals(inputSet.getStoreType())) {
-        throw NestedExceptionUtils.hintWithExplanationException(
-            "Please move either the input-set inline to remote or pipeline remote to inline.",
-            "The StoreType of pipeline and input-set are different.",
-            new InvalidRequestException(String.format(
-                "Pipeline %s of storeType [%s] cannot be used with input-set %s of storeType [%s], please migrate to same storeType to use them",
-                pipelineIdentifier, pipelineEntity.getStoreType().name(), inputSet.getIdentifier(),
-                inputSet.getStoreType().name())));
-      }
+      checkAndThrowExceptionWhenPipelineAndInputSetStoreTypesAreDifferent(pipelineEntity, inputSet);
       if (inputSet.getInputSetEntityType() == InputSetEntityType.INPUT_SET) {
         inputSetYamlList.add(inputSet.getYaml());
       } else {
@@ -231,7 +223,10 @@ public class ValidateAndMergeHelper {
         overlayReferences.forEach(id -> {
           Optional<InputSetEntity> entity2 = pmsInputSetService.getWithoutValidations(
               accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, id, false);
-          entity2.ifPresent(inputSetEntity -> inputSetYamlList.add(inputSetEntity.getYaml()));
+          entity2.ifPresent(inputSetEntity -> {
+            checkAndThrowExceptionWhenPipelineAndInputSetStoreTypesAreDifferent(pipelineEntity, entity2.get());
+            inputSetYamlList.add(inputSetEntity.getYaml());
+          });
         });
       }
     });
@@ -252,5 +247,16 @@ public class ValidateAndMergeHelper {
       return InputSetMergeHelper.mergeInputSetIntoPipeline(pipelineYaml, mergedRuntimeInputYaml, false);
     }
     return mergeInputSetIntoPipelineForGivenStages(pipelineYaml, mergedRuntimeInputYaml, false, stageIdentifiers);
+  }
+
+  private void checkAndThrowExceptionWhenPipelineAndInputSetStoreTypesAreDifferent(
+      PipelineEntity pipelineEntity, InputSetEntity inputSetEntity) {
+    if (!pipelineEntity.getStoreType().equals(inputSetEntity.getStoreType())) {
+      throw NestedExceptionUtils.hintWithExplanationException("Please move the input-set from inline to remote.",
+          "The pipeline is remote and input-set is inline",
+          new InvalidRequestException(String.format(
+              "Remote Pipeline %s cannot be used with inline input-set %s, please move input-set to from inline to remote to use them",
+              pipelineEntity.getIdentifier(), inputSetEntity.getIdentifier())));
+    }
   }
 }
