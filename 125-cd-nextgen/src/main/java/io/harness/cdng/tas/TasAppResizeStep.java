@@ -132,7 +132,6 @@ public class TasAppResizeStep extends TaskExecutableWithRollbackAndRbac<CfComman
       List<ServerInstanceInfo> serverInstanceInfoList = getServerInstanceInfoList(response, ambiance);
       StepResponse.StepOutcome stepOutcome =
           instanceInfoService.saveServerInstancesIntoSweepingOutput(ambiance, serverInstanceInfoList);
-      tasStepHelper.saveInstancesOutcome(ambiance, serverInstanceInfoList);
       builder.stepOutcome(stepOutcome);
     }
     executionSweepingOutputService.consume(
