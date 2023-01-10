@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.beans.steps.nodes;
+package io.harness.beans.steps.nodes.V1;
 
 import static io.harness.annotations.dev.HarnessTeam.CI;
 
@@ -16,64 +16,45 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.CIAbstractStepNode;
 import io.harness.beans.steps.CIStepInfoType;
-import io.harness.beans.steps.stepinfo.RunTestsStepInfo;
-import io.harness.pms.yaml.ParameterField;
+import io.harness.beans.steps.stepinfo.TestStepInfo;
 import io.harness.yaml.core.StepSpecType;
-import io.harness.yaml.core.failurestrategy.FailureStrategyConfig;
-import io.harness.yaml.core.timeout.Timeout;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.List;
 import javax.validation.constraints.NotNull;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.TypeAlias;
 
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("RunTests")
-@TypeAlias("RunTestsStepNode")
+@JsonTypeName("test")
 @OwnedBy(CI)
-@RecasterAlias("io.harness.beans.steps.nodes.RunTestsStepNode")
-public class RunTestStepNode extends CIAbstractStepNode {
-  @JsonProperty("type") @NotNull StepType type = StepType.RunTests;
+@RecasterAlias("io.harness.beans.steps.nodes.V1.TestStepNode")
+public class TestStepNode extends CIAbstractStepNode {
+  @JsonProperty("type") @NotNull StepType type = StepType.TEST;
   @NotNull
   @JsonProperty("spec")
   @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
-  RunTestsStepInfo runTestsStepInfo;
+  TestStepInfo testStepInfo;
   @Override
   public String getType() {
-    return CIStepInfoType.RUN_TESTS.getDisplayName();
+    return CIStepInfoType.TEST.getDisplayName();
   }
 
   @Override
   public StepSpecType getStepSpecType() {
-    return runTestsStepInfo;
+    return testStepInfo;
   }
 
   enum StepType {
-    RunTests(CIStepInfoType.RUN_TESTS.getDisplayName());
-    @Getter String name;
+    @JsonProperty("test") TEST(CIStepInfoType.TEST.getDisplayName());
+    @Getter final String name;
     StepType(String name) {
       this.name = name;
     }
-  }
-
-  @Builder
-  public RunTestStepNode(String uuid, String identifier, String name, List<FailureStrategyConfig> failureStrategies,
-      RunTestsStepInfo runTestsStepInfo, RunTestStepNode.StepType type, ParameterField<Timeout> timeout) {
-    this.setUuid(uuid);
-    this.setIdentifier(identifier);
-    this.setName(name);
-    this.setFailureStrategies(failureStrategies);
-    this.runTestsStepInfo = runTestsStepInfo;
-    this.type = type;
-    this.setTimeout(timeout);
   }
 }
