@@ -6747,7 +6747,17 @@
               "minLength": 1
             },
             "namespace": {
-              "type": "string",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+                },
+                {
+                  "type": "string",
+                  "pattern": "(<\\+.+>.*)",
+                  "minLength": 1
+                }
+              ],
               "minLength": 1
             },
             "releaseName": {
@@ -6878,7 +6888,17 @@
               "minLength": 1
             },
             "namespace": {
-              "type": "string",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+                },
+                {
+                  "type": "string",
+                  "pattern": "(<\\+.+>.*)",
+                  "minLength": 1
+                }
+              ],
               "minLength": 1
             },
             "releaseName": {
@@ -7130,7 +7150,17 @@
               "type": "string"
             },
             "namespace": {
-              "type": "string",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+                },
+                {
+                  "type": "string",
+                  "pattern": "(<\\+.+>.*)",
+                  "minLength": 1
+                }
+              ],
               "minLength": 1
             },
             "releaseName": {
