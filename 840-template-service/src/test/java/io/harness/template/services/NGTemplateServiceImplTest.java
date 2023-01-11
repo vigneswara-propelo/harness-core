@@ -57,10 +57,7 @@ import io.harness.ng.core.template.TemplateListType;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ng.core.template.TemplateReferenceSummary;
 import io.harness.ng.core.template.TemplateWithInputsResponseDTO;
-import io.harness.ng.core.template.exception.NGTemplateResolveExceptionV2;
-import io.harness.ng.core.template.refresh.ErrorNodeSummary;
 import io.harness.ng.core.template.refresh.NgManagerRefreshRequestDTO;
-import io.harness.ng.core.template.refresh.ValidateTemplateInputsResponseDTO;
 import io.harness.ng.core.template.refresh.v2.InputsValidationResponse;
 import io.harness.organization.remote.OrganizationClient;
 import io.harness.pms.yaml.ParameterField;
@@ -98,9 +95,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -1070,8 +1065,6 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     String stageYamlWithMissingInputs = readFile("service/updated-stage-template-with-step-template.yaml");
     TemplateEntity stageTemplateWithMissingInputs =
         entity.withYaml(stageYamlWithMissingInputs).withIdentifier(stageTemplateIdentifier);
-    testShouldThrowExceptionWithInvalidTemplateInputs(
-        () -> templateService.create(stageTemplateWithMissingInputs, false, ""));
 
     String stageYaml = readFile("service/stage-template-with-step-template.yaml");
     TemplateEntity stageTemplate = entity.withYaml(stageYaml).withIdentifier(stageTemplateIdentifier);
@@ -1087,9 +1080,6 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     TemplateEntity updatedStepEntity =
         templateService.updateTemplateEntity(updatedStepTemplate, ChangeType.MODIFY, false, "");
     assertSavedTemplateEntity(updatedStepEntity, TEMPLATE_IDENTIFIER);
-
-    testShouldThrowExceptionWithInvalidTemplateInputs(
-        () -> templateService.updateTemplateEntity(stageTemplate, ChangeType.MODIFY, false, ""));
 
     TemplateEntity updatedStageEntityWithMissingInputs =
         templateService.updateTemplateEntity(stageTemplateWithMissingInputs, ChangeType.MODIFY, false, "");
@@ -1164,9 +1154,8 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     String stageTemplateIdentifier = "template2";
     String stageYaml = readFile("service/stage-template-regular.yaml");
     TemplateEntity stageTemplate = entity.withYaml(stageYaml).withIdentifier(stageTemplateIdentifier);
-    Assertions.assertThatExceptionOfType(NGTemplateResolveExceptionV2.class)
-        .isThrownBy(() -> templateService.create(stageTemplate, false, ""))
-        .withMessageContaining("Exception in resolving template refs in given yaml");
+    // Template creation should be allowed as we have removed inputs validations
+    templateService.create(stageTemplate, false, "");
   }
 
   private void setupGitContext(GitEntityInfo branchInfo) {
@@ -1182,23 +1171,5 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     assertThat(createdEntity.getOrgIdentifier()).isEqualTo(ORG_IDENTIFIER);
     assertThat(createdEntity.getProjectIdentifier()).isEqualTo(PROJ_IDENTIFIER);
     assertThat(createdEntity.getIdentifier()).isEqualTo(templateIdentifier);
-  }
-
-  private void testShouldThrowExceptionWithInvalidTemplateInputs(Callable callable) {
-    assertThatThrownBy(callable::call)
-        .isInstanceOf(NGTemplateResolveExceptionV2.class)
-        .hasMessage("Exception in resolving template refs in given yaml.")
-        .extracting(ex -> ((NGTemplateResolveExceptionV2) ex).getMetadata())
-        .isInstanceOf(ValidateTemplateInputsResponseDTO.class)
-        .isNotNull()
-        .hasFieldOrPropertyWithValue("validYaml", false)
-        .extracting(resp -> ((ValidateTemplateInputsResponseDTO) resp).getErrorNodeSummary())
-        .isNotNull()
-        .hasFieldOrPropertyWithValue("childrenErrorNodes", new ArrayList<>())
-        .hasFieldOrProperty("nodeInfo")
-        .extracting(ErrorNodeSummary::getTemplateResponse)
-        .isNotNull()
-        .hasFieldOrPropertyWithValue("identifier", "template2")
-        .hasFieldOrPropertyWithValue("versionLabel", "version1");
   }
 }
