@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.aws;
+package io.harness.aws.util;
 
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
