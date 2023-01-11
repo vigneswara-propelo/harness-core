@@ -175,27 +175,34 @@ public class EnvironmentInfraFilterHelper {
   }
 
   /**
-   * @param filterYaml       - Contains the information of filters along with it's type
-   * @param clusters         - List of clusters to apply filters on
-   * @param ngGitOpsClusters - Cluster Entity containing tag information for applying filtering
+   * @param filterYaml     - Contains the information of filters along with it's type
+   * @param gitopsClusters - List of clusters to apply filters on
+   * @param ngClusters     - Cluster Entity containing tag information for applying filtering
    * @return - List of filtered Clusters
    */
-  public List<io.harness.cdng.gitops.entity.Cluster> processTagsFilterYamlForGitOpsClusters(FilterYaml filterYaml,
-      Set<Cluster> clusters, Map<String, io.harness.cdng.gitops.entity.Cluster> ngGitOpsClusters) {
+  public List<io.harness.cdng.gitops.entity.Cluster> processTagsFilterYamlForGitOpsClusters(
+      FilterYaml filterYaml, Set<Cluster> gitopsClusters, List<io.harness.cdng.gitops.entity.Cluster> ngClusters) {
     if (FilterType.all.name().equals(filterYaml.getType().name())) {
-      return ngGitOpsClusters.values().stream().collect(Collectors.toList());
+      return new ArrayList<>(ngClusters);
+    }
+    Map<String, List<io.harness.cdng.gitops.entity.Cluster>> idToClusterMap = new HashMap<>();
+    for (io.harness.cdng.gitops.entity.Cluster ngCluster : ngClusters) {
+      List<io.harness.cdng.gitops.entity.Cluster> clusters =
+          idToClusterMap.getOrDefault(ngCluster.getClusterRef(), new ArrayList<>());
+      clusters.add(ngCluster);
+      idToClusterMap.put(ngCluster.getClusterRef(), clusters);
     }
 
     List<io.harness.cdng.gitops.entity.Cluster> filteredClusters = new ArrayList<>();
     if (FilterType.tags.equals(filterYaml.getType())) {
       TagsFilter tagsFilter = (TagsFilter) filterYaml.getSpec();
-      for (Cluster cluster : clusters) {
+      for (Cluster cluster : gitopsClusters) {
         if (applyMatchAllFilter(TagMapper.convertToList(cluster.getTags()), tagsFilter)) {
-          filteredClusters.add(ngGitOpsClusters.get(cluster.getIdentifier()));
+          filteredClusters.addAll(idToClusterMap.get(cluster.getIdentifier()));
           continue;
         }
         if (applyMatchAnyFilter(TagMapper.convertToList(cluster.getTags()), tagsFilter)) {
-          filteredClusters.add(ngGitOpsClusters.get(cluster.getIdentifier()));
+          filteredClusters.addAll(idToClusterMap.get(cluster.getIdentifier()));
           continue;
         }
         if (isSupportedFilter(tagsFilter)) {
@@ -234,32 +241,32 @@ public class EnvironmentInfraFilterHelper {
     }
 
     if (isEmpty(setOfFilteredEnvs) && filterOnEnvExists) {
-      log.info("No Environments are eligible for deployment due to applied filters");
+      throw new InvalidRequestException("No Environments are eligible for deployment due to applied filters");
     }
     return setOfFilteredEnvs;
   }
 
   /**
-   * @param filterYamls  - List of FilterYamls
-   * @param clsToCluster - Map of clusterRef to NG GitOps Cluster Entity
-   * @param clusters     - List of NG GitOpsClusters
+   * @param filterYamls - List of FilterYamls
+   * @param ngClusters  - Map of clusterRef to NG GitOps Cluster Entity
+   * @param clusters    - List of NG GitOpsClusters
    * @return Applies Filters on GitOpsClusters. Returns the same list of no filter is applied.
    * Throws exception if no clusters qualify after applying filters.
    */
-  public Set<io.harness.cdng.gitops.entity.Cluster> applyFilteringOnClusters(Iterable<FilterYaml> filterYamls,
-      Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster, Set<io.harness.gitops.models.Cluster> clusters) {
+  public Set<io.harness.cdng.gitops.entity.Cluster> applyFilteringOnClusters(
+      Iterable<FilterYaml> filterYamls, List<io.harness.cdng.gitops.entity.Cluster> ngClusters, Set<Cluster> clusters) {
     Set<io.harness.cdng.gitops.entity.Cluster> setOfFilteredCls = new HashSet<>();
 
     boolean filterOnClusterExists = false;
     for (FilterYaml filterYaml : filterYamls) {
       if (filterYaml.getEntities().contains(Entity.gitOpsClusters)) {
-        setOfFilteredCls.addAll(processTagsFilterYamlForGitOpsClusters(filterYaml, clusters, clsToCluster));
+        setOfFilteredCls.addAll(processTagsFilterYamlForGitOpsClusters(filterYaml, clusters, ngClusters));
         filterOnClusterExists = true;
       }
     }
 
     if (!filterOnClusterExists) {
-      setOfFilteredCls.addAll(clsToCluster.values());
+      setOfFilteredCls.addAll(ngClusters);
     }
 
     if (isEmpty(setOfFilteredCls) && filterOnClusterExists) {
@@ -307,7 +314,7 @@ public class EnvironmentInfraFilterHelper {
    * @return Fetch NGGitOps Clusters. These are clusters that are linked in Environments section. Throw Exception if no
    * clusters are linked.
    */
-  public Map<String, io.harness.cdng.gitops.entity.Cluster> getClusterRefToNGGitOpsClusterMap(
+  public List<io.harness.cdng.gitops.entity.Cluster> getClusterRefToNGGitOpsClusterMap(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, List<String> envRefs) {
     Page<io.harness.cdng.gitops.entity.Cluster> clusters =
         clusterService.listAcrossEnv(0, PAGE_SIZE, accountIdentifier, orgIdentifier, projectIdentifier, envRefs);
@@ -316,9 +323,7 @@ public class EnvironmentInfraFilterHelper {
       log.info("There are no gitOpsClusters linked to Environments");
     }
 
-    Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster = new HashMap<>();
-    clusters.getContent().forEach(k -> clsToCluster.put(k.getClusterRef(), k));
-    return clsToCluster;
+    return CollectionUtils.emptyIfNull(clusters.getContent());
   }
 
   public Set<Environment> getAllEnvironmentsInProject(
@@ -769,10 +774,11 @@ public class EnvironmentInfraFilterHelper {
     List<FilterYaml> filterYamls = envYamlV2.getFilters().getValue();
     resolveServiceTags(envYamlV2.getFilters(), serviceTags);
 
-    Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster = getClusterRefToNGGitOpsClusterMap(
+    List<io.harness.cdng.gitops.entity.Cluster> ngClusters = getClusterRefToNGGitOpsClusterMap(
         accountIdentifier, orgIdentifier, projectIdentifier, Arrays.asList(envYamlV2.getEnvironmentRef().getValue()));
 
-    Set<String> clsRefs = clsToCluster.values().stream().map(e -> e.getClusterRef()).collect(Collectors.toSet());
+    Set<String> clsRefs =
+        ngClusters.stream().map(io.harness.cdng.gitops.entity.Cluster::getClusterRef).collect(Collectors.toSet());
 
     List<EnvClusterRefs> envClusterRefs = new ArrayList<>();
 
@@ -783,7 +789,7 @@ public class EnvironmentInfraFilterHelper {
           fetchClustersFromGitOps(accountIdentifier, orgIdentifier, projectIdentifier, clsRefs);
 
       Set<io.harness.cdng.gitops.entity.Cluster> filteredClusters =
-          applyFilteringOnClusters(filterYamls, clsToCluster, new HashSet<>(clusterList));
+          applyFilteringOnClusters(filterYamls, ngClusters, new HashSet<>(clusterList));
 
       List<String> filteredClusterRefs = filteredClusters.stream()
                                              .map(io.harness.cdng.gitops.entity.Cluster::getClusterRef)
@@ -821,21 +827,19 @@ public class EnvironmentInfraFilterHelper {
 
     List<String> filteredEnvRefs = filteredEnvs.stream().map(Environment::getIdentifier).collect(Collectors.toList());
 
-    Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster =
+    List<io.harness.cdng.gitops.entity.Cluster> ngclusters =
         getClusterRefToNGGitOpsClusterMap(accountIdentifier, orgIdentifier, projectIdentifier, filteredEnvRefs);
 
-    Set<String> clsRefs = clsToCluster.values()
-                              .stream()
-                              .map(io.harness.cdng.gitops.entity.Cluster::getClusterRef)
-                              .collect(Collectors.toSet());
+    Set<String> clsRefs =
+        ngclusters.stream().map(io.harness.cdng.gitops.entity.Cluster::getClusterRef).collect(Collectors.toSet());
 
     if (isEmpty(clsRefs)) {
-      throw new InvalidRequestException("No clusters found");
+      throw new InvalidRequestException("No clusters found due to applied filters");
     }
     List<Cluster> clusterList = fetchClustersFromGitOps(accountIdentifier, orgIdentifier, projectIdentifier, clsRefs);
 
     Set<io.harness.cdng.gitops.entity.Cluster> filteredClusters =
-        applyFilteringOnClusters(filterYamls, clsToCluster, new HashSet<>(clusterList));
+        applyFilteringOnClusters(filterYamls, ngclusters, new HashSet<>(clusterList));
 
     List<EnvironmentYamlV2> environmentYamlV2List = new ArrayList<>();
     List<EnvClusterRefs> envClusterRefs = new ArrayList<>();
@@ -896,20 +900,17 @@ public class EnvironmentInfraFilterHelper {
             filteredEnvs.stream().map(Environment::getIdentifier).collect(Collectors.toList());
 
         // GetAll ClustersRefs
-        Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster =
+        List<io.harness.cdng.gitops.entity.Cluster> ngClusters =
             getClusterRefToNGGitOpsClusterMap(accountIdentifier, orgIdentifier, projectIdentifier, filteredEnvRefs);
 
         // Apply filtering for clusterRefs for filtered environments
         List<EnvironmentYamlV2> environmentYamlV2List = new ArrayList<>();
         for (Environment env : filteredEnvs) {
           List<io.harness.cdng.gitops.entity.Cluster> clustersInEnv =
-              clsToCluster.values()
-                  .stream()
-                  .filter(e -> e.getEnvRef().equals(env.getIdentifier()))
-                  .collect(Collectors.toList());
+              ngClusters.stream().filter(e -> e.getEnvRef().equals(env.getIdentifier())).collect(Collectors.toList());
           if (isNotEmpty(clustersInEnv)) {
             buildIndividualEnvDataList(accountIdentifier, orgIdentifier, projectIdentifier, envsLevelIndividualEnvData,
-                filterYamls, clsToCluster, env, clustersInEnv);
+                filterYamls, ngClusters, env, clustersInEnv);
 
             EnvironmentYamlV2 environmentYamlV2 =
                 EnvironmentYamlV2.builder()
@@ -930,7 +931,7 @@ public class EnvironmentInfraFilterHelper {
         List<String> envRefsWithFilters =
             envV2YamlsWithFilters.stream().map(e -> e.getEnvironmentRef().getValue()).collect(Collectors.toList());
 
-        Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster =
+        List<io.harness.cdng.gitops.entity.Cluster> clsToCluster =
             getClusterRefToNGGitOpsClusterMap(accountIdentifier, orgIdentifier, projectIdentifier, envRefsWithFilters);
 
         for (EnvironmentYamlV2 environmentYamlV2 : environmentsYaml.getValues().getValue()) {
@@ -939,8 +940,7 @@ public class EnvironmentInfraFilterHelper {
             resolveServiceTags(environmentYamlV2.getFilters(), serviceTags);
 
             List<io.harness.cdng.gitops.entity.Cluster> clustersInEnv =
-                clsToCluster.values()
-                    .stream()
+                clsToCluster.stream()
                     .filter(e -> e.getEnvRef().equals(environmentYamlV2.getEnvironmentRef().getValue()))
                     .collect(Collectors.toList());
             if (isNotEmpty(clustersInEnv)) {
@@ -963,7 +963,7 @@ public class EnvironmentInfraFilterHelper {
 
   private void buildIndividualEnvDataList(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       Set<IndividualEnvData> listEnvData, List<FilterYaml> filterYamls,
-      Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster, Environment env,
+      List<io.harness.cdng.gitops.entity.Cluster> ngClusters, Environment env,
       List<io.harness.cdng.gitops.entity.Cluster> clustersInEnv) {
     Set<String> clsRefs =
         clustersInEnv.stream().map(io.harness.cdng.gitops.entity.Cluster::getClusterRef).collect(Collectors.toSet());
@@ -972,7 +972,7 @@ public class EnvironmentInfraFilterHelper {
         fetchClustersFromGitOps(accountIdentifier, orgIdentifier, projectIdentifier, clsRefs);
 
     Set<io.harness.cdng.gitops.entity.Cluster> filteredClusters =
-        applyFilteringOnClusters(filterYamls, clsToCluster, new HashSet<>(clusterList));
+        applyFilteringOnClusters(filterYamls, ngClusters, new HashSet<>(clusterList));
     Set<String> filteredClsRefs = filteredClusters.stream()
                                       .filter(c -> c.getEnvRef().equals(env.getIdentifier()))
                                       .map(io.harness.cdng.gitops.entity.Cluster::getClusterRef)

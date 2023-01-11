@@ -84,8 +84,8 @@ public class EnvironmentInfraFilterHelperTest extends CategoryTest {
   @Owner(developers = ROHITKARELIA)
   @Category(UnitTests.class)
   public void testProcessAllFilterYamlForClusters() {
-    Map<String, io.harness.cdng.gitops.entity.Cluster> listOfClusters =
-        Map.of("cl1", Cluster.builder().clusterRef("cl1").build(), "cl2", Cluster.builder().clusterRef("cl2").build());
+    List<io.harness.cdng.gitops.entity.Cluster> listOfClusters =
+        Arrays.asList(Cluster.builder().clusterRef("cl1").build(), Cluster.builder().clusterRef("cl2").build());
     final FilterYaml filterYaml = getAllFilterYaml();
 
     List<Cluster> filteredCls = getEnvironmentInfraFilterHelper().processTagsFilterYamlForGitOpsClusters(
@@ -97,8 +97,8 @@ public class EnvironmentInfraFilterHelperTest extends CategoryTest {
   @Owner(developers = ROHITKARELIA)
   @Category(UnitTests.class)
   public void testProcessTagsFilterYamlForClustersForMatchAll() {
-    Map<String, io.harness.cdng.gitops.entity.Cluster> listOfClusters =
-        Map.of("cl1", Cluster.builder().clusterRef("cl1").build(), "cl2", Cluster.builder().clusterRef("cl2").build());
+    List<io.harness.cdng.gitops.entity.Cluster> listOfClusters =
+        Arrays.asList(Cluster.builder().clusterRef("cl1").build(), Cluster.builder().clusterRef("cl2").build());
     final FilterYaml filterYaml = getTagFilterYamlMatchTypeAll();
 
     List<Cluster> filteredCls = getEnvironmentInfraFilterHelper().processTagsFilterYamlForGitOpsClusters(
@@ -110,8 +110,8 @@ public class EnvironmentInfraFilterHelperTest extends CategoryTest {
   @Owner(developers = ROHITKARELIA)
   @Category(UnitTests.class)
   public void testProcessTagsFilterYamlForClustersForMatchAny() {
-    Map<String, io.harness.cdng.gitops.entity.Cluster> listOfClusters =
-        Map.of("cl1", Cluster.builder().clusterRef("cl1").build(), "cl2", Cluster.builder().clusterRef("cl2").build());
+    List<io.harness.cdng.gitops.entity.Cluster> listOfClusters =
+        Arrays.asList(Cluster.builder().clusterRef("cl1").build(), Cluster.builder().clusterRef("cl2").build());
     final FilterYaml filterYaml = getTagFilterYamlMatchTypeAny();
 
     List<Cluster> filteredCls = getEnvironmentInfraFilterHelper().processTagsFilterYamlForGitOpsClusters(
@@ -150,8 +150,8 @@ public class EnvironmentInfraFilterHelperTest extends CategoryTest {
     Set<io.harness.gitops.models.Cluster> listOfClusters = getClusterListForAnyTagMatch();
     final FilterYaml filterYaml = getTagFilterYamlMatchTypeAny();
 
-    Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster =
-        Map.of("cl1", Cluster.builder().clusterRef("cl1").build(), "cl2", Cluster.builder().clusterRef("cl2").build());
+    List<io.harness.cdng.gitops.entity.Cluster> clsToCluster =
+        Arrays.asList(Cluster.builder().clusterRef("cl1").build(), Cluster.builder().clusterRef("cl2").build());
 
     Set<Cluster> filteredClusters = getEnvironmentInfraFilterHelper().applyFilteringOnClusters(
         Arrays.asList(filterYaml), clsToCluster, listOfClusters);
@@ -165,8 +165,8 @@ public class EnvironmentInfraFilterHelperTest extends CategoryTest {
     Set<io.harness.gitops.models.Cluster> listOfClusters = getClusterListForAllTagMatch();
     final FilterYaml filterYaml = getTagFilterYamlMatchTypeAll();
 
-    Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster =
-        Map.of("cl1", Cluster.builder().clusterRef("cl1").build(), "cl2", Cluster.builder().clusterRef("cl2").build());
+    List<io.harness.cdng.gitops.entity.Cluster> clsToCluster =
+        Arrays.asList(Cluster.builder().clusterRef("cl1").build(), Cluster.builder().clusterRef("cl2").build());
 
     Set<Cluster> filteredClusters = getEnvironmentInfraFilterHelper().applyFilteringOnClusters(
         Arrays.asList(filterYaml), clsToCluster, listOfClusters);
@@ -179,8 +179,8 @@ public class EnvironmentInfraFilterHelperTest extends CategoryTest {
   public void testApplyFiltersOnClustersNoFilterExists() {
     Set<io.harness.gitops.models.Cluster> listOfClusters = getClusterListForAllTagMatch();
 
-    Map<String, io.harness.cdng.gitops.entity.Cluster> clsToCluster =
-        Map.of("cl1", Cluster.builder().clusterRef("cl1").build(), "cl2", Cluster.builder().clusterRef("cl2").build());
+    List<io.harness.cdng.gitops.entity.Cluster> clsToCluster =
+        Arrays.asList(Cluster.builder().clusterRef("cl1").build(), Cluster.builder().clusterRef("cl2").build());
 
     Set<Cluster> filteredClusters =
         getEnvironmentInfraFilterHelper().applyFilteringOnClusters(emptyList(), clsToCluster, listOfClusters);
