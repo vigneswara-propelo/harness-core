@@ -21,11 +21,20 @@ import org.springframework.data.util.CloseableIterator;
 public interface PmsExecutionSummaryService {
   void regenerateStageLayoutGraph(String planExecutionId, List<NodeExecution> nodeExecutions);
   void update(String planExecutionId, Update update);
-  boolean updateStageOfIdentityType(String planExecutionId, Update update);
-  boolean addStageNodeInGraphIfUnderStrategy(String planExecutionId, NodeExecution nodeExecution, Update update);
-  boolean updateStrategyNode(String planExecutionId, NodeExecution nodeExecution, Update update);
+
+  // Todo(Sahil): Create a new function which uses projections for fetch execution summary entities.
+  // All usages of this function should be removed.
   Optional<PipelineExecutionSummaryEntity> getPipelineExecutionSummary(
       String accountId, String orgId, String projectId, String planExecutionId);
+
+  /**
+   * updates the top graph based on the type of nodeExecution
+   * @param planExecutionId
+   * @param nodeExecution
+   * @param update
+   * @return
+   */
+  boolean handleNodeExecutionUpdateFromGraphUpdate(String planExecutionId, NodeExecution nodeExecution, Update update);
 
   /**
    * Fetches pipeline execution ids only as an iterator from analytics node
