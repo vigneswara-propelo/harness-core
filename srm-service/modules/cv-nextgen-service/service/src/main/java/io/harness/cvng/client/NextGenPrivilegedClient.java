@@ -30,7 +30,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 @OwnedBy(HarnessTeam.CV)
-public interface NextGenClient {
+public interface NextGenPrivilegedClient {
   String CONNECTOR_BASE_PATH = "connectors";
 
   @POST(CONNECTOR_BASE_PATH)

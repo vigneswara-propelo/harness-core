@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Harness Inc. All rights reserved.
+ * Copyright 2023 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -32,22 +32,24 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Singleton
-public class NextGenClientFactory extends AbstractHttpClientFactory implements Provider<NextGenClient> {
+public class NextGenNonPrivilegedClientFactory
+    extends AbstractHttpClientFactory implements Provider<NextGenNonPrivilegedClient> {
   private NGManagerServiceConfig ngManagerServiceConfig;
   private ClientMode clientMode;
 
-  public NextGenClientFactory(NGManagerServiceConfig ngManagerServiceConfig, ServiceTokenGenerator tokenGenerator) {
+  public NextGenNonPrivilegedClientFactory(
+      NGManagerServiceConfig ngManagerServiceConfig, ServiceTokenGenerator tokenGenerator) {
     super(ServiceHttpClientConfig.builder().baseUrl(ngManagerServiceConfig.getNgManagerUrl()).build(),
         ngManagerServiceConfig.getManagerServiceSecret(), tokenGenerator, null,
-        AuthorizationServiceHeader.CV_NEXT_GEN.getServiceId(), true, ClientMode.PRIVILEGED);
+        AuthorizationServiceHeader.CV_NEXT_GEN.getServiceId(), true, ClientMode.NON_PRIVILEGED);
     this.ngManagerServiceConfig = ngManagerServiceConfig;
     // TODO: this change is for the hotfix. We need to have 2 clients (Previleged and nonprevileged (For client
     // requests))
-    this.clientMode = ClientMode.PRIVILEGED;
+    this.clientMode = ClientMode.NON_PRIVILEGED;
   }
 
   @Override
-  public NextGenClient get() {
+  public NextGenNonPrivilegedClient get() {
     String baseUrl = ngManagerServiceConfig.getNgManagerUrl();
     // https://resilience4j.readme.io/docs/retrofit
     final Retrofit retrofit =
@@ -57,7 +59,7 @@ public class NextGenClientFactory extends AbstractHttpClientFactory implements P
             .addCallAdapterFactory(CircuitBreakerCallAdapter.of(getCircuitBreaker(), response -> response.code() < 500))
             .addConverterFactory(JacksonConverterFactory.create(HObjectMapper.NG_DEFAULT_OBJECT_MAPPER))
             .build();
-    return retrofit.create(NextGenClient.class);
+    return retrofit.create(NextGenNonPrivilegedClient.class);
   }
 
   private OkHttpClient getUnsafeOkHttpClient(String baseUrl) {
