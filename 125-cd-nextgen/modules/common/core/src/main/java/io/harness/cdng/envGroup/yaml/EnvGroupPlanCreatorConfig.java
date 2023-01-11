@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
+import io.harness.cdng.envgroup.yaml.EnvironmentGroupYaml;
 import io.harness.cdng.environment.filters.FilterYaml;
 import io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig;
 import io.harness.data.validator.EntityIdentifier;
@@ -57,4 +58,5 @@ public class EnvGroupPlanCreatorConfig implements Visitable {
   boolean deployToAll;
   List<EnvironmentPlanCreatorConfig> environmentPlanCreatorConfigs;
   ParameterField<List<FilterYaml>> filters;
+  EnvironmentGroupYaml environmentGroupYaml;
 }

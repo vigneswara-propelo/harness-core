@@ -29,8 +29,10 @@ import io.harness.cdng.creator.plan.environment.EnvironmentPlanCreatorHelper;
 import io.harness.cdng.creator.plan.environment.EnvironmentStepsUtils;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.cdng.envGroup.services.EnvironmentGroupService;
+import io.harness.cdng.environment.helper.EnvironmentInfraFilterHelper;
 import io.harness.cdng.expressions.CDExpressionResolver;
 import io.harness.cdng.freeze.FreezeOutcome;
+import io.harness.cdng.gitops.steps.EnvClusterRefs;
 import io.harness.cdng.gitops.steps.GitOpsEnvOutCome;
 import io.harness.cdng.manifest.steps.ManifestsOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
@@ -49,6 +51,7 @@ import io.harness.freeze.service.FreezeEvaluateService;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogLevel;
 import io.harness.logstreaming.NGLogCallback;
+import io.harness.ng.core.common.beans.NGTag;
 import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.environment.yaml.NGEnvironmentConfig;
@@ -110,6 +113,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Data;
@@ -141,6 +145,7 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
   @Inject private EngineExpressionService engineExpressionService;
   @Inject NgExpressionHelper ngExpressionHelper;
   @Inject private EnvironmentGroupService environmentGroupService;
+  @Inject private EnvironmentInfraFilterHelper environmentInfraFilterHelper;
   @Inject @Named("PRIVILEGED") private AccessControlClient accessControlClient;
 
   @Override
@@ -165,6 +170,9 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
               + " , Identifier: "
               + servicePartResponse.getNgServiceConfig().getNgServiceV2InfoConfig().getIdentifier());
 
+      performFiltering(stepParameters, ambiance,
+          EnvironmentInfraFilterHelper.getNGTags(
+              servicePartResponse.ngServiceConfig.getNgServiceV2InfoConfig().getTags()));
       // Support GitOps Flow
       // If environment group is only set for GitOps or if GitOps flow and deploying to multi-environments
       if (ParameterField.isNotNull(stepParameters.getGitOpsMultiSvcEnvEnabled())
@@ -194,6 +202,28 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
     }
   }
 
+  // Only for Gitops flow. Non GitOps is handled in Multi-Spawner Step
+  private void performFiltering(ServiceStepV3Parameters stepParameters, Ambiance ambiance, List<NGTag> serviceTags) {
+    if (stepParameters.getEnvironmentGroupYaml() == null && stepParameters.getEnvironmentsYaml() == null) {
+      return;
+    }
+    List<EnvClusterRefs> envClusterRefs;
+    if (stepParameters.getEnvironmentGroupYaml() != null) {
+      envClusterRefs = environmentInfraFilterHelper.filterEnvGroupAndClusters(stepParameters.getEnvironmentGroupYaml(),
+          serviceTags, AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
+          AmbianceUtils.getProjectIdentifier(ambiance));
+    } else {
+      envClusterRefs = environmentInfraFilterHelper.filterEnvsAndClusters(stepParameters.getEnvironmentsYaml(),
+          serviceTags, AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
+          AmbianceUtils.getProjectIdentifier(ambiance));
+    }
+    Set<String> envRefs =
+        envClusterRefs.stream().map(envClusterRefs1 -> envClusterRefs1.getEnvRef()).collect(Collectors.toSet());
+    List<ParameterField<String>> envRefsList =
+        envRefs.stream().map(envRef -> ParameterField.createValueField(envRef)).collect(Collectors.toList());
+    stepParameters.setEnvRefs(envRefsList);
+  }
+
   private void validate(ServiceStepV3Parameters stepParameters) {
     if (ParameterField.isNull(stepParameters.getServiceRef())) {
       throw new InvalidRequestException("service ref not provided");
@@ -202,8 +232,8 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
     if (stepParameters.getServiceRef().isExpression()) {
       throw new UnresolvedExpressionsException(Arrays.asList(stepParameters.getServiceRef().getExpressionValue()));
     }
-
-    if (ParameterField.isNull(stepParameters.getEnvRef()) && isEmpty(stepParameters.getEnvRefs())) {
+    if (ParameterField.isNull(stepParameters.getEnvRef()) && isEmpty(stepParameters.getEnvRefs())
+        && stepParameters.getEnvironmentGroupYaml() == null && stepParameters.getEnvironmentsYaml() == null) {
       throw new InvalidRequestException("environment ref or environment refs not provided");
     }
   }
