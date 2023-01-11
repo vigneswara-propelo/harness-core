@@ -88,6 +88,7 @@ import io.harness.steps.SdkCoreStepUtils;
 import io.harness.steps.StepUtils;
 import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.tasks.ResponseData;
+import io.harness.utils.FullyQualifiedIdentifierHelper;
 import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.utils.YamlPipelineUtils;
 import io.harness.yaml.core.variables.NGVariable;
@@ -463,7 +464,7 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
 
     final ServiceSweepingOutput serviceSweepingOutput = (ServiceSweepingOutput) sweepingOutputService.resolve(
         ambiance, RefObjectUtils.getOutcomeRefObject(ServiceStepV3.SERVICE_SWEEPING_OUTPUT));
-
+    String serviceRef = stepParameters.getServiceRef().getValue();
     NGServiceConfig ngServiceConfig = null;
     if (serviceSweepingOutput != null) {
       try {
@@ -479,7 +480,7 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
     }
     final NGServiceV2InfoConfig ngServiceV2InfoConfig = ngServiceConfig.getNgServiceV2InfoConfig();
 
-    StepResponse stepResponse = handleFreezeResponse(ambiance, ngServiceV2InfoConfig);
+    StepResponse stepResponse = handleFreezeResponse(ambiance, ngServiceV2InfoConfig, stepParameters);
     if (stepResponse != null) {
       return stepResponse;
     }
@@ -493,16 +494,14 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
     } else {
       saveExecutionLog(logCallback, "Completed service step", LogLevel.INFO, CommandExecutionStatus.SUCCESS);
     }
-
-    stepOutcomes.add(
-        StepResponse.StepOutcome.builder()
-            .name(OutcomeExpressionConstants.SERVICE)
-            .outcome(ServiceStepOutcome.fromServiceStepV2(ngServiceV2InfoConfig.getIdentifier(),
-                ngServiceV2InfoConfig.getName(), ngServiceV2InfoConfig.getServiceDefinition().getType().getYamlName(),
-                ngServiceV2InfoConfig.getDescription(), ngServiceV2InfoConfig.getTags(),
-                ngServiceV2InfoConfig.getGitOpsEnabled()))
-            .group(StepCategory.STAGE.name())
-            .build());
+    stepOutcomes.add(StepResponse.StepOutcome.builder()
+                         .name(OutcomeExpressionConstants.SERVICE)
+                         .outcome(ServiceStepOutcome.fromServiceStepV2(serviceRef, ngServiceV2InfoConfig.getName(),
+                             ngServiceV2InfoConfig.getServiceDefinition().getType().getYamlName(),
+                             ngServiceV2InfoConfig.getDescription(), ngServiceV2InfoConfig.getTags(),
+                             ngServiceV2InfoConfig.getGitOpsEnabled()))
+                         .group(StepCategory.STAGE.name())
+                         .build());
 
     final OptionalSweepingOutput manifestsOutput = sweepingOutputService.resolveOptional(
         ambiance, RefObjectUtils.getSweepingOutputRefObject(OutcomeExpressionConstants.MANIFESTS));
@@ -580,17 +579,18 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
           "Service Definition is not defined for service : " + serviceEntity.getIdentifier());
     }
 
-    serviceStepsHelper.checkForVariablesAccessOrThrow(ambiance, ngServiceConfig);
+    serviceStepsHelper.checkForVariablesAccessOrThrow(
+        ambiance, ngServiceConfig, stepParameters.getServiceRef().getValue());
 
     entityMap.put(FreezeEntityType.ORG, Lists.newArrayList(serviceEntity.getOrgIdentifier()));
     entityMap.put(FreezeEntityType.PROJECT, Lists.newArrayList(serviceEntity.getProjectIdentifier()));
     // serviceRef instead of identifier to be passed here
-    entityMap.put(FreezeEntityType.SERVICE, Lists.newArrayList(serviceEntity.getIdentifier()));
+    entityMap.put(FreezeEntityType.SERVICE,
+        Lists.newArrayList(FullyQualifiedIdentifierHelper.getRefFromIdentifierOrRef(serviceEntity.getAccountId(),
+            serviceEntity.getOrgIdentifier(), serviceEntity.getProjectIdentifier(), serviceEntity.getIdentifier())));
 
     // Add the reason in serviceOutcome;
-    ServiceStepOutcome outcome = ServiceStepOutcome.fromServiceStepV2(serviceEntity.getIdentifier(),
-        serviceEntity.getName(), ngServiceV2InfoConfig.getServiceDefinition().getType().getYamlName(),
-        serviceEntity.getDescription(), ngServiceV2InfoConfig.getTags(), serviceEntity.getGitOpsEnabled());
+    ServiceStepOutcome outcome = ServiceStepOutcome.fromServiceStepV2(serviceEntity, ngServiceV2InfoConfig);
 
     sweepingOutputService.consume(ambiance, OutcomeExpressionConstants.SERVICE, outcome, StepCategory.STAGE.name());
 
@@ -715,7 +715,8 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
   }
 
   @VisibleForTesting
-  protected StepResponse handleFreezeResponse(Ambiance ambiance, NGServiceV2InfoConfig ngServiceV2InfoConfig) {
+  protected StepResponse handleFreezeResponse(
+      Ambiance ambiance, NGServiceV2InfoConfig ngServiceV2InfoConfig, ServiceStepV3Parameters serviceStepParameters) {
     final List<StepResponse.StepOutcome> stepOutcomes = new ArrayList<>();
     if (ngFeatureFlagHelperService.isEnabled(AmbianceUtils.getAccountId(ambiance), FeatureName.NG_DEPLOYMENT_FREEZE)) {
       final OptionalSweepingOutput freezeOutcomeOptional = sweepingOutputService.resolveOptional(
@@ -729,15 +730,16 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
                                .outcome(freezeOutcome)
                                .group(StepCategory.STAGE.name())
                                .build());
-          stepOutcomes.add(StepResponse.StepOutcome.builder()
-                               .name(OutcomeExpressionConstants.SERVICE)
-                               .outcome(ServiceStepOutcome.fromServiceStepV2(ngServiceV2InfoConfig.getIdentifier(),
-                                   ngServiceV2InfoConfig.getName(),
-                                   ngServiceV2InfoConfig.getServiceDefinition().getType().getYamlName(),
-                                   ngServiceV2InfoConfig.getDescription(), ngServiceV2InfoConfig.getTags(),
-                                   ngServiceV2InfoConfig.getGitOpsEnabled()))
-                               .group(StepCategory.STAGE.name())
-                               .build());
+          stepOutcomes.add(
+              StepResponse.StepOutcome.builder()
+                  .name(OutcomeExpressionConstants.SERVICE)
+                  .outcome(ServiceStepOutcome.fromServiceStepV2(serviceStepParameters.getServiceRef().getValue().trim(),
+                      ngServiceV2InfoConfig.getName(),
+                      ngServiceV2InfoConfig.getServiceDefinition().getType().getYamlName(),
+                      ngServiceV2InfoConfig.getDescription(), ngServiceV2InfoConfig.getTags(),
+                      ngServiceV2InfoConfig.getGitOpsEnabled()))
+                  .group(StepCategory.STAGE.name())
+                  .build());
           return StepResponse.builder()
               .stepOutcomes(stepOutcomes)
               .failureInfo(FailureInfo.newBuilder()
