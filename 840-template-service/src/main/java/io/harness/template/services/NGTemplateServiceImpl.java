@@ -1217,9 +1217,9 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
   @Override
   public TemplateWithInputsResponseDTO getTemplateWithInputs(String accountId, String orgIdentifier,
-      String projectIdentifier, String templateIdentifier, String versionLabel) {
+      String projectIdentifier, String templateIdentifier, String versionLabel, boolean loadFromCache) {
     Optional<TemplateEntity> templateEntity =
-        get(accountId, orgIdentifier, projectIdentifier, templateIdentifier, versionLabel, false, false);
+        get(accountId, orgIdentifier, projectIdentifier, templateIdentifier, versionLabel, false, loadFromCache);
     TemplateResponseDTO templateResponseDTO = NGTemplateDtoMapper.writeTemplateResponseDto(templateEntity.orElseThrow(
         ()
             -> new InvalidRequestException(String.format(
