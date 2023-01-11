@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.pipeline;
+package io.harness.pms.pipeline.observer;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.rule.OwnerRule.SAHIL;
@@ -18,6 +18,7 @@ import io.harness.eventsframework.api.Producer;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
 import io.harness.eventsframework.producer.Message;
 import io.harness.pms.events.PipelineDeleteEvent;
+import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableMap;
