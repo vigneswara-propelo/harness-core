@@ -10,19 +10,17 @@ package io.harness.ngmigration.dto;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.v3.oas.annotations.Parameter;
+import java.util.Set;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
 
 @OwnedBy(HarnessTeam.CDC)
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class SimilarWorkflowDetail {
-  private String appName;
-  private String workflowName;
-  private String workflowId;
-  private String appId;
+@EqualsAndHashCode(callSuper = true)
+@JsonTypeName("PIPELINE")
+public class PipelineFilter extends Filter {
+  @Parameter(description = "Application where the pipelines exists") private String appId;
+  private Set<String> pipelineIds;
 }
