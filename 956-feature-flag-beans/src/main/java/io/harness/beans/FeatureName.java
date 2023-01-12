@@ -564,7 +564,8 @@ public enum FeatureName {
       "Publish instance stats at environment granularity in NG. PM Rohan", HarnessTeam.CDP),
   DEPLOYMENT_RECONCILIATION_LOGIC_QUERY_OPTIMIZATIONS(
       "Used to modify logic for reconciliation queries", HarnessTeam.CDC),
-  SPG_MODULE_VERSION_INFO("Enable version information on module level", HarnessTeam.SPG);
+  SPG_MODULE_VERSION_INFO("Enable version information on module level", HarnessTeam.SPG),
+  CIE_HOSTED_VMS_WINDOWS("FF for enabling hosted builds for windows amd64", HarnessTeam.CI);
 
   @Deprecated
   FeatureName() {
