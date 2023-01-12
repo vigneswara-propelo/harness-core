@@ -5,16 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.auditevent.streaming;
+package io.harness.auditevent.streaming.repositories;
 
-import com.mongodb.client.MongoCursor;
-import org.bson.Document;
-import org.bson.conversions.Bson;
+import io.harness.auditevent.streaming.entities.StreamingBatch;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface AuditEventRepository {
-  MongoCursor<Document> loadAuditEvents(Criteria criteria, Bson sort);
-  long countAuditEvents(Criteria criteria);
+public interface StreamingBatchRepositoryCustom {
+  StreamingBatch findOne(Criteria criteria, Sort sort);
 }
