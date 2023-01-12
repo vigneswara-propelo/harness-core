@@ -116,7 +116,7 @@ public class TerragruntDestroyTaskNG extends AbstractDelegateRunnableTask {
       LogCallback fetchFilesLogCallback =
           taskService.getLogCallback(getLogStreamingTaskClient(), FETCH_CONFIG_FILES, commandUnitsProgress);
       TerragruntContext terragruntContext =
-          taskService.prepareTerragrunt(fetchFilesLogCallback, destroyTaskParameters, baseDir);
+          taskService.prepareTerragrunt(fetchFilesLogCallback, destroyTaskParameters, baseDir, destroyLogCallback);
 
       TerragruntClient client = terragruntContext.getClient();
 

@@ -121,7 +121,7 @@ public class TerragruntApplyTaskNG extends AbstractDelegateRunnableTask {
       LogCallback fetchFilesLogCallback =
           taskService.getLogCallback(getLogStreamingTaskClient(), FETCH_CONFIG_FILES, commandUnitsProgress);
       TerragruntContext terragruntContext =
-          taskService.prepareTerragrunt(fetchFilesLogCallback, applyTaskParameters, baseDir);
+          taskService.prepareTerragrunt(fetchFilesLogCallback, applyTaskParameters, baseDir, applyLogCallback);
 
       TerragruntClient client = terragruntContext.getClient();
 

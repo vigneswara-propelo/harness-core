@@ -84,7 +84,7 @@ public class TerragruntPlanTaskNGTest extends CategoryTest {
   public void testPlan() throws JoseException, IOException, InterruptedException, TimeoutException {
     TerragruntPlanTaskParameters planParameters = TerragruntTestUtils.createPlanTaskParameters();
 
-    when(taskService.prepareTerragrunt(any(), any(), any()))
+    when(taskService.prepareTerragrunt(any(), any(), any(), any()))
         .thenReturn(TerragruntTestUtils.createTerragruntContext(cliHelper));
     doNothing().when(taskService).decryptTaskParameters(any());
     doNothing().when(taskService).cleanupTerragruntLocalFiles(any());
