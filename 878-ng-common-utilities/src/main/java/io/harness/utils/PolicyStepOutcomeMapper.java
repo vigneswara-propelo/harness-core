@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.steps.policy.step.outcome;
+package io.harness.utils;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
@@ -15,7 +15,6 @@ import io.harness.opaclient.model.OpaEvaluationResponseHolder;
 import io.harness.opaclient.model.OpaPolicyEvaluationResponse;
 import io.harness.opaclient.model.OpaPolicySetEvaluationResponse;
 import io.harness.opaclient.model.PolicyData;
-import io.harness.utils.IdentifierRefHelper;
 
 import java.util.Collections;
 import java.util.List;
