@@ -244,7 +244,7 @@ public class TerragruntTaskService {
         .build();
   }
 
-  public void cleanupTerragruntLocalFiles(String scriptDirectory) {
+  private void cleanupTerragruntLocalFiles(String scriptDirectory) {
     FileUtils.deleteQuietly(Paths.get(scriptDirectory, TERRAGRUNT_LOCK_FILE_NAME).toFile());
     try {
       deleteDirectoryAndItsContentIfExists(Paths.get(scriptDirectory, TERRAGRUNT_INTERNAL_CACHE_FOLDER).toString());
@@ -290,7 +290,7 @@ public class TerragruntTaskService {
     return delegateFile.getFileId();
   }
 
-  public File getTerraformStateFile(String scripDirectory, String workspace) {
+  private File getTerraformStateFile(String scripDirectory, String workspace) {
     if (!StringUtils.isBlank(scripDirectory)) {
       File tfStateFile = isEmpty(workspace)
           ? Paths.get(scripDirectory, TERRAFORM_STATE_FILE_NAME).toFile()
