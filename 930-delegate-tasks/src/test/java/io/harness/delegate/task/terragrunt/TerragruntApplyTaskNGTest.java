@@ -237,7 +237,7 @@ public class TerragruntApplyTaskNGTest extends CategoryTest {
         .thenReturn(CliResponse.builder().exitCode(0).build());
     when(
         cliHelper.executeCliCommand(
-            eq("terragrunt run-all apply -input=false --terragrunt-non-interactive  -target=\"test-target\"   -var-file=\"test-terragrunt-12345.tfvars\" "),
+            eq("terragrunt run-all apply -input=false --terragrunt-non-interactive --terragrunt-include-external-dependencies  -target=\"test-target\"   -var-file=\"test-terragrunt-12345.tfvars\" "),
             anyLong(), eq(applyParameters.getEnvVars()), any(), any(), any(), any(), any()))
         .thenReturn(CliResponse.builder().exitCode(0).build());
     when(cliHelper.executeCliCommand(contains("echo \"y\" | terragrunt run-all output --json >"), anyLong(),
