@@ -98,8 +98,8 @@ public interface InstanceService {
 
   long countDistinctActiveServicesDeployedInInterval(String accountId, long startTS, long endTS);
 
-  void deleteForAgent(@NotEmpty String accountIdentifier, @NotEmpty String orgIdentifier,
-      @NotEmpty String projectIdentifier, @NotEmpty String agentIdentifier);
+  void deleteForAgent(@NotEmpty String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      @NotEmpty String agentIdentifier);
 
   List<InstanceDTO> getActiveInstancesByServiceId(String accountIdentifier, String orgIdentifier,
       String projectIdentifier, String serviceIdentifier, String agentIdentifier);

@@ -318,14 +318,18 @@ public class InstanceServiceImpl implements InstanceService {
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String agentIdentifier) {
     Criteria criteria = Criteria.where(InstanceKeys.accountIdentifier)
                             .is(accountIdentifier)
-                            .and(InstanceKeys.orgIdentifier)
-                            .is(orgIdentifier)
-                            .and(InstanceKeys.projectIdentifier)
-                            .is(projectIdentifier)
                             .and(InstanceKeysAdditional.instanceInfoAgentIdentifier)
                             .is(agentIdentifier)
                             .and(InstanceKeys.isDeleted)
                             .is(false);
+
+    if (!orgIdentifier.isBlank()) {
+      criteria.and(InstanceKeys.orgIdentifier);
+    }
+    if (!projectIdentifier.isBlank()) {
+      criteria.and(InstanceKeys.projectIdentifier);
+    }
+
     Update update =
         new Update().set(InstanceKeys.isDeleted, true).set(InstanceKeys.deletedAt, System.currentTimeMillis());
     UpdateResult updateResult = instanceRepository.updateMany(criteria, update);
