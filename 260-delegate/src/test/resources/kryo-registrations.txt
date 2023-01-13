@@ -1835,7 +1835,7 @@
 60019:io.harness.delegate.task.serverless.response.ServerlessS3FetchResponse
 71100:software.wings.service.impl.ThirdPartyApiCallLog.ThirdPartyApiCallField
 71101:software.wings.service.impl.ThirdPartyApiCallLog.FieldType
-71102:software.wings.beans.Log
+71102:software.wings.beans.dto.Log
 71103:io.harness.logging.LogLevel
 71104:software.wings.delegatetasks.manifest.ManifestCollectionExecutionResponse
 71105:software.wings.delegatetasks.manifest.ManifestCollectionResponse
