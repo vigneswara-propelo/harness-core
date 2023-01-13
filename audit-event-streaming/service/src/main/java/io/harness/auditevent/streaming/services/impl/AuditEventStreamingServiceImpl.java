@@ -18,13 +18,18 @@ import io.harness.auditevent.streaming.AuditEventRepository;
 import io.harness.auditevent.streaming.BatchConfig;
 import io.harness.auditevent.streaming.entities.BatchStatus;
 import io.harness.auditevent.streaming.entities.StreamingBatch;
+import io.harness.auditevent.streaming.entities.outgoing.OutgoingAuditMessage;
+import io.harness.auditevent.streaming.publishers.StreamingPublisher;
+import io.harness.auditevent.streaming.publishers.StreamingPublisherUtils;
 import io.harness.auditevent.streaming.services.AuditEventStreamingService;
+import io.harness.auditevent.streaming.services.BatchProcessorService;
 import io.harness.auditevent.streaming.services.StreamingBatchService;
 
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Sorts;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.batch.core.JobParameters;
@@ -36,18 +41,23 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class AuditEventStreamingServiceImpl implements AuditEventStreamingService {
+  private final BatchProcessorService batchProcessorService;
   private final StreamingBatchService streamingBatchService;
   private final AuditEventRepository auditEventRepository;
   private final BatchConfig batchConfig;
   private final MongoTemplate template;
+  private final Map<String, StreamingPublisher> streamingPublisherMap;
 
   @Autowired
-  public AuditEventStreamingServiceImpl(StreamingBatchService streamingBatchService,
-      AuditEventRepository auditEventRepository, BatchConfig batchConfig, MongoTemplate template) {
+  public AuditEventStreamingServiceImpl(BatchProcessorService batchProcessorService,
+      StreamingBatchService streamingBatchService, AuditEventRepository auditEventRepository, BatchConfig batchConfig,
+      MongoTemplate template, Map<String, StreamingPublisher> streamingPublisherMap) {
+    this.batchProcessorService = batchProcessorService;
     this.streamingBatchService = streamingBatchService;
     this.auditEventRepository = auditEventRepository;
     this.batchConfig = batchConfig;
     this.template = template;
+    this.streamingPublisherMap = streamingPublisherMap;
   }
 
   @Override
@@ -65,18 +75,28 @@ public class AuditEventStreamingServiceImpl implements AuditEventStreamingServic
       streamingBatch.setStatus(SUCCESS);
       return streamingBatchService.update(streamingBatch.getAccountIdentifier(), streamingBatch);
     } else {
-      return streamInternal(streamingBatch, auditEventMongoCursor);
+      return streamInternal(streamingBatch, streamingDestination, auditEventMongoCursor);
     }
   }
 
-  private StreamingBatch streamInternal(StreamingBatch streamingBatch, MongoCursor<Document> auditEventMongoCursor) {
+  private StreamingBatch streamInternal(StreamingBatch streamingBatch, StreamingDestination streamingDestination,
+      MongoCursor<Document> auditEventMongoCursor) {
+    boolean successResult = false;
     while (auditEventMongoCursor.hasNext()) {
-      List<AuditEvent> auditEvents = null;
-      auditEvents = getAuditEventsChunk(auditEventMongoCursor);
-      // TODO: Replace by publisher
-      boolean successResult = true;
+      List<AuditEvent> auditEvents = getAuditEventsChunk(auditEventMongoCursor);
+      List<OutgoingAuditMessage> outgoingAuditMessages = batchProcessorService.processAuditEvent(auditEvents);
+      StreamingPublisher streamingPublisher =
+          StreamingPublisherUtils.getStreamingPublisher(streamingDestination.getType(), streamingPublisherMap);
+      successResult = streamingPublisher.publish(streamingDestination, outgoingAuditMessages);
       streamingBatch = updateBatchByResult(streamingBatch, auditEvents, successResult);
+      if (!successResult) {
+        break;
+      }
       log.info(getFullLogMessage(String.format("Published [%s] messages.", auditEvents.size()), streamingBatch));
+    }
+    if (successResult) {
+      streamingBatch.setStatus(SUCCESS);
+      streamingBatch = streamingBatchService.update(streamingBatch.getAccountIdentifier(), streamingBatch);
     }
     return streamingBatch;
   }
