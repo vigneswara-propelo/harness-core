@@ -141,15 +141,15 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
   @Inject private AccountClient accountClient;
 
   public TaskChainResponse queueK8sTask(StepElementParameters stepElementParameters, K8sDeployRequest k8sDeployRequest,
-      Ambiance ambiance, K8sExecutionPassThroughData executionPassThroughData) {
+      Ambiance ambiance, K8sExecutionPassThroughData executionPassThroughData, TaskType taskType) {
     TaskData taskData = TaskData.builder()
                             .parameters(new Object[] {k8sDeployRequest})
-                            .taskType(TaskType.K8S_COMMAND_TASK_NG.name())
+                            .taskType(taskType.name())
                             .timeout(CDStepHelper.getTimeoutInMillis(stepElementParameters))
                             .async(true)
                             .build();
 
-    String taskName = TaskType.K8S_COMMAND_TASK_NG.getDisplayName() + " : " + k8sDeployRequest.getCommandName();
+    String taskName = taskType.getDisplayName() + " : " + k8sDeployRequest.getCommandName();
     K8sSpecParameters k8SSpecParameters = (K8sSpecParameters) stepElementParameters.getSpec();
     final TaskRequest taskRequest = prepareCDTaskRequest(ambiance, taskData, kryoSerializer,
         k8SSpecParameters.getCommandUnits(), taskName,
@@ -160,6 +160,12 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
         .chainEnd(true)
         .passThroughData(executionPassThroughData)
         .build();
+  }
+
+  public TaskChainResponse queueK8sTask(StepElementParameters stepElementParameters, K8sDeployRequest k8sDeployRequest,
+      Ambiance ambiance, K8sExecutionPassThroughData executionPassThroughData) {
+    return queueK8sTask(
+        stepElementParameters, k8sDeployRequest, ambiance, executionPassThroughData, TaskType.K8S_COMMAND_TASK_NG);
   }
 
   public List<String> renderValues(

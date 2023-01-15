@@ -688,6 +688,8 @@ import io.harness.delegate.task.k8s.K8sCanaryDeployResponse;
 import io.harness.delegate.task.k8s.K8sDeleteRequest;
 import io.harness.delegate.task.k8s.K8sDeployRequest;
 import io.harness.delegate.task.k8s.K8sDeployResponse;
+import io.harness.delegate.task.k8s.K8sDryRunManifestRequest;
+import io.harness.delegate.task.k8s.K8sDryRunManifestResponse;
 import io.harness.delegate.task.k8s.K8sManifestDelegateConfig;
 import io.harness.delegate.task.k8s.K8sRollingDeployRequest;
 import io.harness.delegate.task.k8s.K8sRollingDeployResponse;
@@ -2191,5 +2193,8 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(EcsRunTaskArnRequest.class, 573583);
     kryo.register(TfVarS3Source.class, 573593);
     kryo.register(ConcurrentHashMap.class, 673567);
+
+    kryo.register(K8sDryRunManifestRequest.class, 573594);
+    kryo.register(K8sDryRunManifestResponse.class, 573595);
   }
 }

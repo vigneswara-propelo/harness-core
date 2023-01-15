@@ -2388,6 +2388,8 @@
 573591:io.harness.delegate.task.aws.asg.AsgRollingRollbackResponse
 573592:io.harness.delegate.task.aws.asg.AsgRollingRollbackResult
 573593:software.wings.api.terraform.TfVarS3Source
+573594:io.harness.delegate.task.k8s.K8sDryRunManifestRequest
+573595:io.harness.delegate.task.k8s.K8sDryRunManifestResponse
 573600:io.harness.delegate.exception.ElastigroupNGException
 573601:io.harness.delegate.task.elastigroup.response.SpotInstConfig
 573602:io.harness.delegate.task.elastigroup.response.ElastigroupParametersFetchResponse

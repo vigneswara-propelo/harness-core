@@ -7127,6 +7127,34 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "K8sDryRunManifestStepInfo": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StepSpecType"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "delegateSelectors": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                  "minLength": 1
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "K8sGcpInfrastructure": {
       "allOf": [
         {
@@ -12129,6 +12157,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/K8sDeleteStepInfo"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "K8sDryRun"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/K8sDryRunManifestStepInfo"
               }
             }
           }

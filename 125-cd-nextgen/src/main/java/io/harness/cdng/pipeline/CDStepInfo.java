@@ -44,6 +44,7 @@ import io.harness.cdng.k8s.K8sBlueGreenStepInfo;
 import io.harness.cdng.k8s.K8sCanaryDeleteStepInfo;
 import io.harness.cdng.k8s.K8sCanaryStepInfo;
 import io.harness.cdng.k8s.K8sDeleteStepInfo;
+import io.harness.cdng.k8s.K8sDryRunManifestStepInfo;
 import io.harness.cdng.k8s.K8sRollingRollbackStepInfo;
 import io.harness.cdng.k8s.K8sRollingStepInfo;
 import io.harness.cdng.k8s.K8sScaleStepInfo;
@@ -108,7 +109,8 @@ import io.swagger.annotations.ApiModel;
         TasCanaryAppSetupStepInfo.class, TasBGAppSetupStepInfo.class, TasBasicAppSetupStepInfo.class,
         TasCommandStepInfo.class, ElastigroupBGStageSetupStepInfo.class, ElastigroupSwapRouteStepInfo.class,
         TasAppResizeStepInfo.class, TasRollbackStepInfo.class, AsgRollingDeployStepInfo.class,
-        AsgRollingRollbackStepInfo.class, TasRollingDeployStepInfo.class, TasRollingRollbackStepInfo.class})
+        AsgRollingRollbackStepInfo.class, TasRollingDeployStepInfo.class, TasRollingRollbackStepInfo.class,
+        K8sDryRunManifestStepInfo.class})
 
 @OwnedBy(HarnessTeam.CDC)
 // keeping this class because of the swagger annotation and UI dependency on it

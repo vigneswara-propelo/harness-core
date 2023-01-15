@@ -53,6 +53,9 @@ import io.harness.cdng.k8s.K8sCanaryStepInfo;
 import io.harness.cdng.k8s.K8sCanaryStepParameters;
 import io.harness.cdng.k8s.K8sDeleteStepInfo;
 import io.harness.cdng.k8s.K8sDeleteStepParameters;
+import io.harness.cdng.k8s.K8sDryRunManifestOutcome;
+import io.harness.cdng.k8s.K8sDryRunManifestStepInfo;
+import io.harness.cdng.k8s.K8sDryRunManifestStepParameters;
 import io.harness.cdng.k8s.K8sInstanceUnitType;
 import io.harness.cdng.k8s.K8sRollingOutcome;
 import io.harness.cdng.k8s.K8sRollingRollbackOutcome;
@@ -257,5 +260,9 @@ public class NGKryoRegistrar implements KryoRegistrar {
     kryo.register(TasRollingDeployStepParameters.class, 12803);
     kryo.register(TasRollingRollbackStepInfo.class, 12804);
     kryo.register(TasRollingRollbackStepParameters.class, 12805);
+
+    kryo.register(K8sDryRunManifestStepInfo.class, 12644);
+    kryo.register(K8sDryRunManifestStepParameters.class, 12645);
+    kryo.register(K8sDryRunManifestOutcome.class, 12646);
   }
 }

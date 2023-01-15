@@ -65,6 +65,7 @@ import io.harness.cdng.k8s.K8sBlueGreenStep;
 import io.harness.cdng.k8s.K8sCanaryDeleteStep;
 import io.harness.cdng.k8s.K8sCanaryStep;
 import io.harness.cdng.k8s.K8sDeleteStep;
+import io.harness.cdng.k8s.K8sDryRunManifestStep;
 import io.harness.cdng.k8s.K8sRollingRollbackStep;
 import io.harness.cdng.k8s.K8sRollingStep;
 import io.harness.cdng.k8s.K8sScaleStep;
@@ -163,6 +164,7 @@ public class NgStepRegistrar {
     engineSteps.put(K8sBlueGreenStep.STEP_TYPE, K8sBlueGreenStep.class);
     engineSteps.put(K8sBGSwapServicesStep.STEP_TYPE, K8sBGSwapServicesStep.class);
     engineSteps.put(K8sApplyStep.STEP_TYPE, K8sApplyStep.class);
+    engineSteps.put(K8sDryRunManifestStep.STEP_TYPE, K8sDryRunManifestStep.class);
     engineSteps.put(TerraformApplyStep.STEP_TYPE, TerraformApplyStep.class);
     engineSteps.put(TerraformPlanStep.STEP_TYPE, TerraformPlanStep.class);
     engineSteps.put(TerraformDestroyStep.STEP_TYPE, TerraformDestroyStep.class);

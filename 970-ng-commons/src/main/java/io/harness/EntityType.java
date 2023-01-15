@@ -506,7 +506,10 @@ public enum EntityType {
       EntityYamlRootNames.TAS_ROLLING_DEPLOY),
   @JsonProperty(EntityTypeConstants.TAS_ROLLING_ROLLBACK)
   TAS_ROLLING_ROLLBACK(ModuleType.CD, EntityTypeConstants.TAS_ROLLING_ROLLBACK, IdentifierRef.class,
-      EntityYamlRootNames.TAS_ROLLING_ROLLBACK);
+      EntityYamlRootNames.TAS_ROLLING_ROLLBACK),
+  @JsonProperty(EntityTypeConstants.K8S_DRY_RUN_MANIFEST)
+  K8S_DRY_RUN_MANIFEST_STEP(ModuleType.CD, EntityTypeConstants.K8S_DRY_RUN_MANIFEST, IdentifierRef.class,
+      EntityYamlRootNames.K8S_DRY_RUN_MANIFEST);
 
   private final ModuleType moduleType;
   String yamlName;

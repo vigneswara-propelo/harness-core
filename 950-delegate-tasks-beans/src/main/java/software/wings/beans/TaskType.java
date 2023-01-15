@@ -441,7 +441,8 @@ public enum TaskType {
   TERRAFORM_INPUT_VARIABLES_OBTAIN_TASK_V2(TaskGroup.TERRAFORM, "Terraform Fetch Input variables Task V2"),
   TERRAFORM_FETCH_TARGETS_TASK_V2(TaskGroup.TERRAFORM, "Terraform Fetch Targets Task V2"),
   TAS_ROLLING_DEPLOY(TaskGroup.TAS, "Tas Rolling Deploy task"),
-  TAS_ROLLING_ROLLBACK(TaskGroup.TAS, "Tas Rolling Rollback task");
+  TAS_ROLLING_ROLLBACK(TaskGroup.TAS, "Tas Rolling Rollback task"),
+  K8S_DRY_RUN_MANIFEST_TASK_NG(TaskGroup.K8S_NG, "K8s Dry Run Manifest Task");
 
   private final TaskGroup taskGroup;
   private final String displayName;

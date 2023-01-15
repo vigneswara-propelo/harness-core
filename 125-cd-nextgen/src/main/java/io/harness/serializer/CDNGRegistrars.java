@@ -49,6 +49,7 @@ import io.harness.cdng.k8s.K8sBlueGreenStepNode;
 import io.harness.cdng.k8s.K8sCanaryDeleteStepNode;
 import io.harness.cdng.k8s.K8sCanaryStepNode;
 import io.harness.cdng.k8s.K8sDeleteStepNode;
+import io.harness.cdng.k8s.K8sDryRunManifestStepNode;
 import io.harness.cdng.k8s.K8sRollingRollbackStepNode;
 import io.harness.cdng.k8s.K8sRollingStepNode;
 import io.harness.cdng.k8s.K8sScaleStepNode;
@@ -726,6 +727,18 @@ public class CDNGRegistrars {
                    .availableAtOrgLevel(false)
                    .availableAtAccountLevel(false)
                    .clazz(ElastigroupRollbackStepNode.class)
+                   .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.CD)
+                                           .modulesSupported(Collections.singletonList(ModuleType.CD))
+                                           .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
+                                           .build())
+                   .build())
+          .add(YamlSchemaRootClass.builder()
+                   .entityType(EntityType.K8S_DRY_RUN_MANIFEST_STEP)
+                   .availableAtProjectLevel(true)
+                   .availableAtOrgLevel(false)
+                   .availableAtAccountLevel(false)
+                   .clazz(K8sDryRunManifestStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
                                            .namespace(SchemaNamespaceConstants.CD)
                                            .modulesSupported(Collections.singletonList(ModuleType.CD))

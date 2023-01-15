@@ -141,6 +141,7 @@ import io.harness.delegate.k8s.K8sBGRequestHandler;
 import io.harness.delegate.k8s.K8sCanaryDeleteRequestHandler;
 import io.harness.delegate.k8s.K8sCanaryRequestHandler;
 import io.harness.delegate.k8s.K8sDeleteRequestHandler;
+import io.harness.delegate.k8s.K8sDryRunManifestRequestHandler;
 import io.harness.delegate.k8s.K8sRequestHandler;
 import io.harness.delegate.k8s.K8sRollingRequestHandler;
 import io.harness.delegate.k8s.K8sRollingRollbackRequestHandler;
@@ -1331,6 +1332,8 @@ public class DelegateModule extends AbstractModule {
         .to(K8sSwapServiceSelectorsHandler.class);
     k8sTaskTypeToRequestHandler.addBinding(K8sTaskType.DELETE.name()).to(K8sDeleteRequestHandler.class);
     k8sTaskTypeToRequestHandler.addBinding(K8sTaskType.CANARY_DELETE.name()).to(K8sCanaryDeleteRequestHandler.class);
+    k8sTaskTypeToRequestHandler.addBinding(K8sTaskType.DRY_RUN_MANIFEST.name())
+        .to(K8sDryRunManifestRequestHandler.class);
 
     // Terraform Task Handlers
     MapBinder<TFTaskType, TerraformAbstractTaskHandler> tfTaskTypeToHandlerMap =
@@ -1847,6 +1850,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.AWS_CF_TASK).toInstance(AwsCFTask.class);
     mapBinder.addBinding(TaskType.K8S_COMMAND_TASK).toInstance(K8sTask.class);
     mapBinder.addBinding(TaskType.K8S_COMMAND_TASK_NG).toInstance(K8sTaskNG.class);
+    mapBinder.addBinding(TaskType.K8S_DRY_RUN_MANIFEST_TASK_NG).toInstance(K8sTaskNG.class);
     mapBinder.addBinding(TaskType.K8S_WATCH_TASK).toInstance(AssignmentTask.class);
     mapBinder.addBinding(TaskType.TRIGGER_TASK).toInstance(TriggerTask.class);
     mapBinder.addBinding(TaskType.WEBHOOK_TRIGGER_TASK).toInstance(WebHookTriggerTask.class);
