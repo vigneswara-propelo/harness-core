@@ -732,6 +732,8 @@ import io.harness.delegate.task.pcf.request.CfInfraMappingDataRequest;
 import io.harness.delegate.task.pcf.request.CfInfraMappingDataRequestNG;
 import io.harness.delegate.task.pcf.request.CfInstanceSyncRequest;
 import io.harness.delegate.task.pcf.request.CfRollbackCommandRequestNG;
+import io.harness.delegate.task.pcf.request.CfRollingDeployRequestNG;
+import io.harness.delegate.task.pcf.request.CfRollingRollbackRequestNG;
 import io.harness.delegate.task.pcf.request.CfRunPluginCommandRequest;
 import io.harness.delegate.task.pcf.request.CfRunPluginCommandRequestNG;
 import io.harness.delegate.task.pcf.request.CfSwapRollbackCommandRequestNG;
@@ -747,6 +749,8 @@ import io.harness.delegate.task.pcf.response.CfInfraMappingDataResponse;
 import io.harness.delegate.task.pcf.response.CfInfraMappingDataResponseNG;
 import io.harness.delegate.task.pcf.response.CfInstanceSyncResponse;
 import io.harness.delegate.task.pcf.response.CfRollbackCommandResponseNG;
+import io.harness.delegate.task.pcf.response.CfRollingDeployResponseNG;
+import io.harness.delegate.task.pcf.response.CfRollingRollbackResponseNG;
 import io.harness.delegate.task.pcf.response.CfRouteUpdateCommandResponse;
 import io.harness.delegate.task.pcf.response.CfSetupCommandResponse;
 import io.harness.delegate.task.pcf.response.CfSwapRouteCommandResponseNG;
@@ -1486,6 +1490,10 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(TasConstants.class, 10000259);
     kryo.register(TasManifestsPackage.class, 10000260);
     kryo.register(CfSwapRouteCommandResult.class, 10000261);
+    kryo.register(CfRollingDeployRequestNG.class, 10000263);
+    kryo.register(CfRollingDeployResponseNG.class, 10000264);
+    kryo.register(CfRollingRollbackRequestNG.class, 10000265);
+    kryo.register(CfRollingRollbackResponseNG.class, 10000266);
 
     kryo.register(SecretType.class, 543214);
     kryo.register(ValueType.class, 543215);
