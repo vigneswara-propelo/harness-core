@@ -20,8 +20,10 @@ import io.harness.entities.Instance.InstanceKeysAdditional;
 import io.harness.mappers.InstanceMapper;
 import io.harness.models.ActiveServiceInstanceInfo;
 import io.harness.models.ActiveServiceInstanceInfoV2;
+import io.harness.models.ArtifactDeploymentDetailModel;
 import io.harness.models.CountByServiceIdAndEnvType;
 import io.harness.models.EnvBuildInstanceCount;
+import io.harness.models.EnvironmentInstanceCountModel;
 import io.harness.models.InstancesByBuildId;
 import io.harness.repositories.instance.InstanceRepository;
 
@@ -231,6 +233,13 @@ public class InstanceServiceImpl implements InstanceService {
         accountIdentifier, orgIdentifier, projectIdentifier, envIdentifier, serviceIdentifier, buildIdentifier);
   }
 
+  public AggregationResults<EnvironmentInstanceCountModel> getInstanceCountForEnvironmentFilteredByService(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String serviceIdentifier,
+      boolean isGitOps) {
+    return instanceRepository.getInstanceCountForEnvironmentFilteredByService(
+        accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, isGitOps);
+  }
+
   /*
     Returns aggregated result containing total {limit} instances for given buildIds
    */
@@ -241,6 +250,14 @@ public class InstanceServiceImpl implements InstanceService {
       long timestampInMs, int limit, String infraId, String clusterId, String pipelineExecutionId) {
     return instanceRepository.getActiveInstancesByServiceIdEnvIdAndBuildIds(accountIdentifier, orgIdentifier,
         projectIdentifier, serviceId, envId, buildIds, timestampInMs, limit, infraId, clusterId, pipelineExecutionId);
+  }
+
+  @Override
+  public AggregationResults<ArtifactDeploymentDetailModel> getLastDeployedInstance(String accountIdentifier,
+      String orgIdentifier, String projectIdentifier, String serviceIdentifier, boolean isEnvironmentCard,
+      boolean isGitOps) {
+    return instanceRepository.getLastDeployedInstance(
+        accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, isEnvironmentCard, isGitOps);
   }
 
   @Override
