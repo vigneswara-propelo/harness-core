@@ -576,7 +576,9 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDP_SKIP_DEFAULT_VALUES_YAML_CG(
       "Skip adding the default values file as an override if it doesn't contain any expressions in case of helm chart manifest for CG",
-      HarnessTeam.CDP);
+      HarnessTeam.CDP),
+  PIE_PIPELINE_SETTINGS_ENFORCEMENT_LIMIT(
+      "To enable pipeline-settings and limits in Project Default Settings in UI", HarnessTeam.PIPELINE);
 
   @Deprecated
   FeatureName() {
