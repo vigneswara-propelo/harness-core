@@ -10,6 +10,7 @@ package io.harness.cdng.pipeline;
 import io.harness.advisers.rollback.OnFailRollbackParameters;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.aws.asg.AsgBlueGreenSwapServiceStepInfo;
 import io.harness.cdng.aws.asg.AsgCanaryDeleteStepInfo;
 import io.harness.cdng.aws.asg.AsgCanaryDeployStepInfo;
 import io.harness.cdng.aws.asg.AsgRollingDeployStepInfo;
@@ -110,7 +111,7 @@ import io.swagger.annotations.ApiModel;
         TasCommandStepInfo.class, ElastigroupBGStageSetupStepInfo.class, ElastigroupSwapRouteStepInfo.class,
         TasAppResizeStepInfo.class, TasRollbackStepInfo.class, AsgRollingDeployStepInfo.class,
         AsgRollingRollbackStepInfo.class, TasRollingDeployStepInfo.class, TasRollingRollbackStepInfo.class,
-        K8sDryRunManifestStepInfo.class})
+        K8sDryRunManifestStepInfo.class, AsgBlueGreenSwapServiceStepInfo.class})
 
 @OwnedBy(HarnessTeam.CDC)
 // keeping this class because of the swagger annotation and UI dependency on it

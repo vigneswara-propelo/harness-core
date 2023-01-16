@@ -2390,6 +2390,9 @@
 573593:software.wings.api.terraform.TfVarS3Source
 573594:io.harness.delegate.task.k8s.K8sDryRunManifestRequest
 573595:io.harness.delegate.task.k8s.K8sDryRunManifestResponse
+573596:io.harness.delegate.task.aws.asg.AsgBlueGreenSwapServiceRequest
+573597:io.harness.delegate.task.aws.asg.AsgBlueGreenSwapServiceResponse
+573598:io.harness.delegate.task.aws.asg.AsgBlueGreenSwapServiceResult
 573600:io.harness.delegate.exception.ElastigroupNGException
 573601:io.harness.delegate.task.elastigroup.response.SpotInstConfig
 573602:io.harness.delegate.task.elastigroup.response.ElastigroupParametersFetchResponse

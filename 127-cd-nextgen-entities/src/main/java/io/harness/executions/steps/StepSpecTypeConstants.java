@@ -101,4 +101,5 @@ public interface StepSpecTypeConstants {
   String ASG_ROLLING_ROLLBACK = "AsgRollingRollback";
 
   String K8S_DRY_RUN_MANIFEST = "K8sDryRun";
+  String ASG_BLUE_GREEN_SWAP_SERVICE = "AsgBlueGreenSwapService";
 }

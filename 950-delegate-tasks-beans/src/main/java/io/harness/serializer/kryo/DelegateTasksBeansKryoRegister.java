@@ -433,6 +433,9 @@ import io.harness.delegate.task.aws.AwsLoadBalancerDetails;
 import io.harness.delegate.task.aws.LbDetailsForAlbTrafficShift;
 import io.harness.delegate.task.aws.LoadBalancerDetailsForBGDeployment;
 import io.harness.delegate.task.aws.LoadBalancerType;
+import io.harness.delegate.task.aws.asg.AsgBlueGreenSwapServiceRequest;
+import io.harness.delegate.task.aws.asg.AsgBlueGreenSwapServiceResponse;
+import io.harness.delegate.task.aws.asg.AsgBlueGreenSwapServiceResult;
 import io.harness.delegate.task.aws.asg.AsgCanaryDeleteRequest;
 import io.harness.delegate.task.aws.asg.AsgCanaryDeleteResponse;
 import io.harness.delegate.task.aws.asg.AsgCanaryDeleteResult;
@@ -2067,6 +2070,9 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AsgRollingRollbackRequest.class, 573590);
     kryo.register(AsgRollingRollbackResponse.class, 573591);
     kryo.register(AsgRollingRollbackResult.class, 573592);
+    kryo.register(AsgBlueGreenSwapServiceRequest.class, 573596);
+    kryo.register(AsgBlueGreenSwapServiceResponse.class, 573597);
+    kryo.register(AsgBlueGreenSwapServiceResult.class, 573598);
 
     kryo.register(AzurePackageArtifactConfig.class, 55410);
     kryo.register(AzureArtifactRequestDetails.class, 55411);

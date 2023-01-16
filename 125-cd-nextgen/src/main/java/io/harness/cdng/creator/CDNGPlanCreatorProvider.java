@@ -125,6 +125,7 @@ import io.harness.cdng.creator.plan.steps.TerraformApplyStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TerraformDestroyStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TerraformPlanStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TerraformRollbackStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.aws.asg.AsgBlueGreenSwapServiceStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.aws.asg.AsgCanaryDeleteStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.aws.asg.AsgCanaryDeployStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.aws.asg.AsgRollingDeployStepPlanCreator;
@@ -150,6 +151,7 @@ import io.harness.cdng.creator.plan.steps.terragrunt.TerragruntApplyStepPlanCrea
 import io.harness.cdng.creator.plan.steps.terragrunt.TerragruntDestroyStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.terragrunt.TerragruntPlanStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.terragrunt.TerragruntRollbackStepPlanCreator;
+import io.harness.cdng.creator.variables.AsgBlueGreenSwapServiceStepVariableCreator;
 import io.harness.cdng.creator.variables.AsgCanaryDeleteStepVariableCreator;
 import io.harness.cdng.creator.variables.AsgCanaryDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.AsgRollingDeployStepVariableCreator;
@@ -413,6 +415,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new AsgCanaryDeleteStepPlanCreator());
     planCreators.add(new AsgRollingDeployStepPlanCreator());
     planCreators.add(new AsgRollingRollbackStepPlanCreator());
+    planCreators.add(new AsgBlueGreenSwapServiceStepPlanCreator());
 
     // TAS
     planCreators.add(new TasCanaryAppSetupStepPlanCreator());
@@ -536,6 +539,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     variableCreators.add(new AsgCanaryDeleteStepVariableCreator());
     variableCreators.add(new AsgRollingDeployStepVariableCreator());
     variableCreators.add(new AsgRollingRollbackStepVariableCreator());
+    variableCreators.add(new AsgBlueGreenSwapServiceStepVariableCreator());
 
     // TAS
     variableCreators.add(new TasCanaryAppSetupStepVariableCreator());
@@ -1138,6 +1142,14 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                      .setFeatureFlag(FeatureName.K8S_DRY_RUN_NG.name())
                                      .build();
 
+    StepInfo asgBlueGreenSwapService =
+        StepInfo.newBuilder()
+            .setName("Asg Blue Green Swap Service")
+            .setType(StepSpecTypeConstants.ASG_BLUE_GREEN_SWAP_SERVICE)
+            .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
+            .setFeatureFlag(FeatureName.ASG_NG.name())
+            .build();
+
     List<StepInfo> stepInfos = new ArrayList<>();
 
     stepInfos.add(gitOpsCreatePR);
@@ -1208,6 +1220,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     stepInfos.add(tasRollingDeploy);
     stepInfos.add(tasRollingRollback);
     stepInfos.add(k8sDryRunManifest);
+    stepInfos.add(asgBlueGreenSwapService);
     return stepInfos;
   }
 }

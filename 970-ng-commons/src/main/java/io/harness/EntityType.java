@@ -509,7 +509,10 @@ public enum EntityType {
       EntityYamlRootNames.TAS_ROLLING_ROLLBACK),
   @JsonProperty(EntityTypeConstants.K8S_DRY_RUN_MANIFEST)
   K8S_DRY_RUN_MANIFEST_STEP(ModuleType.CD, EntityTypeConstants.K8S_DRY_RUN_MANIFEST, IdentifierRef.class,
-      EntityYamlRootNames.K8S_DRY_RUN_MANIFEST);
+      EntityYamlRootNames.K8S_DRY_RUN_MANIFEST),
+  @JsonProperty(EntityTypeConstants.ASG_BLUE_GREEN_SWAP_SERVICE_STEP)
+  ASG_BLUE_GREEN_SWAP_SERVICE_STEP(ModuleType.CD, EntityTypeConstants.ASG_BLUE_GREEN_SWAP_SERVICE_STEP,
+      IdentifierRef.class, EntityYamlRootNames.ASG_BLUE_GREEN_SWAP_SERVICE_STEP);
 
   private final ModuleType moduleType;
   String yamlName;

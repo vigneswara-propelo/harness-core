@@ -209,6 +209,7 @@ import io.harness.delegate.task.aws.AwsCodeCommitApiDelegateTask;
 import io.harness.delegate.task.aws.AwsCodeCommitDelegateTask;
 import io.harness.delegate.task.aws.AwsDelegateTask;
 import io.harness.delegate.task.aws.S3FetchFilesTaskNG;
+import io.harness.delegate.task.aws.asg.AsgBlueGreenSwapServiceTaskNG;
 import io.harness.delegate.task.aws.asg.AsgCanaryDeleteTaskNG;
 import io.harness.delegate.task.aws.asg.AsgCanaryDeployTaskNG;
 import io.harness.delegate.task.aws.asg.AsgPrepareRollbackDataTaskNG;
@@ -2002,6 +2003,8 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.AWS_ASG_ROLLING_DEPLOY_TASK_NG).toInstance(AsgRollingDeployTaskNG.class);
     mapBinder.addBinding(TaskType.AWS_ASG_PREPARE_ROLLBACK_DATA_TASK_NG).toInstance(AsgPrepareRollbackDataTaskNG.class);
     mapBinder.addBinding(TaskType.AWS_ASG_ROLLING_ROLLBACK_TASK_NG).toInstance(AsgRollingRollbackTaskNG.class);
+    mapBinder.addBinding(TaskType.AWS_ASG_BLUE_GREEN_SWAP_SERVICE_TASK_NG)
+        .toInstance(AsgBlueGreenSwapServiceTaskNG.class);
 
     bind(EcsV2Client.class).to(EcsV2ClientImpl.class);
     bind(ElbV2Client.class).to(ElbV2ClientImpl.class);

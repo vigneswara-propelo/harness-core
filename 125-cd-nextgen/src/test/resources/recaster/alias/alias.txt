@@ -707,3 +707,7 @@ io.harness.cdng.k8s.K8sDryRunManifestOutcome
 io.harness.cdng.k8s.K8sDryRunManifestStepInfo
 io.harness.cdng.k8s.K8sDryRunManifestStepNode
 io.harness.cdng.k8s.K8sDryRunManifestStepParameters
+io.harness.cdng.aws.asg.AsgBlueGreenSwapServiceStepNode
+io.harness.cdng.aws.asg.AsgBlueGreenSwapServiceStepParameters
+io.harness.cdng.aws.asg.AsgBlueGreenSwapServiceStepInfo
+io.harness.cdng.aws.asg.AsgBlueGreenSwapServiceOutcome
