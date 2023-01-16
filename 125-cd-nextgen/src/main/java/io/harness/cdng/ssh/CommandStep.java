@@ -33,6 +33,7 @@ import io.harness.delegate.beans.instancesync.mapper.AzureSshWinrmToServiceInsta
 import io.harness.delegate.beans.instancesync.mapper.PdcToServiceInstanceInfoMapper;
 import io.harness.delegate.task.shell.CommandTaskParameters;
 import io.harness.delegate.task.shell.CommandTaskResponse;
+import io.harness.delegate.task.ssh.NgCommandUnit;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.SkipRollbackException;
 import io.harness.executions.steps.ExecutionNodeType;
@@ -82,6 +83,7 @@ public class CommandStep extends CdTaskExecutable<CommandTaskResponse> {
   @Inject private SshCommandStepHelper sshCommandStepHelper;
   @Inject private InstanceInfoService instanceInfoService;
   @Inject private OutcomeService outcomeService;
+  @Inject private CommandTaskDataFactory commandTaskDataFactory;
 
   @Override
   public void validateResources(Ambiance ambiance, StepElementParameters stepParameters) {
@@ -103,17 +105,11 @@ public class CommandStep extends CdTaskExecutable<CommandTaskResponse> {
       CommandTaskParameters taskParameters =
           sshCommandStepHelper.buildCommandTaskParameters(ambiance, executeCommandStepParameters);
 
-      TaskData taskData =
-          TaskData.builder()
-              .async(true)
-              .taskType(TaskType.COMMAND_TASK_NG.name())
-              .parameters(new Object[] {taskParameters})
-              .timeout(StepUtils.getTimeoutMillis(stepParameters.getTimeout(), StepUtils.DEFAULT_STEP_TIMEOUT))
-              .build();
+      TaskData taskData = commandTaskDataFactory.create(taskParameters, stepParameters.getTimeout());
 
       List<String> commandExecutionUnits =
-          taskParameters.getCommandUnits().stream().map(cu -> cu.getName()).collect(Collectors.toList());
-      String taskName = TaskType.COMMAND_TASK_NG.getDisplayName();
+          taskParameters.getCommandUnits().stream().map(NgCommandUnit::getName).collect(Collectors.toList());
+      String taskName = TaskType.valueOf(taskData.getTaskType()).getDisplayName();
 
       return TaskRequestsUtils.prepareCDTaskRequest(ambiance, taskData, referenceFalseKryoSerializer,
           commandExecutionUnits, taskName,

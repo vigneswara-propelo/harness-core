@@ -439,6 +439,7 @@ public class TaskTypeTest extends CategoryTest {
     taskTypeOrdinalMapping.put(399, "TAS_ROLLING_DEPLOY");
     taskTypeOrdinalMapping.put(400, "TAS_ROLLING_ROLLBACK");
     taskTypeOrdinalMapping.put(401, "K8S_DRY_RUN_MANIFEST_TASK_NG");
+    taskTypeOrdinalMapping.put(402, "COMMAND_TASK_NG_WITH_AZURE_ARTIFACT");
 
     taskTypeConstantMapping =
         taskTypeOrdinalMapping.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));

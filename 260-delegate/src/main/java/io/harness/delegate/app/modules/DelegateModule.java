@@ -346,6 +346,7 @@ import io.harness.delegate.task.shell.provisioner.ShellScriptProvisionTaskNG;
 import io.harness.delegate.task.shell.ssh.ArtifactCommandUnitHandler;
 import io.harness.delegate.task.shell.ssh.ArtifactoryCommandUnitHandler;
 import io.harness.delegate.task.shell.ssh.AwsS3ArtifactCommandUnitHandler;
+import io.harness.delegate.task.shell.ssh.AzureArtifactCommandUnitHandler;
 import io.harness.delegate.task.shell.ssh.CommandHandler;
 import io.harness.delegate.task.shell.ssh.JenkinsArtifactCommandUnitHandler;
 import io.harness.delegate.task.shell.ssh.NexusArtifactCommandUnitHandler;
@@ -391,6 +392,7 @@ import io.harness.delegate.task.trigger.TriggerAuthenticationTask;
 import io.harness.delegate.task.winrm.ArtifactDownloadHandler;
 import io.harness.delegate.task.winrm.ArtifactoryArtifactDownloadHandler;
 import io.harness.delegate.task.winrm.AwsS3ArtifactDownloadHandler;
+import io.harness.delegate.task.winrm.AzureArtifactDownloadHandler;
 import io.harness.delegate.task.winrm.JenkinsArtifactDownloadHandler;
 import io.harness.delegate.task.winrm.NexusArtifactDownloadHandler;
 import io.harness.delegate.utils.DecryptionHelperDelegate;
@@ -1559,6 +1561,7 @@ public class DelegateModule extends AbstractModule {
     artifactHandlers.addBinding(SshWinRmArtifactType.JENKINS).to(JenkinsArtifactDownloadHandler.class);
     artifactHandlers.addBinding(SshWinRmArtifactType.AWS_S3).to(AwsS3ArtifactDownloadHandler.class);
     artifactHandlers.addBinding(SshWinRmArtifactType.NEXUS_PACKAGE).to(NexusArtifactDownloadHandler.class);
+    artifactHandlers.addBinding(SshWinRmArtifactType.AZURE).to(AzureArtifactDownloadHandler.class);
 
     MapBinder<String, ArtifactCommandUnitHandler> artifactCommandHandlers =
         MapBinder.newMapBinder(binder(), String.class, ArtifactCommandUnitHandler.class);
@@ -1567,6 +1570,7 @@ public class DelegateModule extends AbstractModule {
     artifactCommandHandlers.addBinding(SshWinRmArtifactType.AWS_S3.name()).to(AwsS3ArtifactCommandUnitHandler.class);
     artifactCommandHandlers.addBinding(SshWinRmArtifactType.NEXUS_PACKAGE.name())
         .to(NexusArtifactCommandUnitHandler.class);
+    artifactCommandHandlers.addBinding(SshWinRmArtifactType.AZURE.name()).to(AzureArtifactCommandUnitHandler.class);
 
     registerSecretManagementBindings();
     registerConnectorValidatorsBindings();
@@ -1957,6 +1961,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.AZURE_WEB_APP_TASK_NG_V2).toInstance(AzureWebAppTaskNG.class);
     mapBinder.addBinding(TaskType.FETCH_INSTANCE_SCRIPT_TASK_NG).toInstance(FetchInstanceScriptTaskNG.class);
     mapBinder.addBinding(TaskType.COMMAND_TASK_NG).toInstance(CommandTaskNG.class);
+    mapBinder.addBinding(TaskType.COMMAND_TASK_NG_WITH_AZURE_ARTIFACT).toInstance(CommandTaskNG.class);
     mapBinder.addBinding(TaskType.TRIGGER_AUTHENTICATION_TASK).toInstance(TriggerAuthenticationTask.class);
     mapBinder.addBinding(TaskType.HELM_FETCH_CHART_VERSIONS_TASK_NG).toInstance(HelmFetchChartVersionTaskNG.class);
 
