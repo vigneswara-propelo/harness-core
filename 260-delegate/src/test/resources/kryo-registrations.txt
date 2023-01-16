@@ -2536,6 +2536,9 @@
 10000113:io.harness.delegate.beans.connector.servicenow.ServiceNowAuthType
 10000114:io.harness.delegate.beans.connector.servicenow.ServiceNowAuthCredentialsDTO
 10000115:io.harness.delegate.beans.connector.servicenow.ServiceNowUserNamePasswordDTO
+10000116:io.harness.delegate.beans.connector.servicenow.ServiceNowADFSDTO
+10000120:io.harness.exception.AdfsAuthException
+10000121:io.harness.adfs.AdfsAccessTokenResponse
 10000201:io.harness.delegate.beans.connector.tasconnector.TasConnectorDTO
 10000202:io.harness.delegate.beans.connector.tasconnector.TasCredentialDTO
 10000203:io.harness.delegate.beans.connector.tasconnector.TasCredentialSpecDTO

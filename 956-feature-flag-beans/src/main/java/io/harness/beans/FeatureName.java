@@ -568,7 +568,8 @@ public enum FeatureName {
       "Used to modify logic for reconciliation queries", HarnessTeam.CDC),
   SPG_MODULE_VERSION_INFO("Enable version information on module level", HarnessTeam.SPG),
   CIE_HOSTED_VMS_WINDOWS("FF for enabling hosted builds for windows amd64", HarnessTeam.CI),
-  K8S_DRY_RUN_NG("Enable K8s Dry Run Step in NG", HarnessTeam.CDP);
+  K8S_DRY_RUN_NG("Enable K8s Dry Run Step in NG", HarnessTeam.CDP),
+  CDS_SERVICENOW_ADFS_AUTH("ADFS auth support for servicenow connector", HarnessTeam.CDC);
 
   @Deprecated
   FeatureName() {
