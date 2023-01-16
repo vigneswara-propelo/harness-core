@@ -579,6 +579,8 @@ public class K8sHelmCommonStepHelper {
             .checkIncorrectChartVersion(true)
             .useRepoFlags(helmVersion != HelmVersion.V2)
             .deleteRepoCacheDir(helmVersion != HelmVersion.V2)
+            .skipApplyHelmDefaultValues(cdFeatureFlagHelper.isEnabled(
+                AmbianceUtils.getAccountId(ambiance), FeatureName.CDP_SKIP_DEFAULT_VALUES_YAML_NG))
             .build();
 
       case ManifestType.Kustomize:
