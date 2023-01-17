@@ -696,6 +696,7 @@ public class ServiceResourceV2 {
     return ResponseDTO.newResponse(k8sCmdFlags);
   }
 
+  @Hidden
   public ServiceEntity updateArtifactoryRegistryUrlIfEmpty(
       ServiceEntity serviceEntity, String accountId, String orgIdentifier, String projectIdentifier) {
     if (serviceEntity == null) {
