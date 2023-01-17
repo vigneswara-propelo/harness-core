@@ -241,7 +241,13 @@ public enum NGStepType {
       "Rolling Rollback", Arrays.asList(ServiceDefinitionType.TAS), "TAS", StepSpecTypeConstants.TAS_ROLLING_ROLLBACK),
   @JsonProperty(StepSpecTypeConstants.ASG_BLUE_GREEN_SWAP_SERVICE)
   ASG_BLUE_GREEN_SWAP_SERVICE("Asg Blue Green Swap Service", Arrays.asList(ServiceDefinitionType.ASG), "ASG",
-      StepSpecTypeConstants.ASG_BLUE_GREEN_SWAP_SERVICE);
+      StepSpecTypeConstants.ASG_BLUE_GREEN_SWAP_SERVICE),
+  @JsonProperty(StepSpecTypeConstants.ASG_BLUE_GREEN_DEPLOY)
+  ASG_BLUE_GREEN_DEPLOY("Asg Blue Green Deploy", Arrays.asList(ServiceDefinitionType.ASG), "ASG",
+      StepSpecTypeConstants.ASG_BLUE_GREEN_DEPLOY),
+  @JsonProperty(StepSpecTypeConstants.ASG_BLUE_GREEN_ROLLBACK)
+  ASG_BLUE_GREEN_ROLLBACK("Asg Blue Green Rollback", Arrays.asList(ServiceDefinitionType.ASG), "ASG",
+      StepSpecTypeConstants.ASG_BLUE_GREEN_ROLLBACK);
 
   private String displayName;
   private List<ServiceDefinitionType> serviceDefinitionTypes;

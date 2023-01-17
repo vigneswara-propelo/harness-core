@@ -13,6 +13,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.expression.Expression;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
@@ -28,4 +29,6 @@ public class AsgLoadBalancerConfig {
   @NonFinal @Expression(ALLOW_SECRETS) String stageListenerRuleArn;
   @NonFinal @Expression(ALLOW_SECRETS) String prodListenerArn;
   @NonFinal @Expression(ALLOW_SECRETS) String prodListenerRuleArn;
+  List<String> prodTargetGroupArns;
+  List<String> stageTargetGroupArns;
 }

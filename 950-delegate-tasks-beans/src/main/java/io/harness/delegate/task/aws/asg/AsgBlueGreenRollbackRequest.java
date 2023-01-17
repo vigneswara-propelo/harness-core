@@ -18,18 +18,22 @@ import io.harness.reflection.ExpressionReflectionUtils.NestedAnnotationResolver;
 import java.util.List;
 import java.util.Map;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.experimental.NonFinal;
 
-@Data
+@Value
 @Builder
 @OwnedBy(HarnessTeam.CDP)
-public class AsgPrepareRollbackDataRequest implements AsgCommandRequest, NestedAnnotationResolver {
+public class AsgBlueGreenRollbackRequest implements AsgCommandRequest, NestedAnnotationResolver {
   String accountId;
   String commandName;
-
   CommandUnitsProgress commandUnitsProgress;
-  @NonFinal @Expression(ALLOW_SECRETS) Integer timeoutIntervalInMin;
-  Map<String, List<String>> asgStoreManifestsContent;
+  Integer timeoutIntervalInMin;
+  Map<String, List<String>> asgManifestsDataForRollback;
   @NonFinal @Expression(ALLOW_SECRETS) AsgInfraConfig asgInfraConfig;
+  AsgLoadBalancerConfig asgLoadBalancerConfig;
+  String prodAsgName;
+  String stageAsgName;
+  boolean stageAsgCreated;
+  boolean servicesSwapped;
 }

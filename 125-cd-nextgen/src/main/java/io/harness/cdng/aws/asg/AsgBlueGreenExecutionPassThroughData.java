@@ -13,29 +13,28 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
-import io.harness.pms.sdk.core.steps.io.PassThroughData;
+import io.harness.delegate.task.aws.asg.AsgLoadBalancerConfig;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 
 @Getter
 @NoArgsConstructor
 @OwnedBy(CDP)
-@TypeAlias("asgExecutionPassThroughData")
-@RecasterAlias("io.harness.cdng.aws.asg.AsgExecutionPassThroughData")
-public class AsgExecutionPassThroughData implements PassThroughData {
-  InfrastructureOutcome infrastructure;
-  @Setter UnitProgressData lastActiveUnitProgressData;
-  AsgManifestFetchData asgManifestFetchData;
+@TypeAlias("asgBlueGreenExecutionPassThroughData")
+@RecasterAlias("io.harness.cdng.aws.asg.AsgBlueGreenExecutionPassThroughData")
+public class AsgBlueGreenExecutionPassThroughData extends AsgExecutionPassThroughData {
+  AsgLoadBalancerConfig loadBalancerConfig;
+  String asgName;
 
-  @Builder()
-  public AsgExecutionPassThroughData(InfrastructureOutcome infrastructure, UnitProgressData lastActiveUnitProgressData,
-      AsgManifestFetchData asgManifestFetchData) {
-    this.infrastructure = infrastructure;
-    this.lastActiveUnitProgressData = lastActiveUnitProgressData;
-    this.asgManifestFetchData = asgManifestFetchData;
+  @Builder(builderMethodName = "blueGreenBuilder")
+  public AsgBlueGreenExecutionPassThroughData(InfrastructureOutcome infrastructure,
+      UnitProgressData lastActiveUnitProgressData, AsgManifestFetchData asgManifestFetchData,
+      AsgLoadBalancerConfig loadBalancerConfig, String asgName) {
+    super(infrastructure, lastActiveUnitProgressData, asgManifestFetchData);
+    this.loadBalancerConfig = loadBalancerConfig;
+    this.asgName = asgName;
   }
 }
