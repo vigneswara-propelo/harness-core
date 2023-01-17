@@ -206,7 +206,7 @@ public class NextGenHealthSourceSpec extends MetricHealthSourceSpec {
                        .connectorIdentifier(getConnectorRef())
                        .monitoringSourceName(name)
                        .queryName(queryDefinition.getName())
-                       .query(queryDefinition.getQuery())
+                       .query(queryDefinition.getQuery().trim())
                        .groupName(queryDefinition.getGroupName())
                        .queryIdentifier(queryDefinition.getIdentifier())
                        .queryParams(queryDefinition.getQueryParams().getQueryParamsEntity())
