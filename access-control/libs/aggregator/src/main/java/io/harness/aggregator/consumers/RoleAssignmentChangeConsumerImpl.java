@@ -87,6 +87,13 @@ public class RoleAssignmentChangeConsumerImpl implements ChangeConsumer<RoleAssi
   @Override
   public void consumeCreateEvent(String id, RoleAssignmentDBO newRoleAssignmentDBO) {
     log.info("Start consuming event: {} for roleassignment: {}", id, newRoleAssignmentDBO);
+    // Temporarily skipping for pre-qa
+    String accountToDisable = "/ACCOUNT/hnfcPmD8T-i0T2NlOs6_Rg";
+    if (newRoleAssignmentDBO != null && newRoleAssignmentDBO.getScopeIdentifier().startsWith(accountToDisable)) {
+      log.info(String.format(
+          "RoleAssignmentChangeConsumerImpl: Skipping ACL creation for %s", newRoleAssignmentDBO.getScopeIdentifier()));
+      return;
+    }
     long startTime = System.currentTimeMillis();
     Optional<RoleAssignmentDBO> roleAssignmentOptional = roleAssignmentRepository.findByIdentifierAndScopeIdentifier(
         newRoleAssignmentDBO.getIdentifier(), newRoleAssignmentDBO.getScopeIdentifier());

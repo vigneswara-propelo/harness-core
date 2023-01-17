@@ -71,6 +71,12 @@ public class RoleChangeConsumerImpl implements ChangeConsumer<RoleDBO> {
 
   @Override
   public void consumeUpdateEvent(String id, RoleDBO updatedRole) {
+    String accountToDisable = "/ACCOUNT/hnfcPmD8T-i0T2NlOs6_Rg";
+    if (updatedRole != null && updatedRole.getScopeIdentifier().startsWith(accountToDisable)) {
+      log.info(String.format("RoleChangeConsumerImpl: Skipping ACL creation for account %s id: %s ",
+          updatedRole.getScopeIdentifier(), id));
+      return;
+    }
     long startTime = System.currentTimeMillis();
     if (updatedRole.getPermissions() == null) {
       return;
