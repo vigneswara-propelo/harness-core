@@ -89,7 +89,9 @@ public class RoleAssignmentChangeConsumerImpl implements ChangeConsumer<RoleAssi
     log.info("Start consuming event: {} for roleassignment: {}", id, newRoleAssignmentDBO);
     // Temporarily skipping for pre-qa
     String accountToDisable = "/ACCOUNT/hnfcPmD8T-i0T2NlOs6_Rg";
-    if (newRoleAssignmentDBO != null && newRoleAssignmentDBO.getScopeIdentifier().startsWith(accountToDisable)) {
+    log.info(String.format("RoleAssignmentChangeConsumerImpl: Entity %s", newRoleAssignmentDBO));
+    if (newRoleAssignmentDBO != null && newRoleAssignmentDBO.getScopeIdentifier() != null
+        && newRoleAssignmentDBO.getScopeIdentifier().startsWith(accountToDisable)) {
       log.info(String.format(
           "RoleAssignmentChangeConsumerImpl: Skipping ACL creation for %s", newRoleAssignmentDBO.getScopeIdentifier()));
       return;
