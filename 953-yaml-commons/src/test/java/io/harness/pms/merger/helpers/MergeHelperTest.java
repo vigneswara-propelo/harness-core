@@ -329,4 +329,67 @@ public class MergeHelperTest extends CategoryTest {
     String result = mergeRuntimeInputValuesIntoOriginalYaml(pipelineYaml, runtimeInput, false);
     assertThat(result).isEqualTo(merged);
   }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testMergeWithServiceAsAxisName() {
+    String baseYaml = "stage:\n"
+        + "  strategy:\n"
+        + "    matrix:\n"
+        + "      service: <+input>\n"
+        + "      env: <+input>\n";
+    String runtimeInput = "stage:\n"
+        + "  strategy:\n"
+        + "    matrix:\n"
+        + "      service:\n"
+        + "      - svc1\n"
+        + "      env:\n"
+        + "      - env1\n"
+        + "      - env2\n";
+    String merged = "stage:\n"
+        + "  strategy:\n"
+        + "    matrix:\n"
+        + "      service:\n"
+        + "      - \"svc1\"\n"
+        + "      env:\n"
+        + "      - \"env1\"\n"
+        + "      - \"env2\"\n";
+    String result = mergeRuntimeInputValuesIntoOriginalYaml(baseYaml, runtimeInput, false);
+    assertThat(result).isEqualTo(merged);
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testMergeWithEnvAsInputUnderEnvGroups() {
+    String baseYaml = "stage:\n"
+        + "  environmentGroup:\n"
+        + "    environments: <+input>\n";
+    String runtimeInput = "stage:\n"
+        + "  junk: \"yes\"\n"
+        + "  environmentGroup:\n"
+        + "    environments:\n"
+        + "      values:\n"
+        + "      - environmentRef: \"Env2\"\n"
+        + "        infrastructureDefinitions:\n"
+        + "        - identifier: \"Infra2\"\n"
+        + "      - environmentRef: \"Env3\"\n"
+        + "        infrastructureDefinitions:\n"
+        + "        - identifier: \"Infra3\"\n"
+        + "    deployToAll: \"true\"\n";
+    String merged = "stage:\n"
+        + "  environmentGroup:\n"
+        + "    environments:\n"
+        + "      values:\n"
+        + "      - environmentRef: \"Env2\"\n"
+        + "        infrastructureDefinitions:\n"
+        + "        - identifier: \"Infra2\"\n"
+        + "      - environmentRef: \"Env3\"\n"
+        + "        infrastructureDefinitions:\n"
+        + "        - identifier: \"Infra3\"\n"
+        + "    deployToAll: \"true\"\n";
+    String result = mergeRuntimeInputValuesIntoOriginalYaml(baseYaml, runtimeInput, false);
+    assertThat(result).isEqualTo(merged);
+  }
 }

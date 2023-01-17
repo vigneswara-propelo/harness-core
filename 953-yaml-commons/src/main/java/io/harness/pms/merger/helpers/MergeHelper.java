@@ -140,10 +140,13 @@ public class MergeHelper {
     Set<FQN> newKeys = new HashSet<>();
     for (FQN nonIgnorableKey : nonIgnorableKeys.keySet()) {
       List<FQNNode> fqnList = nonIgnorableKey.getFqnList();
-      for (int i = 0; i < fqnList.size(); i++) {
+      for (int i = 0; i < fqnList.size() - 1; i++) {
         FQNNode fqnNode = fqnList.get(i);
         if (fqnNode.getNodeType() == NodeType.KEY && acceptAllChildrenKeys.contains(fqnNode.getKey())) {
           newKeys.add(FQN.builder().fqnList(fqnList.subList(0, i + 2)).build());
+          // if the nonIgnorableKey is environmentGroup.environments.values, then once environmentGroup.environments is
+          // added as a new key, we should break as environmentGroup.environments.values is not needed anymore
+          break;
         }
       }
     }
