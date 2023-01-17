@@ -253,7 +253,10 @@ public class MergeHelperTest extends CategoryTest {
         + "        serviceRef: <+input>\n"
         + "      environment:\n"
         + "        environmentRef: <+input>\n"
-        + "        infrastructureDefinitions: <+input>\n";
+        + "        infrastructureDefinitions: <+input>\n"
+        + "      variables:\n"
+        + "        - name: var1\n"
+        + "          value: <+input>";
     String runtimeInput = "pipeline:\n"
         + "  stages:\n"
         + "  - stage:\n"
@@ -285,7 +288,10 @@ public class MergeHelperTest extends CategoryTest {
         + "              description: \"not valid\"\n"
         + "          - step:\n"
         + "              identifier: \"s5\"\n"
-        + "              description: \"not valid\"\n";
+        + "              description: \"not valid\"\n"
+        + "      variables:\n"
+        + "        - name: var1\n"
+        + "          value: <+input>.executionInput()";
     String merged = "pipeline:\n"
         + "  stages:\n"
         + "  - stage:\n"
@@ -316,7 +322,10 @@ public class MergeHelperTest extends CategoryTest {
         + "              description: \"not valid\"\n"
         + "          - step:\n"
         + "              identifier: \"s5\"\n"
-        + "              description: \"not valid\"\n";
+        + "              description: \"not valid\"\n"
+        + "      variables:\n"
+        + "      - name: \"var1\"\n"
+        + "        value: \"<+input>.executionInput()\"\n";
     String result = mergeRuntimeInputValuesIntoOriginalYaml(pipelineYaml, runtimeInput, false);
     assertThat(result).isEqualTo(merged);
   }
