@@ -9,10 +9,11 @@ package io.harness.cdng.tas;
 
 import static io.harness.cdng.tas.TasStepHelperTest.AUTOSCALAR_YML;
 import static io.harness.cdng.tas.TasStepHelperTest.MANIFEST_YML;
+import static io.harness.cdng.tas.TasStepHelperTest.MANIFEST_YML_WITH_ROUTES;
 import static io.harness.cdng.tas.TasStepHelperTest.VARS_YML_1;
 import static io.harness.rule.OwnerRule.RISHABH;
 
-import static software.wings.beans.TaskType.TAS_BASIC_SETUP;
+import static software.wings.beans.TaskType.TAS_BG_SETUP;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +38,7 @@ import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.infra.beans.TanzuApplicationServiceInfrastructureOutcome;
 import io.harness.cdng.k8s.beans.StepExceptionPassThroughData;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
-import io.harness.cdng.tas.TasBasicAppSetupStepParameters.TasBasicAppSetupStepParametersBuilder;
+import io.harness.cdng.tas.TasBGAppSetupStepParameters.TasBGAppSetupStepParametersBuilder;
 import io.harness.cdng.tas.outcome.TasSetupDataOutcome;
 import io.harness.cdng.tas.outcome.TasSetupVariablesOutcome;
 import io.harness.delegate.beans.TaskData;
@@ -46,9 +47,9 @@ import io.harness.delegate.beans.pcf.TasApplicationInfo;
 import io.harness.delegate.beans.pcf.TasResizeStrategyType;
 import io.harness.delegate.task.pcf.CfCommandTypeNG;
 import io.harness.delegate.task.pcf.artifact.TasArtifactConfig;
-import io.harness.delegate.task.pcf.request.CfBasicSetupRequestNG;
+import io.harness.delegate.task.pcf.request.CfBlueGreenSetupRequestNG;
 import io.harness.delegate.task.pcf.request.TasManifestsPackage;
-import io.harness.delegate.task.pcf.response.CfBasicSetupResponseNG;
+import io.harness.delegate.task.pcf.response.CfBlueGreenSetupResponseNG;
 import io.harness.delegate.task.pcf.response.TasInfraConfig;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.UnitProgress;
@@ -89,7 +90,7 @@ import org.mockito.Mockito;
 
 @OwnedBy(HarnessTeam.CDP)
 @Slf4j
-public class TasBasicAppSetupStepTest extends CDNGTestBase {
+public class TasBGAppSetupStepTest extends CDNGTestBase {
   @Mock private CDStepHelper cdStepHelper;
   @Mock private StepHelper stepHelper;
   @Mock private CDFeatureFlagHelper cdFeatureFlagHelper;
@@ -98,7 +99,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Mock private TasArtifactConfig tasArtifactConfig;
   @Mock private ArtifactOutcome artifactOutcome;
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
-  @InjectMocks private TasBasicAppSetupStep tasBasicAppSetupStep;
+  @InjectMocks private TasBGAppSetupStep tasBGAppSetupStep;
 
   private final TanzuApplicationServiceInfrastructureOutcome infrastructureOutcome =
       TanzuApplicationServiceInfrastructureOutcome.builder()
@@ -106,22 +107,39 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
           .organization("dev-org")
           .space("dev-space")
           .build();
-  private final TasBasicAppSetupStepParametersBuilder parameters =
-      TasBasicAppSetupStepParameters.infoBuilder()
+  private TasBGAppSetupStepParametersBuilder parameters =
+      TasBGAppSetupStepParameters.infoBuilder()
           .delegateSelectors(ParameterField.createValueField(List.of(new TaskSelectorYaml("selector-1"))))
-          .existingVersionToKeep(ParameterField.createValueField("3"));
+          .existingVersionToKeep(ParameterField.createValueField("3"))
+          .tempRoutes(ParameterField.createValueField(new ArrayList<>()));
   private final StepElementParameters stepElementParametersFromManifest =
       StepElementParameters.builder()
-          .type("BasicAppSetup")
+          .type("BGAppSetup")
           .timeout(ParameterField.createValueField("10m"))
-          .spec(parameters.instanceCountType(TasInstanceCountType.FROM_MANIFEST).build())
+          .spec(parameters.tasInstanceCountType(TasInstanceCountType.FROM_MANIFEST).build())
           .build();
   private final StepElementParameters stepElementParametersMatchRunningInstances =
       StepElementParameters.builder()
-          .type("BasicAppSetup")
+          .type("BGAppSetup")
           .timeout(ParameterField.createValueField("10m"))
-          .spec(parameters.instanceCountType(TasInstanceCountType.MATCH_RUNNING_INSTANCES).build())
+          .spec(parameters.tasInstanceCountType(TasInstanceCountType.MATCH_RUNNING_INSTANCES).build())
           .build();
+  private final List<String> tempRouteMap = asList("temp-route1", "temp-route2");
+  private final List<String> finalRouteMap = asList("route1", "route2");
+  private final String newApplicationName = "test-tas__INACTIVE";
+  private final String activeApplicationName = "test-tas";
+  private final TasApplicationInfo newApplicationInfo = TasApplicationInfo.builder()
+                                                            .applicationName(newApplicationName)
+                                                            .applicationGuid("1234")
+                                                            .attachedRoutes(tempRouteMap)
+                                                            .build();
+  private final TasApplicationInfo activeApplicationInfo = TasApplicationInfo.builder()
+                                                               .runningCount(3)
+                                                               .applicationName(activeApplicationName)
+                                                               .applicationGuid("4567")
+                                                               .attachedRoutes(List.of("route1"))
+                                                               .build();
+
   private final Ambiance ambiance = getAmbiance();
   @Mock private LogStreamingStepClientFactory logStreamingStepClientFactory;
 
@@ -136,7 +154,8 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
     when(cdStepHelper.getTasInfraConfig(infrastructureOutcome, ambiance)).thenReturn(tasInfraConfig);
     when(tasStepHelper.getPrimaryArtifactConfig(ambiance, artifactOutcome)).thenReturn(tasArtifactConfig);
     when(tasStepHelper.cfCliVersionNGMapper(any())).thenCallRealMethod();
-    when(tasStepHelper.getRouteMaps(any(), any())).thenReturn(new ArrayList<>());
+    when(tasStepHelper.getRouteMaps(any(), any())).thenReturn(finalRouteMap);
+    when(tasStepHelper.finalizeSubstitution(any(), any())).thenCallRealMethod();
   }
 
   @Test
@@ -151,12 +170,12 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
             .errorMessage("error_msg")
             .unitProgressData(UnitProgressData.builder().unitProgresses(unitProgresses).build())
             .build();
-    CfBasicSetupResponseNG cfBasicSetupResponseNG = CfBasicSetupResponseNG.builder()
-                                                        .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-                                                        .unitProgressData(unitProgressData)
-                                                        .build();
-    StepResponse stepResponse = tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(
-        ambiance, stepElementParametersFromManifest, passThroughData, () -> cfBasicSetupResponseNG);
+    CfBlueGreenSetupResponseNG cfBlueGreenSetupResponseNG = CfBlueGreenSetupResponseNG.builder()
+                                                                .commandExecutionStatus(CommandExecutionStatus.FAILURE)
+                                                                .unitProgressData(unitProgressData)
+                                                                .build();
+    StepResponse stepResponse = tasBGAppSetupStep.finalizeExecutionWithSecurityContext(
+        ambiance, stepElementParametersFromManifest, passThroughData, () -> cfBlueGreenSetupResponseNG);
     assertThat(stepResponse.getStatus()).isEqualTo(Status.FAILED);
     assertThat(stepResponse.getUnitProgressList()).isEqualTo(unitProgresses);
     assertThat(stepResponse.getFailureInfo().getErrorMessage()).isEqualTo("error_msg");
@@ -169,13 +188,14 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
     List<UnitProgress> unitProgresses =
         List.of(UnitProgress.newBuilder().setUnitName("Setup Application").setStatus(UnitStatus.FAILURE).build());
     UnitProgressData unitProgressData = UnitProgressData.builder().unitProgresses(unitProgresses).build();
-    CfBasicSetupResponseNG cfBasicSetupResponseNG = CfBasicSetupResponseNG.builder()
-                                                        .commandExecutionStatus(CommandExecutionStatus.FAILURE)
-                                                        .errorMessage("error_msg")
-                                                        .unitProgressData(unitProgressData)
-                                                        .build();
-    StepResponse stepResponse = tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance,
-        stepElementParametersFromManifest, TasExecutionPassThroughData.builder().build(), () -> cfBasicSetupResponseNG);
+    CfBlueGreenSetupResponseNG cfBlueGreenSetupResponseNG = CfBlueGreenSetupResponseNG.builder()
+                                                                .commandExecutionStatus(CommandExecutionStatus.FAILURE)
+                                                                .errorMessage("error_msg")
+                                                                .unitProgressData(unitProgressData)
+                                                                .build();
+    StepResponse stepResponse =
+        tasBGAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
+            TasExecutionPassThroughData.builder().build(), () -> cfBlueGreenSetupResponseNG);
     assertThat(stepResponse.getStatus()).isEqualTo(Status.FAILED);
     assertThat(stepResponse.getUnitProgressList()).isEqualTo(unitProgresses);
     assertThat(stepResponse.getFailureInfo().getErrorMessage()).isEqualTo("error_msg");
@@ -191,59 +211,54 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
              executionSweepingOutputArgumentCaptor.capture(), eq(StepCategory.STEP.name())))
         .thenReturn(null);
     when(tasStepHelper.fetchMaxCountFromManifest(any())).thenReturn(2);
-    TasApplicationInfo newApplicationInfo = TasApplicationInfo.builder()
-                                                .applicationName("test-tas")
-                                                .applicationGuid("1234")
-                                                .attachedRoutes(asList("route1", "route2"))
-                                                .build();
     List<UnitProgress> unitProgresses =
         List.of(UnitProgress.newBuilder().setUnitName("Setup Application").setStatus(UnitStatus.SUCCESS).build());
     TasManifestsPackage tasManifestsPackage =
-        TasManifestsPackage.builder().manifestYml(MANIFEST_YML).variableYmls(List.of(VARS_YML_1)).build();
+        TasManifestsPackage.builder().manifestYml(MANIFEST_YML_WITH_ROUTES).variableYmls(List.of(VARS_YML_1)).build();
     UnitProgressData unitProgressData = UnitProgressData.builder().unitProgresses(unitProgresses).build();
-    CfBasicSetupResponseNG cfBasicSetupResponseNG = CfBasicSetupResponseNG.builder()
-                                                        .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
-                                                        .newApplicationInfo(newApplicationInfo)
-                                                        .unitProgressData(unitProgressData)
-                                                        .build();
+    CfBlueGreenSetupResponseNG cfBlueGreenSetupResponseNG = CfBlueGreenSetupResponseNG.builder()
+                                                                .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
+                                                                .newApplicationInfo(newApplicationInfo)
+                                                                .unitProgressData(unitProgressData)
+                                                                .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
+        tasBGAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
-                .applicationName("test-tas")
+                .applicationName(activeApplicationName)
                 .tasManifestsPackage(tasManifestsPackage)
                 .build(),
-            () -> cfBasicSetupResponseNG);
+            () -> cfBlueGreenSetupResponseNG);
     ExecutionSweepingOutput executionSweepingOutput = executionSweepingOutputArgumentCaptor.getValue();
     assertThat(executionSweepingOutput instanceof TasSetupDataOutcome).isTrue();
     TasSetupDataOutcome tasSetupDataOutcome = (TasSetupDataOutcome) executionSweepingOutput;
     TasSetupDataOutcome tasSetupDataOutcomeReq = TasSetupDataOutcome.builder()
-                                                     .routeMaps(asList("route1", "route2"))
+                                                     .routeMaps(finalRouteMap)
+                                                     .tempRouteMap(tempRouteMap)
                                                      .cfCliVersion(CfCliVersion.V7)
                                                      .timeoutIntervalInMinutes(10)
-                                                     .resizeStrategy(TasResizeStrategyType.DOWNSCALE_OLD_FIRST)
+                                                     .resizeStrategy(TasResizeStrategyType.UPSCALE_NEW_FIRST)
                                                      .maxCount(2)
                                                      .useAppAutoScalar(false)
                                                      .desiredActualFinalCount(2)
-                                                     .newReleaseName("test-tas")
-                                                     .newReleaseName("test-tas")
+                                                     .newReleaseName(newApplicationName)
                                                      .activeApplicationDetails(null)
                                                      .newApplicationDetails(newApplicationInfo)
                                                      .manifestsPackage(tasManifestsPackage)
-                                                     .cfAppNamePrefix("test-tas")
-                                                     .isBlueGreen(false)
+                                                     .cfAppNamePrefix(activeApplicationName)
+                                                     .isBlueGreen(true)
                                                      .build();
     TasSetupVariablesOutcome tasSetupVariablesOutcomeReq = TasSetupVariablesOutcome.builder()
-                                                               .newAppName(newApplicationInfo.getApplicationName())
+                                                               .inActiveAppName(newApplicationInfo.getApplicationName())
                                                                .newAppGuid(newApplicationInfo.getApplicationGuid())
-                                                               .newAppRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .finalRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .oldAppName(null)
+                                                               .newAppRoutes(null)
+                                                               .finalRoutes(finalRouteMap)
+                                                               .activeAppName(null)
                                                                .oldAppGuid(null)
                                                                .oldAppRoutes(null)
-                                                               .inActiveAppName(null)
-                                                               .activeAppName(null)
-                                                               .tempRoutes(null)
+                                                               .newAppName(null)
+                                                               .oldAppName(null)
+                                                               .tempRoutes(tempRouteMap)
                                                                .build();
     assertThat(tasSetupDataOutcome).isEqualTo(tasSetupDataOutcomeReq);
     assertThat(stepResponse.getStepOutcomes())
@@ -266,66 +281,57 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
              executionSweepingOutputArgumentCaptor.capture(), eq(StepCategory.STEP.name())))
         .thenReturn(null);
     when(tasStepHelper.fetchMaxCountFromManifest(any())).thenReturn(2);
-    TasApplicationInfo newApplicationInfo = TasApplicationInfo.builder()
-                                                .applicationName("test-tas")
-                                                .applicationGuid("1234")
-                                                .attachedRoutes(asList("route1", "route2"))
-                                                .build();
-    TasApplicationInfo currentProdInfo = TasApplicationInfo.builder()
-                                             .applicationName("test-tas__0")
-                                             .applicationGuid("4567")
-                                             .attachedRoutes(List.of("route1"))
-                                             .build();
     List<UnitProgress> unitProgresses =
         List.of(UnitProgress.newBuilder().setUnitName("Setup Application").setStatus(UnitStatus.SUCCESS).build());
     TasManifestsPackage tasManifestsPackage =
         TasManifestsPackage.builder().manifestYml(MANIFEST_YML).variableYmls(List.of(VARS_YML_1)).build();
     UnitProgressData unitProgressData = UnitProgressData.builder().unitProgresses(unitProgresses).build();
-    CfBasicSetupResponseNG cfBasicSetupResponseNG = CfBasicSetupResponseNG.builder()
-                                                        .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
-                                                        .newApplicationInfo(newApplicationInfo)
-                                                        .currentProdInfo(currentProdInfo)
-                                                        .unitProgressData(unitProgressData)
-                                                        .build();
+    CfBlueGreenSetupResponseNG cfBlueGreenSetupResponseNG = CfBlueGreenSetupResponseNG.builder()
+                                                                .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
+                                                                .newApplicationInfo(newApplicationInfo)
+                                                                .activeApplicationInfo(activeApplicationInfo)
+                                                                .unitProgressData(unitProgressData)
+                                                                .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
+        tasBGAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
-                .applicationName("test-tas")
+                .applicationName(activeApplicationName)
                 .tasManifestsPackage(tasManifestsPackage)
                 .build(),
-            () -> cfBasicSetupResponseNG);
+            () -> cfBlueGreenSetupResponseNG);
     ExecutionSweepingOutput executionSweepingOutput = executionSweepingOutputArgumentCaptor.getValue();
     assertThat(executionSweepingOutput instanceof TasSetupDataOutcome).isTrue();
     TasSetupDataOutcome tasSetupDataOutcome = (TasSetupDataOutcome) executionSweepingOutput;
     TasSetupDataOutcome tasSetupDataOutcomeReq = TasSetupDataOutcome.builder()
-                                                     .routeMaps(asList("route1", "route2"))
+                                                     .routeMaps(finalRouteMap)
+                                                     .tempRouteMap(tempRouteMap)
                                                      .cfCliVersion(CfCliVersion.V7)
                                                      .timeoutIntervalInMinutes(10)
-                                                     .resizeStrategy(TasResizeStrategyType.DOWNSCALE_OLD_FIRST)
+                                                     .resizeStrategy(TasResizeStrategyType.UPSCALE_NEW_FIRST)
                                                      .maxCount(2)
                                                      .useAppAutoScalar(false)
                                                      .desiredActualFinalCount(2)
-                                                     .newReleaseName("test-tas")
-                                                     .newReleaseName("test-tas")
-                                                     .activeApplicationDetails(currentProdInfo)
+                                                     .newReleaseName(newApplicationName)
+                                                     .activeApplicationDetails(activeApplicationInfo)
                                                      .newApplicationDetails(newApplicationInfo)
                                                      .manifestsPackage(tasManifestsPackage)
-                                                     .cfAppNamePrefix("test-tas")
-                                                     .isBlueGreen(false)
+                                                     .cfAppNamePrefix(activeApplicationName)
+                                                     .isBlueGreen(true)
                                                      .build();
-    TasSetupVariablesOutcome tasSetupVariablesOutcomeReq = TasSetupVariablesOutcome.builder()
-                                                               .newAppName(newApplicationInfo.getApplicationName())
-                                                               .newAppGuid(newApplicationInfo.getApplicationGuid())
-                                                               .newAppRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .finalRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .oldAppName(currentProdInfo.getApplicationName())
-                                                               .oldAppGuid(currentProdInfo.getApplicationGuid())
-                                                               .oldAppRoutes(currentProdInfo.getAttachedRoutes())
-                                                               .inActiveAppName(null)
-                                                               .activeAppName(null)
-                                                               .tempRoutes(null)
-                                                               .build();
+    TasSetupVariablesOutcome tasSetupVariablesOutcomeReq =
+        TasSetupVariablesOutcome.builder()
+            .inActiveAppName(newApplicationInfo.getApplicationName())
+            .newAppGuid(newApplicationInfo.getApplicationGuid())
+            .newAppRoutes(null)
+            .finalRoutes(finalRouteMap)
+            .activeAppName(activeApplicationInfo.getApplicationName())
+            .oldAppGuid(activeApplicationInfo.getApplicationGuid())
+            .oldAppRoutes(activeApplicationInfo.getAttachedRoutes())
+            .newAppName(null)
+            .oldAppName(null)
+            .tempRoutes(tempRouteMap)
+            .build();
     assertThat(tasSetupDataOutcome).isEqualTo(tasSetupDataOutcomeReq);
     assertThat(stepResponse.getStepOutcomes())
         .isEqualTo(List.of(StepResponse.StepOutcome.builder()
@@ -347,59 +353,54 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
              executionSweepingOutputArgumentCaptor.capture(), eq(StepCategory.STEP.name())))
         .thenReturn(null);
     when(tasStepHelper.fetchMaxCountFromManifest(any())).thenReturn(2);
-    TasApplicationInfo newApplicationInfo = TasApplicationInfo.builder()
-                                                .applicationName("test-tas")
-                                                .applicationGuid("1234")
-                                                .attachedRoutes(asList("route1", "route2"))
-                                                .build();
     List<UnitProgress> unitProgresses =
         List.of(UnitProgress.newBuilder().setUnitName("Setup Application").setStatus(UnitStatus.SUCCESS).build());
     TasManifestsPackage tasManifestsPackage =
         TasManifestsPackage.builder().manifestYml(MANIFEST_YML).variableYmls(List.of(VARS_YML_1)).build();
     UnitProgressData unitProgressData = UnitProgressData.builder().unitProgresses(unitProgresses).build();
-    CfBasicSetupResponseNG cfBasicSetupResponseNG = CfBasicSetupResponseNG.builder()
-                                                        .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
-                                                        .newApplicationInfo(newApplicationInfo)
-                                                        .unitProgressData(unitProgressData)
-                                                        .build();
+    CfBlueGreenSetupResponseNG cfBlueGreenSetupResponseNG = CfBlueGreenSetupResponseNG.builder()
+                                                                .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
+                                                                .newApplicationInfo(newApplicationInfo)
+                                                                .unitProgressData(unitProgressData)
+                                                                .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
+        tasBGAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
-                .applicationName("test-tas")
+                .applicationName(activeApplicationName)
                 .tasManifestsPackage(tasManifestsPackage)
                 .build(),
-            () -> cfBasicSetupResponseNG);
+            () -> cfBlueGreenSetupResponseNG);
     ExecutionSweepingOutput executionSweepingOutput = executionSweepingOutputArgumentCaptor.getValue();
     assertThat(executionSweepingOutput instanceof TasSetupDataOutcome).isTrue();
     TasSetupDataOutcome tasSetupDataOutcome = (TasSetupDataOutcome) executionSweepingOutput;
     TasSetupDataOutcome tasSetupDataOutcomeReq = TasSetupDataOutcome.builder()
-                                                     .routeMaps(asList("route1", "route2"))
+                                                     .routeMaps(finalRouteMap)
+                                                     .tempRouteMap(tempRouteMap)
                                                      .cfCliVersion(CfCliVersion.V7)
                                                      .timeoutIntervalInMinutes(10)
-                                                     .resizeStrategy(TasResizeStrategyType.DOWNSCALE_OLD_FIRST)
+                                                     .resizeStrategy(TasResizeStrategyType.UPSCALE_NEW_FIRST)
                                                      .maxCount(0)
                                                      .useAppAutoScalar(false)
                                                      .desiredActualFinalCount(0)
-                                                     .newReleaseName("test-tas")
-                                                     .newReleaseName("test-tas")
+                                                     .newReleaseName(newApplicationName)
                                                      .activeApplicationDetails(null)
                                                      .newApplicationDetails(newApplicationInfo)
                                                      .manifestsPackage(tasManifestsPackage)
-                                                     .cfAppNamePrefix("test-tas")
-                                                     .isBlueGreen(false)
+                                                     .cfAppNamePrefix(activeApplicationName)
+                                                     .isBlueGreen(true)
                                                      .build();
     TasSetupVariablesOutcome tasSetupVariablesOutcomeReq = TasSetupVariablesOutcome.builder()
-                                                               .newAppName(newApplicationInfo.getApplicationName())
+                                                               .inActiveAppName(newApplicationInfo.getApplicationName())
                                                                .newAppGuid(newApplicationInfo.getApplicationGuid())
-                                                               .newAppRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .finalRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .oldAppName(null)
+                                                               .newAppRoutes(null)
+                                                               .finalRoutes(finalRouteMap)
+                                                               .activeAppName(null)
                                                                .oldAppGuid(null)
                                                                .oldAppRoutes(null)
-                                                               .inActiveAppName(null)
-                                                               .activeAppName(null)
-                                                               .tempRoutes(null)
+                                                               .newAppName(null)
+                                                               .oldAppName(null)
+                                                               .tempRoutes(tempRouteMap)
                                                                .build();
     assertThat(tasSetupDataOutcome).isEqualTo(tasSetupDataOutcomeReq);
     assertThat(stepResponse.getStepOutcomes())
@@ -422,67 +423,57 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
              executionSweepingOutputArgumentCaptor.capture(), eq(StepCategory.STEP.name())))
         .thenReturn(null);
     when(tasStepHelper.fetchMaxCountFromManifest(any())).thenReturn(2);
-    TasApplicationInfo newApplicationInfo = TasApplicationInfo.builder()
-                                                .applicationName("test-tas")
-                                                .applicationGuid("1234")
-                                                .attachedRoutes(asList("route1", "route2"))
-                                                .build();
-    TasApplicationInfo currentProdInfo = TasApplicationInfo.builder()
-                                             .runningCount(3)
-                                             .applicationName("test-tas__0")
-                                             .applicationGuid("4567")
-                                             .attachedRoutes(List.of("route1"))
-                                             .build();
     List<UnitProgress> unitProgresses =
         List.of(UnitProgress.newBuilder().setUnitName("Setup Application").setStatus(UnitStatus.SUCCESS).build());
     TasManifestsPackage tasManifestsPackage =
         TasManifestsPackage.builder().manifestYml(MANIFEST_YML).variableYmls(List.of(VARS_YML_1)).build();
     UnitProgressData unitProgressData = UnitProgressData.builder().unitProgresses(unitProgresses).build();
-    CfBasicSetupResponseNG cfBasicSetupResponseNG = CfBasicSetupResponseNG.builder()
-                                                        .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
-                                                        .newApplicationInfo(newApplicationInfo)
-                                                        .currentProdInfo(currentProdInfo)
-                                                        .unitProgressData(unitProgressData)
-                                                        .build();
+    CfBlueGreenSetupResponseNG cfBlueGreenSetupResponseNG = CfBlueGreenSetupResponseNG.builder()
+                                                                .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
+                                                                .newApplicationInfo(newApplicationInfo)
+                                                                .activeApplicationInfo(activeApplicationInfo)
+                                                                .unitProgressData(unitProgressData)
+                                                                .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
+        tasBGAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
-                .applicationName("test-tas")
+                .applicationName(activeApplicationName)
                 .tasManifestsPackage(tasManifestsPackage)
                 .build(),
-            () -> cfBasicSetupResponseNG);
+            () -> cfBlueGreenSetupResponseNG);
     ExecutionSweepingOutput executionSweepingOutput = executionSweepingOutputArgumentCaptor.getValue();
     assertThat(executionSweepingOutput instanceof TasSetupDataOutcome).isTrue();
     TasSetupDataOutcome tasSetupDataOutcome = (TasSetupDataOutcome) executionSweepingOutput;
     TasSetupDataOutcome tasSetupDataOutcomeReq = TasSetupDataOutcome.builder()
-                                                     .routeMaps(asList("route1", "route2"))
+                                                     .routeMaps(finalRouteMap)
+                                                     .tempRouteMap(tempRouteMap)
                                                      .cfCliVersion(CfCliVersion.V7)
                                                      .timeoutIntervalInMinutes(10)
-                                                     .resizeStrategy(TasResizeStrategyType.DOWNSCALE_OLD_FIRST)
+                                                     .resizeStrategy(TasResizeStrategyType.UPSCALE_NEW_FIRST)
                                                      .maxCount(3)
                                                      .useAppAutoScalar(false)
                                                      .desiredActualFinalCount(3)
-                                                     .newReleaseName("test-tas")
-                                                     .newReleaseName("test-tas")
-                                                     .activeApplicationDetails(currentProdInfo)
+                                                     .newReleaseName(newApplicationName)
+                                                     .activeApplicationDetails(activeApplicationInfo)
                                                      .newApplicationDetails(newApplicationInfo)
                                                      .manifestsPackage(tasManifestsPackage)
-                                                     .cfAppNamePrefix("test-tas")
-                                                     .isBlueGreen(false)
+                                                     .cfAppNamePrefix(activeApplicationName)
+                                                     .isBlueGreen(true)
                                                      .build();
-    TasSetupVariablesOutcome tasSetupVariablesOutcomeReq = TasSetupVariablesOutcome.builder()
-                                                               .newAppName(newApplicationInfo.getApplicationName())
-                                                               .newAppGuid(newApplicationInfo.getApplicationGuid())
-                                                               .newAppRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .finalRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .inActiveAppName(null)
-                                                               .activeAppName(null)
-                                                               .tempRoutes(null)
-                                                               .oldAppName(currentProdInfo.getApplicationName())
-                                                               .oldAppGuid(currentProdInfo.getApplicationGuid())
-                                                               .oldAppRoutes(currentProdInfo.getAttachedRoutes())
-                                                               .build();
+    TasSetupVariablesOutcome tasSetupVariablesOutcomeReq =
+        TasSetupVariablesOutcome.builder()
+            .inActiveAppName(newApplicationInfo.getApplicationName())
+            .newAppGuid(newApplicationInfo.getApplicationGuid())
+            .newAppRoutes(null)
+            .finalRoutes(finalRouteMap)
+            .activeAppName(activeApplicationInfo.getApplicationName())
+            .oldAppGuid(activeApplicationInfo.getApplicationGuid())
+            .oldAppRoutes(activeApplicationInfo.getAttachedRoutes())
+            .newAppName(null)
+            .oldAppName(null)
+            .tempRoutes(tempRouteMap)
+            .build();
     assertThat(tasSetupDataOutcome).isEqualTo(tasSetupDataOutcomeReq);
     assertThat(stepResponse.getStepOutcomes())
         .isEqualTo(List.of(StepResponse.StepOutcome.builder()
@@ -500,24 +491,24 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   public void testExecuteTasTask() {
     TasManifestsPackage tasManifestsPackage =
         TasManifestsPackage.builder().manifestYml(MANIFEST_YML).variableYmls(List.of(VARS_YML_1)).build();
+    TasExecutionPassThroughData tasExecutionPassThroughData = TasExecutionPassThroughData.builder()
+                                                                  .tasManifestsPackage(tasManifestsPackage)
+                                                                  .applicationName("tas-test")
+                                                                  .cfCliVersion(CfCliVersionNG.V7)
+                                                                  .build();
     ArgumentCaptor<TaskData> taskDataArgumentCaptor = ArgumentCaptor.forClass(TaskData.class);
     Mockito.mockStatic(StepUtils.class);
     when(StepUtils.prepareCDTaskRequest(any(), taskDataArgumentCaptor.capture(), any(), any(), any(), any(), any()))
         .thenReturn(TaskRequest.newBuilder().build());
     TaskChainResponse taskChainResponse =
-        tasBasicAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest,
-            TasExecutionPassThroughData.builder()
-                .tasManifestsPackage(tasManifestsPackage)
-                .applicationName("tas-test")
-                .cfCliVersion(CfCliVersionNG.V7)
-                .build(),
+        tasBGAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest, tasExecutionPassThroughData,
             true, UnitProgressData.builder().unitProgresses(new ArrayList<>()).build());
     assertThat(taskChainResponse).isNotNull();
 
-    CfBasicSetupRequestNG requestParameters =
-        (CfBasicSetupRequestNG) taskDataArgumentCaptor.getValue().getParameters()[0];
+    CfBlueGreenSetupRequestNG requestParameters =
+        (CfBlueGreenSetupRequestNG) taskDataArgumentCaptor.getValue().getParameters()[0];
 
-    assertThat(taskDataArgumentCaptor.getValue().getTaskType()).isEqualTo(TAS_BASIC_SETUP.toString());
+    assertThat(taskDataArgumentCaptor.getValue().getTaskType()).isEqualTo(TAS_BG_SETUP.toString());
     assertThat(requestParameters.getCfCliVersion()).isEqualTo(CfCliVersion.V7);
     assertThat(requestParameters.getReleaseNamePrefix()).isEqualTo("tas-test");
     assertThat(requestParameters.isUseAppAutoScalar()).isFalse();
@@ -526,7 +517,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
     assertThat(requestParameters.getRouteMaps()).isEqualTo(new ArrayList<>());
     assertThat(requestParameters.isUseCfCLI()).isTrue();
     assertThat(requestParameters.getTasInfraConfig()).isEqualTo(tasInfraConfig);
-    assertThat(requestParameters.getCfCommandTypeNG()).isEqualTo(CfCommandTypeNG.TAS_BASIC_SETUP);
+    assertThat(requestParameters.getCfCommandTypeNG()).isEqualTo(CfCommandTypeNG.TAS_BG_SETUP);
     assertThat(requestParameters.getCommandName()).isEqualTo(CfCommandUnitConstants.PcfSetup);
     assertThat(requestParameters.getAccountId()).isEqualTo("account");
     assertThat(requestParameters.getTimeoutIntervalInMin()).isEqualTo(10);
@@ -541,24 +532,24 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                   .variableYmls(List.of(VARS_YML_1))
                                                   .autoscalarManifestYml(AUTOSCALAR_YML)
                                                   .build();
+    TasExecutionPassThroughData tasExecutionPassThroughData = TasExecutionPassThroughData.builder()
+                                                                  .tasManifestsPackage(tasManifestsPackage)
+                                                                  .applicationName("tas-test")
+                                                                  .cfCliVersion(CfCliVersionNG.V7)
+                                                                  .build();
     ArgumentCaptor<TaskData> taskDataArgumentCaptor = ArgumentCaptor.forClass(TaskData.class);
     Mockito.mockStatic(StepUtils.class);
     when(StepUtils.prepareCDTaskRequest(any(), taskDataArgumentCaptor.capture(), any(), any(), any(), any(), any()))
         .thenReturn(TaskRequest.newBuilder().build());
     TaskChainResponse taskChainResponse =
-        tasBasicAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest,
-            TasExecutionPassThroughData.builder()
-                .tasManifestsPackage(tasManifestsPackage)
-                .applicationName("tas-test")
-                .cfCliVersion(CfCliVersionNG.V7)
-                .build(),
+        tasBGAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest, tasExecutionPassThroughData,
             true, UnitProgressData.builder().unitProgresses(new ArrayList<>()).build());
     assertThat(taskChainResponse).isNotNull();
 
-    CfBasicSetupRequestNG requestParameters =
-        (CfBasicSetupRequestNG) taskDataArgumentCaptor.getValue().getParameters()[0];
+    CfBlueGreenSetupRequestNG requestParameters =
+        (CfBlueGreenSetupRequestNG) taskDataArgumentCaptor.getValue().getParameters()[0];
 
-    assertThat(taskDataArgumentCaptor.getValue().getTaskType()).isEqualTo(TAS_BASIC_SETUP.toString());
+    assertThat(taskDataArgumentCaptor.getValue().getTaskType()).isEqualTo(TAS_BG_SETUP.toString());
     assertThat(requestParameters.getCfCliVersion()).isEqualTo(CfCliVersion.V7);
     assertThat(requestParameters.getReleaseNamePrefix()).isEqualTo("tas-test");
     assertThat(requestParameters.isUseAppAutoScalar()).isTrue();
@@ -567,7 +558,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
     assertThat(requestParameters.getRouteMaps()).isEqualTo(new ArrayList<>());
     assertThat(requestParameters.isUseCfCLI()).isTrue();
     assertThat(requestParameters.getTasInfraConfig()).isEqualTo(tasInfraConfig);
-    assertThat(requestParameters.getCfCommandTypeNG()).isEqualTo(CfCommandTypeNG.TAS_BASIC_SETUP);
+    assertThat(requestParameters.getCfCommandTypeNG()).isEqualTo(CfCommandTypeNG.TAS_BG_SETUP);
     assertThat(requestParameters.getCommandName()).isEqualTo(CfCommandUnitConstants.PcfSetup);
     assertThat(requestParameters.getAccountId()).isEqualTo("account");
     assertThat(requestParameters.getTimeoutIntervalInMin()).isEqualTo(10);
@@ -578,7 +569,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Category(UnitTests.class)
   public void testValidateResourcesFFEnabled() {
     doReturn(true).when(cdFeatureFlagHelper).isEnabled(anyString(), eq(FeatureName.CDS_TAS_NG));
-    tasBasicAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest);
+    tasBGAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest);
   }
 
   @Test
@@ -586,7 +577,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Category(UnitTests.class)
   public void testValidateResourcesFFDisabled() {
     doReturn(false).when(cdFeatureFlagHelper).isEnabled(anyString(), eq(FeatureName.CDS_TAS_NG));
-    assertThatThrownBy(() -> tasBasicAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest))
+    assertThatThrownBy(() -> tasBGAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest))
         .hasMessage("CDS_TAS_NG FF is not enabled for this account. Please contact harness customer care.");
   }
 
@@ -606,6 +597,6 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Owner(developers = RISHABH)
   @Category(UnitTests.class)
   public void testGetStepParametersClass() {
-    assertThat(tasBasicAppSetupStep.getStepParametersClass()).isEqualTo(StepElementParameters.class);
+    assertThat(tasBGAppSetupStep.getStepParametersClass()).isEqualTo(StepElementParameters.class);
   }
 }

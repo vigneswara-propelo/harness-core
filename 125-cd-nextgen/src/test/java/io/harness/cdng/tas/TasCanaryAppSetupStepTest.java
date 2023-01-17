@@ -37,7 +37,7 @@ import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.infra.beans.TanzuApplicationServiceInfrastructureOutcome;
 import io.harness.cdng.k8s.beans.StepExceptionPassThroughData;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
-import io.harness.cdng.tas.TasBasicAppSetupStepParameters.TasBasicAppSetupStepParametersBuilder;
+import io.harness.cdng.tas.TasCanaryAppSetupStepParameters.TasCanaryAppSetupStepParametersBuilder;
 import io.harness.cdng.tas.outcome.TasSetupDataOutcome;
 import io.harness.cdng.tas.outcome.TasSetupVariablesOutcome;
 import io.harness.delegate.beans.TaskData;
@@ -89,7 +89,7 @@ import org.mockito.Mockito;
 
 @OwnedBy(HarnessTeam.CDP)
 @Slf4j
-public class TasBasicAppSetupStepTest extends CDNGTestBase {
+public class TasCanaryAppSetupStepTest extends CDNGTestBase {
   @Mock private CDStepHelper cdStepHelper;
   @Mock private StepHelper stepHelper;
   @Mock private CDFeatureFlagHelper cdFeatureFlagHelper;
@@ -98,7 +98,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Mock private TasArtifactConfig tasArtifactConfig;
   @Mock private ArtifactOutcome artifactOutcome;
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
-  @InjectMocks private TasBasicAppSetupStep tasBasicAppSetupStep;
+  @InjectMocks private TasCanaryAppSetupStep tasCanaryAppSetupStep;
 
   private final TanzuApplicationServiceInfrastructureOutcome infrastructureOutcome =
       TanzuApplicationServiceInfrastructureOutcome.builder()
@@ -106,21 +106,25 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
           .organization("dev-org")
           .space("dev-space")
           .build();
-  private final TasBasicAppSetupStepParametersBuilder parameters =
-      TasBasicAppSetupStepParameters.infoBuilder()
+  private TasCanaryAppSetupStepParametersBuilder parameters =
+      TasCanaryAppSetupStepParameters.infoBuilder()
           .delegateSelectors(ParameterField.createValueField(List.of(new TaskSelectorYaml("selector-1"))))
           .existingVersionToKeep(ParameterField.createValueField("3"));
   private final StepElementParameters stepElementParametersFromManifest =
       StepElementParameters.builder()
-          .type("BasicAppSetup")
+          .type("CanaryAppSetup")
           .timeout(ParameterField.createValueField("10m"))
-          .spec(parameters.instanceCountType(TasInstanceCountType.FROM_MANIFEST).build())
+          .spec(parameters.tasInstanceCountType(TasInstanceCountType.FROM_MANIFEST)
+                    .resizeStrategy(TasResizeStrategyType.UPSCALE_NEW_FIRST)
+                    .build())
           .build();
   private final StepElementParameters stepElementParametersMatchRunningInstances =
       StepElementParameters.builder()
-          .type("BasicAppSetup")
+          .type("CanaryAppSetup")
           .timeout(ParameterField.createValueField("10m"))
-          .spec(parameters.instanceCountType(TasInstanceCountType.MATCH_RUNNING_INSTANCES).build())
+          .spec(parameters.tasInstanceCountType(TasInstanceCountType.MATCH_RUNNING_INSTANCES)
+                    .resizeStrategy(TasResizeStrategyType.DOWNSCALE_OLD_FIRST)
+                    .build())
           .build();
   private final Ambiance ambiance = getAmbiance();
   @Mock private LogStreamingStepClientFactory logStreamingStepClientFactory;
@@ -155,7 +159,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                         .commandExecutionStatus(CommandExecutionStatus.FAILURE)
                                                         .unitProgressData(unitProgressData)
                                                         .build();
-    StepResponse stepResponse = tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(
+    StepResponse stepResponse = tasCanaryAppSetupStep.finalizeExecutionWithSecurityContext(
         ambiance, stepElementParametersFromManifest, passThroughData, () -> cfBasicSetupResponseNG);
     assertThat(stepResponse.getStatus()).isEqualTo(Status.FAILED);
     assertThat(stepResponse.getUnitProgressList()).isEqualTo(unitProgresses);
@@ -174,7 +178,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                         .errorMessage("error_msg")
                                                         .unitProgressData(unitProgressData)
                                                         .build();
-    StepResponse stepResponse = tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance,
+    StepResponse stepResponse = tasCanaryAppSetupStep.finalizeExecutionWithSecurityContext(ambiance,
         stepElementParametersFromManifest, TasExecutionPassThroughData.builder().build(), () -> cfBasicSetupResponseNG);
     assertThat(stepResponse.getStatus()).isEqualTo(Status.FAILED);
     assertThat(stepResponse.getUnitProgressList()).isEqualTo(unitProgresses);
@@ -207,7 +211,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                         .unitProgressData(unitProgressData)
                                                         .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
+        tasCanaryAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
                 .applicationName("test-tas")
@@ -221,7 +225,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                      .routeMaps(asList("route1", "route2"))
                                                      .cfCliVersion(CfCliVersion.V7)
                                                      .timeoutIntervalInMinutes(10)
-                                                     .resizeStrategy(TasResizeStrategyType.DOWNSCALE_OLD_FIRST)
+                                                     .resizeStrategy(TasResizeStrategyType.UPSCALE_NEW_FIRST)
                                                      .maxCount(2)
                                                      .useAppAutoScalar(false)
                                                      .desiredActualFinalCount(2)
@@ -288,7 +292,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                         .unitProgressData(unitProgressData)
                                                         .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
+        tasCanaryAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersFromManifest,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
                 .applicationName("test-tas")
@@ -302,7 +306,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                      .routeMaps(asList("route1", "route2"))
                                                      .cfCliVersion(CfCliVersion.V7)
                                                      .timeoutIntervalInMinutes(10)
-                                                     .resizeStrategy(TasResizeStrategyType.DOWNSCALE_OLD_FIRST)
+                                                     .resizeStrategy(TasResizeStrategyType.UPSCALE_NEW_FIRST)
                                                      .maxCount(2)
                                                      .useAppAutoScalar(false)
                                                      .desiredActualFinalCount(2)
@@ -363,7 +367,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                         .unitProgressData(unitProgressData)
                                                         .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
+        tasCanaryAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
                 .applicationName("test-tas")
@@ -445,7 +449,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                         .unitProgressData(unitProgressData)
                                                         .build();
     StepResponse stepResponse =
-        tasBasicAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
+        tasCanaryAppSetupStep.finalizeExecutionWithSecurityContext(ambiance, stepElementParametersMatchRunningInstances,
             TasExecutionPassThroughData.builder()
                 .cfCliVersion(CfCliVersionNG.V7)
                 .applicationName("test-tas")
@@ -476,12 +480,12 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
                                                                .newAppGuid(newApplicationInfo.getApplicationGuid())
                                                                .newAppRoutes(newApplicationInfo.getAttachedRoutes())
                                                                .finalRoutes(newApplicationInfo.getAttachedRoutes())
-                                                               .inActiveAppName(null)
-                                                               .activeAppName(null)
-                                                               .tempRoutes(null)
                                                                .oldAppName(currentProdInfo.getApplicationName())
                                                                .oldAppGuid(currentProdInfo.getApplicationGuid())
                                                                .oldAppRoutes(currentProdInfo.getAttachedRoutes())
+                                                               .inActiveAppName(null)
+                                                               .activeAppName(null)
+                                                               .tempRoutes(null)
                                                                .build();
     assertThat(tasSetupDataOutcome).isEqualTo(tasSetupDataOutcomeReq);
     assertThat(stepResponse.getStepOutcomes())
@@ -505,7 +509,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
     when(StepUtils.prepareCDTaskRequest(any(), taskDataArgumentCaptor.capture(), any(), any(), any(), any(), any()))
         .thenReturn(TaskRequest.newBuilder().build());
     TaskChainResponse taskChainResponse =
-        tasBasicAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest,
+        tasCanaryAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest,
             TasExecutionPassThroughData.builder()
                 .tasManifestsPackage(tasManifestsPackage)
                 .applicationName("tas-test")
@@ -546,7 +550,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
     when(StepUtils.prepareCDTaskRequest(any(), taskDataArgumentCaptor.capture(), any(), any(), any(), any(), any()))
         .thenReturn(TaskRequest.newBuilder().build());
     TaskChainResponse taskChainResponse =
-        tasBasicAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest,
+        tasCanaryAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest,
             TasExecutionPassThroughData.builder()
                 .tasManifestsPackage(tasManifestsPackage)
                 .applicationName("tas-test")
@@ -578,7 +582,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Category(UnitTests.class)
   public void testValidateResourcesFFEnabled() {
     doReturn(true).when(cdFeatureFlagHelper).isEnabled(anyString(), eq(FeatureName.CDS_TAS_NG));
-    tasBasicAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest);
+    tasCanaryAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest);
   }
 
   @Test
@@ -586,7 +590,7 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Category(UnitTests.class)
   public void testValidateResourcesFFDisabled() {
     doReturn(false).when(cdFeatureFlagHelper).isEnabled(anyString(), eq(FeatureName.CDS_TAS_NG));
-    assertThatThrownBy(() -> tasBasicAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest))
+    assertThatThrownBy(() -> tasCanaryAppSetupStep.validateResources(getAmbiance(), stepElementParametersFromManifest))
         .hasMessage("CDS_TAS_NG FF is not enabled for this account. Please contact harness customer care.");
   }
 
@@ -606,6 +610,6 @@ public class TasBasicAppSetupStepTest extends CDNGTestBase {
   @Owner(developers = RISHABH)
   @Category(UnitTests.class)
   public void testGetStepParametersClass() {
-    assertThat(tasBasicAppSetupStep.getStepParametersClass()).isEqualTo(StepElementParameters.class);
+    assertThat(tasCanaryAppSetupStep.getStepParametersClass()).isEqualTo(StepElementParameters.class);
   }
 }
