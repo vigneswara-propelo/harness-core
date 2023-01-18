@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.elastigroup;
+package io.harness.cdng.elastigroup.deploy;
 
 import static io.harness.rule.OwnerRule.FILIP;
 import static io.harness.spotinst.model.SpotInstConstants.DOWN_SCALE_COMMAND_UNIT;
@@ -26,9 +26,7 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.cdng.elastigroup.deploy.ElastigroupDeployStep;
-import io.harness.cdng.elastigroup.deploy.ElastigroupDeployStepHelper;
-import io.harness.cdng.elastigroup.deploy.ElastigroupDeployStepParameters;
+import io.harness.cdng.elastigroup.ElastigroupStepCommonHelper;
 import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.task.spot.elastigroup.deploy.ElastigroupDeployTaskResponse;
 import io.harness.exception.InvalidArgumentsException;
