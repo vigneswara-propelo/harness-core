@@ -5,15 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.redisConsumer;
+package io.harness.pms.event.overviewLandingPage;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class DebeziumConsumerConfig {
-  @Builder.Default int threads = 1;
-  String topic;
-  int batchSize;
+public class DebeziumConsumersConfig {
+  DebeziumConsumerConfig planExecutionsSummaryStreaming;
+  DebeziumConsumerConfig planExecutionsSummarySnapshot;
 }

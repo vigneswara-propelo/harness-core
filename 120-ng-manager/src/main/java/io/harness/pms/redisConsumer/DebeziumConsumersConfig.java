@@ -12,8 +12,6 @@ import lombok.Data;
 
 @Data
 @Builder
-public class DebeziumConsumerConfig {
-  @Builder.Default int threads = 1;
-  String topic;
-  int batchSize;
+public class DebeziumConsumersConfig {
+  DebeziumConsumerConfig planExecutionsSummaryStreaming;
 }
