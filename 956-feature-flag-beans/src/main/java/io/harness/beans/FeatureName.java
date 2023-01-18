@@ -583,7 +583,8 @@ public enum FeatureName {
       "Skip adding the default values file as an override if it doesn't contain any expressions in case of helm chart manifest for CG",
       HarnessTeam.CDP),
   PIE_PIPELINE_SETTINGS_ENFORCEMENT_LIMIT(
-      "To enable pipeline-settings and limits in Project Default Settings in UI", HarnessTeam.PIPELINE);
+      "To enable pipeline-settings and limits in Project Default Settings in UI", HarnessTeam.PIPELINE),
+  ENABLE_K8_BUILDS("FF for enabling kubernetes builds as an option", HarnessTeam.CI);
 
   @Deprecated
   FeatureName() {
