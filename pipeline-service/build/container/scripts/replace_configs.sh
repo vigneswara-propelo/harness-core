@@ -154,6 +154,22 @@ if [[ "" != "$STO_MANAGER_SERVICE_SECRET" ]]; then
   export STO_MANAGER_SERVICE_SECRET; yq -i '.yamlSchemaClientConfig.yamlSchemaHttpClientMap.sto.secret=env(STO_MANAGER_SERVICE_SECRET)' $CONFIG_FILE
 fi
 
+if [[ "" != "$IACM_MANAGER_BASE_URL" ]]; then
+  export $IACM_MANAGER_BASE_URL; yq -i '.yamlSchemaClientConfig.yamlSchemaHttpClientMap.iacm.serviceHttpClientConfig.baseUrl=env($IACM_MANAGER_BASE_URL)' $CONFIG_FILE
+fi
+
+if [[ "" != "$IACM_MANAGER_SERVICE_CONNECT_TIMEOUT_IN_SECONDS" ]]; then
+  export $IACM_MANAGER_SERVICE_CONNECT_TIMEOUT_IN_SECONDS; yq -i '.yamlSchemaClientConfig.yamlSchemaHttpClientMap.iacm.serviceHttpClientConfig.connectTimeOutSeconds=env($IACM_MANAGER_SERVICE_CONNECT_TIMEOUT_IN_SECONDS)' $CONFIG_FILE
+fi
+
+if [[ "" != "$IACM_MANAGER_SERVICE_READ_TIMEOUT_IN_SECONDS" ]]; then
+  export $IACM_MANAGER_SERVICE_READ_TIMEOUT_IN_SECONDS; yq -i '.yamlSchemaClientConfig.yamlSchemaHttpClientMap.iacm.serviceHttpClientConfig.readTimeOutSeconds=env($IACM_MANAGER_SERVICE_READ_TIMEOUT_IN_SECONDS)' $CONFIG_FILE
+fi
+
+if [[ "" != "$IACM_MANAGER_SERVICE_SECRET" ]]; then
+  export $IACM_MANAGER_SERVICE_SECRET; yq -i '.yamlSchemaClientConfig.yamlSchemaHttpClientMap.iacm.secret=env($IACM_MANAGER_SERVICE_SECRET)' $CONFIG_FILE
+fi
+
 if [[ "" != "$NG_MANAGER_BASE_URL" ]]; then
   export NG_MANAGER_BASE_URL; yq -i '.yamlSchemaClientConfig.yamlSchemaHttpClientMap.cd.serviceHttpClientConfig.baseUrl=env(NG_MANAGER_BASE_URL)' $CONFIG_FILE
 fi
@@ -216,6 +232,14 @@ fi
 
 if [[ "" != "$STO_MANAGER_AUTHORITY" ]]; then
   export STO_MANAGER_AUTHORITY; yq -i '.grpcClientConfigs.sto.authority=env(STO_MANAGER_AUTHORITY)' $CONFIG_FILE
+fi
+
+if [[ "" != "$IACM_MANAGER_TARGET" ]]; then
+  export $IACM_MANAGER_TARGET; yq -i '.grpcClientConfigs.iacm.target=env($IACM_MANAGER_TARGET)' $CONFIG_FILE
+fi
+
+if [[ "" != "$IACM_MANAGER_AUTHORITY" ]]; then
+  export $IACM_MANAGER_AUTHORITY; yq -i '.grpcClientConfigs.iacm.authority=env($IACM_MANAGER_AUTHORITY)' $CONFIG_FILE
 fi
 
 if [[ "" != "$NG_MANAGER_GITSYNC_TARGET" ]]; then
