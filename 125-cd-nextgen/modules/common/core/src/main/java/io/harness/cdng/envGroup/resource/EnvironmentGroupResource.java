@@ -7,6 +7,7 @@
 
 package io.harness.cdng.envGroup.resource;
 
+import static io.harness.NGCommonEntityConstants.FORCE_DELETE_MESSAGE;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.utils.PageUtils.getNGPageResponse;
 
@@ -281,13 +282,15 @@ public class EnvironmentGroupResource {
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
-      @BeanParam GitEntityDeleteInfoDTO entityDeleteInfo) {
+      @BeanParam GitEntityDeleteInfoDTO entityDeleteInfo,
+      @Parameter(description = FORCE_DELETE_MESSAGE) @QueryParam(NGCommonEntityConstants.FORCE_DELETE) @DefaultValue(
+          "false") boolean forceDelete) {
     checkFForThrow(accountId);
 
     // TODO: set up usages of env group as well as env linked with it
     log.info(String.format("Delete Environment group Api %s", envGroupId));
-    EnvironmentGroupEntity deletedEntity = environmentGroupService.delete(
-        accountId, orgIdentifier, projectIdentifier, envGroupId, isNumeric(ifMatch) ? parseLong(ifMatch) : null);
+    EnvironmentGroupEntity deletedEntity = environmentGroupService.delete(accountId, orgIdentifier, projectIdentifier,
+        envGroupId, isNumeric(ifMatch) ? parseLong(ifMatch) : null, forceDelete);
     return ResponseDTO.newResponse(EnvironmentGroupMapper.toDeleteResponseWrapper(deletedEntity));
   }
 

@@ -183,9 +183,9 @@ public class EnvironmentGroupResourceTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testDelete() {
     EnvironmentGroupEntity entity = getEntity();
-    doReturn(entity).when(environmentGroupService).delete(ACC_ID, ORG_ID, PRO_ID, ENV_GROUP_ID, null);
+    doReturn(entity).when(environmentGroupService).delete(ACC_ID, ORG_ID, PRO_ID, ENV_GROUP_ID, null, false);
     ResponseDTO<EnvironmentGroupDeleteResponse> deleteDTO =
-        environmentGroupResource.delete(null, ENV_GROUP_ID, ACC_ID, ORG_ID, PRO_ID, null);
+        environmentGroupResource.delete(null, ENV_GROUP_ID, ACC_ID, ORG_ID, PRO_ID, null, false);
     assertThat(deleteDTO).isNotNull();
     assertThat(deleteDTO.getData().getDeleted()).isEqualTo(entity.getDeleted());
     assertThat(deleteDTO.getData().getIdentifier()).isEqualTo(ENV_GROUP_ID);
