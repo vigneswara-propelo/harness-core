@@ -5,12 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.jira.deserializer;
+package io.harness.jira;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.jira.JiraFieldAllowedValueNG;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -19,18 +18,18 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 
 @OwnedBy(CDC)
-public class JiraFieldAllowedValueDeserializer extends StdDeserializer<JiraFieldAllowedValueNG> {
-  public JiraFieldAllowedValueDeserializer() {
+public class JiraIssueCreateMetadataDeserializer extends StdDeserializer<JiraIssueCreateMetadataNG> {
+  public JiraIssueCreateMetadataDeserializer() {
     this(null);
   }
 
-  public JiraFieldAllowedValueDeserializer(Class<?> vc) {
+  public JiraIssueCreateMetadataDeserializer(Class<?> vc) {
     super(vc);
   }
 
   @Override
-  public JiraFieldAllowedValueNG deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+  public JiraIssueCreateMetadataNG deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
     JsonNode node = jp.getCodec().readTree(jp);
-    return new JiraFieldAllowedValueNG(node);
+    return new JiraIssueCreateMetadataNG(node);
   }
 }
