@@ -516,6 +516,7 @@ grpcNegotiationType: ${GRPC_NEGOTIATION_TYPE:-TLS}
 
 lockNotifyResponseCleanup: ${LOCK_NOTIFY_RESPONSE_CLEANUP:-true}
 
+shouldUseEventsFrameworkSnapshotDebezium: ${SHOULD_USE_EVENTS_FRAMEWORK_SNAPSHOT_DEBEZIUM:-false}
 # Events framework configuration for debezium consumer in case of snapshotting
 eventsFrameworkSnapshotDebezium:
   redis:

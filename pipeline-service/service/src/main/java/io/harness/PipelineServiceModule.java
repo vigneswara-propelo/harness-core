@@ -348,7 +348,8 @@ public class PipelineServiceModule extends AbstractModule {
         configuration.getManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
     install(new PipelineServiceEventsFrameworkModule(configuration.getEventsFrameworkConfiguration(),
         configuration.getPipelineRedisEventsConfig(), configuration.getDebeziumConsumersConfigs(),
-        configuration.getEventsFrameworkSnapshotConfiguration()));
+        configuration.getEventsFrameworkSnapshotConfiguration(),
+        configuration.isShouldUseEventsFrameworkSnapshotDebezium()));
     install(new EntitySetupUsageClientModule(this.configuration.getNgManagerServiceHttpClientConfig(),
         this.configuration.getManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
     install(new LogStreamingModule(configuration.getLogStreamingServiceConfig().getBaseUrl()));
