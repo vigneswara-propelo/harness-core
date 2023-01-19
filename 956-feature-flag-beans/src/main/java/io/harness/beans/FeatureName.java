@@ -586,7 +586,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   PIE_PIPELINE_SETTINGS_ENFORCEMENT_LIMIT(
       "To enable pipeline-settings and limits in Project Default Settings in UI", HarnessTeam.PIPELINE),
-  ENABLE_K8_BUILDS("FF for enabling kubernetes builds as an option", HarnessTeam.CI);
+  ENABLE_K8_BUILDS("FF for enabling kubernetes builds as an option", HarnessTeam.CI),
+  PL_USER_DELETION_V2("Modularising user deletion flows separately for CG and NG ", HarnessTeam.PL);
 
   @Deprecated
   FeatureName() {
