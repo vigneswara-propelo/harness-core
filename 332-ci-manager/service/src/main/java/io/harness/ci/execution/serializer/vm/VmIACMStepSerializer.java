@@ -51,8 +51,8 @@ public class VmIACMStepSerializer {
     Stack stackInfo = getIACMStackInfo(ngAccess.getOrgIdentifier(), ngAccess.getProjectIdentifier(),
         ngAccess.getAccountIdentifier(), stepInfo.getStackID());
 
-    Map<String, String> envVars = getStackVariables(ngAccess.getOrgIdentifier(), ngAccess.getProjectIdentifier(),
-        ngAccess.getAccountIdentifier(), stepInfo.getStackID(), stackInfo);
+    Map<String, String> envVars = getStackVariables(ambiance, ngAccess.getOrgIdentifier(),
+        ngAccess.getProjectIdentifier(), ngAccess.getAccountIdentifier(), stepInfo.getStackID(), stackInfo);
 
     String image = ciExecutionConfigService.getPluginVersionForVM(
         stepInfo.getNonYamlInfo().getStepInfoType(), ngAccess.getAccountIdentifier());
@@ -80,7 +80,7 @@ public class VmIACMStepSerializer {
   }
 
   private Map<String, String> getStackVariables(
-      String org, String projectId, String accountId, String stackID, Stack stackInfo) {
+      Ambiance ambiance, String org, String projectId, String accountId, String stackID, Stack stackInfo) {
     String pluginEnvPrefix = "PLUGIN_";
     String tfEnvPrefix = "TF_";
 
@@ -116,6 +116,7 @@ public class VmIACMStepSerializer {
     // Plugin system env variables
     env.put("ROOT_DIR", stackInfo.getRepository_path());
     env.put("TF_VERSION", stackInfo.getProvisioner_version());
+    env.put("ENDPOINT_VARIABLES", getTerraformEndpointsInfo(ambiance, stackID));
 
     Map<String, String> envVars = prepareEnvsMaps(env, pluginEnvPrefix);
     envVars.putAll(prepareEnvsMaps(envSecrets, "ENV_SECRETS_"));
@@ -151,5 +152,9 @@ public class VmIACMStepSerializer {
       }
     }
     return envVars;
+  }
+
+  private String getTerraformEndpointsInfo(Ambiance ambiance, String stackId) {
+    return iacmServiceUtils.GetTerraformEndpointsData(ambiance, stackId);
   }
 }

@@ -124,7 +124,7 @@ public class VmIACMStepSerializerTest extends CategoryTest {
 
     VmPluginStep vmPluginStep =
         vmIACMPluginCompatibleStepSerializer.serialize(ambiance, stepInfo, null, "foobar", null);
-    assertThat(vmPluginStep.getEnvVariables().size()).isEqualTo(6);
+    assertThat(vmPluginStep.getEnvVariables().size()).isEqualTo(7);
     assertThat(vmPluginStep.getEnvVariables().get("ENV_SECRETS_keytest1")).contains("${ngSecretManager.obtain");
     assertThat(vmPluginStep.getEnvVariables().get("PLUGIN_keytest2")).isEqualTo("keyValue2");
     assertThat(vmPluginStep.getEnvVariables().get("TFVARS_SECRETS_keytest3")).contains("${ngSecretManager.obtain");
@@ -157,7 +157,7 @@ public class VmIACMStepSerializerTest extends CategoryTest {
 
     VmPluginStep vmPluginStep =
         vmIACMPluginCompatibleStepSerializer.serialize(ambiance, stepInfo, null, "foobar", null);
-    assertThat(vmPluginStep.getEnvVariables().size()).isEqualTo(2);
+    assertThat(vmPluginStep.getEnvVariables().size()).isEqualTo(3);
     assertThat(vmPluginStep.getEnvVariables().get("PLUGIN_ROOT_DIR")).isEqualTo("root");
     assertThat(vmPluginStep.getEnvVariables().get("PLUGIN_TF_VERSION")).isEqualTo("1.2.3");
     assertThat(vmPluginStep.getConnector().getConnectorType()).isEqualTo(ConnectorType.AWS);

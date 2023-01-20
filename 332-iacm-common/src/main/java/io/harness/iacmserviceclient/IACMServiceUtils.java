@@ -12,10 +12,15 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.entities.IACMServiceConfig;
 import io.harness.beans.entities.Stack;
 import io.harness.beans.entities.StackVariables;
+import io.harness.beans.entities.TerraformEndpointsData;
 import io.harness.exception.GeneralException;
+import io.harness.ng.core.NGAccess;
+import io.harness.pms.contracts.ambiance.Ambiance;
+import io.harness.pms.execution.utils.AmbianceUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
@@ -158,5 +163,30 @@ public class IACMServiceUtils {
       log.info("Could not retrieve IACM variables from the IACM service.");
     }
     return vars;
+  }
+
+  public String GetTerraformEndpointsData(Ambiance ambiance, String stackId) {
+    NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
+    String executionId = ambiance.getPlanExecutionId();
+    TerraformEndpointsData tfEndpointsData =
+        TerraformEndpointsData.builder()
+            .org_id(ngAccess.getOrgIdentifier())
+            .account_id(ngAccess.getAccountIdentifier())
+            .base_url(iacmServiceConfig.getBaseUrl())
+            .execution_id(executionId)
+            .project_id(ngAccess.getProjectIdentifier())
+            .stack_id(stackId)
+            .stage_execution_id(ambiance.getStageExecutionId())
+            //            .token(getIACMServiceToken(ngAccess.getAccountIdentifier())) //TODO: When we have a token
+            //            generation in place, use this one
+            .token("TODO TOKEN")
+            .build();
+    ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    try {
+      return ow.writeValueAsString(tfEndpointsData);
+    } catch (Exception ex) {
+      throw new GeneralException(
+          "Could not parse Endpoint information. Please contact Harness Support for more information");
+    }
   }
 }
