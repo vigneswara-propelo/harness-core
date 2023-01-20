@@ -5,24 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.azureartifacts;
+package io.harness.delegate.beans.connector.azureartifacts.outcome;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.connector.DelegateSelectable;
 import io.harness.connector.ManagerExecutable;
-import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.ConnectorConfigOutcomeDTO;
 import io.harness.delegate.beans.connector.ConnectorType;
-import io.harness.delegate.beans.connector.azureartifacts.outcome.AzureArtifactsAuthenticationOutcomeDTO;
-import io.harness.delegate.beans.connector.azureartifacts.outcome.AzureArtifactsConnectorOutcomeDTO;
-import io.harness.delegate.beans.connector.azureartifacts.outcome.AzureArtifactsCredentialsOutcomeDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsTokenDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModel;
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -42,29 +37,17 @@ import org.hibernate.validator.constraints.URL;
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ApiModel("AzureArtifactsConnector")
 @OwnedBy(HarnessTeam.CDC)
-@Schema(name = "AzureArtifactsConnector", description = "This contains details of AzureArtifacts connector")
-public class AzureArtifactsConnectorDTO extends ConnectorConfigDTO implements DelegateSelectable, ManagerExecutable {
-  /**
-   * Azure Artifacts Url
-   */
-  @URL @NotBlank @NotNull @Schema(description = "HTTP URL for Azure Artifacts Registry") String azureArtifactsUrl;
-
-  /**
-   * Authentication Details
-   */
-  @Valid
-  @NotNull
-  @Schema(description = "Details for authentication mechanism for AzureArtifacts connector")
-  AzureArtifactsAuthenticationDTO auth;
-
-  @Schema(description = "Selected Connectivity Modes") Set<String> delegateSelectors;
+public class AzureArtifactsConnectorOutcomeDTO
+    extends ConnectorConfigOutcomeDTO implements DelegateSelectable, ManagerExecutable {
+  @URL @NotBlank @NotNull String azureArtifactsUrl;
+  @Valid @NotNull AzureArtifactsAuthenticationOutcomeDTO auth;
+  Set<String> delegateSelectors;
 
   Boolean executeOnDelegate = true;
 
   @Builder
-  public AzureArtifactsConnectorDTO(String azureArtifactsUrl, AzureArtifactsAuthenticationDTO auth,
+  public AzureArtifactsConnectorOutcomeDTO(String azureArtifactsUrl, AzureArtifactsAuthenticationOutcomeDTO auth,
       Set<String> delegateSelectors, Boolean executeOnDelegate) {
     this.azureArtifactsUrl = azureArtifactsUrl;
     this.auth = auth;
@@ -76,7 +59,7 @@ public class AzureArtifactsConnectorDTO extends ConnectorConfigDTO implements De
   public List<DecryptableEntity> getDecryptableEntities() {
     List<DecryptableEntity> decryptableEntities = new ArrayList<>();
 
-    AzureArtifactsTokenDTO httpCredentialsSpec = (auth.getCredentials()).getCredentialsSpec();
+    AzureArtifactsTokenDTO httpCredentialsSpec = (auth.getSpec()).getSpec();
 
     if (httpCredentialsSpec != null) {
       decryptableEntities.add(httpCredentialsSpec);
@@ -92,20 +75,5 @@ public class AzureArtifactsConnectorDTO extends ConnectorConfigDTO implements De
   @JsonIgnore
   public ConnectorType getConnectorType() {
     return ConnectorType.AZURE_ARTIFACTS;
-  }
-
-  @Override
-  public ConnectorConfigOutcomeDTO toOutcome() {
-    return AzureArtifactsConnectorOutcomeDTO.builder()
-        .azureArtifactsUrl(this.azureArtifactsUrl)
-        .delegateSelectors(this.delegateSelectors)
-        .auth(AzureArtifactsAuthenticationOutcomeDTO.builder()
-                  .spec(AzureArtifactsCredentialsOutcomeDTO.builder()
-                            .type(this.auth.getCredentials().getType())
-                            .spec(this.auth.getCredentials().getCredentialsSpec())
-                            .build())
-                  .build())
-        .executeOnDelegate(this.executeOnDelegate)
-        .build();
   }
 }

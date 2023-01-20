@@ -5,18 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.scm.azurerepo;
+package io.harness.delegate.beans.connector.scm.azurerepo.outcome;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.delegate.beans.connector.scm.azurerepo.outcome.AzureRepoCredentialsOutcomeDTO;
-import io.harness.delegate.beans.connector.scm.azurerepo.outcome.AzureRepoHttpCredentialsOutcomeDTO;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpAuthenticationType;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoHttpCredentialsSpecDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -30,27 +27,19 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ApiModel("AzureRepoHttpCredentials")
-@Schema(name = "AzureRepoHttpCredentials",
-    description = "This contains details of the AzureRepo credentials used via HTTP connections")
-public class AzureRepoHttpCredentialsDTO implements AzureRepoCredentialsDTO {
+public class AzureRepoHttpCredentialsOutcomeDTO implements AzureRepoCredentialsOutcomeDTO {
   @NotNull AzureRepoHttpAuthenticationType type;
 
-  @JsonProperty("spec")
   @JsonTypeInfo(
       use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
   @Valid
   @NotNull
-  AzureRepoHttpCredentialsSpecDTO httpCredentialsSpec;
+  AzureRepoHttpCredentialsSpecDTO spec;
 
   @Builder
-  public AzureRepoHttpCredentialsDTO(
-      AzureRepoHttpAuthenticationType type, AzureRepoHttpCredentialsSpecDTO httpCredentialsSpec) {
+  public AzureRepoHttpCredentialsOutcomeDTO(
+      AzureRepoHttpAuthenticationType type, AzureRepoHttpCredentialsSpecDTO spec) {
     this.type = type;
-    this.httpCredentialsSpec = httpCredentialsSpec;
-  }
-
-  public AzureRepoCredentialsOutcomeDTO toOutcome() {
-    return AzureRepoHttpCredentialsOutcomeDTO.builder().type(this.type).spec(this.httpCredentialsSpec).build();
+    this.spec = spec;
   }
 }

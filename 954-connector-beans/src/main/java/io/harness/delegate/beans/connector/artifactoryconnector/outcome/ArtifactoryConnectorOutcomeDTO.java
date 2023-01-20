@@ -5,22 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.nexusconnector;
+package io.harness.delegate.beans.connector.artifactoryconnector.outcome;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.connector.DelegateSelectable;
-import io.harness.delegate.beans.connector.ConnectorConfigDTO;
+import io.harness.connector.ManagerExecutable;
 import io.harness.delegate.beans.connector.ConnectorConfigOutcomeDTO;
-import io.harness.delegate.beans.connector.nexusconnector.outcome.NexusAuthenticationOutcomeDTO;
-import io.harness.delegate.beans.connector.nexusconnector.outcome.NexusConnectorOutcomeDTO;
+import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryAuthType;
 import io.harness.exception.InvalidRequestException;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModel;
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -40,35 +37,21 @@ import org.hibernate.validator.constraints.URL;
 @EqualsAndHashCode(callSuper = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ApiModel("NexusConnector")
-@Schema(name = "NexusConnector", description = "Nexus Connector details.")
-public class NexusConnectorDTO extends ConnectorConfigDTO implements DelegateSelectable {
-  @URL @NotNull @NotBlank String nexusServerUrl;
-  @NotNull @NotBlank String version;
-  @Valid NexusAuthenticationDTO auth;
+public class ArtifactoryConnectorOutcomeDTO
+    extends ConnectorConfigOutcomeDTO implements DelegateSelectable, ManagerExecutable {
+  @URL @NotNull @NotBlank String artifactoryServerUrl;
+  @Valid ArtifactoryAuthenticationOutcomeDTO auth;
   Set<String> delegateSelectors;
+  @Builder.Default Boolean executeOnDelegate = true;
 
   @Override
   public List<DecryptableEntity> getDecryptableEntities() {
     if (auth == null) {
       throw new InvalidRequestException("Auth Field is Null");
     }
-    if (auth.getAuthType() == NexusAuthType.ANONYMOUS) {
+    if (auth.getType() == ArtifactoryAuthType.ANONYMOUS) {
       return null;
     }
-    return Collections.singletonList(auth.getCredentials());
-  }
-
-  @Override
-  public ConnectorConfigOutcomeDTO toOutcome() {
-    return NexusConnectorOutcomeDTO.builder()
-        .nexusServerUrl(this.nexusServerUrl)
-        .version(this.version)
-        .delegateSelectors(this.delegateSelectors)
-        .auth(NexusAuthenticationOutcomeDTO.builder()
-                  .type(this.auth.getAuthType())
-                  .spec(this.auth.getCredentials())
-                  .build())
-        .build();
+    return Collections.singletonList(auth.getSpec());
   }
 }

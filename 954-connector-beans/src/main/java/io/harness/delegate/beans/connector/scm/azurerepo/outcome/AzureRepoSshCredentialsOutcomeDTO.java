@@ -5,20 +5,16 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.scm.azurerepo;
+package io.harness.delegate.beans.connector.scm.azurerepo.outcome;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
-import io.harness.delegate.beans.connector.scm.azurerepo.outcome.AzureRepoCredentialsOutcomeDTO;
-import io.harness.delegate.beans.connector.scm.azurerepo.outcome.AzureRepoSshCredentialsOutcomeDTO;
 import io.harness.encryption.SecretRefData;
 import io.harness.secret.SecretReference;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -30,13 +26,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ApiModel("AzureRepoSshCredentials")
-@Schema(name = "AzureRepoSshCredentials",
-    description = "This contains details of the AzureRepo credentials used via SSH connections")
-public class AzureRepoSshCredentialsDTO implements AzureRepoCredentialsDTO, DecryptableEntity {
+public class AzureRepoSshCredentialsOutcomeDTO implements AzureRepoCredentialsOutcomeDTO, DecryptableEntity {
   @NotNull @SecretReference @ApiModelProperty(dataType = "string") SecretRefData sshKeyRef;
-
-  public AzureRepoCredentialsOutcomeDTO toOutcome() {
-    return AzureRepoSshCredentialsOutcomeDTO.builder().sshKeyRef(this.sshKeyRef).build();
-  }
 }

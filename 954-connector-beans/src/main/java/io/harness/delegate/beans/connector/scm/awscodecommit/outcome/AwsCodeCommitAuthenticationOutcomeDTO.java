@@ -5,19 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.beans.connector.scm.bitbucket;
+package io.harness.delegate.beans.connector.scm.awscodecommit.outcome;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.connector.SourceCodeManagerAuthentication;
-import io.harness.delegate.beans.connector.scm.GitAuthType;
-import io.harness.delegate.beans.connector.scm.bitbucket.outcome.BitbucketAuthenticationOutcomeDTO;
+import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitAuthType;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -26,30 +22,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@OwnedBy(HarnessTeam.DX)
+@OwnedBy(HarnessTeam.CI)
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ApiModel("BitbucketAuthentication")
-@Schema(name = "BitbucketAuthentication",
-    description = "This contains details of the information needed for Bitbucket access")
-public class BitbucketAuthenticationDTO implements SourceCodeManagerAuthentication {
-  @NotNull @JsonProperty("type") GitAuthType authType;
-  @JsonProperty("spec")
+public class AwsCodeCommitAuthenticationOutcomeDTO implements SourceCodeManagerAuthentication {
+  @NotNull AwsCodeCommitAuthType type;
   @JsonTypeInfo(
       use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
   @Valid
   @NotNull
-  BitbucketCredentialsDTO credentials;
+  AwsCodeCommitCredentialsOutcomeDTO spec;
 
   @Builder
-  public BitbucketAuthenticationDTO(GitAuthType authType, BitbucketCredentialsDTO credentials) {
-    this.authType = authType;
-    this.credentials = credentials;
-  }
-
-  public BitbucketAuthenticationOutcomeDTO toOutcome() {
-    return BitbucketAuthenticationOutcomeDTO.builder().type(this.authType).spec(this.credentials.toOutcome()).build();
+  public AwsCodeCommitAuthenticationOutcomeDTO(AwsCodeCommitAuthType type, AwsCodeCommitCredentialsOutcomeDTO spec) {
+    this.type = type;
+    this.spec = spec;
   }
 }
