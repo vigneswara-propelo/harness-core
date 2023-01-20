@@ -40,6 +40,7 @@ import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.outbox.api.OutboxService;
+import io.harness.remote.GovernanceConfig;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.security.annotations.PublicApi;
@@ -113,20 +114,25 @@ public class GovernanceRuleSetResource {
   private final RuleSetService ruleSetService;
   private final GovernanceRuleService ruleService;
   private final TelemetryReporter telemetryReporter;
-  @Inject CENextGenConfiguration configuration;
-  @Inject private OutboxService outboxService;
-  @Inject @Named(OUTBOX_TRANSACTION_TEMPLATE) private TransactionTemplate transactionTemplate;
+  private final CENextGenConfiguration configuration;
+  private final OutboxService outboxService;
+  private final TransactionTemplate transactionTemplate;
   private static final RetryPolicy<Object> transactionRetryRule = DEFAULT_RETRY_POLICY;
   public static final String GLOBAL_ACCOUNT_ID = "__GLOBAL_ACCOUNT_ID__";
   public static final String MALFORMED_ERROR = "Request payload is malformed";
 
   @Inject
-  public GovernanceRuleSetResource(
-      RuleSetService ruleSetService, GovernanceRuleService ruleService, TelemetryReporter telemetryReporter) {
+  public GovernanceRuleSetResource(RuleSetService ruleSetService, GovernanceRuleService ruleService,
+      TelemetryReporter telemetryReporter, OutboxService outboxService,
+      @Named(OUTBOX_TRANSACTION_TEMPLATE) TransactionTemplate transactionTemplate,
+      CENextGenConfiguration configuration) {
     //    this rbacHelper  rbacHelper
     this.ruleSetService = ruleSetService;
     this.ruleService = ruleService;
     this.telemetryReporter = telemetryReporter;
+    this.outboxService = outboxService;
+    this.transactionTemplate = transactionTemplate;
+    this.configuration = configuration;
   }
 
   @POST
@@ -157,13 +163,12 @@ public class GovernanceRuleSetResource {
     } else {
       ruleSet.setAccountId(GLOBAL_ACCOUNT_ID);
     }
-    if (ruleSet.getRulesIdentifier().size() > configuration.getGovernanceConfig().getPoliciesInPack()) {
+    GovernanceConfig governanceConfig = configuration.getGovernanceConfig();
+    if (ruleSet.getRulesIdentifier().size() > governanceConfig.getPoliciesInPack()) {
       throw new InvalidRequestException("Limit of Rules in a set is exceeded ");
     }
     ruleService.check(accountId, ruleSet.getRulesIdentifier());
-    if (!ruleSetService.save(ruleSet)) {
-      throw new InvalidRequestException("Rule set wasn't created");
-    }
+    ruleSetService.save(ruleSet);
     HashMap<String, Object> properties = new HashMap<>();
     properties.put(MODULE, MODULE_NAME);
     properties.put(RULE_SET_NAME, ruleSet.getName());
@@ -200,8 +205,9 @@ public class GovernanceRuleSetResource {
     ruleSet.setAccountId(accountId);
     RuleSet oldRuleSet = ruleSetService.fetchById(accountId, ruleSet.getUuid(), true);
     ruleService.check(accountId, ruleSet.getRulesIdentifier());
-    if (ruleSet.getRulesIdentifier().size() > configuration.getGovernanceConfig().getPoliciesInPack()) {
-      throw new InvalidRequestException("Limit of Rules In a Set is exceeded ");
+    GovernanceConfig governanceConfig = configuration.getGovernanceConfig();
+    if (ruleSet.getRulesIdentifier().size() > governanceConfig.getPoliciesInPack()) {
+      throw new InvalidRequestException("Limit of Rules in a set is exceeded ");
     }
     ruleSetService.update(accountId, ruleSet);
     HashMap<String, Object> properties = new HashMap<>();
