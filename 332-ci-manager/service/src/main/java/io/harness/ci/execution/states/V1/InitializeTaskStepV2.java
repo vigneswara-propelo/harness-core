@@ -202,9 +202,14 @@ public class InitializeTaskStepV2 extends CiAsyncExecutable {
                                           .build();
       try {
         Response<EnqueueResponse> execute = hsqsServiceClient.enqueue(enqueueRequest).execute();
-        log.info("build queued. response code {}", execute.code());
+        if (execute.code() == 200) {
+          log.info("build queued. message id: {}", execute.body().getItemId());
+        } else {
+          log.info("build queue failed. response code {}", execute.code());
+        }
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new CIStageExecutionException(format("failed to process execution, queuing failed. runtime Id: {}",
+            AmbianceUtils.getStageRuntimeIdAmbiance(ambiance)));
       }
     } else {
       taskId = executeBuild(ambiance, stepParameters);
