@@ -38,7 +38,7 @@ public class StatsCollectorImpl implements StatsCollector {
   private static final int SYNC_INTERVAL_MINUTES = 10;
   private static final long SYNC_INTERVAL = TimeUnit.MINUTES.toMinutes(SYNC_INTERVAL_MINUTES);
 
-  private static final int MAX_CALLS_PER_ACCOUNT = 60 / SYNC_INTERVAL_MINUTES * 24;
+  private static final int MAX_CALLS_PER_ACCOUNT = 60 / SYNC_INTERVAL_MINUTES * 6;
 
   private InstanceStatService statService;
   private ServerlessInstanceStatService serverlessInstanceStatService;
