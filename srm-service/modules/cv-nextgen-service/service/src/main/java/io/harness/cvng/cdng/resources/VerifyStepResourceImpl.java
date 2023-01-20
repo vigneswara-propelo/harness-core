@@ -97,8 +97,8 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
         .verificationStartTimestamp(deploymentVerificationJobInstanceSummary.getActivityStartTime())
         .verificationProgressPercentage(deploymentVerificationJobInstanceSummary.getProgressPercentage())
         .verificationStatus(deploymentVerificationJobInstanceSummary.getStatus())
-        .controlNodes(getControlNodesOverview(appliedDeploymentAnalysisType, additionalInfo))
-        .testNodes(getTestNodesOverview(appliedDeploymentAnalysisType, additionalInfo))
+        .controlNodes(getControlNodesOverview(additionalInfo))
+        .testNodes(getTestNodesOverview(additionalInfo))
         .metricsAnalysis(deploymentTimeSeriesAnalysisService.getMetricsAnalysisOverview(
             verifyStepPathParams.getVerifyStepExecutionId()))
         .logClusters(deploymentLogAnalysisService.getLogsAnalysisOverview(
@@ -138,10 +138,9 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
         .build();
   }
 
-  private AnalysedNodeOverview getControlNodesOverview(
-      AppliedDeploymentAnalysisType appliedDeploymentAnalysisType, AdditionalInfo additionalInfo) {
-    AnalysedNodeOverview analysedNodeOverview = null;
-    switch (appliedDeploymentAnalysisType) {
+  private AnalysedNodeOverview getControlNodesOverview(AdditionalInfo additionalInfo) {
+    AnalysedNodeOverview analysedNodeOverview;
+    switch (additionalInfo.getType()) {
       case CANARY:
         CanaryBlueGreenAdditionalInfo canaryAdditionalInfo = (CanaryBlueGreenAdditionalInfo) additionalInfo;
         analysedNodeOverview = AnalysedNodeOverview.builder()
@@ -149,6 +148,8 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
                                    .nodes(getControlNodesForCanaryOrRollingAnalysisType(canaryAdditionalInfo))
                                    .build();
         break;
+      case BLUE_GREEN:
+      case AUTO:
       case ROLLING:
         CanaryBlueGreenAdditionalInfo blueGreenAdditionalInfo = (CanaryBlueGreenAdditionalInfo) additionalInfo;
         analysedNodeOverview = AnalysedNodeOverview.builder()
@@ -163,11 +164,8 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
                                    .nodes(getControlNodesForLoadTestAnalysisType(loadTestAdditionalInfo))
                                    .build();
         break;
-      case NO_ANALYSIS:
-        break;
       default:
-        throw new IllegalArgumentException(
-            "Unrecognised AppliedDeploymentAnalysisType " + appliedDeploymentAnalysisType);
+        throw new IllegalArgumentException("Unrecognised VerificationJobType " + additionalInfo.getType());
     }
     return analysedNodeOverview;
   }
@@ -180,10 +178,9 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
         .collect(Collectors.toList());
   }
 
-  private AnalysedNodeOverview getTestNodesOverview(
-      AppliedDeploymentAnalysisType appliedDeploymentAnalysisType, AdditionalInfo additionalInfo) {
-    AnalysedNodeOverview analysedNodeOverview = null;
-    switch (appliedDeploymentAnalysisType) {
+  private AnalysedNodeOverview getTestNodesOverview(AdditionalInfo additionalInfo) {
+    AnalysedNodeOverview analysedNodeOverview;
+    switch (additionalInfo.getType()) {
       case CANARY:
         CanaryBlueGreenAdditionalInfo canaryAdditionalInfo = (CanaryBlueGreenAdditionalInfo) additionalInfo;
         analysedNodeOverview = AnalysedNodeOverview.builder()
@@ -191,6 +188,8 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
                                    .nodes(getTestNodesForCanaryOrRollingAnalysisType(canaryAdditionalInfo))
                                    .build();
         break;
+      case BLUE_GREEN:
+      case AUTO:
       case ROLLING:
         CanaryBlueGreenAdditionalInfo blueGreenAdditionalInfo = (CanaryBlueGreenAdditionalInfo) additionalInfo;
         analysedNodeOverview = AnalysedNodeOverview.builder()
@@ -205,11 +204,8 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
                                    .nodes(getTestNodesForLoadTestAnalysisType(loadTestAdditionalInfo))
                                    .build();
         break;
-      case NO_ANALYSIS:
-        break;
       default:
-        throw new IllegalArgumentException(
-            "Unrecognised AppliedDeploymentAnalysisType " + appliedDeploymentAnalysisType);
+        throw new IllegalArgumentException("Unrecognised VerificationJobType " + additionalInfo.getType());
     }
     return analysedNodeOverview;
   }
