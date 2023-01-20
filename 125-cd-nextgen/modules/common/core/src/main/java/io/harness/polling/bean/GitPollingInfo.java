@@ -5,21 +5,22 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.polling.bean.artifact;
+package io.harness.polling.bean;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.artifact.bean.ArtifactConfig;
-import io.harness.delegate.task.artifacts.ArtifactSourceType;
-import io.harness.polling.bean.PollingInfo;
+import io.harness.cdng.gitpolling.bean.GitPollingConfig;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @OwnedBy(HarnessTeam.CDC)
-@JsonTypeName("ARTIFACT")
+@JsonTypeName("GITPOLLING")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXISTING_PROPERTY)
-public interface ArtifactInfo extends PollingInfo {
-  ArtifactSourceType getType();
-  ArtifactConfig toArtifactConfig();
+@JsonSubTypes({ @JsonSubTypes.Type(value = GitHubPollingInfo.class, name = "GitHub") })
+public interface GitPollingInfo extends PollingInfo {
+  String getType();
+
+  GitPollingConfig toGitPollingConfig();
 }

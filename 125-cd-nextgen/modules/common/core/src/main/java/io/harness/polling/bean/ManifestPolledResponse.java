@@ -5,19 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.polling.bean.gitpolling;
+package io.harness.polling.bean;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.polling.bean.PolledResponse;
 
 import java.util.Set;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
 @OwnedBy(HarnessTeam.CDC)
-@Value
+@Data
 @Builder
-public class GitPollingPolledResponse implements PolledResponse {
+public class ManifestPolledResponse implements PolledResponse {
   Set<String> allPolledKeys;
 }
