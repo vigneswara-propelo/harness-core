@@ -14,19 +14,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.springframework.data.annotation.TypeAlias;
 
-@TypeAlias("stoYamlGenericConfig")
-@RecasterAlias("io.harness.yaml.sto.variables.STOYamlGenericConfig")
-public enum STOYamlGenericConfig implements STOYamlConfig {
-  @JsonProperty("default") DEFAULT("default");
+@TypeAlias("stoYamlZapConfig")
+@RecasterAlias("io.harness.yaml.sto.variables.STOYamlZapConfig")
+public enum STOYamlZapConfig implements STOYamlConfig {
+  @JsonProperty("default") DEFAULT("default"),
+  @JsonProperty("quick") QUICK("quick"),
+  @JsonProperty("attack") ATTACK("attack"),
+  @JsonProperty("standard") STANDARD("standard");
   private final String yamlName;
 
-  STOYamlGenericConfig(String yamlName) {
+  STOYamlZapConfig(String yamlName) {
     this.yamlName = yamlName;
   }
 
   @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-  public static STOYamlGenericConfig getValue(@JsonProperty("config") String yamlName) {
-    for (STOYamlGenericConfig value : STOYamlGenericConfig.values()) {
+  public static STOYamlZapConfig getValue(@JsonProperty("config") String yamlName) {
+    for (STOYamlZapConfig value : STOYamlZapConfig.values()) {
       if (value.yamlName.equalsIgnoreCase(yamlName)) {
         return value;
       }
@@ -44,7 +47,7 @@ public enum STOYamlGenericConfig implements STOYamlConfig {
     return yamlName;
   }
 
-  public static STOYamlGenericConfig fromString(final String s) {
-    return STOYamlGenericConfig.getValue(s);
+  public static STOYamlZapConfig fromString(final String s) {
+    return STOYamlZapConfig.getValue(s);
   }
 }
