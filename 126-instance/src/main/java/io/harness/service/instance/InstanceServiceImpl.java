@@ -20,6 +20,7 @@ import io.harness.entities.Instance.InstanceKeysAdditional;
 import io.harness.mappers.InstanceMapper;
 import io.harness.models.ActiveServiceInstanceInfo;
 import io.harness.models.ActiveServiceInstanceInfoV2;
+import io.harness.models.ActiveServiceInstanceInfoWithEnvType;
 import io.harness.models.ArtifactDeploymentDetailModel;
 import io.harness.models.CountByServiceIdAndEnvType;
 import io.harness.models.EnvBuildInstanceCount;
@@ -219,6 +220,13 @@ public class InstanceServiceImpl implements InstanceService {
         accountIdentifier, orgIdentifier, projectIdentifier, envIdentifier, serviceIdentifier, buildIdentifier);
   }
 
+  @Override
+  public AggregationResults<ActiveServiceInstanceInfoWithEnvType> getActiveServiceInstanceInfoWithEnvType(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String envIdentifier,
+      String serviceIdentifier, String displayName, boolean isGitOps) {
+    return instanceRepository.getActiveServiceInstanceInfoWithEnvType(
+        accountIdentifier, orgIdentifier, projectIdentifier, envIdentifier, serviceIdentifier, displayName, isGitOps);
+  }
   @Override
   public AggregationResults<ActiveServiceInstanceInfo> getActiveServiceGitOpsInstanceInfo(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String serviceId) {
