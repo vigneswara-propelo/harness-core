@@ -27,18 +27,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 @OwnedBy(HarnessTeam.CDC)
-public class AccountSummaryService {
+public class AccountAnalysisService {
   @Inject DiscoveryService discoveryService;
   @Inject private WorkflowExecutionService workflowExecutionService;
 
   public Map<NGMigrationEntityType, BaseSummary> getSummary(String accountId) {
+    return getSummary(accountId, null);
+  }
+
+  public Map<NGMigrationEntityType, BaseSummary> getSummary(String accountId, String appId) {
+    NGMigrationEntityType migrationEntityType =
+        StringUtils.isBlank(appId) ? NGMigrationEntityType.ACCOUNT : NGMigrationEntityType.APPLICATION;
+    String entityId = StringUtils.isBlank(appId) ? accountId : appId;
     Map<NGMigrationEntityType, BaseSummary> summary =
-        discoveryService.getSummary(accountId, null, accountId, NGMigrationEntityType.ACCOUNT);
+        discoveryService.getSummary(accountId, appId, entityId, migrationEntityType);
 
     PageRequest<WorkflowExecution> pageRequest = new PageRequest<>();
     pageRequest.addFilter(WorkflowExecution.ACCOUNT_ID_KEY, Operator.EQ, accountId);
+    if (StringUtils.isNotBlank(appId)) {
+      pageRequest.addFilter(WorkflowExecutionKeys.appId, Operator.EQ, appId);
+    }
     pageRequest.addFilter(WorkflowExecutionKeys.cdPageCandidate, Operator.EQ, true);
     pageRequest.addOrder(WorkflowExecutionKeys.createdAt, OrderType.DESC);
     pageRequest.setLimit(PageRequest.UNLIMITED);
@@ -50,11 +61,15 @@ public class AccountSummaryService {
 
     executions.forEach(execution -> {
       WorkflowType type = execution.getWorkflowType();
-      String appId = execution.getAppId();
-      popularApps.put(appId, popularApps.getOrDefault(appId, 0L) + 1);
+      popularApps.put(execution.getAppId(), popularApps.getOrDefault(execution.getAppId(), 0L) + 1);
       typeSummary.put(type.name(), typeSummary.getOrDefault(type.name(), 0L) + 1);
       popular.putIfAbsent(execution.getWorkflowId(),
-          EntityExecutionSummary.builder().appId(appId).type(type).uuid(execution.getWorkflowId()).count(0).build());
+          EntityExecutionSummary.builder()
+              .appId(execution.getAppId())
+              .type(type)
+              .uuid(execution.getWorkflowId())
+              .count(0)
+              .build());
       popular.get(execution.getWorkflowId()).incrementCount();
     });
 

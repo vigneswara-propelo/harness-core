@@ -8,6 +8,7 @@
 package io.harness.ngmigration.service.step;
 
 import io.harness.ngmigration.beans.NGYamlFile;
+import io.harness.ngmigration.beans.WorkflowStepSupportStatus;
 import io.harness.ngmigration.service.MigratorUtility;
 import io.harness.plancreator.steps.AbstractStepNode;
 import io.harness.plancreator.steps.resourceconstraint.QueueStepInfo;
@@ -25,6 +26,11 @@ import software.wings.sm.states.ResourceConstraintState;
 import java.util.Map;
 
 public class ResourceConstraintStepMapperImpl implements StepMapper {
+  @Override
+  public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
+    return WorkflowStepSupportStatus.MANUAL_EFFORT;
+  }
+
   @Override
   public String getStepType(GraphNode stepYaml) {
     return StepSpecTypeConstants.RESOURCE_CONSTRAINT;

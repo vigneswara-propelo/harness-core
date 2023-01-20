@@ -110,12 +110,14 @@ public class VaultSecretMigrator implements SecretMigrator {
     // Handle App Role
     if (StringUtils.isNoneBlank(vaultConfig.getSecretId(), vaultConfig.getAppRoleId())) {
       SecretDTOV2 appRoleSecret = getSecretDTO(vaultConfig, inputDTO, secretIdentifier, vaultConfig.getSecretId());
-      connectorDTO.useK8sAuth(false)
-          .appRoleId(vaultConfig.getAppRoleId())
-          .secretId(SecretRefData.builder()
-                        .scope(MigratorUtility.getScope(secretEntityDetail))
-                        .identifier(secretIdentifier)
-                        .build());
+      connectorDTO
+          .useK8sAuth(false)
+          //          .appRoleId(vaultConfig.getAppRoleId())
+          //          .secretId(SecretRefData.builder()
+          .authToken(SecretRefData.builder()
+                         .scope(MigratorUtility.getScope(secretEntityDetail))
+                         .identifier(secretIdentifier)
+                         .build());
       secrets.add(appRoleSecret);
     }
 

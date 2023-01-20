@@ -44,6 +44,7 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.storeconfig.FetchType;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ngmigration.beans.NGYamlFile;
+import io.harness.ngmigration.beans.WorkflowStepSupportStatus;
 import io.harness.ngmigration.service.MigratorUtility;
 import io.harness.ngmigration.service.step.StepMapper;
 import io.harness.plancreator.steps.AbstractStepNode;
@@ -74,6 +75,11 @@ import org.apache.commons.lang3.StringUtils;
 @OwnedBy(HarnessTeam.CDC)
 public abstract class BaseTerraformProvisionerMapper implements StepMapper {
   private static final String SECRET_FORMAT = "<+secrets.getValue(\"%s\")>";
+
+  @Override
+  public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
+    return WorkflowStepSupportStatus.MANUAL_EFFORT;
+  }
 
   public List<CgEntityId> getReferencedEntities(GraphNode graphNode) {
     TerraformProvisionState state = (TerraformProvisionState) getState(graphNode);
