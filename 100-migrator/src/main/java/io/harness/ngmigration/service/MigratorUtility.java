@@ -365,6 +365,9 @@ public class MigratorUtility {
   }
 
   public static String generateName(String str) {
+    if (StringUtils.isBlank(str)) {
+      return str;
+    }
     Pattern p = Pattern.compile("[^-0-9a-zA-Z_\\s]", Pattern.CASE_INSENSITIVE);
     Matcher m = p.matcher(str);
     String generated = m.replaceAll("_");
