@@ -20,6 +20,7 @@ import io.harness.cvng.analysis.beans.TimeSeriesRecordDTO;
 import io.harness.cvng.analysis.entities.DeploymentTimeSeriesAnalysis;
 import io.harness.cvng.analysis.entities.LearningEngineTask.LearningEngineTaskType;
 import io.harness.cvng.beans.CVMonitoringCategory;
+import io.harness.cvng.beans.MonitoredServiceDataSourceType;
 import io.harness.cvng.beans.ThresholdConfigType;
 import io.harness.cvng.beans.TimeSeriesCustomThresholdActions;
 import io.harness.cvng.beans.TimeSeriesMetricType;
@@ -338,6 +339,10 @@ public class VerifyStepMetricsAnalysisUtils {
                          .metricName(metric.getMetricName())
                          .metricIdentifier(metric.getIdentifier())
                          .healthSourceIdentifier(healthSourceIdentifier)
+                         .healthSourceType(
+                             MonitoredServiceDataSourceType.dataSourceTypeMonitoredServiceDataSourceTypeMap.get(
+                                 metricCVConfig.getType()))
+                         .healthSourceName(metricCVConfig.getMonitoringSourceName())
                          .transactionGroup(transactionGroup)
                          .metricType(getMetricTypeFromCvConfigAndMetricDefinition(
                              metricCVConfig, metricDefinitions.get(metric.getIdentifier())))

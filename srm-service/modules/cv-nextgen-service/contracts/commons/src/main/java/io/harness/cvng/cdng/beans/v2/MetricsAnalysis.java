@@ -7,6 +7,8 @@
 
 package io.harness.cvng.cdng.beans.v2;
 
+import io.harness.cvng.beans.MonitoredServiceDataSourceType;
+
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -24,6 +26,8 @@ public class MetricsAnalysis {
   String transactionGroup;
   MetricType metricType;
   String healthSourceIdentifier;
+  MonitoredServiceDataSourceType healthSourceType;
+  String healthSourceName;
   List<MetricThreshold> thresholds;
   AnalysisResult analysisResult;
   List<AnalysedDeploymentTestDataNode> testDataNodes;
