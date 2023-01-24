@@ -53,6 +53,7 @@ import org.springframework.data.annotation.TypeAlias;
 @JsonTypeName("Deployment")
 @TypeAlias("deploymentStageConfig")
 @OneOfField(fields = {"service", "services", "serviceConfig"})
+@OneOfField(fields = {"environment", "environments", "environmentGroup", "infrastructure"})
 @SimpleVisitorHelper(helperClass = DeploymentStageVisitorHelper.class)
 public class DeploymentStageConfig implements StageInfoConfig, Visitable {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
