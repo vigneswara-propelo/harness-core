@@ -13,7 +13,8 @@ GIT_LEAKS=$(git config --bool hook.pre-push.gitleaks)
 
 if [ "${GIT_LEAKS}" == "true" ]; then
     echo "INFO: Scanning Commits information for any GIT LEAKS"
-    gitleaks protect -v --staged
+    #gitleaks protect -v --staged
+    gitleaks detect -s ./ --log-level=debug --log-opts=-1 -v
     STATUS=$?
     if [ $STATUS != 0  ]; then
         echo "WARNING: GIT LEAKS has detected sensitive information in your changes."
