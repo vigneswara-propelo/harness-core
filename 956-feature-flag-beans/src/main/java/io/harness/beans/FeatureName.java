@@ -589,7 +589,8 @@ public enum FeatureName {
   CG_K8S_MANIFEST_COMMIT_VAR(
       "Enables users to pass commit id as sweeping output and use later in subsequent steps. PM Rohan",
       HarnessTeam.CDP),
-  SPG_SIDENAV_COLLAPSE("FF for enabling collapse and expand of side nav", HarnessTeam.SPG);
+  SPG_SIDENAV_COLLAPSE("FF for enabling collapse and expand of side nav", HarnessTeam.SPG),
+  PL_REMOVE_USER_VIEWER_ROLE_ASSIGNMENTS("Enable removal of user level viewer role assignments", HarnessTeam.PL);
 
   @Deprecated
   FeatureName() {
