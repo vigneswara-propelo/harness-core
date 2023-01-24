@@ -48,7 +48,7 @@ public class CIExecutionMetadata {
   @Wither @Id @dev.morphia.annotations.Id String uuid;
   @FdIndex String accountId;
   OSType buildType;
-  String runtimeId;
+  String stageExecutionId;
   Infrastructure.Type infraType;
   @Builder.Default
   @FdTtlIndex
