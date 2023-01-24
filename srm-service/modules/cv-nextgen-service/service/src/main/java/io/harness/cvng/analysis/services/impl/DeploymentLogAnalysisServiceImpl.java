@@ -669,7 +669,7 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
                 .risk(testClusterSummary.getRiskLevel())
                 .totalTestFrequencyData(totalTestFrequencyData)
                 .testHostFrequencyData(testHostFrequencyData)
-                .count(testClusterSummary.getCount())
+                .count(getCountFromTotalTestFrequencyData(totalTestFrequencyData))
                 .averageControlFrequencyData(averageControlFrequencyData);
         if (testClusterSummary.getClusterType().equals(ClusterType.KNOWN_EVENT)
             || testClusterSummary.getClusterType().equals(ClusterType.UNEXPECTED_FREQUENCY)) {
@@ -694,6 +694,10 @@ public class DeploymentLogAnalysisServiceImpl implements DeploymentLogAnalysisSe
           logAnalysisRadarChartListDTOList.size() <= 1, "clusterId filter should result in one or zero cluster");
     }
     return logAnalysisRadarChartListDTOList;
+  }
+
+  private int getCountFromTotalTestFrequencyData(List<TimestampFrequencyCount> totalTestFrequencyData) {
+    return totalTestFrequencyData.stream().map(TimestampFrequencyCount::getCount).mapToInt(Double::intValue).sum();
   }
 
   private List<HostFrequencyData> getTestHostFrequencyData(
