@@ -201,6 +201,12 @@ ciExecutionServiceConfig:
         image: harness/checkmarx-job-runner
       - product: zap_default
         image: harness/zap-job-runner
+      - product: zap_quick
+        image: harness/zap-job-runner
+      - product: zap_attack
+        image: harness/zap-job-runner
+      - product: zap_standard
+        image: harness/zap-job-runner
       - product: mend_default
         image: harness/whitesource-agent-job-runner
   stepConfig:

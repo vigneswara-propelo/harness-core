@@ -204,12 +204,15 @@ public final class STOSettingsUtils {
           resolveStringParameter("instance.path", stepType, identifier, instanceData.getPath(), false));
       map.put(getSTOKey("instance_protocol"),
           resolveStringParameter("instance.protocol", stepType, identifier, instanceData.getProtocol(), false));
-      map.put(getSTOKey("instance_port"),
-          String.valueOf(resolveIntegerParameter(instanceData.getPort(), DEFAULT_INSTANCE_PORT)));
       map.put(getSTOKey("instance_access_id"),
           resolveStringParameter("instance.access_id", stepType, identifier, instanceData.getAccessId(), false));
       map.put(getSTOKey("instance_access_token"),
           resolveStringParameter("instance.access_token", stepType, identifier, instanceData.getAccessToken(), false));
+
+      Integer port = resolveIntegerParameter(instanceData.getPort(), null);
+      if (port != null) {
+        map.put(getSTOKey("instance_port"), String.valueOf(port));
+      }
     }
 
     return map;
@@ -503,8 +506,11 @@ public final class STOSettingsUtils {
     if (toolData != null) {
       map.put(getSTOKey("product_context"),
           resolveStringParameter("tool.context", stepType, identifier, toolData.getContext(), false));
-      map.put(
-          getSTOKey("zap_custom_port"), String.valueOf(resolveIntegerParameter(toolData.getPort(), ZAP_DEFAULT_PORT)));
+
+      Integer port = resolveIntegerParameter(toolData.getPort(), null);
+      if (port != null) {
+        map.put(getSTOKey("zap_custom_port"), String.valueOf(port));
+      }
     }
 
     return map;
