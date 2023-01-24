@@ -21,5 +21,7 @@ public interface CIExecutionRepository extends CrudRepository<CIExecutionMetadat
   long countByAccountId(String AccountID);
   long countByAccountIdAndBuildType(String AccountID, OSType BuildType);
 
+  CIExecutionMetadata findByRuntimeId(String runtimeId);
+
   void deleteByRuntimeId(String runtimeId);
 }

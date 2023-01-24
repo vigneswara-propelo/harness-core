@@ -34,19 +34,21 @@ public class QueueExecutionUtils {
     int count = 0;
     if (event.getResolvedStepParameters() != null && event.getStatus() == RUNNING
         && event.getResolvedStepParameters() instanceof StageElementParameters) {
-      IntegrationStageStepParametersPMS specConfig =
-          (IntegrationStageStepParametersPMS) ((StageElementParameters) event.getResolvedStepParameters())
-              .getSpecConfig();
+      if (ciExecutionRepository.findByRuntimeId(runtimeID) == null) {
+        IntegrationStageStepParametersPMS specConfig =
+            (IntegrationStageStepParametersPMS) ((StageElementParameters) event.getResolvedStepParameters())
+                .getSpecConfig();
 
-      Infrastructure.Type infraType = specConfig.getInfrastructure().getType();
-      OSType buildType = getBuildType(specConfig);
-      CIExecutionMetadata ciAccountBuildMetadata = CIExecutionMetadata.builder()
-                                                       .accountId(accountID)
-                                                       .buildType(buildType)
-                                                       .runtimeId(runtimeID)
-                                                       .infraType(infraType)
-                                                       .build();
-      ciExecutionRepository.save(ciAccountBuildMetadata);
+        Infrastructure.Type infraType = specConfig.getInfrastructure().getType();
+        OSType buildType = getBuildType(specConfig);
+        CIExecutionMetadata ciAccountBuildMetadata = CIExecutionMetadata.builder()
+                                                         .accountId(accountID)
+                                                         .buildType(buildType)
+                                                         .runtimeId(runtimeID)
+                                                         .infraType(infraType)
+                                                         .build();
+        ciExecutionRepository.save(ciAccountBuildMetadata);
+      }
     }
   }
 

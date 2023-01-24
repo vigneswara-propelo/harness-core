@@ -16,12 +16,15 @@ import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.OSType;
 import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.FdIndex;
+import io.harness.mongo.index.FdTtlIndex;
 import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
+import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
@@ -47,6 +50,9 @@ public class CIExecutionMetadata {
   OSType buildType;
   String runtimeId;
   Infrastructure.Type infraType;
+  @Builder.Default
+  @FdTtlIndex
+  private Date expireAfter = Date.from(OffsetDateTime.now().plusSeconds(86400).toInstant());
 
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
