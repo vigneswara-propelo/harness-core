@@ -588,7 +588,8 @@ public enum FeatureName {
   DISABLE_INSTANCE_STATS_JOB_CG("Disable Instance Stats Job from CG", HarnessTeam.CDP),
   CG_K8S_MANIFEST_COMMIT_VAR(
       "Enables users to pass commit id as sweeping output and use later in subsequent steps. PM Rohan",
-      HarnessTeam.CDP);
+      HarnessTeam.CDP),
+  SPG_SIDENAV_COLLAPSE("FF for enabling collapse and expand of side nav", HarnessTeam.SPG);
 
   @Deprecated
   FeatureName() {
