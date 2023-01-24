@@ -7,6 +7,8 @@
 
 package io.harness.ngmigration.service.servicev2;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.artifact.bean.yaml.ArtifactListConfig;
@@ -14,14 +16,13 @@ import io.harness.cdng.artifact.bean.yaml.PrimaryArtifact;
 import io.harness.cdng.configfile.ConfigFileWrapper;
 import io.harness.cdng.elastigroup.config.yaml.StartupScriptConfiguration;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
-import io.harness.cdng.service.beans.KubernetesServiceSpec;
-import io.harness.cdng.service.beans.KubernetesServiceSpec.KubernetesServiceSpecBuilder;
+import io.harness.cdng.service.beans.ElastigroupServiceSpec;
+import io.harness.cdng.service.beans.ElastigroupServiceSpec.ElastigroupServiceSpecBuilder;
 import io.harness.cdng.service.beans.ServiceDefinition;
 import io.harness.cdng.service.beans.ServiceDefinitionType;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.service.MigratorUtility;
-import io.harness.yaml.core.variables.NGVariable;
 
 import software.wings.beans.Service;
 import software.wings.ngmigration.CgEntityId;
@@ -32,24 +33,30 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.CDC)
-public class K8sServiceV2Mapper implements ServiceV2Mapper {
+public class ElastigroupServiceV2Mapper implements ServiceV2Mapper {
   @Override
   public ServiceDefinition getServiceDefinition(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, Service service, Map<CgEntityId, NGYamlFile> migratedEntities,
       List<ManifestConfigWrapper> manifests, List<ConfigFileWrapper> configFiles,
       List<StartupScriptConfiguration> startupScriptConfigurations) {
     PrimaryArtifact primaryArtifact = getPrimaryArtifactStream(inputDTO, entities, graph, service, migratedEntities);
-    KubernetesServiceSpecBuilder kubernetesServiceSpec = KubernetesServiceSpec.builder();
-    List<NGVariable> variables = MigratorUtility.getVariables(service.getServiceVariables(), migratedEntities);
+    ElastigroupServiceSpecBuilder elastigroupServiceSpecBuilder = ElastigroupServiceSpec.builder();
     if (primaryArtifact != null) {
-      kubernetesServiceSpec.artifacts(ArtifactListConfig.builder().primary(primaryArtifact).build());
+      elastigroupServiceSpecBuilder.artifacts(ArtifactListConfig.builder().primary(primaryArtifact).build());
     }
-    kubernetesServiceSpec.manifests(manifests);
-    kubernetesServiceSpec.configFiles(configFiles);
-    kubernetesServiceSpec.variables(variables);
+    if (isNotEmpty(manifests)) {
+      elastigroupServiceSpecBuilder.manifests(manifests);
+    }
+    elastigroupServiceSpecBuilder.variables(
+        MigratorUtility.getVariables(service.getServiceVariables(), migratedEntities));
+    elastigroupServiceSpecBuilder.configFiles(configFiles);
+    if (isNotEmpty(startupScriptConfigurations)) {
+      elastigroupServiceSpecBuilder.startupScript(startupScriptConfigurations.get(0));
+    }
+
     return ServiceDefinition.builder()
-        .type(ServiceDefinitionType.KUBERNETES)
-        .serviceSpec(kubernetesServiceSpec.build())
+        .type(ServiceDefinitionType.ELASTIGROUP)
+        .serviceSpec(elastigroupServiceSpecBuilder.build())
         .build();
   }
 }
