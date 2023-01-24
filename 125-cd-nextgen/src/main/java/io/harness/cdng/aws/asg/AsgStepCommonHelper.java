@@ -268,7 +268,7 @@ public class AsgStepCommonHelper extends CDStepHelper {
                             .async(true)
                             .build();
 
-    String taskName = taskType.getDisplayName() + " : " + commandRequest.getCommandName();
+    String taskName = taskType.getDisplayName();
 
     AsgSpecParameters asgSpecParameters = (AsgSpecParameters) stepElementParameters.getSpec();
 

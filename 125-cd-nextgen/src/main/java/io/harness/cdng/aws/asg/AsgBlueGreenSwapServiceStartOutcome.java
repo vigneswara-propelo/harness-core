@@ -7,34 +7,24 @@
 
 package io.harness.cdng.aws.asg;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
 import io.harness.annotation.RecasterAlias;
-import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.pms.sdk.core.data.ExecutionSweepingOutput;
 import io.harness.pms.sdk.core.data.Outcome;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.List;
-import java.util.Map;
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.data.annotation.TypeAlias;
 
-@OwnedBy(HarnessTeam.CDP)
+@OwnedBy(CDP)
 @Value
 @Builder
-@TypeAlias("asgBlueGreenPrepareRollbackDataOutcome")
-@JsonTypeName("asgBlueGreenPrepareRollbackDataOutcome")
-@RecasterAlias("io.harness.cdng.aws.asg.AsgBlueGreenPrepareRollbackDataOutcome")
-public class AsgBlueGreenPrepareRollbackDataOutcome implements Outcome, ExecutionSweepingOutput {
-  Map<String, List<String>> asgManifestsDataForRollback;
-  String prodAsgName;
-  String asgName;
-  String loadBalancer;
-  String prodListenerArn;
-  String prodListenerRuleArn;
-  List<String> prodTargetGroupArnsList;
-  String stageListenerArn;
-  String stageListenerRuleArn;
-  List<String> stageTargetGroupArnsList;
+@TypeAlias("asgBlueGreenSwapServiceStartOutcome")
+@JsonTypeName("asgBlueGreenSwapServiceStartOutcome")
+@RecasterAlias("io.harness.cdng.aws.asg.AsgBlueGreenSwapServiceStartOutcome")
+public class AsgBlueGreenSwapServiceStartOutcome implements Outcome, ExecutionSweepingOutput {
+  boolean isTrafficShiftStarted;
 }

@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.task.aws.asg;
+package io.harness.aws.beans;
 
 import static io.harness.expression.Expression.ALLOW_SECRETS;
 
@@ -29,6 +29,6 @@ public class AsgLoadBalancerConfig {
   @NonFinal @Expression(ALLOW_SECRETS) String stageListenerRuleArn;
   @NonFinal @Expression(ALLOW_SECRETS) String prodListenerArn;
   @NonFinal @Expression(ALLOW_SECRETS) String prodListenerRuleArn;
-  List<String> prodTargetGroupArns;
-  List<String> stageTargetGroupArns;
+  List<String> prodTargetGroupArnsList;
+  List<String> stageTargetGroupArnsList;
 }
