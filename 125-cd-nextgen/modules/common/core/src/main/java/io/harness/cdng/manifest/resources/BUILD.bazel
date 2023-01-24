@@ -1,4 +1,4 @@
-# Copyright 2022 Harness Inc. All rights reserved.
+# Copyright 2023 Harness Inc. All rights reserved.
 # Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
 # that can be found in the licenses directory at the root of this repository, also available at
 # https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -12,28 +12,26 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
+        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/featureFlag:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/manifest/mappers:module",
-        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/manifest/steps/outcome:module",
-        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/service/steps:module",
-        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/service/steps/constants:module",
-        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/steps:module",
+        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/manifest/resources/dtos:module",
         "//127-cd-nextgen-entities:module",
         "//440-connector-nextgen:module",
         "//878-ng-common-utilities:module",
-        "//884-pms-commons:module",
-        "//953-events-api/src/main/proto:953_events_api_java_proto",
+        "//910-delegate-service-driver:module",
+        "//920-delegate-service-beans:module",
+        "//950-delegate-tasks-beans:module",
         "//953-yaml-commons:module",
         "//954-connector-beans:module",
+        "//956-feature-flag-beans:module",
+        "//970-api-services-beans/src/main/java/io/harness/k8s/model:module",
         "//970-ng-commons:module",
-        "//979-recaster/src/main/java/io/harness/annotation:module",
         "//980-commons/src/main/java/io/harness/data/structure:module",
         "//980-commons/src/main/java/io/harness/exception:module",
-        "//980-commons/src/main/java/io/harness/tasks:module",
-        "//999-annotations/src/main/java/io/harness/annotations/dev:module",
-        "//clients/pipeline-service/pms-sdk-core:module",
+        "//980-commons/src/main/java/io/harness/exception/exceptionmanager:module",
+        "//980-commons/src/main/java/io/harness/utils:module",
         "@maven//:com_google_inject_guice",
-        "@maven//:com_intellij_annotations",
-        "@maven//:org_springframework_data_spring_data_commons",
+        "@maven//:javax_validation_validation_api",
     ],
 )
 
