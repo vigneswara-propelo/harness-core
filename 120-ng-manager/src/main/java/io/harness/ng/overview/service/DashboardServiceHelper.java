@@ -38,7 +38,7 @@ public class DashboardServiceHelper {
       final EnvironmentType envType = activeServiceInstanceInfo.getEnvType();
       final Long lastDeployedAt = activeServiceInstanceInfo.getLastDeployedAt();
 
-      if (envId == null || envType == null || lastDeployedAt == null) {
+      if (envId == null || lastDeployedAt == null) {
         return;
       }
 
