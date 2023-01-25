@@ -625,21 +625,21 @@ public class CDOverviewDashboardServiceImplTest extends NgManagerTestBase {
     List<EnvironmentInstanceDetails.EnvironmentInstanceDetail> environmentInstanceDetails = new ArrayList<>();
     environmentInstanceDetails.add(
         EnvironmentInstanceDetails.EnvironmentInstanceDetail.builder()
-            .envId(ENVIRONMENT_2)
-            .envName(ENVIRONMENT_NAME_2)
-            .environmentType(EnvironmentType.Production)
-            .count(1)
-            .artifactDeploymentDetail(
-                ArtifactDeploymentDetail.builder().artifact(DISPLAY_NAME_2).lastDeployedAt(2l).build())
-            .build());
-    environmentInstanceDetails.add(
-        EnvironmentInstanceDetails.EnvironmentInstanceDetail.builder()
             .envId(ENVIRONMENT_1)
             .envName(ENVIRONMENT_NAME_1)
             .environmentType(EnvironmentType.PreProduction)
             .count(2)
             .artifactDeploymentDetail(
                 ArtifactDeploymentDetail.builder().artifact(DISPLAY_NAME_1).lastDeployedAt(1l).build())
+            .build());
+    environmentInstanceDetails.add(
+        EnvironmentInstanceDetails.EnvironmentInstanceDetail.builder()
+            .envId(ENVIRONMENT_2)
+            .envName(ENVIRONMENT_NAME_2)
+            .environmentType(EnvironmentType.Production)
+            .count(1)
+            .artifactDeploymentDetail(
+                ArtifactDeploymentDetail.builder().artifact(DISPLAY_NAME_2).lastDeployedAt(2l).build())
             .build());
     return environmentInstanceDetails;
   }

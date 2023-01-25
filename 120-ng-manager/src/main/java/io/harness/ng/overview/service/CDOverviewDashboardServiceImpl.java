@@ -2767,6 +2767,9 @@ public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardServic
       final String envName = envIdToEnvNameMap.get(envId);
       final Integer count = entry.getValue();
       final ArtifactDeploymentDetail artifactDeploymentDetail = artifactDeploymentDetailsMap.get(envId);
+      if (artifactDeploymentDetail == null) {
+        continue;
+      }
       environmentInstanceDetails.add(EnvironmentInstanceDetails.EnvironmentInstanceDetail.builder()
                                          .environmentType(envType)
                                          .envId(envId)
@@ -2775,6 +2778,8 @@ public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardServic
                                          .count(count)
                                          .build());
     }
+
+    DashboardServiceHelper.sortEnvironmentInstanceDetailList(environmentInstanceDetails);
 
     return EnvironmentInstanceDetails.builder().environmentInstanceDetails(environmentInstanceDetails).build();
   }
