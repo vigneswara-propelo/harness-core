@@ -10,13 +10,13 @@ customDeployment:
         description: "Connector"
     fetchInstancesScript:
       store:
+        type: Harness
         spec:
-          content: ""
+          files:
+            - account:/manifest.yml
     instancesListPath: instances
-    instanceAttributes:
-      - name: instancename
-        jsonPath: <+input>
-        description: "IP address of the host"
+    instanceAttributes: []
   execution:
     stepTemplateRefs:
-      - org.OpenStackSetup
+      - templateRef: org.OpenStackSetup
+        versionLabel: v1
