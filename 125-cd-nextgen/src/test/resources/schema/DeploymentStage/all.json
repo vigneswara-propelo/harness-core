@@ -6015,12 +6015,19 @@
         },
         {
           "type": "object",
+          "required": [
+            "connectorRef",
+            "type"
+          ],
           "properties": {
+            "connectorRef": {
+              "type": "string"
+            },
             "metadata": {
               "type": "string"
             },
-            "store": {
-              "$ref": "#/definitions/StoreConfigWrapper"
+            "type": {
+              "type": "string"
             }
           }
         }
