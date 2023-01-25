@@ -68,7 +68,8 @@ public enum ConnectorType implements EntitySubtype {
   @JsonProperty("AzureArtifacts") AZURE_ARTIFACTS("AzureArtifacts"),
   @JsonProperty("Tas") TAS("Tas"),
 
-  @JsonProperty("Spot") SPOT("Spot");
+  @JsonProperty("Spot") SPOT("Spot"),
+  @JsonProperty("TerraformCloud") TERRAFORM_CLOUD("TerraformCloud");
 
   private final String displayName;
 

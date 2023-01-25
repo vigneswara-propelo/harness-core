@@ -452,7 +452,7 @@ public enum TaskType {
   AWS_ASG_BLUE_GREEN_DEPLOY_TASK_NG(TaskGroup.ASG, "AWS Asg Blue Green Deploy"),
   AWS_ASG_BLUE_GREEN_ROLLBACK_TASK_NG(TaskGroup.ASG, "AWS Asg Blue Green Rollback"),
   SCM_BATCH_GET_FILE_TASK(TaskGroup.GIT, "SCM Batch Get File Task"),
-  ;
+  TERRAFORM_CLOUD_TASK_NG(TaskGroup.TERRAFORM_CLOUD, "Terraform Cloud Task NG", true);
 
   private final TaskGroup taskGroup;
   private final String displayName;
