@@ -33,7 +33,7 @@ import io.harness.template.helpers.TemplateInputsValidator;
 import io.harness.template.helpers.TemplateMergeServiceHelper;
 import io.harness.template.mappers.NGTemplateDtoMapper;
 import io.harness.template.utils.TemplateUtils;
-import io.harness.utils.YamlPipelineUtils;
+import io.harness.template.yaml.TemplateYamlUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
@@ -120,7 +120,7 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
     JsonNode updatedJsonNode =
         YamlRefreshHelper.refreshNodeFromSourceNode(originalTemplateInputSetJsonNode, templateInputSetJsonNode);
     return TemplateRetainVariablesResponse.builder()
-        .mergedTemplateInputs(YamlPipelineUtils.writeYamlString(updatedJsonNode))
+        .mergedTemplateInputs(TemplateYamlUtils.writeYamlString(updatedJsonNode))
         .build();
   }
 
@@ -141,11 +141,11 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
     List<TemplateReferenceSummary> templateReferenceSummaries =
         getTemplateReferenceSummaries(accountId, orgId, projectId, yaml, templateCacheMap);
     return TemplateMergeResponseDTO.builder()
-        .mergedPipelineYaml(YamlPipelineUtils.writeYamlString(resMap))
+        .mergedPipelineYaml(TemplateYamlUtils.writeYamlString(resMap))
         .templateReferenceSummaries(templateReferenceSummaries)
         .mergedPipelineYamlWithTemplateRef(mergeTemplateInputsInObject == null
                 ? null
-                : YamlPipelineUtils.writeYamlString(mergeTemplateInputsInObject.getResMapWithOpaResponse()))
+                : TemplateYamlUtils.writeYamlString(mergeTemplateInputsInObject.getResMapWithOpaResponse()))
         .cacheResponseMetadata(NGTemplateDtoMapper.getCacheResponse())
         .build();
   }
