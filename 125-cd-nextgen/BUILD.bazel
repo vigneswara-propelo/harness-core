@@ -58,6 +58,9 @@ java_library(
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/manifest/yaml:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/manifest/yaml/storeConfig/moduleSource:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/pipeline:module",
+        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/pipeline/beans:module",
+        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/pipeline/executions/beans:module",
+        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/pipeline/helpers:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/pipeline/steps:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/provision/shellscript:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/service/beans:module",
@@ -123,6 +126,7 @@ java_library(
     deps = [
         ":module",
         "//:lombok",
+        "//125-cd-nextgen/modules/common/contracts/src/main/java/io/harness/cdng/pipeline/resources:module",
         "//884-pms-commons:module",
         "//942-enforcement-sdk:module",
         "//950-ng-core:tests",

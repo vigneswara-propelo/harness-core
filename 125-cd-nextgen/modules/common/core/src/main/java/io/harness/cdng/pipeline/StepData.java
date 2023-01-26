@@ -7,6 +7,8 @@
 
 package io.harness.cdng.pipeline;
 
+import io.harness.cdng.pipeline.steptype.NGStepType;
+
 import lombok.Builder;
 import lombok.Data;
 

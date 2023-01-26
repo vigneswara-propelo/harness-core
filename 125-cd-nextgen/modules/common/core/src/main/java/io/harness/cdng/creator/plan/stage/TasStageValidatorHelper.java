@@ -5,18 +5,23 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.visitor.helpers.deploymentstage.validator;
+package io.harness.cdng.creator.plan.stage;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.executions.steps.StepSpecTypeConstants.CUSTOM_DEPLOYMENT_FETCH_INSTANCE_SCRIPT;
 import static io.harness.executions.steps.StepSpecTypeConstants.DEPLOYMENT_STAGE;
+import static io.harness.executions.steps.StepSpecTypeConstants.SWAP_ROLLBACK;
+import static io.harness.executions.steps.StepSpecTypeConstants.TAS_BASIC_APP_SETUP;
+import static io.harness.executions.steps.StepSpecTypeConstants.TAS_BG_APP_SETUP;
+import static io.harness.executions.steps.StepSpecTypeConstants.TAS_CANARY_APP_SETUP;
+import static io.harness.executions.steps.StepSpecTypeConstants.TAS_ROLLBACK;
+import static io.harness.executions.steps.StepSpecTypeConstants.TAS_SWAP_ROUTES;
 import static io.harness.ng.core.template.TemplateListType.STABLE_TEMPLATE_TYPE;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.creator.plan.stage.DeploymentStageConfig;
 import io.harness.encryption.Scope;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.InvalidYamlException;
@@ -46,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 @OwnedBy(HarnessTeam.CDP)
-public class CustomDeploymentStageValidatorHelper implements StageValidatorHelper {
+public class TasStageValidatorHelper implements StageValidatorHelper {
   @Inject TemplateResourceClient templateResourceClient;
   private static final String ACCOUNT_IDENTIFIER = "account.";
   private static final String ORG_IDENTIFIER = "org.";
@@ -55,28 +60,40 @@ public class CustomDeploymentStageValidatorHelper implements StageValidatorHelpe
   public void validate(Object object, String accountIdentifier, String orgIdentifier, String projectIdentifier) {
     DeploymentStageConfig stageConfig = (DeploymentStageConfig) object;
     ExecutionElementConfig executionElementConfig = stageConfig.getExecution();
+    List<ExecutionWrapperConfig> allSteps = new ArrayList<>();
     Map<String, Integer> stepTypeToCount = new HashMap<>();
     Map<Scope, List<String>> stepTemplateScopeToIds = new EnumMap<>(Scope.class);
-    getCountByStepType(accountIdentifier, orgIdentifier, projectIdentifier, executionElementConfig.getSteps(),
-        stepTypeToCount, stepTemplateScopeToIds);
+    allSteps.addAll(executionElementConfig.getSteps());
+    allSteps.addAll(executionElementConfig.getRollbackSteps());
+    getCountByStepType(
+        accountIdentifier, orgIdentifier, projectIdentifier, allSteps, stepTypeToCount, stepTemplateScopeToIds);
     getTemplateResponseDTO(
         accountIdentifier, orgIdentifier, projectIdentifier, stepTypeToCount, stepTemplateScopeToIds);
-    int fetchInstanceStepCount = stepTypeToCount.getOrDefault(CUSTOM_DEPLOYMENT_FETCH_INSTANCE_SCRIPT, 0);
-    if (fetchInstanceStepCount != 1) {
-      throw new InvalidYamlException(
-          "Fetch instance script step should be present only 1 time found: " + fetchInstanceStepCount);
+    int basicAppSetupStepCount = stepTypeToCount.getOrDefault(TAS_BASIC_APP_SETUP, 0);
+    int canaryAppSetupStepCount = stepTypeToCount.getOrDefault(TAS_CANARY_APP_SETUP, 0);
+    int bgAppSetupStepCount = stepTypeToCount.getOrDefault(TAS_BG_APP_SETUP, 0);
+    validateStepCount(basicAppSetupStepCount, "Only one Basic App Setup step is valid, found: %d");
+    validateStepCount(canaryAppSetupStepCount, "Only one Canary App Setup step is valid, found: %d");
+    validateStepCount(bgAppSetupStepCount, "Only one BG App Setup step is valid, found: %d");
+    if ((basicAppSetupStepCount + bgAppSetupStepCount + canaryAppSetupStepCount) != 1) {
+      throw new InvalidYamlException(format("Only one App Setup step out of %s is supported",
+          List.of(TAS_BASIC_APP_SETUP, TAS_BG_APP_SETUP, TAS_CANARY_APP_SETUP)));
     }
-    Map<String, Integer> rollbackStepTypeToCount = new HashMap<>();
-    Map<Scope, List<String>> rollbackStepTemplateScopeToIds = new EnumMap<>(Scope.class);
-    getCountByStepType(accountIdentifier, orgIdentifier, projectIdentifier, executionElementConfig.getRollbackSteps(),
-        rollbackStepTypeToCount, rollbackStepTemplateScopeToIds);
-    getTemplateResponseDTO(
-        accountIdentifier, orgIdentifier, projectIdentifier, rollbackStepTypeToCount, rollbackStepTemplateScopeToIds);
-    int rollbackFetchInstanceStepCount =
-        rollbackStepTypeToCount.getOrDefault(CUSTOM_DEPLOYMENT_FETCH_INSTANCE_SCRIPT, 0);
-    if (rollbackFetchInstanceStepCount > 1) {
-      throw new InvalidYamlException("Rollback: Fetch instance script step should be present at max 1 time, found: "
-          + rollbackFetchInstanceStepCount);
+    int swapRouteStepCount = stepTypeToCount.getOrDefault(TAS_SWAP_ROUTES, 0);
+    validateStepCount(swapRouteStepCount, "At max one Swap Route step is valid, found: %d");
+    int appRollbackStepCount = stepTypeToCount.getOrDefault(TAS_ROLLBACK, 0);
+    int swapRollbackStepCount = stepTypeToCount.getOrDefault(SWAP_ROLLBACK, 0);
+    validateStepCount(appRollbackStepCount, "At max one App Rollback step is valid, found: %d");
+    validateStepCount(swapRollbackStepCount, "At max one Swap Rollback step is valid, found: %d");
+    if ((appRollbackStepCount + swapRollbackStepCount) > 1) {
+      throw new InvalidYamlException(
+          format("Only one Rollback step out of %s is supported", List.of(TAS_ROLLBACK, SWAP_ROLLBACK)));
+    }
+  }
+
+  private void validateStepCount(int count, String errorMsg) {
+    if (count > 1) {
+      throw new InvalidYamlException(format(errorMsg, count));
     }
   }
 
