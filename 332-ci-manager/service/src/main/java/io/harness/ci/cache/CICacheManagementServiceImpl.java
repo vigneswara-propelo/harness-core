@@ -42,6 +42,7 @@ public class CICacheManagementServiceImpl implements CICacheManagementService {
   private final Storage storage;
   private final long DEFAULT_ALLOWANCE = 2147483648L;
   private final String UNIT_BYTES = "Bytes";
+  private final String DEFAULT_SERVICE_KEY = "gcp_service_key";
 
   @Inject
   CICacheManagementServiceImpl(
@@ -49,6 +50,11 @@ public class CICacheManagementServiceImpl implements CICacheManagementService {
     this.ciExecutionServiceConfig = ciExecutionServiceConfig;
     this.moduleLicenseRepository = moduleLicenseRepository;
     CICacheIntelligenceConfig cacheIntelligenceConfig = ciExecutionServiceConfig.getCacheIntelligenceConfig();
+    // workaround for local when service key isn't needed
+    if (cacheIntelligenceConfig.getServiceKey().equals(DEFAULT_SERVICE_KEY)) {
+      storage = StorageOptions.getDefaultInstance().getService();
+      return;
+    }
     File credentialsFile = new File(cacheIntelligenceConfig.getServiceKey());
     ServiceAccountCredentials credentials = null;
     try (FileInputStream serviceAccountStream = new FileInputStream(credentialsFile)) {
