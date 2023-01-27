@@ -437,7 +437,9 @@
             "GoogleArtifactRegistry",
             "GithubPackageRegistry",
             "AzureArtifacts",
-            "AmazonMachineImage"
+            "AmazonMachineImage",
+            "GoogleCloudStorage",
+            "GoogleCloudSource"
           ]
         }
       },
@@ -9753,7 +9755,9 @@
             "GoogleArtifactRegistry",
             "GithubPackageRegistry",
             "AzureArtifacts",
-            "AmazonMachineImage"
+            "AmazonMachineImage",
+            "GoogleCloudStorage",
+            "GoogleCloudSource"
           ]
         }
       },
@@ -11119,7 +11123,9 @@
             "GoogleArtifactRegistry",
             "GithubPackageRegistry",
             "AzureArtifacts",
-            "AmazonMachineImage"
+            "AmazonMachineImage",
+            "GoogleCloudStorage",
+            "GoogleCloudSource"
           ]
         }
       },
