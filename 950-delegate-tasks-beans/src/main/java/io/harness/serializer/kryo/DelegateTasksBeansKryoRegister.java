@@ -275,6 +275,7 @@ import io.harness.delegate.beans.elastigroup.ElastigroupSwapRouteResult;
 import io.harness.delegate.beans.executioncapability.AlwaysFalseValidationCapability;
 import io.harness.delegate.beans.executioncapability.AwsCliInstallationCapability;
 import io.harness.delegate.beans.executioncapability.AwsRegionCapability;
+import io.harness.delegate.beans.executioncapability.AwsSamInstallationCapability;
 import io.harness.delegate.beans.executioncapability.CIVmConnectionCapability;
 import io.harness.delegate.beans.executioncapability.CapabilityType;
 import io.harness.delegate.beans.executioncapability.ChartMuseumCapability;
@@ -2246,5 +2247,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(TerraformCloudDelegateTaskResponse.class, 680002);
     kryo.register(TerraformCloudValidateTaskResponse.class, 680003);
     kryo.register(TerraformCloudValidationParams.class, 680004);
+
+    kryo.register(AwsSamInstallationCapability.class, 10000401);
   }
 }
