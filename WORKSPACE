@@ -4857,7 +4857,7 @@ plain_artifacts = [
     "commons-io:commons-io:2.7",
     "commons-lang:commons-lang:2.3",
     "commons-logging:commons-logging:1.1.1",
-    "commons-net:commons-net:3.6",
+    "commons-net:commons-net:3.9.0",
     "commons-pool:commons-pool:1.5.4",
     "commons-validator:commons-validator:1.7",
     "de.danielbechler:java-object-diff:0.94",
