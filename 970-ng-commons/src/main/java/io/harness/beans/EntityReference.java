@@ -5,12 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.common;
+package io.harness.beans;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.IdentifierRef;
-import io.harness.beans.InputSetReference;
 import io.harness.ng.core.NGAccess;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
