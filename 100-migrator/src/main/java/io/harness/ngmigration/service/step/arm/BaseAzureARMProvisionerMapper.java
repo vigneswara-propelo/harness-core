@@ -13,7 +13,7 @@ import io.harness.ngmigration.service.step.StepMapper;
 import io.harness.pms.yaml.ParameterField;
 
 @OwnedBy(HarnessTeam.CDC)
-public abstract class BaseAzureARMProvisionerMapper implements StepMapper {
+public abstract class BaseAzureARMProvisionerMapper extends StepMapper {
   ParameterField<String> getProvisionerIdentifier() {
     return ParameterField.createValueField("azureARMProvision_1");
   }

@@ -23,7 +23,7 @@ import software.wings.sm.states.k8s.K8sBlueGreenDeploy;
 
 import java.util.Map;
 
-public class K8sBlueGreenDeployStepMapperImpl implements StepMapper {
+public class K8sBlueGreenDeployStepMapperImpl extends StepMapper {
   @Override
   public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
     return WorkflowStepSupportStatus.SUPPORTED;
@@ -36,7 +36,7 @@ public class K8sBlueGreenDeployStepMapperImpl implements StepMapper {
 
   @Override
   public State getState(GraphNode stepYaml) {
-    Map<String, Object> properties = StepMapper.super.getProperties(stepYaml);
+    Map<String, Object> properties = getProperties(stepYaml);
     K8sBlueGreenDeploy state = new K8sBlueGreenDeploy(stepYaml.getName());
     state.parseProperties(properties);
     return state;

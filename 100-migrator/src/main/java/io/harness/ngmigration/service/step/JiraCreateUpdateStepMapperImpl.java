@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class JiraCreateUpdateStepMapperImpl implements StepMapper {
+public class JiraCreateUpdateStepMapperImpl extends StepMapper {
   @Override
   public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
     return WorkflowStepSupportStatus.SUPPORTED;
@@ -52,7 +52,7 @@ public class JiraCreateUpdateStepMapperImpl implements StepMapper {
 
   @Override
   public State getState(GraphNode stepYaml) {
-    Map<String, Object> properties = StepMapper.super.getProperties(stepYaml);
+    Map<String, Object> properties = getProperties(stepYaml);
     JiraCreateUpdate state = new JiraCreateUpdate(stepYaml.getName());
     state.parseProperties(properties);
     return state;

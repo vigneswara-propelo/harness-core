@@ -25,7 +25,7 @@ import software.wings.sm.states.AbstractLogAnalysisState;
 import software.wings.sm.states.AbstractMetricAnalysisState;
 
 @OwnedBy(HarnessTeam.CDC)
-public abstract class VerificationBaseService implements StepMapper {
+public abstract class VerificationBaseService extends StepMapper {
   @Override
   public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
     return WorkflowStepSupportStatus.MANUAL_EFFORT;

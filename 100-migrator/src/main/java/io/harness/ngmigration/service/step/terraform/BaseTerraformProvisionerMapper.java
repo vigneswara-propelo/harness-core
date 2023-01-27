@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 @OwnedBy(HarnessTeam.CDC)
-public abstract class BaseTerraformProvisionerMapper implements StepMapper {
+public abstract class BaseTerraformProvisionerMapper extends StepMapper {
   private static final String SECRET_FORMAT = "<+secrets.getValue(\"%s\")>";
 
   @Override

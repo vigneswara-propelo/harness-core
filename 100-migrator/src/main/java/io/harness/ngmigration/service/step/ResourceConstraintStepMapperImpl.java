@@ -23,7 +23,7 @@ import software.wings.sm.states.ResourceConstraintState;
 
 import java.util.Map;
 
-public class ResourceConstraintStepMapperImpl implements StepMapper {
+public class ResourceConstraintStepMapperImpl extends StepMapper {
   @Override
   public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
     return WorkflowStepSupportStatus.MANUAL_EFFORT;
@@ -36,7 +36,7 @@ public class ResourceConstraintStepMapperImpl implements StepMapper {
 
   @Override
   public State getState(GraphNode stepYaml) {
-    Map<String, Object> properties = StepMapper.super.getProperties(stepYaml);
+    Map<String, Object> properties = getProperties(stepYaml);
     ResourceConstraintState state = new ResourceConstraintState(stepYaml.getName());
     state.parseProperties(properties);
     return state;

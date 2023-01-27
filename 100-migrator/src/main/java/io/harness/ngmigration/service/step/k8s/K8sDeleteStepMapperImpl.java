@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
-public class K8sDeleteStepMapperImpl implements StepMapper {
+public class K8sDeleteStepMapperImpl extends StepMapper {
   @Override
   public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
     return WorkflowStepSupportStatus.SUPPORTED;
@@ -44,7 +44,7 @@ public class K8sDeleteStepMapperImpl implements StepMapper {
 
   @Override
   public State getState(GraphNode stepYaml) {
-    Map<String, Object> properties = StepMapper.super.getProperties(stepYaml);
+    Map<String, Object> properties = getProperties(stepYaml);
     K8sDelete state = new K8sDelete(stepYaml.getName());
     state.parseProperties(properties);
     return state;
