@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Harness Inc. All rights reserved.
+ * Copyright 2020 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -10,17 +10,14 @@ package io.harness.testlib.module;
 import io.harness.exception.GeneralException;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.ServerVersion;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,13 +26,13 @@ import java.util.concurrent.Future;
 import lombok.Builder;
 import lombok.Value;
 
-public class FakeMongoCreator {
+public class FakeLegacyMongoCreator {
   public static ExecutorService executorService =
-      Executors.newFixedThreadPool(8, new ThreadFactoryBuilder().setNameFormat("FakeMongoCreator-%d").build());
+      Executors.newFixedThreadPool(8, new ThreadFactoryBuilder().setNameFormat("FakeLegacyMongoCreator-%d").build());
 
   @Value
   @Builder
-  static class FakeMongo implements Closeable {
+  static class FakeLegacyMongo implements Closeable {
     MongoServer mongoServer;
     MongoClient mongoClient;
 
@@ -48,28 +45,25 @@ public class FakeMongoCreator {
     }
   }
 
-  private static FakeMongo fakeMongo() {
+  private static FakeLegacyMongo fakeLegacyMongo() {
     MongoServer mongoServer = new MongoServer(new MemoryBackend().version(ServerVersion.MONGO_3_6));
     mongoServer.bind("localhost", 0);
     InetSocketAddress serverAddress = mongoServer.getLocalAddress();
-    MongoClient mongoClient = MongoClients.create(
-        MongoClientSettings.builder()
-            .applyToClusterSettings(builder -> builder.hosts(Arrays.asList(new ServerAddress(serverAddress))))
-            .build());
-    return FakeMongo.builder().mongoServer(mongoServer).mongoClient(mongoClient).build();
+    MongoClient mongoClient = new MongoClient(new ServerAddress(serverAddress));
+    return FakeLegacyMongo.builder().mongoServer(mongoServer).mongoClient(mongoClient).build();
   }
 
-  private static Queue<Future<FakeMongo>> futureFakeMongoClient = new ArrayDeque<>();
+  private static Queue<Future<FakeLegacyMongo>> futureFakeMongoClient = new ArrayDeque<>();
 
   static {
     for (int i = 0; i < 10; i++) {
-      futureFakeMongoClient.add(executorService.submit(FakeMongoCreator::fakeMongo));
+      futureFakeMongoClient.add(executorService.submit(FakeLegacyMongoCreator::fakeLegacyMongo));
     }
   }
 
-  static FakeMongo takeFakeMongo() {
-    Future<FakeMongo> fakeMongo = futureFakeMongoClient.poll();
-    futureFakeMongoClient.add(executorService.submit(FakeMongoCreator::fakeMongo));
+  static FakeLegacyMongo takeFakeLegacyMongo() {
+    Future<FakeLegacyMongo> fakeMongo = futureFakeMongoClient.poll();
+    futureFakeMongoClient.add(executorService.submit(FakeLegacyMongoCreator::fakeLegacyMongo));
     try {
       return fakeMongo.get();
     } catch (InterruptedException | ExecutionException exception) {

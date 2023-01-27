@@ -13,10 +13,8 @@ import io.harness.exception.GeneralException;
 import io.harness.threading.Morpheus;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.internal.connection.ServerAddressHelper;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import de.flapdoodle.embed.mongo.Command;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -30,16 +28,15 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.runtime.Network;
 import java.io.Closeable;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.Builder;
 import lombok.Value;
 import org.slf4j.LoggerFactory;
 
-class RealMongoCreator {
+class RealLegacyMongoCreator {
   private static ExecutorService executorService =
-      Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("RealMongoCreator-%d").build());
+      Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("RealLegacyMongoCreator-%d").build());
 
   private static IRuntimeConfig runtimeConfig =
       new RuntimeConfigBuilder()
@@ -56,7 +53,7 @@ class RealMongoCreator {
 
   @Value
   @Builder
-  static class RealMongo implements Closeable {
+  static class RealLegacyMongo implements Closeable {
     MongodExecutable mongodExecutable;
     MongoClient mongoClient;
     String temporaryDatabaseName;
@@ -64,6 +61,10 @@ class RealMongoCreator {
     @Override
     public void close() {
       executorService.submit(() -> {
+        if (temporaryDatabaseName != null) {
+          mongoClient.dropDatabase(temporaryDatabaseName);
+        }
+
         mongoClient.close();
         if (mongodExecutable != null) {
           mongodExecutable.stop();
@@ -72,13 +73,14 @@ class RealMongoCreator {
     }
   }
 
-  private static RealMongo realMongo(String databaseName) throws Exception {
+  private static RealLegacyMongo realLegacyMongo(String databaseName) throws Exception {
     String testMongoUri = System.getenv("TEST_MONGO_URI");
     if (testMongoUri != null) {
-      return RealMongo.builder()
+      MongoClientURI mongoClientURI = new MongoClientURI(testMongoUri + "/" + databaseName);
+      return RealLegacyMongo.builder()
           .mongodExecutable(null)
           .temporaryDatabaseName(databaseName)
-          .mongoClient(MongoClients.create(testMongoUri + "/" + databaseName))
+          .mongoClient(new MongoClient(mongoClientURI))
           .build();
     }
 
@@ -105,12 +107,8 @@ class RealMongoCreator {
           mongodExecutable = starter.prepare(mongodConfig);
           mongodExecutable.start();
         }
-        MongoClient mongoClient = MongoClients.create(
-            MongoClientSettings.builder()
-                .applyToClusterSettings(
-                    builder -> builder.hosts(Arrays.asList(ServerAddressHelper.createServerAddress("localhost", port))))
-                .build());
-        return RealMongo.builder().mongodExecutable(mongodExecutable).mongoClient(mongoClient).build();
+        MongoClient mongoClient = new MongoClient("localhost", port);
+        return RealLegacyMongo.builder().mongodExecutable(mongodExecutable).mongoClient(mongoClient).build();
       } catch (Exception e) {
         // Note this handles race int the port, but also in the starter prepare
         Morpheus.sleep(ofMillis(250));
@@ -120,9 +118,9 @@ class RealMongoCreator {
     throw persistent;
   }
 
-  static RealMongo takeRealMongo(String databaseName) {
+  static RealLegacyMongo takeRealLegacyMongo(String databaseName) {
     try {
-      return realMongo(databaseName);
+      return realLegacyMongo(databaseName);
     } catch (Exception exception) {
       throw new GeneralException("", exception);
     }
