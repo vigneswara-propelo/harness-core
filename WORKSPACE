@@ -5065,7 +5065,7 @@ plain_artifacts = [
     "org.apache.cxf:cxf-rt-databinding-jaxb:3.5.5",
     "org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5",
     "org.apache.cxf:cxf-rt-frontend-simple:3.5.5",
-    "org.apache.cxf:cxf-rt-transports-http-hc:3.5.4",
+    "org.apache.cxf:cxf-rt-transports-http-hc:3.5.5",
     "org.apache.cxf:cxf-rt-transports-http:3.5.5",
     "org.apache.cxf:cxf-rt-ws-addr:3.5.5",
     "org.apache.cxf:cxf-rt-ws-policy:3.5.5",
