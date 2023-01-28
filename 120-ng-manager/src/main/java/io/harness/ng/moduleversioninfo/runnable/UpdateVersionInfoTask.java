@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.moduleversioninfo.runnable;
+package io.harness.ng.moduleversioninfo.runnable;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -13,6 +13,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.moduleversioninfo.entity.ModuleVersionInfo;
 import io.harness.cdng.moduleversioninfo.entity.ModuleVersionInfo.ModuleVersionInfoKeys;
 import io.harness.exception.UnexpectedException;
+import io.harness.ng.NextGenConfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -24,9 +25,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.validation.executable.ValidateOnExecution;
@@ -42,6 +44,7 @@ import org.springframework.data.mongodb.core.query.Query;
 @Slf4j
 public class UpdateVersionInfoTask {
   @Inject private MongoTemplate mongoTemplate;
+  @Inject NextGenConfiguration nextGenConfiguration;
 
   List<ModuleVersionInfo> allModulesFromDB;
   private static final String pathToFile = "mvi/baseinfo.json";
@@ -74,13 +77,22 @@ public class UpdateVersionInfoTask {
 
     // get current versions
     allModulesFromDB.forEach(module -> {
-      String currentVersion = "";
-      try {
-        currentVersion = getCurrentMicroserviceVersions(module.getModuleName(), module.getVersionUrl());
-      } catch (IOException e) {
-        throw new UnexpectedException("Update VersionInfo Task Sync job interrupted:" + e);
+      if (!module.getVersion().equals("Coming Soon")) {
+        String currentVersion = "";
+        try {
+          String baseUrl = nextGenConfiguration.getNgManagerClientConfig().getBaseUrl();
+          StringBuilder baseUrlBuilder = new StringBuilder();
+          baseUrlBuilder.append(baseUrl);
+          if (!baseUrl.endsWith("/")) {
+            baseUrlBuilder.append('/');
+          }
+          baseUrlBuilder.append("version");
+          currentVersion = getCurrentMicroserviceVersions(module.getModuleName(), baseUrlBuilder.toString());
+        } catch (IOException e) {
+          throw new UnexpectedException("Update VersionInfo Task Sync job interrupted:" + e);
+        }
+        module.setVersion(currentVersion);
       }
-      module.setVersion(currentVersion);
     });
 
     mongoTemplate.insertAll(allModulesFromDB);
@@ -105,11 +117,12 @@ public class UpdateVersionInfoTask {
     if (module.getVersion().equals("Coming Soon")) {
       return;
     }
-    Date dateTime = new Date(System.currentTimeMillis());
-    String[] dateTimeFormat = dateTime.toString().split(",");
-    if (dateTimeFormat.length >= 2) {
-      module.setLastModifiedAt(dateTimeFormat[0] + " " + dateTimeFormat[1]);
-    }
+
+    // TODO: move this logic to UI in future.
+    LocalDateTime dateTime = LocalDateTime.now();
+    DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("MMM-dd-yyyy");
+    String formattedDate = dateTime.format(myFormatObj);
+    module.setLastModifiedAt(formattedDate);
   }
 
   private String getCurrentMicroserviceVersions(String serviceName, String serviceVersionUrl) throws IOException {
