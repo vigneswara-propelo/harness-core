@@ -595,6 +595,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   SPG_SIDENAV_COLLAPSE("FF for enabling collapse and expand of side nav", HarnessTeam.SPG),
   PL_REMOVE_USER_VIEWER_ROLE_ASSIGNMENTS("Enable removal of user level viewer role assignments", HarnessTeam.PL),
+  PL_REMOVE_EXTERNAL_USER_ORG_PROJECT(
+      "Allow deletion of externally managed user from orgs and projects", HarnessTeam.PL),
   CDP_AWS_SAM("FF for enabling AWS SAM deployments", HarnessTeam.CDP),
   TERRAFORM_CLOUD("Enable support of Terraform Cloud in the NG", HarnessTeam.CDP);
 
