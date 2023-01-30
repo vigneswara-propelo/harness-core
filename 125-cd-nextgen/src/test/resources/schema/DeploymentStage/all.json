@@ -6016,6 +6016,9 @@
             "store": {
               "$ref": "#/definitions/StoreConfigWrapper"
             },
+            "subChartName": {
+              "type": "string"
+            },
             "valuesPaths": {
               "oneOf": [
                 {
