@@ -5,23 +5,26 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.terraformcloud.model;
+package io.harness.cdng.provision.terraformcloud.resources.dtos;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.FieldDefaults;
 
-@OwnedBy(CDP)
+@Value
 @Builder
-@lombok.Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TerraformCloudResponse<T> {
-  private T data;
-  private JsonNode errors;
-  private JsonNode meta;
-  private JsonNode links;
+@OwnedBy(CDP)
+@Schema(name = "TerraformCloudOrganizationsResponse", description = "Terraform cloud response for list organizations")
+public class OrganizationsDTO {
+  List<OrganizationDTO> organizations;
 }
