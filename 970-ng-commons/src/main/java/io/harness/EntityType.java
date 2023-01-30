@@ -518,7 +518,10 @@ public enum EntityType {
       EntityYamlRootNames.ASG_BLUE_GREEN_DEPLOY),
   @JsonProperty(EntityTypeConstants.ASG_BLUE_GREEN_ROLLBACK)
   ASG_BLUE_GREEN_ROLLBACK_STEP(ModuleType.CD, EntityTypeConstants.ASG_BLUE_GREEN_ROLLBACK, IdentifierRef.class,
-      EntityYamlRootNames.ASG_BLUE_GREEN_ROLLBACK);
+      EntityYamlRootNames.ASG_BLUE_GREEN_ROLLBACK),
+  @JsonProperty(EntityTypeConstants.TERRAFORM_CLOUD_RUN)
+  TERRAFORM_CLOUD_RUN(ModuleType.CD, EntityTypeConstants.TERRAFORM_CLOUD_RUN, IdentifierRef.class,
+      EntityYamlRootNames.TERRAFORM_CLOUD_RUN);
 
   private final ModuleType moduleType;
   String yamlName;
