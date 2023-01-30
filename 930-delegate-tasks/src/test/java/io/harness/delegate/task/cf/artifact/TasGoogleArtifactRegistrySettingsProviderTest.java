@@ -36,10 +36,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(CDP)
-public class TasGoogleContainerRegistrySettingsProviderTest extends CategoryTest {
+public class TasGoogleArtifactRegistrySettingsProviderTest extends CategoryTest {
   @Mock DecryptionHelper decryptionHelper;
-  TasGoogleContainerRegistrySettingsProvider tasGoogleContainerRegistrySettingsProvider =
-      new TasGoogleContainerRegistrySettingsProvider();
+  TasGoogleArtifactRegistrySettingsProvider tasGoogleArtifactRegistrySettingsProvider =
+      new TasGoogleArtifactRegistrySettingsProvider();
 
   @Before
   public void setUp() throws Exception {
@@ -50,7 +50,7 @@ public class TasGoogleContainerRegistrySettingsProviderTest extends CategoryTest
   @Test
   @Owner(developers = RISHABH)
   @Category(UnitTests.class)
-  public void testGetContainerSettingsForGoogleContainerRegistry() {
+  public void testGetContainerSettingsForGoogleArtifactRegistry() {
     GcpConnectorDTO gcpConnectorDTO =
         GcpConnectorDTO.builder()
             .credential(
@@ -63,7 +63,7 @@ public class TasGoogleContainerRegistrySettingsProviderTest extends CategoryTest
                     .build())
             .build();
 
-    TasArtifactCreds containerSettingsResult = tasGoogleContainerRegistrySettingsProvider.getContainerSettings(
+    TasArtifactCreds containerSettingsResult = tasGoogleArtifactRegistrySettingsProvider.getContainerSettings(
         TasTestUtils.createTestContainerArtifactConfig(gcpConnectorDTO, TasArtifactRegistryType.GCR), decryptionHelper);
 
     assertThat(containerSettingsResult.getPassword()).isEqualTo("test-secretKey");
@@ -83,7 +83,7 @@ public class TasGoogleContainerRegistrySettingsProviderTest extends CategoryTest
 
     assertThatThrownBy(
         ()
-            -> tasGoogleContainerRegistrySettingsProvider.getContainerSettings(
+            -> tasGoogleArtifactRegistrySettingsProvider.getContainerSettings(
                 TasTestUtils.createTestContainerArtifactConfig(gcpConnectorDTO, TasArtifactRegistryType.GCR),
                 decryptionHelper))
         .isInstanceOf(InvalidRequestException.class);
