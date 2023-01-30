@@ -19,15 +19,14 @@ import lombok.Value;
 @Builder
 @OwnedBy(IACM)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class StackVariables {
-  Long created;
-  Long updated;
-  String kind;
-  String value_type;
-  String value;
-  String key;
-  String stack;
+public class Execution {
+  String id;
   String account;
   String org;
   String project;
+  String stack;
+  String pipeline;
+  String pipeline_execution_id;
+  String pipeline_stage_id;
+  String action;
 }
