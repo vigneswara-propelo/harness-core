@@ -442,5 +442,11 @@ public class VerifyStepMetricsAnalysisUtils {
     resultMap.remove(metricIdentifier);
   }
 
+  public static boolean isTransactionGroupExcluded(
+      DeploymentTimeSeriesAnalysisFilter deploymentTimeSeriesAnalysisFilter, String transactionGroup) {
+    return deploymentTimeSeriesAnalysisFilter.filterByTransactionNames()
+        && !deploymentTimeSeriesAnalysisFilter.getTransactionNames().contains(transactionGroup);
+  }
+
   private VerifyStepMetricsAnalysisUtils() {}
 }
