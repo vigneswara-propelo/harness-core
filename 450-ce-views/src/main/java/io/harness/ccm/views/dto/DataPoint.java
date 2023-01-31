@@ -5,16 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ccm.graphql.dto.common;
+package io.harness.ccm.views.dto;
 
 import io.leangen.graphql.annotations.GraphQLNonNull;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 @Builder
-public class Reference {
-  @GraphQLNonNull String id;
-  @GraphQLNonNull String name;
-  @GraphQLNonNull String type;
+public class DataPoint {
+  @GraphQLNonNull Reference key;
+  @GraphQLNonNull Number value;
 }

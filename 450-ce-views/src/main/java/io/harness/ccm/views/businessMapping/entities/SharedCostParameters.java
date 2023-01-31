@@ -5,10 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ccm.graphql.dto.common;
+package io.harness.ccm.views.businessMapping.entities;
 
-import io.harness.ccm.views.businessMapping.entities.BusinessMapping;
-import io.harness.ccm.views.businessMapping.entities.SharedCost;
+import io.harness.ccm.views.dto.Reference;
 
 import com.google.cloud.Timestamp;
 import java.util.List;
