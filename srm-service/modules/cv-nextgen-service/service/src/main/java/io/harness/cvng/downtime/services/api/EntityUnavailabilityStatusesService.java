@@ -28,6 +28,7 @@ public interface EntityUnavailabilityStatusesService extends DeleteEntityByHandl
 
   List<EntityUnavailabilityStatusesDTO> getAllInstances(ProjectParams projectParams);
 
+  List<EntityUnavailabilityStatusesDTO> getAllInstances(ProjectParams projectParams, long startTime, long endTime);
   Set<String> getActiveInstances(ProjectParams projectParams, List<String> entityIds);
   boolean deleteFutureDowntimeInstances(ProjectParams projectParams, String entityId);
   boolean deleteAllInstances(ProjectParams projectParams, String entityId);

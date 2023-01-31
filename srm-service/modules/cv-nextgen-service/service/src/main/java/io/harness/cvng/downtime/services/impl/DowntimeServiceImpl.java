@@ -56,6 +56,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -237,6 +238,29 @@ public class DowntimeServiceImpl implements DowntimeService {
             .build());
   }
 
+  @Override
+  public List<EntityUnavailabilityStatusesDTO> filterDowntimeInstancesOnMonitoredService(ProjectParams projectParams,
+      List<EntityUnavailabilityStatusesDTO> entityUnavailabilityStatusesDTOS, String monitoredServiceIdentifier) {
+    return filterDowntimeInstancesOnMonitoredServices(
+        projectParams, entityUnavailabilityStatusesDTOS, Collections.singleton(monitoredServiceIdentifier));
+  }
+
+  @Override
+  public List<EntityUnavailabilityStatusesDTO> filterDowntimeInstancesOnMonitoredServices(ProjectParams projectParams,
+      List<EntityUnavailabilityStatusesDTO> entityUnavailabilityStatusesDTOS, Set<String> monitoredServiceIdentifiers) {
+    Set<String> downtimeIdentifiers = entityUnavailabilityStatusesDTOS.stream()
+                                          .map(EntityUnavailabilityStatusesDTO::getEntityId)
+                                          .collect(Collectors.toSet());
+    List<Downtime> downtimeList = get(projectParams, downtimeIdentifiers);
+    if (monitoredServiceIdentifiers != null) {
+      downtimeList = filterDowntimesOnMonitoredServices(downtimeList, monitoredServiceIdentifiers);
+    }
+    Set<String> filteredDowntimeIdentifiers =
+        downtimeList.stream().map(Downtime::getIdentifier).collect(Collectors.toSet());
+    return entityUnavailabilityStatusesDTOS.stream()
+        .filter(entity -> filteredDowntimeIdentifiers.contains(entity.getEntityId()))
+        .collect(Collectors.toList());
+  }
   @Override
   public void deleteByProjectIdentifier(
       Class<Downtime> clazz, String accountId, String orgIdentifier, String projectIdentifier) {
@@ -440,13 +464,19 @@ public class DowntimeServiceImpl implements DowntimeService {
   }
   private List<Downtime> filterDowntimesOnMonitoredService(
       List<Downtime> downtimes, String monitoredServiceIdentifier) {
+    return filterDowntimesOnMonitoredServices(downtimes, Collections.singleton(monitoredServiceIdentifier));
+  }
+
+  private List<Downtime> filterDowntimesOnMonitoredServices(
+      List<Downtime> downtimes, Set<String> monitoredServiceIdentifiers) {
     return downtimes.stream()
         .filter(downtime
             -> downtime.getEntityRefs()
                    .stream()
                    .map(EntityDetails::getEntityRef)
                    .collect(Collectors.toList())
-                   .contains(monitoredServiceIdentifier))
+                   .stream()
+                   .anyMatch(monitoredServiceIdentifiers::contains))
         .collect(Collectors.toList());
   }
 

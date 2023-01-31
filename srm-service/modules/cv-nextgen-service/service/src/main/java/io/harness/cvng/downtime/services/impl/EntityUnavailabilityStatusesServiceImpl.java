@@ -92,6 +92,26 @@ public class EntityUnavailabilityStatusesServiceImpl implements EntityUnavailabi
   }
 
   @Override
+  public List<EntityUnavailabilityStatusesDTO> getAllInstances(
+      ProjectParams projectParams, long startTime, long endTime) {
+    List<EntityUnavailabilityStatuses> allInstances =
+        hPersistence.createQuery(EntityUnavailabilityStatuses.class)
+            .disableValidation()
+            .filter(EntityUnavailabilityStatusesKeys.accountId, projectParams.getAccountIdentifier())
+            .filter(EntityUnavailabilityStatusesKeys.orgIdentifier, projectParams.getOrgIdentifier())
+            .filter(EntityUnavailabilityStatusesKeys.projectIdentifier, projectParams.getProjectIdentifier())
+            .field(EntityUnavailabilityStatusesKeys.startTime)
+            .lessThanOrEq(endTime)
+            .field(EntityUnavailabilityStatusesKeys.endTime)
+            .greaterThanOrEq(startTime)
+            .order(Sort.descending(EntityUnavailabilityStatusesKeys.endTime))
+            .asList();
+    return allInstances.stream()
+        .map(status -> statusesEntityAndDTOTransformer.getDto(status))
+        .collect(Collectors.toList());
+  }
+
+  @Override
   public Set<String> getActiveInstances(ProjectParams projectParams, List<String> entityIds) {
     List<EntityUnavailabilityStatuses> entityUnavailabilityStatuses =
         hPersistence.createQuery(EntityUnavailabilityStatuses.class)
@@ -177,7 +197,6 @@ public class EntityUnavailabilityStatusesServiceImpl implements EntityUnavailabi
   private Query<EntityUnavailabilityStatuses> getAllInstancesQuery(ProjectParams projectParams) {
     return hPersistence.createQuery(EntityUnavailabilityStatuses.class)
         .disableValidation()
-        .filter(EntityUnavailabilityStatusesKeys.entityType, EntityType.MAINTENANCE_WINDOW)
         .filter(EntityUnavailabilityStatusesKeys.accountId, projectParams.getAccountIdentifier())
         .filter(EntityUnavailabilityStatusesKeys.orgIdentifier, projectParams.getOrgIdentifier())
         .filter(EntityUnavailabilityStatusesKeys.projectIdentifier, projectParams.getProjectIdentifier())
@@ -186,7 +205,6 @@ public class EntityUnavailabilityStatusesServiceImpl implements EntityUnavailabi
   private Query<EntityUnavailabilityStatuses> getPastInstancesQuery(ProjectParams projectParams) {
     return hPersistence.createQuery(EntityUnavailabilityStatuses.class)
         .disableValidation()
-        .filter(EntityUnavailabilityStatusesKeys.entityType, EntityType.MAINTENANCE_WINDOW)
         .filter(EntityUnavailabilityStatusesKeys.accountId, projectParams.getAccountIdentifier())
         .filter(EntityUnavailabilityStatusesKeys.orgIdentifier, projectParams.getOrgIdentifier())
         .filter(EntityUnavailabilityStatusesKeys.projectIdentifier, projectParams.getProjectIdentifier())
@@ -201,7 +219,6 @@ public class EntityUnavailabilityStatusesServiceImpl implements EntityUnavailabi
         .filter(EntityUnavailabilityStatusesKeys.orgIdentifier, projectParams.getOrgIdentifier())
         .filter(EntityUnavailabilityStatusesKeys.projectIdentifier, projectParams.getProjectIdentifier())
         .filter(EntityUnavailabilityStatusesKeys.entityIdentifier, entityId)
-        .filter(EntityUnavailabilityStatusesKeys.entityType, EntityType.MAINTENANCE_WINDOW)
         .field(EntityUnavailabilityStatusesKeys.startTime)
         .greaterThanOrEq(clock.millis() / 1000);
   }
