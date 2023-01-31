@@ -118,6 +118,7 @@ import io.harness.cvng.core.jobs.ConnectorChangeEventMessageProcessor;
 import io.harness.cvng.core.jobs.ConsumerMessageProcessor;
 import io.harness.cvng.core.jobs.CustomChangeEventPublisherService;
 import io.harness.cvng.core.jobs.CustomChangeEventPublisherServiceImpl;
+import io.harness.cvng.core.jobs.FakeFeatureFlagSRMProducer;
 import io.harness.cvng.core.jobs.OrganizationChangeEventMessageProcessor;
 import io.harness.cvng.core.jobs.ProjectChangeEventMessageProcessor;
 import io.harness.cvng.core.jobs.StateMachineEventPublisherService;
@@ -125,6 +126,7 @@ import io.harness.cvng.core.jobs.StateMachineEventPublisherServiceImpl;
 import io.harness.cvng.core.jobs.StateMachineMessageProcessor;
 import io.harness.cvng.core.jobs.StateMachineMessageProcessorImpl;
 import io.harness.cvng.core.services.CVNextGenConstants;
+import io.harness.cvng.core.services.DebugConfigService;
 import io.harness.cvng.core.services.api.AppDynamicsService;
 import io.harness.cvng.core.services.api.AwsService;
 import io.harness.cvng.core.services.api.CVConfigService;
@@ -521,6 +523,13 @@ public class CVServiceModule extends AbstractModule {
         return verificationConfiguration.getWebhookConfig().getWebhookBaseUrl();
       }
     });
+
+    bind(DebugConfigService.class).toInstance(new DebugConfigService() {
+      @Override
+      public boolean isDebugEnabled() {
+        return verificationConfiguration.isEnableDebugAPI();
+      }
+    });
     MapBinder<Type, DataCollectionTaskManagementService> dataCollectionTaskServiceMapBinder =
         MapBinder.newMapBinder(binder(), Type.class, DataCollectionTaskManagementService.class);
     dataCollectionTaskServiceMapBinder.addBinding(Type.SERVICE_GUARD)
@@ -745,6 +754,7 @@ public class CVServiceModule extends AbstractModule {
     bind(VerifyStepDemoService.class).to(VerifyStepDemoServiceImpl.class);
     bind(StateMachineEventPublisherService.class).to(StateMachineEventPublisherServiceImpl.class);
     bind(CustomChangeEventPublisherService.class).to(CustomChangeEventPublisherServiceImpl.class);
+    bind(FakeFeatureFlagSRMProducer.class);
     bind(String.class)
         .annotatedWith(Names.named("portalUrl"))
         .toInstance(verificationConfiguration.getPortalUrl().endsWith("/")
