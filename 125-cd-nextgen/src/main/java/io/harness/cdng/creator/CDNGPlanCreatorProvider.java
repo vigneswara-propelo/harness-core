@@ -1166,7 +1166,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .build();
 
     StepInfo k8sDryRunManifest = StepInfo.newBuilder()
-                                     .setName("K8s Dry Run")
+                                     .setName("Dry Run")
                                      .setType(StepSpecTypeConstants.K8S_DRY_RUN_MANIFEST)
                                      .setFeatureRestrictionName(FeatureRestrictionName.K8S_DRY_RUN.name())
                                      .setStepMetaData(StepMetaData.newBuilder()
