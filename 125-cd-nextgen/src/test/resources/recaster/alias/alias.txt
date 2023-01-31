@@ -742,3 +742,6 @@ io.harness.cdng.provision.terraformcloud.runspecs.TerraformCloudRefreshSpec
 io.harness.cdng.provision.terraformcloud.TerraformCloudRunStepInfo
 io.harness.cdng.provision.terraformcloud.TerraformCloudRunStepNode
 io.harness.cdng.provision.terraformcloud.TerraformCloudRunStepParameters
+io.harness.cdng.infra.beans.GoogleFunctionsInfrastructureOutcome
+io.harness.cdng.infra.yaml.GoogleFunctionsInfrastructure
+io.harness.cdng.infra.beans.GoogleFunctionsInfraMapping
