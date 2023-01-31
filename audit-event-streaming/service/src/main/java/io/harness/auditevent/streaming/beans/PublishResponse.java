@@ -5,19 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.auditevent.streaming.config;
+package io.harness.auditevent.streaming.beans;
 
-import io.harness.secret.ConfigSecret;
-
-import lombok.AccessLevel;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Value;
-import lombok.experimental.FieldDefaults;
+import lombok.Data;
 
-@Value
+@Data
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class ServiceSecrets {
-  @ConfigSecret String platformServiceSecret;
-  @ConfigSecret String ngManagerServiceSecret;
+public class PublishResponse {
+  @NotNull PublishResponseStatus status;
+  BatchFailureInfo failureInfo;
 }
