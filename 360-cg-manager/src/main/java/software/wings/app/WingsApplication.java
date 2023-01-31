@@ -233,7 +233,6 @@ import software.wings.scheduler.events.segment.SegmentGroupEventJob;
 import software.wings.scheduler.marketplace.gcp.GCPBillingHandler;
 import software.wings.scheduler.persistance.PersistentLockCleanup;
 import software.wings.search.framework.ElasticsearchSyncService;
-import software.wings.search.redisConsumer.ApplicationTimeScaleRedisChangeEventConsumer;
 import software.wings.security.AuthResponseFilter;
 import software.wings.security.AuthRuleFilter;
 import software.wings.security.AuthenticationFilter;
@@ -1271,8 +1270,6 @@ public class WingsApplication extends Application<MainConfiguration> {
     RedisConsumerControllerCg controller = injector.getInstance(RedisConsumerControllerCg.class);
     controller.register(injector.getInstance(NotifyEventConsumerCg.class), listenerConfig.getNotifyConsumerCount());
     controller.register(injector.getInstance(GeneralEventConsumerCg.class), listenerConfig.getGeneralConsumerCount());
-    controller.register(injector.getInstance(ApplicationTimeScaleRedisChangeEventConsumer.class),
-        configuration.getDebeziumConsumerConfigs().getApplicationTimescaleStreaming().getThreads());
   }
 
   private void scheduleJobsManager(
