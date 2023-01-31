@@ -603,7 +603,9 @@ public enum FeatureName {
   NG_CDS_HELM_SUB_CHARTS("Support for helm sub charts", HarnessTeam.CDP),
   CDS_GOOGLE_CLOUD_FUNCTION("This flag is to enable the Google Functions Deployment Swimlane for users. "
           + "This flag only works with Service and Environments v2",
-      HarnessTeam.CDP);
+      HarnessTeam.CDP),
+  CDS_NOT_USE_HEADERS_FOR_HTTP_CAPABILITY(
+      "FF for disabling headers while doing capability check for HTTP", HarnessTeam.CDC);
 
   @Deprecated
   FeatureName() {
