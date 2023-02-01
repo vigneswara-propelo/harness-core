@@ -61,6 +61,7 @@ import io.harness.remote.client.NGRestUtils;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.template.TemplateFilterPropertiesDTO;
 import io.harness.template.beans.FilterParamsDTO;
+import io.harness.template.beans.NGTemplateConstants;
 import io.harness.template.beans.PageParamsDTO;
 import io.harness.template.beans.PermissionTypes;
 import io.harness.template.beans.TemplateDeleteListRequestDTO;
@@ -94,6 +95,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -239,7 +241,12 @@ public class NGTemplateResource {
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
       @Parameter(description = "This contains details of Git Entity like Git Branch, Git Repository to be created")
       @BeanParam GitEntityCreateInfoDTO gitEntityCreateInfo,
-      @Parameter(description = "Template YAML") @NotNull String templateYaml,
+      @RequestBody(required = true, description = "Template YAML",
+          content =
+          {
+            @Content(examples = @ExampleObject(name = "Create", summary = "Sample Create Template YAML",
+                         value = NGTemplateConstants.API_SAMPLE_TEMPLATE_YAML, description = "Sample Template YAML"))
+          }) @NotNull String templateYaml,
       @Parameter(description = "Specify true if Default Template is to be set") @QueryParam(
           "setDefaultTemplate") @DefaultValue("false") boolean setDefaultTemplate,
       @Parameter(description = "Comments") @QueryParam("comments") String comments) {
@@ -319,7 +326,12 @@ public class NGTemplateResource {
           NGCommonEntityConstants.VERSION_LABEL_KEY) String versionLabel,
       @Parameter(description = "This contains details of Git Entity like Git Branch information to be updated")
       @BeanParam GitEntityUpdateInfoDTO gitEntityInfo,
-      @Parameter(description = "Template YAML") @NotNull String templateYaml,
+      @RequestBody(required = true, description = "Template YAML",
+          content =
+          {
+            @Content(examples = @ExampleObject(name = "Update", summary = "Sample Update Template YAML",
+                         value = NGTemplateConstants.API_SAMPLE_TEMPLATE_YAML, description = "Sample Template YAML"))
+          }) @NotNull String templateYaml,
       @Parameter(description = "Specify true if Default Template is to be set") @QueryParam(
           "setDefaultTemplate") @DefaultValue("false") boolean setDefaultTemplate,
       @Parameter(description = "Comments") @QueryParam("comments") String comments) {
