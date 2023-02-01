@@ -78,7 +78,7 @@ public class StepMapperFactory {
   @Inject ElastigroupDeployStepMapperImpl elastigroupDeployStepMapper;
   @Inject ElastigroupListenerRollbackStepMapperImpl elastigroupListenerRollbackStepMapper;
   @Inject ElastigroupRollbackStepMapperImpl elastigroupRollbackStepMapper;
-
+  @Inject ServiceNowStepMapperImpl serviceNowStepMapper;
   @Inject ApmVerificationStepMapperImpl apmVerificationStepMapper;
   @Inject AppDynamicsStepMapperImpl appDynamicsStepMapper;
   @Inject DataDogStepMapperImpl dataDogStepMapper;
@@ -135,6 +135,8 @@ public class StepMapperFactory {
         return k8sBlueGreenDeployStepMapper;
       case "JIRA_CREATE_UPDATE":
         return jiraCreateUpdateStepMapper;
+      case "SERVICENOW_CREATE_UPDATE":
+        return serviceNowStepMapper;
       case "COMMAND":
         return commandStepMapper;
       case "TERRAFORM_PROVISION":
