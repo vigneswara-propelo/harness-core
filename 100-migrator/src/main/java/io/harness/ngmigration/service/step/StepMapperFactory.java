@@ -52,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StepMapperFactory {
+  @Inject CustomFetchInstancesStepMapperImpl customFetchInstancesStepMapper;
   @Inject ShellScriptStepMapperImpl shellScriptStepMapper;
   @Inject K8sRollingStepMapperImpl k8sRollingStepMapper;
   @Inject HttpStepMapperImpl httpStepMapper;
@@ -201,6 +202,8 @@ public class StepMapperFactory {
         return azureCreateARMResourceStepMapper;
       case "ARM_ROLLBACK":
         return azureRollbackARMResourceStepMapper;
+      case "CUSTOM_DEPLOYMENT_FETCH_INSTANCES":
+        return customFetchInstancesStepMapper;
       default:
         return unsupportedStepMapper;
     }
