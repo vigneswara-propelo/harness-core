@@ -18,6 +18,7 @@ import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.delegate.beans.instancesync.ServerInstanceInfo;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.task.aws.asg.AsgCommandResponse;
 import io.harness.delegate.task.aws.asg.AsgRollingRollbackRequest;
@@ -45,6 +46,7 @@ import io.harness.steps.StepHelper;
 import io.harness.supplier.ThrowingSupplier;
 
 import com.google.inject.Inject;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.CDP)
@@ -105,9 +107,20 @@ public class AsgRollingRollbackStep extends CdTaskExecutable<AsgCommandResponse>
                                .build())
               .build();
     } else {
+      InfrastructureOutcome infrastructureOutcome = (InfrastructureOutcome) outcomeService.resolve(
+          ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.INFRASTRUCTURE_OUTCOME));
+
+      List<ServerInstanceInfo> serverInstanceInfos = asgStepCommonHelper.getServerInstanceInfos(
+          asgRollingRollbackResponse, infrastructureOutcome.getInfrastructureKey(),
+          asgStepCommonHelper.getAsgInfraConfig(infrastructureOutcome, ambiance).getRegion());
+
+      StepResponse.StepOutcome stepOutcome =
+          instanceInfoService.saveServerInstancesIntoSweepingOutput(ambiance, serverInstanceInfos);
+
       stepResponse =
           stepResponseBuilder.status(Status.SUCCEEDED)
               .stepOutcome(StepResponse.StepOutcome.builder().name(OutcomeExpressionConstants.OUTPUT).build())
+              .stepOutcome(stepOutcome)
               .build();
     }
     return stepResponse;

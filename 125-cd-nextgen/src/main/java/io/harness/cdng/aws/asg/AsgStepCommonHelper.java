@@ -43,6 +43,7 @@ import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.exception.TaskNGDataException;
 import io.harness.delegate.task.aws.asg.AsgBlueGreenDeployResponse;
 import io.harness.delegate.task.aws.asg.AsgBlueGreenDeployResult;
+import io.harness.delegate.task.aws.asg.AsgBlueGreenRollbackResponse;
 import io.harness.delegate.task.aws.asg.AsgCanaryDeployResponse;
 import io.harness.delegate.task.aws.asg.AsgCanaryDeployResult;
 import io.harness.delegate.task.aws.asg.AsgCommandRequest;
@@ -52,6 +53,7 @@ import io.harness.delegate.task.aws.asg.AsgPrepareRollbackDataResponse;
 import io.harness.delegate.task.aws.asg.AsgPrepareRollbackDataResult;
 import io.harness.delegate.task.aws.asg.AsgRollingDeployResponse;
 import io.harness.delegate.task.aws.asg.AsgRollingDeployResult;
+import io.harness.delegate.task.aws.asg.AsgRollingRollbackResponse;
 import io.harness.delegate.task.git.GitFetchFilesConfig;
 import io.harness.delegate.task.git.GitFetchRequest;
 import io.harness.delegate.task.git.GitFetchResponse;
@@ -592,7 +594,8 @@ public class AsgStepCommonHelper extends CDStepHelper {
 
   public List<ServerInstanceInfo> getServerInstanceInfos(
       AsgCommandResponse asgCommandResponse, String infrastructureKey, String region) {
-    if (asgCommandResponse instanceof AsgRollingDeployResponse) {
+    if ((asgCommandResponse instanceof AsgRollingDeployResponse)
+        || (asgCommandResponse instanceof AsgRollingRollbackResponse)) {
       AsgRollingDeployResult asgRollingDeployResult =
           ((AsgRollingDeployResponse) asgCommandResponse).getAsgRollingDeployResult();
       String asgName = asgRollingDeployResult.getAutoScalingGroupContainer().getAutoScalingGroupName();
@@ -607,7 +610,8 @@ public class AsgStepCommonHelper extends CDStepHelper {
       return AutoScalingGroupContainerToServerInstanceInfoMapper.toServerInstanceInfoList(
           asgCanaryDeployResult.getAutoScalingGroupContainer(), infrastructureKey, region, EXEC_STRATEGY_CANARY,
           asgNameWithoutSuffix, null);
-    } else if (asgCommandResponse instanceof AsgBlueGreenDeployResponse) {
+    } else if ((asgCommandResponse instanceof AsgBlueGreenDeployResponse)
+        || (asgCommandResponse instanceof AsgBlueGreenRollbackResponse)) {
       AsgBlueGreenDeployResult asgBlueGreenDeployResult =
           ((AsgBlueGreenDeployResponse) asgCommandResponse).getAsgBlueGreenDeployResult();
       String prodAsgName = asgBlueGreenDeployResult.getProdAutoScalingGroupContainer().getAutoScalingGroupName();
