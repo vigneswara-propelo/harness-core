@@ -607,7 +607,8 @@ public enum FeatureName {
           + "This flag only works with Service and Environments v2",
       HarnessTeam.CDP),
   CDS_NOT_USE_HEADERS_FOR_HTTP_CAPABILITY(
-      "FF for disabling headers while doing capability check for HTTP", HarnessTeam.CDC);
+      "FF for disabling headers while doing capability check for HTTP", HarnessTeam.CDC),
+  CCM_CLUSTER_ORCH("Show/ Hide navigation link for cluster orchestrator page", HarnessTeam.CE);
 
   @Deprecated
   FeatureName() {
