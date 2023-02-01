@@ -2182,7 +2182,7 @@
 71103:io.harness.logging.LogLevel
 71104:software.wings.delegatetasks.manifest.ManifestCollectionExecutionResponse
 71105:software.wings.delegatetasks.manifest.ManifestCollectionResponse
-71106:software.wings.beans.appmanifest.HelmChart
+71106:software.wings.beans.dto.HelmChart
 71107:software.wings.beans.ConfigFile
 71108:software.wings.beans.ConfigFile.ConfigOverrideType
 71109:software.wings.beans.EntityVersion

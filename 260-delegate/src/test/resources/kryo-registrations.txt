@@ -1843,7 +1843,7 @@
 71103:io.harness.logging.LogLevel
 71104:software.wings.delegatetasks.manifest.ManifestCollectionExecutionResponse
 71105:software.wings.delegatetasks.manifest.ManifestCollectionResponse
-71106:software.wings.beans.appmanifest.HelmChart
+71106:software.wings.beans.dto.HelmChart
 71111:software.wings.helpers.ext.helm.response.HelmCollectChartResponse
 71123:java.time.ZonedDateTime
 72100:software.wings.beans.GcpSecretsManagerConfig
