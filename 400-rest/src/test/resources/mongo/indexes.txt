@@ -337,6 +337,7 @@ gitFileActivity {"name": "accountId_filePath", "background": true} {"accountId":
 gitFileActivity {"name": "accountId_procCommitId_filePath_status", "background": true} {"accountId": 1, "processingCommitId": 1, "filePath": 1, "status": 1}
 gitFileActivity {"name": "accountId_procCommitId_status", "background": true} {"accountId": 1, "processingCommitId": 1, "status": 1}
 gitFileActivity {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
+gitFileActivitySummary {"name": "accountId_appId_createdAt", "background": true} {"accountId": 1, "appId": 1, "createdAt": -1}
 gitFileActivitySummary {"name": "gitCommits_createdAt_direction_indx", "background": true} {"accountId": 1, "createdAt": 1, "gitToHarness": 1}
 gitFileActivitySummary {"name": "gitCommits_for_appId_indx", "background": true} {"accountId": 1, "appId": 1, "gitToHarness": 1}
 gitFileActivitySummary {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
