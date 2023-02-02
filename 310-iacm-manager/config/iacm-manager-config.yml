@@ -62,7 +62,7 @@ iacmmanager-mongo:
 enableAuth: false
 
 logServiceConfig:
-  baseUrl: https://qa.harness.io/log-service/
+  baseUrl: https://aec2-35-197-221-21.ngrok.io
   globalToken: "c76e567a-b341-404d-a8dd-d9738714eb82"
 
 tiServiceConfig:
@@ -75,7 +75,7 @@ stoServiceConfig:
 
 iacmServiceConfig:
   baseUrl: http://localhost:8080
-  externalUrl: http://localhost:8000
+  externalUrl: https://37a4-35-197-221-21.eu.ngrok.io
   globalToken: "551715ea-ca71-11ec-9d64-0242ac120002"
 
 managerTarget: localhost:9880

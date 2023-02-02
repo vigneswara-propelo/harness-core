@@ -52,8 +52,8 @@ import java.util.stream.Collectors;
 @Singleton
 @OwnedBy(HarnessTeam.IACM)
 public class IACMPipelineServiceInfoProvider implements PipelineServiceInfoProvider {
-  @Inject InjectorUtils injectorUtils;
   private static final String LITE_ENGINE_TASK = "liteEngineTask";
+  @Inject InjectorUtils injectorUtils;
 
   @Override
   public List<PartialPlanCreator<?>> getPlanCreators() {
