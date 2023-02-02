@@ -261,7 +261,9 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
           ngEnvironmentConfig = mergeEnvironmentInputs(environment.getYaml(), null);
         }
       } catch (IOException ex) {
-        throw new InvalidRequestException("Unable to read yaml for environment: " + environment.getIdentifier(), ex);
+        throw new InvalidRequestException(format("Unable to read yaml for environment [Name: %s, Identifier: %s]",
+                                              environment.getName(), environment.getIdentifier()),
+            ex);
       }
       List<NGVariable> variables = ngEnvironmentConfig.getNgEnvironmentInfoConfig().getVariables();
       envToEnvVariables.put(environment.getIdentifier(), NGVariablesUtils.getMapOfVariables(variables));
@@ -590,7 +592,9 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
     try {
       ngServiceConfig = YamlUtils.read(mergedServiceYaml, NGServiceConfig.class);
     } catch (IOException e) {
-      throw new InvalidRequestException("corrupt service yaml for service " + serviceEntity.getIdentifier(), e);
+      throw new InvalidRequestException(format("Unable to read yaml for service [Name: %s, Identifier: %s]",
+                                            serviceEntity.getName(), serviceEntity.getIdentifier()),
+          e);
     }
 
     sweepingOutputService.consume(ambiance, ServiceStepV3Constants.SERVICE_SWEEPING_OUTPUT,
@@ -600,7 +604,8 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
 
     if (ngServiceV2InfoConfig.getServiceDefinition() == null) {
       throw new InvalidRequestException(
-          "Service Definition is not defined for service : " + serviceEntity.getIdentifier());
+          format("Service Definition is not defined for service [Name: %s, Identifier: %s]", serviceEntity.getName(),
+              serviceEntity.getIdentifier()));
     }
 
     serviceStepsHelper.checkForVariablesAccessOrThrow(

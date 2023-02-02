@@ -186,6 +186,28 @@ public class ServiceStepV3Test extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = OwnerRule.TATHAGAT)
+  @Category(UnitTests.class)
+  public void executeSyncServiceWithNoServiceDef() {
+    final ServiceEntity serviceEntity = testServiceEntityWithNoServiceDef();
+    final Environment environment = testEnvEntity();
+    mockService(serviceEntity);
+    mockEnv(environment);
+
+    assertThatExceptionOfType(InvalidRequestException.class)
+        .isThrownBy(()
+                        -> step.obtainChildren(buildAmbiance(),
+                            ServiceStepV3Parameters.builder()
+                                .serviceRef(ParameterField.createValueField(serviceEntity.getIdentifier()))
+                                .envRef(ParameterField.createValueField(environment.getIdentifier()))
+                                .childrenNodeIds(new ArrayList<>())
+                                .build(),
+                            null))
+        .withMessageContaining(String.format("Unable to read yaml for service [Name: %s, Identifier: %s]",
+            serviceEntity.getName(), serviceEntity.getIdentifier()));
+  }
+
+  @Test
   @Owner(developers = OwnerRule.YOGESH)
   @Category(UnitTests.class)
   public void executeSync() {
@@ -738,6 +760,24 @@ public class ServiceStepV3Test extends CategoryTest {
         + "          type: Secret\n"
         + "          value: org.secret\n"
         + "    type: Ssh\n";
+    return ServiceEntity.builder()
+        .accountId("accountId")
+        .orgIdentifier("orgId")
+        .projectIdentifier("projectId")
+        .identifier("service-id")
+        .name("service-name")
+        .type(ServiceDefinitionType.KUBERNETES)
+        .yaml(serviceYaml)
+        .build();
+  }
+
+  private ServiceEntity testServiceEntityWithNoServiceDef() {
+    final String serviceYaml = "service:\n"
+        + "  name: service-name\n"
+        + "  identifier: service-id\n"
+        + "  tags: {}\n"
+        + "  serviceDefinition:\n"
+        + "    spec: {}\n";
     return ServiceEntity.builder()
         .accountId("accountId")
         .orgIdentifier("orgId")
