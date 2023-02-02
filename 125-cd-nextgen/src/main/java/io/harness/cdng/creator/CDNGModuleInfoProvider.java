@@ -86,6 +86,10 @@ public class CDNGModuleInfoProvider implements ExecutionSummaryModuleInfoProvide
     ArtifactsOutcome artifactsOutcome = artifactsOutcomeOptional.get();
     if (artifactsOutcome.getPrimary() != null) {
       artifactsSummaryBuilder.primary(artifactsOutcome.getPrimary().getArtifactSummary());
+      if (artifactsOutcome.getPrimary().getArtifactSummary() != null) {
+        artifactsSummaryBuilder.artifactDisplayName(
+            artifactsOutcome.getPrimary().getArtifactSummary().getDisplayName());
+      }
     }
 
     if (isNotEmpty(artifactsOutcome.getSidecars())) {
@@ -116,6 +120,15 @@ public class CDNGModuleInfoProvider implements ExecutionSummaryModuleInfoProvide
       return Optional.empty();
     }
     return Optional.ofNullable((FreezeOutcome) optionalOutcome.getOutcome());
+  }
+
+  private Optional<ArtifactsOutcome> getArtifactsOutcome(Ambiance ambiance) {
+    OptionalOutcome optionalOutcome = outcomeService.resolveOptional(
+        ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.ARTIFACTS));
+    if (!optionalOutcome.isFound()) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable((ArtifactsOutcome) optionalOutcome.getOutcome());
   }
 
   private Optional<ArtifactsOutcome> getArtifactsOutcome(OrchestrationEvent event) {
@@ -181,6 +194,12 @@ public class CDNGModuleInfoProvider implements ExecutionSummaryModuleInfoProvide
       serviceOutcome.ifPresent(outcome
           -> cdPipelineModuleInfoBuilder.serviceDefinitionType(outcome.getServiceDefinitionType())
                  .serviceIdentifier(outcome.getIdentifier()));
+      Optional<ArtifactsOutcome> artifactsOutcome = getArtifactsOutcome(ambiance);
+      artifactsOutcome.ifPresent(outcome -> {
+        if (outcome.getPrimary() != null && outcome.getPrimary().getArtifactSummary() != null) {
+          cdPipelineModuleInfoBuilder.artifactDisplayName(outcome.getPrimary().getArtifactSummary().getDisplayName());
+        }
+      });
     }
     if (isInfrastructureNodeAndCompleted(stepType, event.getStatus())) {
       OptionalOutcome infraOptionalOutcome = outcomeService.resolveOptional(
