@@ -611,7 +611,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_NOT_USE_HEADERS_FOR_HTTP_CAPABILITY(
       "FF for disabling headers while doing capability check for HTTP", HarnessTeam.CDC),
-  CCM_CLUSTER_ORCH("Show/ Hide navigation link for cluster orchestrator page", HarnessTeam.CE);
+  CCM_CLUSTER_ORCH("Show/ Hide navigation link for cluster orchestrator page", HarnessTeam.CE),
+  SPG_DISABLE_SECRET_DETAILS("Disable secret management logs show in CG", HarnessTeam.SPG);
 
   @Deprecated
   FeatureName() {
