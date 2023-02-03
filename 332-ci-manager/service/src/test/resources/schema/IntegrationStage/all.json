@@ -47,6 +47,22 @@
       "type": "string",
       "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
     },
+    "pipelineVariables": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/NumberNGVariable"
+          },
+          {
+            "$ref": "#/definitions/SecretNGVariable"
+          },
+          {
+            "$ref": "#/definitions/StringNGVariable"
+          }
+        ]
+      }
+    },
     "strategy": {
       "$ref": "#/definitions/StrategyConfig"
     },
@@ -3756,6 +3772,12 @@
             "infrastructure": {
               "$ref": "#/definitions/Infrastructure"
             },
+            "pipelineVariables": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/NGVariable"
+              }
+            },
             "skipGitClone": {
               "type": "boolean"
             },
@@ -3976,6 +3998,22 @@
         "name": {
           "type": "string",
           "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
+        },
+        "pipelineVariables": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/NumberNGVariable"
+              },
+              {
+                "$ref": "#/definitions/SecretNGVariable"
+              },
+              {
+                "$ref": "#/definitions/StringNGVariable"
+              }
+            ]
+          }
         },
         "strategy": {
           "$ref": "#/definitions/StrategyConfig"

@@ -51,6 +51,7 @@ public class IntegrationStageNode extends AbstractStageNode {
   @JsonProperty("spec")
   @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
   IntegrationStageConfigImpl integrationStageConfig;
+  @VariableExpression List<NGVariable> pipelineVariables;
 
   @Override
   public String getType() {
@@ -76,11 +77,12 @@ public class IntegrationStageNode extends AbstractStageNode {
   @Builder
   public IntegrationStageNode(String uuid, String identifier, String name,
       ParameterField<List<FailureStrategyConfig>> failureStrategies, IntegrationStageConfigImpl integrationStageConfig,
-      StepType type, List<NGVariable> variables) {
+      StepType type, List<NGVariable> variables, List<NGVariable> pipelineVariables) {
     this.failureStrategies = failureStrategies;
     this.integrationStageConfig = integrationStageConfig;
     this.type = type;
     this.setVariables(variables);
+    this.pipelineVariables = pipelineVariables;
     this.setUuid(uuid);
     this.setIdentifier(identifier);
     this.setName(name);

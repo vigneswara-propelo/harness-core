@@ -3756,6 +3756,12 @@
             "infrastructure": {
               "$ref": "#/definitions/Infrastructure"
             },
+            "pipelineVariables": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/NGVariable"
+              }
+            },
             "skipGitClone": {
               "type": "boolean"
             },

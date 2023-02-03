@@ -39,6 +39,7 @@ public class InitializeStepGenerator {
         .infrastructure(infrastructure)
         .stageIdentifier(stageNode.getIdentifier())
         .variables(stageNode.getVariables())
+        .pipelineVariables(stageNode.getPipelineVariables())
         .stageElementConfig(integrationStageConfig)
         .executionSource(ciExecutionArgs.getExecutionSource())
         .ciCodebase(ciCodebase)
