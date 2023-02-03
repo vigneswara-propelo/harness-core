@@ -611,7 +611,10 @@ public enum FeatureName {
       "FF for disabling headers while doing capability check for HTTP", HarnessTeam.CDC),
   CDS_DEBEZIUM_ENABLED_CG("This flag is enable sync using debezium in cg", HarnessTeam.CDC, Scope.GLOBAL),
   CCM_CLUSTER_ORCH("Show/ Hide navigation link for cluster orchestrator page", HarnessTeam.CE),
-  SPG_DISABLE_SECRET_DETAILS("Disable secret management logs show in CG", HarnessTeam.SPG);
+  SPG_DISABLE_SECRET_DETAILS("Disable secret management logs show in CG", HarnessTeam.SPG),
+  CDS_AWS_NATIVE_LAMBDA("This flag is to enable the AWS Native Lambda Deployments for users. "
+          + "This flag only works with Service and Environments v2",
+      HarnessTeam.CDP);
 
   @Deprecated
   FeatureName() {
