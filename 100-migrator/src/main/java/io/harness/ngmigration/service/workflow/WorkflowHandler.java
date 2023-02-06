@@ -350,7 +350,7 @@ public abstract class WorkflowHandler {
                                                 .name(MigratorUtility.generateName(phaseStep.getName()))
                                                 .steps(allSteps)
                                                 .skipCondition(null)
-                                                .when(when)
+                                                .when(ParameterField.createValueField(when))
                                                 .failureStrategies(null)
                                                 .build()))
         .build();
@@ -408,7 +408,8 @@ public abstract class WorkflowHandler {
       return null;
     }
     if (StringUtils.isNotBlank(skipCondition)) {
-      stepNode.setWhen(StepWhenCondition.builder().condition(wrapNot(skipCondition)).stageStatus(SUCCESS).build());
+      stepNode.setWhen(ParameterField.createValueField(
+          StepWhenCondition.builder().condition(wrapNot(skipCondition)).stageStatus(SUCCESS).build()));
     }
     if (addLoopingStrategy && stepMapper.loopingSupported()) {
       stepNode.setStrategy(
