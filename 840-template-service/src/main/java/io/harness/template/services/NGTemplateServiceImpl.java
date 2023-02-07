@@ -59,8 +59,6 @@ import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ng.core.template.TemplateReferenceSummary;
 import io.harness.ng.core.template.TemplateResponseDTO;
 import io.harness.ng.core.template.TemplateWithInputsResponseDTO;
-import io.harness.ng.core.template.exception.NGTemplateResolveExceptionV2;
-import io.harness.ng.core.template.refresh.ValidateTemplateInputsResponseDTO;
 import io.harness.ngsettings.SettingIdentifiers;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.organization.remote.OrganizationClient;
@@ -267,26 +265,17 @@ public class NGTemplateServiceImpl implements NGTemplateService {
   }
 
   private void applyTemplatesToYamlAndValidateSchema(TemplateEntity templateEntity) {
-    try {
-      TemplateMergeResponseDTO templateMergeResponseDTO = null;
-      templateMergeResponseDTO =
-          templateMergeService.applyTemplatesToYamlV2(templateEntity.getAccountId(), templateEntity.getOrgIdentifier(),
-              templateEntity.getProjectIdentifier(), templateEntity.getYaml(), false, false);
-      populateLinkedTemplatesModules(templateEntity, templateMergeResponseDTO);
-      checkLinkedTemplateAccess(templateEntity.getAccountId(), templateEntity.getOrgIdentifier(),
-          templateEntity.getProjectIdentifier(), templateMergeResponseDTO);
+    TemplateMergeResponseDTO templateMergeResponseDTO = null;
+    templateMergeResponseDTO =
+        templateMergeService.applyTemplatesToYamlV2(templateEntity.getAccountId(), templateEntity.getOrgIdentifier(),
+            templateEntity.getProjectIdentifier(), templateEntity.getYaml(), false, false);
+    populateLinkedTemplatesModules(templateEntity, templateMergeResponseDTO);
+    checkLinkedTemplateAccess(templateEntity.getAccountId(), templateEntity.getOrgIdentifier(),
+        templateEntity.getProjectIdentifier(), templateMergeResponseDTO);
 
-      // validate schema on resolved yaml to validate template inputs value as well.
-      ngTemplateSchemaService.validateYamlSchemaInternal(templateMergeResponseDTO == null
-              ? templateEntity
-              : templateEntity.withYaml(templateMergeResponseDTO.getMergedPipelineYaml()));
-    } catch (NGTemplateResolveExceptionV2 ex) {
-      ValidateTemplateInputsResponseDTO validateTemplateInputsResponse = ex.getValidateTemplateInputsResponseDTO();
-      validateTemplateInputsResponse.getErrorNodeSummary().setTemplateResponse(
-          NGTemplateDtoMapper.writeTemplateResponseDto(templateEntity));
-      throw new NGTemplateResolveExceptionV2(
-          "Exception in resolving template refs in given yaml.", USER, validateTemplateInputsResponse, null);
-    }
+    // validate schema on resolved yaml to validate template inputs value as well.
+    ngTemplateSchemaService.validateYamlSchemaInternal(
+        templateEntity.withYaml(templateMergeResponseDTO.getMergedPipelineYaml()));
   }
 
   private void populateLinkedTemplatesModules(
