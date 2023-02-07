@@ -1301,6 +1301,25 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "AwsLambdaDefinitionManifest": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ManifestAttributes"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "type": "string"
+            },
+            "store": {
+              "$ref": "#/definitions/StoreConfigWrapper"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "AwsLambdaDeployStepInfo": {
       "allOf": [
         {
@@ -8187,7 +8206,8 @@
             "AsgConfiguration",
             "AsgScalingPolicy",
             "AsgScheduledUpdateGroupAction",
-            "GoogleCloudFunctionDefinition"
+            "GoogleCloudFunctionDefinition",
+            "AwsLambda"
           ]
         }
       },
@@ -8253,6 +8273,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/AsgScheduledUpdateGroupActionManifest"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "AwsLambda"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AwsLambdaDefinitionManifest"
               }
             }
           }

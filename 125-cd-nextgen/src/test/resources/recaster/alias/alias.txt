@@ -768,3 +768,5 @@ io.harness.cdng.aws.lambda.deploy.AwsLambdaDeployStepParameters
 io.harness.cdng.aws.lambda.AwsLambdaStepExceptionPassThroughData
 io.harness.cdng.aws.lambda.beans.AwsLambdaStepOutcome
 io.harness.cdng.service.beans.AwsLambdaServiceSpec
+io.harness.cdng.manifest.yaml.kinds.AwsLambdaDefinitionManifest
+io.harness.cdng.manifest.yaml.AwsLambdaDefinitionManifestOutcome
