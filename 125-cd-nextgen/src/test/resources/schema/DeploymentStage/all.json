@@ -6283,6 +6283,19 @@
                 "$ref": "#/definitions/HelmManifestCommandFlag"
               }
             },
+            "enableDeclarativeRollback": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/ParameterFieldBoolean"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
             "helmVersion": {
               "type": "string",
               "enum": [
@@ -7813,6 +7826,19 @@
         {
           "type": "object",
           "properties": {
+            "enableDeclarativeRollback": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/ParameterFieldBoolean"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
             "metadata": {
               "type": "string"
             },
@@ -8055,6 +8081,19 @@
         {
           "type": "object",
           "properties": {
+            "enableDeclarativeRollback": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/ParameterFieldBoolean"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
             "metadata": {
               "type": "string"
             },
@@ -9468,6 +9507,19 @@
         {
           "type": "object",
           "properties": {
+            "enableDeclarativeRollback": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/ParameterFieldBoolean"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
             "metadata": {
               "type": "string"
             },
