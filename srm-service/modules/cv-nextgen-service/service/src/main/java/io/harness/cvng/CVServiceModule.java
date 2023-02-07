@@ -127,6 +127,7 @@ import io.harness.cvng.core.jobs.StateMachineMessageProcessor;
 import io.harness.cvng.core.jobs.StateMachineMessageProcessorImpl;
 import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.DebugConfigService;
+import io.harness.cvng.core.services.DeeplinkURLService;
 import io.harness.cvng.core.services.api.AppDynamicsService;
 import io.harness.cvng.core.services.api.AwsService;
 import io.harness.cvng.core.services.api.CVConfigService;
@@ -198,6 +199,7 @@ import io.harness.cvng.core.services.impl.DataCollectionTaskServiceImpl;
 import io.harness.cvng.core.services.impl.DatadogMetricDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.DatadogServiceImpl;
 import io.harness.cvng.core.services.impl.DebugServiceImpl;
+import io.harness.cvng.core.services.impl.DeeplinkURLServiceImpl;
 import io.harness.cvng.core.services.impl.DefaultDeleteEntityByHandler;
 import io.harness.cvng.core.services.impl.DynatraceDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.DynatraceServiceImpl;
@@ -730,6 +732,7 @@ public class CVServiceModule extends AbstractModule {
     bind(StackdriverService.class).to(StackdriverServiceImpl.class);
     bind(DatadogService.class).to(DatadogServiceImpl.class);
     bind(DynatraceService.class).to(DynatraceServiceImpl.class);
+    bind(DeeplinkURLService.class).to(DeeplinkURLServiceImpl.class);
     bind(RedisConfig.class)
         .annotatedWith(Names.named("lock"))
         .toInstance(verificationConfiguration.getEventsFrameworkConfiguration().getRedisConfig());
