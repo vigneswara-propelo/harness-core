@@ -617,7 +617,9 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CI_PIPELINE_VARIABLES_IN_STEPS("For enabling pipeline variables as env variables in CI steps", HarnessTeam.CI),
   CDS_ENTITY_REFRESH_DO_NOT_QUOTE_STRINGS(
-      "Do not add quotes to strings when a user reconciles a template, pipeline", HarnessTeam.CDC, Scope.GLOBAL);
+      "Do not add quotes to strings when a user reconciles a template, pipeline", HarnessTeam.CDC, Scope.GLOBAL),
+  SPG_STATE_MACHINE_MAPPING_EXCEPTION_IGNORE(
+      "To silent ignore org.modelmapper.MappingException inside state machine executor", HarnessTeam.SPG);
 
   @Deprecated
   FeatureName() {
