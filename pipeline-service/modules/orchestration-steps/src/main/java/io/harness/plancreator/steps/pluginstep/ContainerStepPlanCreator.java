@@ -113,8 +113,8 @@ public class ContainerStepPlanCreator extends ChildrenPlanCreator<ContainerStepN
                                                           .identifier(config.getIdentifier())
                                                           .name(config.getName())
                                                           .skipCondition(config.getSkipCondition())
-                                                          .when(config.getWhen())
-                                                          .failureStrategies(config.getFailureStrategies())
+                                                          .when(config.getWhen().getValue())
+                                                          .failureStrategies(config.getFailureStrategies().getValue())
                                                           .childNodeID(childrenNodeIds.get(0))
                                                           .build();
 
