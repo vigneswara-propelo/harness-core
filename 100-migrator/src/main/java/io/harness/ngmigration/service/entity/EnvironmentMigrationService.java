@@ -36,6 +36,7 @@ import io.harness.ng.core.environment.yaml.NGEnvironmentInfoConfig;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.YamlGenerationDetails;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.client.TemplateClient;
@@ -205,7 +206,7 @@ public class EnvironmentMigrationService extends NgMigrationService {
   }
 
   @Override
-  public List<NGYamlFile> generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
+  public YamlGenerationDetails generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NGYamlFile> migratedEntities) {
     Environment environment = (Environment) entities.get(entityId).getEntity();
     String name = MigratorUtility.generateName(inputDTO.getOverrides(), entityId, environment.getName());
@@ -270,8 +271,7 @@ public class EnvironmentMigrationService extends NgMigrationService {
     files.add(ngYamlFile);
 
     migratedEntities.putIfAbsent(entityId, ngYamlFile);
-
-    return files;
+    return YamlGenerationDetails.builder().yamlFileList(files).build();
   }
 
   private List<NGVariable> getGlobalVariables(
