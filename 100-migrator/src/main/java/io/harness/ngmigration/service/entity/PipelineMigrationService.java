@@ -50,6 +50,8 @@ import io.harness.pms.yaml.YamlUtils;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.steps.approval.stage.ApprovalStageConfig;
 import io.harness.steps.approval.stage.ApprovalStageNode;
+import io.harness.steps.pipelinestage.PipelineStageConfig;
+import io.harness.steps.pipelinestage.PipelineStageNode;
 import io.harness.steps.template.stage.TemplateStageNode;
 import io.harness.template.beans.yaml.NGTemplateConfig;
 import io.harness.template.remote.TemplateResourceClient;
@@ -235,7 +237,7 @@ public class PipelineMigrationService extends NgMigrationService {
     NGYamlFile ngYamlFile =
         NGYamlFile.builder()
             .type(PIPELINE)
-            .filename("workflows/" + name + ".yaml")
+            .filename("pipelines/" + name + ".yaml")
             .yaml(PipelineConfig.builder()
                       .pipelineInfoConfig(PipelineInfoConfig.builder()
                                               .identifier(identifier)
@@ -244,6 +246,7 @@ public class PipelineMigrationService extends NgMigrationService {
                                               .projectIdentifier(projectIdentifier)
                                               .orgIdentifier(orgIdentifier)
                                               .stages(ngStages)
+                                              .allowStageExecutions(true)
                                               .build())
                       .build())
             .ngEntityDetail(NgEntityDetail.builder()
@@ -289,14 +292,16 @@ public class PipelineMigrationService extends NgMigrationService {
           .build();
     }
 
-    NGTemplateConfig wfTemplateConfig = (NGTemplateConfig) wfTemplate.getYaml();
-    if (TemplateEntityType.PIPELINE_TEMPLATE.equals(wfTemplateConfig.getTemplateInfoConfig().getType())) {
-      log.warn("Cannot link a multi-service WFs as they are created as pipeline templates");
-      return NGSkipDetail.builder()
-          .reason("A multi-service workflow is linked to this pipeline.")
-          .cgBasicInfo(pipeline.getCgBasicInfo())
-          .type(PIPELINE)
-          .build();
+    if (wfTemplate.getYaml() instanceof NGTemplateConfig) {
+      NGTemplateConfig wfTemplateConfig = (NGTemplateConfig) wfTemplate.getYaml();
+      if (TemplateEntityType.PIPELINE_TEMPLATE.equals(wfTemplateConfig.getTemplateInfoConfig().getType())) {
+        log.warn("Cannot link a multi-service WFs as they are created as pipeline templates");
+        return NGSkipDetail.builder()
+            .reason("A multi-service workflow is linked to this pipeline.")
+            .cgBasicInfo(pipeline.getCgBasicInfo())
+            .type(PIPELINE)
+            .build();
+      }
     }
     return null;
   }
@@ -310,6 +315,22 @@ public class PipelineMigrationService extends NgMigrationService {
     if (wfTemplate == null) {
       log.error("The workflow was not migrated, aborting pipeline migration {}", workflowId);
       return null;
+    }
+
+    if (wfTemplate.getYaml() instanceof PipelineConfig) {
+      PipelineInfoConfig pipelineConfig = ((PipelineConfig) wfTemplate.getYaml()).getPipelineInfoConfig();
+      PipelineStageConfig pipelineStageConfig = PipelineStageConfig.builder()
+                                                    .pipeline(pipelineConfig.getIdentifier())
+                                                    .project(pipelineConfig.getProjectIdentifier())
+                                                    .org(pipelineConfig.getOrgIdentifier())
+                                                    .build();
+      PipelineStageNode stageNode = new PipelineStageNode();
+      stageNode.setName(stageElement.getName());
+      stageNode.setIdentifier(MigratorUtility.generateIdentifier(stageElement.getName()));
+      stageNode.setDescription(ParameterField.createValueField(""));
+      stageNode.setPipelineStageConfig(pipelineStageConfig);
+
+      return StageElementWrapperConfig.builder().stage(JsonPipelineUtils.asTree(stageNode)).build();
     }
 
     NGTemplateConfig wfTemplateConfig = (NGTemplateConfig) wfTemplate.getYaml();
@@ -332,7 +353,7 @@ public class PipelineMigrationService extends NgMigrationService {
   }
 
   @Override
-  protected YamlDTO getNGEntity(NgEntityDetail ngEntityDetail, String accountIdentifier) {
+  protected YamlDTO getNGEntity(CgEntityNode cgEntityNode, NgEntityDetail ngEntityDetail, String accountIdentifier) {
     try {
       PMSPipelineResponseDTO response = NGRestUtils.getResponse(
           pipelineServiceClient.getPipelineByIdentifier(ngEntityDetail.getIdentifier(), accountIdentifier,
