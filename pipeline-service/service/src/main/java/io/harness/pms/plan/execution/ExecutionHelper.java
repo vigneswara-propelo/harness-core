@@ -244,6 +244,7 @@ public class ExecutionHelper {
     in pipelineYamlConfig will be 12h.allowedValues(12h, 1d) for validation during execution. However, this value will
     give an error in schema validation. That's why we need a value that doesn't have this validator appended.
      */
+      // We don't have schema validation for V1 yaml as of now.
       if (PipelineVersion.V0.equals(version)) {
         String yamlToRunWithoutRuntimeInputs =
             YamlUtils.getYamlWithoutInputs(new YamlConfig(stagesExecutionInfo.getPipelineYamlToRun()));
@@ -385,9 +386,10 @@ public class ExecutionHelper {
     }
     if (isRetry) {
       try {
-        currentProcessedYaml = retryExecutionHelper.retryProcessedYaml(
-            retryExecutionParameters.getPreviousProcessedYaml(), currentProcessedYaml,
-            retryExecutionParameters.getRetryStagesIdentifier(), retryExecutionParameters.getIdentifierOfSkipStages());
+        currentProcessedYaml =
+            retryExecutionHelper.retryProcessedYaml(retryExecutionParameters.getPreviousProcessedYaml(),
+                currentProcessedYaml, retryExecutionParameters.getRetryStagesIdentifier(),
+                retryExecutionParameters.getIdentifierOfSkipStages(), version);
       } catch (IOException e) {
         log.error("Unable to get processed yaml. Previous Processed yaml:\n"
                 + retryExecutionParameters.getPreviousProcessedYaml(),
