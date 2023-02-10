@@ -21,6 +21,7 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.encryption.Scope;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.beans.YamlDTO;
+import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NGSkipDetail;
@@ -44,6 +45,7 @@ import io.harness.plancreator.pipeline.PipelineConfig;
 import io.harness.plancreator.pipeline.PipelineInfoConfig;
 import io.harness.plancreator.stages.StageElementWrapperConfig;
 import io.harness.plancreator.steps.AbstractStepNode;
+import io.harness.pms.governance.PipelineSaveResponse;
 import io.harness.pms.pipeline.PMSPipelineResponseDTO;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlUtils;
@@ -82,6 +84,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
+import retrofit2.Response;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)
@@ -161,11 +164,17 @@ public class PipelineMigrationService extends NgMigrationService {
   public MigrationImportSummaryDTO migrate(String auth, NGClient ngClient, PmsClient pmsClient,
       TemplateClient templateClient, MigrationInputDTO inputDTO, NGYamlFile yamlFile) throws IOException {
     try {
-      NGRestUtils.getResponse(pmsClient.createPipeline(auth, inputDTO.getAccountIdentifier(),
-          inputDTO.getOrgIdentifier(), inputDTO.getProjectIdentifier(),
-          RequestBody.create(MediaType.parse("application/yaml"), YamlUtils.write(yamlFile.getYaml()))));
-      log.info("Pipeline creation successful");
-      return MigrationImportSummaryDTO.builder().success(true).errors(Collections.emptyList()).build();
+      String yaml = YamlUtils.write(yamlFile.getYaml());
+      Response<ResponseDTO<PipelineSaveResponse>> resp =
+          pmsClient
+              .createPipeline(auth, inputDTO.getAccountIdentifier(), inputDTO.getOrgIdentifier(),
+                  inputDTO.getProjectIdentifier(), RequestBody.create(MediaType.parse("application/yaml"), yaml))
+              .execute();
+      log.info("Pipeline creation Response details {} {}", resp.code(), resp.message());
+      if (resp.code() >= 400) {
+        log.info("Pipeline generated is \n - {}", yaml);
+      }
+      return handleResp(yamlFile, resp);
     } catch (Exception ex) {
       log.error("Pipeline creation failed - ", ex);
       return MigrationImportSummaryDTO.builder()

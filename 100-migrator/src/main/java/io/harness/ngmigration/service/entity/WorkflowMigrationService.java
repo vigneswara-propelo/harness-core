@@ -267,7 +267,19 @@ public class WorkflowMigrationService extends NgMigrationService {
     TemplateEntityType templateType = workflowHandler.getTemplateType(workflow);
     YamlDTO yamlDTO;
     if (templateType == TemplateEntityType.PIPELINE_TEMPLATE) {
-      List<StageElementWrapperConfig> stages = workflowHandler.asStages(entities, migratedEntities, workflow);
+      List<StageElementWrapperConfig> stages;
+      try {
+        stages = workflowHandler.asStages(entities, migratedEntities, workflow);
+      } catch (Exception e) {
+        return YamlGenerationDetails.builder()
+            .yamlFileList(files)
+            .skipDetails(Collections.singletonList(NGSkipDetail.builder()
+                                                       .type(entityId.getType())
+                                                       .cgBasicInfo(workflow.getCgBasicInfo())
+                                                       .reason(e.getMessage())
+                                                       .build()))
+            .build();
+      }
       yamlDTO = PipelineConfig.builder()
                     .pipelineInfoConfig(PipelineInfoConfig.builder()
                                             .identifier(identifier)
@@ -280,9 +292,22 @@ public class WorkflowMigrationService extends NgMigrationService {
                                             .build())
                     .build();
     } else {
-      JsonNode templateSpec = workflowHandler.getTemplateSpec(entities, migratedEntities, workflow);
+      JsonNode templateSpec;
+      try {
+        templateSpec = workflowHandler.getTemplateSpec(entities, migratedEntities, workflow);
+      } catch (Exception e) {
+        return YamlGenerationDetails.builder()
+            .yamlFileList(files)
+            .skipDetails(Collections.singletonList(NGSkipDetail.builder()
+                                                       .type(entityId.getType())
+                                                       .cgBasicInfo(workflow.getCgBasicInfo())
+                                                       .reason(e.getMessage())
+                                                       .build()))
+            .build();
+      }
       if (templateSpec == null) {
         return YamlGenerationDetails.builder()
+            .yamlFileList(files)
             .skipDetails(Collections.singletonList(
                 NGSkipDetail.builder()
                     .type(entityId.getType())
@@ -338,8 +363,7 @@ public class WorkflowMigrationService extends NgMigrationService {
       Response<ResponseDTO<PipelineSaveResponse>> resp =
           pmsClient
               .createPipeline(auth, inputDTO.getAccountIdentifier(), inputDTO.getOrgIdentifier(),
-                  inputDTO.getProjectIdentifier(),
-                  RequestBody.create(MediaType.parse("application/yaml"), YamlUtils.write(yamlFile.getYaml())))
+                  inputDTO.getProjectIdentifier(), RequestBody.create(MediaType.parse("application/yaml"), yaml))
               .execute();
       log.info("Workflow as pipeline creation Response details {} {}", resp.code(), resp.message());
       if (resp.code() >= 400) {
