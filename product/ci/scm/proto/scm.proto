@@ -658,15 +658,15 @@ enum AzureWebhookEvent {
 }
 
 enum HarnessWebhookEvent {
-  HARNESS_CREATE = 0;
-  HARNESS_DELETE = 1;
-  HARNESS_DEPLOYMENT = 2;
-  HARNESS_ISSUE = 3;
-  HARNESS_ISSUE_COMMENT = 4;
-  HARNESS_PULL_REQUEST = 5;
-  HARNESS_PULL_REQUEST_REVIEW = 6;
-  HARNESS_PUSH = 7;
-  HARNESS_RELEASE = 8;
+  HARNESS_BRANCH_CREATED = 0;
+  HARNESS_BRANCH_DELETED = 1;
+  HARNESS_BRANCH_UPDATED = 2;
+  HARNESS_PULLREQ_BRANCH_UPDATED = 3;
+  HARNESS_PULLREQ_CREATED = 4;
+  HARNESS_PULLREQ_REOPENED = 5;
+  HARNESS_TAG_CREATED = 6;
+  HARNESS_TAG_DELETED = 7;
+  HARNESS_TAG_UPDATED = 8;
 }
 
 message GithubWebhookEvents {
@@ -691,7 +691,7 @@ message AzureWebhookEvents {
 }
 
 message HarnessWebhookEvents {
-  HarnessWebhookEvent event = 1;
+  repeated HarnessWebhookEvent events = 1;
 }
 
 message NativeEvents {
@@ -701,6 +701,7 @@ message NativeEvents {
     BitbucketCloudWebhookEvents bitbucket_cloud = 3;
     BitbucketServerWebhookEvents bitbucket_server = 4;
     AzureWebhookEvents azure = 5;
+    HarnessWebhookEvents harness = 6;
   }
 }
 
