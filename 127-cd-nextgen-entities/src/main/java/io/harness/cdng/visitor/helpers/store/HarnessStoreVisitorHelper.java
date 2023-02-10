@@ -8,7 +8,6 @@
 package io.harness.cdng.visitor.helpers.store;
 
 import static io.harness.cdng.visitor.YamlTypes.PATH_CONNECTOR;
-import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
 
 import io.harness.beans.FileReference;
 import io.harness.cdng.manifest.yaml.harness.HarnessStore;
@@ -70,7 +69,7 @@ public class HarnessStoreVisitorHelper implements EntityReferenceExtractor {
   public Set<EntityDetailProtoDTO> getEntityDetailsProtoDTO(ParameterField<List<String>> valuesFiles,
       String accountIdentifier, String orgIdentifier, String projectIdentifier, Map<String, Object> contextMap,
       String overridePathFieldName) {
-    List<String> files = getParameterFieldValue(valuesFiles) instanceof List
+    List<String> files = ParameterFieldHelper.getParameterFieldValue(valuesFiles) instanceof List
         ? ParameterFieldHelper.getParameterFieldListValue(valuesFiles, false)
         : Collections.emptyList();
     Set<EntityDetailProtoDTO> result = new HashSet<>(files.size());
