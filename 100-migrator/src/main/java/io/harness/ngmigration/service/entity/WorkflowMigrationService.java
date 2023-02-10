@@ -233,7 +233,19 @@ public class WorkflowMigrationService extends NgMigrationService {
           .build();
     }
 
-    JsonNode templateSpec = workflowHandler.getTemplateSpec(entities, migratedEntities, workflow);
+    JsonNode templateSpec;
+    try {
+      templateSpec = workflowHandler.getTemplateSpec(entities, migratedEntities, workflow);
+    } catch (Exception e) {
+      log.warn("Failed to generate template/pipeline for workflow", e);
+      return YamlGenerationDetails.builder()
+          .skipDetails(Collections.singletonList(NGSkipDetail.builder()
+                                                     .type(entityId.getType())
+                                                     .cgBasicInfo(workflow.getCgBasicInfo())
+                                                     .reason(e.getMessage())
+                                                     .build()))
+          .build();
+    }
     if (templateSpec == null) {
       return YamlGenerationDetails.builder()
           .skipDetails(Collections.singletonList(
