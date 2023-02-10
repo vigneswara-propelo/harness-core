@@ -26,6 +26,7 @@ import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NGSkipDetail;
 import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.StepTypeSummary;
 import io.harness.ngmigration.beans.WorkflowStepSupportStatus;
 import io.harness.ngmigration.beans.YamlGenerationDetails;
 import io.harness.ngmigration.beans.summary.BaseSummary;
@@ -65,6 +66,7 @@ import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -121,14 +123,22 @@ public class WorkflowMigrationService extends NgMigrationService {
         entities.stream()
             .map(entity -> (Workflow) entity.getEntity())
             .collect(groupingBy(entity -> entity.getOrchestration().getOrchestrationWorkflowType().name(), counting()));
-    Map<String, Long> summaryByStepTyp = entities.stream()
-                                             .flatMap(entity -> {
-                                               Workflow workflow = (Workflow) entity.getEntity();
-                                               WorkflowHandler workflowHandler =
-                                                   workflowHandlerFactory.getWorkflowHandler(workflow);
-                                               return workflowHandler.getSteps(workflow).stream();
-                                             })
-                                             .collect(groupingBy(GraphNode::getType, counting()));
+    Map<String, Long> summaryByStepType = entities.stream()
+                                              .flatMap(entity -> {
+                                                Workflow workflow = (Workflow) entity.getEntity();
+                                                WorkflowHandler workflowHandler =
+                                                    workflowHandlerFactory.getWorkflowHandler(workflow);
+                                                return workflowHandler.getSteps(workflow).stream();
+                                              })
+                                              .collect(groupingBy(GraphNode::getType, counting()));
+    Map<String, StepTypeSummary> stepTypeSummaryMap = new HashMap<>();
+    summaryByStepType.forEach((key, value) -> {
+      stepTypeSummaryMap.put(key,
+          StepTypeSummary.builder()
+              .count(value)
+              .status(stepMapperFactory.getStepMapper(key).stepSupportStatus(GraphNode.builder().build()))
+              .build());
+    });
     Set<String> expressions =
         entities.stream()
             .flatMap(entity -> {
@@ -142,7 +152,8 @@ public class WorkflowMigrationService extends NgMigrationService {
     return WorkflowSummary.builder()
         .count(entities.size())
         .typeSummary(summaryByType)
-        .stepTypeSummary(summaryByStepTyp)
+        .stepTypeSummary(summaryByStepType)
+        .stepsSummary(stepTypeSummaryMap)
         .expressions(expressions)
         .build();
   }
