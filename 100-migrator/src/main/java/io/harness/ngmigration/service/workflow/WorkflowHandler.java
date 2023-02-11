@@ -229,21 +229,22 @@ public abstract class WorkflowHandler {
   public List<GraphNode> getSteps(Workflow workflow) {
     CanaryOrchestrationWorkflow orchestrationWorkflow =
         (CanaryOrchestrationWorkflow) workflow.getOrchestrationWorkflow();
-    return getSteps(orchestrationWorkflow.getWorkflowPhases(), orchestrationWorkflow.getPreDeploymentSteps(),
-        orchestrationWorkflow.getPostDeploymentSteps());
-  }
-
-  List<GraphNode> getSteps(
-      List<WorkflowPhase> phases, PhaseStep preDeploymentPhaseStep, PhaseStep postDeploymentPhaseStep) {
     List<GraphNode> stepYamls = new ArrayList<>();
+    PhaseStep postDeploymentPhaseStep = orchestrationWorkflow.getPostDeploymentSteps();
     if (postDeploymentPhaseStep != null && EmptyPredicate.isNotEmpty(postDeploymentPhaseStep.getSteps())) {
       stepYamls.addAll(postDeploymentPhaseStep.getSteps());
     }
+    PhaseStep preDeploymentPhaseStep = orchestrationWorkflow.getPreDeploymentSteps();
     if (preDeploymentPhaseStep != null && EmptyPredicate.isNotEmpty(preDeploymentPhaseStep.getSteps())) {
       stepYamls.addAll(preDeploymentPhaseStep.getSteps());
     }
+    List<WorkflowPhase> phases = orchestrationWorkflow.getWorkflowPhases();
     if (EmptyPredicate.isNotEmpty(phases)) {
       stepYamls.addAll(getStepsFromPhases(phases));
+    }
+    List<WorkflowPhase> rollbackPhases = getRollbackPhases(workflow);
+    if (EmptyPredicate.isNotEmpty(rollbackPhases)) {
+      stepYamls.addAll(getStepsFromPhases(rollbackPhases));
     }
     return stepYamls;
   }
