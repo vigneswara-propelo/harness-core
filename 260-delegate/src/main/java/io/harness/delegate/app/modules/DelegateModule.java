@@ -312,6 +312,11 @@ import io.harness.delegate.task.gitapi.GitApiTask;
 import io.harness.delegate.task.gitcommon.GitTaskNG;
 import io.harness.delegate.task.gitops.GitOpsFetchAppTask;
 import io.harness.delegate.task.googlefunction.GoogleFunctionCommandTask;
+import io.harness.delegate.task.googlefunction.GoogleFunctionDeployTask;
+import io.harness.delegate.task.googlefunction.GoogleFunctionDeployWithoutTrafficTask;
+import io.harness.delegate.task.googlefunction.GoogleFunctionPrepareRollbackTask;
+import io.harness.delegate.task.googlefunction.GoogleFunctionRollbackTask;
+import io.harness.delegate.task.googlefunction.GoogleFunctionTrafficShiftTask;
 import io.harness.delegate.task.googlefunctionbeans.GoogleFunctionCommandTypeNG;
 import io.harness.delegate.task.helm.HelmCommandTaskNG;
 import io.harness.delegate.task.helm.HelmDeployServiceImplNG;
@@ -2138,6 +2143,13 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.GOOGLE_FUNCTION_COMMAND_TASK).toInstance(GoogleFunctionCommandTask.class);
     mapBinder.addBinding(TaskType.GCP_PROJECTS_TASK_NG).toInstance(GcpProjectTask.class);
     mapBinder.addBinding(TaskType.GCS_BUCKETS_TASK_NG).toInstance(GcsBucketPerProjectTask.class);
+    mapBinder.addBinding(TaskType.GOOGLE_FUNCTION_DEPLOY_TASK).toInstance(GoogleFunctionDeployTask.class);
+    mapBinder.addBinding(TaskType.GOOGLE_FUNCTION_DEPLOY_WITHOUT_TRAFFIC_TASK)
+        .toInstance(GoogleFunctionDeployWithoutTrafficTask.class);
+    mapBinder.addBinding(TaskType.GOOGLE_FUNCTION_PREPARE_ROLLBACK_TASK)
+        .toInstance(GoogleFunctionPrepareRollbackTask.class);
+    mapBinder.addBinding(TaskType.GOOGLE_FUNCTION_ROLLBACK_TASK).toInstance(GoogleFunctionRollbackTask.class);
+    mapBinder.addBinding(TaskType.GOOGLE_FUNCTION_TRAFFIC_SHIFT_TASK).toInstance(GoogleFunctionTrafficShiftTask.class);
   }
 
   private void registerSecretManagementBindings() {
