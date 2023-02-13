@@ -575,4 +575,10 @@ public class DashboardServiceHelper {
     }
     return map;
   }
+
+  public String buildOpenTaskQuery(String accountId, String orgId, String projectId, long startInterval) {
+    return String.format(
+        "select pipeline_execution_summary_cd_id from service_infra_info where accountid = '%s' and orgidentifier = '%s' and projectidentifier = '%s' and service_startts > %s",
+        accountId, orgId, projectId, startInterval);
+  }
 }
