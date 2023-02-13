@@ -16,7 +16,7 @@ import io.harness.executions.steps.StepSpecTypeConstants;
 import io.harness.ngmigration.beans.StepOutput;
 import io.harness.ngmigration.beans.SupportStatus;
 import io.harness.ngmigration.beans.WorkflowMigrationContext;
-import io.harness.ngmigration.expressions.step.ShellScripStepFunctor;
+import io.harness.ngmigration.expressions.step.JenkinsStepFunctor;
 import io.harness.ngmigration.expressions.step.StepExpressionFunctor;
 import io.harness.ngmigration.utils.MigratorUtility;
 import io.harness.plancreator.steps.AbstractStepNode;
@@ -114,7 +114,7 @@ public class JenkinsStepMapperImpl extends StepMapper {
                    .stepGroupIdentifier(MigratorUtility.generateIdentifier(phaseStep.getName()))
                    .expression(exp)
                    .build())
-        .map(ShellScripStepFunctor::new)
+        .map(JenkinsStepFunctor::new)
         .collect(Collectors.toList());
   }
 }

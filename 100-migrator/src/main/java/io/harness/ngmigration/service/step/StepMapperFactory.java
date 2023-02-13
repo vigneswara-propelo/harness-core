@@ -9,6 +9,7 @@ package io.harness.ngmigration.service.step;
 
 import io.harness.ngmigration.service.step.arm.AzureCreateARMResourceStepMapperImpl;
 import io.harness.ngmigration.service.step.arm.AzureRollbackARMResourceStepMapperImpl;
+import io.harness.ngmigration.service.step.ecs.EcsServiceRollbackStepMapperImpl;
 import io.harness.ngmigration.service.step.ecs.EcsServiceSetupStepMapperImpl;
 import io.harness.ngmigration.service.step.elastigroup.ElastigroupDeployStepMapperImpl;
 import io.harness.ngmigration.service.step.elastigroup.ElastigroupListenerRollbackStepMapperImpl;
@@ -25,6 +26,7 @@ import io.harness.ngmigration.service.step.k8s.K8sRollingRollbackStepMapperImpl;
 import io.harness.ngmigration.service.step.k8s.K8sRollingStepMapperImpl;
 import io.harness.ngmigration.service.step.k8s.K8sScaleStepMapperImpl;
 import io.harness.ngmigration.service.step.k8s.K8sSwapServiceSelectorsStepMapperImpl;
+import io.harness.ngmigration.service.step.k8s.K8sTrafficSplitStepMapperImpl;
 import io.harness.ngmigration.service.step.terraform.TerraformApplyStepMapperImpl;
 import io.harness.ngmigration.service.step.terraform.TerraformDestroyStepMapperImpl;
 import io.harness.ngmigration.service.step.terraform.TerraformProvisionStepMapperImpl;
@@ -59,6 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StepMapperFactory {
   @Inject EcsServiceSetupStepMapperImpl ecsServiceSetupStepMapper;
+  @Inject EcsServiceRollbackStepMapperImpl ecsServiceRollbackStepMapper;
   @Inject HelmDeployStepMapperImpl helmDeployStepMapper;
   @Inject HelmRollbackStepMapperImpl helmRollbackStepMapper;
   @Inject CustomFetchInstancesStepMapperImpl customFetchInstancesStepMapper;
@@ -69,6 +72,7 @@ public class StepMapperFactory {
   @Inject BarrierStepMapperImpl barrierStepMapper;
   @Inject K8sApplyStepMapperImpl k8sApplyStepMapper;
   @Inject K8sDeleteStepMapperImpl k8sDeleteStepMapper;
+  @Inject K8sTrafficSplitStepMapperImpl k8sTrafficSplitStepMapper;
   @Inject EmailStepMapperImpl emailStepMapper;
   @Inject K8sRollingRollbackStepMapperImpl k8sRollingRollbackStepMapper;
   @Inject K8sCanaryDeployStepMapperImpl k8sCanaryDeployStepMapper;
@@ -123,6 +127,9 @@ public class StepMapperFactory {
         return helmRollbackStepMapper;
       case "ECS_SERVICE_SETUP":
         return ecsServiceSetupStepMapper;
+      case "ECS_SERVICE_ROLLBACK":
+      case "ECS_SERVICE_SETUP_ROLLBACK":
+        return ecsServiceRollbackStepMapper;
       case "SHELL_SCRIPT":
         return shellScriptStepMapper;
       case "K8S_DEPLOYMENT_ROLLING":
@@ -145,6 +152,8 @@ public class StepMapperFactory {
         return k8sRollingRollbackStepMapper;
       case "K8S_CANARY_DEPLOY":
         return k8sCanaryDeployStepMapper;
+      case "K8S_TRAFFIC_SPLIT":
+        return k8sTrafficSplitStepMapper;
       case "JENKINS":
         return jenkinsStepMapper;
       case "KUBERNETES_SWAP_SERVICE_SELECTORS":
