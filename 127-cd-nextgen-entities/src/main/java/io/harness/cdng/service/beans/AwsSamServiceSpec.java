@@ -14,7 +14,7 @@ import io.harness.cdng.artifact.bean.yaml.ArtifactListConfig;
 import io.harness.cdng.configfile.ConfigFileWrapper;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
 import io.harness.cdng.service.ServiceSpec;
-import io.harness.cdng.visitor.helpers.serviceconfig.GoogleCloudFunctionsServiceSpecVisitorHelper;
+import io.harness.cdng.visitor.helpers.serviceconfig.AwsSamServiceSpecVisitorHelper;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.ng.core.k8s.ServiceSpecType;
 import io.harness.pms.yaml.YamlNode;
@@ -35,11 +35,11 @@ import org.springframework.data.annotation.TypeAlias;
 @OwnedBy(HarnessTeam.CDP)
 @Value
 @Builder
-@JsonTypeName(ServiceSpecType.GOOGLE_CLOUD_FUNCTIONS)
-@SimpleVisitorHelper(helperClass = GoogleCloudFunctionsServiceSpecVisitorHelper.class)
-@TypeAlias("googleCloudFunctionsServiceSpec")
-@RecasterAlias("io.harness.cdng.service.beans.GoogleCloudFunctionsServiceSpec")
-public class GoogleCloudFunctionsServiceSpec implements ServiceSpec, Visitable {
+@JsonTypeName(ServiceSpecType.AWS_SAM)
+@SimpleVisitorHelper(helperClass = AwsSamServiceSpecVisitorHelper.class)
+@TypeAlias("awsSamServiceSpec")
+@RecasterAlias("io.harness.cdng.service.beans.AwsSamServiceSpec")
+public class AwsSamServiceSpec implements ServiceSpec, Visitable {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
   @ApiModelProperty(hidden = true)
@@ -54,7 +54,7 @@ public class GoogleCloudFunctionsServiceSpec implements ServiceSpec, Visitable {
 
   @Override
   public String getType() {
-    return ServiceDefinitionType.GOOGLE_CLOUD_FUNCTIONS.getYamlName();
+    return ServiceDefinitionType.AWS_SAM.getYamlName();
   }
 
   @Override
