@@ -79,7 +79,7 @@ public abstract class BaseTerragruntProvisionerMapper extends StepMapper {
     return SupportStatus.MANUAL_EFFORT;
   }
 
-  public List<CgEntityId> getReferencedEntities(GraphNode graphNode) {
+  public List<CgEntityId> getReferencedEntities(GraphNode graphNode, Map<String, String> stepIdToServiceIdMap) {
     TerragruntProvisionState state = (TerragruntProvisionState) getState(graphNode);
 
     List<CgEntityId> references = new ArrayList<>();

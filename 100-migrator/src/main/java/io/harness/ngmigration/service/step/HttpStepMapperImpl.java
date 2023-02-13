@@ -44,7 +44,7 @@ public class HttpStepMapperImpl extends StepMapper {
   }
 
   @Override
-  public List<CgEntityId> getReferencedEntities(GraphNode graphNode) {
+  public List<CgEntityId> getReferencedEntities(GraphNode graphNode, Map<String, String> stepIdToServiceIdMap) {
     String templateId = graphNode.getTemplateUuid();
     if (StringUtils.isNotBlank(templateId)) {
       return Collections.singletonList(

@@ -76,6 +76,7 @@ public class MigratorUtility {
   private static final int SECRET_MANAGER = 1;
   private static final int SECRET = 5;
   private static final int TEMPLATE = 7;
+  private static final int SERVICE_COMMAND_TEMPLATE = 8;
   private static final int CONNECTOR = 10;
   private static final int CONTAINER_TASK = 13;
   private static final int ECS_SERVICE_SPEC = 14;
@@ -98,6 +99,7 @@ public class MigratorUtility {
           .put(NGMigrationEntityType.APPLICATION, APPLICATION)
           .put(NGMigrationEntityType.SECRET_MANAGER, SECRET_MANAGER)
           .put(NGMigrationEntityType.TEMPLATE, TEMPLATE)
+          .put(NGMigrationEntityType.SERVICE_COMMAND_TEMPLATE, SERVICE_COMMAND_TEMPLATE)
           .put(NGMigrationEntityType.CONNECTOR, CONNECTOR)
           .put(NGMigrationEntityType.CONTAINER_TASK, CONTAINER_TASK)
           .put(NGMigrationEntityType.ECS_SERVICE_SPEC, ECS_SERVICE_SPEC)

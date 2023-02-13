@@ -9,6 +9,7 @@ package io.harness.ngmigration.service.entity;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.encryption.Scope.PROJECT;
+import static io.harness.ngmigration.utils.NGMigrationConstants.SERVICE_COMMAND_TEMPLATE_SEPARATOR;
 
 import static software.wings.api.DeploymentType.AMI;
 import static software.wings.api.DeploymentType.ECS;
@@ -21,6 +22,7 @@ import static software.wings.ngmigration.NGMigrationEntityType.ECS_SERVICE_SPEC;
 import static software.wings.ngmigration.NGMigrationEntityType.MANIFEST;
 import static software.wings.ngmigration.NGMigrationEntityType.SECRET;
 import static software.wings.ngmigration.NGMigrationEntityType.SERVICE;
+import static software.wings.ngmigration.NGMigrationEntityType.SERVICE_COMMAND_TEMPLATE;
 
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
@@ -71,6 +73,7 @@ import software.wings.beans.Service;
 import software.wings.beans.ServiceVariableType;
 import software.wings.beans.appmanifest.ApplicationManifest;
 import software.wings.beans.artifact.ArtifactStream;
+import software.wings.beans.command.ServiceCommand;
 import software.wings.beans.container.ContainerTask;
 import software.wings.beans.container.EcsServiceSpecification;
 import software.wings.beans.container.UserDataSpecification;
@@ -231,6 +234,19 @@ public class ServiceMigrationService extends NgMigrationService {
       if (null != userDataSpecification) {
         children.add(CgEntityId.builder().id(userDataSpecification.getUuid()).type(AMI_STARTUP_SCRIPT).build());
       }
+    }
+
+    if (isNotEmpty(service.getServiceCommands())) {
+      List<ServiceCommand> serviceCommands = service.getServiceCommands();
+      List<CgEntityId> serviceCommandTemplates =
+          serviceCommands.stream()
+              .map(sc
+                  -> CgEntityId.builder()
+                         .id(serviceId + SERVICE_COMMAND_TEMPLATE_SEPARATOR + sc.getName())
+                         .type(SERVICE_COMMAND_TEMPLATE)
+                         .build())
+              .collect(Collectors.toList());
+      children.addAll(serviceCommandTemplates);
     }
 
     return DiscoveryNode.builder().entityNode(serviceEntityNode).children(children).build();
