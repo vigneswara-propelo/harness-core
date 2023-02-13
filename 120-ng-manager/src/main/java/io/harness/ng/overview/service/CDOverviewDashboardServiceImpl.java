@@ -2838,14 +2838,14 @@ public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardServic
             .stream()
             .map(ExecutionStatus::name)
             .collect(Collectors.toList());
-    String query =
-        DashboardServiceHelper.buildOpenTaskQuery(accountIdentifier, orgIdentifier, projectIdentifier, startInterval);
+    String query = DashboardServiceHelper.buildOpenTaskQuery(
+        accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, startInterval);
     List<String> pipelineExecutionIdList = getPipelineExecutionIdFromServiceInfraInfo(query);
     Map<String, ServicePipelineInfo> servicePipelineInfoMap =
         getPipelineExecutionDetails(pipelineExecutionIdList, STATUS_LIST);
-    return OpenTaskDetails.builder()
-        .pipelineDeploymentDetails(new ArrayList<>(servicePipelineInfoMap.values()))
-        .build();
+    List<ServicePipelineInfo> servicePipelineInfoList = new ArrayList<>(servicePipelineInfoMap.values());
+    DashboardServiceHelper.sortServicePipelineInfoList(servicePipelineInfoList);
+    return OpenTaskDetails.builder().pipelineDeploymentDetails(servicePipelineInfoList).build();
   }
 
   private List<InstanceGroupedByArtifactList.InstanceGroupedByArtifact> groupedByArtifacts(
