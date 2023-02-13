@@ -2671,3 +2671,7 @@
 10000304:io.harness.delegate.beans.connector.terraformcloudconnector.TerraformCloudCredentialType
 
 10000401:io.harness.delegate.beans.executioncapability.AwsSamInstallationCapability
+10000450:io.harness.delegate.beans.connector.jira.JiraAuthenticationDTO
+10000451:io.harness.delegate.beans.connector.jira.JiraAuthType
+10000452:io.harness.delegate.beans.connector.jira.JiraAuthCredentialsDTO
+10000453:io.harness.delegate.beans.connector.jira.JiraUserNamePasswordDTO
