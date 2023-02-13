@@ -12,6 +12,7 @@ import static software.wings.settings.SettingVariableTypes.APP_DYNAMICS;
 import static software.wings.settings.SettingVariableTypes.ARTIFACTORY;
 import static software.wings.settings.SettingVariableTypes.AWS;
 import static software.wings.settings.SettingVariableTypes.AZURE;
+import static software.wings.settings.SettingVariableTypes.AZURE_ARTIFACTS_PAT;
 import static software.wings.settings.SettingVariableTypes.DATA_DOG;
 import static software.wings.settings.SettingVariableTypes.DOCKER;
 import static software.wings.settings.SettingVariableTypes.GCP;
@@ -68,6 +69,7 @@ public class ConnectorFactory {
   private static final BaseConnector appDynamicsConnector = new AppDynamicsConnectorImpl();
   private static final BaseConnector splunkConnector = new SplunkConnectorImpl();
   private static final BaseConnector spotConnector = new SpotConnectorImpl();
+  private static final BaseConnector azureArtifactPat = new AzureArtifactPatConnectorImpl();
 
   public static final Map<SettingVariableTypes, BaseConnector> CONNECTOR_FACTORY_MAP =
       ImmutableMap.<SettingVariableTypes, BaseConnector>builder()
@@ -94,6 +96,7 @@ public class ConnectorFactory {
           .put(APP_DYNAMICS, appDynamicsConnector)
           .put(SPLUNK, splunkConnector)
           .put(SPOT_INST, spotConnector)
+          .put(AZURE_ARTIFACTS_PAT, azureArtifactPat)
           .build();
 
   public static BaseConnector getConnector(SettingAttribute settingAttribute) {
