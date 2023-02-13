@@ -27,6 +27,12 @@ import io.harness.ngmigration.service.step.k8s.K8sRollingStepMapperImpl;
 import io.harness.ngmigration.service.step.k8s.K8sScaleStepMapperImpl;
 import io.harness.ngmigration.service.step.k8s.K8sSwapServiceSelectorsStepMapperImpl;
 import io.harness.ngmigration.service.step.k8s.K8sTrafficSplitStepMapperImpl;
+import io.harness.ngmigration.service.step.pcf.PcfBGMapRouteStepMapperImpl;
+import io.harness.ngmigration.service.step.pcf.PcfDeployStepMapperImpl;
+import io.harness.ngmigration.service.step.pcf.PcfPluginStepMapperImpl;
+import io.harness.ngmigration.service.step.pcf.PcfRollbackStepMapperImpl;
+import io.harness.ngmigration.service.step.pcf.PcfSetupStepMapperImpl;
+import io.harness.ngmigration.service.step.pcf.PcfSwapRoutesStepMapperImpl;
 import io.harness.ngmigration.service.step.terraform.TerraformApplyStepMapperImpl;
 import io.harness.ngmigration.service.step.terraform.TerraformDestroyStepMapperImpl;
 import io.harness.ngmigration.service.step.terraform.TerraformProvisionStepMapperImpl;
@@ -89,6 +95,12 @@ public class StepMapperFactory {
   @Inject TerraformRollbackStepMapperImpl terraformRollbackStepMapper;
   @Inject TerragruntProvisionStepMapperImpl terragruntProvisionStepMapper;
   @Inject TerragruntDestroyStepMapperImpl terragruntDestroyStepMapper;
+  @Inject PcfSetupStepMapperImpl pcfSetupStepMapper;
+  @Inject PcfSwapRoutesStepMapperImpl pcfSwapRoutesStepMapper;
+  @Inject PcfPluginStepMapperImpl pcfPluginStepMapper;
+  @Inject PcfDeployStepMapperImpl pcfDeployStepMapper;
+  @Inject PcfBGMapRouteStepMapperImpl pcfBGMapRouteStepMapper;
+  @Inject PcfRollbackStepMapperImpl pcfRollbackStepMapper;
   @Inject TerragruntRollbackStepMapperImpl terragruntRollbackStepMapper;
   @Inject ElastigroupSetupStepMapperImpl elastigroupSetupStepMapper;
   @Inject ElastigroupDeployStepMapperImpl elastigroupDeployStepMapper;
@@ -241,6 +253,19 @@ public class StepMapperFactory {
         return terragruntDestroyStepMapper;
       case "TERRAGRUNT_ROLLBACK":
         return terragruntRollbackStepMapper;
+      case "PCF_SETUP":
+        return pcfSetupStepMapper;
+      case "PCF_RESIZE":
+        return pcfDeployStepMapper;
+      case "PCF_BG_MAP_ROUTE":
+        return pcfSwapRoutesStepMapper;
+      case "PCF_PLUGIN":
+        return pcfPluginStepMapper;
+      case "PCF_ROLLBACK":
+        return pcfRollbackStepMapper;
+      case "PCF_MAP_ROUTE":
+      case "PCF_UNMAP_ROUTE":
+        return unsupportedStepMapper;
       default:
         return unsupportedStepMapper;
     }
