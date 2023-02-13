@@ -896,7 +896,7 @@
 7341:software.wings.beans.HostValidationTaskParameters
 7345:software.wings.delegatetasks.validation.capabilities.ClusterMasterUrlValidationCapability
 7346:software.wings.api.HelmDeployContextElement
-7347:software.wings.service.impl.newrelic.NewRelicMetricDataRecord
+7347:software.wings.beans.dto.NewRelicMetricDataRecord
 7348:software.wings.service.intfc.analysis.ClusterLevel
 7349:software.wings.helpers.ext.vault.VaultTokenLookupResult
 7360:software.wings.service.impl.stackdriver.StackdriverLogGcpConfigTaskParams
