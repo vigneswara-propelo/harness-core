@@ -12,8 +12,8 @@ import io.harness.data.structure.CollectionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NGYamlFile;
+import io.harness.ngmigration.beans.SupportStatus;
 import io.harness.ngmigration.beans.WorkflowMigrationContext;
-import io.harness.ngmigration.beans.WorkflowStepSupportStatus;
 import io.harness.ngmigration.expressions.step.StepExpressionFunctor;
 import io.harness.ngmigration.service.MigrationTemplateUtils;
 import io.harness.ngmigration.utils.MigratorUtility;
@@ -150,7 +150,7 @@ public abstract class StepMapper {
     }
   }
 
-  public abstract WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode);
+  public abstract SupportStatus stepSupportStatus(GraphNode graphNode);
 
   public List<NGYamlFile> getChildNGYamlFiles(MigrationInputDTO inputDTO, GraphNode graphNode, String name) {
     return new ArrayList<>();

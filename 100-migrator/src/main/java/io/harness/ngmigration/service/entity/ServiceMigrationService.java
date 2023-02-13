@@ -9,6 +9,7 @@ package io.harness.ngmigration.service.entity;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.encryption.Scope.PROJECT;
+import static io.harness.ngmigration.service.artifactstream.ArtifactStreamFactory.ARTIFACT_STREAM_MAPPER_MAP;
 
 import static software.wings.api.DeploymentType.AMI;
 import static software.wings.api.DeploymentType.ECS;
@@ -44,6 +45,8 @@ import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NGSkipDetail;
 import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.SupportStatus;
+import io.harness.ngmigration.beans.TypeSummary;
 import io.harness.ngmigration.beans.YamlGenerationDetails;
 import io.harness.ngmigration.beans.summary.BaseSummary;
 import io.harness.ngmigration.beans.summary.ServiceSummary;
@@ -69,6 +72,7 @@ import software.wings.beans.Service;
 import software.wings.beans.ServiceVariableType;
 import software.wings.beans.appmanifest.ApplicationManifest;
 import software.wings.beans.artifact.ArtifactStream;
+import software.wings.beans.artifact.ArtifactStreamType;
 import software.wings.beans.container.ContainerTask;
 import software.wings.beans.container.EcsServiceSpecification;
 import software.wings.beans.container.UserDataSpecification;
@@ -145,7 +149,28 @@ public class ServiceMigrationService extends NgMigrationService {
                                                   .map(entity -> ((Service) entity.getEntity()).getDeploymentType())
                                                   .filter(Objects::nonNull)
                                                   .collect(groupingBy(DeploymentType::name, counting()));
-    return new ServiceSummary(entities.size(), deploymentTypeSummary, artifactTypeSummary);
+    Map<String, TypeSummary> deploymentsSummary = new HashMap<>();
+    deploymentTypeSummary.forEach((key, value) -> {
+      deploymentsSummary.put(key,
+          TypeSummary.builder()
+              .status(ServiceV2Factory.getServiceV2Mapper(DeploymentType.valueOf(key)).isMigrationSupported()
+                      ? SupportStatus.SUPPORTED
+                      : SupportStatus.UNSUPPORTED)
+              .count(value)
+              .build());
+    });
+    Map<String, TypeSummary> artifactsSummary = new HashMap<>();
+    artifactTypeSummary.forEach((key, value) -> {
+      artifactsSummary.put(key,
+          TypeSummary.builder()
+              .status(ARTIFACT_STREAM_MAPPER_MAP.containsKey(ArtifactStreamType.valueOf(key))
+                      ? SupportStatus.SUPPORTED
+                      : SupportStatus.UNSUPPORTED)
+              .count(value)
+              .build());
+    });
+    return new ServiceSummary(
+        entities.size(), deploymentTypeSummary, artifactTypeSummary, deploymentsSummary, artifactsSummary);
   }
 
   @Override

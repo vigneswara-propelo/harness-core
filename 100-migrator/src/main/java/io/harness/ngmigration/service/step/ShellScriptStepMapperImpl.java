@@ -8,8 +8,8 @@
 package io.harness.ngmigration.service.step;
 
 import io.harness.ngmigration.beans.StepOutput;
+import io.harness.ngmigration.beans.SupportStatus;
 import io.harness.ngmigration.beans.WorkflowMigrationContext;
-import io.harness.ngmigration.beans.WorkflowStepSupportStatus;
 import io.harness.ngmigration.expressions.MigratorExpressionUtils;
 import io.harness.ngmigration.expressions.step.ShellScripStepFunctor;
 import io.harness.ngmigration.expressions.step.StepExpressionFunctor;
@@ -51,8 +51,8 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class ShellScriptStepMapperImpl extends StepMapper {
   @Override
-  public WorkflowStepSupportStatus stepSupportStatus(GraphNode graphNode) {
-    return WorkflowStepSupportStatus.SUPPORTED;
+  public SupportStatus stepSupportStatus(GraphNode graphNode) {
+    return SupportStatus.SUPPORTED;
   }
 
   @Override

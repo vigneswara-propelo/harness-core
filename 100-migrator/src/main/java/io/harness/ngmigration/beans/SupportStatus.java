@@ -11,7 +11,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
 @OwnedBy(HarnessTeam.CDC)
-public enum WorkflowStepSupportStatus {
+public enum SupportStatus {
   // We can migrate this step over
   SUPPORTED,
   // We cannot migrate this step. Workflow migration will not happen if this step exists

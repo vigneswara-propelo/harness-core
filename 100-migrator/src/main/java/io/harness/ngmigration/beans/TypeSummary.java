@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StepTypeSummary {
+public class TypeSummary {
   private long count;
-  private WorkflowStepSupportStatus status;
+  private SupportStatus status;
 }
