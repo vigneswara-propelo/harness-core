@@ -334,7 +334,7 @@ public class ServiceMigrationService extends NgMigrationService {
             .map(configFile -> CgEntityId.builder().type(CONFIG_FILE).id(configFile.getUuid()).build())
             .collect(Collectors.toSet());
     List<ManifestConfigWrapper> manifestConfigWrapperList =
-        manifestMigrationService.getManifests(manifests, inputDTO, entities, migratedEntities);
+        manifestMigrationService.getManifests(manifests, inputDTO, entities, migratedEntities, service);
     List<ManifestConfigWrapper> ecsServiceSpecs =
         ecsServiceSpecMigrationService.getServiceSpec(serviceDefs, inputDTO, entities);
     List<ManifestConfigWrapper> taskDefSpecs = containerTaskMigrationService.getTaskSpecs(taskDefs, inputDTO, entities);

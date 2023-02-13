@@ -26,6 +26,7 @@ import static software.wings.settings.SettingVariableTypes.KUBERNETES_CLUSTER;
 import static software.wings.settings.SettingVariableTypes.NEW_RELIC;
 import static software.wings.settings.SettingVariableTypes.NEXUS;
 import static software.wings.settings.SettingVariableTypes.OCI_HELM_REPO;
+import static software.wings.settings.SettingVariableTypes.PCF;
 import static software.wings.settings.SettingVariableTypes.PROMETHEUS;
 import static software.wings.settings.SettingVariableTypes.SERVICENOW;
 import static software.wings.settings.SettingVariableTypes.SPLUNK;
@@ -52,6 +53,7 @@ public class ConnectorFactory {
   private static final BaseConnector azureConnector = new AzureConnectorImpl();
   private static final BaseConnector httpHelmConnector = new HttpHelmConnectorImpl();
   private static final BaseConnector awsConnector = new AWSConnectorImpl();
+  private static final BaseConnector pcfConnector = new PcfConnectorImpl();
   private static final BaseConnector ociHelmConnector = new OCIHelmConnectorImpl();
   private static final BaseConnector unsupportedConnector = new UnsupportedConnectorImpl();
 
@@ -82,6 +84,7 @@ public class ConnectorFactory {
           .put(AZURE, azureConnector)
           .put(HTTP_HELM_REPO, httpHelmConnector)
           .put(AWS, awsConnector)
+          .put(PCF, pcfConnector)
           .put(OCI_HELM_REPO, ociHelmConnector)
           .put(JIRA, jiraConnector)
           .put(SERVICENOW, serviceNowConnector)

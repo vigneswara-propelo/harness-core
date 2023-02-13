@@ -59,6 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -68,6 +69,8 @@ public class MigratorUtility {
   public static final ParameterField<String> RUNTIME_INPUT = ParameterField.createValueField("<+input>");
   public static final Pattern cgPattern = Pattern.compile("\\$\\{[\\w-.\"()]+}");
   public static final Pattern ngPattern = Pattern.compile("<\\+[\\w-.\"()]+>");
+
+  private static final String[] schemes = {"https", "http"};
 
   private static final int APPLICATION = 0;
   private static final int SECRET_MANAGER = 1;
@@ -461,5 +464,10 @@ public class MigratorUtility {
   public static String generateFileIdentifier(String fileName) {
     String prefix = fileName + ' ';
     return MigratorUtility.generateManifestIdentifier(prefix);
+  }
+
+  public static boolean checkIfStringIsValidUrl(String value) {
+    UrlValidator urlValidator = new UrlValidator(schemes);
+    return urlValidator.isValid(value);
   }
 }
