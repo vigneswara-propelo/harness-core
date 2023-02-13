@@ -486,7 +486,7 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
           ctx.getOrgIdentifier(), ctx.getProjectIdentifier(), ctx.getAccountIdentifier(), stackId);
       // If the repository name is empty, it means that the connector is an account connector and the repo needs to be
       // defined
-      if (!Objects.equals(stack.getRepository(), "")) {
+      if (!Objects.equals(stack.getRepository(), "") && stack.getRepository() != null) {
         iacmCodeBase.repoName(ParameterField.<String>builder().value(stack.getRepository()).build());
       } else {
         iacmCodeBase.repoName(ParameterField.<String>builder().value(null).build());
@@ -502,12 +502,12 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
       // We support 2,
 
       BuildBuilder build = Build.builder();
-      if (!Objects.equals(stack.getRepository_branch(), "")) {
+      if (!Objects.equals(stack.getRepository_branch(), "") && stack.getRepository_branch() != null) {
         build.type(BuildType.BRANCH);
         build.spec(BranchBuildSpec.builder()
                        .branch(ParameterField.<String>builder().value(stack.getRepository_branch()).build())
                        .build());
-      } else if (!Objects.equals(stack.getRepository_commit(), "")) {
+      } else if (!Objects.equals(stack.getRepository_commit(), "") && stack.getRepository_commit() != null) {
         build.type(BuildType.TAG);
         build.spec(TagBuildSpec.builder()
                        .tag(ParameterField.<String>builder().value(stack.getRepository_commit()).build())
