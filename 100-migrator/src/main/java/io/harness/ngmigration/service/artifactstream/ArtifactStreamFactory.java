@@ -38,7 +38,7 @@ public class ArtifactStreamFactory {
   private static final ArtifactStreamMapper amiMapper = new AmiArtifactStreamMapper();
   private static final ArtifactStreamMapper azureMapper = new AzureArtifactStreamMapper();
 
-  public static final Map<ArtifactStreamType, ArtifactStreamMapper> ARTIFACT_STREAM_MAPPER_MAP =
+  private static final Map<ArtifactStreamType, ArtifactStreamMapper> ARTIFACT_STREAM_MAPPER_MAP =
       ImmutableMap.<ArtifactStreamType, ArtifactStreamMapper>builder()
           .put(ArtifactStreamType.ARTIFACTORY, artifactoryMapper)
           .put(ArtifactStreamType.DOCKER, dockerMapper)

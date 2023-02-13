@@ -9,7 +9,6 @@ package io.harness.ngmigration.service.entity;
 
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.encryption.Scope.PROJECT;
-import static io.harness.ngmigration.service.artifactstream.ArtifactStreamFactory.ARTIFACT_STREAM_MAPPER_MAP;
 
 import static software.wings.api.DeploymentType.AMI;
 import static software.wings.api.DeploymentType.ECS;
@@ -72,7 +71,6 @@ import software.wings.beans.Service;
 import software.wings.beans.ServiceVariableType;
 import software.wings.beans.appmanifest.ApplicationManifest;
 import software.wings.beans.artifact.ArtifactStream;
-import software.wings.beans.artifact.ArtifactStreamType;
 import software.wings.beans.container.ContainerTask;
 import software.wings.beans.container.EcsServiceSpecification;
 import software.wings.beans.container.UserDataSpecification;
@@ -159,18 +157,7 @@ public class ServiceMigrationService extends NgMigrationService {
               .count(value)
               .build());
     });
-    Map<String, TypeSummary> artifactsSummary = new HashMap<>();
-    artifactTypeSummary.forEach((key, value) -> {
-      artifactsSummary.put(key,
-          TypeSummary.builder()
-              .status(ARTIFACT_STREAM_MAPPER_MAP.containsKey(ArtifactStreamType.valueOf(key))
-                      ? SupportStatus.SUPPORTED
-                      : SupportStatus.UNSUPPORTED)
-              .count(value)
-              .build());
-    });
-    return new ServiceSummary(
-        entities.size(), deploymentTypeSummary, artifactTypeSummary, deploymentsSummary, artifactsSummary);
+    return new ServiceSummary(entities.size(), deploymentTypeSummary, artifactTypeSummary, deploymentsSummary);
   }
 
   @Override
