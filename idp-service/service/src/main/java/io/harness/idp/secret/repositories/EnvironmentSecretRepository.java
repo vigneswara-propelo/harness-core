@@ -18,7 +18,7 @@ import org.springframework.data.repository.CrudRepository;
 
 @HarnessRepo
 @OwnedBy(HarnessTeam.IDP)
-public interface EnvironmentEnvironmentSecretRepository
+public interface EnvironmentSecretRepository
     extends CrudRepository<EnvironmentSecretEntity, String>, EnvironmentSecretRepositoryCustom {
   Optional<EnvironmentSecretEntity> findByIdAndAccountIdentifier(String identifier, String accountIdentifier);
   List<EnvironmentSecretEntity> findByAccountIdentifier(String accountIdentifier);
