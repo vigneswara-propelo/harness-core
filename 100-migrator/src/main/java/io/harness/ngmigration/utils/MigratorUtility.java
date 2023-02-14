@@ -318,7 +318,7 @@ public class MigratorUtility {
           .type(NGVariableType.SECRET)
           .value(ParameterField.createValueField(
               MigratorUtility.getSecretRef(migratedEntities, serviceVariable.getEncryptedValue())))
-          .name(serviceVariable.getName())
+          .name(StringUtils.trim(serviceVariable.getName()))
           .build();
     } else {
       String value = "";
@@ -326,7 +326,7 @@ public class MigratorUtility {
         value =
             String.valueOf(MigratorExpressionUtils.render(String.valueOf(serviceVariable.getValue()), new HashMap<>()));
       }
-      String name = serviceVariable.getName();
+      String name = StringUtils.trim(serviceVariable.getName());
       name = name.replace('-', '_');
       return StringNGVariable.builder()
           .type(NGVariableType.STRING)
@@ -419,7 +419,7 @@ public class MigratorUtility {
     if (StringUtils.isBlank(str)) {
       return str;
     }
-    str = StringUtils.stripAccents(str);
+    str = StringUtils.stripAccents(str.trim());
     Pattern p = Pattern.compile("[^-0-9a-zA-Z_\\s]", Pattern.CASE_INSENSITIVE);
     Matcher m = p.matcher(str);
     String generated = m.replaceAll("_");
