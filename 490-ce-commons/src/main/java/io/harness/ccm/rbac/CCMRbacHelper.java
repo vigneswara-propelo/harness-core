@@ -7,10 +7,17 @@
 
 package io.harness.ccm.rbac;
 
+import java.util.Set;
+
 public interface CCMRbacHelper {
-  void checkFolderViewPermission(String accountIdentifier, String orgIdentifier, String projectIdentifier);
-  void checkFolderEditPermission(String accountIdentifier, String orgIdentifier, String projectIdentifier);
-  void checkFolderDeletePermission(String accountIdentifier, String orgIdentifier, String projectIdentifier);
+  void checkFolderViewPermission(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String folderId);
+  void checkFolderEditPermission(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String folderId);
+  void checkFolderDeletePermission(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String folderId);
+  Set<String> checkFolderIdsGivenPermission(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      Set<String> folderIds, String permission);
 
   void checkPerspectiveViewPermission(String accountIdentifier, String orgIdentifier, String projectIdentifier);
   void checkPerspectiveEditPermission(String accountIdentifier, String orgIdentifier, String projectIdentifier);

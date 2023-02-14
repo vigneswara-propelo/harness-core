@@ -17,6 +17,7 @@ import io.harness.ccm.views.graphql.QLCEViewSortCriteria;
 import com.google.cloud.bigquery.BigQuery;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface CEViewService {
   CEView save(CEView ceView, boolean clone);
@@ -26,6 +27,7 @@ public interface CEViewService {
 
   CEView get(String uuid);
   CEView update(CEView ceView);
+  Set<String> getPerspectiveFolderIds(String accountId, List<String> ceViewIds);
   void updateBusinessMappingName(String accountId, String buinessMappingUuid, String newBusinessMappingName);
   CEView updateTotalCost(CEView ceView, BigQuery bigQuery, String cloudProviderTableName);
   boolean delete(String uuid, String accountId);

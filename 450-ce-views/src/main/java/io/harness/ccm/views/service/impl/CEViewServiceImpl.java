@@ -283,6 +283,15 @@ public class CEViewServiceImpl implements CEViewService {
   }
 
   @Override
+  public Set<String> getPerspectiveFolderIds(String accountId, List<String> ceViewIds) {
+    if (ceViewIds == null) {
+      return null;
+    }
+    List<CEView> ceViews = ceViewDao.getPerspectivesByIds(accountId, ceViewIds);
+    return ceViews.stream().map(ceView -> ceView.getFolderId()).collect(Collectors.toSet());
+  }
+
+  @Override
   public void updateBusinessMappingName(String accountId, String buinessMappingUuid, String newBusinessMappingName) {
     ceViewDao.updateBusinessMappingName(accountId, buinessMappingUuid, newBusinessMappingName);
   }
