@@ -17,6 +17,7 @@ import io.harness.pms.pipeline.MoveConfigOperationType;
 
 import java.util.List;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -66,4 +67,6 @@ public interface PMSInputSetRepositoryCustom {
 
   InputSetEntity updateInputSetEntity(
       InputSetEntity inputSetToMove, Criteria criteria, Update update, MoveConfigOperationType moveConfigOperationType);
+
+  List<String> findAllUniqueInputSetRepos(@NotNull Criteria criteria);
 }

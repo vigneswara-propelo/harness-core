@@ -15,6 +15,7 @@ import io.harness.git.model.ChangeType;
 import io.harness.pms.inputset.InputSetMoveConfigOperationDTO;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetImportRequestDTO;
+import io.harness.pms.pipeline.PMSInputSetListRepoResponse;
 import io.harness.pms.pipeline.PipelineEntity;
 
 import java.util.List;
@@ -66,4 +67,7 @@ public interface PMSInputSetService {
 
   InputSetEntity moveConfig(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String inputSetIdentifier, InputSetMoveConfigOperationDTO inputSetMoveConfigOperationDTO);
+
+  PMSInputSetListRepoResponse getListOfRepos(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String pipelineIdentifier);
 }

@@ -51,6 +51,7 @@ import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType;
 import io.harness.pms.ngpipeline.inputset.beans.resource.InputSetImportRequestDTO;
 import io.harness.pms.ngpipeline.inputset.mappers.PMSInputSetElementMapper;
 import io.harness.pms.ngpipeline.inputset.mappers.PMSInputSetFilterHelper;
+import io.harness.pms.pipeline.PMSInputSetListRepoResponse;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
 import io.harness.pms.pipeline.service.PipelineCRUDErrorResponse;
@@ -71,7 +72,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.ws.rs.InternalServerErrorException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.PredicateUtils;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -92,6 +96,9 @@ public class PMSInputSetServiceImpl implements PMSInputSetService {
 
   private static final String DUP_KEY_EXP_FORMAT_STRING =
       "Input set [%s] under Project[%s], Organization [%s] for Pipeline [%s] already exists";
+
+  private static final int MAX_LIST_SIZE = 1000;
+  private static final String REPO_LIST_SIZE_EXCEPTION = "The size of unique repository list is greater than [%d]";
 
   @Override
   public InputSetEntity create(InputSetEntity inputSetEntity, boolean hasNewYamlStructure) {
@@ -462,6 +469,20 @@ public class PMSInputSetServiceImpl implements PMSInputSetService {
 
     return moveInputSetEntity(accountIdentifier, orgIdentifier, projectIdentifier, inputSetMoveConfigOperationDTO,
         optionalInputSetEntity.get());
+  }
+
+  @Override
+  public PMSInputSetListRepoResponse getListOfRepos(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String pipelineIdentifier) {
+    Criteria criteria = PMSInputSetFilterHelper.buildCriteriaForRepoListing(
+        accountIdentifier, orgIdentifier, projectIdentifier, pipelineIdentifier);
+    List<String> inputSetRepoList = inputSetRepository.findAllUniqueInputSetRepos(criteria);
+    CollectionUtils.filter(inputSetRepoList, PredicateUtils.notNullPredicate());
+    if (inputSetRepoList.size() > MAX_LIST_SIZE) {
+      log.error(String.format(REPO_LIST_SIZE_EXCEPTION, MAX_LIST_SIZE));
+      throw new InternalServerErrorException(String.format(REPO_LIST_SIZE_EXCEPTION, MAX_LIST_SIZE));
+    }
+    return PMSInputSetListRepoResponse.builder().repositories(inputSetRepoList).build();
   }
 
   @VisibleForTesting

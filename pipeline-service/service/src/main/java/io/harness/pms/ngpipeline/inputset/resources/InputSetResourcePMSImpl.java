@@ -61,6 +61,7 @@ import io.harness.pms.ngpipeline.inputset.mappers.PMSInputSetFilterHelper;
 import io.harness.pms.ngpipeline.inputset.service.InputSetValidationHelper;
 import io.harness.pms.ngpipeline.inputset.service.PMSInputSetService;
 import io.harness.pms.ngpipeline.overlayinputset.beans.resource.OverlayInputSetResponseDTOPMS;
+import io.harness.pms.pipeline.PMSInputSetListRepoResponse;
 import io.harness.pms.pipeline.service.PMSPipelineService;
 import io.harness.pms.plan.execution.service.PMSExecutionService;
 import io.harness.pms.rbac.PipelineRbacPermissions;
@@ -399,5 +400,12 @@ public class InputSetResourcePMSImpl implements InputSetResourcePMS {
                 .build());
     return ResponseDTO.newResponse(
         InputSetMoveConfigResponseDTO.builder().identifier(movedInputSet.getIdentifier()).build());
+  }
+
+  @Override
+  public ResponseDTO<PMSInputSetListRepoResponse> getListRepos(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String pipelineIdentifier) {
+    return ResponseDTO.newResponse(
+        pmsInputSetService.getListOfRepos(accountIdentifier, orgIdentifier, projectIdentifier, pipelineIdentifier));
   }
 }

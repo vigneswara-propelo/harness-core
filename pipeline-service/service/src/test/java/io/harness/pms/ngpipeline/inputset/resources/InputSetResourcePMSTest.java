@@ -64,6 +64,7 @@ import io.harness.pms.ngpipeline.inputset.service.InputSetValidationHelper;
 import io.harness.pms.ngpipeline.inputset.service.PMSInputSetService;
 import io.harness.pms.ngpipeline.overlayinputset.beans.resource.OverlayInputSetResponseDTOPMS;
 import io.harness.pms.pipeline.MoveConfigOperationType;
+import io.harness.pms.pipeline.PMSInputSetListRepoResponse;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
 import io.harness.pms.plan.execution.service.PMSExecutionService;
@@ -73,6 +74,7 @@ import io.harness.rule.Owner;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -666,6 +668,24 @@ public class InputSetResourcePMSTest extends PipelineServiceTestBase {
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, INPUT_SET_ID, inputSetMoveConfigRequestDTO);
 
     assertEquals(movedInputSet.getData().getIdentifier(), INPUT_SET_ID);
+  }
+
+  @Test
+  @Owner(developers = ADITHYA)
+  @Category(UnitTests.class)
+  public void testInputSetRepoListing() {
+    List<String> repos = new ArrayList<>();
+    repos.add("testRepo");
+    repos.add("testRepo2");
+
+    PMSInputSetListRepoResponse repoResponse = PMSInputSetListRepoResponse.builder().repositories(repos).build();
+    doReturn(repoResponse)
+        .when(pmsInputSetService)
+        .getListOfRepos(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER);
+
+    PMSInputSetListRepoResponse pmsPipelineListRepoResponse =
+        pmsInputSetService.getListOfRepos(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER);
+    assertEquals(pmsPipelineListRepoResponse, repoResponse);
   }
 
   @Test

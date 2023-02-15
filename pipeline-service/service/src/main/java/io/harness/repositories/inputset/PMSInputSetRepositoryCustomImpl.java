@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -420,6 +421,12 @@ public class PMSInputSetRepositoryCustomImpl implements PMSInputSetRepositoryCus
       MoveConfigOperationType moveConfigOperationType) {
     return transactionHelper.performTransaction(
         () -> moveConfigOperations(inputSetToMove, criteria, update, moveConfigOperationType));
+  }
+
+  @Override
+  public List<String> findAllUniqueInputSetRepos(@NotNull Criteria criteria) {
+    Query query = new Query(criteria);
+    return mongoTemplate.findDistinct(query, InputSetEntityKeys.repo, InputSetEntity.class, String.class);
   }
 
   @VisibleForTesting
