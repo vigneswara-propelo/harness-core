@@ -257,6 +257,7 @@
 3107:io.harness.pms.sdk.core.adviser.manualintervention.ManualInterventionAdviserParameters
 3108:io.harness.pms.sdk.core.adviser.marksuccess.OnMarkSuccessAdviserParameters
 3109:io.harness.pms.sdk.core.adviser.abort.OnAbortAdviserParameters
+3110:io.harness.pms.sdk.core.adviser.markFailure.OnMarkFailureAdviserParameters
 3211:io.harness.steps.fork.ForkStepParameters
 3214:io.harness.steps.section.chain.SectionChainStepParameters
 3217:io.harness.steps.section.chain.SectionChainPassThroughData

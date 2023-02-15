@@ -45,9 +45,13 @@ public class NextStepHandler implements AdviserResponseHandler {
   @Override
   public void handleAdvise(NodeExecution prevNodeExecution, AdviserResponse adviserResponse) {
     NextStepAdvise advise = adviserResponse.getNextStepAdvise();
-    if (EmptyPredicate.isNotEmpty(advise.getNextNodeId())) {
-      Node nextNode = Preconditions.checkNotNull(
-          planService.fetchNode(prevNodeExecution.getAmbiance().getPlanId(), advise.getNextNodeId()));
+    runNextNode(prevNodeExecution, advise.getNextNodeId());
+  }
+
+  public void runNextNode(NodeExecution prevNodeExecution, String nextNodeId) {
+    if (EmptyPredicate.isNotEmpty(nextNodeId)) {
+      Node nextNode =
+          Preconditions.checkNotNull(planService.fetchNode(prevNodeExecution.getAmbiance().getPlanId(), nextNodeId));
       nextNode = createIdentityNodeIfRequired(nextNode, prevNodeExecution);
       String runtimeId = generateUuid();
       // Update NodeExecution nextId and endTs
