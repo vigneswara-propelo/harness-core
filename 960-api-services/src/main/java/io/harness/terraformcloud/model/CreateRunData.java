@@ -11,12 +11,14 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Map;
 
 @OwnedBy(CDP)
-@Builder
-@Data
-public class RunRequest {
-  private CreateRunData data;
+@JsonIgnoreProperties(ignoreUnknown = true)
+@lombok.Data
+public class CreateRunData {
+  private String type = "runs";
+  private Attributes attributes;
+  private Map<String, SingleRelationship> relationships;
 }
