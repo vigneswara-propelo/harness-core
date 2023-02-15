@@ -128,9 +128,11 @@ public interface InputSetResourcePMS {
           NGCommonEntityConstants.PIPELINE_KEY) @ResourceIdentifier String pipelineIdentifier,
       @QueryParam("pipelineBranch") @Parameter(
           description = "Github branch of the Pipeline for which the Input Set is to be fetched") String pipelineBranch,
-      @QueryParam("pipelineRepoID")
-      @Parameter(description = "Github Repo identifier of the Pipeline for which the Input Set is to be fetched")
-      String pipelineRepoID, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo);
+      @QueryParam("pipelineRepoID") @Parameter(
+          description = "Github Repo identifier of the Pipeline for which the Input Set is to be fetched")
+      String pipelineRepoID,
+      @QueryParam("loadFromFallbackBranch") @DefaultValue("false") boolean loadFromFallbackBranch,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo);
 
   @GET
   @Path("overlay/{inputSetIdentifier}")
@@ -157,9 +159,11 @@ public interface InputSetResourcePMS {
           NGCommonEntityConstants.PIPELINE_KEY) @ResourceIdentifier String pipelineIdentifier,
       @QueryParam("pipelineBranch") @Parameter(
           description = "Github branch of the Pipeline for which the Input Set is to be fetched") String pipelineBranch,
-      @QueryParam("pipelineRepoID")
-      @Parameter(description = "Github Repo identifier of the Pipeline for which the Input Set is to be fetched")
-      String pipelineRepoID, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo);
+      @QueryParam("pipelineRepoID") @Parameter(
+          description = "Github Repo identifier of the Pipeline for which the Input Set is to be fetched")
+      String pipelineRepoID,
+      @QueryParam("loadFromFallbackBranch") @DefaultValue("false") boolean loadFromFallbackBranch,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo);
 
   @POST
   @ApiOperation(value = "Create an InputSet For Pipeline", nickname = "createInputSetForPipeline")
