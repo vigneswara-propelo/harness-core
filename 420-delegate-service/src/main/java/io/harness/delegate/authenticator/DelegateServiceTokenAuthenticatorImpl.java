@@ -21,12 +21,8 @@ import static io.harness.manage.GlobalContextManager.upsertGlobalContextRecord;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_JWT_CACHE_HIT;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_JWT_CACHE_MISS;
 
-import static software.wings.beans.Account.GLOBAL_ACCOUNT_ID;
-
 import io.harness.agent.utils.AgentMtlsVerifier;
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.context.GlobalContext;
 import io.harness.delegate.beans.DelegateToken;
 import io.harness.delegate.beans.DelegateToken.DelegateTokenKeys;
@@ -45,16 +41,12 @@ import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
 import io.harness.security.DelegateTokenAuthenticator;
 
-import software.wings.beans.Account;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.nimbusds.jose.JOSEException;
@@ -67,7 +59,6 @@ import dev.morphia.query.Query;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
@@ -77,22 +68,14 @@ import org.apache.commons.codec.digest.DigestUtils;
 @Slf4j
 @Singleton
 @OwnedBy(DEL)
-@TargetModule(HarnessModule._420_DELEGATE_SERVICE)
-public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticator {
+public class DelegateServiceTokenAuthenticatorImpl implements DelegateTokenAuthenticator {
   @Inject private HPersistence persistence;
   @Inject private DelegateTokenCacheHelper delegateTokenCacheHelper;
   @Inject private DelegateJWTCache delegateJWTCache;
   @Inject private DelegateMetricsService delegateMetricsService;
   @Inject private AgentMtlsVerifier agentMtlsVerifier;
 
-  private final LoadingCache<String, String> keyCache =
-      Caffeine.newBuilder()
-          .maximumSize(10000)
-          .expireAfterWrite(5, TimeUnit.MINUTES)
-          .build(accountId
-              -> Optional.ofNullable(persistence.get(Account.class, accountId))
-                     .map(Account::getAccountKey)
-                     .orElse(null));
+  public static final String GLOBAL_ACCOUNT_ID = "__GLOBAL_ACCOUNT_ID__";
 
   // TODO: ARPIT clean this class to validate from JWTCache only and remove older delegate token cache method after 3-4
   // weeks.
@@ -135,10 +118,10 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     boolean decryptedWithRevokedTokenFromDB = false;
 
     if (!decryptedWithTokenFromCache) {
-      log.debug("Not able to decrypt with token from cache. Fetching it from db.");
       delegateTokenCacheHelper.removeDelegateToken(delegateId);
       decryptedWithActiveTokenFromDB = decryptJWTDelegateToken(
           accountId, DelegateTokenStatus.ACTIVE, encryptedJWT, delegateId, shouldSetTokenNameInGlobalContext);
+
       if (!decryptedWithActiveTokenFromDB) {
         decryptedWithRevokedTokenFromDB = decryptJWTDelegateToken(
             accountId, DelegateTokenStatus.REVOKED, encryptedJWT, delegateId, shouldSetTokenNameInGlobalContext);
@@ -156,10 +139,6 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       delegateJWTCache.setDelegateJWTCache(tokenHash, delegateTokenName, new DelegateJWTCacheValue(false, 0L, null));
       log.error("Delegate {} is using REVOKED delegate token. DelegateId: {}", delegateHostName, delegateId);
       throw new RevokedTokenException("Invalid delegate token. Delegate is using revoked token", USER_ADMIN);
-    }
-
-    if (!decryptedWithTokenFromCache && !decryptedWithActiveTokenFromDB) {
-      decryptWithAccountKey(accountId, encryptedJWT);
     }
 
     try {
@@ -187,11 +166,6 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
 
     // Ensure that delegate connection satisfies mTLS configuration of the account
     this.validateMtlsHeader(accountId, agentMtlsAuthority);
-
-    // First try to validate token with accountKey.
-    if (validateDelegateAuth2TokenWithAccountKey(accountId, tokenString)) {
-      return;
-    }
 
     // TODO (Arpit): Replace this logic to validate it from tokenCache.
     Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
@@ -231,25 +205,6 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     throw new InvalidRequestException("Unauthorized", INVALID_AGENT_MTLS_AUTHORITY, null);
   }
 
-  private boolean validateDelegateAuth2TokenWithAccountKey(String accountId, String tokenString) {
-    String accountKey = null;
-    try {
-      accountKey = keyCache.get(accountId);
-    } catch (Exception ex) {
-      log.warn("Account key not found for accountId: {}", accountId, ex);
-    }
-
-    if (accountKey == null || GLOBAL_ACCOUNT_ID.equals(accountId)) {
-      throw new InvalidRequestException("Access denied", USER_ADMIN);
-    }
-    try {
-      decryptDelegateAuthV2Token(accountId, tokenString, accountKey);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
   private void decryptDelegateAuthV2Token(String accountId, String tokenString, String delegateToken) {
     try {
       Algorithm algorithm = Algorithm.HMAC256(delegateToken);
@@ -261,20 +216,6 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     } catch (InvalidClaimException e) {
       throw new InvalidRequestException("Token expired", e, EXPIRED_TOKEN, USER);
     }
-  }
-
-  private void decryptWithAccountKey(String accountId, EncryptedJWT encryptedJWT) {
-    String accountKey = null;
-    try {
-      accountKey = keyCache.get(accountId);
-    } catch (Exception ex) {
-      log.warn("Account key not found for accountId: {}", accountId, ex);
-    }
-
-    if (accountKey == null || GLOBAL_ACCOUNT_ID.equals(accountId)) {
-      throw new InvalidRequestException("Access denied", USER_ADMIN);
-    }
-    decryptDelegateToken(encryptedJWT, accountKey);
   }
 
   private boolean decryptJWTDelegateToken(String accountId, DelegateTokenStatus status, EncryptedJWT encryptedJWT,
@@ -289,7 +230,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     boolean result = decryptDelegateTokenByQuery(
         query, accountId, status, encryptedJWT, delegateId, shouldSetTokenNameInGlobalContext);
     long time_end = System.currentTimeMillis() - time_start;
-    log.debug("Delegate Token verification for accountId {} and status {} has taken {} milliseconds.", accountId,
+    log.info("Delegate Token verification for accountId {} and status {} has taken {} milliseconds.", accountId,
         status.name(), time_end);
     return result;
   }
@@ -299,6 +240,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
     try (HIterator<DelegateToken> iterator = new HIterator<>(query.fetch())) {
       while (iterator.hasNext()) {
         DelegateToken delegateToken = iterator.next();
+        log.info("Token name : " + delegateToken.getName());
         try {
           if (delegateToken.isNg()) {
             decryptDelegateToken(encryptedJWT, decodeBase64ToString(delegateToken.getValue()));
@@ -383,6 +325,7 @@ public class DelegateTokenAuthenticatorImpl implements DelegateTokenAuthenticato
       throw new RevokedTokenException(
           "Invalid delegate token. Delegate is using invalid or expired JWT token", USER_ADMIN);
     } else if (delegateJWTCacheValue.getExpiryInMillis() < System.currentTimeMillis()) {
+      log.info("AuthService getting delegate token : " + delegateJWTCacheValue);
       throw new InvalidRequestException("Unauthorized", EXPIRED_TOKEN, null);
     }
     setTokenNameInGlobalContext(shouldSetTokenNameInGlobalContext, delegateJWTCacheValue.getDelegateTokenName());
