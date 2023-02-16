@@ -149,7 +149,7 @@ public class ServiceVariableMigrationService extends NgMigrationService {
   public YamlGenerationDetails generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NGYamlFile> migratedEntities) {
     ServiceVariable serviceVariable = (ServiceVariable) entities.get(entityId).getEntity();
-    MigratorExpressionUtils.render(serviceVariable, inputDTO.getCustomExpressions());
+    MigratorExpressionUtils.render(entities, migratedEntities, serviceVariable, inputDTO.getCustomExpressions());
     List<NGYamlFile> files = new ArrayList<>();
 
     if (!doReferenceExists(migratedEntities, serviceVariable.getEnvId(), serviceVariable.getServiceId())) {

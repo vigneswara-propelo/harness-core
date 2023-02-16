@@ -312,7 +312,7 @@ public class ServiceMigrationService extends NgMigrationService {
     String projectIdentifier = MigratorUtility.getProjectIdentifier(PROJECT, inputDTO);
     String orgIdentifier = MigratorUtility.getOrgIdentifier(PROJECT, inputDTO);
 
-    MigratorExpressionUtils.render(service, inputDTO.getCustomExpressions());
+    MigratorExpressionUtils.render(entities, migratedEntities, service, inputDTO.getCustomExpressions());
     Set<CgEntityId> manifests =
         graph.get(entityId).stream().filter(cgEntityId -> cgEntityId.getType() == MANIFEST).collect(Collectors.toSet());
     Set<CgEntityId> serviceDefs = graph.get(entityId)

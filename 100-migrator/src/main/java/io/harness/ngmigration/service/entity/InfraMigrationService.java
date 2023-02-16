@@ -213,7 +213,7 @@ public class InfraMigrationService extends NgMigrationService {
   public YamlGenerationDetails generateYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NGYamlFile> migratedEntities) {
     InfrastructureDefinition infra = (InfrastructureDefinition) entities.get(entityId).getEntity();
-    MigratorExpressionUtils.render(infra, inputDTO.getCustomExpressions());
+    MigratorExpressionUtils.render(entities, migratedEntities, infra, inputDTO.getCustomExpressions());
     String name = MigratorUtility.generateName(inputDTO.getOverrides(), entityId, infra.getName());
     String identifier = MigratorUtility.generateIdentifierDefaultName(inputDTO.getOverrides(), entityId, name);
     String projectIdentifier = MigratorUtility.getProjectIdentifier(Scope.PROJECT, inputDTO);
