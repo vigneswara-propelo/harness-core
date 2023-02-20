@@ -13,11 +13,13 @@ import static io.harness.eventsframework.EventsFrameworkMetadataConstants.SECRET
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.connector.ConnectorResourceClientModule;
 import io.harness.events.EventsFrameworkModule;
 import io.harness.idp.config.resource.ConfigManagerResource;
 import io.harness.idp.config.resources.ConfigManagerResourceImpl;
 import io.harness.idp.config.service.AppConfigService;
 import io.harness.idp.config.service.AppConfigServiceImpl;
+import io.harness.idp.gitintegration.factory.ConnectorProcessorFactory;
 import io.harness.idp.namespace.service.NamespaceService;
 import io.harness.idp.namespace.service.NamespaceServiceImpl;
 import io.harness.idp.secret.eventlisteners.SecretCrudListener;
@@ -146,6 +148,8 @@ public class IdpModule extends AbstractModule {
     });
     install(new SecretNGManagerClientModule(appConfig.getNgManagerServiceHttpClientConfig(),
         appConfig.getNgManagerServiceSecret(), IDP_SERVICE.getServiceId()));
+    install(new ConnectorResourceClientModule(appConfig.getNgManagerServiceHttpClientConfig(),
+        appConfig.getNgManagerServiceSecret(), IDP_SERVICE.getServiceId()));
 
     bind(IdpConfiguration.class).toInstance(appConfig);
     // Keeping it to 1 thread to start with. Assuming executor service is used only to
@@ -166,6 +170,7 @@ public class IdpModule extends AbstractModule {
     bind(StatusInfoApi.class).to(StatusInfoApiImpl.class);
     bind(K8sClient.class).to(K8sApiClient.class);
     bind(MessageListener.class).annotatedWith(Names.named(SECRET_ENTITY + ENTITY_CRUD)).to(SecretCrudListener.class);
+    bind(ConnectorProcessorFactory.class);
   }
 
   @Provides
