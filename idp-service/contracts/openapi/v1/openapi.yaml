@@ -92,6 +92,42 @@ paths:
       responses:
         '204':
           description: No Content
+  '/v1/status-info/{type}':
+    get:
+      summary: Gets Status Info by type
+      tags:
+        - StatusInfo
+      operationId: get-status-info-by-type
+      description: Get status info for the given type
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      security:
+        - x-api-key: []
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusInfoResponse'
+      x-internal: true
+    parameters:
+      - schema:
+          type: string
+        name: type
+        in: path
+        required: true
+    post:
+      summary: 'Saves Status Info by type'
+      tags:
+        - StatusInfo
+      operationId: save-status-info-by-type
+      responses:
+        '201':
+          $ref: '#/components/responses/StatusInfoResponse'
+      description: Saves status info for the given type
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/StatusInfoRequest'
 components:
   schemas:
     EnvironmentSecret:
@@ -126,6 +162,35 @@ components:
       properties:
         secret:
           $ref: '#/components/schemas/EnvironmentSecret'
+    StatusInfo:
+      title: StatusInfo
+      x-stoplight:
+        id: ae1f1702dd443
+      type: object
+      properties:
+        currentStatus:
+          type: string
+        reason:
+          type: string
+        updatedAt:
+          type: integer
+          format: int64
+    StatusInfoResponse:
+      title: StatusInfoResponse
+      x-stoplight:
+        id: d5b32dc406018
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusInfo'
+    StatusInfoRequest:
+      title: StatusInfoRequest
+      x-stoplight:
+        id: m2r87gp8mfed7
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusInfo'
   parameters:
     AccountHeader:
       name: Harness-Account
@@ -171,6 +236,14 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/EnvironmentSecretRequest'
+    StatusInfoRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusInfoRequest'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/StatusInfoRequest'
   responses:
     EnvironmentSecretResponse:
       description: Example response
@@ -207,6 +280,15 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
+    StatusInfoResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusInfoResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/StatusInfoResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -24,8 +24,9 @@ import io.harness.idp.secret.eventlisteners.SecretCrudListener;
 import io.harness.idp.secret.resources.EnvironmentSecretApiImpl;
 import io.harness.idp.secret.service.EnvironmentSecretService;
 import io.harness.idp.secret.service.EnvironmentSecretServiceImpl;
-import io.harness.idp.status.resource.IDPStatusResource;
-import io.harness.idp.status.resources.IDPStatusResourceImpl;
+import io.harness.idp.status.resources.StatusInfoApiImpl;
+import io.harness.idp.status.service.StatusInfoService;
+import io.harness.idp.status.service.StatusInfoServiceImpl;
 import io.harness.k8s.client.K8sApiClient;
 import io.harness.k8s.client.K8sClient;
 import io.harness.metrics.modules.MetricsModule;
@@ -42,6 +43,7 @@ import io.harness.secrets.SecretNGManagerClientModule;
 import io.harness.serializer.IdpServiceRegistrars;
 import io.harness.serializer.KryoRegistrar;
 import io.harness.spec.server.idp.v1.EnvironmentSecretApi;
+import io.harness.spec.server.idp.v1.StatusInfoApi;
 import io.harness.threading.ThreadPool;
 import io.harness.version.VersionModule;
 
@@ -157,10 +159,11 @@ public class IdpModule extends AbstractModule {
     bind(HPersistence.class).to(MongoPersistence.class).in(Singleton.class);
     bind(AppConfigService.class).to(AppConfigServiceImpl.class);
     bind(EnvironmentSecretService.class).to(EnvironmentSecretServiceImpl.class);
+    bind(StatusInfoService.class).to(StatusInfoServiceImpl.class);
     bind(NamespaceService.class).to(NamespaceServiceImpl.class);
     bind(ConfigManagerResource.class).to(ConfigManagerResourceImpl.class);
     bind(EnvironmentSecretApi.class).to(EnvironmentSecretApiImpl.class);
-    bind(IDPStatusResource.class).to(IDPStatusResourceImpl.class);
+    bind(StatusInfoApi.class).to(StatusInfoApiImpl.class);
     bind(K8sClient.class).to(K8sApiClient.class);
     bind(MessageListener.class).annotatedWith(Names.named(SECRET_ENTITY + ENTITY_CRUD)).to(SecretCrudListener.class);
   }
