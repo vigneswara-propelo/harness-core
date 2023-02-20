@@ -5,6 +5,10 @@ info:
   title: IDP
   version: '1.0'
   description: Harness Internal Developer Portal API Reference
+  contact:
+    name: API Support
+    email: contact@harness.io
+    url: 'https://harness.io/'
 servers:
   - url: 'https://api.harness.io'
 paths:
@@ -92,6 +96,39 @@ paths:
       responses:
         '204':
           description: No Content
+  /v1/environment-secrets/batch:
+    post:
+      summary: Creates Multiple Environment Secret
+      operationId: create-environment-secrets
+      responses:
+        '201':
+          $ref: '#/components/responses/EnvironmentSecretResponseList'
+      description: Creates multiple environment secret
+      x-internal: true
+      requestBody:
+        $ref: '#/components/requestBodies/EnvironmentSecretRequestList'
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      security:
+        - x-api-key: []
+      tags:
+        - EnvironmentSecret
+    put:
+      summary: Updates Multiple Environment Secret
+      operationId: update-environment-secrets
+      responses:
+        '200':
+          $ref: '#/components/responses/EnvironmentSecretResponseList'
+      description: Updates the multiple environment secrets specified in the request
+      x-internal: true
+      security:
+        - x-api-key: []
+      requestBody:
+        $ref: '#/components/requestBodies/EnvironmentSecretRequestList'
+      tags:
+        - EnvironmentSecret
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
   '/v1/status-info/{type}':
     get:
       summary: Gets Status Info by type
@@ -136,6 +173,8 @@ components:
         id: c62d4d8f19081
       type: object
       properties:
+        identifier:
+          type: string
         name:
           type: string
         secret_identifier:
@@ -236,6 +275,18 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/EnvironmentSecretRequest'
+    EnvironmentSecretRequestList:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EnvironmentSecretRequest'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EnvironmentSecretRequest'
     StatusInfoRequest:
       content:
         application/json:
@@ -294,3 +345,6 @@ components:
       name: x-api-key
       type: apiKey
       in: header
+tags:
+  - name: EnvironmentSecret
+    description: Mapping of Environment Variables to Secrets
