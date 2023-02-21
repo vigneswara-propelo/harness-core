@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @OwnedBy(HarnessTeam.IDP)
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
@@ -166,11 +167,15 @@ public class EnvironmentSecretServiceImpl implements EnvironmentSecretService {
     // TODO: get the namespace for the given account. Currently assuming it to be default. Needs to be fixed.
     Map<String, byte[]> secretData = new HashMap<>();
     for (EnvironmentSecret environmentSecret : environmentSecrets) {
-      String envName = environmentSecret.getName();
+      String envName = environmentSecret.getEnvName();
       String secretIdentifier = environmentSecret.getSecretIdentifier();
-      DecryptedSecretValue decryptedValue =
-          ngSecretService.getDecryptedSecretValue(accountIdentifier, null, null, secretIdentifier);
-      secretData.put(envName, decryptedValue.getDecryptedValue().getBytes());
+      if (StringUtils.isBlank(environmentSecret.getDecryptedValue())) {
+        DecryptedSecretValue decryptedValue =
+            ngSecretService.getDecryptedSecretValue(accountIdentifier, null, null, secretIdentifier);
+        secretData.put(envName, decryptedValue.getDecryptedValue().getBytes());
+      } else {
+        secretData.put(envName, environmentSecret.getDecryptedValue().getBytes());
+      }
     }
     return k8sClient.updateSecretData(getNamespaceForAccount(accountIdentifier), BACKSTAGE_SECRET, secretData, false);
   }

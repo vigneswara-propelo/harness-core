@@ -196,9 +196,11 @@ components:
       properties:
         identifier:
           type: string
-        name:
+        env_name:
           type: string
         secret_identifier:
+          type: string
+        decrypted_value:
           type: string
         created:
           type: integer
