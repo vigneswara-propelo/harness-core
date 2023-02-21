@@ -134,14 +134,15 @@ public class EnvironmentSecretServiceImpl implements EnvironmentSecretService {
           format("Environment secret [%s] not found in account [%s]", secretIdentifier, accountIdentifier));
     }
     k8sClient.removeSecretData(getNamespaceForAccount(accountIdentifier), BACKSTAGE_SECRET,
-        Collections.singletonList(envSecretOpt.get().getName()));
+        Collections.singletonList(envSecretOpt.get().getEnvName()));
     environmentSecretRepository.delete(environmentSecretEntity);
   }
 
   @Override
   public void deleteMulti(List<String> secretIdentifiers, String accountIdentifier) throws Exception {
     Iterable<EnvironmentSecretEntity> secrets = environmentSecretRepository.findAllById(secretIdentifiers);
-    List<String> envNames = Streams.stream(secrets).map(EnvironmentSecretEntity::getName).collect(Collectors.toList());
+    List<String> envNames =
+        Streams.stream(secrets).map(EnvironmentSecretEntity::getEnvName).collect(Collectors.toList());
     k8sClient.removeSecretData(getNamespaceForAccount(accountIdentifier), BACKSTAGE_SECRET, envNames);
     environmentSecretRepository.deleteAllById(secretIdentifiers);
   }
