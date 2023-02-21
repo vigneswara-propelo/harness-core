@@ -396,8 +396,12 @@ public abstract class WorkflowHandler {
   JsonNode getStepElementConfig(WorkflowMigrationContext context, WorkflowPhase phase, PhaseStep phaseStep,
       GraphNode step, String skipCondition, boolean addLoopingStrategy) {
     StepMapper stepMapper = stepMapperFactory.getStepMapper(step.getType());
-    MigratorExpressionUtils.render(context.getEntities(), context.getMigratedEntities(), step,
-        getExpressions(phase, context.getStepExpressionFunctors()));
+    Map<String, Object> expressions = getExpressions(phase, context.getStepExpressionFunctors());
+    if (StringUtils.isNotBlank(skipCondition)) {
+      skipCondition = (String) MigratorExpressionUtils.render(
+          context.getEntities(), context.getMigratedEntities(), skipCondition, expressions);
+    }
+    MigratorExpressionUtils.render(context.getEntities(), context.getMigratedEntities(), step, expressions);
     List<StepExpressionFunctor> expressionFunctors = stepMapper.getExpressionFunctor(context, phase, phaseStep, step);
     if (isNotEmpty(expressionFunctors)) {
       context.getStepExpressionFunctors().addAll(expressionFunctors);
