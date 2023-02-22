@@ -9,6 +9,7 @@ package io.harness;
 
 import static io.harness.rule.OwnerRule.ASHISHSANODIA;
 
+import io.harness.agent.sdk.HarnessAlwaysRun;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
@@ -231,6 +232,7 @@ public class EntityTypeTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
+  @HarnessAlwaysRun
   public void testMappingExistsForAllEnumConstants() {
     Arrays.stream(EntityType.values()).forEach(entityType -> {
       if (!entityType.name().equals(entityTypeOrdinalMapping.get(entityType.ordinal()))) {
@@ -243,6 +245,7 @@ public class EntityTypeTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
+  @HarnessAlwaysRun
   public void testEnumConstantAddedAtTheEndWithoutMapping() {
     if (EntityType.values().length > entityTypeOrdinalMapping.size()) {
       Arrays.stream(EntityType.values()).forEach(entityType -> {
@@ -261,6 +264,7 @@ public class EntityTypeTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
+  @HarnessAlwaysRun
   public void testEnumConstantNotAddedInBetween() {
     if (entityTypeOrdinalMapping.size() < EntityType.values().length) {
       Arrays.stream(EntityType.values()).forEach(entityType -> {
@@ -278,6 +282,7 @@ public class EntityTypeTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
+  @HarnessAlwaysRun
   public void testEnumConstantNotDeleted() {
     if (entityTypeOrdinalMapping.size() > EntityType.values().length) {
       Arrays.stream(EntityType.values()).forEach(entityType -> {
