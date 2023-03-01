@@ -638,7 +638,9 @@ public enum FeatureName {
   CHAOS_LINUX_ENABLED("Enable linux experiment and infrastructure integration in CHAOS", HarnessTeam.CHAOS),
   CHAOS_PROBE_ENABLED("Enable new probe ui and flow in CHAOS", HarnessTeam.CHAOS),
   CHAOS_GAMEDAY_ENABLED("Enable gameday feature in CHAOS", HarnessTeam.CHAOS),
-  CDS_JIRA_PAT_AUTH("PAT auth support for jira connector", HarnessTeam.CDC);
+  CDS_JIRA_PAT_AUTH("PAT auth support for jira connector", HarnessTeam.CDC),
+  PL_MIGRATE_SECRETS_FROM_LOCAL_TO_GCP_KMS_PROD3(
+      "Allow migration of secrets from local to gcpKms in ng prod3", HarnessTeam.PL);
 
   @Deprecated
   FeatureName() {
