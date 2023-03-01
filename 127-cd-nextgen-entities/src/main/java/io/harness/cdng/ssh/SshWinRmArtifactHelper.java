@@ -27,6 +27,7 @@ import io.harness.cdng.artifact.outcome.ArtifactoryGenericArtifactOutcome;
 import io.harness.cdng.artifact.outcome.AzureArtifactsOutcome;
 import io.harness.cdng.artifact.outcome.CustomArtifactOutcome;
 import io.harness.cdng.artifact.outcome.EcrArtifactOutcome;
+import io.harness.cdng.artifact.outcome.GcrArtifactOutcome;
 import io.harness.cdng.artifact.outcome.JenkinsArtifactOutcome;
 import io.harness.cdng.artifact.outcome.NexusArtifactOutcome;
 import io.harness.cdng.artifact.outcome.S3ArtifactOutcome;
@@ -46,6 +47,7 @@ import io.harness.delegate.task.ssh.artifact.AwsS3ArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.AzureArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.CustomArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.EcrArtifactDelegateConfig;
+import io.harness.delegate.task.ssh.artifact.GcrArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.JenkinsArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.NexusArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.NexusDockerArtifactDelegateConfig;
@@ -206,6 +208,13 @@ public class SshWinRmArtifactHelper {
           .image(acrArtifactOutcome.getImage())
           .tag(acrArtifactOutcome.getTag())
           .tagRegex(acrArtifactOutcome.getTagRegex())
+          .build();
+    } else if (artifactOutcome instanceof GcrArtifactOutcome) {
+      GcrArtifactOutcome gcrArtifactOutcome = (GcrArtifactOutcome) artifactOutcome;
+      return GcrArtifactDelegateConfig.builder()
+          .identifier(gcrArtifactOutcome.getIdentifier())
+          .primaryArtifact(gcrArtifactOutcome.isPrimaryArtifact())
+          .version(gcrArtifactOutcome.getTag())
           .build();
     } else {
       throw new UnsupportedOperationException(

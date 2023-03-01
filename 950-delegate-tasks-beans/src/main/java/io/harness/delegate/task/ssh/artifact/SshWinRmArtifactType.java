@@ -20,5 +20,6 @@ public enum SshWinRmArtifactType {
   NEXUS_PACKAGE,
   AZURE,
   ECR,
-  ACR
+  ACR,
+  GCR
 }
