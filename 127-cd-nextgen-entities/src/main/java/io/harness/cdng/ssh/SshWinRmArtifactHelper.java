@@ -20,6 +20,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
+import io.harness.cdng.artifact.outcome.AcrArtifactOutcome;
 import io.harness.cdng.artifact.outcome.ArtifactOutcome;
 import io.harness.cdng.artifact.outcome.ArtifactoryArtifactOutcome;
 import io.harness.cdng.artifact.outcome.ArtifactoryGenericArtifactOutcome;
@@ -38,6 +39,7 @@ import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorDTO;
 import io.harness.delegate.beans.connector.jenkins.JenkinsConnectorDTO;
 import io.harness.delegate.beans.connector.nexusconnector.NexusConnectorDTO;
+import io.harness.delegate.task.ssh.artifact.AcrArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.ArtifactoryArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.ArtifactoryDockerArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.AwsS3ArtifactDelegateConfig;
@@ -193,6 +195,17 @@ public class SshWinRmArtifactHelper {
           .identifier(ecrArtifactOutcome.getIdentifier())
           .primaryArtifact(ecrArtifactOutcome.isPrimaryArtifact())
           .version(ecrArtifactOutcome.getTag())
+          .build();
+    } else if (artifactOutcome instanceof AcrArtifactOutcome) {
+      AcrArtifactOutcome acrArtifactOutcome = (AcrArtifactOutcome) artifactOutcome;
+      return AcrArtifactDelegateConfig.builder()
+          .identifier(acrArtifactOutcome.getIdentifier())
+          .primaryArtifact(acrArtifactOutcome.isPrimaryArtifact())
+          .subscription(acrArtifactOutcome.getSubscription())
+          .registry(acrArtifactOutcome.getRegistry())
+          .image(acrArtifactOutcome.getImage())
+          .tag(acrArtifactOutcome.getTag())
+          .tagRegex(acrArtifactOutcome.getTagRegex())
           .build();
     } else {
       throw new UnsupportedOperationException(

@@ -940,6 +940,7 @@ import io.harness.delegate.task.ssh.NgInitCommandUnit;
 import io.harness.delegate.task.ssh.PdcSshInfraDelegateConfig;
 import io.harness.delegate.task.ssh.PdcWinRmInfraDelegateConfig;
 import io.harness.delegate.task.ssh.ScriptCommandUnit;
+import io.harness.delegate.task.ssh.artifact.AcrArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.ArtifactoryArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.ArtifactoryDockerArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.AwsS3ArtifactDelegateConfig;
@@ -2245,6 +2246,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(RemoteTerraformBackendConfigFileInfo.class, 9800009);
     kryo.register(AzureArtifactDelegateConfig.class, 9800010);
     kryo.register(EcrArtifactDelegateConfig.class, 9800012);
+    kryo.register(AcrArtifactDelegateConfig.class, 9800013);
     kryo.register(WinrmConnectivityExecutionCapability.class, 55425);
     kryo.register(GcpSecretManagerValidationParams.class, 19879);
     kryo.register(ShellScriptProvisionTaskNGRequest.class, 55426);
