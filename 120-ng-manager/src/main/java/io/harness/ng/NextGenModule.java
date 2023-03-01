@@ -110,9 +110,11 @@ import io.harness.filestore.outbox.FileEventHandler;
 import io.harness.freeze.service.FreezeCRUDService;
 import io.harness.freeze.service.FreezeEvaluateService;
 import io.harness.freeze.service.FreezeSchemaService;
+import io.harness.freeze.service.FrozenExecutionService;
 import io.harness.freeze.service.impl.FreezeCRUDServiceImpl;
 import io.harness.freeze.service.impl.FreezeEvaluateServiceImpl;
 import io.harness.freeze.service.impl.FreezeSchemaServiceImpl;
+import io.harness.freeze.service.impl.FrozenExecutionServiceImpl;
 import io.harness.gitops.GitopsResourceClientModule;
 import io.harness.gitsync.GitServiceConfiguration;
 import io.harness.gitsync.GitSyncConfigClientModule;
@@ -718,6 +720,7 @@ public class NextGenModule extends AbstractModule {
     bind(FreezeCRUDService.class).to(FreezeCRUDServiceImpl.class);
     bind(FreezeEvaluateService.class).to(FreezeEvaluateServiceImpl.class);
     bind(FreezeSchemaService.class).to(FreezeSchemaServiceImpl.class);
+    bind(FrozenExecutionService.class).to(FrozenExecutionServiceImpl.class);
     install(new ProviderModule() {
       @Provides
       @Singleton
