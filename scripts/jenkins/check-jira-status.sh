@@ -107,6 +107,7 @@ then
     check_story_ticket $ff_added $what_changed
   elif [ $issuetype = "Bug" ]; then
     check_bug_ticket $bug_resolution $jira_resolved_as $phase_injected $what_changed
+  fi
   exit 1
 fi
 
