@@ -18,6 +18,11 @@ import static io.harness.threading.Morpheus.sleep;
 
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
+import static software.amazon.awssdk.services.lambda.model.State.FAILED;
+import static software.amazon.awssdk.services.lambda.model.State.INACTIVE;
+import static software.amazon.awssdk.services.lambda.model.State.PENDING;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.aws.beans.AwsInternalConfig;
@@ -27,6 +32,7 @@ import io.harness.data.structure.UUIDGenerator;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.exception.AwsLambdaException;
 import io.harness.delegate.task.aws.AwsNgConfigMapper;
+import io.harness.delegate.task.aws.lambda.AwsLambdaFunctionWithActiveVersions.AwsLambdaFunctionWithActiveVersionsBuilder;
 import io.harness.eraro.ErrorCode;
 import io.harness.eraro.Level;
 import io.harness.exception.FileCreationException;
@@ -43,6 +49,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.TimeLimiter;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.google.inject.Inject;
@@ -52,13 +59,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.logging.log4j.util.Strings;
 import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.lambda.model.AliasConfiguration;
 import software.amazon.awssdk.services.lambda.model.CreateFunctionRequest;
 import software.amazon.awssdk.services.lambda.model.CreateFunctionResponse;
 import software.amazon.awssdk.services.lambda.model.DeleteFunctionRequest;
@@ -70,6 +84,10 @@ import software.amazon.awssdk.services.lambda.model.GetFunctionConfigurationRequ
 import software.amazon.awssdk.services.lambda.model.GetFunctionConfigurationResponse;
 import software.amazon.awssdk.services.lambda.model.GetFunctionRequest;
 import software.amazon.awssdk.services.lambda.model.GetFunctionResponse;
+import software.amazon.awssdk.services.lambda.model.ListAliasesRequest;
+import software.amazon.awssdk.services.lambda.model.ListAliasesResponse;
+import software.amazon.awssdk.services.lambda.model.ListVersionsByFunctionRequest;
+import software.amazon.awssdk.services.lambda.model.ListVersionsByFunctionResponse;
 import software.amazon.awssdk.services.lambda.model.PackageType;
 import software.amazon.awssdk.services.lambda.model.PublishVersionRequest;
 import software.amazon.awssdk.services.lambda.model.PublishVersionResponse;
@@ -171,13 +189,15 @@ public class AwsLambdaTaskHelper {
       String awsLambdaManifestContent, LogCallback logCallback,
       AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig, GetFunctionResponse function) {
     String functionName = function.configuration().functionName();
+    String functionCodeSha = function.configuration().codeSha256();
     logCallback.saveExecutionLog(format("Function: [%s] already exists. Update and Publish.", functionName));
 
     logCallback.saveExecutionLog(
         format("Existing Lambda Function Code Sha256: [%s].", function.configuration().codeSha256()));
 
     // Update Function Code
-    updateFunctionCodeWithArtifact(awsLambdaArtifactConfig, logCallback, awsLambdaFunctionsInfraConfig, functionName);
+    updateFunctionCodeWithArtifact(
+        awsLambdaArtifactConfig, logCallback, awsLambdaFunctionsInfraConfig, functionName, functionCodeSha);
 
     // Update Function Configuration
     UpdateFunctionConfigurationResponse updateFunctionConfigurationResponse =
@@ -187,7 +207,8 @@ public class AwsLambdaTaskHelper {
 
     // Publish New version
     PublishVersionResponse publishVersionResponse =
-        getPublishVersionResponse(logCallback, awsLambdaFunctionsInfraConfig, updateFunctionConfigurationResponse);
+        getPublishVersionResponse(logCallback, awsLambdaFunctionsInfraConfig,
+            updateFunctionConfigurationResponse.functionName(), updateFunctionConfigurationResponse.codeSha256());
 
     logCallback.saveExecutionLog(format("Successfully deployed lambda function: [%s]", functionName));
     logCallback.saveExecutionLog("=================");
@@ -201,37 +222,51 @@ public class AwsLambdaTaskHelper {
   }
 
   private void updateFunctionCodeWithArtifact(AwsLambdaArtifactConfig awsLambdaArtifactConfig, LogCallback logCallback,
-      AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig, String functionName) {
+      AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig, String functionName,
+      String existingFunctionCodeSha) {
     FunctionCode functionCode;
     functionCode = prepareFunctionCode(awsLambdaArtifactConfig);
 
-    UpdateFunctionCodeRequest updateFunctionCodeRequest;
+    UpdateFunctionCodeRequest.Builder updateFunctionCodeRequest;
 
     if (awsLambdaArtifactConfig instanceof AwsLambdaS3ArtifactConfig) {
-      updateFunctionCodeRequest = (UpdateFunctionCodeRequest) UpdateFunctionCodeRequest.builder()
+      updateFunctionCodeRequest = UpdateFunctionCodeRequest.builder()
                                       .functionName(functionName)
                                       .s3Bucket(functionCode.s3Bucket())
-                                      .s3Key(functionCode.s3Key())
-                                      .build();
+                                      .s3Key(functionCode.s3Key());
     } else if (awsLambdaArtifactConfig instanceof AwsLambdaEcrArtifactConfig) {
-      updateFunctionCodeRequest = (UpdateFunctionCodeRequest) UpdateFunctionCodeRequest.builder()
-                                      .functionName(functionName)
-                                      .imageUri(functionCode.imageUri())
-                                      .build();
+      updateFunctionCodeRequest =
+          UpdateFunctionCodeRequest.builder().functionName(functionName).imageUri(functionCode.imageUri());
 
     } else {
       throw new InvalidRequestException("Not Support ArtifactConfig Type");
     }
 
-    UpdateFunctionCodeResponse updateFunctionCodeResponse =
+    if (isFunctionCodeUpdateNeeded(awsLambdaFunctionsInfraConfig, updateFunctionCodeRequest, existingFunctionCodeSha)) {
+      // Update Function Code
+      UpdateFunctionCodeResponse updateFunctionCodeResponse =
+          awsLambdaClient.updateFunctionCode(getAwsInternalConfig(awsLambdaFunctionsInfraConfig.getAwsConnectorDTO(),
+                                                 awsLambdaFunctionsInfraConfig.getRegion()),
+              (UpdateFunctionCodeRequest) updateFunctionCodeRequest.build());
+      waitForFunctionToUpdate(functionName, awsLambdaFunctionsInfraConfig, logCallback);
+
+      logCallback.saveExecutionLog(
+          format("Updated Function Code Sha256: [%s]", updateFunctionCodeResponse.codeSha256()));
+
+      logCallback.saveExecutionLog(format("Updated Function ARN: [%s]", updateFunctionCodeResponse.functionArn()));
+
+    } else {
+      logCallback.saveExecutionLog("Function code didn't change. Skip function code update", INFO);
+    }
+  }
+
+  private boolean isFunctionCodeUpdateNeeded(AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig,
+      UpdateFunctionCodeRequest.Builder updateFunctionCodeRequest, String existingFunctionCodeSha) {
+    UpdateFunctionCodeResponse updateFunctionCodeResponseDryRun =
         awsLambdaClient.updateFunctionCode(getAwsInternalConfig(awsLambdaFunctionsInfraConfig.getAwsConnectorDTO(),
                                                awsLambdaFunctionsInfraConfig.getRegion()),
-            updateFunctionCodeRequest);
-    waitForFunctionToUpdate(functionName, awsLambdaFunctionsInfraConfig, logCallback);
-
-    logCallback.saveExecutionLog(format("Updated Function Code Sha256: [%s]", updateFunctionCodeResponse.codeSha256()));
-
-    logCallback.saveExecutionLog(format("Updated Function ARN: [%s]", updateFunctionCodeResponse.functionArn()));
+            (UpdateFunctionCodeRequest) updateFunctionCodeRequest.dryRun(Boolean.TRUE).build());
+    return !updateFunctionCodeResponseDryRun.codeSha256().equals(existingFunctionCodeSha);
   }
 
   protected FunctionCode prepareFunctionCode(AwsLambdaArtifactConfig awsLambdaArtifactConfig) {
@@ -302,9 +337,11 @@ public class AwsLambdaTaskHelper {
 
     logCallback.saveExecutionLog(format("Created Function: %s in region: %s %n", functionName,
         awsLambdaFunctionsInfraConfig.getRegion(), LogLevel.INFO));
+    logCallback.saveExecutionLog(format("Function Version: [%s]", createFunctionResponse.version(), INFO));
     logCallback.saveExecutionLog(
         format("Created Function Code Sha256: [%s]", createFunctionResponse.codeSha256(), INFO));
     logCallback.saveExecutionLog(format("Created Function ARN: [%s]", createFunctionResponse.functionArn(), INFO));
+
     logCallback.saveExecutionLog(format("Successfully deployed lambda function: [%s]", functionName));
     logCallback.saveExecutionLog("=================");
 
@@ -328,7 +365,8 @@ public class AwsLambdaTaskHelper {
 
     // Publish New version
     PublishVersionResponse publishVersionResponse =
-        getPublishVersionResponse(logCallback, awsLambdaFunctionsInfraConfig, updateFunctionConfigurationResponse);
+        getPublishVersionResponse(logCallback, awsLambdaFunctionsInfraConfig,
+            updateFunctionConfigurationResponse.functionName(), updateFunctionConfigurationResponse.codeSha256());
 
     logCallback.saveExecutionLog(format("Successfully deployed lambda function: [%s]", functionName));
     logCallback.saveExecutionLog("=================");
@@ -465,13 +503,12 @@ public class AwsLambdaTaskHelper {
   }
 
   private PublishVersionResponse getPublishVersionResponse(LogCallback logCallback,
-      AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig,
-      UpdateFunctionConfigurationResponse updateFunctionConfigurationResponse) {
+      AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig, String functionName, String codeSha256) {
     logCallback.saveExecutionLog("Publishing new version", INFO);
 
     PublishVersionRequest publishVersionRequest = (PublishVersionRequest) PublishVersionRequest.builder()
-                                                      .functionName(updateFunctionConfigurationResponse.functionName())
-                                                      .codeSha256(updateFunctionConfigurationResponse.codeSha256())
+                                                      .functionName(functionName)
+                                                      .codeSha256(codeSha256)
                                                       .build();
 
     PublishVersionResponse publishVersionResponse =
@@ -558,5 +595,127 @@ public class AwsLambdaTaskHelper {
       throw new InvalidRequestException(
           "Error while waiting for function to reach " + ACTIVE_LAST_UPDATE_STATUS + " status", e);
     }
+  }
+
+  public ListVersionsByFunctionResponse listVersionsByFunction(
+      String functionName, AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig) {
+    ListVersionsByFunctionResponse listVersionsByFunctionResult = null;
+    try {
+      ListVersionsByFunctionRequest listVersionsByFunctionRequest =
+          (ListVersionsByFunctionRequest) ListVersionsByFunctionRequest.builder().functionName(functionName).build();
+      listVersionsByFunctionResult = awsLambdaClient.listVersionsByFunction(
+          getAwsInternalConfig(
+              awsLambdaFunctionsInfraConfig.getAwsConnectorDTO(), awsLambdaFunctionsInfraConfig.getRegion()),
+          listVersionsByFunctionRequest);
+    } catch (Exception e) {
+      throw new InvalidRequestException(e.getMessage());
+    }
+
+    return listVersionsByFunctionResult;
+  }
+
+  public ListAliasesResponse listAliases(
+      String functionName, AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig) {
+    ListAliasesResponse listAliasesResponse = null;
+    try {
+      ListAliasesRequest listAliasesRequest =
+          (ListAliasesRequest) ListAliasesRequest.builder().functionName(functionName).build();
+      listAliasesResponse =
+          awsLambdaClient.listAliases(getAwsInternalConfig(awsLambdaFunctionsInfraConfig.getAwsConnectorDTO(),
+                                          awsLambdaFunctionsInfraConfig.getRegion()),
+              listAliasesRequest);
+    } catch (Exception e) {
+      throw new InvalidRequestException(e.getMessage());
+    }
+
+    return listAliasesResponse;
+  }
+
+  public AwsLambdaFunctionWithActiveVersions getAwsLambdaFunctionWithActiveVersions(
+      AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig, String functionName) {
+    GetFunctionRequest getFunctionRequest =
+        (GetFunctionRequest) GetFunctionRequest.builder().functionName(functionName).build();
+
+    Optional<GetFunctionResponse> existingFunctionOptional = null;
+    try {
+      existingFunctionOptional =
+          awsLambdaClient.getFunction(getAwsInternalConfig(awsLambdaFunctionsInfraConfig.getAwsConnectorDTO(),
+                                          awsLambdaFunctionsInfraConfig.getRegion()),
+              getFunctionRequest);
+    } catch (Exception e) {
+      throw new InvalidRequestException(e.getMessage());
+    }
+
+    if (existingFunctionOptional.isEmpty()) {
+      throw new AwsLambdaException(
+          new Exception(format("Cannot find any function with function name: %s in region: %s %n", functionName,
+              awsLambdaFunctionsInfraConfig.getRegion())));
+    } else {
+      try {
+        List<String> activeVersions = getActiveVersions(functionName, awsLambdaFunctionsInfraConfig);
+        ListAliasesResponse listAliasesResponse = listAliases(functionName, awsLambdaFunctionsInfraConfig);
+        return convertToAwsLambdaFunctionWithActiveVersion(
+            existingFunctionOptional.get(), listAliasesResponse, activeVersions);
+      } catch (Exception e) {
+        throw new InvalidRequestException(e.getMessage());
+      }
+    }
+  }
+
+  public List<String> getActiveVersions(
+      String functionName, AwsLambdaFunctionsInfraConfig awsLambdaFunctionsInfraConfig) {
+    List<String> activeVersions = new ArrayList<>();
+    ListVersionsByFunctionResponse listVersionsByFunctionResult =
+        listVersionsByFunction(functionName, awsLambdaFunctionsInfraConfig);
+    if (listVersionsByFunctionResult == null || listVersionsByFunctionResult.versions() == null) {
+      throw new InvalidRequestException("Cannot find Versions for the given function");
+    }
+    for (FunctionConfiguration functionConfiguration : listVersionsByFunctionResult.versions()) {
+      if (!(PENDING.equals(functionConfiguration.state()) || INACTIVE.equals(functionConfiguration.state())
+              || FAILED.equals(functionConfiguration.state()))) {
+        activeVersions.add(functionConfiguration.version());
+      }
+    }
+    return activeVersions;
+  }
+
+  public AwsLambdaFunctionWithActiveVersions convertToAwsLambdaFunctionWithActiveVersion(
+      GetFunctionResponse result, ListAliasesResponse listAliasesResult, List<String> activeVersions) {
+    final FunctionConfiguration config = result.configuration();
+    final AwsLambdaFunctionWithActiveVersionsBuilder builder = AwsLambdaFunctionWithActiveVersions.builder()
+                                                                   .functionArn(config.functionArn())
+                                                                   .functionName(config.functionName())
+                                                                   .runtime(config.runtime().toString())
+                                                                   .role(config.role())
+                                                                   .handler(config.handler())
+                                                                   .codeSize(config.codeSize())
+                                                                   .description(config.description())
+                                                                   .timeout(config.timeout())
+                                                                   .memorySize(config.memorySize())
+                                                                   .codeSha256(config.codeSha256())
+                                                                   .versions(activeVersions)
+                                                                   .kMSKeyArn(config.kmsKeyArn())
+                                                                   .masterArn(config.masterArn())
+                                                                   .revisionId(config.revisionId());
+
+    if (Strings.isNotEmpty(config.lastModified())) {
+      try {
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+        builder.lastModified(simpleDateFormat.parse(config.lastModified()));
+      } catch (ParseException e) {
+        log.warn("Unable to parse date [{}]", config.lastModified());
+      }
+    }
+
+    if (MapUtils.isNotEmpty(result.tags())) {
+      builder.tags(ImmutableMap.copyOf(result.tags()));
+    }
+
+    if (listAliasesResult != null) {
+      builder.aliases(
+          emptyIfNull(listAliasesResult.aliases()).stream().map(AliasConfiguration::name).collect(toList()));
+    }
+    return builder.build();
   }
 }
