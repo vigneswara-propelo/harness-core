@@ -547,6 +547,7 @@ public enum FeatureName {
   CDS_ASG_NG("Supports Amazon ASG in NG", HarnessTeam.CDP),
   CDP_UPDATE_INSTANCE_DETAILS_WITH_IMAGE_SUFFIX("Update instance details if image suffix matches", HarnessTeam.CDP),
   SRM_INTERNAL_CHANGE_SOURCE_FF("Control Feature Flag Internal Change Source On UI", HarnessTeam.CV),
+  SRM_ENABLE_REQUEST_SLO("Control Request Based SLO feature on UI", HarnessTeam.CV),
   CD_NG_DYNAMIC_PROVISIONING_ENV_V2(
       "Enable dynamic provisioning support in v2 environment. Epic: CDS-39606", HarnessTeam.CDC),
   CDS_ARTIFACTORY_REPOSITORY_URL_MANDATORY(
