@@ -22,8 +22,6 @@ bazel* diptiman.adak@harness.io udham.singh@harness.io
 
 /840-template-service utkarsh.choubey@harness.io tathagat.chaurasiya@harness.io  inderpreet.chera@harness.io yogesh.chauhan@harness.io
 
-/260-delegate/src/main/java/io/harness/ @harness/del-team
-/400-rest/src/main/resources/delegatetemplates/ @harness/del-team
 /420-delegate-agent/ @harness/del-team
 /420-delegate-service/ @harness/del-team
 /pipeline-service/service/src/main/java/io/harness/pms/plan/creation/PipelineServiceInternalInfoProvider.java prashant.sharma@harness.io vaibhav.si@harness.io archit.singla@harness.io
