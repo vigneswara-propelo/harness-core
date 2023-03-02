@@ -16,14 +16,14 @@ import io.harness.pms.execution.utils.StatusUtils;
 import com.google.inject.Inject;
 
 /***
- * Upon Failure node already has status as failed, the failure-strategy "MarkAsFailure" doesn't need to do update status
- * hence directly running the next node.
+ * Upon Failure node already has status as failed, the failure-strategy "MarkAsFailure"
+ * doesn't need to do update status hence directly running the next node.
  */
 public class MarkAsFailureAdviseHandler extends NextStepHandler {
   @Inject NodeExecutionServiceImpl nodeExecutionService;
   @Override
   public void handleAdvise(NodeExecution prevNodeExecution, AdviserResponse adviserResponse) {
-    if (!prevNodeExecution.getStatus().equals(Status.FAILED)) {
+    if (!Status.FAILED.equals(prevNodeExecution.getStatus())) {
       nodeExecutionService.updateStatusWithOps(
           prevNodeExecution.getUuid(), Status.FAILED, null, StatusUtils.brokeStatuses());
     }
