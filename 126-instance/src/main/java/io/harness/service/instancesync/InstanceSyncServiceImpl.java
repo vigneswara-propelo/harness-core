@@ -74,24 +74,25 @@ import org.apache.commons.lang3.StringUtils;
 @Singleton
 @Slf4j
 public class InstanceSyncServiceImpl implements InstanceSyncService {
-  @Inject private PersistentLocker persistentLocker;
-  @Inject private InstanceSyncPerpetualTaskService instanceSyncPerpetualTaskService;
+  private PersistentLocker persistentLocker;
+  private InstanceSyncPerpetualTaskService instanceSyncPerpetualTaskService;
 
-  @Inject private InstanceSyncPerpetualTaskInfoService instanceSyncPerpetualTaskInfoService;
-  @Inject private InstanceSyncPerpetualTaskMappingService instanceSyncPerpetualTaskMappingService;
-  @Inject private InstanceSyncHandlerFactoryService instanceSyncHandlerFactoryService;
-  @Inject private InfrastructureMappingService infrastructureMappingService;
-  @Inject private InstanceService instanceService;
-  @Inject private DeploymentSummaryService deploymentSummaryService;
-  @Inject private InstanceSyncHelper instanceSyncHelper;
+  private InstanceSyncPerpetualTaskInfoService instanceSyncPerpetualTaskInfoService;
+  private InstanceSyncPerpetualTaskMappingService instanceSyncPerpetualTaskMappingService;
+  private InstanceSyncHandlerFactoryService instanceSyncHandlerFactoryService;
+  private InfrastructureMappingService infrastructureMappingService;
+  private InstanceService instanceService;
+  private DeploymentSummaryService deploymentSummaryService;
+  private InstanceSyncHelper instanceSyncHelper;
 
-  @Inject @Named(DEFAULT_CONNECTOR_SERVICE) private ConnectorService connectorService;
-  @Inject private InstanceSyncServiceUtils utils;
-  @Inject private InstanceSyncMonitoringService instanceSyncMonitoringService;
-  @Inject private AccountClient accountClient;
+  @Named(DEFAULT_CONNECTOR_SERVICE) private ConnectorService connectorService;
+  private InstanceSyncServiceUtils utils;
+  private InstanceSyncMonitoringService instanceSyncMonitoringService;
+  private AccountClient accountClient;
   private static final int NEW_DEPLOYMENT_EVENT_RETRY = 3;
   private static final long TWO_WEEKS_IN_MILLIS = (long) 14 * 24 * 60 * 60 * 1000;
 
+  @Inject
   public InstanceSyncServiceImpl(PersistentLocker persistentLocker,
       InstanceSyncPerpetualTaskService instanceSyncPerpetualTaskService,
       InstanceSyncPerpetualTaskInfoService instanceSyncPerpetualTaskInfoService,
