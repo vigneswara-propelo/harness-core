@@ -11,8 +11,8 @@ import io.harness.ModuleType;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.credit.utils.CreditStatus;
 import io.harness.data.validator.Trimmed;
-import io.harness.licensing.utils.CreditStatus;
 import io.harness.ng.DbAliases;
 import io.harness.ng.core.NGAccountAccess;
 import io.harness.persistence.PersistentEntity;
@@ -26,7 +26,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@OwnedBy(HarnessTeam.PLG)
+@OwnedBy(HarnessTeam.GTM)
 @Data
 @FieldNameConstants(innerTypeName = "CreditsKeys")
 @StoreIn(DbAliases.NG_MANAGER)
