@@ -661,7 +661,8 @@ public enum FeatureName {
   PL_SELECT_SPECIFIC_SERVICE_ACCOUNT_IN_RESOURCE_GROUP(
       "Allow selection of specific service accounts in Resource group", HarnessTeam.PL),
   CDS_TERRAFORM_REMOTE_BACKEND_CONFIG_NG(
-      "Enables storing Terraform backend configuration in a remote repo", HarnessTeam.CDP);
+      "Enables storing Terraform backend configuration in a remote repo", HarnessTeam.CDP),
+  FF_ALLOW_OPTIONAL_VARIABLE("Allow Optional Variable from UI in NG.", HarnessTeam.PIPELINE);
 
   @Deprecated
   FeatureName() {
