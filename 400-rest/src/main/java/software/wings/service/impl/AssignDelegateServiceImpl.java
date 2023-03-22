@@ -616,6 +616,9 @@ public class AssignDelegateServiceImpl implements AssignDelegateService, Delegat
               || !result.get().isValidated()) {
             matching = false;
             Delegate delegate = delegateCache.get(task.getAccountId(), delegateId, false);
+            if (delegate == null) {
+              break;
+            }
             String delegateName =
                 isNotEmpty(delegate.getDelegateName()) ? delegate.getDelegateName() : delegate.getUuid();
             String noMatchError = String.format("No matching criteria %s found in delegate %s", criteria, delegateName);
