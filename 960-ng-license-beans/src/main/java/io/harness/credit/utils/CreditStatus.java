@@ -6,7 +6,8 @@
  */
 package io.harness.credit.utils;
 
-import io.harness.annotations.dev.HarnessTeam;
+import static io.harness.annotations.dev.HarnessTeam.GTM;
+
 import io.harness.annotations.dev.OwnedBy;
 
-@OwnedBy(HarnessTeam.GTM) public enum CreditStatus { ACTIVE, EXPIRED }
+@OwnedBy(GTM) public enum CreditStatus { ACTIVE, EXPIRED }

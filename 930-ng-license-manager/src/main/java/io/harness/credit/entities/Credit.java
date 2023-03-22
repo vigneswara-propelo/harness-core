@@ -6,10 +6,11 @@
  */
 package io.harness.credit.entities;
 
+import static io.harness.annotations.dev.HarnessTeam.GTM;
+
 import io.harness.CreditType;
 import io.harness.ModuleType;
 import io.harness.annotations.StoreIn;
-import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.credit.utils.CreditStatus;
 import io.harness.data.validator.Trimmed;
@@ -26,7 +27,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@OwnedBy(HarnessTeam.GTM)
+@OwnedBy(GTM)
 @Data
 @FieldNameConstants(innerTypeName = "CreditsKeys")
 @StoreIn(DbAliases.NG_MANAGER)
