@@ -4,17 +4,14 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
-package io.harness.idp.configmanager.repositories;
+
+package io.harness.idp.configmanager;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.configmanager.ConfigType;
-import io.harness.idp.configmanager.beans.entity.AppConfigEntity;
 
 @OwnedBy(HarnessTeam.IDP)
-public interface AppConfigRepositoryCustom {
-  AppConfigEntity updateConfig(AppConfigEntity appConfigEntity, ConfigType configType);
-
-  AppConfigEntity updateConfigEnablement(
-      String accountIdentifier, String configId, Boolean isEnabled, ConfigType configType);
+public enum ConfigType {
+  PLUGIN,
+  INTEGRATION;
 }
