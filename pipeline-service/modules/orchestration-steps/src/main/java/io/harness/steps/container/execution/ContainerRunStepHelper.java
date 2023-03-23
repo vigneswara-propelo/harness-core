@@ -91,7 +91,8 @@ public class ContainerRunStepHelper {
             identifier, accountId, containerStepInfo.getName(), timeout);
       case CD_SSCA_ORCHESTRATION:
         return pluginStepSerializer.serializeStepWithStepParameters((PluginStep) containerStepInfo, port, parkedTaskId,
-            logKey, identifier, timeout, accountId, containerStepInfo.getName(), delegateCallbackTokenSupplier);
+            logKey, identifier, timeout, accountId, containerStepInfo.getName(), delegateCallbackTokenSupplier,
+            ambiance);
       default:
         throw new ContainerStepExecutionException("Step serialization not handled");
     }

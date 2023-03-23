@@ -36,6 +36,7 @@ import io.harness.redis.RedisConfig;
 import io.harness.reflection.HarnessReflections;
 import io.harness.remote.client.ServiceHttpClientConfig;
 import io.harness.secret.ConfigSecret;
+import io.harness.ssca.beans.entities.SSCAServiceConfig;
 import io.harness.steps.container.execution.ContainerExecutionConfig;
 import io.harness.telemetry.segment.SegmentConfiguration;
 import io.harness.threading.ThreadPoolConfig;
@@ -173,6 +174,8 @@ public class PipelineServiceConfiguration extends Configuration {
   private OpaServiceConfiguration opaServerConfig;
   private String policyManagerSecret;
   private ServiceHttpClientConfig opaClientConfig;
+
+  private SSCAServiceConfig sscaServiceConfig;
 
   private PipelineServiceIteratorsConfig iteratorsConfig;
   private boolean shouldDeployWithGitSync;
