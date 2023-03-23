@@ -1070,6 +1070,29 @@ public class BuilderFactory {
         .eventEndTime(clock.instant().toEpochMilli());
   }
 
+  public InternalChangeActivityBuilder getInternalChangeActivity_CEBuilder() {
+    return InternalChangeActivity.builder()
+        .accountId(context.getAccountId())
+        .orgIdentifier(context.getOrgIdentifier())
+        .projectIdentifier(context.getProjectIdentifier())
+        .monitoredServiceIdentifier(context.getMonitoredServiceParams().getMonitoredServiceIdentifier())
+        .eventTime(clock.instant())
+        .changeSourceIdentifier("changeSourceID")
+        .monitoredServiceIdentifier(context.getMonitoredServiceIdentifier())
+        .type(ActivityType.CHAOS_EXPERIMENT)
+        .activityType(ActivityType.CHAOS_EXPERIMENT)
+        .updatedBy("user")
+        .internalChangeEvent(
+            InternalChangeEvent.builder()
+                .changeEventDetailsLink(
+                    DeepLink.builder().action(DeepLink.Action.FETCH_DIFF_DATA).url("changeEventDetails").build())
+                .internalLinkToEntity(
+                    DeepLink.builder().action(DeepLink.Action.REDIRECT_URL).url("internalUrl").build())
+                .eventDescriptions(Arrays.asList("eventDesc1", "eventDesc2"))
+                .build())
+        .eventEndTime(clock.instant().toEpochMilli());
+  }
+
   public CustomChangeActivityBuilder getCustomChangeActivity(ChangeSourceType customChangeSourceType) {
     return CustomChangeActivity.builder()
         .accountId(context.getAccountId())
