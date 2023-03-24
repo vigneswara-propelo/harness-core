@@ -1573,13 +1573,13 @@ public class BuilderFactory {
     return ThresholdSLIMetricSpec.builder()
         .metric1("metric1")
         .thresholdType(ThresholdType.GREATER_THAN_EQUAL_TO)
-        .thresholdValue(100.0);
+        .thresholdValue(500.0);
   }
 
   public RatioSLIMetricSpecBuilder getRatioSLIMetricSpecBuilder() {
     return RatioSLIMetricSpec.builder()
         .thresholdType(ThresholdType.GREATER_THAN)
-        .thresholdValue(20.0)
+        .thresholdValue(100.0)
         .eventType(RatioSLIMetricEventType.GOOD)
         .metric1("metric1")
         .metric2("metric2");
