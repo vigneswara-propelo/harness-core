@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum SLIExecutionType {
+public enum SLIEvaluationType {
   @JsonProperty("Window") WINDOW,
   @JsonProperty("Request") REQUEST;
 }

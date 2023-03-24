@@ -44,7 +44,7 @@ import io.harness.cvng.core.services.api.MetricPackService;
 import io.harness.cvng.core.services.api.OnboardingService;
 import io.harness.cvng.core.services.api.monitoredService.HealthSourceService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
-import io.harness.cvng.servicelevelobjective.beans.SLIExecutionType;
+import io.harness.cvng.servicelevelobjective.beans.SLIEvaluationType;
 import io.harness.cvng.servicelevelobjective.beans.SLIMetricType;
 import io.harness.cvng.servicelevelobjective.beans.SLIMissingDataType;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelIndicatorDTO;
@@ -418,7 +418,7 @@ public class ServiceLevelIndicatorServiceImplTest extends CvNextGenTestBase {
     return ServiceLevelIndicatorDTO.builder()
         .identifier("sliIndicator")
         .name("sliName")
-        .type(SLIExecutionType.WINDOW)
+        .type(SLIEvaluationType.WINDOW)
         .spec(WindowBasedServiceLevelIndicatorSpec.builder()
                   .sliMissingDataType(SLIMissingDataType.GOOD)
                   .type(SLIMetricType.RATIO)
@@ -437,7 +437,7 @@ public class ServiceLevelIndicatorServiceImplTest extends CvNextGenTestBase {
     return ServiceLevelIndicatorDTO.builder()
         .identifier("sliIndicator")
         .name("sliName")
-        .type(SLIExecutionType.WINDOW)
+        .type(SLIEvaluationType.WINDOW)
         .spec(WindowBasedServiceLevelIndicatorSpec.builder()
                   .sliMissingDataType(SLIMissingDataType.GOOD)
                   .type(SLIMetricType.THRESHOLD)
