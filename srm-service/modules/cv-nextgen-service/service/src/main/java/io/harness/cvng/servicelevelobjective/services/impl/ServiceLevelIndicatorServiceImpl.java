@@ -548,12 +548,12 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
       if (record.getMetricIdentifier().equals(metricIdentifiers.get(1))) {
         long timestamp = record.getTimestamp();
         if (metric1ValuesMap.containsKey(timestamp)) {
-          double ratio;
-          if (eventType.equals(RatioSLIMetricEventType.GOOD)) {
-            ratio = metric1ValuesMap.get(timestamp) * 100 / record.getMetricValue();
-          } else {
-            ratio = (1 - (metric1ValuesMap.get(timestamp) / record.getMetricValue())) * 100;
+          double metricValue1 = metric1ValuesMap.get(timestamp);
+          double metricValue2 = record.getMetricValue();
+          if (Objects.isNull(metricValue1) || Objects.isNull(metricValue2) || metricValue2 == 0) {
+            continue;
           }
+          double ratio = eventType.computeSLIMetricValue(metricValue1, metricValue2);
           dataPoints.add(DataPoints.builder().timeStamp(timestamp).value(ratio).build());
         }
       }

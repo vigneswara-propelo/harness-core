@@ -239,6 +239,58 @@ public class ServiceLevelIndicatorServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testGetMetricGraphForRatio() throws IOException, IllegalAccessException {
+    String tracingId = "tracingId";
+    String healthSourceRef = "healthSourceIdentifier";
+    CVConfig cvConfig =
+        builderFactory.appDynamicsCVConfigBuilder()
+            .identifier(HealthSourceService.getNameSpacedIdentifier(monitoredServiceIdentifier, healthSourceRef))
+            .build();
+    hPersistence.save(cvConfig);
+
+    String textLoad = Resources.toString(
+        AppDynamicsServiceimplTest.class.getResource("/timeseries/appd_metric_data_validation.json"), Charsets.UTF_8);
+
+    OnboardingService mockOnboardingService = mock(OnboardingService.class);
+    FieldUtils.writeField(serviceLevelIndicatorService, "onboardingService", mockOnboardingService, true);
+    when(mockOnboardingService.getOnboardingResponse(any(), any()))
+        .thenReturn(JsonUtils.asObject(textLoad, OnboardingResponseDTO.class));
+
+    MetricOnboardingGraph metricOnboardingGraph = serviceLevelIndicatorService.getMetricGraphs(
+        builderFactory.getContext().getProjectParams(), monitoredServiceIdentifier, healthSourceRef,
+        RatioSLIMetricEventType.GOOD, List.of("identifier", "zero metric identifier"), tracingId);
+
+    assertThat(metricOnboardingGraph.getMetricGraphs().size()).isEqualTo(2);
+
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("identifier").getStartTime()).isEqualTo(1595760600000L);
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("identifier").getEndTime()).isEqualTo(1595847000000L);
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("identifier").getMetricName()).isEqualTo("name");
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("identifier").getMetricIdentifier()).isEqualTo("identifier");
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("identifier").getDataPoints().get(0).getValue())
+        .isEqualTo(343.0);
+
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("zero metric identifier").getStartTime())
+        .isEqualTo(1595760600000L);
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("zero metric identifier").getEndTime())
+        .isEqualTo(1595847000000L);
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("zero metric identifier").getMetricName())
+        .isEqualTo("zero metric");
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("zero metric identifier").getMetricIdentifier())
+        .isEqualTo("zero metric identifier");
+    assertThat(metricOnboardingGraph.getMetricGraphs().get("zero metric identifier").getDataPoints().get(0).getValue())
+        .isEqualTo(0.0);
+
+    assertThat(metricOnboardingGraph.getMetricPercentageGraph().getMetricIdentifier1()).isEqualTo("identifier");
+    assertThat(metricOnboardingGraph.getMetricPercentageGraph().getMetricIdentifier2())
+        .isEqualTo("zero metric identifier");
+    assertThat(metricOnboardingGraph.getMetricPercentageGraph().getDataPoints().size()).isEqualTo(0);
+    assertThat(metricOnboardingGraph.getMetricPercentageGraph().getStartTime()).isEqualTo(1595760600000L);
+    assertThat(metricOnboardingGraph.getMetricPercentageGraph().getEndTime()).isEqualTo(1595847000000L);
+  }
+
+  @Test
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testGetOnboardingGraph_NoDataPresent() throws IOException, IllegalAccessException {

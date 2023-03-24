@@ -285,6 +285,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
@@ -524,7 +525,7 @@ public class BuilderFactory {
         .metricPack(
             MetricPack.builder()
                 .identifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER)
-                .metrics(Collections.singleton(
+                .metrics(Set.of(
                     MetricPack.MetricDefinition.builder()
                         .identifier("identifier")
                         .type(TimeSeriesMetricType.OTHER)
@@ -540,11 +541,31 @@ public class BuilderFactory {
                                                       .criteria(TimeSeriesThresholdCriteria.builder().build())
                                                       .action(IGNORE)
                                                       .build()))
+                        .build(),
+                    MetricPack.MetricDefinition.builder()
+                        .identifier("zero metric identifier")
+                        .type(TimeSeriesMetricType.OTHER)
+                        .name("zero metric")
+                        .thresholds(Arrays.asList(TimeSeriesThreshold.builder()
+                                                      .uuid("thresholdId")
+                                                      .metricPackIdentifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER)
+                                                      .metricType(TimeSeriesMetricType.OTHER)
+                                                      .metricGroupName("*")
+                                                      .metricType(TimeSeriesMetricType.OTHER)
+                                                      .metricIdentifier("zero metric identifier")
+                                                      .deviationType(DeviationType.HIGHER_IS_RISKY)
+                                                      .criteria(TimeSeriesThresholdCriteria.builder().build())
+                                                      .action(IGNORE)
+                                                      .build()))
                         .build()))
                 .dataCollectionDsl("dsl")
                 .build())
         .metricInfos(
-            Arrays.asList(AppDynamicsCVConfig.MetricInfo.builder().identifier("identifier").metricName("name").build()))
+            Arrays.asList(AppDynamicsCVConfig.MetricInfo.builder().identifier("identifier").metricName("name").build(),
+                AppDynamicsCVConfig.MetricInfo.builder()
+                    .identifier("zero metric identifier")
+                    .metricName("zero metric")
+                    .build()))
         .applicationName(generateUuid())
         .tierName("tier-name")
         .connectorIdentifier("AppDynamics Connector")
