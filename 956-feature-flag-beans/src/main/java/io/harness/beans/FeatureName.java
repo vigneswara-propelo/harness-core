@@ -679,6 +679,8 @@ public enum FeatureName {
   SPG_REMOVE_RESTRICTION_APPS_UNNECESSARY_CALLS(
       "Unnecessary restriction apps calls are not called from UI", HarnessTeam.SPG),
   FF_ALLOW_OPTIONAL_VARIABLE("Allow Optional Variable from UI in NG.", HarnessTeam.PIPELINE),
+  PIE_STORE_USED_EXPRESSIONS(
+      "FF to use store the expressions used during the pipeline executions", HarnessTeam.PIPELINE),
   CDS_SERVICENOW_TICKET_TYPE_V2("FF to use servicenow ticketTypesV2 endpoint", HarnessTeam.CDC),
   SPG_SETTINGS_INFINITY_SCROLL_FIX("Fixes infinte scroll used with infinite scroll.", HarnessTeam.SPG),
   CDS_TERRAFORM_CONFIG_INSPECT_V1_2(
