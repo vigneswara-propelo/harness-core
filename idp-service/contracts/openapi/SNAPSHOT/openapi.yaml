@@ -499,12 +499,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
         - $ref: '#/components/parameters/PluginId'
-    parameters:
-      - schema:
-          type: string
-        name: plugin-id
-        in: path
-        required: true
   /v1/app-config:
     post:
       summary: ''
@@ -875,6 +869,7 @@ components:
           enum:
             - Monitoring
             - CI/CD
+            - Security
         source:
           type: string
           x-stoplight:
@@ -883,6 +878,10 @@ components:
           type: string
           x-stoplight:
             id: 4arnqctb1wfyl
+        layout:
+          type: object
+          x-stoplight:
+            id: ns1ky9089aalt
     ManualImportEntityRequest:
       title: ManualImportEntityRequest
       x-stoplight:
@@ -1075,6 +1074,10 @@ components:
       required: true
       schema:
         type: string
+        enum:
+          - pager-duty
+          - snyk-security
+          - harness-ci-cd
     PluginName:
       name: PluginId
       in: query
