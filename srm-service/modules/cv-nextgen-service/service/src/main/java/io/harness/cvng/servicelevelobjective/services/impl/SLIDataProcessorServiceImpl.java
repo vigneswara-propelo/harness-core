@@ -9,7 +9,7 @@ package io.harness.cvng.servicelevelobjective.services.impl;
 
 import io.harness.cvng.servicelevelobjective.beans.SLIAnalyseRequest;
 import io.harness.cvng.servicelevelobjective.beans.SLIAnalyseResponse;
-import io.harness.cvng.servicelevelobjective.beans.SLIExecutionType;
+import io.harness.cvng.servicelevelobjective.beans.SLIEvaluationType;
 import io.harness.cvng.servicelevelobjective.beans.SLIMetricType;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelIndicatorDTO;
 import io.harness.cvng.servicelevelobjective.beans.slimetricspec.RatioSLIMetricEventType;
@@ -71,12 +71,12 @@ public class SLIDataProcessorServiceImpl implements SLIDataProcessorService {
 
   private SLIState getState(
       ServiceLevelIndicatorDTO serviceLevelIndicatorDTO, Map<String, Double> singleSLIAnalysisRequest) {
-    if (serviceLevelIndicatorDTO.getType() == SLIExecutionType.WINDOW) {
+    if (serviceLevelIndicatorDTO.getType() == SLIEvaluationType.WINDOW) {
       WindowBasedServiceLevelIndicatorSpec windowBasedServiceLevelIndicatorSpec =
           (WindowBasedServiceLevelIndicatorSpec) serviceLevelIndicatorDTO.getSpec();
       return sliAnalyserServiceMapBinder.get(windowBasedServiceLevelIndicatorSpec.getSpec().getType())
           .analyse(singleSLIAnalysisRequest, windowBasedServiceLevelIndicatorSpec.getSpec());
-    } else if (serviceLevelIndicatorDTO.getType() == SLIExecutionType.REQUEST) {
+    } else if (serviceLevelIndicatorDTO.getType() == SLIEvaluationType.REQUEST) {
       return SLIState.GOOD;
     } else {
       throw new InvalidArgumentsException(
@@ -88,13 +88,13 @@ public class SLIDataProcessorServiceImpl implements SLIDataProcessorService {
       ServiceLevelIndicatorDTO serviceLevelIndicatorDTO, Map<String, Double> sliAnalysisRequest, SLIState sliState) {
     long goodCountValue = 0;
     long badCountValue = 0;
-    if (serviceLevelIndicatorDTO.getType() == SLIExecutionType.WINDOW) {
+    if (serviceLevelIndicatorDTO.getType() == SLIEvaluationType.WINDOW) {
       if (sliState == SLIState.GOOD) {
         goodCountValue = 1;
       } else if (sliState == SLIState.BAD) {
         badCountValue = 1;
       }
-    } else if (serviceLevelIndicatorDTO.getType() == SLIExecutionType.REQUEST && sliState != SLIState.NO_DATA) {
+    } else if (serviceLevelIndicatorDTO.getType() == SLIEvaluationType.REQUEST && sliState != SLIState.NO_DATA) {
       RequestBasedServiceLevelIndicatorSpec sliSpec =
           (RequestBasedServiceLevelIndicatorSpec) serviceLevelIndicatorDTO.getSpec();
       Double metricValue1 = sliAnalysisRequest.get(sliSpec.getMetric1());

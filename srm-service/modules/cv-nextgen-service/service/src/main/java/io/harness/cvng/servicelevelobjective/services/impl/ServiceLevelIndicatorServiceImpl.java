@@ -43,7 +43,7 @@ import io.harness.cvng.downtime.beans.EntityUnavailabilityStatusesDTO;
 import io.harness.cvng.downtime.services.api.EntityUnavailabilityStatusesService;
 import io.harness.cvng.servicelevelobjective.beans.SLIAnalyseRequest;
 import io.harness.cvng.servicelevelobjective.beans.SLIAnalyseResponse;
-import io.harness.cvng.servicelevelobjective.beans.SLIExecutionType;
+import io.harness.cvng.servicelevelobjective.beans.SLIEvaluationType;
 import io.harness.cvng.servicelevelobjective.beans.SLIMetricType;
 import io.harness.cvng.servicelevelobjective.beans.SLIValue;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelIndicatorDTO;
@@ -193,12 +193,12 @@ public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorSe
 
   private SLIValue getSLIValue(ServiceLevelIndicatorDTO serviceLevelIndicatorDTO, SLIAnalyseResponse sliAnalyseResponse,
       SLIAnalyseResponse initialSLIResponse) {
-    if (serviceLevelIndicatorDTO.getType() == SLIExecutionType.WINDOW) {
+    if (serviceLevelIndicatorDTO.getType() == SLIEvaluationType.WINDOW) {
       return ((WindowBasedServiceLevelIndicatorSpec) serviceLevelIndicatorDTO.getSpec())
           .getSliMissingDataType()
           .calculateSLIValue(sliAnalyseResponse.getRunningGoodCount(), sliAnalyseResponse.getRunningBadCount(),
               Duration.between(initialSLIResponse.getTimeStamp(), sliAnalyseResponse.getTimeStamp()).toMinutes() + 1);
-    } else if (serviceLevelIndicatorDTO.getType() == SLIExecutionType.REQUEST) {
+    } else if (serviceLevelIndicatorDTO.getType() == SLIEvaluationType.REQUEST) {
       return SLIValue.builder()
           .goodCount(sliAnalyseResponse.getRunningGoodCount())
           .badCount(sliAnalyseResponse.getRunningBadCount())
