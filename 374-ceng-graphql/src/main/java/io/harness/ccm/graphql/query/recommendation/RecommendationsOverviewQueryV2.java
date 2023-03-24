@@ -162,7 +162,7 @@ public class RecommendationsOverviewQueryV2 {
     final String perspectiveName;
     if (accessToAllPerspectives) {
       List<QLCEView> defaultPerspectives =
-          ceViewService.getAllViews(accountId, ceViewService.getDefaultFolderId(accountId), true, null)
+          ceViewService.getAllViews(accountId, ceViewService.getSampleFolderId(accountId), true, null)
               .stream()
               .filter(qlceView -> qlceView.getName().equalsIgnoreCase(DEFAULT_CLUSTER_VIEW_NAME))
               .collect(Collectors.toList());
@@ -636,6 +636,12 @@ public class RecommendationsOverviewQueryV2 {
         return SQLConverter.getField(fieldId, table).isNotNull();
       case NULL:
         return SQLConverter.getField(fieldId, table).isNull();
+      case LIKE:
+        if (Lists.isNullOrEmpty(viewIdCondition.getValues())) {
+          return DSL.noCondition();
+        } else {
+          return SQLConverter.getField(fieldId, table).like("%" + viewIdCondition.getValues().get(0) + "%");
+        }
       default:
         throw new InvalidRequestException(String.format("%s not implemented", viewIdCondition.getViewOperator()));
     }
