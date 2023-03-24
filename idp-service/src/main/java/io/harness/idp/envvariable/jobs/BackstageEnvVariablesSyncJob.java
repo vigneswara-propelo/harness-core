@@ -5,13 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.secret.jobs;
+package io.harness.idp.envvariable.jobs;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.envvariable.service.BackstageEnvVariableService;
 import io.harness.idp.namespace.service.NamespaceService;
-import io.harness.idp.secret.service.EnvironmentSecretService;
-import io.harness.spec.server.idp.v1.model.EnvironmentSecret;
+import io.harness.spec.server.idp.v1.model.BackstageEnvVariable;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
@@ -27,24 +27,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 @OwnedBy(HarnessTeam.IDP)
-public class EnvironmentSecretsSyncJob implements Managed {
+public class BackstageEnvVariablesSyncJob implements Managed {
   private static final long DELAY_IN_MINUTES = TimeUnit.HOURS.toMinutes(24);
   private ScheduledExecutorService executorService;
-  private final EnvironmentSecretService environmentSecretService;
+  private final BackstageEnvVariableService backstageEnvVariableService;
   private final NamespaceService namespaceService;
 
   @Inject
-  public EnvironmentSecretsSyncJob(@Named("envSecretSyncer") ScheduledExecutorService executorService,
-      EnvironmentSecretService environmentSecretService, NamespaceService namespaceService) {
+  public BackstageEnvVariablesSyncJob(@Named("backstageEnvVariableSyncer") ScheduledExecutorService executorService,
+      BackstageEnvVariableService backstageEnvVariableService, NamespaceService namespaceService) {
     this.executorService = executorService;
-    this.environmentSecretService = environmentSecretService;
+    this.backstageEnvVariableService = backstageEnvVariableService;
     this.namespaceService = namespaceService;
   }
 
   @Override
   public void start() throws Exception {
     executorService = Executors.newSingleThreadScheduledExecutor(
-        new ThreadFactoryBuilder().setNameFormat("environment-secrets-sync-job").build());
+        new ThreadFactoryBuilder().setNameFormat("backstage-env-variable-sync-job").build());
     executorService.scheduleWithFixedDelay(this::run, 0, DELAY_IN_MINUTES, TimeUnit.MINUTES);
   }
 
@@ -55,16 +55,16 @@ public class EnvironmentSecretsSyncJob implements Managed {
   }
 
   public void run() {
-    log.info("Environment secrets sync job started");
+    log.info("Backstage env variables sync job started");
     List<String> accountIds = namespaceService.getAccountIds();
     accountIds.forEach(account -> {
       try {
-        List<EnvironmentSecret> secrets = environmentSecretService.findByAccountIdentifier(account);
-        environmentSecretService.syncK8sSecret(secrets, account);
+        List<BackstageEnvVariable> secrets = backstageEnvVariableService.findByAccountIdentifier(account);
+        backstageEnvVariableService.sync(secrets, account);
       } catch (Exception e) {
-        log.error("Could not sync environment secrets for account {}", account, e);
+        log.error("Could not sync backstage env variables for account {}", account, e);
       }
     });
-    log.info("Environment secrets sync job completed");
+    log.info("Backstage env variables sync job completed");
   }
 }

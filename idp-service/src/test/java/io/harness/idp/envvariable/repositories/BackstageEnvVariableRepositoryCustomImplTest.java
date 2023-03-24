@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.secret.repositories;
+package io.harness.idp.envvariable.repositories;
 
 import static io.harness.rule.OwnerRule.VIKYATH_HAREKAL;
 
@@ -18,7 +18,10 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.idp.secret.beans.entity.EnvironmentSecretEntity;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvSecretVariableEntity;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvSecretVariableEntity.BackstageEnvSecretVariableKeys;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableEntity;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableEntity.BackstageEnvVariableKeys;
 import io.harness.rule.Owner;
 
 import lombok.AccessLevel;
@@ -38,10 +41,10 @@ import org.springframework.data.mongodb.core.query.Update;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.IDP)
-public class EnvironmentSecretRepositoryCustomImplTest extends CategoryTest {
+public class BackstageEnvVariableRepositoryCustomImplTest extends CategoryTest {
   AutoCloseable openMocks;
   @Mock MongoTemplate mongoTemplate;
-  @InjectMocks EnvironmentSecretRepositoryCustomImpl envSecretRepoCustomImpl;
+  @InjectMocks BackstageEnvVariableRepositoryCustomImpl envVariableRepoCustomImpl;
   static final String TEST_ENV_NAME = "HARNESS_API_KEY";
   static final String TEST_SECRET_IDENTIFIER = "accountHarnessKey";
   static final String TEST_ACCOUNT_IDENTIFIER = "accountId";
@@ -55,23 +58,21 @@ public class EnvironmentSecretRepositoryCustomImplTest extends CategoryTest {
   @Owner(developers = VIKYATH_HAREKAL)
   @Category(UnitTests.class)
   public void testUpdate() {
-    EnvironmentSecretEntity envSecretEntity = EnvironmentSecretEntity.builder()
-                                                  .accountIdentifier(TEST_ACCOUNT_IDENTIFIER)
-                                                  .envName(TEST_ENV_NAME)
-                                                  .secretIdentifier(TEST_SECRET_IDENTIFIER)
-                                                  .build();
-    Criteria criteria = Criteria.where(EnvironmentSecretEntity.EnvironmentSecretsEntityKeys.accountIdentifier)
+    BackstageEnvSecretVariableEntity envSecretEntity =
+        BackstageEnvSecretVariableEntity.builder().harnessSecretIdentifier(TEST_SECRET_IDENTIFIER).build();
+    envSecretEntity.setAccountIdentifier(TEST_ACCOUNT_IDENTIFIER);
+    envSecretEntity.setEnvName(TEST_ENV_NAME);
+    Criteria criteria = Criteria.where(BackstageEnvVariableKeys.accountIdentifier)
                             .is(envSecretEntity.getAccountIdentifier())
-                            .and(EnvironmentSecretEntity.EnvironmentSecretsEntityKeys.envName)
+                            .and(BackstageEnvVariableKeys.envName)
                             .is(envSecretEntity.getEnvName());
     Query query = new Query(criteria);
     Update update = new Update();
-    update.set(
-        EnvironmentSecretEntity.EnvironmentSecretsEntityKeys.secretIdentifier, envSecretEntity.getSecretIdentifier());
+    update.set(BackstageEnvSecretVariableKeys.harnessSecretIdentifier, envSecretEntity.getHarnessSecretIdentifier());
     when(mongoTemplate.findAndModify(
-             eq(query), eq(update), any(FindAndModifyOptions.class), eq(EnvironmentSecretEntity.class)))
+             eq(query), eq(update), any(FindAndModifyOptions.class), eq(BackstageEnvVariableEntity.class)))
         .thenReturn(envSecretEntity);
-    assertEquals(envSecretEntity, envSecretRepoCustomImpl.update(envSecretEntity));
+    assertEquals(envSecretEntity, envVariableRepoCustomImpl.update(envSecretEntity));
   }
 
   @After

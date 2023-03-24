@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.secret.jobs;
+package io.harness.idp.envvariable.jobs;
 
 import static io.harness.rule.OwnerRule.VIKYATH_HAREKAL;
 
@@ -18,10 +18,13 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableType;
+import io.harness.idp.envvariable.service.BackstageEnvVariableService;
 import io.harness.idp.namespace.service.NamespaceService;
-import io.harness.idp.secret.service.EnvironmentSecretService;
 import io.harness.rule.Owner;
-import io.harness.spec.server.idp.v1.model.EnvironmentSecret;
+import io.harness.spec.server.idp.v1.model.BackstageEnvConfigVariable;
+import io.harness.spec.server.idp.v1.model.BackstageEnvSecretVariable;
+import io.harness.spec.server.idp.v1.model.BackstageEnvVariable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,12 +38,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(HarnessTeam.IDP)
-public class EnvironmentSecretsSyncJobTest extends CategoryTest {
+public class BackstageEnvVariablesSyncJobTest extends CategoryTest {
   private static final String TEST_ACCOUNT1 = "acc1";
   private static final String TEST_ACCOUNT2 = "acc2";
-  @Mock private EnvironmentSecretService environmentSecretService;
+  @Mock private BackstageEnvVariableService backstageEnvVariableService;
   @Mock private NamespaceService namespaceService;
-  @InjectMocks private EnvironmentSecretsSyncJob job;
+  @InjectMocks private BackstageEnvVariablesSyncJob job;
   AutoCloseable openMocks;
 
   @Before
@@ -54,13 +57,13 @@ public class EnvironmentSecretsSyncJobTest extends CategoryTest {
   public void testEnvSecretSync() {
     List<String> accountIds = Arrays.asList(TEST_ACCOUNT1, TEST_ACCOUNT2);
     when(namespaceService.getAccountIds()).thenReturn(accountIds);
-    List<EnvironmentSecret> secrets1 = Collections.singletonList(new EnvironmentSecret());
-    List<EnvironmentSecret> secrets2 = Collections.singletonList(new EnvironmentSecret());
-    when(environmentSecretService.findByAccountIdentifier(TEST_ACCOUNT1)).thenReturn(secrets1);
-    when(environmentSecretService.findByAccountIdentifier(TEST_ACCOUNT2)).thenReturn(secrets2);
+    List<BackstageEnvVariable> envConfigVariables = Collections.singletonList(new BackstageEnvConfigVariable());
+    List<BackstageEnvVariable> envSecretVariables = Collections.singletonList(new BackstageEnvSecretVariable());
+    when(backstageEnvVariableService.findByAccountIdentifier(TEST_ACCOUNT1)).thenReturn(envConfigVariables);
+    when(backstageEnvVariableService.findByAccountIdentifier(TEST_ACCOUNT2)).thenReturn(envSecretVariables);
     job.run();
-    verify(environmentSecretService).syncK8sSecret(secrets1, TEST_ACCOUNT1);
-    verify(environmentSecretService).syncK8sSecret(secrets2, TEST_ACCOUNT2);
+    verify(backstageEnvVariableService).sync(envConfigVariables, TEST_ACCOUNT1);
+    verify(backstageEnvVariableService).sync(envSecretVariables, TEST_ACCOUNT2);
   }
 
   @Test
@@ -69,16 +72,16 @@ public class EnvironmentSecretsSyncJobTest extends CategoryTest {
   public void testEnvSecretSyncErrorWithOneAccount() {
     List<String> accountIds = Arrays.asList(TEST_ACCOUNT1, TEST_ACCOUNT2);
     when(namespaceService.getAccountIds()).thenReturn(accountIds);
-    List<EnvironmentSecret> secrets1 = Collections.singletonList(new EnvironmentSecret());
-    List<EnvironmentSecret> secrets2 = Collections.singletonList(new EnvironmentSecret());
-    when(environmentSecretService.findByAccountIdentifier(TEST_ACCOUNT1)).thenReturn(secrets1);
-    when(environmentSecretService.findByAccountIdentifier(TEST_ACCOUNT2)).thenReturn(secrets2);
+    List<BackstageEnvVariable> secrets1 = Collections.singletonList(new BackstageEnvConfigVariable());
+    List<BackstageEnvVariable> secrets2 = Collections.singletonList(new BackstageEnvSecretVariable());
+    when(backstageEnvVariableService.findByAccountIdentifier(TEST_ACCOUNT1)).thenReturn(secrets1);
+    when(backstageEnvVariableService.findByAccountIdentifier(TEST_ACCOUNT2)).thenReturn(secrets2);
     doThrow(new InvalidRequestException("Failed to replace secret. Code: 403"))
-        .when(environmentSecretService)
-        .syncK8sSecret(secrets1, TEST_ACCOUNT1);
+        .when(backstageEnvVariableService)
+        .sync(secrets1, TEST_ACCOUNT1);
     job.run();
     // Sync should happen for 2nd account even if there is an error in 1st account sync.
-    verify(environmentSecretService).syncK8sSecret(secrets2, TEST_ACCOUNT2);
+    verify(backstageEnvVariableService).sync(secrets2, TEST_ACCOUNT2);
   }
 
   @After

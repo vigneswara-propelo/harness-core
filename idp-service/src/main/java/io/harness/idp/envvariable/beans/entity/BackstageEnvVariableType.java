@@ -5,10 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.secret.repositories;
+package io.harness.idp.envvariable.beans.entity;
 
-import io.harness.idp.secret.beans.entity.EnvironmentSecretEntity;
-
-public interface EnvironmentSecretRepositoryCustom {
-  EnvironmentSecretEntity update(EnvironmentSecretEntity environmentSecretEntity);
+public enum BackstageEnvVariableType {
+  CONFIG,
+  SECRET,
 }

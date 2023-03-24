@@ -23,6 +23,14 @@ import io.harness.git.GitClientV2Impl;
 import io.harness.idp.configmanager.resource.AppConfigApiImpl;
 import io.harness.idp.configmanager.service.ConfigManagerService;
 import io.harness.idp.configmanager.service.ConfigManagerServiceImpl;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvConfigVariableEntity.BackstageEnvConfigVariableMapper;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvSecretVariableEntity.BackstageEnvSecretVariableMapper;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableEntity;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableEntity.BackstageEnvVariableMapper;
+import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableType;
+import io.harness.idp.envvariable.resources.BackstageEnvVariableApiImpl;
+import io.harness.idp.envvariable.service.BackstageEnvVariableService;
+import io.harness.idp.envvariable.service.BackstageEnvVariableServiceImpl;
 import io.harness.idp.events.EventsFrameworkModule;
 import io.harness.idp.events.eventlisteners.eventhandler.EntityCrudStreamListener;
 import io.harness.idp.gitintegration.processor.factory.ConnectorProcessorFactory;
@@ -46,9 +54,6 @@ import io.harness.idp.provision.resource.ProvisionApiImpl;
 import io.harness.idp.provision.service.ProvisionService;
 import io.harness.idp.provision.service.ProvisionServiceImpl;
 import io.harness.idp.proxy.layout.LayoutProxyApiImpl;
-import io.harness.idp.secret.resources.EnvironmentSecretApiImpl;
-import io.harness.idp.secret.service.EnvironmentSecretService;
-import io.harness.idp.secret.service.EnvironmentSecretServiceImpl;
 import io.harness.idp.serializer.IdpServiceRegistrars;
 import io.harness.idp.settings.resources.BackstagePermissionsApiImpl;
 import io.harness.idp.settings.service.BackstagePermissionsService;
@@ -80,8 +85,8 @@ import io.harness.serializer.KryoRegistrar;
 import io.harness.service.ServiceResourceClientModule;
 import io.harness.spec.server.idp.v1.AccountInfoApi;
 import io.harness.spec.server.idp.v1.AppConfigApi;
+import io.harness.spec.server.idp.v1.BackstageEnvVariableApi;
 import io.harness.spec.server.idp.v1.BackstagePermissionsApi;
-import io.harness.spec.server.idp.v1.EnvironmentSecretApi;
 import io.harness.spec.server.idp.v1.LayoutProxyApi;
 import io.harness.spec.server.idp.v1.NamespaceApi;
 import io.harness.spec.server.idp.v1.OnboardingResourceApi;
@@ -100,6 +105,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import dev.morphia.converters.TypeConverter;
@@ -224,12 +230,12 @@ public class IdpModule extends AbstractModule {
                 .build()));
     bind(HPersistence.class).to(MongoPersistence.class).in(Singleton.class);
     bind(ConfigManagerService.class).to(ConfigManagerServiceImpl.class);
-    bind(EnvironmentSecretService.class).to(EnvironmentSecretServiceImpl.class);
+    bind(BackstageEnvVariableService.class).to(BackstageEnvVariableServiceImpl.class);
     bind(StatusInfoService.class).to(StatusInfoServiceImpl.class);
     bind(BackstagePermissionsService.class).to(BackstagePermissionsServiceImpl.class);
     bind(NamespaceService.class).to(NamespaceServiceImpl.class);
     bind(GitIntegrationService.class).to(GitIntegrationServiceImpl.class);
-    bind(EnvironmentSecretApi.class).to(EnvironmentSecretApiImpl.class);
+    bind(BackstageEnvVariableApi.class).to(BackstageEnvVariableApiImpl.class);
     bind(StatusInfoApi.class).to(StatusInfoApiImpl.class);
     bind(BackstagePermissionsApi.class).to(BackstagePermissionsApiImpl.class);
     bind(K8sClient.class).to(K8sApiClient.class);
@@ -248,8 +254,15 @@ public class IdpModule extends AbstractModule {
     bind(PluginInfoApi.class).to(PluginInfoApiImpl.class);
     bind(PluginInfoService.class).to(PluginInfoServiceImpl.class);
     bind(ScheduledExecutorService.class)
-        .annotatedWith(Names.named("envSecretSyncer"))
-        .toInstance(new ManagedScheduledExecutorService("EnvSecretSyncer"));
+        .annotatedWith(Names.named("backstageEnvVariableSyncer"))
+        .toInstance(new ManagedScheduledExecutorService("backstageEnvVariableSyncer"));
+
+    MapBinder<BackstageEnvVariableType, BackstageEnvVariableMapper> backstageEnvVariableMapBinder =
+        MapBinder.newMapBinder(binder(), BackstageEnvVariableType.class, BackstageEnvVariableMapper.class);
+    backstageEnvVariableMapBinder.addBinding(BackstageEnvVariableType.CONFIG)
+        .to(BackstageEnvConfigVariableMapper.class);
+    backstageEnvVariableMapBinder.addBinding(BackstageEnvVariableType.SECRET)
+        .to(BackstageEnvSecretVariableMapper.class);
   }
 
   @Provides
