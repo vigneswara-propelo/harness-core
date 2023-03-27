@@ -8,6 +8,7 @@
 package software.wings.security.authentication;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.delegate.beans.TaskData.DEFAULT_SYNC_CALL_TIMEOUT;
 import static io.harness.eraro.ErrorCode.INVALID_ARGUMENT;
 import static io.harness.eraro.ErrorCode.INVALID_CREDENTIAL;
@@ -76,7 +77,7 @@ public class LdapBasedAuthHandler implements AuthHandler {
 
   @Override
   public AuthenticationResponse authenticate(String... credentials) {
-    if (credentials == null || credentials.length != 2) {
+    if (credentials == null || credentials.length != 3) {
       throw new WingsException(INVALID_ARGUMENT);
     }
 
@@ -88,13 +89,13 @@ public class LdapBasedAuthHandler implements AuthHandler {
       throw new WingsException(USER_DOES_NOT_EXIST, USER);
     }
 
-    Account account = authenticationUtils.getDefaultAccount(user);
-    String accountId = user.getDefaultAccountId();
+    String accountId = isEmpty(credentials[2]) ? user.getDefaultAccountId() : credentials[2];
+    Account account = authenticationUtils.getAccount(accountId);
     String uuid = user.getUuid();
-    LdapSettings settings = ssoSettingService.getLdapSettingsByAccountId(account.getUuid());
+    LdapSettings settings = ssoSettingService.getLdapSettingsByAccountId(accountId);
     if (null == settings) {
       // log and throw invalid credential error
-      log.error("No LDAP sso settings exists for the account id: " + account.getUuid());
+      log.error("No LDAP sso settings exists for the account id: " + accountId);
       throw new WingsException(INVALID_CREDENTIAL, USER);
     }
     try (AutoLogContext ignore = new UserLogContext(accountId, uuid, OVERRIDE_ERROR)) {
