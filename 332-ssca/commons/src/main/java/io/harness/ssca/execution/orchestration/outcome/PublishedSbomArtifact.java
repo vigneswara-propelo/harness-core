@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.beans.steps.outcome;
+package io.harness.ssca.execution.orchestration.outcome;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
@@ -19,7 +19,7 @@ import org.springframework.data.annotation.TypeAlias;
 @Builder
 @OwnedBy(HarnessTeam.SSCA)
 @TypeAlias("publishedSbomArtifact")
-@RecasterAlias("io.harness.beans.execution.PublishedSbomArtifact")
+@RecasterAlias("io.harness.ssca.execution.orchestration.outcome.PublishedSbomArtifact")
 public class PublishedSbomArtifact {
   String id;
   String url;

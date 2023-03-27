@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ssca.beans;
+package io.harness.ssca.client.beans;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -21,9 +21,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @OwnedBy(HarnessTeam.SSCA)
-public class SBOMArtifactResponse {
-  Artifact artifact;
-  SbomDetails sbom;
-  AttestationDetails attestation;
-  String stepExecutionId;
+public class AttestationDetails {
+  boolean isAttested;
+  String url;
 }
