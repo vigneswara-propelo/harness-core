@@ -330,6 +330,39 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = VARSHA_LALWANI)
   @Category(UnitTests.class)
+  public void testCreateSimpleSLOWithConsecutiveMinutes_Success() {
+    ServiceLevelObjectiveV2DTO sloDTO = createSLOBuilder();
+    SimpleServiceLevelObjectiveSpec spec = (SimpleServiceLevelObjectiveSpec) sloDTO.getSpec();
+    WindowBasedServiceLevelIndicatorSpec sliSpec =
+        (WindowBasedServiceLevelIndicatorSpec) spec.getServiceLevelIndicators().get(0).getSpec();
+    RatioSLIMetricSpec sliMetricSpec = (RatioSLIMetricSpec) sliSpec.getSpec();
+    sliMetricSpec.setConsiderConsecutiveMinutes(5);
+    sliMetricSpec.setConsiderAllConsecutiveMinutesFromStartAsBad(false);
+    createMonitoredService();
+    ServiceLevelObjectiveV2Response serviceLevelObjectiveResponse =
+        serviceLevelObjectiveV2Service.create(projectParams, sloDTO);
+    AbstractServiceLevelObjective serviceLevelObjective =
+        serviceLevelObjectiveV2Service.getEntity(projectParams, sloDTO.getIdentifier());
+    SLOTarget sloTarget = sloTargetTypeSLOTargetTransformerMap.get(sloDTO.getSloTarget().getType())
+                              .getSLOTarget(sloDTO.getSloTarget().getSpec());
+    assertThat(serviceLevelObjective.getTarget()).isEqualTo(sloTarget);
+    assertThat(serviceLevelObjective.getSloTarget())
+        .isEqualTo(SLOTargetTransformerOldAndNew.getOldSLOtargetFromNewSLOtarget(sloTarget));
+    assertThat(serviceLevelObjectiveResponse.getServiceLevelObjectiveV2DTO()).isEqualTo(sloDTO);
+    assertThat((RatioSLIMetricSpec) ((WindowBasedServiceLevelIndicatorSpec) ((SimpleServiceLevelObjectiveSpec)
+                                                                                 serviceLevelObjectiveResponse
+                                                                                     .getServiceLevelObjectiveV2DTO()
+                                                                                     .getSpec())
+                                         .getServiceLevelIndicators()
+                                         .get(0)
+                                         .getSpec())
+                   .getSpec())
+        .isEqualTo(sliMetricSpec);
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
   public void testCreate_Calendar_Success_UpdateFailure() {
     MonitoredServiceDTO monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder()
                                                   .identifier("service2_env2")
