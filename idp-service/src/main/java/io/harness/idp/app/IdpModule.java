@@ -25,7 +25,6 @@ import io.harness.idp.configmanager.service.ConfigManagerService;
 import io.harness.idp.configmanager.service.ConfigManagerServiceImpl;
 import io.harness.idp.envvariable.beans.entity.BackstageEnvConfigVariableEntity.BackstageEnvConfigVariableMapper;
 import io.harness.idp.envvariable.beans.entity.BackstageEnvSecretVariableEntity.BackstageEnvSecretVariableMapper;
-import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableEntity;
 import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableEntity.BackstageEnvVariableMapper;
 import io.harness.idp.envvariable.beans.entity.BackstageEnvVariableType;
 import io.harness.idp.envvariable.resources.BackstageEnvVariableApiImpl;
@@ -55,6 +54,8 @@ import io.harness.idp.provision.resource.ProvisionApiImpl;
 import io.harness.idp.provision.service.ProvisionService;
 import io.harness.idp.provision.service.ProvisionServiceImpl;
 import io.harness.idp.proxy.layout.LayoutProxyApiImpl;
+import io.harness.idp.proxy.ngmanager.NgManagerProxyApi;
+import io.harness.idp.proxy.ngmanager.NgManagerProxyApiImpl;
 import io.harness.idp.serializer.IdpServiceRegistrars;
 import io.harness.idp.settings.resources.BackstagePermissionsApiImpl;
 import io.harness.idp.settings.service.BackstagePermissionsService;
@@ -81,6 +82,7 @@ import io.harness.project.ProjectClientModule;
 import io.harness.queue.QueueController;
 import io.harness.redis.RedisConfig;
 import io.harness.remote.client.ClientMode;
+import io.harness.remote.client.ServiceHttpClientConfig;
 import io.harness.secrets.SecretNGManagerClientModule;
 import io.harness.serializer.KryoRegistrar;
 import io.harness.service.ServiceResourceClientModule;
@@ -253,6 +255,7 @@ public class IdpModule extends AbstractModule {
     bind(OnboardingService.class).to(OnboardingServiceImpl.class);
     bind(GitClientV2.class).to(GitClientV2Impl.class);
     bind(LayoutProxyApi.class).to(LayoutProxyApiImpl.class);
+    bind(NgManagerProxyApi.class).to(NgManagerProxyApiImpl.class);
     bind(PluginInfoApi.class).to(PluginInfoApiImpl.class);
     bind(PluginInfoService.class).to(PluginInfoServiceImpl.class);
     bind(ConnectorInfoApi.class).to(ConnectorInfoApiImpl.class);
@@ -338,5 +341,19 @@ public class IdpModule extends AbstractModule {
   @Named("backstageServiceSecret")
   public String backstageServiceSecret() {
     return this.appConfig.getBackstageServiceSecret();
+  }
+
+  @Provides
+  @Singleton
+  @Named("ngManagerServiceHttpClientConfig")
+  public ServiceHttpClientConfig ngManagerServiceHttpClientConfig() {
+    return this.appConfig.getNgManagerServiceHttpClientConfig();
+  }
+
+  @Provides
+  @Singleton
+  @Named("ngManagerServiceSecret")
+  public String ngManagerServiceSecret() {
+    return this.appConfig.getNgManagerServiceSecret();
   }
 }
