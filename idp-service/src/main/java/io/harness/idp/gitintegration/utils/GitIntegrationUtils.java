@@ -77,4 +77,8 @@ public class GitIntegrationUtils {
         ? true
         : false;
   }
+
+  public String replaceAccountScopeFromConnectorId(String connectorIdentifier) {
+    return connectorIdentifier.replace(GitIntegrationConstants.ACCOUNT_SCOPED, "");
+  }
 }

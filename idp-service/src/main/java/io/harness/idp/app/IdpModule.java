@@ -34,6 +34,7 @@ import io.harness.idp.envvariable.service.BackstageEnvVariableServiceImpl;
 import io.harness.idp.events.EventsFrameworkModule;
 import io.harness.idp.events.eventlisteners.eventhandler.EntityCrudStreamListener;
 import io.harness.idp.gitintegration.processor.factory.ConnectorProcessorFactory;
+import io.harness.idp.gitintegration.resources.ConnectorInfoApiImpl;
 import io.harness.idp.gitintegration.service.GitIntegrationService;
 import io.harness.idp.gitintegration.service.GitIntegrationServiceImpl;
 import io.harness.idp.k8s.client.K8sApiClient;
@@ -87,6 +88,7 @@ import io.harness.spec.server.idp.v1.AccountInfoApi;
 import io.harness.spec.server.idp.v1.AppConfigApi;
 import io.harness.spec.server.idp.v1.BackstageEnvVariableApi;
 import io.harness.spec.server.idp.v1.BackstagePermissionsApi;
+import io.harness.spec.server.idp.v1.ConnectorInfoApi;
 import io.harness.spec.server.idp.v1.LayoutProxyApi;
 import io.harness.spec.server.idp.v1.NamespaceApi;
 import io.harness.spec.server.idp.v1.OnboardingResourceApi;
@@ -253,6 +255,7 @@ public class IdpModule extends AbstractModule {
     bind(LayoutProxyApi.class).to(LayoutProxyApiImpl.class);
     bind(PluginInfoApi.class).to(PluginInfoApiImpl.class);
     bind(PluginInfoService.class).to(PluginInfoServiceImpl.class);
+    bind(ConnectorInfoApi.class).to(ConnectorInfoApiImpl.class);
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("backstageEnvVariableSyncer"))
         .toInstance(new ManagedScheduledExecutorService("backstageEnvVariableSyncer"));
