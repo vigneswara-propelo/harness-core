@@ -30,7 +30,6 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.EncryptedData;
-import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.NoAvailableDelegatesException;
 import io.harness.exception.WingsException;
@@ -221,7 +220,6 @@ public class LdapBasedAuthHandlerTest extends CategoryTest {
 
     EncryptedData encryptedSecret = mock(EncryptedData.class);
     doReturn(encryptedSecret).when(secretManager).encryptSecret(anyString(), any(), anyBoolean());
-    when(featureFlagService.isEnabled(FeatureName.NG_ENABLE_LDAP_CHECK, account.getUuid())).thenReturn(true);
 
     when(domainWhitelistCheckerService.isDomainWhitelisted(any())).thenReturn(true);
     when(ssoSettingService.getLdapSettingsByAccountId(testAccountId)).thenReturn(spyLdapSettings);

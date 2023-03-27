@@ -22,7 +22,6 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.EncryptedData;
-import io.harness.beans.FeatureName;
 import io.harness.beans.SecretText;
 import io.harness.delegate.NoEligibleDelegatesInAccountException;
 import io.harness.delegate.beans.NoAvailableDelegatesException;
@@ -108,10 +107,8 @@ public class LdapBasedAuthHandler implements AuthHandler {
     } catch (NoAvailableDelegatesException | NoEligibleDelegatesInAccountException e) {
       final String ldapConnectionInvalidRequestMsg =
           "Unable to connect to LDAP server, please try after some time. If the problem persist, please contact your admin";
-      if (!account.isNextGenEnabled()
-          || !featureFlagService.isEnabled(FeatureName.NG_ENABLE_LDAP_CHECK, settings.getAccountId())) {
-        log.warn("NGLDAP: Authentication flow. NG not enabled or feature flag for NGLDAP not enabled on account {}",
-            accountId);
+      if (!account.isNextGenEnabled()) {
+        log.warn("NGLDAP: Authentication flow. NG not enabled on account {}", accountId);
         throw new InvalidRequestException(ldapConnectionInvalidRequestMsg);
       }
       boolean userInNGScope = false;
