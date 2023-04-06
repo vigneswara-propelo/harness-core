@@ -7,6 +7,7 @@
 
 package io.harness.ngmigration.service.entity;
 
+import static software.wings.ngmigration.NGMigrationEntityType.CONFIG_FILE;
 import static software.wings.ngmigration.NGMigrationEntityType.ENVIRONMENT;
 import static software.wings.ngmigration.NGMigrationEntityType.MANIFEST;
 import static software.wings.ngmigration.NGMigrationEntityType.SERVICE;
@@ -72,7 +73,7 @@ public class ServiceVariableMigrationService extends NgMigrationService {
   @Inject private ServiceVariableService serviceVariableService;
   @Inject private ServiceTemplateService serviceTemplateService;
 
-  private static Set<NGMigrationEntityType> overrideTypes = Sets.newHashSet(SERVICE_VARIABLE, MANIFEST);
+  private static Set<NGMigrationEntityType> overrideTypes = Sets.newHashSet(SERVICE_VARIABLE, MANIFEST, CONFIG_FILE);
 
   @Override
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
@@ -167,7 +168,7 @@ public class ServiceVariableMigrationService extends NgMigrationService {
     boolean reused = false;
     // Check if we already have some migrated entity for service/environment combo
     NGYamlFile existingOverride =
-        findExistingOverride(entities, migratedEntities, serviceVariable.getEnvId(), serviceVariable.getServiceId());
+        findExistingOverride(migrationContext, serviceVariable.getEnvId(), serviceVariable.getServiceId());
     if (existingOverride != null) {
       yamlFile = existingOverride;
       reused = true;
@@ -185,8 +186,9 @@ public class ServiceVariableMigrationService extends NgMigrationService {
     return YamlGenerationDetails.builder().yamlFileList(files).build();
   }
 
-  public static NGYamlFile findExistingOverride(Map<CgEntityId, CgEntityNode> entities,
-      Map<CgEntityId, NGYamlFile> migratedEntities, String envId, String serviceId) {
+  public static NGYamlFile findExistingOverride(MigrationContext migrationContext, String envId, String serviceId) {
+    Map<CgEntityId, CgEntityNode> entities = migrationContext.getEntities();
+    Map<CgEntityId, NGYamlFile> migratedEntities = migrationContext.getMigratedEntities();
     if (EmptyPredicate.isNotEmpty(migratedEntities)
         && migratedEntities.keySet().stream().anyMatch(migrated -> overrideTypes.contains(migrated.getType()))) {
       List<CgEntityId> alreadyMigratedOverrides = migratedEntities.keySet()
@@ -205,6 +207,10 @@ public class ServiceVariableMigrationService extends NgMigrationService {
           ApplicationManifest manifest = (ApplicationManifest) entities.get(cgEntityId).getEntity();
           migratedServiceId = manifest.getServiceId();
           migratedEnvId = manifest.getEnvId();
+        }
+        if (cgEntityId.getType() == CONFIG_FILE) {
+          migratedServiceId = ConfigFileMigrationService.getServiceId(migrationContext, cgEntityId);
+          migratedEnvId = ConfigFileMigrationService.getEnvId(migrationContext, cgEntityId);
         }
         // If we already migrated variable/manifest which had the same env & service. We then just merge them
         if (Objects.equals(migratedEnvId, envId) && Objects.equals(migratedServiceId, serviceId)) {
