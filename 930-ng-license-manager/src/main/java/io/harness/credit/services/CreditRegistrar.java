@@ -6,16 +6,19 @@
  */
 package io.harness.credit.services;
 
-import static io.harness.annotations.dev.HarnessTeam.GTM;
-
+import io.harness.ModuleType;
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.credit.beans.credits.CreditDTO;
+import io.harness.credit.mappers.CreditObjectMapper;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Value;
 
-@OwnedBy(GTM)
-public interface CreditService {
-  List<CreditDTO> getCredits(String accountIdentifier);
+@OwnedBy(HarnessTeam.GTM)
+@Value
+@AllArgsConstructor
+public class CreditRegistrar {
+  ModuleType moduleType;
 
-  void purchaseCredits(String accountIdentifier);
+  Class<? extends CreditObjectMapper> objectMapper;
 }
