@@ -12,34 +12,29 @@ import static io.harness.annotations.dev.HarnessTeam.STO;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.stepinfo.security.shared.STOGenericStepInfo;
-import io.harness.yaml.sto.variables.STOYamlCustomIngestConfig;
+import io.harness.beans.steps.stepinfo.security.shared.STOYamlAuth;
+import io.harness.yaml.sto.variables.STOYamlGenericConfig;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@JsonTypeName("CustomIngest")
+@JsonTypeName("Fossa")
 @JsonIgnoreProperties(ignoreUnknown = true)
-@TypeAlias("customIngestStepInfo")
+@TypeAlias("fossaStepInfo")
 @OwnedBy(STO)
-@RecasterAlias("io.harness.beans.steps.stepinfo.security.CustomIngestStepInfo")
-public class CustomIngestStepInfo extends STOGenericStepInfo {
-  private static final String PRODUCT_NAME = "custom";
-
+@RecasterAlias("io.harness.beans.steps.stepinfo.security.FossaStepInfo")
+public class FossaStepInfo extends STOGenericStepInfo {
   @NotNull
-  @ApiModelProperty(dataType = "io.harness.yaml.sto.variables.STOYamlCustomIngestConfig")
-  @Field(name = "customIngestConfig")
-  protected STOYamlCustomIngestConfig config;
+  @ApiModelProperty(dataType = "io.harness.yaml.sto.variables.STOYamlGenericConfig")
+  protected STOYamlGenericConfig config;
 
-  @ApiModelProperty(hidden = true)
-  public String getProductName() {
-    return PRODUCT_NAME;
-  }
+  @NotNull @JsonProperty protected STOYamlAuth auth;
 }

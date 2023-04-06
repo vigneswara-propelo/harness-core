@@ -378,6 +378,7 @@ public enum FeatureName {
   STO_STEP_PALETTE_BURP_ENTERPRISE("Enable Burp Enterpise step for STO", HarnessTeam.STO),
 
   STO_STEP_PALETTE_CODEQL("Enable CodeQL step for STO", HarnessTeam.STO),
+  STO_STEP_PALETTE_GIT_LEAKS("Enable GitLeaks step for STO", HarnessTeam.STO),
 
   DONT_ENABLE_STO_STEP_PALETTE_V3(
       "Enable the rest of STO Steps Q2 2023 and beyond, NOT READY for use in PRODUCTION", HarnessTeam.STO),
