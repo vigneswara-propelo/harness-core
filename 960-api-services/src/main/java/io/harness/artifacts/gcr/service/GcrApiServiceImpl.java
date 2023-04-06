@@ -90,7 +90,7 @@ public class GcrApiServiceImpl implements GcrApiService {
     retryEventPublisher.onRetry(event -> log.warn("Retrying GCR API call. Event: " + event));
   }
 
-  private GcrRestClient getGcrRestClient(String registryHostName) {
+  public GcrRestClient getGcrRestClient(String registryHostName) {
     String url = getUrl(registryHostName);
     OkHttpClient okHttpClient = getOkHttpClientBuilder()
                                     .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
@@ -112,8 +112,7 @@ public class GcrApiServiceImpl implements GcrApiService {
   @Override
   public List<BuildDetailsInternal> getBuilds(GcrInternalConfig gcpConfig, String imageName, int maxNumberOfBuilds) {
     try {
-      Response<GcrImageTagResponse> response =
-          listImageTag(getGcrRestClient(gcpConfig.getRegistryHostname()), gcpConfig.getBasicAuthHeader(), imageName);
+      Response<GcrImageTagResponse> response = listImageTag(gcpConfig, imageName);
       checkValidImage(imageName, response);
       return processBuildResponse(gcpConfig.getRegistryHostname(), imageName, response.body());
     } catch (GcrImageNotFoundRuntimeException ex) {
@@ -223,8 +222,7 @@ public class GcrApiServiceImpl implements GcrApiService {
   @Override
   public boolean validateCredentials(GcrInternalConfig gcpConfig, String imageName) {
     try {
-      GcrRestClient registryRestClient = getGcrRestClient(gcpConfig.getRegistryHostname());
-      return isSuccessful(listImageTag(registryRestClient, gcpConfig.getBasicAuthHeader(), imageName));
+      return isSuccessful(listImageTag(gcpConfig, imageName));
     } catch (IOException e) {
       throw NestedExceptionUtils.hintWithExplanationException(
           ERROR_MESSAGE, CONNECTION_ERROR_MESSAGE, new ArtifactServerException(ExceptionUtils.getMessage(e), e, USER));
@@ -290,17 +288,13 @@ public class GcrApiServiceImpl implements GcrApiService {
 
   public ArtifactMetaInfo getArtifactMetaInfo(GcrInternalConfig gcrInternalConfig, String imageName, String tag)
       throws Exception {
-    Response<DockerImageManifestResponse> response =
-        fetchImage(getGcrRestClient(gcrInternalConfig.getRegistryHostname()), gcrInternalConfig.getBasicAuthHeader(),
-            imageName, tag);
+    Response<DockerImageManifestResponse> response = fetchImage(gcrInternalConfig, imageName, tag);
     return getArtifactMetaInfoHelper(response, imageName);
   }
 
   public ArtifactMetaInfo getArtifactMetaInfoV2(GcrInternalConfig gcrInternalConfig, String imageName, String tag)
       throws Exception {
-    Response<DockerImageManifestResponse> response =
-        fetchImageManifestV2(getGcrRestClient(gcrInternalConfig.getRegistryHostname()),
-            gcrInternalConfig.getBasicAuthHeader(), imageName, tag);
+    Response<DockerImageManifestResponse> response = fetchImageManifestV2(gcrInternalConfig, imageName, tag);
     return getArtifactMetaInfoHelper(response, imageName);
   }
 
@@ -313,23 +307,37 @@ public class GcrApiServiceImpl implements GcrApiService {
 
   @VisibleForTesting
   public Response<DockerImageManifestResponse> fetchImage(
-      GcrRestClient gcrRestClient, String basicAuthHeader, String imageName, String tag) throws Exception {
+      GcrInternalConfig gcrInternalConfig, String imageName, String tag) throws Exception {
     return Retry
-        .decorateCallable(retry, () -> gcrRestClient.getImageManifest(basicAuthHeader, imageName, tag).execute())
+        .decorateCallable(retry,
+            ()
+                -> getGcrRestClient(gcrInternalConfig.getRegistryHostname())
+                       .getImageManifest(gcrInternalConfig.getBasicAuthHeader(), imageName, tag)
+                       .execute())
         .call();
   }
 
   public Response<DockerImageManifestResponse> fetchImageManifestV2(
-      GcrRestClient gcrRestClient, String basicAuthHeader, String imageName, String tag) throws Exception {
+      GcrInternalConfig gcrInternalConfig, String imageName, String tag) throws Exception {
     return Retry
-        .decorateCallable(retry, () -> gcrRestClient.getImageManifestV2(basicAuthHeader, imageName, tag).execute())
+        .decorateCallable(retry,
+            ()
+                -> getGcrRestClient(gcrInternalConfig.getRegistryHostname())
+                       .getImageManifestV2(gcrInternalConfig.getBasicAuthHeader(), imageName, tag)
+                       .execute())
         .call();
   }
 
   @VisibleForTesting
-  public Response<GcrImageTagResponse> listImageTag(
-      GcrRestClient gcrRestClient, String basicAuthHeader, String imageName) throws Exception {
-    return Retry.decorateCallable(retry, () -> gcrRestClient.listImageTags(basicAuthHeader, imageName).execute())
+  public Response<GcrImageTagResponse> listImageTag(GcrInternalConfig gcrInternalConfig, String imageName)
+      throws Exception {
+    return Retry
+        .decorateCallable(retry,
+            ()
+                -> getGcrRestClient(gcrInternalConfig.getRegistryHostname())
+                       .listImageTags(gcrInternalConfig.getBasicAuthHeader(), imageName)
+                       .clone()
+                       .execute())
         .call();
   }
 
