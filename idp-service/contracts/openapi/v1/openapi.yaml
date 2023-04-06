@@ -328,6 +328,8 @@ paths:
         - $ref: '#/components/parameters/SearchTerm'
         - schema:
             type: array
+            items:
+              type: string
           in: query
           name: projects_to_filter
           description: This would be used to filter resources having attributes matching the project filter.
