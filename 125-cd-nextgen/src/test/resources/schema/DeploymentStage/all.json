@@ -7222,7 +7222,8 @@
             "GoogleCloudFunctions",
             "AWS_SAM",
             "AwsLambda",
-            "KubernetesAws"
+            "KubernetesAws",
+            "KubernetesRancher"
           ]
         }
       },
