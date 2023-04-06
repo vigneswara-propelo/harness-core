@@ -122,8 +122,8 @@ public class ServiceVariableMigrationService extends NgMigrationService {
   }
 
   @Override
-  public MigrationImportSummaryDTO migrate(String auth, NGClient ngClient, PmsClient pmsClient,
-      TemplateClient templateClient, MigrationInputDTO inputDTO, NGYamlFile yamlFile) throws IOException {
+  public MigrationImportSummaryDTO migrate(NGClient ngClient, PmsClient pmsClient, TemplateClient templateClient,
+      MigrationInputDTO inputDTO, NGYamlFile yamlFile) throws IOException {
     NGServiceOverrideInfoConfig serviceOverrideInfoConfig =
         ((NGServiceOverrideConfig) yamlFile.getYaml()).getServiceOverrideInfoConfig();
     String yaml = getYamlString(yamlFile);
@@ -136,7 +136,10 @@ public class ServiceVariableMigrationService extends NgMigrationService {
                                                .build();
 
     Response<ResponseDTO<ServiceOverrideResponseDTO>> resp =
-        ngClient.upsertServiceOverride(auth, inputDTO.getAccountIdentifier(), JsonUtils.asTree(requestDTO)).execute();
+        ngClient
+            .upsertServiceOverride(inputDTO.getDestinationAuthToken(), inputDTO.getDestinationAccountIdentifier(),
+                JsonUtils.asTree(requestDTO))
+            .execute();
     log.info("Service variables creation Response details {} {}", resp.code(), resp.message());
     return handleResp(yamlFile, resp);
   }
