@@ -610,6 +610,8 @@ public class ArtifactResponseToOutcomeMapper {
         .type(ArtifactSourceType.ACR.getDisplayName())
         .primaryArtifact(acrArtifactConfig.isPrimaryArtifact())
         .imagePullSecret(createImagePullSecret(ArtifactUtils.getArtifactKey(acrArtifactConfig)))
+        .metadata(useDelegateResponse ? getMetadata(acrArtifactDelegateResponse) : null)
+        .label(getLabels(acrArtifactDelegateResponse))
         .dockerConfigJsonSecret(createDockerConfigJsonSecret(ArtifactUtils.getArtifactKey(acrArtifactConfig)))
         .build();
   }
@@ -721,6 +723,13 @@ public class ArtifactResponseToOutcomeMapper {
       return Collections.emptyMap();
     }
     return gcrArtifactDelegateResponse.getLabel();
+  }
+
+  private Map<String, String> getLabels(AcrArtifactDelegateResponse artifactDelegateResponse) {
+    if (artifactDelegateResponse == null || EmptyPredicate.isEmpty(artifactDelegateResponse.getLabel())) {
+      return Collections.emptyMap();
+    }
+    return artifactDelegateResponse.getLabel();
   }
 
   private String getRegistryHostnameValue(ArtifactDelegateResponse artifactDelegateResponse) {
