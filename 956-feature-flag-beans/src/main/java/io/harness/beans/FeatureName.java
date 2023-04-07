@@ -707,7 +707,8 @@ public enum FeatureName {
   CDS_NG_CONFIG_FILE_EXPRESSION(
       "Enable Harness variable rendering in Hanress config files (SSH/WinRM)", HarnessTeam.CDP),
   CDS_TERRAFORM_S3_NG("Enables storing Terraform config, backend and var files in S3", HarnessTeam.CDP),
-  CDS_HTTP_STEP_NG_CERTIFICATE("Allow enforce SSL/TLS certificate in NG HTTP step", HarnessTeam.CDC);
+  CDS_HTTP_STEP_NG_CERTIFICATE("Allow enforce SSL/TLS certificate in NG HTTP step", HarnessTeam.CDC),
+  SRM_ENABLE_JIRA_INTEGRATION("Enable Jira integration in CVNG Verify step UI", HarnessTeam.CV);
 
   @Deprecated
   FeatureName() {
