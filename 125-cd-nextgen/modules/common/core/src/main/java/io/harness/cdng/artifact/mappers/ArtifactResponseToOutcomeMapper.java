@@ -475,6 +475,7 @@ public class ArtifactResponseToOutcomeMapper {
         .imagePullSecret(createImagePullSecret(ArtifactUtils.getArtifactKey(artifactConfig)))
         .registryHostname(getRegistryHostnameValue(artifactDelegateResponse))
         .displayName(displayName)
+        .label(getLabels(artifactDelegateResponse))
         .metadata(useDelegateResponse ? getMetadata(artifactDelegateResponse) : null)
         .build();
   }
@@ -694,6 +695,13 @@ public class ArtifactResponseToOutcomeMapper {
   }
 
   private Map<String, String> getLabels(GithubPackagesArtifactDelegateResponse artifactDelegateResponse) {
+    if (artifactDelegateResponse == null || EmptyPredicate.isEmpty(artifactDelegateResponse.getLabel())) {
+      return Collections.emptyMap();
+    }
+    return artifactDelegateResponse.getLabel();
+  }
+
+  private Map<String, String> getLabels(NexusArtifactDelegateResponse artifactDelegateResponse) {
     if (artifactDelegateResponse == null || EmptyPredicate.isEmpty(artifactDelegateResponse.getLabel())) {
       return Collections.emptyMap();
     }
