@@ -5,13 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.sdk.core.plugin;
+package io.harness.plancreator.steps.pluginstep;
 
-import io.harness.pms.contracts.plan.PluginCreationRequest;
+import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.plan.PluginCreationResponse;
+import io.harness.steps.plugin.InitContainerV2StepInfo;
 
-public interface PluginInfoProvider {
-  PluginCreationResponse getPluginInfo(PluginCreationRequest request);
+import java.util.Map;
 
-  boolean isSupported(String stepType);
+public interface ContainerStepV2PluginProvider {
+  Map<String, PluginCreationResponse> getPluginsData(
+      InitContainerV2StepInfo initContainerV2StepInfo, Ambiance ambiance);
 }
