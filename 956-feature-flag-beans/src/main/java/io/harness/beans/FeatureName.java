@@ -713,7 +713,9 @@ public enum FeatureName {
   CDS_GIT_CONFIG_FILES("Enable config files from GIT repositories", HarnessTeam.CDP),
   NG_EXPRESSIONS_NEW_INPUT_ELEMENT(
       "FF to enable the new input element for the Expressions on UI when UI suggests the probable expressions to the User based on text input so far",
-      PIPELINE);
+      PIPELINE),
+  CDS_NOT_ALLOW_READ_ONLY_SECRET_MANAGER_TERRAFORM_TERRAGRUNT_PLAN(
+      "Enable the check if Vault secret manager is read only", HarnessTeam.CDP);
 
   @Deprecated
   FeatureName() {
