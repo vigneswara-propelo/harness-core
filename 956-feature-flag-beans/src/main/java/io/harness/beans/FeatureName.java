@@ -385,6 +385,7 @@ public enum FeatureName {
       "Enable the rest of STO Steps Q2 2023 and beyond, NOT READY for use in PRODUCTION", HarnessTeam.STO),
 
   STO_JIRA_INTEGRATION("Enable Jira integration for STO", HarnessTeam.STO),
+  STO_BASELINE_REGEX("Enable selection of baselines by RegEx from Test Targets page", HarnessTeam.STO),
   HOSTED_BUILDS("Used to enabled Hosted builds in paid accounts", HarnessTeam.CI),
   SPOT_ELASTIGROUP_NG("Enables Spot Elastigroup implementation on NG", HarnessTeam.CDP),
   ATTRIBUTE_TYPE_ACL_ENABLED("Enable attribute filter on NG UI for ACL", HarnessTeam.PL),
