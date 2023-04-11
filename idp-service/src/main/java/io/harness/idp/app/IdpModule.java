@@ -273,6 +273,9 @@ public class IdpModule extends AbstractModule {
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("userSyncer"))
         .toInstance(new ManagedScheduledExecutorService("UserSyncer"));
+    bind(ScheduledExecutorService.class)
+        .annotatedWith(Names.named("AppConfigPurger"))
+        .toInstance(new ManagedScheduledExecutorService("AppConfigPurger"));
     bind(HealthResource.class).to(HealthResourceImpl.class);
 
     MapBinder<BackstageEnvVariableType, BackstageEnvVariableMapper> backstageEnvVariableMapBinder =
