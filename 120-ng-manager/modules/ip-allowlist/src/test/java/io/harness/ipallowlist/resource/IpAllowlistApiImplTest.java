@@ -32,8 +32,10 @@ import java.util.List;
 import javax.validation.Validator;
 import javax.ws.rs.core.Response;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -45,6 +47,7 @@ public class IpAllowlistApiImplTest extends CategoryTest {
   private IPAllowlistResourceUtils ipAllowlistResourceUtil;
   private Validator validator;
   private IpAllowlistApiImpl ipAllowlistApi;
+  @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
   private static final String ACCOUNT_IDENTIFIER = randomAlphabetic(10);
 
@@ -70,6 +73,18 @@ public class IpAllowlistApiImplTest extends CategoryTest {
     Response result = ipAllowlistApi.createIpAllowlistConfig(request, ACCOUNT_IDENTIFIER);
     assertThat(result).isNotNull();
     assertThat(result.getStatus()).isEqualTo(201);
+    assertThat(result.getEntity()).isEqualTo(getIpAllowlistConfigResponse());
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testGetIpAllowlistConfig() {
+    IPAllowlistEntity ipAllowlistEntity = getIPAllowlistEntity();
+    when(ipAllowlistService.get(ACCOUNT_IDENTIFIER, IDENTIFIER)).thenReturn(ipAllowlistEntity);
+    Response result = ipAllowlistApi.getIpAllowlistConfig(IDENTIFIER, ACCOUNT_IDENTIFIER);
+    assertThat(result).isNotNull();
+    assertThat(result.getStatus()).isEqualTo(200);
     assertThat(result.getEntity()).isEqualTo(getIpAllowlistConfigResponse());
   }
 

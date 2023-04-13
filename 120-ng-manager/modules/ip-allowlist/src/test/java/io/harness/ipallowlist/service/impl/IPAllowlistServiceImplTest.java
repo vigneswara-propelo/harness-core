@@ -20,6 +20,7 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.DuplicateFieldException;
+import io.harness.exception.NoResultFoundException;
 import io.harness.ipallowlist.IPAllowlistResourceUtils;
 import io.harness.ipallowlist.entity.IPAllowlistEntity;
 import io.harness.outbox.api.OutboxService;
@@ -28,6 +29,7 @@ import io.harness.rule.Owner;
 import io.harness.spec.server.ng.v1.model.AllowedSourceType;
 
 import java.util.List;
+import java.util.Optional;
 import javax.validation.Validator;
 import org.junit.Before;
 import org.junit.Rule;
@@ -94,6 +96,29 @@ public class IPAllowlistServiceImplTest extends CategoryTest {
     exceptionRule.expect(DuplicateFieldException.class);
     exceptionRule.expectMessage(String.format("IP Allowlist config with identifier [%s] already exists.", IDENTIFIER));
     ipAllowlistService.create(ipAllowlistEntity);
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testGet() {
+    Optional<IPAllowlistEntity> ipAllowlistEntity = Optional.ofNullable(getIPAllowlistEntity());
+    when(ipAllowlistRepository.findByAccountIdentifierAndIdentifier(ACCOUNT_IDENTIFIER, IDENTIFIER))
+        .thenReturn(ipAllowlistEntity);
+    IPAllowlistEntity result = ipAllowlistService.get(ACCOUNT_IDENTIFIER, IDENTIFIER);
+    assertThat(result).isNotNull();
+    assertThat(result).isEqualToComparingFieldByField(ipAllowlistEntity.get());
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testGet_notFound() {
+    when(ipAllowlistRepository.findByAccountIdentifierAndIdentifier(ACCOUNT_IDENTIFIER, IDENTIFIER))
+        .thenReturn(Optional.empty());
+    exceptionRule.expect(NoResultFoundException.class);
+    exceptionRule.expectMessage(String.format("IP Allowlist config with identifier [%s] not found.", IDENTIFIER));
+    ipAllowlistService.get(ACCOUNT_IDENTIFIER, IDENTIFIER);
   }
 
   private IPAllowlistEntity getIPAllowlistEntity() {

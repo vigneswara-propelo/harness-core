@@ -8,6 +8,7 @@
 package io.harness.ipallowlist.resource;
 
 import static io.harness.ng.accesscontrol.PlatformPermissions.EDIT_AUTHSETTING_PERMISSION;
+import static io.harness.ng.accesscontrol.PlatformPermissions.VIEW_AUTHSETTING_PERMISSION;
 import static io.harness.ng.accesscontrol.PlatformResourceTypes.AUTHSETTING;
 
 import io.harness.accesscontrol.acl.api.Resource;
@@ -62,7 +63,13 @@ public class IpAllowlistApiImpl implements IpAllowlistApi {
 
   @Override
   public Response getIpAllowlistConfig(String ipConfigIdentifier, String harnessAccount) {
-    return null;
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(harnessAccount, null, null),
+        Resource.of(AUTHSETTING, ipConfigIdentifier), VIEW_AUTHSETTING_PERMISSION);
+    IPAllowlistEntity ipAllowlistEntity = ipAllowlistService.get(harnessAccount, ipConfigIdentifier);
+
+    return Response.status(Response.Status.OK)
+        .entity(ipAllowlistResourceUtil.toIPAllowlistConfigResponse(ipAllowlistEntity))
+        .build();
   }
 
   @Override
