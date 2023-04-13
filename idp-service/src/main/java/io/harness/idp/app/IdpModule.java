@@ -72,6 +72,7 @@ import io.harness.idp.status.service.StatusInfoService;
 import io.harness.idp.status.service.StatusInfoServiceImpl;
 import io.harness.lock.DistributedLockImplementation;
 import io.harness.lock.PersistentLockModule;
+import io.harness.manage.ManagedExecutorService;
 import io.harness.manage.ManagedScheduledExecutorService;
 import io.harness.metrics.modules.MetricsModule;
 import io.harness.mongo.AbstractMongoModule;
@@ -123,6 +124,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -276,6 +278,9 @@ public class IdpModule extends AbstractModule {
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("AppConfigPurger"))
         .toInstance(new ManagedScheduledExecutorService("AppConfigPurger"));
+    bind(ExecutorService.class)
+        .annotatedWith(Names.named("DefaultPREnvAccountIdToNamespaceMappingCreator"))
+        .toInstance(new ManagedExecutorService(Executors.newSingleThreadExecutor()));
     bind(HealthResource.class).to(HealthResourceImpl.class);
 
     MapBinder<BackstageEnvVariableType, BackstageEnvVariableMapper> backstageEnvVariableMapBinder =
@@ -370,5 +375,19 @@ public class IdpModule extends AbstractModule {
   @Named("ngManagerServiceSecret")
   public String ngManagerServiceSecret() {
     return this.appConfig.getNgManagerServiceSecret();
+  }
+
+  @Provides
+  @Singleton
+  @Named("env")
+  public String env() {
+    return this.appConfig.getEnv();
+  }
+
+  @Provides
+  @Singleton
+  @Named("prEnvDefaultBackstageNamespace")
+  public String prEnvDefaultBackstageNamespace() {
+    return this.appConfig.getPrEnvDefaultBackstageNamespace();
   }
 }

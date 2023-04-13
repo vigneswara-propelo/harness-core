@@ -133,3 +133,6 @@ backstagePodLabel: ""
 
 provisionModuleConfig:
   triggerPipelineUrl: ""
+
+env: ""
+prEnvDefaultBackstageNamespace: ""
