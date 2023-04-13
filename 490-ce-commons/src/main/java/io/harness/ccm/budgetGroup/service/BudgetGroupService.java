@@ -33,4 +33,6 @@ public interface BudgetGroupService {
       Double[] budgetAmountMonthlyDiff);
   void updateBudgetGroupCosts(BudgetGroup budgetGroup);
   void updateCostsOfParentBudgetGroupsOnEntityDeletion(BudgetGroup immediateParent);
+  void updateBudgetGroupAmount(BudgetGroup budgetGroup, String accountId);
+  void updateBudgetGroupCosts(BudgetGroup budgetGroup, String accountId);
 }
