@@ -7,4 +7,8 @@
 
 package io.harness.ipallowlist.service;
 
-public interface IPAllowlistService {}
+import io.harness.ipallowlist.entity.IPAllowlistEntity;
+
+public interface IPAllowlistService {
+  IPAllowlistEntity create(IPAllowlistEntity ipAllowlistEntity);
+}

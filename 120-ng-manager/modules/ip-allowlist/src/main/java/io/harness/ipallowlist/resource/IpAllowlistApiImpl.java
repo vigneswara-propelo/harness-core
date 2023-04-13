@@ -7,8 +7,14 @@
 
 package io.harness.ipallowlist.resource;
 
+import static io.harness.ng.accesscontrol.PlatformPermissions.EDIT_AUTHSETTING_PERMISSION;
+import static io.harness.ng.accesscontrol.PlatformResourceTypes.AUTHSETTING;
+
+import io.harness.accesscontrol.acl.api.Resource;
+import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.ipallowlist.IPAllowlistResourceUtils;
+import io.harness.ipallowlist.entity.IPAllowlistEntity;
 import io.harness.ipallowlist.service.IPAllowlistService;
 import io.harness.spec.server.ng.v1.IpAllowlistApi;
 import io.harness.spec.server.ng.v1.model.IPAllowlistConfigRequest;
@@ -32,7 +38,15 @@ public class IpAllowlistApiImpl implements IpAllowlistApi {
   @Override
   public Response createIpAllowlistConfig(
       @Valid IPAllowlistConfigRequest ipAllowlistConfigRequest, String accountIdentifier) {
-    return null;
+    accessControlClient.checkForAccessOrThrow(
+        ResourceScope.of(accountIdentifier, null, null), Resource.of(AUTHSETTING, null), EDIT_AUTHSETTING_PERMISSION);
+    IPAllowlistEntity ipAllowlistEntity =
+        ipAllowlistResourceUtil.toIPAllowlistEntity(ipAllowlistConfigRequest.getIpAllowlistConfig(), accountIdentifier);
+    IPAllowlistEntity createdIpAllowlistEntity = ipAllowlistService.create(ipAllowlistEntity);
+
+    return Response.status(Response.Status.CREATED)
+        .entity(ipAllowlistResourceUtil.toIPAllowlistConfigResponse(createdIpAllowlistEntity))
+        .build();
   }
 
   @Override
