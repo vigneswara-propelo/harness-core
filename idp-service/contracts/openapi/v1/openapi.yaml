@@ -1715,9 +1715,7 @@ components:
       content:
         application/json:
           schema:
-            properties:
-              id:
-                type: string
+            $ref: '#/components/schemas/HarnessEntitiesCountResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key
