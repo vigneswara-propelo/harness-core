@@ -764,4 +764,17 @@ public class BudgetGroupUtils {
   public static Double getSumGivenTimeAndValueList(List<ValueDataPoint> valueDataPoints) {
     return valueDataPoints.stream().map(valueDataPoint -> valueDataPoint.getValue()).reduce(0.0D, (a, b) -> a + b);
   }
+
+  public static List<ValueDataPoint> updateBudgetGroupMonthlyAmount(
+      List<ValueDataPoint> budgetGroupMonthlyAmount, Double[] budgetAmountMonthlyDiff) {
+    List<ValueDataPoint> updatedBudgetGroupMonthlyAmount = new ArrayList<>();
+    for (int month = 0; month < MONTHS; month++) {
+      updatedBudgetGroupMonthlyAmount.add(
+          ValueDataPoint.builder()
+              .time(budgetGroupMonthlyAmount.get(month).getTime())
+              .value(budgetGroupMonthlyAmount.get(month).getValue() + budgetAmountMonthlyDiff[month])
+              .build());
+    }
+    return updatedBudgetGroupMonthlyAmount;
+  }
 }
