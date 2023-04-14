@@ -229,7 +229,7 @@ public class AwsMarketPlaceApiHandlerImpl implements AwsMarketPlaceApiHandler {
       URI redirectUrl = null;
       try {
         redirectUrl = new URI(authenticationUtils.getBaseUrl()
-            + ("#/invite?inviteId=" + userInvite.getUuid() + "&marketPlaceToken=" + marketPlaceToken));
+            + ("auth/#/invite?inviteId=" + userInvite.getUuid() + "&marketPlaceToken=" + marketPlaceToken));
       } catch (URISyntaxException e) {
         throw new WingsException(e);
       }
