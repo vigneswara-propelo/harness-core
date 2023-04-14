@@ -7,18 +7,23 @@
 
 package io.harness.ipallowlist.resource;
 
+import static io.harness.NGCommonEntityConstants.DIFFERENT_IDENTIFIER_IN_PAYLOAD_AND_PARAM;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.rule.OwnerRule.MEENAKSHI;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
+import io.harness.accesscontrol.NGAccessDeniedException;
 import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ipallowlist.IPAllowlistResourceUtils;
 import io.harness.ipallowlist.entity.IPAllowlistEntity;
 import io.harness.ipallowlist.service.IPAllowlistService;
@@ -86,6 +91,50 @@ public class IpAllowlistApiImplTest extends CategoryTest {
     assertThat(result).isNotNull();
     assertThat(result.getStatus()).isEqualTo(200);
     assertThat(result.getEntity()).isEqualTo(getIpAllowlistConfigResponse());
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testUpdateIpAllowlistConfig() {
+    IPAllowlistConfigRequest request = getIpAllowlistConfigRequest();
+    IPAllowlistEntity ipAllowlistEntity = getIPAllowlistEntity();
+    when(ipAllowlistService.update(IDENTIFIER, ipAllowlistEntity)).thenReturn(ipAllowlistEntity);
+    Response result = ipAllowlistApi.updateIpAllowlistConfig(IDENTIFIER, request, ACCOUNT_IDENTIFIER);
+    assertThat(result).isNotNull();
+    assertThat(result.getStatus()).isEqualTo(200);
+    assertThat(result.getEntity()).isEqualTo(getIpAllowlistConfigResponse());
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testUpdateIpAllowlistConfig_forDifferentIdentifier() {
+    IPAllowlistConfigRequest request = getIpAllowlistConfigRequest();
+    exceptionRule.expect(InvalidRequestException.class);
+    exceptionRule.expectMessage(DIFFERENT_IDENTIFIER_IN_PAYLOAD_AND_PARAM);
+    ipAllowlistApi.updateIpAllowlistConfig("identifier", request, ACCOUNT_IDENTIFIER);
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testDeleteIpAllowlistConfig() {
+    when(ipAllowlistService.delete(ACCOUNT_IDENTIFIER, IDENTIFIER)).thenReturn(true);
+    Response result = ipAllowlistApi.deleteIpAllowlistConfig(IDENTIFIER, ACCOUNT_IDENTIFIER);
+    assertThat(result).isNotNull();
+    assertThat(result.getStatus()).isEqualTo(204);
+    assertThat(result.getEntity()).isEqualTo(null);
+  }
+
+  @Test
+  @Owner(developers = MEENAKSHI)
+  @Category(UnitTests.class)
+  public void testDeleteIpAllowlistConfig_noAccess() {
+    doThrow(NGAccessDeniedException.class).when(accessControlClient).checkForAccessOrThrow(any(), any(), any());
+    when(ipAllowlistService.delete(ACCOUNT_IDENTIFIER, IDENTIFIER)).thenReturn(true);
+    exceptionRule.expect(NGAccessDeniedException.class);
+    ipAllowlistApi.deleteIpAllowlistConfig(IDENTIFIER, ACCOUNT_IDENTIFIER);
   }
 
   private IPAllowlistConfigRequest getIpAllowlistConfigRequest() {

@@ -80,4 +80,35 @@ public class IPAllowlistServiceImpl implements IPAllowlistService {
 
     return optionalIPAllowlistEntity.get();
   }
+
+  @Override
+  public IPAllowlistEntity update(String ipConfigIdentifier, IPAllowlistEntity ipAllowlistEntity) {
+    IPAllowlistEntity existingIPAllowlist = get(ipAllowlistEntity.getAccountIdentifier(), ipConfigIdentifier);
+
+    ipAllowlistEntity.setCreated(existingIPAllowlist.getCreated());
+    ipAllowlistEntity.setUpdated(existingIPAllowlist.getUpdated());
+    ipAllowlistEntity.setCreatedBy(existingIPAllowlist.getCreatedBy());
+    ipAllowlistEntity.setId(existingIPAllowlist.getId());
+    try {
+      return Failsafe.with(DEFAULT_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
+        IPAllowlistEntity savedIpAllowlistEntity = ipAllowlistRepository.save(ipAllowlistEntity);
+
+        return savedIpAllowlistEntity;
+      }));
+    } catch (DuplicateKeyException exception) {
+      String message =
+          String.format("IP Allowlist config with identifier [%s] already exists.", ipAllowlistEntity.getIdentifier());
+      log.error(message, exception);
+      throw new DuplicateFieldException(message);
+    }
+  }
+
+  @Override
+  public boolean delete(String accountIdentifier, String identifier) {
+    IPAllowlistEntity ipAllowlistEntity = get(accountIdentifier, identifier);
+    return Failsafe.with(DEFAULT_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
+      ipAllowlistRepository.deleteByAccountIdentifierAndIdentifier(accountIdentifier, identifier);
+      return true;
+    }));
+  }
 }

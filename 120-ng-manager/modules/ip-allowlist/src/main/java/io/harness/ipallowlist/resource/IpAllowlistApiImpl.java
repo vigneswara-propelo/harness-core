@@ -7,6 +7,9 @@
 
 package io.harness.ipallowlist.resource;
 
+import static io.harness.NGCommonEntityConstants.DIFFERENT_IDENTIFIER_IN_PAYLOAD_AND_PARAM;
+import static io.harness.exception.WingsException.USER;
+import static io.harness.ng.accesscontrol.PlatformPermissions.DELETE_AUTHSETTING_PERMISSION;
 import static io.harness.ng.accesscontrol.PlatformPermissions.EDIT_AUTHSETTING_PERMISSION;
 import static io.harness.ng.accesscontrol.PlatformPermissions.VIEW_AUTHSETTING_PERMISSION;
 import static io.harness.ng.accesscontrol.PlatformResourceTypes.AUTHSETTING;
@@ -14,6 +17,7 @@ import static io.harness.ng.accesscontrol.PlatformResourceTypes.AUTHSETTING;
 import io.harness.accesscontrol.acl.api.Resource;
 import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.accesscontrol.clients.AccessControlClient;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ipallowlist.IPAllowlistResourceUtils;
 import io.harness.ipallowlist.entity.IPAllowlistEntity;
 import io.harness.ipallowlist.service.IPAllowlistService;
@@ -22,6 +26,7 @@ import io.harness.spec.server.ng.v1.model.IPAllowlistConfigRequest;
 
 import com.google.inject.Inject;
 import java.util.List;
+import java.util.Objects;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
@@ -53,12 +58,27 @@ public class IpAllowlistApiImpl implements IpAllowlistApi {
   @Override
   public Response updateIpAllowlistConfig(
       String ipConfigIdentifier, @Valid IPAllowlistConfigRequest ipAllowlistConfigRequest, String harnessAccount) {
-    return null;
+    if (!Objects.equals(ipAllowlistConfigRequest.getIpAllowlistConfig().getIdentifier(), ipConfigIdentifier)) {
+      throw new InvalidRequestException(DIFFERENT_IDENTIFIER_IN_PAYLOAD_AND_PARAM, USER);
+    }
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(harnessAccount, null, null),
+        Resource.of(AUTHSETTING, ipConfigIdentifier), EDIT_AUTHSETTING_PERMISSION);
+    IPAllowlistEntity newIpAllowlistEntity =
+        ipAllowlistResourceUtil.toIPAllowlistEntity(ipAllowlistConfigRequest.getIpAllowlistConfig(), harnessAccount);
+    IPAllowlistEntity updatedIpAllowlistEntity = ipAllowlistService.update(ipConfigIdentifier, newIpAllowlistEntity);
+
+    return Response.status(Response.Status.OK)
+        .entity(ipAllowlistResourceUtil.toIPAllowlistConfigResponse(updatedIpAllowlistEntity))
+        .build();
   }
 
   @Override
   public Response deleteIpAllowlistConfig(String ipConfigIdentifier, String harnessAccount) {
-    return null;
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(harnessAccount, null, null),
+        Resource.of(AUTHSETTING, ipConfigIdentifier), DELETE_AUTHSETTING_PERMISSION);
+
+    ipAllowlistService.delete(harnessAccount, ipConfigIdentifier);
+    return Response.status(Response.Status.NO_CONTENT).build();
   }
 
   @Override
