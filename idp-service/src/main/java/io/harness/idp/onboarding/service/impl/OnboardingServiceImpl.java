@@ -268,7 +268,7 @@ public class OnboardingServiceImpl implements OnboardingService {
           -> registerLocationInBackstage(
               accountIdentifier, BACKSTAGE_LOCATION_URL_TYPE, Collections.singletonList(sampleEntity)));
 
-      createCatalogInfraConnectorInBackstageK8S(accountIdentifier, catalogConnectorInfo);
+      createCatalogInfraConnectorInBackstageK8S(accountIdentifier, catalogConnectorInfo, catalogInfraConnectorType);
 
       log.info("Finished operation of yaml generation, pushing to source, registering in backstage, "
           + "creating connector secret in K8S for all entities");
@@ -454,7 +454,7 @@ public class OnboardingServiceImpl implements OnboardingService {
         + SAMPLE_ENTITY_NAME + SLASH_DELIMITER + SAMPLE_ENTITY_NAME.toLowerCase() + YAML_FILE_EXTENSION);
     registerLocationInBackstage(accountIdentifier, BACKSTAGE_LOCATION_URL_TYPE, locationTargets);
 
-    createCatalogInfraConnectorInBackstageK8S(accountIdentifier, catalogConnectorInfo);
+    createCatalogInfraConnectorInBackstageK8S(accountIdentifier, catalogConnectorInfo, catalogInfraConnectorType);
 
     saveCatalogConnector(accountIdentifier, catalogConnectorInfo, catalogInfraConnectorType);
     saveStatusInfo(accountIdentifier, StatusType.ONBOARDING.name(), StatusInfo.CurrentStatusEnum.COMPLETED,
@@ -720,11 +720,16 @@ public class OnboardingServiceImpl implements OnboardingService {
   }
 
   private void createCatalogInfraConnectorInBackstageK8S(
-      String accountIdentifier, CatalogConnectorInfo catalogConnectorInfo) {
+      String accountIdentifier, CatalogConnectorInfo catalogConnectorInfo, String catalogInfraConnectorType) {
     try {
-      gitIntegrationService.createConnectorInBackstage(accountIdentifier,
-          catalogConnectorInfo.getConnector().getIdentifier(),
-          String.valueOf(catalogConnectorInfo.getConnector().getType()));
+      String type = String.valueOf(catalogConnectorInfo.getConnector().getType());
+      ConnectorProcessor connectorProcessor =
+          connectorProcessorFactory.getConnectorProcessor(ConnectorType.fromString(type));
+      ConnectorInfoDTO connectorInfoDTO =
+          connectorProcessor.getConnectorInfo(accountIdentifier, catalogConnectorInfo.getConnector().getIdentifier());
+      gitIntegrationService.createConnectorInBackstage(accountIdentifier, connectorInfoDTO,
+          CatalogInfraConnectorType.valueOf(catalogInfraConnectorType),
+          catalogConnectorInfo.getConnector().getIdentifier());
     } catch (Exception e) {
       log.error("Unable to create infra connector secrets in backstage k8s, ex = {}", e.getMessage(), e);
     }
