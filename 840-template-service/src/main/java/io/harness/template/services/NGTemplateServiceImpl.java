@@ -1414,8 +1414,12 @@ public class NGTemplateServiceImpl implements NGTemplateService {
     TemplateEntity templateEntity =
         templateRepository.updateV2(accountIdentifier, orgIdentifier, projectIdentifier, templateCriteria, update);
     if (templateEntity == null) {
-      throw new EntityNotFoundException(String.format(
-          "Template not found for template identifier [%s] and version label [%s]", templateIdentifier, versionLabel));
+      String scope =
+          String.format("account %s%s%s", accountIdentifier, isNotEmpty(orgIdentifier) ? ", org " + orgIdentifier : "",
+              isNotEmpty(projectIdentifier) ? ", project " + projectIdentifier : "");
+      throw new EntityNotFoundException(
+          String.format("Template not found for template identifier [%s] and version label [%s] in %s",
+              templateIdentifier, versionLabel, scope));
     }
   }
 
@@ -1432,7 +1436,7 @@ public class NGTemplateServiceImpl implements NGTemplateService {
                                     .and(TemplateEntityKeys.identifier)
                                     .is(templateIdentifier)
                                     .and(TemplateEntityKeys.versionLabel)
-                                    .in(versionLabel)
+                                    .is(versionLabel)
                                     .and(TemplateEntityKeys.deleted)
                                     .is(false);
 
@@ -1469,7 +1473,7 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
   private TemplateEntity updateTemplateConfig(String accountId, String orgIdentifier, String projectIdentifier,
       Criteria templateCriteria, Update templateUpdate) {
-    return templateRepository.update(accountId, orgIdentifier, projectIdentifier, templateCriteria, templateUpdate);
+    return templateRepository.updateV2(accountId, orgIdentifier, projectIdentifier, templateCriteria, templateUpdate);
   }
 
   private ScmCreateFileGitResponse createRemoteEntity(TemplateEntity templateEntityToMove) {
