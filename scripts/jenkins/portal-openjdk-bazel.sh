@@ -252,14 +252,14 @@ cd ../..
 mkdir -p dist/template-service
 cd dist/template-service
 
-cp ${HOME}/.bazel-dirs/bin/template-service/module_deploy.jar template-service-capsule.jar
-cp ../../template-service/config.yml .
-cp ../../template-service/keystore.jks .
-cp ../../template-service/key.pem .
-cp ../../template-service/cert.pem .
-cp ../../template-service/src/main/resources/redisson-jcache.yaml .
-cp ../../template-service/src/main/resources/jfr/default.jfc .
-cp ../../template-service/src/main/resources/jfr/profile.jfc .
+cp ${HOME}/.bazel-dirs/bin/template-service/service/module_deploy.jar template-service-capsule.jar
+cp ../../template-service/config/config.yml .
+cp ../../template-service/config/keystore.jks .
+cp ../../template-service/config/key.pem .
+cp ../../template-service/config/cert.pem .
+cp ../../template-service/service/src/main/resources/redisson-jcache.yaml .
+cp ../../template-service/service/src/main/resources/jfr/default.jfc .
+cp ../../template-service/service/src/main/resources/jfr/profile.jfc .
 
 cp ../../dockerization/template-service/Dockerfile-template-service-cie-jdk ./Dockerfile-cie-jdk
 cp ../../dockerization/base-images/apm/inject-onprem-apm-bins-into-dockerimage.sh .

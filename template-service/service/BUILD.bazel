@@ -93,7 +93,7 @@ java_binary(
     data = ["//:resource"],
     main_class = "io.harness.TemplateServiceApplication",
     resources = [
-        "//template-service/src/main/resources:resource",
+        "//template-service/service/src/main/resources:resource",
     ],
     visibility = ["//visibility:public"],
     runtime_deps = [
@@ -106,8 +106,8 @@ java_library(
     name = "tests",
     testonly = True,
     srcs = glob(["src/test/**/*.java"]),
-    resources = ["//template-service/src/test/resources:resource"],
-    visibility = ["//visibility:public"],
+    resources = ["//template-service/service/src/test/resources:resource"],
+    visibility = ["//template-service-service/build:__subpackages__"],
     deps = shared_dependencies + [
         ":module",
         "//960-persistence:supporter-test",
@@ -126,8 +126,3 @@ java_library(
 run_tests()
 
 run_analysis()
-
-exports_files([
-    "config.yml",
-    "keystore.jks",
-])
