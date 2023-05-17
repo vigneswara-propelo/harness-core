@@ -2217,8 +2217,7 @@
     "CodeBase": {
       "type": "object",
       "required": [
-        "build",
-        "connectorRef"
+        "build"
       ],
       "properties": {
         "build": {
