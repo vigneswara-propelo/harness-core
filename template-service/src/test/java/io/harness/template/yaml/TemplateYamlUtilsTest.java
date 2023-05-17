@@ -17,6 +17,7 @@ import io.harness.rule.OwnerRule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,9 +33,19 @@ public class TemplateYamlUtilsTest extends CategoryTest {
         .isEqualTo("k: 42\n");
     assertThat(TemplateYamlUtils.writeString(Map.of("k", new TextNode("42"))).replaceFirst("---\n", ""))
         .isEqualTo("k: \"42\"\n");
+    Map map = new LinkedHashMap<String, Object>();
+    map.put("k1", "abc");
+    map.put("k2", new TextNode("42e4"));
+    assertThat(TemplateYamlUtils.writeString(map).replaceFirst("---\n", "")).isEqualTo("k1: abc\nk2: \"42e4\"\n");
     assertThat(TemplateYamlUtils.writeString(Map.of("k", "true")).replaceFirst("---\n", "")).isEqualTo("k: \"true\"\n");
     assertThat(TemplateYamlUtils.writeString(Map.of("k", "Some \n Name")).replaceFirst("---\n", ""))
         .isEqualTo("k: \"Some \\n Name\"\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("abc"))).replaceFirst("---\n", ""))
+        .isEqualTo("k: abc\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+1234")))).isEqualTo("k: \"+1234\"\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+1234.12")))).isEqualTo("k: \"+1234.12\"\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+1234.")))).isEqualTo("k: \"+1234.\"\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+.12")))).isEqualTo("k: \"+.12\"\n");
   }
 
   @Test
@@ -48,6 +59,10 @@ public class TemplateYamlUtilsTest extends CategoryTest {
     assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new IntNode(42)))).isEqualTo("k: 42\n");
     // should not remove quotes from a text node containing an int
     assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("42")))).isEqualTo("k: \"42\"\n");
+    Map map = new LinkedHashMap<String, Object>();
+    map.put("k1", "abc");
+    map.put("k2", new TextNode("42e4"));
+    assertThat(TemplateYamlUtils.writeYamlString(map)).isEqualTo("k1: abc\nk2: \"42e4\"\n");
     // should quote a boolean
     assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", "true"))).isEqualTo("k: \"true\"\n");
     assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", "Some \n Name"))).isEqualTo("k: \"Some \\n Name\"\n");
@@ -59,5 +74,10 @@ public class TemplateYamlUtilsTest extends CategoryTest {
             + "  abc\n"
             + "  foo\n"
             + "  bar\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("abc")))).isEqualTo("k: abc\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+1234")))).isEqualTo("k: \"+1234\"\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+1234.12")))).isEqualTo("k: \"+1234.12\"\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+1234.")))).isEqualTo("k: \"+1234.\"\n");
+    assertThat(TemplateYamlUtils.writeYamlString(Map.of("k", new TextNode("+.12")))).isEqualTo("k: \"+.12\"\n");
   }
 }
