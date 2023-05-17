@@ -2034,6 +2034,16 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = KARAN_SARASWAT)
   @Category(UnitTests.class)
   public void testGetSecondaryEventDetails_Success() {
+    serviceLevelObjectiveV2DTO =
+        builderFactory.getSimpleCalendarServiceLevelObjectiveV2DTOBuilder().identifier("slo").build();
+    simpleServiceLevelObjectiveSpec = (SimpleServiceLevelObjectiveSpec) serviceLevelObjectiveV2DTO.getSpec();
+    simpleServiceLevelObjectiveSpec.setMonitoredServiceRef(monitoredServiceIdentifier);
+    simpleServiceLevelObjectiveSpec.setHealthSourceRef(healthSource.getIdentifier());
+    serviceLevelObjectiveV2DTO.setSpec(simpleServiceLevelObjectiveSpec);
+    serviceLevelObjectiveV2Service.create(builderFactory.getProjectParams(), serviceLevelObjectiveV2DTO);
+    serviceLevelObjective = serviceLevelObjectiveV2Service.getEntity(
+        builderFactory.getProjectParams(), serviceLevelObjectiveV2DTO.getIdentifier());
+
     ServiceLevelIndicator serviceLevelIndicator =
         serviceLevelIndicatorService.getServiceLevelIndicator(builderFactory.getProjectParams(),
             simpleServiceLevelObjectiveSpec.getServiceLevelIndicators().get(0).getIdentifier());
@@ -2051,6 +2061,7 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
     downtimeService.create(builderFactory.getProjectParams(), downtimeDTO);
 
     AnnotationDTO annotationDTO = builderFactory.getAnnotationDTO();
+    annotationDTO.setSloIdentifier("slo");
     annotationService.create(builderFactory.getProjectParams(), annotationDTO);
     annotationDTO.setMessage("new one");
     annotationService.create(builderFactory.getProjectParams(), annotationDTO);
