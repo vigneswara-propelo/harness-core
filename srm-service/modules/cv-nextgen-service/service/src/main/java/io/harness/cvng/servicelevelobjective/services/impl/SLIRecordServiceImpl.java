@@ -19,14 +19,15 @@ import io.harness.cvng.servicelevelobjective.entities.CompositeServiceLevelObjec
 import io.harness.cvng.servicelevelobjective.entities.CompositeServiceLevelObjective.ServiceLevelObjectivesDetail;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIRecordKeys;
-import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIRecordParam;
+import io.harness.cvng.servicelevelobjective.entities.SLIRecordParam;
+import io.harness.cvng.servicelevelobjective.entities.SLIState;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.SimpleServiceLevelObjective;
+import io.harness.cvng.servicelevelobjective.services.api.SLIRecordBucketService;
 import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveV2Service;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.mongodb.ReadPreference;
@@ -48,13 +49,14 @@ import org.apache.commons.math3.util.Pair;
 
 @Slf4j
 public class SLIRecordServiceImpl implements SLIRecordService {
-  @VisibleForTesting static int MAX_NUMBER_OF_POINTS = 2000;
   private static final int RETRY_COUNT = 3;
 
   @Inject private SRMPersistence hPersistence;
   @Inject private ServiceLevelObjectiveV2Service serviceLevelObjectiveV2Service;
 
   @Inject private ServiceLevelIndicatorService serviceLevelIndicatorService;
+
+  @Inject private SLIRecordBucketService sliRecordBucketService;
 
   @Override
   public void create(List<SLIRecordParam> sliRecordParamList, String sliId, String verificationTaskId, int sliVersion) {
@@ -80,6 +82,12 @@ public class SLIRecordServiceImpl implements SLIRecordService {
     } else {
       createSLIRecords(
           sliRecordParamList, sliId, verificationTaskId, sliVersion, runningGoodCount, runningBadCount, sliRecordList);
+    }
+
+    try {
+      sliRecordBucketService.create(sliRecordParamList, sliId, sliVersion);
+    } catch (Exception exception) {
+      log.error("[SLI Record Bucketing Error]", exception);
     }
   }
 
@@ -262,7 +270,7 @@ public class SLIRecordServiceImpl implements SLIRecordService {
       SLIRecord sliRecord = getLastSLIRecord(sliId, startTime);
       if (Objects.isNull(sliRecord)) {
         sliRecord = SLIRecord.builder()
-                        .sliState(SLIRecord.SLIState.GOOD)
+                        .sliState(SLIState.GOOD)
                         .runningBadCount(0)
                         .runningGoodCount(0)
                         .sliVersion(sliVersion)

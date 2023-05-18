@@ -9,9 +9,9 @@ package io.harness.cvng.servicelevelobjective.services.impl;
 
 import static io.harness.cvng.CVNGTestConstants.TIME_FOR_TESTS;
 import static io.harness.cvng.downtime.utils.DateTimeUtils.dtf;
-import static io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIState.BAD;
-import static io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIState.GOOD;
-import static io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIState.NO_DATA;
+import static io.harness.cvng.servicelevelobjective.entities.SLIState.BAD;
+import static io.harness.cvng.servicelevelobjective.entities.SLIState.GOOD;
+import static io.harness.cvng.servicelevelobjective.entities.SLIState.NO_DATA;
 import static io.harness.rule.OwnerRule.ABHIJITH;
 import static io.harness.rule.OwnerRule.ARPITJ;
 import static io.harness.rule.OwnerRule.KAMAL;
@@ -84,7 +84,8 @@ import io.harness.cvng.servicelevelobjective.entities.Annotation;
 import io.harness.cvng.servicelevelobjective.entities.CompositeSLORecord;
 import io.harness.cvng.servicelevelobjective.entities.CompositeServiceLevelObjective;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
-import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIRecordParam;
+import io.harness.cvng.servicelevelobjective.entities.SLIRecordParam;
+import io.harness.cvng.servicelevelobjective.entities.SLIState;
 import io.harness.cvng.servicelevelobjective.entities.SLOErrorBudgetReset;
 import io.harness.cvng.servicelevelobjective.entities.SLOErrorBudgetReset.SLOErrorBudgetResetKeys;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
@@ -538,12 +539,10 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
                         .getServiceLevelIndicator(builderFactory.getProjectParams(),
                             simpleServiceLevelObjective2.getServiceLevelIndicators().get(0))
                         .getUuid();
-    List<SLIRecord.SLIState> sliStateList1 =
-        Arrays.asList(SLIRecord.SLIState.BAD, SLIRecord.SLIState.BAD, SLIRecord.SLIState.GOOD);
+    List<SLIState> sliStateList1 = Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD);
     List<Long> goodCounts1 = Arrays.asList(100L, 200l, 0L);
     List<Long> badCounts1 = Arrays.asList(10L, 20L, 0L);
-    List<SLIRecord.SLIState> sliStateList2 =
-        Arrays.asList(SLIRecord.SLIState.GOOD, SLIRecord.SLIState.GOOD, SLIRecord.SLIState.GOOD);
+    List<SLIState> sliStateList2 = Arrays.asList(SLIState.GOOD, SLIState.GOOD, SLIState.GOOD);
     List<Long> goodCounts2 = Arrays.asList(100L, 200L, 300L);
     List<Long> badCounts2 = Arrays.asList(0L, 0L, 10L);
 
@@ -2145,22 +2144,22 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
         .hasMessage("All the messages should be of the same thread");
   }
 
-  private void createData(Instant startTime, List<SLIRecord.SLIState> sliStates, String sliId) {
+  private void createData(Instant startTime, List<SLIState> sliStates, String sliId) {
     List<SLIRecordParam> sliRecordParams = getSLIRecordParam(startTime, sliStates);
     sliRecordService.create(sliRecordParams, sliId, sliId, 0);
   }
 
-  private void createData(Instant startTime, List<SLIRecord.SLIState> sliStates, List<Long> goodCounts,
-      List<Long> badCounts, String sliId) {
+  private void createData(
+      Instant startTime, List<SLIState> sliStates, List<Long> goodCounts, List<Long> badCounts, String sliId) {
     List<SLIRecordParam> sliRecordParams = getSLIRecordParam(startTime, sliStates, goodCounts, badCounts);
     sliRecordService.create(sliRecordParams, sliId, sliId, 0);
   }
 
   private List<SLIRecordParam> getSLIRecordParam(
-      Instant startTime, List<SLIRecord.SLIState> sliStates, List<Long> goodCounts, List<Long> badCounts) {
+      Instant startTime, List<SLIState> sliStates, List<Long> goodCounts, List<Long> badCounts) {
     List<SLIRecordParam> sliRecordParams = new ArrayList<>();
     for (int i = 0; i < sliStates.size(); i++) {
-      SLIRecord.SLIState sliState = sliStates.get(i);
+      SLIState sliState = sliStates.get(i);
       long goodCount = goodCounts.get(i);
       long badCount = badCounts.get(i);
       sliRecordParams.add(SLIRecordParam.builder()
@@ -2224,8 +2223,8 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
     return sloRecords;
   }
 
-  private List<SLIRecord> createSLIRecords(Instant start, Instant end, String sliId, List<SLIRecord.SLIState> states,
-      List<Long> goodCounts, List<Long> badCounts) {
+  private List<SLIRecord> createSLIRecords(
+      Instant start, Instant end, String sliId, List<SLIState> states, List<Long> goodCounts, List<Long> badCounts) {
     int index = 0;
     List<SLIRecord> sliRecords = new ArrayList<>();
     long runningGoodCount = 0;
@@ -2249,10 +2248,10 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
     return sliRecords;
   }
 
-  private List<SLIRecordParam> getSLIRecordParam(Instant startTime, List<SLIRecord.SLIState> sliStates) {
+  private List<SLIRecordParam> getSLIRecordParam(Instant startTime, List<SLIState> sliStates) {
     List<SLIRecordParam> sliRecordParams = new ArrayList<>();
     for (int i = 0; i < sliStates.size(); i++) {
-      SLIRecord.SLIState sliState = sliStates.get(i);
+      SLIState sliState = sliStates.get(i);
       long goodCount = 0;
       long badCount = 0;
       if (sliState == GOOD) {

@@ -13,8 +13,8 @@ import io.harness.cvng.downtime.beans.EntityUnavailabilityStatus;
 import io.harness.cvng.downtime.beans.EntityUnavailabilityStatusesDTO;
 import io.harness.cvng.downtime.services.api.DowntimeService;
 import io.harness.cvng.downtime.services.api.EntityUnavailabilityStatusesService;
-import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
-import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIRecordParam;
+import io.harness.cvng.servicelevelobjective.entities.SLIRecordParam;
+import io.harness.cvng.servicelevelobjective.entities.SLIState;
 import io.harness.cvng.servicelevelobjective.services.api.SLIDataUnavailabilityInstancesHandlerService;
 
 import com.google.inject.Inject;
@@ -67,7 +67,7 @@ public class SLIDataUnavailabilityInstancesHandlerServiceImpl implements SLIData
     List<SLIRecordParam> updatedRecords = new ArrayList<>();
     for (SLIRecordParam sliRecord : sliRecordList) {
       if (failureInstants.contains(sliRecord.getTimeStamp())) {
-        sliRecord.setSliState(SLIRecord.SLIState.SKIP_DATA);
+        sliRecord.setSliState(SLIState.SKIP_DATA);
         sliRecord.setBadEventCount(0l);
         sliRecord.setGoodEventCount(0l);
       }

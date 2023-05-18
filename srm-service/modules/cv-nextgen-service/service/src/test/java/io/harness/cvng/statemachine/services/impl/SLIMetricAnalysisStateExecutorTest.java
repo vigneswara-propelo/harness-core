@@ -47,6 +47,7 @@ import io.harness.cvng.servicelevelobjective.beans.slospec.SimpleServiceLevelObj
 import io.harness.cvng.servicelevelobjective.beans.slotargetspec.WindowBasedServiceLevelIndicatorSpec;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIRecordKeys;
+import io.harness.cvng.servicelevelobjective.entities.SLIState;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.services.api.SLIConsecutiveMinutesProcessorService;
@@ -208,7 +209,7 @@ public class SLIMetricAnalysisStateExecutorTest extends CvNextGenTestBase {
                                         .asList();
     assertThat(sliMetricAnalysisState.getStatus().name()).isEqualTo(AnalysisStatus.SUCCESS.name());
     assertThat(sliRecordList.size()).isEqualTo(5);
-    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIRecord.SLIState.BAD);
+    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIState.BAD);
     assertThat(sliRecordList.get(4).getRunningGoodCount()).isEqualTo(5);
     assertThat(sliRecordList.get(4).getRunningBadCount()).isEqualTo(0);
   }
@@ -228,7 +229,7 @@ public class SLIMetricAnalysisStateExecutorTest extends CvNextGenTestBase {
                                         .asList();
     assertThat(sliMetricAnalysisState.getStatus().name()).isEqualTo(AnalysisStatus.SUCCESS.name());
     assertThat(sliRecordList.size()).isEqualTo(5);
-    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIRecord.SLIState.NO_DATA);
+    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIState.NO_DATA);
     SLOHealthIndicator sloHealthIndicator = sloHealthIndicatorService.getBySLOIdentifier(
         builderFactory.getProjectParams(), serviceLevelObjective.getIdentifier());
     assertThat(sloHealthIndicator.getErrorBudgetRemainingPercentage()).isEqualTo(100);
@@ -267,7 +268,7 @@ public class SLIMetricAnalysisStateExecutorTest extends CvNextGenTestBase {
                                         .asList();
     assertThat(sliMetricAnalysisState.getStatus().name()).isEqualTo(AnalysisStatus.SUCCESS.name());
     assertThat(sliRecordList.size()).isEqualTo(5);
-    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIRecord.SLIState.SKIP_DATA);
+    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIState.SKIP_DATA);
     SLOHealthIndicator sloHealthIndicator = sloHealthIndicatorService.getBySLOIdentifier(
         builderFactory.getProjectParams(), serviceLevelObjective.getIdentifier());
     assertThat(sloHealthIndicator.getErrorBudgetRemainingPercentage()).isEqualTo(100);
@@ -308,7 +309,7 @@ public class SLIMetricAnalysisStateExecutorTest extends CvNextGenTestBase {
                                         .asList();
     assertThat(sliMetricAnalysisState.getStatus().name()).isEqualTo(AnalysisStatus.SUCCESS.name());
     assertThat(sliRecordList.size()).isEqualTo(5);
-    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIRecord.SLIState.SKIP_DATA);
+    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIState.SKIP_DATA);
     SLOHealthIndicator sloHealthIndicator = sloHealthIndicatorService.getBySLOIdentifier(
         builderFactory.getProjectParams(), serviceLevelObjective.getIdentifier());
     assertThat(sloHealthIndicator.getErrorBudgetRemainingPercentage()).isEqualTo(100);
@@ -343,7 +344,7 @@ public class SLIMetricAnalysisStateExecutorTest extends CvNextGenTestBase {
                                         .lessThan(endTime)
                                         .asList();
     assertThat(sliMetricAnalysisState.getStatus().name()).isEqualTo(AnalysisStatus.SUCCESS.name());
-    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIRecord.SLIState.BAD);
+    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIState.BAD);
     assertThat(sliRecordList.size()).isEqualTo(5);
     SLOHealthIndicator sloHealthIndicator = sloHealthIndicatorService.getBySLOIdentifier(
         builderFactory.getProjectParams(), serviceLevelObjective.getIdentifier());
@@ -385,7 +386,7 @@ public class SLIMetricAnalysisStateExecutorTest extends CvNextGenTestBase {
                                         .asList();
     assertThat(sliMetricAnalysisState.getStatus().name()).isEqualTo(AnalysisStatus.SUCCESS.name());
     assertThat(sliRecordList.size()).isEqualTo(5);
-    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIRecord.SLIState.SKIP_DATA);
+    assertThat(sliRecordList.get(0).getSliState()).isEqualTo(SLIState.SKIP_DATA);
     SLOHealthIndicator sloHealthIndicator = sloHealthIndicatorService.getBySLOIdentifier(
         builderFactory.getProjectParams(), serviceLevelObjective.getIdentifier());
     assertThat(sloHealthIndicator.getErrorBudgetRemainingPercentage()).isEqualTo(100);
