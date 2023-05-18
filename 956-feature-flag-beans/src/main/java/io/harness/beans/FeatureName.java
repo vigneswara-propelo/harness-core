@@ -23,6 +23,9 @@ import lombok.Getter;
 @OwnedBy(HarnessTeam.PL)
 public enum FeatureName {
   SPG_UI_ALLOW_ENCODING_FOR_JENKINS_ARTIFACT("Enables correct encoding for jenkins artifact", HarnessTeam.SPG),
+  SPG_CG_SEGMENT_EVENT_FIRST_DEPLOYMENT(
+      "Disable evaluation of first deployment condition to avoid unoptimized query execution on each completed deployment",
+      HarnessTeam.SPG),
   SPG_CG_LIST_RESUMED_PIPELINES(
       "Allows resumed workflow/pipelines to be listed on the deployment history page", HarnessTeam.SPG),
   SPG_CG_STATS_INSTANCE_CONSUMER("Optimize stats collector for instance collection", HarnessTeam.SPG),
