@@ -28,9 +28,6 @@ public interface SLIRecordService {
       Instant startTime, Instant endTime);
   List<SLIRecord> getSLIRecordsOfMinutes(String sliId, List<Instant> minutes);
 
-  Map<String, SLIRecord> getLastCompositeSLOsSLIRecord(
-      List<CompositeServiceLevelObjective.ServiceLevelObjectivesDetail> serviceLevelObjectivesDetailList,
-      Instant startTime);
   List<SLIRecord> getLatestCountSLIRecords(String sliId, int count);
   List<SLIRecord> getSLIRecords(String sliId, Instant startTime, Instant endTime);
   List<SLIRecord> getSLIRecordsWithSLIVersion(String sliId, Instant startTime, Instant endTime, int sliVersion);

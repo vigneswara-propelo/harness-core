@@ -44,7 +44,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
@@ -125,16 +124,7 @@ public class GraphDataServiceImpl implements GraphDataService {
       CompositeSLORecord lastCompositeSLORecord =
           compositeSLORecordService.getLastCompositeSLORecord(compositeServiceLevelObjective.getUuid(), startTime);
       if (Objects.isNull(lastCompositeSLORecord)) {
-        Map<String, SLIRecord> scopedIdentifierSLIRecordMap = sliRecordService.getLastCompositeSLOsSLIRecord(
-            compositeServiceLevelObjective.getServiceLevelObjectivesDetails(), startTime);
-        lastCompositeSLORecord = CompositeSLORecord.builder()
-                                     .runningGoodCount(0)
-                                     .runningBadCount(0)
-                                     .sloId(compositeServiceLevelObjective.getUuid())
-                                     .scopedIdentifierSLIRecordMap(scopedIdentifierSLIRecordMap)
-                                     .timestamp(startTime.minus(Duration.ofMinutes(1)))
-                                     .sloVersion(compositeServiceLevelObjective.getVersion())
-                                     .build();
+        lastCompositeSLORecord = sloRecords.get(0);
       }
       prevRecordGoodCount = lastCompositeSLORecord.getRunningGoodCount();
       prevRecordBadCount = lastCompositeSLORecord.getRunningBadCount();

@@ -348,7 +348,7 @@ public class CompositeSLOMetricAnalysisStateExecutorTest extends CvNextGenTestBa
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.GOOD, SLIState.GOOD, SLIState.BAD, SLIState.NO_DATA, SLIState.BAD);
     List<SLIState> sliStateList2 =
-        Arrays.asList(SLIState.BAD, SLIState.GOOD, SLIState.NO_DATA, SLIState.BAD, SLIState.GOOD);
+        Arrays.asList(SLIState.GOOD, SLIState.BAD, SLIState.NO_DATA, SLIState.BAD, SLIState.GOOD);
     int index = 0;
     for (Instant instant = startTime; instant.isBefore(endTime); instant = instant.plus(1, ChronoUnit.MINUTES)) {
       SLIRecord sliRecord1 = SLIRecord.builder()
