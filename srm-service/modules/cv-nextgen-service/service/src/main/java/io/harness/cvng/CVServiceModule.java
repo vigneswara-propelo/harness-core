@@ -794,7 +794,7 @@ public class CVServiceModule extends AbstractModule {
     bind(DeeplinkURLService.class).to(DeeplinkURLServiceImpl.class);
     bind(RedisConfig.class)
         .annotatedWith(Names.named("lock"))
-        .toInstance(verificationConfiguration.getEventsFrameworkConfiguration().getRedisConfig());
+        .toInstance(verificationConfiguration.getRedisLockConfig());
     bind(ConsumerMessageProcessor.class)
         .annotatedWith(Names.named(EventsFrameworkMetadataConstants.PROJECT_ENTITY))
         .to(ProjectChangeEventMessageProcessor.class);
