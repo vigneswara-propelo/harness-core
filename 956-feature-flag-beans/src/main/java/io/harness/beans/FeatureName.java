@@ -416,6 +416,7 @@ public enum FeatureName {
   ENABLE_CHECK_STATE_EXECUTION_STARTING(
       "Used to allow create retry state execution when event is status equals to STARTING", HarnessTeam.SPG),
   CI_TI_DASHBOARDS_ENABLED,
+  CDB_MFE_ENABLED("Feature flag is needed to test/control the microfrontend architecture for CDB UI", HarnessTeam.CDB),
   SERVICE_ID_FILTER_FOR_TRIGGERS(
       "Filter last deployed artifacts for triggers using serviceId as well", HarnessTeam.SPG),
   PERSIST_MONITORED_SERVICE_TEMPLATE_STEP(
