@@ -1183,7 +1183,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Canary Deploy")
             .setType(StepSpecTypeConstants.ASG_CANARY_DEPLOY)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
-            .setFeatureFlag(FeatureName.CDS_ASG_NG.name())
             .build();
 
     StepInfo asgCanaryDelete =
@@ -1191,7 +1190,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Canary Delete")
             .setType(StepSpecTypeConstants.ASG_CANARY_DELETE)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
-            .setFeatureFlag(FeatureName.CDS_ASG_NG.name())
             .build();
 
     StepInfo tasCanaryAppSetup =
@@ -1254,7 +1252,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Rolling Deploy")
             .setType(StepSpecTypeConstants.ASG_ROLLING_DEPLOY)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
-            .setFeatureFlag(FeatureName.CDS_ASG_NG.name())
             .build();
 
     StepInfo asgRollingRollback =
@@ -1262,7 +1259,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Rolling Rollback")
             .setType(StepSpecTypeConstants.ASG_ROLLING_ROLLBACK)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
-            .setFeatureFlag(FeatureName.CDS_ASG_NG.name())
             .build();
 
     StepInfo asgBlueGreenDeploy =
@@ -1270,7 +1266,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Blue Green Deploy")
             .setType(StepSpecTypeConstants.ASG_BLUE_GREEN_DEPLOY)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
-            .setFeatureFlag(FeatureName.CDS_ASG_NG.name())
             .build();
 
     StepInfo asgBlueGreenRollback =
@@ -1278,7 +1273,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Blue Green Rollback")
             .setType(StepSpecTypeConstants.ASG_BLUE_GREEN_ROLLBACK)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
-            .setFeatureFlag(FeatureName.CDS_ASG_NG.name())
             .build();
 
     StepInfo tasRollingDeploy =
@@ -1314,7 +1308,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Blue Green Swap Service")
             .setType(StepSpecTypeConstants.ASG_BLUE_GREEN_SWAP_SERVICE)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
-            .setFeatureFlag(FeatureName.CDS_ASG_NG.name())
             .build();
 
     StepInfo tasRouteMapping =
