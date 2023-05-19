@@ -20,8 +20,8 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@EqualsAndHashCode(callSuper = true)
 @Builder
+@EqualsAndHashCode(callSuper = true)
 @OwnedBy(HarnessTeam.CDP)
 public class K8sDeploymentReleaseDetails extends DeploymentDetails {
   String releaseName;
