@@ -89,7 +89,7 @@ if [[ "" != "$NG_HARNESS_MONGO_URI" ]]; then
 fi
 
 if [[ "" != "$CVNG_MONGO_URI" ]]; then
-  export $CVNG_MONGO_URI; yq -i '.cvng.uri=env($CVNG_MONGO_URI)' $CONFIG_FILE
+  export CVNG_MONGO_URI; yq -i '.cvng.uri=env(CVNG_MONGO_URI)' $CONFIG_FILE
 fi
 
 replace_key_value cfClientConfig.apiKey "$CF_CLIENT_API_KEY"
