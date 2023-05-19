@@ -765,7 +765,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     assertThat(result2).isEqualTo("");
     ArgumentCaptor<VersionCommand> captor = ArgumentCaptor.forClass(VersionCommand.class);
     verify(spyK8sTaskHelperBase, times(1)).runK8sExecutableSilent(any(), captor.capture());
-    assertThat(captor.getValue().command()).isEqualTo("kubectl --kubeconfig=config-path version --output=json");
+    assertThat(captor.getValue().command()).isEqualTo("kubectl --kubeconfig=config-path version --output=json ");
   }
 
   @Test
@@ -792,7 +792,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
         "{\"clientVersion\":{\"gitVersion\":\"v1.19.2\"},\"serverVersion\":{\"gitVersion\":\"v1.23.14-gke.1800\"}}");
     ArgumentCaptor<VersionCommand> captor = ArgumentCaptor.forClass(VersionCommand.class);
     verify(spyK8sTaskHelperBase, times(1)).runK8sExecutableSilent(any(), captor.capture());
-    assertThat(captor.getValue().command()).isEqualTo("kubectl --kubeconfig=config-path version --output=json");
+    assertThat(captor.getValue().command()).isEqualTo("kubectl --kubeconfig=config-path version --output=json ");
   }
 
   @Test
