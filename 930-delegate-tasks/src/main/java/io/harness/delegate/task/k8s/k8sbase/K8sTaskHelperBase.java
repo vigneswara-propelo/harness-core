@@ -161,6 +161,7 @@ import io.harness.k8s.model.IstioDestinationWeight;
 import io.harness.k8s.model.K8sContainer;
 import io.harness.k8s.model.K8sDelegateTaskParams;
 import io.harness.k8s.model.K8sPod;
+import io.harness.k8s.model.K8sRequestHandlerContext;
 import io.harness.k8s.model.K8sSteadyStateDTO;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
@@ -3163,9 +3164,9 @@ public class K8sTaskHelperBase {
     return arrangeResourceIdsInDeletionOrder(resourceIdsToBeDeleted);
   }
 
-  public void addRevisionNumber(List<KubernetesResource> resources, int revision) {
+  public void addRevisionNumber(K8sRequestHandlerContext context, int revision) {
     try {
-      VersionUtils.addRevisionNumber(resources, revision);
+      VersionUtils.addRevisionNumber(context, revision);
     } catch (KubernetesYamlException exception) {
       throw NestedExceptionUtils.hintWithExplanationException(
           INVALID_RESOURCE_SPEC_HINT, INVALID_RESOURCE_SPEC_EXPLANATION, exception);
@@ -3173,9 +3174,9 @@ public class K8sTaskHelperBase {
   }
 
   public void addSuffixToConfigmapsAndSecrets(
-      List<KubernetesResource> resources, String suffix, LogCallback executionLogCallback) {
+      K8sRequestHandlerContext context, String suffix, LogCallback executionLogCallback) {
     try {
-      VersionUtils.addSuffixToConfigmapsAndSecrets(resources, suffix, executionLogCallback);
+      VersionUtils.addSuffixToConfigmapsAndSecrets(context, suffix, executionLogCallback);
     } catch (KubernetesYamlException exception) {
       throw NestedExceptionUtils.hintWithExplanationException(
           INVALID_RESOURCE_SPEC_HINT, INVALID_RESOURCE_SPEC_EXPLANATION, exception);

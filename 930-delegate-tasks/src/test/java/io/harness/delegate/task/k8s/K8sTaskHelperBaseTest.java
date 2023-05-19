@@ -179,6 +179,7 @@ import io.harness.k8s.model.IstioDestinationWeight;
 import io.harness.k8s.model.K8sContainer;
 import io.harness.k8s.model.K8sDelegateTaskParams;
 import io.harness.k8s.model.K8sPod;
+import io.harness.k8s.model.K8sRequestHandlerContext;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
@@ -3833,10 +3834,12 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testAddingRevisionNumberWithException() {
     KubernetesResource resource = mock(KubernetesResource.class);
-    when(resource.transformName(any(UnaryOperator.class))).thenThrow(new KubernetesYamlException(DEFAULT));
+    K8sRequestHandlerContext context = new K8sRequestHandlerContext();
+    context.setResources(Collections.singletonList(resource));
+    when(resource.transformName(any(UnaryOperator.class), any())).thenThrow(new KubernetesYamlException(DEFAULT));
     when(resource.getResourceId()).thenReturn(KubernetesResourceId.builder().kind(Secret.name()).build());
     when(resource.getMetadataAnnotationValue(anyString())).thenReturn(DEFAULT);
-    assertThatThrownBy(() -> k8sTaskHelperBase.addRevisionNumber(Collections.singletonList(resource), 1))
+    assertThatThrownBy(() -> k8sTaskHelperBase.addRevisionNumber(context, 1))
         .isInstanceOf(HintException.class)
         .getCause()
         .isInstanceOf(ExplanationException.class)
