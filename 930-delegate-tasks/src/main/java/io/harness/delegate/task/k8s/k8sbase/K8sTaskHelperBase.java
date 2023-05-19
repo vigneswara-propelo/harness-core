@@ -966,7 +966,6 @@ public class K8sTaskHelperBase {
     ProcessResponse response = runK8sExecutable(k8sDelegateTaskParams, executionLogCallback, scaleCommand);
     ProcessResult result = response.getProcessResult();
     if (result.getExitValue() == 0) {
-      executionLogCallback.saveExecutionLog("\nDone.", INFO, SUCCESS);
       return true;
     } else {
       logExecutableFailed(result, executionLogCallback);
@@ -1059,6 +1058,26 @@ public class K8sTaskHelperBase {
     DeleteCommand deleteCommand =
         client.delete().resources(resourceId.kindNameRef()).namespace(resourceId.getNamespace());
     return runK8sExecutable(k8sDelegateTaskParams, executionLogCallback, deleteCommand).getProcessResult();
+  }
+
+  public boolean checkIfResourceExists(Kubectl client, K8sDelegateTaskParams k8sDelegateTaskParams,
+      KubernetesResourceId kubernetesResourceId, LogCallback executionLogCallback) {
+    try {
+      ProcessResult result =
+          executeGetWorkloadCommand(client, k8sDelegateTaskParams, executionLogCallback, kubernetesResourceId);
+      if (result.getExitValue() == 0) {
+        return true;
+      }
+    } catch (Exception ex) {
+      log.warn("Resource {} not found in cluster. Error {}", kubernetesResourceId.kindNameRef(), ex);
+    }
+    return false;
+  }
+
+  private ProcessResult executeGetWorkloadCommand(Kubectl client, K8sDelegateTaskParams k8sDelegateTaskParams,
+      LogCallback executionLogCallback, KubernetesResourceId resourceId) throws Exception {
+    GetCommand getCommand = client.get().resources(resourceId.kindNameRef()).namespace(resourceId.getNamespace());
+    return runK8sExecutable(k8sDelegateTaskParams, executionLogCallback, getCommand).getProcessResult();
   }
 
   public void describe(Kubectl client, K8sDelegateTaskParams k8sDelegateTaskParams, LogCallback executionLogCallback)
@@ -1687,10 +1706,13 @@ public class K8sTaskHelperBase {
   }
 
   public String getResourcesInTableFormat(List<KubernetesResource> resources) {
+    return getResourcesIdsInTableFormat(resources.stream().map(KubernetesResource::getResourceId).collect(toList()));
+  }
+
+  public String getResourcesIdsInTableFormat(List<KubernetesResourceId> resourceIds) {
     int maxKindLength = 16;
     int maxNameLength = 36;
-    for (KubernetesResource resource : resources) {
-      KubernetesResourceId id = resource.getResourceId();
+    for (KubernetesResourceId id : resourceIds) {
       if (id.getKind().length() > maxKindLength) {
         maxKindLength = id.getKind().length();
       }
@@ -1709,8 +1731,7 @@ public class K8sTaskHelperBase {
         .append(color(format(tableFormat, "Kind", "Name", "Versioned"), White, Bold))
         .append(System.lineSeparator());
 
-    for (KubernetesResource resource : resources) {
-      KubernetesResourceId id = resource.getResourceId();
+    for (KubernetesResourceId id : resourceIds) {
       sb.append(color(format(tableFormat, id.getKind(), id.getName(), id.isVersioned()), Gray))
           .append(System.lineSeparator());
     }

@@ -1119,6 +1119,41 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testValidateExistingResourceIdsFailure() throws Exception {
+    Kubectl kubectl = Kubectl.client("kubectl", "config-path");
+    ProcessResponse response =
+        ProcessResponse.builder().processResult(new ProcessResult(1, new ProcessOutput("failure".getBytes()))).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    final boolean success = spyK8sTaskHelperBase.checkIfResourceExists(kubectl, K8sDelegateTaskParams.builder().build(),
+        KubernetesResourceId.builder().name("nginx").kind("Deployment").namespace("default").build(),
+        executionLogCallback);
+    assertThat(success).isFalse();
+    ArgumentCaptor<GetCommand> captor = ArgumentCaptor.forClass(GetCommand.class);
+    verify(spyK8sTaskHelperBase, times(1)).runK8sExecutable(any(), any(), captor.capture());
+    assertThat(captor.getValue().command())
+        .isEqualTo("kubectl --kubeconfig=config-path get Deployment/nginx --namespace=default");
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testValidateExistingResourceIdsSuccess() throws Exception {
+    Kubectl kubectl = Kubectl.client("kubectl", "config-path");
+    ProcessResponse response = ProcessResponse.builder().processResult(new ProcessResult(0, null)).build();
+    doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
+    final boolean success = spyK8sTaskHelperBase.checkIfResourceExists(kubectl, K8sDelegateTaskParams.builder().build(),
+        KubernetesResourceId.builder().name("nginx").kind("Deployment").namespace("default").build(),
+        executionLogCallback);
+    assertThat(success).isTrue();
+    ArgumentCaptor<GetCommand> captor = ArgumentCaptor.forClass(GetCommand.class);
+    verify(spyK8sTaskHelperBase, times(1)).runK8sExecutable(any(), any(), captor.capture());
+    assertThat(captor.getValue().command())
+        .isEqualTo("kubectl --kubeconfig=config-path get Deployment/nginx --namespace=default");
+  }
+
+  @Test
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void cleanUp() throws Exception {
