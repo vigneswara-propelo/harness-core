@@ -57,6 +57,7 @@ java_binary(
         "//980-commons/src/main/java/io/harness/sanitizer:module",
         "//clients/access-control/sdk:module",
         "//clients/audit:module",
+        "//clients/ci:module",
         "//clients/ng-variables:module",
         "//clients/ngsettings:module",
         "//clients/notification:module",
