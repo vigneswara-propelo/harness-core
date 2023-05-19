@@ -763,8 +763,7 @@ public enum FeatureName {
   CCM_MSP("To enable margin obfuscation for CCM MSP accounts", HarnessTeam.CE),
   PL_REGENERATE_ACL_FOR_DEFAULT_VIEWER_ROLE(
       "This is to regenerate acls for default account viewer roles", HarnessTeam.PL),
-  SRM_ENABLE_GRAFANA_LOKI_LOGS("This is used to enable Grafana Loki logs health source.", HarnessTeam.CV),
-  PIE_RETRY_STEP_GROUP("To enable Retry Step Group Failure Strategy", PIPELINE);
+  SRM_ENABLE_GRAFANA_LOKI_LOGS("This is used to enable Grafana Loki logs health source.", HarnessTeam.CV);
 
   @Deprecated
   FeatureName() {
