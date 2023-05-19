@@ -1,6 +1,6 @@
-# verification-svc
+# event-service
 
-![Version: 0.4.1](https://img.shields.io/badge/Version-0.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 22.12.77629](https://img.shields.io/badge/AppVersion-22.12.77629-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.773.0](https://img.shields.io/badge/AppVersion-1.773.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -14,14 +14,14 @@ A Helm chart for Kubernetes
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| additionalConfigs | object | `{}` |  |
 | affinity | object | `{}` |  |
-| appLogInfo | string | `"INFO"` | appLogInfo can be INFO DEBUG WARN ERROR |
-| autoscaling.enabled | bool | `false` |  |
-| autoscaling.maxReplicas | int | `100` |  |
+| autoscaling.enabled | bool | `true` |  |
+| autoscaling.maxReplicas | int | `2` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| defaultInternalImageConnector | string | `"test"` |  |
 | fullnameOverride | string | `""` |  |
-| global.airgap | bool | `false` |  |
 | global.database.mongo.extraArgs | string | `""` |  |
 | global.database.mongo.hosts | list | `[]` | provide default values if mongo.installed is set to false |
 | global.database.mongo.installed | bool | `true` |  |
@@ -43,53 +43,52 @@ A Helm chart for Kubernetes
 | global.database.timescaledb.protocol | string | `"jdbc:postgresql"` |  |
 | global.database.timescaledb.secretName | string | `""` |  |
 | global.database.timescaledb.userKey | string | `""` |  |
-| global.ha | bool | `false` |  |
 | global.imagePullSecrets | list | `[]` |  |
-| global.ingress.additionalPaths | string | `nil` |  |
 | global.ingress.className | string | `"harness"` |  |
 | global.ingress.enabled | bool | `false` |  |
-| global.ingress.hosts[0] | string | `"*"` |  |
-| global.ingress.objects.annotations | object | `{}` |  |
-| global.ingress.tls.enabled | bool | `false` |  |
-| global.ingress.tls.secretName | string | `"harness-cert"` |  |
+| global.ingress.hosts[0] | string | `"events-grpc-app.harness.io"` |  |
+| global.ingress.tls.enabled | bool | `true` |  |
+| global.ingress.tls.secretName | string | `""` |  |
 | global.istio.enabled | bool | `false` |  |
 | global.istio.gateway.create | bool | `false` |  |
 | global.istio.virtualService.gateways | string | `nil` |  |
 | global.istio.virtualService.hosts | string | `nil` |  |
-| global.loadbalancerURL | string | `""` |  |
+| global.loadbalancerURL | string | `"https://test"` |  |
+| global.stackDriverLoggingEnabled | bool | `false` |  |
 | image.digest | string | `""` |  |
 | image.imagePullSecrets | list | `[]` |  |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.pullPolicy | string | `"Always"` |  |
 | image.registry | string | `"docker.io"` |  |
-| image.repository | string | `"harness/verification-service-signed"` |  |
-| image.tag | string | `"77629"` |  |
-| ingress.annotations | object | `{}` |  |
-| ingress.hosts[0].host | string | `""` |  |
-| ingress.hosts[0].paths[0].path | string | `"/verification"` |  |
-| ingress.hosts[0].paths[0].pathType | string | `"ImplementationSpecific"` |  |
-| ingress.tls | list | `[]` |  |
-| java | object | `{"memory":2048}` | Specify Java memory to be used |
-| maxSurge | int | `1` |  |
+| image.repository | string | `"harness/event-service-signed"` |  |
+| image.tag | string | `"77317"` |  |
+| ingress.className | string | `"nginx"` |  |
+| java.memory | int | `1024` |  |
+| maxSurge | string | `"100%"` |  |
 | maxUnavailable | int | `0` |  |
 | mongoSecrets.password.key | string | `"mongodb-root-password"` |  |
 | mongoSecrets.password.name | string | `"mongodb-replicaset-chart"` |  |
 | mongoSecrets.userName.key | string | `"mongodbUsername"` |  |
 | mongoSecrets.userName.name | string | `"harness-secrets"` |  |
 | nameOverride | string | `""` |  |
+| ngServiceAccount | string | `"test"` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| redislabsCATruststore | string | `"test"` |  |
 | replicaCount | int | `1` |  |
-| resources.limits.cpu | string | `"500m"` |  |
-| resources.limits.memory | string | `"3000Mi"` |  |
-| resources.requests.cpu | string | `"500m"` |  |
-| resources.requests.memory | string | `"3000Mi"` |  |
-| securityContext.runAsNonRoot | bool | `true` |  |
-| service.port | int | `7070` |  |
+| resources.limits.cpu | string | `"512m"` |  |
+| resources.limits.memory | string | `"1840Mi"` |  |
+| resources.requests.cpu | string | `"512m"` |  |
+| resources.requests.memory | string | `"1840Mi"` |  |
+| securityContext | object | `{}` |  |
+| service.port | int | `7280` |  |
+| service.port2 | int | `9889` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `false` |  |
 | serviceAccount.name | string | `"harness-default"` |  |
+| timescaleSecret.password.key | string | `"timescaledbPostgresPassword"` |  |
+| timescaleSecret.password.name | string | `"harness-secrets"` |  |
 | tolerations | list | `[]` |  |
 | waitForInitContainer.image.digest | string | `""` |  |
 | waitForInitContainer.image.imagePullSecrets | list | `[]` |  |
