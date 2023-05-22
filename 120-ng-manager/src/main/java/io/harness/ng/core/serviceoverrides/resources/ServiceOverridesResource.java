@@ -206,6 +206,7 @@ public class ServiceOverridesResource {
   }
 
   @POST
+  @Path("/upsert")
   @ApiOperation(value = "Upsert an ServiceOverride Entity", nickname = "upsertServiceOverrideV2")
   @Operation(operationId = "upsertServiceOverrideV2", summary = "Upsert an ServiceOverride Entity",
       responses =
