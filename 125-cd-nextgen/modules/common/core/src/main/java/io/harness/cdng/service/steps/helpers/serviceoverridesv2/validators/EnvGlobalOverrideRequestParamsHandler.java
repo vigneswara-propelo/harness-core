@@ -5,17 +5,16 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.serviceoverridesv2.validators;
+package io.harness.cdng.service.steps.helpers.serviceoverridesv2.validators;
 
 import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
 import io.harness.ng.core.serviceoverridev2.beans.ServiceOverrideRequestDTOV2;
 
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 public class EnvGlobalOverrideRequestParamsHandler implements ServiceOverrideTypeBasedRequestParamsHandler {
   @Override
-  public void validateRequest(@NotNull ServiceOverrideRequestDTOV2 requestDTOV2, @NonNull String accountId) {}
+  public void validateRequest(@NonNull ServiceOverrideRequestDTOV2 requestDTOV2, @NonNull String accountId) {}
 
   @Override
   public String generateServiceOverrideIdentifier(@NonNull NGServiceOverridesEntity serviceOverridesEntity) {

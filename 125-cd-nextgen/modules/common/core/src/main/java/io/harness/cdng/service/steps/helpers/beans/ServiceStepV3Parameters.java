@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.service.steps;
+package io.harness.cdng.service.steps.helpers.beans;
 
 import io.harness.cdng.envgroup.yaml.EnvironmentGroupYaml;
 import io.harness.cdng.environment.yaml.EnvironmentsYaml;
@@ -26,6 +26,8 @@ public class ServiceStepV3Parameters implements StepParameters {
   private ParameterField<String> serviceRef;
   private ParameterField<Map<String, Object>> inputs;
   private ParameterField<String> envRef;
+  // Supporting single infra in overrides V2 - First Phase
+  private ParameterField<String> infraId;
   private ParameterField<String> envGroupRef;
   private List<ParameterField<String>> envRefs;
   private ParameterField<Boolean> gitOpsMultiSvcEnvEnabled;

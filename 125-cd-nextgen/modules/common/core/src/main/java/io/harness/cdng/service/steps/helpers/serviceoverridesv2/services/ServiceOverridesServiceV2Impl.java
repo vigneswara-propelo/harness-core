@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.serviceoverridesv2.services;
+package io.harness.cdng.service.steps.helpers.serviceoverridesv2.services;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
@@ -17,7 +17,7 @@ import io.harness.cdng.configfile.ConfigFile;
 import io.harness.cdng.configfile.ConfigFileWrapper;
 import io.harness.cdng.manifest.yaml.ManifestConfig;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
-import io.harness.cdng.serviceoverridesv2.validators.ServiceOverrideValidatorService;
+import io.harness.cdng.service.steps.helpers.serviceoverridesv2.validators.ServiceOverrideValidatorService;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.events.EnvironmentUpdatedEvent;
 import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
@@ -46,7 +46,6 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -73,7 +72,7 @@ public class ServiceOverridesServiceV2Impl implements ServiceOverridesServiceV2 
   }
 
   @Override
-  public Optional<NGServiceOverridesEntity> get(@NotNull String accountId, String orgIdentifier,
+  public Optional<NGServiceOverridesEntity> get(@NonNull String accountId, String orgIdentifier,
       String projectIdentifier, @NonNull String serviceOverridesIdentifier) {
     return serviceOverrideRepositoryV2
         .getNGServiceOverridesEntityByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifier(
@@ -171,7 +170,7 @@ public class ServiceOverridesServiceV2Impl implements ServiceOverridesServiceV2 
     return new ImmutablePair<>(updateOverrideEntity, false);
   }
 
-  private NGServiceOverridesEntity saveAndSendOutBoxEvent(@NotNull NGServiceOverridesEntity requestedEntity) {
+  private NGServiceOverridesEntity saveAndSendOutBoxEvent(@NonNull NGServiceOverridesEntity requestedEntity) {
     NGServiceOverridesEntity tempCreateResult = serviceOverrideRepositoryV2.save(requestedEntity);
     if (tempCreateResult == null) {
       throw new InvalidRequestException(String.format(
@@ -192,7 +191,7 @@ public class ServiceOverridesServiceV2Impl implements ServiceOverridesServiceV2 
     return tempCreateResult;
   }
 
-  private NGServiceOverridesEntity updateAndSendOutboxEvent(@NotNull NGServiceOverridesEntity requestedEntity,
+  private NGServiceOverridesEntity updateAndSendOutboxEvent(@NonNull NGServiceOverridesEntity requestedEntity,
       Criteria equalityCriteria, NGServiceOverridesEntity existingEntityInDb) {
     NGServiceOverridesEntity updatedServiceOverride =
         serviceOverrideRepositoryV2.update(equalityCriteria, requestedEntity);
@@ -293,7 +292,7 @@ public class ServiceOverridesServiceV2Impl implements ServiceOverridesServiceV2 
   }
 
   private NGServiceOverridesEntity checkIfServiceOverrideExistAndThrow(
-      @NotNull String accountId, String orgIdentifier, String projectIdentifier, @NotNull String identifier) {
+      @NonNull String accountId, String orgIdentifier, String projectIdentifier, @NonNull String identifier) {
     Optional<NGServiceOverridesEntity> existingOverrideInDb =
         serviceOverrideRepositoryV2
             .getNGServiceOverridesEntityByAccountIdAndOrgIdentifierAndProjectIdentifierAndIdentifier(

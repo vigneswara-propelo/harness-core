@@ -5,14 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.serviceoverridesv2.validators;
+package io.harness.cdng.service.steps.helpers.serviceoverridesv2.validators;
 
 import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
 import io.harness.ng.core.serviceoverridev2.beans.ServiceOverrideRequestDTOV2;
 
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 public interface ServiceOverrideValidatorService {
   void validateRequestOrThrow(@NonNull ServiceOverrideRequestDTOV2 requestDTOV2, @NonNull String accountId);
@@ -24,7 +23,7 @@ public interface ServiceOverrideValidatorService {
 
   void validateEnvironmentRBACOrThrow(@NonNull Environment environment);
 
-  void validateEnvWithRBACOrThrow(@NotNull String accountId, String orgId, String projectId, String environmentRef);
+  void validateEnvWithRBACOrThrow(@NonNull String accountId, String orgId, String projectId, String environmentRef);
 
   void checkForImmutablePropertiesOrThrow(
       NGServiceOverridesEntity existingEntity, NGServiceOverridesEntity requestedEntity);

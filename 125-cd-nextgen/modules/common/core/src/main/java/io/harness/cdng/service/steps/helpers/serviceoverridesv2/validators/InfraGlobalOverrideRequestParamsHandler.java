@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.serviceoverridesv2.validators;
+package io.harness.cdng.service.steps.helpers.serviceoverridesv2.validators;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
@@ -22,26 +22,21 @@ import io.harness.utils.IdentifierRefHelper;
 import com.google.inject.Inject;
 import java.util.Optional;
 import javax.ws.rs.NotFoundException;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 @OwnedBy(HarnessTeam.CDC)
-public class InfraServiceOverrideRequestParamsHandler implements ServiceOverrideTypeBasedRequestParamsHandler {
-  @Inject OverrideV2AccessControlCheckHelper overrideV2AccessControlCheckHelper;
-  @Inject private ServiceEntityValidationHelper serviceEntityValidationHelper;
+@AllArgsConstructor(onConstructor = @__({ @Inject }))
+public class InfraGlobalOverrideRequestParamsHandler implements ServiceOverrideTypeBasedRequestParamsHandler {
   @Inject private InfrastructureEntityService infrastructureEntityService;
 
   @Override
-  public void validateRequest(@NotNull ServiceOverrideRequestDTOV2 requestDTOV2, @NonNull String accountId) {
-    validateRequiredField(requestDTOV2.getServiceRef(), requestDTOV2.getInfraIdentifier());
-    checkIfServiceAndInfraExist(requestDTOV2, accountId);
-    overrideV2AccessControlCheckHelper.validateRBACForService(requestDTOV2, accountId);
+  public void validateRequest(@NonNull ServiceOverrideRequestDTOV2 requestDTOV2, @NonNull String accountId) {
+    validateRequiredField(requestDTOV2.getInfraIdentifier());
+    checkIfInfraExist(requestDTOV2, accountId);
   }
 
-  private void checkIfServiceAndInfraExist(ServiceOverrideRequestDTOV2 requestDTOV2, String accountId) {
-    serviceEntityValidationHelper.checkThatServiceExists(
-        accountId, requestDTOV2.getOrgIdentifier(), requestDTOV2.getProjectIdentifier(), requestDTOV2.getServiceRef());
-
+  private void checkIfInfraExist(ServiceOverrideRequestDTOV2 requestDTOV2, String accountId) {
     IdentifierRef envIdentifierRef = IdentifierRefHelper.getIdentifierRef(requestDTOV2.getEnvironmentRef(), accountId,
         requestDTOV2.getOrgIdentifier(), requestDTOV2.getProjectIdentifier());
     Optional<InfrastructureEntity> infrastructureEntity = infrastructureEntityService.get(
@@ -55,18 +50,13 @@ public class InfraServiceOverrideRequestParamsHandler implements ServiceOverride
 
   @Override
   public String generateServiceOverrideIdentifier(NGServiceOverridesEntity serviceOverridesEntity) {
-    return String
-        .join("_", serviceOverridesEntity.getEnvironmentRef(), serviceOverridesEntity.getServiceRef(),
-            serviceOverridesEntity.getInfraIdentifier())
+    return String.join("_", serviceOverridesEntity.getEnvironmentRef(), serviceOverridesEntity.getInfraIdentifier())
         .replace(".", "_");
   }
 
-  private void validateRequiredField(String serviceRef, String infraIdentifier) {
+  private void validateRequiredField(String infraIdentifier) {
     if (isEmpty(infraIdentifier)) {
-      throw new InvalidRequestException("Infra Identifier should not be empty for INFRA-SERVICE override");
-    }
-    if (isEmpty(serviceRef)) {
-      throw new InvalidRequestException("ServiceRef should not be empty for INFRA-SERVICE override");
+      throw new InvalidRequestException("Infra Identifier should not be empty for Infrastructure override");
     }
   }
 }

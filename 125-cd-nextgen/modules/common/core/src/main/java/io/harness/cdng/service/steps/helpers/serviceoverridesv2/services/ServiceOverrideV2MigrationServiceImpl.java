@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.serviceoverridesv2.services;
+package io.harness.cdng.service.steps.helpers.serviceoverridesv2.services;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -47,7 +47,6 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -417,7 +416,7 @@ public class ServiceOverrideV2MigrationServiceImpl implements ServiceOverrideV2M
     }
   }
 
-  @NotNull
+  @NonNull
   private static Criteria getCriteriaForProjectServiceOverrides(String accountId, String orgId, String projectId) {
     Criteria criteria = new Criteria()
                             .and(NGServiceOverridesEntityKeys.accountId)
@@ -431,7 +430,7 @@ public class ServiceOverrideV2MigrationServiceImpl implements ServiceOverrideV2M
             Criteria.where(NGServiceOverridesEntityKeys.isV2).is(Boolean.FALSE)));
   }
 
-  @NotNull
+  @NonNull
   private static Criteria getCriteriaForOrgServiceOverrides(String accountId, String orgId) {
     Criteria criteria = new Criteria()
                             .and(NGServiceOverridesEntityKeys.accountId)
@@ -446,7 +445,7 @@ public class ServiceOverrideV2MigrationServiceImpl implements ServiceOverrideV2M
             Criteria.where(NGServiceOverridesEntityKeys.isV2).is(Boolean.FALSE)));
   }
 
-  @NotNull
+  @NonNull
   private static Criteria getCriteriaForAccountServiceOverrides(String accountId) {
     Criteria criteria = new Criteria().and(NGServiceOverridesEntityKeys.accountId).is(accountId);
     return criteria.andOperator(
@@ -458,7 +457,7 @@ public class ServiceOverrideV2MigrationServiceImpl implements ServiceOverrideV2M
             Criteria.where(NGServiceOverridesEntityKeys.isV2).is(Boolean.FALSE)));
   }
 
-  @NotNull
+  @NonNull
   private static Criteria getCriteriaForOrgEnvs(String accountId, String orgId) {
     Criteria criteria =
         new Criteria().and(EnvironmentKeys.accountId).is(accountId).and(EnvironmentKeys.orgIdentifier).is(orgId);
@@ -471,7 +470,7 @@ public class ServiceOverrideV2MigrationServiceImpl implements ServiceOverrideV2M
         new Criteria().and(EnvironmentKeys.yaml).exists(true).ne(null));
   }
 
-  @NotNull
+  @NonNull
   private static Criteria getCriteriaForAccountEnvs(String accountId) {
     Criteria criteria = new Criteria().and(EnvironmentKeys.accountId).is(accountId);
     return criteria.andOperator(new Criteria().orOperator(Criteria.where(EnvironmentKeys.orgIdentifier).exists(false),

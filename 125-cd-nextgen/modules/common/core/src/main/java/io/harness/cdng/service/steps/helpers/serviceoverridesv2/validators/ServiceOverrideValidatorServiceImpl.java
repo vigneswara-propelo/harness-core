@@ -5,19 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.serviceoverridesv2.validators;
+package io.harness.cdng.service.steps.helpers.serviceoverridesv2.validators;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.rbac.CDNGRbacPermissions.ENVIRONMENT_UPDATE_PERMISSION;
 
 import io.harness.accesscontrol.acl.api.ResourceScope;
-import io.harness.cdng.validations.helper.OrgAndProjectValidationHelper;
 import io.harness.encryption.Scope;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
 import io.harness.ng.core.serviceoverridev2.beans.ServiceOverrideRequestDTOV2;
+import io.harness.ng.core.utils.OrgAndProjectValidationHelper;
 import io.harness.scope.ScopeHelper;
 import io.harness.utils.IdentifierRefHelper;
 
@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 @Singleton
 @Slf4j
@@ -49,7 +48,7 @@ public class ServiceOverrideValidatorServiceImpl implements ServiceOverrideValid
 
   @Override
   public void validateEnvWithRBACOrThrow(
-      @NotNull String accountId, String orgId, String projectId, @NonNull String environmentRef) {
+      @NonNull String accountId, String orgId, String projectId, @NonNull String environmentRef) {
     Environment environment = checkIfEnvExistAndReturn(accountId, orgId, projectId, environmentRef);
     validateEnvironmentRBACOrThrow(environment);
   }
@@ -101,7 +100,7 @@ public class ServiceOverrideValidatorServiceImpl implements ServiceOverrideValid
 
   @Override
   public void validateServiceOverrideRequestBasicChecksOrThrow(
-      @NotNull ServiceOverrideRequestDTOV2 serviceOverrideRequestDTOV2, @NotNull String accountId) {
+      @NonNull ServiceOverrideRequestDTOV2 serviceOverrideRequestDTOV2, @NonNull String accountId) {
     orgAndProjectValidationHelper.checkThatTheOrganizationAndProjectExists(
         serviceOverrideRequestDTOV2.getOrgIdentifier(), serviceOverrideRequestDTOV2.getProjectIdentifier(), accountId);
     throwExceptionForRequiredFields(serviceOverrideRequestDTOV2);
@@ -109,7 +108,7 @@ public class ServiceOverrideValidatorServiceImpl implements ServiceOverrideValid
   }
 
   @Override
-  public void validateEnvironmentRBACOrThrow(@NotNull Environment environment) {
+  public void validateEnvironmentRBACOrThrow(@NonNull Environment environment) {
     overrideV2AccessControlCheckHelper.checkForEnvAndAttributesAccessOrThrow(
         ResourceScope.of(
             environment.getAccountId(), environment.getOrgIdentifier(), environment.getProjectIdentifier()),
@@ -118,7 +117,7 @@ public class ServiceOverrideValidatorServiceImpl implements ServiceOverrideValid
 
   @Override
   @NonNull
-  public String generateServiceOverrideIdentifier(@NotNull NGServiceOverridesEntity serviceOverridesEntity) {
+  public String generateServiceOverrideIdentifier(@NonNull NGServiceOverridesEntity serviceOverridesEntity) {
     ServiceOverrideTypeBasedRequestParamsHandler validator =
         overrideValidatorFactory.getTypeBasedValidator(serviceOverridesEntity.getType());
     return validator.generateServiceOverrideIdentifier(serviceOverridesEntity);

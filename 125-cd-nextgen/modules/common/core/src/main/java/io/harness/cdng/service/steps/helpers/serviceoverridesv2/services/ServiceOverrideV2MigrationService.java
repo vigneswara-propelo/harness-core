@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.serviceoverridesv2.services;
+package io.harness.cdng.service.steps.helpers.serviceoverridesv2.services;
 
 import io.harness.ng.core.serviceoverridev2.beans.ServiceOverrideMigrationResponseDTO;
 
