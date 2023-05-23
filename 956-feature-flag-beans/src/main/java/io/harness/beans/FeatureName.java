@@ -448,8 +448,6 @@ public enum FeatureName {
       "With this instead of using regex search we will use text search for CD page in CG", HarnessTeam.SPG),
   AZURE_WEBAPP_NG_JENKINS_ARTIFACTS(
       "FF to enable Jenkins as an artifact source option for Azure Web App NG", HarnessTeam.CDP),
-  AZURE_WEBAPP_NG_AZURE_DEVOPS_ARTIFACTS(
-      "FF to enable Azure DevOps Artifacts as an artifact source option for Azure Web App NG", HarnessTeam.CDP),
   SRM_CUSTOM_CHANGE_SOURCE("UI FF to enable Custom Change Source", HarnessTeam.CV),
   SETTING_ATTRIBUTES_SERVICE_ACCOUNT_TOKEN_MIGRATION("Migrate erroneous service account tokens", HarnessTeam.PL),
   ARTIFACT_SOURCE_TEMPLATE("Flag to add support for artifact source templates", HarnessTeam.CDC),
