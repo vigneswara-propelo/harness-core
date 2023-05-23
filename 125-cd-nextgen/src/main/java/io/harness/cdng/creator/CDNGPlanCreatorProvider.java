@@ -1295,7 +1295,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                                           .addCategory("Helm")
                                                           .addFolderPaths("Kubernetes")
                                                           .build())
-                                     .setFeatureFlag(FeatureName.K8S_DRY_RUN_NG.name())
                                      .build();
 
     StepInfo asgBlueGreenSwapService =

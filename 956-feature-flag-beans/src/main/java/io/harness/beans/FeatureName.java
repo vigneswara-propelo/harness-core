@@ -580,7 +580,6 @@ public enum FeatureName {
   SPG_MODULE_VERSION_INFO("Enable version information on module level", HarnessTeam.SPG),
   CIE_HOSTED_VMS_WINDOWS("FF for enabling hosted builds for windows amd64", HarnessTeam.CI),
   CD_TRIGGER_CATALOG_API_ENABLED("Enable support for pipeline/api/triggers/catalog API in UI", HarnessTeam.CDC),
-  K8S_DRY_RUN_NG("Enable K8s Dry Run Step in NG", HarnessTeam.CDP),
   CDP_SKIP_DEFAULT_VALUES_YAML_NG(
       "Skip adding the default values file as an override if it doesn't contain any expressions in case of helm chart manifest for NG",
       HarnessTeam.CDP),
