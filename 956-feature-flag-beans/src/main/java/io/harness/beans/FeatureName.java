@@ -574,8 +574,6 @@ public enum FeatureName {
   VALIDATE_SERVICE_NAME_IN_FILE_PATH("Validate the service name in yaml file path", HarnessTeam.SPG),
   CD_NG_DOCKER_ARTIFACT_DIGEST(
       "Use SHA256 digest as optional parameter for docker image artifact config", HarnessTeam.SPG),
-  CDP_PUBLISH_INSTANCE_STATS_FOR_ENV_NG(
-      "Publish instance stats at environment granularity in NG. PM Rohan", HarnessTeam.CDP),
   DEPLOYMENT_RECONCILIATION_LOGIC_QUERY_OPTIMIZATIONS(
       "Used to modify logic for reconciliation queries", HarnessTeam.CDC),
   NOTIFY_GIT_SYNC_ERRORS_PER_APP(
