@@ -760,7 +760,8 @@ public enum FeatureName {
   SRM_ENABLE_GRAFANA_LOKI_LOGS("This is used to enable Grafana Loki logs health source.", HarnessTeam.CV),
   CDS_TEMPLATE_ERROR_HANDLING("Enabling new Schema validation UI for template studio", PIPELINE),
   CDS_SUPPORT_HPA_AND_PDB_NG(
-      "Enabling support for HPA and PDB kind resources in k8s deployments in NG", HarnessTeam.CDP);
+      "Enabling support for HPA and PDB kind resources in k8s deployments in NG", HarnessTeam.CDP),
+  SRM_ENABLE_BASELINE_BASED_VERIFICATION("This is used to enable baseline based verification.", HarnessTeam.CV);
 
   @Deprecated
   FeatureName() {
