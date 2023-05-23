@@ -45,6 +45,7 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.tasks.TaskRequest;
+import io.harness.pms.contracts.plan.ExpressionMode;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
@@ -261,10 +262,15 @@ public class UpdateReleaseRepoStep extends CdTaskExecutable<NGGitOpsResponse> {
             }
           }
 
-          ExpressionEvaluatorUtils.updateExpressions(
-              copyParameter, new CDExpressionResolveFunctor(engineExpressionService, ambiance));
-          populateVariables(
-              copyParameter, flattennedVariables, variableEntry.getKey(), copyParameter.getValue().toString());
+          ExpressionEvaluatorUtils.updateExpressions(copyParameter,
+              new CDExpressionResolveFunctor(
+                  engineExpressionService, ambiance, ExpressionMode.THROW_EXCEPTION_IF_UNRESOLVED));
+
+          if (copyParameter.getValue() != null) {
+            populateVariables(
+                copyParameter, flattennedVariables, variableEntry.getKey(), copyParameter.getValue().toString());
+          }
+
           for (String key : flattennedVariables.keySet()) {
             String value = flattennedVariables.get(key);
             if (value.matches("[-+]?[0-9]*\\.0")) {

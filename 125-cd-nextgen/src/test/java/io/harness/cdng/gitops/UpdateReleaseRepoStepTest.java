@@ -123,11 +123,9 @@ public class UpdateReleaseRepoStepTest extends CategoryTest {
     assertThat(fileVariables2.get("config2")).isEqualTo("CLUSTER_NAME2");
     assertThat(fileVariables2.get("config3")).isEqualTo("ENV_NAME2");
     verify(engineExpressionService)
-        .renderExpression(
-            ambiance, "ENV_NAME/<+variable.foo>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED);
+        .renderExpression(ambiance, "ENV_NAME/<+variable.foo>", ExpressionMode.THROW_EXCEPTION_IF_UNRESOLVED);
     verify(engineExpressionService)
-        .renderExpression(
-            ambiance, "ENV_NAME2/<+variable.foo>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED);
+        .renderExpression(ambiance, "ENV_NAME2/<+variable.foo>", ExpressionMode.THROW_EXCEPTION_IF_UNRESOLVED);
   }
 
   @Test
@@ -204,11 +202,9 @@ public class UpdateReleaseRepoStepTest extends CategoryTest {
     assertThat(fileVariables2.get("config3")).isEqualTo("ENV_NAME2");
     assertThat(fileVariables2.get("config5")).isEqualTo("ENV_GROUP");
     verify(engineExpressionService)
-        .renderExpression(
-            ambiance, "ENV_NAME/<+variable.foo>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED);
+        .renderExpression(ambiance, "ENV_NAME/<+variable.foo>", ExpressionMode.THROW_EXCEPTION_IF_UNRESOLVED);
     verify(engineExpressionService)
-        .renderExpression(
-            ambiance, "ENV_NAME2/<+variable.foo>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED);
+        .renderExpression(ambiance, "ENV_NAME2/<+variable.foo>", ExpressionMode.THROW_EXCEPTION_IF_UNRESOLVED);
   }
 
   @Test
