@@ -5,11 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.service.core.k8s;
+package io.harness.delegate.service.core.util;
 
+import io.kubernetes.client.openapi.ApiException;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class K8SConstants {
-  public static final String DELEGATE_FIELD_MANAGER = "delegate-field-manager";
+public class ApiExceptionLogger {
+  public static String format(final ApiException e) {
+    return String.format("K8S ApiException: %s, %s, %s, %s, %s", e.getCode(), e.getResponseBody(), e.getMessage(),
+        e.getResponseHeaders(), e.getCause());
+  }
 }
