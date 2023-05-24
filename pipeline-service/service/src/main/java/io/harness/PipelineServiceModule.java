@@ -334,8 +334,9 @@ public class PipelineServiceModule extends AbstractModule {
         configuration.getNgManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
     install(new TemplateResourceClientModule(configuration.getTemplateServiceClientConfig(),
         configuration.getTemplateServiceSecret(), PIPELINE_SERVICE.toString()));
-    install(new CiServiceResourceClientModule(
-        configuration.getCiServiceClientConfig(), configuration.getCiServiceSecret(), PIPELINE_SERVICE.toString()));
+    install(
+        new CiServiceResourceClientModule(configuration.getCiServiceClientConfig(), configuration.getCiServiceSecret(),
+            PIPELINE_SERVICE.toString(), configuration.isContainerStepConfigureWithCi()));
     install(NGTriggersModule.getInstance(configuration.getTriggerConfig(),
         configuration.getPipelineServiceClientConfig(), configuration.getPipelineServiceSecret()));
     install(PersistentLockModule.getInstance());
