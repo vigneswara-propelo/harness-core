@@ -182,9 +182,8 @@ public class ConnectorFilterServiceImpl implements ConnectorFilterService {
   }
 
   private void populateTypesInFilter(Criteria criteria, List<?> types, String version) {
-    Criteria nexusVersionFiltercriteria =
-        new Criteria().andOperator(Criteria.where(ConnectorKeys.type).is(ConnectorType.NEXUS.name()),
-            Criteria.where("nexusVersion").in("2.x", "3.x"));
+    Criteria nexusVersionFiltercriteria = new Criteria().andOperator(
+        Criteria.where(ConnectorKeys.type).is(ConnectorType.NEXUS.name()), Criteria.where("nexusVersion").is(version));
     if (isNotEmpty(types)) {
       List<?> nonNexusTypes = new ArrayList<>(types);
       nonNexusTypes.remove(ConnectorType.NEXUS);
