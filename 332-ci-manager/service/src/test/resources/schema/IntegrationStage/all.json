@@ -12216,6 +12216,9 @@
         "templateRef"
       ],
       "properties": {
+        "gitBranch": {
+          "type": "string"
+        },
         "templateInputs": {
           "$ref": "#/definitions/JsonNode"
         },
