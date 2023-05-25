@@ -9,20 +9,15 @@ package io.harness.iacm.plan.creator.step;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.filters.GenericStepPMSFilterJsonCreator;
 import io.harness.iacm.plan.creator.IACMCreatorUtils;
-import io.harness.plancreator.steps.GenericStepPMSPlanCreator;
 
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.IACM)
-public class IACMStepPlanCreator extends GenericStepPMSPlanCreator {
+public class IACMPMSStepFilterJsonCreator extends GenericStepPMSFilterJsonCreator {
   @Override
   public Set<String> getSupportedStepTypes() {
     return IACMCreatorUtils.getSupportedSteps();
   }
-  // Uncomment for v1
-  //  @Override
-  //  public Set<String> getSupportedStepTypes() {
-  //    return IACMCreatorUtils.getSupportedStepsV2();
-  //  }
 }
