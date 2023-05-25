@@ -77,6 +77,7 @@ public class VmIACMStepSerializerTest extends CategoryTest {
                                            .env(ParameterField.createValueField(env))
                                            .identifier("id")
                                            .name("name")
+                                           .image(ParameterField.<String>builder().build())
                                            .build();
 
     Mockito.mockStatic(CIStepInfoUtils.class);

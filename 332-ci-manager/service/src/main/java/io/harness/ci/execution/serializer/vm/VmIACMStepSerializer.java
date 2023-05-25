@@ -42,7 +42,7 @@ public class VmIACMStepSerializer {
     Map<String, String> envVars = iacmStepsUtils.getIACMEnvVariables(ambiance, stepInfo);
 
     String image;
-    if (stepInfo.getImage() != null) {
+    if (stepInfo.getImage().getValue() != null) {
       image = stepInfo.getImage().getValue();
     } else {
       image = ciExecutionConfigService.getPluginVersionForVM(
