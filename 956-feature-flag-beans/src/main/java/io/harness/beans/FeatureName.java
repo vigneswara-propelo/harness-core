@@ -764,6 +764,7 @@ public enum FeatureName {
   SRM_ENABLE_BASELINE_BASED_VERIFICATION("This is used to enable baseline based verification.", HarnessTeam.CV),
   SPG_DISABLE_CUSTOM_WEBHOOK_V3_URL("This is used to disable customer webhook authentication.", SPG),
   SRM_MICRO_FRONTEND("This FF is used to enable the micro-frontend for SRM", CV),
+  CCM_ENABLE_AZURE_CLOUD_ASSET_GOVERNANCE_UI("Enable Azure Cloud Asset Governance UI", HarnessTeam.CE),
   CDS_NEW_PIPELINE_STUDIO("Enables upgraded one canvas pipeline studio with usability fixes", HarnessTeam.CDP);
 
   @Deprecated
