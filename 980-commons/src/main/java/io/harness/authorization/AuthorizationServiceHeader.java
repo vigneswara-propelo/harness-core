@@ -42,6 +42,7 @@ public enum AuthorizationServiceHeader {
   DEBEZIUM_SERVICE("DebeziumService"),
   SUBSCRIPTION_SERVICE("SubscriptionService"),
   CHAOS_SERVICE("ChaosService"),
+  SERVICE_DISCOVERY_SERVICE("ServiceDiscoveryService"),
   CODE("Code"),
   IACM_MANAGER("IACMManager"),
   MIGRATOR("MigratorService"),
