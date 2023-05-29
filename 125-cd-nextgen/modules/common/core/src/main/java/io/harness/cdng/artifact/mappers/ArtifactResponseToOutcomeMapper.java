@@ -240,6 +240,7 @@ public class ArtifactResponseToOutcomeMapper {
         .project(azureArtifactsConfig.getProject().getValue())
         .packageType(azureArtifactsConfig.getPackageType().getValue())
         .scope(azureArtifactsConfig.getScope().getValue())
+        .metadata(useDelegateResponse ? getMetadata(azureArtifactsDelegateResponse) : null)
         .build();
   }
 
