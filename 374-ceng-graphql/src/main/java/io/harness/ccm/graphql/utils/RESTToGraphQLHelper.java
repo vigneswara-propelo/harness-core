@@ -5,10 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ccm.remote.utils;
+package io.harness.ccm.graphql.utils;
 
+import static io.harness.ccm.views.graphql.QLCEViewTimeGroupType.DAY;
 import static io.harness.ccm.views.utils.ClusterTableKeys.ACTUAL_IDLE_COST;
 import static io.harness.ccm.views.utils.ClusterTableKeys.BILLING_AMOUNT;
+import static io.harness.ccm.views.utils.ClusterTableKeys.MARKUP_AMOUNT_AGGREGATION;
 import static io.harness.ccm.views.utils.ClusterTableKeys.UNALLOCATED_COST;
 
 import io.harness.ccm.commons.entities.CCMAggregation;
@@ -37,6 +39,7 @@ import io.harness.ccm.views.utils.ViewFieldUtils;
 import io.harness.exception.InvalidRequestException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.joda.time.DateTime;
@@ -102,6 +105,45 @@ public class RESTToGraphQLHelper {
     }
 
     return modifiedFilters;
+  }
+
+  public static List<QLCEViewFilterWrapper> getTimeFilters(long startTime, long endTime) {
+    List<QLCEViewFilterWrapper> timeFilters = new ArrayList<>();
+
+    // Add startTime Filter
+    timeFilters.add(QLCEViewFilterWrapper.builder()
+                        .timeFilter(QLCEViewTimeFilter.builder()
+                                        .field(QLCEViewFieldInput.builder()
+                                                   .fieldId("startTime")
+                                                   .fieldName("startTime")
+                                                   .identifier(ViewFieldIdentifier.COMMON)
+                                                   .identifierName(ViewFieldIdentifier.COMMON.getDisplayName())
+                                                   .build())
+                                        .operator(QLCEViewTimeFilterOperator.AFTER)
+                                        .value(startTime)
+                                        .build())
+                        .build());
+
+    // Add EndTime Filter
+    timeFilters.add(QLCEViewFilterWrapper.builder()
+                        .timeFilter(QLCEViewTimeFilter.builder()
+                                        .field(QLCEViewFieldInput.builder()
+                                                   .fieldId("startTime")
+                                                   .fieldName("startTime")
+                                                   .identifier(ViewFieldIdentifier.COMMON)
+                                                   .identifierName(ViewFieldIdentifier.COMMON.getDisplayName())
+                                                   .build())
+                                        .operator(QLCEViewTimeFilterOperator.BEFORE)
+                                        .value(endTime)
+                                        .build())
+                        .build());
+    return timeFilters;
+  }
+  public static List<QLCEViewAggregation> getMarkupAggregation() {
+    return Collections.singletonList(QLCEViewAggregation.builder()
+                                         .operationType(QLCEViewAggregateOperation.SUM)
+                                         .columnName(MARKUP_AMOUNT_AGGREGATION)
+                                         .build());
   }
 
   public static List<QLCEViewAggregation> getCostAggregation() {
@@ -187,16 +229,22 @@ public class RESTToGraphQLHelper {
     return groupByList;
   }
 
+  public static QLCEViewGroupBy getGroupByDay() {
+    return QLCEViewGroupBy.builder()
+        .timeTruncGroupBy(QLCEViewTimeTruncGroupBy.builder().resolution(DAY).build())
+        .build();
+  }
+
   public static QLCEViewGroupBy convertTimeSeriesGroupBy(QLCEViewTimeGroupType timeResolution) {
     if (timeResolution == null) {
-      timeResolution = QLCEViewTimeGroupType.DAY;
+      timeResolution = DAY;
     }
     return QLCEViewGroupBy.builder()
         .timeTruncGroupBy(QLCEViewTimeTruncGroupBy.builder().resolution(timeResolution).build())
         .build();
   }
 
-  private static QLCEViewFieldInput getViewFieldInputFromCCMField(CCMField field) throws Exception {
+  public static QLCEViewFieldInput getViewFieldInputFromCCMField(CCMField field) throws Exception {
     HashMap<String, QLCEViewFieldInput> viewFieldsHashMap = getViewFieldsHashMap();
     QLCEViewFieldInput viewField = viewFieldsHashMap.get(field.toString());
     if (viewField == null) {
