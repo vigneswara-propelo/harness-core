@@ -140,6 +140,11 @@ public class ServiceOverridesServiceV2Impl implements ServiceOverridesServiceV2 
   }
 
   @Override
+  public List<NGServiceOverridesEntity> findAll(Criteria criteria) {
+    return serviceOverrideRepositoryV2.findAll(criteria);
+  }
+
+  @Override
   public Pair<NGServiceOverridesEntity, Boolean> upsert(@NonNull NGServiceOverridesEntity requestedEntity) {
     validatePresenceOfRequiredFields(
         requestedEntity.getAccountId(), requestedEntity.getEnvironmentRef(), requestedEntity.getType());
