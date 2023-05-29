@@ -9,19 +9,21 @@ package io.harness.perpetualtask.instancesync;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.connector.ConnectorInfoDTO;
 
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.CDP)
-public class DeploymentReleaseDetails {
-  private String taskInfoId;
-  List<DeploymentDetails> deploymentDetails;
-  String deploymentType;
+public class InstanceSyncV2Request {
+  String accountId;
+  String orgId;
+  String projectId;
+  String perpetualTaskId;
+  ConnectorInfoDTO connector;
 }

@@ -90,7 +90,6 @@ import org.springframework.data.domain.Sort;
 public class InstanceSyncServiceImpl implements InstanceSyncService {
   private PersistentLocker persistentLocker;
   private InstanceSyncPerpetualTaskService instanceSyncPerpetualTaskService;
-  private KryoSerializer kryoSerializer;
 
   private InstanceSyncPerpetualTaskInfoService instanceSyncPerpetualTaskInfoService;
   private InstanceSyncPerpetualTaskMappingService instanceSyncPerpetualTaskMappingService;
@@ -104,6 +103,7 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
   private InstanceSyncServiceUtils utils;
   private InstanceSyncMonitoringService instanceSyncMonitoringService;
   private AccountClient accountClient;
+  private KryoSerializer kryoSerializer;
   private static final int NEW_DEPLOYMENT_EVENT_RETRY = 3;
   private static final String CONNECTOR = "connector";
   private static final int PAGE_SIZE = 100;
@@ -124,7 +124,7 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
       DeploymentSummaryService deploymentSummaryService, InstanceSyncHelper instanceSyncHelper,
       @Named(DEFAULT_CONNECTOR_SERVICE) ConnectorService connectorService,
       InstanceSyncServiceUtils instanceSyncServiceUtils, InstanceSyncMonitoringService instanceSyncMonitoringService,
-      AccountClient accountClient) {
+      AccountClient accountClient, KryoSerializer kryoSerializer) {
     this.persistentLocker = persistentLocker;
     this.instanceSyncPerpetualTaskService = instanceSyncPerpetualTaskService;
     this.instanceSyncPerpetualTaskInfoService = instanceSyncPerpetualTaskInfoService;
@@ -138,6 +138,7 @@ public class InstanceSyncServiceImpl implements InstanceSyncService {
     this.utils = instanceSyncServiceUtils;
     this.instanceSyncMonitoringService = instanceSyncMonitoringService;
     this.accountClient = accountClient;
+    this.kryoSerializer = kryoSerializer;
   }
 
   @Override

@@ -29,6 +29,7 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.models.infrastructuredetails.InfrastructureDetails;
 import io.harness.models.infrastructuredetails.K8sInfrastructureDetails;
 import io.harness.ng.core.infrastructure.InfrastructureKind;
+import io.harness.ng.core.k8s.ServiceSpecType;
 import io.harness.perpetualtask.PerpetualTaskType;
 import io.harness.perpetualtask.instancesync.DeploymentReleaseDetails;
 import io.harness.perpetualtask.instancesync.k8s.K8sDeploymentReleaseDetails;
@@ -102,6 +103,7 @@ public class K8sInstanceSyncHandler extends AbstractInstanceSyncHandler {
     return DeploymentReleaseDetails.builder()
         .taskInfoId(instanceSyncPerpetualTaskInfoDTO.getId())
         .deploymentDetails(new ArrayList<>(k8sDeploymentReleaseDetailsList))
+        .deploymentType(ServiceSpecType.KUBERNETES)
         .build();
   }
 
