@@ -183,7 +183,7 @@ public class PluginSettingUtils extends PluginServiceImpl {
             (SscaOrchestrationStepInfo) stepInfo, identifier, ambiance, infraType);
       case SSCA_ENFORCEMENT:
         return SscaEnforcementPluginHelper.getSscaEnforcementStepEnvVariables(
-            (SscaEnforcementStepInfo) stepInfo, identifier, ambiance);
+            (SscaEnforcementStepInfo) stepInfo, identifier, ambiance, infraType);
       default:
         throw new IllegalStateException("Unexpected value: " + stepInfo.getNonYamlInfo().getStepInfoType());
     }
