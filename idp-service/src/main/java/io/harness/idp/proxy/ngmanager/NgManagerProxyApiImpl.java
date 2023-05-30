@@ -49,16 +49,24 @@ import org.jetbrains.annotations.Nullable;
 @RequestScoped
 @NextGenManagerAuth
 @NoArgsConstructor
-@AllArgsConstructor(onConstructor = @__({ @Inject }))
 public class NgManagerProxyApiImpl implements NgManagerProxyApi {
   private static final String PROXY_PATH = "v1/idp-proxy/ng-manager";
   private static final String PATH_DELIMITER = "/";
   private static final String QUERY_PARAMS_DELIMITER = "\\?";
   private static final String CONTENT_TYPE_HEADER = "Content-Type";
   private static final String FORWARDING_MESSAGE = "Forwarding request to [{}]";
-  @Named("ngManagerServiceHttpClientConfig") private ServiceHttpClientConfig ngManagerServiceHttpClientConfig;
-  @Named("ngManagerServiceSecret") private String ngManagerServiceSecret;
+  private ServiceHttpClientConfig ngManagerServiceHttpClientConfig;
+  private String ngManagerServiceSecret;
   private ServiceTokenGenerator tokenGenerator;
+
+  @Inject
+  public NgManagerProxyApiImpl(
+      @Named("ngManagerServiceHttpClientConfig") ServiceHttpClientConfig ngManagerServiceHttpClientConfig,
+      @Named("ngManagerServiceSecret") String ngManagerServiceSecret, ServiceTokenGenerator tokenGenerator) {
+    this.ngManagerServiceHttpClientConfig = ngManagerServiceHttpClientConfig;
+    this.ngManagerServiceSecret = ngManagerServiceSecret;
+    this.tokenGenerator = tokenGenerator;
+  }
 
   private static final List<String> allowList = Arrays.asList(USERS, USER_GROUPS);
   @IdpServiceAuthIfHasApiKey
