@@ -48,6 +48,7 @@ import static io.harness.ccm.views.utils.ClusterTableKeys.WORKLOAD_NAME;
 import static io.harness.timescaledb.Tables.ANOMALIES;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ccm.msp.entities.MarginDetails;
 import io.harness.ccm.views.businessmapping.entities.BusinessMapping;
 import io.harness.ccm.views.businessmapping.entities.CostTarget;
 import io.harness.ccm.views.businessmapping.entities.SharedCost;
@@ -148,6 +149,8 @@ public class ViewsQueryBuilder {
   private static final String CLICKHOUSE_DISTINCT = "distinct %s";
   private static final String CLICKHOUSE_LABEL_KEYS = "arrayJoin(labels.keys)";
   private static final String CLICKHOUSE_LABEL_VALUES = "arrayJoin(labels.values)";
+
+  private static final Double DEFAULT_MARKUP = 1.0;
 
   @Inject private ViewCustomFieldDao viewCustomFieldDao;
   @Inject private BusinessMappingService businessMappingService;
@@ -1939,6 +1942,18 @@ public class ViewsQueryBuilder {
     return new CustomSql(multiIfStatement.toString());
   }
 
+  public String getSQLCaseStatementForMarginDetails(MarginDetails marginDetails, String tableIdentifier) {
+    CaseStatement caseStatement = new CaseStatement();
+    if (Objects.nonNull(marginDetails.getMarginRules())) {
+      for (CostTarget costTarget : marginDetails.getMarginRules()) {
+        caseStatement.addWhen(getConsolidatedRuleCondition(costTarget.getRules(), tableIdentifier),
+            getRoundedDoubleValue(DEFAULT_MARKUP + (costTarget.getMarginPercentage() / 100)));
+      }
+      caseStatement.addElse(DEFAULT_MARKUP);
+    }
+    return new CustomSql(caseStatement).toString();
+  }
+
   public String getAliasFromField(QLCEViewFieldInput field) {
     switch (field.getIdentifier()) {
       case AWS:
@@ -2056,5 +2071,9 @@ public class ViewsQueryBuilder {
       return ViewFieldUtils.getClickHouseColumnMapping().get(key);
     }
     return field;
+  }
+
+  private double getRoundedDoubleValue(double value) {
+    return Math.round(value * 100D) / 100D;
   }
 }

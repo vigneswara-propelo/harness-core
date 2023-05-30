@@ -24,6 +24,7 @@ import io.harness.ccm.msp.entities.ManagedAccountStats;
 import io.harness.ccm.msp.entities.ManagedAccountTimeSeriesData;
 import io.harness.ccm.msp.entities.ManagedAccountsOverview;
 import io.harness.ccm.msp.entities.MarginDetails;
+import io.harness.ccm.msp.service.intf.MspValidationService;
 import io.harness.ccm.views.dto.TimeSeriesDataPoints;
 import io.harness.ccm.views.graphql.QLCEViewFieldInput;
 import io.harness.ccm.views.graphql.QLCEViewFilter;
@@ -42,13 +43,15 @@ import java.util.stream.Collectors;
 public class ManagedAccountDataServiceImpl implements ManagedAccountDataService {
   @Inject private PerspectivesQuery perspectivesQuery;
   @Inject private MarginDetailsDao marginDetailsDao;
+  @Inject private MspValidationService mspValidationService;
 
   private static final long MAX_DAYS_IN_MONTH = 31;
   private static final long ONE_DAY_IN_MILLIS = 86400000;
 
   @Override
-  public List<String> getEntityList(
-      String managedAccountId, CCMField entity, String searchParam, Integer limit, Integer offset) {
+  public List<String> getEntityList(String mspAccountId, String managedAccountId, CCMField entity, String searchParam,
+      Integer limit, Integer offset) {
+    mspValidationService.validateAccountIsManagedByMspAccount(mspAccountId, managedAccountId);
     try {
       final ResolutionEnvironment env = GraphQLToRESTHelper.createResolutionEnv(managedAccountId);
       QLCEViewFieldInput entityConvertedToFieldInput = RESTToGraphQLHelper.getViewFieldInputFromCCMField(entity);
@@ -122,6 +125,7 @@ public class ManagedAccountDataServiceImpl implements ManagedAccountDataService 
     if (managedAccountId == null) {
       return getManagedAccountStats(mspAccountId, startTime, endTime);
     }
+    mspValidationService.validateAccountIsManagedByMspAccount(mspAccountId, managedAccountId);
     final ResolutionEnvironment env = GraphQLToRESTHelper.createResolutionEnv(mspAccountId);
 
     PerspectiveTrendStats totalSpendStats =
@@ -147,6 +151,7 @@ public class ManagedAccountDataServiceImpl implements ManagedAccountDataService 
   @Override
   public ManagedAccountTimeSeriesData getManagedAccountTimeSeriesData(
       String mspAccountId, String managedAccountId, long startTime, long endTime) {
+    mspValidationService.validateAccountIsManagedByMspAccount(mspAccountId, managedAccountId);
     final ResolutionEnvironment env = GraphQLToRESTHelper.createResolutionEnv(managedAccountId);
     QLCEViewPreferences qlCEViewPreferences =
         QLCEViewPreferences.builder().includeOthers(false).includeUnallocatedCost(false).build();

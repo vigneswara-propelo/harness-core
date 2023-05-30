@@ -57,8 +57,8 @@ public class ManagedAccountDataResource {
                 @AccountIdentifier String accountIdentifier, @QueryParam("managedAccountId") String managedAccountId,
       @QueryParam("entity") CCMField entity, @QueryParam("searchParam") String searchParam,
       @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
-    return ResponseDTO.newResponse(
-        mspManagedAccountDataService.getEntityList(managedAccountId, entity, searchParam, limit, offset));
+    return ResponseDTO.newResponse(mspManagedAccountDataService.getEntityList(
+        accountIdentifier, managedAccountId, entity, searchParam, limit, offset));
   }
 
   @GET

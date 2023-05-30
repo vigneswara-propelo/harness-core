@@ -64,7 +64,8 @@ public class ManagedAccountDataResourceTest {
 
   @Before
   public void setUp() throws IllegalAccessException, IOException {
-    when(managedAccountDataService.getEntityList(MANAGED_ACCOUNT_ID, ENTITY, SEARCH_PARAM, LIMIT, OFFSET))
+    when(managedAccountDataService.getEntityList(
+             MSP_ACCOUNT_ID, MANAGED_ACCOUNT_ID, ENTITY, SEARCH_PARAM, LIMIT, OFFSET))
         .thenReturn(Collections.singletonList(AWS_ACCOUNT_ENTITY));
     when(managedAccountDataService.getManagedAccountStats(MSP_ACCOUNT_ID, MANAGED_ACCOUNT_ID, START_TIME, END_TIME))
         .thenReturn(getDummyManagedAccountStats());

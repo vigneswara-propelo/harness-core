@@ -16,7 +16,7 @@ import java.util.List;
 
 public interface ManagedAccountDataService {
   List<String> getEntityList(
-      String managedAccountId, CCMField entity, String searchParam, Integer limit, Integer offset);
+      String mspAccountId, String managedAccountId, CCMField entity, String searchParam, Integer limit, Integer offset);
   ManagedAccountsOverview getTotalMarkupAndSpend(String mspAccountId);
   ManagedAccountStats getManagedAccountStats(String mspAccountId, long startTime, long endTime);
   ManagedAccountStats getManagedAccountStats(
