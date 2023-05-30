@@ -768,7 +768,8 @@ public enum FeatureName {
   CDS_PIPELINE_STUDIO_UPGRADES("Enables upgraded one canvas pipeline studio with usability fixes", HarnessTeam.CDP),
   CDS_ARTIFACTS_PRIMARY_IDENTIFIER("To change the expression value for primary artifact identifier", HarnessTeam.CDC),
   PL_DISCOVERY_ENABLE(
-      "To control visibility of Discovery navlink in sidebar under project settings", HarnessTeam.CHAOS);
+      "To control visibility of Discovery navlink in sidebar under project settings", HarnessTeam.CHAOS),
+  GITOPS_ORG_LEVEL("Support GitOps at Org level", HarnessTeam.GITOPS);
 
   @Deprecated
   FeatureName() {
