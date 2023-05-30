@@ -5,21 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngtriggers.beans.source;
+package io.harness.ngtriggers.beans.source.artifact;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.data.annotation.TypeAlias;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@TypeAlias("ngTriggerType")
+@Data
+@NoArgsConstructor
 @OwnedBy(PIPELINE)
-public enum NGTriggerType {
-  @JsonProperty("Webhook") WEBHOOK,
-  @JsonProperty("Artifact") ARTIFACT,
-  @JsonProperty("Manifest") MANIFEST,
-  @JsonProperty("Scheduled") SCHEDULED,
-  @JsonProperty("MultiRegionArtifact") MULTI_REGION_ARTIFACT
+public class ArtifactTypeSpecWrapper {
+  ArtifactTypeSpec spec;
 }
