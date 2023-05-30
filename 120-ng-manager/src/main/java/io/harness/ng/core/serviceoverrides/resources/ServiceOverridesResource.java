@@ -311,7 +311,7 @@ public class ServiceOverridesResource {
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
     ServiceOverrideMigrationResponseDTO serviceOverrideMigrationResponseDTO =
-        serviceOverrideV2MigrationService.migrateToV2(accountId, orgIdentifier, projectIdentifier, false);
+        serviceOverrideV2MigrationService.migrateToV2(accountId, orgIdentifier, projectIdentifier, false, false);
     return ResponseDTO.newResponse(serviceOverrideMigrationResponseDTO);
   }
 
@@ -319,21 +319,67 @@ public class ServiceOverridesResource {
   @Path("/migrateScope")
   @Hidden
   @ApiOperation(value = "Migrate ServiceOverride to V2 at one scope", nickname = "migrateServiceOverrideScoped")
-  @Operation(operationId = "migrateServiceOverrideScoped", summary = "Migrate ServiceOverride to V2 at one cope",
+  @Operation(operationId = "migrateServiceOverrideScoped", summary = "Migrate ServiceOverride to V2 at one scope",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns Override Migration Details")
       })
   public ResponseDTO<ServiceOverrideMigrationResponseDTO>
-  migrateServiceOverrideAtAtScope(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull
-                                  @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
+  migrateServiceOverrideAtScope(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull
+                                @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
     ServiceOverrideMigrationResponseDTO serviceOverrideMigrationResponseDTO =
-        serviceOverrideV2MigrationService.migrateToV2(accountId, orgIdentifier, projectIdentifier, true);
+        serviceOverrideV2MigrationService.migrateToV2(accountId, orgIdentifier, projectIdentifier, true, false);
+    return ResponseDTO.newResponse(serviceOverrideMigrationResponseDTO);
+  }
+
+  @POST
+  @Path("/revertMigration")
+  @Hidden
+  @ApiOperation(value = "Revert ServiceOverride V2 Migration", nickname = "revertMigrationServiceOverride")
+  @Operation(operationId = "revertMigrationServiceOverride", summary = "Revert ServiceOverride V2 Migration",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Returns Override Migration Revert Details")
+      })
+  public ResponseDTO<ServiceOverrideMigrationResponseDTO>
+  revertMigrationServiceOverride(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull
+                                 @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
+    ServiceOverrideMigrationResponseDTO serviceOverrideMigrationResponseDTO =
+        serviceOverrideV2MigrationService.migrateToV2(accountId, orgIdentifier, projectIdentifier, false, true);
+    return ResponseDTO.newResponse(serviceOverrideMigrationResponseDTO);
+  }
+
+  @POST
+  @Path("/revertMigrationScope")
+  @Hidden
+  @ApiOperation(
+      value = "Revert ServiceOverride V2 Migration at one scope", nickname = "revertMigrationServiceOverrideScoped")
+  @Operation(operationId = "revertMigrationServiceOverrideScoped",
+      summary = "Revert ServiceOverride V2 Migration at one scope",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "Returns Override Migration Revert Details")
+      })
+  public ResponseDTO<ServiceOverrideMigrationResponseDTO>
+  revertMigrationServiceOverrideAtScope(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull
+                                        @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
+    ServiceOverrideMigrationResponseDTO serviceOverrideMigrationResponseDTO =
+        serviceOverrideV2MigrationService.migrateToV2(accountId, orgIdentifier, projectIdentifier, true, true);
     return ResponseDTO.newResponse(serviceOverrideMigrationResponseDTO);
   }
 }
