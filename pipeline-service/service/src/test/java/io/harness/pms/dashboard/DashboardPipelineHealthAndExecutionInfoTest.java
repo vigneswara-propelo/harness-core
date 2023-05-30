@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.dashboards;
+package io.harness.pms.dashboard;
 
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 
@@ -18,12 +18,6 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.pms.dashboard.DashboardPipelineExecutionInfo;
-import io.harness.pms.dashboard.DashboardPipelineHealthInfo;
-import io.harness.pms.dashboard.MeanAndMedian;
-import io.harness.pms.dashboard.PipelineCountInfo;
-import io.harness.pms.dashboard.PipelineExecutionInfo;
-import io.harness.pms.dashboard.StatusAndTime;
 import io.harness.pms.execution.ExecutionStatus;
 import io.harness.pms.pipeline.service.PipelineDashboardQueryService;
 import io.harness.pms.pipeline.service.PipelineDashboardServiceImpl;
