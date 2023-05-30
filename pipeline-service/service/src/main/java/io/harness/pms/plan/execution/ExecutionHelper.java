@@ -46,6 +46,7 @@ import io.harness.ngsettings.SettingCategory;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.ngsettings.dto.SettingDTO;
 import io.harness.ngsettings.dto.SettingResponseDTO;
+import io.harness.ngsettings.dto.SettingValueResponseDTO;
 import io.harness.notification.bean.NotificationRules;
 import io.harness.opaclient.model.OpaConstants;
 import io.harness.plan.Plan;
@@ -91,6 +92,7 @@ import io.harness.pms.plan.execution.service.PMSExecutionService;
 import io.harness.pms.rbac.PipelineRbacPermissions;
 import io.harness.pms.rbac.validator.PipelineRbacService;
 import io.harness.pms.stages.StagesExpressionExtractor;
+import io.harness.pms.utils.NGPipelineSettingsConstant;
 import io.harness.pms.yaml.PipelineVersion;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlUtils;
@@ -98,7 +100,6 @@ import io.harness.remote.client.NGRestUtils;
 import io.harness.repositories.executions.PmsExecutionSummaryRepository;
 import io.harness.template.yaml.TemplateRefHelper;
 import io.harness.threading.Morpheus;
-import io.harness.utils.NGPipelineSettingsConstant;
 import io.harness.utils.PmsFeatureFlagHelper;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -715,17 +716,21 @@ public class ExecutionHelper {
 
       List<SettingResponseDTO> response = NGRestUtils.getResponse(responseDTOCall);
 
-      // TODO: The filed useMatrixFieldName is redundant, we can make use of the settingToValueMap values. Please make
-      // sure before removing the field from proto that its not being used anywhere. Also there has been some releases
-      // after removing the usages of the field to maintain Backward compatibility.
       for (SettingResponseDTO settingDto : response) {
         SettingDTO setting = settingDto.getSetting();
-        if (setting.getIdentifier().equals(NGPipelineSettingsConstant.ENABLE_MATRIX_FIELD_NAME_SETTING.getName())
-            && setting.getValue().equals("true")) {
-          builder.setUseMatrixFieldName(true);
-        } else {
-          builder.putSettingToValueMap(setting.getIdentifier(), setting.getValue());
-        }
+        builder.putSettingToValueMap(setting.getIdentifier(), setting.getValue());
+      }
+
+      // TODO(Remove this specific setting call once the settings-list API returns all scope settings and not only
+      // project)
+      if (!builder.getSettingToValueMapMap().containsKey(
+              NGPipelineSettingsConstant.ENABLE_NODE_EXECUTION_AUDIT_EVENTS.getName())) {
+        Call<ResponseDTO<SettingValueResponseDTO>> auditSettingResponseDTO =
+            settingsClient.getSetting(NGPipelineSettingsConstant.ENABLE_NODE_EXECUTION_AUDIT_EVENTS.getName(),
+                pipelineEntity.getAccountIdentifier(), null, null);
+        SettingValueResponseDTO auditSettingResponse = NGRestUtils.getResponse(auditSettingResponseDTO);
+        builder.putSettingToValueMap(
+            NGPipelineSettingsConstant.ENABLE_NODE_EXECUTION_AUDIT_EVENTS.getName(), auditSettingResponse.getValue());
       }
     } catch (Exception e) {
       log.error("Error in fetching pipeline Settings due to {}", e.getMessage());

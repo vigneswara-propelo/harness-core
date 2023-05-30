@@ -5,12 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.utils;
+package io.harness.pms.utils;
 
 public enum NGPipelineSettingsConstant {
   ENABLE_MATRIX_FIELD_NAME_SETTING("enable_matrix_label_by_name"),
-  DEFAULT_IMAGE_PULL_POLICY_ADD_ON_CONTANER("default_image_pull_policy_for_add_on_container");
-
+  DEFAULT_IMAGE_PULL_POLICY_ADD_ON_CONTANER("default_image_pull_policy_for_add_on_container"),
+  ENABLE_NODE_EXECUTION_AUDIT_EVENTS("enable_node_execution_audit_events");
   private final String name;
 
   NGPipelineSettingsConstant(String name) {
