@@ -12,9 +12,6 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
-        "//970-api-services-beans/src/main/java/io/harness/jira:module",
-        "//970-api-services-beans/src/main/java/io/harness/servicenow/auth/refreshtoken:module",
-        "//970-api-services-beans/src/main/java/io/harness/servicenow/misc:module",
         "//980-commons/src/main/java/io/harness/eraro:module",
         "//980-commons/src/main/java/io/harness/exception:module",
         "//980-commons/src/main/java/io/harness/jackson:module",
@@ -22,10 +19,8 @@ java_library(
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
-        "@maven//:com_intellij_annotations",
         "@maven//:javax_validation_validation_api",
         "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_hibernate_validator_hibernate_validator",
     ],
 )
 
