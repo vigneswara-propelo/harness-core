@@ -37,6 +37,7 @@ import io.harness.cvng.cdng.beans.v2.VerificationSpec;
 import io.harness.cvng.cdng.beans.v2.VerifyStepPathParams;
 import io.harness.cvng.cdng.services.api.CVNGStepTaskService;
 import io.harness.cvng.core.beans.LoadTestAdditionalInfo;
+import io.harness.cvng.core.beans.TimeRange;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.HealthSourceDTO;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
 import io.harness.cvng.core.beans.params.filterParams.DeploymentTimeSeriesAnalysisFilter;
@@ -61,6 +62,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -150,6 +152,8 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
             verifyStepPathParams.getAccountIdentifier(), verifyStepPathParams.getVerifyStepExecutionId()))
         .baselineOverview(getBaselineOverview(verificationSpec, verifyStepPathParams, appliedDeploymentAnalysisType,
             verificationJobInstance, deploymentVerificationJobInstanceSummary))
+        .controlDataStartTimestamp(getControlDataStartTimestamp(verificationJobInstance))
+        .testDataStartTimestamp(getTestDataStartTimestamp(verificationJobInstance))
         .build();
   }
 
@@ -358,5 +362,29 @@ public class VerifyStepResourceImpl implements VerifyStepResource {
                 .build());
 
     return PageUtils.offsetAndLimit(metricsAnalyses, pageRequest.getPageIndex(), pageRequest.getPageSize());
+  }
+
+  private Long getTestDataStartTimestamp(VerificationJobInstance verificationJobInstance) {
+    Long testDataStartTimestamp = null;
+    TimeRange testDataStartTimerange =
+        deploymentTimeSeriesAnalysisService.getTestDataTimeRange(verificationJobInstance, null);
+    if (Objects.nonNull(testDataStartTimerange)) {
+      testDataStartTimestamp = testDataStartTimerange.getStartTime().toEpochMilli();
+    }
+    return testDataStartTimestamp;
+  }
+
+  private Long getControlDataStartTimestamp(VerificationJobInstance verificationJobInstance) {
+    Long controlDataStartTimestamp = null;
+    TimeRange controlDataStartTimerange =
+        deploymentTimeSeriesAnalysisService
+            .getControlDataTimeRange(AppliedDeploymentAnalysisType.fromVerificationJobType(
+                                         verificationJobInstance.getResolvedJob().getType()),
+                verificationJobInstance, null)
+            .orElse(null);
+    if (Objects.nonNull(controlDataStartTimerange)) {
+      controlDataStartTimestamp = controlDataStartTimerange.getStartTime().toEpochMilli();
+    }
+    return controlDataStartTimestamp;
   }
 }
