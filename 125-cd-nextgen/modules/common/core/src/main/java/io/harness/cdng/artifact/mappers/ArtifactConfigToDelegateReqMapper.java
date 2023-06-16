@@ -791,7 +791,19 @@ public class ArtifactConfigToDelegateReqMapper {
     if (StringUtils.isBlank(bucket)) {
       throw new InvalidRequestException("Please input bucket name.");
     }
+
+    String artifactPathRegex = null;
+    if (isLastPublishedExpression(artifactPath)) {
+      if (ParameterField.isNotNull(artifactConfig.getArtifactPath())
+          && tagHasInputValidator(artifactConfig.getArtifactPath().getInputSetValidator(), artifactPath)) {
+        artifactPathRegex = artifactConfig.getArtifactPath().getInputSetValidator().getParameters();
+      } else {
+        artifactPathRegex = getTagRegex(artifactPath);
+      }
+      artifactPath = "";
+    }
     return ArtifactDelegateRequestUtils.getGoogleCloudStorageArtifactDelegateRequest(bucket, project, artifactPath,
-        gcpConnectorDTO, connectorRef, encryptedDataDetails, ArtifactSourceType.GOOGLE_CLOUD_STORAGE_ARTIFACT);
+        artifactPathRegex, gcpConnectorDTO, connectorRef, encryptedDataDetails,
+        ArtifactSourceType.GOOGLE_CLOUD_STORAGE_ARTIFACT);
   }
 }
