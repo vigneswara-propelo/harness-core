@@ -177,9 +177,10 @@ public class FavoritesServiceImplTest extends CategoryTest {
                             .resourceType(resourceType)
                             .resourceIdentifier(favoriteConnectorId)
                             .build();
-    when(favoriteRepository
-             .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceId(
-                 accountIdentifier, orgIdentifier, projectIdentifier, userId, resourceType, favoriteConnectorId))
+    when(
+        favoriteRepository
+            .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceIdentifier(
+                accountIdentifier, orgIdentifier, projectIdentifier, userId, resourceType, favoriteConnectorId))
         .thenReturn(Optional.of(favorite));
     boolean isFavorite = favoriteService.isFavorite(
         accountIdentifier, orgIdentifier, projectIdentifier, userId, resourceType.toString(), favoriteConnectorId);
@@ -196,9 +197,10 @@ public class FavoritesServiceImplTest extends CategoryTest {
     String userId = randomAlphabetic(10);
     ResourceType resourceType = ResourceType.CONNECTOR;
     String favoriteConnectorId = randomAlphabetic(10);
-    when(favoriteRepository
-             .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceId(
-                 accountIdentifier, orgIdentifier, projectIdentifier, userId, resourceType, favoriteConnectorId))
+    when(
+        favoriteRepository
+            .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceIdentifier(
+                accountIdentifier, orgIdentifier, projectIdentifier, userId, resourceType, favoriteConnectorId))
         .thenReturn(Optional.empty());
     boolean isFavorite = favoriteService.isFavorite(
         accountIdentifier, orgIdentifier, projectIdentifier, userId, resourceType.toString(), favoriteConnectorId);

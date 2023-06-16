@@ -73,7 +73,7 @@ public class FavoritesServiceImpl implements FavoritesService {
       throw new InvalidRequestException(INVALID_RESOURCE_TYPE_ERROR_MESSAGE);
     }
     return favoriteRepository
-        .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceId(
+        .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceIdentifier(
             accountIdentifier, orgIdentifier, projectIdentifier, userId, resourceTypeResolved, resourceId)
         .isPresent();
   }

@@ -30,7 +30,7 @@ public interface FavoriteRepository extends PagingAndSortingRepository<Favorite,
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String userIdentifier);
 
   Optional<Favorite>
-  findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceId(
+  findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUserIdentifierAndResourceTypeAndResourceIdentifier(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String userIdentifier,
       ResourceType resourceType, String resourceId);
 
