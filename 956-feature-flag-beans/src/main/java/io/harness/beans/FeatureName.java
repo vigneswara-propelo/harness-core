@@ -810,7 +810,9 @@ public enum FeatureName {
 
   SRM_ENABLE_SLI_BUCKET("This is used to enable sli bucket reads", HarnessTeam.CV),
   PL_FAVORITES("To enable favorites marking support on entities", HarnessTeam.PL),
-  CI_OUTPUT_VARIABLES_AS_ENV("For enabling output variables as env variables in CI stages", HarnessTeam.CI);
+  CI_OUTPUT_VARIABLES_AS_ENV("For enabling output variables as env variables in CI stages", HarnessTeam.CI),
+  SRM_ENABLE_AGGREGATION_USING_BY_IN_PROMETHEUS(
+      "This is used make prometheus Health source run with promQL by clause", HarnessTeam.CV);
 
   @Deprecated
   FeatureName() {
