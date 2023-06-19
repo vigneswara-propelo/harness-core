@@ -315,7 +315,7 @@ public class PMSYamlSchemaServiceImplTest {
     when(pmsYamlSchemaHelper.isFeatureFlagEnabled(FeatureName.DONT_RESTRICT_PARALLEL_STAGE_COUNT, ACC_ID))
         .thenReturn(false);
 
-    when(pmsYamlSchemaHelper.isFeatureFlagEnabled(FeatureName.STATIC_YAML_SCHEMA, ACC_ID)).thenReturn(false);
+    when(pmsYamlSchemaHelper.isFeatureFlagEnabled(FeatureName.PIE_STATIC_YAML_SCHEMA, ACC_ID)).thenReturn(false);
 
     try (MockedStatic<JsonPipelineUtils> pipelineUtils = mockStatic(JsonPipelineUtils.class)) {
       pipelineUtils.when(() -> JsonPipelineUtils.writeJsonString(any())).thenReturn(schemaString);

@@ -7,7 +7,7 @@
 
 package io.harness.pms.pipeline.service;
 
-import static io.harness.beans.FeatureName.STATIC_YAML_SCHEMA;
+import static io.harness.beans.FeatureName.PIE_STATIC_YAML_SCHEMA;
 import static io.harness.pms.pipeline.service.yamlschema.PmsYamlSchemaHelper.APPROVAL_NAMESPACE;
 import static io.harness.pms.pipeline.service.yamlschema.PmsYamlSchemaHelper.FLATTENED_PARALLEL_STEP_ELEMENT_CONFIG_SCHEMA;
 import static io.harness.pms.pipeline.service.yamlschema.PmsYamlSchemaHelper.PARALLEL_STEP_ELEMENT_CONFIG;
@@ -130,7 +130,7 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
   public JsonNode getPipelineYamlSchema(
       String accountIdentifier, String projectIdentifier, String orgIdentifier, Scope scope) {
     try {
-      if (pmsFeatureFlagService.isEnabled(accountIdentifier, STATIC_YAML_SCHEMA)) {
+      if (pmsFeatureFlagService.isEnabled(accountIdentifier, PIE_STATIC_YAML_SCHEMA)) {
         String staticYamlRepoUrl = calculateFileURL(EntityType.PIPELINES, "v0");
         return schemaFetcher.fetchStaticYamlSchema(accountIdentifier, staticYamlRepoUrl);
       }
