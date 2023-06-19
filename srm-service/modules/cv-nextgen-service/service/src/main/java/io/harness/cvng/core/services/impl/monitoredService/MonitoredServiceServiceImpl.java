@@ -821,6 +821,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                        .serviceRef(monitoredService.getServiceIdentifier())
                        .serviceName(serviceIdNameMap.get(monitoredService.getServiceIdentifier()))
                        .environmentRefs(monitoredService.getEnvironmentIdentifierList())
+                       .tags(TagMapper.convertToMap(monitoredService.getTags()))
                        .type(monitoredService.getType())
                        .configuredChangeSources(isNotEmpty(monitoredService.getChangeSourceIdentifiers())
                                ? monitoredService.getChangeSourceIdentifiers().size()
