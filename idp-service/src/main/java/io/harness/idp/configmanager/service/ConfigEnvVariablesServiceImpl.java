@@ -47,10 +47,6 @@ public class ConfigEnvVariablesServiceImpl implements ConfigEnvVariablesService 
       throws Exception {
     List<PluginConfigEnvVariablesEntity> configVariables =
         ConfigEnvVariablesMapper.getEntitiesForEnvVariables(appConfig, accountIdentifier);
-    if (configVariables.isEmpty()) {
-      log.info(NO_ENV_VARIABLE_ASSOCIATED, appConfig.getConfigId(), accountIdentifier);
-      return new ArrayList<>();
-    }
     List<String> errorMessagesForEnvVariables = getErrorMessagesForEnvVariables(appConfig, accountIdentifier);
     if (!errorMessagesForEnvVariables.isEmpty()) {
       throw new InvalidRequestException(new Gson().toJson(errorMessagesForEnvVariables));
@@ -104,9 +100,11 @@ public class ConfigEnvVariablesServiceImpl implements ConfigEnvVariablesService 
   public void deleteConfigEnvVariables(String accountIdentifier, String configId) {
     List<PluginConfigEnvVariablesEntity> pluginsEnvVariablesEntity =
         configEnvVariablesRepository.findAllByAccountIdentifierAndPluginId(accountIdentifier, configId);
-    configEnvVariablesRepository.deleteAllByAccountIdentifierAndPluginId(accountIdentifier, configId);
-    backstageEnvVariableService.deleteMultiUsingEnvNames(
-        getEnvVariablesFromEntities(pluginsEnvVariablesEntity), accountIdentifier);
+    if (!pluginsEnvVariablesEntity.isEmpty()) {
+      configEnvVariablesRepository.deleteAllByAccountIdentifierAndPluginId(accountIdentifier, configId);
+      backstageEnvVariableService.deleteMultiUsingEnvNames(
+          getEnvVariablesFromEntities(pluginsEnvVariablesEntity), accountIdentifier);
+    }
   }
 
   @Override
