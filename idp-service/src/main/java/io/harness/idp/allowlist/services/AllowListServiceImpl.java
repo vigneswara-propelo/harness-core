@@ -16,9 +16,9 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.idp.common.CommonUtils;
 import io.harness.idp.common.YamlUtils;
-import io.harness.idp.configmanager.ConfigType;
 import io.harness.idp.configmanager.service.ConfigManagerService;
 import io.harness.idp.configmanager.utils.ConfigManagerUtils;
+import io.harness.idp.configmanager.utils.ConfigType;
 import io.harness.spec.server.idp.v1.model.AppConfig;
 import io.harness.spec.server.idp.v1.model.HostInfo;
 
