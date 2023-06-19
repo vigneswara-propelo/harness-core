@@ -75,7 +75,7 @@ public class GitlabConnectorProcessor extends ConnectorProcessor {
     secrets.put(Constants.GITLAB_TOKEN,
         GitIntegrationUtils.getBackstageEnvSecretVariable(tokenSecretIdentifier, Constants.GITLAB_TOKEN));
     configManagerService.createOrUpdateAppConfigForGitIntegrations(accountIdentifier, connectorInfoDTO,
-        ConfigManagerUtils.getIntegrationConfigBasedOnConnectorType(connectorTypeAsString));
+        ConfigManagerUtils.getIntegrationConfigBasedOnConnectorType(connectorTypeAsString), connectorTypeAsString);
     return secrets;
   }
 

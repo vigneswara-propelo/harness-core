@@ -73,7 +73,7 @@ public class AzureRepoConnectorProcessor extends ConnectorProcessor {
     secrets.put(Constants.AZURE_REPO_TOKEN,
         GitIntegrationUtils.getBackstageEnvSecretVariable(tokenSecretIdentifier, Constants.AZURE_REPO_TOKEN));
     configManagerService.createOrUpdateAppConfigForGitIntegrations(accountIdentifier, connectorInfoDTO,
-        ConfigManagerUtils.getIntegrationConfigBasedOnConnectorType(connectorTypeAsString));
+        ConfigManagerUtils.getIntegrationConfigBasedOnConnectorType(connectorTypeAsString), connectorTypeAsString);
     return secrets;
   }
 

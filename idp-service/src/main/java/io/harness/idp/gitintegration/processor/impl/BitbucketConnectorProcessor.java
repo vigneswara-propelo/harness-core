@@ -113,6 +113,9 @@ public class BitbucketConnectorProcessor extends ConnectorProcessor {
       secrets.put(Constants.BITBUCKET_API_ACCESS_TOKEN,
           GitIntegrationUtils.getBackstageEnvSecretVariable(
               bitbucketUsernameTokenApiAccessDTO.getTokenRef().getIdentifier(), Constants.BITBUCKET_API_ACCESS_TOKEN));
+    }
+
+    if (apiAccess != null && !host.equals(GitIntegrationConstants.HOST_FOR_BITBUCKET_CLOUD)) {
       connectorTypeAsString = connectorTypeAsString + SUFFIX_FOR_BITBUCKET_SERVER_PAT;
     }
 
@@ -123,8 +126,9 @@ public class BitbucketConnectorProcessor extends ConnectorProcessor {
     if (host.equals(GitIntegrationConstants.HOST_FOR_BITBUCKET_CLOUD)) {
       connectorTypeAsString = connectorTypeAsString + SUFFIX_FOR_BITBUCKET_CLOUD;
     }
+
     configManagerService.createOrUpdateAppConfigForGitIntegrations(accountIdentifier, connectorInfoDTO,
-        ConfigManagerUtils.getIntegrationConfigBasedOnConnectorType(connectorTypeAsString));
+        ConfigManagerUtils.getIntegrationConfigBasedOnConnectorType(connectorTypeAsString), connectorTypeAsString);
     return secrets;
   }
 

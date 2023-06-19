@@ -114,7 +114,7 @@ public class GithubConnectorProcessor extends ConnectorProcessor {
     integrationConfigs = integrationConfigs.replace(TARGET_TO_REPLACE_IN_CONFIG_FOR_GITHUB_API_BASE_URL,
         getGithubApiBaseUrlFromHost(GitIntegrationUtils.getHostForConnector(connectorInfoDTO)));
     configManagerService.createOrUpdateAppConfigForGitIntegrations(
-        accountIdentifier, connectorInfoDTO, integrationConfigs);
+        accountIdentifier, connectorInfoDTO, integrationConfigs, connectorTypeAsString);
     return secrets;
   }
 

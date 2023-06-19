@@ -316,20 +316,19 @@ public class ConfigManagerServiceImpl implements ConfigManagerService {
 
   @Override
   public void createOrUpdateAppConfigForGitIntegrations(
-      String accountIdentifier, ConnectorInfoDTO connectorInfoDTO, String integrationConfigs) {
+      String accountIdentifier, ConnectorInfoDTO connectorInfoDTO, String integrationConfigs, String connectorType) {
     try {
-      saveAndMergeAppConfigForGitIntegrations(accountIdentifier, connectorInfoDTO, integrationConfigs);
+      saveAndMergeAppConfigForGitIntegrations(accountIdentifier, connectorInfoDTO, integrationConfigs, connectorType);
     } catch (Exception e) {
       log.error("Error in saving and merging app config for git integration in account - {} for connector type - {} ",
           accountIdentifier, connectorInfoDTO.getConnectorType().toString(), e);
     }
   }
 
-  public void saveAndMergeAppConfigForGitIntegrations(
-      String accountIdentifier, ConnectorInfoDTO connectorInfoDTO, String integrationConfigs) throws Exception {
+  public void saveAndMergeAppConfigForGitIntegrations(String accountIdentifier, ConnectorInfoDTO connectorInfoDTO,
+      String integrationConfigs, String connectorTypeAsString) throws Exception {
     ConnectorType connectorType = connectorInfoDTO.getConnectorType();
     String host = GitIntegrationUtils.getHostForConnector(connectorInfoDTO);
-    String connectorTypeAsString = connectorType.toString();
     log.info("Connector chosen in git integration is  - {} ", connectorTypeAsString);
     integrationConfigs = integrationConfigs.replace(TARGET_TO_REPLACE_IN_GIT_INTEGRATION_CONFIG, host);
 

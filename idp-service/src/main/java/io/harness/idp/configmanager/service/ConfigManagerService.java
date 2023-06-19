@@ -48,5 +48,5 @@ public interface ConfigManagerService {
   Boolean isPluginWithNoConfig(String accountIdentifier, String configId);
 
   void createOrUpdateAppConfigForGitIntegrations(
-      String accountIdentifier, ConnectorInfoDTO connectorInfoDTO, String integrationConfigs);
+      String accountIdentifier, ConnectorInfoDTO connectorInfoDTO, String integrationConfigs, String connectorType);
 }
