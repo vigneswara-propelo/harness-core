@@ -868,7 +868,8 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
     }
 
     connectorRepository.delete(existingConnector, null, changeType, supplier);
-
+    favoritesService.deleteFavorites(
+        accountIdentifier, orgIdentifier, projectIdentifier, ResourceType.CONNECTOR.toString(), connectorIdentifier);
     return true;
   }
 
@@ -1214,6 +1215,8 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
             ConnectorResponseDTO connectorDTO = connectorMapper.writeDTO(existingConnector);
             connectorEntityReferenceHelper.deleteConnectorEntityReferenceWhenConnectorGetsDeleted(
                 connectorDTO.getConnector(), accountIdentifier);
+            favoritesService.deleteFavorites(accountIdentifier, orgIdentifier, projectIdentifier,
+                ResourceType.CONNECTOR.toString(), item.getIdentifier());
             return true;
           })
           .orElseThrow(()
