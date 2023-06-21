@@ -28,7 +28,9 @@ import lombok.experimental.UtilityClass;
 @OwnedBy(HarnessTeam.GITOPS)
 @UtilityClass
 public class ClusterEntityMapper {
-  private static final String ORG = "org";
+  public static final String ORG = "org";
+  public static final String ORG_PREFIX = "org.";
+
   public Cluster toEntity(String accountId, ClusterRequest request) {
     return Cluster.builder()
         .accountId(accountId)

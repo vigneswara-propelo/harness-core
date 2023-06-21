@@ -352,7 +352,7 @@ public class ClusterResource {
   private String getScope(ScopeLevel scopeLevel) {
     // For Organization scoped clusters, the prefix used is "org"
     if (ScopeLevel.ORGANIZATION.equals(scopeLevel)) {
-      return "org";
+      return ClusterEntityMapper.ORG;
     }
     // For Account and Project scoped clusters, the prefix used is the scope itself
     return scopeLevel.toString().toLowerCase();
