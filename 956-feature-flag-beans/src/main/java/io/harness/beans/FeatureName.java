@@ -605,9 +605,6 @@ public enum FeatureName {
       "Enable Basic Role assignment  Default User Group in Orgs and Projects", HarnessTeam.PL),
   CDP_AWS_SAM("FF for enabling AWS SAM deployments", HarnessTeam.CDP),
   CI_REMOTE_DEBUG("Enable the option for remote debug for CI users.", HarnessTeam.CI),
-  CDS_GOOGLE_CLOUD_FUNCTION("This flag is to enable the Google Functions Deployment Swimlane for users. "
-          + "This flag only works with Service and Environments v2",
-      HarnessTeam.CDP),
   CDS_NOT_USE_HEADERS_FOR_HTTP_CAPABILITY(
       "FF for disabling headers while doing capability check for HTTP", HarnessTeam.CDC),
   DEL_SELECTION_LOGS_READ_FROM_GOOGLE_DATA_STORE(
