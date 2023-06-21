@@ -432,14 +432,15 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
           buildObject.spec(BranchBuildSpec.builder()
                                .branch(ParameterField.<String>builder().value("<+trigger.branch>").build())
                                .build());
+        } else {
+          // This should be triggered only if the trigger is a tag. There could be a chance that we hit this with
+          // a trigger with comments but I was unable to test this so I will need to check if that has been implemented
+          // or not
+          buildObject.type(BuildType.TAG);
+          buildObject.spec(TagBuildSpec.builder()
+                               .tag(ParameterField.<String>builder().value("<+trigger.tag>").expression(true).build())
+                               .build());
         }
-        // This should be triggered only if the trigger is a tag. There could be a chance that we hit this with
-        // a trigger with comments but I was unable to test this so I will need to check if that has been implemented
-        // or not
-        buildObject.type(BuildType.TAG);
-        buildObject.spec(TagBuildSpec.builder()
-                             .tag(ParameterField.<String>builder().value("<+trigger.tag>").expression(true).build())
-                             .build());
 
       } else {
         // If the repository name is empty, it means that the connector is an account connector and the repo needs to be
