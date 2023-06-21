@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Harness Inc. All rights reserved.
+ * Copyright 2023 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -14,15 +14,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.steps.stepinfo.IACMTerraformPluginInfo;
+import io.harness.beans.steps.stepinfo.IACMApprovalInfo;
 import io.harness.category.element.UnitTests;
 import io.harness.ci.buildstate.ConnectorUtils;
 import io.harness.ci.buildstate.PluginSettingUtils;
 import io.harness.ci.execution.CIExecutionConfigService;
 import io.harness.ci.integrationstage.IntegrationStageUtils;
-import io.harness.ci.serializer.vm.VmIACMStepSerializer;
+import io.harness.ci.serializer.vm.VmIACMApprovalStepSerializer;
 import io.harness.ci.utils.CIStepInfoUtils;
 import io.harness.ci.utils.HarnessImageUtils;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
@@ -44,13 +43,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(IACM)
-public class VmIACMStepSerializerTest extends CategoryTest {
+public class VmIACMApprovalStepSerializerTest {
   @Mock private CIExecutionConfigService ciExecutionConfigService;
   @Mock private ConnectorUtils connectorUtils;
   @Mock private HarnessImageUtils harnessImageUtils;
 
   @Mock IACMStepsUtils iacmStepsUtils;
-  @InjectMocks private VmIACMStepSerializer vmIACMPluginCompatibleStepSerializer;
+  @InjectMocks private VmIACMApprovalStepSerializer vmIACMApprovalStepSerializer;
   private Ambiance ambiance = Ambiance.newBuilder()
                                   .putAllSetupAbstractions(Maps.of("accountId", "accountId", "projectIdentifier",
                                       "projectIdentfier", "orgIdentifier", "orgIdentifier"))
@@ -73,13 +72,12 @@ public class VmIACMStepSerializerTest extends CategoryTest {
     tfVars.put("tfvar2", "Value1");
     Map<String, String> env = new HashMap<>();
     env.put("command", "Apply");
-    IACMTerraformPluginInfo stepInfo = IACMTerraformPluginInfo.builder()
-                                           .env(ParameterField.createValueField(env))
-                                           .identifier("id")
-                                           .name("name")
-                                           .operation(ParameterField.<String>builder().build())
-                                           .image(ParameterField.<String>builder().build())
-                                           .build();
+    IACMApprovalInfo stepInfo = IACMApprovalInfo.builder()
+                                    .env(ParameterField.createValueField(env))
+                                    .identifier("id")
+                                    .name("name")
+                                    .image(ParameterField.<String>builder().build())
+                                    .build();
 
     Mockito.mockStatic(CIStepInfoUtils.class);
     when(CIStepInfoUtils.getPluginCustomStepImage(any(), any(), any(), any())).thenReturn("imageName");
@@ -89,21 +87,22 @@ public class VmIACMStepSerializerTest extends CategoryTest {
         put("PLUGIN_keytest2", "keyValue2");
         put("TFVARS_SECRETS_keytest3", "${ngSecretManager.obtain");
         put("TF_keytest4", "keyValue4");
+        put("PLUGIN_COMMAND", "approval");
       }
     });
-    when(iacmStepsUtils.retrieveIACMConnectorDetails(ambiance, stepInfo))
-        .thenReturn(ConnectorDetails.builder().build());
+
     Mockito.mockStatic(IntegrationStageUtils.class);
     when(IntegrationStageUtils.getFullyQualifiedImageName(any(), any())).thenReturn("imageName");
     Mockito.mockStatic(PluginSettingUtils.class);
     when(PluginSettingUtils.getConnectorSecretEnvMap(any())).thenReturn(new HashMap<>());
     when(connectorUtils.getConnectorDetails(any(), any())).thenReturn(ConnectorDetails.builder().build());
 
-    VmPluginStep vmPluginStep = vmIACMPluginCompatibleStepSerializer.serialize(ambiance, stepInfo, null, null);
-    assertThat(vmPluginStep.getEnvVariables().size()).isEqualTo(4);
+    VmPluginStep vmPluginStep = vmIACMApprovalStepSerializer.serialize(ambiance, stepInfo, null, null);
+    assertThat(vmPluginStep.getEnvVariables().size()).isEqualTo(5);
     assertThat(vmPluginStep.getEnvVariables().get("ENV_SECRETS_keytest1")).contains("${ngSecretManager.obtain");
     assertThat(vmPluginStep.getEnvVariables().get("PLUGIN_keytest2")).isEqualTo("keyValue2");
     assertThat(vmPluginStep.getEnvVariables().get("TFVARS_SECRETS_keytest3")).contains("${ngSecretManager.obtain");
     assertThat(vmPluginStep.getEnvVariables().get("TF_keytest4")).isEqualTo("keyValue4");
+    assertThat(vmPluginStep.getEnvVariables().get("PLUGIN_COMMAND")).isEqualTo("approval");
   }
 }

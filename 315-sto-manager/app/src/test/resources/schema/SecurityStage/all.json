@@ -4703,6 +4703,32 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "IACMApprovalInfo": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StepSpecType"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "env": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/ParameterFieldMapStringString"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "image": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "IACMStepInfo": {
       "allOf": [
         {
@@ -11277,6 +11303,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/IACMStepInfo"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "IACMApproval"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/IACMApprovalInfo"
               }
             }
           }
