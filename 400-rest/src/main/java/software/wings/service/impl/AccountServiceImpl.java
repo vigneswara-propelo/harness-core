@@ -698,6 +698,7 @@ public class AccountServiceImpl implements AccountService {
     accountDetails.setDefaultExperience(account.getDefaultExperience());
     accountDetails.setCrossGenerationAccessEnabled(account.isCrossGenerationAccessEnabled());
     accountDetails.setCreatedFromNG(account.isCreatedFromNG());
+    accountDetails.setSessionTimeOutInMinutes(account.getSessionTimeOutInMinutes());
     accountDetails.setActiveServiceCount(cgCdLicenseUsageService.getActiveServiceInTimePeriod(accountId, 60));
     if (featureFlagService.isEnabled(CG_LICENSE_USAGE, accountId)) {
       accountDetails.setActiveServicesUsageInfo(cgCdLicenseUsageService.getActiveServiceLicenseUsage(accountId));
