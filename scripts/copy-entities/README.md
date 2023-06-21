@@ -1,36 +1,33 @@
-## Prerequisite to Run the script
-
-- Create an API Key with admin permissions
-- All the Secret Managers needs to be migrated manually. <br>
-  Cases when this is not needed
-    - If the SM are at account level then there is no need to do the same
-    - If the migration is being done in the same org and the SM are present at the org level then this is not needed
+## Prerequisites to run the Script:
+1. Generate an API key with administrative rights (or enough rights to perform read and write operations in both the Orgs / projects)
+2. All Secret Managers created inside the project must be migrated manually - this is needed to ensure that secrets required to create other entities can be created before migration of entities
+3. If Org level secrets are being used in the project, they must be migrated manually if the new project is in different org
 
 
-## Limitations of the Script
+## Limitations of the Script:
 
-1. This script won’t migrate any inline secrets stored in any secret manager.
-2. All the remote Pipelines will be moved to Inline.
-3. All the remote templates would be move to Inline.
-4. If the SM is not migrated then the secrets present in that SM will also be not migrated.
-5. Make sure that the identifier remains the same while creating the prerequisites data.
-
-
-## Entities Supported
-
-- Secrets
-- Connectors
-- Service
-- Environment
-- Template
-- Pipeline
-
-### Order of Execution of the Script
+1. The script will not migrate any inline secrets created in any Secret Manager.
+2. Any Org level entities that are being referenced in the project will not be migrated (they must be migrated manually if the target project is in different org)
+3. All remote Pipelines will be converted to inline.
+4. All remote templates will be converted to inline.
+5. If the SM is not migrated, the secrets within it cannot be migrated.
+6. It’s crucial to maintain same identifiers when creating prerequisite data.
 
 
-Secrets  -> Connector -> Service -> Environment -> Template -> Pipeline
+## Supported Entities:
+
+1. Secrets 
+2. Connectors
+3. Service
+4. Environment
+5. Template
+6. Pipeline
+
+### Script Execution Order:
+
+The script migrates the entities in the following order: Secrets -> Connector -> Service -> Environment -> Template -> Pipeline.
 
 
-### Command to Execute this script
+### Command to Execute the Script:
 
 python3 script.py accountIdentifier from_projectIdentifier to_ProjectIdentifier from_orgIdentifier to_orgIdentifier x-api-key
