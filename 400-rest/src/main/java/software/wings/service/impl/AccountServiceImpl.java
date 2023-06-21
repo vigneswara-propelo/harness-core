@@ -21,6 +21,7 @@ import static io.harness.eraro.ErrorCode.ACCOUNT_DOES_NOT_EXIST;
 import static io.harness.eraro.ErrorCode.INVALID_REQUEST;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.DELETE_ACTION;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.NG_USER_CLEANUP_ACTION;
+import static io.harness.eventsframework.EventsFrameworkMetadataConstants.SYNC_ACTION;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.UPDATE_ACTION;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
@@ -569,6 +570,13 @@ public class AccountServiceImpl implements AccountService {
     account.setNextGenEnabled(enabled);
     update(account);
     publishAccountChangeEventViaEventFramework(accountId, UPDATE_ACTION);
+    return true;
+  }
+
+  @Override
+  public Boolean syncNextgenWithCG(String accountId) {
+    log.info("Syncing NG with CG for account " + accountId);
+    publishAccountChangeEventViaEventFramework(accountId, SYNC_ACTION);
     return true;
   }
 
