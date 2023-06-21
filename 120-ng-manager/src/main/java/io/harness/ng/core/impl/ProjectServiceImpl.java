@@ -687,8 +687,8 @@ public class ProjectServiceImpl implements ProjectService {
 
   @Override
   public boolean isFavorite(Project project, String userId) {
-    return favoritesService.isFavorite(
-        project.getAccountIdentifier(), null, null, userId, ResourceType.PROJECT.toString(), project.getIdentifier());
+    return favoritesService.isFavorite(project.getAccountIdentifier(), project.getOrgIdentifier(), null, userId,
+        ResourceType.PROJECT.toString(), project.getIdentifier());
   }
 
   private void validateCreateProjectRequest(String accountIdentifier, String orgIdentifier, ProjectDTO project) {

@@ -694,6 +694,23 @@ public class ProjectServiceImplTest extends CategoryTest {
         .getFavorites(accountIdentifier, orgIdentifier, null, userid, ResourceType.PROJECT.toString());
   }
 
+  @Test
+  @Owner(developers = BOOPESH)
+  @Category(UnitTests.class)
+  public void shouldReturnTrueIfProjectIsFavorite() {
+    String accountIdentifier = randomAlphabetic(10);
+    String orgIdentifier = randomAlphabetic(10);
+    String userid = randomAlphabetic(10);
+    ProjectDTO projectDTO = createProjectDTO(orgIdentifier, randomAlphabetic(10));
+    Project project = toProject(projectDTO);
+    project.setAccountIdentifier(accountIdentifier);
+    when(favoritesService.isFavorite(accountIdentifier, project.getOrgIdentifier(), null, userid,
+             ResourceType.PROJECT.toString(), project.getIdentifier()))
+        .thenReturn(true);
+    boolean isFavorite = projectService.isFavorite(project, userid);
+    assertThat(isFavorite).isTrue();
+  }
+
   private static <T> CloseableIterator<T> createCloseableIterator(Iterator<T> iterator) {
     return new CloseableIterator<T>() {
       @Override
