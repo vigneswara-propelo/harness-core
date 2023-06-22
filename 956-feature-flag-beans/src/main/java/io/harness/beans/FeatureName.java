@@ -547,6 +547,7 @@ public enum FeatureName {
       HarnessTeam.PIPELINE),
   PIE_GET_FILE_CONTENT_ONLY(
       "FF to optimise the execution flow to fetch only file content for remote entities", HarnessTeam.PIPELINE),
+  PIE_GIT_DEFAULT_BRANCH_CACHE("FF to fetch the default branch from the git default branch cache", PIPELINE),
   INSTANT_DELEGATE_DOWN_ALERT("FF to instantly alert when delegates are down", HarnessTeam.SPG),
   QUEUE_CI_EXECUTIONS("FF to enable queueing in CI builds", HarnessTeam.CI),
   QUEUE_CI_EXECUTIONS_CONCURRENCY("FF to enable queueing in CI builds", HarnessTeam.CI),
