@@ -817,7 +817,10 @@ public enum FeatureName {
   CDS_ENCRYPT_TERRAFORM_APPLY_JSON_OUTPUT(
       "FF for providing the terraform apply json output as a secret", HarnessTeam.CDP),
   CDS_K8S_HELM_INSTANCE_SYNC_V2_NG(
-      "FF for enabling Instance Sync V2 for K8s and Native Helm swimlanes in NG", HarnessTeam.CDP);
+      "FF for enabling Instance Sync V2 for K8s and Native Helm swimlanes in NG", HarnessTeam.CDP),
+  CDS_SERVICENOW_USE_METADATA_V2(
+      "Using METADATA_V2 in /metadata (create update) and /createMetadata (approval) API in Servicenow Steps NG; and changing /metadata parsing to manager",
+      HarnessTeam.CDC);
 
   @Deprecated
   FeatureName() {
