@@ -4605,6 +4605,13 @@ go_repository(
     version = "v1.3.1",
 )
 
+go_repository(
+    name = "com_github_harness_ti_client",
+    importpath = "github.com/harness/ti-client",
+    sum = "h1:Ep30TUGSR+TlhMe8Ez0P9awmBUga0KEapfV438hzpP8=",
+    version = "v0.0.0-20230625231222-263e215b8017",
+)
+
 go_rules_dependencies()
 
 go_register_toolchains(version = "1.20.4")
