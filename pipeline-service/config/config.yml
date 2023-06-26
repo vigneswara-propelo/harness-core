@@ -329,7 +329,7 @@ orchestrationStepConfig:
     #Todo: Move to config Management Service
     moduleToSupportedSteps:
       cd: [ "DownloadManifests", "AwsSamBuild", "AwsSamDeploy" ]
-      ci: [ "Background", "background", "GitClone" ]
+      ci: [ "Background", "background", "GitClone", "Run", "Plugin", "Action"]
 
 
 shouldDeployWithGitSync: true
