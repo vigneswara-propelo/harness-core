@@ -365,7 +365,7 @@ redisLockConfig:
   timeout: 6000
   subscriptionsPerConnection: 5
 
-distributedLockImplementation: MONGO
+distributedLockImplementation: REDIS
 
 enableDashboardTimescale: false
 
