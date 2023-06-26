@@ -5,21 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.task.helm.response;
+package io.harness.helm;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.helm.HelmChartYaml;
 
 import java.util.Map;
 import javax.annotation.Nullable;
-import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
 @OwnedBy(HarnessTeam.CDP)
-public class HelmChartManifest {
+public class HelmChartYaml {
   private String apiVersion;
   private String name;
   private String version;
@@ -28,19 +25,5 @@ public class HelmChartManifest {
   @Nullable private String type;
   @Nullable private String appVersion;
   @Nullable private Map<String, String> annotations;
-  private Map<String, String> metadata;
-
-  public static HelmChartManifest create(HelmChartYaml helmChartYaml, Map<String, String> metadata) {
-    return HelmChartManifest.builder()
-        .apiVersion(helmChartYaml.getApiVersion())
-        .name(helmChartYaml.getName())
-        .version(helmChartYaml.getVersion())
-        .annotations(helmChartYaml.getAnnotations())
-        .description(helmChartYaml.getDescription())
-        .kubeVersion(helmChartYaml.getKubeVersion())
-        .appVersion(helmChartYaml.getAppVersion())
-        .type(helmChartYaml.getType())
-        .metadata(metadata)
-        .build();
-  }
+  @Nullable private Map<String, String> metadata;
 }
