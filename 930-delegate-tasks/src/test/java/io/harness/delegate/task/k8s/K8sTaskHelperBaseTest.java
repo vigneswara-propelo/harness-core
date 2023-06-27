@@ -2482,6 +2482,90 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     verify(executionLogCallback, times(1)).saveExecutionLog("\nStatus : app1   Failed", ERROR);
   }
 
+  @Test
+  @Owner(developers = TARUN_UBA)
+  @Category(UnitTests.class)
+  public void testDeleteFunctionWhenProcessResultSucceeded() throws Exception {
+    List<KubernetesResourceId> resourceIds =
+        ImmutableList.of(KubernetesResourceId.builder().name("app1").namespace("default").build());
+    K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
+                                                      .workingDirectory(".")
+                                                      .kubectlPath("kubectl")
+                                                      .kubeconfigPath("config-path")
+                                                      .build();
+    Kubectl client = Kubectl.client("kubectl", "config-path");
+    ProcessResult processResult = new ProcessResult(0, new ProcessOutput("Successful".getBytes()));
+    ProcessResponse response = ProcessResponse.builder().processResult(processResult).build();
+    doReturn(response)
+        .when(spyK8sTaskHelperBase)
+        .runK8sExecutable(eq(k8sDelegateTaskParams), eq(executionLogCallback), any(AbstractExecutable.class));
+    spyK8sTaskHelperBase.delete(client, k8sDelegateTaskParams, resourceIds, executionLogCallback, true);
+    verify(executionLogCallback, times(1)).saveExecutionLog("Done", INFO, CommandExecutionStatus.SUCCESS);
+  }
+
+  @Test
+  @Owner(developers = TARUN_UBA)
+  @Category(UnitTests.class)
+  public void testDeleteFunctionWhenProcessResultFailedCauseResourceNotFound() throws Exception {
+    List<KubernetesResourceId> resourceIds =
+        ImmutableList.of(KubernetesResourceId.builder().name("app1").namespace("default").build());
+    K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
+                                                      .workingDirectory(".")
+                                                      .kubectlPath("kubectl")
+                                                      .kubeconfigPath("config-path")
+                                                      .build();
+    Kubectl client = Kubectl.client("kubectl", "config-path");
+    ProcessResult processResult = new ProcessResult(1, new ProcessOutput("Resource not found".getBytes()));
+    ProcessResponse response = ProcessResponse.builder().processResult(processResult).build();
+    doReturn(response)
+        .when(spyK8sTaskHelperBase)
+        .runK8sExecutable(eq(k8sDelegateTaskParams), eq(executionLogCallback), any(AbstractExecutable.class));
+    spyK8sTaskHelperBase.delete(client, k8sDelegateTaskParams, resourceIds, executionLogCallback, true);
+    verify(executionLogCallback, times(1)).saveExecutionLog("Done", INFO, CommandExecutionStatus.SUCCESS);
+  }
+
+  @Test
+  @Owner(developers = TARUN_UBA)
+  @Category(UnitTests.class)
+  public void testDeleteFunctionWhenProcessResultFailedCauseOfOtherReasons() throws Exception {
+    List<KubernetesResourceId> resourceIds =
+        ImmutableList.of(KubernetesResourceId.builder().name("app1").namespace("default").build());
+    K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
+                                                      .workingDirectory(".")
+                                                      .kubectlPath("kubectl")
+                                                      .kubeconfigPath("config-path")
+                                                      .build();
+    Kubectl client = Kubectl.client("kubectl", "config-path");
+    ProcessResult processResult = new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes()));
+    ProcessResponse response = ProcessResponse.builder().processResult(processResult).build();
+    doReturn(response)
+        .when(spyK8sTaskHelperBase)
+        .runK8sExecutable(eq(k8sDelegateTaskParams), eq(executionLogCallback), any(AbstractExecutable.class));
+    spyK8sTaskHelperBase.delete(client, k8sDelegateTaskParams, resourceIds, executionLogCallback, true);
+    verify(executionLogCallback, times(1)).saveExecutionLog("Failed", ERROR, CommandExecutionStatus.FAILURE);
+  }
+
+  @Test
+  @Owner(developers = TARUN_UBA)
+  @Category(UnitTests.class)
+  public void testDeleteFunctionWhenProcessResultSucceededButCannotDenoteSuccess() throws Exception {
+    List<KubernetesResourceId> resourceIds =
+        ImmutableList.of(KubernetesResourceId.builder().name("app1").namespace("default").build());
+    K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder()
+                                                      .workingDirectory(".")
+                                                      .kubectlPath("kubectl")
+                                                      .kubeconfigPath("config-path")
+                                                      .build();
+    Kubectl client = Kubectl.client("kubectl", "config-path");
+    ProcessResult processResult = new ProcessResult(0, new ProcessOutput("Successful".getBytes()));
+    ProcessResponse response = ProcessResponse.builder().processResult(processResult).build();
+    doReturn(response)
+        .when(spyK8sTaskHelperBase)
+        .runK8sExecutable(eq(k8sDelegateTaskParams), eq(executionLogCallback), any(AbstractExecutable.class));
+    spyK8sTaskHelperBase.delete(client, k8sDelegateTaskParams, resourceIds, executionLogCallback, false);
+    verify(executionLogCallback, times(0)).saveExecutionLog("Done", INFO, CommandExecutionStatus.SUCCESS);
+  }
+
   private LogCallback getLogCallback() {
     return new LogCallback() {
       @Override
