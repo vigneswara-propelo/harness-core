@@ -159,6 +159,9 @@ public class ExecutionInputServiceImpl implements ExecutionInputService {
   public void checkValueForRequiredVariablesProvided(
       String fieldYaml, JsonNode executionInputNode, boolean continueWithDefault) {
     Map<String, String> executionInputYamlVariables = new HashMap<>();
+    // Storing the variables present in execution input yaml at first level and storing them in a map as key value pair
+    // . Expressions are also present as string only since we dont want to throw error in case the expression is
+    // resolved to empty value
     if (executionInputNode.fields() != null && executionInputNode.fields().hasNext()
         && executionInputNode.fields().next().getValue().get(VARIABLES) != null) {
       ArrayNode executionInputVariables = (ArrayNode) executionInputNode.fields().next().getValue().get(VARIABLES);
@@ -166,23 +169,31 @@ public class ExecutionInputServiceImpl implements ExecutionInputService {
           jsonNode -> executionInputYamlVariables.put(jsonNode.get(NAME).asText(), jsonNode.get(VALUE).asText()));
     }
 
+    // Fetching variables from the field yaml at first level
     JsonNode fieldYamlNode = YamlUtils.readAsJsonNode(fieldYaml);
     if (fieldYamlNode.fields() != null && fieldYamlNode.fields().hasNext()
         && fieldYamlNode.fields().next().getValue().get(VARIABLES) != null) {
       ArrayNode fieldYamlVariables = (ArrayNode) fieldYamlNode.fields().next().getValue().get(VARIABLES);
       fieldYamlVariables.forEach(jsonNode -> {
+        // Checking if variable in field yaml is an execution input and required
         if (NGExpressionUtils.matchesExecutionInputPattern(jsonNode.get(VALUE).asText())
             && jsonNode.get(REQUIRED) != null && jsonNode.get(REQUIRED).asBoolean()) {
           String variableName = jsonNode.get(NAME).asText();
+          // Throwing error if value of the variable in execution input yaml is empty
           if (isEmpty(executionInputYamlVariables.get(variableName))) {
             throw new InvalidRequestException(
                 String.format("%s is a required variable .Value or expression not provided for the variable : %s",
                     variableName, variableName));
           }
 
+          // Checking if value of required variable in execution input yaml is of form <+input>.executionInput().
           if (NGExpressionUtils.matchesExecutionInputPattern(executionInputYamlVariables.get(variableName))) {
             String defaultValue =
                 NGRuntimeInputUtils.extractParameters(executionInputYamlVariables.get(variableName), "default");
+            // This should happen only in case when we come to this flow via proceed with default values failure
+            // strategy where execution input yam is empty and we fetch it from the execution input instance in the db.
+            // In case execution input yaml is provided empty by the user we will throw an error. We will also throw an
+            // error if the default value of a required variable is empty in case of proceed with default values.
             if (!continueWithDefault || isEmpty(defaultValue)) {
               throw new InvalidRequestException(String.format(
                   "%s is a required variable .Default value is empty or not provided for the variable : %s or the execution input yaml provided by user is empty",
