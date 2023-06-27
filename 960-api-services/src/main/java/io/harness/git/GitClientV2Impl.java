@@ -487,6 +487,7 @@ public class GitClientV2Impl implements GitClientV2 {
           startCommitIdStr = firstCommit.getName();
         }
       }
+
       log.info(GIT_YAML_LOG_PREFIX + "startCommitIdStr =[{}], endCommitIdStr=[{}], endCommitId.name=[{}]",
           startCommitIdStr, endCommitIdStr, endCommitId.name());
 
