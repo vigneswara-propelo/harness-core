@@ -40,12 +40,14 @@ import io.harness.template.services.TemplateGitXService;
 import io.harness.template.utils.NGTemplateFeatureFlagHelperService;
 
 import com.google.common.io.Resources;
+import com.google.inject.Inject;
 import com.google.protobuf.StringValue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import org.joor.Reflect;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,6 +79,9 @@ public class TemplateFullGitSyncHelperTest extends CategoryTest {
   @Mock NGTemplateFeatureFlagHelperService ngTemplateFeatureFlagHelperService;
 
   @Mock TelemetryReporter telemetryReporter;
+
+  @Inject private ExecutorService executorService;
+
   private final String ACCOUNT_ID = "accountId";
   private final String ORG_IDENTIFIER = "orgId";
   private final String PROJ_IDENTIFIER = "projId";
@@ -96,7 +101,7 @@ public class TemplateFullGitSyncHelperTest extends CategoryTest {
     yaml = Resources.toString(Objects.requireNonNull(classLoader.getResource(filename)), StandardCharsets.UTF_8);
 
     templateServiceHelper = new NGTemplateServiceHelper(filterService, templateRepository, gitSyncSdkService,
-        templateGitXService, gitAwareEntityHelper, telemetryReporter);
+        templateGitXService, gitAwareEntityHelper, telemetryReporter, executorService);
     Reflect.on(templateFullGitSyncHelper).set("templateServiceHelper", templateServiceHelper);
 
     entityDetailProtoDTO = EntityDetailProtoDTO.newBuilder().setType(EntityTypeProtoEnum.TEMPLATE).build();
