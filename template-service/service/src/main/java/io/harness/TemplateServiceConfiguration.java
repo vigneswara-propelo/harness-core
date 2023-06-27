@@ -102,6 +102,7 @@ public class TemplateServiceConfiguration extends Configuration {
   @JsonProperty("templateAsyncSetupUsagePoolConfig") private ThreadPoolConfig templateAsyncSetupUsagePoolConfig;
   @JsonProperty(value = "enableOpentelemetry") private Boolean enableOpentelemetry;
   @JsonProperty("distributedLockImplementation") private DistributedLockImplementation distributedLockImplementation;
+  @JsonProperty("staticSchemaFileURL") private String staticSchemaFileURL;
   @JsonProperty("segmentConfiguration") private SegmentConfiguration segmentConfiguration;
   private ServiceHttpClientConfig opaClientConfig;
   private String policyManagerSecret;
