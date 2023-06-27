@@ -218,7 +218,6 @@ import io.harness.cdng.creator.variables.ServerlessAwsLambdaDeployStepVariableCr
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaPrepareRollbackV2StepVariableCreator;
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaRollbackStepVariableCreator;
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaRollbackV2StepVariableCreator;
-import io.harness.cdng.creator.variables.StepGroupVariableCreator;
 import io.harness.cdng.creator.variables.TasAppResizeStepVariableCreator;
 import io.harness.cdng.creator.variables.TasBGAppSetupStepVariableCreator;
 import io.harness.cdng.creator.variables.TasBasicAppSetupStepVariableCreator;
@@ -275,6 +274,7 @@ import io.harness.plancreator.steps.StepGroupPMSPlanCreatorV2;
 import io.harness.pms.contracts.steps.StepInfo;
 import io.harness.pms.contracts.steps.StepMetaData;
 import io.harness.pms.sdk.core.pipeline.filters.FilterJsonCreator;
+import io.harness.pms.sdk.core.pipeline.variables.StepGroupVariableCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoProvider;
 import io.harness.pms.sdk.core.variables.EmptyAnyVariableCreator;
