@@ -1006,3 +1006,4 @@ io.harness.cdng.provision.terraform.TerraformEncryptOutput
 io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaDeployV2StepInfo
 io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaDeployV2StepNode
 io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaDeployV2StepParameters
+io.harness.cdng.manifestConfigs.ManifestConfigurations
