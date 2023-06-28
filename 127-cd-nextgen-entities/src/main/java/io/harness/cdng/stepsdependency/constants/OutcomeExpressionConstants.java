@@ -22,6 +22,7 @@ public class OutcomeExpressionConstants {
   public final String ARTIFACTS = "artifacts";
   public final String ARTIFACT = "artifact";
   public final String MANIFESTS = "manifests";
+  public final String UNRESOLVED_MANIFESTS = "_unresolved_manifests";
   public final String INFRASTRUCTURE_OUTCOME = "stage.spec.infrastructure.output";
   public final String INFRASTRUCTURE_GROUP = "infrastructureGroup";
   public final String K8S_ROLL_OUT = "rollingOutcome";
