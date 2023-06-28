@@ -524,6 +524,7 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
 
   @Override
   public ScmCommitFileResponseDTO createFile(ScmCreateFileRequestDTO scmCreateFileRequestDTO) {
+    validateCreateFileRequest(scmCreateFileRequestDTO);
     Scope scope = scmCreateFileRequestDTO.getScope();
     ScmConnector scmConnector = gitSyncConnectorHelper.getScmConnectorForGivenRepo(scope.getAccountIdentifier(),
         scope.getOrgIdentifier(), scope.getProjectIdentifier(), scmCreateFileRequestDTO.getConnectorRef(),
@@ -587,7 +588,9 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
 
   @Override
   public ScmCommitFileResponseDTO updateFile(ScmUpdateFileRequestDTO scmUpdateFileRequestDTO) {
+    validateUpdateFileRequest(scmUpdateFileRequestDTO);
     Scope scope = scmUpdateFileRequestDTO.getScope();
+
     ScmConnector scmConnector = gitSyncConnectorHelper.getScmConnectorForGivenRepo(scope.getAccountIdentifier(),
         scope.getOrgIdentifier(), scope.getProjectIdentifier(), scmUpdateFileRequestDTO.getConnectorRef(),
         scmUpdateFileRequestDTO.getRepoName());
@@ -1217,5 +1220,17 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
         .setStatus(response.getStatus())
         .setError(response.getError())
         .build();
+  }
+
+  private void validateCreateFileRequest(ScmCreateFileRequestDTO scmCreateFileRequestDTO) {
+    Scope scope = scmCreateFileRequestDTO.getScope();
+    gitRepoAllowlistHelper.validateRepo(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
+        scope.getProjectIdentifier(), scmCreateFileRequestDTO.getRepoName());
+  }
+
+  private void validateUpdateFileRequest(ScmUpdateFileRequestDTO scmUpdateFileRequestDTO) {
+    Scope scope = scmUpdateFileRequestDTO.getScope();
+    gitRepoAllowlistHelper.validateRepo(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
+        scope.getProjectIdentifier(), scmUpdateFileRequestDTO.getRepoName());
   }
 }
