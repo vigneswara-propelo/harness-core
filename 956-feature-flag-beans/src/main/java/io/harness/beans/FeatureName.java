@@ -466,7 +466,6 @@ public enum FeatureName {
   NG_GIT_EXPERIENCE,
   NG_INLINE_MANIFEST,
   NG_LICENSES_ENABLED,
-  NG_SETTINGS("Enable Settings at various scopes in NG", HarnessTeam.PL),
   NG_SVC_ENV_REDESIGN,
   NODE_RECOMMENDATION_AGGREGATE("K8S Node recommendation Feature in CCM", HarnessTeam.CE),
   NOTIFY_GIT_SYNC_ERRORS_PER_APP(
