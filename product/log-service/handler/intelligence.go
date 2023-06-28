@@ -169,7 +169,7 @@ func HandleRCA(store store.Store, cfg config.Config) http.HandlerFunc {
 		genAISvcSecret := cfg.GenAI.ServiceSecret
 		provider := cfg.GenAI.Provider
 		useJSONResponse := cfg.GenAI.UseJSONResponse
-		report, err := retrieveLogRCA(ctx, genAISvcURL, genAISvcSecret,
+		report, prompt, err := retrieveLogRCA(ctx, genAISvcURL, genAISvcSecret,
 			provider, logs, useJSONResponse, r)
 		if err != nil {
 			WriteInternalError(w, err)
@@ -185,8 +185,8 @@ func HandleRCA(store store.Store, cfg config.Config) http.HandlerFunc {
 			WithField("keys", keys).
 			WithField("latency", time.Since(st)).
 			WithField("command", trim(command, debugLogChars)).
-			WithField("logs", trim(logs, debugLogChars)).
 			WithField("step_type", stepType).
+			WithField("prompt", prompt).
 			WithField("error_summary", errSummary).
 			WithField("time", time.Now().Format(time.RFC3339)).
 			WithField("response.rca", report.Rca).
@@ -198,7 +198,7 @@ func HandleRCA(store store.Store, cfg config.Config) http.HandlerFunc {
 
 func retrieveLogRCA(ctx context.Context, endpoint, secret, provider,
 	logs string, useJSONResponse bool, r *http.Request) (
-	*RCAReport, error) {
+	*RCAReport, string, error) {
 	promptTmpl := genAIPlainTextPrompt
 	if useJSONResponse {
 		promptTmpl = genAIJSONPrompt
@@ -216,15 +216,16 @@ func retrieveLogRCA(ctx context.Context, endpoint, secret, provider,
 
 	response, isBlocked, err := predict(ctx, client, provider, prompt)
 	if err != nil {
-		return nil, err
+		return nil, prompt, err
 	}
 	if isBlocked {
-		return nil, errors.New("received blocked response from genAI")
+		return nil, prompt, errors.New("received blocked response from genAI")
 	}
 	if useJSONResponse {
-		return parseGenAIResponse(response)
+		report, err := parseGenAIResponse(response)
+		return report, prompt, err
 	}
-	return &RCAReport{Rca: response}, nil
+	return &RCAReport{Rca: response}, prompt, nil
 }
 
 func predict(ctx context.Context, client genAIClient, provider, prompt string) (string, bool, error) {
