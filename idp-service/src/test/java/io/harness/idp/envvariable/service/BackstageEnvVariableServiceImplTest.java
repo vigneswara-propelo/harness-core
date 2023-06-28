@@ -32,9 +32,12 @@ import io.harness.idp.envvariable.repositories.BackstageEnvVariableRepository;
 import io.harness.idp.events.producers.SetupUsageProducer;
 import io.harness.idp.k8s.client.K8sClient;
 import io.harness.idp.namespace.service.NamespaceService;
+import io.harness.ng.core.dto.secrets.SecretDTOV2;
+import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
 import io.harness.remote.client.CGRestUtils;
 import io.harness.rule.LifecycleRule;
 import io.harness.rule.Owner;
+import io.harness.secretmanagerclient.SecretType;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.SecurityContextBuilder;
 import io.harness.security.dto.UserPrincipal;
@@ -460,6 +463,12 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     decryptedSecretValue.setDecryptedValue(TEST_ENCRYPTED_VALUE);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
         .thenReturn(decryptedSecretValue);
+    SecretResponseWrapper secretResponseWrapper =
+        SecretResponseWrapper.builder()
+            .secret(SecretDTOV2.builder().type(SecretType.SecretFile).identifier(TEST_SECRET_IDENTIFIER).build())
+            .build();
+    when(ngSecretService.getSecret(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
+        .thenReturn(secretResponseWrapper);
     when(backstageEnvVariableRepository.findByAccountIdentifier(TEST_ACCOUNT_IDENTIFIER))
         .thenReturn(Collections.emptyList())
         .thenReturn(Arrays.asList(configEntity, secretEntity));
