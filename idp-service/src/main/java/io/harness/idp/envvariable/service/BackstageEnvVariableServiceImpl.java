@@ -278,7 +278,6 @@ public class BackstageEnvVariableServiceImpl implements BackstageEnvVariableServ
         backstageEnvVariableRepository.findAllByAccountIdentifierAndMultipleEnvNames(
             accountIdentifier, envVariableNames);
     BackstageEnvVariableMapper envVariableMapper = getEnvVariableMapper((BackstageEnvVariableType.SECRET));
-    List<BackstageEnvSecretVariable> backstageEnvSecretVariableList = new ArrayList<>();
 
     for (BackstageEnvVariableEntity backstageEnvVariableEntity : listEnvVariablesAndSecretId) {
       resultList.add((BackstageEnvSecretVariable) envVariableMapper.toDto(backstageEnvVariableEntity));
