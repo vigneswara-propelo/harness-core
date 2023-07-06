@@ -334,9 +334,7 @@ public class TriggerExecutionHelper {
         }
 
         StagesExecutionInfo stagesExecutionInfo = null;
-        if (featureFlagService.isEnabled(
-                pipelineEntity.getAccountId(), FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION)
-            && triggerDetails.getNgTriggerConfigV2() != null
+        if (triggerDetails.getNgTriggerConfigV2() != null
             && EmptyPredicate.isNotEmpty(triggerDetails.getNgTriggerConfigV2().getStagesToExecute())) {
           boolean allowedStageExecution = false;
           if (PipelineVersion.V0.equals(pipelineEntity.getHarnessVersion())) {
@@ -436,9 +434,7 @@ public class TriggerExecutionHelper {
       RetryExecutionParameters retryExecutionParameters = RetryExecutionParameters.builder().isRetry(false).build();
       List<String> stagesToExecute = Collections.emptyList();
 
-      if (featureFlagService.isEnabled(
-              pipelineEntity.getAccountId(), FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION)
-          && triggerDetails.getNgTriggerConfigV2() != null
+      if (triggerDetails.getNgTriggerConfigV2() != null
           && EmptyPredicate.isNotEmpty(triggerDetails.getNgTriggerConfigV2().getStagesToExecute())) {
         stagesToExecute = triggerDetails.getNgTriggerConfigV2().getStagesToExecute();
       }

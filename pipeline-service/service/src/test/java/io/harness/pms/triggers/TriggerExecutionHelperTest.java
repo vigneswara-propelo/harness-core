@@ -486,7 +486,6 @@ public class TriggerExecutionHelperTest extends CategoryTest {
         .fetchExpandedPipelineJSONFromYaml(pipelineEntityV1.getAccountId(), pipelineEntityV1.getOrgIdentifier(),
             pipelineEntityV1.getProjectIdentifier(), pipelineEntityV1.getYaml(),
             OpaConstants.OPA_EVALUATION_ACTION_PIPELINE_RUN);
-    doReturn(false).when(pmsFeatureFlagHelper).isEnabled("acc", FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION);
     triggerExecutionHelper.resolveRuntimeInputAndSubmitExecutionRequest(
         triggerDetails, payloadBuilder.build(), triggerWebhookEvent, null, null);
   }
@@ -547,7 +546,6 @@ public class TriggerExecutionHelperTest extends CategoryTest {
     NGTriggerElementMapper elementMapper = new NGTriggerElementMapper(null, null, null, null, null);
     TriggerDetails triggerDetails = elementMapper.toTriggerDetails("acc", "default", "test", triggerYaml, true);
 
-    when(pmsFeatureFlagHelper.isEnabled("acc", FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION)).thenReturn(false);
     when(pmsPipelineService.getPipeline("acc", "default", "test", "myPipeline", false, false))
         .thenReturn(Optional.of(pipelineEntity));
     RetryExecutionParameters retryExecutionParameters = RetryExecutionParameters.builder().isRetry(false).build();
@@ -628,7 +626,6 @@ public class TriggerExecutionHelperTest extends CategoryTest {
     String triggerYaml = readFile("trigger-without-inputs.yml");
     NGTriggerElementMapper elementMapper = new NGTriggerElementMapper(null, null, null, null, null);
     TriggerDetails triggerDetails = elementMapper.toTriggerDetails("acc", "default", "test", triggerYaml, true);
-    when(pmsFeatureFlagHelper.isEnabled("acc", FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION)).thenReturn(false);
     GitEntityInfo gitEntityInfo = GitEntityInfo.builder().branch("branch").build();
     ScmGitMetaData scmGitMetaData = ScmGitMetaData.builder().filePath("filepath").branchName("branch").build();
     when(pmsPipelineService.getPipeline("acc", "default", "test", "myPipeline", false, false))
@@ -675,7 +672,6 @@ public class TriggerExecutionHelperTest extends CategoryTest {
     String triggerYaml = readFile("trigger-without-inputs.yml");
     NGTriggerElementMapper elementMapper = new NGTriggerElementMapper(null, null, null, null, null);
     TriggerDetails triggerDetails = elementMapper.toTriggerDetails("acc", "default", "test", triggerYaml, true);
-    when(pmsFeatureFlagHelper.isEnabled("acc", FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION)).thenReturn(false);
     GitEntityInfo gitEntityInfo = GitEntityInfo.builder().branch("branch").build();
     ScmGitMetaData scmGitMetaData = ScmGitMetaData.builder().filePath("filepath").branchName("branch").build();
     GitAwareContextHelper.updateGitEntityContext(gitEntityInfo);
