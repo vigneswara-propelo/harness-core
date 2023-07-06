@@ -587,7 +587,6 @@ public class TriggerExecutionHelperTest extends CategoryTest {
     NGTriggerElementMapper elementMapper = new NGTriggerElementMapper(null, null, null, null, null);
     TriggerDetails triggerDetails = elementMapper.toTriggerDetails("acc", "default", "test", triggerYaml, true);
 
-    when(pmsFeatureFlagHelper.isEnabled("acc", FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION)).thenReturn(false);
     when(pmsPipelineService.getPipeline("acc", "default", "test", "myPipeline", false, false))
         .thenReturn(Optional.of(pipelineEntity));
     RetryExecutionParameters retryExecutionParameters = RetryExecutionParameters.builder().isRetry(false).build();
