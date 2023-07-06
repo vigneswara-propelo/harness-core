@@ -575,6 +575,46 @@ public class TriggerExecutionHelperTest extends CategoryTest {
   @Test
   @Owner(developers = VINICIUS)
   @Category(UnitTests.class)
+  public void testCreatePlanExecutionV2WithNullTriggerWebhookEvent() {
+    String pipelineYaml = readFile("pipeline.yml");
+    PipelineEntity pipelineEntity = PipelineEntity.builder()
+                                        .accountId(accountId)
+                                        .orgIdentifier(orgId)
+                                        .projectIdentifier(projectId)
+                                        .identifier(pipelineId)
+                                        .yaml(pipelineYaml)
+                                        .harnessVersion(PipelineVersion.V0)
+                                        .build();
+    String triggerYaml = readFile("trigger-without-inputs.yml");
+    NGTriggerElementMapper elementMapper = new NGTriggerElementMapper(null, null, null, null, null);
+    TriggerDetails triggerDetails = elementMapper.toTriggerDetails("acc", "default", "test", triggerYaml, true);
+
+    when(pmsFeatureFlagHelper.isEnabled("acc", FeatureName.CDS_NG_TRIGGER_SELECTIVE_STAGE_EXECUTION)).thenReturn(false);
+    when(pmsPipelineService.getPipeline("acc", "default", "test", "myPipeline", false, false))
+        .thenReturn(Optional.of(pipelineEntity));
+    RetryExecutionParameters retryExecutionParameters = RetryExecutionParameters.builder().isRetry(false).build();
+    ExecArgs execArgs = ExecArgs.builder()
+                            .planExecutionMetadata(PlanExecutionMetadata.builder().build())
+                            .metadata(ExecutionMetadata.newBuilder().build())
+                            .build();
+    when(executionHelper.buildExecutionArgs(pipelineEntity, null, "", Collections.emptyList(), Collections.emptyMap(),
+             null, null, retryExecutionParameters, false, false))
+        .thenReturn(execArgs);
+    when(executionHelper.startExecution("acc", "default", "test", execArgs.getMetadata(),
+             execArgs.getPlanExecutionMetadata(), false, null, null, null))
+        .thenReturn(PlanExecution.builder().ambiance(ambiance).build());
+
+    triggerExecutionHelper.createPlanExecutionV2(
+        triggerDetails, null, null, null, null, null, triggerDetails.getNgTriggerConfigV2().getInputYaml());
+
+    Principal expectedPrincipal = new ServicePrincipal(AuthorizationServiceHeader.PIPELINE_SERVICE.getServiceId());
+    assertThat(SecurityContextBuilder.getPrincipal()).isEqualToComparingFieldByField(expectedPrincipal);
+    assertThat(SourcePrincipalContextBuilder.getSourcePrincipal()).isEqualToComparingFieldByField(expectedPrincipal);
+  }
+
+  @Test
+  @Owner(developers = VINICIUS)
+  @Category(UnitTests.class)
   public void testNoGitXContextLeakFromCreatePlanExecutionV2() {
     String pipelineYaml = readFile("pipeline.yml");
     PipelineEntity pipelineEntity = PipelineEntity.builder()

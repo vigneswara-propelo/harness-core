@@ -108,7 +108,6 @@ import io.harness.product.ci.scm.proto.User;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.security.SecurityContextBuilder;
 import io.harness.security.SourcePrincipalContextBuilder;
-import io.harness.security.dto.Principal;
 import io.harness.security.dto.ServicePrincipal;
 import io.harness.serializer.ProtoUtils;
 import io.harness.utils.PmsFeatureFlagHelper;
@@ -834,10 +833,9 @@ public class TriggerExecutionHelper {
     /* If user or svc-account principal is available in triggerWebhookEvent, we used it.
     This means that all API calls will inherit the underlying user or svc-account's permissions.
     Otherwise, we just set a Service Principal, which always has full privileges. */
-    Principal principal = triggerWebhookEvent.getPrincipal();
-    if (principal != null) {
-      SecurityContextBuilder.setContext(principal);
-      SourcePrincipalContextBuilder.setSourcePrincipal(principal);
+    if (triggerWebhookEvent != null && triggerWebhookEvent.getPrincipal() != null) {
+      SecurityContextBuilder.setContext(triggerWebhookEvent.getPrincipal());
+      SourcePrincipalContextBuilder.setSourcePrincipal(triggerWebhookEvent.getPrincipal());
     } else {
       SecurityContextBuilder.setContext(
           new ServicePrincipal(AuthorizationServiceHeader.PIPELINE_SERVICE.getServiceId()));
