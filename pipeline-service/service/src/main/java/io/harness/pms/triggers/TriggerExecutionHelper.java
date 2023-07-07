@@ -182,9 +182,10 @@ public class TriggerExecutionHelper {
   }
 
   // Todo: Check if we can merge some logic with ExecutionHelper
-  private PlanExecution createPlanExecution(TriggerDetails triggerDetails, TriggerPayload triggerPayload,
-      String payload, String executionTagForGitEvent, ExecutionTriggerInfo triggerInfo,
-      TriggerWebhookEvent triggerWebhookEvent, String runtimeInputYaml) {
+  @VisibleForTesting
+  PlanExecution createPlanExecution(TriggerDetails triggerDetails, TriggerPayload triggerPayload, String payload,
+      String executionTagForGitEvent, ExecutionTriggerInfo triggerInfo, TriggerWebhookEvent triggerWebhookEvent,
+      String runtimeInputYaml) {
     try {
       SecurityContextBuilder.setContext(
           new ServicePrincipal(AuthorizationServiceHeader.PIPELINE_SERVICE.getServiceId()));
@@ -290,15 +291,17 @@ public class TriggerExecutionHelper {
           PlanExecutionMetadata.builder().planExecutionId(executionId).triggerJsonPayload(payload);
 
       String pipelineYaml;
+      JsonNode runtimeInputJsonNode = null;
       if (isBlank(runtimeInputYaml)) {
         pipelineYaml = pipelineEntity.getYaml();
       } else {
+        runtimeInputJsonNode = YamlUtils.readAsJsonNode(runtimeInputYaml);
         String pipelineYamlBeforeMerge = pipelineEntity.getYaml();
         switch (pipelineEntity.getHarnessVersion()) {
           case PipelineVersion.V1:
             planExecutionMetadataBuilder.inputSetYaml(runtimeInputYaml);
             pipelineYaml = InputSetMergeHelperV1.mergeInputSetIntoPipelineYaml(
-                YamlUtils.readAsJsonNode(runtimeInputYaml), YamlUtils.readAsJsonNode(pipelineYamlBeforeMerge));
+                runtimeInputJsonNode, YamlUtils.readAsJsonNode(pipelineYamlBeforeMerge));
             break;
           default:
             String sanitizedRuntimeInputYaml =
@@ -394,8 +397,8 @@ public class TriggerExecutionHelper {
         SecurityContextBuilder.setContext(new ServicePrincipal(PIPELINE_SERVICE.getServiceId()));
         switch (pipelineEntity.getHarnessVersion()) {
           case PipelineVersion.V0:
-            JsonNode yamlForValidatingSchema = executionHelper.getPipelineYamlWithUnResolvedTemplates(
-                YamlUtils.readAsJsonNode(runtimeInputYaml), pipelineEntity);
+            JsonNode yamlForValidatingSchema =
+                executionHelper.getPipelineYamlWithUnResolvedTemplates(runtimeInputJsonNode, pipelineEntity);
             pmsYamlSchemaService.validateYamlSchema(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
                 pipelineEntity.getProjectIdentifier(), yamlForValidatingSchema);
             break;

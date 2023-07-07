@@ -10,6 +10,7 @@ package io.harness.pms.triggers;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.execution.PlanExecution.EXEC_TAG_SET_BY_TRIGGER;
+import static io.harness.gitcaching.GitCachingConstants.BOOLEAN_FALSE_VALUE;
 import static io.harness.ngtriggers.Constants.COMMIT_SHA_STRING_LENGTH;
 import static io.harness.ngtriggers.Constants.EVENT_CORRELATION_ID;
 import static io.harness.ngtriggers.Constants.GIT_USER;
@@ -20,9 +21,11 @@ import static io.harness.rule.OwnerRule.ADWAIT;
 import static io.harness.rule.OwnerRule.HARSH;
 import static io.harness.rule.OwnerRule.MEET;
 import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
+import static io.harness.rule.OwnerRule.SHALINI;
 import static io.harness.rule.OwnerRule.VINICIUS;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -50,6 +53,7 @@ import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.interceptor.GitSyncBranchContext;
 import io.harness.gitsync.scm.beans.ScmGitMetaData;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ngtriggers.beans.config.NGTriggerConfigV2;
 import io.harness.ngtriggers.beans.dto.TriggerDetails;
 import io.harness.ngtriggers.beans.entity.NGTriggerEntity;
@@ -70,6 +74,7 @@ import io.harness.opaclient.model.OpaConstants;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
+import io.harness.pms.contracts.plan.ExecutionTriggerInfo;
 import io.harness.pms.contracts.plan.TriggeredBy;
 import io.harness.pms.contracts.triggers.ParsedPayload;
 import io.harness.pms.contracts.triggers.TriggerPayload;
@@ -80,6 +85,8 @@ import io.harness.pms.inputset.MergeInputSetResponseDTOPMS;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.governance.service.PipelineGovernanceServiceImpl;
 import io.harness.pms.pipeline.service.PMSPipelineService;
+import io.harness.pms.pipeline.service.PMSPipelineTemplateHelper;
+import io.harness.pms.pipeline.service.PMSYamlSchemaService;
 import io.harness.pms.pipeline.service.PipelineEnforcementService;
 import io.harness.pms.pipeline.service.PipelineMetadataService;
 import io.harness.pms.plan.execution.ExecutionHelper;
@@ -155,6 +162,8 @@ public class TriggerExecutionHelperTest extends CategoryTest {
   @Mock PipelineGovernanceServiceImpl pipelineGovernanceService;
   @Mock ExecutionHelper executionHelper;
   @Mock PmsFeatureFlagHelper pmsFeatureFlagHelper;
+  @Mock PMSPipelineTemplateHelper pipelineTemplateHelper;
+  @Mock PMSYamlSchemaService pmsYamlSchemaService;
   @Before
   public void setUp() {
     triggerWebhookEvent =
@@ -568,6 +577,49 @@ public class TriggerExecutionHelperTest extends CategoryTest {
             eq(Collections.emptyList()), eq(Collections.emptyMap()), eq(null), eq(null), eq(retryExecutionParameters),
             eq(false), eq(false));
     assertThat(capturedRuntimeInputYaml.getValue()).isEqualTo("");
+  }
+
+  @Test
+  @Owner(developers = SHALINI)
+  @Category(UnitTests.class)
+  public void testCreatePlanExecutionForPipelineWithNoInputs() {
+    String pipelineYaml = readFile("pipeline.yml");
+    PipelineEntity pipelineEntity = PipelineEntity.builder()
+                                        .accountId(accountId)
+                                        .orgIdentifier(orgId)
+                                        .projectIdentifier(projectId)
+                                        .identifier(pipelineId)
+                                        .yaml(pipelineYaml)
+                                        .harnessVersion(PipelineVersion.V0)
+                                        .build();
+    String triggerYaml = readFile("trigger-without-inputs.yml");
+    NGTriggerElementMapper elementMapper = new NGTriggerElementMapper(null, null, null, null, null);
+    TriggerDetails triggerDetails = elementMapper.toTriggerDetails("acc", "default", "test", triggerYaml, true);
+
+    when(pmsPipelineService.getPipeline("acc", "default", "test", "myPipeline", false, false))
+        .thenReturn(Optional.of(pipelineEntity));
+    RetryExecutionParameters retryExecutionParameters = RetryExecutionParameters.builder().isRetry(false).build();
+    ExecArgs execArgs = ExecArgs.builder()
+                            .planExecutionMetadata(PlanExecutionMetadata.builder().build())
+                            .metadata(ExecutionMetadata.newBuilder().build())
+                            .build();
+    when(executionHelper.buildExecutionArgs(pipelineEntity, null, "", Collections.emptyList(), Collections.emptyMap(),
+             null, null, retryExecutionParameters, false, false))
+        .thenReturn(execArgs);
+    when(executionHelper.startExecution("acc", "default", "test", execArgs.getMetadata(),
+             execArgs.getPlanExecutionMetadata(), false, null, null, null))
+        .thenReturn(PlanExecution.builder().ambiance(ambiance).build());
+    when(pipelineTemplateHelper.resolveTemplateRefsInPipelineAndAppendInputSetValidators(
+             "acc", "org", "proj", pipelineYaml, false, false, BOOLEAN_FALSE_VALUE))
+        .thenReturn(TemplateMergeResponseDTO.builder()
+                        .mergedPipelineYaml(pipelineYaml)
+                        .mergedPipelineYamlWithTemplateRef(null)
+                        .build());
+    assertThatCode(()
+                       -> triggerExecutionHelper.createPlanExecution(triggerDetails, null, null, null,
+                           ExecutionTriggerInfo.newBuilder().build(), TriggerWebhookEvent.builder().build(),
+                           triggerDetails.getNgTriggerConfigV2().getInputYaml()))
+        .doesNotThrowAnyException();
   }
 
   @Test
