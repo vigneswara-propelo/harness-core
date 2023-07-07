@@ -376,9 +376,6 @@ public enum FeatureName {
   FETCH_PIPELINE_HEALTH_FROM_NEW_TABLE(
       "We will fetch pipeline health and execution data from the new timescale table if this FF is on",
       HarnessTeam.PIPELINE),
-  FFM_1512,
-  FFM_1513,
-  FFM_1827,
   FFM_1859,
   FFM_2134_FF_PIPELINES_TRIGGER,
   FFM_3938_STALE_FLAGS_ACTIVE_CARD_HIDE_SHOW,
