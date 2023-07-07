@@ -56,6 +56,7 @@ function get_info_from_file(){
 
 BAZEL_ARGS="--announce_rc --keep_going --show_timestamps --jobs=auto"
 BAZEL_OUTPUT_PATH="/tmp/execroot/harness_monorepo/bazel-out/k8-fastbuild/bin"
+COVERAGE_ARGS="--collect_code_coverage --combined_report=lcov --coverage_report_generator=//tools/bazel/sonarqube:sonarqube_coverage_generator"
 COVERAGE_REPORT_PATH='/tmp/execroot/harness_monorepo/bazel-out/_coverage/_coverage_report.dat'
 JARS_ARRAY=("libmodule-hjar.jar" "libmodule.jar" "module.jar")
 JARS_FILE="modules_jars.txt"
@@ -94,8 +95,8 @@ check_cmd_status "$?" "Failed to list harness core modules."
 echo "SONAR PROP FILE: ${SONAR_PROP_FILE_PATH}"
 
 # Running Bazel Coverage
-echo "INFO: BAZEL COMMAND: bazel ${STARTUP_ARGS} coverage ${BAZEL_ARGS} ${TEST_ARGS} -- ${BAZEL_COMPILE_MODULES[@]}"
-bazel ${STARTUP_ARGS} coverage ${BAZEL_ARGS} ${TEST_ARGS} -- "${BAZEL_COMPILE_MODULES[@]}" || true
+echo "INFO: BAZEL COMMAND: bazel ${STARTUP_ARGS} test ${BAZEL_ARGS} ${COVERAGE_ARGS} ${TEST_ARGS} -- ${BAZEL_COMPILE_MODULES[@]}"
+bazel ${STARTUP_ARGS} test ${BAZEL_ARGS} ${COVERAGE_ARGS} ${TEST_ARGS} -- "${BAZEL_COMPILE_MODULES[@]}" || true
 check_cmd_status "$?" "Failed to run coverage."
 
 MODULE_SOURCE_PATH=$(grep -inr "sonar.sources" ${SONAR_PROP_FILE_PATH} | awk -F= '{print $2}' | sed 's|\/src\/main||')
