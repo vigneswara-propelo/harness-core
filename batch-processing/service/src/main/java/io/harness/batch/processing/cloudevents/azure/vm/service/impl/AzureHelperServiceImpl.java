@@ -28,7 +28,7 @@ import static io.harness.batch.processing.cloudevents.azure.vm.service.utils.Azu
 import static io.harness.batch.processing.cloudevents.azure.vm.service.utils.AzureRecommendationConstants.TARGET_SKU;
 
 import io.harness.azure.utility.AzureUtils;
-import io.harness.batch.processing.cloudevents.azure.vm.service.AzureRecommendationService;
+import io.harness.batch.processing.cloudevents.azure.vm.service.AzureHelperService;
 import io.harness.batch.processing.config.BatchMainConfig;
 import io.harness.batch.processing.tasklet.util.CurrencyPreferenceHelper;
 import io.harness.ccm.azurevmpricing.AzureVmItemDTO;
@@ -39,6 +39,7 @@ import io.harness.ccm.commons.entities.azure.AzureRecommendation;
 import io.harness.ccm.commons.entities.azure.AzureRecommendation.AzureRecommendationBuilder;
 import io.harness.ccm.commons.entities.azure.AzureVmDetails;
 import io.harness.ccm.currency.Currency;
+import io.harness.ccm.governance.entities.RecommendationAdhocDTO;
 import io.harness.ccm.graphql.core.recommendation.AzureMetricsUtilisationService;
 import io.harness.ccm.graphql.dto.common.CloudServiceProvider;
 
@@ -52,11 +53,13 @@ import com.azure.core.management.exception.ManagementException;
 import com.azure.core.management.profile.AzureProfile;
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.resourcemanager.AzureResourceManager;
 import com.azure.resourcemanager.advisor.AdvisorManager;
 import com.azure.resourcemanager.advisor.models.ResourceRecommendationBase;
 import com.azure.resourcemanager.compute.ComputeManager;
 import com.azure.resourcemanager.compute.fluent.VirtualMachineSizesClient;
 import com.azure.resourcemanager.compute.fluent.models.VirtualMachineSizeInner;
+import com.azure.resourcemanager.resources.models.Location;
 import com.microsoft.aad.msal4j.MsalServiceException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +74,7 @@ import retrofit2.Response;
 
 @Slf4j
 @Service
-public class AzureRecommendationServiceImpl implements AzureRecommendationService {
+public class AzureHelperServiceImpl implements AzureHelperService {
   @Autowired BatchMainConfig configuration;
   @Autowired AzureVmPricingClient azureVmPricingClient;
   @Autowired AzureMetricsUtilisationService azureMetricsUtilisationService;
@@ -81,7 +84,7 @@ public class AzureRecommendationServiceImpl implements AzureRecommendationServic
   public List<AzureRecommendation> getRecommendations(String accountId, AzureAccountAttributes request) {
     String tenantId = request.getTenantId();
     AzureProfile profile = new AzureProfile(tenantId, request.getSubscriptionId(), AzureEnvironment.AZURE);
-    ClientSecretCredential clientSecretCredential = getClientSecretCredential(request);
+    ClientSecretCredential clientSecretCredential = getClientSecretCredential(tenantId);
     VirtualMachineSizesClient vmSizeClient = getVirtualMachineSizesClientClient(clientSecretCredential, profile);
     AdvisorManager advisorManager = getAdvisorManager(clientSecretCredential, profile);
 
@@ -113,12 +116,32 @@ public class AzureRecommendationServiceImpl implements AzureRecommendationServic
     return allRecommendations;
   }
 
-  private ClientSecretCredential getClientSecretCredential(AzureAccountAttributes request) {
+  @Override
+  public List<String> getValidRegions(String accountId, RecommendationAdhocDTO recommendationAdhocDTO) {
+    try {
+      AzureProfile profile = new AzureProfile(
+          recommendationAdhocDTO.getTenantInfo(), recommendationAdhocDTO.getTargetInfo(), AzureEnvironment.AZURE);
+      ClientSecretCredential clientSecretCredential = getClientSecretCredential(recommendationAdhocDTO.getTenantInfo());
+      AzureResourceManager azureResourceManager = AzureResourceManager.authenticate(clientSecretCredential, profile)
+                                                      .withSubscription(recommendationAdhocDTO.getTargetInfo());
+      List<String> regions = new ArrayList<>();
+      for (Location location :
+          azureResourceManager.subscriptions().getById(recommendationAdhocDTO.getTargetInfo()).listLocations()) {
+        regions.add(location.region().name());
+      }
+      return regions;
+    } catch (Exception ex) {
+      log.info("Exception while listing regions {}", ex.getMessage());
+    }
+    return List.of("eastus", "eastus2", "westus", "eastasia", "westeurope");
+  }
+
+  private ClientSecretCredential getClientSecretCredential(String tenantId) {
     HttpClient httpClient = AzureUtils.getAzureHttpClient();
     return new ClientSecretCredentialBuilder()
         .clientId(configuration.getAzureStorageSyncConfig().getAzureAppClientId())
         .clientSecret(configuration.getAzureStorageSyncConfig().getAzureAppClientSecret())
-        .tenantId(request.getTenantId())
+        .tenantId(tenantId)
         .httpClient(httpClient)
         .build();
   }
