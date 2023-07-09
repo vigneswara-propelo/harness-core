@@ -479,7 +479,7 @@ public class EventJobScheduler {
     }
   }
 
-  @Value(value = "${batchJobRepository.dataOlderThanDays}") private int days;
+  @Value(value = "${batchJobRepository.dataRetentionPeriodInDays}") private int days;
 
   //  @Scheduled(cron = "0 */2 * * * ?")
   @Scheduled(cron = "${batchJobRepository.metadataCleanupSchedule}") // Every 30 minutes for testing
