@@ -814,7 +814,8 @@ public enum FeatureName {
   YAML_GIT_CONNECTOR_NAME,
   CDS_STEP_EXECUTION_DATA_SYNC(
       "This flag controls if you want Step execution data saved in mongodb and eventually synced to timescale",
-      HarnessTeam.CDP);
+      HarnessTeam.CDP),
+  CDS_GITHUB_PACKAGES("Used for SSH/WinRm copy and download Github packages artifacts", HarnessTeam.CDP);
   // keep-sorted end
 
   @Deprecated
