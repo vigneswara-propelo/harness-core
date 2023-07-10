@@ -541,7 +541,7 @@ public class NGTemplateServiceImpl implements NGTemplateService {
     } catch (Exception e) {
       String errorMessage = getErrorMessage(templateIdentifier, versionLabel);
       log.error(errorMessage, e);
-      throw new InvalidRequestException(String.format("[%s]: %s", errorMessage, ExceptionUtils.getMessage(e)));
+      throw new InvalidRequestException(String.format("[%s]: %s", errorMessage, e.getMessage()));
     }
   }
 

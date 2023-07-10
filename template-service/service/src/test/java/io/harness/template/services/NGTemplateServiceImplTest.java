@@ -1482,13 +1482,8 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     assertThatThrownBy(
         () -> templateService.get(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, "zxcv", "as", false, false, false))
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage("[Error while retrieving template with identifier [zxcv] and versionLabel [as]]: INVALID_REQUEST");
-    /*
-    TODO:- Fix error message here Jira CDS-72694
-      "Template version from remote template file [%s] does not match with template version in request [%s]. Each
-    template version maps to a unique file on Git. Create a new version through harness or import a new version if the
-    file is already created on Git" Above message should have been thrown
-     */
+        .hasMessage(
+            "[Error while retrieving template with identifier [zxcv] and versionLabel [as]]: Template version from remote template file [version1] does not match with template version in request [as]. Each template version maps to a unique file on Git. Create a new version through harness or import a new version if the file is already created on Git");
   }
 
   @Test
