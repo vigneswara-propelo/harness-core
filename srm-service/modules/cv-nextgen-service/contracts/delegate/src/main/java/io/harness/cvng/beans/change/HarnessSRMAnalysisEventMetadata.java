@@ -31,9 +31,10 @@ public class HarnessSRMAnalysisEventMetadata extends ChangeEventMetadata {
   String stageId;
   String artifactType;
   String artifactTag;
-  String status;
   SRMAnalysisStatus analysisStatus;
   String pipelinePath;
+
+  String executionNotificationDetailsId;
 
   @Override
   public ChangeSourceType getType() {

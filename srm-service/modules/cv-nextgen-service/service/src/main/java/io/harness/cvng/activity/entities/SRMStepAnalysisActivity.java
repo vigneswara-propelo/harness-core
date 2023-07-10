@@ -22,26 +22,23 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
 @JsonTypeName("SRM_STEP_ANALYSIS")
-@FieldNameConstants(innerTypeName = "SRMAnalysisActivityKeys")
+@FieldNameConstants(innerTypeName = "SRMStepAnalysisActivityKeys")
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class SRMAnalysisActivity extends Activity {
-  String deploymentTag;
+public class SRMStepAnalysisActivity extends Activity {
   @FdSparseIndex String planExecutionId;
   String pipelineId;
   String stageStepId;
   String stageId;
   String artifactType;
   String artifactTag;
-  String deploymentStatus;
-  boolean isDemoActivity;
   String executionNotificationDetailsId;
 
   @Override
   public ActivityType getType() {
-    return ActivityType.DEPLOYMENT;
+    return ActivityType.SRM_STEP_ANALYSIS;
   }
 
   @Override
@@ -59,36 +56,37 @@ public class SRMAnalysisActivity extends Activity {
   }
 
   public static class SRMAnalysiActivityUpdatableEntity
-      extends ActivityUpdatableEntity<SRMAnalysisActivity, SRMAnalysisActivity> {
+      extends ActivityUpdatableEntity<SRMStepAnalysisActivity, SRMStepAnalysisActivity> {
     @Override
     public Class getEntityClass() {
-      return SRMAnalysisActivity.class;
+      return SRMStepAnalysisActivity.class;
     }
 
     @Override
-    public String getEntityKeyLongString(SRMAnalysisActivity activity) {
+    public String getEntityKeyLongString(SRMStepAnalysisActivity activity) {
       return super.getKeyBuilder(activity).add(activity.getPlanExecutionId()).add(activity.getStageStepId()).toString();
     }
 
-    public Query<SRMAnalysisActivity> populateKeyQuery(Query<SRMAnalysisActivity> query, SRMAnalysisActivity activity) {
+    public Query<SRMStepAnalysisActivity> populateKeyQuery(
+        Query<SRMStepAnalysisActivity> query, SRMStepAnalysisActivity activity) {
       return super.populateKeyQuery(query, activity)
-          .filter(SRMAnalysisActivityKeys.planExecutionId, activity.getPlanExecutionId())
-          .filter(SRMAnalysisActivityKeys.stageStepId, activity.getStageStepId());
+          .filter(SRMStepAnalysisActivityKeys.planExecutionId, activity.getPlanExecutionId())
+          .filter(SRMStepAnalysisActivityKeys.stageStepId, activity.getStageStepId());
     }
 
     @Override
     public void setUpdateOperations(
-        UpdateOperations<SRMAnalysisActivity> updateOperations, SRMAnalysisActivity activity) {
+        UpdateOperations<SRMStepAnalysisActivity> updateOperations, SRMStepAnalysisActivity activity) {
       setCommonUpdateOperations(updateOperations, activity);
-      updateOperations.set(SRMAnalysisActivityKeys.planExecutionId, activity.getPlanExecutionId())
-          .set(SRMAnalysisActivityKeys.pipelineId, activity.getPipelineId())
-          .set(SRMAnalysisActivityKeys.stageStepId, activity.getStageStepId())
-          .set(SRMAnalysisActivityKeys.stageId, activity.getStageId());
+      updateOperations.set(SRMStepAnalysisActivityKeys.planExecutionId, activity.getPlanExecutionId())
+          .set(SRMStepAnalysisActivityKeys.pipelineId, activity.getPipelineId())
+          .set(SRMStepAnalysisActivityKeys.stageStepId, activity.getStageStepId())
+          .set(SRMStepAnalysisActivityKeys.stageId, activity.getStageId());
       if (activity.getArtifactType() != null) {
-        updateOperations.set(SRMAnalysisActivityKeys.artifactType, activity.getArtifactType());
+        updateOperations.set(SRMStepAnalysisActivityKeys.artifactType, activity.getArtifactType());
       }
       if (activity.getArtifactTag() != null) {
-        updateOperations.set(SRMAnalysisActivityKeys.artifactTag, activity.getArtifactTag());
+        updateOperations.set(SRMStepAnalysisActivityKeys.artifactTag, activity.getArtifactTag());
       }
     }
   }

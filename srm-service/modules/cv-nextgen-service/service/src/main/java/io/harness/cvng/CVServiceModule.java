@@ -33,7 +33,7 @@ import io.harness.cvng.activity.entities.HarnessCDCurrentGenActivity.HarnessCDCu
 import io.harness.cvng.activity.entities.InternalChangeActivity.InternalChangeActivityUpdatableEntity;
 import io.harness.cvng.activity.entities.KubernetesClusterActivity.KubernetesClusterActivityUpdatableEntity;
 import io.harness.cvng.activity.entities.PagerDutyActivity.PagerDutyActivityUpdatableEntity;
-import io.harness.cvng.activity.entities.SRMAnalysisActivity;
+import io.harness.cvng.activity.entities.SRMStepAnalysisActivity;
 import io.harness.cvng.activity.services.api.ActivityService;
 import io.harness.cvng.activity.services.api.ActivityUpdateHandler;
 import io.harness.cvng.activity.services.impl.ActivityServiceImpl;
@@ -1093,7 +1093,7 @@ public class CVServiceModule extends AbstractModule {
         .to(CustomChangeActivityUpdatableEntity.class)
         .in(Scopes.SINGLETON);
     activityTypeActivityUpdatableEntityMapBinder.addBinding(ActivityType.SRM_STEP_ANALYSIS)
-        .to(SRMAnalysisActivity.SRMAnalysiActivityUpdatableEntity.class)
+        .to(SRMStepAnalysisActivity.SRMAnalysiActivityUpdatableEntity.class)
         .in(Scopes.SINGLETON);
     MapBinder<ChangeSourceType, ChangeSourceUpdateHandler> changeSourceUpdateHandlerMapBinder =
         MapBinder.newMapBinder(binder(), ChangeSourceType.class, ChangeSourceUpdateHandler.class);
