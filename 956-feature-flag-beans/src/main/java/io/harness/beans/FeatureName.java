@@ -128,8 +128,6 @@ public enum FeatureName {
       "Replace HTTP capability check for Kubernetes connector with Socket Capability", HarnessTeam.CDP),
   CDS_NEXUS_GROUPID_ARTIFACTID_DROPDOWN(
       "FF to enable dropdowns for groupId and artifactId in Nexus Artifact Source", HarnessTeam.CDC),
-  CDS_NG_CONFIG_FILE_EXPRESSION(
-      "Enable Harness variable rendering in Hanress config files (SSH/WinRM)", HarnessTeam.CDP),
   CDS_NG_TRIGGER_EXECUTION_REFACTOR(
       "Refactor trigger execution to use same logic used in manual execution", HarnessTeam.SPG),
   CDS_NG_TRIGGER_MULTI_ARTIFACTS("Allows creation of multi-region artifact triggers", HarnessTeam.CDC),
