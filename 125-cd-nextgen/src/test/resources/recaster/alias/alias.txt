@@ -1074,3 +1074,5 @@ io.harness.steps.SectionStepSweepingOutput
 io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPackageV2StepInfo
 io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPackageV2StepNode
 io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPackageV2StepParameters
+io.harness.cdng.serverless.beans.ServerlessV2ValuesYamlDataOutcome
+io.harness.cdng.serverless.container.steps.outcome.ServerlessV2DirectoryPathsOutcome

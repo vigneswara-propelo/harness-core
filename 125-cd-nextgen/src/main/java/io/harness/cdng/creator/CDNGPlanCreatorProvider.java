@@ -184,6 +184,7 @@ import io.harness.cdng.creator.variables.AsgRollingDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.AsgRollingRollbackStepVariableCreator;
 import io.harness.cdng.creator.variables.CommandStepVariableCreator;
 import io.harness.cdng.creator.variables.DeploymentStageVariableCreator;
+import io.harness.cdng.creator.variables.DownloadManifestsStepVariableCreator;
 import io.harness.cdng.creator.variables.EcsBlueGreenCreateServiceStepVariableCreator;
 import io.harness.cdng.creator.variables.EcsBlueGreenRollbackStepVariableCreator;
 import io.harness.cdng.creator.variables.EcsBlueGreenSwapTargetGroupsStepVariableCreator;
@@ -236,7 +237,6 @@ import io.harness.cdng.creator.variables.aws.AwsLambdaRollbackStepVariableCreato
 import io.harness.cdng.creator.variables.aws.sam.AwsSamBuildStepVariableCreator;
 import io.harness.cdng.creator.variables.aws.sam.AwsSamDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.aws.sam.AwsSamRollbackStepVariableCreator;
-import io.harness.cdng.creator.variables.aws.sam.DownloadManifestsStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsDeployWithoutTrafficStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsGenOneDeployStepVariableCreator;
@@ -1345,8 +1345,8 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
         StepInfo.newBuilder()
             .setName("Download Manifests")
             .setType(StepSpecTypeConstants.DOWNLOAD_MANIFESTS)
-            .setStepMetaData(StepMetaData.newBuilder().addCategory(PLUGIN).setFolderPath("AWS SAM").build())
-            .setFeatureFlag(FeatureName.CDP_AWS_SAM.name())
+            .setStepMetaData(StepMetaData.newBuilder().addCategory(PLUGIN).setFolderPath("DOWNLOAD MANIFESTS").build())
+            .setFeatureFlag(FeatureName.NG_SVC_ENV_REDESIGN.name())
             .build();
 
     StepInfo awsSamBuild =
