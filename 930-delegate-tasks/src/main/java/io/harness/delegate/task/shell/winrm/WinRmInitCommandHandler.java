@@ -51,7 +51,7 @@ import org.jetbrains.annotations.NotNull;
 @OwnedBy(CDP)
 @Singleton
 public class WinRmInitCommandHandler implements CommandHandler {
-  private static final String AZURE_CLI_CHECK_SCRIPT = "az -v";
+  private static final String AZURE_CLI_CHECK_SCRIPT = "az devops -h";
 
   @Inject private WinRmExecutorFactoryNG winRmExecutorFactoryNG;
   @Inject private WinRmConfigAuthEnhancer winRmConfigAuthEnhancer;

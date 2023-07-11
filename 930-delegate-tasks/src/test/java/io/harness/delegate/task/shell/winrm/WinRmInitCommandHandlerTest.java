@@ -8,6 +8,7 @@
 package io.harness.delegate.task.shell.winrm;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.AZURE_CLI_INSTALLATION_CHECK_HINT;
 import static io.harness.rule.OwnerRule.BOJAN;
 import static io.harness.rule.OwnerRule.FILIP;
 import static io.harness.rule.OwnerRule.VITALIE;
@@ -207,6 +208,6 @@ public class WinRmInitCommandHandlerTest {
                            -> winRmInitCommandHandler.handle(winrmTaskParameters, initCommandUnit,
                                iLogStreamingTaskClient, CommandUnitsProgress.builder().build(), taskContext))
         .isInstanceOf(HintException.class)
-        .hasMessage("Please install Azure CLI in order to download Azure Universal packages");
+        .hasMessage(AZURE_CLI_INSTALLATION_CHECK_HINT);
   }
 }
