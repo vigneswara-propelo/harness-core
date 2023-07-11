@@ -45,7 +45,6 @@ import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys;
 import io.harness.pms.plan.execution.beans.dto.ExecutionDataResponseDTO;
 import io.harness.pms.plan.execution.beans.dto.ExecutionMetaDataResponseDetailsDTO;
-import io.harness.pms.plan.execution.beans.dto.ExpressionEvaluationDetail;
 import io.harness.pms.plan.execution.beans.dto.ExpressionEvaluationDetailDTO;
 import io.harness.pms.plan.execution.beans.dto.PipelineExecutionDetailDTO;
 import io.harness.pms.plan.execution.beans.dto.PipelineExecutionFilterPropertiesDTO;
@@ -70,9 +69,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.ws.rs.BeanParam;
@@ -385,16 +382,8 @@ public class ExecutionDetailsResource {
       @Parameter(description = "Plan Execution Id for which Expression have to be evaluated",
           required = true) @PathParam(NGCommonEntityConstants.PLAN_KEY) String planExecutionId,
       @RequestBody(required = true, description = "Pipeline YAML") @NotNull String yaml) {
-    // TODO: need to be implemented
-    Map<String, ExpressionEvaluationDetail> dummyMapData = new HashMap<>();
-    dummyMapData.put("expression+fqn",
-        ExpressionEvaluationDetail.builder()
-            .fqn("fqn")
-            .originalExpression("originalExpression")
-            .resolvedValue("resolvedYaml")
-            .build());
     return ResponseDTO.newResponse(
-        ExpressionEvaluationDetailDTO.builder().compiledYaml(yaml).mapExpression(dummyMapData).build());
+        executionHelper.evaluateExpression(accountId, orgId, projectId, planExecutionId, yaml));
   }
 
   @GET
