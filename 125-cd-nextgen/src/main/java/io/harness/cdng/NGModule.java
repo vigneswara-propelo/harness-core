@@ -99,7 +99,9 @@ import io.harness.cdng.servicenow.resources.service.ServiceNowResourceService;
 import io.harness.cdng.servicenow.resources.service.ServiceNowResourceServiceImpl;
 import io.harness.cdng.tas.service.TasResourceService;
 import io.harness.cdng.tas.service.TasResourceServiceImpl;
+import io.harness.cdng.usage.CDLicenseUsageReportService;
 import io.harness.cdng.usage.impl.CDLicenseUsageImpl;
+import io.harness.cdng.usage.impl.CDLicenseUsageReportServiceImpl;
 import io.harness.cdng.yaml.CdYamlSchemaService;
 import io.harness.cdng.yaml.CdYamlSchemaServiceImpl;
 import io.harness.filter.FilterType;
@@ -211,6 +213,7 @@ public class NGModule extends AbstractModule {
     bind(ServiceOverrideValidatorService.class).to(ServiceOverrideValidatorServiceImpl.class);
     bind(ServiceOverrideV2MigrationService.class).to(ServiceOverrideV2MigrationServiceImpl.class);
     bind(ServiceOverrideV2SettingsUpdateService.class).to(ServiceOverrideV2SettingsUpdateServiceImpl.class);
+    bind(CDLicenseUsageReportService.class).to(CDLicenseUsageReportServiceImpl.class);
 
     MapBinder<String, FilterPropertiesMapper> filterPropertiesMapper =
         MapBinder.newMapBinder(binder(), String.class, FilterPropertiesMapper.class);

@@ -141,6 +141,7 @@ public class CDNGRegistrars {
           .addAll(NGCommonModuleRegistrars.kryoRegistrars)
           .addAll(FileStoreRegistrars.kryoRegistrars)
           .addAll(ContainerRegistrars.kryoRegistrars)
+          .addAll(LicenseManagerRegistrars.kryoRegistrars)
           .build();
 
   public final ImmutableSet<Class<? extends MorphiaRegistrar>> morphiaRegistrars =
@@ -160,6 +161,7 @@ public class CDNGRegistrars {
           .addAll(FileStoreRegistrars.morphiaRegistrars)
           .addAll(FreezeRegistrars.morphiaRegistrars)
           .addAll(ContainerRegistrars.morphiaRegistrars)
+          .addAll(LicenseManagerRegistrars.morphiaRegistrars)
           .build();
 
   public static final ImmutableList<YamlSchemaRootClass> yamlSchemaRegistrars =

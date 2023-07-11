@@ -20,6 +20,8 @@ import io.harness.ng.core.migration.timescale.CreateConnectorsTable;
 import io.harness.ng.core.migration.timescale.CreateModuleLicensesTable;
 import io.harness.ng.core.migration.timescale.CreateNgUserTable;
 import io.harness.ng.core.migration.timescale.CreateRuntimeInputsInfoTable;
+import io.harness.ng.core.migration.timescale.CreateServiceInstancesLicenseDailyReport;
+import io.harness.ng.core.migration.timescale.CreateServicesLicenseDailyReport;
 import io.harness.ng.core.migration.timescale.CreateStageTable;
 import io.harness.ng.core.migration.timescale.GetActiveServicesByDateFunction;
 import io.harness.ng.core.migration.timescale.GetServiceInstancesByDateFunction;
@@ -55,6 +57,10 @@ public class NGCoreTimeScaleMigrationDetails implements MigrationDetails {
         .add(Pair.of(11, CreateStageTable.class))
         .add(Pair.of(12, CreateCDStageTable.class))
         .add(Pair.of(13, AddColumnsToCDStageTable.class))
+        .add(Pair.of(14, GetActiveServicesByDateFunction.class))
+        .add(Pair.of(15, GetServiceInstancesByDateFunction.class))
+        .add(Pair.of(16, CreateServiceInstancesLicenseDailyReport.class))
+        .add(Pair.of(17, CreateServicesLicenseDailyReport.class))
         .build();
   }
 }
