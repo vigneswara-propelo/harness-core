@@ -138,7 +138,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -161,7 +161,7 @@ import retrofit2.Response;
 @OwnedBy(CDC)
 public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
   @Mock TelemetryReporter telemetryReporter;
-  @Mock Executor executor;
+  @Mock ExecutorService executorService;
   @Mock EnforcementClientService enforcementClientService;
   @Spy @InjectMocks private NGTemplateServiceHelper templateServiceHelper;
   @Mock private GitSyncSdkService gitSyncSdkService;
