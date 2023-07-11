@@ -350,11 +350,11 @@ ciExecutionServiceConfig:
       windowsEntrypoint:
         - "C:\\drone-cache.exe"
     sscaOrchestrationConfig:
-      image: harness/ssca-plugin:latest
+      image: harness/ssca-plugin:0.3.0
       entrypoint:
         - /bin/ssca-plugin
     sscaEnforcementConfig:
-      image: harness/ssca-plugin:latest
+      image: harness/ssca-plugin:0.3.0
       entrypoint:
         - /bin/ssca-plugin
     vmImageConfig:
@@ -370,8 +370,8 @@ ciExecutionServiceConfig:
       artifactoryUpload: plugins/artifactory:1.4.4
       cacheGCS: plugins/cache:1.5.9
       cacheS3: plugins/cache:1.5.9
-      sscaOrchestration: harness/ssca-plugin:latest
-      sscaEnforcement: harness/ssca-plugin:latest
+      sscaOrchestration: harness/ssca-plugin:0.3.0
+      sscaEnforcement: harness/ssca-plugin:0.3.0
     vmContainerlessStepConfig:
       s3UploadConfig:
         name: github.com/drone-plugins/drone-s3@refs/tags/v1.2.2
