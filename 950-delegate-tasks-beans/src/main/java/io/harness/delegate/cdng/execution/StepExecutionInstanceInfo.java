@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.execution;
+package io.harness.delegate.cdng.execution;
 
 import io.harness.annotation.RecasterAlias;
 
@@ -16,7 +16,7 @@ import lombok.Data;
 
 @Data
 @Builder
-@RecasterAlias("io.harness.cdng.execution.StepExecutionInstanceInfo")
+@RecasterAlias("io.harness.delegate.cdng.execution.StepExecutionInstanceInfo")
 public class StepExecutionInstanceInfo {
   @NotNull List<StepInstanceInfo> deployedServiceInstances;
   @NotNull List<StepInstanceInfo> serviceInstancesBefore;

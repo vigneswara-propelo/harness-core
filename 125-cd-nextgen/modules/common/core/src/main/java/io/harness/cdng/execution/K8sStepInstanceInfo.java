@@ -8,6 +8,7 @@
 package io.harness.cdng.execution;
 
 import io.harness.annotation.RecasterAlias;
+import io.harness.delegate.cdng.execution.StepInstanceInfo;
 
 import lombok.Builder;
 import lombok.Data;

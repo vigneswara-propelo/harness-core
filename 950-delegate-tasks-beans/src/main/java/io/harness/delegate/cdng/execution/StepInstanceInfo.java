@@ -5,12 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.execution;
+package io.harness.delegate.cdng.execution;
 
 import io.harness.annotation.RecasterAlias;
 
 import lombok.Data;
 
 @Data
-@RecasterAlias("io.harness.cdng.execution.StepInstanceInfo")
+@RecasterAlias("io.harness.delegate.cdng.execution.StepInstanceInfo")
 public class StepInstanceInfo {}
