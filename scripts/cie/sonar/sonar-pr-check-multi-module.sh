@@ -56,15 +56,19 @@ function get_info_from_file(){
 
 BAZEL_ARGS="--announce_rc --keep_going --show_timestamps --jobs=auto"
 BAZEL_OUTPUT_PATH="/tmp/execroot/harness_monorepo/bazel-out/k8-fastbuild/bin"
+BAZEL_TESTS_FILE="raw_bazel_tests.txt"
 COVERAGE_ARGS="--collect_code_coverage --combined_report=lcov --coverage_report_generator=//tools/bazel/sonarqube:sonarqube_coverage_generator"
 COVERAGE_REPORT_PATH='/tmp/execroot/harness_monorepo/bazel-out/_coverage/_coverage_report.dat'
 JARS_ARRAY=("libmodule-hjar.jar" "libmodule.jar" "module.jar")
 JARS_FILE="modules_jars.txt"
+JAVA_TEST_SRCS='test'
 LIBS_FILE="modules_libs.txt"
 MODULES_FILE="modules.txt"
 MODULES_TESTS_FILE="modules_tests.txt"
 PR_SRCS_FILE="pr_srcs.txt"
-SONAR_CONFIG_FILE='sonar-project.properties'
+PR_TESTS_FILE="pr_tests.txt"
+PR_TEST_INCLUSION_FILE="pr_test_inclusions.txt"
+SONAR_PROP_FILE_PATH='sonar-project.properties'
 STARTUP_ARGS="--output_base=/tmp"
 TEST_ARGS="--discard_analysis_cache --notrack_incremental_state --nokeep_state_after_build"
 
@@ -92,24 +96,21 @@ echo "------------------------------------------------"
 echo -e "GIT DIFF:\n$GIT_DIFF"
 echo "------------------------------------------------"
 
-# Filtering out only Java files for sonar coverage
+# Filtering out only Java Source files for sonar coverage
 for FILE in $GIT_DIFF;
   do
     extension=${FILE##*.}
-    if [ -f "${FILE}" ] && [ "${extension}" = "java" ]; then
+    if [ -f "${FILE}" ] && [ "${extension}" = "java" ] && ! [[ ${FILE} =~ 'Test.java' ]]; then
       FILES+=("${FILE}")
       echo "$(echo ${FILE} | awk -F/ '{print $1}')" >> $MODULES_FILE
     else
-      echo "${FILE} not found or is not a Java File....."
+      echo "${FILE} not found or is not a Java Source File....."
     fi
   done
 
 # Check if the file is empty, meaning there is no java file changed in the PR.
 if ! [[ -f "$MODULES_FILE" ]]; then
-  echo "INFO: No Java File change detected. Skipping the Scan....."
-  exit 0
-elif ! [[ -z $(grep -inr '400-rest' "$MODULES_FILE") ]]; then
-  echo "INFO: 400-rest changes detected in the PR. Skipping the Scan....."
+  echo "INFO: No Java Source File change detected. Skipping the Scan....."
   exit 0
 fi
 
@@ -121,20 +122,32 @@ PR_MODULES=$(cat $MODULES_FILE | sort -u | tr '\n' ' ')
 check_cmd_status "$?" "Failed to get modules from commits."
 echo -e "PR_MODULES:\n$PR_MODULES"
 
-# Checking if PR contains more than 1 module changes
-if [ "$(cat $MODULES_FILE | sort -u | wc -l)" -gt 1 ]; then
-    echo "ERROR: PR is touching multiple modules, Generating Coverage and Code Smells is not possible. Exiting....."
-    exit 1
-fi
-
 # Filtering out Bazel modules only and Getting the path of the sonar prop file in the module.
 for module in $PR_MODULES
   do
      [ -d ${module} ] && [[ "${HARNESS_CORE_MODULES}" =~ "${module}" ]] \
      && BAZEL_COMPILE_MODULES+=("//${module}/...") \
-     && SONAR_PROP_FILE_PATH=$(find ${module} -type f -iname "${SONAR_CONFIG_FILE}") \
+     && echo "$(bazel query "attr(tags, 'java_test', ${module}/...)")" >> $BAZEL_TESTS_FILE \
      || echo "$module is not present in the bazel modules list."
   done
+#echo "BAZEL_TEST_LIST: $(cat $BAZEL_TESTS_FILE)"
+
+# Filtering the Test Classes for the PR Sources files.
+for FILE in $(echo $PR_FILES | sed "s/,/ /g")
+  do
+    #echo "PR_FILE: $FILE"
+    FILE=$(echo $FILE | awk -F/ '{print $NF}' | awk -F. '{print $1}')
+    for TEST in `cat $BAZEL_TESTS_FILE`
+      do
+        [[ "${TEST}" =~ "${FILE}" ]] && echo "${TEST}" >> $PR_TESTS_FILE && echo "TEST Found: $TEST"
+      done
+  done
+
+PR_TEST_LIST=( $(cat $PR_TESTS_FILE | sort -u | tr '\r\n' ' ') )
+echo -e "PR_TEST_LIST:\n${PR_TEST_LIST[@]}"
+! [ -f $PR_TESTS_FILE ] \
+&& echo "ERROR: NO TEST CLASS FOUND FOR JAVA SOURCE FILES... PLEASE ADD SOME TEST CLASSES." \
+&& exit 1
 
 if [ -f ${SONAR_PROP_FILE_PATH} ]; then
   echo "SONAR PROP FILE: ${SONAR_PROP_FILE_PATH}"
@@ -144,8 +157,8 @@ else
 fi
 
 # Running Bazel Coverage
-echo "INFO: BAZEL COMMAND: bazel ${STARTUP_ARGS} test ${BAZEL_ARGS} ${COVERAGE_ARGS} ${TEST_ARGS} -- ${BAZEL_COMPILE_MODULES[@]}"
-bazel ${STARTUP_ARGS} test ${BAZEL_ARGS} ${COVERAGE_ARGS} ${TEST_ARGS} -- "${BAZEL_COMPILE_MODULES[@]}" || true
+echo "INFO: BAZEL COMMAND: bazel ${STARTUP_ARGS} coverage ${BAZEL_ARGS} ${COVERAGE_ARGS} ${TEST_ARGS} -- ${PR_TEST_LIST[@]}"
+bazel ${STARTUP_ARGS} coverage ${BAZEL_ARGS} ${COVERAGE_ARGS} ${TEST_ARGS} -- "${PR_TEST_LIST[@]}" || true
 check_cmd_status "$?" "Failed to run coverage."
 
 # Splitting path till 'src' folder inside module
@@ -154,8 +167,14 @@ for file in $(echo $GIT_DIFF | tr '\r\n' ' ')
      TEMP_RES=$(grep -w 'src' <<< $file | sed 's|src|:|' | awk -F: '{print $1}' | sed 's|$|src|')
      echo "$TEMP_RES" >> $PR_SRCS_FILE
   done
-PR_SRCS_DIR=$(cat $PR_SRCS_FILE | sort -u)
+PR_SRCS_DIR=$(cat $PR_SRCS_FILE | sort -u | tr '\r\n' ',')
 echo -e "PR_SRCS_DIR:\n${PR_SRCS_DIR}"
+
+while IFS= read -r line; do
+    [ -d "$line/test" ] && echo "$line/$JAVA_TEST_SRCS"
+done < "$PR_SRCS_FILE" > "$PR_TEST_INCLUSION_FILE"
+SONAR_TEST_INCLUSIONS=$(get_info_from_file $PR_TEST_INCLUSION_FILE)
+echo -e "SONAR_TEST_INCLUSIONS:\n${SONAR_TEST_INCLUSIONS}"
 
 # Getting all test classes in the module
 for DIR in ${PR_SRCS_DIR}
@@ -165,10 +184,9 @@ for DIR in ${PR_SRCS_DIR}
 MODULES_TESTS=$(get_info_from_file $MODULES_TESTS_FILE)
 
 # Getting list of generated jars after bazel build/test/coverage
-for MODULE in ${PR_SRCS_DIR[@]}
+for MODULE in $(echo ${PR_SRCS_DIR} | tr ',' ' ')
   do
     TEMP_RES=$(grep -w 'src' <<< ${MODULE} | sed 's|\/src||')
-    find "${BAZEL_OUTPUT_PATH}/${TEMP_RES}" -type f -name '*.jar' >> $LIBS_FILE
     echo -e "\n" >> $LIBS_FILE
     for JAR in ${JARS_ARRAY[@]}
       do
@@ -181,10 +199,11 @@ for MODULE in ${PR_SRCS_DIR[@]}
   done
 echo -e "JARS:\n$(cat ${JARS_FILE})"
 JARS_BINS=$(get_info_from_file $JARS_FILE)
-LIBS_BINS=$(get_info_from_file $LIBS_FILE)
 
 # Preparing Sonar Properties file
 [ -f "${SONAR_PROP_FILE_PATH}" ] \
+&& echo -e "\nsonar.sources=$PR_FILES" >> ${SONAR_PROP_FILE_PATH} \
+&& echo -e "\nsonar.tests=$SONAR_TEST_INCLUSIONS" >> ${SONAR_PROP_FILE_PATH} \
 && echo -e "\nsonar.scm.revision=$COMMIT_SHA" >> ${SONAR_PROP_FILE_PATH} \
 && echo -e "\nsonar.java.binaries=$JARS_BINS" >> ${SONAR_PROP_FILE_PATH} \
 && echo -e "\nsonar.java.libraries=$JARS_BINS" >> ${SONAR_PROP_FILE_PATH} \
