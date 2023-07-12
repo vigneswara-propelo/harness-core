@@ -106,7 +106,6 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_DEBEZIUM_ENABLED_CG("This flag is enable sync using debezium in cg", HarnessTeam.CDC, Scope.GLOBAL),
   CDS_ENABLE_TRIGGER_YAML_VALIDATION("Enables trigger yaml validation", HarnessTeam.SPG),
-  CDS_ENCODE_HTTP_STEP_URL("Enables the encoding of HTTP Step URL if it is not already encoded", HarnessTeam.CDP),
   CDS_ENCRYPT_TERRAFORM_APPLY_JSON_OUTPUT(
       "FF for providing the terraform apply json output as a secret", HarnessTeam.CDP),
   CDS_GIT_CONFIG_FILES("Enable config files from GIT repositories", HarnessTeam.CDP),
