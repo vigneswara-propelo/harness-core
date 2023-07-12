@@ -620,6 +620,7 @@ io.harness.cdng.infra.yaml.GoogleFunctionsInfrastructure
 io.harness.cdng.elastigroup.deploy.ElastigroupDeployStepInfo
 io.harness.ci.beans.entities.CIExecutionImages
 io.harness.cdng.serverless.beans.ServerlessExecutionPassThroughData
+io.harness.cdng.environment.yaml.EnvironmentInfraUseFromStage
 io.harness.cdng.environment.yaml.EnvironmentPlanCreatorConfig
 io.harness.cdng.artifact.bean.yaml.AmazonS3ArtifactConfig
 io.harness.beans.steps.stepinfo.V1.ActionStepInfoV1

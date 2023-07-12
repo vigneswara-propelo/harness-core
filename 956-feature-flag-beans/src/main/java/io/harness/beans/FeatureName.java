@@ -108,6 +108,7 @@ public enum FeatureName {
   CDS_ENABLE_TRIGGER_YAML_VALIDATION("Enables trigger yaml validation", HarnessTeam.SPG),
   CDS_ENCRYPT_TERRAFORM_APPLY_JSON_OUTPUT(
       "FF for providing the terraform apply json output as a secret", HarnessTeam.CDP),
+  CDS_ENV_PROPAGATION("FF for enabling env infra propagation for CD", HarnessTeam.CDC),
   CDS_GIT_CONFIG_FILES("Enable config files from GIT repositories", HarnessTeam.CDP),
   CDS_HELM_FETCH_CHART_METADATA_NG(
       "Enables option to fetch helm chart details from the Chart.yaml and expose this as expressions. Epic: https://harness.atlassian.net/browse/CDS-58036",
