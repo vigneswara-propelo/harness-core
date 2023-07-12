@@ -7,12 +7,14 @@
 
 package io.harness.cdng.manifest.steps;
 
+import static io.harness.cdng.manifest.ManifestType.HelmChart;
 import static io.harness.cdng.service.steps.constants.ServiceStepConstants.ENVIRONMENT_GLOBAL_OVERRIDES;
 import static io.harness.cdng.service.steps.constants.ServiceStepConstants.SERVICE;
 import static io.harness.cdng.service.steps.constants.ServiceStepConstants.SERVICE_OVERRIDES;
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.ABOSII;
+import static io.harness.rule.OwnerRule.RISHABH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,6 +31,9 @@ import io.harness.CategoryTest;
 import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.CDStepHelper;
+import io.harness.cdng.execution.ServiceExecutionSummaryDetails;
+import io.harness.cdng.execution.StageExecutionInfoUpdateDTO;
+import io.harness.cdng.execution.service.StageExecutionInfoService;
 import io.harness.cdng.expressions.CDExpressionResolver;
 import io.harness.cdng.manifest.ManifestConfigType;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
@@ -45,6 +50,7 @@ import io.harness.cdng.manifest.yaml.kinds.K8sManifest;
 import io.harness.cdng.manifest.yaml.kinds.ValuesManifest;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
+import io.harness.cdng.manifest.yaml.summary.HelmChartManifestSummary;
 import io.harness.cdng.service.beans.ServiceDefinitionType;
 import io.harness.cdng.service.steps.constants.ServiceStepV3Constants;
 import io.harness.cdng.service.steps.helpers.ServiceStepsHelper;
@@ -55,6 +61,7 @@ import io.harness.connector.services.ConnectorService;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.sdk.EntityValidityDetails;
+import io.harness.k8s.model.HelmVersion;
 import io.harness.logstreaming.NGLogCallback;
 import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -91,6 +98,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,6 +123,7 @@ public class ManifestsStepV2Test extends CategoryTest {
   @Mock NGFeatureFlagHelperService featureFlagHelperService;
   @Mock private NGSettingsClient ngSettingsClient;
   @Mock private Call<ResponseDTO<SettingValueResponseDTO>> request;
+  @Mock private StageExecutionInfoService stageExecutionInfoService;
   @InjectMocks private ManifestsStepV2 step = new ManifestsStepV2();
 
   private AutoCloseable mocks;
@@ -138,6 +147,15 @@ public class ManifestsStepV2Test extends CategoryTest {
     if (mocks != null) {
       mocks.close();
     }
+  }
+
+  @Test
+  @Owner(developers = RISHABH)
+  @Category(UnitTests.class)
+  public void executeSyncHelm() {
+    StepResponse stepResponse =
+        testExecuteHelmManifest(() -> step.executeSync(buildAmbiance(), new EmptyStepParameters(), null, null));
+    assertThat(stepResponse.getStatus()).isEqualTo(Status.SUCCEEDED);
   }
 
   @Test
@@ -192,6 +210,10 @@ public class ManifestsStepV2Test extends CategoryTest {
     doReturn(listEntityDetail)
         .when(entityDetailProtoToRestMapper)
         .createEntityDetailsDTO(new ArrayList<>(emptyIfNull(setEntityDetail)));
+    doReturn(false)
+        .when(featureFlagHelperService)
+        .isEnabled(anyString(), eq(FeatureName.CDS_CUSTOM_STAGE_EXECUTION_DATA_SYNC));
+    verify(stageExecutionInfoService, times(0)).updateStageExecutionInfo(any(), any());
 
     T response = executeMethod.get();
 
@@ -205,6 +227,68 @@ public class ManifestsStepV2Test extends CategoryTest {
     assertThat(outcome.keySet()).containsExactlyInAnyOrder("file1", "file2", "file3");
     assertThat(outcome.get("file2").getOrder()).isEqualTo(1);
     assertThat(outcome.get("file3").getOrder()).isEqualTo(2);
+    verify(pipelineRbacHelper, times(1)).checkRuntimePermissions(any(), any(List.class), any(Boolean.class));
+
+    return response;
+  }
+
+  private <T> T testExecuteHelmManifest(Supplier<T> executeMethod) {
+    ManifestConfigWrapper file1 = sampleManifestFile("file1", ManifestConfigType.HELM_CHART);
+    ManifestConfigWrapper file2 = sampleValuesYamlFile("file2");
+
+    final Map<String, List<ManifestConfigWrapper>> finalManifests = new HashMap<>();
+    finalManifests.put(SERVICE, Arrays.asList(file1, file2));
+
+    doReturn(OptionalSweepingOutput.builder()
+                 .found(true)
+                 .output(NgManifestsMetadataSweepingOutput.builder()
+                             .finalSvcManifestsMap(finalManifests)
+                             .serviceIdentifier(SVC_ID)
+                             .environmentIdentifier(ENV_ID)
+                             .serviceDefinitionType(ServiceDefinitionType.KUBERNETES)
+                             .build())
+                 .build())
+        .when(sweepingOutputService)
+        .resolveOptional(any(Ambiance.class),
+            eq(RefObjectUtils.getOutcomeRefObject(ServiceStepV3Constants.SERVICE_MANIFESTS_SWEEPING_OUTPUT)));
+    List<EntityDetail> listEntityDetail = new ArrayList<>();
+
+    listEntityDetail.add(EntityDetail.builder().name("ManifestSecret1").build());
+    listEntityDetail.add(EntityDetail.builder().name("ManifestSecret2").build());
+
+    Set<EntityDetailProtoDTO> setEntityDetail = new HashSet<>();
+
+    doReturn(setEntityDetail).when(entityReferenceExtractorUtils).extractReferredEntities(any(), any());
+
+    doReturn(listEntityDetail)
+        .when(entityDetailProtoToRestMapper)
+        .createEntityDetailsDTO(new ArrayList<>(emptyIfNull(setEntityDetail)));
+    doReturn(true)
+        .when(featureFlagHelperService)
+        .isEnabled(anyString(), eq(FeatureName.CDS_CUSTOM_STAGE_EXECUTION_DATA_SYNC));
+    T response = executeMethod.get();
+
+    ArgumentCaptor<StageExecutionInfoUpdateDTO> captor = ArgumentCaptor.forClass(StageExecutionInfoUpdateDTO.class);
+    verify(stageExecutionInfoService, times(1)).updateStageExecutionInfo(any(), captor.capture());
+    StageExecutionInfoUpdateDTO stageExecutionInfoUpdateDTO = captor.getValue();
+    ServiceExecutionSummaryDetails.ManifestsSummary manifestsSummary =
+        stageExecutionInfoUpdateDTO.getManifestsSummary();
+    assertThat(manifestsSummary.getManifestSummaries()).hasSize(1);
+    HelmChartManifestSummary helmChartManifestSummary =
+        (HelmChartManifestSummary) manifestsSummary.getManifestSummaries().get(0);
+    assertThat(helmChartManifestSummary.getIdentifier()).isEqualTo("file1");
+    assertThat(helmChartManifestSummary.getType()).isEqualTo(HelmChart);
+    assertThat(helmChartManifestSummary.getChartVersion()).isEqualTo("0.1.0");
+
+    ArgumentCaptor<ManifestsOutcome> manifestsOutcomeArgumentCaptor = ArgumentCaptor.forClass(ManifestsOutcome.class);
+    verify(sweepingOutputService, times(1))
+        .consume(any(Ambiance.class), eq("manifests"), manifestsOutcomeArgumentCaptor.capture(), eq("STAGE"));
+    verify(expressionResolver, times(1)).updateExpressions(any(Ambiance.class), any());
+
+    ManifestsOutcome outcome = manifestsOutcomeArgumentCaptor.getValue();
+
+    assertThat(outcome.keySet()).containsExactlyInAnyOrder("file1", "file2");
+    assertThat(outcome.get("file2").getOrder()).isEqualTo(1);
     verify(pipelineRbacHelper, times(1)).checkRuntimePermissions(any(), any(List.class), any(Boolean.class));
 
     return response;
@@ -835,24 +919,34 @@ public class ManifestsStepV2Test extends CategoryTest {
 
   private ManifestConfigWrapper sampleManifestFile(String identifier, ManifestConfigType type) {
     return ManifestConfigWrapper.builder()
-        .manifest(ManifestConfig.builder()
-                      .identifier(identifier)
-                      .type(type)
-                      .spec(K8sManifest.builder()
-                                .identifier(identifier)
-                                .store(ParameterField.createValueField(
-                                    StoreConfigWrapper.builder()
-                                        .type(StoreConfigType.GIT)
-                                        .spec(GitStore.builder()
-                                                  .folderPath(ParameterField.createValueField("manifests/"))
-                                                  .connectorRef(ParameterField.createValueField("gitconnector"))
-                                                  .branch(ParameterField.createValueField("main"))
-                                                  .paths(ParameterField.createValueField(List.of("path1", "path2")))
-                                                  .build())
-                                        .build()))
-                                .build())
-                      .build())
+        .manifest(ManifestConfig.builder().identifier(identifier).type(type).spec(getSpec(identifier, type)).build())
         .build();
+  }
+
+  private ManifestAttributes getSpec(String identifier, ManifestConfigType type) {
+    if (ManifestConfigType.HELM_CHART.equals(type)) {
+      return HelmChartManifest.builder()
+          .identifier(identifier)
+          .helmVersion(HelmVersion.V3)
+          .chartVersion(ParameterField.createValueField("0.1.0"))
+          .store(getStoreConfig())
+          .build();
+    }
+    return K8sManifest.builder().identifier(identifier).store(getStoreConfig()).build();
+  }
+
+  @NotNull
+  private ParameterField<StoreConfigWrapper> getStoreConfig() {
+    return ParameterField.createValueField(
+        StoreConfigWrapper.builder()
+            .type(StoreConfigType.GIT)
+            .spec(GitStore.builder()
+                      .folderPath(ParameterField.createValueField("manifests/"))
+                      .connectorRef(ParameterField.createValueField("gitconnector"))
+                      .branch(ParameterField.createValueField("main"))
+                      .paths(ParameterField.createValueField(List.of("path1", "path2")))
+                      .build())
+            .build());
   }
 
   private ManifestConfigWrapper sampleManifestHttpHelm(String identifier, ManifestConfigType type) {

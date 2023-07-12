@@ -1,6 +1,7 @@
 io.harness.cdng.k8s.K8sCanaryStepParameters
 io.harness.cdng.provision.terraform.TerraformStepConfigurationParameters
 io.harness.cdng.execution.ServiceExecutionSummaryDetails$ArtifactsSummary
+io.harness.cdng.execution.ServiceExecutionSummaryDetails$ManifestsSummary
 io.harness.plancreator.strategy.v1.MatrixConfigV1
 io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome
 io.harness.cdng.manifest.yaml.AsgLaunchTemplateManifestOutcome

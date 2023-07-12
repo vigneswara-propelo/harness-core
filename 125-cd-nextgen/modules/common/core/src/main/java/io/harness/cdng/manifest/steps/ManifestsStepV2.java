@@ -18,14 +18,19 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
+import io.harness.cdng.execution.ServiceExecutionSummaryDetails;
+import io.harness.cdng.execution.StageExecutionInfoUpdateDTO;
+import io.harness.cdng.execution.service.StageExecutionInfoService;
 import io.harness.cdng.expressions.CDExpressionResolver;
 import io.harness.cdng.manifest.ManifestConfigType;
 import io.harness.cdng.manifest.mappers.ManifestOutcomeMapper;
+import io.harness.cdng.manifest.mappers.ManifestSummaryMapper;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
 import io.harness.cdng.manifest.steps.output.NgManifestsMetadataSweepingOutput;
 import io.harness.cdng.manifest.steps.output.UnresolvedManifestsOutput;
@@ -36,6 +41,7 @@ import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.kinds.HelmChartManifest;
 import io.harness.cdng.manifest.yaml.kinds.HelmRepoOverrideManifest;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
+import io.harness.cdng.manifest.yaml.summary.ManifestSummary;
 import io.harness.cdng.service.steps.constants.ServiceStepV3Constants;
 import io.harness.cdng.service.steps.helpers.ServiceStepsHelper;
 import io.harness.cdng.steps.EmptyStepParameters;
@@ -86,6 +92,7 @@ import software.wings.beans.LogWeight;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -116,6 +123,7 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
   @Inject private NGSettingsClient ngSettingsClient;
 
   @Inject NGFeatureFlagHelperService featureFlagHelperService;
+  @Inject private StageExecutionInfoService stageExecutionInfoService;
 
   private static final String OVERRIDE_PROJECT_SETTING_IDENTIFIER = "service_override_v2";
 
@@ -144,7 +152,7 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
       if (!manifestsOutcomeOutput.isFound()) {
         return StepResponse.builder().status(Status.SKIPPED).build();
       }
-
+      saveManifestExecutionDataToStageInfo(ambiance, (ManifestsOutcome) manifestsOutcomeOutput.getOutput());
       return StepResponse.builder().status(Status.SUCCEEDED).build();
     }
 
@@ -176,6 +184,7 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
     Optional<ManifestsOutcome> manifestsOutcome = resolveManifestsOutcome(ambiance);
 
     manifestsOutcome.ifPresent(outcome -> saveManifestsOutcome(ambiance, outcome, new HashMap<>()));
+    manifestsOutcome.ifPresent(outcome -> saveManifestExecutionDataToStageInfo(ambiance, outcome));
 
     return manifestsOutcome.map(ignored -> StepResponse.builder().status(Status.SUCCEEDED).build())
         .orElseGet(() -> StepResponse.builder().status(Status.SKIPPED).build());
@@ -508,5 +517,43 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
                    ngSettingsClient.getSetting(OVERRIDE_PROJECT_SETTING_IDENTIFIER, accountId, orgId, projectId))
                .getValue()
                .equals("true");
+  }
+
+  public void saveManifestExecutionDataToStageInfo(Ambiance ambiance, ManifestsOutcome manifestsOutcome) {
+    if (isNull(manifestsOutcome)) {
+      return;
+    }
+    if (!featureFlagHelperService.isEnabled(
+            AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_CUSTOM_STAGE_EXECUTION_DATA_SYNC)) {
+      return;
+    }
+    try {
+      List<ManifestSummary> manifestsSummary = mapManifestOutcomeToSummary(manifestsOutcome);
+      if (isNotEmpty(manifestsSummary)) {
+        stageExecutionInfoService.updateStageExecutionInfo(ambiance,
+            StageExecutionInfoUpdateDTO.builder()
+                .manifestsSummary(ServiceExecutionSummaryDetails.ManifestsSummary.builder()
+                                      .manifestSummaries(manifestsSummary)
+                                      .build())
+                .build());
+      }
+    } catch (Exception e) {
+      log.error(String.format(
+          "[CustomDashboard]: Error while saving manifest info to StageExecutionInfo for accountIdentifier %s, orgIdentifier %s, projectIdentifier %s and stageExecutionId %s",
+          AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
+          AmbianceUtils.getProjectIdentifier(ambiance), ambiance.getStageExecutionId()));
+    }
+  }
+
+  private List<ManifestSummary> mapManifestOutcomeToSummary(ManifestsOutcome manifestsOutcome) {
+    List<ManifestSummary> manifestSummaries = new ArrayList<>();
+    Collection<ManifestOutcome> manifestOutcomeList = manifestsOutcome.values();
+    for (ManifestOutcome manifestOutcome : manifestOutcomeList) {
+      ManifestSummary manifestSummary = ManifestSummaryMapper.toManifestSummary(manifestOutcome);
+      if (manifestSummary != null) {
+        manifestSummaries.add(manifestSummary);
+      }
+    }
+    return manifestSummaries;
   }
 }
