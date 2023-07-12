@@ -38,6 +38,7 @@ import io.harness.cvng.beans.change.ChangeSourceType;
 import io.harness.cvng.beans.change.ChangeSummaryDTO;
 import io.harness.cvng.beans.cvnglog.CVNGLogDTO;
 import io.harness.cvng.beans.errortracking.ErrorTrackingNotificationData;
+import io.harness.cvng.cdng.services.api.SRMAnalysisStepService;
 import io.harness.cvng.client.ErrorTrackingService;
 import io.harness.cvng.client.NextGenService;
 import io.harness.cvng.core.beans.HealthMonitoringFlagResponse;
@@ -238,6 +239,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Inject private ServiceLevelIndicatorService serviceLevelIndicatorService;
   @Inject private EnforcementClientService enforcementClientService;
   @Inject private FeatureFlagService featureFlagService;
+
+  @Inject private SRMAnalysisStepService srmAnalysisStepService;
 
   @Inject NgLicenseHttpClient ngLicenseHttpClient;
   @Inject
@@ -547,6 +550,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                              .build());
       setupUsageEventService.sendDeleteEventsForMonitoredService(projectParams, monitoredService);
       activityService.deleteByMonitoredServiceIdentifier(monitoredServiceParams);
+      srmAnalysisStepService.abortRunningStepsForMonitoredService(projectParams, identifier);
     }
     return deleted;
   }
@@ -1420,7 +1424,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public MonitoredServiceResponse createDefault(
       ProjectParams projectParams, String serviceIdentifier, String environmentIdentifier) {
-    String identifier = serviceIdentifier + "_" + environmentIdentifier;
+    String identifier = MonitoredService.getIdentifier(serviceIdentifier, environmentIdentifier);
     identifier = identifier.substring(0, Math.min(identifier.length(), 64));
     MonitoredServiceDTO monitoredServiceDTO = MonitoredServiceDTO.builder()
                                                   .name(identifier)

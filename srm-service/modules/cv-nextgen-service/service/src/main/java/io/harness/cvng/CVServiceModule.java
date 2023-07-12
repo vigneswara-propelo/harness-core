@@ -73,12 +73,14 @@ import io.harness.cvng.cdng.services.api.CDStageMetaDataService;
 import io.harness.cvng.cdng.services.api.CVNGStepService;
 import io.harness.cvng.cdng.services.api.CVNGStepTaskService;
 import io.harness.cvng.cdng.services.api.PipelineStepMonitoredServiceResolutionService;
+import io.harness.cvng.cdng.services.api.SRMAnalysisStepService;
 import io.harness.cvng.cdng.services.api.VerifyStepDemoService;
 import io.harness.cvng.cdng.services.impl.CDStageMetaDataServiceImpl;
 import io.harness.cvng.cdng.services.impl.CVNGStepServiceImpl;
 import io.harness.cvng.cdng.services.impl.CVNGStepTaskServiceImpl;
 import io.harness.cvng.cdng.services.impl.ConfiguredPipelineStepMonitoredServiceResolutionServiceImpl;
 import io.harness.cvng.cdng.services.impl.DefaultPipelineStepMonitoredServiceResolutionServiceImpl;
+import io.harness.cvng.cdng.services.impl.SRMAnalysisStepServiceImpl;
 import io.harness.cvng.cdng.services.impl.TemplatePipelineStepMonitoredServiceResolutionServiceImpl;
 import io.harness.cvng.cdng.services.impl.VerifyStepDemoServiceImpl;
 import io.harness.cvng.client.ErrorTrackingService;
@@ -1218,6 +1220,7 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
 
     bind(StateMachineMessageProcessor.class).to(StateMachineMessageProcessorImpl.class);
+    bind(SRMAnalysisStepService.class).to(SRMAnalysisStepServiceImpl.class);
 
     MapBinder<SLIMetricType, SLIAnalyserService> sliAnalyserServiceMapBinder =
         MapBinder.newMapBinder(binder(), SLIMetricType.class, SLIAnalyserService.class);
