@@ -8754,6 +8754,18 @@
                 }
               ]
             },
+            "fetchHelmChartMetadata": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "pattern": "(<\\+.+>.*)",
+                  "minLength": 1
+                }
+              ]
+            },
             "helmVersion": {
               "type": "string",
               "enum": [

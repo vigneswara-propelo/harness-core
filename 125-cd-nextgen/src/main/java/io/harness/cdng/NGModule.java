@@ -73,6 +73,8 @@ import io.harness.cdng.manifest.resources.HelmChartService;
 import io.harness.cdng.manifest.resources.HelmChartServiceImpl;
 import io.harness.cdng.manifest.steps.task.HelmChartManifestTaskHandler;
 import io.harness.cdng.manifest.steps.task.ManifestTaskHandler;
+import io.harness.cdng.manifest.steps.task.ManifestTaskService;
+import io.harness.cdng.manifest.steps.task.ManifestTaskServiceImpl;
 import io.harness.cdng.plugininfoproviders.AwsSamBuildPluginInfoProvider;
 import io.harness.cdng.plugininfoproviders.AwsSamDeployPluginInfoProvider;
 import io.harness.cdng.plugininfoproviders.DownloadManifestsPluginInfoProvider;
@@ -214,6 +216,7 @@ public class NGModule extends AbstractModule {
     bind(ServiceOverrideV2MigrationService.class).to(ServiceOverrideV2MigrationServiceImpl.class);
     bind(ServiceOverrideV2SettingsUpdateService.class).to(ServiceOverrideV2SettingsUpdateServiceImpl.class);
     bind(CDLicenseUsageReportService.class).to(CDLicenseUsageReportServiceImpl.class);
+    bind(ManifestTaskService.class).to(ManifestTaskServiceImpl.class);
 
     MapBinder<String, FilterPropertiesMapper> filterPropertiesMapper =
         MapBinder.newMapBinder(binder(), String.class, FilterPropertiesMapper.class);
