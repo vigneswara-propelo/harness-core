@@ -9,6 +9,8 @@ package io.harness.cdng.aws.sam;
 
 import static io.harness.ci.commonconstants.CIExecutionConstants.GIT_CLONE_STEP_ID;
 
+import static java.lang.String.format;
+
 import io.harness.beans.steps.nodes.GitCloneStepNode;
 import io.harness.beans.steps.stepinfo.GitCloneStepInfo;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
@@ -17,10 +19,13 @@ import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.data.structure.UUIDGenerator;
+import io.harness.exception.GeneralException;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
+import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
+import io.harness.pms.sdk.core.data.OptionalOutcome;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outcome.OutcomeService;
 import io.harness.pms.yaml.ParameterField;
@@ -30,14 +35,25 @@ import io.harness.yaml.extended.ci.codebase.impl.BranchBuildSpec;
 
 import com.google.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
 public class DownloadManifestsCommonHelper {
   @Inject private OutcomeService outcomeService;
 
   public ManifestsOutcome fetchManifestsOutcome(Ambiance ambiance) {
-    return (ManifestsOutcome) outcomeService
-        .resolveOptional(ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.MANIFESTS))
-        .getOutcome();
+    OptionalOutcome manifestsOutcome = outcomeService.resolveOptional(
+        ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.MANIFESTS));
+
+    if (!manifestsOutcome.isFound()) {
+      String stageName =
+          AmbianceUtils.getStageLevelFromAmbiance(ambiance).map(Level::getIdentifier).orElse("Deployment stage");
+      String stepType =
+          Optional.ofNullable(AmbianceUtils.getCurrentStepType(ambiance)).map(StepType::getType).orElse("This");
+      throw new GeneralException(format(
+          "No manifests found in stage %s. %s step requires at least one manifest defined in stage service definition",
+          stageName, stepType));
+    }
+    return (ManifestsOutcome) manifestsOutcome.getOutcome();
   }
 
   public Ambiance buildAmbianceForGitClone(Ambiance ambiance, String identifier) {

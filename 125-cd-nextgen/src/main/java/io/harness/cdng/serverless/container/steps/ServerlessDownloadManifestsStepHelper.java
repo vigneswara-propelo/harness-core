@@ -10,10 +10,7 @@ package io.harness.cdng.serverless.container.steps;
 import io.harness.beans.steps.nodes.GitCloneStepNode;
 import io.harness.beans.steps.stepinfo.GitCloneStepInfo;
 import io.harness.cdng.aws.sam.DownloadManifestsCommonHelper;
-import io.harness.cdng.manifest.ManifestType;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
-import io.harness.cdng.manifest.yaml.GitStoreConfig;
-import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
@@ -54,12 +51,10 @@ import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -89,7 +84,8 @@ public class ServerlessDownloadManifestsStepHelper {
     List<String> logKeys = new ArrayList<>(samDirectoryAsyncExecutableResponse.getLogKeysList());
 
     ValuesManifestOutcome valuesManifestOutcome =
-        (ValuesManifestOutcome) getServerlessAwsLambdaValuesManifestOutcome(manifestsOutcome.values());
+        (ValuesManifestOutcome) serverlessV2PluginInfoProviderHelper.getServerlessAwsLambdaValuesManifestOutcome(
+            manifestsOutcome.values());
 
     if (valuesManifestOutcome != null) {
       AsyncExecutableResponse valuesAsyncExecutableResponse =
@@ -108,7 +104,8 @@ public class ServerlessDownloadManifestsStepHelper {
   public AsyncExecutableResponse getAsyncExecutableResponseForServerlessAwsLambdaManifest(
       Ambiance ambiance, StepInputPackage inputPackage, GitCloneStep gitCloneStep, ManifestsOutcome manifestsOutcome) {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaDirectoryManifestOutcome =
-        (ServerlessAwsLambdaManifestOutcome) getServerlessAwsLambdaDirectoryManifestOutcome(manifestsOutcome.values());
+        (ServerlessAwsLambdaManifestOutcome) serverlessV2PluginInfoProviderHelper
+            .getServerlessAwsLambdaDirectoryManifestOutcome(manifestsOutcome.values());
 
     GitCloneStepInfo gitCloneStepInfo = downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcome(
         serverlessAwsLambdaDirectoryManifestOutcome);
@@ -127,7 +124,8 @@ public class ServerlessDownloadManifestsStepHelper {
     GitCloneStepInfo valuesGitCloneStepInfo =
         downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcomeWithOutputFilePathContents(
             valuesManifestOutcome,
-            Collections.singletonList(getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
+            Collections.singletonList(
+                serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
 
     StepElementParameters valuesStepElementParameters =
         downloadManifestsCommonHelper.getGitStepElementParameters(valuesManifestOutcome, valuesGitCloneStepInfo);
@@ -151,7 +149,8 @@ public class ServerlessDownloadManifestsStepHelper {
 
   public StepOutcome handleResponseForServerlessAwsLambdaManifest(ManifestsOutcome manifestsOutcome) {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaDirectoryManifestOutcome =
-        (ServerlessAwsLambdaManifestOutcome) getServerlessAwsLambdaDirectoryManifestOutcome(manifestsOutcome.values());
+        (ServerlessAwsLambdaManifestOutcome) serverlessV2PluginInfoProviderHelper
+            .getServerlessAwsLambdaDirectoryManifestOutcome(manifestsOutcome.values());
     String serverlessDirectoryPath =
         serverlessV2PluginInfoProviderHelper.getServerlessAwsLambdaDirectoryPathFromManifestOutcome(
             serverlessAwsLambdaDirectoryManifestOutcome);
@@ -168,7 +167,8 @@ public class ServerlessDownloadManifestsStepHelper {
   public void handleResponseForValuesManifest(
       Ambiance ambiance, Map<String, ResponseData> responseDataMap, ManifestsOutcome manifestsOutcome) {
     ValuesManifestOutcome valuesManifestOutcome =
-        (ValuesManifestOutcome) getServerlessAwsLambdaValuesManifestOutcome(manifestsOutcome.values());
+        (ValuesManifestOutcome) serverlessV2PluginInfoProviderHelper.getServerlessAwsLambdaValuesManifestOutcome(
+            manifestsOutcome.values());
 
     if (valuesManifestOutcome != null) {
       ServerlessV2ValuesYamlDataOutcomeBuilder serverlessValuesYamlDataOutcomeBuilder =
@@ -193,7 +193,8 @@ public class ServerlessDownloadManifestsStepHelper {
       ValuesManifestOutcome valuesManifestOutcome,
       ServerlessV2ValuesYamlDataOutcomeBuilder serverlessValuesYamlDataOutcomeBuilder, StepOutput stepOutput) {
     if (stepOutput instanceof StepMapOutput) {
-      String valuesYamlPath = getValuesPathFromValuesManifestOutcome(valuesManifestOutcome);
+      String valuesYamlPath =
+          serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome);
 
       StepMapOutput stepMapOutput = (StepMapOutput) stepOutput;
       if (EmptyPredicate.isNotEmpty(stepMapOutput.getMap())) {
@@ -241,7 +242,8 @@ public class ServerlessDownloadManifestsStepHelper {
     // Values Yaml
 
     ValuesManifestOutcome valuesManifestOutcome =
-        (ValuesManifestOutcome) getServerlessAwsLambdaValuesManifestOutcome(manifestsOutcome.values());
+        (ValuesManifestOutcome) serverlessV2PluginInfoProviderHelper.getServerlessAwsLambdaValuesManifestOutcome(
+            manifestsOutcome.values());
 
     if (valuesManifestOutcome != null) {
       PluginCreationResponseWrapper valuesPluginCreationResponseWrapper =
@@ -259,7 +261,8 @@ public class ServerlessDownloadManifestsStepHelper {
     GitCloneStepInfo valuesGitCloneStepInfo =
         downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcomeWithOutputFilePathContents(
             valuesManifestOutcome,
-            Collections.singletonList(getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
+            Collections.singletonList(
+                serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
 
     GitCloneStepNode valuesGitCloneStepNode = downloadManifestsCommonHelper.getGitCloneStepNode(
         valuesManifestOutcome, valuesGitCloneStepInfo, cdAbstractStepNode);
@@ -274,7 +277,8 @@ public class ServerlessDownloadManifestsStepHelper {
       PluginCreationRequest request, Set<Integer> usedPorts, Ambiance ambiance, CdAbstractStepNode cdAbstractStepNode,
       ManifestsOutcome manifestsOutcome) {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
-        (ServerlessAwsLambdaManifestOutcome) getServerlessAwsLambdaDirectoryManifestOutcome(manifestsOutcome.values());
+        (ServerlessAwsLambdaManifestOutcome) serverlessV2PluginInfoProviderHelper
+            .getServerlessAwsLambdaDirectoryManifestOutcome(manifestsOutcome.values());
 
     GitCloneStepInfo gitCloneStepInfo =
         downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcome(serverlessAwsLambdaManifestOutcome);
@@ -286,30 +290,6 @@ public class ServerlessDownloadManifestsStepHelper {
         request.toBuilder().setStepJsonNode(getStepJsonNode(gitCloneStepNode)).build();
 
     return gitClonePluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
-  }
-
-  public ManifestOutcome getServerlessAwsLambdaDirectoryManifestOutcome(Collection<ManifestOutcome> manifestOutcomes) {
-    List<ManifestOutcome> manifestOutcomeList =
-        manifestOutcomes.stream()
-            .filter(manifestOutcome -> ManifestType.ServerlessAwsLambda.equals(manifestOutcome.getType()))
-            .collect(Collectors.toList());
-    return manifestOutcomeList.isEmpty() ? null : manifestOutcomeList.get(0);
-  }
-
-  public ManifestOutcome getServerlessAwsLambdaValuesManifestOutcome(Collection<ManifestOutcome> manifestOutcomes) {
-    List<ManifestOutcome> manifestOutcomeList =
-        manifestOutcomes.stream()
-            .filter(manifestOutcome -> ManifestType.VALUES.equals(manifestOutcome.getType()))
-            .collect(Collectors.toList());
-    return manifestOutcomeList.isEmpty() ? null : manifestOutcomeList.get(0);
-  }
-
-  public String getValuesPathFromValuesManifestOutcome(ValuesManifestOutcome valuesManifestOutcome) {
-    GitStoreConfig gitStoreConfig = (GitStoreConfig) valuesManifestOutcome.getStore();
-    String path = String.format(
-        "/harness/%s/%s", valuesManifestOutcome.getIdentifier(), gitStoreConfig.getPaths().getValue().get(0));
-    path = path.replaceAll("/$", "");
-    return path;
   }
 
   public RefObject getOutcomeRefObject() {

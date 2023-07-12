@@ -123,7 +123,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
         mock(ServerlessAwsLambdaManifestOutcome.class);
     doReturn(serverlessAwsLambdaManifestOutcome)
-        .when(serverlessDownloadManifestsV2StepHelper)
+        .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
 
     GitCloneStepInfo gitCloneStepInfo = mock(GitCloneStepInfo.class);
@@ -143,7 +143,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
         PluginCreationResponseWrapper.newBuilder().setResponse(pluginCreationResponse).build();
     doReturn(pluginCreationResponseWrapper).when(gitClonePluginInfoProvider).getPluginInfo(any(), any(), any());
 
-    doReturn(null).when(serverlessDownloadManifestsV2StepHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
+    doReturn(null).when(serverlessV2PluginInfoProviderHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
 
     PluginCreationResponseList pluginCreationResponseList = serverlessDownloadManifestsV2StepHelper.getPluginInfoList(
         pluginCreationRequest, new HashSet<Integer>(), ambiance);
@@ -179,7 +179,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
         mock(ServerlessAwsLambdaManifestOutcome.class);
     doReturn(serverlessAwsLambdaManifestOutcome)
-        .when(serverlessDownloadManifestsV2StepHelper)
+        .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
 
     GitCloneStepInfo gitCloneStepInfo = mock(GitCloneStepInfo.class);
@@ -203,9 +203,9 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(pluginCreationResponseWrapper).when(gitClonePluginInfoProvider).getPluginInfo(any(), any(), any());
 
     ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
-    doReturn("path").when(serverlessDownloadManifestsV2StepHelper).getValuesPathFromValuesManifestOutcome(any());
+    doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
     doReturn(valuesManifestOutcome)
-        .when(serverlessDownloadManifestsV2StepHelper)
+        .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaValuesManifestOutcome(any());
 
     PluginCreationResponseList pluginCreationResponseList = serverlessDownloadManifestsV2StepHelper.getPluginInfoList(
@@ -234,10 +234,10 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
         mock(ServerlessAwsLambdaManifestOutcome.class);
     doReturn(serverlessAwsLambdaManifestOutcome)
-        .when(serverlessDownloadManifestsV2StepHelper)
+        .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
 
-    doReturn("path").when(serverlessDownloadManifestsV2StepHelper).getValuesPathFromValuesManifestOutcome(any());
+    doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
 
     GitCloneStepInfo gitCloneStepInfo = mock(GitCloneStepInfo.class);
     doReturn(gitCloneStepInfo).when(downloadManifestsCommonHelper).getGitCloneStepInfoFromManifestOutcome(any());
@@ -270,7 +270,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
 
     ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
     doReturn(valuesManifestOutcome)
-        .when(serverlessDownloadManifestsV2StepHelper)
+        .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaValuesManifestOutcome(any());
 
     AsyncExecutableResponse asyncExecutableResponse1 = serverlessDownloadManifestsV2StepHelper.executeAsyncAfterRbac(
@@ -295,7 +295,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
         mock(ServerlessAwsLambdaManifestOutcome.class);
     doReturn(serverlessAwsLambdaManifestOutcome)
-        .when(serverlessDownloadManifestsV2StepHelper)
+        .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
 
     GitCloneStepInfo gitCloneStepInfo = mock(GitCloneStepInfo.class);
@@ -324,7 +324,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(logKeysList).when(asyncExecutableResponse).getLogKeysList();
 
     ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
-    doReturn(null).when(serverlessDownloadManifestsV2StepHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
+    doReturn(null).when(serverlessV2PluginInfoProviderHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
 
     AsyncExecutableResponse asyncExecutableResponse1 = serverlessDownloadManifestsV2StepHelper.executeAsyncAfterRbac(
         ambiance, StepInputPackage.builder().build(), gitCloneStep);
@@ -351,13 +351,11 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
 
     ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
     doReturn(valuesManifestOutcome)
-        .when(serverlessDownloadManifestsV2StepHelper)
+        .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaValuesManifestOutcome(any());
 
     String valuesYamlPath = "path";
-    doReturn(valuesYamlPath)
-        .when(serverlessDownloadManifestsV2StepHelper)
-        .getValuesPathFromValuesManifestOutcome(any());
+    doReturn(valuesYamlPath).when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
 
     Map<String, ResponseData> responseDataMap = new HashMap<>();
     Map<String, String> resultMap = new HashMap<>();
@@ -388,12 +386,10 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(optionalManifestsOutcome).when(outcomeService).resolveOptional(any(), any());
 
     ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
-    doReturn(null).when(serverlessDownloadManifestsV2StepHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
+    doReturn(null).when(serverlessV2PluginInfoProviderHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
 
     String valuesYamlPath = "path";
-    doReturn(valuesYamlPath)
-        .when(serverlessDownloadManifestsV2StepHelper)
-        .getValuesPathFromValuesManifestOutcome(any());
+    doReturn(valuesYamlPath).when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
 
     Map<String, ResponseData> responseDataMap = new HashMap<>();
     Map<String, String> resultMap = new HashMap<>();
