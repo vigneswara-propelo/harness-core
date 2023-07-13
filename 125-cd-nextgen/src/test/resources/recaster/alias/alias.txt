@@ -1077,3 +1077,7 @@ io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPackageV2StepParam
 io.harness.cdng.serverless.beans.ServerlessV2ValuesYamlDataOutcome
 io.harness.cdng.serverless.container.steps.outcome.ServerlessV2DirectoryPathsOutcome
 io.harness.delegate.cdng.execution.StepExecutionInstanceInfo
+io.harness.cdng.gitops.revertpr.RevertPRStepInfo
+io.harness.cdng.gitops.revertpr.RevertPRStepNode
+io.harness.cdng.gitops.revertpr.RevertPRStepParameters
+io.harness.cdng.gitops.revertpr.RevertPROutcome
