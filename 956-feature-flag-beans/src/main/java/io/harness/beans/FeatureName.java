@@ -509,6 +509,7 @@ public enum FeatureName {
       "To enable Retry Step Group Failure Strategy, under which if a step fails in a step group, the whole group is retried",
       PIPELINE),
   PIE_STATIC_YAML_SCHEMA("Enable support for static schema", PIPELINE),
+  PIE_EXPRESSION_PLAYGROUND("Enable support for dynamic expression evaluation", PIPELINE),
   PIE_STORE_USED_EXPRESSIONS(
       "FF to use store the expressions used during the pipeline executions", HarnessTeam.PIPELINE),
   PIE_USE_SECRET_FUNCTOR_WITH_RBAC("Perform Rbac on secrets when used in pipeline execution", HarnessTeam.PIPELINE),
