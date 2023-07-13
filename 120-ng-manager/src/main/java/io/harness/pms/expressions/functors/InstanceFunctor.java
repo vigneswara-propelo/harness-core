@@ -44,6 +44,7 @@ public class InstanceFunctor implements SdkFunctor {
   private static final String INSTANCE_NAME_PROPERTY = "name";
   private static final String INSTANCE_HOST_NAME_PROPERTY = "hostName";
   private static final String INSTANCE_HOST_PROPERTY = "host";
+  public static final String INSTANCE_PROPERTIES_PROPERTY = "properties";
 
   @Inject private ExecutionSweepingOutputService sweepingOutputService;
 
@@ -59,12 +60,15 @@ public class InstanceFunctor implements SdkFunctor {
     }
     String instanceProperty = args[0];
 
-    if (INSTANCE_NAME_PROPERTY.equals(instanceProperty)) {
-      return instance.getName();
-    } else if (INSTANCE_HOST_NAME_PROPERTY.equals(instanceProperty)) {
-      return instance.getHostName();
-    } else if (INSTANCE_HOST_PROPERTY.equals(instanceProperty)) {
-      return instance.getHost();
+    switch (instanceProperty) {
+      case INSTANCE_NAME_PROPERTY:
+        return instance.getName();
+      case INSTANCE_HOST_NAME_PROPERTY:
+        return instance.getHostName();
+      case INSTANCE_HOST_PROPERTY:
+        return instance.getHost();
+      case INSTANCE_PROPERTIES_PROPERTY:
+        return instance.getHost() != null ? instance.getHost().getProperties() : null;
     }
 
     throw new InvalidArgumentsException(format("Unsupported instance property, property: %s", instanceProperty));
