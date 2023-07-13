@@ -221,8 +221,8 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
     if (!delegateTask.isSelectionLogsTrackingEnabled()) {
       return;
     }
-    Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
     DelegateMetaData delegateMetaData = null;
+    Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId);
     if (delegate != null) {
       delegateId = delegate.getHostName();
       delegateMetaData = DelegateMetaData.builder()
@@ -380,7 +380,7 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   private String getDelegateSelectionLogKey(String accountId, String delegateId) {
-    Delegate delegate = delegateCache.get(accountId, delegateId, false);
+    Delegate delegate = delegateCache.get(accountId, delegateId);
     if (delegate == null) {
       return delegateId;
     }

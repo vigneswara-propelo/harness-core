@@ -365,7 +365,7 @@ public class DelegateSelectionLogsServiceImplTest extends WingsBaseTest {
         Delegate.builder().accountId(accountId).uuid(delegateId).delegateName(delegateName).hostName(hotsName).build();
     DelegateTask task =
         DelegateTask.builder().uuid(taskId).accountId(accountId).selectionLogsTrackingEnabled(true).build();
-    when(delegateCache.get(accountId, delegateId, false)).thenReturn(delegate);
+    when(delegateCache.get(accountId, delegateId)).thenReturn(delegate);
 
     delegateSelectionLogsService.logTaskAssigned(delegateId, task);
     List<DelegateSelectionLogParams> delegateSelectionLogParams = fetchSelectionLogs(accountId, taskId);
