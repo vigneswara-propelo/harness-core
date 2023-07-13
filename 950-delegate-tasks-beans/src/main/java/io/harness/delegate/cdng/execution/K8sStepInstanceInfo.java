@@ -5,17 +5,21 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.execution;
+package io.harness.delegate.cdng.execution;
 
 import io.harness.annotation.RecasterAlias;
-import io.harness.delegate.cdng.execution.StepInstanceInfo;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-@RecasterAlias("io.harness.cdng.execution.K8sStepInstanceInfo")
-public class K8sStepInstanceInfo extends StepInstanceInfo {
+@RecasterAlias("io.harness.delegate.cdng.execution.K8sStepInstanceInfo")
+public class K8sStepInstanceInfo implements StepInstanceInfo {
   String podName;
+
+  @Override
+  public String getInstanceName() {
+    return podName;
+  }
 }
