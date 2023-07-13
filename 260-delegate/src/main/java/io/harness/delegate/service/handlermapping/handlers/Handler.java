@@ -5,11 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.delegate.beans;
+package io.harness.delegate.service.handlermapping.handlers;
 
-import lombok.experimental.UtilityClass;
+import io.harness.delegate.core.beans.TaskPayload;
+import io.harness.delegate.service.handlermapping.context.Context;
 
-@UtilityClass
-public class RunnerType {
-  public static final String RUNNER_TYPE_K8S = "k8s-runner";
+@FunctionalInterface
+public interface Handler {
+  void handle(String runnerType, TaskPayload taskPayload, Context context);
 }
