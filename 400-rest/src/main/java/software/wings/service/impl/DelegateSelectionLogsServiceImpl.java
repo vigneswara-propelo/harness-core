@@ -24,12 +24,14 @@ import io.harness.beans.FeatureName;
 import io.harness.beans.SearchFilter;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateSelectionLogParams;
+import io.harness.delegate.beans.DelegateSelectionLogParams.DelegateSelectionLogParamsBuilder;
 import io.harness.delegate.beans.DelegateSelectionLogResponse;
 import io.harness.delegate.beans.DelegateType;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.SelectorCapability;
 import io.harness.ff.FeatureFlagService;
 import io.harness.persistence.HPersistence;
+import io.harness.selection.log.DelegateMetaData;
 import io.harness.selection.log.DelegateSelectionLog;
 import io.harness.selection.log.DelegateSelectionLog.DelegateSelectionLogKeys;
 import io.harness.service.intfc.DelegateCache;
@@ -220,13 +222,20 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
       return;
     }
     Delegate delegate = delegateCache.get(delegateTask.getAccountId(), delegateId, false);
+    DelegateMetaData delegateMetaData = null;
     if (delegate != null) {
       delegateId = delegate.getHostName();
+      delegateMetaData = DelegateMetaData.builder()
+                             .delegateName(delegate.getDelegateName())
+                             .hostName(delegate.getHostName())
+                             .delegateId(delegate.getUuid())
+                             .build();
     }
     String message = String.format("%s : [%s]", TASK_ASSIGNED, delegateId);
     save(DelegateSelectionLog.builder()
              .accountId(getAccountId(delegateTask))
              .taskId(delegateTask.getUuid())
+             .delegateMetaData(delegateMetaData)
              .conclusion(ASSIGNED)
              .message(message)
              .eventTimestamp(System.currentTimeMillis())
@@ -348,11 +357,19 @@ public class DelegateSelectionLogsServiceImpl implements DelegateSelectionLogsSe
   }
 
   private DelegateSelectionLogParams buildSelectionLogParams(DelegateSelectionLog selectionLog) {
-    return DelegateSelectionLogParams.builder()
-        .conclusion(selectionLog.getConclusion())
-        .message(selectionLog.getMessage())
-        .eventTimestamp(selectionLog.getEventTimestamp())
-        .build();
+    DelegateSelectionLogParamsBuilder delegateSelectionLogParamsBuilder =
+        DelegateSelectionLogParams.builder()
+            .conclusion(selectionLog.getConclusion())
+            .message(selectionLog.getMessage())
+            .eventTimestamp(selectionLog.getEventTimestamp());
+
+    if (selectionLog.getDelegateMetaData() != null) {
+      delegateSelectionLogParamsBuilder.delegateName(selectionLog.getDelegateMetaData().getDelegateName())
+          .delegateHostName(selectionLog.getDelegateMetaData().getHostName())
+          .delegateId(selectionLog.getDelegateMetaData().getDelegateId());
+    }
+
+    return delegateSelectionLogParamsBuilder.build();
   }
 
   // for ng docker delegate the key is DELEGATE_NAME + HOSTNAME and for others the key is HOSTNAME
