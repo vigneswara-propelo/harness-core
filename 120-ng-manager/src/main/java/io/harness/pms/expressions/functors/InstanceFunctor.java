@@ -69,9 +69,9 @@ public class InstanceFunctor implements SdkFunctor {
         return instance.getHost();
       case INSTANCE_PROPERTIES_PROPERTY:
         return instance.getHost() != null ? instance.getHost().getProperties() : null;
+      default:
+        throw new InvalidArgumentsException(format("Unsupported instance property, property: %s", instanceProperty));
     }
-
-    throw new InvalidArgumentsException(format("Unsupported instance property, property: %s", instanceProperty));
   }
 
   private List<InstanceOutcome> getInstancesFromSweepingOutput(Ambiance ambiance) {
