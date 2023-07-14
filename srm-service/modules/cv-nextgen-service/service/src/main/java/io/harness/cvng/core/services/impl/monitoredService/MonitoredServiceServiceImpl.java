@@ -1576,9 +1576,20 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
   @Override
   public HistoricalTrend getOverAllHealthScore(
-      ProjectParams projectParams, String identifier, DurationDTO duration, Instant endTime) {
+      ProjectParams projectParams, String identifier, Instant startTime, Instant endTime) {
     MonitoredService monitoredService = getMonitoredService(projectParams, identifier);
-    return getMonitoredServiceHistorialTrend(monitoredService, projectParams, duration, endTime);
+    Duration duration = Duration.ofSeconds(endTime.getEpochSecond() - startTime.getEpochSecond());
+    if (duration.toSeconds() < Duration.ofMinutes(5).toSeconds()) {
+      throw new InvalidArgumentsException("Start time and endTime should have atleast 5 minutes difference");
+    }
+    DurationDTO bestFitDuration = DurationDTO.findClosestGreaterDurationDTO(duration);
+    HistoricalTrend historicalTrend =
+        getMonitoredServiceHistorialTrend(monitoredService, projectParams, bestFitDuration, endTime);
+    historicalTrend.getHealthScores()
+        .stream()
+        .filter(healthScore -> healthScore.getEndTime() >= startTime.toEpochMilli())
+        .collect(Collectors.toList());
+    return historicalTrend;
   }
 
   @Override
