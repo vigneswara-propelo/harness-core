@@ -2072,4 +2072,34 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
         100, 25, ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, "identifier", "version", "", false);
     mockStatic.close();
   }
+
+  @Test
+  @Owner(developers = SHIVAM)
+  @Category(UnitTests.class)
+  public void updateTemplateEntityException() {
+    TemplateEntity createdEntity = templateService.create(entity, false, "", false);
+    assertThat(createdEntity).isNotNull();
+    assertThat(createdEntity.getAccountId()).isEqualTo(ACCOUNT_ID);
+    assertThat(createdEntity.getOrgIdentifier()).isEqualTo(ORG_IDENTIFIER);
+    assertThat(createdEntity.getProjectIdentifier()).isEqualTo(PROJ_IDENTIFIER);
+    assertThat(createdEntity.getIdentifier()).isEqualTo(TEMPLATE_IDENTIFIER);
+    assertThat(createdEntity.getVersion()).isZero();
+
+    Optional<TemplateEntity> optionalTemplateEntity = templateService.get(
+        ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, false, false);
+    assertThat(optionalTemplateEntity).isPresent();
+    assertThat(optionalTemplateEntity.get().getAccountId()).isEqualTo(ACCOUNT_ID);
+    assertThat(optionalTemplateEntity.get().getOrgIdentifier()).isEqualTo(ORG_IDENTIFIER);
+    assertThat(optionalTemplateEntity.get().getProjectIdentifier()).isEqualTo(PROJ_IDENTIFIER);
+    assertThat(optionalTemplateEntity.get().getIdentifier()).isEqualTo(TEMPLATE_IDENTIFIER);
+    assertThat(optionalTemplateEntity.get().getVersionLabel()).isEqualTo(TEMPLATE_VERSION_LABEL);
+    assertThat(optionalTemplateEntity.get().getVersion()).isZero();
+    doThrow(InvalidRequestException.class).when(templateServiceHelper).isOldGitSync(any());
+
+    String description = "Updated Description";
+    TemplateEntity updateTemplate = entity.withDescription(description);
+    assertThatThrownBy(() -> templateService.updateTemplateEntity(updateTemplate, ChangeType.MODIFY, false, ""))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Error while saving template [template1] of versionLabel [version1] : [null]");
+  }
 }

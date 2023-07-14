@@ -506,8 +506,9 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       log.error(String.format("Error while saving template [%s] of versionLabel [%s]", templateEntity.getIdentifier(),
                     templateEntity.getVersionLabel()),
           e);
-      throw new InvalidRequestException(String.format("Error while saving template [%s] of versionLabel [%s]",
-                                            templateEntity.getIdentifier(), templateEntity.getVersionLabel()),
+      throw new InvalidRequestException(
+          String.format("Error while saving template [%s] of versionLabel [%s] : [%s]", templateEntity.getIdentifier(),
+              templateEntity.getVersionLabel(), e.getMessage()),
           e);
     }
   }
