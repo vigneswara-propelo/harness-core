@@ -33,6 +33,7 @@ import io.harness.security.dto.ServicePrincipal;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.BulkOperations;
@@ -124,7 +125,7 @@ public class DisableRedundantACLJob implements Runnable {
         }
       }
     } catch (Exception ex) {
-      log.error(DEBUG_MESSAGE + "Exception occurred while processing ACLs ", ex);
+      log.error(DEBUG_MESSAGE + "Exception occurred while processing ACLs " + ex.getMessage(), ex);
     }
   }
 
@@ -152,6 +153,7 @@ public class DisableRedundantACLJob implements Runnable {
     Query aclQuery = new Query();
     aclQuery.addCriteria(where(ACLKeys.id).gt(new ObjectId(offset)));
     aclQuery.cursorBatchSize(BATCH_SIZE);
+    aclQuery.maxTime(Duration.ofMillis(600000));
     return mongoTemplate.stream(aclQuery, ACL.class);
   }
 }
