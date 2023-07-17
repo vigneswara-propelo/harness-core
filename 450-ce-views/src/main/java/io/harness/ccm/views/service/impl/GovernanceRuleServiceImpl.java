@@ -111,8 +111,8 @@ public class GovernanceRuleServiceImpl implements GovernanceRuleService {
   }
 
   @Override
-  public Rule fetchById(String accountId, String name, boolean create) {
-    return ruleDAO.fetchById(accountId, name, create);
+  public Rule fetchById(String accountId, String uuid, boolean create) {
+    return ruleDAO.fetchById(accountId, uuid, create);
   }
 
   @Override

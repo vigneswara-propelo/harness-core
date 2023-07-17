@@ -27,7 +27,7 @@ public interface GovernanceRuleService {
   RuleList list(GovernanceRuleFilter governancePolicyFilter);
   List<Rule> list(String accountId, List<String> uuid);
   Rule fetchByName(String accountId, String name, boolean create);
-  Rule fetchById(String accountId, String name, boolean create);
+  Rule fetchById(String accountId, String uuid, boolean create);
   void check(String accountId, List<String> policiesIdentifier);
   void customRuleLimit(String accountId);
   void custodianValidate(Rule rule);

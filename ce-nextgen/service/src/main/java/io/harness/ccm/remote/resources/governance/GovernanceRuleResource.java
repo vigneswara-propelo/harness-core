@@ -298,6 +298,9 @@ public class GovernanceRuleResource {
       throw new InvalidRequestException(MALFORMED_ERROR);
     }
     Rule rule = createRuleDTO.getRule();
+    if (rule.getCloudProvider() == null) {
+      throw new InvalidRequestException("cloudProvider is a required field.");
+    }
     if (!rule.getIsOOTB()) {
       rule.setAccountId(accountId);
     } else if (rule.getAccountId().equals(configuration.getGovernanceConfig().getOOTBAccount())) {
@@ -411,6 +414,7 @@ public class GovernanceRuleResource {
       governanceRuleService.validateAWSSchema(testSchema);
       governanceRuleService.custodianValidate(testSchema);
     }
+    rule.setForRecommendation(false);
     governanceRuleService.update(rule, accountId);
     Rule updatedRule = governanceRuleService.fetchById(accountId, rule.getUuid(), true);
     telemetryReporter.sendTrackEvent(GOVERNANCE_RULE_UPDATED, null, accountId, properties,
