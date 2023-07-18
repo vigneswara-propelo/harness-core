@@ -14,6 +14,7 @@ import io.harness.callback.DelegateCallbackToken;
 import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.serverless.ServerlessStepCommonHelper;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.serverless.StackDetails;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
 import io.harness.delegate.task.stepstatus.StepMapOutput;
@@ -129,9 +130,20 @@ public class ServerlessAwsLambdaPrepareRollbackV2Step extends AbstractContainerS
         && stepStatusTaskResponseData.getStepStatus().getStepExecutionStatus() == StepExecutionStatus.SUCCESS) {
       StepOutput stepOutput = stepStatusTaskResponseData.getStepStatus().getOutput();
 
+      ServerlessAwsLambdaPrepareRollbackDataOutcome serverlessAwsLambdaPrepareRollbackDataOutcome = null;
+
       if (stepOutput instanceof StepMapOutput) {
         StepMapOutput stepMapOutput = (StepMapOutput) stepOutput;
         String stackDetailsByte64 = stepMapOutput.getMap().get("stackDetails");
+        if (EmptyPredicate.isEmpty(stackDetailsByte64)) {
+          log.info("No stack details was received in Serverless Aws Lambda Prepare Rollback V2 Response");
+          serverlessAwsLambdaPrepareRollbackDataOutcome =
+              ServerlessAwsLambdaPrepareRollbackDataOutcome.builder().firstDeployment(true).stackDetails(null).build();
+          executionSweepingOutputService.consume(ambiance,
+              OutcomeExpressionConstants.SERVERLESS_AWS_LAMBDA_PREPARE_ROLLBACK_DATA_OUTCOME_V2,
+              serverlessAwsLambdaPrepareRollbackDataOutcome, StepOutcomeGroup.STEP.name());
+          return stepOutcome;
+        }
         stackDetailsString = serverlessStepCommonHelper.convertByte64ToString(stackDetailsByte64);
       }
 
@@ -142,7 +154,6 @@ public class ServerlessAwsLambdaPrepareRollbackV2Step extends AbstractContainerS
         log.error("Error while parsing Stack Details", e);
       }
 
-      ServerlessAwsLambdaPrepareRollbackDataOutcome serverlessAwsLambdaPrepareRollbackDataOutcome = null;
       if (stackDetails != null) {
         serverlessAwsLambdaPrepareRollbackDataOutcome =
             ServerlessAwsLambdaPrepareRollbackDataOutcome.builder().stackDetails(stackDetails).build();
