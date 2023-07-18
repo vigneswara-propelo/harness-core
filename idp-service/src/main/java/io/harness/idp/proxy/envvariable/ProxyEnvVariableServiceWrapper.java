@@ -16,7 +16,7 @@ import io.harness.spec.server.idp.v1.model.BackstageEnvConfigVariable;
 import io.harness.spec.server.idp.v1.model.BackstageEnvVariable;
 
 import com.google.inject.Inject;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -24,28 +24,26 @@ import org.json.JSONObject;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.IDP)
-public class ProxyEnvVariableUtils {
+public class ProxyEnvVariableServiceWrapper {
   BackstageEnvVariableService backstageEnvVariableService;
 
-  public void createOrUpdateHostProxyEnvVariable(String accountIdentifier, Map<String, Boolean> hostProxyMap) {
+  public JSONObject getHostProxyMap(String accountIdentifier) {
     Optional<BackstageEnvVariable> envVariableOpt =
         backstageEnvVariableService.findByEnvNameAndAccountIdentifier(PROXY_ENV_NAME, accountIdentifier);
     if (envVariableOpt.isPresent()) {
       BackstageEnvConfigVariable envVariable = (BackstageEnvConfigVariable) envVariableOpt.get();
       String hostProxyString = envVariable.getValue();
-      JSONObject hostProxyObj = new JSONObject(hostProxyString);
-      hostProxyMap.forEach(hostProxyObj::put);
-      envVariable.setValue(hostProxyObj.toString());
-      backstageEnvVariableService.update(envVariable, accountIdentifier);
-    } else {
-      BackstageEnvConfigVariable envVariable = new BackstageEnvConfigVariable();
-      JSONObject proxyIntegrationObj = new JSONObject();
-      hostProxyMap.forEach(proxyIntegrationObj::put);
-      envVariable.setType(BackstageEnvVariable.TypeEnum.CONFIG);
-      envVariable.setEnvName(PROXY_ENV_NAME);
-      envVariable.setValue(proxyIntegrationObj.toString());
-      backstageEnvVariableService.create(envVariable, accountIdentifier);
+      return new JSONObject(hostProxyString);
     }
+    return new JSONObject();
+  }
+
+  public void setHostProxyMap(String accountIdentifier, JSONObject hostProxyMap) {
+    BackstageEnvConfigVariable envVariable = new BackstageEnvConfigVariable();
+    envVariable.setType(BackstageEnvVariable.TypeEnum.CONFIG);
+    envVariable.setEnvName(PROXY_ENV_NAME);
+    envVariable.setValue(hostProxyMap.toString());
+    backstageEnvVariableService.createOrUpdate(Collections.singletonList(envVariable), accountIdentifier);
   }
 
   public void removeFromHostProxyEnvVariable(String accountIdentifier, Set<String> hostsToBeRemoved) {
