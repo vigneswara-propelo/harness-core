@@ -62,7 +62,12 @@ public class K8sGlobalConfigServiceImpl implements K8sGlobalConfigService {
       case V2:
         return getToolPath(HELM, io.harness.delegate.clienttools.HelmVersion.V2);
       case V3:
-        return getToolPath(HELM, io.harness.delegate.clienttools.HelmVersion.V3);
+        try {
+          return InstallUtils.getPath(ClientTool.HELM, io.harness.delegate.clienttools.HelmVersion.V3);
+        } catch (IllegalArgumentException e) {
+          log.warn("Helm 3.1.2 not installed Version 3.8.0 will be used");
+          return InstallUtils.getPath(ClientTool.HELM, io.harness.delegate.clienttools.HelmVersion.V3_8);
+        }
       case V380:
         return getToolPath(HELM, io.harness.delegate.clienttools.HelmVersion.V3_8);
       default:
