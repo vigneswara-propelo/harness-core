@@ -652,3 +652,7 @@ expandedJsonConfig:
 
 staticSchemaFileURL: ${STATIC_SCHEMA_FILE_URL:-"https://raw.githubusercontent.com/harness/harness-schema/main/%s/%s"}
 timeoutIteratorMode : ${TIMEOUT_ITERATOR_MODE:-LOOP}
+
+webhookEventHsqsDequeueConfig:
+  batchSize: ${WEBHOOK_EVENT_DEQUE_BATCH_SIZE:-20}
+  threadSleepTimeInMillis: ${WEBHOOK_EVENT_DEQUE_THREAD_SLEEP_TIME_IN_MILLIS:-30}

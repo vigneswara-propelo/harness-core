@@ -135,6 +135,7 @@ import io.harness.govern.ProviderModule;
 import io.harness.grpc.DelegateServiceDriverGrpcClientModule;
 import io.harness.grpc.DelegateServiceGrpcClient;
 import io.harness.grpc.client.GrpcClientConfig;
+import io.harness.hsqs.client.beans.HsqsDequeueConfig;
 import io.harness.licensing.LicenseModule;
 import io.harness.licensing.event.ModuleLicenseEventListener;
 import io.harness.lock.DistributedLockImplementation;
@@ -597,6 +598,20 @@ public class NextGenModule extends AbstractModule {
     return ThreadPool.create(threadPoolConfig.getCorePoolSize(), threadPoolConfig.getMaxPoolSize(),
         threadPoolConfig.getIdleTime(), threadPoolConfig.getTimeUnit(),
         new ThreadFactoryBuilder().setNameFormat("log-client-pool-%d").build());
+  }
+
+  @Provides
+  @Singleton
+  @Named("webhookBranchHookEventHsqsDequeueConfig")
+  public HsqsDequeueConfig getWebhookBranchHookEventHsqsDequeueConfig() {
+    return appConfig.getWebhookBranchHookEventHsqsDequeueConfig();
+  }
+
+  @Provides
+  @Singleton
+  @Named("webhookPushEventHsqsDequeueConfig")
+  public HsqsDequeueConfig getWebhookPushEventHsqsDequeueConfig() {
+    return appConfig.getWebhookPushEventHsqsDequeueConfig();
   }
 
   @Override
