@@ -5,25 +5,22 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.exceptions;
+package io.harness.exception;
 
-public class RecasterException extends RuntimeException {
-  private static final long serialVersionUID = 1L;
+public class CastedFieldException extends RuntimeException {
   // fieldPath is to store the path of the field for which classCastException was caught and messageWithoutFieldPath
   // contains %s, which can be replaced with fieldPath while building the exception
   String fieldPath; // Eg:- strategyConfig.repeat.items
-
   String messageWithoutFieldPath; // Eg:- Exception while resolving the field [%s]
-
-  public RecasterException(final String message) {
+  public CastedFieldException(final String message) {
     super(message);
   }
 
-  public RecasterException(final String message, final Throwable cause) {
+  public CastedFieldException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
-  public RecasterException(
+  public CastedFieldException(
       final String message, final Throwable cause, String fieldPath, String messageWithoutFieldPath) {
     super(message, cause);
     this.fieldPath = fieldPath;
