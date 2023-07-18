@@ -8,9 +8,11 @@
 package io.harness.engine.execution;
 
 import static io.harness.rule.OwnerRule.BRIJESH;
+import static io.harness.rule.OwnerRule.LOVISH_BANSAL;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.OrchestrationTestBase;
 import io.harness.annotations.dev.HarnessTeam;
@@ -32,7 +34,7 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 
 @OwnedBy(HarnessTeam.PIPELINE)
-public class ExecutionInputServiceHelperlTest extends OrchestrationTestBase {
+public class ExecutionInputServiceHelperTest extends OrchestrationTestBase {
   @InjectMocks ExecutionInputServiceHelper executionInputServiceHelper;
   ObjectMapper objectMapper = new YAMLMapper();
 
@@ -124,5 +126,44 @@ public class ExecutionInputServiceHelperlTest extends OrchestrationTestBase {
       map = (Map<String, Object>) map.get(fqnComponents[i]);
     }
     return map.get(fqnComponents[fqnComponents.length - 1]);
+  }
+
+  @Test
+  @Owner(developers = LOVISH_BANSAL)
+  @Category(UnitTests.class)
+  public void testGetExecutionInputMapForServiceAsExpression() throws JsonProcessingException {
+    String templatInputYaml = "pipeline:\n"
+        + "  identifier: p1\n"
+        + "  stages:\n"
+        + "    - stage:\n"
+        + "        identifier: stage\n"
+        + "        type: Deployment\n"
+        + "        spec:\n"
+        + "          service:\n"
+        + "            serviceInputs: <+input>.executionInput()";
+    String userInputYaml = "pipeline:\n"
+        + "  identifier: p1\n"
+        + "  stages:\n"
+        + "    - stage:\n"
+        + "        identifier: stage\n"
+        + "        type: Deployment\n"
+        + "        spec:\n"
+        + "          service:\n"
+        + "            serviceInputs:\n"
+        + "              serviceDefinition:\n"
+        + "              type: Kubernetes\n"
+        + "              spec:\n"
+        + "                variables:\n"
+        + "                  - name: v1\n"
+        + "                    type: String\n"
+        + "                    value: \"val1\"";
+
+    JsonNode templateJsonNode = objectMapper.readTree(templatInputYaml);
+    JsonNode userInputJsonNode = objectMapper.readTree(userInputYaml);
+
+    Map<String, Object> responseMap =
+        executionInputServiceHelper.getExecutionInputMap(templateJsonNode, userInputJsonNode);
+
+    assertThat(getValueInMap("pipeline.stages.stage.spec.service.serviceInputs", responseMap)).isInstanceOf(Map.class);
   }
 }
