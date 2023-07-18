@@ -170,11 +170,12 @@ public abstract class AbstractStepExecutable extends CommonAbstractStepExecutabl
     if (isEmpty(vmDetailsOutcome.getIpAddress())) {
       throw new CIStageExecutionException("Ip address in initialise outcome cannot be empty");
     }
+    boolean isBareMetalUsed = vmExecuteStepUtils.isBareMetalUsed(vmDetailsOutcome.getPoolDriverUsed());
 
     logBackgroundStepForBackwardCompatibility(
         ciStepInfo, completeStepIdentifier, stepIdentifier, ambiance.getPlanExecutionId());
     Set<String> stepPreProcessSecrets =
-        vmStepSerializer.preProcessStep(ambiance, ciStepInfo, stageInfraDetails, stepIdentifier);
+        vmStepSerializer.preProcessStep(ambiance, ciStepInfo, stageInfraDetails, stepIdentifier, isBareMetalUsed);
     VmStepInfo vmStepInfo = vmStepSerializer.serialize(ambiance, ciStepInfo, stageInfraDetails, stepIdentifier,
         ParameterField.createValueField(Timeout.fromString(stringTimeout)), stageDetails.getRegistries(),
         stageDetails.getExecutionSource(), vmDetailsOutcome.getDelegateId());
