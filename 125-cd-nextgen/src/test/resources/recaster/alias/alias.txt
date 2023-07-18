@@ -1081,3 +1081,6 @@ io.harness.cdng.gitops.revertpr.RevertPRStepInfo
 io.harness.cdng.gitops.revertpr.RevertPRStepNode
 io.harness.cdng.gitops.revertpr.RevertPRStepParameters
 io.harness.cdng.gitops.revertpr.RevertPROutcome
+io.harness.cdng.provision.awscdk.AwsCdkBootstrapStepInfo
+io.harness.cdng.provision.awscdk.AwsCdkBootstrapStepNode
+io.harness.cdng.provision.awscdk.AwsCdkBootstrapStepParameters

@@ -327,7 +327,10 @@ public enum NGStepType {
   @JsonProperty(StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_PACKAGE_V2)
   SERVERLESS_AWS_LAMBDA_PACKAGE_V2("Serverless Aws Lambda Package V2",
       Collections.singletonList(ServiceDefinitionType.SERVERLESS_AWS_LAMBDA), "Serverless Aws Lambda",
-      StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_PACKAGE_V2);
+      StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_PACKAGE_V2),
+  @JsonProperty(StepSpecTypeConstants.AWS_CDK_BOOTSTRAP)
+  AWS_CDK_BOOTSTRAP("AWS CDK Bootstrap", Arrays.asList(ServiceDefinitionType.values()),
+      "Infrastructure Provisioners/AWS CDK Bootstrap", StepSpecTypeConstants.AWS_CDK_BOOTSTRAP);
 
   private String displayName;
   private List<ServiceDefinitionType> serviceDefinitionTypes;
