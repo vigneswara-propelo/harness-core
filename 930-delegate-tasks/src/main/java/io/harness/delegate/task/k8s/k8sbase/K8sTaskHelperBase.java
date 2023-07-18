@@ -895,6 +895,18 @@ public class K8sTaskHelperBase {
         .collect(Collectors.toList());
   }
 
+  public List<K8sPod> getHelmPodList(
+      long timeoutInMillis, KubernetesConfig kubernetesConfig, String releaseName, LogCallback logCallback) {
+    String namespace = kubernetesConfig.getNamespace();
+    try {
+      logCallback.saveExecutionLog("\nFetching existing pod list.");
+      return getHelmPodDetails(kubernetesConfig, namespace, releaseName, timeoutInMillis);
+    } catch (Exception e) {
+      logCallback.saveExecutionLog(e.getMessage(), ERROR, FAILURE);
+    }
+    return Collections.emptyList();
+  }
+
   public Kubectl getOverriddenClient(
       Kubectl client, List<KubernetesResource> resources, K8sDelegateTaskParams k8sDelegateTaskParams) {
     List<KubernetesResource> openshiftResourcesList =
