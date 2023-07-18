@@ -20,6 +20,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.ACCOUNT_DOES_NOT_EXIST;
 import static io.harness.eraro.ErrorCode.INVALID_REQUEST;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.DELETE_ACTION;
+import static io.harness.eventsframework.EventsFrameworkMetadataConstants.DISABLE_IP_ALLOWLIST;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.NG_USER_CLEANUP_ACTION;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.SYNC_ACTION;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.UPDATE_ACTION;
@@ -584,6 +585,13 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public Boolean cleanUpNextGen(String accountId) {
     publishAccountChangeEventViaEventFramework(accountId, NG_USER_CLEANUP_ACTION);
+    return true;
+  }
+
+  @Override
+  public Boolean disableIpAllowList(String accountId) {
+    log.info("Publish disable ip event for account" + accountId);
+    publishAccountChangeEventViaEventFramework(accountId, DISABLE_IP_ALLOWLIST);
     return true;
   }
 
