@@ -110,10 +110,8 @@ if [ "${issuetype}" = "Question" ]; then
 fi
 
 # shellcheck disable=SC2076
-if [[ "${BRANCH_PREFIX}" = "release/"  && ( ${PRIORITY_LIST[*]} =~ "${prioritytype}" ) ]]
+if [[ "${BRANCH_PREFIX}" = "release/" ]]
 then
-  echo -e "${RED}ERROR: Hotfix merge to 'release/*' is blocked, unless it's P0 or P1. Use capital letters for Jira ID in PR message.${NC}"
-
   # check ticket fields
   if [ "${issuetype}" = "Story" ]; then
     check_story_ticket "${ff_added}"
