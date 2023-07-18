@@ -183,6 +183,7 @@ public class GovernanceRuleSetResource {
       ruleSet.setCloudProvider(
           ruleService.fetchById(accountId, uniqueRuleIds.iterator().next(), false).getCloudProvider());
     }
+    ruleSetService.validateCloudProvider(accountId, uniqueRuleIds, ruleSet.getCloudProvider());
     Set<String> rulesPermitted =
         rbacHelper.checkRuleIdsGivenPermission(accountId, null, null, uniqueRuleIds, RULE_EXECUTE);
     if (rulesPermitted.size() != uniqueRuleIds.size()) {
@@ -243,10 +244,7 @@ public class GovernanceRuleSetResource {
     }
     Set<String> uniqueRuleIds = new HashSet<>();
     uniqueRuleIds.addAll(ruleSet.getRulesIdentifier());
-    if (ruleSet.getCloudProvider() == null) {
-      ruleSet.setCloudProvider(
-          ruleService.fetchById(accountId, uniqueRuleIds.iterator().next(), false).getCloudProvider());
-    }
+    ruleSetService.validateCloudProvider(accountId, uniqueRuleIds, oldRuleSet.getCloudProvider());
     Set<String> rulesPermitted =
         rbacHelper.checkRuleIdsGivenPermission(accountId, null, null, uniqueRuleIds, RULE_EXECUTE);
     if (rulesPermitted.size() != uniqueRuleIds.size()) {

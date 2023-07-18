@@ -205,6 +205,7 @@ public class GovernanceRuleEnforcementResource {
       ruleEnforcement.setCloudProvider(
           governanceRuleService.fetchById(accountId, rules.iterator().next(), false).getCloudProvider());
     }
+    ruleSetService.validateCloudProvider(accountId, rules, ruleEnforcement.getCloudProvider());
     Set<String> rulesPermitted = rbacHelper.checkRuleIdsGivenPermission(accountId, null, null, rules, RULE_EXECUTE);
     if (rulesPermitted.size() != rules.size()) {
       throw new NGAccessDeniedException(
@@ -391,10 +392,7 @@ public class GovernanceRuleEnforcementResource {
     if (rules.size() < 1) {
       throw new InvalidRequestException("At least one rule should be added in ruleIds/ruleSetIDs");
     }
-    if (ruleEnforcement.getCloudProvider() == null) {
-      ruleEnforcement.setCloudProvider(
-          governanceRuleService.fetchById(accountId, rules.iterator().next(), false).getCloudProvider());
-    }
+    ruleSetService.validateCloudProvider(accountId, rules, ruleEnforcementFromMongo.getCloudProvider());
     if (ruleEnforcement.getRuleIds() != null) {
       Set<String> rulesPermitted = rbacHelper.checkRuleIdsGivenPermission(accountId, null, null, rules, RULE_EXECUTE);
       if (rulesPermitted.size() != rules.size()) {
