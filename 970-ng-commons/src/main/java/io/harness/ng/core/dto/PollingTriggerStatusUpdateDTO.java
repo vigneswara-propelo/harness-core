@@ -5,12 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.ngtriggers.beans.entity.metadata.status;
+package io.harness.ng.core.dto;
 
-import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,10 +21,13 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@OwnedBy(PIPELINE)
-public class PollingSubscriptionStatus {
-  StatusResult statusResult;
-  String detailedMessage;
-  List<String> lastPolled;
-  Long lastPollingUpdate;
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@OwnedBy(HarnessTeam.CDC)
+public class PollingTriggerStatusUpdateDTO {
+  List<String> signatures;
+  boolean success;
+  String errorMessage;
+  List<String> lastCollectedVersions;
+  long lastCollectedTime;
 }
