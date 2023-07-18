@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.proxy.ngmanager;
+package io.harness.idp.proxy.services;
 
 import static io.harness.authorization.AuthorizationServiceHeader.IDP_SERVICE;
 
