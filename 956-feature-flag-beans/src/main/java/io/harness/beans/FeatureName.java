@@ -537,6 +537,8 @@ public enum FeatureName {
       HarnessTeam.PL),
   PL_HELM2_DELEGATE_BANNER("FF for adding banner on delegate to mention deprecation of helm 2", HarnessTeam.PL),
   PL_HIDE_LAUNCH_NEXTGEN("FF to hide Launch NextGen button", HarnessTeam.PL),
+  PL_HIDE_ORGANIZATION_LEVEL_MANAGED_ROLE("FF to hide organization level managed roles", HarnessTeam.PL),
+  PL_HIDE_PROJECT_LEVEL_MANAGED_ROLE("FF to hide project level managed roles", HarnessTeam.PL),
   PL_IP_ALLOWLIST_NG("Enables IP Allowlist feature in NG.", HarnessTeam.PL),
   PL_LDAP_PARALLEL_GROUP_SYNC(
       "Enables User Group sync operation to fetch data from Ldap Server in Parallel. Enable only if Ldap Server can take the load",
