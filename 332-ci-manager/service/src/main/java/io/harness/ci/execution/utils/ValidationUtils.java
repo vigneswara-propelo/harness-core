@@ -89,7 +89,7 @@ public class ValidationUtils {
   public void validateCacheIntel(Caching caching, Infrastructure infrastructure) {
     if (caching != null && caching.getEnabled() != null && caching.getEnabled().getValue() != null) {
       if (caching.getEnabled().getValue() && infrastructure.getType() != HOSTED_VM) {
-        throw new CIStageExecutionException("Caching Intelligence is only available on Hosted Infrastructures");
+        throw new CIStageExecutionException("Cache Intelligence is only available on Harness Cloud Infrastructure");
       }
     }
   }
