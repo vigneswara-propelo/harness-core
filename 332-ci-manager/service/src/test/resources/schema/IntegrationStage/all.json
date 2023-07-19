@@ -7964,6 +7964,9 @@
             },
             "target": {
               "$ref": "#/definitions/STOYamlTarget"
+            },
+            "tool": {
+              "$ref": "#/definitions/STOYamlPrismaCloudToolData"
             }
           }
         }
@@ -9426,6 +9429,15 @@
           "type": "string"
         },
         "project_token": {
+          "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "STOYamlPrismaCloudToolData": {
+      "type": "object",
+      "properties": {
+        "image_name": {
           "type": "string"
         }
       },
