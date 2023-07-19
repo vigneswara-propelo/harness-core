@@ -35,6 +35,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.authorization.AuthorizationServiceHeader;
 import io.harness.beans.FeatureName;
+import io.harness.beans.HeaderConfig;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.engine.executions.plan.PlanExecutionService;
 import io.harness.engine.executions.retry.RetryExecutionParameters;
@@ -157,15 +158,16 @@ public class TriggerExecutionHelper {
     if (featureFlagService.isEnabled(
             triggerDetails.getNgTriggerEntity().getAccountId(), FeatureName.CDS_NG_TRIGGER_EXECUTION_REFACTOR)) {
       return createPlanExecutionV2(
-          triggerDetails, triggerPayload, null, executionTag, triggerInfo, null, runTimeInputYaml);
+          triggerDetails, triggerPayload, null, null, executionTag, triggerInfo, null, runTimeInputYaml);
     } else {
       return createPlanExecution(
-          triggerDetails, triggerPayload, null, executionTag, triggerInfo, null, runTimeInputYaml);
+          triggerDetails, triggerPayload, null, null, executionTag, triggerInfo, null, runTimeInputYaml);
     }
   }
 
   public PlanExecution resolveRuntimeInputAndSubmitExecutionRequest(TriggerDetails triggerDetails,
-      TriggerPayload triggerPayload, TriggerWebhookEvent triggerWebhookEvent, String payload, String runTimeInputYaml) {
+      TriggerPayload triggerPayload, TriggerWebhookEvent triggerWebhookEvent, String payload, List<HeaderConfig> header,
+      String runTimeInputYaml) {
     String executionTagForGitEvent = generateExecutionTagForEvent(triggerDetails, triggerPayload);
     TriggeredBy embeddedUser = generateTriggerdBy(
         executionTagForGitEvent, triggerDetails.getNgTriggerEntity(), triggerPayload, triggerWebhookEvent.getUuid());
@@ -175,10 +177,10 @@ public class TriggerExecutionHelper {
         ExecutionTriggerInfo.newBuilder().setTriggerType(triggerType).setTriggeredBy(embeddedUser).build();
     if (featureFlagService.isEnabled(
             triggerDetails.getNgTriggerEntity().getAccountId(), FeatureName.CDS_NG_TRIGGER_EXECUTION_REFACTOR)) {
-      return createPlanExecutionV2(triggerDetails, triggerPayload, payload, executionTagForGitEvent, triggerInfo,
-          triggerWebhookEvent, runTimeInputYaml);
+      return createPlanExecutionV2(triggerDetails, triggerPayload, payload, header, executionTagForGitEvent,
+          triggerInfo, triggerWebhookEvent, runTimeInputYaml);
     } else {
-      return createPlanExecution(triggerDetails, triggerPayload, payload, executionTagForGitEvent, triggerInfo,
+      return createPlanExecution(triggerDetails, triggerPayload, payload, header, executionTagForGitEvent, triggerInfo,
           triggerWebhookEvent, runTimeInputYaml);
     }
   }
@@ -186,8 +188,8 @@ public class TriggerExecutionHelper {
   // Todo: Check if we can merge some logic with ExecutionHelper
   @VisibleForTesting
   PlanExecution createPlanExecution(TriggerDetails triggerDetails, TriggerPayload triggerPayload, String payload,
-      String executionTagForGitEvent, ExecutionTriggerInfo triggerInfo, TriggerWebhookEvent triggerWebhookEvent,
-      String runtimeInputYaml) {
+      List<HeaderConfig> header, String executionTagForGitEvent, ExecutionTriggerInfo triggerInfo,
+      TriggerWebhookEvent triggerWebhookEvent, String runtimeInputYaml) {
     try {
       SecurityContextBuilder.setContext(
           new ServicePrincipal(AuthorizationServiceHeader.PIPELINE_SERVICE.getServiceId()));
@@ -289,8 +291,10 @@ public class TriggerExecutionHelper {
       executionHelper.updateFeatureFlagsInExecutionMetadataBuilder(
           pipelineEntity.getAccountId(), executionHelper.featureNames, executionMetaDataBuilder);
 
-      PlanExecutionMetadata.Builder planExecutionMetadataBuilder =
-          PlanExecutionMetadata.builder().planExecutionId(executionId).triggerJsonPayload(payload);
+      PlanExecutionMetadata.Builder planExecutionMetadataBuilder = PlanExecutionMetadata.builder()
+                                                                       .planExecutionId(executionId)
+                                                                       .triggerJsonPayload(payload)
+                                                                       .triggerHeader(header);
 
       String pipelineYaml;
       JsonNode runtimeInputJsonNode = null;
@@ -427,7 +431,7 @@ public class TriggerExecutionHelper {
   }
 
   public PlanExecution createPlanExecutionV2(TriggerDetails triggerDetails, TriggerPayload triggerPayload,
-      String payload, String executionTagForGitEvent, ExecutionTriggerInfo triggerInfo,
+      String payload, List<HeaderConfig> header, String executionTagForGitEvent, ExecutionTriggerInfo triggerInfo,
       TriggerWebhookEvent triggerWebhookEvent, String runtimeInputYaml) {
     // First we reset git-sync global context to avoid any issues with global context leaking between executions.
     // TODO: Move all calls of `initDefaultScmGitMetaDataAndRequestParams` to the beginning of trigger execution threads
@@ -449,6 +453,7 @@ public class TriggerExecutionHelper {
           Collections.emptyMap(), triggerInfo, null, retryExecutionParameters, false, false);
       execArgs.getPlanExecutionMetadata().setTriggerPayload(triggerPayload);
       execArgs.getPlanExecutionMetadata().setTriggerJsonPayload(payload);
+      execArgs.getPlanExecutionMetadata().setTriggerHeader(header);
       NGTriggerEntity ngTriggerEntity = triggerDetails.getNgTriggerEntity();
       PlanExecution planExecution = executionHelper.startExecution(ngTriggerEntity.getAccountId(),
           ngTriggerEntity.getOrgIdentifier(), ngTriggerEntity.getProjectIdentifier(), execArgs.getMetadata(),

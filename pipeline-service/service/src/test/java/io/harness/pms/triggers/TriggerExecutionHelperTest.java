@@ -499,7 +499,7 @@ public class TriggerExecutionHelperTest extends CategoryTest {
             pipelineEntityV1.getProjectIdentifier(), pipelineEntityV1.getYaml(),
             OpaConstants.OPA_EVALUATION_ACTION_PIPELINE_RUN);
     triggerExecutionHelper.resolveRuntimeInputAndSubmitExecutionRequest(
-        triggerDetails, payloadBuilder.build(), triggerWebhookEvent, null, null);
+        triggerDetails, payloadBuilder.build(), triggerWebhookEvent, null, null, null);
   }
 
   private void assertTriggerBy(TriggeredBy triggeredBy) {
@@ -572,7 +572,7 @@ public class TriggerExecutionHelperTest extends CategoryTest {
              execArgs.getPlanExecutionMetadata(), false, null, null, null))
         .thenReturn(PlanExecution.builder().ambiance(ambiance).build());
 
-    triggerExecutionHelper.createPlanExecutionV2(triggerDetails, null, null, null, null,
+    triggerExecutionHelper.createPlanExecutionV2(triggerDetails, null, null, null, null, null,
         TriggerWebhookEvent.builder().build(), triggerDetails.getNgTriggerConfigV2().getInputYaml());
     ArgumentCaptor<String> capturedRuntimeInputYaml = ArgumentCaptor.forClass(String.class);
     verify(executionHelper, times(1))
@@ -619,7 +619,7 @@ public class TriggerExecutionHelperTest extends CategoryTest {
                         .mergedPipelineYamlWithTemplateRef(null)
                         .build());
     assertThatCode(()
-                       -> triggerExecutionHelper.createPlanExecution(triggerDetails, null, null, null,
+                       -> triggerExecutionHelper.createPlanExecution(triggerDetails, null, null, null, null,
                            ExecutionTriggerInfo.newBuilder().build(), TriggerWebhookEvent.builder().build(),
                            triggerDetails.getNgTriggerConfigV2().getInputYaml()))
         .doesNotThrowAnyException();
@@ -657,7 +657,7 @@ public class TriggerExecutionHelperTest extends CategoryTest {
         .thenReturn(PlanExecution.builder().ambiance(ambiance).build());
 
     triggerExecutionHelper.createPlanExecutionV2(
-        triggerDetails, null, null, null, null, null, triggerDetails.getNgTriggerConfigV2().getInputYaml());
+        triggerDetails, null, null, null, null, null, null, triggerDetails.getNgTriggerConfigV2().getInputYaml());
 
     Principal expectedPrincipal = new ServicePrincipal(AuthorizationServiceHeader.PIPELINE_SERVICE.getServiceId());
     assertThat(SecurityContextBuilder.getPrincipal()).isEqualToComparingFieldByField(expectedPrincipal);
@@ -701,7 +701,7 @@ public class TriggerExecutionHelperTest extends CategoryTest {
              execArgs.getPlanExecutionMetadata(), false, null, null, null))
         .thenReturn(PlanExecution.builder().ambiance(ambiance).build());
 
-    triggerExecutionHelper.createPlanExecutionV2(triggerDetails, null, null, null, null,
+    triggerExecutionHelper.createPlanExecutionV2(triggerDetails, null, null, null, null, null,
         TriggerWebhookEvent.builder().build(), triggerDetails.getNgTriggerConfigV2().getInputYaml());
     verify(pmsPipelineService, times(1)).getPipeline("acc", "default", "test", "myPipeline", false, false);
     assertThat(GitAwareContextHelper.getGitRequestParamsInfo())
@@ -751,7 +751,7 @@ public class TriggerExecutionHelperTest extends CategoryTest {
              execArgs.getPlanExecutionMetadata(), false, null, null, null))
         .thenReturn(PlanExecution.builder().ambiance(ambiance).build());
 
-    triggerExecutionHelper.createPlanExecutionV2(triggerDetails, null, null, null, null,
+    triggerExecutionHelper.createPlanExecutionV2(triggerDetails, null, null, null, null, null,
         TriggerWebhookEvent.builder().build(), triggerDetails.getNgTriggerConfigV2().getInputYaml());
     verify(pmsPipelineService, times(1)).getPipeline("acc", "default", "test", "myPipeline", false, false);
     assertThat(GitAwareContextHelper.getGitRequestParamsInfo())
