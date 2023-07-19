@@ -69,6 +69,9 @@ import io.harness.cdng.k8s.resources.azure.service.AzureResourceServiceImpl;
 import io.harness.cdng.k8s.resources.gcp.service.GcpResourceService;
 import io.harness.cdng.k8s.resources.gcp.service.impl.GcpResourceServiceImpl;
 import io.harness.cdng.manifest.ManifestType;
+import io.harness.cdng.manifest.groupingstrategy.InheritFromManifestGroupingStrategy;
+import io.harness.cdng.manifest.groupingstrategy.ManifestGroupingStrategy;
+import io.harness.cdng.manifest.groupingstrategy.StoreTypeGroupingStrategy;
 import io.harness.cdng.manifest.resources.HelmChartService;
 import io.harness.cdng.manifest.resources.HelmChartServiceImpl;
 import io.harness.cdng.manifest.steps.task.HelmChartManifestTaskHandler;
@@ -235,6 +238,11 @@ public class NGModule extends AbstractModule {
     pluginInfoProviderMultibinder.addBinding().to(ServerlessAwsLambdaDeployV2PluginInfoProvider.class);
     pluginInfoProviderMultibinder.addBinding().to(ServerlessAwsLambdaPackageV2PluginInfoProvider.class);
     pluginInfoProviderMultibinder.addBinding().to(AwsCdkBootstrapPluginInfoProvider.class);
+
+    Multibinder<ManifestGroupingStrategy> groupingStrategyMultiBinder =
+        Multibinder.newSetBinder(binder(), new TypeLiteral<>() {});
+    groupingStrategyMultiBinder.addBinding().to(StoreTypeGroupingStrategy.class);
+    groupingStrategyMultiBinder.addBinding().to(InheritFromManifestGroupingStrategy.class);
 
     MapBinder<String, ManifestTaskHandler> manifestTaskHandlerMapper =
         MapBinder.newMapBinder(binder(), String.class, ManifestTaskHandler.class);
