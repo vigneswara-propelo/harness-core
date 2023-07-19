@@ -235,9 +235,10 @@ public class ExecutionDetailsResource {
 
     pageRequest = PageRequest.of(page, size, Sort.by(Direction.DESC, PlanExecutionSummaryKeys.startTs));
 
-    List<String> projections = Arrays.asList(PlanExecutionSummaryKeys.planExecutionId,
-        PlanExecutionSummaryKeys.runSequence, PlanExecutionSummaryKeys.orgIdentifier,
-        PlanExecutionSummaryKeys.pipelineIdentifier, PlanExecutionSummaryKeys.projectIdentifier);
+    List<String> projections =
+        Arrays.asList(PlanExecutionSummaryKeys.planExecutionId, PlanExecutionSummaryKeys.runSequence,
+            PlanExecutionSummaryKeys.orgIdentifier, PlanExecutionSummaryKeys.pipelineIdentifier,
+            PlanExecutionSummaryKeys.projectIdentifier, PlanExecutionSummaryKeys.status);
 
     Page<PipelineExecutionIdentifierSummaryDTO> planExecutionSummaryDTOS =
         pmsExecutionService.getPipelineExecutionSummaryEntityWithProjection(criteria, pageRequest, projections)
