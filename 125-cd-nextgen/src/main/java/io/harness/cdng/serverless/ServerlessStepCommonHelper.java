@@ -183,10 +183,16 @@ public class ServerlessStepCommonHelper extends ServerlessStepUtils {
 
   @NotNull
   public String convertByte64ToString(String input) {
+    if (EmptyPredicate.isEmpty(input)) {
+      return input;
+    }
     return new String(Base64.getDecoder().decode(input));
   }
 
   public StackDetails getStackDetails(String stackDetailsString) throws JsonProcessingException {
+    if (EmptyPredicate.isEmpty(stackDetailsString)) {
+      return null;
+    }
     ObjectMapper objectMapper = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     return objectMapper.readValue(stackDetailsString, StackDetails.class);
   }
