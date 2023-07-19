@@ -175,6 +175,9 @@ public class RuleDAO {
     if (rule.getForRecommendation() != null) {
       updateOperations.set(RuleId.forRecommendation, rule.getForRecommendation());
     }
+    if (rule.getResourceType() != null) {
+      updateOperations.set(RuleId.resourceType, rule.getResourceType());
+    }
     log.info("Updated rule: {} {} {}", rule.getUuid(), hPersistence.update(query, updateOperations), query);
     hPersistence.update(query, updateOperations);
     return query.asList().get(0);
