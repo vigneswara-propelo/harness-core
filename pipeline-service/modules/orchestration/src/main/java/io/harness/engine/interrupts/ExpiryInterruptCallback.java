@@ -12,8 +12,9 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.engine.executions.node.NodeExecutionService;
-import io.harness.engine.interrupts.helpers.UserMarkedFailAllHelper;
-import io.harness.pms.contracts.ambiance.Ambiance;
+import io.harness.engine.interrupts.helpers.ExpiryHelper;
+import io.harness.execution.NodeExecution;
+import io.harness.execution.NodeExecution.NodeExecutionKeys;
 import io.harness.pms.contracts.interrupts.InterruptConfig;
 import io.harness.pms.contracts.interrupts.InterruptType;
 import io.harness.tasks.ResponseData;
@@ -22,53 +23,52 @@ import io.harness.waiter.WaitNotifyEngine;
 
 import com.google.inject.Inject;
 import java.util.Map;
+import java.util.Set;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(PIPELINE)
 @Slf4j
-public class UserMarkedFailureInterruptCallback implements OldNotifyCallback {
+public class ExpiryInterruptCallback implements OldNotifyCallback {
   @Inject private NodeExecutionService nodeExecutionService;
-  @Inject private UserMarkedFailAllHelper userMarkedFailAllHelper;
+  @Inject private ExpiryHelper expiryHelper;
   @Inject private WaitNotifyEngine waitNotifyEngine;
 
   String nodeExecutionId;
   String interruptId;
   InterruptConfig interruptConfig;
   InterruptType interruptType;
-  Ambiance ambiance;
 
   @Builder
-  public UserMarkedFailureInterruptCallback(String nodeExecutionId, String interruptId, InterruptConfig interruptConfig,
-      InterruptType interruptType, Ambiance ambiance) {
+  public ExpiryInterruptCallback(
+      String nodeExecutionId, String interruptId, InterruptConfig interruptConfig, InterruptType interruptType) {
     this.nodeExecutionId = nodeExecutionId;
     this.interruptId = interruptId;
     this.interruptConfig = interruptConfig;
     this.interruptType = interruptType;
-    this.ambiance = ambiance;
   }
 
   @Override
   public void notify(Map<String, ResponseData> response) {
-    failNode(response);
+    expireNode(response);
   }
 
   @Override
   public void notifyTimeout(Map<String, ResponseData> responseMap) {
-    log.error(
-        "UserMarkedFailure event timed out for nodeExecutionId {} and interrupt {}", nodeExecutionId, interruptId);
-    failNode(responseMap);
+    log.error("Expire event timed out for nodeExecutionId {} and interrupt {}", nodeExecutionId, interruptId);
+    expireNode(responseMap);
   }
 
   @Override
   public void notifyError(Map<String, ResponseData> response) {
-    log.error("UserMarkedFailure event failed for nodeExecutionId {} and interrupt {}", nodeExecutionId, interruptId);
-    failNode(response);
+    log.error("Expire event failed for nodeExecutionId {} and interrupt {}", nodeExecutionId, interruptId);
+    expireNode(response);
   }
 
-  void failNode(Map<String, ResponseData> response) {
-    userMarkedFailAllHelper.failDiscontinuingNode(
-        ambiance, nodeExecutionId, interruptType, interruptId, interruptConfig);
+  void expireNode(Map<String, ResponseData> response) {
+    NodeExecution nodeExecution = nodeExecutionService.getWithFieldsIncluded(
+        nodeExecutionId, Set.of(NodeExecutionKeys.uuid, NodeExecutionKeys.ambiance, NodeExecutionKeys.unitProgresses));
+    expiryHelper.expireDiscontinuedInstance(nodeExecution, interruptConfig, interruptId, interruptType);
     ResponseData responseData = isEmpty(response) ? null : response.values().iterator().next();
     waitNotifyEngine.doneWith(nodeExecutionId + "|" + interruptId, responseData);
   }
