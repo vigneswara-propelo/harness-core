@@ -400,6 +400,7 @@ io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig
 io.harness.cdng.creator.plan.customDeployment.CustomDeploymentNode
 io.harness.cdng.spot.elastigroup.rollback.ElastigroupRollbackStepInfo
 io.harness.yaml.core.failurestrategy.retry.RetryFailureSpecConfig
+io.harness.yaml.core.failurestrategy.retry.RetryStepGroupFailureSpecConfig
 io.harness.cdng.provision.azure.AzureCreateARMResourceStepScope
 io.harness.cdng.provision.cloudformation.InlineCloudformationTemplateFileSpec
 io.harness.cdng.pipeline.executions.beans.ServiceExecutionSummary$ArtifactsSummary
