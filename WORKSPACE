@@ -5594,6 +5594,7 @@ maven_install(
 maven_install(
     name = "batch",
     artifacts = [
+        "com.google.guava:guava:32.0.1-jre",
         "com.fasterxml.jackson.core:jackson-databind:2.13.4.2",
         "com.azure:azure-core:1.29.1",
         "com.azure:azure-identity:1.5.0",
