@@ -131,6 +131,7 @@ public enum FeatureName {
   CDS_K8S_SERVICE_HOOKS_NG("Enables Service hooks support for K8s/Native Helm Services", HarnessTeam.CDP),
   CDS_K8S_SOCKET_CAPABILITY_CHECK_NG(
       "Replace HTTP capability check for Kubernetes connector with Socket Capability", HarnessTeam.CDP),
+  CDS_MULTI_SERVICE_PROPAGATION("FF for enabling multi service propagation for CD", HarnessTeam.CDP),
   CDS_NEXUS_GROUPID_ARTIFACTID_DROPDOWN(
       "FF to enable dropdowns for groupId and artifactId in Nexus Artifact Source", HarnessTeam.CDC),
   CDS_NG_TRIGGER_EXECUTION_REFACTOR(
