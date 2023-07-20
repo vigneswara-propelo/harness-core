@@ -149,7 +149,6 @@ public enum FeatureName {
       HarnessTeam.CDC),
   CDS_QUERY_OPTIMIZATION("Feature flag to optimize CG Queries", HarnessTeam.CDC),
   CDS_RANCHER_SUPPORT_NG("Enable Rancher support in NG.", HarnessTeam.CDP),
-  CDS_REMOVE_COMMENTS_FROM_VALUES_YAML("Remove comments from values.yaml files", HarnessTeam.CDP),
   CDS_RENAME_HARNESS_RELEASE_HISTORY_RESOURCE_NATIVE_HELM_NG(
       "Use a prefix for internal harness release history for native helm deployment. Feature Flag will be removed as part of the epic: https://harness.atlassian.net/browse/CDS-46915",
       HarnessTeam.CDP),
