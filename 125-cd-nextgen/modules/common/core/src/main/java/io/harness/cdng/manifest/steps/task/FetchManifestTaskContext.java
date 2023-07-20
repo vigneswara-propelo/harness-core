@@ -10,16 +10,26 @@ package io.harness.cdng.manifest.steps.task;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
-import io.harness.delegate.beans.TaskData;
-import io.harness.tasks.ResponseData;
+import io.harness.logging.LogCallback;
+import io.harness.logging.LogLevel;
+import io.harness.pms.contracts.ambiance.Ambiance;
 
-import java.util.Optional;
+import lombok.Builder;
+import lombok.Value;
 
+@Value
+@Builder
 @OwnedBy(HarnessTeam.CDP)
-public interface ManifestTaskHandler {
-  boolean isSupported(FetchManifestTaskContext context);
+public class FetchManifestTaskContext {
+  Ambiance ambiance;
+  LogCallback logCallback;
+  ManifestOutcome manifestOutcome;
 
-  Optional<TaskData> createTaskData(FetchManifestTaskContext context);
+  public void warn(String warn) {
+    logCallback.saveExecutionLog(warn, LogLevel.WARN);
+  }
 
-  Optional<ManifestOutcome> updateManifestOutcome(ResponseData response, ManifestOutcome manifestOutcome);
+  public String getType() {
+    return manifestOutcome.getType();
+  }
 }
