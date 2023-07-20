@@ -24,10 +24,10 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("AZURE_LOGS_SAMPLE_DATA")
+@JsonTypeName("AZURE_METRICS_SAMPLE_DATA")
 @FieldNameConstants(innerTypeName = "AzureSampleDataRequestKeys")
-public class AzureLogsSampleDataRequest extends AbstractAzureDataRequest {
-  String query;
+public class AzureMetricsSampleDataRequest extends AbstractAzureDataRequest {
+  String metricName;
   String dsl;
   Instant from;
   Instant to;
@@ -40,20 +40,20 @@ public class AzureLogsSampleDataRequest extends AbstractAzureDataRequest {
 
   @Override
   public String getBaseUrl() {
-    return AzureUtils.getBaseUrl(VerificationType.LOG);
+    return AzureUtils.getBaseUrl(VerificationType.TIME_SERIES);
   }
 
   @Override
   public DataCollectionRequestType getType() {
-    return DataCollectionRequestType.AZURE_LOGS_SAMPLE_DATA;
+    return DataCollectionRequestType.AZURE_METRICS_SAMPLE_DATA;
   }
 
   @Override
   public Map<String, Object> fetchDslEnvVariables() {
     Map<String, Object> dslEnvVariables = super.fetchDslEnvVariables();
-    dslEnvVariables.put("query", query);
-    dslEnvVariables.put(
-        "url", String.format("%sv1%s/query?scope=hierarchy&timespan=%s/%s", getBaseUrl(), resourceId, from, to));
+    dslEnvVariables.put("url",
+        String.format("%s%s/providers/Microsoft.Insights/metrics?api-version=2021-05-01&timespan=%s/%s&metricnames=%s",
+            getBaseUrl(), resourceId, from, to, metricName));
     return dslEnvVariables;
   }
 }

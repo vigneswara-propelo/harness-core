@@ -194,6 +194,7 @@ import io.harness.cvng.core.services.impl.AwsPrometheusDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.AwsServiceImpl;
 import io.harness.cvng.core.services.impl.AzureLogsDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.AzureLogsNextGenHealthSourceHelper;
+import io.harness.cvng.core.services.impl.AzureMetricsNextGenHealthSourceHelper;
 import io.harness.cvng.core.services.impl.CVConfigServiceImpl;
 import io.harness.cvng.core.services.impl.CVNGLogServiceImpl;
 import io.harness.cvng.core.services.impl.CVNGYamlSchemaServiceImpl;
@@ -898,6 +899,9 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
     dataSourceTypeNextGenHelperMapBinder.addBinding(DataSourceType.AZURE_LOGS)
         .to(AzureLogsNextGenHealthSourceHelper.class)
+        .in(Scopes.SINGLETON);
+    dataSourceTypeNextGenHelperMapBinder.addBinding(DataSourceType.AZURE_METRICS)
+        .to(AzureMetricsNextGenHealthSourceHelper.class)
         .in(Scopes.SINGLETON);
     MapBinder<DataSourceType, CVConfigUpdatableEntity> dataSourceTypeCVConfigMapBinder =
         MapBinder.newMapBinder(binder(), DataSourceType.class, CVConfigUpdatableEntity.class);
