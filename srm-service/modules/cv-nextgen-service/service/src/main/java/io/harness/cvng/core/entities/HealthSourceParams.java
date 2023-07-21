@@ -7,6 +7,8 @@
 
 package io.harness.cvng.core.entities;
 
+import io.harness.cvng.utils.AggregationType;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -14,4 +16,7 @@ import lombok.Value;
 @Builder
 public class HealthSourceParams {
   String region;
+  String metricName;
+  String metricNamespace;
+  AggregationType aggregationType;
 }

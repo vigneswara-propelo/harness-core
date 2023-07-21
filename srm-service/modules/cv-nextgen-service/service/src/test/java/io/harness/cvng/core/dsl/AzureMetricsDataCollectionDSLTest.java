@@ -15,6 +15,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.cvng.HoverflyTestBase;
 import io.harness.cvng.beans.azure.AzureMetricsSampleDataRequest;
+import io.harness.cvng.beans.azure.AzureServiceInstanceFieldDataRequest;
 import io.harness.cvng.core.services.impl.MetricPackServiceImpl;
 import io.harness.datacollection.DataCollectionDSLService;
 import io.harness.datacollection.entity.CallDetails;
@@ -41,7 +42,8 @@ import org.junit.experimental.categories.Category;
 
 public class AzureMetricsDataCollectionDSLTest extends HoverflyTestBase {
   private static final int THREADS = 3;
-  private final String query = "node_cpu_usage_millicores";
+  private final String metricName = "node_cpu_usage_millicores";
+  private final String metricNamespace = "microsoft.containerservice/managedclusters";
   private final Instant startTime = Instant.ofEpochMilli(1689279600000L);
   private final Instant endTime = Instant.ofEpochMilli(1689280200000L);
   private final String resourceId =
@@ -86,7 +88,9 @@ public class AzureMetricsDataCollectionDSLTest extends HoverflyTestBase {
   public void testExecute_AzureMetrics_DSL_getSampleData() {
     String sampleDataRequestDSL = MetricPackServiceImpl.AZURE_METRICS_SAMPLE_DATA_DSL;
     AzureMetricsSampleDataRequest azureMetricsSampleDataRequest = AzureMetricsSampleDataRequest.builder()
-                                                                      .metricName(query)
+                                                                      .metricNamespace(metricNamespace)
+                                                                      .metricName(metricName)
+                                                                      .aggregationType("average")
                                                                       .from(startTime)
                                                                       .to(endTime)
                                                                       .dsl(sampleDataRequestDSL)
@@ -103,5 +107,32 @@ public class AzureMetricsDataCollectionDSLTest extends HoverflyTestBase {
     List<?> result = (List<?>) dataCollectionDSLService.execute(
         sampleDataRequestDSL, runtimeParameters, (CallDetails callDetails) -> {});
     assertThat(result).hasSize(10);
+  }
+
+  @Test
+  @Owner(developers = KARAN_SARASWAT)
+  @Category(UnitTests.class)
+  public void testExecute_AzureMetrics_DSL_getServiceInstanceFieldData() {
+    String serviceInstanceFieldDsl = MetricPackServiceImpl.AZURE_SERVICE_INSTANCE_FIELD_DSL;
+    AzureServiceInstanceFieldDataRequest azureServiceInstanceFieldDataRequest =
+        AzureServiceInstanceFieldDataRequest.builder()
+            .connectorInfoDTO(connectorInfoDTO)
+            .resourceId(resourceId)
+            .metricNamespace(metricNamespace)
+            .metricName(metricName)
+            .dsl(serviceInstanceFieldDsl)
+            .build();
+    Instant instant = Instant.parse("2023-07-15T10:45:48.164Z");
+    RuntimeParameters runtimeParameters =
+        RuntimeParameters.builder()
+            .startTime(azureServiceInstanceFieldDataRequest.getStartTime(instant))
+            .endTime(azureServiceInstanceFieldDataRequest.getEndTime(instant))
+            .commonHeaders(azureServiceInstanceFieldDataRequest.collectionHeaders())
+            .otherEnvVariables(azureServiceInstanceFieldDataRequest.fetchDslEnvVariables())
+            .baseUrl(azureServiceInstanceFieldDataRequest.getBaseUrl())
+            .build();
+    List<?> result =
+        (List<?>) dataCollectionDSLService.execute(serviceInstanceFieldDsl, runtimeParameters, callDetails -> {});
+    assertThat(result.size()).isEqualTo(2);
   }
 }

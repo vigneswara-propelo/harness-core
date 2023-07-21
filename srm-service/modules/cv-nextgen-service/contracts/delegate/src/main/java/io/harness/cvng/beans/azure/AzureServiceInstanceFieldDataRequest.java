@@ -12,7 +12,6 @@ import io.harness.cvng.models.VerificationType;
 import io.harness.cvng.utils.AzureUtils;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.time.Instant;
 import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,16 +23,13 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("AZURE_METRICS_SAMPLE_DATA")
-@FieldNameConstants(innerTypeName = "AzureSampleDataRequestKeys")
-public class AzureMetricsSampleDataRequest extends AbstractAzureDataRequest {
+@JsonTypeName("AZURE_SERVICE_INSTANCE_FIELD_DATA")
+@FieldNameConstants(innerTypeName = "AzureServiceInstanceFieldDataRequestKeys")
+public class AzureServiceInstanceFieldDataRequest extends AbstractAzureDataRequest {
+  String dsl;
+  String resourceId;
   String metricName;
   String metricNamespace;
-  String aggregationType;
-  String dsl;
-  Instant from;
-  Instant to;
-  String resourceId;
 
   @Override
   public String getDSL() {
@@ -47,7 +43,7 @@ public class AzureMetricsSampleDataRequest extends AbstractAzureDataRequest {
 
   @Override
   public DataCollectionRequestType getType() {
-    return DataCollectionRequestType.AZURE_METRICS_SAMPLE_DATA;
+    return DataCollectionRequestType.AZURE_SERVICE_INSTANCE_FIELD_DATA;
   }
 
   @Override
@@ -55,8 +51,8 @@ public class AzureMetricsSampleDataRequest extends AbstractAzureDataRequest {
     Map<String, Object> dslEnvVariables = super.fetchDslEnvVariables();
     dslEnvVariables.put("url",
         String.format(
-            "%s%s/providers/Microsoft.Insights/metrics?api-version=2021-05-01&timespan=%s/%s&metricnamespace=%s&metricnames=%s&aggregation=%s",
-            getBaseUrl(), resourceId, from, to, metricNamespace, metricName, aggregationType));
+            "%s%s/providers/Microsoft.Insights/metricDefinitions?api-version=2021-05-01&metricnamespace=%s&metricnames=%s",
+            getBaseUrl(), resourceId, metricNamespace, metricName));
     return dslEnvVariables;
   }
 }

@@ -1392,6 +1392,7 @@
 9151:io.harness.cvng.beans.azure.AzureLogsSampleDataRequest
 9152:io.harness.cvng.beans.AzureLogsDataCollectionInfo
 9153:io.harness.cvng.beans.azure.AzureMetricsSampleDataRequest
+9154:io.harness.cvng.beans.azure.AzureServiceInstanceFieldDataRequest
 9501:io.harness.timeout.trackers.absolute.AbsoluteTimeoutParameters
 9701:io.harness.logging.UnitProgress
 9702:io.harness.logging.UnitStatus
