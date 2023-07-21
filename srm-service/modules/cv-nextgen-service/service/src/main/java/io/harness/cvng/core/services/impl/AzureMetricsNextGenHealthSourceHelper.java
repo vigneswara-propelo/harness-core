@@ -47,11 +47,12 @@ public class AzureMetricsNextGenHealthSourceHelper implements NextGenHealthSourc
         .dsl(MetricPackServiceImpl.AZURE_METRICS_SAMPLE_DATA_DSL)
         .from(Instant.ofEpochMilli(healthSourceRecordsRequest.getStartTime()))
         .to(Instant.ofEpochMilli(healthSourceRecordsRequest.getEndTime()))
-        .metricName(healthSourceRecordsRequest.getHealthSourceParams().getMetricName())
-        .metricNamespace(healthSourceRecordsRequest.getHealthSourceParams().getMetricNamespace())
-        .aggregationType(Optional.ofNullable(healthSourceRecordsRequest.getHealthSourceParams().getAggregationType())
-                             .orElse(AggregationType.AVERAGE)
-                             .toString())
+        .metricName(healthSourceRecordsRequest.getHealthSourceQueryParams().getHealthSourceMetricName())
+        .metricNamespace(healthSourceRecordsRequest.getHealthSourceQueryParams().getHealthSourceMetricNamespace())
+        .aggregationType(
+            Optional.ofNullable(healthSourceRecordsRequest.getHealthSourceQueryParams().getAggregationType())
+                .orElse(AggregationType.AVERAGE)
+                .toString())
         .resourceId(healthSourceRecordsRequest.getHealthSourceQueryParams().getIndex())
         .type(DataCollectionRequestType.AZURE_METRICS_SAMPLE_DATA)
         .build();
@@ -63,8 +64,9 @@ public class AzureMetricsNextGenHealthSourceHelper implements NextGenHealthSourc
     if (QueryParamsDTO.QueryParamKeys.serviceInstanceField.equals(healthSourceParamValuesRequest.getParamName())) {
       DataCollectionRequest<? extends ConnectorConfigDTO> request =
           AzureServiceInstanceFieldDataRequest.builder()
-              .metricNamespace(healthSourceParamValuesRequest.getHealthSourceParams().getMetricNamespace())
-              .metricName(healthSourceParamValuesRequest.getHealthSourceParams().getMetricName())
+              .metricNamespace(
+                  healthSourceParamValuesRequest.getHealthSourceQueryParams().getHealthSourceMetricNamespace())
+              .metricName(healthSourceParamValuesRequest.getHealthSourceQueryParams().getHealthSourceMetricName())
               .resourceId(healthSourceParamValuesRequest.getHealthSourceQueryParams().getIndex())
               .type(DataCollectionRequestType.AZURE_SERVICE_INSTANCE_FIELD_DATA)
               .dsl(MetricPackServiceImpl.AZURE_SERVICE_INSTANCE_FIELD_DSL)
