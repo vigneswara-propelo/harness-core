@@ -272,6 +272,7 @@ public class NextGenConfiguration extends Configuration {
   @JsonProperty("webhookBranchHookEventHsqsDequeueConfig")
   private HsqsDequeueConfig webhookBranchHookEventHsqsDequeueConfig;
   @JsonProperty("webhookPushEventHsqsDequeueConfig") private HsqsDequeueConfig webhookPushEventHsqsDequeueConfig;
+  private boolean useQueueServiceForWebhookTriggers;
 
   // [secondary-db]: Uncomment this and the corresponding config in yaml file if you want to connect to another database
   //  @JsonProperty("secondary-mongo") MongoConfig secondaryMongoConfig;

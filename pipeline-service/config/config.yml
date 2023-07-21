@@ -660,3 +660,5 @@ timeoutIteratorMode : ${TIMEOUT_ITERATOR_MODE:-LOOP}
 webhookEventHsqsDequeueConfig:
   batchSize: ${WEBHOOK_EVENT_DEQUE_BATCH_SIZE:-20}
   threadSleepTimeInMillis: ${WEBHOOK_EVENT_DEQUE_THREAD_SLEEP_TIME_IN_MILLIS:-30}
+
+useQueueServiceForWebhookTriggers: ${USE_QUEUE_SERVICE_FOR_WEBHOOK_TRIGGERS:-false}

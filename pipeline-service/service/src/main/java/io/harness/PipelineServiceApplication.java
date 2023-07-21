@@ -387,7 +387,7 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     registerCorsFilter(appConfig, environment);
     registerResources(environment, injector);
     registerJerseyProviders(environment, injector);
-    registerManagedBeans(environment, injector);
+    registerManagedBeans(environment, injector, appConfig);
     registerAuthFilters(appConfig, environment, injector);
     registerAPIAuthTelemetryFilters(appConfig, environment, injector);
     registerApiResponseFilter(environment, injector);
@@ -885,13 +885,16 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
     }
   }
 
-  private void registerManagedBeans(Environment environment, Injector injector) {
+  private void registerManagedBeans(
+      Environment environment, Injector injector, PipelineServiceConfiguration appConfig) {
     environment.lifecycle().manage(injector.getInstance(PMSEventConsumerService.class));
     environment.lifecycle().manage(injector.getInstance(QueueListenerController.class));
     environment.lifecycle().manage(injector.getInstance(ApprovalInstanceExpirationJob.class));
     environment.lifecycle().manage(injector.getInstance(OutboxEventPollService.class));
     environment.lifecycle().manage(injector.getInstance(PipelineEventConsumerController.class));
-    environment.lifecycle().manage(injector.getInstance(WebhookEventQueueProcessor.class));
+    if (appConfig.isUseQueueServiceForWebhookTriggers()) {
+      environment.lifecycle().manage(injector.getInstance(WebhookEventQueueProcessor.class));
+    }
     // Do not remove as it's used for MaintenanceController for shutdown mode
     environment.lifecycle().manage(injector.getInstance(MaintenanceController.class));
   }

@@ -18,7 +18,6 @@ import static io.harness.eventsframework.webhookpayloads.webhookdata.WebhookEven
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.FeatureName;
 import io.harness.eventsframework.webhookpayloads.webhookdata.SourceRepoType;
 import io.harness.eventsframework.webhookpayloads.webhookdata.WebhookDTO;
 import io.harness.exception.InvalidRequestException;
@@ -64,8 +63,7 @@ public class WebhookServiceImpl implements WebhookService, WebhookEventService {
       log.info(
           "received webhook event with id {} in the accountId {}", webhookEvent.getUuid(), webhookEvent.getAccountId());
       // TODO: add a check based on env to use iterators in community edition and on prem
-      if (!ngFeatureFlagHelperService.isEnabled(
-              webhookEvent.getAccountId(), FeatureName.CDS_QUEUE_SERVICE_FOR_TRIGGERS)) {
+      if (!nextGenConfiguration.isUseQueueServiceForWebhookTriggers()) {
         return webhookEventRepository.save(webhookEvent);
       } else {
         generateWebhookDTOAndEnqueue(webhookEvent);
