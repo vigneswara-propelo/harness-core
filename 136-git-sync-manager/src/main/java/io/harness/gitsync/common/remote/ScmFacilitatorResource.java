@@ -6,7 +6,6 @@
  */
 
 package io.harness.gitsync.common.remote;
-
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_JSON_MEDIA_TYPE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_YAML_MEDIA_TYPE;
@@ -21,7 +20,10 @@ import static io.harness.NGCommonEntityConstants.SIZE_PARAM_MESSAGE;
 import static io.harness.annotations.dev.HarnessTeam.DX;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.Scope;
 import io.harness.beans.gitsync.GitPRCreateRequest;
 import io.harness.gitsync.common.YamlConstants;
@@ -92,6 +94,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import org.hibernate.validator.constraints.NotBlank;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
+    components = {HarnessModuleComponent.CDS_GITX, HarnessModuleComponent.CDS_PIPELINE})
 @Api("/scm")
 @Path("/scm")
 @Produces({"application/json", "text/yaml", "text/html"})

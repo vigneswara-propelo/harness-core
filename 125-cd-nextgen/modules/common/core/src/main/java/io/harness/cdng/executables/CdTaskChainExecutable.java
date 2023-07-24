@@ -6,10 +6,12 @@
  */
 
 package io.harness.cdng.executables;
-
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.execution.service.StageExecutionInstanceInfoService;
 import io.harness.delegate.beans.CDDelegateTaskNotifyResponseData;
 import io.harness.delegate.cdng.execution.StepExecutionInstanceInfo;
@@ -30,6 +32,7 @@ import io.harness.utils.PolicyEvalUtils;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
 @OwnedBy(CDC)
 @Slf4j
 // Task Executable with RBAC, Rollback and postTaskValidation

@@ -6,7 +6,6 @@
  */
 
 package io.harness.ngtriggers.resource;
-
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.NGCommonEntityConstants;
@@ -15,7 +14,10 @@ import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ProjectIdentifier;
 import io.harness.accesscontrol.ResourceIdentifier;
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.dto.PollingInfoForTriggers;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
@@ -45,6 +47,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import org.springframework.data.domain.Page;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_TRIGGERS})
 @Api("triggers/eventHistory")
 @Path("triggers/eventHistory")
 @Produces({"application/json", "application/yaml"})

@@ -6,9 +6,11 @@
  */
 
 package io.harness.gitsync.common.service;
-
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.Scope;
 import io.harness.gitsync.common.dtos.GitBranchesResponseDTO;
 import io.harness.gitsync.common.dtos.GitRepositoryResponseDTO;
@@ -36,6 +38,8 @@ import io.harness.ng.beans.PageRequest;
 
 import java.util.List;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
+    components = {HarnessModuleComponent.CDS_GITX, HarnessModuleComponent.CDS_PIPELINE})
 @OwnedBy(HarnessTeam.PL)
 public interface ScmFacilitatorService {
   List<String> listBranchesUsingConnector(String accountIdentifier, String orgIdentifier, String projectIdentifier,

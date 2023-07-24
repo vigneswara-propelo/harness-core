@@ -6,12 +6,14 @@
  */
 
 package io.harness.gitsync.common.impl;
-
 import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.PR_CREATION_ERROR;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.FileContentBatchResponse;
 import io.harness.beans.GetBatchFileRequestIdentifier;
 import io.harness.beans.IdentifierRef;
@@ -92,6 +94,8 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 // Don't inject this directly go through ScmClientOrchestrator.
+
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_GITX})
 @Slf4j
 @OwnedBy(DX)
 public class ScmManagerFacilitatorServiceImpl extends AbstractScmClientFacilitatorServiceImpl {
