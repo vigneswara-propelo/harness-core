@@ -14,6 +14,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.plancreator.stages.stage.StageElementConfig;
+import io.harness.plancreator.strategy.StrategyUtils;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdviserType;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
@@ -115,12 +116,17 @@ public class FeatureFlagStagePlanCreator extends ChildrenPlanCreator<StageElemen
       }
       YamlField siblingField = stageField.getNode().nextSiblingFromParentArray(
           stageField.getName(), Arrays.asList(YAMLFieldNameConstants.STAGE, YAMLFieldNameConstants.PARALLEL));
+      // Comparing pipelineRollbackStageId with siblingFieldUuid to add rollback stage if required
+      String pipelineRollbackStageId = StrategyUtils.getPipelineRollbackStageId(stageField);
       if (siblingField != null && siblingField.getNode().getUuid() != null) {
+        String siblingFieldUuid = siblingField.getNode().getUuid();
         adviserObtainments.add(
             AdviserObtainment.newBuilder()
                 .setType(AdviserType.newBuilder().setType(OrchestrationAdviserTypes.NEXT_STAGE.name()).build())
                 .setParameters(ByteString.copyFrom(kryoSerializer.asBytes(
-                    NextStepAdviserParameters.builder().nextNodeId(siblingField.getNode().getUuid()).build())))
+                    NextStepAdviserParameters.builder()
+                        .nextNodeId(siblingFieldUuid.equals(pipelineRollbackStageId) ? null : siblingFieldUuid)
+                        .build())))
                 .build());
       }
     }
