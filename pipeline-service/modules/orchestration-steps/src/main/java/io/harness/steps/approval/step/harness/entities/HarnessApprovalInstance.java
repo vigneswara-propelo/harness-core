@@ -78,7 +78,7 @@ public class HarnessApprovalInstance extends ApprovalInstance {
   }
 
   public void addApprovalActivity(EmbeddedUser user, HarnessApprovalActivityRequestDTO request) {
-    if (request.getAction() == HarnessApprovalAction.APPROVE
+    if (!request.isAutoApprove() && request.getAction() == HarnessApprovalAction.APPROVE
         && !validateApprovalInputsRequest(request.getApproverInputs())) {
       throw new InvalidRequestException("Invalid approver inputs");
     }
