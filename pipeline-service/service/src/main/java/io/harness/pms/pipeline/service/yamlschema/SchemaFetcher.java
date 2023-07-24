@@ -51,7 +51,7 @@ public class SchemaFetcher {
   @Inject @Named("partialSchemaCache") Cache<SchemaCacheKey, PartialSchemaDTOWrapperValue> schemaCache;
   @Inject private SchemaGetterFactory schemaGetterFactory;
 
-  @Inject @Named("staticSchemaCache") Cache<SchemaCacheKey, String> staticSchemaCache;
+  private JsonNode pipelineStaticSchema = null;
 
   private final String PIPELINE_JSON_PATH = "static-schema/pipeline.json";
 
@@ -119,7 +119,6 @@ public class SchemaFetcher {
     log.info("[PMS] Invalidating yaml schema cache");
     schemaCache.clear();
     schemaDetailsCache.clear();
-    staticSchemaCache.clear();
     log.info("[PMS] Yaml schema cache was successfully invalidated");
   }
 
@@ -139,20 +138,15 @@ public class SchemaFetcher {
         orgIdentifier, projectIdentifier, scope, entityType, yamlGroup, yamlSchemaWithDetailsList);
   }
 
-  @Nullable
-  public JsonNode fetchStaticYamlSchema(String accountId) {
+  public JsonNode fetchStaticYamlSchema() {
     log.info("[PMS] Fetching static schema");
     try (ResponseTimeRecorder ignore = new ResponseTimeRecorder("Fetching Static Schema")) {
-      SchemaCacheKey schemaCacheKey = SchemaCacheKey.builder().build();
-
-      if (staticSchemaCache.containsKey(schemaCacheKey)) {
-        log.info("[PMS_SCHEMA] Fetching static schema from cache for account {}", accountId);
-        return JsonUtils.readTree(staticSchemaCache.get(schemaCacheKey));
-      }
-
-      JsonNode jsonNode = getStaticSchema();
-
-      return jsonNode;
+      /*
+        Fetches schema from Github repo in case of PRE_QA Env.
+        If pipelineStaticSchema is null, then we read it from the pipeline.json resource file and set it to
+        pipelineStaticSchema and return pipelineStaticSchema.
+      */
+      return getStaticSchema();
     } catch (Exception e) {
       log.warn(format("[PMS] Unable to get static schema"), e);
       return null;
@@ -169,10 +163,13 @@ public class SchemaFetcher {
   }
 
   public JsonNode fetchFile(String filePath) throws IOException {
-    ClassLoader classLoader = this.getClass().getClassLoader();
-    String staticJson =
-        Resources.toString(Objects.requireNonNull(classLoader.getResource(filePath)), StandardCharsets.UTF_8);
-    return JsonUtils.asObject(staticJson, JsonNode.class);
+    if (null == pipelineStaticSchema) {
+      ClassLoader classLoader = this.getClass().getClassLoader();
+      String staticJson =
+          Resources.toString(Objects.requireNonNull(classLoader.getResource(filePath)), StandardCharsets.UTF_8);
+      pipelineStaticSchema = JsonUtils.asObject(staticJson, JsonNode.class);
+    }
+    return pipelineStaticSchema;
   }
 
   public JsonNode fetchSchemaFromRepo(EntityType entityType, String version) throws IOException {

@@ -176,7 +176,7 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
 
       // If static schema ff is on, fetch schema from fetcher
       if (pmsFeatureFlagService.isEnabled(accountIdentifier, PIE_STATIC_YAML_SCHEMA)) {
-        schema = schemaFetcher.fetchStaticYamlSchema(accountIdentifier);
+        schema = schemaFetcher.fetchStaticYamlSchema();
       } else {
         schema = getPipelineYamlSchema(accountIdentifier, projectId, orgId, Scope.PROJECT);
       }
