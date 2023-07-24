@@ -27,6 +27,7 @@ import io.harness.gitsync.common.dtos.ScmGetFileUrlRequestDTO;
 import io.harness.gitsync.common.dtos.ScmGetFileUrlResponseDTO;
 import io.harness.gitsync.common.dtos.ScmListFilesRequestDTO;
 import io.harness.gitsync.common.dtos.ScmListFilesResponseDTO;
+import io.harness.gitsync.common.dtos.ScmRepoFilterParams;
 import io.harness.gitsync.common.dtos.ScmUpdateFileRequestDTO;
 import io.harness.gitsync.common.dtos.UserDetailsRequestDTO;
 import io.harness.gitsync.common.dtos.UserDetailsResponseDTO;
@@ -41,7 +42,7 @@ public interface ScmFacilitatorService {
       String connectorIdentifierRef, String repoURL, PageRequest pageRequest, String searchTerm);
 
   List<GitRepositoryResponseDTO> listReposByRefConnector(String accountIdentifier, String orgIdentifier,
-      String projectIdentifier, String connectorRef, PageRequest pageRequest, String searchTerm,
+      String projectIdentifier, String connectorRef, PageRequest pageRequest, ScmRepoFilterParams scmRepoFilterParams,
       boolean applyGitXRepoAllowListFilter);
 
   ScmCommitFileResponseDTO createFile(ScmCreateFileRequestDTO scmCommitRequestDTO);

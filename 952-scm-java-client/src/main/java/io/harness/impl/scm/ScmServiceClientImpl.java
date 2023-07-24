@@ -22,6 +22,7 @@ import io.harness.beans.FileContentBatchResponse;
 import io.harness.beans.FileGitDetails;
 import io.harness.beans.GetBatchFileRequestIdentifier;
 import io.harness.beans.PageRequestDTO;
+import io.harness.beans.RepoFilterParamsDTO;
 import io.harness.beans.gitsync.GitFileDetails;
 import io.harness.beans.gitsync.GitFilePathDetails;
 import io.harness.beans.gitsync.GitPRCreateRequest;
@@ -110,6 +111,7 @@ import io.harness.product.ci.scm.proto.PageRequest;
 import io.harness.product.ci.scm.proto.Provider;
 import io.harness.product.ci.scm.proto.RefreshTokenRequest;
 import io.harness.product.ci.scm.proto.RefreshTokenResponse;
+import io.harness.product.ci.scm.proto.RepoFilterParams;
 import io.harness.product.ci.scm.proto.SCMGrpc;
 import io.harness.product.ci.scm.proto.Signature;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
@@ -947,14 +949,15 @@ public class ScmServiceClientImpl implements ScmServiceClient {
 
   @Override
   public GetUserReposResponse getUserRepos(
-      ScmConnector scmConnector, io.harness.beans.PageRequestDTO pageRequest, SCMGrpc.SCMBlockingStub scmBlockingStub) {
-    Provider gitProvider = scmGitProviderMapper.mapToSCMGitProvider(scmConnector);
-    return ScmGrpcClientUtils.retryAndProcessException(scmBlockingStub::getUserRepos,
-        GetUserReposRequest.newBuilder()
-            .setPagination(PageRequest.newBuilder().setPage(pageRequest.getPageIndex() + 1).build())
-            .setProvider(gitProvider)
-            .setFetchAllRepos(pageRequest.isFetchAll())
-            .build());
+      ScmConnector scmConnector, PageRequestDTO pageRequest, SCMGrpc.SCMBlockingStub scmBlockingStub) {
+    GetUserReposRequest getUserReposRequest = buildGetUserReposRequest(scmConnector, pageRequest, null);
+    return ScmGrpcClientUtils.retryAndProcessException(scmBlockingStub::getUserRepos, getUserReposRequest);
+  }
+  @Override
+  public GetUserReposResponse getUserRepos(ScmConnector scmConnector, PageRequestDTO pageRequest,
+      SCMGrpc.SCMBlockingStub scmBlockingStub, RepoFilterParamsDTO repoFilterParamsDTO) {
+    GetUserReposRequest getUserReposRequest = buildGetUserReposRequest(scmConnector, pageRequest, repoFilterParamsDTO);
+    return ScmGrpcClientUtils.retryAndProcessException(scmBlockingStub::getUserRepos, getUserReposRequest);
   }
 
   @Override
@@ -1273,5 +1276,27 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     if (exception instanceof ConnectException || exception instanceof GeneralException) {
       throw exception;
     }
+  }
+
+  private GetUserReposRequest buildGetUserReposRequest(
+      ScmConnector scmConnector, PageRequestDTO pageRequest, RepoFilterParamsDTO repoFilterParamsDTO) {
+    Provider gitProvider = scmGitProviderMapper.mapToSCMGitProvider(scmConnector);
+    GetUserReposRequest getUserReposRequest = GetUserReposRequest.newBuilder()
+                                                  .setPagination(PageRequest.newBuilder()
+                                                                     .setPage(pageRequest.getPageIndex() + 1)
+                                                                     .setSize(pageRequest.getPageSize())
+                                                                     .build())
+                                                  .setProvider(gitProvider)
+                                                  .setFetchAllRepos(pageRequest.isFetchAll())
+                                                  .build();
+    if (repoFilterParamsDTO != null) {
+      getUserReposRequest = GetUserReposRequest.newBuilder(getUserReposRequest)
+                                .setRepoFilterParams(RepoFilterParams.newBuilder()
+                                                         .setUserName(scmGitProviderHelper.getRepoOwner(scmConnector))
+                                                         .setRepoName(repoFilterParamsDTO.getRepoName())
+                                                         .build())
+                                .build();
+    }
+    return getUserReposRequest;
   }
 }

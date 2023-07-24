@@ -19,6 +19,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.beans.GetBatchFileRequestIdentifier;
 import io.harness.beans.PageRequestDTO;
+import io.harness.beans.RepoFilterParamsDTO;
 import io.harness.beans.Scope;
 import io.harness.beans.request.GitFileBatchRequest;
 import io.harness.beans.request.GitFileRequest;
@@ -65,6 +66,7 @@ import io.harness.gitsync.common.dtos.ScmGetFileUrlRequestDTO;
 import io.harness.gitsync.common.dtos.ScmGetFileUrlResponseDTO;
 import io.harness.gitsync.common.dtos.ScmListFilesRequestDTO;
 import io.harness.gitsync.common.dtos.ScmListFilesResponseDTO;
+import io.harness.gitsync.common.dtos.ScmRepoFilterParams;
 import io.harness.gitsync.common.dtos.ScmUpdateFileRequestDTO;
 import io.harness.gitsync.common.dtos.UpdateGitFileRequestDTO;
 import io.harness.gitsync.common.dtos.UserDetailsRequestDTO;
@@ -175,15 +177,16 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
 
   @Override
   public List<GitRepositoryResponseDTO> listReposByRefConnector(String accountIdentifier, String orgIdentifier,
-      String projectIdentifier, String connectorRef, PageRequest pageRequest, String searchTerm,
+      String projectIdentifier, String connectorRef, PageRequest pageRequest, ScmRepoFilterParams scmRepoFilterParams,
       boolean applyGitXRepoAllowListFilter) {
     ScmConnector scmConnector =
         gitSyncConnectorHelper.getScmConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef);
-
+    RepoFilterParamsDTO repoFilterParams = buildRepoFilterParamsDTO(scmRepoFilterParams);
     GetUserReposResponse response = scmOrchestratorService.processScmRequestUsingConnectorSettings(
         scmClientFacilitatorService
         -> scmClientFacilitatorService.listUserRepos(accountIdentifier, orgIdentifier, projectIdentifier, scmConnector,
-            PageRequestDTO.builder().pageIndex(pageRequest.getPageIndex()).pageSize(pageRequest.getPageSize()).build()),
+            PageRequestDTO.builder().pageIndex(pageRequest.getPageIndex()).pageSize(pageRequest.getPageSize()).build(),
+            repoFilterParams),
         scmConnector);
     if (ScmApiErrorHandlingHelper.isFailureResponse(response.getStatus(), scmConnector.getConnectorType())) {
       ScmApiErrorHandlingHelper.processAndThrowError(ScmApis.LIST_REPOSITORIES, scmConnector.getConnectorType(),
@@ -216,7 +219,7 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
             .get(()
                      -> scmOrchestratorService.processScmRequestUsingConnectorSettings(scmClientFacilitatorService
                          -> scmClientFacilitatorService.listUserRepos(accountIdentifier, orgIdentifier,
-                             projectIdentifier, scmConnector, PageRequestDTO.builder().fetchAll(true).build()),
+                             projectIdentifier, scmConnector, PageRequestDTO.builder().fetchAll(true).build(), null),
                          scmConnector));
 
     if (ScmApiErrorHandlingHelper.isFailureResponse(response.getStatus(), scmConnector.getConnectorType())) {
@@ -1255,5 +1258,15 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
       gitRepoAllowlistHelper.validateRepo(
           scmGetFileByBranchRequestDTO.getScope(), scmConnector, scmGetFileByBranchRequestDTO.getRepoName());
     }
+  }
+
+  private RepoFilterParamsDTO buildRepoFilterParamsDTO(ScmRepoFilterParams scmRepoFilterParams) {
+    if (scmRepoFilterParams == null) {
+      return RepoFilterParamsDTO.builder().build();
+    }
+    return RepoFilterParamsDTO.builder()
+        .repoName(scmRepoFilterParams.getRepoName())
+        .userName(scmRepoFilterParams.getUserName())
+        .build();
   }
 }
