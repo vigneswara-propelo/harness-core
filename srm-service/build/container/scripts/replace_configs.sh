@@ -87,7 +87,7 @@ if [[ "" != "$NEXT_GEN_MANAGER_SECRET" ]]; then
 fi
 
 if [[ "" != "$PIPELINE_SERVICE_SECRET" ]]; then
-  export PIPELINE_SERVICE_SECRET; yq -i '.secrets.pipelineServiceSecret=env(PIPELINE_SERVICE_SECRET)' $CONFIG_FILE
+  export PIPELINE_SERVICE_SECRET; yq -i '.pipelineServiceSecret=env(PIPELINE_SERVICE_SECRET)' $CONFIG_FILE
 fi
 
 if [[ "" != "$MANAGER_JWT_AUTH_SECRET" ]]; then

@@ -94,7 +94,7 @@ enableAudit: false
 
 templateServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
 ngManagerServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
-pipelineServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9q
+pipelineServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
 
 nextGen:
   managerServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
@@ -183,7 +183,7 @@ pmsGrpcClientConfig:
   target: localhost:12011
   authority: localhost
 
-shouldConfigureWithPMS: ${SHOULD_CONFIGURE_WITH_PMS:-true}
+shouldConfigureWithPMS: ${SHOULD_CONFIGURE_WITH_PMS:-false}
 
 portalUrl: https://localhost:8181/
 
