@@ -800,26 +800,30 @@ public class MigratorUtility {
     String timeString = "10m";
 
     long days = TimeUnit.SECONDS.toDays(tSec);
+    boolean isTimeStringChanged = false;
     if (days > 0) {
       timeString = days + "d";
       tSec -= TimeUnit.DAYS.toSeconds(days);
+      isTimeStringChanged = true;
     }
 
     long hours = TimeUnit.SECONDS.toHours(tSec);
     if (hours > 0) {
-      timeString = hours + "h";
+      timeString = (isTimeStringChanged ? timeString + " " : "") + hours + "h";
       tSec -= TimeUnit.HOURS.toSeconds(hours);
+      isTimeStringChanged = true;
     }
 
     long minutes = TimeUnit.SECONDS.toMinutes(tSec);
     if (minutes > 0) {
-      timeString = minutes + "m";
+      timeString = (isTimeStringChanged ? timeString + " " : "") + minutes + "m";
       tSec -= TimeUnit.MINUTES.toSeconds(minutes);
+      isTimeStringChanged = true;
     }
 
     long seconds = tSec;
     if (seconds > 0) {
-      timeString = seconds + "s";
+      timeString = (isTimeStringChanged ? timeString + " " : "") + seconds + "s";
     }
     return timeString;
   }
