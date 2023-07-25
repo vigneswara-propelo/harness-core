@@ -189,7 +189,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
     PollingDelegateResponse delegateResponse = getFailedPollingDelegateResponse();
     PollingDocument pollingDocument = getHttpHelmPollingDocument(null);
 
-    int failedAttempts = 3400;
+    int failedAttempts = 7100;
     for (int i = 0; i < 100; i++) {
       pollingDocument.setFailedAttempts(failedAttempts + i);
       when(pollingService.get(anyString(), anyString())).thenReturn(pollingDocument);
@@ -197,7 +197,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
     }
     verify(pollingService, times(100)).get(ACCOUNT_ID, POLLING_DOC_ID);
     verify(pollingService, times(100)).updateFailedAttempts(eq(ACCOUNT_ID), eq(POLLING_DOC_ID), anyInt());
-    verify(pollingPerpetualTaskService, times(3)).resetPerpetualTask(any());
+    verify(pollingPerpetualTaskService, times(0)).resetPerpetualTask(any());
     verify(pollingPerpetualTaskService).deletePerpetualTask(PERPETUAL_TASK_ID, ACCOUNT_ID);
   }
 
