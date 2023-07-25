@@ -226,8 +226,9 @@ public class ArtifactsStepV2Test extends CDNGTestBase {
         .get(anyString(), anyString(), anyString(), eq("connector"));
 
     // mock serviceStepsHelper
-    doReturn(mockNgLogCallback).when(serviceStepsHelper).getServiceLogCallback(Mockito.any());
-    doReturn(mockNgLogCallback).when(serviceStepsHelper).getServiceLogCallback(Mockito.any(), Mockito.anyBoolean());
+    doReturn(mockNgLogCallback)
+        .when(serviceStepsHelper)
+        .getServiceLogCallback(Mockito.any(), Mockito.anyBoolean(), Mockito.anyString());
 
     // mock delegateGrpcClientWrapper
     doAnswer(invocationOnMock -> UUIDGenerator.generateUuid())
