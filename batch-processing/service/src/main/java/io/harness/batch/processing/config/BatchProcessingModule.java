@@ -76,6 +76,7 @@ import io.harness.ccm.views.businessmapping.service.intf.BusinessMappingHistoryS
 import io.harness.ccm.views.businessmapping.service.intf.BusinessMappingService;
 import io.harness.ccm.views.businessmapping.service.intf.BusinessMappingValidationService;
 import io.harness.ccm.views.service.CEViewFolderService;
+import io.harness.ccm.views.service.CEViewPreferenceService;
 import io.harness.ccm.views.service.CEViewService;
 import io.harness.ccm.views.service.DataResponseService;
 import io.harness.ccm.views.service.GovernanceRuleService;
@@ -86,6 +87,7 @@ import io.harness.ccm.views.service.ViewCustomFieldService;
 import io.harness.ccm.views.service.ViewsBillingService;
 import io.harness.ccm.views.service.impl.BigQueryDataResponseServiceImpl;
 import io.harness.ccm.views.service.impl.CEViewFolderServiceImpl;
+import io.harness.ccm.views.service.impl.CEViewPreferenceServiceImpl;
 import io.harness.ccm.views.service.impl.CEViewServiceImpl;
 import io.harness.ccm.views.service.impl.ClickHouseDataResponseServiceImpl;
 import io.harness.ccm.views.service.impl.ClickHouseViewsBillingServiceImpl;
@@ -107,6 +109,7 @@ import io.harness.lock.noop.PersistentNoopLocker;
 import io.harness.metrics.modules.MetricsModule;
 import io.harness.metrics.service.api.MetricsPublisher;
 import io.harness.mongo.MongoConfig;
+import io.harness.ngsettings.client.remote.NGSettingsClientModule;
 import io.harness.notifications.NotificationResourceClientModule;
 import io.harness.persistence.HPersistence;
 import io.harness.pricing.client.CloudInfoPricingClientModule;
@@ -209,6 +212,7 @@ public class BatchProcessingModule extends AbstractModule {
     bind(CeCloudMetricsService.class).to(CeCloudMetricsServiceImpl.class);
     bind(CENGTelemetryService.class).to(CENGTelemetryServiceImpl.class);
     bind(CEViewService.class).to(CEViewServiceImpl.class);
+    bind(CEViewPreferenceService.class).to(CEViewPreferenceServiceImpl.class);
     bind(CEViewFolderService.class).to(CEViewFolderServiceImpl.class);
     bind(ViewCustomFieldService.class).to(ViewCustomFieldServiceImpl.class);
     bind(BusinessMappingService.class).to(BusinessMappingServiceImpl.class);
@@ -232,6 +236,8 @@ public class BatchProcessingModule extends AbstractModule {
     install(new NotificationResourceClientModule(batchMainConfig.getCeNgServiceHttpClientConfig(),
         batchMainConfig.getCeNgServiceSecret(), BATCH_PROCESSING.getServiceId(), ClientMode.PRIVILEGED));
     install(new SecretNGManagerClientModule(batchMainConfig.getNgManagerServiceHttpClientConfig(),
+        batchMainConfig.getNgManagerServiceSecret(), BATCH_PROCESSING.getServiceId()));
+    install(new NGSettingsClientModule(batchMainConfig.getNgManagerServiceHttpClientConfig(),
         batchMainConfig.getNgManagerServiceSecret(), BATCH_PROCESSING.getServiceId()));
     install(new AzureVmPricingClientModule(batchMainConfig.getAzureVmPricingConfig()));
     install(new AbstractTelemetryModule() {
