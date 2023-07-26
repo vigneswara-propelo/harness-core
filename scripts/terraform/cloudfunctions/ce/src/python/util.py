@@ -145,7 +145,7 @@ def http_trigger_cf_v2_async(cf_name, trigger_payload):
 
         # Provide the token in the request to the receiving function
         receiving_function_headers = {'Authorization': f'bearer {jwt}'}
-        r = requests.post(url, json=trigger_payload, timeout=30, headers=receiving_function_headers)
+        r = requests.post(url, json=trigger_payload, timeout=1, headers=receiving_function_headers)
     except Exception as e:
         print_(e)
         print_("2nd gen cloudfunction HTTP trigger: Ignore above exception if it's a timeout exception")
