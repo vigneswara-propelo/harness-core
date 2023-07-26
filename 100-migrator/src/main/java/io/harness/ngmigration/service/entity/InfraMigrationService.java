@@ -255,7 +255,7 @@ public class InfraMigrationService extends NgMigrationService {
 
     String value = MigratorUtility.getSettingValue(inputDTO, SIMULTANEOUS_DEPLOYMENT_ON_SAME_INFRA, null);
 
-    boolean allowSimultaneousDeployments = "ENABLED".equals(value);
+    boolean allowSimultaneousDeployments = "true".equalsIgnoreCase(value);
 
     InfrastructureConfig infrastructureConfig =
         InfrastructureConfig.builder()

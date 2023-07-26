@@ -703,10 +703,12 @@ public class MigratorUtility {
     Map<NGMigrationEntityType, InputDefaults> defaults = new HashMap<>();
     Map<CgEntityId, BaseProvidedInput> overrides = new HashMap<>();
     Map<String, Object> expressions = new HashMap<>();
+    List<MigrationInputSettings> settings = new ArrayList<>();
     if (importDTO.getInputs() != null) {
       overrides = importDTO.getInputs().getOverrides();
       defaults = importDTO.getInputs().getDefaults();
       expressions = importDTO.getInputs().getExpressions();
+      settings = importDTO.getInputs().getSettings();
     }
 
     // We do not want to auto migrate WFs/Pipelines. We want customers to migrate WFs/Pipelines by choice.
@@ -734,6 +736,7 @@ public class MigratorUtility {
         .overrides(overrides)
         .defaults(defaults)
         .customExpressions(expressions)
+        .settings(settings)
         .identifierCaseFormat(
             importDTO.getIdentifierCaseFormat() == null ? CAMEL_CASE : importDTO.getIdentifierCaseFormat())
         .build();
