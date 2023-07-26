@@ -18,9 +18,12 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.beans.BranchFilterParameters;
+import io.harness.beans.BranchFilterParamsDTO;
 import io.harness.beans.FeatureName;
 import io.harness.beans.GetBatchFileRequestIdentifier;
 import io.harness.beans.PageRequestDTO;
+import io.harness.beans.RepoFilterParameters;
 import io.harness.beans.RepoFilterParamsDTO;
 import io.harness.beans.Scope;
 import io.harness.beans.request.GitFileBatchRequest;
@@ -68,7 +71,6 @@ import io.harness.gitsync.common.dtos.ScmGetFileUrlRequestDTO;
 import io.harness.gitsync.common.dtos.ScmGetFileUrlResponseDTO;
 import io.harness.gitsync.common.dtos.ScmListFilesRequestDTO;
 import io.harness.gitsync.common.dtos.ScmListFilesResponseDTO;
-import io.harness.gitsync.common.dtos.ScmRepoFilterParams;
 import io.harness.gitsync.common.dtos.ScmUpdateFileRequestDTO;
 import io.harness.gitsync.common.dtos.UpdateGitFileRequestDTO;
 import io.harness.gitsync.common.dtos.UserDetailsRequestDTO;
@@ -181,11 +183,11 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
 
   @Override
   public List<GitRepositoryResponseDTO> listReposByRefConnector(String accountIdentifier, String orgIdentifier,
-      String projectIdentifier, String connectorRef, PageRequest pageRequest, ScmRepoFilterParams scmRepoFilterParams,
+      String projectIdentifier, String connectorRef, PageRequest pageRequest, RepoFilterParameters repoFilterParameters,
       boolean applyGitXRepoAllowListFilter) {
     ScmConnector scmConnector =
         gitSyncConnectorHelper.getScmConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef);
-    RepoFilterParamsDTO repoFilterParams = buildRepoFilterParamsDTO(scmRepoFilterParams);
+    RepoFilterParamsDTO repoFilterParams = buildRepoFilterParamsDTO(repoFilterParameters);
     GetUserReposResponse response = scmOrchestratorService.processScmRequestUsingConnectorSettings(
         scmClientFacilitatorService
         -> scmClientFacilitatorService.listUserRepos(accountIdentifier, orgIdentifier, projectIdentifier, scmConnector,
@@ -240,10 +242,10 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
 
   @Override
   public GitBranchesResponseDTO listBranchesV2(String accountIdentifier, String orgIdentifier, String projectIdentifier,
-      String connectorRef, String repoName, PageRequest pageRequest, String searchTerm) {
+      String connectorRef, String repoName, PageRequest pageRequest, BranchFilterParameters branchFilterParameters) {
     final ScmConnector scmConnector = gitSyncConnectorHelper.getScmConnectorForGivenRepo(
         accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, repoName);
-
+    BranchFilterParamsDTO branchFilterParamsDTO = buildBranchFilterParamsDTO(branchFilterParameters);
     ListBranchesWithDefaultResponse listBranchesWithDefaultResponse =
         scmOrchestratorService.processScmRequestUsingConnectorSettings(scmClientFacilitatorService
             -> scmClientFacilitatorService.listBranches(accountIdentifier, orgIdentifier, projectIdentifier,
@@ -251,7 +253,8 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
                 PageRequestDTO.builder()
                     .pageIndex(pageRequest.getPageIndex())
                     .pageSize(pageRequest.getPageSize())
-                    .build()),
+                    .build(),
+                branchFilterParamsDTO),
             scmConnector);
 
     if (ScmApiErrorHandlingHelper.isFailureResponse(
@@ -262,7 +265,8 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
           ErrorMetadata.builder().connectorRef(connectorRef).repoName(repoName).build());
     }
 
-    List<GitBranchDetailsDTO> gitBranches = prepareGitBranchList(listBranchesWithDefaultResponse);
+    List<GitBranchDetailsDTO> gitBranches =
+        prepareGitBranchList(listBranchesWithDefaultResponse, branchFilterParamsDTO.getBranchName());
     return GitBranchesResponseDTO.builder()
         .branches(gitBranches)
         .defaultBranch(GitBranchDetailsDTO.builder().name(listBranchesWithDefaultResponse.getDefaultBranch()).build())
@@ -787,9 +791,10 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
 
   @VisibleForTesting
   protected List<GitBranchDetailsDTO> prepareGitBranchList(
-      ListBranchesWithDefaultResponse listBranchesWithDefaultResponse) {
+      ListBranchesWithDefaultResponse listBranchesWithDefaultResponse, String branchNameSearchTerm) {
     List<String> branchList = new ArrayList<>(emptyIfNull(listBranchesWithDefaultResponse.getBranchesList()));
-    if (!branchList.isEmpty() && !branchList.contains(listBranchesWithDefaultResponse.getDefaultBranch())) {
+    if (isEmpty(branchNameSearchTerm) && !branchList.isEmpty()
+        && !branchList.contains(listBranchesWithDefaultResponse.getDefaultBranch())) {
       branchList.set(branchList.size() - 1, listBranchesWithDefaultResponse.getDefaultBranch());
     }
     return branchList.stream()
@@ -1264,13 +1269,20 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
     }
   }
 
-  private RepoFilterParamsDTO buildRepoFilterParamsDTO(ScmRepoFilterParams scmRepoFilterParams) {
-    if (scmRepoFilterParams == null) {
+  private RepoFilterParamsDTO buildRepoFilterParamsDTO(RepoFilterParameters repoFilterParameters) {
+    if (repoFilterParameters == null) {
       return RepoFilterParamsDTO.builder().build();
     }
     return RepoFilterParamsDTO.builder()
-        .repoName(scmRepoFilterParams.getRepoName())
-        .userName(scmRepoFilterParams.getUserName())
+        .repoName(repoFilterParameters.getRepoName())
+        .userName(repoFilterParameters.getUserName())
         .build();
+  }
+
+  private BranchFilterParamsDTO buildBranchFilterParamsDTO(BranchFilterParameters branchFilterParameters) {
+    if (branchFilterParameters == null) {
+      return BranchFilterParamsDTO.builder().build();
+    }
+    return BranchFilterParamsDTO.builder().branchName(branchFilterParameters.getBranchName()).build();
   }
 }
