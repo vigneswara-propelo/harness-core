@@ -168,7 +168,6 @@ public enum FeatureName {
       "Support resolution of Objects via JSON Select Command in HTTP Step", HarnessTeam.CDC),
   CDS_SERVERLESS_V2("FF for enabling Serverless 2.0 deployments", HarnessTeam.CDP),
   CDS_SERVICENOW_REFRESH_TOKEN_AUTH("Refresh Token auth support for servicenow connector", HarnessTeam.CDC),
-  CDS_SERVICENOW_TICKET_TYPE_V2("FF to use servicenow ticketTypesV2 endpoint", HarnessTeam.CDC),
   CDS_SERVICENOW_USE_METADATA_V2(
       "Using METADATA_V2 in /metadata (create update) and /createMetadata (approval) API in Servicenow Steps NG; and changing /metadata parsing to manager",
       HarnessTeam.CDC),
