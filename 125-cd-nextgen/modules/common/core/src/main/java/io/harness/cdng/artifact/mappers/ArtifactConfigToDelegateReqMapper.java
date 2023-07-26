@@ -344,20 +344,24 @@ public class ArtifactConfigToDelegateReqMapper {
 
   public BambooArtifactDelegateRequest getBambooDelegateRequest(BambooArtifactConfig artifactConfig,
       BambooConnectorDTO connectorDTO, List<EncryptedDataDetail> encryptedDataDetails, String connectorRef) {
-    List<String> artifactPath = artifactConfig.getArtifactPaths() != null ? artifactConfig.getArtifactPaths().getValue()
-                                                                          : Collections.emptyList();
-    String planKey = artifactConfig.getPlanKey() != null ? artifactConfig.getPlanKey().getValue() : "";
-    String buildNumber = artifactConfig.getBuild() != null ? artifactConfig.getBuild().getValue() : "";
+    List<String> artifactPath = artifactConfig.getArtifactPaths() != null
+        ? (List<String>) artifactConfig.getArtifactPaths().fetchFinalValue()
+        : Collections.emptyList();
+    String planKey = artifactConfig.getPlanKey() != null ? (String) artifactConfig.getPlanKey().fetchFinalValue() : "";
+    String buildNumber = artifactConfig.getBuild() != null ? (String) artifactConfig.getBuild().fetchFinalValue() : "";
+    String buildRegex = null;
     if (isLastPublishedExpression(buildNumber)) {
       if (ParameterField.isNotNull(artifactConfig.getBuild())
           && tagHasInputValidator(artifactConfig.getBuild().getInputSetValidator(), buildNumber)) {
         buildNumber = artifactConfig.getBuild().getInputSetValidator().getParameters();
+        buildRegex = artifactConfig.getBuild().getInputSetValidator().getParameters();
       } else {
         buildNumber = getTagRegex(buildNumber);
+        buildRegex = getTagRegex(buildNumber);
       }
     }
     return ArtifactDelegateRequestUtils.getBambooDelegateArtifactRequest(connectorRef, connectorDTO,
-        encryptedDataDetails, ArtifactSourceType.BAMBOO, planKey, artifactPath, buildNumber);
+        encryptedDataDetails, ArtifactSourceType.BAMBOO, planKey, artifactPath, buildNumber, buildRegex);
   }
   public CustomArtifactDelegateRequest getCustomDelegateRequest(
       CustomArtifactConfig artifactConfig, Ambiance ambiance) {

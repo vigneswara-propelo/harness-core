@@ -1166,6 +1166,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(bambooArtifactDelegateRequest.getPlanKey()).isEqualTo(bambooArtifactConfig.getPlanKey().getValue());
     assertThat(bambooArtifactDelegateRequest.getConnectorRef()).isEqualTo("");
     assertThat(bambooArtifactDelegateRequest.getBuildNumber()).isEqualTo(".*?");
+    assertThat(bambooArtifactDelegateRequest.getBuildRegex()).isEqualTo(".*?");
   }
 
   @Test
@@ -1193,6 +1194,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(bambooArtifactDelegateRequest.getPlanKey()).isEqualTo(bambooArtifactConfig.getPlanKey().getValue());
     assertThat(bambooArtifactDelegateRequest.getConnectorRef()).isEqualTo("");
     assertThat(bambooArtifactDelegateRequest.getBuildNumber()).isEqualTo(TAG);
+    assertThat(bambooArtifactDelegateRequest.getBuildRegex()).isEqualTo(TAG);
   }
 
   @Test
@@ -1220,6 +1222,7 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
     assertThat(bambooArtifactDelegateRequest.getPlanKey()).isEqualTo(bambooArtifactConfig.getPlanKey().getValue());
     assertThat(bambooArtifactDelegateRequest.getConnectorRef()).isEqualTo("");
     assertThat(bambooArtifactDelegateRequest.getBuildNumber()).isEqualTo(TAG);
+    assertThat(bambooArtifactDelegateRequest.getBuildRegex()).isNull();
   }
 
   @Test
