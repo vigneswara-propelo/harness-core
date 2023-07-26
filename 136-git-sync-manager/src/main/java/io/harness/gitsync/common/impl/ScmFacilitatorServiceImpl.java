@@ -6,6 +6,7 @@
  */
 
 package io.harness.gitsync.common.impl;
+
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -203,7 +204,7 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
       response = filterResponseBasedOnGitXRepoAllowList(accountIdentifier, orgIdentifier, projectIdentifier, response);
     }
 
-    return prepareListRepoResponse(scmConnector, response);
+    return prepareListRepoResponse(accountIdentifier, orgIdentifier, projectIdentifier, scmConnector, response);
   }
 
   @Override
@@ -803,8 +804,8 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
         .collect(Collectors.toList());
   }
 
-  private List<GitRepositoryResponseDTO> prepareListRepoResponse(
-      ScmConnector scmConnector, GetUserReposResponse response) {
+  private List<GitRepositoryResponseDTO> prepareListRepoResponse(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, ScmConnector scmConnector, GetUserReposResponse response) {
     GitRepositoryDTO gitRepository = scmConnector.getGitRepositoryDetails();
 
     if (isEmpty(gitRepository.getOrg())
@@ -816,7 +817,8 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
           .collect(Collectors.toList());
     }
     if (isNotEmpty(gitRepository.getName())) {
-      return Collections.singletonList(GitRepositoryResponseDTO.builder().name(gitRepository.getName()).build());
+      return validateRepoAndPrepareResponse(
+          accountIdentifier, orgIdentifier, projectIdentifier, scmConnector, gitRepository);
     } else if (isNotEmpty(gitRepository.getOrg()) && isNamespaceNotEmpty(response)) {
       return prepareListRepoResponseWithNamespace(scmConnector, response, gitRepository);
     } else {
@@ -824,6 +826,21 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
           .stream()
           .map(repository -> GitRepositoryResponseDTO.builder().name(repository.getName()).build())
           .collect(Collectors.toList());
+    }
+  }
+
+  private List<GitRepositoryResponseDTO> validateRepoAndPrepareResponse(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, ScmConnector scmConnector, GitRepositoryDTO gitRepository) {
+    try {
+      gitRepoAllowlistHelper.validateRepo(Scope.builder()
+                                              .accountIdentifier(accountIdentifier)
+                                              .orgIdentifier(orgIdentifier)
+                                              .projectIdentifier(projectIdentifier)
+                                              .build(),
+          scmConnector, gitRepository.getName());
+      return Collections.singletonList(GitRepositoryResponseDTO.builder().name(gitRepository.getName()).build());
+    } catch (WingsException ex) {
+      return Collections.EMPTY_LIST;
     }
   }
 

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.joor.Reflect.on;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -73,6 +74,7 @@ import io.harness.gitsync.common.helper.GitRepoHelper;
 import io.harness.gitsync.common.helper.GitSyncConnectorHelper;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
 import io.harness.gitsync.core.runnable.GitBackgroundCacheRefreshHelper;
+import io.harness.gitx.GitXSettingsHelper;
 import io.harness.grpc.DelegateServiceGrpcClient;
 import io.harness.ng.beans.PageRequest;
 import io.harness.product.ci.scm.proto.CreateBranchResponse;
@@ -88,6 +90,7 @@ import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.rule.Owner;
 import io.harness.utils.NGFeatureFlagHelperService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -99,6 +102,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 
 @OwnedBy(PL)
 public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
@@ -134,7 +138,9 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
   @Mock GitBackgroundCacheRefreshHelper gitBackgroundCacheRefreshHelper;
 
   @Mock GitDefaultBranchCacheHelper gitDefaultBranchCacheHelper;
-  @Mock GitRepoAllowlistHelper gitRepoAllowlistHelper;
+  @Mock GitXSettingsHelper gitXSettingsHelper;
+  @Mock GitRepoHelper gitRepoHelper;
+  @Spy @InjectMocks GitRepoAllowlistHelper gitRepoAllowlistHelper;
 
   String fileUrl = "https://github.com/harness/repoName/blob/branch/filePath";
 
@@ -300,6 +306,8 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
         CreateFileResponse.newBuilder().setBlobId(blobId).setCommitId(commitId).build();
     when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any())).thenReturn(createFileResponse);
     when(gitClientEnabledHelper.isGitClientEnabledInSettings(scope.getAccountIdentifier())).thenReturn(false);
+    doNothing().when(gitRepoAllowlistHelper).validateRepo(any(), any(), any());
+
     ScmCommitFileResponseDTO scmCommitFileResponseDTO =
         scmFacilitatorService.createFile(ScmCreateFileRequestDTO.builder().scope(Scope.builder().build()).build());
     assertThat(scmCommitFileResponseDTO.getCommitId()).isEqualTo(commitId);
@@ -312,6 +320,8 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
   public void testCreateFileWhenSCMAPIfails() {
     CreateFileResponse createFileResponse = CreateFileResponse.newBuilder().setStatus(400).build();
     when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any())).thenReturn(createFileResponse);
+    doNothing().when(gitRepoAllowlistHelper).validateRepo(any(), any(), any());
+
     when(gitClientEnabledHelper.isGitClientEnabledInSettings(scope.getAccountIdentifier())).thenReturn(false);
     assertThatThrownBy(()
                            -> scmFacilitatorService.createFile(
@@ -708,9 +718,13 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
             Repository.newBuilder().setName("test-repo").setNamespace("harness").build());
     GetUserReposResponse getUserReposResponse = GetUserReposResponse.newBuilder().addAllRepos(repositories).build();
     when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any())).thenReturn(getUserReposResponse);
-    List<GitRepositoryResponseDTO> repositoryResponseDTOList =
-        scmFacilitatorService.listReposByRefConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef,
-            pageRequest, RepoFilterParameters.builder().build(), false);
+
+    List<String> repoAllowlist = new ArrayList<>();
+    repoAllowlist.add("test-repo");
+    doReturn(repoAllowlist).when(gitXSettingsHelper).getGitRepoAllowlist(any(), any(), any());
+
+    List<GitRepositoryResponseDTO> repositoryResponseDTOList = scmFacilitatorService.listReposByRefConnector(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, pageRequest, null, true);
     assertThat(repositoryResponseDTOList.size()).isEqualTo(1);
     assertThat(repositoryResponseDTOList.get(0).getName()).isEqualTo("test-repo");
   }
@@ -730,19 +744,24 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
 
     List<Repository> repositories =
         Arrays.asList(Repository.newBuilder().setName("repo1").setNamespace("harness").build(),
-            Repository.newBuilder().setName("repo2").setNamespace("harness").build());
-    GetUserReposResponse getUserReposResponse = GetUserReposResponse.newBuilder().addAllRepos(repositories).build();
+            Repository.newBuilder().setName("test-repo").setNamespace("harness").build());
+
+    List<String> repoAllowlist = new ArrayList<>();
+    repoAllowlist.add("another-repo");
+    doReturn(repoAllowlist).when(gitXSettingsHelper).getGitRepoAllowlist(any(), any(), any());
+
+    GetUserReposResponse getUserReposResponse =
+        GetUserReposResponse.newBuilder().setStatus(200).addAllRepos(repositories).build();
     when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any())).thenReturn(getUserReposResponse);
-    List<GitRepositoryResponseDTO> repositoryResponseDTOList =
-        scmFacilitatorService.listReposByRefConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef,
-            pageRequest, RepoFilterParameters.builder().build(), false);
-    assertThat(repositoryResponseDTOList.get(0).getName()).isEqualTo("test-repo");
+    List<GitRepositoryResponseDTO> repositoryResponseDTOList = scmFacilitatorService.listReposByRefConnector(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, pageRequest, null, true);
+    assertThat(repositoryResponseDTOList.size()).isEqualTo(0);
   }
 
   @Test
-  @Owner(developers = ADITHYA)
+  @Owner(developers = VIVEK_DIXIT)
   @Category(UnitTests.class)
-  public void testListReposForConnectorOfRepoWithSearchTerms() {
+  public void testListReposForConnectorOfRepoLevelWithAccessDeniedToInValidReposWithRepoNotInGITResponse() {
     GithubConnectorDTO githubConnector = GithubConnectorDTO.builder()
                                              .connectionType(GitConnectionType.REPO)
                                              .apiAccess(GithubApiAccessDTO.builder().build())
@@ -752,15 +771,15 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
     scmConnector = (ScmConnector) connectorInfo.getConnectorConfig();
     when(gitSyncConnectorHelper.getScmConnector(any(), any(), any(), any())).thenReturn(scmConnector);
 
-    List<Repository> repositories =
-        Arrays.asList(Repository.newBuilder().setName("repo1").setNamespace("harness").build(),
-            Repository.newBuilder().setName("repo2").setNamespace("harness").build());
-    GetUserReposResponse getUserReposResponse = GetUserReposResponse.newBuilder().addAllRepos(repositories).build();
+    List<String> repoAllowlist = new ArrayList<>();
+    repoAllowlist.add("another-repo");
+    doReturn(repoAllowlist).when(gitXSettingsHelper).getGitRepoAllowlist(any(), any(), any());
+
+    GetUserReposResponse getUserReposResponse = GetUserReposResponse.newBuilder().setStatus(200).build();
     when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any())).thenReturn(getUserReposResponse);
-    List<GitRepositoryResponseDTO> repositoryResponseDTOList =
-        scmFacilitatorService.listReposByRefConnector(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef,
-            pageRequest, RepoFilterParameters.builder().repoName("test").build(), false);
-    assertThat(repositoryResponseDTOList.get(0).getName()).isEqualTo("test-repo");
+    List<GitRepositoryResponseDTO> repositoryResponseDTOList = scmFacilitatorService.listReposByRefConnector(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorRef, pageRequest, null, true);
+    assertThat(repositoryResponseDTOList.size()).isEqualTo(0);
   }
 
   private Scope getDefaultScope() {
