@@ -88,8 +88,9 @@ public class HelmRollbackStep extends CdTaskExecutable<HelmCmdExecResponseNG> {
   }
 
   @Override
-  public StepResponse handleTaskResultWithSecurityContext(Ambiance ambiance, StepElementParameters stepParameters,
-      ThrowingSupplier<HelmCmdExecResponseNG> responseDataSupplier) throws Exception {
+  public StepResponse handleTaskResultWithSecurityContextAndNodeInfo(Ambiance ambiance,
+      StepElementParameters stepParameters, ThrowingSupplier<HelmCmdExecResponseNG> responseDataSupplier)
+      throws Exception {
     StepResponse stepResponse = null;
     try {
       HelmCmdExecResponseNG executionResponse = responseDataSupplier.get();

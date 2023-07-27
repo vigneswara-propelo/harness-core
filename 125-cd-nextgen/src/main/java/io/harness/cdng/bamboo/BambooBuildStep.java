@@ -60,8 +60,9 @@ public class BambooBuildStep extends CdTaskExecutable<ArtifactTaskResponse> {
   }
 
   @Override
-  public StepResponse handleTaskResultWithSecurityContext(Ambiance ambiance, StepElementParameters stepParameters,
-      ThrowingSupplier<ArtifactTaskResponse> responseDataSupplier) throws Exception {
+  public StepResponse handleTaskResultWithSecurityContextAndNodeInfo(Ambiance ambiance,
+      StepElementParameters stepParameters, ThrowingSupplier<ArtifactTaskResponse> responseDataSupplier)
+      throws Exception {
     try {
       return bambooBuildStepHelperService.prepareStepResponse(responseDataSupplier);
     } finally {

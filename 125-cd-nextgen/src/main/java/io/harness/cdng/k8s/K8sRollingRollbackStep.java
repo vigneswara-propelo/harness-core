@@ -156,7 +156,7 @@ public class K8sRollingRollbackStep extends CdTaskExecutable<K8sDeployResponse> 
   }
 
   @Override
-  public StepResponse handleTaskResultWithSecurityContext(Ambiance ambiance,
+  public StepResponse handleTaskResultWithSecurityContextAndNodeInfo(Ambiance ambiance,
       StepElementParameters stepElementParameters, ThrowingSupplier<K8sDeployResponse> responseSupplier)
       throws Exception {
     StepResponse stepResponse = null;

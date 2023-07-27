@@ -134,8 +134,9 @@ public class ServerlessAwsLambdaRollbackV2Step extends CdTaskExecutable<Serverle
   }
 
   @Override
-  public StepResponse handleTaskResultWithSecurityContext(Ambiance ambiance, StepElementParameters stepParameters,
-      ThrowingSupplier<ServerlessCommandResponse> responseDataSupplier) throws Exception {
+  public StepResponse handleTaskResultWithSecurityContextAndNodeInfo(Ambiance ambiance,
+      StepElementParameters stepParameters, ThrowingSupplier<ServerlessCommandResponse> responseDataSupplier)
+      throws Exception {
     StepResponse stepResponse = null;
     try {
       ServerlessRollbackResponse rollbackResponse = (ServerlessRollbackResponse) responseDataSupplier.get();
