@@ -5,14 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.repositories;
+package io.harness.ssca.enforcement.constants;
 
-import static io.harness.annotations.dev.HarnessTeam.SSCA;
+import lombok.AllArgsConstructor;
 
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.ssca.entities.EnforcementSummaryEntity;
+@AllArgsConstructor
+public enum RuleExecutorType {
+  MONGO_EXECUTOR("MONGO");
 
-@OwnedBy(SSCA)
-public interface EnforcementSummaryRepoCustom {
-  EnforcementSummaryEntity save(EnforcementSummaryEntity entity);
+  String executor;
+
+  public String getExecutor() {
+    return this.executor;
+  }
 }

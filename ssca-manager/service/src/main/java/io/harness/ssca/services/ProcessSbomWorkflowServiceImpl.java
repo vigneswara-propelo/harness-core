@@ -12,6 +12,7 @@ import io.harness.repositories.SBOMComponentRepo;
 import io.harness.spec.server.ssca.v1.model.SbomProcessRequestBody;
 import io.harness.ssca.beans.SbomDTO;
 import io.harness.ssca.beans.SettingsDTO;
+import io.harness.ssca.enforcement.ExecutorRegistry;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.normalize.Normalizer;
@@ -28,11 +29,15 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SbomProcessorServiceImpl implements SbomProcessorService {
+public class ProcessSbomWorkflowServiceImpl implements ProcessSbomWorkflowService {
   @Inject ArtifactService artifactService;
   @Inject ArtifactRepository artifactRepository;
   @Inject SBOMComponentRepo SBOMComponentRepo;
   @Inject NormalizerRegistry normalizerRegistry;
+
+  @Inject ExecutorRegistry executorRegistry;
+  @Inject RuleEngineService ruleEngineService;
+  @Inject EnforcementResultService enforcementResultService;
 
   @Override
   public String processSBOM(String accountId, String orgIdentifier, String projectIdentifier,

@@ -5,14 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.repositories;
+package io.harness.ssca.enforcement.executors.mongo.filter.denylist.fields;
 
-import static io.harness.annotations.dev.HarnessTeam.SSCA;
+import io.harness.ssca.beans.DenyList.DenyListItem;
 
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.ssca.entities.EnforcementSummaryEntity;
+import org.bson.Document;
 
-@OwnedBy(SSCA)
-public interface EnforcementSummaryRepoCustom {
-  EnforcementSummaryEntity save(EnforcementSummaryEntity entity);
+public interface Field {
+  boolean isMatched(DenyListItem denyListItem);
+
+  Document getQueryDocument(DenyListItem denyListItem);
 }

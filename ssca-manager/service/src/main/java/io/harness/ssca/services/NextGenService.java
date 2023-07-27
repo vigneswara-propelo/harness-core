@@ -5,14 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.repositories;
+package io.harness.ssca.services;
 
-import static io.harness.annotations.dev.HarnessTeam.SSCA;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriInfo;
+import okhttp3.Response;
 
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.ssca.entities.EnforcementSummaryEntity;
-
-@OwnedBy(SSCA)
-public interface EnforcementSummaryRepoCustom {
-  EnforcementSummaryEntity save(EnforcementSummaryEntity entity);
+public interface NextGenService {
+  Response getRequest(UriInfo uriInfo, HttpHeaders headers, String path, String harnessAccount);
 }

@@ -5,14 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.repositories;
+package io.harness.ssca.enforcement.executors.mongo.filter;
 
-import static io.harness.annotations.dev.HarnessTeam.SSCA;
+import org.springframework.data.mongodb.core.query.Query;
 
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.ssca.entities.EnforcementSummaryEntity;
-
-@OwnedBy(SSCA)
-public interface EnforcementSummaryRepoCustom {
-  EnforcementSummaryEntity save(EnforcementSummaryEntity entity);
+public interface QueryBuilder {
+  Query getQuery();
 }

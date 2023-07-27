@@ -7,11 +7,8 @@
 
 package io.harness.ssca.services;
 
-import io.harness.spec.server.ssca.v1.model.SbomProcessRequestBody;
+import io.harness.ssca.beans.RuleDTO;
 
-import java.text.ParseException;
-
-public interface SbomProcessorService {
-  String processSBOM(String accountId, String orgIdentifier, String projectIdentifier,
-      SbomProcessRequestBody sbomProcessRequestBody) throws ParseException;
+public interface RuleEngineService {
+  RuleDTO getRules(String accountId, String orgIdentifier, String projectIdentifier, String policyFileId);
 }

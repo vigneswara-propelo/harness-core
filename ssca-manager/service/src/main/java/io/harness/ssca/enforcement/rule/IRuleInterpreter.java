@@ -5,17 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.repositories;
+package io.harness.ssca.enforcement.rule;
 
-import static io.harness.annotations.dev.HarnessTeam.SSCA;
+import io.harness.ssca.beans.AllowList.AllowListRuleType;
+import io.harness.ssca.enforcement.EnforcementListItem;
 
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
-
-import java.util.List;
 import org.springframework.data.mongodb.core.query.Query;
 
-@OwnedBy(SSCA)
-public interface SBOMComponentRepoCustom {
-  List<NormalizedSBOMComponentEntity> findAllByQuery(Query query);
+public interface IRuleInterpreter {
+  Query interpretRules(EnforcementListItem item, String orchestrationId, AllowListRuleType type);
 }
