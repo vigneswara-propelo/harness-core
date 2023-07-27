@@ -116,6 +116,8 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   @Getter private final Subject<NodeExecutionStartObserver> nodeExecutionStartSubject = new Subject<>();
   @Getter private final Subject<NodeExecutionDeleteObserver> nodeDeleteObserverSubject = new Subject<>();
 
+  private final int MAX_DEPTH = 15;
+
   @Override
   public NodeExecution get(String nodeExecutionId) {
     Query query = query(where(NodeExecutionKeys.uuid).is(nodeExecutionId));
@@ -290,6 +292,52 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
       query.fields().include(field);
     }
     return nodeExecutionReadHelper.fetchNodeExecutions(query);
+  }
+
+  private CloseableIterator<NodeExecution> fetchChildrenNodeExecutionsIteratorWithoutProjection(
+      String planExecutionId, List<String> parentIds) {
+    // Uses planExecutionId_parentId_createdAt_idx
+    Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
+                      .addCriteria(where(NodeExecutionKeys.parentId).in(parentIds))
+                      .with(Sort.by(Direction.ASC, NodeExecutionKeys.createdAt));
+    return nodeExecutionReadHelper.fetchNodeExecutionsIteratorWithoutProjections(query);
+  }
+
+  public List<NodeExecution> fetchChildrenNodeExecutionsRecursivelyFromGivenParentIdWithoutOldRetries(
+      String planExecutionId, List<String> parentIds) {
+    return fetchChildrenNodeExecutionsRecursivelyFromGivenParentId(planExecutionId, parentIds, MAX_DEPTH);
+  }
+
+  private List<NodeExecution> fetchChildrenNodeExecutionsRecursivelyFromGivenParentId(
+      String planExecutionId, List<String> parentIds, int depth) {
+    if (depth <= 0) {
+      throw new InvalidRequestException(
+          String.format("Exceeded Max Depth level [%s] for the Node SubGraph", MAX_DEPTH));
+    }
+    if (EmptyPredicate.isEmpty(parentIds)) {
+      return new ArrayList<>();
+    }
+    List<NodeExecution> recursiveChildrenNodeExecutions = new LinkedList<>();
+    try (CloseableIterator<NodeExecution> iterator =
+             fetchChildrenNodeExecutionsIteratorWithoutProjection(planExecutionId, parentIds)) {
+      while (iterator.hasNext()) {
+        recursiveChildrenNodeExecutions.add(iterator.next());
+      }
+    }
+    List<String> childParentIds = new LinkedList<>();
+    if (EmptyPredicate.isEmpty(recursiveChildrenNodeExecutions)) {
+      return new ArrayList<>();
+    }
+    recursiveChildrenNodeExecutions = recursiveChildrenNodeExecutions.stream()
+                                          .filter(o -> o.getOldRetry().equals(false))
+                                          .collect(Collectors.toList());
+    for (NodeExecution nodeExecution : recursiveChildrenNodeExecutions) {
+      childParentIds.add(nodeExecution.getUuid());
+    }
+    List<NodeExecution> childNodeExecutions =
+        fetchChildrenNodeExecutionsRecursivelyFromGivenParentId(planExecutionId, childParentIds, depth - 1);
+    recursiveChildrenNodeExecutions.addAll(childNodeExecutions);
+    return recursiveChildrenNodeExecutions;
   }
 
   @Override
