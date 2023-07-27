@@ -471,8 +471,7 @@ public class STOManagerApplication extends Application<CIManagerConfiguration> {
     environment.lifecycle().manage(injector.getInstance(NotifierScheduledExecutorService.class));
     environment.lifecycle().manage(injector.getInstance(PipelineEventConsumerController.class));
 
-    boolean local = config.getCiExecutionServiceConfig().isLocal();
-    if (!local) {
+    if (config.getEnableQueue()) {
       environment.lifecycle().manage(injector.getInstance(CIExecutionPoller.class));
     }
     // Do not remove as it's used for MaintenanceController for shutdown mode
