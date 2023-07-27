@@ -546,6 +546,7 @@ jsonExpansionRequestBatchSize: ${JSON_EXPANSION_BATCH_SIZE:-50}
 #############################################################
 
 orchestrationRestrictionConfiguration:
+  maxNestedLevelsCount: ${MAX_NESTED_LEVELS_COUNT:-25}
   useRestrictionForFree: ${USE_RESTRICTION_FOR_FREE:-false}
   useRestrictionForTeam: ${USE_RESTRICTION_FOR_TEAM:-false}
   useRestrictionForEnterprise: ${USE_RESTRICTION_FOR_ENTERPRISE:-false}
