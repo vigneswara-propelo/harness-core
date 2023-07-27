@@ -28,13 +28,13 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.engine.events.OrchestrationEventEmitter;
 import io.harness.engine.executions.plan.PlanExecutionMetadataService;
+import io.harness.engine.executions.plan.PlanService;
 import io.harness.engine.executions.retry.RetryStageInfo;
 import io.harness.engine.observers.NodeExecutionDeleteObserver;
 import io.harness.engine.observers.NodeExecutionStartObserver;
 import io.harness.engine.observers.NodeStartInfo;
 import io.harness.engine.observers.NodeStatusUpdateObserver;
 import io.harness.engine.observers.NodeUpdateInfo;
-import io.harness.event.OrchestrationLogConfiguration;
 import io.harness.event.OrchestrationLogPublisher;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
@@ -107,10 +107,9 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   @Inject private PlanExecutionMetadataService planExecutionMetadataService;
   @Inject private TransactionHelper transactionHelper;
   @Inject private OrchestrationLogPublisher orchestrationLogPublisher;
-  @Inject private OrchestrationLogConfiguration orchestrationLogConfiguration;
   @Inject private NodeExecutionReadHelper nodeExecutionReadHelper;
-  @Inject private MongoTemplate secondaryMongoTemplate;
 
+  @Inject private PlanService planService;
   @Inject private PlanExpansionService planExpansionService;
 
   @Getter private final Subject<NodeStatusUpdateObserver> nodeStatusUpdateSubject = new Subject<>();
@@ -881,9 +880,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
     List<NodeExecution> nodeExecutions = mongoTemplate.find(query, NodeExecution.class);
 
     // fetching stageFqn of stage Nodes
-    return nodeExecutions.stream()
-        .map(nodeExecution -> nodeExecution.getNode().getStageFqn())
-        .collect(Collectors.toList());
+    return nodeExecutions.stream().map(NodeExecution::getStageFqn).collect(Collectors.toList());
   }
 
   @Override
@@ -915,8 +912,14 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
     Map<String, NodeExecution> nodeExecutionMap = getUniqueNodeExecutionForNodes(nodeExecutions);
     // fetching stageFqn of stage Nodes
     Map<String, Node> nodeExecutionIdToPlanNode = new HashMap<>();
+
+    Set<String> nodeIds = nodeExecutionMap.values().stream().map(NodeExecution::getNodeId).collect(Collectors.toSet());
+    Set<Node> nodes = planService.fetchAllNodes(nodeIds);
+    Map<String, Node> nodeMap = nodes.stream().collect(Collectors.toMap(Node::getUuid, node -> node));
+
     nodeExecutionMap.forEach(
-        (uuid, nodeExecution) -> nodeExecutionIdToPlanNode.put(nodeExecution.getUuid(), nodeExecution.getNode()));
+        (uuid, nodeExecution)
+            -> nodeExecutionIdToPlanNode.put(nodeExecution.getUuid(), nodeMap.get(nodeExecution.getNodeId())));
     return nodeExecutionIdToPlanNode;
   }
 
@@ -930,8 +933,8 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   private Map<String, NodeExecution> getUniqueNodeExecutionForNodes(List<NodeExecution> nodeExecutions) {
     Map<String, NodeExecution> nodeExecutionMap = new HashMap<>();
     for (NodeExecution nodeExecution : nodeExecutions) {
-      if (!nodeExecutionMap.containsKey(nodeExecution.getNode().getUuid()) && !nodeExecution.getOldRetry()) {
-        nodeExecutionMap.put(nodeExecution.getNode().getUuid(), nodeExecution);
+      if (!nodeExecutionMap.containsKey(nodeExecution.getNodeId()) && !nodeExecution.getOldRetry()) {
+        nodeExecutionMap.put(nodeExecution.getNodeId(), nodeExecution);
       }
     }
     return nodeExecutionMap;
