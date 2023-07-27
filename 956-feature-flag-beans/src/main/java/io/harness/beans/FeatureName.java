@@ -60,8 +60,6 @@ public enum FeatureName {
   AWS_OVERRIDE_REGION,
   AZURE_BLOB_SM,
   AZURE_WEBAPP,
-  BAMBOO_ARTIFACT_NG("Bamboo Artifact Connector NG", HarnessTeam.CDC),
-  BAMBOO_BUILD("Bamboo Build Step", HarnessTeam.CDC),
   BIND_CUSTOM_VALUE_AND_MANIFEST_FETCH_TASK,
   BIND_FETCH_FILES_TASK_TO_DELEGATE,
   BOOKING_RECOMMENDATIONS("Feature flag for booking.com recommendations", HarnessTeam.CE),
