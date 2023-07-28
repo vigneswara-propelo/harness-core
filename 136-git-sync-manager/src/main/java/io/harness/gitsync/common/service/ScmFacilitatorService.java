@@ -15,6 +15,8 @@ import io.harness.beans.BranchFilterParameters;
 import io.harness.beans.RepoFilterParameters;
 import io.harness.beans.Scope;
 import io.harness.gitsync.common.dtos.GitBranchesResponseDTO;
+import io.harness.gitsync.common.dtos.GitListBranchesResponse;
+import io.harness.gitsync.common.dtos.GitListRepositoryResponse;
 import io.harness.gitsync.common.dtos.GitRepositoryResponseDTO;
 import io.harness.gitsync.common.dtos.ScmCommitFileResponseDTO;
 import io.harness.gitsync.common.dtos.ScmCreateFileRequestDTO;
@@ -50,6 +52,9 @@ public interface ScmFacilitatorService {
       String projectIdentifier, String connectorRef, PageRequest pageRequest, RepoFilterParameters repoFilterParameters,
       boolean applyGitXRepoAllowListFilter);
 
+  GitListRepositoryResponse listReposV2(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, PageRequest pageRequest, RepoFilterParameters repoFilterParameters);
+
   ScmCommitFileResponseDTO createFile(ScmCreateFileRequestDTO scmCommitRequestDTO);
 
   ScmCommitFileResponseDTO updateFile(ScmUpdateFileRequestDTO scmUpdateFileRequestDTO);
@@ -69,6 +74,9 @@ public interface ScmFacilitatorService {
   ScmGetFileResponseDTO getFileByCommitId(ScmGetFileByCommitIdRequestDTO scmGetFileByCommitIdRequestDTO);
 
   GitBranchesResponseDTO listBranchesV2(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String connectorRef, String repoName, PageRequest pageRequest, BranchFilterParameters branchFilterParameters);
+
+  GitListBranchesResponse listBranchesV3(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String connectorRef, String repoName, PageRequest pageRequest, BranchFilterParameters branchFilterParameters);
 
   String getDefaultBranch(

@@ -50,6 +50,8 @@ import io.harness.gitsync.GitSyncTestBase;
 import io.harness.gitsync.caching.service.GitFileCacheService;
 import io.harness.gitsync.common.dtos.GitBranchDetailsDTO;
 import io.harness.gitsync.common.dtos.GitBranchesResponseDTO;
+import io.harness.gitsync.common.dtos.GitListBranchesResponse;
+import io.harness.gitsync.common.dtos.GitListRepositoryResponse;
 import io.harness.gitsync.common.dtos.GitRepositoryResponseDTO;
 import io.harness.gitsync.common.dtos.ScmCommitFileResponseDTO;
 import io.harness.gitsync.common.dtos.ScmCreateFileRequestDTO;
@@ -85,6 +87,7 @@ import io.harness.product.ci.scm.proto.GetLatestCommitOnFileResponse;
 import io.harness.product.ci.scm.proto.GetUserRepoResponse;
 import io.harness.product.ci.scm.proto.GetUserReposResponse;
 import io.harness.product.ci.scm.proto.ListBranchesWithDefaultResponse;
+import io.harness.product.ci.scm.proto.PageResponse;
 import io.harness.product.ci.scm.proto.Repository;
 import io.harness.product.ci.scm.proto.UpdateFileResponse;
 import io.harness.rule.Owner;
@@ -185,6 +188,27 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
   }
 
   @Test
+  @Owner(developers = ADITHYA)
+  @Category(UnitTests.class)
+  public void testListReposWithPagination() {
+    List<Repository> repositories =
+        Arrays.asList(Repository.newBuilder().setName("repo1").setNamespace("harness").build(),
+            Repository.newBuilder().setName("repo2").setNamespace("harness").build(),
+            Repository.newBuilder().setName("repo3").setNamespace("harnessxy").build());
+    GetUserReposResponse getUserReposResponse = GetUserReposResponse.newBuilder()
+                                                    .addAllRepos(repositories)
+                                                    .setPagination(PageResponse.newBuilder().setNext(1).build())
+                                                    .build();
+    when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any())).thenReturn(getUserReposResponse);
+    GitListRepositoryResponse gitListRepositoryResponse = scmFacilitatorService.listReposV2(accountIdentifier,
+        orgIdentifier, projectIdentifier, connectorRef, pageRequest, RepoFilterParameters.builder().build());
+    assertThat(gitListRepositoryResponse.getGitRepositoryResponseList().size()).isEqualTo(2);
+    assertThat(gitListRepositoryResponse.getPaginationDetails().getNextPage()).isEqualTo(1);
+    assertThat(gitListRepositoryResponse.getGitRepositoryResponseList().get(0).getName()).isEqualTo("repo1");
+    assertThat(gitListRepositoryResponse.getGitRepositoryResponseList().get(1).getName()).isEqualTo("repo2");
+  }
+
+  @Test
   @Owner(developers = DEV_MITTAL)
   @Category(UnitTests.class)
   public void testListReposByRefConnectorNoOwner() {
@@ -228,6 +252,28 @@ public class ScmFacilitatorServiceImplTest extends GitSyncTestBase {
     assertThat(gitBranchesResponseDTO.getDefaultBranch().getName()).isEqualTo(defaultBranch);
     assertThat(gitBranchesResponseDTO.getBranches().size()).isEqualTo(1);
     assertThat(gitBranchesResponseDTO.getBranches().get(0).getName()).isEqualTo(defaultBranch);
+  }
+
+  @Test
+  @Owner(developers = ADITHYA)
+  @Category(UnitTests.class)
+  public void testListBranchesWithPagination() {
+    ListBranchesWithDefaultResponse listBranchesWithDefaultResponse =
+        ListBranchesWithDefaultResponse.newBuilder()
+            .setDefaultBranch(defaultBranch)
+            .addAllBranches(Arrays.asList(branch))
+            .setPagination(PageResponse.newBuilder().setNext(1).build())
+            .build();
+    when(scmOrchestratorService.processScmRequestUsingConnectorSettings(any(), any()))
+        .thenReturn(listBranchesWithDefaultResponse);
+    GitListBranchesResponse gitListBranchesResponse =
+        scmFacilitatorService.listBranchesV3(accountIdentifier, orgIdentifier, projectIdentifier, connectorRef,
+            repoName, pageRequest, BranchFilterParameters.builder().build());
+    assertThat(gitListBranchesResponse.getGitBranchesResponse().getDefaultBranch().getName()).isEqualTo(defaultBranch);
+    assertThat(gitListBranchesResponse.getGitBranchesResponse().getBranches().size()).isEqualTo(1);
+    assertThat(gitListBranchesResponse.getPaginationDetails().getNextPage()).isEqualTo(1);
+    assertThat(gitListBranchesResponse.getGitBranchesResponse().getBranches().get(0).getName())
+        .isEqualTo(defaultBranch);
   }
 
   @Test

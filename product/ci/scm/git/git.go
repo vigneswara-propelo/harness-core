@@ -425,6 +425,7 @@ func ListBranches(ctx context.Context, request *pb.ListBranchesRequest, log *zap
 		Branches: branches,
 		Pagination: &pb.PageResponse{
 			Next: int32(response.Page.Next),
+			NextUrl: response.Page.NextURL,
 		},
 	}
 	return out, nil
@@ -469,6 +470,7 @@ func ListBranchesWithDefault(ctx context.Context, request *pb.ListBranchesWithDe
 			Branches: branches,
 			Pagination: &pb.PageResponse{
 				Next: int32(response.Page.Next),
+				NextUrl: response.Page.NextURL,
 			},
 		}
 		return out, nil
@@ -497,6 +499,7 @@ func ListBranchesWithDefault(ctx context.Context, request *pb.ListBranchesWithDe
 		DefaultBranch: userRepoResponse.GetRepo().GetBranch(),
 		Pagination: &pb.PageResponse{
 			Next: int32(response.Page.Next),
+			NextUrl: response.Page.NextURL,
 		},
 	}
 	log.Infow("ListBranchesWithDefault success", "slug", request.GetSlug(), "elapsed_time_ms", utils.TimeSince(start))
@@ -643,6 +646,7 @@ func GetUserRepos(ctx context.Context, request *pb.GetUserReposRequest, log *zap
 			Repos:  convertRepoList(repoList),
 			Pagination: &pb.PageResponse{
 				Next: int32(response.Page.Next),
+				NextUrl: response.Page.NextURL,
 			},
 		}
 		return out, nil

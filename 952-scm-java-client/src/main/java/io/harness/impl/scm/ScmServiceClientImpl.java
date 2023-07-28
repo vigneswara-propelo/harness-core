@@ -416,7 +416,7 @@ public class ScmServiceClientImpl implements ScmServiceClient {
   public ListBranchesWithDefaultResponse listBranchesWithDefault(
       ScmConnector scmConnector, PageRequestDTO pageRequest, SCMGrpc.SCMBlockingStub scmBlockingStub) {
     ListBranchesWithDefaultRequest listBranchesWithDefaultRequest =
-        buildListBranchesWithDefaultRequest(scmConnector, pageRequest, null);
+        buildListBranchesWithDefaultRequest(scmConnector, PageRequest.newBuilder().setPage(1).build(), null);
     ListBranchesWithDefaultResponse listBranchesWithDefaultResponse = ScmGrpcClientUtils.retryAndProcessException(
         scmBlockingStub::listBranchesWithDefault, listBranchesWithDefaultRequest);
     if (isNotEmpty(listBranchesWithDefaultResponse.getError())) {
@@ -428,14 +428,11 @@ public class ScmServiceClientImpl implements ScmServiceClient {
   @Override
   public ListBranchesWithDefaultResponse listBranchesWithDefault(ScmConnector scmConnector, PageRequestDTO pageRequest,
       SCMGrpc.SCMBlockingStub scmBlockingStub, BranchFilterParamsDTO branchFilterParamsDTO) {
-    ListBranchesWithDefaultRequest listBranchesWithDefaultRequest =
-        buildListBranchesWithDefaultRequest(scmConnector, pageRequest, branchFilterParamsDTO);
-    ListBranchesWithDefaultResponse listBranchesWithDefaultResponse = ScmGrpcClientUtils.retryAndProcessException(
+    ListBranchesWithDefaultRequest listBranchesWithDefaultRequest = buildListBranchesWithDefaultRequest(scmConnector,
+        PageRequest.newBuilder().setPage(pageRequest.getPageIndex()).setSize(pageRequest.getPageSize()).build(),
+        branchFilterParamsDTO);
+    return ScmGrpcClientUtils.retryAndProcessException(
         scmBlockingStub::listBranchesWithDefault, listBranchesWithDefaultRequest);
-    if (isNotEmpty(listBranchesWithDefaultResponse.getError())) {
-      return listBranchesWithDefaultResponse;
-    }
-    return listMoreBranches(scmConnector, listBranchesWithDefaultResponse, pageRequest.getPageSize(), scmBlockingStub);
   }
 
   @VisibleForTesting
@@ -1324,16 +1321,14 @@ public class ScmServiceClientImpl implements ScmServiceClient {
   }
 
   private ListBranchesWithDefaultRequest buildListBranchesWithDefaultRequest(
-      ScmConnector scmConnector, PageRequestDTO pageRequest, BranchFilterParamsDTO branchFilterParamsDTO) {
+      ScmConnector scmConnector, PageRequest pageRequest, BranchFilterParamsDTO branchFilterParamsDTO) {
     final String slug = scmGitProviderHelper.getSlug(scmConnector);
     final Provider provider = scmGitProviderMapper.mapToSCMGitProvider(scmConnector);
-    int pageNumber = 1;
-    ListBranchesWithDefaultRequest listBranchesWithDefaultRequest =
-        ListBranchesWithDefaultRequest.newBuilder()
-            .setSlug(slug)
-            .setProvider(provider)
-            .setPagination(PageRequest.newBuilder().setPage(pageNumber).setSize(pageRequest.getPageSize()).build())
-            .build();
+    ListBranchesWithDefaultRequest listBranchesWithDefaultRequest = ListBranchesWithDefaultRequest.newBuilder()
+                                                                        .setSlug(slug)
+                                                                        .setProvider(provider)
+                                                                        .setPagination(pageRequest)
+                                                                        .build();
     if (branchFilterParamsDTO != null) {
       if (isNotEmpty(branchFilterParamsDTO.getBranchName())) {
         listBranchesWithDefaultRequest =
