@@ -3205,12 +3205,11 @@ public class DelegateServiceImpl implements DelegateService {
                                      .filter(DelegateGroupKeys.ng, isNg)
                                      .filter(DelegateGroupKeys.name, name);
 
-    DelegateGroup existingEntity = query.get();
-
-    if (existingEntity != null && !matchOwners(existingEntity.getOwner(), owner)) {
-      throw new InvalidRequestException(
-          "Unable to create delegate group. Delegate with same name exists. Delegate name must be unique across account.");
+    if (owner != null) {
+      query.filter(DelegateGroupKeys.owner, owner);
     }
+
+    DelegateGroup existingEntity = query.get();
 
     // this statement is here because of identifier migration where we used normalized uuid for existing groups
     if (existingEntity != null && uuidToIdentifier(existingEntity.getUuid()).equals(existingEntity.getIdentifier())) {
@@ -3232,7 +3231,12 @@ public class DelegateServiceImpl implements DelegateService {
       setUnset(updateOperations, DelegateGroupKeys.k8sConfigDetails, k8sConfigDetails);
     }
 
-    setUnset(updateOperations, DelegateGroupKeys.owner, owner);
+    if (owner != null && existingEntity != null && !matchOwners(existingEntity.getOwner(), owner)) {
+      updateOperations.setOnInsert(DelegateGroupKeys.owner, owner);
+    } else {
+      setUnset(updateOperations, DelegateGroupKeys.owner, owner);
+    }
+
     setUnset(updateOperations, DelegateGroupKeys.description, description);
     setUnset(updateOperations, DelegateGroupKeys.tags, tags);
 
