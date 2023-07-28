@@ -44,4 +44,16 @@ public class STOYamlImage {
   @ApiModelProperty(dataType = STRING_CLASSPATH) protected ParameterField<String> name;
 
   @ApiModelProperty(dataType = STRING_CLASSPATH) protected ParameterField<String> tag;
+
+  public STOYamlImageType getType() {
+    if (type == null) {
+      return null;
+    }
+    if (type.fetchFinalValue() instanceof String) {
+      String imageType = (String) type.fetchFinalValue();
+      return STOYamlImageType.getValue(imageType);
+    } else {
+      return (STOYamlImageType) type.fetchFinalValue();
+    }
+  }
 }

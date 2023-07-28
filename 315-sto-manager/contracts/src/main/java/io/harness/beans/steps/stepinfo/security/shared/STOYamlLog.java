@@ -35,4 +35,16 @@ public class STOYamlLog {
   @YamlSchemaTypes(value = {runtime})
   @ApiModelProperty(dataType = "io.harness.yaml.sto.variables.STOYamlLogSerializer")
   protected STOYamlLogSerializer serializer;
+
+  public STOYamlLogLevel getLevel() {
+    if (level == null) {
+      return null;
+    }
+    if (level.fetchFinalValue() instanceof String) {
+      String logLevel = (String) level.fetchFinalValue();
+      return STOYamlLogLevel.getValue(logLevel);
+    } else {
+      return (STOYamlLogLevel) level.fetchFinalValue();
+    }
+  }
 }

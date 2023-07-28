@@ -49,4 +49,13 @@ public class STOYamlAuth {
   @YamlSchemaTypes(value = {runtime})
   @ApiModelProperty(dataType = BOOLEAN_CLASSPATH)
   protected ParameterField<Boolean> ssl;
+
+  public STOYamlAuthType getType() {
+    if (type.fetchFinalValue() instanceof String) {
+      String authType = (String) type.fetchFinalValue();
+      return STOYamlAuthType.getValue(authType);
+    } else {
+      return (STOYamlAuthType) type.fetchFinalValue();
+    }
+  }
 }

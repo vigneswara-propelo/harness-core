@@ -88,9 +88,40 @@ public class STOSettingsUtilsTest {
   @Test
   @Owner(developers = SERGEY)
   @Category(UnitTests.class)
+  public void getDockerParameterizedEnvVariablesTest() throws IOException {
+    ParameterField<STOYamlScanMode> scanMode = ParameterField.createExpressionField(false, null, null, false);
+    scanMode.updateWithValue("orchestration");
+    ParameterField<STOYamlAuthType> authType = ParameterField.createExpressionField(false, null, null, false);
+    authType.updateWithValue("apiKey");
+    BlackDuckStepInfo step =
+        BlackDuckStepInfo.builder()
+            .mode(scanMode)
+            .target(createTarget(STOYamlTargetType.REPOSITORY, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
+            .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
+            .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
+            .auth(STOYamlAuth.builder()
+                      .accessId(ParameterField.createValueField(ACCESS_ID))
+                      .accessToken(ParameterField.createValueField(ACCESS_TOKEN))
+                      .region(ParameterField.createValueField(ACCESS_REGION))
+                      .domain(ParameterField.createValueField(ACCESS_DOMAIN))
+                      .ssl(ParameterField.createValueField(Boolean.FALSE))
+                      .type(authType)
+                      .build())
+            .image(createImageSettings())
+            .tool(createBDHToolData())
+            .config(STOYamlGenericConfig.DEFAULT)
+            .build();
+
+    assertEnvVariables(step, getExpectedValue("bdh_repository.json"));
+  }
+
+  @Test
+  @Owner(developers = SERGEY)
+  @Category(UnitTests.class)
   public void getBlackDuckEnvVariablesTest() throws IOException {
     BlackDuckStepInfo step =
         BlackDuckStepInfo.builder()
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.REPOSITORY, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -109,7 +140,25 @@ public class STOSettingsUtilsTest {
   public void getMendEnvVariablesTest() throws IOException {
     MendStepInfo step =
         MendStepInfo.builder()
-            .mode(ParameterField.createExpressionField(true, "orchestration", null, false))
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
+            .target(createTarget(STOYamlTargetType.CONTAINER, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
+            .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
+            .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
+            .auth(createAuthSettings())
+            .image(createImageSettings())
+            .config(STOYamlGenericConfig.DEFAULT)
+            .build();
+
+    assertEnvVariables(step, getExpectedValue("mend_repository.json"));
+  }
+
+  @Test
+  @Owner(developers = SERGEY)
+  @Category(UnitTests.class)
+  public void getMendEnvVariablesTesta() throws IOException {
+    MendStepInfo step =
+        MendStepInfo.builder()
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.CONTAINER, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -127,7 +176,7 @@ public class STOSettingsUtilsTest {
   public void getFossaEnvVariablesTest() throws IOException {
     FossaStepInfo step =
         FossaStepInfo.builder()
-            .mode(ParameterField.createExpressionField(true, "orchestration", null, false))
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.REPOSITORY, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -144,7 +193,7 @@ public class STOSettingsUtilsTest {
   public void getAwsEcrEnvVariablesTest() throws IOException {
     AwsEcrStepInfo step =
         AwsEcrStepInfo.builder()
-            .mode(ParameterField.createExpressionField(true, "orchestration", null, false))
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.CONTAINER, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -160,12 +209,9 @@ public class STOSettingsUtilsTest {
   @Owner(developers = SERGEY)
   @Category(UnitTests.class)
   public void getProwlerEnvVariablesTest() throws IOException {
-    ParameterField<STOYamlScanMode> scanMode = ParameterField.createExpressionField(false, null, null, false);
-    scanMode.updateWithValue("orchestration");
-
     ProwlerStepInfo step =
         ProwlerStepInfo.builder()
-            .mode(scanMode)
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.CONFIGURATION, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -182,7 +228,7 @@ public class STOSettingsUtilsTest {
   public void getNmapEnvVariablesTest() throws IOException {
     NmapStepInfo step =
         NmapStepInfo.builder()
-            .mode(ParameterField.createExpressionField(true, "orchestration", null, false))
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.INSTANCE, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -192,13 +238,14 @@ public class STOSettingsUtilsTest {
 
     assertEnvVariables(step, getExpectedValue("nmap.json"));
   }
+
   @Test
   @Owner(developers = SERGEY)
   @Category(UnitTests.class)
   public void getCustomIngestEnvVariablesTest() throws IOException {
     CustomIngestStepInfo step =
         CustomIngestStepInfo.builder()
-            .mode(ParameterField.createExpressionField(true, "orchestration", null, false))
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.INSTANCE, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -214,7 +261,7 @@ public class STOSettingsUtilsTest {
   public void getMetasploitEnvVariablesTest() throws IOException {
     MetasploitStepInfo step =
         MetasploitStepInfo.builder()
-            .mode(ParameterField.createExpressionField(true, "orchestration", null, false))
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.INSTANCE, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -231,7 +278,7 @@ public class STOSettingsUtilsTest {
   public void getBurpEnvVariablesTest() throws IOException {
     BurpStepInfo step =
         BurpStepInfo.builder()
-            .mode(ParameterField.createExpressionField(true, "orchestration", null, false))
+            .mode(ParameterField.createValueField(STOYamlScanMode.ORCHESTRATION))
             .target(createTarget(STOYamlTargetType.INSTANCE, TARGET_NAME, TARGET_VARIANT, WORKSPACE))
             .ingestion(createIngestionSettings(INGESTION_FILE_NAME))
             .advanced(createAdvancedSettings(STOYamlLogSerializer.BASIC, STOYamlLogLevel.DEBUG, CLI_PARAMS, ""))
@@ -267,15 +314,13 @@ public class STOSettingsUtilsTest {
   }
 
   private static STOYamlAuth createAuthSettings() {
-    ParameterField<STOYamlAuthType> authType = ParameterField.createExpressionField(false, null, null, false);
-    authType.updateWithValue("apiKey");
     return STOYamlAuth.builder()
         .accessId(ParameterField.createValueField(ACCESS_ID))
         .accessToken(ParameterField.createValueField(ACCESS_TOKEN))
         .region(ParameterField.createValueField(ACCESS_REGION))
         .domain(ParameterField.createValueField(ACCESS_DOMAIN))
         .ssl(ParameterField.createValueField(Boolean.FALSE))
-        .type(authType)
+        .type(ParameterField.createValueField(STOYamlAuthType.API_KEY))
         .build();
   }
 
@@ -303,9 +348,7 @@ public class STOSettingsUtilsTest {
   }
 
   private static STOYamlLog createLogSettings(STOYamlLogSerializer serializer, STOYamlLogLevel level) {
-    ParameterField<STOYamlLogLevel> logLevel = ParameterField.createExpressionField(false, null, null, false);
-    logLevel.updateWithValue(level.toString());
-    return STOYamlLog.builder().serializer(serializer).level(logLevel).build();
+    return STOYamlLog.builder().serializer(serializer).level(ParameterField.createValueField(level)).build();
   }
 
   private static STOYamlArgs createArgsSettings(String cliParams, String passthroughParams) {

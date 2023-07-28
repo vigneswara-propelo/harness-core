@@ -58,4 +58,13 @@ public class STOGenericStepInfo extends SecurityStepInfo {
   @JsonProperty protected STOYamlIngestion ingestion;
 
   @JsonProperty protected STOYamlAdvancedSettings advanced;
+
+  public STOYamlScanMode getMode() {
+    if (mode.fetchFinalValue() instanceof String) {
+      String scanMode = (String) mode.fetchFinalValue();
+      return STOYamlScanMode.getValue(scanMode);
+    } else {
+      return (STOYamlScanMode) mode.fetchFinalValue();
+    }
+  }
 }

@@ -37,7 +37,7 @@ public enum STOYamlScanMode {
         return value;
       }
     }
-    throw new IllegalArgumentException("Invalid value for log level: " + yamlName + ". Valid values are: "
+    throw new IllegalArgumentException("Invalid value for scan mode: " + yamlName + ". Valid values are: "
         + Arrays.stream(STOYamlScanMode.values()).map(Enum::toString).collect(Collectors.joining(", ")));
   }
 

@@ -176,12 +176,9 @@ public final class STOSettingsUtils {
     Map<String, String> map = new HashMap<>();
 
     if (authData != null) {
-      String authType = null;
-      if (authData.getType() != null) {
-        authType = (String) authData.getType().fetchFinalValue();
-        authType = STOYamlAuthType.getValue(authType).getYamlName();
-      }
-      map.put(getSTOKey("product_auth_type"), authType != null ? authType : STOYamlAuthType.API_KEY.toString());
+      STOYamlAuthType authType = authData.getType();
+      map.put(
+          getSTOKey("product_auth_type"), authType != null ? authType.toString() : STOYamlAuthType.API_KEY.toString());
 
       Boolean authSsl = resolveBooleanParameter(authData.getSsl(), Boolean.TRUE);
 
@@ -214,10 +211,9 @@ public final class STOSettingsUtils {
       Boolean sbomGenerate = resolveBooleanParameter(sbom.getGenerate(), Boolean.FALSE);
       map.put(getSTOKey("generate_sbom"), String.valueOf(sbomGenerate));
 
-      String sbomFormat = (String) sbom.getFormat().fetchFinalValue();
-      sbomFormat = STOYamlSBOMFormat.getValue(sbomFormat).toString();
-
-      map.put(getSTOKey("sbom_type"), sbomFormat != null ? sbomFormat : STOYamlSBOMFormat.SPDX_JSON.toString());
+      STOYamlSBOMFormat sbomFormat = sbom.getFormat();
+      map.put(
+          getSTOKey("sbom_type"), sbomFormat != null ? sbomFormat.toString() : STOYamlSBOMFormat.SPDX_JSON.toString());
     }
     return map;
   }
@@ -226,13 +222,9 @@ public final class STOSettingsUtils {
     Map<String, String> map = new HashMap<>();
 
     if (imageData != null) {
-      String imageType = null;
-      if (imageData.getType() != null) {
-        imageType = (String) imageData.getType().fetchFinalValue();
-        imageType = STOYamlImageType.getValue(imageType).toString();
-      }
-
-      map.put(getSTOKey("container_type"), imageType != null ? imageType : STOYamlImageType.DOCKER_V2.toString());
+      STOYamlImageType imageType = imageData.getType();
+      map.put(getSTOKey("container_type"),
+          imageType != null ? imageType.getYamlName() : STOYamlImageType.DOCKER_V2.toString());
       map.put(getSTOKey("container_domain"),
           resolveStringParameter("image.domain", stepType, identifier, imageData.getDomain(), false));
       map.put(getSTOKey("container_region"),
@@ -320,19 +312,14 @@ public final class STOSettingsUtils {
     }
 
     STOYamlLog logData = advancedSettings.getLog();
-    String logLevel = null;
 
     if (logData != null) {
       STOYamlLogSerializer logSerializer = logData.getSerializer();
       map.put(getSTOKey("log_serializer"),
           logSerializer != null ? logSerializer.getYamlName() : STOYamlLogSerializer.SIMPLE_ONPREM.getYamlName());
-
-      if (logData.getLevel() != null) {
-        logLevel = (String) logData.getLevel().fetchFinalValue();
-      }
+      STOYamlLogLevel logLevel = logData.getLevel();
+      map.put(getSTOKey("log_level"), logLevel != null ? logLevel.toString() : STOYamlLogLevel.DEBUG.toString());
     }
-    map.put(getSTOKey("log_level"),
-        logLevel != null ? STOYamlLogLevel.getValue(logLevel).toString() : STOYamlLogLevel.DEBUG.toString());
 
     STOYamlArgs argsData = advancedSettings.getArgs();
     if (argsData != null) {
@@ -342,13 +329,9 @@ public final class STOSettingsUtils {
           resolveStringParameter("args.passthrough", stepType, identifier, argsData.getPassthrough(), false));
     }
 
-    String failOnSeverity = null;
-    if (advancedSettings.getFailOnSeverity() != null) {
-      failOnSeverity = (String) advancedSettings.getFailOnSeverity().fetchFinalValue();
-    }
+    STOYamlFailOnSeverity failOnSeverity = advancedSettings.getFailOnSeverity();
     map.put(getSTOKey("fail_on_severity"),
-        failOnSeverity != null ? STOYamlFailOnSeverity.getValue(failOnSeverity).toString()
-                               : STOYamlFailOnSeverity.NONE.toString());
+        failOnSeverity != null ? failOnSeverity.getYamlName() : STOYamlFailOnSeverity.NONE.getYamlName());
     map.put(getSTOKey("include_raw"),
         String.valueOf(resolveBooleanParameter(advancedSettings.getIncludeRaw(), Boolean.TRUE)));
 
@@ -719,13 +702,9 @@ public final class STOSettingsUtils {
     map.put(getSTOKey("product_name"), stepInfo.getProductName());
     map.put(getSTOKey("product_config_name"), getProductConfigName(stepInfo));
 
-    String mode = null;
-    if (stepInfo.getMode() != null) {
-      mode = (String) stepInfo.getMode().fetchFinalValue();
-      mode = STOYamlScanMode.getValue(mode).getPluginName();
-    }
-
-    map.put(getSTOKey("policy_type"), mode != null ? mode : STOYamlScanMode.ORCHESTRATION.getPluginName());
+    STOYamlScanMode mode = stepInfo.getMode();
+    map.put(
+        getSTOKey("policy_type"), mode != null ? mode.getPluginName() : STOYamlScanMode.ORCHESTRATION.getPluginName());
     map.putAll(processSTOTargetFields(stepInfo.getTarget(), stepType, identifier));
     map.putAll(processSTOAdvancedSettings(stepInfo.getAdvanced(), stepType, identifier));
     map.putAll(processSTOIngestionFields(stepInfo.getIngestion(), stepType, identifier));

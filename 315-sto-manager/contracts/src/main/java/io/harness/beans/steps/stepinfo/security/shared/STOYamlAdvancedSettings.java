@@ -43,4 +43,16 @@ public class STOYamlAdvancedSettings {
   @YamlSchemaTypes(value = {expression})
   @ApiModelProperty(dataType = "io.harness.yaml.sto.variables.STOYamlFailOnSeverity", name = "fail_on_severity")
   private ParameterField<STOYamlFailOnSeverity> failOnSeverity;
+
+  public STOYamlFailOnSeverity getFailOnSeverity() {
+    if (failOnSeverity == null) {
+      return null;
+    }
+    if (failOnSeverity.fetchFinalValue() instanceof String) {
+      String severity = (String) failOnSeverity.fetchFinalValue();
+      return STOYamlFailOnSeverity.getValue(severity);
+    } else {
+      return (STOYamlFailOnSeverity) failOnSeverity.fetchFinalValue();
+    }
+  }
 }
