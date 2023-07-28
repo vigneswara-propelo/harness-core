@@ -164,8 +164,8 @@ public interface NGLdapResource {
   @PUT
   @Path("/sync-groups")
   @Hidden
-  @ApiOperation(value = "Sync Ldap groups within an account", nickname = "syncLdapGroups")
-  @Operation(operationId = "syncLdapGroups", summary = "Triggers Ldap groups sync based on linked SSO groups",
+  @ApiOperation(value = "Sync Ldap groups within an account", nickname = "syncLdapGroupsV2")
+  @Operation(operationId = "syncLdapGroupsV2", summary = "Triggers Ldap groups sync based on linked SSO groups",
       description = "Returns Boolean status whether Ldap groups sync got triggered on not.",
       responses =
       {
