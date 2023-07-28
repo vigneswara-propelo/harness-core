@@ -824,6 +824,7 @@ public enum FeatureName {
   WF_VAR_MULTI_SELECT_ALLOWED_VALUES,
   WHITELIST_GRAPHQL,
   WHITELIST_PUBLIC_API,
+  SPG_TRIPLE_TIMEOUT_FOR_ZIP_YAML_UPSERT("This makes timeout for upsert yaml entities zip file to be 90 seconds", SPG),
   WINRM_ASG_ROLLBACK("Used for Collect remaining instances rollback step", HarnessTeam.CDP),
   WINRM_COPY_CONFIG_OPTIMIZE,
   WINRM_KERBEROS_CACHE_UNIQUE_FILE,
