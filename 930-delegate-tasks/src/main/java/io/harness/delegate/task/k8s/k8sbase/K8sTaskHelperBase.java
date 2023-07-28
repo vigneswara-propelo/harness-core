@@ -84,6 +84,7 @@ import io.harness.connector.ConnectorValidationResult;
 import io.harness.connector.helper.GitApiAccessDecryptionHelper;
 import io.harness.connector.service.git.NGGitService;
 import io.harness.connector.task.git.GitDecryptionHelper;
+import io.harness.connector.task.git.ScmConnectorMapperDelegate;
 import io.harness.container.ContainerInfo;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.connector.CEFeatures;
@@ -316,6 +317,7 @@ public class K8sTaskHelperBase {
   @Inject private CustomManifestFetchTaskHelper customManifestFetchTaskHelper;
   @Inject private K8sReleaseHandlerFactory releaseHandlerFactory;
   @Inject private K8sTaskManifestValidator k8sTaskManifestValidator;
+  @Inject private ScmConnectorMapperDelegate scmConnectorMapperDelegate;
 
   private DelegateExpressionEvaluator delegateExpressionEvaluator = new DelegateExpressionEvaluator();
 
@@ -2744,7 +2746,8 @@ public class K8sTaskHelperBase {
 
         scmFetchFilesHelper.downloadFilesUsingScm(manifestFilesDirectory, gitStoreDelegateConfig, executionLogCallback);
       } else {
-        GitConfigDTO gitConfigDTO = ScmConnectorMapper.toGitConfigDTO(gitStoreDelegateConfig.getGitConfigDTO());
+        GitConfigDTO gitConfigDTO = scmConnectorMapperDelegate.toGitConfigDTO(
+            gitStoreDelegateConfig.getGitConfigDTO(), gitStoreDelegateConfig.getEncryptedDataDetails());
         gitDecryptionHelper.decryptGitConfig(gitConfigDTO, gitStoreDelegateConfig.getEncryptedDataDetails());
         SshSessionConfig sshSessionConfig = gitDecryptionHelper.getSSHSessionConfig(
             gitStoreDelegateConfig.getSshKeySpecDTO(), gitStoreDelegateConfig.getEncryptedDataDetails());
