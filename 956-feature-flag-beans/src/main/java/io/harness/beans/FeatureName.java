@@ -116,6 +116,12 @@ public enum FeatureName {
       "This flag controls if you want Custom Stage execution data saved in mongodb and eventually synced to timescale",
       HarnessTeam.CDP),
   CDS_DEBEZIUM_ENABLED_CG("This flag is enable sync using debezium in cg", HarnessTeam.CDC, Scope.GLOBAL),
+  CDS_DISABLE_FABRIC8_CG(
+      "Enabling this FF switches the user to kubernetes java client instead of deprecated fabric8 client in CG.",
+      HarnessTeam.CDP),
+  CDS_DISABLE_FABRIC8_NG(
+      "Enabling this FF switches the user to kubernetes java client instead of deprecated fabric8 client in NG.",
+      HarnessTeam.CDP),
   CDS_ENABLE_TRIGGER_YAML_VALIDATION("Enables trigger yaml validation", HarnessTeam.SPG),
   CDS_ENCRYPT_TERRAFORM_APPLY_JSON_OUTPUT(
       "FF for providing the terraform apply json output as a secret", HarnessTeam.CDP),
