@@ -19,6 +19,7 @@ import static io.harness.springdata.PersistenceUtils.DEFAULT_RETRY_POLICY;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import io.harness.accesscontrol.NGAccessDeniedException;
 import io.harness.accesscontrol.acl.api.Resource;
 import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.accesscontrol.clients.AccessControlClient;
@@ -28,6 +29,7 @@ import io.harness.beans.Scope;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.WingsException;
 import io.harness.ng.accesscontrol.PlatformResourceTypes;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.AccountOrgProjectValidator;
@@ -325,8 +327,9 @@ public class ApiKeyServiceImpl implements ApiKeyService {
           throw new InvalidArgumentsException("No user identifier present in context");
         }
         if (!userId.get().equals(parentIdentifier)) {
-          throw new InvalidArgumentsException(String.format(
-              "User [%s] not authenticated to create or list api key for user [%s]", userId.get(), parentIdentifier));
+          throw new NGAccessDeniedException(String.format("User [%s] not authenticated to create api key for user [%s]",
+                                                userId.get(), parentIdentifier),
+              WingsException.USER, null);
         }
         Optional<UserInfo> userInfo = ngUserService.getUserById(userId.get());
         if (userInfo.isEmpty()) {
@@ -340,8 +343,10 @@ public class ApiKeyServiceImpl implements ApiKeyService {
                    .filter(account -> account.getUuid().equals(accountIdentifier))
                    .findFirst()
                    .isEmpty()) {
-          throw new InvalidArgumentsException(String.format(
-              "User [%s] is not authorized to create ApiKey for account: [%s]", userId.get(), accountIdentifier));
+          throw new NGAccessDeniedException(
+              String.format(
+                  "User [%s] is not authorized to create ApiKey for account: [%s]", userId.get(), accountIdentifier),
+              WingsException.USER, null);
         }
 
         break;
