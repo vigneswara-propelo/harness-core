@@ -157,10 +157,6 @@ public abstract class PmsAbstractRedisConsumer<T extends PmsAbstractMessageListe
       if (isProcessed) {
         log.warn(String.format("Duplicate redis notification received to consumer [%s] with messageId [%s]",
             this.getClass().getSimpleName(), message.getId()));
-        Integer count = eventsCache.get(key);
-        if (count != null) {
-          eventsCache.put(String.format(CACHE_KEY, this.getClass().getSimpleName(), message.getId()), count + 1);
-        }
       }
       return isProcessed;
     } catch (Exception ex) {
