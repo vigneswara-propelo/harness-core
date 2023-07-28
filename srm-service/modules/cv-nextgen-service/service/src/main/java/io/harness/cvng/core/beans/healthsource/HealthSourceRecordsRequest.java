@@ -31,12 +31,13 @@ public class HealthSourceRecordsRequest {
   QueryParamsDTO healthSourceQueryParams = QueryParamsDTO.builder().build();
   HealthSourceParamsDTO healthSourceParams = HealthSourceParamsDTO.builder().build();
 
-  List<DataSourceType> skipQueryValidationDataSourceTypes = List.of(DataSourceType.AZURE_METRICS);
+  List<MonitoredServiceDataSourceType> skipQueryValidationDataSourceTypes =
+      List.of(MonitoredServiceDataSourceType.AZURE_METRICS);
   public void validate() {
     if (providerType == null && healthSourceType == null) {
       throw new BadRequestException("datasourceType cannot be inferred from request:" + healthSourceType);
     }
-    if (isEmpty(query) && !skipQueryValidationDataSourceTypes.contains(providerType)) {
+    if (isEmpty(query) && healthSourceType != null && !skipQueryValidationDataSourceTypes.contains(healthSourceType)) {
       throw new InvalidRequestException("Query is required");
     }
   }
