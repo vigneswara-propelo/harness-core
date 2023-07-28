@@ -6,6 +6,7 @@
  */
 
 package io.harness.cdng.provision.terraform;
+
 import static io.harness.beans.FeatureName.CDS_NOT_ALLOW_READ_ONLY_SECRET_MANAGER_TERRAFORM_TERRAGRUNT_PLAN;
 import static io.harness.beans.FeatureName.CDS_TERRAFORM_TERRAGRUNT_PLAN_ENCRYPTION_ON_MANAGER_NG;
 import static io.harness.cdng.manifest.yaml.harness.HarnessStoreConstants.HARNESS_STORE_TYPE;
@@ -323,8 +324,6 @@ public class TerraformStepHelper {
     SSHKeySpecDTO sshKeySpecDTO =
         gitConfigAuthenticationInfoHelper.getSSHKey(gitConfigDTO, AmbianceUtils.getAccountId(ambiance),
             AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance));
-    List<EncryptedDataDetail> encryptedDataDetails =
-        gitConfigAuthenticationInfoHelper.getEncryptedDataDetails(gitConfigDTO, sshKeySpecDTO, basicNGAccessObject);
     String repoName = gitStoreConfig.getRepoName() != null ? gitStoreConfig.getRepoName().getValue() : null;
     if (gitConfigDTO.getGitConnectionType() == GitConnectionType.ACCOUNT) {
       String repoUrl = getGitRepoUrl(gitConfigDTO, repoName);
@@ -337,8 +336,12 @@ public class TerraformStepHelper {
     } else {
       paths.addAll(getParameterFieldValue(gitStoreConfig.getPaths()));
     }
+    ScmConnector scmConnector = cdStepHelper.getScmConnector(
+        (ScmConnector) connectorDTO.getConnectorConfig(), basicNGAccessObject.getAccountIdentifier());
+    List<EncryptedDataDetail> encryptedDataDetails =
+        gitConfigAuthenticationInfoHelper.getEncryptedDataDetails(scmConnector, sshKeySpecDTO, basicNGAccessObject);
     GitStoreDelegateConfig gitStoreDelegateConfig = GitStoreDelegateConfig.builder()
-                                                        .gitConfigDTO(gitConfigDTO)
+                                                        .gitConfigDTO(scmConnector)
                                                         .sshKeySpecDTO(sshKeySpecDTO)
                                                         .encryptedDataDetails(encryptedDataDetails)
                                                         .fetchType(gitStoreConfig.getGitFetchType())
