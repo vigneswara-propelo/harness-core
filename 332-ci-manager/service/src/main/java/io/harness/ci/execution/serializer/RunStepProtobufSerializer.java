@@ -70,8 +70,8 @@ public class RunStepProtobufSerializer implements ProtobufStepSerializer<RunStep
     NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
     if (ambiance.hasMetadata() && ambiance.getMetadata().getIsDebug()
         && featureFlagService.isEnabled(FeatureName.CI_REMOTE_DEBUG, accountId)) {
-      command =
-          SerializerUtils.getK8sDebugCommand(accountId, ciExecutionServiceConfig.getRemoteDebugTimeout(), runStepInfo)
+      command = SerializerUtils.getK8sDebugCommand(accountId, ciExecutionServiceConfig.getRemoteDebugTimeout(),
+                    runStepInfo, ciExecutionServiceConfig.getTmateEndpoint())
           + System.lineSeparator()
           + RunTimeInputHandler.resolveStringParameter("Command", "Run", identifier, runStepInfo.getCommand(), true);
     } else {

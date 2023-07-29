@@ -102,7 +102,7 @@ public class VmRunStepSerializer {
       command = earlyExitCommand + System.lineSeparator()
           + SerializerUtils.getVmDebugCommand(ngAccess.getAccountIdentifier(),
               ciExecutionServiceConfig.getRemoteDebugTimeout(), runStepInfo, stageInfraDetails,
-              envVars.get("TMATE_PATH"))
+              envVars.get("TMATE_PATH"), ciExecutionServiceConfig.getTmateEndpoint())
           + System.lineSeparator() + command;
     } else {
       command = earlyExitCommand + command;

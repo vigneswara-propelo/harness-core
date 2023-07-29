@@ -183,6 +183,7 @@ ciExecutionServiceConfig:
   liteEngineImage: harness/ci-lite-engine:1.16.22
   isLocal: false
   remoteDebugTimeout: 3600
+  tmateEndpoint: ${TMATE_ENDPOINT:-"ssh.harness.io"}
   cacheIntelligenceConfig:
     bucket: "gcp_bucket"
     serviceKey: "gcp_service_key"
