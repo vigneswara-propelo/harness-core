@@ -216,6 +216,8 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
         cvngLogTags.add(CVNGTaskMetadataUtils.getCvngLogTag(
             CVNGTaskMetadataConstants.RETRY_COUNT, String.valueOf(dataCollectionTask.getRetryCount())));
       }
+      cvngLogTags.add(CVNGTaskMetadataUtils.getCvngLogTag(
+          CVNGTaskMetadataConstants.TASK_TYPE, String.valueOf(dataCollectionTask.getType())));
       if (dataCollectionTask.getFirstPickedAt() != null) {
         cvngLogTags.addAll(CVNGTaskMetadataUtils.getTaskDurationTags(
             CVNGTaskMetadataUtils.DurationType.WAIT_DURATION, dataCollectionTask.waitTime()));
