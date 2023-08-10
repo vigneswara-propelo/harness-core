@@ -12,6 +12,7 @@ import io.harness.cvng.analysis.entities.SRMAnalysisStepDetailDTO;
 import io.harness.cvng.analysis.entities.SRMAnalysisStepExecutionDetail;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
+import io.harness.cvng.servicelevelobjective.beans.secondaryevents.SecondaryEventsResponse;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -35,6 +36,9 @@ public interface SRMAnalysisStepService {
   void completeSrmAnalysisStep(SRMAnalysisStepExecutionDetail stepExecutionDetail);
 
   SRMAnalysisStepDetailDTO getSRMAnalysisSummary(String executionDetailId);
+
+  List<SecondaryEventsResponse> getSRMAnalysisStepExecutions(
+      ProjectParams projectParams, String monitoredServiceIdentifier, long startTime, long endTime);
 
   void handleReportNotification(SRMAnalysisStepExecutionDetail stepExecutionDetail);
 
