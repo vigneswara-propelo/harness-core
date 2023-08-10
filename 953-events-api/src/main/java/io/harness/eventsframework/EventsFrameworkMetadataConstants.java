@@ -117,4 +117,5 @@ public final class EventsFrameworkMetadataConstants {
   public static final String DEPLOYMENT_SUMMARY_NG = "deploymentSummaryNG";
   public static final String DEPLOYMENT_ACCOUNTS = "DeploymentAccounts";
   public static final String INSTANCE_DEPLOYMENT_INFO = "instanceDeploymentInfo";
+  public static final String INSTANCE_NG = "instanceNG";
 }
