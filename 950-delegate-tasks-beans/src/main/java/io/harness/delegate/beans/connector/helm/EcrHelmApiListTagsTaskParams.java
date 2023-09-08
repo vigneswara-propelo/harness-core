@@ -13,6 +13,8 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.delegate.beans.connector.ConnectorTaskParams;
+import io.harness.delegate.beans.connector.awsconnector.AwsCapabilityHelper;
+import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.task.TaskParameters;
@@ -27,16 +29,18 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @OwnedBy(HarnessTeam.CDP)
-public class OciHelmDockerApiListTagsTaskParams
+public class EcrHelmApiListTagsTaskParams
     extends ConnectorTaskParams implements TaskParameters, ExecutionCapabilityDemander {
-  OciHelmConnectorDTO ociHelmConnector;
   private List<EncryptedDataDetail> encryptionDetails;
   private String chartName;
   private int pageSize;
   private String lastTag;
+  private AwsConnectorDTO awsConnectorDTO;
+  private String region;
+  private String registryId;
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
-    return OciHelmCapabilityHelper.fetchRequiredExecutionCapabilities(ociHelmConnector, maskingEvaluator);
+    return AwsCapabilityHelper.fetchRequiredExecutionCapabilities(awsConnectorDTO, maskingEvaluator);
   }
 }
