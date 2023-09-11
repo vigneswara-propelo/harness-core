@@ -8,6 +8,10 @@
 package io.harness.ci.execution.states.ssca;
 
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameter;
+import static io.harness.beans.steps.outcome.StepArtifacts.StepArtifactsBuilder;
+import static io.harness.ssca.beans.SscaConstants.PREDICATE_TYPE;
+import static io.harness.ssca.beans.SscaConstants.SLSA_VERIFICATION;
+import static io.harness.ssca.beans.SscaConstants.SLSA_VERIFICATION_STEP_TYPE;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -28,12 +32,11 @@ import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.serializer.JsonUtils;
 import io.harness.slsa.beans.verification.source.SlsaDockerSourceSpec;
 import io.harness.slsa.beans.verification.source.SlsaVerificationSourceType;
-import io.harness.ssca.beans.SscaConstants;
 import io.harness.ssca.beans.stepinfo.SlsaVerificationStepInfo;
 
 @OwnedBy(HarnessTeam.SSCA)
 public class SlsaVerificationStep extends AbstractStepExecutable {
-  public static final StepType STEP_TYPE = SscaConstants.SLSA_VERIFICATION_STEP_TYPE;
+  public static final StepType STEP_TYPE = SLSA_VERIFICATION_STEP_TYPE;
 
   @Override
   protected void modifyStepStatus(Ambiance ambiance, StepStatus stepStatus, String stepIdentifier) {
@@ -57,10 +60,10 @@ public class SlsaVerificationStep extends AbstractStepExecutable {
       predicate = JsonUtils.asObject(provenanceMetaData.getProvenance(), ProvenancePredicate.class);
     }
 
-    StepArtifacts.StepArtifactsBuilder stepArtifactsBuilder = StepArtifacts.builder();
+    StepArtifactsBuilder stepArtifactsBuilder = StepArtifacts.builder();
 
     stepArtifactsBuilder.provenanceArtifact(
-        ProvenanceArtifact.builder().predicateType(SscaConstants.PREDICATE_TYPE).predicate(predicate).build());
+        ProvenanceArtifact.builder().predicateType(PREDICATE_TYPE).predicate(predicate).build());
 
     SlsaVerificationStepInfo slsaVerificationStepInfo = (SlsaVerificationStepInfo) stepParameters.getSpec();
     if (slsaVerificationStepInfo != null && slsaVerificationStepInfo.getSource() != null
@@ -68,9 +71,8 @@ public class SlsaVerificationStep extends AbstractStepExecutable {
       String identifier = stepParameters.getIdentifier();
       SlsaDockerSourceSpec slsaDockerSourceSpec = (SlsaDockerSourceSpec) slsaVerificationStepInfo.getSource().getSpec();
       String imageName = resolveStringParameter(
-          "image_path", SscaConstants.SLSA_VERIFICATION, identifier, slsaDockerSourceSpec.getImage_path(), true);
-      String tag = resolveStringParameter(
-          "tag", SscaConstants.SLSA_VERIFICATION, identifier, slsaDockerSourceSpec.getTag(), true);
+          "image_path", SLSA_VERIFICATION, identifier, slsaDockerSourceSpec.getImage_path(), true);
+      String tag = resolveStringParameter("tag", SLSA_VERIFICATION, identifier, slsaDockerSourceSpec.getTag(), true);
 
       stepArtifactsBuilder.publishedImageArtifact(
           PublishedImageArtifact.builder().imageName(imageName).tag(tag).build());
