@@ -4,20 +4,19 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
-
 package io.harness.beans.provenance;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import java.util.List;
-import lombok.Data;
+import lombok.Value;
 
-@Data
-@lombok.Builder
+@Value
 @OwnedBy(HarnessTeam.SSCA)
-public class RunDetails {
-  private ProvenanceBuilder builder;
-  private RunDetailsMetadata runDetailsMetadata;
-  private List<ResourceDescriptor> byproducts;
+public class CodeMetadata {
+  private String repositoryURL;
+  private String branch;
+  private String PRNumber;
+  private String tag;
+  private String commitSha;
 }

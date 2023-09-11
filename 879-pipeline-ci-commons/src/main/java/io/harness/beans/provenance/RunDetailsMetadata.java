@@ -10,14 +10,14 @@ package io.harness.beans.provenance;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@lombok.Builder
+@Builder
 @OwnedBy(HarnessTeam.SSCA)
-public class RunDetails {
-  private ProvenanceBuilder builder;
-  private RunDetailsMetadata runDetailsMetadata;
-  private List<ResourceDescriptor> byproducts;
+public class RunDetailsMetadata {
+  private String invocationId;
+  private String startedOn;
+  private String finishedOn;
 }
