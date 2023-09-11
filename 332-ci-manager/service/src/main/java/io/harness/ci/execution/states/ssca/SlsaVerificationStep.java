@@ -44,11 +44,15 @@ public class SlsaVerificationStep extends AbstractStepExecutable {
     String outputKey = "SLSA_PROVENANCE_" + stepExecutionId;
     StepMapOutput stepOutput = (StepMapOutput) stepStatus.getOutput();
 
-    stepStatus.setArtifactMetadata(
-        ArtifactMetadata.builder()
-            .type(ArtifactMetadataType.PROVENANCE_ARTIFACT_METADATA)
-            .spec(ProvenanceMetaData.builder().provenance(stepOutput.getMap().get(outputKey)).build())
-            .build());
+    if (stepOutput != null && stepOutput.getMap() != null) {
+      stepStatus.setArtifactMetadata(
+          ArtifactMetadata.builder()
+              .type(ArtifactMetadataType.PROVENANCE_ARTIFACT_METADATA)
+              .spec(ProvenanceMetaData.builder().provenance(stepOutput.getMap().get(outputKey)).build())
+              .build());
+
+      stepOutput.getMap().remove(outputKey);
+    }
   }
 
   @Override
