@@ -1,31 +1,28 @@
 /*
- * Copyright 2021 Harness Inc. All rights reserved.
+ * Copyright 2023 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.app;
+package io.harness.app.impl;
 
-import static io.harness.authorization.AuthorizationServiceHeader.ACCESS_CONTROL_SERVICE;
 import static io.harness.eventsframework.EventsFrameworkConstants.DEFAULT_MAX_PROCESSING_TIME;
 import static io.harness.eventsframework.EventsFrameworkConstants.DEFAULT_READ_BATCH_SIZE;
-import static io.harness.eventsframework.EventsFrameworkConstants.ENTITY_CRUD;
 import static io.harness.eventsframework.EventsFrameworkConstants.OBSERVER_EVENT_CHANNEL;
-import static io.harness.eventsframework.EventsFrameworkMetadataConstants.ACCOUNT_ENTITY;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.DELEGATE_ENTITY;
-import static io.harness.lock.DistributedLockImplementation.REDIS;
-import static io.harness.outbox.OutboxSDKConstants.DEFAULT_OUTBOX_POLL_CONFIGURATION;
+import static io.harness.lock.DistributedLockImplementation.MONGO;
 import static io.harness.pms.listener.NgOrchestrationNotifyEventListenerNonVersioned.NG_ORCHESTRATION;
+
+import static org.mockito.Mockito.mock;
 
 import io.harness.AccessControlClientModule;
 import io.harness.account.AccountClientModule;
-import io.harness.annotations.dev.CodePulse;
-import io.harness.annotations.dev.HarnessModuleComponent;
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.ProductModule;
-import io.harness.app.impl.CIYamlSchemaServiceImpl;
+import io.harness.app.CICacheRegistrar;
+import io.harness.app.CIManagerApplication;
+import io.harness.app.CIManagerConfiguration;
+import io.harness.app.CIManagerConfigurationOverride;
+import io.harness.app.PrimaryVersionManagerModule;
 import io.harness.authorization.AuthorizationServiceHeader;
 import io.harness.aws.AwsClient;
 import io.harness.aws.AwsClientImpl;
@@ -40,8 +37,6 @@ import io.harness.ci.cache.CICacheManagementService;
 import io.harness.ci.cache.CICacheManagementServiceImpl;
 import io.harness.ci.enforcement.CIBuildEnforcer;
 import io.harness.ci.enforcement.CIBuildEnforcerImpl;
-import io.harness.ci.event.AccountEntityListener;
-import io.harness.ci.execution.buildstate.SecretDecryptorViaNg;
 import io.harness.ci.execution.execution.DelegateTaskEventListener;
 import io.harness.ci.execution.queue.CIInitTaskMessageProcessor;
 import io.harness.ci.execution.queue.CIInitTaskMessageProcessorImpl;
@@ -51,7 +46,6 @@ import io.harness.ci.execution.validation.CIYAMLSanitizationService;
 import io.harness.ci.execution.validation.CIYAMLSanitizationServiceImpl;
 import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.ci.ff.impl.CIFeatureFlagServiceImpl;
-import io.harness.ci.licensing.CILicenseUsageImpl;
 import io.harness.ci.logserviceclient.CILogServiceClientModule;
 import io.harness.ci.plugin.CiPluginStepInfoProvider;
 import io.harness.ci.tiserviceclient.TIServiceClientModule;
@@ -63,13 +57,11 @@ import io.harness.cistatus.service.bitbucket.BitbucketService;
 import io.harness.cistatus.service.bitbucket.BitbucketServiceImpl;
 import io.harness.cistatus.service.gitlab.GitlabService;
 import io.harness.cistatus.service.gitlab.GitlabServiceImpl;
-import io.harness.code.CodeResourceClientModule;
+import io.harness.code.CodeResourceClient;
 import io.harness.concurrent.HTimeLimiter;
 import io.harness.connector.ConnectorResourceClientModule;
 import io.harness.core.ci.dashboard.BuildNumberService;
 import io.harness.core.ci.dashboard.BuildNumberServiceImpl;
-import io.harness.core.ci.dashboard.CIOverviewDashboardService;
-import io.harness.core.ci.dashboard.CIOverviewDashboardServiceImpl;
 import io.harness.enforcement.client.EnforcementClientModule;
 import io.harness.entitysetupusageclient.EntitySetupUsageClientModule;
 import io.harness.eventsframework.EventsFrameworkConstants;
@@ -87,14 +79,12 @@ import io.harness.grpc.client.ManagerGrpcClientModule;
 import io.harness.iacmserviceclient.IACMServiceClientModule;
 import io.harness.impl.scm.ScmServiceClientImpl;
 import io.harness.licensing.remote.NgLicenseHttpClientModule;
-import io.harness.licensing.usage.interfaces.LicenseUsageInterface;
 import io.harness.lock.DistributedLockImplementation;
 import io.harness.lock.PersistentLockModule;
 import io.harness.manage.ManagedScheduledExecutorService;
 import io.harness.mongo.MongoPersistence;
 import io.harness.ng.core.event.MessageListener;
 import io.harness.opaclient.OpaClientModule;
-import io.harness.outbox.TransactionOutboxModule;
 import io.harness.persistence.HPersistence;
 import io.harness.pms.sdk.core.plugin.PluginInfoProvider;
 import io.harness.pms.sdk.core.waiter.AsyncWaitEngine;
@@ -113,8 +103,6 @@ import io.harness.telemetry.AbstractTelemetryModule;
 import io.harness.telemetry.TelemetryConfiguration;
 import io.harness.threading.ThreadPool;
 import io.harness.timescaledb.TimeScaleDBConfig;
-import io.harness.timescaledb.TimeScaleDBService;
-import io.harness.timescaledb.TimeScaleDBServiceImpl;
 import io.harness.token.TokenClientModule;
 import io.harness.user.UserClientModule;
 import io.harness.version.VersionInfoManager;
@@ -147,18 +135,13 @@ import java.util.function.Supplier;
 import javax.cache.Cache;
 import javax.cache.expiry.AccessedExpiryPolicy;
 import javax.cache.expiry.Duration;
-import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 
-@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
-    components = {HarnessModuleComponent.CDS_COMMON_STEPS, HarnessModuleComponent.CDS_PIPELINE})
-@Slf4j
-@OwnedBy(HarnessTeam.PIPELINE)
-public class CIManagerServiceModule extends AbstractModule {
+public class CIManagerServiceTestModule extends AbstractModule {
   private final CIManagerConfiguration ciManagerConfiguration;
   protected final CIManagerConfigurationOverride configurationOverride;
 
-  public CIManagerServiceModule(
+  public CIManagerServiceTestModule(
       CIManagerConfiguration ciManagerConfiguration, CIManagerConfigurationOverride configurationOverride) {
     this.ciManagerConfiguration = ciManagerConfiguration;
     this.configurationOverride = configurationOverride;
@@ -186,7 +169,6 @@ public class CIManagerServiceModule extends AbstractModule {
 
   private DelegateCallbackToken getDelegateCallbackToken(
       DelegateServiceGrpcClient delegateServiceClient, CIManagerConfiguration appConfig) {
-    log.info("Generating Delegate callback token");
     String overrideMongoUri = configurationOverride.getMongoUri();
     final DelegateCallbackToken delegateCallbackToken = delegateServiceClient.registerCallback(
         DelegateCallback.newBuilder()
@@ -196,7 +178,6 @@ public class CIManagerServiceModule extends AbstractModule {
                                                                             : overrideMongoUri)
                                   .build())
             .build());
-    log.info("Delegate callback token generated =[{}]", delegateCallbackToken.getToken());
     return delegateCallbackToken;
   }
 
@@ -232,6 +213,7 @@ public class CIManagerServiceModule extends AbstractModule {
   public AsyncWaitEngine asyncWaitEngineQueue(WaitNotifyEngine waitNotifyEngine) {
     return new AsyncWaitEngineImpl(waitNotifyEngine, NG_ORCHESTRATION);
   }
+
   @Provides
   @Singleton
   public TimeLimiter timeLimiter(ExecutorService executorService) {
@@ -242,7 +224,7 @@ public class CIManagerServiceModule extends AbstractModule {
   @Singleton
   DistributedLockImplementation distributedLockImplementation() {
     return ciManagerConfiguration.getDistributedLockImplementation() == null
-        ? REDIS
+        ? MONGO
         : ciManagerConfiguration.getDistributedLockImplementation();
   }
 
@@ -252,6 +234,7 @@ public class CIManagerServiceModule extends AbstractModule {
   RedisConfig redisConfig() {
     return ciManagerConfiguration.getRedisLockConfig();
   }
+
   @Provides
   @Singleton
   @Named("ciEventsCache")
@@ -261,6 +244,7 @@ public class CIManagerServiceModule extends AbstractModule {
         AccessedExpiryPolicy.factoryOf(Duration.THIRTY_MINUTES), versionInfoManager.getVersionInfo().getBuildNo(),
         true);
   }
+
   @Override
   protected void configure() {
     if (this.configurationOverride.isUsePrimaryVersionController()) {
@@ -278,17 +262,16 @@ public class CIManagerServiceModule extends AbstractModule {
     bind(CIYamlSchemaService.class).to(CIYamlSchemaServiceImpl.class).in(Singleton.class);
     bind(CIFeatureFlagService.class).to(CIFeatureFlagServiceImpl.class).in(Singleton.class);
     bind(CILicenseService.class).to(this.configurationOverride.getLicenseClass()).in(Singleton.class);
-    bind(CIOverviewDashboardService.class).to(CIOverviewDashboardServiceImpl.class);
     bind(CICacheManagementService.class).to(CICacheManagementServiceImpl.class);
-    bind(LicenseUsageInterface.class).to(CILicenseUsageImpl.class);
     bind(ScmServiceClient.class).to(ScmServiceClientImpl.class);
     bind(GithubService.class).to(GithubServiceImpl.class);
     bind(GitlabService.class).to(GitlabServiceImpl.class);
     bind(BitbucketService.class).to(BitbucketServiceImpl.class);
     bind(AzureRepoService.class).to(AzureRepoServiceImpl.class);
-    bind(SecretDecryptor.class).to(SecretDecryptorViaNg.class);
+    bind(SecretDecryptor.class).to(io.harness.ci.execution.buildstate.SecretDecryptorViaNg.class);
     bind(CIYAMLSanitizationService.class).to(CIYAMLSanitizationServiceImpl.class).in(Singleton.class);
     bind(CIAccountValidationService.class).to(CIAccountValidationServiceImpl.class).in(Singleton.class);
+    bind(CodeResourceClient.class).toInstance(mock(CodeResourceClient.class));
     install(NgLicenseHttpClientModule.getInstance(ciManagerConfiguration.getNgManagerClientConfig(),
         ciManagerConfiguration.getNgManagerServiceSecret(), serviceId));
 
@@ -311,24 +294,12 @@ public class CIManagerServiceModule extends AbstractModule {
                 .setNameFormat("plugin-metadata-publisher-Thread-%d")
                 .setPriority(Thread.NORM_PRIORITY)
                 .build()));
-    bind(ScheduledExecutorService.class)
-        .annotatedWith(Names.named("ciDataDeleteScheduler"))
-        .toInstance(new ScheduledThreadPoolExecutor(1,
-            new ThreadFactoryBuilder()
-                .setNameFormat("ci-data-delete-Thread-%d")
-                .setPriority(Thread.NORM_PRIORITY)
-                .build()));
     bind(AwsClient.class).to(AwsClientImpl.class);
     Multibinder<PluginInfoProvider> pluginInfoProviderMultibinder =
         Multibinder.newSetBinder(binder(), new TypeLiteral<PluginInfoProvider>() {});
     pluginInfoProviderMultibinder.addBinding().to(CiPluginStepInfoProvider.class);
     registerEventListeners();
-    try {
-      bind(TimeScaleDBService.class)
-          .toConstructor(TimeScaleDBServiceImpl.class.getConstructor(TimeScaleDBConfig.class));
-    } catch (NoSuchMethodException e) {
-      log.error("TimeScaleDbServiceImpl Initialization Failed in due to missing constructor", e);
-    }
+
     if (ciManagerConfiguration.getEnableDashboardTimescale() != null
         && ciManagerConfiguration.getEnableDashboardTimescale()) {
       bind(TimeScaleDBConfig.class)
@@ -402,8 +373,6 @@ public class CIManagerServiceModule extends AbstractModule {
     install(new CILogServiceClientModule(ciManagerConfiguration.getLogServiceConfig()));
     install(UserClientModule.getInstance(
         ciManagerConfiguration.getManagerClientConfig(), ciManagerConfiguration.getManagerServiceSecret(), serviceId));
-    install(
-        new TransactionOutboxModule(DEFAULT_OUTBOX_POLL_CONFIGURATION, ACCESS_CONTROL_SERVICE.getServiceId(), false));
     install(new ProjectClientModule(ciManagerConfiguration.getNgManagerClientConfig(),
         ciManagerConfiguration.getNgManagerServiceSecret(), serviceId));
     install(new TIServiceClientModule(ciManagerConfiguration.getTiServiceConfig()));
@@ -422,10 +391,6 @@ public class CIManagerServiceModule extends AbstractModule {
       }
     });
     install(new CICacheRegistrar());
-    install(new CodeResourceClientModule(
-        ciManagerConfiguration.getCiExecutionServiceConfig().getGitnessConfig().getHttpClientConfig(),
-        ciManagerConfiguration.getCiExecutionServiceConfig().getGitnessConfig().getJwtSecret(), serviceId,
-        ClientMode.PRIVILEGED));
     if (configurationOverride.getServiceHeader() == AuthorizationServiceHeader.CI_MANAGER) {
       install(FeatureFlagModule.getInstance());
     } else {
@@ -451,17 +416,9 @@ public class CIManagerServiceModule extends AbstractModule {
           .toInstance(RedisConsumer.of(OBSERVER_EVENT_CHANNEL, serviceId, redissonClient, DEFAULT_MAX_PROCESSING_TIME,
               DEFAULT_READ_BATCH_SIZE, redisConfig.getEnvNamespace()));
 
-      bind(Consumer.class)
-          .annotatedWith(Names.named(ENTITY_CRUD))
-          .toInstance(RedisConsumer.of(ENTITY_CRUD, serviceId, redissonClient, DEFAULT_MAX_PROCESSING_TIME,
-              DEFAULT_READ_BATCH_SIZE, redisConfig.getEnvNamespace()));
-
       bind(MessageListener.class)
           .annotatedWith(Names.named(DELEGATE_ENTITY + OBSERVER_EVENT_CHANNEL))
           .to(DelegateTaskEventListener.class);
-      bind(MessageListener.class)
-          .annotatedWith(Names.named(ACCOUNT_ENTITY + ENTITY_CRUD))
-          .to(AccountEntityListener.class);
 
       bind(Producer.class)
           .annotatedWith(Names.named(orchestrationEvent))
