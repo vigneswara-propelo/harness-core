@@ -149,7 +149,7 @@ public class MonitoredServiceMigrationService extends NgMigrationService {
                                 .orgIdentifier(orgIdentifier)
                                 .versionLabel("v1")
                                 .spec(monitoredServiceEntityToMonitoredServiceMapper.getMonitoredServiceJsonNode(
-                                    cgMonitoredServiceEntity.getStepNode()))
+                                    cgMonitoredServiceEntity.getStepNode(), migrationContext))
                                 .build())
                         .build())
               .ngEntityDetail(NgEntityDetail.builder()
