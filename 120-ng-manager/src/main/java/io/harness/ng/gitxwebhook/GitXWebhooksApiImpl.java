@@ -118,7 +118,7 @@ public class GitXWebhooksApiImpl implements GitXWebhooksApi {
 
   @Override
   public Response listGitxWebhookEvents(String harnessAccount, Integer page, @Max(1000L) Integer limit,
-      String webhookIdentifier, Integer eventStartTime, Integer eventEndTime) {
-    return Response.ok().build();
+      String webhookIdentifier, Long eventStartTime, Long eventEndTime) {
+    return null;
   }
 }
