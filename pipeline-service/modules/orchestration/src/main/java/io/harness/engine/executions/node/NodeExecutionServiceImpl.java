@@ -692,12 +692,12 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   }
 
   @Override
-  public void deleteAllNodeExecutionAndMetadata(String planExecutionId) {
-    // Fetches all nodeExecutions from analytics for given planExecutionId
+  public void deleteAllNodeExecutionAndMetadata(Set<String> planExecutionIds) {
+    // Fetches all nodeExecutions from analytics for given planExecutionIds
     List<NodeExecution> batchNodeExecutionList = new LinkedList<>();
     Set<String> nodeExecutionsIdsToDelete = new HashSet<>();
     try (CloseableIterator<NodeExecution> iterator =
-             fetchNodeExecutionsFromAnalytics(planExecutionId, NodeProjectionUtils.fieldsForNodeExecutionDelete)) {
+             fetchNodeExecutionsFromAnalytics(planExecutionIds, NodeProjectionUtils.fieldsForNodeExecutionDelete)) {
       while (iterator.hasNext()) {
         NodeExecution next = iterator.next();
         nodeExecutionsIdsToDelete.add(next.getUuid());
@@ -792,6 +792,17 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
       String planExecutionId, @NotNull Set<String> fieldsToInclude) {
     // Uses - id_idx
     Query query = query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId));
+    for (String field : fieldsToInclude) {
+      query.fields().include(field);
+    }
+    return nodeExecutionReadHelper.fetchNodeExecutionsFromAnalytics(query);
+  }
+
+  @VisibleForTesting
+  CloseableIterator<NodeExecution> fetchNodeExecutionsFromAnalytics(
+      Set<String> planExecutionIds, @NotNull Set<String> fieldsToInclude) {
+    // Uses - id_idx
+    Query query = query(where(NodeExecutionKeys.planExecutionId).in(planExecutionIds));
     for (String field : fieldsToInclude) {
       query.fields().include(field);
     }

@@ -21,6 +21,7 @@ import static io.harness.rule.OwnerRule.MEET;
 import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -55,11 +56,15 @@ import com.google.protobuf.StringValue;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import org.joor.Reflect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.util.CloseableIterator;
 
@@ -78,11 +83,16 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
   @Mock private NodeExecutionService nodeExecutionService;
   @Mock private PlanExecutionService planExecutionService;
   @Mock private PlanExpansionService planExpansionService;
-  @InjectMocks PipelineEntityCRUDStreamListener pipelineEntityCRUDStreamListener;
+  @Mock private ThreadPoolExecutor pipelineExecutorService;
+  private PipelineEntityCRUDStreamListener pipelineEntityCRUDStreamListener;
 
   @Before
-  public void setUp() {
+  public void setUp() throws ExecutionException, InterruptedException {
     MockitoAnnotations.initMocks(this);
+    pipelineEntityCRUDStreamListener = Mockito.spy(new PipelineEntityCRUDStreamListener(ngTriggerService,
+        pipelineMetadataService, pmsExecutionSummaryService, barrierService, preflightService, pmsSweepingOutputService,
+        pmsOutcomeService, interruptService, graphGenerationService, nodeExecutionService, ngTriggerEventsService,
+        planExecutionService, planExpansionService, pipelineExecutorService));
   }
 
   @Test
@@ -171,6 +181,7 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
         .when(pmsExecutionSummaryService)
         .fetchPlanExecutionIdsFromAnalytics(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID);
 
+    doNothing().when(pipelineEntityCRUDStreamListener).deletePipelineExecutionsDetailsInternal(any());
     assertTrue(pipelineEntityCRUDStreamListener.handleMessage(message));
 
     // Verify pipeline metadata delete
@@ -181,7 +192,7 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
     // Execution ids call only once as empty list
     verify(pmsExecutionSummaryService, times(1)).fetchPlanExecutionIdsFromAnalytics(any(), any(), any(), any());
     // Verify execution delete calls
-    verify(barrierService, times(0)).deleteAllForGivenPlanExecutionId(any());
+    verify(pipelineEntityCRUDStreamListener, times(0)).deletePipelineExecutionsDetailsInternal(any());
   }
 
   @Test
@@ -208,7 +219,7 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
                           .build();
 
     List<PipelineExecutionSummaryEntity> executionIds = new LinkedList<>();
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 505; i++) {
       PipelineExecutionSummaryEntity entity =
           PipelineExecutionSummaryEntity.builder().planExecutionId(String.valueOf(i)).build();
       executionIds.add(entity);
@@ -220,6 +231,7 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
         .when(pmsExecutionSummaryService)
         .fetchPlanExecutionIdsFromAnalytics(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID);
 
+    doNothing().when(pipelineEntityCRUDStreamListener).deletePipelineExecutionsDetailsInternal(any());
     assertTrue(pipelineEntityCRUDStreamListener.handleMessage(message));
 
     // Verify pipeline metadata delete as its called only once
@@ -229,20 +241,43 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
 
     // Execution ids call only once as empty list
     verify(pmsExecutionSummaryService, times(1)).fetchPlanExecutionIdsFromAnalytics(any(), any(), any(), any());
+
+    verify(pipelineEntityCRUDStreamListener, times(2)).deletePipelineExecutionsDetailsInternal(any());
+  }
+
+  @Test
+  @Owner(developers = ARCHIT)
+  @Category(UnitTests.class)
+  public void testDeletePipelineExecutionsDetailsInternal() {
+    Reflect.on(pipelineEntityCRUDStreamListener).set("pipelineExecutorService", Executors.newFixedThreadPool(1));
+
+    doNothing().when(barrierService).deleteAllForGivenPlanExecutionId(any());
+    doNothing().when(pmsSweepingOutputService).deleteAllSweepingOutputInstances(any());
+    doNothing().when(pmsOutcomeService).deleteAllOutcomesInstances(any());
+    doNothing().when(interruptService).deleteAllInterrupts(any());
+    doNothing().when(graphGenerationService).deleteAllGraphMetadataForGivenExecutionIds(any());
+    doNothing().when(nodeExecutionService).deleteAllNodeExecutionAndMetadata(any());
+    doNothing().when(planExecutionService).deleteAllPlanExecutionAndMetadata(any());
+    doNothing().when(planExpansionService).deleteAllExpansions(any());
+
+    pipelineEntityCRUDStreamListener.deletePipelineExecutionsDetailsInternal(Collections.singleton("uuid1"));
+
     // Verify execution delete calls
-    verify(barrierService, times(2)).deleteAllForGivenPlanExecutionId(any());
+    verify(barrierService, times(1)).deleteAllForGivenPlanExecutionId(any());
     // Verify Delete sweepingOutput
-    verify(pmsSweepingOutputService, times(2)).deleteAllSweepingOutputInstances(any());
+    verify(pmsSweepingOutputService, times(1)).deleteAllSweepingOutputInstances(any());
     // Verify Delete outcome instances
-    verify(pmsOutcomeService, times(2)).deleteAllOutcomesInstances(any());
+    verify(pmsOutcomeService, times(1)).deleteAllOutcomesInstances(any());
     // Verify Delete all interrupts
-    verify(interruptService, times(2)).deleteAllInterrupts(any());
+    verify(interruptService, times(1)).deleteAllInterrupts(any());
     // Verify graph metadata delete
-    verify(graphGenerationService, times(2)).deleteAllGraphMetadataForGivenExecutionIds(any());
+    verify(graphGenerationService, times(1)).deleteAllGraphMetadataForGivenExecutionIds(any());
     // Verify nodeExecutions and its metadata delete
-    verify(nodeExecutionService, times(100)).deleteAllNodeExecutionAndMetadata(any());
+    verify(nodeExecutionService, times(1)).deleteAllNodeExecutionAndMetadata(any());
     // Verify planExecutions and its metadata delete
-    verify(planExecutionService, times(2)).deleteAllPlanExecutionAndMetadata(any());
+    verify(planExecutionService, times(1)).deleteAllPlanExecutionAndMetadata(any());
+    // Verify planExpansion delete
+    verify(planExpansionService, times(1)).deleteAllExpansions(any());
   }
 
   @Test
@@ -280,6 +315,7 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
     doReturn(executionsIterator)
         .when(pmsExecutionSummaryService)
         .fetchPlanExecutionIdsFromAnalytics(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID);
+    doNothing().when(pipelineEntityCRUDStreamListener).deletePipelineExecutionsDetailsInternal(any());
 
     assertTrue(pipelineEntityCRUDStreamListener.handleMessage(message));
 
@@ -290,20 +326,8 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
 
     // Execution ids call only once as empty list
     verify(pmsExecutionSummaryService, times(1)).fetchPlanExecutionIdsFromAnalytics(any(), any(), any(), any());
-    // Verify execution delete calls
-    verify(barrierService, times(1)).deleteAllForGivenPlanExecutionId(any());
-    // Verify Delete sweepingOutput
-    verify(pmsSweepingOutputService, times(1)).deleteAllSweepingOutputInstances(any());
-    // Verify Delete outcome instances
-    verify(pmsOutcomeService, times(1)).deleteAllOutcomesInstances(any());
-    // Verify Delete all interrupts
-    verify(interruptService, times(1)).deleteAllInterrupts(any());
-    // Verify graph metadata delete
-    verify(graphGenerationService, times(1)).deleteAllGraphMetadataForGivenExecutionIds(any());
-    // Verify nodeExecutions and its metadata delete
-    verify(nodeExecutionService, times(40)).deleteAllNodeExecutionAndMetadata(any());
-    // Verify planExecutions and its metadata delete
-    verify(planExecutionService, times(1)).deleteAllPlanExecutionAndMetadata(any());
+
+    verify(pipelineEntityCRUDStreamListener, times(1)).deletePipelineExecutionsDetailsInternal(any());
   }
 
   @Test
@@ -340,6 +364,7 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
     doReturn(executionsIterator)
         .when(pmsExecutionSummaryService)
         .fetchPlanExecutionIdsFromAnalytics(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID);
+    doNothing().when(pipelineEntityCRUDStreamListener).deletePipelineExecutionsDetailsInternal(any());
 
     assertTrue(pipelineEntityCRUDStreamListener.handleMessage(message));
     verify(ngTriggerEventsService, times(1)).deleteAllForPipeline(any(), any(), any(), any());

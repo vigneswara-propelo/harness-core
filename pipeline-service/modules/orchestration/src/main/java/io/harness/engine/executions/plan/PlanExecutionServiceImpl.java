@@ -249,7 +249,7 @@ public class PlanExecutionServiceImpl implements PlanExecutionService {
     try (AcquiredLock<?> lock =
              persistentLocker.waitToAcquireLockOptional(lockName, Duration.ofSeconds(10), Duration.ofSeconds(30))) {
       if (lock == null) {
-        log.debug(String.format(
+        log.warn(String.format(
             "[PLAN_EXECUTION_STATUS_UPDATE] Not able to take lock on plan status update for lockName - %s, returning early.",
             lockName));
       }

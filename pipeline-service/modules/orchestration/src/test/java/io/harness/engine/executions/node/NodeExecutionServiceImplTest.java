@@ -831,8 +831,9 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
         OrchestrationTestHelper.createCloseableIterator(nodeExecutionList.iterator());
     doReturn(iterator)
         .when(nodeExecutionService)
-        .fetchNodeExecutionsFromAnalytics("EXECUTION_1", NodeProjectionUtils.fieldsForNodeExecutionDelete);
-    nodeExecutionService.deleteAllNodeExecutionAndMetadata("EXECUTION_1");
+        .fetchNodeExecutionsFromAnalytics(
+            new HashSet<>(Arrays.asList("EXECUTION_1")), NodeProjectionUtils.fieldsForNodeExecutionDelete);
+    nodeExecutionService.deleteAllNodeExecutionAndMetadata(new HashSet<>(Arrays.asList("EXECUTION_1")));
     verify(nodeDeleteObserverSubject, times(2)).fireInform(any(), any());
 
     verify(mongoTemplateMock, times(1))
