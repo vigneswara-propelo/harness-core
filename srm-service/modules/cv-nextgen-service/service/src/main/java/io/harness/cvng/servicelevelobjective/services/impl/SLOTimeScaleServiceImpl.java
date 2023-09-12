@@ -143,7 +143,7 @@ public class SLOTimeScaleServiceImpl implements SLOTimeScaleService {
               projectParams.getProjectIdentifier()));
       upsertStatement.execute();
     } catch (Exception ex) {
-      log.error("error while upserting slo data. {}", ex);
+      log.error("error while upserting slo health indicator data. {}", ex);
     }
   }
 
@@ -189,7 +189,7 @@ public class SLOTimeScaleServiceImpl implements SLOTimeScaleService {
         insertStatement.execute();
       }
     } catch (Exception ex) {
-      log.error("error while upserting slo data. {}", ex);
+      log.error("error while upserting slo history data. {}", ex);
     }
   }
 
