@@ -3040,6 +3040,7 @@
 930012:io.harness.licensing.beans.modules.IACMModuleLicenseDTO
 930013:io.harness.licensing.beans.modules.CETModuleLicenseDTO
 954001:io.harness.pms.contracts.advisers.AdviserObtainment
+954002:io.harness.pms.contracts.plan.RetryExecutionInfo
 955000:io.harness.beans.CommitDetails
 955001:io.harness.beans.Repository
 955002:io.harness.beans.WebhookGitUser
