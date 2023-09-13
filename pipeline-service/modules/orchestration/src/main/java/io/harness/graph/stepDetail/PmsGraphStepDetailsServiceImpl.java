@@ -27,6 +27,7 @@ import io.harness.pms.data.stepdetails.PmsStepDetails;
 import io.harness.pms.data.stepparameters.PmsStepParameters;
 import io.harness.pms.serializer.recaster.RecastOrchestrationUtils;
 import io.harness.repositories.stepDetail.NodeExecutionsInfoRepository;
+import io.harness.serializer.KryoSerializer;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
+import org.bson.types.Binary;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -52,6 +54,7 @@ import org.springframework.data.mongodb.core.query.Update;
 public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsService {
   @Inject NodeExecutionsInfoRepository nodeExecutionsInfoRepository;
   @Inject @Getter private final Subject<StepDetailsUpdateObserver> stepDetailsUpdateObserverSubject = new Subject<>();
+  @Inject KryoSerializer kryoSerializer;
   @Inject private MongoTemplate mongoTemplate;
 
   @Override
@@ -81,7 +84,10 @@ public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsServic
 
   @Override
   public void addStepInputs(String nodeExecutionId, PmsStepParameters resolvedInputs) {
-    Update update = new Update().set(NodeExecutionsInfoKeys.resolvedInputs, resolvedInputs);
+    // TODO (Sahil) : This is a hack right now to serialize in binary as findAndModify is not honoring converter
+    // for maps Find a better way to do this
+    Update update = new Update().set(
+        NodeExecutionsInfoKeys.resolvedInputs, new Binary(kryoSerializer.asDeflatedBytes(resolvedInputs)));
     Criteria criteria = Criteria.where(NodeExecutionsInfoKeys.nodeExecutionId).is(nodeExecutionId);
     mongoTemplate.findAndModify(new Query(criteria), update, NodeExecutionsInfo.class);
   }
