@@ -510,7 +510,9 @@ public enum TaskType {
   AWS_ASG_BLUE_GREEN_PREPARE_ROLLBACK_DATA_TASK_NG_V2(TaskGroup.ASG, "AWS Asg Blue Green Prepare Rollback Data V2"),
   AWS_ASG_BLUE_GREEN_DEPLOY_TASK_NG_V2(TaskGroup.ASG, "AWS Asg Blue Green Deploy V2"),
   AWS_ASG_BLUE_GREEN_SWAP_SERVICE_TASK_NG_V2(TaskGroup.ASG, "AWS Asg Blue Green Swap Service V2"),
-  AWS_ASG_BLUE_GREEN_ROLLBACK_TASK_NG_V2(TaskGroup.ASG, "AWS Asg Blue Green Rollback V2");
+  AWS_ASG_BLUE_GREEN_ROLLBACK_TASK_NG_V2(TaskGroup.ASG, "AWS Asg Blue Green Rollback V2"),
+  DLITE_CI_VM_EXECUTE_TASK_V2(TaskGroup.CI, true),
+  DLITE_CI_VM_CLEANUP_TASK_V2(TaskGroup.CI, true);
 
   private final TaskGroup taskGroup;
   private final String displayName;
