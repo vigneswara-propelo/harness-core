@@ -891,7 +891,10 @@ public enum FeatureName {
   CDS_IMPROVED_HELM_DEPLOYMENT_TRACKING(
       "Feature Flag enables improved tracking for Helm deployments that use workloads label selectors to track deployed pods",
       HarnessTeam.CDP),
-  SEI_ENABLED("FF to enable SEI for harness platform users", HarnessTeam.SEI);
+  SEI_ENABLED("FF to enable SEI for harness platform users", HarnessTeam.SEI),
+  CDS_EKS_ADD_REGIONAL_PARAM(
+      "This flag adds the AWS_STS_REGIONAL_ENDPOINTS=regional environment variable for EKS infrastructure while creating the kubernetes config",
+      HarnessTeam.CDP);
   // keep-sorted end
 
   @Deprecated
