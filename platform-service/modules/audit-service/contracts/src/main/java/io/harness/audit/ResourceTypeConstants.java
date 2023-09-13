@@ -80,4 +80,8 @@ public class ResourceTypeConstants {
   public static final String CHAOS_SECURITY_GOVERNANCE = "CHAOS_SECURITY_GOVERNANCE";
   public static final String EULA = "END_USER_LICENSE_AGREEMENT";
   public static final String WORKSPACE = "WORKSPACE";
+
+  public static final String SEI_CONFIGURATION_SETTINGS = "SEI_CONFIGURATION_SETTINGS";
+  public static final String SEI_COLLECTIONS = "SEI_COLLECTIONS";
+  public static final String SEI_INSIGHTS = "SEI_INSIGHTS";
 }
