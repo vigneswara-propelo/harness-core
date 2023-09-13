@@ -13,9 +13,13 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.eventsframework.webhookpayloads.webhookdata.WebhookDTO;
+import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListRequestDTO;
+import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListResponseDTO;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_GITX})
 @OwnedBy(HarnessTeam.PIPELINE)
 public interface GitXWebhookEventService {
   void processEvent(WebhookDTO webhookDTO);
+
+  GitXEventsListResponseDTO listEvents(GitXEventsListRequestDTO gitXEventsListRequestDTO);
 }

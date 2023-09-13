@@ -5,24 +5,31 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.repositories.gitxwebhook;
+package io.harness.gitsync.gitxwebhooks.dtos;
 
-import io.harness.annotation.HarnessRepo;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.gitsync.gitxwebhooks.entity.GitXWebhookEvent;
 
-import java.util.List;
-import org.springframework.data.mongodb.core.query.Criteria;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_GITX})
-@HarnessRepo
+@Getter
+@Builder
+@AllArgsConstructor
+@ToString
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.PIPELINE)
-public interface GitXWebhookEventsRepositoryCustom {
-  GitXWebhookEvent create(GitXWebhookEvent gitXWebhookEvent);
-
-  List<GitXWebhookEvent> list(Criteria criteria);
+public class GitXEventsListRequestDTO {
+  String accountIdentifier;
+  String webhookIdentifier;
+  Long eventStartTime;
+  Long eventEndTime;
 }
