@@ -46,7 +46,7 @@
     "name": "Owner is defined and is not unknown",
     "type": "BOOLEAN",
     "dataSourceIdentifier": "catalog",
-    "outcomeExpression":  "catalog.spec.owner!=null && catalog.spec.owner!=Unknown",
+    "outcomeExpression":  "catalog.spec.owner!=null && catalog.spec.owner!=\"Unknown\"",
     "dataSourceLocationIdentifier": "catalog"
   },
   {
