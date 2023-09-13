@@ -5,30 +5,29 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.cdng.infra.beans;
+package io.harness.cdng.aws.asg;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import dev.morphia.annotations.Id;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import org.springframework.data.annotation.TypeAlias;
 
-@Data
-@Builder
-@TypeAlias("asgInfraMapping")
-@JsonTypeName("asgInfraMapping")
 @OwnedBy(CDP)
-@RecasterAlias("io.harness.cdng.infra.beans.AsgInfraMapping")
-public class AsgInfraMapping implements InfraMapping {
-  @Id private String uuid;
-  private String accountId;
-  private String awsConnector;
-  private String region;
-  private String baseAsgName;
-  private String asgName;
+@Value
+@Builder
+@JsonTypeName("CurrentRunning")
+@TypeAlias("AsgCurrentRunningInstances")
+@RecasterAlias("io.harness.cdng.aws.asg.AsgCurrentRunningInstances")
+public class AsgCurrentRunningInstances implements AsgInstancesSpec {
+  @Override
+  @JsonIgnore
+  public AsgInstancesType getType() {
+    return AsgInstancesType.CURRENT_RUNNING;
+  }
 }

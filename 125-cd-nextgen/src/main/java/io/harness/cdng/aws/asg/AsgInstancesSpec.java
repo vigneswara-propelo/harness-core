@@ -5,19 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.aws.asg.manifest;
+package io.harness.cdng.aws.asg;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.EXTERNAL_PROPERTY;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
+
 import io.harness.annotations.dev.OwnedBy;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 @OwnedBy(CDP)
-public interface AsgManifestType {
-  String AsgLaunchTemplate = "AsgLaunchTemplate";
-  String AsgConfiguration = "AsgConfiguration";
-  String AsgScalingPolicy = "AsgScalingPolicy";
-  String AsgScheduledUpdateGroupAction = "AsgScheduledUpdateGroupAction";
-  String AsgInstanceRefresh = "AsgInstanceRefresh";
-  String AsgSwapService = "AsgSwapService";
-  String AsgUserData = "userData";
+@JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
+public interface AsgInstancesSpec {
+  AsgInstancesType getType();
 }
