@@ -1281,3 +1281,4 @@ io.harness.cdng.manifest.yaml.summary.ManifestStoreInfo
 io.harness.delegate.beans.instancesync.CustomDeploymentOutcomeMetadata
 io.harness.cdng.pipeline.beans.CustomStageSpecParams
 io.harness.cdng.creator.plan.stage.CustomStageNode
+io.harness.cdng.environment.steps.CustomStageEnvironmentStepParameters
