@@ -41,9 +41,11 @@ public class SlsaVerificationStep extends AbstractStepExecutable {
   protected boolean shouldPublishArtifact(StepStatus stepStatus) {
     return true;
   }
+
   protected boolean shouldPublishOutcome(StepStatus stepStatus) {
     return true;
   }
+
   @Override
   protected void modifyStepStatus(Ambiance ambiance, StepStatus stepStatus, String stepIdentifier) {
     String stepExecutionId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
