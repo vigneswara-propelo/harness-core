@@ -30,7 +30,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @OwnedBy(HarnessTeam.IDP)
 public class GithubProvider extends DataSourceProvider {
   private static final String SOURCE_LOCATION_ANNOTATION = "backstage.io/source-location";
@@ -53,7 +55,10 @@ public class GithubProvider extends DataSourceProvider {
     Map<String, String> replaceableHeaders = new HashMap<>(authHeaders);
 
     String catalogLocation = entity.getMetadata().getAnnotations().get(SOURCE_LOCATION_ANNOTATION);
-    Map<String, String> possibleReplaceableRequestBodyPairs = prepareRequestBodyReplaceablePairs(catalogLocation);
+    Map<String, String> possibleReplaceableRequestBodyPairs = new HashMap<>();
+    if (catalogLocation != null) {
+      possibleReplaceableRequestBodyPairs = prepareRequestBodyReplaceablePairs(catalogLocation);
+    }
 
     return processOut(accountIdentifier, entity, dataPointsAndInputValues, replaceableHeaders,
         possibleReplaceableRequestBodyPairs, Collections.emptyMap());
@@ -77,10 +82,14 @@ public class GithubProvider extends DataSourceProvider {
 
     String[] catalogLocationParts = catalogLocation.split("/");
 
-    possibleReplaceableRequestBodyPairs.put(REPO_SCM, catalogLocationParts[2]);
-    possibleReplaceableRequestBodyPairs.put(REPOSITORY_OWNER, catalogLocationParts[3]);
-    possibleReplaceableRequestBodyPairs.put(REPOSITORY_NAME, catalogLocationParts[4]);
-    possibleReplaceableRequestBodyPairs.put(REPOSITORY_BRANCH, catalogLocationParts[6]);
+    try {
+      possibleReplaceableRequestBodyPairs.put(REPO_SCM, catalogLocationParts[2]);
+      possibleReplaceableRequestBodyPairs.put(REPOSITORY_OWNER, catalogLocationParts[3]);
+      possibleReplaceableRequestBodyPairs.put(REPOSITORY_NAME, catalogLocationParts[4]);
+      possibleReplaceableRequestBodyPairs.put(REPOSITORY_BRANCH, catalogLocationParts[6]);
+    } catch (ArrayIndexOutOfBoundsException e) {
+      log.error("Error occurred while reading source location annotation ", e);
+    }
 
     return possibleReplaceableRequestBodyPairs;
   }
