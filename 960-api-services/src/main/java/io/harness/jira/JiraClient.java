@@ -10,6 +10,8 @@ package io.harness.jira;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.network.Http.getOkHttpClientBuilder;
 
+import static java.util.Objects.isNull;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
@@ -24,6 +26,7 @@ import io.harness.network.SafeHttpCall;
 import io.harness.retry.RetryHelper;
 import io.harness.validation.Validator;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.github.resilience4j.retry.Retry;
 import java.util.ArrayList;
@@ -193,9 +196,39 @@ public class JiraClient {
     return getIssue(issueKey, false);
   }
 
+  public JiraIssueNG getIssue(@NotBlank String issueKey, String filterFields) {
+    return getIssue(issueKey, false, filterFields);
+  }
+
   private JiraIssueNG getIssue(@NotBlank String issueKey, boolean throwOnInvalidKey) {
     try {
       JiraIssueNG issue = executeCall(restClient.getIssue(issueKey, "names,schema"), "fetching issue");
+      if (issue != null) {
+        issue.updateJiraBaseUrl(config.getJiraUrl());
+      }
+      return issue;
+    } catch (Exception ex) {
+      if (!throwOnInvalidKey && is404StatusCode(ex)) {
+        return null;
+      }
+      throw ex;
+    }
+  }
+
+  private JiraIssueNG getIssue(@NotBlank String issueKey, boolean throwOnInvalidKey, String filterFields) {
+    try {
+      JiraIssueNG issue;
+      JsonNode issueNode = executeCall(
+          restClient.getIssueV2(issueKey, "names,schema", StringUtils.isBlank(filterFields) ? null : filterFields),
+          "fetching issue with filtered fields");
+
+      // only if filterFields is null, then fetch all the fields
+      if (isNull(filterFields)) {
+        issue = JiraIssueUtilsNG.toJiraIssueNGWithAllFieldNames(issueNode);
+      } else {
+        issue = new JiraIssueNG(issueNode);
+      }
+
       if (issue != null) {
         issue.updateJiraBaseUrl(config.getJiraUrl());
       }
