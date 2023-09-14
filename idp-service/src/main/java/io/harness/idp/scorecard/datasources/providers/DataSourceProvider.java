@@ -23,6 +23,7 @@ import io.harness.idp.scorecard.datasourcelocations.entity.DataSourceLocationEnt
 import io.harness.idp.scorecard.datasourcelocations.locations.DataSourceLocation;
 import io.harness.idp.scorecard.datasourcelocations.locations.DataSourceLocationFactory;
 import io.harness.idp.scorecard.datasourcelocations.repositories.DataSourceLocationRepository;
+import io.harness.spec.server.idp.v1.model.MergedPluginConfigs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class DataSourceProvider {
   private String identifier;
-
-  protected static final String AUTHORIZATION_HEADER = "Authorization";
 
   DataPointService dataPointService;
   DataSourceLocationFactory dataSourceLocationFactory;
@@ -58,7 +57,8 @@ public abstract class DataSourceProvider {
   public abstract Map<String, Map<String, Object>> fetchData(
       String accountIdentifier, BackstageCatalogEntity entity, Map<String, Set<String>> dataPointsAndInputValues);
 
-  protected abstract Map<String, String> getAuthHeaders(String accountIdentifier);
+  protected abstract Map<String, String> getAuthHeaders(
+      String accountIdentifier, MergedPluginConfigs mergedPluginConfigs);
 
   protected Map<String, Map<String, Object>> processOut(String accountIdentifier,
       BackstageCatalogEntity backstageCatalogEntity, Map<String, Set<String>> dataPointsAndInputValues,
