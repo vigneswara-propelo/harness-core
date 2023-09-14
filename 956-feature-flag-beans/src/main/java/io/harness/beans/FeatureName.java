@@ -452,6 +452,8 @@ public enum FeatureName {
   HOSTED_BUILDS("Used to enabled Hosted builds in paid accounts", HarnessTeam.CI),
   HTTP_HEADERS_CAPABILITY_CHECK,
   IACM_ENABLED("Enable support for IACM micro front end capabilities", HarnessTeam.IACM),
+  IACM_COST_ESTIMATION("Enable support for cost estimate in IACM", HarnessTeam.IACM),
+  IACM_OPA_WORKSPACE_GOVERNANCE("Enable support for OPA in IACM", HarnessTeam.IACM),
   IDP_DYNAMIC_SECRET_RESOLUTION("Enable dynamic resolution of secrets", HarnessTeam.IDP),
   IDP_ENABLED("This for enabling IDP on UI", HarnessTeam.IDP),
   IDP_ENABLE_EDIT_HARNESS_CI_CD_PLUGIN(
@@ -509,7 +511,6 @@ public enum FeatureName {
   OPA_FF_GOVERNANCE,
   OPA_GIT_GOVERNANCE,
   OPA_PIPELINE_GOVERNANCE,
-  IACM_OPA_WORKSPACE_GOVERNANCE,
   OPTIMIZED_GIT_FETCH_FILES,
   OPTIMIZED_TF_PLAN,
   OUTAGE_CV_DISABLE,
@@ -901,6 +902,7 @@ public enum FeatureName {
   CDS_EKS_ADD_REGIONAL_PARAM(
       "This flag adds the AWS_STS_REGIONAL_ENDPOINTS=regional environment variable for EKS infrastructure while creating the kubernetes config",
       HarnessTeam.CDP),
+  OPA_AIDA_WIDGET("FF for enabling the AIDA integration for OPA Service", HarnessTeam.OPA),
   CDS_RESOLVE_CUSTOM_TRIGGER_EXPRESSION(
       "This flag resolves expression for pipeline branch for Custom Trigger.", PIPELINE),
   PL_ALLOW_TO_SET_PUBLIC_ACCESS(
