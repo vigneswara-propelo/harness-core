@@ -903,7 +903,9 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_RESOLVE_CUSTOM_TRIGGER_EXPRESSION(
       "This flag resolves expression for pipeline branch for Custom Trigger.", PIPELINE),
-      PL_ALLOW_TO_SET_PUBLIC_ACCESS("Allows to set Public Access of Resources on Authentication page under account settings", HarnessTeam.PL);
+  PL_ALLOW_TO_SET_PUBLIC_ACCESS(
+      "Allows to set Public Access of Resources on Authentication page under account settings", HarnessTeam.PL),
+  CDS_SCOPE_INFRA_TO_SERVICES("This flag enables the scoping of Infrastructure to specific Services.", HarnessTeam.CDP);
   // keep-sorted end
 
   @Deprecated

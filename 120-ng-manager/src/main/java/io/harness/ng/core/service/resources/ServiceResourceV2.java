@@ -77,6 +77,7 @@ import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.RepoListResponseDTO;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
 import io.harness.ng.core.k8s.ServiceSpecType;
 import io.harness.ng.core.remote.utils.ScopeAccessHelper;
 import io.harness.ng.core.service.dto.ServiceRequestDTO;
@@ -153,6 +154,7 @@ import javax.ws.rs.QueryParam;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -197,6 +199,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @Slf4j
 public class ServiceResourceV2 {
   private final ServiceEntityService serviceEntityService;
+  private final InfrastructureEntityService infrastructureEntityService;
   private final AccessControlClient accessControlClient;
   private final ServiceEntityManagementService serviceEntityManagementService;
   private final OrgAndProjectValidationHelper orgAndProjectValidationHelper;
@@ -658,7 +661,8 @@ public class ServiceResourceV2 {
       @QueryParam("versionLabel") String versionLabel,
       @QueryParam("deploymentMetadataYaml") String deploymentMetaDataYaml,
       @Parameter(description = "Specify true if all accessible Services are to be included") @QueryParam(
-          "includeAllServicesAccessibleAtScope") @DefaultValue("false") boolean includeAllServicesAccessibleAtScope) {
+          "includeAllServicesAccessibleAtScope") @DefaultValue("false") boolean includeAllServicesAccessibleAtScope,
+      @QueryParam("envInfraMapping") Map<String, List<String>> envRefInfraRefsMapping) {
     accessControlClient.checkForAccessOrThrow(List.of(scopeAccessHelper.getPermissionCheckDtoForViewAccessForScope(
                                                   Scope.of(accountId, orgIdentifier, projectIdentifier))),
         "Unauthorized to list services");
@@ -689,6 +693,10 @@ public class ServiceResourceV2 {
                         .stream()
                         .map(ServiceElementMapper::toAccessListResponseWrapper)
                         .collect(Collectors.toList());
+    }
+    if (featureFlagService.isEnabled(accountId, FeatureName.CDS_SCOPE_INFRA_TO_SERVICES)) {
+      serviceList = filterByScopedInfrastructures(
+          accountId, orgIdentifier, projectIdentifier, serviceList, envRefInfraRefsMapping);
     }
     List<PermissionCheckDTO> permissionCheckDTOS =
         serviceList.stream().map(CDNGRbacUtility::serviceResponseToPermissionCheckDTO).collect(Collectors.toList());
@@ -1114,6 +1122,22 @@ public class ServiceResourceV2 {
       }
     }
     return filteredAccessControlDtoList;
+  }
+
+  private List<ServiceResponse> filterByScopedInfrastructures(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, List<ServiceResponse> serviceResponses,
+      Map<String, List<String>> envRefInfraRefsMapping) {
+    if (CollectionUtils.isEmpty(serviceResponses)) {
+      return serviceResponses;
+    }
+    List<String> currentServiceRefs = serviceResponses.stream()
+                                          .map(serviceResponse -> serviceResponse.getService().getIdentifier())
+                                          .collect(toList());
+    List<String> allowedServiceRefs = infrastructureEntityService.filterServicesByScopedInfrastructures(
+        accountIdentifier, orgIdentifier, projectIdentifier, currentServiceRefs, envRefInfraRefsMapping);
+    return serviceResponses.stream()
+        .filter(serviceResponse -> allowedServiceRefs.contains(serviceResponse.getService().getIdentifier()))
+        .collect(toList());
   }
 
   private void throwExceptionForNoRequestDTO(List<ServiceRequestDTO> dto) {
