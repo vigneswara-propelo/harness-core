@@ -929,11 +929,11 @@ paths:
   /v1/scores/recalibrate:
     parameters: []
     post:
-      summary: ''
+      summary: 'Trigger recalibration of scores for a scorecard'
       operationId: scorecard-recalibrate
       responses:
         '200':
-          $ref: '#/components/responses/ScorecardRecalibrateReponse'
+          $ref: '#/components/responses/ScorecardRecalibrateResponse'
       x-stoplight:
         id: ovevc0tsakmzl
       description: API for Recalibrating the score for scorecard of entity
@@ -3449,6 +3449,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ScorecardRecalibrateRequest'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateRequest'
   responses:
     BackstageEnvVariableResponse:
       description: Example response
@@ -3729,10 +3732,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ScorecardGraphSummaryInfoResponse'
-    ScorecardRecalibrateReponse:
+    ScorecardRecalibrateResponse:
       description: Example response
       content:
         application/json:
+          schema:
+            $ref: '#/components/schemas/ScorecardRecalibrateResponse'
+        application/yaml:
           schema:
             $ref: '#/components/schemas/ScorecardRecalibrateResponse'
     CheckResponseList:
