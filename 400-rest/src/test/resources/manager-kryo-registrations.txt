@@ -1153,7 +1153,7 @@
 7443:software.wings.sm.states.gcbconfigs.GcbTriggerBuildSpec.GcbTriggerSource
 7444:software.wings.sm.states.gcbconfigs.GcbRemoteBuildSpec.RemoteFileSource
 7445:software.wings.beans.AccountEvent
-7446:software.wings.beans.AccountEventType
+7446:software.wings.beans.account.AccountEventType
 7447:software.wings.beans.TechStack
 7448:software.wings.sm.states.ParameterEntry
 7449:software.wings.api.k8s.K8sHelmDeploymentElement
@@ -1235,7 +1235,7 @@
 8121:software.wings.api.arm.ARMOutputVariables
 8122:software.wings.api.arm.ARMPreExistingTemplate
 8123:software.wings.api.ARMStateExecutionData
-8124:software.wings.beans.AccountPreferences
+8124:software.wings.beans.account.AccountPreferences
 8125:io.kubernetes.client.openapi.ApiException
 8126:software.wings.beans.ArtifactStreamMetadata
 8127:software.wings.beans.artifact.ArtifactSummary
