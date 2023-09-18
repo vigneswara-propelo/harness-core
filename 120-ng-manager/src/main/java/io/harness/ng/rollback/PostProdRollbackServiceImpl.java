@@ -6,6 +6,7 @@
  */
 
 package io.harness.ng.rollback;
+
 import static io.harness.beans.FeatureName.POST_PROD_ROLLBACK;
 
 import io.harness.annotations.dev.CodePulse;
@@ -103,8 +104,8 @@ public class PostProdRollbackServiceImpl implements PostProdRollbackService {
           instance.getProjectIdentifier(), "getPipelineId", instance.getStageNodeExecutionId()));
     } catch (Exception ex) {
       throw new InvalidRequestException(
-          String.format("Could not trigger the rollback for instance with InstanceKey %s and infraMappingId %s",
-              instanceKey, infraMappingId),
+          String.format("Could not trigger the rollback for instance with InstanceKey %s and infraMappingId %s: %s",
+              instanceKey, infraMappingId, ex.getMessage()),
           ex);
     }
     String planExecutionId = (String) (((Map<String, Map>) response).get("planExecution")).get("uuid");
