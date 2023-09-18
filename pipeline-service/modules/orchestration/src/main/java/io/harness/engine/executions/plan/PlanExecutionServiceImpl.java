@@ -229,7 +229,13 @@ public class PlanExecutionServiceImpl implements PlanExecutionService {
 
   @Override
   public Status calculateStatus(String planExecutionId) {
-    List<Status> statuses = nodeExecutionService.fetchNodeExecutionsStatusesWithoutOldRetries(planExecutionId);
+    return calculateStatus(planExecutionId, false);
+  }
+
+  @Override
+  public Status calculateStatus(String planExecutionId, boolean shouldSkipIdentityNodes) {
+    List<Status> statuses =
+        nodeExecutionService.fetchNodeExecutionsStatusesWithoutOldRetries(planExecutionId, shouldSkipIdentityNodes);
     return OrchestrationUtils.calculateStatusForPlanExecution(statuses, planExecutionId);
   }
 
