@@ -16,9 +16,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.FeatureName;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
+import io.harness.dtos.rollback.K8sPostProdRollbackInfo;
 import io.harness.dtos.rollback.PostProdRollbackCheckDTO;
 import io.harness.dtos.rollback.PostProdRollbackCheckDTO.PostProdRollbackCheckDTOBuilder;
 import io.harness.dtos.rollback.PostProdRollbackResponseDTO;
+import io.harness.dtos.rollback.PostProdRollbackSwimLaneInfo;
 import io.harness.entities.Instance;
 import io.harness.entities.InstanceType;
 import io.harness.entities.RollbackStatus;
@@ -79,7 +81,8 @@ public class PostProdRollbackServiceImpl implements PostProdRollbackService {
           "Can not start the Rollback. Rollback has already been triggered and the previous rollback status is: %s",
           instance.getRollbackStatus()));
     }
-    return rollbackCheckDTO.build();
+    PostProdRollbackSwimLaneInfo swimLaneInfo = getSwimlaneInfo(instance);
+    return rollbackCheckDTO.swimLaneInfo(swimLaneInfo).build();
   }
 
   @Override
@@ -118,5 +121,14 @@ public class PostProdRollbackServiceImpl implements PostProdRollbackService {
         .infraMappingId(infraMappingId)
         .planExecutionId(planExecutionId)
         .build();
+  }
+
+  public PostProdRollbackSwimLaneInfo getSwimlaneInfo(Instance instance) {
+    switch (instance.getInstanceType()) {
+      case K8S_INSTANCE:
+        return K8sPostProdRollbackInfo.builder().build();
+      default:
+        return null;
+    }
   }
 }
