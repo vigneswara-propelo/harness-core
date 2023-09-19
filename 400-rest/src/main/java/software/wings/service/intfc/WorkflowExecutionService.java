@@ -384,4 +384,6 @@ public interface WorkflowExecutionService extends StateStatusUpdate {
 
   void checkDeploymentFreezeRejectedExecution(
       String accountId, PreDeploymentChecker deploymentFreezeChecker, WorkflowExecution workflowExecution);
+
+  Integer getDeploymentCount();
 }
