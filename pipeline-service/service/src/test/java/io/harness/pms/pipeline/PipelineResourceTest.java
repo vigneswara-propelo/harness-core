@@ -76,7 +76,7 @@ import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.pms.template.PipelineRefreshResource;
 import io.harness.pms.template.service.PipelineRefreshService;
 import io.harness.pms.variables.VariableCreatorMergeService;
-import io.harness.pms.yaml.PipelineVersion;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.rule.Owner;
 import io.harness.steps.template.TemplateStepNode;
 import io.harness.steps.template.stage.TemplateStageNode;
@@ -186,7 +186,7 @@ public class PipelineResourceTest extends CategoryTest {
                            .name(PIPELINE_IDENTIFIER)
                            .yaml(simplifiedYaml)
                            .isDraft(false)
-                           .harnessVersion(PipelineVersion.V1)
+                           .harnessVersion(HarnessYamlVersion.V1)
                            .build();
 
     entityGitDetails = EntityGitDetails.builder()
@@ -217,7 +217,7 @@ public class PipelineResourceTest extends CategoryTest {
                                       .name(PIPELINE_IDENTIFIER)
                                       .yaml(simplifiedYaml)
                                       .isDraft(false)
-                                      .harnessVersion(PipelineVersion.V1)
+                                      .harnessVersion(HarnessYamlVersion.V1)
                                       .version(1L)
                                       .build();
 
@@ -810,7 +810,7 @@ public class PipelineResourceTest extends CategoryTest {
   @Owner(developers = RAGHAV_GUPTA)
   @Category(UnitTests.class)
   public void testCreateSimplifiedPipeline() {
-    doReturn(PipelineVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYaml);
+    doReturn(HarnessYamlVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYaml);
     doReturn(PipelineCRUDResult.builder()
                  .pipelineEntity(simplifiedEntityWithVersion)
                  .governanceMetadata(GovernanceMetadata.newBuilder().setDeny(false).build())
@@ -827,7 +827,7 @@ public class PipelineResourceTest extends CategoryTest {
   @Owner(developers = RAGHAV_GUPTA)
   @Category(UnitTests.class)
   public void testCreateSimplifiedPipelineWithoutYamlName() {
-    doReturn(PipelineVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYamlWithoutName);
+    doReturn(HarnessYamlVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYamlWithoutName);
     simplifiedEntityWithVersion.setYaml(simplifiedYamlWithoutName);
     simplifiedEntity.setYaml(simplifiedYamlWithoutName);
     doReturn(PipelineCRUDResult.builder()
@@ -846,7 +846,7 @@ public class PipelineResourceTest extends CategoryTest {
   @Owner(developers = RAGHAV_GUPTA)
   @Category(UnitTests.class)
   public void testUpdateSimplifiedPipeline() {
-    doReturn(PipelineVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYaml);
+    doReturn(HarnessYamlVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYaml);
     GovernanceMetadata governanceMetadata = GovernanceMetadata.newBuilder().setDeny(false).build();
     PipelineCRUDResult pipelineCRUDResult = PipelineCRUDResult.builder()
                                                 .governanceMetadata(governanceMetadata)
@@ -864,7 +864,7 @@ public class PipelineResourceTest extends CategoryTest {
   @Owner(developers = RAGHAV_GUPTA)
   @Category(UnitTests.class)
   public void testUpdateSimplifiedPipelineWithoutYamlName() {
-    doReturn(PipelineVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYamlWithoutName);
+    doReturn(HarnessYamlVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYamlWithoutName);
     simplifiedEntityWithVersion.setYaml(simplifiedYamlWithoutName);
     simplifiedEntity.setYaml(simplifiedYamlWithoutName);
     GovernanceMetadata governanceMetadata = GovernanceMetadata.newBuilder().setDeny(false).build();
@@ -884,7 +884,7 @@ public class PipelineResourceTest extends CategoryTest {
   @Owner(developers = RAGHAV_GUPTA)
   @Category(UnitTests.class)
   public void testUpdateSimplifiedPipelineWithoutYamlNameFailure() {
-    doReturn(PipelineVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYamlWithoutName);
+    doReturn(HarnessYamlVersion.V1).when(pmsPipelineService).pipelineVersion(ACCOUNT_ID, simplifiedYamlWithoutName);
     simplifiedEntityWithVersion.setYaml(simplifiedYamlWithoutName);
     simplifiedEntity.setYaml(simplifiedYamlWithoutName);
     GovernanceMetadata governanceMetadata = GovernanceMetadata.newBuilder().setDeny(false).build();

@@ -31,7 +31,7 @@ import io.harness.persistence.AccountAccess;
 import io.harness.persistence.PersistentEntity;
 import io.harness.persistence.UuidAware;
 import io.harness.persistence.gitaware.GitAware;
-import io.harness.pms.yaml.PipelineVersion;
+import io.harness.pms.yaml.HarnessYamlVersion;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.reinert.jjschema.SchemaIgnore;
@@ -196,7 +196,7 @@ public class InputSetEntity implements GitAware, GitSyncableEntity, PersistentEn
 
   public String getHarnessVersion() {
     if (harnessVersion == null || harnessVersion.equals("0")) {
-      return PipelineVersion.V0;
+      return HarnessYamlVersion.V0;
     }
     return harnessVersion;
   }

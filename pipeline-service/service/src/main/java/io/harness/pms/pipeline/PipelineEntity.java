@@ -32,7 +32,7 @@ import io.harness.persistence.AccountAccess;
 import io.harness.persistence.PersistentEntity;
 import io.harness.persistence.UuidAware;
 import io.harness.persistence.gitaware.GitAware;
-import io.harness.pms.yaml.PipelineVersion;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.template.yaml.TemplateRefHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -235,7 +235,7 @@ public class PipelineEntity implements GitAware, GitSyncableEntity, PersistentEn
 
   public String getHarnessVersion() {
     if (harnessVersion == null || harnessVersion.equals("V0")) {
-      return PipelineVersion.V0;
+      return HarnessYamlVersion.V0;
     }
     return harnessVersion;
   }
