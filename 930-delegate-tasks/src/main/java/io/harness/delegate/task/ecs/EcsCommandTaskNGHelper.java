@@ -1146,7 +1146,7 @@ public class EcsCommandTaskNGHelper {
     if (CollectionUtils.isNotEmpty(describeServicesResponse.services())) {
       Service service = describeServicesResponse.services().get(0);
       if (isServiceActive(service) && isServiceBGVersion(service.tags(), tag)) {
-        Optional.ofNullable(service);
+        return Optional.ofNullable(service);
       }
     }
     return Optional.empty();
