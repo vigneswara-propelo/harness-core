@@ -30,6 +30,7 @@ import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorDTO;
 import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorWrapperDTO;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.pipeline.yamlschema.PipelineYamlSchemaServiceClient;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.individualschema.PipelineSchemaRequest;
 import io.harness.pms.yaml.individualschema.TemplateSchemaMetadata;
 import io.harness.pms.yaml.individualschema.TemplateSchemaParserV0;
@@ -171,14 +172,16 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
   public void validateYamlSchemaInternal(TemplateEntity templateEntity) {
     validateYamlSchema(templateEntity.getAccountIdentifier(), templateEntity.getProjectIdentifier(),
         templateEntity.getOrgIdentifier(), templateEntity.getYaml(), templateEntity.getTemplateScope(),
-        templateEntity.getChildType(), templateEntity.getTemplateEntityType());
+        templateEntity.getChildType(), templateEntity.getTemplateEntityType(),
+        getSchemaVersionFromHarnessYamlVersion(templateEntity.getHarnessVersion()));
   }
 
   public void validateYamlSchemaInternal(GlobalTemplateEntity globalTemplateEntity) {
     validateYamlSchema(globalTemplateEntity.getAccountIdentifier(), globalTemplateEntity.getProjectIdentifier(),
         globalTemplateEntity.getOrgIdentifier(), globalTemplateEntity.getYaml(),
         globalTemplateEntity.getTemplateScope(), globalTemplateEntity.getChildType(),
-        globalTemplateEntity.getTemplateEntityType());
+        globalTemplateEntity.getTemplateEntityType(),
+        getSchemaVersionFromHarnessYamlVersion(globalTemplateEntity.getHarnessVersion()));
   }
 
   @Override
@@ -194,7 +197,7 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
   }
 
   void validateYamlSchema(String accountIdentifier, String projectIdentifier, String orgIdentifier, String templateYaml,
-      Scope templateScope, String childType, TemplateEntityType templateEntityType) {
+      Scope templateScope, String childType, TemplateEntityType templateEntityType, String version) {
     long start = System.currentTimeMillis();
     if (TemplateYamlSchemaMergeHelper.isFeatureFlagEnabled(
             FeatureName.DISABLE_TEMPLATE_SCHEMA_VALIDATION, accountIdentifier, accountClient)) {
@@ -210,14 +213,14 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
       // Use Static schema if ff is enabled.
       if (TemplateYamlSchemaMergeHelper.isFeatureFlagEnabled(
               FeatureName.PIE_STATIC_YAML_SCHEMA, accountIdentifier, accountClient)) {
-        String nodeGroup = getNodeGroup(templateEntityType);
+        String nodeGroup = templateEntityType.getNodeGroup();
         String nodeType = getNodeType(templateEntityType, childType);
         schema = getIndividualSchema(nodeGroup, nodeType);
         if (EmptyPredicate.isEmpty(schema)) {
           // FallBack logic - If we didn't find 'nodeGroup/nodeType' key in the parser, we will use template.json
           log.warn(String.format(
               "Individual Schema not found for v0 Templates with %s nodeGroup and %s nodeType", nodeGroup, nodeType));
-          schema = templateSchemaFetcher.getStaticYamlSchema("v0");
+          schema = templateSchemaFetcher.getStaticYamlSchema(version);
         }
       } else {
         // Use traditional way of generating schema if ff is off
@@ -260,26 +263,10 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
     return childType;
   }
 
-  private String getNodeGroup(TemplateEntityType templateEntityType) {
-    switch (templateEntityType) {
-      case STEP_TEMPLATE:
-        return "step";
-      case STAGE_TEMPLATE:
-        return "stage";
-      case MONITORED_SERVICE_TEMPLATE:
-        return "monitoredservice";
-      case ARTIFACT_SOURCE_TEMPLATE:
-        return "artifactsourcetemplate";
-      case CUSTOM_DEPLOYMENT_TEMPLATE:
-        return "customdeployment";
-      case PIPELINE_TEMPLATE:
-        return "pipeline";
-      case SECRET_MANAGER_TEMPLATE:
-        return "secretmanager";
-      case STEPGROUP_TEMPLATE:
-        return "stepgroup";
-      default:
-        return "template";
+  private String getSchemaVersionFromHarnessYamlVersion(String harnessYamlVersion) {
+    if (harnessYamlVersion.equals(HarnessYamlVersion.V0)) {
+      return "v0";
     }
+    return "v1";
   }
 }
