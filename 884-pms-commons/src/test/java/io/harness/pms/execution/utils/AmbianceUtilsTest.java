@@ -711,8 +711,11 @@ public class AmbianceUtilsTest extends CategoryTest {
     List<String> enabledFeatureFlags = new ArrayList<>();
     enabledFeatureFlags.add("flag1");
     enabledFeatureFlags.add("flag3");
-
-    assertThat(enabledFeatureFlags).isEqualTo(AmbianceUtils.getEnabledFeatureFlags(ambiance));
+    List<String> ffListResponseFromAmbiance = AmbianceUtils.getEnabledFeatureFlags(ambiance);
+    assertThat(ffListResponseFromAmbiance.size()).isEqualTo(enabledFeatureFlags.size());
+    for (String ff : enabledFeatureFlags) {
+      assertThat(ffListResponseFromAmbiance.contains(ff)).isTrue();
+    }
   }
 
   @Test
