@@ -9,7 +9,7 @@ package io.harness.accesscontrol.acl.worker;
 
 import static io.harness.authorization.AuthorizationServiceHeader.ACCESS_CONTROL_SERVICE;
 
-import static java.time.Duration.ofMinutes;
+import static java.lang.Integer.MAX_VALUE;
 import static java.time.Duration.ofSeconds;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -223,7 +223,7 @@ public class RemoveRedundantACLJob implements Runnable {
     Query aclQuery = new Query();
     aclQuery.addCriteria(where(ACLKeys.id).gte(new ObjectId(offset)));
     aclQuery.cursorBatchSize(BATCH_SIZE);
-    aclQuery.maxTime(ofMinutes(2));
+    aclQuery.maxTimeMsec(MAX_VALUE);
     return mongoTemplate.stream(aclQuery, ACL.class);
   }
 
@@ -246,7 +246,7 @@ public class RemoveRedundantACLJob implements Runnable {
     Query aclQuery = new Query();
     aclQuery.addCriteria(where(ACLKeys.id).gte(new ObjectId(offset)).and(ACLKeys.enabled).is(false));
     aclQuery.cursorBatchSize(BATCH_SIZE);
-    aclQuery.maxTime(ofMinutes(2));
+    aclQuery.maxTimeMsec(MAX_VALUE);
     return mongoTemplate.stream(aclQuery, ACL.class);
   }
 }
