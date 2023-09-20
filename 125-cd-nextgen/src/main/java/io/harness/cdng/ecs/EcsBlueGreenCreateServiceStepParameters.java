@@ -34,8 +34,9 @@ public class EcsBlueGreenCreateServiceStepParameters
   public EcsBlueGreenCreateServiceStepParameters(ParameterField<List<TaskSelectorYaml>> delegateSelectors,
       ParameterField<String> loadBalancer, ParameterField<String> prodListener,
       ParameterField<String> prodListenerRuleArn, ParameterField<String> stageListener,
-      ParameterField<String> stageListenerRuleArn) {
-    super(delegateSelectors, loadBalancer, prodListener, prodListenerRuleArn, stageListener, stageListenerRuleArn);
+      ParameterField<String> stageListenerRuleArn, ParameterField<Boolean> sameAsAlreadyRunningInstances) {
+    super(delegateSelectors, loadBalancer, prodListener, prodListenerRuleArn, stageListener, stageListenerRuleArn,
+        sameAsAlreadyRunningInstances);
   }
 
   public List<String> getCommandUnits() {
