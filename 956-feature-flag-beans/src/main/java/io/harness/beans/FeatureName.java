@@ -361,9 +361,6 @@ public enum FeatureName {
       "To disable Base64 encoding done to WinRM command script which is sent to remote server for execution",
       HarnessTeam.CDP),
   DONT_RESTRICT_PARALLEL_STAGE_COUNT,
-  DO_NOT_RENEW_APPROLE_TOKEN(
-      "CAUTION: USE THIS ONLY WHEN THE CUSTOMER DELEGATE IS IN VERSION HIGHER OR EQUAL TO 764xx. Used for disabling appRole token renewal and fetching token on the fly before CRUD",
-      HarnessTeam.PL),
   DYNATRACE_MULTI_SERVICE,
   ECS_AUTOSCALAR_REDESIGN,
   ECS_BG_DOWNSIZE,
