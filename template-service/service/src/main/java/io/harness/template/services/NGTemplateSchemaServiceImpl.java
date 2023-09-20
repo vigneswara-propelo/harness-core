@@ -31,9 +31,10 @@ import io.harness.exception.ngexception.beans.yamlschema.YamlSchemaErrorWrapperD
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.pipeline.yamlschema.PipelineYamlSchemaServiceClient;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.individualschema.AbstractStaticSchemaParser;
 import io.harness.pms.yaml.individualschema.PipelineSchemaRequest;
 import io.harness.pms.yaml.individualschema.TemplateSchemaMetadata;
-import io.harness.pms.yaml.individualschema.TemplateSchemaParserV0;
+import io.harness.pms.yaml.individualschema.TemplateSchemaParserFactory;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.template.entity.GlobalTemplateEntity;
 import io.harness.template.entity.TemplateEntity;
@@ -67,7 +68,7 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
   @Inject TemplateServiceConfiguration templateServiceConfiguration;
   @Inject TemplateSchemaFetcher templateSchemaFetcher;
 
-  @Inject TemplateSchemaParserV0 templateSchemaParserV0;
+  @Inject TemplateSchemaParserFactory templateSchemaParserFactory;
   Map<String, YamlSchemaClient> yamlSchemaClientMapper;
   private YamlSchemaProvider yamlSchemaProvider;
   private YamlSchemaValidator yamlSchemaValidator;
@@ -186,11 +187,8 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
 
   @Override
   public ObjectNode getIndividualStaticSchema(String nodeGroup, String nodeType, String version) {
-    return getIndividualSchema(nodeGroup, nodeType);
-  }
-
-  private ObjectNode getIndividualSchema(String nodeGroup, String nodeType) {
-    return templateSchemaParserV0.getIndividualSchema(
+    AbstractStaticSchemaParser templateSchemaParser = templateSchemaParserFactory.getTemplateSchemaParser(version);
+    return templateSchemaParser.getIndividualSchema(
         PipelineSchemaRequest.builder()
             .individualSchemaMetadata(TemplateSchemaMetadata.builder().nodeGroup(nodeGroup).nodeType(nodeType).build())
             .build());
@@ -215,7 +213,7 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
               FeatureName.PIE_STATIC_YAML_SCHEMA, accountIdentifier, accountClient)) {
         String nodeGroup = templateEntityType.getNodeGroup();
         String nodeType = getNodeType(templateEntityType, childType);
-        schema = getIndividualSchema(nodeGroup, nodeType);
+        schema = getIndividualStaticSchema(nodeGroup, nodeType, version);
         if (EmptyPredicate.isEmpty(schema)) {
           // FallBack logic - If we didn't find 'nodeGroup/nodeType' key in the parser, we will use template.json
           log.warn(String.format(
