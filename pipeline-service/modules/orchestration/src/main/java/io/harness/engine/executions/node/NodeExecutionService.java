@@ -384,5 +384,6 @@ public interface NodeExecutionService {
   NodeExecution fetchNodeExecutionForPlanNodeAndRetriedId(
       String planExecutionId, String planNode, boolean oldRetry, List<String> retriedId);
 
-  CloseableIterator<NodeExecution> fetchAllWithPlanExecutionId(String planExecutionId, Set<String> fieldsToBeIncluded);
+  CloseableIterator<NodeExecution> fetchAllLeavesUsingPlanExecutionId(
+      String planExecutionId, Set<String> fieldsToBeIncluded);
 }

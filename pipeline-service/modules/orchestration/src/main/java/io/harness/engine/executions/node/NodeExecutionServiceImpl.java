@@ -1111,9 +1111,13 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   }
 
   @Override
-  public CloseableIterator<NodeExecution> fetchAllWithPlanExecutionId(
+  public CloseableIterator<NodeExecution> fetchAllLeavesUsingPlanExecutionId(
       String planExecutionId, Set<String> fieldsToBeIncluded) {
-    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId).is(planExecutionId);
+    // Uses - planExecutionId_mode_status_oldRetry_idx
+    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId)
+                            .is(planExecutionId)
+                            .and(NodeExecutionKeys.mode)
+                            .in(ExecutionModeUtils.leafModes());
     Query query = query(criteria);
     for (String field : fieldsToBeIncluded) {
       query.fields().include(field);
