@@ -1618,6 +1618,10 @@ components:
           type: string
           x-stoplight:
             id: lh9dkmt7tjrf0
+        documentation:
+          type: string
+          x-stoplight:
+            id: lh9dkot7tjrf0
         core:
           type: boolean
           x-stoplight:
