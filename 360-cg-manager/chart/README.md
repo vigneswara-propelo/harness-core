@@ -50,11 +50,9 @@ A Helm chart for Kubernetes
 | featureFlags.STO | string | `"STO_BASELINE_REGEX,STO_STEP_PALETTE_BURP_ENTERPRISE,STO_STEP_PALETTE_CODEQL,STO_STEP_PALETTE_FOSSA,STO_STEP_PALETTE_GIT_LEAKS,STO_STEP_PALETTE_SEMGREP"` | STO Feature Flags |
 | fullnameOverride | string | `""` |  |
 | global.awsServiceEndpointUrls.cloudwatchEndPointUrl | string | `"https://monitoring.us-east-2.amazonaws.com"` |  |
-| global.awsServiceEndpointUrls.ec2EndPointUrl | string | `"https://ec2.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.ecsEndPointUrl | string | `"https://ecs.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.enabled | bool | `false` |  |
 | global.awsServiceEndpointUrls.endPointRegion | string | `"us-east-2"` |  |
-| global.awsServiceEndpointUrls.s3EndPointUrl | string | `"https://s3.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.stsEndPointUrl | string | `"https://sts.us-east-2.amazonaws.com"` |  |
 | global.ccm.enabled | bool | `false` |  |
 | global.cd.enabled | bool | `false` |  |

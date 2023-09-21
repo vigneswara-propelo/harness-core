@@ -27,6 +27,12 @@ A Helm chart for Kubernetes
 | awsSecret.S3_SYNC_CONFIG_SECRETKEY | string | `""` |  |
 | ceBatchGCPCredentials | string | `""` |  |
 | ceGCPHomeProjectCreds | string | `""` |  |
+| cliProxy.enabled | bool | `false` |  |
+| cliProxy.host | string | `"localhost"` |  |
+| cliProxy.password | string | `""` |  |
+| cliProxy.port | int | `80` |  |
+| cliProxy.protocol | string | `"http"` |  |
+| cliProxy.username | string | `""` |  |
 | clickhouse.password.key | string | `"admin-password"` |  |
 | clickhouse.password.name | string | `"clickhouse"` |  |
 | clickhouse.username | string | `"default"` |  |
@@ -39,11 +45,9 @@ A Helm chart for Kubernetes
 | extraVolumes | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
 | global.awsServiceEndpointUrls.cloudwatchEndPointUrl | string | `"https://monitoring.us-east-2.amazonaws.com"` |  |
-| global.awsServiceEndpointUrls.ec2EndPointUrl | string | `"https://ec2.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.ecsEndPointUrl | string | `"https://ecs.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.enabled | bool | `false` |  |
 | global.awsServiceEndpointUrls.endPointRegion | string | `"us-east-2"` |  |
-| global.awsServiceEndpointUrls.s3EndPointUrl | string | `"https://s3.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.stsEndPointUrl | string | `"https://sts.us-east-2.amazonaws.com"` |  |
 | global.ccm.gcpProjectId | string | `"placeHolder"` |  |
 | global.commonAnnotations | object | `{}` |  |

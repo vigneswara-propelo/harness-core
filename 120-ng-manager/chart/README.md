@@ -37,11 +37,9 @@ A Helm chart for Kubernetes
 | extraVolumes | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
 | global.awsServiceEndpointUrls.cloudwatchEndPointUrl | string | `"https://monitoring.us-east-2.amazonaws.com"` |  |
-| global.awsServiceEndpointUrls.ec2EndPointUrl | string | `"https://ec2.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.ecsEndPointUrl | string | `"https://ecs.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.enabled | bool | `false` |  |
 | global.awsServiceEndpointUrls.endPointRegion | string | `"us-east-2"` |  |
-| global.awsServiceEndpointUrls.s3EndPointUrl | string | `"https://s3.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.stsEndPointUrl | string | `"https://sts.us-east-2.amazonaws.com"` |  |
 | global.ccm.enabled | bool | `false` |  |
 | global.cg.enabled | bool | `false` |  |
