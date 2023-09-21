@@ -11,13 +11,16 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 
+import io.harness.OrchestrationPublisherName;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.UUIDGenerator;
+import io.harness.delay.DelayEventHelper;
 import io.harness.engine.OrchestrationEngine;
 import io.harness.engine.execution.ExecutionInputService;
 import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.executions.plan.PlanService;
 import io.harness.engine.pms.data.ResolverUtils;
+import io.harness.engine.pms.resume.EngineWaitRetryCallbackV2;
 import io.harness.engine.utils.PmsLevelUtils;
 import io.harness.execution.ExecutionInputInstance;
 import io.harness.execution.NodeExecution;
@@ -33,12 +36,14 @@ import io.harness.pms.contracts.interrupts.InterruptConfig;
 import io.harness.pms.contracts.interrupts.InterruptType;
 import io.harness.pms.contracts.interrupts.RetryInterruptConfig;
 import io.harness.pms.execution.utils.AmbianceUtils;
+import io.harness.waiter.WaitNotifyEngine;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +58,9 @@ public class RetryHelper {
   @Inject private OrchestrationEngine engine;
   @Inject @Named("EngineExecutorService") private ExecutorService executorService;
   @Inject private ExecutionInputService executionInputService;
+  @Inject private DelayEventHelper delayEventHelper;
+  @Inject private WaitNotifyEngine waitNotifyEngine;
+  @Inject @Named(OrchestrationPublisherName.PUBLISHER_NAME) String publisherName;
   @Inject private NodeExecutionInfoService pmsGraphStepDetailsService;
   public void retryNodeExecution(String nodeExecutionId, String interruptId, InterruptConfig interruptConfig) {
     NodeExecution nodeExecution = Preconditions.checkNotNull(nodeExecutionService.get(nodeExecutionId));
@@ -78,6 +86,14 @@ public class RetryHelper {
 
     nodeExecutionService.updateRelationShipsForRetryNode(updatedRetriedNode.getUuid(), savedNodeExecution.getUuid());
     nodeExecutionService.markRetried(updatedRetriedNode.getUuid());
+
+    if (interruptConfig.getRetryInterruptConfig().getWaitInterval() > 0) {
+      log.info("Retry Wait Interval : {}", interruptConfig.getRetryInterruptConfig().getWaitInterval());
+      String resumeId =
+          delayEventHelper.delay(interruptConfig.getRetryInterruptConfig().getWaitInterval(), Collections.emptyMap());
+      waitNotifyEngine.waitForAllOn(publisherName, new EngineWaitRetryCallbackV2(finalAmbiance), resumeId);
+      return;
+    }
     // Todo: Check with product if we want to stop again for execution time input
     executorService.submit(() -> engine.startNodeExecution(finalAmbiance));
   }
