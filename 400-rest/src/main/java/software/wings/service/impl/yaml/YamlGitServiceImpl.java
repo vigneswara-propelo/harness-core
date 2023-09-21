@@ -6,6 +6,7 @@
  */
 
 package software.wings.service.impl.yaml;
+
 import static io.harness.beans.FeatureName.CDS_QUERY_OPTIMIZATION;
 import static io.harness.beans.FeatureName.NOTIFY_GIT_SYNC_ERRORS_PER_APP;
 import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
@@ -1037,8 +1038,8 @@ public class YamlGitServiceImpl implements YamlGitService {
       }
 
     } catch (Exception ex) {
-      log.error(format(GIT_YAML_LOG_PREFIX + "Unexpected error while processing git->harness change set [%s]",
-                    yamlChangeSet.getUuid()),
+      log.warn(format(GIT_YAML_LOG_PREFIX + "Unexpected error while processing git->harness change set [%s]",
+                   yamlChangeSet.getUuid()),
           ex);
       yamlChangeSetService.updateStatus(accountId, yamlChangeSet.getUuid(), Status.SKIPPED);
     }
