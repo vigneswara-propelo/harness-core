@@ -14,9 +14,13 @@ import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants
 import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.NOT_FOUND;
 import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.QUERY_FOR_GETTING_CHANGE_TASK;
 import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.QUERY_FOR_GETTING_CHANGE_TASK_ALL;
+import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.RESULT;
 import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.RETURN_FIELDS;
 import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.SYS_ID;
+import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.SYS_NAME;
+import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.TEMPLATE;
 import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.TIME_OUT;
+import static io.harness.delegate.beans.connector.servicenow.ServiceNowConstants.VALUE;
 import static io.harness.delegate.task.servicenow.ServiceNowUtils.errorWhileUpdatingTicket;
 import static io.harness.delegate.task.servicenow.ServiceNowUtils.failedToUpdateTicket;
 import static io.harness.delegate.task.servicenow.ServiceNowUtils.isUnauthorizedError;
@@ -81,6 +85,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -114,6 +119,10 @@ public class ServiceNowTaskNgHelper {
 
   @Inject @Named("serviceNowFetchTicketExecutor") public ExecutorService executorService;
 
+  public static final String RESPONSE_MESSAGE_SERVICENOW = "Response received from serviceNow: {}";
+  public static final String FAILURE_MESSAGE_SERVICENOW_STANDARD_TEMPLATE =
+      "Failed to get ServiceNow Standard template";
+
   @Inject
   public ServiceNowTaskNgHelper(SecretDecryptionService secretDecryptionService) {
     this.secretDecryptionService = secretDecryptionService;
@@ -142,6 +151,8 @@ public class ServiceNowTaskNgHelper {
         return getMetadata(serviceNowTaskNGParameters);
       case GET_TEMPLATE:
         return getTemplateList(serviceNowTaskNGParameters);
+      case GET_STANDARD_TEMPLATE:
+        return getStandardTemplate(serviceNowTaskNGParameters);
       case IMPORT_SET:
         return createImportSet(serviceNowTaskNGParameters, executionLogCallback);
       case GET_IMPORT_SET_STAGING_TABLES:
@@ -564,6 +575,61 @@ public class ServiceNowTaskNgHelper {
       throw new ServiceNowException(errorWhileUpdatingTicket(ex), SERVICENOW_ERROR, USER, ex);
     }
   }
+  private ServiceNowTaskNGResponse getStandardTemplate(ServiceNowTaskNGParameters serviceNowTaskNGParameters) {
+    ServiceNowConnectorDTO serviceNowConnectorDTO = serviceNowTaskNGParameters.getServiceNowConnectorDTO();
+    ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl());
+
+    StringBuilder sysparm_query_builder = new StringBuilder("active=true");
+    if (!StringUtils.isBlank(serviceNowTaskNGParameters.getTemplateName())) {
+      sysparm_query_builder.append(String.format("^sys_name=%s", serviceNowTaskNGParameters.getTemplateName()));
+    }
+    if (!StringUtils.isBlank(serviceNowTaskNGParameters.getSearchTerm())) {
+      sysparm_query_builder.append(String.format("^sys_nameCONTAINS%s", serviceNowTaskNGParameters.getSearchTerm()));
+    }
+    sysparm_query_builder.append("^ORDERBYsys_created_on");
+    String sysparm_query = sysparm_query_builder.toString();
+    String sparm_fields = "template,sys_name,sys_id";
+    final Call<JsonNode> request = serviceNowRestClient.getStandardTemplate(
+        ServiceNowAuthNgHelper.getAuthToken(serviceNowConnectorDTO), sysparm_query, sparm_fields,
+        serviceNowTaskNGParameters.getTemplateListLimit(), serviceNowTaskNGParameters.getTemplateListOffset());
+    Response<JsonNode> response = null;
+    try {
+      response = Retry.decorateCallable(retry, () -> request.clone().execute()).call();
+      log.info(RESPONSE_MESSAGE_SERVICENOW, response);
+      handleResponse(response, FAILURE_MESSAGE_SERVICENOW_STANDARD_TEMPLATE);
+      JsonNode responseObj = response.body().get(RESULT);
+
+      // Standard template fields are fetched only when template name is provided, Otherwise list of {sys_id,sys_name}
+      // is fetched.
+      if (!StringUtils.isBlank(serviceNowTaskNGParameters.getTemplateName())) {
+        return getStandardTemplateFields(
+            serviceNowTaskNGParameters, serviceNowRestClient, serviceNowConnectorDTO, responseObj);
+      }
+
+      if (responseObj != null) {
+        JsonNode templateList = responseObj;
+        List<ServiceNowTemplate> templateResponse = new ArrayList<>(templateList.size());
+        for (JsonNode template : templateList) {
+          String templateName = template.get(SYS_NAME).asText();
+          templateResponse.add(
+              ServiceNowTemplate.builder().sys_id(template.get(SYS_ID).asText()).name(templateName).build());
+        }
+        return ServiceNowTaskNGResponse.builder().serviceNowTemplateList(templateResponse).build();
+      } else {
+        throw new ServiceNowException("Failed to fetch standard templates for ticket type "
+                + serviceNowTaskNGParameters.getTicketType() + " response: " + response,
+            SERVICENOW_ERROR, USER);
+      }
+    } catch (ServiceNowException e) {
+      log.error(FAILURE_MESSAGE_SERVICENOW_STANDARD_TEMPLATE + ": {}", ExceptionUtils.getMessage(e), e);
+      throw e;
+    } catch (Exception ex) {
+      log.error(FAILURE_MESSAGE_SERVICENOW_STANDARD_TEMPLATE + ": {}", ExceptionUtils.getMessage(ex), ex);
+      throw new ServiceNowException(String.format("Error occurred while fetching serviceNow Standard templates: %s",
+                                        ExceptionUtils.getMessage(ex)),
+          SERVICENOW_ERROR, USER, ex);
+    }
+  }
 
   private String getTicketNumberFromUpdateMultiple(ServiceNowTaskNGParameters serviceNowTaskNGParameters) {
     ServiceNowUpdateMultipleTaskNode updateMultiple = serviceNowTaskNGParameters.getUpdateMultiple();
@@ -574,7 +640,57 @@ public class ServiceNowTaskNgHelper {
     }
     return "";
   }
+  private ServiceNowTaskNGResponse getStandardTemplateFields(ServiceNowTaskNGParameters serviceNowTaskNGParameters,
+      ServiceNowRestClient serviceNowRestClient, ServiceNowConnectorDTO serviceNowConnectorDTO, JsonNode responseObj) {
+    if (responseObj.size() == 0) {
+      throw new ServiceNowException(String.format("No ServiceNow Standard Template found with template name %s",
+                                        serviceNowTaskNGParameters.getTemplateName()),
+          SERVICENOW_ERROR, USER);
+    }
 
+    if (responseObj.size() > 1) {
+      throw new ServiceNowException(
+          String.format("More than one ServiceNow Standard Template found with template name %s",
+              serviceNowTaskNGParameters.getTemplateName()),
+          SERVICENOW_ERROR, USER);
+    }
+
+    JsonNode template = responseObj.get(0);
+
+    if (!serviceNowTaskNGParameters.getTemplateName().equalsIgnoreCase(template.get(SYS_NAME).asText())) {
+      throw new ServiceNowException(
+          String.format("Standard Template fetched %s is not matched with template name %s provided",
+              template.get(SYS_NAME).asText(), serviceNowTaskNGParameters.getTemplateName()),
+          SERVICENOW_ERROR, USER);
+    }
+
+    String id = template.get(TEMPLATE).get(VALUE).asText();
+    final Call<JsonNode> requestStandardTemplate =
+        serviceNowRestClient.getStandardTemplate(ServiceNowAuthNgHelper.getAuthToken(serviceNowConnectorDTO), id);
+    Response<JsonNode> standardTemplateResponse = null;
+    try {
+      standardTemplateResponse = Retry.decorateCallable(retry, () -> requestStandardTemplate.clone().execute()).call();
+      log.info(RESPONSE_MESSAGE_SERVICENOW, standardTemplateResponse);
+      handleResponse(standardTemplateResponse, FAILURE_MESSAGE_SERVICENOW_STANDARD_TEMPLATE);
+      JsonNode responseObjStandardTemplate = standardTemplateResponse.body().get(RESULT);
+      return ServiceNowTaskNGResponse.builder()
+          .serviceNowFieldJsonNGListAsString(responseObjStandardTemplate.get(TEMPLATE).asText())
+          .serviceNowTemplateList(Collections.singletonList(ServiceNowTemplate.builder()
+                                                                .sys_id(template.get(SYS_ID).asText())
+                                                                .name(template.get(SYS_NAME).asText())
+                                                                .build()))
+          .build();
+    } catch (ServiceNowException e) {
+      log.error(FAILURE_MESSAGE_SERVICENOW_STANDARD_TEMPLATE + "fields: {}", ExceptionUtils.getMessage(e), e);
+      throw e;
+    } catch (Exception ex) {
+      log.error(FAILURE_MESSAGE_SERVICENOW_STANDARD_TEMPLATE + "fields: {}", ExceptionUtils.getMessage(ex), ex);
+      throw new ServiceNowException(
+          String.format(
+              "Error occurred while fetching serviceNow standard template fields: %s", ExceptionUtils.getMessage(ex)),
+          SERVICENOW_ERROR, USER, ex);
+    }
+  }
   private ServiceNowTaskNGResponse getTemplateList(ServiceNowTaskNGParameters serviceNowTaskNGParameters) {
     ServiceNowConnectorDTO serviceNowConnectorDTO = serviceNowTaskNGParameters.getServiceNowConnectorDTO();
     ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl());
@@ -623,7 +739,6 @@ public class ServiceNowTaskNgHelper {
           SERVICENOW_ERROR, USER, ex);
     }
   }
-
   private ServiceNowTaskNGResponse getTicket(ServiceNowTaskNGParameters serviceNowTaskNGParameters) {
     ServiceNowConnectorDTO serviceNowConnectorDTO = serviceNowTaskNGParameters.getServiceNowConnectorDTO();
     ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl());
