@@ -1616,6 +1616,14 @@ paths:
             format: int64
           in: query
           name: event_end_time
+        - schema:
+            type: string
+          in: query
+          name: repo_name
+        - schema:
+            type: string
+          in: query
+          name: file_path
       x-internal: true
 components:
   schemas:
