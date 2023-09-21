@@ -161,13 +161,20 @@ public class ExecutionSummaryCreateEventHandler implements OrchestrationStartObs
     if (ambiance.getMetadata().getExecutionMode() == ExecutionMode.POST_EXECUTION_ROLLBACK) {
       startingNodeId = ambiance.getMetadata().getPostExecutionRollbackInfo(0).getPostExecutionRollbackStageId();
       GraphLayoutNode layoutNode = layoutNodeMap.get(startingNodeId);
-      layoutNodeMap.put(startingNodeId,
+
+      Map<String, GraphLayoutNode> modifiedLayoutNodeMap = new HashMap<>();
+      modifiedLayoutNodeMap.put(startingNodeId,
           layoutNode.toBuilder()
               .setEdgeLayoutList(
                   EdgeLayoutList.newBuilder()
                       .addAllCurrentNodeChildren(layoutNode.getEdgeLayoutList().getCurrentNodeChildrenList())
                       .build())
               .build());
+      for (String childrenNode : layoutNode.getEdgeLayoutList().getCurrentNodeChildrenList()) {
+        GraphLayoutNode childrenLayoutNode = layoutNodeMap.get(childrenNode);
+        modifiedLayoutNodeMap.put(childrenNode, childrenLayoutNode);
+      }
+      layoutNodeMap = modifiedLayoutNodeMap;
     }
     Map<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
     Set<String> modules = new LinkedHashSet<>();

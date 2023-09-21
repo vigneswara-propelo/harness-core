@@ -23,6 +23,7 @@ import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys;
 import io.harness.pms.plan.execution.beans.dto.GraphLayoutNodeDTO.GraphLayoutNodeDTOKeys;
 import io.harness.steps.StepSpecTypeConstants;
+import io.harness.utils.ExecutionModeUtils;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -68,6 +69,19 @@ public class ExecutionSummaryUpdateUtils {
     boolean updated = false;
     if (isBarrierNode(level)) {
       updated = performUpdatesOnBarrierNode(update, nodeExecution);
+    }
+    if (ExecutionModeUtils.isPostExecutionRollbackMode(nodeExecution.getAmbiance().getMetadata().getExecutionMode())) {
+      String startingNodeId =
+          nodeExecution.getAmbiance().getMetadata().getPostExecutionRollbackInfo(0).getPostExecutionRollbackStageId();
+      if (OrchestrationUtils.isStageNode(nodeExecution)) {
+        for (Level nodeLevel : nodeExecution.getAmbiance().getLevelsList()) {
+          if (Objects.equals(nodeLevel.getSetupId(), startingNodeId)) {
+            ExecutionStatus status = ExecutionStatus.getExecutionStatus(nodeExecution.getStatus());
+            updated = updateStageNode(update, nodeExecution, status, level) || updated;
+          }
+        }
+      }
+      return updated;
     }
     if (OrchestrationUtils.isStageNode(nodeExecution)) {
       ExecutionStatus status = ExecutionStatus.getExecutionStatus(nodeExecution.getStatus());
