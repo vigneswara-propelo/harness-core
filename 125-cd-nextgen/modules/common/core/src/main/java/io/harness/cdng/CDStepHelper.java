@@ -69,6 +69,7 @@ import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.harness.HarnessStore;
+import io.harness.cdng.service.steps.ServiceStepOutcome;
 import io.harness.cdng.service.steps.ServiceSweepingOutput;
 import io.harness.cdng.service.steps.constants.ServiceStepV3Constants;
 import io.harness.cdng.ssh.SshEntityHelper;
@@ -642,6 +643,11 @@ public class CDStepHelper {
 
   // releaseName helper methods:
   public String getReleaseName(Ambiance ambiance, InfrastructureOutcome infrastructure) {
+    Optional<String> releaseNameFromServiceOptional = getReleaseNameFromService(ambiance);
+    if (releaseNameFromServiceOptional.isPresent()) {
+      return releaseNameFromServiceOptional.get();
+    }
+
     String releaseName;
     switch (infrastructure.getKind()) {
       case KUBERNETES_DIRECT:
@@ -667,12 +673,27 @@ public class CDStepHelper {
       default:
         throw new UnsupportedOperationException(format("Unknown infrastructure type: [%s]", infrastructure.getKind()));
     }
+    return resolveAndValidateReleaseName(ambiance, releaseName);
+  }
+
+  private String resolveAndValidateReleaseName(Ambiance ambiance, String releaseName) {
     if (EngineExpressionEvaluator.hasExpressions(releaseName)) {
       releaseName = engineExpressionService.renderExpression(ambiance, releaseName);
     }
 
     validateReleaseName(releaseName);
     return releaseName;
+  }
+
+  private Optional<String> getReleaseNameFromService(Ambiance ambiance) {
+    ServiceStepOutcome serviceStepOutcome = (ServiceStepOutcome) outcomeService.resolve(
+        ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE));
+    if (serviceStepOutcome != null && serviceStepOutcome.getRelease() != null
+        && serviceStepOutcome.getRelease().getName() != null) {
+      String rawReleaseName = serviceStepOutcome.getRelease().getName();
+      return Optional.ofNullable(resolveAndValidateReleaseName(ambiance, rawReleaseName));
+    }
+    return Optional.empty();
   }
 
   public String getFileContentAsBase64(Ambiance ambiance, String scopedFilePath, long allowedBytesFileSize) {

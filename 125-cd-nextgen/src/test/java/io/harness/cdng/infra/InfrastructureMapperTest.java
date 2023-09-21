@@ -8,6 +8,7 @@
 package io.harness.cdng.infra;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.rule.OwnerRule.ABHINAV2;
 import static io.harness.rule.OwnerRule.ABHISHEK;
 import static io.harness.rule.OwnerRule.ACASIAN;
 import static io.harness.rule.OwnerRule.ANIL;
@@ -39,6 +40,7 @@ import io.harness.cdng.infra.beans.K8sAwsInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sAzureInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sGcpInfrastructureOutcome;
+import io.harness.cdng.infra.beans.K8sRancherInfrastructureOutcome;
 import io.harness.cdng.infra.beans.PdcInfrastructureOutcome;
 import io.harness.cdng.infra.beans.ServerlessAwsLambdaInfrastructureOutcome;
 import io.harness.cdng.infra.beans.SshWinRmAzureInfrastructureOutcome;
@@ -57,10 +59,12 @@ import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
 import io.harness.cdng.infra.yaml.K8sAwsInfrastructure;
 import io.harness.cdng.infra.yaml.K8sAzureInfrastructure;
 import io.harness.cdng.infra.yaml.K8sGcpInfrastructure;
+import io.harness.cdng.infra.yaml.K8sRancherInfrastructure;
 import io.harness.cdng.infra.yaml.PdcInfrastructure;
 import io.harness.cdng.infra.yaml.ServerlessAwsLambdaInfrastructure;
 import io.harness.cdng.infra.yaml.SshWinRmAzureInfrastructure;
 import io.harness.cdng.infra.yaml.TanzuApplicationServiceInfrastructure;
+import io.harness.cdng.k8s.HarnessRelease;
 import io.harness.cdng.manifest.yaml.InlineStoreConfig;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
@@ -604,5 +608,141 @@ public class InfrastructureMapperTest extends CategoryTest {
     InfrastructureOutcome infrastructureOutcome = infrastructureMapper.toOutcome(
         k8SGcpInfrastructure, null, environment, serviceOutcome, "accountId", "projId", "orgId", tags);
     assertThat(infrastructureOutcome).isEqualTo(k8sGcpInfrastructureOutcome);
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testK8sDirectReleaseName() {
+    String serviceReleaseName = "K8sRelease";
+    String infraReleaseName = "InfraK8sRelease";
+    ServiceStepOutcome serviceStepOutcomeWithRelease =
+        ServiceStepOutcome.builder().release(HarnessRelease.builder().name(serviceReleaseName).build()).build();
+    ServiceStepOutcome serviceStepOutcomeWithoutRelease = ServiceStepOutcome.builder().build();
+
+    K8SDirectInfrastructure directInfrastructure = K8SDirectInfrastructure.builder()
+                                                       .connectorRef(ParameterField.createValueField("connectorId"))
+                                                       .namespace(ParameterField.createValueField("namespace"))
+                                                       .releaseName(ParameterField.createValueField(infraReleaseName))
+                                                       .build();
+
+    K8sDirectInfrastructureOutcome infrastructureOutcome =
+        (K8sDirectInfrastructureOutcome) infrastructureMapper.toOutcome(directInfrastructure, null, environment,
+            serviceStepOutcomeWithRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(serviceReleaseName);
+
+    infrastructureOutcome = (K8sDirectInfrastructureOutcome) infrastructureMapper.toOutcome(directInfrastructure, null,
+        environment, serviceStepOutcomeWithoutRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(infraReleaseName);
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testK8sGcpReleaseName() {
+    String serviceReleaseName = "K8sRelease";
+    String infraReleaseName = "InfraK8sRelease";
+    ServiceStepOutcome serviceStepOutcomeWithRelease =
+        ServiceStepOutcome.builder().release(HarnessRelease.builder().name(serviceReleaseName).build()).build();
+    ServiceStepOutcome serviceStepOutcomeWithoutRelease = ServiceStepOutcome.builder().build();
+
+    K8sGcpInfrastructure infrastructure = K8sGcpInfrastructure.builder()
+                                              .connectorRef(ParameterField.createValueField("connectorId"))
+                                              .namespace(ParameterField.createValueField("namespace"))
+                                              .cluster(ParameterField.createValueField("cluster"))
+                                              .releaseName(ParameterField.createValueField(infraReleaseName))
+                                              .build();
+
+    K8sGcpInfrastructureOutcome infrastructureOutcome =
+        (K8sGcpInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null, environment,
+            serviceStepOutcomeWithRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(serviceReleaseName);
+
+    infrastructureOutcome = (K8sGcpInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null,
+        environment, serviceStepOutcomeWithoutRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(infraReleaseName);
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testK8sAzureReleaseName() {
+    String serviceReleaseName = "K8sRelease";
+    String infraReleaseName = "InfraK8sRelease";
+    ServiceStepOutcome serviceStepOutcomeWithRelease =
+        ServiceStepOutcome.builder().release(HarnessRelease.builder().name(serviceReleaseName).build()).build();
+    ServiceStepOutcome serviceStepOutcomeWithoutRelease = ServiceStepOutcome.builder().build();
+
+    K8sAzureInfrastructure infrastructure = K8sAzureInfrastructure.builder()
+                                                .connectorRef(ParameterField.createValueField("connectorId"))
+                                                .namespace(ParameterField.createValueField("namespace"))
+                                                .cluster(ParameterField.createValueField("cluster"))
+                                                .releaseName(ParameterField.createValueField(infraReleaseName))
+                                                .resourceGroup(ParameterField.createValueField("res-group"))
+                                                .subscriptionId(ParameterField.createValueField("sub-id"))
+                                                .build();
+
+    K8sAzureInfrastructureOutcome infrastructureOutcome =
+        (K8sAzureInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null, environment,
+            serviceStepOutcomeWithRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(serviceReleaseName);
+
+    infrastructureOutcome = (K8sAzureInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null,
+        environment, serviceStepOutcomeWithoutRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(infraReleaseName);
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testK8sAwsReleaseName() {
+    String serviceReleaseName = "K8sRelease";
+    String infraReleaseName = "InfraK8sRelease";
+    ServiceStepOutcome serviceStepOutcomeWithRelease =
+        ServiceStepOutcome.builder().release(HarnessRelease.builder().name(serviceReleaseName).build()).build();
+    ServiceStepOutcome serviceStepOutcomeWithoutRelease = ServiceStepOutcome.builder().build();
+
+    K8sAwsInfrastructure infrastructure = K8sAwsInfrastructure.builder()
+                                              .connectorRef(ParameterField.createValueField("connectorId"))
+                                              .namespace(ParameterField.createValueField("namespace"))
+                                              .cluster(ParameterField.createValueField("cluster"))
+                                              .releaseName(ParameterField.createValueField(infraReleaseName))
+                                              .build();
+
+    K8sAwsInfrastructureOutcome infrastructureOutcome =
+        (K8sAwsInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null, environment,
+            serviceStepOutcomeWithRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(serviceReleaseName);
+
+    infrastructureOutcome = (K8sAwsInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null,
+        environment, serviceStepOutcomeWithoutRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(infraReleaseName);
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testK8sRancherReleaseName() {
+    String serviceReleaseName = "K8sRelease";
+    String infraReleaseName = "InfraK8sRelease";
+    ServiceStepOutcome serviceStepOutcomeWithRelease =
+        ServiceStepOutcome.builder().release(HarnessRelease.builder().name(serviceReleaseName).build()).build();
+    ServiceStepOutcome serviceStepOutcomeWithoutRelease = ServiceStepOutcome.builder().build();
+
+    K8sRancherInfrastructure infrastructure = K8sRancherInfrastructure.builder()
+                                                  .connectorRef(ParameterField.createValueField("connectorId"))
+                                                  .namespace(ParameterField.createValueField("namespace"))
+                                                  .cluster(ParameterField.createValueField("cluster"))
+                                                  .releaseName(ParameterField.createValueField(infraReleaseName))
+                                                  .build();
+
+    K8sRancherInfrastructureOutcome infrastructureOutcome =
+        (K8sRancherInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null, environment,
+            serviceStepOutcomeWithRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(serviceReleaseName);
+
+    infrastructureOutcome = (K8sRancherInfrastructureOutcome) infrastructureMapper.toOutcome(infrastructure, null,
+        environment, serviceStepOutcomeWithoutRelease, "accountId", "projId", "orgId", Collections.emptyMap());
+    assertThat(infrastructureOutcome.getReleaseName()).isEqualTo(infraReleaseName);
   }
 }

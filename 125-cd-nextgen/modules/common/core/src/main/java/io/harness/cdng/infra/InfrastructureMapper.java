@@ -123,11 +123,14 @@ public class InfrastructureMapper {
         K8SDirectInfrastructure k8SDirectInfrastructure = (K8SDirectInfrastructure) infrastructure;
         InfraKey k8sDirectInfraKey = InfrastructureKeyGenerator.createInfraKey(
             service, environmentOutcome, k8SDirectInfrastructure.getInfrastructureKeyValues());
+        Optional<String> k8sDirectServiceReleaseName = getReleaseName(service);
+        String k8sDirectReleaseName =
+            k8sDirectServiceReleaseName.orElseGet(() -> getValueOrExpression(k8SDirectInfrastructure.getReleaseName()));
         K8sDirectInfrastructureOutcome k8SDirectInfrastructureOutcome =
             K8sDirectInfrastructureOutcome.builder()
                 .connectorRef(k8SDirectInfrastructure.getConnectorRef().getValue())
                 .namespace(k8SDirectInfrastructure.getNamespace().getValue())
-                .releaseName(getValueOrExpression(k8SDirectInfrastructure.getReleaseName()))
+                .releaseName(k8sDirectReleaseName)
                 .environment(environmentOutcome)
                 .infrastructureKey(k8sDirectInfraKey.getKey())
                 .infrastructureKeyShort(k8sDirectInfraKey.getShortKey())
@@ -141,12 +144,15 @@ public class InfrastructureMapper {
         K8sGcpInfrastructure k8sGcpInfrastructure = (K8sGcpInfrastructure) infrastructure;
         InfraKey k8sGcpInfraKey = InfrastructureKeyGenerator.createInfraKey(
             service, environmentOutcome, k8sGcpInfrastructure.getInfrastructureKeyValues());
+        Optional<String> k8sGcpServiceReleaseName = getReleaseName(service);
+        String k8sGcpReleaseName =
+            k8sGcpServiceReleaseName.orElseGet(() -> getValueOrExpression(k8sGcpInfrastructure.getReleaseName()));
         K8sGcpInfrastructureOutcome k8sGcpInfrastructureOutcome =
             K8sGcpInfrastructureOutcome.builder()
                 .connectorRef(k8sGcpInfrastructure.getConnectorRef().getValue())
                 .namespace(k8sGcpInfrastructure.getNamespace().getValue())
                 .cluster(k8sGcpInfrastructure.getCluster().getValue())
-                .releaseName(getValueOrExpression(k8sGcpInfrastructure.getReleaseName()))
+                .releaseName(k8sGcpReleaseName)
                 .environment(environmentOutcome)
                 .infrastructureKey(k8sGcpInfraKey.getKey())
                 .infrastructureKeyShort(k8sGcpInfraKey.getShortKey())
@@ -177,12 +183,15 @@ public class InfrastructureMapper {
         K8sAzureInfrastructure k8sAzureInfrastructure = (K8sAzureInfrastructure) infrastructure;
         InfraKey k8sAzureInfraKey = InfrastructureKeyGenerator.createInfraKey(
             service, environmentOutcome, k8sAzureInfrastructure.getInfrastructureKeyValues());
+        Optional<String> k8sAzureServiceReleaseName = getReleaseName(service);
+        String k8sAzureReleaseName =
+            k8sAzureServiceReleaseName.orElseGet(() -> getValueOrExpression(k8sAzureInfrastructure.getReleaseName()));
         K8sAzureInfrastructureOutcome k8sAzureInfrastructureOutcome =
             K8sAzureInfrastructureOutcome.builder()
                 .connectorRef(getParameterFieldValue(k8sAzureInfrastructure.getConnectorRef()))
                 .namespace(getParameterFieldValue(k8sAzureInfrastructure.getNamespace()))
                 .cluster(getParameterFieldValue(k8sAzureInfrastructure.getCluster()))
-                .releaseName(getValueOrExpression(k8sAzureInfrastructure.getReleaseName()))
+                .releaseName(k8sAzureReleaseName)
                 .environment(environmentOutcome)
                 .infrastructureKey(k8sAzureInfraKey.getKey())
                 .infrastructureKeyShort(k8sAzureInfraKey.getShortKey())
@@ -423,12 +432,15 @@ public class InfrastructureMapper {
         K8sAwsInfrastructure k8sAwsInfrastructure = (K8sAwsInfrastructure) infrastructure;
         InfraKey k8sAwsInfraKey = InfrastructureKeyGenerator.createInfraKey(
             service, environmentOutcome, k8sAwsInfrastructure.getInfrastructureKeyValues());
+        Optional<String> k8sAwsServiceReleaseName = getReleaseName(service);
+        String k8sAwsReleaseName =
+            k8sAwsServiceReleaseName.orElseGet(() -> getValueOrExpression(k8sAwsInfrastructure.getReleaseName()));
         K8sAwsInfrastructureOutcome k8sAwsInfrastructureOutcome =
             K8sAwsInfrastructureOutcome.builder()
                 .connectorRef(k8sAwsInfrastructure.getConnectorRef().getValue())
                 .namespace(k8sAwsInfrastructure.getNamespace().getValue())
                 .cluster(k8sAwsInfrastructure.getCluster().getValue())
-                .releaseName(getValueOrExpression(k8sAwsInfrastructure.getReleaseName()))
+                .releaseName(k8sAwsReleaseName)
                 .environment(environmentOutcome)
                 .infrastructureKey(k8sAwsInfraKey.getKey())
                 .infrastructureKeyShort(k8sAwsInfraKey.getShortKey())
@@ -442,12 +454,15 @@ public class InfrastructureMapper {
         K8sRancherInfrastructure rancherInfrastructure = (K8sRancherInfrastructure) infrastructure;
         InfraKey k8sRancherInfraKey = InfrastructureKeyGenerator.createInfraKey(
             service, environmentOutcome, rancherInfrastructure.getInfrastructureKeyValues());
+        Optional<String> k8sRancherServiceReleaseName = getReleaseName(service);
+        String k8sRancherReleaseName =
+            k8sRancherServiceReleaseName.orElseGet(() -> getValueOrExpression(rancherInfrastructure.getReleaseName()));
         K8sRancherInfrastructureOutcome rancherInfrastructureOutcome =
             K8sRancherInfrastructureOutcome.builder()
                 .connectorRef(rancherInfrastructure.getConnectorRef().getValue())
                 .namespace(rancherInfrastructure.getNamespace().getValue())
                 .clusterName(rancherInfrastructure.getCluster().getValue())
-                .releaseName(getValueOrExpression(rancherInfrastructure.getReleaseName()))
+                .releaseName(k8sRancherReleaseName)
                 .environment(environmentOutcome)
                 .infrastructureKey(k8sRancherInfraKey.getKey())
                 .infrastructureKeyShort(k8sRancherInfraKey.getShortKey())
@@ -468,6 +483,14 @@ public class InfrastructureMapper {
       infrastructureOutcome.setTags(mergedTags);
     }
     return infrastructureOutcome;
+  }
+
+  private Optional<String> getReleaseName(ServiceStepOutcome service) {
+    if (service != null && service.getRelease() != null && service.getRelease().getName() != null) {
+      return Optional.of(service.getRelease().getName());
+    }
+
+    return Optional.empty();
   }
 
   private void setConnectorInOutcome(Infrastructure infrastructure, String accountIdentifier, String projectIdentifier,
