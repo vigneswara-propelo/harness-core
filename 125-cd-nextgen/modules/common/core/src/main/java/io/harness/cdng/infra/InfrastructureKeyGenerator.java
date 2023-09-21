@@ -39,7 +39,12 @@ public class InfrastructureKeyGenerator {
 
   public String createFullInfraKey(ServiceStepOutcome service, EnvironmentOutcome env, String... params) {
     String formattedParams = String.join(INFRA_KEY_DELIMITER, params);
-    String rawKey = String.join(INFRA_KEY_DELIMITER, service.getIdentifier(), env.getIdentifier(), formattedParams);
+    String rawKey;
+    if (service == null) {
+      rawKey = String.join(INFRA_KEY_DELIMITER, env.getIdentifier(), formattedParams);
+    } else {
+      rawKey = String.join(INFRA_KEY_DELIMITER, service.getIdentifier(), env.getIdentifier(), formattedParams);
+    }
     return hashKey(rawKey.getBytes(UTF_8));
   }
 

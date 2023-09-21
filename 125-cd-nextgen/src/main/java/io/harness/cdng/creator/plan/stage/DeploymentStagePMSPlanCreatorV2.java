@@ -10,7 +10,6 @@ package io.harness.cdng.creator.plan.stage;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
-import static java.lang.Boolean.parseBoolean;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -19,7 +18,6 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.beans.FeatureName;
 import io.harness.cdng.creator.plan.envGroup.EnvGroupPlanCreatorHelper;
 import io.harness.cdng.creator.plan.infrastructure.InfrastructurePmsPlanCreator;
 import io.harness.cdng.creator.plan.service.ServiceAllInOnePlanCreatorUtils;
@@ -56,7 +54,6 @@ import io.harness.freeze.service.FreezeEvaluateService;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
 import io.harness.ng.core.serviceoverride.services.ServiceOverrideService;
-import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.plancreator.stages.AbstractStagePlanCreator;
 import io.harness.plancreator.steps.GenericStepPMSPlanCreator;
 import io.harness.plancreator.steps.common.SpecParameters;
@@ -92,7 +89,6 @@ import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rbac.CDNGRbacUtility;
-import io.harness.remote.client.NGRestUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.strategy.StrategyValidationUtils;
 import io.harness.utils.NGFeatureFlagHelperService;
@@ -164,10 +160,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
   @Inject private ServicePlanCreatorHelper servicePlanCreatorHelper;
   @Inject private FreezeEvaluateService freezeEvaluateService;
   @Inject @Named("PRIVILEGED") private AccessControlClient accessControlClient;
-  @Inject private NGSettingsClient settingsClient;
-
-  private static final String PROJECT_SCOPED_RESOURCE_CONSTRAINT_SETTING_ID =
-      "project_scoped_resource_constraint_queue";
+  @Inject private StagePlanCreatorHelper stagePlanCreatorHelper;
 
   @Override
   public Set<String> getSupportedStageTypes() {
@@ -263,14 +256,16 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
         throw new InvalidRequestException("Execution section cannot be absent in deploy stage");
       }
 
-      final boolean isProjectScopedResourceConstraintQueue = isProjectScopedResourceConstraintQueueByFFOrSetting(ctx);
+      final boolean isProjectScopedResourceConstraintQueue =
+          stagePlanCreatorHelper.isProjectScopedResourceConstraintQueueByFFOrSetting(ctx);
       if (v2Flow(stageNode)) {
         if (isGitopsEnabled(stageNode.getDeploymentStageConfig())) {
           // GitOps flow doesn't fork on environments, so handling it in this function.
           return buildPlanCreationResponse(ctx, planCreationResponseMap, stageNode, specField, executionField);
         } else {
-          List<AdviserObtainment> adviserObtainments = addResourceConstraintDependencyWithWhenCondition(
-              planCreationResponseMap, specField, ctx, isProjectScopedResourceConstraintQueue);
+          List<AdviserObtainment> adviserObtainments =
+              stagePlanCreatorHelper.addResourceConstraintDependencyWithWhenCondition(
+                  planCreationResponseMap, specField, ctx, isProjectScopedResourceConstraintQueue);
           String infraNodeId = addInfrastructureNode(planCreationResponseMap, stageNode, adviserObtainments, specField);
           Optional<String> provisionerIdOptional =
               addProvisionerNodeIfNeeded(specField, planCreationResponseMap, stageNode, infraNodeId);
@@ -298,15 +293,6 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       throw new InvalidRequestException(
           "Invalid yaml for Deployment stage with identifier - " + stageNode.getIdentifier(), e);
     }
-  }
-
-  private boolean isProjectScopedResourceConstraintQueueByFFOrSetting(PlanCreationContext ctx) {
-    return featureFlagHelperService.isEnabled(
-               ctx.getAccountIdentifier(), FeatureName.CDS_PROJECT_SCOPED_RESOURCE_CONSTRAINT_QUEUE)
-        || parseBoolean(NGRestUtils
-                            .getResponse(settingsClient.getSetting(
-                                PROJECT_SCOPED_RESOURCE_CONSTRAINT_SETTING_ID, ctx.getAccountIdentifier(), null, null))
-                            .getValue());
   }
 
   private LinkedHashMap<String, PlanCreationResponse> buildPlanCreationResponse(PlanCreationContext ctx,
@@ -372,13 +358,6 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       stageYamlFieldMap = StrategyUtils.modifyStageLayoutNodeGraph(stageYamlField);
     }
     return GraphLayoutResponse.builder().layoutNodes(stageYamlFieldMap).build();
-  }
-
-  private List<AdviserObtainment> addResourceConstraintDependencyWithWhenCondition(
-      LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap, YamlField specField,
-      PlanCreationContext context, boolean isProjectScopedResourceConstraintQueue) {
-    return InfrastructurePmsPlanCreator.addResourceConstraintDependency(
-        planCreationResponseMap, specField, kryoSerializer, context, isProjectScopedResourceConstraintQueue);
   }
 
   private boolean v2Flow(DeploymentStageNode stageNode) {

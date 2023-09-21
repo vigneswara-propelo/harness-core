@@ -13,6 +13,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.pms.sdk.core.steps.io.StepParameters;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,4 +22,6 @@ import lombok.Data;
 @Data
 @Builder
 @RecasterAlias("io.harness.cdng.environment.steps.CustomStageEnvironmentStepParameters")
-public class CustomStageEnvironmentStepParameters implements StepParameters {}
+public class CustomStageEnvironmentStepParameters implements StepParameters {
+  private List<String> childrenNodeIds;
+}

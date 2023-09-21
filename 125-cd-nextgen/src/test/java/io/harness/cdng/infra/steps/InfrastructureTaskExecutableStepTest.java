@@ -86,6 +86,7 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.tasks.TaskRequest;
 import io.harness.pms.contracts.steps.StepCategory;
+import io.harness.pms.sdk.core.data.OptionalOutcome;
 import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.execution.invokers.StrategyHelper;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
@@ -222,8 +223,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   public void testObtainTaskAfterRbacWithSshAzureInfra() {
     when(infrastructureStepHelper.validateAndGetConnectors(eq(connectorRef), eq(ambiance), any()))
         .thenReturn(Arrays.asList(azureConnectorInfoDTO));
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(azureSshInfraDelegateConfig);
     when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
         .thenReturn(SshWinRmAzureInfrastructureOutcome.builder()
@@ -257,8 +262,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   public void testObtainTaskAfterRbacWithSshAwsInfra() {
     when(infrastructureStepHelper.validateAndGetConnectors(eq(connectorRef), eq(ambiance), any()))
         .thenReturn(Arrays.asList(awsConnectorInfoDTO));
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(awsSshInfraDelegateConfig);
     when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
         .thenReturn(SshWinRmAwsInfrastructureOutcome.builder()
@@ -292,8 +301,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   public void testObtainTaskAfterRbacWithWinRmAzureInfra() {
     when(infrastructureStepHelper.validateAndGetConnectors(eq(connectorRef), eq(ambiance), any()))
         .thenReturn(Arrays.asList(azureConnectorInfoDTO));
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.WINRM).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.WINRM).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getWinRmInfraDelegateConfig(any(), eq(ambiance))).thenReturn(azureWinrmInfraDelegateConfig);
     when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
         .thenReturn(SshWinRmAzureInfrastructureOutcome.builder()
@@ -327,8 +340,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   public void testObtainTaskAfterRbacWithWinRmAwsInfra() {
     when(infrastructureStepHelper.validateAndGetConnectors(eq(connectorRef), eq(ambiance), any()))
         .thenReturn(Arrays.asList(awsConnectorInfoDTO));
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.WINRM).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.WINRM).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getWinRmInfraDelegateConfig(any(), eq(ambiance))).thenReturn(awsWinrmInfraDelegateConfig);
     when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
         .thenReturn(SshWinRmAwsInfrastructureOutcome.builder()
@@ -360,8 +377,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   @Owner(developers = ACASIAN)
   @Category(UnitTests.class)
   public void testHandleAzureTaskResultWithSecurityContextSuccess() throws Exception {
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(azureSshInfraDelegateConfig);
     doReturn(OptionalSweepingOutput.builder()
                  .found(true)
@@ -425,8 +446,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   @Owner(developers = VITALIE)
   @Category(UnitTests.class)
   public void testHandleAwsTaskResultWithSecurityContextSuccess() throws Exception {
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(awsSshInfraDelegateConfig);
     when(stageExecutionHelper.saveAndExcludeHostsWithSameArtifactDeployedIfNeeded(
              eq(ambiance), any(ExecutionInfoKey.class), any(), any(Set.class), anyString(), anyBoolean(), eq(null)))
@@ -491,8 +516,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   @Owner(developers = ACASIAN)
   @Category(UnitTests.class)
   public void testHandleAzureTaskResultWithSecurityContextFailure() throws Exception {
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(azureSshInfraDelegateConfig);
     doReturn(OptionalSweepingOutput.builder()
                  .found(true)
@@ -529,8 +558,12 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
   @Owner(developers = VITALIE)
   @Category(UnitTests.class)
   public void testHandleAwsTaskResultWithSecurityContextFailure() throws Exception {
-    when(outcomeService.resolve(any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
-        .thenReturn(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build());
+    when(outcomeService.resolveOptional(
+             any(), eq(RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.SERVICE))))
+        .thenReturn(OptionalOutcome.builder()
+                        .outcome(ServiceStepOutcome.builder().type(ServiceSpecType.SSH).build())
+                        .found(true)
+                        .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(awsSshInfraDelegateConfig);
     doReturn(OptionalSweepingOutput.builder()
                  .found(true)

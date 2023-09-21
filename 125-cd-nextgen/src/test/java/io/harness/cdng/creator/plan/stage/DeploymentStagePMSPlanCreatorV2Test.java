@@ -108,6 +108,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import retrofit2.Call;
 
@@ -118,6 +119,7 @@ public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
   @Inject private KryoSerializer kryoSerializer;
   @Mock private FreezeEvaluateService freezeEvaluateService;
   @Mock private AccessControlClient accessControlClient;
+  @Spy private StagePlanCreatorHelper stagePlanCreatorHelper;
   @InjectMocks private DeploymentStagePMSPlanCreatorV2 deploymentStagePMSPlanCreator;
 
   @Mock private EnvironmentInfraFilterHelper environmentInfraFilterHelper;
@@ -131,6 +133,7 @@ public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
   public void setUp() throws Exception {
     mocks = MockitoAnnotations.openMocks(this);
 
+    Reflect.on(stagePlanCreatorHelper).set("kryoSerializer", kryoSerializer);
     Reflect.on(deploymentStagePMSPlanCreator).set("kryoSerializer", kryoSerializer);
   }
 
@@ -194,6 +197,7 @@ public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
   @Parameters(method = "getDeploymentStageConfig")
   @PrepareForTest(YamlUtils.class)
   public void testCreatePlanForChildrenNodes(DeploymentStageNode node) throws IOException {
+    doReturn(false).when(stagePlanCreatorHelper).isProjectScopedResourceConstraintQueueByFFOrSetting(any());
     node.setFailureStrategies(
         ParameterField.createValueField(List.of(FailureStrategyConfig.builder()
                                                     .onFailure(OnFailureConfig.builder()

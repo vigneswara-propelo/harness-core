@@ -108,6 +108,7 @@ import io.harness.pms.contracts.plan.PrincipalType;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.rbac.PipelineRbacHelper;
 import io.harness.pms.sdk.core.data.ExecutionSweepingOutput;
+import io.harness.pms.sdk.core.data.OptionalOutcome;
 import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.data.Outcome;
 import io.harness.pms.sdk.core.execution.SdkGraphVisualizationDataService;
@@ -192,9 +193,9 @@ public class InfrastructureTaskExecutableStepV2Test extends CategoryTest {
   public void setUp() throws Exception {
     this.mocks = MockitoAnnotations.openMocks(this);
 
-    doReturn(ServiceStepOutcome.builder().type("ssh").build())
+    doReturn(OptionalOutcome.builder().outcome(ServiceStepOutcome.builder().type("ssh").build()).found(true).build())
         .when(outcomeService)
-        .resolve(any(), eq(RefObjectUtils.getOutcomeRefObject("service")));
+        .resolveOptional(any(), eq(RefObjectUtils.getOutcomeRefObject("service")));
 
     doReturn(EnvironmentOutcome.builder().type(PreProduction).build())
         .when(sweepingOutputService)

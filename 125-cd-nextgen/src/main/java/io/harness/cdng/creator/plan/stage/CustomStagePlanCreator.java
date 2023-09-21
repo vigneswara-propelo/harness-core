@@ -11,6 +11,7 @@ import static io.harness.pms.yaml.YAMLFieldNameConstants.CUSTOM;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.creator.plan.infrastructure.InfrastructurePmsPlanCreator;
 import io.harness.cdng.environment.helper.EnvironmentPlanCreatorHelper;
 import io.harness.cdng.environment.steps.CustomStageEnvironmentStepParameters;
 import io.harness.cdng.environment.yaml.EnvironmentYamlV2;
@@ -25,6 +26,7 @@ import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.plancreator.steps.common.StageElementParameters;
 import io.harness.plancreator.steps.common.StageElementParameters.StageElementParametersBuilder;
 import io.harness.plancreator.strategy.StrategyUtils;
+import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
 import io.harness.pms.contracts.plan.Dependency;
@@ -51,6 +53,7 @@ import io.harness.yaml.utils.NGVariablesUtils;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -61,6 +64,7 @@ import java.util.Set;
 @OwnedBy(HarnessTeam.CDC)
 public class CustomStagePlanCreator extends AbstractStagePlanCreator<CustomStageNode> {
   @Inject private KryoSerializer kryoSerializer;
+  @Inject private StagePlanCreatorHelper stagePlanCreatorHelper;
 
   @Override
   public Set<String> getSupportedStageTypes() {
@@ -141,29 +145,61 @@ public class CustomStagePlanCreator extends AbstractStagePlanCreator<CustomStage
             .build());
 
     String executionFieldUuid = executionField.getNode().getUuid();
+    String specNextNodeUuid = executionFieldUuid;
 
     EnvironmentYamlV2 finalEnvironmentYamlV2 = field.getCustomStageConfig().getEnvironment();
     boolean envNodeExists = finalEnvironmentYamlV2 != null && finalEnvironmentYamlV2.getEnvironmentRef() != null;
-    String envNodeUuid = UUIDGenerator.generateUuid();
+
+    String envNodeUuid;
+    // Adding Env & Infra nodes
+    if (envNodeExists) {
+      String infraNodeUuid = null;
+      if (finalEnvironmentYamlV2.getInfrastructureDefinition() != null) {
+        infraNodeUuid = addInfraNode(planCreationResponseMap, finalEnvironmentYamlV2, specField, ctx);
+      }
+      String envNextNodeUuid = EmptyPredicate.isNotEmpty(infraNodeUuid) ? infraNodeUuid : executionFieldUuid;
+      envNodeUuid = addEnvNode(planCreationResponseMap, envNextNodeUuid);
+      specNextNodeUuid = envNodeUuid;
+    }
 
     // Adding Spec node
-    String specNextNodeUuid = envNodeExists ? envNodeUuid : executionFieldUuid;
     PlanCreationResponse specPlanCreationResponse = prepareDependencyForSpecNode(specField, specNextNodeUuid);
     planCreationResponseMap.put(specField.getNode().getUuid(), specPlanCreationResponse);
 
-    // Adding Env node
-    if (envNodeExists) {
-      String envNextNodeUuid = executionFieldUuid;
-      final CustomStageEnvironmentStepParameters stepParameters =
-          CustomStageEnvironmentStepParameters.builder().build();
-      ByteString advisorParameters = ByteString.copyFrom(
-          kryoSerializer.asBytes(OnSuccessAdviserParameters.builder().nextNodeId(envNextNodeUuid).build()));
-      final PlanNode envNode =
-          EnvironmentPlanCreatorHelper.getPlanNodeForCustomStage(envNodeUuid, stepParameters, advisorParameters);
-      planCreationResponseMap.put(envNode.getUuid(), PlanCreationResponse.builder().planNode(envNode).build());
-    }
-
     return planCreationResponseMap;
+  }
+
+  private String addInfraNode(LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap,
+      EnvironmentYamlV2 finalEnvironmentYamlV2, YamlField specField, PlanCreationContext ctx) {
+    final boolean isProjectScopedResourceConstraintQueue =
+        stagePlanCreatorHelper.isProjectScopedResourceConstraintQueueByFFOrSetting(ctx);
+    List<AdviserObtainment> adviserObtainments =
+        stagePlanCreatorHelper.addResourceConstraintDependencyWithWhenCondition(
+            planCreationResponseMap, specField, ctx, isProjectScopedResourceConstraintQueue);
+
+    PlanNode infraNode = InfrastructurePmsPlanCreator.getCustomStageInfraTaskExecutableStepV2PlanNode(
+        finalEnvironmentYamlV2, adviserObtainments);
+    String infraNodeUuid = infraNode.getUuid();
+
+    planCreationResponseMap.put(infraNodeUuid, PlanCreationResponse.builder().planNode(infraNode).build());
+
+    return infraNodeUuid;
+  }
+
+  private String addEnvNode(
+      LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap, String envNextNodeUuid) {
+    String envNodeUuid = UUIDGenerator.generateUuid();
+    ByteString advisorParameters = ByteString.copyFrom(
+        kryoSerializer.asBytes(OnSuccessAdviserParameters.builder().nextNodeId(envNextNodeUuid).build()));
+
+    final CustomStageEnvironmentStepParameters stepParameters =
+        CustomStageEnvironmentStepParameters.builder().childrenNodeIds(new ArrayList<>()).build();
+
+    final PlanNode envNode =
+        EnvironmentPlanCreatorHelper.getEnvPlanNodeForCustomStage(envNodeUuid, stepParameters, advisorParameters);
+
+    planCreationResponseMap.put(envNode.getUuid(), PlanCreationResponse.builder().planNode(envNode).build());
+    return envNodeUuid;
   }
 
   private PlanCreationResponse prepareDependencyForSpecNode(YamlField specField, String uuid) {

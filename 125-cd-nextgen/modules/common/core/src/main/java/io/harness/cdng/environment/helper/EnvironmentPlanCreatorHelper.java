@@ -93,7 +93,7 @@ public class EnvironmentPlanCreatorHelper {
         .build();
   }
 
-  public PlanNode getPlanNodeForCustomStage(
+  public PlanNode getEnvPlanNodeForCustomStage(
       String envNodeUuid, StepParameters stepParameters, ByteString advisorParameters) {
     return PlanNode.builder()
         .uuid(envNodeUuid)
