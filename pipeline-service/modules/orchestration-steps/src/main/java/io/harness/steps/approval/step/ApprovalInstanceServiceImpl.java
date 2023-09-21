@@ -360,9 +360,10 @@ public class ApprovalInstanceServiceImpl implements ApprovalInstanceService {
     log.info("No. of approval instances fetched waiting for approval that will be auto rejected : {}",
         approvalInstances.size());
 
-    List<String> rejectedApprovalIds = new ArrayList<>();
-    approvalInstances.forEach(approvalInstance -> rejectedApprovalIds.add(approvalInstance.getId()));
-    return rejectedApprovalIds;
+    return approvalInstances.stream()
+        .filter(instance -> !instance.hasExpired())
+        .map(ApprovalInstance::getId)
+        .collect(Collectors.toList());
   }
 
   private List<ApprovalInstance> filterOnService(List<ApprovalInstance> approvalInstances, Ambiance currAmbiance) {
