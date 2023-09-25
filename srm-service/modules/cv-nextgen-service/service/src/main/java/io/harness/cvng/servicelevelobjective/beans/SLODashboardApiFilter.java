@@ -52,6 +52,4 @@ public class SLODashboardApiFilter {
   @Parameter(description = "For Filtering on the basis of environment identifiers")
   @QueryParam("envIdentifiers")
   List<String> envIdentifiers;
-
-  @Parameter(description = "For filtering only the Composite SLOs") @QueryParam("compositeSLO") boolean compositeSLO;
 }

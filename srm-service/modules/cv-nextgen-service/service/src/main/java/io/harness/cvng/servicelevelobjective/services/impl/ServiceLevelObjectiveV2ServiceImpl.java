@@ -813,7 +813,6 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
                     : null)
             .sliEvaluationType(filter.getEvaluationType())
             .childResource(filter.isChildResource())
-            .compositeSLO(filter.isCompositeSLO())
             .envIdentifiers(filter.getEnvIdentifiers())
             .build());
   }
@@ -1386,9 +1385,6 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
     if (isNotEmpty(filter.getUserJourneys())) {
       sloQuery.field(ServiceLevelObjectiveV2Keys.userJourneyIdentifiers).hasAnyOf(filter.getUserJourneys());
     }
-    if (filter.isCompositeSLO()) {
-      sloQuery = sloQuery.filter(ServiceLevelObjectiveV2Keys.type, ServiceLevelObjectiveType.COMPOSITE);
-    }
     if (isNotEmpty(filter.getIdentifiers())) {
       sloQuery.field(ServiceLevelObjectiveV2Keys.identifier).in(filter.getIdentifiers());
     }
@@ -1562,7 +1558,6 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
     ServiceLevelObjectiveType sloType;
     SLIEvaluationType sliEvaluationType;
     boolean childResource;
-    boolean compositeSLO;
     List<String> envIdentifiers;
   }
 }
