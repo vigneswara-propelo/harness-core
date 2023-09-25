@@ -25,31 +25,29 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.IDP)
-public class GithubMeanTimeToMergeParser implements DataPointParser {
-  private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+public class BitbucketMeanTimeToMergeParser implements DataPointParser {
+  private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
   @Override
-  public Object parseDataPoint(Map<String, Object> data, DataPointEntity dataPoint, Set<String> inputValues) {
+  public Object parseDataPoint(Map<String, Object> data, DataPointEntity dataPointIdentifier, Set<String> inputValues) {
     Map<String, Object> dataPointData = new HashMap<>();
     for (String inputValue : inputValues) {
       if (!data.containsKey(inputValue)) {
         dataPointData.putAll(constructDataPointInfo(inputValue, false, INVALID_BRANCH_NAME_ERROR));
         continue;
       }
-
       Map<String, Object> inputValueData = (Map<String, Object>) data.get(inputValue);
-      List<Map<String, Object>> edges =
-          (List<Map<String, Object>>) CommonUtils.findObjectByName(inputValueData, "edges");
-      if (isEmpty(edges)) {
+      List<Map<String, Object>> values =
+          (List<Map<String, Object>>) CommonUtils.findObjectByName(inputValueData, "values");
+      if (isEmpty(values)) {
         dataPointData.putAll(
             constructDataPointInfo(inputValue, false, format(NO_PULL_REQUESTS_FOUND, inputValue.replace("\"", ""))));
         continue;
       }
-      int numberOfPullRequests = edges.size();
+      int numberOfPullRequests = values.size();
       long totalTimeToMerge = 0;
-      for (Map<String, Object> edge : edges) {
-        Map<String, Object> node = (Map<String, Object>) edge.get("node");
-        long createdAtMillis = DateUtils.parseTimestamp((String) node.get("createdAt"), DATE_FORMAT);
-        long mergedAtMillis = DateUtils.parseTimestamp((String) node.get("mergedAt"), DATE_FORMAT);
+      for (Map<String, Object> value : values) {
+        long createdAtMillis = DateUtils.parseTimestamp((String) value.get("created_on"), DATE_FORMAT);
+        long mergedAtMillis = DateUtils.parseTimestamp((String) value.get("updated_on"), DATE_FORMAT);
         long timeToMergeMillis = mergedAtMillis - createdAtMillis;
         totalTimeToMerge += timeToMergeMillis;
       }

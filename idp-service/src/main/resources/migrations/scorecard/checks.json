@@ -3,8 +3,8 @@
     "id": "64d4f1a9b308cf71096284be",
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
     "identifier": "__HARNESS__bfeece93-8892-4459-be93-b7a647df7e5f",
-    "name": "Mean time to merge PR is less than 2 days",
-    "description": "Mean time to merge PR is less than 2 days",
+    "name": "GitHub Mean time to merge PR is less than 2 days",
+    "description": "GitHub Mean time to merge PR is less than 2 days",
     "ruleStrategy": "ALL_OF",
     "rules": [
       {
@@ -44,8 +44,8 @@
     "id": "64d5f23eb90d6686d2a9a007",
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
     "identifier": "__HARNESS__a9b98e87-d9c1-4c5e-9ba6-4485f171dbc4",
-    "name": "Branch protection is set",
-    "description": "Branch protection is set",
+    "name": "GitHub Branch protection is set",
+    "description": "GitHub Branch protection is set",
     "ruleStrategy": "ALL_OF",
     "rules": [
       {
@@ -105,8 +105,8 @@
     "id": "64ede62a8b4004661f8e59aa",
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
     "identifier": "__HARNESS__b9a99e87-d9c1-4c5e-9ba6-4605a771dbc4",
-    "name": "Gitleaks file exists",
-    "description": "Gitleaks file exists",
+    "name": "GitHub Gitleaks file exists",
+    "description": "GitHub Gitleaks file exists",
     "ruleStrategy": "ALL_OF",
     "rules": [
       {
@@ -321,5 +321,26 @@
     "tags": ["DevOps maturity"],
     "defaultBehaviour": "FAIL",
     "failMessage": "Application should be deployed within a week"
+  },
+  {
+    "id": "650c3ff3b0979ea005707417",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "__HARNESS__beefce94-8892-5590-be93-b7a247ef7e5e",
+    "name": "Bitbucket Mean time to merge PR is less than 2 days",
+    "description": "Bitbucket Mean time to merge PR is less than 2 days",
+    "ruleStrategy": "ALL_OF",
+    "rules": [
+      {
+        "data_source_identifier": "bitbucket",
+        "data_point_identifier": "meanTimeToMerge",
+        "conditional_input_value": "\"refs/\"",
+        "operator": "<",
+        "value": "48"
+      }
+    ],
+    "expression": "bitbucket.meanTimeToMerge < 48",
+    "tags": ["Development maturity"],
+    "defaultBehaviour": "FAIL",
+    "failMessage": "Mean time to merge PR is more than 2 days"
   }
 ]

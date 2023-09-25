@@ -175,6 +175,36 @@
       },
       "requestBody": "{BODY}"
     }
+  },
+  {
+    "id": "650ae5f5047ed6bddfdeee81",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "bitbucket_mean_time_to_merge_pr",
+    "dataSourceIdentifier": "bitbucket",
+    "type": "DirectHttp",
+    "apiRequestDetails": {
+      "method": "GET",
+      "url": "https://api.bitbucket.org/2.0/repositories/{WORKSPACE}/{REPOSITORY_NAME}/pullrequests?q=state=\"MERGED\"",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "{BASIC_AUTH}"
+      }
+    }
+  },
+  {
+    "id": "650ae614f618a0c0a125440d",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "bitbucket_is_branch_protection_set",
+    "dataSourceIdentifier": "bitbucket",
+    "type": "DirectHttp",
+    "apiRequestDetails": {
+      "method": "GET",
+      "url": "https://api.bitbucket.org/2.0/repositories/{WORKSPACE}/{REPOSITORY_NAME}/branch-restrictions?pattern={BRANCH_NAME_REPLACER}",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "{BASIC_AUTH}"
+      }
+    }
   }
 ]
 

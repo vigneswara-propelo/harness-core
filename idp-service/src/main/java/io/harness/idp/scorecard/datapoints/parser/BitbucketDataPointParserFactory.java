@@ -8,7 +8,6 @@
 package io.harness.idp.scorecard.datapoints.parser;
 
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_BRANCH_PROTECTED;
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_FILE_EXISTS;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.PULL_REQUEST_MEAN_TIME_TO_MERGE;
 
 import io.harness.annotations.dev.HarnessTeam;
@@ -19,20 +18,17 @@ import lombok.AllArgsConstructor;
 
 @OwnedBy(HarnessTeam.IDP)
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
-public class GithubDataPointParserFactory implements DataPointParserFactory {
-  private GithubMeanTimeToMergeParser githubMeanTimeToMergeParser;
-  private GithubIsBranchProtectedParser githubIsBranchProtectedParser;
-  private GithubFileExistsParser githubFileExistsParser;
+public class BitbucketDataPointParserFactory implements DataPointParserFactory {
+  private BitbucketMeanTimeToMergeParser bitbucketMeanTimeToMergeParser;
+  private BitbucketIsBranchProtectedParser bitbucketIsBranchProtectedParser;
 
+  @Override
   public DataPointParser getParser(String identifier) {
     switch (identifier) {
       case PULL_REQUEST_MEAN_TIME_TO_MERGE:
-        return githubMeanTimeToMergeParser;
+        return bitbucketMeanTimeToMergeParser;
       case IS_BRANCH_PROTECTED:
-        return githubIsBranchProtectedParser;
-      case IS_FILE_EXISTS:
-        return githubFileExistsParser;
-      // Add more cases for other parsers
+        return bitbucketIsBranchProtectedParser;
       default:
         throw new UnsupportedOperationException(String.format("Could not find DataPoint parser for %s", identifier));
     }

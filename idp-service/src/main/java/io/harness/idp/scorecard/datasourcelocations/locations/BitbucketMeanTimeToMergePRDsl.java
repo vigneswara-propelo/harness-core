@@ -8,14 +8,15 @@
 package io.harness.idp.scorecard.datasourcelocations.locations;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.idp.common.Constants.DEFAULT_BRANCH_KEY_ESCAPED;
 import static io.harness.idp.common.Constants.DSL_RESPONSE;
 import static io.harness.idp.common.Constants.ERROR_MESSAGE_KEY;
 import static io.harness.idp.common.Constants.MESSAGE_KEY;
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_FILE_EXISTS;
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.PULL_REQUEST_MEAN_TIME_TO_MERGE;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.SOURCE_LOCATION_ANNOTATION_ERROR;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_NAME;
-import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_OWNER;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPO_SCM;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.WORKSPACE;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -40,9 +41,10 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.IDP)
-public class GithubFileExistsDsl implements DataSourceLocation {
-  private static final String GITHUB_FILE_EXISTS_REPLACER = "{GITHUB_FILE_EXISTS_REPLACER}";
+public class BitbucketMeanTimeToMergePRDsl implements DataSourceLocation {
   DslClientFactory dslClientFactory;
+  private static final String DESTINATION_BRANCH_NAME_REPLACER = "{DESTINATION_BRANCH_NAME_REPLACER}";
+
   @Override
   public Map<String, Object> fetchData(String accountIdentifier, BackstageCatalogEntity backstageCatalogEntity,
       DataSourceLocationEntity dataSourceLocationEntity, Map<DataPointEntity, Set<String>> dataPointsAndInputValues,
@@ -50,34 +52,31 @@ public class GithubFileExistsDsl implements DataSourceLocation {
       Map<String, String> possibleReplaceableUrlPairs) throws NoSuchAlgorithmException, KeyManagementException {
     ApiRequestDetails apiRequestDetails = fetchApiRequestDetails(dataSourceLocationEntity);
     matchAndReplaceHeaders(apiRequestDetails.getHeaders(), replaceableHeaders);
-    apiRequestDetails.setUrl(replaceUrlsPlaceholdersIfAny(apiRequestDetails.getUrl(), possibleReplaceableUrlPairs));
     Map<String, Object> data = new HashMap<>();
 
     Optional<Map.Entry<DataPointEntity, Set<String>>> dataPointAndInputValuesOpt =
         dataPointsAndInputValues.entrySet()
             .stream()
-            .filter(entry -> entry.getKey().getIdentifier().equals(IS_FILE_EXISTS))
+            .filter(entry -> entry.getKey().getIdentifier().equals(PULL_REQUEST_MEAN_TIME_TO_MERGE))
             .findFirst();
 
     if (dataPointAndInputValuesOpt.isEmpty()) {
       return data;
     }
+
     DataPointEntity dataPoint = dataPointAndInputValuesOpt.get().getKey();
     Set<String> inputValues = dataPointAndInputValuesOpt.get().getValue();
-    String tempRequestBody = apiRequestDetails.getRequestBody(); // using temp variable to store unchanged requestBody
+    String tempUrl = apiRequestDetails.getUrl(); // using temp variable to store unchanged url
 
     for (String inputValue : inputValues) {
-      if (isEmpty(possibleReplaceableRequestBodyPairs.get(REPO_SCM))
-          || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_OWNER))
-          || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_NAME))) {
+      if (isEmpty(possibleReplaceableUrlPairs.get(REPO_SCM)) || isEmpty(possibleReplaceableUrlPairs.get(WORKSPACE))
+          || isEmpty(possibleReplaceableUrlPairs.get(REPOSITORY_NAME))) {
         data.put(inputValue, Map.of(ERROR_MESSAGE_KEY, SOURCE_LOCATION_ANNOTATION_ERROR));
         continue;
       }
-      apiRequestDetails.setRequestBody(tempRequestBody);
       Map<DataPointEntity, String> dataPointAndInputValueToFetch = Map.of(dataPoint, inputValue);
-      String requestBody =
-          constructRequestBody(apiRequestDetails, possibleReplaceableRequestBodyPairs, dataPointAndInputValueToFetch);
-      apiRequestDetails.setRequestBody(requestBody);
+      String url = constructUrl(tempUrl, possibleReplaceableUrlPairs, dataPointAndInputValueToFetch);
+      apiRequestDetails.setUrl(url);
       DslClient dslClient =
           dslClientFactory.getClient(accountIdentifier, possibleReplaceableRequestBodyPairs.get(REPO_SCM));
       Response response = getResponse(apiRequestDetails, dslClient, accountIdentifier);
@@ -97,18 +96,17 @@ public class GithubFileExistsDsl implements DataSourceLocation {
   }
 
   @Override
-  public String replaceInputValuePlaceholdersIfAny(Map<String, String> dataPointsAndInputValue, String requestBody) {
-    if (!isEmpty(dataPointsAndInputValue.get(IS_FILE_EXISTS))) {
-      String inputValue = dataPointsAndInputValue.get(IS_FILE_EXISTS);
-      inputValue = inputValue.replace("\"", "");
-      int lastSlash = inputValue.lastIndexOf("/");
-      if (lastSlash != -1) {
-        String path = inputValue.substring(0, lastSlash);
-        requestBody = requestBody.replace(GITHUB_FILE_EXISTS_REPLACER, "HEAD:" + path);
+  public String replaceInputValuePlaceholdersIfAny(Map<String, String> dataPointIdsAndInputValue, String url) {
+    if (!isEmpty(dataPointIdsAndInputValue.get(PULL_REQUEST_MEAN_TIME_TO_MERGE))) {
+      String inputValue = dataPointIdsAndInputValue.get(PULL_REQUEST_MEAN_TIME_TO_MERGE);
+      if (!inputValue.equals(DEFAULT_BRANCH_KEY_ESCAPED)) {
+        url = url.replace(DESTINATION_BRANCH_NAME_REPLACER,
+            " AND destination.branch.name="
+                + "\"" + inputValue + "\"");
       } else {
-        requestBody = requestBody.replace(GITHUB_FILE_EXISTS_REPLACER, "HEAD:");
+        url = url.replace(DESTINATION_BRANCH_NAME_REPLACER, "");
       }
     }
-    return requestBody;
+    return url;
   }
 }

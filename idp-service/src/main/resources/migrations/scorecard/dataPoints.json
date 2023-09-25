@@ -155,5 +155,27 @@
     "dataSourceLocationIdentifier": "kubernetes",
     "outcomeExpression":  "kubernetes.workload.status.conditions",
     "isConditional": false
+  },
+  {
+    "id": "650afb9076990ecb89d7d502",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "meanTimeToMerge",
+    "name": "Mean time to merge Pull Request (in hours)",
+    "type": "NUMBER",
+    "dataSourceIdentifier": "bitbucket",
+    "dataSourceLocationIdentifier": "bitbucket_mean_time_to_merge_pr",
+    "isConditional": true,
+    "conditionalInputValueDescription": "Branch name"
+  },
+  {
+    "id": "650afc30838d877cd2c8f881",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "isBranchProtected",
+    "name": "Branch protection is set (boolean)",
+    "type": "BOOLEAN",
+    "dataSourceIdentifier": "bitbucket",
+    "dataSourceLocationIdentifier": "bitbucket_is_branch_protection_set",
+    "isConditional": true,
+    "conditionalInputValueDescription" : "Branch name"
   }
 ]
