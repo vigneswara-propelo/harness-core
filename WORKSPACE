@@ -4623,8 +4623,8 @@ go_repository(
 go_repository(
     name = "com_github_harness_ti_client",
     importpath = "github.com/harness/ti-client",
-    sum = "h1:tKAZ/8G4ErcAMEPmVsA3A0w+aYpagXwT3fXxtFcJKiM=",
-    version = "v0.0.0-20230827043740-d394b7ccaa1a",
+    sum = "h1:MVFzBU0ScnbCHFxzyMZo5oLzeDwQLwaqibXQtjUzcvw=",
+    version = "v0.0.0-20230919114308-05b6697b67f9",
 )
 
 go_rules_dependencies()
