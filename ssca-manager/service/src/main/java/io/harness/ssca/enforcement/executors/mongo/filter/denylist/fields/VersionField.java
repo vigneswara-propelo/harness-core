@@ -35,7 +35,9 @@ public class VersionField implements Field {
       return null;
     } else {
       Operator operator = getOperator(denyListItem.getVersion());
-      String versionString = denyListItem.getVersion().split(operator.getNumericString())[1];
+      String versionString = operator == Operator.UNKNOWN
+          ? denyListItem.getVersion()
+          : denyListItem.getVersion().split(operator.getNumericString())[1];
       List<Integer> numericVersions = getVersion(versionString);
 
       return getDocument(numericVersions, operator);
