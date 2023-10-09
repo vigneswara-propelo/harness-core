@@ -5194,7 +5194,7 @@ plain_artifacts = [
     "org.codehaus.janino:commons-compiler:3.0.6",
     "org.codehaus.janino:janino:3.0.6",
     "org.codehaus.mojo:animal-sniffer-annotations:1.18",
-    "org.codehaus.plexus:plexus-utils:3.0.20",
+    "org.codehaus.plexus:plexus-utils:4.0.0",
     "org.codehaus.woodstox:stax2-api:4.2",
     "org.conscrypt:conscrypt-openjdk-uber:2.5.1",
     "org.coursera:metrics-datadog:1.1.13",
