@@ -918,6 +918,9 @@ public enum FeatureName {
   CDS_NG_K8S_SERVICE_RELEASE_NAME(
       "This flag enables the usage of release name in service configuration for K8s & Helm service types.",
       HarnessTeam.CDP),
+  CDS_NG_K8S_PASS_RELEASE_METADATA(
+      "This flag enables warnings in execution logs if conflicting service/infra are found while performing K8s deployments.",
+      HarnessTeam.CDP),
   CDS_K8S_EKS_LIST_CLUSTERS_ADD_REGION(
       "Allow the user to specify the region to be used for listing EKS clusters.", HarnessTeam.CDP),
   CDS_SHELL_VARIABLES_EXPORT("Export shell script output variables to different scopes", HarnessTeam.CDC),

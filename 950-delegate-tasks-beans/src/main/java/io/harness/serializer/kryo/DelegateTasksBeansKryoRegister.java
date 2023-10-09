@@ -832,6 +832,7 @@ import io.harness.delegate.task.k8s.K8sTaskType;
 import io.harness.delegate.task.k8s.KustomizeManifestDelegateConfig;
 import io.harness.delegate.task.k8s.OpenshiftManifestDelegateConfig;
 import io.harness.delegate.task.k8s.RancherK8sInfraDelegateConfig;
+import io.harness.delegate.task.k8s.ReleaseMetadata;
 import io.harness.delegate.task.k8s.data.K8sCanaryDataException;
 import io.harness.delegate.task.localstore.LocalStoreFetchFilesResult;
 import io.harness.delegate.task.localstore.ManifestFiles;
@@ -2577,5 +2578,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(HelmFetchChartManifestTaskParameters.class, 20000617);
     kryo.register(HelmFetchChartManifestResponse.class, 20000618);
     kryo.register(HelmChartManifest.class, 20000619);
+    kryo.register(ReleaseMetadata.class, 20001002);
   }
 }
