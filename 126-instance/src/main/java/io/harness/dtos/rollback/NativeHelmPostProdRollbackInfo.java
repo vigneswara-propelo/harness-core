@@ -20,7 +20,7 @@ import lombok.Data;
 @Builder
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
 @OwnedBy(HarnessTeam.CDP)
-public class K8sPostProdRollbackInfo implements PostProdRollbackSwimLaneInfo {
+public class NativeHelmPostProdRollbackInfo implements PostProdRollbackSwimLaneInfo {
   private final String lastPipelineExecutionName;
   private final String lastPipelineExecutionId;
   private final long lastDeployedAt;
