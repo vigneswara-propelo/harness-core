@@ -7,16 +7,12 @@ syntax = "proto3";
 
 package io.harness.delegate;
 
-import "920-delegate-service-beans/src/main/proto/io/harness/delegate/k8s_infra.proto";
-import "920-delegate-service-beans/src/main/proto/io/harness/delegate/log_config.proto";
+option java_multiple_files = true;
 option go_package = "920_delegate_service_beans";
 
-option java_multiple_files = true;
+import "920-delegate-service-beans/src/main/proto/io/harness/delegate/schedule_task.proto";
 
-message ExecutionInfrastructure {
-  LogConfig log_config = 1;  // log stream service settings
-  oneof spec {
-    K8sInfraSpec k8s = 2;
-    // VMInfraSpec
-  }
+service ScheduleTaskService {
+  rpc InitTask(SetupExecutionInfrastructureRequest) returns (SetupExecutionInfrastructureResponse);
+  rpc ExecuteTask(ScheduleTaskRequest) returns (ScheduleTaskResponse);
 }
