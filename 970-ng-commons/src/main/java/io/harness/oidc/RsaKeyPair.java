@@ -11,11 +11,13 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
 
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import lombok.Builder;
+import lombok.Value;
 
 @OwnedBy(PL)
+@Value
+@Builder
 public class RsaKeyPair {
-  RSAPublicKey publicKey;
-  RSAPrivateKey privateKey;
+  String publicKey;
+  String privateKey;
 }
