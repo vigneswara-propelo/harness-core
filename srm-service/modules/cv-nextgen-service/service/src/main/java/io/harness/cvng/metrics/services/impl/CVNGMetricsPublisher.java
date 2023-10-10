@@ -73,7 +73,7 @@ import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class CVNGMetricsPublisher implements MetricsPublisher, MetricDefinitionInitializer {
-  private static final String METRIC_PREFIX = "io_harness_cvng_mongodb_";
+  private static final String METRIC_PREFIX_FOR_DB = "io_harness_cvng_mongodb_";
   private static final Pattern METRIC_NAME_RE = Pattern.compile("[^a-zA-Z0-9_]");
   private static final String CONNECTION_POOL_SIZE = "connection_pool_size";
   private static final String CONNECTIONS_CHECKED_OUT = "connections_checked_out";
@@ -84,6 +84,7 @@ public class CVNGMetricsPublisher implements MetricsPublisher, MetricDefinitionI
   private static final String ENV = isEmpty(System.getenv("ENV")) ? "localhost" : System.getenv("ENV");
 
   private static final Double SNAPSHOT_FACTOR = 1.0D / (double) TimeUnit.SECONDS.toNanos(1L);
+  public static final String MEAN_SUFFIX = "_mean";
 
   private static final Map<String, Boolean> LE_TASKS_METRICS_TO_BE_RECORDED = new HashMap<>();
   @Inject private Clock clock;
@@ -147,33 +148,36 @@ public class CVNGMetricsPublisher implements MetricsPublisher, MetricDefinitionI
       String clientDescription = sanitizeName(serverId.getClusterId().getDescription());
       try (MongoMetricsContext ignore =
                new MongoMetricsContext(NAMESPACE, CONTAINER_NAME, serverAddress, clientDescription)) {
-        metricRegistry.recordGaugeValue(
-            METRIC_PREFIX + CONNECTION_POOL_MAX_SIZE, null, harnessConnectionPoolStatistics.getMaxSize());
-        metricRegistry.recordGaugeValue(
-            METRIC_PREFIX + CONNECTION_POOL_SIZE, null, harnessConnectionPoolStatistics.getSize());
-        metricRegistry.recordGaugeValue(
-            METRIC_PREFIX + CONNECTIONS_CHECKED_OUT, null, harnessConnectionPoolStatistics.getCheckedOutCount());
+        metricRegistry.recordGaugeValue(METRIC_PREFIX_FOR_DB + CONNECTION_POOL_MAX_SIZE,
+            CVNGPrometheusExporterUtils.contextLabels.values().toArray(new String[0]),
+            harnessConnectionPoolStatistics.getMaxSize());
+        metricRegistry.recordGaugeValue(METRIC_PREFIX_FOR_DB + CONNECTION_POOL_SIZE,
+            CVNGPrometheusExporterUtils.contextLabels.values().toArray(new String[0]),
+            harnessConnectionPoolStatistics.getSize());
+        metricRegistry.recordGaugeValue(METRIC_PREFIX_FOR_DB + CONNECTIONS_CHECKED_OUT,
+            CVNGPrometheusExporterUtils.contextLabels.values().toArray(new String[0]),
+            harnessConnectionPoolStatistics.getCheckedOutCount());
       }
     });
   }
 
   public void recordMeanForTimers() {
-    Set<Map.Entry<String, Timer>> timerSet =
-        metricRegistry.getMetricRegistry()
-            .getTimers(MetricFilter.startsWith("io.harness.cvng.core.resources.MonitoredServiceResource"))
-            .entrySet();
     Set<Map.Entry<String, Timer>> webMetricsTimerSet =
         metricRegistry.getMetricRegistry()
             .getTimers(MetricFilter.startsWith("io.dropwizard.jetty.MutableServletContextHandler"))
             .entrySet();
-    timerSet.forEach(entry -> recordTimer(entry.getKey(), entry.getValue()));
-    webMetricsTimerSet.forEach(entry -> recordTimer(entry.getKey(), entry.getValue()));
+    if (!metricRegistry.getNamesToCollectors().containsKey(
+            "io_harness_custom_metric_io_dropwizard_jetty_MutableServletContextHandler_requests" + MEAN_SUFFIX)) {
+      webMetricsTimerSet.forEach(entry
+          -> metricRegistry.registerGaugeMetric(sanitizeName(entry.getKey()) + MEAN_SUFFIX,
+              CVNGPrometheusExporterUtils.contextLabels.keySet().toArray(new String[0]),
+              "Metrics from CVNG for Web server Servlet"));
+    }
+    webMetricsTimerSet.forEach(entry -> recordTimerMeanWithMetricRegistry(entry.getKey(), entry.getValue()));
   }
 
-  private void recordTimer(String metricName, Timer timer) {
-    metricRegistry.registerGaugeMetric(sanitizeName(metricName) + "_mean",
-        CVNGPrometheusExporterUtils.contextLabels.keySet().toArray(new String[0]), "Metrics from CVNG for LE");
-    metricRegistry.recordGaugeValue(sanitizeName(metricName) + "_mean",
+  private void recordTimerMeanWithMetricRegistry(String metricName, Timer timer) {
+    metricRegistry.recordGaugeValue(sanitizeName(metricName) + MEAN_SUFFIX,
         CVNGPrometheusExporterUtils.contextLabels.values().toArray(new String[0]),
         timer.getSnapshot().getMean() * SNAPSHOT_FACTOR);
   }
