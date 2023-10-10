@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 Harness Inc. All rights reserved.
+ * Copyright 2023 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Shield 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.steps.http;
+package io.harness.steps.http.v1;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
@@ -45,10 +45,12 @@ import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepHelper;
-import io.harness.steps.StepSpecTypeConstants;
+import io.harness.steps.StepSpecTypeConstantsV1;
 import io.harness.steps.StepUtils;
 import io.harness.steps.TaskRequestsUtils;
 import io.harness.steps.executables.PipelineTaskExecutable;
+import io.harness.steps.http.HttpOutcome;
+import io.harness.steps.http.HttpStepUtils;
 import io.harness.supplier.ThrowingSupplier;
 import io.harness.utils.PmsFeatureFlagHelper;
 
@@ -66,8 +68,8 @@ import lombok.extern.slf4j.Slf4j;
     module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_COMMON_STEPS})
 @OwnedBy(CDC)
 @Slf4j
-public class HttpStep extends PipelineTaskExecutable<HttpStepResponse> {
-  public static final StepType STEP_TYPE = StepSpecTypeConstants.HTTP_STEP_TYPE;
+public class HttpStepV1 extends PipelineTaskExecutable<HttpStepResponse> {
+  public static final StepType STEP_TYPE = StepSpecTypeConstantsV1.HTTP_STEP_TYPE;
 
   @Inject @Named("referenceFalseKryoSerializer") private KryoSerializer referenceFalseKryoSerializer;
 
@@ -92,7 +94,7 @@ public class HttpStep extends PipelineTaskExecutable<HttpStepResponse> {
       socketTimeoutMillis =
           (int) NGTimeConversionHelper.convertTimeStringToMilliseconds(stepParameters.getTimeout().getValue());
     }
-    HttpStepParameters httpStepParameters = (HttpStepParameters) stepParameters.getSpec();
+    HttpStepParametersV1 httpStepParameters = (HttpStepParametersV1) stepParameters.getSpec();
 
     String url = (String) httpStepParameters.getUrl().fetchFinalValue();
 
@@ -112,8 +114,8 @@ public class HttpStep extends PipelineTaskExecutable<HttpStepResponse> {
       httpTaskParametersNgBuilder.requestHeader(headers);
     }
 
-    if (httpStepParameters.getRequestBody() != null) {
-      httpTaskParametersNgBuilder.body((String) httpStepParameters.getRequestBody().fetchFinalValue());
+    if (httpStepParameters.getBody() != null) {
+      httpTaskParametersNgBuilder.body((String) httpStepParameters.getBody().fetchFinalValue());
     }
     String accountId = AmbianceUtils.getAccountId(ambiance);
 
@@ -125,7 +127,7 @@ public class HttpStep extends PipelineTaskExecutable<HttpStepResponse> {
         pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.ENABLE_CERT_VALIDATION));
 
     if (pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_HTTP_STEP_NG_CERTIFICATE)) {
-      httpStepUtils.createCertificate(httpStepParameters.getCertificate(), httpStepParameters.getCertificateKey())
+      httpStepUtils.createCertificate(httpStepParameters.getCert(), httpStepParameters.getCert_key())
           .ifPresent(cert -> { httpTaskParametersNgBuilder.certificateNG(cert); });
     }
 
@@ -140,7 +142,7 @@ public class HttpStep extends PipelineTaskExecutable<HttpStepResponse> {
     return TaskRequestsUtils.prepareCDTaskRequest(ambiance, taskData, referenceFalseKryoSerializer,
         CollectionUtils.emptyIfNull(StepUtils.generateLogKeys(
             StepUtils.generateLogAbstractions(ambiance), Collections.singletonList(ShellScriptTaskNG.COMMAND_UNIT))),
-        null, null, TaskSelectorYaml.toTaskSelector(httpStepParameters.getDelegateSelectors()),
+        null, null, TaskSelectorYaml.toTaskSelector(httpStepParameters.getDelegate()),
         stepHelper.getEnvironmentType(ambiance));
   }
 
@@ -154,12 +156,12 @@ public class HttpStep extends PipelineTaskExecutable<HttpStepResponse> {
       StepResponseBuilder responseBuilder = StepResponse.builder();
       HttpStepResponse httpStepResponse = responseSupplier.get();
 
-      HttpStepParameters httpStepParameters = (HttpStepParameters) stepParameters.getSpec();
+      HttpStepParametersV1 httpStepParameters = (HttpStepParametersV1) stepParameters.getSpec();
       logCallback.saveExecutionLog(String.format(
           "Successfully executed the http request %s .", httpStepUtils.fetchFinalValue(httpStepParameters.getUrl())));
 
       Map<String, Object> outputVariables =
-          httpStepParameters.getOutputVariables() == null ? null : httpStepParameters.getOutputVariables().getValue();
+          httpStepParameters.getOutput_vars() == null ? null : httpStepParameters.getOutput_vars().getValue();
       Map<String, String> outputVariablesEvaluated =
           httpStepUtils.evaluateOutputVariables(outputVariables, httpStepResponse, ambiance);
 
