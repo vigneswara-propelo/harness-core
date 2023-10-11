@@ -6641,6 +6641,10 @@
     },
     "ScheduledDeadline": {
       "type": "object",
+      "required": [
+        "time",
+        "timeZone"
+      ],
       "properties": {
         "time": {
           "type": "string"
