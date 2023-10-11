@@ -335,13 +335,9 @@ orchestrationStepConfig:
     logStreamingContainerStepBaseUrl: ${LOG_STREAMING_CONTAINER_STEP_BASE_URL:-http://localhost:8079}
     pluginConfig:
       sscaOrchestrationConfig:
-        image: ${SSCA_ORCHESTRATION_IMAGE:-harness/ssca-plugin:0.3.0}
-        entrypoint:
-          - /bin/ssca-plugin
+        image: ${SSCA_ORCHESTRATION_IMAGE:-harness/ssca-plugin:0.11.0}
       sscaEnforcementConfig:
-        image: ${SSCA_ENFORCEMENT_IMAGE:-harness/ssca-plugin:0.3.0}
-        entrypoint:
-          - /bin/ssca-plugin
+        image: ${SSCA_ENFORCEMENT_IMAGE:-harness/ssca-plugin:0.11.0}
     #Todo: Move to config Management Service
     moduleToSupportedSteps:
       cd: [ "DownloadManifests", "AwsSamBuild", "AwsSamDeploy", "ServerlessAwsLambdaPrepareRollbackV2", "ServerlessAwsLambdaDeployV2", "ServerlessAwsLambdaPackageV2", "AwsCdkBootstrap", "AwsCdkSynth", "AwsCdkDiff", "ServerlessAwsLambdaRollbackV2", "AwsCdkDeploy", "AwsCdkDestroy", "AwsCdkRollback"]
