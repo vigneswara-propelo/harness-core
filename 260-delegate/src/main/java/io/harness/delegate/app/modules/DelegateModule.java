@@ -2001,6 +2001,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.K8S_COMMAND_TASK_NG_V2).toInstance(K8sTaskNG.class);
     mapBinder.addBinding(TaskType.K8S_COMMAND_TASK_NG_RANCHER).toInstance(K8sTaskNG.class);
     mapBinder.addBinding(TaskType.K8S_DRY_RUN_MANIFEST_TASK_NG).toInstance(K8sTaskNG.class);
+    mapBinder.addBinding(TaskType.K8S_COMMAND_TASK_NG_OCI_ECR_CONFIG).toInstance(K8sTaskNG.class);
     mapBinder.addBinding(TaskType.K8S_WATCH_TASK).toInstance(AssignmentTask.class);
     mapBinder.addBinding(TaskType.TRIGGER_TASK).toInstance(TriggerTask.class);
     mapBinder.addBinding(TaskType.WEBHOOK_TRIGGER_TASK).toInstance(WebHookTriggerTask.class);
@@ -2038,8 +2039,10 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.HELM_REPO_CONFIG_VALIDATION).toInstance(HelmRepoConfigValidationTask.class);
     mapBinder.addBinding(TaskType.HELM_VALUES_FETCH).toInstance(HelmValuesFetchTask.class);
     mapBinder.addBinding(TaskType.HELM_VALUES_FETCH_NG).toInstance(HelmValuesFetchTaskNG.class);
+    mapBinder.addBinding(TaskType.HELM_VALUES_FETCH_NG_OCI_ECR_CONFIG).toInstance(HelmValuesFetchTaskNG.class);
     mapBinder.addBinding(TaskType.HELM_COMMAND_TASK_NG).toInstance(HelmCommandTaskNG.class);
     mapBinder.addBinding(TaskType.HELM_COMMAND_TASK_NG_V2).toInstance(HelmCommandTaskNG.class);
+    mapBinder.addBinding(TaskType.HELM_COMMAND_TASK_NG_OCI_ECR_CONFIG).toInstance(HelmCommandTaskNG.class);
     mapBinder.addBinding(TaskType.HELM_COMMAND_TASK_NG_RANCHER).toInstance(HelmCommandTaskNG.class);
     mapBinder.addBinding(TaskType.HELM_COLLECT_CHART).toInstance(HelmCollectChartTask.class);
     mapBinder.addBinding(TaskType.SLACK).toInstance(ServiceImplDelegateTask.class);
