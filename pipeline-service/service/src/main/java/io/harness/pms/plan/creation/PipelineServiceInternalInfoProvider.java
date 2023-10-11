@@ -27,6 +27,7 @@ import io.harness.filters.EmptyFilterJsonCreator;
 import io.harness.filters.GroupFilterJsonCreator;
 import io.harness.filters.ParallelFilterJsonCreator;
 import io.harness.filters.PipelineFilterJsonCreator;
+import io.harness.plancreator.EmptyVariableCreatorV1;
 import io.harness.plancreator.approval.ApprovalStageFilterJsonCreator;
 import io.harness.plancreator.approval.ApprovalStagePlanCreatorV2;
 import io.harness.plancreator.group.GroupPlanCreatorV1;
@@ -40,7 +41,6 @@ import io.harness.plancreator.steps.email.EmailStepPlanCreator;
 import io.harness.plancreator.steps.email.EmailStepVariableCreator;
 import io.harness.plancreator.steps.http.HTTPStepVariableCreator;
 import io.harness.plancreator.steps.http.HttpStepPlanCreator;
-import io.harness.plancreator.steps.http.v1.HTTPStepVariableCreatorV1;
 import io.harness.plancreator.steps.http.v1.HttpStepPlanCreatorV1;
 import io.harness.plancreator.steps.internal.FlagConfigurationStepPlanCreator;
 import io.harness.plancreator.steps.internal.HarnessApprovalStepFilterJsonCreatorV2;
@@ -87,6 +87,7 @@ import io.harness.steps.cf.FlagConfigurationStep;
 import io.harness.steps.customstage.CustomStageFilterCreator;
 import io.harness.steps.customstage.CustomStagePlanCreator;
 import io.harness.steps.customstage.CustomStageVariableCreator;
+import io.harness.steps.customstage.v1.CustomStageFilterCreatorV1;
 import io.harness.steps.customstage.v1.CustomStagePlanCreatorV1;
 import io.harness.steps.jira.JiraStepVariableCreator;
 import io.harness.steps.jira.JiraUpdateStepVariableCreator;
@@ -185,6 +186,7 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     filterJsonCreators.add(new EmptyFilterJsonCreator(STAGE, ImmutableSet.of(PIPELINE_ROLLBACK_STAGE)));
     filterJsonCreators.add(new HarnessApprovalStepFilterJsonCreatorV2());
     filterJsonCreators.add(new CdSscaStepFilterJsonCreator());
+    filterJsonCreators.add(new CustomStageFilterCreatorV1());
 
     injectorUtils.injectMembers(filterJsonCreators);
 
@@ -197,7 +199,6 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     variableCreators.add(new PipelineVariableCreator());
     variableCreators.add(new HTTPStepVariableCreator());
     variableCreators.add(new EmailStepVariableCreator());
-    variableCreators.add(new HTTPStepVariableCreatorV1());
     variableCreators.add(new StepGroupVariableCreator());
     variableCreators.add(new ShellScriptStepVariableCreator());
     variableCreators.add(new JiraStepVariableCreator());
@@ -223,6 +224,7 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     variableCreators.add(new ContainerStepVariableCreator());
     variableCreators.add(new BarrierStepVariableCreator());
     variableCreators.add(new CdSscaStepVariableCreator());
+    variableCreators.add(new EmptyVariableCreatorV1());
 
     injectorUtils.injectMembers(variableCreators);
     return variableCreators;
