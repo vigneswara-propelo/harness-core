@@ -18,15 +18,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
-        "//970-ng-commons/src/main/java/io/harness/constants:module",
-        "//970-ng-commons/src/main/java/io/harness/delegate/task/k8s:module",
-        "//970-ng-commons/src/main/java/io/harness/entities:module",
-        "//980-commons/src/main/java/io/harness/data/structure:module",
-        "//980-commons/src/main/java/io/harness/exception:module",
-        "//980-commons/src/main/java/io/harness/logging/autolog:module",
         "//999-annotations/src/main/java/io/harness/annotations/dev:module",
-        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
-        "@maven//:com_google_guava_guava",
     ],
 )
 
