@@ -13,6 +13,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.migration.MigrationDetails;
 import io.harness.migration.NGMigration;
 import io.harness.migration.beans.MigrationType;
+import io.harness.ng.core.migration.tasks.parentid.AddParentIdToProjectMigration;
 import io.harness.ng.core.migration.tasks.uniqueid.AddUniqueIdToProjectMigration;
 
 import com.google.common.collect.ImmutableList;
@@ -35,6 +36,7 @@ public class ProjectBackgroundMigrationDetails implements MigrationDetails {
   public List<Pair<Integer, Class<? extends NGMigration>>> getMigrations() {
     return new ImmutableList.Builder<Pair<Integer, Class<? extends NGMigration>>>()
         .add(Pair.of(1, AddUniqueIdToProjectMigration.class))
+        .add(Pair.of(2, AddParentIdToProjectMigration.class))
         .build();
   }
 }
