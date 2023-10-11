@@ -5018,7 +5018,7 @@ plain_artifacts = [
     "io.grpc:grpc-netty-shaded:1.48.0",
     "io.grpc:grpc-netty:1.48.0",
     "io.grpc:grpc-protobuf-lite:1.50.1",
-    "io.grpc:grpc-protobuf:1.50.1",
+    "io.grpc:grpc-protobuf:1.58.0",
     "io.grpc:grpc-services:1.50.1",
     "io.grpc:grpc-stub:1.50.1",
     "io.gsonfire:gson-fire:1.8.3",
