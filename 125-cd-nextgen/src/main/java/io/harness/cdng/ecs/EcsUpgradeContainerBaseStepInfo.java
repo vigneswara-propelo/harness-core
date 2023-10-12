@@ -7,7 +7,6 @@
 
 package io.harness.cdng.ecs;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.expression;
-import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
 
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
@@ -47,11 +46,11 @@ public class EcsUpgradeContainerBaseStepInfo {
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) EcsInstanceUnitType downsizeOldServiceInstanceUnit;
 
   @NotNull
-  @YamlSchemaTypes({expression, runtime})
+  @YamlSchemaTypes({expression})
   @ApiModelProperty(dataType = SwaggerConstants.INTEGER_CLASSPATH)
   ParameterField<Integer> newServiceInstanceCount;
 
-  @YamlSchemaTypes({expression, runtime})
+  @YamlSchemaTypes({expression})
   @ApiModelProperty(dataType = SwaggerConstants.INTEGER_CLASSPATH)
   ParameterField<Integer> downsizeOldServiceInstanceCount;
 
