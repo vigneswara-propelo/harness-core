@@ -29,6 +29,7 @@ import io.harness.engine.executions.plan.PlanExecutionService;
 import io.harness.engine.utils.OrchestrationUtils;
 import io.harness.event.GraphStatusUpdateHelper;
 import io.harness.event.OrchestrationLogPublisher;
+import io.harness.event.PlanExecutionModuleInfoUpdateEventHandler;
 import io.harness.event.PlanExecutionStatusUpdateEventHandler;
 import io.harness.event.StepDetailsUpdateEventHandler;
 import io.harness.exception.InvalidRequestException;
@@ -88,6 +89,7 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
   @Inject private PersistentLocker persistentLocker;
   @Inject private OrchestrationLogPublisher orchestrationLogPublisher;
   @Inject private PmsFeatureFlagService pmsFeatureFlagService;
+  @Inject private PlanExecutionModuleInfoUpdateEventHandler planExecutionModuleInfoUpdateEventHandler;
 
   @Override
   public boolean updateGraph(String planExecutionId) {
@@ -193,6 +195,15 @@ public class GraphGenerationServiceImpl implements GraphGenerationService {
         case STEP_INPUTS_UPDATE:
           orchestrationGraph =
               stepDetailsUpdateEventHandler.handleStepInputEvent(planExecutionId, nodeExecutionId, orchestrationGraph);
+          updateRequired = true;
+          break;
+        case PIPELINE_INFO_UPDATE:
+          planExecutionModuleInfoUpdateEventHandler.handlePipelineInfoUpdate(planExecutionId, executionSummaryUpdate);
+          updateRequired = true;
+          break;
+        case STAGE_INFO_UPDATE:
+          planExecutionModuleInfoUpdateEventHandler.handleStageInfoUpdate(
+              planExecutionId, nodeExecutionId, executionSummaryUpdate);
           updateRequired = true;
           break;
         default:
