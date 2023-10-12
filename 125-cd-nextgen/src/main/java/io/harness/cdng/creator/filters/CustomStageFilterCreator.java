@@ -6,10 +6,12 @@
  */
 
 package io.harness.cdng.creator.filters;
-
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.pms.yaml.YAMLFieldNameConstants.CUSTOM;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.creator.plan.stage.CustomStageConfig;
 import io.harness.cdng.creator.plan.stage.CustomStageNode;
 import io.harness.cdng.environment.filters.Entity;
@@ -30,6 +32,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
+    components = {HarnessModuleComponent.CDS_SERVICE_ENVIRONMENT})
 public class CustomStageFilterCreator extends GenericStageFilterJsonCreatorV2<CustomStageNode> {
   @Override
   public Set<String> getSupportedStageTypes() {

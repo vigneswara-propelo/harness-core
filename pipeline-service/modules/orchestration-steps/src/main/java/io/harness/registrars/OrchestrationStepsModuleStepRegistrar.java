@@ -6,11 +6,13 @@
  */
 
 package io.harness.registrars;
-
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.steps.StepSpecTypeConstants.INIT_CONTAINER_V2_STEP_TYPE;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.engine.pms.execution.strategy.identity.IdentityStep;
 import io.harness.engine.pms.execution.strategy.identity.IdentityStrategyInternalStep;
 import io.harness.engine.pms.execution.strategy.identity.IdentityStrategyStep;
@@ -54,6 +56,8 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
 
+@CodePulse(
+    module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_COMMON_STEPS})
 @OwnedBy(PIPELINE)
 @UtilityClass
 public class OrchestrationStepsModuleStepRegistrar {
