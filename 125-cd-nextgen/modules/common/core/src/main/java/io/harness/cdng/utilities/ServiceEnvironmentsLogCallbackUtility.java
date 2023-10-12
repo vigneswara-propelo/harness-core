@@ -33,7 +33,7 @@ import lombok.AllArgsConstructor;
     components = {HarnessModuleComponent.CDS_SERVICE_ENVIRONMENT})
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.CDC)
-public class NGLogCallbackUtility {
+public class ServiceEnvironmentsLogCallbackUtility {
   @Inject private LogStreamingStepClientFactory logStreamingStepClientFactory;
 
   public NGLogCallback getLogCallback(Ambiance ambiance, boolean shouldOpenStream) {

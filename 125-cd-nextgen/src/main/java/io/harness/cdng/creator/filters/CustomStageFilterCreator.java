@@ -53,7 +53,7 @@ public class CustomStageFilterCreator extends GenericStageFilterJsonCreatorV2<Cu
     if (customStageConfig.getEnvironment() != null) {
       EnvironmentYamlV2 env = customStageConfig.getEnvironment();
       final ParameterField<String> environmentRef = env.getEnvironmentRef();
-      if (ParameterField.isNull(environmentRef)
+      if (ParameterField.isNull(environmentRef) || (environmentRef.fetchFinalValue() == null)
           || EmptyPredicate.isEmpty(environmentRef.fetchFinalValue().toString())) {
         throw new InvalidYamlRuntimeException(String.format(
             "Empty environmentRef should not be present in stage [%s]. Please either remove the environment or provide an environmentRef and try again",
