@@ -36,6 +36,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import lombok.Singular;
+import lombok.With;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.NonFinal;
 import lombok.experimental.Wither;
@@ -88,12 +89,12 @@ public class InfrastructureEntity implements PersistentEntity, GitAware, ScopeAw
 
   @Wither @Singular @Size(max = 128) private List<NGTag> tags;
 
-  @NotEmpty @EntityName String name;
-  @Size(max = 1024) String description;
+  @With @NotEmpty @EntityName String name;
+  @With @Size(max = 1024) String description;
 
   @Wither @CreatedDate Long createdAt;
   @Wither @LastModifiedDate Long lastModifiedAt;
-  @NotNull InfrastructureType type;
+  @With @NotNull InfrastructureType type;
   @Wither ServiceDefinitionType deploymentType;
   @Wither String yaml;
   @Builder.Default Boolean obsolete = Boolean.FALSE;
