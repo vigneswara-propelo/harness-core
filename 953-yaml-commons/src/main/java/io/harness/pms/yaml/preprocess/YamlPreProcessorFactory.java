@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.plan.execution.preprocess;
+package io.harness.pms.yaml.preprocess;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -16,10 +16,10 @@ import io.harness.pms.yaml.HarnessYamlVersion;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
     components = {HarnessModuleComponent.CDS_PIPELINE, HarnessModuleComponent.CDS_TEMPLATE_LIBRARY})
 @OwnedBy(HarnessTeam.PIPELINE)
-public class PipelinePreprocessorFactory {
-  public PipelinePreprocessor getProcessorInstance(String harnessYamlVersion) {
+public class YamlPreProcessorFactory {
+  public YamlPreProcessor getProcessorInstance(String harnessYamlVersion) {
     if (HarnessYamlVersion.isV1(harnessYamlVersion)) {
-      return new PipelineV1Preprocessor();
+      return new YamlV1PreProcessor();
     }
     return null;
   }

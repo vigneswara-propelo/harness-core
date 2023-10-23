@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.plan.execution.preprocess;
+package io.harness.pms.yaml;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.rule.OwnerRule.BRIJESH;
@@ -16,8 +16,7 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
-import io.harness.pms.yaml.YAMLFieldNameConstants;
-import io.harness.pms.yaml.YamlUtils;
+import io.harness.pms.yaml.preprocess.YamlV1PreProcessor;
 import io.harness.rule.Owner;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,14 +28,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @OwnedBy(PIPELINE)
-public class PipelineV1PreprocessorTest extends CategoryTest {
-  PipelineV1Preprocessor preprocessor = new PipelineV1Preprocessor();
+public class YamlV1PreprocessorTest extends CategoryTest {
+  YamlV1PreProcessor preprocessor = new YamlV1PreProcessor();
   @Test
   @Owner(developers = BRIJESH)
   @Category(UnitTests.class)
   public void testPreprocess() {
     String yaml = readFile();
-    String processedYaml = preprocessor.preProcess(yaml);
+    String processedYaml = YamlUtils.writeYamlString(preprocessor.preProcess(yaml).getPreprocessedJsonNode());
     JsonNode jsonNode = YamlUtils.readAsJsonNode(processedYaml);
     assertThat(processedYaml).isNotEqualTo(yaml);
 
