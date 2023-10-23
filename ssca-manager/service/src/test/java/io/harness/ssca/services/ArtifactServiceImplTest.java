@@ -289,8 +289,8 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
         builderFactory.getArtifactEntityBuilder()
             .artifactId("artifact2")
             .artifactCorrelationId("artifactCorrelation2")
-            .prodEnvCount(0)
-            .nonProdEnvCount(1)
+            .prodEnvCount(0l)
+            .nonProdEnvCount(1l)
             .build());
     Mockito.when(artifactRepository.findAll(Mockito.any(), Mockito.any()))
         .thenReturn(new PageImpl<>(artifactEntities, Pageable.ofSize(2).withPage(0), 3));

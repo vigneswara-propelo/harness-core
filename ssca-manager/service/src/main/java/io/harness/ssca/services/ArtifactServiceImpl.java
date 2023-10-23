@@ -172,10 +172,10 @@ public class ArtifactServiceImpl implements ArtifactService {
         .artifactId(artifact.getArtifactId())
         .artifactName(artifact.getName())
         .tag(artifact.getTag())
-        .componentsCount((int) artifact.getComponentsCount())
+        .componentsCount(artifact.getComponentsCount().intValue())
         .updated(String.format("%d", artifact.getLastUpdatedAt()))
-        .prodEnvCount((int) artifact.getProdEnvCount())
-        .nonProdEnvCount((int) artifact.getNonProdEnvCount())
+        .prodEnvCount(artifact.getProdEnvCount().intValue())
+        .nonProdEnvCount(artifact.getNonProdEnvCount().intValue())
         .buildPipelineId(artifact.getPipelineId())
         .buildPipelineExecutionId(artifact.getPipelineExecutionId());
   }
