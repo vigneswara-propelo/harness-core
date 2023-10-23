@@ -47,10 +47,10 @@ public class LogStreamingStepClientImplTest extends CategoryTest {
   private static final String LOG_KEY = "BaseLogKey-commandUnit:logKeySuffix";
 
   private LogStreamingClient logStreamingClient = Mockito.mock(LogStreamingClient.class);
-  private ScheduledExecutorService logStreamingClientScheduledExecutor = Mockito.mock(ScheduledExecutorService.class);
+  private ScheduledExecutorService logStreamingDelayExecutor = Mockito.mock(ScheduledExecutorService.class);
   private LogStreamingSanitizer logStreamingSanitizer = Mockito.mock(LogStreamingSanitizer.class);
-  private LogStreamingStepClientImpl logStreamingStepClient = spy(new LogStreamingStepClientImpl(logStreamingClient,
-      logStreamingSanitizer, TOKEN, ACCOUNT_ID, BASE_LOG_KEY, 5L, logStreamingClientScheduledExecutor));
+  private LogStreamingStepClientImpl logStreamingStepClient = spy(new LogStreamingStepClientImpl(
+      logStreamingClient, logStreamingSanitizer, TOKEN, ACCOUNT_ID, BASE_LOG_KEY, 5L, logStreamingDelayExecutor));
   private static final LogLine LOG_LINE =
       new LogLine(LogLevel.INFO, "Message", Instant.ofEpochMilli(1L), 1, new HashMap<>(), false);
   @Before
@@ -82,7 +82,7 @@ public class LogStreamingStepClientImplTest extends CategoryTest {
   public void testCloseStream() throws Exception {
     logStreamingStepClient.closeStream(LOG_KEY_SUFFIX);
 
-    verify(logStreamingClientScheduledExecutor).submit(any(Runnable.class));
+    verify(logStreamingDelayExecutor).submit(any(Runnable.class));
 
     // Simulate execution of the submitted task
     Runnable submittedTask = getSubmittedTask();
@@ -127,7 +127,7 @@ public class LogStreamingStepClientImplTest extends CategoryTest {
   public void testCloseAllOpenStreamsWithPrefix() throws Exception {
     logStreamingStepClient.closeAllOpenStreamsWithPrefix(PREFIX);
 
-    verify(logStreamingClientScheduledExecutor).schedule(any(Runnable.class), eq(5L), eq(TimeUnit.SECONDS));
+    verify(logStreamingDelayExecutor).schedule(any(Runnable.class), eq(5L), eq(TimeUnit.SECONDS));
 
     // Simulate execution of the submitted task
     Runnable scheduledTask = getScheduledTask();
@@ -139,15 +139,15 @@ public class LogStreamingStepClientImplTest extends CategoryTest {
 
   private Runnable getSubmittedTask() {
     ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
-    verify(logStreamingClientScheduledExecutor).submit(captor.capture());
-    verifyNoMoreInteractions(logStreamingClientScheduledExecutor);
+    verify(logStreamingDelayExecutor).submit(captor.capture());
+    verifyNoMoreInteractions(logStreamingDelayExecutor);
     return captor.getValue();
   }
 
   private Runnable getScheduledTask() {
     ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
-    verify(logStreamingClientScheduledExecutor).schedule(captor.capture(), eq(5L), eq(TimeUnit.SECONDS));
-    verifyNoMoreInteractions(logStreamingClientScheduledExecutor);
+    verify(logStreamingDelayExecutor).schedule(captor.capture(), eq(5L), eq(TimeUnit.SECONDS));
+    verifyNoMoreInteractions(logStreamingDelayExecutor);
     return captor.getValue();
   }
 }

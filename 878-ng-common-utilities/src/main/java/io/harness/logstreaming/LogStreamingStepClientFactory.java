@@ -38,7 +38,7 @@ public class LogStreamingStepClientFactory {
   @Inject LogStreamingServiceConfiguration logStreamingServiceConfiguration;
   @Inject LogStreamingClient logStreamingClient;
   @Inject LogStreamingServiceRestClient logStreamingServiceRestClient;
-  @Inject @Named("logStreamingClientScheduledExecutor") ScheduledExecutorService logStreamingClientScheduledExecutor;
+  @Inject @Named("logStreamingDelayExecutor") ScheduledExecutorService logStreamingDelayExecutor;
 
   public LoadingCache<String, String> accountIdToTokenCache =
       CacheBuilder.newBuilder().maximumSize(1000).expireAfterWrite(5, TimeUnit.MINUTES).build(new CacheLoader<>() {
@@ -63,7 +63,7 @@ public class LogStreamingStepClientFactory {
           .baseLogKey(logBaseKey)
           .accountId(accountId)
           .token(accountIdToTokenCache.get(accountId))
-          .logStreamingClientScheduledExecutor(logStreamingClientScheduledExecutor)
+          .logStreamingDelayExecutor(logStreamingDelayExecutor)
           .delayToClosePrefixLogStream(logStreamingServiceConfiguration.getDelayToClosePrefixLogStreamInSeconds())
           .build();
 

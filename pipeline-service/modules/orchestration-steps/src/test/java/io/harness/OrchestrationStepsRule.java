@@ -162,8 +162,8 @@ public class OrchestrationStepsRule implements MethodRule, InjectorRuleMixin, Mo
 
       @Provides
       @Singleton
-      @Named("logStreamingClientScheduledExecutor")
-      public ScheduledExecutorService logStreamingClientScheduledExecutor() {
+      @Named("logStreamingDelayExecutor")
+      public ScheduledExecutorService logStreamingDelayExecutor() {
         return Mockito.mock(ScheduledExecutorService.class);
       }
 

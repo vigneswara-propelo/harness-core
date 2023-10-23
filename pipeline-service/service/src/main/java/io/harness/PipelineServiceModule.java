@@ -591,8 +591,8 @@ public class PipelineServiceModule extends AbstractModule {
 
   @Provides
   @Singleton
-  @Named("logStreamingClientScheduledExecutor")
-  public ScheduledExecutorService logStreamingClientScheduledExecutor() {
+  @Named("logStreamingDelayExecutor")
+  public ScheduledExecutorService logStreamingDelayExecutor() {
     ThreadPoolConfig threadPoolConfig = configuration != null && configuration.getLogStreamingServiceConfig() != null
             && configuration.getLogStreamingServiceConfig().getThreadPoolConfig() != null
         ? configuration.getLogStreamingServiceConfig().getThreadPoolConfig()

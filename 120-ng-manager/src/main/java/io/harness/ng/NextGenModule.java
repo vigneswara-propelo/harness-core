@@ -647,8 +647,8 @@ public class NextGenModule extends AbstractModule {
 
   @Provides
   @Singleton
-  @Named("logStreamingClientScheduledExecutor")
-  public ScheduledExecutorService logStreamingClientScheduledExecutor() {
+  @Named("logStreamingDelayExecutor")
+  public ScheduledExecutorService logStreamingDelayExecutor() {
     ThreadPoolConfig threadPoolConfig = appConfig != null && appConfig.getLogStreamingServiceConfig() != null
             && appConfig.getLogStreamingServiceConfig().getThreadPoolConfig() != null
         ? appConfig.getLogStreamingServiceConfig().getThreadPoolConfig()
