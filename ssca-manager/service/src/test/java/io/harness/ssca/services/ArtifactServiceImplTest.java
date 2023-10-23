@@ -22,6 +22,7 @@ import io.harness.rule.Owner;
 import io.harness.spec.server.ssca.v1.model.ArtifactComponentViewResponse;
 import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewResponse;
 import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewResponse.AttestedStatusEnum;
+import io.harness.spec.server.ssca.v1.model.ArtifactDetailResponse;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBody;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBody.EnvironmentTypeEnum;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBody.PolicyViolationEnum;
@@ -188,6 +189,26 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
     assertThat(artifact.getProjectId()).isEqualTo(builderFactory.getContext().getProjectIdentifier());
     assertThat(artifact.getArtifactId()).isEqualTo("artifactId");
     assertThat(artifact.getOrchestrationId()).isEqualTo("stepExecutionId");
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testGetArtifactDetails() {
+    Mockito.when(artifactRepository.findOne(Mockito.any()))
+        .thenReturn(builderFactory.getArtifactEntityBuilder().build());
+
+    ArtifactDetailResponse response = artifactService.getArtifactDetails(builderFactory.getContext().getAccountId(),
+        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(),
+        "artifactId", "tag");
+    assertThat(response.getArtifactId()).isEqualTo("artifactId");
+    assertThat(response.getArtifactName()).isEqualTo("test/image");
+    assertThat(response.getTag()).isEqualTo("tag");
+    assertThat(response.getComponentsCount()).isEqualTo(35);
+    assertThat(response.getProdEnvCount()).isEqualTo(2);
+    assertThat(response.getNonProdEnvCount()).isEqualTo(1);
+    assertThat(response.getBuildPipelineId()).isEqualTo("pipelineId");
+    assertThat(response.getBuildPipelineExecutionId()).isEqualTo("pipelineExecutionId");
   }
 
   @Test
