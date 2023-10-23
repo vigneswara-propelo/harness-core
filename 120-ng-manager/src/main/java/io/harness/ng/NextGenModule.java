@@ -690,6 +690,13 @@ public class NextGenModule extends AbstractModule {
     return appConfig.getWebhookPushEventHsqsDequeueConfig();
   }
 
+  @Provides
+  @Singleton
+  @Named("webhookGitXPushEventQueueConfig")
+  public HsqsDequeueConfig getWebhookGitXPushEventQueueConfig() {
+    return appConfig.getWebhookGitXPushEventQueueConfig();
+  }
+
   @Override
   protected void configure() {
     install(VersionModule.getInstance());
