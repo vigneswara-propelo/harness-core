@@ -325,15 +325,15 @@ public class ArtifactServiceImpl implements ArtifactService {
               .artifactId(artifact.getArtifactId())
               .artifactName(artifact.getName())
               .tag(artifact.getTag())
-              .componentsCount((int) artifact.getComponentsCount())
+              .componentsCount(artifact.getComponentsCount().intValue())
               .allowListViolationCount(enforcementSummary.getAllowListViolationCount())
               .denyListViolationCount(enforcementSummary.getDenyListViolationCount())
               .enforcementId(enforcementSummary.getEnforcementId())
               .activity(artifact.getProdEnvCount() + artifact.getNonProdEnvCount() == 0 ? ActivityEnum.GENERATED
                                                                                         : ActivityEnum.DEPLOYED)
               .updatedAt(String.format("%d", artifact.getLastUpdatedAt()))
-              .prodEnvCount((int) artifact.getProdEnvCount())
-              .nonProdEnvCount((int) artifact.getNonProdEnvCount()));
+              .prodEnvCount(artifact.getProdEnvCount().intValue())
+              .nonProdEnvCount(artifact.getNonProdEnvCount().intValue()));
     }
     return responses;
   }
