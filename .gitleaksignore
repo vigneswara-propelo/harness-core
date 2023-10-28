@@ -35,6 +35,11 @@ ae9da625afeb97041dd9c0ed8f393cdb8733dd8d:batch-processing/chart/values.yaml:gene
 527d3f50c1234bbcdd9e511d71d25f1023dc297d:product/log-service/chart/values.yaml:generic-api-key:184
 527d3f50c1234bbcdd9e511d71d25f1023dc297d:product/log-service/chart/values.yaml:generic-api-key:185
 dbd752eda4b10996ecbd047b7ab0d59dd6cbd326:970-ng-commons/src/test/java/io/harness/rsa/RSAKeysUtilsTest.java:private-key:30
+3ad24265b206d52b434aa64024b66527e2586787:360-cg-manager/chart/values.yaml:generic-api-key:490
+3ad24265b206d52b434aa64024b66527e2586787:360-cg-manager/chart/values.yaml:generic-api-key:491
+66d0c2fdd26041b0c7139d2eac6ac0e48441d7db:360-cg-manager/chart/templates/_helpers.tpl:generic-api-key:160
+360-cg-manager/chart/somefile:generic-api-key:74
+360-cg-manager/chart/somefile:generic-api-key:82
 040f4cb500e52799ac43ca05e5a78299f78c7d38:template-service/chart/values.yaml:generic-api-key:297
 d9cc57bdd593f37f8b3edb0cd599e78b3129e489:100-migrator/chart/values.yaml:generic-api-key:773
 d9cc57bdd593f37f8b3edb0cd599e78b3129e489:100-migrator/chart/values.yaml:generic-api-key:772
@@ -56,6 +61,8 @@ dbd752eda4b10996ecbd047b7ab0d59dd6cbd326:970-ng-commons/src/test/java/io/harness
 41da864aca0eb6ca7360f44c5e81ffb778e55b30:120-ng-manager/chart/values.yaml:generic-api-key:499
 41da864aca0eb6ca7360f44c5e81ffb778e55b30:120-ng-manager/chart/values.yaml:generic-api-key:500
 41da864aca0eb6ca7360f44c5e81ffb778e55b30:120-ng-manager/chart/values.yaml:generic-api-key:501
+26032afb21651323fb7f875e25040071671ef3f3:360-cg-manager/chart/values.yaml:generic-api-key:526
+26032afb21651323fb7f875e25040071671ef3f3:360-cg-manager/chart/values.yaml:generic-api-key:527
 63ae81160b5d4b57e234c82c86ef617ea4c38ee4:pipeline-service/chart/values.yaml:generic-api-key:409
 227af0c4d0bb6a97151a2f40dcc71d60def7e174:270-verification/chart/values.yaml:generic-api-key:238
 561d01f16b6bb9070f87341a3a5a7f874c30637a:270-verification/chart/values.yaml:generic-api-key:248
