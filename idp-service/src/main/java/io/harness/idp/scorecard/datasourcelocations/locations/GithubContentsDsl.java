@@ -11,13 +11,15 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.idp.common.Constants.DSL_RESPONSE;
 import static io.harness.idp.common.Constants.ERROR_MESSAGE_KEY;
 import static io.harness.idp.common.Constants.MESSAGE_KEY;
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_BRANCH_PROTECTED;
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_FILE_EXISTS;
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.FILE_CONTAINS;
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.FILE_CONTENTS;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.SOURCE_LOCATION_ANNOTATION_ERROR;
 import static io.harness.idp.scorecard.datapoints.constants.Inputs.BRANCH_NAME;
+import static io.harness.idp.scorecard.datapoints.constants.Inputs.FILE_PATH;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_BRANCH;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_NAME;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_OWNER;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPO_SCM;
-import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.WORKSPACE;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -25,7 +27,6 @@ import io.harness.eraro.ResponseMessage;
 import io.harness.idp.backstagebeans.BackstageCatalogEntity;
 import io.harness.idp.common.GsonUtils;
 import io.harness.idp.scorecard.common.beans.DataSourceConfig;
-import io.harness.idp.scorecard.common.beans.HttpConfig;
 import io.harness.idp.scorecard.datapoints.entity.DataPointEntity;
 import io.harness.idp.scorecard.datasourcelocations.beans.ApiRequestDetails;
 import io.harness.idp.scorecard.datasourcelocations.client.DslClient;
@@ -46,9 +47,9 @@ import org.apache.commons.math3.util.Pair;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.IDP)
-public class BitbucketIsBranchProtectionSetDsl implements DataSourceLocation {
+public class GithubContentsDsl implements DataSourceLocation {
+  private static final String FILE_PATH_REPLACER = "{FILE_PATH_REPLACER}";
   DslClientFactory dslClientFactory;
-  private static final String BRANCH_NAME_REPLACER = "{BRANCH_NAME_REPLACER}";
   @Override
   public Map<String, Object> fetchData(String accountIdentifier, BackstageCatalogEntity backstageCatalogEntity,
       DataSourceLocationEntity dataSourceLocationEntity,
@@ -57,21 +58,25 @@ public class BitbucketIsBranchProtectionSetDsl implements DataSourceLocation {
       DataSourceConfig dataSourceConfig) throws NoSuchAlgorithmException, KeyManagementException {
     ApiRequestDetails apiRequestDetails = fetchApiRequestDetails(dataSourceLocationEntity);
     matchAndReplaceHeaders(apiRequestDetails.getHeaders(), replaceableHeaders);
-    HttpConfig httpConfig = (HttpConfig) dataSourceConfig;
-    apiRequestDetails.getHeaders().putAll(httpConfig.getHeaders());
+    apiRequestDetails.setUrl(replaceUrlsPlaceholdersIfAny(apiRequestDetails.getUrl(), possibleReplaceableUrlPairs));
     Map<String, Object> data = new HashMap<>();
-    String tempUrl = apiRequestDetails.getUrl(); // using temp variable to store unchanged url
+
+    String tempRequestBody = apiRequestDetails.getRequestBody(); // using temp variable to store unchanged requestBody
 
     for (Pair<DataPointEntity, List<InputValue>> dataPointAndInputValues : dataPointsAndInputValues) {
       DataPointEntity dataPoint = dataPointAndInputValues.getFirst();
       List<InputValue> inputValues = dataPointAndInputValues.getSecond();
-      if (isEmpty(possibleReplaceableUrlPairs.get(REPO_SCM)) || isEmpty(possibleReplaceableUrlPairs.get(WORKSPACE))
-          || isEmpty(possibleReplaceableUrlPairs.get(REPOSITORY_NAME))) {
+
+      if (isEmpty(possibleReplaceableRequestBodyPairs.get(REPO_SCM))
+          || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_OWNER))
+          || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_NAME))) {
         addInputValueResponse(data, inputValues, Map.of(ERROR_MESSAGE_KEY, SOURCE_LOCATION_ANNOTATION_ERROR));
         continue;
       }
-      String url = constructUrl(httpConfig.getTarget(), tempUrl, possibleReplaceableUrlPairs, dataPoint, inputValues);
-      apiRequestDetails.setUrl(url);
+      apiRequestDetails.setRequestBody(tempRequestBody);
+      String requestBody =
+          constructRequestBody(apiRequestDetails, possibleReplaceableRequestBodyPairs, dataPoint, inputValues);
+      apiRequestDetails.setRequestBody(requestBody);
       DslClient dslClient =
           dslClientFactory.getClient(accountIdentifier, possibleReplaceableRequestBodyPairs.get(REPO_SCM));
       Response response = getResponse(apiRequestDetails, dslClient, accountIdentifier);
@@ -93,18 +98,25 @@ public class BitbucketIsBranchProtectionSetDsl implements DataSourceLocation {
 
   @Override
   public String replaceInputValuePlaceholdersIfAny(
-      String url, DataPointEntity dataPoint, List<InputValue> inputValues) {
-    if (dataPoint.getIdentifier().equals(IS_BRANCH_PROTECTED)) {
-      Optional<InputValue> inputValueOpt =
-          inputValues.stream().filter(inputValue -> inputValue.getKey().equals(BRANCH_NAME)).findFirst();
-      if (inputValueOpt.isPresent()) {
-        String inputValue = inputValueOpt.get().getValue();
-        if (!inputValue.isEmpty()) {
-          String branch = inputValueOpt.get().getValue();
-          url = url.replace(BRANCH_NAME_REPLACER, branch);
-        }
+      String requestBody, DataPointEntity dataPoint, List<InputValue> inputValues) {
+    if (dataPoint.getIdentifier().equals(FILE_CONTENTS) || dataPoint.getIdentifier().equals(FILE_CONTAINS)) {
+      requestBody = replaceInputValuePlaceholders(requestBody, inputValues, FILE_PATH, FILE_PATH_REPLACER);
+      requestBody = replaceInputValuePlaceholders(requestBody, inputValues, BRANCH_NAME, REPOSITORY_BRANCH);
+    }
+    return requestBody;
+  }
+
+  private String replaceInputValuePlaceholders(
+      String requestBody, List<InputValue> inputValues, String inputKey, String inputValuePlaceholder) {
+    Optional<InputValue> inputValueOpt =
+        inputValues.stream().filter(inputValue -> inputValue.getKey().equals(inputKey)).findFirst();
+    if (inputValueOpt.isPresent()) {
+      String inputValue = inputValueOpt.get().getValue();
+      if (!inputValue.isEmpty()) {
+        inputValue = inputValue.replace("\"", "");
+        requestBody = requestBody.replace(inputValuePlaceholder, inputValue);
       }
     }
-    return url;
+    return requestBody;
   }
 }
