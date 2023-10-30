@@ -1001,6 +1001,12 @@ components:
           type: integer
         enforcement_id:
           type: string
+        orchestration_id:
+          type: string
+        build_pipeline_id:
+          type: string
+        build_pipeline_execution_id:
+          type: string
       required:
         - artifact_id
         - artifact_name
@@ -1029,6 +1035,8 @@ components:
         build_pipeline_id:
           type: string
         build_pipeline_execution_id:
+          type: string
+        orchestration_id:
           type: string
       required:
         - artifact_id
