@@ -388,8 +388,6 @@ secrets:
   default:
     NEXT_GEN_MANAGER_SECRET: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
     CE_NG_SERVICE_SECRET: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
-    S3_SYNC_CONFIG_ACCESSKEY: ""
-    S3_SYNC_CONFIG_SECRETKEY: ""
   kubernetesSecrets:
     - secretName: ""
       keys:
@@ -414,4 +412,4 @@ secrets:
             property: ""
           S3_SYNC_CONFIG_SECRETKEY:
             name: ""
-            property: ""   
+            property: ""
