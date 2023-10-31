@@ -27,7 +27,6 @@ import org.mockito.InjectMocks;
 public class FeatureFlagResourceImplTest {
   @Inject @InjectMocks FeatureFlagResourceImplTest featureFlagResource;
   @Inject @InjectMocks FeatureFlagResourceImpl featureFlagResourceImpl;
-
   private static final String ACCOUNT_IDENTIFIER = "accountIdentifier";
   private static final String ORG_IDENTIFIER = "orgIdentifier";
   private static final String PROJECT_IDENTIFIER = "projectIdentifier";
@@ -56,7 +55,7 @@ public class FeatureFlagResourceImplTest {
   @Owner(developers = DMACK)
   @Category(UnitTests.class)
   public void getEventFrameworkEntityType() {
-    assertThat(featureFlagResourceImpl.getEventFrameworkEntityType().get()).isEqualTo("FEATUREFLAG");
+    assertThat(featureFlagResourceImpl.getEventFrameworkEntityType().get()).isEqualTo("featureflag");
   }
 
   @Test
