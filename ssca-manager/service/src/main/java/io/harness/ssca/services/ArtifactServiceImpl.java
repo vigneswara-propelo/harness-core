@@ -7,6 +7,8 @@
 
 package io.harness.ssca.services;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.count;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.limit;
@@ -28,6 +30,7 @@ import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewResponse.Attes
 import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewResponse.TypeEnum;
 import io.harness.spec.server.ssca.v1.model.ArtifactDetailResponse;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBody;
+import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBodyLicenseFilter;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingResponse;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingResponse.ActivityEnum;
 import io.harness.spec.server.ssca.v1.model.SbomProcessRequestBody;
@@ -231,6 +234,17 @@ public class ArtifactServiceImpl implements ArtifactService {
     return new PageImpl<>(artifactListingResponses, pageable, total);
   }
 
+  private Criteria getLicenseCriteria(String accountId, String orgIdentifier, String projectIdentifier,
+      ArtifactListingRequestBodyLicenseFilter licenseFilter) {
+    Criteria criteria = new Criteria();
+    List<String> orchestrationIds =
+        normalisedSbomComponentService.getOrchestrationIds(accountId, orgIdentifier, projectIdentifier, licenseFilter);
+    if (isNotEmpty(orchestrationIds)) {
+      return Criteria.where(ArtifactEntityKeys.orchestrationId).in(orchestrationIds);
+    }
+    return criteria;
+  }
+
   @Override
   public Page<ArtifactListingResponse> listArtifacts(String accountId, String orgIdentifier, String projectIdentifier,
       ArtifactListingRequestBody body, Pageable pageable) {
@@ -243,7 +257,8 @@ public class ArtifactServiceImpl implements ArtifactService {
                             .and(ArtifactEntityKeys.invalid)
                             .is(false);
 
-    criteria.andOperator(getPolicyFilterCriteria(body), getDeploymentFilterCriteria(body));
+    criteria.andOperator(getPolicyFilterCriteria(body), getDeploymentFilterCriteria(body),
+        getLicenseCriteria(accountId, orgIdentifier, projectIdentifier, body.getLicenseFilter()));
 
     Page<ArtifactEntity> artifactEntities = artifactRepository.findAll(criteria, pageable);
 
