@@ -63,6 +63,7 @@ public class AmbianceUtils {
   public static final String STAGE = "STAGE";
   public static final String SPECIAL_CHARACTER_REGEX = "[^a-zA-Z0-9]";
   public static final String PIE_SIMPLIFY_LOG_BASE_KEY = "PIE_SIMPLIFY_LOG_BASE_KEY";
+  public static final String PIE_SECRETS_OBSERVER = "PIE_SECRETS_OBSERVER";
 
   public static Ambiance cloneForFinish(@NonNull Ambiance ambiance) {
     return clone(ambiance, ambiance.getLevelsList().size() - 1);
@@ -548,6 +549,11 @@ public class AmbianceUtils {
   public boolean shouldSimplifyLogBaseKey(Ambiance ambiance) {
     return ambiance.getMetadata() != null && ambiance.getMetadata().getFeatureFlagToValueMapMap() != null
         && ambiance.getMetadata().getFeatureFlagToValueMapMap().getOrDefault(PIE_SIMPLIFY_LOG_BASE_KEY, false);
+  }
+
+  public boolean shouldEnableSecretsObserver(Ambiance ambiance) {
+    return ambiance.getMetadata() != null && ambiance.getMetadata().getFeatureFlagToValueMapMap() != null
+        && ambiance.getMetadata().getFeatureFlagToValueMapMap().getOrDefault(PIE_SECRETS_OBSERVER, false);
   }
 
   public boolean hasStrategyMetadata(Level level) {
