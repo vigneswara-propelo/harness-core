@@ -166,9 +166,12 @@ func (c *serverCommand) run(*kingpin.ParseContext) error {
 
 	ngClient := client.NewHTTPClient(config.Platform.BaseURL, false, "")
 
-	gcsClient, err := gcputils.NewGCSClient(context.Background(), nil, nil, gcputils.WithGCSCredentialsFile(config.S3.CredentialsPath))
-	if err != nil {
-		return err
+	var gcsClient gcputils.GCS
+	if config.S3.CredentialsPath != "" {
+		gcsClient, err = gcputils.NewGCSClient(context.Background(), nil, nil, gcputils.WithGCSCredentialsFile(config.S3.CredentialsPath))
+		if err != nil {
+			return err
+		}
 	}
 	// create the http server.
 	server := server.Server{
