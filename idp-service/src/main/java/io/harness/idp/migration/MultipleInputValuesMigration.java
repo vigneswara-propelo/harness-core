@@ -11,8 +11,8 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.scorecard.checks.entity.CheckEntity;
 import io.harness.idp.scorecard.datapoints.entity.DataPointEntity;
-import io.harness.idp.scorecard.scorecardchecks.entity.CheckEntity;
 import io.harness.migration.NGMigration;
 import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
 
 @Slf4j
 @OwnedBy(HarnessTeam.IDP)
