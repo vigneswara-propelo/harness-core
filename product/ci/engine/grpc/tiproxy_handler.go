@@ -145,12 +145,9 @@ func (h *tiProxyHandler) UploadCg(ctx context.Context, req *pb.UploadCgRequest) 
 	source := req.GetSource()
 	target := req.GetTarget()
 	timeMs := req.GetTimeMs()
-	encCg, msg, emptyCg, err := h.getEncodedData(req)
+	encCg, msg, _, err := h.getEncodedData(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get avro encoded callgraph")
-	} else if emptyCg {
-		h.log.Infow("Skipping call graph upload since no call graph was generated")
-		return &pb.UploadCgResponse{CgMsg: msg, EmptyCg: emptyCg}, nil
 	}
 
 	err = tiClient.UploadCg(ctx, stepID, source, target, timeMs, encCg)
@@ -314,7 +311,7 @@ func (h *tiProxyHandler) GetChangedFilesPushTrigger(ctx context.Context, req *pb
 		return nil, fmt.Errorf("last Successful Commit ID not present in request")
 	}
 	currentCommitID := req.GetCurrentCommit()
-	
+
 	workspace, err := getWrkspcPath()
 	if err != nil {
 		return nil, err
