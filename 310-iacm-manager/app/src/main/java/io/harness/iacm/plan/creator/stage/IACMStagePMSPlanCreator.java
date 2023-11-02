@@ -186,7 +186,7 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
 
   private ExecutionElementConfig addExtraGitCloneSteps(
       ExecutionElementConfig modifiedExecutionPlan, Workspace workspace) {
-    if (workspace.getTf_var_files() == null) {
+    if (workspace.getTerraform_variable_files() == null) {
       return modifiedExecutionPlan;
     }
     List<ExecutionWrapperConfig> steps = modifiedExecutionPlan.getSteps();
@@ -194,7 +194,7 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
     int stepIndex = 0;
     List<String> processedRepos = new ArrayList<>();
     List<ExecutionWrapperConfig> innerSteps = new ArrayList<>();
-    for (VariablesRepo variablesRepo : workspace.getTf_var_files()) {
+    for (VariablesRepo variablesRepo : workspace.getTerraform_variable_files()) {
       // If the connector is the same as where the main repo is, then it means that we do not need to clone the repo
       // again
       if (Objects.equals(variablesRepo.getRepository_connector(), workspace.getRepository_connector())) {
