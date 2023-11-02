@@ -266,7 +266,7 @@ proxy:
   port: 80
   username: ""
   password: ""
-  protocol: http
+  protocol: https
 
 cliProxy:
   enabled: false
