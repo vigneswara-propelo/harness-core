@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.cdng.k8s.ayncsteps;
+package io.harness.cdng.k8s.asyncsteps;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
