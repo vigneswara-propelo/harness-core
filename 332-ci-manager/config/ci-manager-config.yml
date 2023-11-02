@@ -327,7 +327,7 @@ ciExecutionServiceConfig:
       windowsEntrypoint:
         - "C:\\drone-s3.exe"
     securityConfig:
-      image: harness/sto-plugin:dev
+      image: harness/sto-plugin:${STO_STEP_CONFIG_DEFAULT_TAG:-latest}
       entrypoint:
         - /bin/sh
         - -c
@@ -372,7 +372,7 @@ ciExecutionServiceConfig:
       buildAndPushGAR: plugins/gar:20.17.0
       gcsUpload: plugins/gcs:1.5.0
       s3Upload: plugins/s3:1.2.8
-      security: harness/sto-plugin:dev
+      security: harness/sto-plugin:${STO_STEP_CONFIG_DEFAULT_TAG:-latest}
       artifactoryUpload: plugins/artifactory:1.4.7
       cacheGCS: plugins/cache:1.6.2
       cacheS3: plugins/cache:1.6.2
