@@ -7,9 +7,13 @@
 
 package io.harness.ssca.services;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+
+import io.harness.exception.InvalidRequestException;
 import io.harness.repositories.SBOMComponentRepo;
 import io.harness.spec.server.ssca.v1.model.Artifact;
 import io.harness.spec.server.ssca.v1.model.ArtifactComponentViewRequestBody;
+import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBodyComponentFilter;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBodyLicenseFilter;
 import io.harness.spec.server.ssca.v1.model.NormalizedSbomComponentDTO;
 import io.harness.ssca.entities.ArtifactEntity;
@@ -21,6 +25,7 @@ import io.harness.utils.ApiUtils;
 
 import com.google.inject.Inject;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.ws.rs.NotFoundException;
@@ -36,6 +41,10 @@ public class NormalisedSbomComponentServiceImpl implements NormalisedSbomCompone
   @Inject SBOMComponentRepo sbomComponentRepo;
 
   @Inject ArtifactService artifactService;
+  Map<ArtifactListingRequestBodyComponentFilter.FieldNameEnum, String> componentFilterToFieldNameMap = Map.of(
+      ArtifactListingRequestBodyComponentFilter.FieldNameEnum.COMPONENTNAME, NormalizedSBOMEntityKeys.packageName,
+      ArtifactListingRequestBodyComponentFilter.FieldNameEnum.COMPONENTVERSION,
+      NormalizedSBOMEntityKeys.packageVersion);
   @Override
   public Response listNormalizedSbomComponent(
       String orgIdentifier, String projectIdentifier, Integer page, Integer limit, Artifact body, String accountId) {
@@ -96,6 +105,42 @@ public class NormalisedSbomComponentServiceImpl implements NormalisedSbomCompone
       if (ArtifactListingRequestBodyLicenseFilter.OperatorEnum.EQUALS.equals(licenseFilter.getOperator())) {
         criteria.and(NormalizedSBOMEntityKeys.packageLicense).is(licenseFilter.getValue());
       }
+    }
+    return sbomComponentRepo.findAll(criteria, Pageable.unpaged())
+        .map(NormalizedSBOMComponentEntity::getOrchestrationId)
+        .toList();
+  }
+
+  public List<String> getOrchestrationIds(String accountId, String orgIdentifier, String projectIdentifier,
+      List<ArtifactListingRequestBodyComponentFilter> componentFilter) {
+    Criteria criteria = Criteria.where(NormalizedSBOMEntityKeys.accountId)
+                            .is(accountId)
+                            .and(NormalizedSBOMEntityKeys.orgIdentifier)
+                            .is(orgIdentifier)
+                            .and(NormalizedSBOMEntityKeys.projectIdentifier)
+                            .is(projectIdentifier);
+
+    if (Objects.nonNull(componentFilter)) {
+      Criteria[] componentFilterCriteria =
+          componentFilter.stream()
+              .map(filter -> {
+                if (isEmpty(String.valueOf(filter.getFieldName()))) {
+                  throw new InvalidRequestException("fieldName cannot be null");
+                }
+                String fieldName = componentFilterToFieldNameMap.get(filter.getFieldName());
+                switch (filter.getOperator()) {
+                  case EQUALS:
+                    return Criteria.where(fieldName).is(filter.getValue());
+                  case CONTAINS:
+                    return Criteria.where(fieldName).regex(filter.getValue());
+                  case STARTSWITH:
+                    return Criteria.where(fieldName).regex(Pattern.compile("^".concat(filter.getValue())));
+                  default:
+                    throw new InvalidRequestException("Invalid component filter operator");
+                }
+              })
+              .toArray(Criteria[] ::new);
+      criteria.andOperator(componentFilterCriteria);
     }
     return sbomComponentRepo.findAll(criteria, Pageable.unpaged())
         .map(NormalizedSBOMComponentEntity::getOrchestrationId)

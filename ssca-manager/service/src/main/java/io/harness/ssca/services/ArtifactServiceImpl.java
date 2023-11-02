@@ -30,6 +30,7 @@ import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewResponse.Attes
 import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewResponse.EnvTypeEnum;
 import io.harness.spec.server.ssca.v1.model.ArtifactDetailResponse;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBody;
+import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBodyComponentFilter;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBodyLicenseFilter;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingResponse;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingResponse.ActivityEnum;
@@ -247,6 +248,17 @@ public class ArtifactServiceImpl implements ArtifactService {
     return criteria;
   }
 
+  private Criteria getComponentFilterCriteria(String accountId, String orgIdentifier, String projectIdentifier,
+      List<ArtifactListingRequestBodyComponentFilter> componentFilter) {
+    Criteria criteria = new Criteria();
+    List<String> orchestrationIds = normalisedSbomComponentService.getOrchestrationIds(
+        accountId, orgIdentifier, projectIdentifier, componentFilter);
+    if (isNotEmpty(orchestrationIds)) {
+      return Criteria.where(ArtifactEntityKeys.orchestrationId).in(orchestrationIds);
+    }
+    return criteria;
+  }
+
   @Override
   public Page<ArtifactListingResponse> listArtifacts(String accountId, String orgIdentifier, String projectIdentifier,
       ArtifactListingRequestBody body, Pageable pageable) {
@@ -260,7 +272,8 @@ public class ArtifactServiceImpl implements ArtifactService {
                             .is(false);
 
     criteria.andOperator(getPolicyFilterCriteria(body), getDeploymentFilterCriteria(body),
-        getLicenseCriteria(accountId, orgIdentifier, projectIdentifier, body.getLicenseFilter()));
+        getLicenseCriteria(accountId, orgIdentifier, projectIdentifier, body.getLicenseFilter()),
+        getComponentFilterCriteria(accountId, orgIdentifier, projectIdentifier, body.getComponentFilter()));
 
     Page<ArtifactEntity> artifactEntities = artifactRepository.findAll(criteria, pageable);
 

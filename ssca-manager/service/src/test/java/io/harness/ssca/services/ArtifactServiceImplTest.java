@@ -297,7 +297,7 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
             .build());
     Mockito.when(artifactRepository.findAll(Mockito.any(), Mockito.any()))
         .thenReturn(new PageImpl<>(artifactEntities, Pageable.ofSize(2).withPage(0), 3));
-
+    Mockito.when(sbomComponentRepo.findAll(Mockito.any(), Mockito.any())).thenReturn(Page.empty());
     Mockito.when(enforcementSummaryRepo.findAll(Mockito.any(Aggregation.class)))
         .thenReturn(List.of(builderFactory.getEnforcementSummaryBuilder().build()));
     ArtifactListingRequestBody filterBody = new ArtifactListingRequestBody()
