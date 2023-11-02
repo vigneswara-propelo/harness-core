@@ -98,6 +98,12 @@ type Config struct {
 	Zip struct {
 		LIMIT_FILES int `envconfig:"LOG_SERVICE_LIMIT_FILES" default:"100"`
 	}
+
+	Profiler struct {
+		ServiceName    string `envconfig:"LOG_SERVICE_PROFILER_SERVICE_NAME" default:"log-service"`
+		EnableProfiler bool   `envconfig:"LOG_SERVICE_PROFILER_ENABLED"`
+		Environment    string `envconfig:"LOG_SERVICE_PROFILER_ENVIRONMENT"`
+	}
 }
 
 // Load loads the configuration from the environment.

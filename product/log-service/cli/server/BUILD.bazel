@@ -36,6 +36,7 @@ go_library(
         "//product/platform/client",
         "@com_github_joho_godotenv//:godotenv",
         "@com_github_sirupsen_logrus//:logrus",
+        "@com_google_cloud_go_profiler//:profiler",
         "@in_gopkg_alecthomas_kingpin_v2//:kingpin_v2",
     ],
 )
