@@ -115,7 +115,6 @@ function print_log() {
 }
 
 CodeformatRequired() {
-  set -ex
   local run_codeformat=true
 
   for file in "${merge_summary[@]}"; do
@@ -147,6 +146,7 @@ CodeformatRequired() {
     echo "true" > /tmp/codeformatcheck
   else
     echo "CodeFormat Result: False"
+    echo "false" > /tmp/codeformatcheck
   fi
 
 }
