@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"errors"
 
 	gcputils "github.com/harness/harness-core/commons/go/lib/gcputils"
 
@@ -24,7 +25,8 @@ import (
 )
 
 const (
-	filePathSuffix  = "logs.zip"
+	filePathSuffix = "logs.zip"
+	maxItemsToDownload = 1500
 	harnessDownload = "harness-download"
 )
 
@@ -235,6 +237,7 @@ func HandleZipLinkPrefix(q queue.Queue, s store.Store, c cache.Cache, cfg config
 		}
 
 		out, err := s.ListBlobPrefix(ctx, CreateAccountSeparatedKey(accountID, prefix), cfg.Zip.LIMIT_FILES)
+
 		if err != nil || len(out) == 0 {
 			logger.FromRequest(r).
 				WithError(err).
@@ -243,6 +246,16 @@ func HandleZipLinkPrefix(q queue.Queue, s store.Store, c cache.Cache, cfg config
 			WriteNotFound(w, fmt.Errorf("cannot list files for prefix"))
 			return
 		}
+
+		if len(out) > maxItemsToDownload {
+		    err := errors.New("Amount of data is too large to download")
+        	logger.FromRequest(r).
+        	    WithError(err).
+        	    WithField(usePrefixParam, prefix).
+        	    Errorln("api: Download failed! Amount of data is too large")
+        	WriteInternalError(w, fmt.Errorf("Prefix Key Exceeds Maximum Download Limit"))
+        	return
+        }
 
 		// creates a cache in status queued
 		logger.FromRequest(r).WithField("Prefix", prefix).Infoln("Adding request to queued state for further processing")
