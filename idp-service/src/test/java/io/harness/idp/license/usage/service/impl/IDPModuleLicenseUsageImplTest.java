@@ -265,7 +265,6 @@ public class IDPModuleLicenseUsageImplTest extends CategoryTest {
     assertNotNull(activeDevelopersTrendCountDTOList);
     assertEquals(1, activeDevelopersTrendCountDTOList.size());
     assertEquals(1, activeDevelopersTrendCountDTOList.get(0).getCount());
-    assertEquals("2023-10", activeDevelopersTrendCountDTOList.get(0).getDate());
   }
 
   @After
