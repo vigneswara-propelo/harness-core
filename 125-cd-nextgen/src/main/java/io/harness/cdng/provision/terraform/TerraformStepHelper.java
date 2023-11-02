@@ -356,15 +356,13 @@ public class TerraformStepHelper {
                                                         .commitId(getParameterFieldValue(gitStoreConfig.getCommitId()))
                                                         .paths(paths)
                                                         .connectorName(connectorDTO.getName())
+                                                        .optional(isVarFileOptional)
                                                         .build();
 
     GitFetchFilesConfigBuilder builder = GitFetchFilesConfig.builder();
 
     if (manifestType != null) {
       builder.manifestType(manifestType);
-    }
-    if (isVarFileOptional) {
-      builder.optional(isVarFileOptional);
     }
     builder.identifier(identifier).succeedIfFileNotFound(false).gitStoreDelegateConfig(gitStoreDelegateConfig);
     return builder.build();
