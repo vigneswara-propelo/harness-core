@@ -55,6 +55,8 @@ import io.harness.pms.pipeline.PipelineResourceConstants;
 import io.harness.pms.pipeline.ResolveInputYamlType;
 import io.harness.pms.rbac.PipelineRbacPermissions;
 
+import com.codahale.metrics.annotation.ResponseMetered;
+import com.codahale.metrics.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -121,6 +123,8 @@ public interface InputSetResourcePMS {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns Input Set if exists for the given Identifier.")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<InputSetResponseDTOPMS>
   getInputSet(@PathParam(NGCommonEntityConstants.INPUT_SET_IDENTIFIER_KEY) @Parameter(
                   description = PipelineResourceConstants.INPUT_SET_ID_PARAM_MESSAGE) String inputSetIdentifier,
@@ -184,6 +188,8 @@ public interface InputSetResourcePMS {
             description =
                 "If the YAML is valid, returns created Input Set. If not, it sends what is wrong with the YAML")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<InputSetResponseDTOPMS>
   createInputSet(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @Parameter(
                      description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE) String accountId,
@@ -246,6 +252,8 @@ public interface InputSetResourcePMS {
             description =
                 "If the YAML is valid, returns the updated Input Set. If not, it sends what is wrong with the YAML")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<InputSetResponseDTOPMS>
   updateInputSet(
       @Parameter(description = PipelineResourceConstants.IF_MATCH_PARAM_MESSAGE) @HeaderParam(IF_MATCH) String ifMatch,
@@ -317,6 +325,8 @@ public interface InputSetResourcePMS {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Return the Deleted Input Set")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<Boolean>
   delete(
       @Parameter(description = PipelineResourceConstants.IF_MATCH_PARAM_MESSAGE) @HeaderParam(IF_MATCH) String ifMatch,
@@ -342,6 +352,8 @@ public interface InputSetResourcePMS {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
             description = "Fetch all the Input Sets for a Pipeline, including Overlay Input Sets.")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<PageResponse<InputSetSummaryResponseDTOPMS>>
   listInputSetsForPipeline(@QueryParam(NGResourceFilterConstants.PAGE_KEY) @DefaultValue("0") @Parameter(
                                description = NGCommonEntityConstants.PAGE_PARAM_MESSAGE) int page,
@@ -375,6 +387,8 @@ public interface InputSetResourcePMS {
             description =
                 "Fetch Runtime Input Template for a Pipeline, along with any expressions whose value is needed for running specific Stages")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<InputSetTemplateResponseDTOPMS>
   getTemplateFromPipeline(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @Parameter(
                               description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE) String accountId,

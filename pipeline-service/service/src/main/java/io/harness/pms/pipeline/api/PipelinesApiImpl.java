@@ -68,6 +68,8 @@ import io.harness.utils.PageUtils;
 import io.harness.yaml.schema.inputs.beans.YamlInputDetails;
 import io.harness.yaml.validator.InvalidYamlException;
 
+import com.codahale.metrics.annotation.ResponseMetered;
+import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +100,8 @@ public class PipelinesApiImpl implements PipelinesApi {
   private final PipelineAsyncValidationService pipelineAsyncValidationService;
 
   @Override
+  @Timed
+  @ResponseMetered
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_CREATE_AND_EDIT)
   public Response createPipeline(PipelineCreateRequestBody requestBody, @OrgIdentifier String org,
       @ProjectIdentifier String project, @AccountIdentifier String account) {
@@ -123,6 +127,8 @@ public class PipelinesApiImpl implements PipelinesApi {
   }
 
   @Override
+  @Timed
+  @ResponseMetered
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_DELETE)
   public Response deletePipeline(@OrgIdentifier String org, @ProjectIdentifier String project,
       @ResourceIdentifier String pipeline, @AccountIdentifier String account) {
@@ -142,6 +148,8 @@ public class PipelinesApiImpl implements PipelinesApi {
   }
 
   @Override
+  @Timed
+  @ResponseMetered
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
   public Response getPipeline(@OrgIdentifier String org, @ProjectIdentifier String project,
       @ResourceIdentifier String pipeline, @AccountIdentifier String account, String branch, Boolean templatesApplied,
@@ -270,6 +278,8 @@ public class PipelinesApiImpl implements PipelinesApi {
   }
 
   @Override
+  @Timed
+  @ResponseMetered
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
   public Response listPipelines(@OrgIdentifier String org, @ProjectIdentifier String project,
       @AccountIdentifier String account, Integer page, Integer limit, String searchTerm, String sort, String order,
@@ -306,6 +316,8 @@ public class PipelinesApiImpl implements PipelinesApi {
   }
 
   @Override
+  @Timed
+  @ResponseMetered
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_CREATE_AND_EDIT)
   public Response updatePipeline(PipelineUpdateRequestBody requestBody, @OrgIdentifier String org,
       @ProjectIdentifier String project, @ResourceIdentifier String pipeline, @AccountIdentifier String account) {
