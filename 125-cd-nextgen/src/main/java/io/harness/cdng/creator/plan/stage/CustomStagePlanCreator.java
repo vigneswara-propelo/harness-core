@@ -248,6 +248,7 @@ public class CustomStagePlanCreator extends AbstractStagePlanCreator<CustomStage
             .envInputs(finalEnvironmentYamlV2.getEnvironmentInputs())
             .infraId(infraRef)
             .childrenNodeIds(childrenNodeIds)
+            .envGitBranch(finalEnvironmentYamlV2.getGitBranch())
             .build();
 
     final PlanNode envNode =
