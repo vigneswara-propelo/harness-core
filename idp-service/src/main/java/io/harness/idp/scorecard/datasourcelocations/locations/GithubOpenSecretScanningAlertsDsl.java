@@ -28,6 +28,7 @@ import io.harness.idp.scorecard.datasourcelocations.beans.ApiRequestDetails;
 import io.harness.idp.scorecard.datasourcelocations.client.DslClient;
 import io.harness.idp.scorecard.datasourcelocations.client.DslClientFactory;
 import io.harness.idp.scorecard.datasourcelocations.entity.DataSourceLocationEntity;
+import io.harness.idp.scorecard.scores.beans.DataFetchDTO;
 import io.harness.spec.server.idp.v1.model.InputValue;
 
 import com.google.inject.Inject;
@@ -38,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
-import org.apache.commons.math3.util.Pair;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.IDP)
@@ -47,43 +47,44 @@ public class GithubOpenSecretScanningAlertsDsl implements DataSourceLocation {
 
   @Override
   public Map<String, Object> fetchData(String accountIdentifier, BackstageCatalogEntity backstageCatalogEntity,
-      DataSourceLocationEntity dataSourceLocationEntity,
-      List<Pair<DataPointEntity, List<InputValue>>> dataPointsAndInputValues, Map<String, String> replaceableHeaders,
-      Map<String, String> possibleReplaceableRequestBodyPairs, Map<String, String> possibleReplaceableUrlPairs,
-      DataSourceConfig dataSourceConfig) throws NoSuchAlgorithmException, KeyManagementException {
+      DataSourceLocationEntity dataSourceLocationEntity, List<DataFetchDTO> dataFetchDTOs,
+      Map<String, String> replaceableHeaders, Map<String, String> possibleReplaceableRequestBodyPairs,
+      Map<String, String> possibleReplaceableUrlPairs, DataSourceConfig dataSourceConfig)
+      throws NoSuchAlgorithmException, KeyManagementException {
     ApiRequestDetails apiRequestDetails = fetchApiRequestDetails(dataSourceLocationEntity);
     matchAndReplaceHeaders(apiRequestDetails.getHeaders(), replaceableHeaders);
     HttpConfig httpConfig = (HttpConfig) dataSourceConfig;
     apiRequestDetails.getHeaders().putAll(httpConfig.getHeaders());
-    Map<String, Object> data = new HashMap<>();
+    Map<String, Object> ruleData = new HashMap<>();
 
-    for (Pair<DataPointEntity, List<InputValue>> dataPointAndInputValues : dataPointsAndInputValues) {
-      DataPointEntity dataPoint = dataPointAndInputValues.getFirst();
-
-      if (isEmpty(possibleReplaceableRequestBodyPairs.get(REPO_SCM))
-          || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_OWNER))
-          || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_NAME))) {
-        data.put(dataPoint.getIdentifier(), Map.of(ERROR_MESSAGE_KEY, SOURCE_LOCATION_ANNOTATION_ERROR));
-        return data;
-      }
-
-      Map<String, String> replaceablePairs = new HashMap<>();
-      replaceablePairs.putAll(possibleReplaceableUrlPairs);
-      replaceablePairs.putAll(possibleReplaceableRequestBodyPairs);
-      String url = constructUrl(httpConfig.getTarget(), apiRequestDetails.getUrl(), replaceablePairs);
-      apiRequestDetails.setUrl(url);
-      DslClient dslClient =
-          dslClientFactory.getClient(accountIdentifier, possibleReplaceableRequestBodyPairs.get(REPO_SCM));
-      Response response = getResponse(apiRequestDetails, dslClient, accountIdentifier);
-      if (response.getStatus() == 200) {
-        data.put(DSL_RESPONSE, GsonUtils.convertJsonStringToObject(response.getEntity().toString(), List.class));
-      } else if (response.getStatus() == 500) {
-        data.put(ERROR_MESSAGE_KEY, ((ResponseMessage) response.getEntity()).getMessage());
-      } else {
-        data.put(ERROR_MESSAGE_KEY,
-            GsonUtils.convertJsonStringToObject(response.getEntity().toString(), Map.class).get(MESSAGE_KEY));
-      }
+    if (isEmpty(possibleReplaceableRequestBodyPairs.get(REPO_SCM))
+        || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_OWNER))
+        || isEmpty(possibleReplaceableRequestBodyPairs.get(REPOSITORY_NAME))) {
+      return Map.of(ERROR_MESSAGE_KEY, SOURCE_LOCATION_ANNOTATION_ERROR);
     }
+
+    Map<String, String> replaceablePairs = new HashMap<>();
+    replaceablePairs.putAll(possibleReplaceableUrlPairs);
+    replaceablePairs.putAll(possibleReplaceableRequestBodyPairs);
+    String url = constructUrl(httpConfig.getTarget(), apiRequestDetails.getUrl(), replaceablePairs);
+    apiRequestDetails.setUrl(url);
+    DslClient dslClient =
+        dslClientFactory.getClient(accountIdentifier, possibleReplaceableRequestBodyPairs.get(REPO_SCM));
+    Response response = getResponse(apiRequestDetails, dslClient, accountIdentifier);
+    if (response.getStatus() == 200) {
+      ruleData.put(DSL_RESPONSE, GsonUtils.convertJsonStringToObject(response.getEntity().toString(), List.class));
+    } else if (response.getStatus() == 500) {
+      ruleData.put(ERROR_MESSAGE_KEY, ((ResponseMessage) response.getEntity()).getMessage());
+    } else {
+      ruleData.put(ERROR_MESSAGE_KEY,
+          GsonUtils.convertJsonStringToObject(response.getEntity().toString(), Map.class).get(MESSAGE_KEY));
+    }
+
+    // We need to do this as the parser for this datapoint is shared with other data points which have input values
+    // and hence expect data added against rule identifier
+    Map<String, Object> data = new HashMap<>();
+    dataFetchDTOs.forEach(dataFetchDTO -> data.put(dataFetchDTO.getRuleIdentifier(), ruleData));
+
     return data;
   }
 
