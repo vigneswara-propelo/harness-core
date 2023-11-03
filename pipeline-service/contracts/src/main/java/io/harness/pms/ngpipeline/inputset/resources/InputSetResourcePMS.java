@@ -30,6 +30,7 @@ import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.pms.inputset.InputSetFilterPropertiesDto;
 import io.harness.pms.inputset.InputSetSchemaConstants;
 import io.harness.pms.inputset.MergeInputSetForRerunRequestDTO;
 import io.harness.pms.inputset.MergeInputSetRequestDTOPMS;
@@ -667,7 +668,7 @@ public interface InputSetResourcePMS {
           NGCommonEntityConstants.INPUT_SET_IDENTIFIER_KEY) @ResourceIdentifier String inputSetIdentifier,
       @BeanParam GitMetadataUpdateRequestInfoDTO gitMetadataUpdateRequestInfo);
 
-  @GET
+  @POST
   @Hidden
   @Path("/list")
   @ApiOperation(value = "Gets InputSets list for a project", nickname = "getInputSetsListForProject")
@@ -682,7 +683,7 @@ public interface InputSetResourcePMS {
   ResponseDTO<PageResponse<InputSetListResponseDTO>>
   listInputSetsForProject(@QueryParam(NGResourceFilterConstants.PAGE_KEY) @DefaultValue("0") @Parameter(
                               description = NGCommonEntityConstants.PAGE_PARAM_MESSAGE) int page,
-      @QueryParam(NGResourceFilterConstants.SIZE_KEY) @DefaultValue("100") @Parameter(
+      @QueryParam(NGResourceFilterConstants.SIZE_KEY) @DefaultValue("25") @Parameter(
           description = NGCommonEntityConstants.SIZE_PARAM_MESSAGE) int size,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @Parameter(
           description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE) @AccountIdentifier String accountId,
@@ -690,6 +691,13 @@ public interface InputSetResourcePMS {
           description = PipelineResourceConstants.ORG_PARAM_MESSAGE) @OrgIdentifier String orgIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) @Parameter(
           description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE) @ProjectIdentifier String projectIdentifier,
-      @Parameter(description = InputSetSchemaConstants.INPUT_SET_TYPE_MESSAGE) @QueryParam("inputSetType")
-      @DefaultValue("ALL") InputSetListTypePMS inputSetListType, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo);
+      @Parameter(description = InputSetSchemaConstants.INPUT_SET_TYPE_MESSAGE) @QueryParam(
+          "inputSetType") @DefaultValue("ALL") InputSetListTypePMS inputSetListType,
+      @QueryParam(NGResourceFilterConstants.SEARCH_TERM_KEY) @Parameter(
+          description = PipelineResourceConstants.INPUT_SET_SEARCH_TERM_PARAM_MESSAGE) String searchTerm,
+      @QueryParam(NGResourceFilterConstants.SORT_KEY) @Parameter(
+          description = NGCommonEntityConstants.SORT_PARAM_MESSAGE) List<String> sort,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
+      @RequestBody(description = "This is the body for the filter properties for listing InputSets.")
+      InputSetFilterPropertiesDto filterProperties);
 }
