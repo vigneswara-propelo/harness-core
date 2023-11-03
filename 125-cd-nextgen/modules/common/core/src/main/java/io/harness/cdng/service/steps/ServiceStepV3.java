@@ -30,6 +30,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.beans.FeatureName;
 import io.harness.cdng.artifact.outcome.ArtifactsOutcome;
 import io.harness.cdng.envGroup.beans.EnvironmentGroupEntity;
 import io.harness.cdng.envGroup.services.EnvironmentGroupService;
@@ -67,6 +68,7 @@ import io.harness.ng.core.common.beans.NGTag;
 import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.environment.yaml.NGEnvironmentConfig;
+import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
 import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.services.ServiceEntityService;
 import io.harness.ng.core.service.services.impl.ServiceEntityYamlSchemaHelper;
@@ -100,6 +102,7 @@ import io.harness.steps.StepUtils;
 import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.tasks.ResponseData;
 import io.harness.utils.IdentifierRefHelper;
+import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.utils.YamlPipelineUtils;
 import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.core.variables.SecretNGVariable;
@@ -146,6 +149,8 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
   @Inject private ServiceOverrideUtilityFacade serviceOverrideUtilityFacade;
   @Inject private ServiceOverrideV2ValidationHelper overrideV2ValidationHelper;
   @Inject private ServiceStepV3Helper serviceStepV3Helper;
+  @Inject private InfrastructureEntityService infrastructureEntityService;
+  @Inject private NGFeatureFlagHelperService ngFeatureFlagHelperService;
 
   private static final Pattern serviceVariablePattern = Pattern.compile(SERVICE_VARIABLES_PATTERN_REGEX);
   private static final Pattern envVariablePattern = Pattern.compile(ENV_VARIABLES_PATTERN_REGEX);
@@ -242,7 +247,6 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
     checkIfEnvTypesEntityRefIsExpAndThrow(stepParameters.getEnvGroupRef(), ENV_GROUP_REF,
         "[Hint]: service variables expression should not be used as environment group ref.");
   }
-
   private void checkIfEnvTypesEntityRefIsExpAndThrow(
       ParameterField<String> envTypeEntityRef, String entityTypeName, String suffixErrorMessage) {
     if (ParameterField.isNotNull(envTypeEntityRef) && envTypeEntityRef.isExpression()) {
@@ -481,6 +485,13 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
 
       NGEnvironmentConfig ngEnvironmentConfig =
           serviceStepV3Helper.getNgEnvironmentConfig(ambiance, parameters, accountId, environment);
+
+      if (ngFeatureFlagHelperService.isEnabled(accountId, FeatureName.CDS_SCOPE_INFRA_TO_SERVICES)) {
+        infrastructureEntityService.checkIfInfraIsScopedToService(AmbianceUtils.getAccountId(ambiance),
+            AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance),
+            parameters.getServiceRef().getValue(), parameters.getEnvRef().getValue(),
+            parameters.getInfraId().getValue());
+      }
 
       final Optional<NGServiceOverridesEntity> ngServiceOverridesEntity =
           serviceOverrideService.get(AmbianceUtils.getAccountId(ambiance), orgIdentifier, projectIdentifier,
