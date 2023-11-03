@@ -24,6 +24,7 @@ import io.harness.ssca.transformers.NormalisedSbomComponentTransformer;
 import io.harness.utils.ApiUtils;
 
 import com.google.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -94,33 +95,45 @@ public class NormalisedSbomComponentServiceImpl implements NormalisedSbomCompone
 
   public List<String> getOrchestrationIds(String accountId, String orgIdentifier, String projectIdentifier,
       ArtifactListingRequestBodyLicenseFilter licenseFilter) {
-    Criteria criteria = Criteria.where(NormalizedSBOMEntityKeys.accountId)
-                            .is(accountId)
-                            .and(NormalizedSBOMEntityKeys.orgIdentifier)
-                            .is(orgIdentifier)
-                            .and(NormalizedSBOMEntityKeys.projectIdentifier)
-                            .is(projectIdentifier);
-
     if (Objects.nonNull(licenseFilter)) {
-      if (ArtifactListingRequestBodyLicenseFilter.OperatorEnum.EQUALS.equals(licenseFilter.getOperator())) {
-        criteria.and(NormalizedSBOMEntityKeys.packageLicense).is(licenseFilter.getValue());
+      Criteria criteria = Criteria.where(NormalizedSBOMEntityKeys.accountId)
+                              .is(accountId)
+                              .and(NormalizedSBOMEntityKeys.orgIdentifier)
+                              .is(orgIdentifier)
+                              .and(NormalizedSBOMEntityKeys.projectIdentifier)
+                              .is(projectIdentifier);
+
+      switch (licenseFilter.getOperator()) {
+        case EQUALS:
+          criteria.and(NormalizedSBOMEntityKeys.packageLicense).is(licenseFilter.getValue());
+          break;
+        case CONTAINS:
+          criteria.and(NormalizedSBOMEntityKeys.packageLicense).regex(licenseFilter.getValue());
+          break;
+        case STARTSWITH:
+          criteria.and(NormalizedSBOMEntityKeys.packageLicense)
+              .regex(Pattern.compile("^".concat(licenseFilter.getValue())));
+          break;
+        default:
+          throw new InvalidRequestException("Invalid component filter operator");
       }
+      return sbomComponentRepo.findAll(criteria, Pageable.unpaged())
+          .map(NormalizedSBOMComponentEntity::getOrchestrationId)
+          .toList();
     }
-    return sbomComponentRepo.findAll(criteria, Pageable.unpaged())
-        .map(NormalizedSBOMComponentEntity::getOrchestrationId)
-        .toList();
+    return new ArrayList<>();
   }
 
   public List<String> getOrchestrationIds(String accountId, String orgIdentifier, String projectIdentifier,
       List<ArtifactListingRequestBodyComponentFilter> componentFilter) {
-    Criteria criteria = Criteria.where(NormalizedSBOMEntityKeys.accountId)
-                            .is(accountId)
-                            .and(NormalizedSBOMEntityKeys.orgIdentifier)
-                            .is(orgIdentifier)
-                            .and(NormalizedSBOMEntityKeys.projectIdentifier)
-                            .is(projectIdentifier);
-
     if (Objects.nonNull(componentFilter)) {
+      Criteria criteria = Criteria.where(NormalizedSBOMEntityKeys.accountId)
+                              .is(accountId)
+                              .and(NormalizedSBOMEntityKeys.orgIdentifier)
+                              .is(orgIdentifier)
+                              .and(NormalizedSBOMEntityKeys.projectIdentifier)
+                              .is(projectIdentifier);
+
       Criteria[] componentFilterCriteria =
           componentFilter.stream()
               .map(filter -> {
@@ -141,9 +154,10 @@ public class NormalisedSbomComponentServiceImpl implements NormalisedSbomCompone
               })
               .toArray(Criteria[] ::new);
       criteria.andOperator(componentFilterCriteria);
+      return sbomComponentRepo.findAll(criteria, Pageable.unpaged())
+          .map(NormalizedSBOMComponentEntity::getOrchestrationId)
+          .toList();
     }
-    return sbomComponentRepo.findAll(criteria, Pageable.unpaged())
-        .map(NormalizedSBOMComponentEntity::getOrchestrationId)
-        .toList();
+    return new ArrayList<>();
   }
 }

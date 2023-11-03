@@ -26,6 +26,7 @@ import io.harness.rule.Owner;
 import io.harness.spec.server.ssca.v1.model.Artifact;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBodyComponentFilter;
 import io.harness.spec.server.ssca.v1.model.ArtifactListingRequestBodyLicenseFilter;
+import io.harness.spec.server.ssca.v1.model.Operator;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys;
@@ -102,9 +103,7 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
     ArgumentCaptor<Criteria> criteriaArgumentCaptor = ArgumentCaptor.forClass(Criteria.class);
     when(sbomComponentRepo.findAll(any(), any())).thenReturn(Page.empty());
     ArtifactListingRequestBodyLicenseFilter licenseFilter =
-        new ArtifactListingRequestBodyLicenseFilter()
-            .operator(ArtifactListingRequestBodyLicenseFilter.OperatorEnum.EQUALS)
-            .value(licenseValue);
+        new ArtifactListingRequestBodyLicenseFilter().operator(Operator.EQUALS).value(licenseValue);
     normalisedSbomComponentService.getOrchestrationIds("account", "org", "project", licenseFilter);
     verify(sbomComponentRepo, times(1)).findAll(criteriaArgumentCaptor.capture(), any());
     Criteria criteria = criteriaArgumentCaptor.getValue();
@@ -124,11 +123,11 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
     List<ArtifactListingRequestBodyComponentFilter> componentFilter =
         Lists.newArrayList(new ArtifactListingRequestBodyComponentFilter()
                                .fieldName(ArtifactListingRequestBodyComponentFilter.FieldNameEnum.COMPONENTNAME)
-                               .operator(ArtifactListingRequestBodyComponentFilter.OperatorEnum.CONTAINS)
+                               .operator(Operator.CONTAINS)
                                .value(componentValue1),
             new ArtifactListingRequestBodyComponentFilter()
                 .fieldName(ArtifactListingRequestBodyComponentFilter.FieldNameEnum.COMPONENTVERSION)
-                .operator(ArtifactListingRequestBodyComponentFilter.OperatorEnum.STARTSWITH)
+                .operator(Operator.STARTSWITH)
                 .value(componentValue2));
 
     normalisedSbomComponentService.getOrchestrationIds("account", "org", "project", componentFilter);
