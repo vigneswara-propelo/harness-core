@@ -73,7 +73,6 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
     MockitoAnnotations.initMocks(this);
     FieldUtils.writeField(artifactService, "artifactRepository", artifactRepository, true);
     FieldUtils.writeField(artifactService, "enforcementSummaryRepo", enforcementSummaryRepo, true);
-    FieldUtils.writeField(artifactService, "cdInstanceSummaryRepo", cdInstanceSummaryRepo, true);
     FieldUtils.writeField(normalisedSbomComponentService, "sbomComponentRepo", sbomComponentRepo, true);
     FieldUtils.writeField(artifactService, "normalisedSbomComponentService", normalisedSbomComponentService, true);
     FieldUtils.writeField(cdInstanceSummaryService, "cdInstanceSummaryRepo", cdInstanceSummaryRepo, true);

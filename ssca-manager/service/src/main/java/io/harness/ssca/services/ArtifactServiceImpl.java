@@ -20,7 +20,6 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.unwi
 
 import io.harness.network.Http;
 import io.harness.repositories.ArtifactRepository;
-import io.harness.repositories.CdInstanceSummaryRepo;
 import io.harness.repositories.EnforcementSummaryRepo;
 import io.harness.spec.server.ssca.v1.model.ArtifactComponentViewRequestBody;
 import io.harness.spec.server.ssca.v1.model.ArtifactComponentViewResponse;
@@ -79,8 +78,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArtifactServiceImpl implements ArtifactService {
   @Inject ArtifactRepository artifactRepository;
   @Inject EnforcementSummaryRepo enforcementSummaryRepo;
+
+  @Inject EnforcementSummaryService enforcementSummaryService;
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
-  @Inject CdInstanceSummaryRepo cdInstanceSummaryRepo;
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
 
   private final String GCP_REGISTRY_HOST = "grc.io";
@@ -172,6 +172,10 @@ public class ArtifactServiceImpl implements ArtifactService {
   public ArtifactDetailResponse getArtifactDetails(
       String accountId, String orgIdentifier, String projectIdentifier, String artifactId, String tag) {
     ArtifactEntity artifact = getLatestArtifact(accountId, orgIdentifier, projectIdentifier, artifactId, tag);
+    if (Objects.isNull(artifact)) {
+      throw new NotFoundException(
+          String.format("Artifact with artifactId [%s] and tag [%s] is not found", artifactId, tag));
+    }
     return new ArtifactDetailResponse()
         .id(artifact.getArtifactId())
         .name(artifact.getName())
