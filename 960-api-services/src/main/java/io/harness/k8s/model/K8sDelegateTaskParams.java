@@ -22,4 +22,5 @@ public class K8sDelegateTaskParams {
   String kustomizeBinaryPath;
   boolean useLatestKustomizeVersion;
   String gcpKeyFilePath;
+  KubernetesConfig kubernetesConfig;
 }
