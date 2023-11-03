@@ -2739,17 +2739,6 @@ components:
           type: string
           x-stoplight:
             id: 6g2l9bcr1d5rt
-        entity_type:
-          x-stoplight:
-            id: umvcas8rv6rtu
-          enum:
-            - STAGE
-            - STEP
-            - STEP_GROUP
-        stage_type:
-          type: string
-          x-stoplight:
-            id: min1rai4qchv4
     RuntimeInputDependencyDetailsDTO:
       title: RuntimeInputDependencyDetailsDTO
       x-stoplight:
