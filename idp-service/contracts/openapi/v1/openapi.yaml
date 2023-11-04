@@ -3328,9 +3328,14 @@ components:
           type: string
           x-stoplight:
             id: aqhb6cu8ooj5t
+        required:
+          type: boolean
+          x-stoplight:
+            id: q7eabpypob3ty
       required:
         - key
         - description
+        - required
     InputValue:
       title: InputValue
       x-stoplight:
