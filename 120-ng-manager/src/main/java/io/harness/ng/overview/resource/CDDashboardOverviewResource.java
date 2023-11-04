@@ -292,6 +292,7 @@ public class CDDashboardOverviewResource {
     log.info("Getting workloads");
     long numDays = getNumberOfDays(startInterval, endInterval);
     long previousStartInterval = getStartTimeOfPreviousInterval(startInterval, numDays);
+    cdOverviewDashboardService.validateDashboardRequestDuration(numDays);
 
     return ResponseDTO.newResponse(cdOverviewDashboardService.getDashboardWorkloadDeploymentV2(accountIdentifier,
         orgIdentifier, projectIdentifier, startInterval, endInterval, previousStartInterval, envType));
