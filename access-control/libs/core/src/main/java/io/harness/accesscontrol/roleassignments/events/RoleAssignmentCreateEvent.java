@@ -28,19 +28,25 @@ import lombok.NoArgsConstructor;
 @OwnedBy(PL)
 @Getter
 @NoArgsConstructor
-public class RoleAssignmentUpdateEvent implements Event {
-  public static final String ROLE_ASSIGNMENT_UPDATE_EVENT = "RoleAssignmentUpdated";
+public class RoleAssignmentCreateEvent implements Event {
+  public static final String ROLE_ASSIGNMENT_CREATE_EVENT = "RoleAssignmentCreated";
   private String accountIdentifier;
-  private RoleAssignmentDTO newRoleAssignment;
-  private RoleAssignmentDTO oldRoleAssignment;
+  private RoleAssignmentDTO roleAssignment;
   private ScopeDTO scope;
+  private String roleAssignmentId;
 
-  public RoleAssignmentUpdateEvent(String accountIdentifier, RoleAssignmentDTO newRoleAssignment,
-      RoleAssignmentDTO oldRoleAssignment, ScopeDTO scope) {
+  public RoleAssignmentCreateEvent(String accountIdentifier, RoleAssignmentDTO roleAssignment, ScopeDTO scope) {
     this.accountIdentifier = accountIdentifier;
-    this.newRoleAssignment = newRoleAssignment;
-    this.oldRoleAssignment = oldRoleAssignment;
+    this.roleAssignment = roleAssignment;
     this.scope = scope;
+  }
+
+  public RoleAssignmentCreateEvent(
+      String accountIdentifier, RoleAssignmentDTO roleAssignment, ScopeDTO scope, String roleAssignmentId) {
+    this.accountIdentifier = accountIdentifier;
+    this.roleAssignment = roleAssignment;
+    this.scope = scope;
+    this.roleAssignmentId = roleAssignmentId;
   }
 
   @JsonIgnore
@@ -57,12 +63,12 @@ public class RoleAssignmentUpdateEvent implements Event {
   @JsonIgnore
   @Override
   public Resource getResource() {
-    return Resource.builder().identifier(newRoleAssignment.getIdentifier()).type(ROLE_ASSIGNMENT).build();
+    return Resource.builder().identifier(roleAssignment.getIdentifier()).type(ROLE_ASSIGNMENT).build();
   }
 
   @JsonIgnore
   @Override
   public String getEventType() {
-    return ROLE_ASSIGNMENT_UPDATE_EVENT;
+    return ROLE_ASSIGNMENT_CREATE_EVENT;
   }
 }

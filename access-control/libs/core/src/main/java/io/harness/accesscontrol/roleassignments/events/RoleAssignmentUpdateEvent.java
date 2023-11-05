@@ -28,16 +28,21 @@ import lombok.NoArgsConstructor;
 @OwnedBy(PL)
 @Getter
 @NoArgsConstructor
-public class RoleAssignmentCreateEvent implements Event {
-  public static final String ROLE_ASSIGNMENT_CREATE_EVENT = "RoleAssignmentCreated";
+public class RoleAssignmentUpdateEvent implements Event {
+  public static final String ROLE_ASSIGNMENT_UPDATE_EVENT = "RoleAssignmentUpdated";
   private String accountIdentifier;
-  private RoleAssignmentDTO roleAssignment;
+  private RoleAssignmentDTO newRoleAssignment;
+  private RoleAssignmentDTO oldRoleAssignment;
   private ScopeDTO scope;
+  private String roleAssignmentId;
 
-  public RoleAssignmentCreateEvent(String accountIdentifier, RoleAssignmentDTO roleAssignment, ScopeDTO scope) {
+  public RoleAssignmentUpdateEvent(String accountIdentifier, RoleAssignmentDTO newRoleAssignment,
+      RoleAssignmentDTO oldRoleAssignment, ScopeDTO scope, String roleAssignmentId) {
     this.accountIdentifier = accountIdentifier;
-    this.roleAssignment = roleAssignment;
+    this.newRoleAssignment = newRoleAssignment;
+    this.oldRoleAssignment = oldRoleAssignment;
     this.scope = scope;
+    this.roleAssignmentId = roleAssignmentId;
   }
 
   @JsonIgnore
@@ -54,12 +59,12 @@ public class RoleAssignmentCreateEvent implements Event {
   @JsonIgnore
   @Override
   public Resource getResource() {
-    return Resource.builder().identifier(roleAssignment.getIdentifier()).type(ROLE_ASSIGNMENT).build();
+    return Resource.builder().identifier(newRoleAssignment.getIdentifier()).type(ROLE_ASSIGNMENT).build();
   }
 
   @JsonIgnore
   @Override
   public String getEventType() {
-    return ROLE_ASSIGNMENT_CREATE_EVENT;
+    return ROLE_ASSIGNMENT_UPDATE_EVENT;
   }
 }

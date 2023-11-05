@@ -33,11 +33,22 @@ public class RoleAssignmentDeleteEvent implements Event {
   private String accountIdentifier;
   private RoleAssignmentDTO roleAssignment;
   private ScopeDTO scope;
+  private Boolean skipAudit;
+  private String roleAssignmentId;
 
   public RoleAssignmentDeleteEvent(String accountIdentifier, RoleAssignmentDTO roleAssignment, ScopeDTO scope) {
     this.accountIdentifier = accountIdentifier;
     this.roleAssignment = roleAssignment;
     this.scope = scope;
+  }
+
+  public RoleAssignmentDeleteEvent(String accountIdentifier, RoleAssignmentDTO roleAssignment, ScopeDTO scope,
+      Boolean skipAudit, String roleAssignmentId) {
+    this.accountIdentifier = accountIdentifier;
+    this.roleAssignment = roleAssignment;
+    this.scope = scope;
+    this.skipAudit = skipAudit;
+    this.roleAssignmentId = roleAssignmentId;
   }
 
   @JsonIgnore
