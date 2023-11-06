@@ -20,6 +20,7 @@ import io.harness.ModuleType;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.beans.steps.nodes.security.AnchoreScanNode;
+import io.harness.beans.steps.nodes.security.AquaSecurityScanNode;
 import io.harness.beans.steps.nodes.security.AquaTrivyScanNode;
 import io.harness.beans.steps.nodes.security.AwsEcrScanNode;
 import io.harness.beans.steps.nodes.security.AwsSecurityHubScanNode;
@@ -92,6 +93,8 @@ import lombok.Getter;
 public enum STOStepType {
   ANCHORE("Anchore", null, FeatureName.STO_STEP_PALETTE_ANCHORE_ENTERPRISE, AnchoreScanNode.class, EntityType.ANCHORE,
       new String[] {CONTAINER_SECURITY}),
+  AQUA_SECURITY("AquaSecurity", "Aqua Security", FeatureName.STO_STEP_PALETTE_AQUASEC, AquaSecurityScanNode.class,
+      EntityType.AQUA_SECURITY, new String[] {CONTAINER_SECURITY}),
   AQUA_TRIVY("AquaTrivy", "Aqua Trivy", null, AquaTrivyScanNode.class, EntityType.AQUA_TRIVY,
       new String[] {CONTAINER_SECURITY}),
   AWS_ECR("AWSECR", "AWS ECR Scan", null, AwsEcrScanNode.class, EntityType.AWS_ECR, new String[] {CONTAINER_SECURITY}),
