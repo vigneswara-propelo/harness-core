@@ -1002,9 +1002,9 @@ components:
         components_count:
           type: integer
         allow_list_violation_count:
-          type: integer
+          type: string
         deny_list_violation_count:
-          type: integer
+          type: string
         activity:
           type: string
           enum:
@@ -1093,12 +1093,11 @@ components:
       properties:
         environment:
           type: string
-        'environment_type ':
+        environment_type:
           type: string
           enum:
-            - PROD
-            - NONPROD
-            - ALL
+            - Prod
+            - NonProd
         policy_violation:
           type: string
           enum:

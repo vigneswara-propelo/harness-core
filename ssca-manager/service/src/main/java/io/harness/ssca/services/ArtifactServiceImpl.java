@@ -39,6 +39,7 @@ import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.SbomDTO;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityKeys;
+import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.EnforcementSummaryEntity;
 import io.harness.ssca.entities.EnforcementSummaryEntity.EnforcementSummaryEntityKeys;
 import io.harness.ssca.utils.SBOMUtils;
@@ -117,6 +118,9 @@ public class ArtifactServiceImpl implements ArtifactService {
                   .sbomFormat(body.getSbomProcess().getFormat())
                   .sbomVersion(SBOMUtils.getSbomVersion(sbomDTO))
                   .build())
+        .prodEnvCount(0l)
+        .nonProdEnvCount(0l)
+        .invalid(false)
         .build();
   }
 
@@ -317,19 +321,47 @@ public class ArtifactServiceImpl implements ArtifactService {
       throw new NotFoundException(String.format("No Artifact Found with {id: %s}", artifactId));
     }
 
-    return cdInstanceSummaryService
-        .getCdInstanceSummaries(accountId, orgIdentifier, projectIdentifier, artifact, filterBody, pageable)
-        .map(entity
-            -> new ArtifactDeploymentViewResponse()
-                   .envId(entity.getEnvIdentifier())
-                   .envName(entity.getEnvName())
-                   .envType(entity.getEnvType() == EnvType.Production ? EnvTypeEnum.PROD : EnvTypeEnum.NONPROD)
-                   .attestedStatus(artifact.isAttested() ? AttestedStatusEnum.PASS : AttestedStatusEnum.FAIL)
-                   .pipelineId(entity.getLastPipelineExecutionName())
-                   .pipelineExecutionId(entity.getLastPipelineExecutionId())
-                   .triggeredById(entity.getLastDeployedById())
-                   .triggeredBy(entity.getLastDeployedByName())
-                   .triggeredAt(entity.getLastDeployedAt().toString()));
+    Page<CdInstanceSummary> cdInstanceSummaries = cdInstanceSummaryService.getCdInstanceSummaries(
+        accountId, orgIdentifier, projectIdentifier, artifact, filterBody, pageable);
+    Criteria enforcementSummaryCriteria = Criteria.where(EnforcementSummaryEntityKeys.accountId)
+                                              .is(accountId)
+                                              .and(EnforcementSummaryEntityKeys.orgIdentifier)
+                                              .is(orgIdentifier)
+                                              .and(EnforcementSummaryEntityKeys.projectIdentifier)
+                                              .is(projectIdentifier)
+                                              .and(EnforcementSummaryEntityKeys.pipelineExecutionId)
+                                              .in(cdInstanceSummaries.map(entity -> entity.getLastPipelineExecutionId())
+                                                      .get()
+                                                      .collect(Collectors.toList()));
+
+    Map<String, EnforcementSummaryEntity> enforcementSummaryEntityMap =
+        enforcementSummaryRepo.findAll(enforcementSummaryCriteria)
+            .stream()
+            .collect(Collectors.toMap(EnforcementSummaryEntity::getPipelineExecutionId, Function.identity()));
+
+    return cdInstanceSummaries.map(entity -> {
+      EnforcementSummaryEntity enforcementSummaryEntity =
+          enforcementSummaryEntityMap.get(entity.getLastPipelineExecutionId());
+
+      ArtifactDeploymentViewResponse response =
+          new ArtifactDeploymentViewResponse()
+              .envId(entity.getEnvIdentifier())
+              .envName(entity.getEnvName())
+              .envType(entity.getEnvType() == EnvType.Production ? EnvTypeEnum.PROD : EnvTypeEnum.NONPROD)
+              .attestedStatus(artifact.isAttested() ? AttestedStatusEnum.PASS : AttestedStatusEnum.FAIL)
+              .pipelineId(entity.getLastPipelineExecutionName())
+              .pipelineExecutionId(entity.getLastPipelineExecutionId())
+              .triggeredById(entity.getLastDeployedById())
+              .triggeredBy(entity.getLastDeployedByName())
+              .triggeredAt(entity.getLastDeployedAt().toString());
+
+      if (Objects.nonNull(enforcementSummaryEntity)) {
+        response.allowListPolicyViolation(String.valueOf(enforcementSummaryEntity.getAllowListViolationCount()))
+            .denyListPolicyViolation(String.valueOf(enforcementSummaryEntity.getDenyListViolationCount()))
+            .enforcementId(enforcementSummaryEntity.getEnforcementId());
+      }
+      return response;
+    });
   }
 
   @Override
@@ -378,8 +410,8 @@ public class ArtifactServiceImpl implements ArtifactService {
               .name(artifact.getName())
               .tag(artifact.getTag())
               .componentsCount(artifact.getComponentsCount().intValue())
-              .allowListViolationCount(enforcementSummary.getAllowListViolationCount())
-              .denyListViolationCount(enforcementSummary.getDenyListViolationCount())
+              .allowListViolationCount(String.valueOf(enforcementSummary.getAllowListViolationCount()))
+              .denyListViolationCount(String.valueOf(enforcementSummary.getDenyListViolationCount()))
               .enforcementId(enforcementSummary.getEnforcementId())
               .activity(artifact.getProdEnvCount() + artifact.getNonProdEnvCount() == 0 ? ActivityEnum.GENERATED
                                                                                         : ActivityEnum.DEPLOYED)
