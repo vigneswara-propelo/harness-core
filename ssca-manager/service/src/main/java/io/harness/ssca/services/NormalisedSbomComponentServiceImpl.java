@@ -162,7 +162,7 @@ public class NormalisedSbomComponentServiceImpl implements NormalisedSbomCompone
 
   public List<String> getOrchestrationIds(
       String accountId, String orgIdentifier, String projectIdentifier, List<ComponentFilter> componentFilter) {
-    if (Objects.nonNull(componentFilter)) {
+    if (isNotEmpty(componentFilter)) {
       Criteria criteria = Criteria.where(NormalizedSBOMEntityKeys.accountId)
                               .is(accountId)
                               .and(NormalizedSBOMEntityKeys.orgIdentifier)
