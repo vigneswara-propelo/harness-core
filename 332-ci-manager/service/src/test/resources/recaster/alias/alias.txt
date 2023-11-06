@@ -347,6 +347,7 @@ io.harness.ci.pipeline.executions.beans.CIImageDetails
 io.harness.yaml.sto.variables.STOYamlMetasploitConfig
 io.harness.yaml.core.failurestrategy.ProceedWithDefaultValuesFailureActionConfig
 io.harness.plancreator.customDeployment.StepTemplateRef
+io.harness.plancreator.customDeployment.v1.StepTemplateRefV1
 io.harness.beans.yaml.extended.TIDotNetVersion
 io.harness.beans.steps.stepinfo.security.DataTheoremStepInfo
 io.harness.beans.steps.stepinfo.IACMTerraformPluginInfo
