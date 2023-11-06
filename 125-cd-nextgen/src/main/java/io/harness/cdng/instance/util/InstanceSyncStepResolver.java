@@ -35,6 +35,8 @@ import io.harness.cdng.ecs.EcsCanaryDeployStep;
 import io.harness.cdng.ecs.EcsRollingDeployStep;
 import io.harness.cdng.ecs.EcsRollingRollbackStep;
 import io.harness.cdng.ecs.EcsUpgradeContainerStep;
+import io.harness.cdng.ecs.asyncsteps.EcsCanaryDeployStepV2;
+import io.harness.cdng.ecs.asyncsteps.EcsRollingDeployStepV2;
 import io.harness.cdng.elastigroup.ElastigroupBGStageSetupStep;
 import io.harness.cdng.elastigroup.ElastigroupSwapRouteStep;
 import io.harness.cdng.elastigroup.deploy.ElastigroupDeployStep;
@@ -85,7 +87,8 @@ public class InstanceSyncStepResolver {
       HelmRollbackStepV2.STEP_TYPE.getType(), ServerlessAwsLambdaDeployStep.STEP_TYPE.getType(),
       AzureWebAppSlotDeploymentStep.STEP_TYPE.getType(), AzureWebAppRollbackStep.STEP_TYPE.getType(),
       CommandStep.STEP_TYPE.getType(), EcsRollingDeployStep.STEP_TYPE.getType(),
-      EcsRollingRollbackStep.STEP_TYPE.getType(), EcsCanaryDeployStep.STEP_TYPE.getType(),
+      EcsRollingDeployStepV2.STEP_TYPE.getType(), EcsRollingRollbackStep.STEP_TYPE.getType(),
+      EcsCanaryDeployStep.STEP_TYPE.getType(), EcsCanaryDeployStepV2.STEP_TYPE.getType(),
       EcsBlueGreenSwapTargetGroupsStep.STEP_TYPE.getType(), EcsBlueGreenRollbackStep.STEP_TYPE.getType(),
       FetchInstanceScriptStep.STEP_TYPE.getType(), ElastigroupDeployStep.STEP_TYPE.getType(),
       TasAppResizeStep.STEP_TYPE.getType(), TasSwapRoutesStep.STEP_TYPE.getType(), TasRollbackStep.STEP_TYPE.getType(),
