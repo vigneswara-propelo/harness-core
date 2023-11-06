@@ -937,7 +937,7 @@ public enum FeatureName {
       "Remove sdk resume event for async and async chain modes to avoid race condition", PIPELINE),
   CDS_K8S_TRAFFIC_ROUTING_NG(
       "Providing Traffic Routing functionality for K8s - BG, Canary and TrafficRouting steps", HarnessTeam.CDP),
-  CDS_METHOD_INVOCATION_OLD_FLOW_EXPRESSION_ENGINE(
+  CDS_METHOD_INVOCATION_NEW_FLOW_EXPRESSION_ENGINE(
       "Supports edge cases of method invocation in expression engine", PIPELINE),
 
   CDS_USE_AMBIANCE_IN_EXPRESSION_ENGINE(

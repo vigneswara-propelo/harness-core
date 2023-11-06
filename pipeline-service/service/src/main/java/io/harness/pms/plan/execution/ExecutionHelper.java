@@ -8,7 +8,7 @@
 package io.harness.pms.plan.execution;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-import static io.harness.beans.FeatureName.CDS_METHOD_INVOCATION_OLD_FLOW_EXPRESSION_ENGINE;
+import static io.harness.beans.FeatureName.CDS_METHOD_INVOCATION_NEW_FLOW_EXPRESSION_ENGINE;
 import static io.harness.beans.FeatureName.CDS_NG_BARRIER_STEPS_WITHIN_LOOPING_STRATEGIES;
 import static io.harness.beans.FeatureName.CDS_REMOVE_RESUME_EVENT_FOR_ASYNC_AND_ASYNCCHAIN_MODE;
 import static io.harness.beans.FeatureName.CDS_USE_AMBIANCE_IN_EXPRESSION_ENGINE;
@@ -176,7 +176,7 @@ public class ExecutionHelper {
   public final List<FeatureName> featureNames = List.of(PIE_EXPRESSION_CONCATENATION,
       PIE_EXPRESSION_DISABLE_COMPLEX_JSON_SUPPORT, PIE_SIMPLIFY_LOG_BASE_KEY,
       CDS_NG_BARRIER_STEPS_WITHIN_LOOPING_STRATEGIES, CDS_REMOVE_RESUME_EVENT_FOR_ASYNC_AND_ASYNCCHAIN_MODE,
-      PIE_SECRETS_OBSERVER, CDS_METHOD_INVOCATION_OLD_FLOW_EXPRESSION_ENGINE, CDS_USE_AMBIANCE_IN_EXPRESSION_ENGINE);
+      PIE_SECRETS_OBSERVER, CDS_METHOD_INVOCATION_NEW_FLOW_EXPRESSION_ENGINE, CDS_USE_AMBIANCE_IN_EXPRESSION_ENGINE);
   public static final String PMS_EXECUTION_SETTINGS_GROUP_IDENTIFIER = "pms_execution_settings";
 
   public PipelineEntity fetchPipelineEntity(@NotNull String accountId, @NotNull String orgIdentifier,
