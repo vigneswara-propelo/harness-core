@@ -87,6 +87,8 @@ import io.harness.cdng.googlefunctions.rollbackgenone.GoogleFunctionsGenOneRollb
 import io.harness.cdng.googlefunctions.trafficShift.GoogleFunctionsTrafficShiftStep;
 import io.harness.cdng.helm.HelmDeployStep;
 import io.harness.cdng.helm.HelmRollbackStep;
+import io.harness.cdng.helm.async.HelmDeployStepV2;
+import io.harness.cdng.helm.async.HelmRollbackStepV2;
 import io.harness.cdng.hooks.steps.ServiceHooksStep;
 import io.harness.cdng.infra.steps.EnvironmentStep;
 import io.harness.cdng.infra.steps.InfrastructureSectionStep;
@@ -395,11 +397,13 @@ public class NgStepRegistrar {
     engineSteps.put(K8sRollingRollbackStepV2.STEP_TYPE, K8sRollingRollbackStepV2.class);
     engineSteps.put(K8sBGStageScaleDownStepV2.STEP_TYPE, K8sBGStageScaleDownStepV2.class);
     engineSteps.put(K8sDryRunManifestStepV2.STEP_TYPE, K8sDryRunManifestStepV2.class);
-
     engineSteps.put(K8sDeleteStepV2.STEP_TYPE, K8sDeleteStepV2.class);
     engineSteps.put(K8sApplyStepV2.STEP_TYPE, K8sApplyStepV2.class);
-
     engineSteps.put(K8sRollingStepV2.STEP_TYPE, K8sRollingStepV2.class);
+
+    engineSteps.put(HelmDeployStepV2.STEP_TYPE, HelmDeployStepV2.class);
+    engineSteps.put(HelmRollbackStepV2.STEP_TYPE, HelmRollbackStepV2.class);
+
     return engineSteps;
   }
 }
