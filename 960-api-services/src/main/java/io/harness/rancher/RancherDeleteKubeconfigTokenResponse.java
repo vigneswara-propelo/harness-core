@@ -6,18 +6,23 @@
  */
 
 package io.harness.rancher;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
-@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
+@Data
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.CDP)
-public interface RancherClusterClient {
-  RancherListClustersResponse listClusters(String bearerToken, String url, Map<String, String> pageRequestParams);
-  RancherGenerateKubeconfigResponse generateKubeconfig(String bearerToken, String url, String clusterName);
-  RancherDeleteKubeconfigTokenResponse deleteKubeconfigToken(String bearerToken, String url, String tokenId);
-}
+public class RancherDeleteKubeconfigTokenResponse {}
