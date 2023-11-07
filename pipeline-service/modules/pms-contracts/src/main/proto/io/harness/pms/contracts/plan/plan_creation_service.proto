@@ -58,7 +58,6 @@ message GraphLayoutInfo {
 message PlanCreationContextValue {
   oneof value {
     string stringValue = 1 [deprecated = true];
-    ExecutionMetadata metadata = 2 [deprecated = true];
   }
   triggers.TriggerPayload triggerPayload = 3;
   string accountIdentifier = 4;
