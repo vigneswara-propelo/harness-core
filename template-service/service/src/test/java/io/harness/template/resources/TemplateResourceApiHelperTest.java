@@ -93,10 +93,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @OwnedBy(CDC)
-public class TemplateResourceApiUtilsTest extends CategoryTest {
+public class TemplateResourceApiHelperTest extends CategoryTest {
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
-  @InjectMocks TemplateResourceApiUtils templateResourceApiUtils;
+  @InjectMocks TemplateResourceApiHelper templateResourceApiHelper;
   @Mock NGTemplateService templateService;
   @Mock AccessControlClient accessControlClient;
   @Inject VariablesServiceBlockingStub variablesServiceBlockingStub;
@@ -212,7 +212,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     templateResponse.setStableTemplate(entity.isStableTemplate());
     when(templateResourceApiMapper.toTemplateResponse(any())).thenReturn(templateResponse);
     TemplateRequestInfoDTO requestInfoDTO = TemplateRequestInfoDTO.builder().yaml(yaml).build();
-    Response response = templateResourceApiUtils.createTemplate(
+    Response response = templateResourceApiHelper.createTemplate(
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, null, requestInfoDTO, false, "");
     assertThat(response.getEntity()).isNotNull();
     verify(accessControlClient)
@@ -233,7 +233,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     doReturn(TemplateEntity.builder().identifier(TEMPLATE_IDENTIFIER).build())
         .when(templateService)
         .importTemplateFromRemote(any(), any(), any(), any(), any(), anyBoolean());
-    Response response = templateResourceApiUtils.importTemplate(
+    Response response = templateResourceApiHelper.importTemplate(
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, gitImportDetails, templateImportRequestDTO);
     TemplateImportResponseBody responseBody = (TemplateImportResponseBody) response.getEntity();
     assertEquals(responseBody.getTemplateIdentifier(), TEMPLATE_IDENTIFIER);
@@ -266,7 +266,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     templateWithInputsResponse.setTemplate(templateResponse);
     templateWithInputsResponse.setInputs("Input YAML not requested");
     when(templateResourceApiMapper.toTemplateResponseDefault(any())).thenReturn(templateWithInputsResponse);
-    Response response = templateResourceApiUtils.getTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+    Response response = templateResourceApiHelper.getTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
         TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, false, null, null, null, null, null, null, false);
     TemplateWithInputsResponse templateResponseInput = (TemplateWithInputsResponse) response.getEntity();
     assertThat(response.getEntityTag().getValue()).isEqualTo("1");
@@ -310,7 +310,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
         .getTemplateWithInputs(
             ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, false);
     when(templateResourceApiMapper.toTemplateWithInputResponse(any())).thenReturn(templateWithInputsResponse);
-    Response response = templateResourceApiUtils.getTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+    Response response = templateResourceApiHelper.getTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
         TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, false, null, null, null, null, null, null, true);
     TemplateWithInputsResponse templateResponseInput = (TemplateWithInputsResponse) response.getEntity();
     assertThat(response.getEntityTag().getValue()).isEqualTo("1");
@@ -331,7 +331,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
             false);
     assertThatThrownBy(
         ()
-            -> templateResourceApiUtils.getTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+            -> templateResourceApiHelper.getTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
                 incorrectTemplateIdentifier, TEMPLATE_VERSION_LABEL, false, null, null, null, null, null, null, false))
         .isInstanceOf(NotFoundException.class);
   }
@@ -359,7 +359,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     templateResponse.setStableTemplate(entity.isStableTemplate());
     when(templateResourceApiMapper.toTemplateResponse(any())).thenReturn(templateResponse);
     TemplateRequestInfoDTO requestInfoDTO = TemplateRequestInfoDTO.builder().yaml(yaml).build();
-    Response response = templateResourceApiUtils.updateTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+    Response response = templateResourceApiHelper.updateTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
         TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, null, requestInfoDTO, false, "");
     TemplateResponse templateResponseFinal = (TemplateResponse) response.getEntity();
     verify(accessControlClient)
@@ -376,7 +376,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
         .when(templateService)
         .updateStableTemplateVersion(
             ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, "");
-    Response response = templateResourceApiUtils.updateStableTemplate(
+    Response response = templateResourceApiHelper.updateStableTemplate(
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, null, "");
     TemplateUpdateStableResponse templateResponse = (TemplateUpdateStableResponse) response.getEntity();
     assertThat(templateResponse.getStableVersion()).isEqualTo(TEMPLATE_VERSION_LABEL);
@@ -392,7 +392,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     String incorrectPipelineIdentifier = "notTheIdentifierWeNeed";
     TemplateRequestInfoDTO requestInfoDTO = TemplateRequestInfoDTO.builder().yaml(yaml).build();
     assertThatThrownBy(()
-                           -> templateResourceApiUtils.updateTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+                           -> templateResourceApiHelper.updateTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
                                incorrectPipelineIdentifier, TEMPLATE_VERSION_LABEL, null, requestInfoDTO, false, ""))
         .isInstanceOf(InvalidRequestException.class);
   }
@@ -401,19 +401,19 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
   @Owner(developers = UTKARSH_CHOUBEY)
   @Category(UnitTests.class)
   public void testToListType() {
-    String value = templateResourceApiUtils.toListType("");
+    String value = templateResourceApiHelper.toListType("");
     assertThat(value).isEqualTo(ALL);
 
-    value = templateResourceApiUtils.toListType("LAST_UPDATES_TEMPLATE");
+    value = templateResourceApiHelper.toListType("LAST_UPDATES_TEMPLATE");
     assertThat(value).isEqualTo(LAST_UPDATES_TEMPLATE);
 
-    value = templateResourceApiUtils.toListType("STABLE_TEMPLATE");
+    value = templateResourceApiHelper.toListType("STABLE_TEMPLATE");
     assertThat(value).isEqualTo(STABLE_TEMPLATE);
 
-    value = templateResourceApiUtils.toListType("ALL");
+    value = templateResourceApiHelper.toListType("ALL");
     assertThat(value).isEqualTo(ALL);
 
-    assertThatThrownBy(() -> templateResourceApiUtils.toListType("random"))
+    assertThatThrownBy(() -> templateResourceApiHelper.toListType("random"))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(
             "Expected query param 'type' to be of value LAST_UPDATES_TEMPLATE, STABLE_TEMPLATE, ALL. [random] value Not allowed");
@@ -427,7 +427,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
         .when(templateService)
         .delete(
             ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, null, "", false);
-    Response response = templateResourceApiUtils.deleteTemplate(
+    Response response = templateResourceApiHelper.deleteTemplate(
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, null, false);
     assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
     verify(accessControlClient)
@@ -459,7 +459,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     templateMetadataSummaryResponse.setStableTemplate(entity.isStableTemplate());
     when(templateResourceApiMapper.mapToTemplateMetadataResponse(any())).thenReturn(templateMetadataSummaryResponse);
     doReturn(templateEntities).when(templateService).listTemplateMetadata(any(), any(), any(), any(), any());
-    Response response = templateResourceApiUtils.getTemplates(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, 0, 25, null,
+    Response response = templateResourceApiHelper.getTemplates(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, 0, 25, null,
         null, null, "ALL", false, null, null, null, Collections.singletonList("Stage"), null);
     List<TemplateMetadataSummaryResponse> templates = (List<TemplateMetadataSummaryResponse>) response.getEntity();
     assertThat(templates).isNotEmpty().hasSize(1);
@@ -481,7 +481,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     createRequestBody.setName(generateUuid());
     createRequestBody.setLabel(generateUuid());
     createRequestBody.setTags(Map.of("tag1", "val1"));
-    TemplateRequestInfoDTO requestInfoDTO = templateResourceApiUtils.mapCreateToRequestInfoDTO(createRequestBody);
+    TemplateRequestInfoDTO requestInfoDTO = templateResourceApiHelper.mapCreateToRequestInfoDTO(createRequestBody);
     assertThat(requestInfoDTO.getIdentifier()).isEqualTo(createRequestBody.getIdentifier());
     assertThat(requestInfoDTO.getName()).isEqualTo(createRequestBody.getName());
     assertThat(requestInfoDTO.getLabel()).isEqualTo(createRequestBody.getLabel());
@@ -498,7 +498,7 @@ public class TemplateResourceApiUtilsTest extends CategoryTest {
     createRequestBody.setName(generateUuid());
     createRequestBody.setLabel(generateUuid());
     createRequestBody.setTags(Map.of("tag1", "val1"));
-    TemplateRequestInfoDTO requestInfoDTO = templateResourceApiUtils.mapUpdateToRequestInfoDTO(createRequestBody);
+    TemplateRequestInfoDTO requestInfoDTO = templateResourceApiHelper.mapUpdateToRequestInfoDTO(createRequestBody);
     assertThat(requestInfoDTO.getIdentifier()).isEqualTo(createRequestBody.getIdentifier());
     assertThat(requestInfoDTO.getName()).isEqualTo(createRequestBody.getName());
     assertThat(requestInfoDTO.getLabel()).isEqualTo(createRequestBody.getLabel());

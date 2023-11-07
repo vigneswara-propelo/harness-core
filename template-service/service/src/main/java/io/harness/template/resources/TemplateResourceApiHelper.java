@@ -8,6 +8,7 @@
 package io.harness.template.resources;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.ng.core.template.TemplateEntityConstants.ALL;
 import static io.harness.ng.core.template.TemplateEntityConstants.LAST_UPDATES_TEMPLATE;
 import static io.harness.ng.core.template.TemplateEntityConstants.STABLE_TEMPLATE;
@@ -33,20 +34,31 @@ import io.harness.gitaware.helper.GitAwareContextHelper;
 import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.ng.core.template.TemplateListType;
+import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ng.core.template.TemplateMetadataSummaryResponseDTO;
 import io.harness.ng.core.template.TemplateResponseDTO;
 import io.harness.ng.core.template.TemplateWithInputsResponseDTO;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.security.annotations.NextGenManagerAuth;
+import io.harness.spec.server.template.v1.model.FixedValueFieldDependencyDetailsDTO;
 import io.harness.spec.server.template.v1.model.GitCreateDetails;
 import io.harness.spec.server.template.v1.model.GitFindDetails;
 import io.harness.spec.server.template.v1.model.GitImportDetails;
 import io.harness.spec.server.template.v1.model.GitUpdateDetails;
+import io.harness.spec.server.template.v1.model.InputDetailsPerFieldDTO;
+import io.harness.spec.server.template.v1.model.RuntimeInputDependencyDetailsDTO;
 import io.harness.spec.server.template.v1.model.TemplateCreateRequestBody;
 import io.harness.spec.server.template.v1.model.TemplateImportRequestDTO;
 import io.harness.spec.server.template.v1.model.TemplateImportResponseBody;
+import io.harness.spec.server.template.v1.model.TemplateInputSchemaDetailsResponseBody;
 import io.harness.spec.server.template.v1.model.TemplateMetadataSummaryResponse;
 import io.harness.spec.server.template.v1.model.TemplateUpdateRequestBody;
 import io.harness.spec.server.template.v1.model.TemplateUpdateStableResponse;
+import io.harness.spec.server.template.v1.model.TemplateYamlInputDTO;
+import io.harness.spec.server.template.v1.model.TemplateYamlInputDetailsDTO;
+import io.harness.spec.server.template.v1.model.TemplateYamlInputMetadataDTO;
+import io.harness.spec.server.template.v1.model.YamlInputDependencyDetailsDTO;
+import io.harness.spec.server.template.v1.model.YamlInputType;
 import io.harness.template.entity.TemplateEntity;
 import io.harness.template.mappers.NGTemplateDtoMapper;
 import io.harness.template.resources.beans.FilterParamsDTO;
@@ -54,10 +66,18 @@ import io.harness.template.resources.beans.PageParamsDTO;
 import io.harness.template.resources.beans.PermissionTypes;
 import io.harness.template.resources.beans.TemplateFilterProperties;
 import io.harness.template.resources.beans.TemplateFilterPropertiesDTO;
+import io.harness.template.services.NGTemplateSchemaService;
 import io.harness.template.services.NGTemplateService;
+import io.harness.template.services.TemplateMergeService;
 import io.harness.utils.ApiUtils;
+import io.harness.yaml.schema.inputs.beans.DependencyDetails;
+import io.harness.yaml.schema.inputs.beans.InputDetails;
+import io.harness.yaml.schema.inputs.beans.InputMetadata;
+import io.harness.yaml.schema.inputs.beans.SchemaInputType;
+import io.harness.yaml.schema.inputs.beans.YamlInputDetails;
 
 import com.google.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -75,12 +95,14 @@ import org.springframework.data.domain.Page;
 @AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @Slf4j
 @NextGenManagerAuth
-public class TemplateResourceApiUtils {
+public class TemplateResourceApiHelper {
   public static final String TEMPLATE = "TEMPLATE";
 
   private final NGTemplateService templateService;
   private final AccessControlClient accessControlClient;
   private final TemplateResourceApiMapper templateResourceApiMapper;
+  private final TemplateMergeService templateMergeService;
+  private final NGTemplateSchemaService ngTemplateSchemaService;
 
   public Response getTemplate(@AccountIdentifier String account, @OrgIdentifier String org,
       @ProjectIdentifier String project, @ResourceIdentifier String templateIdentifier, String versionLabel,
@@ -138,6 +160,102 @@ public class TemplateResourceApiUtils {
           .entity(templateResourceApiMapper.toTemplateResponseDefault(templateResponseDTO))
           .tag(version)
           .build();
+    }
+  }
+
+  public static TemplateInputSchemaDetailsResponseBody getTemplateInputSchemaDetailsResponseBody(
+      List<YamlInputDetails> yamlInputDetailsList) {
+    TemplateInputSchemaDetailsResponseBody responseBody = new TemplateInputSchemaDetailsResponseBody();
+    List<TemplateYamlInputDetailsDTO> templateYamlInputDetailsDTOList = new ArrayList<>();
+    yamlInputDetailsList.forEach(
+        yamlInputDetails -> templateYamlInputDetailsDTOList.add(toTemplateYamlInputDetailsDTO(yamlInputDetails)));
+
+    responseBody.setInputs(templateYamlInputDetailsDTOList);
+    return responseBody;
+  }
+
+  private static TemplateYamlInputDetailsDTO toTemplateYamlInputDetailsDTO(YamlInputDetails yamlInputDetails) {
+    TemplateYamlInputDetailsDTO templateYamlInputDetailsDTO = new TemplateYamlInputDetailsDTO();
+    templateYamlInputDetailsDTO.setDetails(toTemplateYamlInputDTO(yamlInputDetails.getInputDetails()));
+    templateYamlInputDetailsDTO.setMetadata(toTemplateYamlInputMetadataDTO(yamlInputDetails.getInputMetadata()));
+    return templateYamlInputDetailsDTO;
+  }
+
+  private static TemplateYamlInputDTO toTemplateYamlInputDTO(InputDetails inputDetails) {
+    TemplateYamlInputDTO templateYamlInputDTO = new TemplateYamlInputDTO();
+    templateYamlInputDTO.setName(inputDetails.getName());
+    templateYamlInputDTO.setDescription(inputDetails.getDescription());
+    templateYamlInputDTO.setType(getYamlInputType(inputDetails.getType()));
+    templateYamlInputDTO.setRequired(inputDetails.isRequired());
+    return templateYamlInputDTO;
+  }
+
+  private static TemplateYamlInputMetadataDTO toTemplateYamlInputMetadataDTO(InputMetadata inputMetadata) {
+    TemplateYamlInputMetadataDTO templateYamlInputMetadataDTO = new TemplateYamlInputMetadataDTO();
+    if (inputMetadata != null) {
+      templateYamlInputMetadataDTO.setFieldProperties(
+          toInputDetailsPerFieldDTOList(inputMetadata.getInputDetailsPerFieldList()));
+      templateYamlInputMetadataDTO.setDependencies(
+          toYamlInputDependencyDetailsDTO(inputMetadata.getDependencyDetails()));
+    }
+    return templateYamlInputMetadataDTO;
+  }
+
+  private static List<InputDetailsPerFieldDTO> toInputDetailsPerFieldDTOList(
+      List<InputMetadata.InputDetailsPerField> inputDetailsPerFieldList) {
+    List<InputDetailsPerFieldDTO> inputDetailsPerFieldDTOList = new ArrayList<>();
+    if (isNotEmpty(inputDetailsPerFieldList)) {
+      inputDetailsPerFieldList.forEach(inputDetailsPerField -> {
+        InputDetailsPerFieldDTO inputDetailsPerFieldDTO = new InputDetailsPerFieldDTO();
+        inputDetailsPerFieldDTO.setInputType(inputDetailsPerField.getInputType());
+        inputDetailsPerFieldDTO.setInternalType(inputDetailsPerField.getInternalAPIType());
+        inputDetailsPerFieldDTOList.add(inputDetailsPerFieldDTO);
+      });
+    }
+    return inputDetailsPerFieldDTOList;
+  }
+
+  private static YamlInputDependencyDetailsDTO toYamlInputDependencyDetailsDTO(DependencyDetails dependencyDetails) {
+    YamlInputDependencyDetailsDTO yamlInputDependencyDetailsDTO = new YamlInputDependencyDetailsDTO();
+    List<FixedValueFieldDependencyDetailsDTO> fixedValueFieldDependencyDetailsDTOList = new ArrayList<>();
+    List<RuntimeInputDependencyDetailsDTO> runtimeInputDependencyDetailsDTOList = new ArrayList<>();
+
+    if (dependencyDetails != null) {
+      if (dependencyDetails.getRuntimeInputDependencyDetailsList() != null) {
+        dependencyDetails.getRuntimeInputDependencyDetailsList().forEach(inputDependencyDetails -> {
+          RuntimeInputDependencyDetailsDTO runtimeInputDependencyDetailsDTO = new RuntimeInputDependencyDetailsDTO();
+          runtimeInputDependencyDetailsDTO.setInputName(inputDependencyDetails.getInputName());
+          runtimeInputDependencyDetailsDTO.setFieldName(inputDependencyDetails.getFieldName());
+          runtimeInputDependencyDetailsDTOList.add(runtimeInputDependencyDetailsDTO);
+        });
+      }
+      if (dependencyDetails.getFixedValueDependencyDetailsList() != null) {
+        dependencyDetails.getFixedValueDependencyDetailsList().forEach(constantDependencyDetails -> {
+          FixedValueFieldDependencyDetailsDTO fixedValueFieldDependencyDetailsDTO =
+              new FixedValueFieldDependencyDetailsDTO();
+          fixedValueFieldDependencyDetailsDTO.setFieldName(constantDependencyDetails.getPropertyName());
+          fixedValueFieldDependencyDetailsDTO.setFieldValue(constantDependencyDetails.getFieldValue());
+          fixedValueFieldDependencyDetailsDTO.setFieldInputType(constantDependencyDetails.getPropertyType());
+          fixedValueFieldDependencyDetailsDTOList.add(fixedValueFieldDependencyDetailsDTO);
+        });
+      }
+    }
+
+    yamlInputDependencyDetailsDTO.setRequiredFixedValues(fixedValueFieldDependencyDetailsDTOList);
+    yamlInputDependencyDetailsDTO.setRequiredRuntimeInputs(runtimeInputDependencyDetailsDTOList);
+    return yamlInputDependencyDetailsDTO;
+  }
+
+  private static YamlInputType getYamlInputType(SchemaInputType schemaInputType) {
+    switch (schemaInputType) {
+      case STRING:
+        return YamlInputType.STRING;
+      case BOOLEAN:
+        return YamlInputType.BOOLEAN;
+      case INTEGER:
+        return YamlInputType.INTEGER;
+      default:
+        return YamlInputType.OBJECT;
     }
   }
 
@@ -237,6 +355,27 @@ public class TemplateResourceApiUtils {
     templateService.delete(account, org, project, templateIdentifier, versionLabel,
         isNumeric("ifMatch") ? parseLong("ifMatch") : null, comments, forceDelete);
     return Response.status(Response.Status.NO_CONTENT).build();
+  }
+
+  public Response getInputsSchema(@AccountIdentifier String account, @OrgIdentifier String org,
+      @ProjectIdentifier String project, @ResourceIdentifier String templateIdentifier, String versionLabel) {
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(account, org, project),
+        Resource.of(TEMPLATE, templateIdentifier), PermissionTypes.TEMPLATE_VIEW_PERMISSION);
+    Optional<TemplateEntity> templateEntity =
+        templateService.get(account, org, project, templateIdentifier, versionLabel, false, false);
+    if (!templateEntity.isPresent()) {
+      throw new NotFoundException(String.format(
+          "Template with the given Identifier: %s and %s does not exist or has been deleted", templateIdentifier,
+          EmptyPredicate.isEmpty(versionLabel) ? "stable versionLabel" : "versionLabel: " + versionLabel));
+    }
+    TemplateMergeResponseDTO templateMergeResponseDTO = templateMergeService.applyTemplatesToYamlV2(account, org,
+        project, YamlUtils.readAsJsonNode(templateEntity.get().getYaml()), false, false, false,
+        templateEntity.get().getHarnessVersion());
+    List<YamlInputDetails> yamlInputDetails =
+        ngTemplateSchemaService.getInputSchemaDetails(templateMergeResponseDTO.getMergedPipelineYaml());
+    TemplateInputSchemaDetailsResponseBody responseBody =
+        TemplateResourceApiHelper.getTemplateInputSchemaDetailsResponseBody(yamlInputDetails);
+    return Response.ok().entity(responseBody).build();
   }
 
   public Response getTemplates(@AccountIdentifier String account, @OrgIdentifier String org,
