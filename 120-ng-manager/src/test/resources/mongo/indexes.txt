@@ -15,6 +15,8 @@ cache {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"va
 cdLicenseReportAccounts {"name": "cdLicenseDailyReportIteration_1", "background": true} {"cdLicenseDailyReportIteration": 1}
 cdLicenseReportAccounts {"name": "unique_account_id", "unique": true} {"accountIdentifier": 1}
 cdTelemetrySentStatus {"name": "no_dup_cd", "unique": true} {"accountId": 1}
+organizations {"name":"uniqueId_1","unique":true}{"uniqueId":1}
+projects {"name":"uniqueId_1","unique":true}{"uniqueId":1}
 cloudformationConfig {"name": "accountId_orgId_projectId_provisionerIdentifier_stageExecutionId_createdAt", "background": true} {"accountId": 1, "orgId": 1, "projectId": 1, "provisionerIdentifier": 1, "stageExecutionId": 1, "createdAt": -1}
 connectors {"name": "accountId_orgId_projectId_identifier_repo_branch_unique_index", "unique": true} {"accountIdentifier": 1, "orgIdentifier": 1, "projectIdentifier": 1, "identifier": 1, "yamlGitConfigRef": 1, "branch": 1}
 connectors {"name": "accountId_orgId_projectId_name_Index", "background": true} {"accountIdentifier": 1, "orgIdentifier": 1, "projectIdentifier": 1, "name": 1}
