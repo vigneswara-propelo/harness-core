@@ -318,6 +318,9 @@ public enum FeatureName {
       "Displays the control node and test node reg filter option in Verify step", HarnessTeam.CV),
   CV_UI_DISPLAY_SHOULD_USE_NODES_FROM_CD_CHECKBOX(
       "Displays the should use nodes from CD checkbox in Verify step", HarnessTeam.CV),
+
+  CV_UI_DISPLAY_FAIL_IF_ANY_CUSTOM_METRIC_IN_NO_ANALYSIS(
+      "Displays the failIfAnyCustomMetricInNoAnalysis checkbox in verify step UI", HarnessTeam.CDC),
   CV_USE_SEPARATE_LE_TASK_TYPE_FOR_LOG_CLUSTERING(
       "When enabled, CV log clustering task type will be CV_LOG_CLUSTER, else it will be LOG_CLUSTER", HarnessTeam.CV),
   CV_DEMO,
