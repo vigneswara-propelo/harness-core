@@ -7,6 +7,7 @@
 
 package io.harness.beans;
 
+import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.annotations.dev.HarnessTeam.CV;
 import static io.harness.annotations.dev.HarnessTeam.GTM;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
@@ -936,6 +937,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_REMOVE_RESUME_EVENT_FOR_ASYNC_AND_ASYNCCHAIN_MODE(
       "Remove sdk resume event for async and async chain modes to avoid race condition", PIPELINE),
+  CDS_SERVICE_AND_INFRA_STEP_DELEGATE_SELECTOR_PRECEDENCE(
+      "Follow delegate selector precedence in service/infra step", CDC),
   CDS_K8S_TRAFFIC_ROUTING_NG(
       "Providing Traffic Routing functionality for K8s - BG, Canary and TrafficRouting steps", HarnessTeam.CDP),
   CDS_METHOD_INVOCATION_NEW_FLOW_EXPRESSION_ENGINE(
