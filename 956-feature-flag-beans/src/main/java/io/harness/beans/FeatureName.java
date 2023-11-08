@@ -945,7 +945,9 @@ public enum FeatureName {
       "Supports edge cases of method invocation in expression engine", PIPELINE),
 
   CDS_USE_AMBIANCE_IN_EXPRESSION_ENGINE(
-      "Uses ambiance in expression engine. Should be enabled only if we see any issues", PIPELINE);
+      "Uses ambiance in expression engine. Should be enabled only if we see any issues", PIPELINE),
+
+  CDS_PRESERVE_WINRM_WORKING_DIR_FOR_COMMAND_UNITS("Use the correct working directory for WinRm deployments", CDC);
 
   // keep-sorted end
 
