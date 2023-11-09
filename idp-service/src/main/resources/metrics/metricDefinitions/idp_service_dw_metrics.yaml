@@ -1,0 +1,48 @@
+name: IDP Service Dropwizard Metrics
+identifier: IdpServiceDwMetrics
+metricGroup: IdpServiceDwMetricsGroup
+metrics:
+  - metricName: io_dropwizard_jetty_MutableServletContextHandler_4xx_responses_count
+    metricDefinition: IDP Service Total number of 4xx error responses
+    type: LastValue
+    unit: count
+  - metricName: io_dropwizard_jetty_MutableServletContextHandler_5xx_responses_count
+    metricDefinition: IDP Service Total number of 5xx error responses
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_total_max
+    metricDefinition: IDP Service JVM Memory - Max
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_total_committed
+    metricDefinition: IDP Service JVM Memory - Total Committed
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_total_used
+    metricDefinition: IDP Service JVM Memory - Used Memory
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_non_heap_max
+    metricDefinition: IDP Service JVM Memory - Max Non-Heap Memory
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_non_heap_committed
+    metricDefinition: IDP Service JVM Memory - Committed Non-Heap Memory
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_non_heap_used
+    metricDefinition: IDP Service JVM Memory - Non-Heap Memory Usage
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_heap_max
+    metricDefinition: IDP Service JVM Memory - Max Heap Memory
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_heap_committed
+    metricDefinition: IDP Service JVM Memory - Committed Heap Memory
+    type: LastValue
+    unit: count
+  - metricName: jvm_memory_heap_used
+    metricDefinition: IDP Service JVM Memory - Heap Memory Usage
+    type: LastValue
+    unit: count
