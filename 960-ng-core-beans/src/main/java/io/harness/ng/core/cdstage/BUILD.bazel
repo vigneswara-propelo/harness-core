@@ -6,24 +6,18 @@
 load("@rules_java//java:defs.bzl", "java_library")
 load("//:tools/bazel/macros.bzl", "run_analysis_per_module")
 
-filegroup(
-    name = "java_srcs",
-    srcs = glob(["*.java"]),
-    visibility = ["//visibility:public"],
-)
-
 java_library(
     name = "module",
     srcs = glob(["*.java"]),
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
-        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/creator/plan/stage:module",
-        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/repositories/executions:module",
-        "//960-ng-core-beans/src/main/java/io/harness/ng/core/cdstage:module",
+        "//970-ng-commons/src/main/java/io/harness/cd:module",
         "//999-annotations/src/main/java/io/harness/annotations/dev:module",
-        "@maven//:com_google_inject_guice",
-        "@maven//:javax_validation_validation_api",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:io_swagger_core_v3_swagger_annotations",
+        "@maven//:io_swagger_swagger_annotations",
+        "@maven//:javax_annotation_javax_annotation_api",
     ],
 )
 
