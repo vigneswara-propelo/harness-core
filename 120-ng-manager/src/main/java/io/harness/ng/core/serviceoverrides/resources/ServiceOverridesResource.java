@@ -322,6 +322,38 @@ public class ServiceOverridesResource {
         ngServiceOverridesEntity.getIdentifier(), ngServiceOverridesEntity));
   }
 
+  @GET
+  @Path("/list")
+  @Hidden
+  @ApiOperation(value = "Gets Service Override List", nickname = "getServiceOverrideListV2")
+  @Operation(operationId = "getServiceOverrideListV2", summary = "Gets Service Override List",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns the list of Services for a Project")
+      })
+  public ResponseDTO<PageResponse<ServiceOverridesResponseDTOV2>>
+  listServiceOverrides(@Parameter(description = NGCommonEntityConstants.PAGE_PARAM_MESSAGE) @QueryParam(
+                           NGCommonEntityConstants.PAGE) @DefaultValue("0") int page,
+      @Parameter(description = NGCommonEntityConstants.SIZE_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.SIZE) @DefaultValue("100") @Max(MAX_LIMIT) int size,
+      @Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
+          NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
+      @Parameter(description = "This is service override type which is based on override source") @QueryParam(
+          "type") ServiceOverridesType type) {
+    Criteria criteria = ServiceOverrideCriteriaHelper.createCriteriaForGetList(
+        accountId, orgIdentifier, projectIdentifier, type, null, null);
+    Pageable pageRequest =
+        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, NGServiceOverridesEntityKeys.lastModifiedAt));
+    Page<NGServiceOverridesEntity> serviceOverridesEntities = serviceOverridesServiceV2.list(criteria, pageRequest);
+
+    return ResponseDTO.newResponse(getNGPageResponse(
+        serviceOverridesEntities.map(entity -> ServiceOverridesMapperV2.toResponseDTO(entity, false))));
+  }
+
   @POST
   @Path("/list")
   @Hidden
