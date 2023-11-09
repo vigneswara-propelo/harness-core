@@ -281,7 +281,7 @@ paths:
       summary: Get Status Info by type
       description: Get Status Info for the given type
       tags:
-        - StatusInfo
+        - StatusInfoV2
       responses:
         '200':
           $ref: '#/components/responses/StatusInfoResponseV2'
