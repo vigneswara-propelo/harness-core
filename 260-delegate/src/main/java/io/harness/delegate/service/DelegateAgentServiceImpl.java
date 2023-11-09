@@ -2095,6 +2095,11 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
           return;
         }
 
+        if (rejectRequest.get()) {
+          log.info("Delegate running out of resources, dropping this request");
+          return;
+        }
+
         if (!acquireTasks.get()) {
           log.info("[Old] Upgraded process is running. Won't acquire task while completing other tasks");
           return;
