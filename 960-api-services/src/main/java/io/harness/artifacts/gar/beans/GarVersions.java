@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Harness Inc. All rights reserved.
+ * Copyright 2023 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -25,7 +25,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GarPackageVersionResponse {
-  private List<GarVersions> versions;
-  String nextPageToken;
+public class GarVersions {
+  private String name;
+  private String description;
+  private String createTime;
+  private String updateTime;
+  private List<GarTags> relatedTags;
 }
