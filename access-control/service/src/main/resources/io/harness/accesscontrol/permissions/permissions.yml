@@ -1731,8 +1731,8 @@ permissions:
     allowedScopeLevels:
       - account
   - identifier: ccm_commitmentOrchestrator_view
-      name: View CCM Commitment Orchestration
-      status: ACTIVE
-      includedInAllRoles: false
-      allowedScopeLevels:
-        - account
+    name: View CCM Commitment Orchestration
+    status: ACTIVE
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
