@@ -202,7 +202,7 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
   }
 
   @Override
-  public HelmCommandResponseNG deploy(HelmInstallCommandRequestNG commandRequest) throws IOException {
+  public HelmCommandResponseNG deploy(HelmInstallCommandRequestNG commandRequest) throws Exception {
     LogCallback logCallback = commandRequest.getLogCallback();
     HelmChartInfo helmChartInfo = null;
     int prevVersion = -1;
