@@ -66,6 +66,7 @@ import io.harness.cistatus.service.gitlab.GitlabServiceImpl;
 import io.harness.client.NgConnectorManagerClientModule;
 import io.harness.clients.BackstageResourceClientModule;
 import io.harness.connector.ConnectorResourceClientModule;
+import io.harness.creditcard.CreditCardClientModule;
 import io.harness.dashboard.DashboardResourceClientModule;
 import io.harness.delegate.beans.DelegateAsyncTaskResponse;
 import io.harness.delegate.beans.DelegateSyncTaskResponse;
@@ -418,6 +419,8 @@ public class IdpModule extends AbstractModule {
         appConfig.getManagerServiceSecret(), appConfig.getManagerTarget(), appConfig.getManagerAuthority(), true));
     install(new AuditClientModule(appConfig.getAuditClientConfig(), appConfig.getNgManagerServiceSecret(),
         IDP_SERVICE.getServiceId(), appConfig.isEnableAudit()));
+    install(new CreditCardClientModule(appConfig.getNgManagerServiceHttpClientConfig(),
+        appConfig.getNgManagerServiceSecret(), IDP_SERVICE.getServiceId()));
 
     bind(IdpConfiguration.class).toInstance(appConfig);
     install(PersistentLockModule.getInstance());
