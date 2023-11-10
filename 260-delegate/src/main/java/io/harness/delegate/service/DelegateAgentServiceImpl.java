@@ -695,6 +695,13 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
                     handleClose(o);
                   }
                 })
+            .on(Event.REOPENED,
+                new Function<Object>() { // Do not change this, wasync doesn't like lambdas
+                  @Override
+                  public void on(Object o) {
+                    handleReopen(o);
+                  }
+                })
             .on(new Function<IOException>() {
               @Override
               public void on(IOException ioe) {
@@ -886,6 +893,11 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private void handleClose(Object o) {
     log.info("Event:{}, trying to reconnect, message:[{}]", Event.CLOSE.name(), o);
     metricRegistry.recordGaugeValue(DELEGATE_CONNECTED.getMetricName(), new String[] {DELEGATE_NAME}, 0.0);
+  }
+
+  private void handleReopen(Object o) {
+    log.info("Event:{}, socket reconnected, message:[{}]", Event.REOPENED.name(), o.toString());
+    metricRegistry.recordGaugeValue(DELEGATE_CONNECTED.getMetricName(), new String[] {DELEGATE_NAME}, 1.0);
   }
 
   private void handleError(final Exception e) {
