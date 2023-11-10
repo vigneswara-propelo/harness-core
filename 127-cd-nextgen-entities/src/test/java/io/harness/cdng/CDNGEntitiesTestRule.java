@@ -40,8 +40,6 @@ import io.harness.factory.ClosingFactory;
 import io.harness.file.NGFileServiceModule;
 import io.harness.filestore.NgFileStoreModule;
 import io.harness.filter.FiltersModule;
-import io.harness.gitsync.persistance.GitSyncSdkService;
-import io.harness.gitsync.persistance.NoOpGitSyncSdkServiceImpl;
 import io.harness.gitsync.persistance.testing.GitSyncablePersistenceTestModule;
 import io.harness.govern.ProviderModule;
 import io.harness.govern.ServersModule;
@@ -63,8 +61,6 @@ import io.harness.ng.core.serviceoverridev2.service.DummyServiceOverridesService
 import io.harness.ng.core.serviceoverridev2.service.ServiceOverridesServiceV2;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
-import io.harness.ng.core.utils.CDGitXService;
-import io.harness.ng.core.utils.CDGitXServiceImpl;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.outbox.api.OutboxService;
 import io.harness.outbox.api.impl.OutboxDaoImpl;
@@ -246,8 +242,6 @@ public class CDNGEntitiesTestRule implements InjectorRuleMixin, MethodRule, Mong
         bind(EnvironmentService.class).to(EnvironmentServiceImpl.class);
         bind(ServiceOverrideService.class).to(ServiceOverrideServiceImpl.class);
         bind(ServiceOverridesServiceV2.class).to(DummyServiceOverridesServiceV2Impl.class);
-        bind(GitSyncSdkService.class).to(NoOpGitSyncSdkServiceImpl.class);
-        bind(CDGitXService.class).to(CDGitXServiceImpl.class);
         bind(ServiceEntityService.class).to(ServiceEntityServiceImpl.class);
         bind(AccountService.class).toInstance(mock(AccountService.class));
         bind(AccountClient.class).annotatedWith(Names.named("PRIVILEGED")).toInstance(mock(AccountClient.class));

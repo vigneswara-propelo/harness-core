@@ -17,8 +17,6 @@ import io.harness.ng.core.dto.RepoListResponseDTO;
 import io.harness.ng.core.service.entity.ArtifactSourcesResponseDTO;
 import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.entity.ServiceInputsMergedResponseDto;
-import io.harness.ng.core.service.entity.ServiceMoveConfigOperationDTO;
-import io.harness.ng.core.service.entity.ServiceMoveConfigResponse;
 import io.harness.ng.core.template.refresh.ValidateTemplateInputsResponseDTO;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.repositories.UpsertOptions;
@@ -139,7 +137,4 @@ public interface ServiceEntityService {
 
   RepoListResponseDTO getListOfRepos(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       boolean includeAllServicesAccessibleAtScope);
-
-  ServiceMoveConfigResponse moveServiceStoreTypeConfig(String accountIdentifier, String orgIdentifier,
-      String projectIdentifier, String serviceIdentifier, ServiceMoveConfigOperationDTO serviceRequestDTO);
 }
