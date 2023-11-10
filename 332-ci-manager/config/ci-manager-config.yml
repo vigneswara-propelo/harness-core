@@ -351,7 +351,7 @@ ciExecutionServiceConfig:
       windowsEntrypoint:
         - "C:\\drone-cache.exe"
     cacheS3Config:
-      image: plugins/cache:1.6.1
+      image: plugins/cache:1.6.3
       entrypoint:
         - /bin/drone-cache
       windowsEntrypoint:
@@ -381,7 +381,7 @@ ciExecutionServiceConfig:
       security: harness/sto-plugin:${STO_STEP_CONFIG_DEFAULT_TAG:-latest}
       artifactoryUpload: plugins/artifactory:1.4.7
       cacheGCS: plugins/cache:1.6.2
-      cacheS3: plugins/cache:1.6.2
+      cacheS3: plugins/cache:1.6.3
       sscaOrchestration: harness/ssca-plugin:0.11.0
       sscaEnforcement: harness/ssca-plugin:0.11.0
     vmContainerlessStepConfig:
@@ -390,7 +390,7 @@ ciExecutionServiceConfig:
       gcsUploadConfig:
         name: github.com/drone-plugins/drone-gcs@refs/tags/v1.5.0
       cacheS3Config:
-        name: github.com/drone-plugins/drone-meltwater-cache@refs/tags/v1.6.1
+        name: github.com/drone-plugins/drone-meltwater-cache@refs/tags/v1.6.3
       cacheGCSConfig:
         name: github.com/drone-plugins/drone-meltwater-cache@refs/tags/v1.6.1
       gitCloneConfig:
