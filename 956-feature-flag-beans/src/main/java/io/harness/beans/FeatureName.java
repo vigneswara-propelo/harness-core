@@ -190,7 +190,6 @@ public enum FeatureName {
   CDS_TERRAGRUNT_CLI_OPTIONS_NG("Enable terragrunt CLI Options", HarnessTeam.CDP),
   CDS_TERRAGRUNT_USE_UNIQUE_DIRECTORY_BASE_DIR_NG(
       "Enable unique directory to support terragrunt run in parallel", HarnessTeam.CDP),
-  CDS_TRIGGER_ACTIVITY_PAGE("NG Triggers Activity page", HarnessTeam.CDC),
   CDS_USE_HTTP_CHECK_IGNORE_RESPONSE_INSTEAD_OF_SOCKET_NG(
       "This is to diable checking for the HTTP status code and instead just check for a valid response",
       HarnessTeam.CDP),
