@@ -79,6 +79,7 @@ import javax.ws.rs.QueryParam;
           @Content(mediaType = NGCommonEntityConstants.APPLICATION_YAML_MEDIA_TYPE,
               schema = @Schema(implementation = ErrorDTO.class))
     })
+@Hidden
 public interface CDNGStageSummaryResource {
   @GET
   //  @Hidden
