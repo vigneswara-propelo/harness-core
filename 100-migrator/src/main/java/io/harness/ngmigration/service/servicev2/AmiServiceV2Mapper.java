@@ -6,7 +6,9 @@
  */
 
 package io.harness.ngmigration.service.servicev2;
+
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.ngmigration.utils.MigratorUtility.ELASTIC_GROUP_ACCOUNT_IDS;
 
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
@@ -33,16 +35,11 @@ import software.wings.beans.Workflow;
 import software.wings.beans.WorkflowExecution;
 import software.wings.service.intfc.WorkflowService;
 
-import com.google.common.collect.Lists;
 import java.util.List;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_MIGRATOR})
 @OwnedBy(HarnessTeam.CDC)
 public class AmiServiceV2Mapper implements ServiceV2Mapper {
-  // Choice, GumGum
-  private static final List<String> ELASTIC_GROUP_ACCOUNT_IDS =
-      Lists.newArrayList("R7OsqSbNQS69mq74kMNceQ", "EBGrtCo0RE6i_E9yNDdCOg");
-
   @Override
   public ServiceDefinition getServiceDefinition(WorkflowService workflowService, MigrationContext migrationContext,
       Service service, List<ManifestConfigWrapper> manifests, List<ConfigFileWrapper> configFiles,
