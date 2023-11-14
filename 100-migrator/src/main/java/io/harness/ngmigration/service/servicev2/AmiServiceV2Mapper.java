@@ -16,7 +16,6 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.artifact.bean.yaml.ArtifactListConfig;
 import io.harness.cdng.artifact.bean.yaml.PrimaryArtifact;
 import io.harness.cdng.configfile.ConfigFileWrapper;
-import io.harness.cdng.elastigroup.config.yaml.StartupScriptConfiguration;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
 import io.harness.cdng.service.beans.AsgServiceSpec;
 import io.harness.cdng.service.beans.AsgServiceSpec.AsgServiceSpecBuilder;
@@ -25,6 +24,7 @@ import io.harness.cdng.service.beans.ElastigroupServiceSpec.ElastigroupServiceSp
 import io.harness.cdng.service.beans.ServiceDefinition;
 import io.harness.cdng.service.beans.ServiceDefinitionType;
 import io.harness.ngmigration.beans.MigrationContext;
+import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.utils.MigratorUtility;
 
 import software.wings.beans.GraphNode;
@@ -46,7 +46,7 @@ public class AmiServiceV2Mapper implements ServiceV2Mapper {
   @Override
   public ServiceDefinition getServiceDefinition(WorkflowService workflowService, MigrationContext migrationContext,
       Service service, List<ManifestConfigWrapper> manifests, List<ConfigFileWrapper> configFiles,
-      List<StartupScriptConfiguration> startupScriptConfigurations) {
+      List<NGYamlFile> startupScriptConfigurations) {
     if (ELASTIC_GROUP_ACCOUNT_IDS.contains(migrationContext.getAccountId())) {
       WorkflowExecution workflowExecution = workflowService.getLastSuccessfulWorkflowExecution(
           service.getAccountId(), service.getAppId(), service.getUuid());
@@ -56,7 +56,8 @@ public class AmiServiceV2Mapper implements ServiceV2Mapper {
         if (isNotEmpty(steps)) {
           for (GraphNode step : steps) {
             if (ServiceV2Factory.checkForASG(step.getType())) {
-              return getAsgServiceDefinition(migrationContext, service, manifests, configFiles);
+              return getAsgServiceDefinition(
+                  migrationContext, service, manifests, configFiles, startupScriptConfigurations);
             }
           }
         }
@@ -64,11 +65,12 @@ public class AmiServiceV2Mapper implements ServiceV2Mapper {
       return getElasticGroupServiceDefinition(
           migrationContext, service, manifests, configFiles, startupScriptConfigurations);
     }
-    return getAsgServiceDefinition(migrationContext, service, manifests, configFiles);
+    return getAsgServiceDefinition(migrationContext, service, manifests, configFiles, startupScriptConfigurations);
   }
 
   private ServiceDefinition getAsgServiceDefinition(MigrationContext migrationContext, Service service,
-      List<ManifestConfigWrapper> manifests, List<ConfigFileWrapper> configFiles) {
+      List<ManifestConfigWrapper> manifests, List<ConfigFileWrapper> configFiles,
+      List<NGYamlFile> startupScriptConfigurations) {
     PrimaryArtifact primaryArtifact = getPrimaryArtifactStream(migrationContext.getInputDTO(),
         migrationContext.getEntities(), migrationContext.getGraph(), service, migrationContext.getMigratedEntities());
     AsgServiceSpecBuilder asgServiceSpecBuilder = AsgServiceSpec.builder();
@@ -77,6 +79,9 @@ public class AmiServiceV2Mapper implements ServiceV2Mapper {
     }
     if (isNotEmpty(manifests)) {
       asgServiceSpecBuilder.manifests(changeIdentifier(manifests, "asg_"));
+    }
+    if (isNotEmpty(startupScriptConfigurations)) {
+      asgServiceSpecBuilder.userData(getUserDataConfigFileWrapper(startupScriptConfigurations.get(0)));
     }
     asgServiceSpecBuilder.variables(
         MigratorUtility.getServiceVariables(migrationContext, service.getServiceVariables()));
@@ -89,7 +94,7 @@ public class AmiServiceV2Mapper implements ServiceV2Mapper {
 
   private ServiceDefinition getElasticGroupServiceDefinition(MigrationContext migrationContext, Service service,
       List<ManifestConfigWrapper> manifests, List<ConfigFileWrapper> configFiles,
-      List<StartupScriptConfiguration> startupScriptConfigurations) {
+      List<NGYamlFile> startupScriptConfigurationFiles) {
     PrimaryArtifact primaryArtifact = getPrimaryArtifactStream(migrationContext.getInputDTO(),
         migrationContext.getEntities(), migrationContext.getGraph(), service, migrationContext.getMigratedEntities());
     ElastigroupServiceSpecBuilder elastigroupServiceSpecBuilder = ElastigroupServiceSpec.builder();
@@ -102,8 +107,8 @@ public class AmiServiceV2Mapper implements ServiceV2Mapper {
     elastigroupServiceSpecBuilder.variables(
         MigratorUtility.getServiceVariables(migrationContext, service.getServiceVariables()));
     elastigroupServiceSpecBuilder.configFiles(configFiles);
-    if (isNotEmpty(startupScriptConfigurations)) {
-      elastigroupServiceSpecBuilder.startupScript(startupScriptConfigurations.get(0));
+    if (isNotEmpty(startupScriptConfigurationFiles)) {
+      elastigroupServiceSpecBuilder.startupScript(getConfigFileWrapper(startupScriptConfigurationFiles.get(0)));
     }
 
     return ServiceDefinition.builder()

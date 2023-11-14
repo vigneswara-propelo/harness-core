@@ -14,10 +14,6 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.MigratedEntityMapping;
-import io.harness.cdng.elastigroup.config.yaml.StartupScriptConfiguration;
-import io.harness.cdng.manifest.yaml.harness.HarnessStore;
-import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
-import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.encryption.Scope;
 import io.harness.gitsync.beans.YamlDTO;
 import io.harness.ng.core.filestore.FileUsage;
@@ -34,7 +30,6 @@ import io.harness.ngmigration.dto.MigrationImportSummaryDTO;
 import io.harness.ngmigration.expressions.MigratorExpressionUtils;
 import io.harness.ngmigration.service.NgMigrationService;
 import io.harness.ngmigration.utils.MigratorUtility;
-import io.harness.pms.yaml.ParameterField;
 
 import software.wings.beans.Service;
 import software.wings.beans.container.UserDataSpecification;
@@ -168,39 +163,28 @@ public class AmiStartupScriptMigrationService extends NgMigrationService {
     return true;
   }
 
-  public List<StartupScriptConfiguration> getStartupScriptConfiguration(
+  public List<NGYamlFile> getStartupScriptConfiguration(
       MigrationContext migrationContext, Set<CgEntityId> serviceSpecIds) {
     Map<CgEntityId, CgEntityNode> entities = migrationContext.getEntities();
     if (isEmpty(serviceSpecIds)) {
       return new ArrayList<>();
     }
-    List<StartupScriptConfiguration> scriptConfigurations = new ArrayList<>();
+    List<NGYamlFile> scriptConfigurationFiles = new ArrayList<>();
     for (CgEntityId configEntityId : serviceSpecIds) {
       CgEntityNode configNode = entities.get(configEntityId);
       if (configNode != null) {
         UserDataSpecification specification = (UserDataSpecification) configNode.getEntity();
         NGYamlFile file = getYamlFile(migrationContext, specification);
         if (file != null) {
-          scriptConfigurations.add(getConfigFileWrapper(file));
+          scriptConfigurationFiles.add(file);
         }
       }
     }
-    return scriptConfigurations;
+    return scriptConfigurationFiles;
   }
 
   @Override
   public boolean canMigrate(CgEntityId id, CgEntityId root, boolean migrateAll) {
     return migrateAll || root.getType() == NGMigrationEntityType.SERVICE;
-  }
-
-  private static StartupScriptConfiguration getConfigFileWrapper(NGYamlFile file) {
-    ParameterField<List<String>> files;
-    files = MigratorUtility.getFileStorePaths(Collections.singletonList(file));
-    return StartupScriptConfiguration.builder()
-        .store(StoreConfigWrapper.builder()
-                   .type(StoreConfigType.HARNESS)
-                   .spec(HarnessStore.builder().files(files).build())
-                   .build())
-        .build();
   }
 }
