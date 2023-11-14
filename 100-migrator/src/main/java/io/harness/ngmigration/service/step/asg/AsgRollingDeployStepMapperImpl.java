@@ -90,6 +90,7 @@ public class AsgRollingDeployStepMapperImpl extends AsgBaseStepMapper {
         AsgRollingDeployStepInfo.infoBuilder()
             .useAlreadyRunningInstances(ParameterField.createValueField(state.isUseCurrentRunningCount()))
             .skipMatching(ParameterField.createValueField(true))
+            .minimumHealthyPercentage(ParameterField.createValueField(100))
             .build());
     return node;
   }
