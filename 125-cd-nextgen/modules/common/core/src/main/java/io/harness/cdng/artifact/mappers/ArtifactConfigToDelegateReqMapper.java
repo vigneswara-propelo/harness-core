@@ -6,6 +6,7 @@
  */
 
 package io.harness.cdng.artifact.mappers;
+
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
@@ -682,7 +683,7 @@ public class ArtifactConfigToDelegateReqMapper {
         (String) artifactConfig.getRepository().fetchFinalValue(), port, artifactId,
         (String) artifactConfig.getRepositoryFormat().fetchFinalValue(), artifactRepositoryUrl, tag, tagRegex,
         connectorRef, nexusConnectorDTO, encryptedDataDetails, ArtifactSourceType.NEXUS3_REGISTRY, groupId, artifactId,
-        extension, classifier, packageName, group);
+        StringUtils.defaultIfBlank(extension, null), StringUtils.defaultIfBlank(classifier, null), packageName, group);
   }
 
   public NexusArtifactDelegateRequest getNexus2ArtifactDelegateRequest(Nexus2RegistryArtifactConfig artifactConfig,
