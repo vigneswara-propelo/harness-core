@@ -1,8 +1,12 @@
 .gitleaksignore pranay.shah@harness.io jyoti.raval@harness.io
-DockerFile* marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
-.bazel* marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
-bazel* marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
-project/bazelproject-config marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
+DockerFile* anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
+.bazel* anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
+bazel* anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
+project/bazelproject-config anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
 /access-control/ ankit.singhal@harness.io mallavarapu.reetika@harness.io manish.manchanda@harness.io jimit.gandhi@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
 /batch-processing/ hitesh.aringa@harness.io nikunj.badjatya@harness.io shubhanshu.verma@harness.io trunapushpa.surkar@harness.io anmol.maheshwari@harness.io abhinav.singh3@harness.io sahildeep.singh@harness.io abhijeet.sharma@harness.io
 /clients/access-control/ ankit.singhal@harness.io mallavarapu.reetika@harness.io manish.manchanda@harness.io jimit.gandhi@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
@@ -37,16 +41,22 @@ marko.milic@harness.io raghu@harness.io jenny.james@harness.io bharat.goel@harne
 /dockerization/pipeline-service/ prashant.sharma@harness.io archit.singla@harness.io sanyasi.naidu@harness.io
 
 /315-sto-manager/ anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
 christopher.hamper@harness.io william.wissemann@harness.io andrew.mollohan@harness.io david.mcnamara@harness.io bruce.mcpherson@harness.io joseph.sentongo@harness.io dylan.collins@harness.io
 /323-sto-utilities/ anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
 christopher.hamper@harness.io william.wissemann@harness.io andrew.mollohan@harness.io david.mcnamara@harness.io bruce.mcpherson@harness.io joseph.sentongo@harness.io dylan.collins@harness.io
 /325-sto-beans/ anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
 christopher.hamper@harness.io william.wissemann@harness.io andrew.mollohan@harness.io david.mcnamara@harness.io bruce.mcpherson@harness.io joseph.sentongo@harness.io dylan.collins@harness.io
 /320-ci-execution/src/**/Security*.java anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
 christopher.hamper@harness.io william.wissemann@harness.io andrew.mollohan@harness.io david.mcnamara@harness.io bruce.mcpherson@harness.io joseph.sentongo@harness.io dylan.collins@harness.io
 /320-ci-execution/src/**/STO*.java anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
 christopher.hamper@harness.io william.wissemann@harness.io andrew.mollohan@harness.io david.mcnamara@harness.io bruce.mcpherson@harness.io joseph.sentongo@harness.io dylan.collins@harness.io
 /332-ci-manager/service/src/**/Security*.java anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
+anders.hokinson@harness.io sergey.bobrov@harness.io gabriel.aboy@harness.io
 christopher.hamper@harness.io william.wissemann@harness.io andrew.mollohan@harness.io david.mcnamara@harness.io bruce.mcpherson@harness.io joseph.sentongo@harness.io dylan.collins@harness.io
 
 ### All BUILD.bazel files 260-delegate depends on - to avoid the introduction of new, unnecessary dependencies increasing the delegate JAR size.
