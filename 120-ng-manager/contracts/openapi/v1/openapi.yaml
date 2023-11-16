@@ -1757,7 +1757,9 @@ paths:
       - $ref: '#/components/parameters/OrgPathParam'
     get:
       summary: Lists all the GitX Webhooks events at org level
-      responses: {}
+      responses:
+        '200':
+          $ref: '#/components/responses/ListGitXWebhookEventResponse'
       operationId: list-org-gitx-webhook-events
       security:
         - x-api-key: []
@@ -1904,7 +1906,9 @@ paths:
       summary: Lists all the GitX Webhooks events at project level
       tags:
         - Project Gitx Webhooks
-      responses: {}
+      responses:
+        '200':
+          $ref: '#/components/responses/ListGitXWebhookEventResponse'
       operationId: list-project-gitx-webhook-events
       security:
         - x-api-key: []
