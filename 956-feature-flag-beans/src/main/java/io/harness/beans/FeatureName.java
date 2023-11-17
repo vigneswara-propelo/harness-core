@@ -947,7 +947,8 @@ public enum FeatureName {
       "Allows users to apply manifests from sources that are not related to the service", HarnessTeam.CDP),
   CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA(
       "Improves approval and stage notifications with cd metadata", HarnessTeam.CDC),
-  GTM_DEVELOPER_LICENSING("Enable new developer licensing changes", GTM);
+  GTM_DEVELOPER_LICENSING("Enable new developer licensing changes", GTM),
+  CDS_ASG_SHIFT_TRAFFIC_STEP_NG("Enable Shift Traffic step for Asg Blue-Green deployments", CDC);
 
   // keep-sorted end
 
