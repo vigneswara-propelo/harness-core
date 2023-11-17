@@ -80,7 +80,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArtifactServiceImpl implements ArtifactService {
   @Inject ArtifactRepository artifactRepository;
   @Inject EnforcementSummaryRepo enforcementSummaryRepo;
-
   @Inject EnforcementSummaryService enforcementSummaryService;
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
@@ -348,17 +347,26 @@ public class ArtifactServiceImpl implements ArtifactService {
               .envName(entity.getEnvName())
               .envType(entity.getEnvType() == EnvType.Production ? EnvTypeEnum.PROD : EnvTypeEnum.NONPROD)
               .attestedStatus(artifact.isAttested() ? AttestedStatusEnum.PASS : AttestedStatusEnum.FAIL)
+              .pipelineName(entity.getLastPipelineName())
               .pipelineId(entity.getLastPipelineExecutionName())
               .pipelineExecutionId(entity.getLastPipelineExecutionId())
+              .pipelineSequenceId(entity.getSequenceId())
               .triggeredById(entity.getLastDeployedById())
               .triggeredBy(entity.getLastDeployedByName())
-              .triggeredAt(entity.getLastDeployedAt().toString());
+              .triggeredAt(entity.getLastDeployedAt().toString())
+              .triggeredType(entity.getTriggerType());
 
       if (Objects.nonNull(enforcementSummaryEntity)) {
         response.allowListViolationCount(String.valueOf(enforcementSummaryEntity.getAllowListViolationCount()))
             .denyListViolationCount(String.valueOf(enforcementSummaryEntity.getDenyListViolationCount()))
             .enforcementId(enforcementSummaryEntity.getEnforcementId());
       }
+
+      if (Objects.nonNull(entity.getSlsaVerificationSummary())) {
+        response.slsaPolicyOutcomeStatus(entity.getSlsaVerificationSummary().getSlsaPolicyOutcomeStatus())
+            .provenanceArtifact(entity.getSlsaVerificationSummary().getProvenanceArtifact());
+      }
+
       return response;
     });
   }
