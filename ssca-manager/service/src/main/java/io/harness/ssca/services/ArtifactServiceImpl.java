@@ -203,8 +203,12 @@ public class ArtifactServiceImpl implements ArtifactService {
   @Override
   @Transactional
   public void saveArtifactAndInvalidateOldArtifact(ArtifactEntity artifact) {
+    ArtifactEntity lastArtifact = getLatestArtifact(artifact.getAccountId(), artifact.getOrgId(),
+        artifact.getProjectId(), artifact.getArtifactId(), artifact.getTag());
     artifactRepository.invalidateOldArtifact(artifact);
     artifact.setLastUpdatedAt(artifact.getCreatedOn().toEpochMilli());
+    artifact.setProdEnvCount(lastArtifact.getProdEnvCount());
+    artifact.setNonProdEnvCount(lastArtifact.getNonProdEnvCount());
     artifactRepository.save(artifact);
   }
 
@@ -221,7 +225,7 @@ public class ArtifactServiceImpl implements ArtifactService {
                             .is(false);
 
     MatchOperation matchOperation = match(criteria);
-    SortOperation sortOperation = sort(Sort.by(Direction.DESC, ArtifactEntityKeys.lastUpdatedAt));
+    SortOperation sortOperation = sort(Sort.by(Direction.DESC, ArtifactEntityKeys.createdOn));
     GroupOperation groupByArtifactId = group(ArtifactEntityKeys.artifactId).first("$$ROOT").as("document");
     Sort.Order customSort = pageable.getSort().get().collect(Collectors.toList()).get(0);
     SortOperation customSortOperation =
