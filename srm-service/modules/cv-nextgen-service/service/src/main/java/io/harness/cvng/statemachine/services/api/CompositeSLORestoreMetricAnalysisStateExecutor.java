@@ -29,9 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CompositeSLORestoreMetricAnalysisStateExecutor
     extends AnalysisStateExecutor<CompositeSLORestoreMetricAnalysisState> {
   @Inject private ServiceLevelObjectiveV2ServiceImpl serviceLevelObjectiveV2Service;
-
   @Inject private CompositeSLORecordService compositeSLORecordService;
-
   @Inject private VerificationTaskService verificationTaskService;
   @Inject private Clock clock;
 
@@ -51,7 +49,9 @@ public class CompositeSLORestoreMetricAnalysisStateExecutor
     startTime = startTime.isAfter(analysisState.getInputs().getStartTime()) ? startTime
                                                                             : analysisState.getInputs().getStartTime();
     Instant endTime = analysisState.getInputs().getEndTime();
-    compositeSLORecordService.create(compositeServiceLevelObjective, startTime, endTime, verificationTaskId);
+    if (endTime.isAfter(startTime)) {
+      compositeSLORecordService.create(compositeServiceLevelObjective, startTime, endTime, verificationTaskId);
+    }
     try (SLOMetricContext sloMetricContext = new SLOMetricContext(compositeServiceLevelObjective)) {
       metricService.recordDuration(CVNGMetricsUtils.SLO_DATA_ANALYSIS_METRIC,
           Duration.between(analysisState.getInputs().getStartTime(), clock.instant()));
