@@ -15,6 +15,7 @@ import static io.harness.git.model.ChangeType.DELETE;
 import static io.harness.git.model.ChangeType.RENAME;
 import static io.harness.git.model.PushResultGit.pushResultBuilder;
 import static io.harness.rule.OwnerRule.ABHINAV;
+import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ARVIND;
 import static io.harness.rule.OwnerRule.LUCAS_SALES;
 import static io.harness.rule.OwnerRule.SATHISH;
@@ -421,6 +422,33 @@ public class GitClientV2ImplTest extends CategoryTest {
     gitClient.downloadFiles(request);
     doReturn(null).when(gitClientHelper).getFileDownloadRepoDirectory(any());
     assertThatThrownBy(() -> gitClient.downloadFiles(request)).isInstanceOf(YamlException.class);
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void testDownloadFiles_File_Clone_With_Checkout() throws Exception {
+    String destinationDirectory = Files.createTempDirectory(UUID.randomUUID().toString()).toString();
+    DownloadFilesRequest request = DownloadFilesRequest.builder()
+                                       .repoUrl(repoPath)
+                                       .authRequest(new UsernamePasswordAuthRequest(USERNAME, PASSWORD.toCharArray()))
+                                       .branch("master")
+                                       .connectorId(CONNECTOR_ID)
+                                       .accountId("ACCOUNT_ID")
+                                       .destinationDirectory(destinationDirectory)
+                                       .cloneWithCheckout(true)
+                                       .build();
+    addRemote(repoPath);
+    String data = "ABCD\nDEP\n";
+    FileUtils.writeStringToFile(new File(repoPath + "/base.txt"), data, UTF_8);
+
+    request.setFilePaths(Collections.singletonList("./base.txt"));
+    doReturn(cache.get(CONNECTOR_ID)).when(gitClientHelper).getLockObject(request.getConnectorId());
+
+    doNothing().when(gitClientHelper).createDirStructureForFileDownload(any());
+    doReturn(repoPath).when(gitClientHelper).getFileDownloadRepoDirectory(any());
+    gitClient.downloadFiles(request);
+    assertThat(FileUtils.readFileToString(new File(destinationDirectory + "/base.txt"), UTF_8)).isEqualTo(data);
   }
 
   @Test

@@ -190,6 +190,7 @@ public class NGGitServiceImpl implements NGGitService {
             .repoUrl(gitConfigDTO.getUrl())
             .destinationDirectory(destinationDirectory)
             .mayHaveMultipleFolders(mayHaveMultipleFolders)
+            .cloneWithCheckout(true)
             .build();
     gitClientV2.downloadFiles(downloadFilesRequest);
   }

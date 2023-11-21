@@ -317,11 +317,16 @@ public class GitClientV2Impl implements GitClientV2 {
   }
 
   private synchronized void checkout(GitBaseRequest request) throws IOException, GitAPIException {
-    Git git = openGit(new File(gitClientHelper.getRepoDirectory(request)), request.getDisableUserGitConfig());
+    try (Git git = openGit(new File(gitClientHelper.getRepoDirectory(request)), request.getDisableUserGitConfig())) {
+      checkout(request, git, true);
+    }
+  }
+
+  private void checkout(GitBaseRequest request, Git git, boolean createBranch) throws GitAPIException {
     try {
       if (isNotEmpty(request.getBranch())) {
         CheckoutCommand checkoutCommand = git.checkout();
-        checkoutCommand.setCreateBranch(true).setName(request.getBranch());
+        checkoutCommand.setCreateBranch(createBranch).setName(request.getBranch());
         if (!request.isUnsureOrNonExistentBranch()) {
           checkoutCommand.setUpstreamMode(SetupUpstreamMode.TRACK).setStartPoint(ORIGIN + request.getBranch());
         } else {
@@ -1468,6 +1473,16 @@ public class GitClientV2Impl implements GitClientV2 {
       // clone repo locally without checkout
       cloneRepoForFilePathCheckout(request);
 
+      if (request.isCloneWithCheckout()) {
+        try (Git git = openGit(
+                 new File(gitClientHelper.getFileDownloadRepoDirectory(request)), request.getDisableUserGitConfig())) {
+          // we don't want to create a branch as due to a bug in jgit it will fail if branch name matches with a tag
+          checkout(request, git, false);
+        } catch (Exception ex) {
+          log.warn(gitClientHelper.getGitLogMessagePrefix(request.getRepoType()) + EXCEPTION_STRING, ex);
+        }
+      }
+
       // if useBranch is set, use it to checkout latest, else checkout given commitId
       String commitId = request.getCommitId();
       if (request.useBranch()) {
@@ -1594,7 +1609,6 @@ public class GitClientV2Impl implements GitClientV2 {
                      .append("result fetched: ")
                      .append(fetchResult.toString())
                      .toString());
-
         return;
       } catch (Exception ex) {
         exceptionOccured = true;
