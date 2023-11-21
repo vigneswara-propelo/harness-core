@@ -6,6 +6,7 @@
  */
 
 package io.harness.delegate.task.helm;
+
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.beans.storeconfig.StoreDelegateConfigType.CUSTOM_REMOTE;
@@ -1137,8 +1138,7 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
   }
 
   @VisibleForTesting
-  public List<KubernetesResource> printHelmChartKubernetesResources(HelmInstallCommandRequestNG commandRequest)
-      throws Exception {
+  public List<KubernetesResource> printHelmChartKubernetesResources(HelmInstallCommandRequestNG commandRequest) {
     ManifestDelegateConfig manifestDelegateConfig = commandRequest.getManifestDelegateConfig();
 
     Optional<StoreDelegateConfigType> storeTypeOpt =
@@ -1170,12 +1170,11 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
           helmKubernetesResources, commandRequest.getReleaseName(), executionLogCallback);
       executionLogCallback.saveExecutionLog(ManifestHelper.toYamlForLogs(helmKubernetesResources));
 
-    } catch (InterruptedException e) {
-      log.error("Failed to get k8s resources from Helm chart", ExceptionMessageSanitizer.sanitizeException(e));
-      Thread.currentThread().interrupt();
-      throw new HelmClientRuntimeException(
-          new HelmClientException(ExceptionUtils.getMessage(ExceptionMessageSanitizer.sanitizeException(e)), USER,
-              HelmCliCommandType.RENDER_CHART));
+    } catch (Exception e) {
+      log.warn("Failed to print Helm chart kubernetes resources", ExceptionMessageSanitizer.sanitizeException(e));
+      executionLogCallback.saveExecutionLog(
+          "Failed to print Helm chart kubernetes resources", LogLevel.WARN, CommandExecutionStatus.RUNNING);
+      return Collections.emptyList();
     }
     return helmKubernetesResources;
   }

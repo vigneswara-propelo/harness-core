@@ -1280,6 +1280,27 @@ public class HelmDeployServiceImplNGTest extends CategoryTest {
     verify(k8sTaskHelperBase, times(1)).getHelmPodList(anyLong(), any(), anyString(), eq(selectorsMap), any());
   }
 
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testPrintHelmChartKubernetesResourcesFailed() throws Exception {
+    HelmInstallCommandRequestNG requestNG = HelmInstallCommandRequestNG.builder()
+                                                .namespace("namespace")
+                                                .workingDir("/")
+                                                .manifestDelegateConfig(helmChartManifestDelegateConfig.build())
+                                                .logCallback(logCallback)
+                                                .build();
+
+    when(helmClient.renderChart(any(), anyString(), anyString(), anyList(), anyBoolean()))
+        .thenReturn(HelmCliResponse.builder().commandExecutionStatus(SUCCESS).output("Some dummy output").build());
+    when(helmTaskHelperBase.checkForDependencyUpdateFlag(anyMap(), anyString())).thenReturn(-1);
+    when(delegateLocalConfigService.replacePlaceholdersWithLocalConfig(anyString())).thenReturn("Some dummy output");
+
+    List<KubernetesResource> resources = helmDeployService.printHelmChartKubernetesResources(requestNG);
+
+    assertThat(resources).isEmpty();
+  }
+
   @SneakyThrows
   private void testGetContainerInfosSteadyStateCheckDisabled(boolean k8sSteadyStateCheckEnabled) {
     setFakeTimeLimiter();
