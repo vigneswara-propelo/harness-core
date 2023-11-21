@@ -80,6 +80,7 @@ import io.harness.app.PrimaryVersionManagerModule;
 import io.harness.audit.ResourceTypeConstants;
 import io.harness.audit.client.remote.AuditClientModule;
 import io.harness.authorization.AuthorizationServiceHeader;
+import io.harness.beans.ScopeInfo;
 import io.harness.cache.HarnessCacheManager;
 import io.harness.callback.DelegateCallback;
 import io.harness.callback.DelegateCallbackToken;
@@ -1327,5 +1328,25 @@ public class NextGenModule extends AbstractModule {
         .configure()
         .parameterNameProvider(new ReflectionParameterNameProvider())
         .buildValidatorFactory();
+  }
+
+  @Provides
+  @Singleton
+  @Named(OrganizationService.ORG_SCOPE_INFO_DATA_CACHE_KEY)
+  Cache<String, ScopeInfo> getOrgScopeInfoDataCache(
+      HarnessCacheManager harnessCacheManager, VersionInfoManager versionInfoManager) {
+    return harnessCacheManager.getCache(OrganizationService.ORG_SCOPE_INFO_DATA_CACHE_KEY, String.class,
+        ScopeInfo.class, CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.HOURS, 1)),
+        versionInfoManager.getVersionInfo().getBuildNo());
+  }
+
+  @Provides
+  @Singleton
+  @Named(ProjectService.PROJECT_SCOPE_INFO_DATA_CACHE_KEY)
+  Cache<String, ScopeInfo> getProjectScopeInfoDataCache(
+      HarnessCacheManager harnessCacheManager, VersionInfoManager versionInfoManager) {
+    return harnessCacheManager.getCache(ProjectService.PROJECT_SCOPE_INFO_DATA_CACHE_KEY, String.class, ScopeInfo.class,
+        CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.HOURS, 1)),
+        versionInfoManager.getVersionInfo().getBuildNo());
   }
 }

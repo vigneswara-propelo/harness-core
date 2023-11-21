@@ -38,6 +38,7 @@ import io.harness.CategoryTest;
 import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
+import io.harness.beans.ScopeInfo;
 import io.harness.category.element.UnitTests;
 import io.harness.context.GlobalContext;
 import io.harness.exception.EntityNotFoundException;
@@ -49,7 +50,6 @@ import io.harness.ng.core.dto.OrganizationFilterDTO;
 import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Organization.OrganizationKeys;
 import io.harness.ng.core.remote.utils.ScopeAccessHelper;
-import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ng.core.user.service.NgUserService;
 import io.harness.outbox.OutboxEvent;
 import io.harness.outbox.api.OutboxService;
@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import javax.cache.Cache;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,14 +92,15 @@ public class OrganizationServiceImplTest extends CategoryTest {
   @Mock private OrganizationInstrumentationHelper instrumentationHelper;
   private OrganizationServiceImpl organizationService;
   @Mock private DefaultUserGroupService defaultUserGroupService;
-  @Mock private ScopeInfoService scopeInfoService;
+  @Mock private Cache<String, ScopeInfo> scopeInfoCache;
+  @Mock private ScopeInfoHelper scopeInfoHelper;
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    organizationService =
-        spy(new OrganizationServiceImpl(organizationRepository, outboxService, transactionTemplate, ngUserService,
-            accessControlClient, scopeAccessHelper, instrumentationHelper, defaultUserGroupService, scopeInfoService));
+    organizationService = spy(new OrganizationServiceImpl(organizationRepository, outboxService, transactionTemplate,
+        ngUserService, accessControlClient, scopeAccessHelper, instrumentationHelper, defaultUserGroupService,
+        scopeInfoCache, scopeInfoHelper));
     when(scopeAccessHelper.getPermittedScopes(any())).then(returnsFirstArg());
   }
 
