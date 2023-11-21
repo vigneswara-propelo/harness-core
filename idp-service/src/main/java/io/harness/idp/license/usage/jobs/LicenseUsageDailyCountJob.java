@@ -7,8 +7,6 @@
 
 package io.harness.idp.license.usage.jobs;
 
-import static io.harness.idp.common.DateUtils.ZONE_ID_IST;
-
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.license.usage.service.IDPModuleLicenseUsage;
@@ -20,7 +18,6 @@ import com.google.inject.name.Named;
 import io.dropwizard.lifecycle.Managed;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,8 +42,7 @@ public class LicenseUsageDailyCountJob implements Managed {
   public void start() throws Exception {
     executorService = Executors.newSingleThreadScheduledExecutor(
         new ThreadFactoryBuilder().setNameFormat("license-usage-daily-count-job").build());
-    long midnight = LocalDateTime.now(ZoneId.of(ZONE_ID_IST))
-                        .until(LocalDate.now(ZoneId.of(ZONE_ID_IST)).plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
+    long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
     log.info("Scheduling LicenseUsageDailyCountJob with initial delay of {} minutes from current time", midnight);
     executorService.scheduleAtFixedRate(this::run, midnight + 3, TimeUnit.DAYS.toMinutes(1), TimeUnit.MINUTES);
   }

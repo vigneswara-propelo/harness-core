@@ -39,7 +39,8 @@ public class IdpServiceRequestInterceptor implements ContainerRequestFilter {
     UserPrincipal userPrincipal = null;
     try {
       urlPath = containerRequestContext.getUriInfo().getPath();
-      if (idpModuleLicenseUsage.checkIfUrlPathCapturesLicenseUsage(urlPath)) {
+      if (idpModuleLicenseUsage.checkIfUrlPathCapturesLicenseUsage(urlPath)
+          && SourcePrincipalContextBuilder.getSourcePrincipal() instanceof UserPrincipal) {
         userPrincipal = (UserPrincipal) SourcePrincipalContextBuilder.getSourcePrincipal();
         IDPLicenseUsageUserCaptureDTO idpLicenseUsageUserCapture =
             buildIdpLicenseUsageUserCaptureDTOFromUserPrincipal(userPrincipal);

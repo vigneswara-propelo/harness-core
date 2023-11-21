@@ -7,7 +7,6 @@
 
 package io.harness.idp.scorecard.scores.jobs;
 
-import static io.harness.idp.common.DateUtils.ZONE_ID_IST;
 import static io.harness.rule.OwnerRule.VIGNESWARA;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -25,7 +24,6 @@ import io.harness.rule.Owner;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,8 +59,7 @@ public class CheckStatusDailyRunJobTest extends CategoryTest {
   public void testStart() throws Exception {
     try (MockedStatic<Executors> ignored = Mockito.mockStatic(Executors.class)) {
       when(Executors.newSingleThreadScheduledExecutor(any())).thenReturn(executorService);
-      long midnight = LocalDateTime.now(ZoneId.of(ZONE_ID_IST))
-                          .until(LocalDate.now(ZoneId.of(ZONE_ID_IST)).plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
+      long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
       when(executorService.scheduleAtFixedRate(
                any(Runnable.class), eq(midnight + 10), eq(TimeUnit.DAYS.toMinutes(1)), eq(TimeUnit.MINUTES)))
           .thenAnswer(invocation -> {
