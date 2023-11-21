@@ -88,6 +88,27 @@ metadata:
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - list
+  - watch
+  - create
+  - delete
+  - get 
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - delete
+  - watch
+- apiGroups:
   - ""
   resources:
   - namespaces
