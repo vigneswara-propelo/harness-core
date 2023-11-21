@@ -1066,6 +1066,10 @@ public class UserServiceImpl implements UserService {
       updateOperations.set(UserKeys.accounts, newAccounts);
     }
 
+    if (user.isDisabled()) {
+      updateOperations.set(UserKeys.disabled, false);
+      updateOperations.set(UserKeys.defaultAccountId, account.getUuid());
+    }
     if (featureFlagService.isEnabled(FeatureName.PL_USER_ACCOUNT_LEVEL_DATA_FLOW, accountId)) {
       userServiceHelper.populateAccountToUserMapping(user, accountId, NG, userSource);
       updateOperations.set(UserKeys.userAccountLevelDataMap, user.getUserAccountLevelDataMap());
@@ -4530,6 +4534,10 @@ public class UserServiceImpl implements UserService {
     updateOperations.set(UserKeys.accounts, newAccountsList);
     updateOperations.set(UserKeys.pendingAccounts, newPendingAccountsList);
     updateOperations.set(UserKeys.emailVerified, markEmailVerified);
+    if (existingUser.getDisabled()) {
+      updateOperations.set(UserKeys.disabled, false);
+      updateOperations.set(UserKeys.defaultAccountId, invitationAccount.getUuid());
+    }
     updateUser(existingUser.getUuid(), updateOperations);
   }
 

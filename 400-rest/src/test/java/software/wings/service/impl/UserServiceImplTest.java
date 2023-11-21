@@ -13,6 +13,7 @@ import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
 import static io.harness.beans.PageResponse.PageResponseBuilder.aPageResponse;
 import static io.harness.beans.SearchFilter.Operator.HAS;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.ng.core.common.beans.UserSource.MANUAL;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.ACCOUNT_INVITE_ACCEPTED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.ACCOUNT_INVITE_ACCEPTED_NEED_PASSWORD;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.FAIL;
@@ -30,6 +31,7 @@ import static io.harness.rule.OwnerRule.NANDAN;
 import static io.harness.rule.OwnerRule.PRATEEK;
 import static io.harness.rule.OwnerRule.RAFAEL;
 import static io.harness.rule.OwnerRule.RAJ;
+import static io.harness.rule.OwnerRule.SAHIBA;
 import static io.harness.rule.OwnerRule.TEJAS;
 import static io.harness.rule.OwnerRule.VIKAS_M;
 import static io.harness.rule.OwnerRule.VOJIN;
@@ -74,6 +76,7 @@ import io.harness.eventsframework.api.Producer;
 import io.harness.eventsframework.producer.Message;
 import io.harness.eventsframework.schemas.user.UserDTO;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ff.FeatureFlagService;
 import io.harness.invites.remote.NgInviteClient;
 import io.harness.ng.core.account.AuthenticationMechanism;
 import io.harness.ng.core.common.beans.Generation;
@@ -154,6 +157,8 @@ public class UserServiceImplTest extends WingsBaseTest {
   @Mock TOTPAuthHandler totpAuthHandler;
   @Mock UserServiceLimitChecker userServiceLimitChecker;
   @Inject WingsPersistence wingsPersistence;
+
+  @Mock FeatureFlagService featureFlagService;
   private static final String NG_AUTH_UI_PATH_PREFIX = "auth/";
 
   @Test
@@ -1168,5 +1173,39 @@ public class UserServiceImplTest extends WingsBaseTest {
     String userNameAsEmail = "user.name@harness.io";
     userNameWithoutEmailDomain = userServiceImpl.removeEmailDomainFromUserName(userNameAsEmail);
     assertThat(userNameWithoutEmailDomain).isEqualTo("user.name");
+  }
+
+  @Test
+  @Owner(developers = SAHIBA)
+  @Category(UnitTests.class)
+  public void testAddUserWithPreviouslyDisabledUser() {
+    String accountId = randomAlphabetic(10);
+    String userId = randomAlphabetic(10);
+    Account account = anAccount()
+                          .withAccountName("harness")
+                          .withCompanyName("harness")
+                          .withAppId(GLOBAL_APP_ID)
+                          .withUuid(ACCOUNT_ID)
+                          .withAuthenticationMechanism(AuthenticationMechanism.USER_PASSWORD)
+                          .build();
+    wingsPersistence.save(account);
+    User user1 = User.Builder.anUser()
+                     .uuid(userId)
+                     .accounts(Collections.singletonList(account))
+                     .email("abc@harness.io")
+                     .name("pqr")
+                     .defaultAccountId(ACCOUNT_ID)
+                     .build();
+    user1.setDisabled(true);
+    wingsPersistence.save(user1);
+    when(featureFlagService.isEnabled(any(), any())).thenReturn(true);
+    when(accountService.get(any())).thenReturn(account);
+    when(configurationController.isPrimary()).thenReturn(true);
+    when(userServiceHelper.validationForUserAccountLevelDataFlow(any(), any())).thenReturn(true);
+    when(harnessCacheManager.getCache(PRIMARY_CACHE_PREFIX + USER_CACHE, String.class, User.class,
+             AccessedExpiryPolicy.factoryOf(Duration.THIRTY_MINUTES)))
+        .thenReturn(new NoOpCache<>());
+    userServiceImpl.addUserToAccount(userId, accountId, MANUAL);
+    assertThat(userServiceImpl.get(userId).getDisabled()).isEqualTo(false);
   }
 }
