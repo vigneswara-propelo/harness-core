@@ -25,6 +25,7 @@ import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Collation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -126,5 +127,14 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
   @Override
   public long count(Criteria criteria) {
     return mongoTemplate.count(new Query(criteria), Project.class);
+  }
+
+  @Override
+  public Page<Project> findAllWithCollation(Criteria criteria, Pageable pageable) {
+    Query query = new Query(criteria).with(pageable);
+    query.collation(Collation.of("en").strength(Collation.ComparisonLevel.secondary()));
+    List<Project> projects = mongoTemplate.find(query, Project.class);
+    return PageableExecutionUtils.getPage(
+        projects, pageable, () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Project.class));
   }
 }

@@ -507,7 +507,7 @@ public class ProjectServiceImpl implements ProjectService {
     if (criteria == null) {
       return Page.empty();
     }
-    return projectRepository.findAll(criteria, pageable);
+    return projectRepository.findAllWithCollation(criteria, pageable);
   }
 
   @Override
