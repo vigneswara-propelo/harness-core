@@ -218,7 +218,7 @@ public class SCMGitSyncHelperTest extends GitSdkTestBase {
 
     assertThatThrownBy(() -> scmGitSyncHelper.checkForError(buildPushFileResponse(1, 304, "")))
         .isInstanceOf(ScmException.class)
-        .hasMessage("");
+        .hasMessage("SCM_NOT_MODIFIED");
 
     assertThatThrownBy(() -> scmGitSyncHelper.checkForError(buildPushFileResponse(1, 404, errorMessage)))
         .isInstanceOf(HintException.class)

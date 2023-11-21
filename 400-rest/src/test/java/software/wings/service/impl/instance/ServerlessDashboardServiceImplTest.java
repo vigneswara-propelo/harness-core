@@ -149,7 +149,7 @@ public class ServerlessDashboardServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void test_getAppInstanceSummaryStats_error() {
     final Mocks mocks = setup_AggregationPipeline();
-    doThrow(NoResultFoundException.newBuilder().message("").build())
+    doThrow(NoResultFoundException.newBuilder().message("some message").build())
         .when(serverlessDashboardService)
         .getServerlessInstanceQueryAtTime(anyString(), anyList(), anyLong());
 
@@ -215,7 +215,7 @@ public class ServerlessDashboardServiceImplTest extends CategoryTest {
   @Owner(developers = ROHIT_KUMAR)
   @Category(UnitTests.class)
   public void test_getAppInstanceSummaryStatsByService_error() {
-    doThrow(NoResultFoundException.newBuilder().message("").build())
+    doThrow(NoResultFoundException.newBuilder().message("some message").build())
         .when(serverlessDashboardService)
         .getServerlessInstanceQueryAtTime(anyString(), anyList(), anyLong());
 
