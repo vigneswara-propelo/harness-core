@@ -16,8 +16,10 @@ import static io.harness.idp.common.JacksonUtils.convert;
 import static io.harness.idp.scorecard.checks.mappers.CheckDetailsMapper.constructExpressionFromRules;
 import static io.harness.remote.client.NGRestUtils.getGeneralResponse;
 
+import io.harness.account.AccountClient;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.clients.BackstageResourceClient;
 import io.harness.exception.UnexpectedException;
 import io.harness.idp.backstagebeans.BackstageCatalogEntity;
@@ -36,10 +38,12 @@ import io.harness.idp.scorecard.scores.entity.ScoreEntity;
 import io.harness.idp.scorecard.scores.logging.ScoreComputationLogContext;
 import io.harness.idp.scorecard.scores.repositories.ScoreRepository;
 import io.harness.logging.AutoLogContext;
+import io.harness.remote.client.CGRestUtils;
 import io.harness.spec.server.idp.v1.model.CheckDetails;
 import io.harness.spec.server.idp.v1.model.CheckStatus;
 import io.harness.spec.server.idp.v1.model.Rule;
 import io.harness.spec.server.idp.v1.model.ScorecardFilter;
+import io.harness.spec.server.idp.v1.model.ScorecardRecalibrateInfo;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,6 +78,8 @@ public class ScoreComputerServiceImpl implements ScoreComputerService {
   @Inject DataSourceProviderFactory dataSourceProviderFactory;
   @Inject ScoreRepository scoreRepository;
   @Inject ConfigReader configReader;
+  AsyncScoreComputationService asyncScoreComputationService;
+  private final AccountClient accountClient;
   static final ObjectMapper mapper =
       new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -108,7 +114,11 @@ public class ScoreComputerServiceImpl implements ScoreComputerService {
       });
     }
 
-    if (entityIdentifiers != null && !entityIdentifiers.isEmpty()) {
+    boolean asyncScoreComputationEnabled = CGRestUtils.getResponse(
+        accountClient.isFeatureFlagEnabled(FeatureName.IDP_ASYNC_SCORE_COMPUTATION.name(), accountIdentifier));
+    log.info(
+        "IDP_ASYNC_SCORE_COMPUTATION FF enabled: {} for account {}", asyncScoreComputationEnabled, accountIdentifier);
+    if (asyncScoreComputationEnabled || (entityIdentifiers != null && !entityIdentifiers.isEmpty())) {
       try {
         if (!latch.await(30, TimeUnit.SECONDS)) {
           log.warn("Timeout waiting for threads to complete.");
@@ -118,6 +128,21 @@ public class ScoreComputerServiceImpl implements ScoreComputerService {
         log.warn("Interrupted while waiting for threads.");
       }
     }
+  }
+
+  @Override
+  public ScorecardRecalibrateInfo computeScoresAsync(
+      String accountIdentifier, String scorecardIdentifier, String entityIdentifier) {
+    ScorecardRecalibrateInfo scorecardRecalibrateInfo =
+        asyncScoreComputationService.getStartTimeOfInProgressScoreComputation(
+            accountIdentifier, scorecardIdentifier, entityIdentifier);
+    if (scorecardRecalibrateInfo != null) {
+      log.info("Score computation is already in progress for scorecard {}, entity {} and account {}",
+          scorecardIdentifier, entityIdentifier, accountIdentifier);
+      return scorecardRecalibrateInfo;
+    }
+    return asyncScoreComputationService.logScoreComputationRequestAndPublishEvent(
+        accountIdentifier, scorecardIdentifier, entityIdentifier);
   }
 
   @Override

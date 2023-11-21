@@ -10,6 +10,7 @@ package io.harness.idp.scorecard.scores.service;
 import io.harness.idp.backstagebeans.BackstageCatalogEntity;
 import io.harness.idp.scorecard.scores.beans.ScorecardAndChecks;
 import io.harness.spec.server.idp.v1.model.ScorecardFilter;
+import io.harness.spec.server.idp.v1.model.ScorecardRecalibrateInfo;
 
 import java.util.List;
 import java.util.Set;
@@ -19,6 +20,9 @@ public interface ScoreComputerService {
 
   Set<BackstageCatalogEntity> getAllEntities(
       String accountIdentifier, List<String> entityIdentifiers, List<ScorecardFilter> filters);
+
+  ScorecardRecalibrateInfo computeScoresAsync(
+      String accountIdentifier, String scorecardIdentifier, String entityIdentifier);
 
   Set<? extends BackstageCatalogEntity> getBackstageEntitiesForScorecardsAndEntityIdentifiers(
       String accountIdentifier, List<ScorecardAndChecks> scorecardsAndChecks, List<String> entityIdentifiers);

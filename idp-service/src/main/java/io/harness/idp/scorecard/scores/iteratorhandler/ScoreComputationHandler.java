@@ -7,12 +7,15 @@
 
 package io.harness.idp.scorecard.scores.iteratorhandler;
 
+import static io.harness.authorization.AuthorizationServiceHeader.IDP_SERVICE;
 import static io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType.REGULAR;
 
 import static java.time.Duration.ofSeconds;
 
+import io.harness.account.AccountClient;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.idp.namespace.beans.entity.NamespaceEntity;
 import io.harness.idp.scorecard.scores.service.ScoreComputerService;
 import io.harness.iterator.PersistenceIteratorFactory;
@@ -20,6 +23,10 @@ import io.harness.mongo.iterator.IteratorConfig;
 import io.harness.mongo.iterator.MongoPersistenceIterator;
 import io.harness.mongo.iterator.filter.SpringFilterExpander;
 import io.harness.mongo.iterator.provider.SpringPersistenceProvider;
+import io.harness.remote.client.CGRestUtils;
+import io.harness.security.SecurityContextBuilder;
+import io.harness.security.SourcePrincipalContextBuilder;
+import io.harness.security.dto.ServicePrincipal;
 
 import java.util.Collections;
 import lombok.AllArgsConstructor;
@@ -33,13 +40,31 @@ public class ScoreComputationHandler implements MongoPersistenceIterator.Handler
   private PersistenceIteratorFactory persistenceIteratorFactory;
   private MongoTemplate mongoTemplate;
   private ScoreComputerService scoreComputerService;
+  private AccountClient accountClient;
 
   @Override
   public void handle(NamespaceEntity namespaceEntity) {
-    log.info("Scorecard Score Computation for account - {} from iterator started at - {}",
-        namespaceEntity.getAccountIdentifier(), System.currentTimeMillis());
-    scoreComputerService.computeScores(
-        namespaceEntity.getAccountIdentifier(), Collections.emptyList(), Collections.emptyList());
+    String accountIdentifier = namespaceEntity.getAccountIdentifier();
+    log.info("Scorecard Score Computation for account - {} from iterator started at - {}", accountIdentifier,
+        System.currentTimeMillis());
+
+    boolean asyncScoreComputationEnabled = CGRestUtils.getResponse(
+        accountClient.isFeatureFlagEnabled(FeatureName.IDP_ASYNC_SCORE_COMPUTATION.name(), accountIdentifier));
+    log.info(
+        "IDP_ASYNC_SCORE_COMPUTATION FF enabled: {} for account {}", asyncScoreComputationEnabled, accountIdentifier);
+    if (asyncScoreComputationEnabled) {
+      try {
+        ServicePrincipal servicePrincipal = new ServicePrincipal("System");
+        SecurityContextBuilder.setContext(servicePrincipal);
+        SourcePrincipalContextBuilder.setSourcePrincipal(servicePrincipal);
+        scoreComputerService.computeScoresAsync(accountIdentifier, null, null);
+      } finally {
+        SecurityContextBuilder.unsetCompleteContext();
+      }
+    } else {
+      scoreComputerService.computeScores(
+          namespaceEntity.getAccountIdentifier(), Collections.emptyList(), Collections.emptyList());
+    }
     log.info("Scorecard Score Computation for account - {} from iterator is completed at - {}",
         namespaceEntity.getAccountIdentifier(), System.currentTimeMillis());
   }
