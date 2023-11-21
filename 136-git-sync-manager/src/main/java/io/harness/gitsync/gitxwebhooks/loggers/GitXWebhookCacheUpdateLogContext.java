@@ -31,7 +31,7 @@ public class GitXWebhookCacheUpdateLogContext extends AutoLogContext {
   public static final String CONTEXT_KEY = "contextKey";
 
   public GitXWebhookCacheUpdateLogContext(GitXCacheUpdateRunnableRequestDTO gitXCacheUpdateRunnableRequestDTO) {
-    super(setContextMap(gitXCacheUpdateRunnableRequestDTO.getAccountIdentifier(),
+    super(setContextMap(gitXCacheUpdateRunnableRequestDTO.getScope().getAccountIdentifier(),
               gitXCacheUpdateRunnableRequestDTO.getRepoName(), gitXCacheUpdateRunnableRequestDTO.getEventIdentifier(),
               gitXCacheUpdateRunnableRequestDTO.getBranch(), gitXCacheUpdateRunnableRequestDTO.getModifiedFilePaths()),
         OverrideBehavior.OVERRIDE_NESTS);

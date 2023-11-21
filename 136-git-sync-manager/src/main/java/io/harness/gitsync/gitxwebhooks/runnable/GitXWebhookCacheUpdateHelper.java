@@ -50,7 +50,7 @@ public class GitXWebhookCacheUpdateHelper {
   private GitXCacheUpdateRunnableRequestDTO buildGitXCacheUpdateRunnableDTO(
       GitXCacheUpdateHelperRequestDTO gitXCacheUpdateHelperRequestDTO) {
     return GitXCacheUpdateRunnableRequestDTO.builder()
-        .accountIdentifier(gitXCacheUpdateHelperRequestDTO.getAccountIdentifier())
+        .scope(gitXCacheUpdateHelperRequestDTO.getScope())
         .branch(gitXCacheUpdateHelperRequestDTO.getBranch())
         .repoName(gitXCacheUpdateHelperRequestDTO.getRepoName())
         .connectorRef(gitXCacheUpdateHelperRequestDTO.getConnectorRef())

@@ -140,21 +140,8 @@ public class GitXWebhookServiceImpl implements GitXWebhookService {
   }
 
   @Override
-  public Optional<GitXWebhook> getGitXWebhook(String accountIdentifier, String webhookIdentifier, String repoName) {
-    List<GitXWebhook> gitXWebhookList;
-    if (isNotEmpty(webhookIdentifier)) {
-      gitXWebhookList =
-          gitXWebhookRepository.findByAccountIdentifierAndIdentifier(accountIdentifier, webhookIdentifier);
-    } else {
-      gitXWebhookList = gitXWebhookRepository.findByAccountIdentifierAndRepoName(accountIdentifier, repoName);
-    }
-    if (isEmpty(gitXWebhookList)) {
-      log.info(String.format(
-          "For the given key with accountIdentifier %s and gitXWebhookIdentifier %s or repoName %s no webhook found.",
-          accountIdentifier, webhookIdentifier, repoName));
-      return Optional.empty();
-    }
-    return Optional.of(gitXWebhookList.get(0));
+  public List<GitXWebhook> getGitXWebhook(String accountIdentifier, String repoName) {
+    return gitXWebhookRepository.findByAccountIdentifierAndRepoName(accountIdentifier, repoName);
   }
 
   @Override
@@ -168,6 +155,17 @@ public class GitXWebhookServiceImpl implements GitXWebhookService {
                             .and(GitXWebhookKeys.repoName)
                             .is(repoName);
     return gitXWebhookRepository.findAll(new Query(criteria));
+  }
+
+  @Override
+  public Optional<GitXWebhook> getGitXWebhookForGivenScopes(Scope scope, String repoName) {
+    List<GitXWebhook> gitXWebhookList =
+        gitXWebhookRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndRepoName(
+            scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier(), repoName);
+    if (isEmpty(gitXWebhookList)) {
+      return Optional.empty();
+    }
+    return Optional.of(gitXWebhookList.get(0));
   }
 
   @Override

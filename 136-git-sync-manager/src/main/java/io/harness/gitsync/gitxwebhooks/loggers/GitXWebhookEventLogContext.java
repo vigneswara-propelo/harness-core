@@ -31,8 +31,8 @@ public class GitXWebhookEventLogContext extends AutoLogContext {
   public static final String REPO_KEY = "repoName";
 
   public GitXWebhookEventLogContext(GitXWebhookEvent gitXWebhookEvent) {
-    super(setContextMap(gitXWebhookEvent.getAccountIdentifier(), gitXWebhookEvent.getWebhookIdentifier(),
-              gitXWebhookEvent.getEventIdentifier(), gitXWebhookEvent.getEventStatus(), null),
+    super(setContextMap(gitXWebhookEvent.getAccountIdentifier(), null, gitXWebhookEvent.getEventIdentifier(),
+              gitXWebhookEvent.getEventStatus(), null),
         OverrideBehavior.OVERRIDE_NESTS);
   }
 

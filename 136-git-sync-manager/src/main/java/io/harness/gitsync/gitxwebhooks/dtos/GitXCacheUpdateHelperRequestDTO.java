@@ -12,6 +12,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.beans.Scope;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 
 import java.util.List;
@@ -30,7 +31,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.PIPELINE)
 public class GitXCacheUpdateHelperRequestDTO {
-  String accountIdentifier;
+  Scope scope;
   String repoName;
   String branch;
   String connectorRef;

@@ -36,9 +36,11 @@ public interface GitXWebhookService {
 
   Optional<GetGitXWebhookResponseDTO> getGitXWebhook(GetGitXWebhookRequestDTO getGitXWebhookRequestDTO);
 
-  Optional<GitXWebhook> getGitXWebhook(String accountIdentifier, String webhookIdentifier, String repoName);
+  List<GitXWebhook> getGitXWebhook(String accountIdentifier, String repoName);
 
   List<GitXWebhook> getGitXWebhookForAllScopes(Scope scope, String repoName);
+
+  Optional<GitXWebhook> getGitXWebhookForGivenScopes(Scope scope, String repoName);
 
   UpdateGitXWebhookResponseDTO updateGitXWebhook(UpdateGitXWebhookCriteriaDTO updateGitXWebhookCriteriaDTO,
       UpdateGitXWebhookRequestDTO updateGitXWebhookRequestDTO);

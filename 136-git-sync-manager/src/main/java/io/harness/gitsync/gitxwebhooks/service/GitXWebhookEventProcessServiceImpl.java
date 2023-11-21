@@ -28,6 +28,7 @@ import io.harness.gitsync.common.service.GitSyncConnectorService;
 import io.harness.gitsync.common.service.ScmOrchestratorService;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXCacheUpdateHelperRequestDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventUpdateRequestDTO;
+import io.harness.gitsync.gitxwebhooks.dtos.ProcessingFilePathResponseDTO;
 import io.harness.gitsync.gitxwebhooks.entity.GitXWebhook;
 import io.harness.gitsync.gitxwebhooks.entity.GitXWebhookEvent;
 import io.harness.gitsync.gitxwebhooks.loggers.GitXWebhookEventLogContext;
@@ -40,7 +41,6 @@ import io.harness.security.dto.ServicePrincipal;
 import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,34 +75,32 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
       try {
         SecurityContextBuilder.setContext(new ServicePrincipal(NG_MANAGER.getServiceId()));
         log.info(String.format("Picked the event %s from the queue.", gitXWebhookEvent.getEventIdentifier()));
-        GitXWebhook gitXWebhook = getGitXWebhook(gitXWebhookEvent);
-        if (gitXWebhook == null) {
-          log.info(String.format(
-              "The webhook event %s will be SKIPPED as there is no webhook configured for webhookIdentifier %s.",
-              gitXWebhookEvent.getEventIdentifier(), gitXWebhookEvent.getWebhookIdentifier()));
+        List<GitXWebhook> gitXWebhookList = getGitXWebhook(gitXWebhookEvent);
+        if (isEmpty(gitXWebhookList)) {
+          log.info(String.format("The webhook event %s will be SKIPPED as there is no webhook(s) configured.",
+              gitXWebhookEvent.getEventIdentifier()));
           updateEventStatus(gitXWebhookEvent.getAccountIdentifier(), gitXWebhookEvent.getEventIdentifier(),
               GitXWebhookEventStatus.SKIPPED);
           return;
         }
-        ScmConnector scmConnector = getScmConnector(
-            gitXWebhook.getAccountIdentifier(), gitXWebhook.getConnectorRef(), gitXWebhook.getRepoName());
-        List<String> modifiedFilePaths =
-            parsePayloadAndGetModifiedFilePaths(gitXWebhook, gitXWebhookEvent, scmConnector);
-        List<String> processingFilePaths = getMatchingFilePaths(modifiedFilePaths, gitXWebhook);
-        if (isEmpty(processingFilePaths)) {
+        ProcessingFilePathResponseDTO processingFilePathResponseDTO =
+            getFilesToProcess(gitXWebhookList, gitXWebhookEvent);
+        if (isEmpty(processingFilePathResponseDTO.getProcessingFilePaths())) {
           log.info(String.format(
-              "The webhook event %s will be SKIPPED as the webhook is disabled or the folder paths don't match.",
+              "The webhook event %s will be SKIPPED as the webhook(s) is disabled or the folder paths don't match.",
               gitXWebhookEvent.getEventIdentifier()));
           updateEventStatus(gitXWebhookEvent.getAccountIdentifier(), gitXWebhookEvent.getEventIdentifier(),
               GitXWebhookEventStatus.SKIPPED);
         } else {
           log.info(String.format(
-              "Submitting the task for PROCESSING the webhook event %s as the webhook is enabled and the folder paths match.",
+              "Submitting the task for PROCESSING the webhook event %s as the webhook(s) is enabled and the folder paths match.",
               gitXWebhookEvent.getEventIdentifier()));
           gitXWebhookCacheUpdateHelper.submitTask(gitXWebhookEvent.getEventIdentifier(),
-              buildGitXWebhookRunnableRequest(gitXWebhook, gitXWebhookEvent, modifiedFilePaths, scmConnector));
+              buildGitXWebhookRunnableRequest(processingFilePathResponseDTO.getGitXWebhook(), gitXWebhookEvent,
+                  processingFilePathResponseDTO.getModifiedFilePaths(),
+                  processingFilePathResponseDTO.getScmConnector()));
           updateEventStatus(gitXWebhookEvent.getAccountIdentifier(), gitXWebhookEvent.getEventIdentifier(),
-              GitXWebhookEventStatus.PROCESSING, processingFilePaths);
+              GitXWebhookEventStatus.PROCESSING, processingFilePathResponseDTO.getProcessingFilePaths());
         }
       } catch (ConnectorNotFoundException connectorNotFoundException) {
         log.error(String.format("Connector not found for event %s in the account %s.",
@@ -120,7 +118,8 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
   private GitXCacheUpdateHelperRequestDTO buildGitXWebhookRunnableRequest(GitXWebhook gitXWebhook,
       GitXWebhookEvent gitXWebhookEvent, List<String> modifiedFilePaths, ScmConnector scmConnector) {
     return GitXCacheUpdateHelperRequestDTO.builder()
-        .accountIdentifier(gitXWebhook.getAccountIdentifier())
+        .scope(Scope.of(
+            gitXWebhook.getAccountIdentifier(), gitXWebhook.getOrgIdentifier(), gitXWebhook.getProjectIdentifier()))
         .repoName(gitXWebhook.getRepoName())
         .branch(gitXWebhookEvent.getBranch())
         .connectorRef(gitXWebhook.getConnectorRef())
@@ -128,6 +127,33 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
         .modifiedFilePaths(modifiedFilePaths)
         .scmConnector(scmConnector)
         .build();
+  }
+
+  private ProcessingFilePathResponseDTO getFilesToProcess(
+      List<GitXWebhook> gitXWebhookList, GitXWebhookEvent gitXWebhookEvent) {
+    ProcessingFilePathResponseDTO processingFilePathResponseDTO = null;
+    for (GitXWebhook gitXWebhook : gitXWebhookList) {
+      try {
+        ScmConnector scmConnector = getScmConnector(gitXWebhook);
+        List<String> modifiedFilePaths =
+            parsePayloadAndGetModifiedFilePaths(gitXWebhook, gitXWebhookEvent, scmConnector);
+        log.info(String.format("Successfully fetched the file paths with GitXWebhook %s", gitXWebhook.getIdentifier()));
+        List<String> processingFilePaths = getMatchingFilePaths(modifiedFilePaths, gitXWebhook);
+        return ProcessingFilePathResponseDTO.builder()
+            .modifiedFilePaths(modifiedFilePaths)
+            .processingFilePaths(processingFilePaths)
+            .scmConnector(scmConnector)
+            .gitXWebhook(gitXWebhook)
+            .build();
+      } catch (Exception exception) {
+        log.error(
+            String.format(
+                "Failed to fetch the modifiedFilePaths data from gitXWebhook identifier %s, will be trying with the next connector",
+                gitXWebhook.getIdentifier()),
+            exception);
+      }
+    }
+    return processingFilePathResponseDTO;
   }
 
   private List<String> parsePayloadAndGetModifiedFilePaths(
@@ -153,13 +179,8 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
     return GitXWebhookUtils.compareFolderPaths(gitXWebhook.getFolderPaths(), modifiedFilePaths);
   }
 
-  private GitXWebhook getGitXWebhook(GitXWebhookEvent gitXWebhookEvent) {
-    Optional<GitXWebhook> optionalGitXWebhook = gitXWebhookService.getGitXWebhook(
-        gitXWebhookEvent.getAccountIdentifier(), gitXWebhookEvent.getWebhookIdentifier(), null);
-    if (optionalGitXWebhook.isEmpty()) {
-      return null;
-    }
-    return optionalGitXWebhook.get();
+  private List<GitXWebhook> getGitXWebhook(GitXWebhookEvent gitXWebhookEvent) {
+    return gitXWebhookService.getGitXWebhook(gitXWebhookEvent.getAccountIdentifier(), gitXWebhookEvent.getRepo());
   }
 
   public List<String> getDiffFilesUsingSCM(
@@ -183,10 +204,12 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
         .collect(Collectors.toList());
   }
 
-  public ScmConnector getScmConnector(String accountIdentifier, String connectorRef, String repoName) {
-    ScmConnector scmConnector = gitSyncConnectorService.getScmConnector(accountIdentifier, "", "", connectorRef);
-    scmConnector.setUrl(gitRepoHelper.getRepoUrl(scmConnector, repoName));
-    return gitSyncConnectorService.getDecryptedConnectorForNewGitX(accountIdentifier, "", "", scmConnector);
+  private ScmConnector getScmConnector(GitXWebhook gitXWebhook) {
+    ScmConnector scmConnector = gitSyncConnectorService.getScmConnector(gitXWebhook.getAccountIdentifier(),
+        gitXWebhook.getOrgIdentifier(), gitXWebhook.getProjectIdentifier(), gitXWebhook.getConnectorRef());
+    scmConnector.setUrl(gitRepoHelper.getRepoUrl(scmConnector, gitXWebhook.getRepoName()));
+    return gitSyncConnectorService.getDecryptedConnectorForNewGitX(gitXWebhook.getAccountIdentifier(),
+        gitXWebhook.getOrgIdentifier(), gitXWebhook.getProjectIdentifier(), scmConnector);
   }
 
   private void updateEventStatus(

@@ -12,8 +12,8 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.beans.Scope;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
+import io.harness.gitsync.gitxwebhooks.entity.GitXWebhook;
 
 import java.util.List;
 import lombok.AccessLevel;
@@ -30,12 +30,9 @@ import lombok.experimental.FieldDefaults;
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.PIPELINE)
-public class GitXCacheUpdateRunnableRequestDTO {
-  Scope scope;
-  String repoName;
-  String branch;
-  String connectorRef;
-  String eventIdentifier;
+public class ProcessingFilePathResponseDTO {
   List<String> modifiedFilePaths;
+  List<String> processingFilePaths;
   ScmConnector scmConnector;
+  GitXWebhook gitXWebhook;
 }
