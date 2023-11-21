@@ -198,8 +198,7 @@ public class CdInstanceSummaryServiceImplTest extends SSCAManagerTestBase {
     assertThat(cdInstanceSummary.getLastDeployedById()).isEqualTo("userId");
     assertThat(cdInstanceSummary.getTriggerType()).isEqualTo("MANUAL");
     assertThat(cdInstanceSummary.getSequenceId()).isEqualTo("5");
-    assertThat(cdInstanceSummary.getSlsaVerificationSummary().getSlsaPolicyOutcomeStatus()).isNull();
-    assertThat(cdInstanceSummary.getSlsaVerificationSummary().getProvenanceArtifact()).isNull();
+    assertThat(cdInstanceSummary.getSlsaVerificationSummary()).isNull();
   }
 
   @Test
@@ -233,7 +232,6 @@ public class CdInstanceSummaryServiceImplTest extends SSCAManagerTestBase {
     assertThat(cdInstanceSummary.getLastDeployedById()).isEqualTo("userId");
     assertThat(cdInstanceSummary.getTriggerType()).isEqualTo("MANUAL");
     assertThat(cdInstanceSummary.getSequenceId()).isEqualTo("5");
-    assertThat(cdInstanceSummary.getSlsaVerificationSummary().getSlsaPolicyOutcomeStatus()).isNull();
-    assertThat(cdInstanceSummary.getSlsaVerificationSummary().getProvenanceArtifact()).isNull();
+    assertThat(cdInstanceSummary.getSlsaVerificationSummary()).isNull();
   }
 }

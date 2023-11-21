@@ -17,7 +17,6 @@ import io.harness.serializer.JsonUtils;
 import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewRequestBody;
 import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.SLSAVerificationSummary;
-import io.harness.ssca.beans.SLSAVerificationSummary.SLSAVerificationSummaryBuilder;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.CdInstanceSummary.CdInstanceSummaryKeys;
@@ -250,14 +249,13 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
 
   private SLSAVerificationSummary getSlsaVerificationSummary(
       JsonNode rootNode, Instance instance, ArtifactEntity artifact) {
-    SLSAVerificationSummaryBuilder slsaVerificationSummaryBuilder = SLSAVerificationSummary.builder();
     if (rootNode == null) {
-      return slsaVerificationSummaryBuilder.build();
+      return null;
     }
     try {
       JsonNode executionNodeList = parseField(rootNode, EXECUTION_GRAPH, NODE_MAP);
       if (Objects.isNull(executionNodeList)) {
-        return slsaVerificationSummaryBuilder.build();
+        return null;
       }
       for (JsonNode node : executionNodeList) {
         if (SLSA_VERIFICATION_STEP_ID.equals(getNodeValue(node.get(STEP_TYPE)))
@@ -269,17 +267,17 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
             String provenanceArtifactData = Objects.nonNull(provenanceArtifactList) && provenanceArtifactList.size() > 0
                 ? provenanceArtifactList.get(0).toString()
                 : null;
-            slsaVerificationSummaryBuilder
+            return SLSAVerificationSummary.builder()
                 .slsaPolicyOutcomeStatus(getNodeValue(parseField(node, OUTCOMES, POLICY_OUTPUT, STATUS)))
-                .provenanceArtifact(provenanceArtifactData);
-            break;
+                .provenanceArtifact(provenanceArtifactData)
+                .build();
           }
         }
       }
     } catch (Exception e) {
       log.error(String.format("Failed to extract SLSA Verification Data. Exception: %s", e));
     }
-    return slsaVerificationSummaryBuilder.build();
+    return null;
   }
 
   private String getFqnSlsaStepIdentifier(JsonNode node) {
