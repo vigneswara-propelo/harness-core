@@ -21,6 +21,8 @@ import lombok.Builder;
 @Builder
 @OwnedBy(CDP)
 public class ExecutionLogWriter extends Writer {
+  private static final String WARNING = "WARNING";
+  private static final String DEBUG = "DEBUG";
   private final LogCallback logCallback;
   @SuppressWarnings("PMD.AvoidStringBufferField") // This buffer is getting cleared on every newline.
   private final StringBuilder stringBuilder;
@@ -53,8 +55,19 @@ public class ExecutionLogWriter extends Writer {
   private void logAndFlush() {
     String logLine = stringBuilder.toString();
     if (!logLine.isEmpty()) {
-      logCallback.saveExecutionLog(logLine.trim(), logLevel, RUNNING);
+      LogLevel derivedLogLevel = getLogLevelFromLogLine(logLine);
+      logCallback.saveExecutionLog(logLine.trim(), derivedLogLevel, RUNNING);
       stringBuilder.setLength(0);
+    }
+  }
+
+  private LogLevel getLogLevelFromLogLine(String line) {
+    if (line.startsWith(WARNING)) {
+      return LogLevel.WARN;
+    } else if (line.startsWith(DEBUG)) {
+      return LogLevel.DEBUG;
+    } else {
+      return logLevel;
     }
   }
 }
