@@ -138,6 +138,9 @@ public class AnomalyServiceImpl implements AnomalyService {
     }
     // For other cases
     List<CCMFilter> ruleFilters = perspectiveToAnomalyQueryHelper.getConvertedRulesForPerspective(perspective);
+    if (perspectiveToAnomalyQueryHelper.isEmptyRuleFilter(ruleFilters)) {
+      ruleFilters.add(perspectiveToAnomalyQueryHelper.addIdNullFilter());
+    }
     CCMFilter filters =
         perspectiveToAnomalyQueryHelper.getConvertedFiltersForPerspective(perspective, perspectiveQuery);
     List<AnomalyData> anomalyData = listAnomalies(accountIdentifier,
@@ -275,6 +278,9 @@ public class AnomalyServiceImpl implements AnomalyService {
 
     for (CEView perspective : allowedPerspectives) {
       List<CCMFilter> ruleFilters = perspectiveToAnomalyQueryHelper.getConvertedRulesForPerspective(perspective);
+      if (perspectiveToAnomalyQueryHelper.isEmptyRuleFilter(ruleFilters)) {
+        ruleFilters.add(perspectiveToAnomalyQueryHelper.addIdNullFilter());
+      }
       List<AnomalyData> anomalyDataForPerspective = listAnomalies(accountIdentifier,
           AnomalyQueryDTO.builder()
               .filter(filters)
@@ -298,6 +304,9 @@ public class AnomalyServiceImpl implements AnomalyService {
 
     for (CEView perspective : allowedPerspectives) {
       List<CCMFilter> ruleFilters = perspectiveToAnomalyQueryHelper.getConvertedRulesForPerspective(perspective);
+      if (perspectiveToAnomalyQueryHelper.isEmptyRuleFilter(ruleFilters)) {
+        ruleFilters.add(perspectiveToAnomalyQueryHelper.addIdNullFilter());
+      }
       List<AnomalyData> anomalyDataForPerspective = listAnomalies(accountIdentifier,
           AnomalyQueryDTO.builder()
               .filter(filters)
