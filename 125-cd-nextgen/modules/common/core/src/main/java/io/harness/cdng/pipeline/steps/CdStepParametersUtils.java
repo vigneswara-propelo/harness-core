@@ -10,7 +10,7 @@ package io.harness.cdng.pipeline.steps;
 import io.harness.advisers.rollback.OnFailRollbackParameters;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.creator.plan.stage.DeploymentAbstractStageNode;
+import io.harness.cdng.creator.plan.stage.AbstractStageNodeWithFailureInfo;
 import io.harness.data.structure.CollectionUtils;
 import io.harness.plancreator.steps.common.StageElementParameters;
 import io.harness.plancreator.steps.common.StageElementParameters.StageElementParametersBuilder;
@@ -45,7 +45,7 @@ public class CdStepParametersUtils {
     return stepBuilder;
   }
 
-  public StageElementParametersBuilder getStageParameters(DeploymentAbstractStageNode stageNode) {
+  public StageElementParametersBuilder getStageParameters(AbstractStageNodeWithFailureInfo stageNode) {
     TagUtils.removeUuidFromTags(stageNode.getTags());
 
     StageElementParametersBuilder stageBuilder = StageElementParameters.builder();
@@ -61,6 +61,7 @@ public class CdStepParametersUtils {
     stageBuilder.variables(
         ParameterField.createValueField(NGVariablesUtils.getMapOfVariables(stageNode.getVariables())));
     stageBuilder.tags(CollectionUtils.emptyIfNull(stageNode.getTags()));
+    stageBuilder.delegateSelectors(stageNode.getDelegateSelectors());
 
     return stageBuilder;
   }

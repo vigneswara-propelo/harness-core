@@ -6,6 +6,7 @@
  */
 
 package io.harness.cdng.creator.plan.stage;
+
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.onlyRuntimeInputAllowed;
 
 import io.harness.annotations.dev.CodePulse;
@@ -26,7 +27,7 @@ import lombok.Data;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
     components = {HarnessModuleComponent.CDS_SERVICE_ENVIRONMENT})
 @Data
-public abstract class CustomAbstractStageNode extends AbstractStageNode {
+public abstract class AbstractStageNodeWithFailureInfo extends AbstractStageNode {
   @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.FAILURE_STRATEGY_CONFIG_LIST_CLASSPATH)
   @VariableExpression(skipVariableExpression = true)
