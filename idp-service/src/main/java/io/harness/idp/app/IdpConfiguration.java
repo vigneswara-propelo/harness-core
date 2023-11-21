@@ -10,6 +10,7 @@ package io.harness.idp.app;
 import static io.harness.idp.provision.ProvisionConstants.PROVISION_MODULE_CONFIG;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toSet;
 
 import io.harness.AccessControlClientConfiguration;
 import io.harness.ScmConnectionConfig;
@@ -42,8 +43,10 @@ import io.harness.telemetry.segment.SegmentConfiguration;
 import io.harness.threading.ThreadPoolConfig;
 
 import ch.qos.logback.access.spi.IAccessEvent;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import io.dropwizard.Configuration;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -53,10 +56,21 @@ import io.dropwizard.request.logging.RequestLogFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import io.grpc.netty.shaded.io.grpc.netty.NegotiationType;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.integration.api.OpenAPIConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javax.ws.rs.Path;
@@ -117,6 +131,9 @@ public class IdpConfiguration extends Configuration {
   private IteratorConfig scorecardScoreComputationIteratorConfig;
   @JsonProperty("cpu") private String cpu;
   @JsonProperty("scoreComputerThreadsPerCore") private String scoreComputerThreadsPerCore;
+  @JsonProperty("allowedOrigins") private List<String> allowedOrigins = Lists.newArrayList();
+  @JsonProperty("hostname") String hostname = "localhost";
+  @JsonProperty("basePathPrefix") String basePathPrefix = "";
   @JsonProperty("auditClientConfig") private ServiceHttpClientConfig auditClientConfig;
   @JsonProperty("enableAudit") private boolean enableAudit;
   private String managerTarget;
@@ -168,6 +185,37 @@ public class IdpConfiguration extends Configuration {
     ((DefaultServerFactory) getServerFactory()).setMaxThreads(defaultServerFactory.getMaxThreads());
   }
 
+  @JsonIgnore
+  public OpenAPIConfiguration getOasConfig() {
+    OpenAPI oas = new OpenAPI();
+    Info info =
+        new Info()
+            .title("IDP Service API Reference")
+            .description(
+                "This is the Open Api Spec 3 for the IDP Service. This is under active development. Beware of the breaking change with respect to the generated code stub")
+            .termsOfService("https://harness.io/terms-of-use/")
+            .version("3.0")
+            .contact(new Contact().email("contact@harness.io"));
+    oas.info(info);
+    URL baseurl = null;
+    try {
+      baseurl = new URL("https", hostname, basePathPrefix);
+      Server server = new Server();
+      server.setUrl(baseurl.toString());
+      oas.servers(Collections.singletonList(server));
+    } catch (MalformedURLException e) {
+      log.error("The base URL of the server could not be set. {}/{}", hostname, basePathPrefix);
+    }
+    Collection<Class<?>> allResourceClasses = HARNESS_RESOURCE_CLASSES;
+    final Set<String> resourceClasses =
+        getOAS3ResourceClassesOnly(allResourceClasses).stream().map(Class::getCanonicalName).collect(toSet());
+    return new SwaggerConfiguration()
+        .openAPI(oas)
+        .prettyPrint(true)
+        .resourceClasses(resourceClasses)
+        .scannerClass("io.swagger.v3.jaxrs2.integration.JaxrsAnnotationScanner");
+  }
+
   private ConnectorFactory getDefaultApplicationConnectorFactory() {
     final HttpConnectorFactory factory = new HttpConnectorFactory();
     factory.setPort(12003);
@@ -198,6 +246,17 @@ public class IdpConfiguration extends Configuration {
       dbAliases.add(mongoConfig.getAliasDBName());
     }
     return dbAliases;
+  }
+
+  public static Set<String> getUniquePackages(Collection<Class<?>> classes) {
+    return classes.stream()
+        .filter(x -> x.isAnnotationPresent(Tag.class))
+        .map(aClass -> aClass.getPackage().getName())
+        .collect(toSet());
+  }
+
+  public static Collection<Class<?>> getOAS3ResourceClassesOnly(Collection<Class<?>> allResourceClasses) {
+    return allResourceClasses.stream().collect(Collectors.toList());
   }
 
   public static Collection<Class<?>> getResourceClasses() {

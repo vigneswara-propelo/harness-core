@@ -15,6 +15,7 @@ import static io.harness.logging.LoggingInitializer.initializeLogging;
 import static io.harness.pms.listener.NgOrchestrationNotifyEventListener.NG_ORCHESTRATION;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toSet;
 
 import io.harness.Microservice;
 import io.harness.ModuleType;
@@ -102,6 +103,7 @@ import io.harness.serializer.PipelineServiceUtilAdviserRegistrar;
 import io.harness.service.impl.DelegateAsyncServiceImpl;
 import io.harness.service.impl.DelegateProgressServiceImpl;
 import io.harness.service.impl.DelegateSyncServiceImpl;
+import io.harness.swagger.SwaggerBundleConfigurationFactory;
 import io.harness.threading.ExecutorModule;
 import io.harness.threading.ThreadPool;
 import io.harness.token.remote.TokenClient;
@@ -130,12 +132,17 @@ import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.serializer.HObjectMapper;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -183,8 +190,15 @@ public class IdpApplication extends Application<IdpConfiguration> {
   public void initialize(Bootstrap<IdpConfiguration> bootstrap) {
     initializeLogging();
     log.info("bootstrapping ...");
+    bootstrap.addBundle(new SwaggerBundle<IdpConfiguration>() {
+      @Override
+      protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(IdpConfiguration appConfig) {
+        return getSwaggerConfiguration(appConfig);
+      }
+    });
     bootstrap.addCommand(new InspectCommand<>(this));
     bootstrap.addCommand(new ScanClasspathMetadataCommand());
+    bootstrap.addCommand(new GenerateOpenApiSpecCommand());
 
     // Enable variable substitution with environment variables
     bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
@@ -238,6 +252,7 @@ public class IdpApplication extends Application<IdpConfiguration> {
     registerRequestContextFilter(environment);
     registerIterators(injector, configuration.getScorecardScoreComputationIteratorConfig());
     environment.jersey().register(RequestLoggingFilter.class);
+    registerOasResource(configuration, environment, injector);
     environment.jersey().register(injector.getInstance(IdpServiceRequestInterceptor.class));
     environment.jersey().register(injector.getInstance(IdpServiceResponseInterceptor.class));
     injector.getInstance(IDPTelemetryRecordsJob.class).scheduleTasks();
@@ -273,6 +288,12 @@ public class IdpApplication extends Application<IdpConfiguration> {
     QueueListenerController queueListenerController = injector.getInstance(QueueListenerController.class);
     queueListenerController.register(injector.getInstance(NgOrchestrationNotifyEventListenerNonVersioned.class), 1);
     controller.register(injector.getInstance(IdpModuleLicenseUsageCaptureEventConsumer.class), 2);
+  }
+
+  private void registerOasResource(IdpConfiguration config, Environment environment, Injector injector) {
+    OpenApiResource openApiResource = injector.getInstance(OpenApiResource.class);
+    openApiResource.setOpenApiConfiguration(config.getOasConfig());
+    environment.jersey().register(openApiResource);
   }
 
   private void registerIterators(Injector injector, IteratorConfig iteratorConfig) {
@@ -365,6 +386,20 @@ public class IdpApplication extends Application<IdpConfiguration> {
     NGMigrationSdkInitHelper.initialize(injector, config);
   }
 
+  public SwaggerBundleConfiguration getSwaggerConfiguration(IdpConfiguration appConfig) {
+    Collection<Class<?>> classes = HARNESS_RESOURCE_CLASSES;
+    SwaggerBundleConfiguration defaultSwaggerBundleConfiguration =
+        SwaggerBundleConfigurationFactory.buildSwaggerBundleConfiguration(classes);
+    String resourcePackage = String.join(",", getUniquePackages(classes));
+    defaultSwaggerBundleConfiguration.setResourcePackage(resourcePackage);
+    defaultSwaggerBundleConfiguration.setSchemes(new String[] {"https", "http"});
+    defaultSwaggerBundleConfiguration.setHost(appConfig.hostname);
+    defaultSwaggerBundleConfiguration.setUriPrefix(appConfig.basePathPrefix);
+    defaultSwaggerBundleConfiguration.setVersion("1.0");
+    defaultSwaggerBundleConfiguration.setTitle("IDP Service API Reference");
+    return defaultSwaggerBundleConfiguration;
+  }
+
   private NGMigrationConfiguration getMigrationSdkConfiguration() {
     return NGMigrationConfiguration.builder()
         .microservice(Microservice.IDP)
@@ -405,6 +440,10 @@ public class IdpApplication extends Application<IdpConfiguration> {
         log.error("PMS SDK registration failed", e);
       }
     }
+  }
+
+  private static Set<String> getUniquePackages(Collection<Class<?>> classes) {
+    return classes.stream().map(aClass -> aClass.getPackage().getName()).collect(toSet());
   }
 
   private void registerPmsSdkEvents(Injector injector) {
