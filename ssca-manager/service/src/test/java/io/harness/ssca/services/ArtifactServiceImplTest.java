@@ -243,6 +243,19 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
   @Test
   @Owner(developers = ARPITJ)
   @Category(UnitTests.class)
+  public void testSaveArtifactAndInvalidateOldArtifact_noLastArtifact() {
+    Mockito.when(artifactRepository.findOne(Mockito.any())).thenReturn(null);
+    ArtifactEntity newArtifact = builderFactory.getArtifactEntityBuilder().nonProdEnvCount(0l).prodEnvCount(0l).build();
+    artifactService.saveArtifactAndInvalidateOldArtifact(newArtifact);
+    ArgumentCaptor<ArtifactEntity> argument = ArgumentCaptor.forClass(ArtifactEntity.class);
+    Mockito.verify(artifactRepository).save(argument.capture());
+    assertThat(argument.getValue().getNonProdEnvCount()).isEqualTo(0);
+    assertThat(argument.getValue().getProdEnvCount()).isEqualTo(0);
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
   public void testListLatestArtifacts() {
     List<ArtifactEntity> artifactEntities = Arrays.asList(builderFactory.getArtifactEntityBuilder()
                                                               .artifactId("artifactId")

@@ -206,8 +206,10 @@ public class ArtifactServiceImpl implements ArtifactService {
         artifact.getProjectId(), artifact.getArtifactId(), artifact.getTag());
     artifactRepository.invalidateOldArtifact(artifact);
     artifact.setLastUpdatedAt(artifact.getCreatedOn().toEpochMilli());
-    artifact.setProdEnvCount(lastArtifact.getProdEnvCount());
-    artifact.setNonProdEnvCount(lastArtifact.getNonProdEnvCount());
+    if (Objects.nonNull(lastArtifact)) {
+      artifact.setProdEnvCount(lastArtifact.getProdEnvCount());
+      artifact.setNonProdEnvCount(lastArtifact.getNonProdEnvCount());
+    }
     artifactRepository.save(artifact);
   }
 
