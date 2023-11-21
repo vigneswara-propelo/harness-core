@@ -392,24 +392,36 @@ public class GitClientImpl implements GitClient {
   @VisibleForTesting
   synchronized GitCheckoutResult checkout(GitOperationContext gitOperationContext) throws GitAPIException, IOException {
     GitConfig gitConfig = gitOperationContext.getGitConfig();
-    Git git =
-        openGit(new File(gitClientHelper.getRepoDirectory(gitOperationContext)), gitConfig.getDisableUserGitConfig());
+    try (Git git = openGit(
+             new File(gitClientHelper.getRepoDirectory(gitOperationContext)), gitConfig.getDisableUserGitConfig())) {
+      return checkout(gitOperationContext, git);
+    }
+  }
+
+  private GitCheckoutResult checkout(GitOperationContext gitOperationContext, Git git)
+      throws GitAPIException, IOException {
+    GitConfig gitConfig = gitOperationContext.getGitConfig();
+    return checkout(gitOperationContext, git, gitConfig.getBranch(), gitConfig.getBranch(), true);
+  }
+
+  private GitCheckoutResult checkout(GitOperationContext gitOperationContext, Git git, String branch, String reference,
+      boolean createBranch) throws GitAPIException {
     try {
-      if (isNotEmpty(gitConfig.getBranch())) {
+      if (isNotEmpty(branch)) {
         Ref ref = git.checkout()
-                      .setCreateBranch(true)
-                      .setName(gitConfig.getBranch())
+                      .setCreateBranch(createBranch)
+                      .setName(branch)
                       .setUpstreamMode(SetupUpstreamMode.TRACK)
-                      .setStartPoint("origin/" + gitConfig.getBranch())
+                      .setStartPoint("origin/" + branch)
                       .call();
       }
 
     } catch (RefAlreadyExistsException refExIgnored) {
-      log.info(getGitLogMessagePrefix(gitConfig.getGitRepoType())
+      log.info(getGitLogMessagePrefix(gitOperationContext.getGitConfig().getGitRepoType())
           + "Reference already exist do nothing."); // TODO:: check gracefully instead of relying on Exception
     }
 
-    String gitRef = gitConfig.getReference() != null ? gitConfig.getReference() : gitConfig.getBranch();
+    String gitRef = reference != null ? reference : branch;
     if (StringUtils.isNotEmpty(gitRef)) {
       git.checkout().setName(gitRef).call();
     }
@@ -718,6 +730,18 @@ public class GitClientImpl implements GitClient {
       // clone repo locally without checkout
       String branch = gitRequest.isUseBranch() ? gitRequest.getBranch() : StringUtils.EMPTY;
       cloneRepoForFilePathCheckout(gitConfig, branch, gitConnectorId, logCallback);
+
+      if (gitRequest.isCloneWithCheckout()) {
+        File repoDir = new File(gitClientHelper.getFileDownloadRepoDirectory(gitConfig, gitConnectorId));
+        GitOperationContext context =
+            GitOperationContext.builder().gitConfig(gitConfig).gitConnectorId(gitConnectorId).build();
+        try (Git git = openGit(repoDir, gitConfig.getDisableUserGitConfig())) {
+          checkout(context, git, gitRequest.getBranch(), gitRequest.getCommitId(), false);
+        } catch (Exception ex) {
+          log.warn(getGitLogMessagePrefix(gitConfig.getGitRepoType()) + EXCEPTION_STRING, ex);
+        }
+      }
+
       // if useBranch is set, use it to checkout latest, else checkout given commitId
       String latestCommitSha;
       if (gitRequest.isUseBranch()) {

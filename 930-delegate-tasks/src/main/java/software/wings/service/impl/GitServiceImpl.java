@@ -207,6 +207,7 @@ public class GitServiceImpl implements GitService {
             .gitConnectorId(gitFileConfig.getConnectorId())
             .useBranch(gitFileConfig.isUseBranch())
             .recursive(true)
+            .cloneWithCheckout(true)
             .build(),
         destinationDirectory, shouldExportCommitSha, logCallback);
   }
