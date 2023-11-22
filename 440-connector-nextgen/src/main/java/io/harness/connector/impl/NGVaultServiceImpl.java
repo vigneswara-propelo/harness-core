@@ -1004,7 +1004,7 @@ public class NGVaultServiceImpl implements NGVaultService {
   private void pauseRenewalIfStale(VaultConnector vaultConnector) {
     // a static buffer of 5 mins buffer has been added to tackle iterator delay
     if (vaultConnector.getRenewedAt() < OffsetDateTime.now()
-                                            .minusMinutes(vaultConnector.getRenewalIntervalMinutes() + 5)
+                                            .minusMinutes(2 * vaultConnector.getRenewalIntervalMinutes() + 5)
                                             .toInstant()
                                             .toEpochMilli()) {
       log.warn("Stopping renewal iterator for vault- {} with id- {}", vaultConnector.getName(), vaultConnector.getId());
