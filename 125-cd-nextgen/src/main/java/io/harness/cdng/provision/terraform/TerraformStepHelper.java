@@ -1953,9 +1953,7 @@ public class TerraformStepHelper {
 
     List<TerraformVarFileInfo> varFiles = getVarFilesInCorrectOrder(ambiance, terraformPassThroughData, builder);
 
-    if (!varFiles.isEmpty()) {
-      builder.varFileInfos(varFiles);
-    }
+    builder.varFileInfos(varFiles);
     builder.commandUnitsProgress(UnitProgressDataMapper.toCommandUnitsProgress(responseData.getUnitProgressData()));
 
     return executeTerraformTask(
