@@ -175,7 +175,9 @@ public class ProjectServiceImplTest extends CategoryTest {
     setContextData(accountIdentifier);
 
     when(projectRepository.save(project)).thenReturn(project);
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    Optional<Organization> organizationOptional = Optional.of(random(Organization.class));
+    organizationOptional.get().setIdentifier(orgIdentifier);
+    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(organizationOptional);
 
     projectService.create(accountIdentifier, orgIdentifier, projectDTO);
     try {
@@ -197,7 +199,7 @@ public class ProjectServiceImplTest extends CategoryTest {
     GlobalContextManager.set(globalContext);
   }
 
-  @Test(expected = InvalidRequestException.class)
+  @Test(expected = EntityNotFoundException.class)
   @Owner(developers = KARAN)
   @Category(UnitTests.class)
   public void testCreateProject_IncorrectPayload() {
@@ -227,7 +229,9 @@ public class ProjectServiceImplTest extends CategoryTest {
     exceptionRule.expectMessage(
         String.format("A project with identifier [%s] and orgIdentifier [%s] is already present",
             project.getIdentifier(), orgIdentifier));
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    Optional<Organization> organizationOptional = Optional.of(random(Organization.class));
+    organizationOptional.get().setIdentifier(orgIdentifier);
+    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(organizationOptional);
     when(transactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock
             -> invocationOnMock.getArgument(0, TransactionCallback.class)

@@ -185,14 +185,22 @@ public class ProjectServiceImpl implements ProjectService {
   @FeatureRestrictionCheck(MULTIPLE_PROJECTS)
   public Project create(@AccountIdentifier String accountIdentifier, String orgIdentifier, ProjectDTO projectDTO) {
     orgIdentifier = orgIdentifier == null ? DEFAULT_ORG_IDENTIFIER : orgIdentifier;
+
+    // First check if an organization with given orgIdentifier exists or not.
+    Optional<Organization> organizationOptional = organizationService.get(accountIdentifier, orgIdentifier);
+    if (!organizationOptional.isPresent()) {
+      throw new EntityNotFoundException(String.format("Organization with identifier [%s] not found", orgIdentifier));
+    }
+
+    // Use the identifier of the organization from Mongo Doc as it ensure case insensitivity.
+    orgIdentifier = organizationOptional.get().getIdentifier();
     validateCreateProjectRequest(accountIdentifier, orgIdentifier, projectDTO);
     Project project = toProject(projectDTO);
 
     project.setModules(ModuleType.getModules());
     project.setOrgIdentifier(orgIdentifier);
     project.setAccountIdentifier(accountIdentifier);
-    Optional<Organization> parentOrgOptional = organizationService.get(accountIdentifier, orgIdentifier);
-    parentOrgOptional.ifPresent(organization -> {
+    organizationOptional.ifPresent(organization -> {
       if (isNotEmpty(organization.getUniqueId())) {
         project.setParentId(organization.getUniqueId());
       }
