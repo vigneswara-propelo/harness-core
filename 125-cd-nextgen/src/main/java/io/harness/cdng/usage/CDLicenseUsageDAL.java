@@ -102,6 +102,39 @@ public class CDLicenseUsageDAL {
       + "    order by reportedat desc\n"
       + ") instancesPerServicePerReportedat\n"
       + "group by orgid, projectid, serviceid";
+  private static final String QUERY_FETCH_INSTANCES_PER_SERVICE_V2 = ""
+      + "select percentile_disc(?) within group (order by instancesPerServicePerReportedat.instancecount) as instanceCount,\n"
+      + "    orgid, projectid, serviceid\n"
+      + "from (\n"
+      + "    select date_trunc('minute', reportedat) as reportedat,\n"
+      + "       case\n"
+      + "           when serviceid like 'account.%' then null\n"
+      + "           else orgid\n"
+      + "       end as orgid,\n"
+      + "       case\n"
+      + "           when serviceid like 'account.%' or serviceid like 'org.%' then null\n"
+      + "           else projectid\n"
+      + "       end as projectid,\n"
+      + "       serviceid,\n"
+      + "       sum(instancecount) as instancecount\n"
+      + "    from \n"
+      + "        ng_instance_stats \n"
+      + "    where accountid = ?\n"
+      + "        and reportedat > now() - INTERVAL '30 day' \n"
+      + "    group by\n"
+      + "        case\n"
+      + "            when serviceid like 'account.%' then null\n"
+      + "            else orgid\n"
+      + "        end,\n"
+      + "        case\n"
+      + "            when serviceid like 'account.%' or serviceid like 'org.%' then null\n"
+      + "            else projectid\n"
+      + "        end,\n"
+      + " serviceid,"
+      + " date_trunc('minute', reportedat)\n"
+      + "    order by reportedat desc\n"
+      + ") instancesPerServicePerReportedat\n"
+      + "group by orgid, projectid, serviceid";
   private static final String FETCH_ACTIVE_SERVICES_WITH_INSTANCES_COUNT_QUERY = ""
       + "SELECT activeServices.orgIdentifier,\n"
       + "       activeServices.projectIdentifier,\n"
@@ -324,12 +357,19 @@ public class CDLicenseUsageDAL {
       return Collections.emptyList();
     }
 
+    final String fetchInstancesPerServiceQuery;
+    if (featureFlagService.isEnabled(accountId, FeatureName.CDS_NG_ACC_ORG_LEVEL_SERVICE_LICENSING_FIX)) {
+      fetchInstancesPerServiceQuery = QUERY_FETCH_INSTANCES_PER_SERVICE_V2;
+    } else {
+      fetchInstancesPerServiceQuery = QUERY_FETCH_INSTANCES_PER_SERVICE;
+    }
+
     int retry = 0;
     boolean successfulOperation = false;
     List<AggregateServiceUsageInfo> instanceCountPerService = new ArrayList<>();
     while (!successfulOperation && retry <= MAX_RETRY) {
       try (Connection dbConnection = timeScaleDBService.getDBConnection();
-           PreparedStatement fetchStatement = dbConnection.prepareStatement(QUERY_FETCH_INSTANCES_PER_SERVICE)) {
+           PreparedStatement fetchStatement = dbConnection.prepareStatement(fetchInstancesPerServiceQuery)) {
         fetchStatement.setDouble(1, INSTANCE_COUNT_PERCENTILE_DISC);
         fetchStatement.setString(2, accountId);
 

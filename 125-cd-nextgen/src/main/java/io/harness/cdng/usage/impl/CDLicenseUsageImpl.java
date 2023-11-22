@@ -409,9 +409,10 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
         instanceCountsPerService.parallelStream()
             .filter(serviceInstanceCounts
                 -> activeServiceList.parallelStream().anyMatch(activeService
-                    -> activeService.getOrgidentifier().equals(serviceInstanceCounts.getOrgidentifier())
-                        && activeService.getProjectidentifier().equals(serviceInstanceCounts.getProjectidentifier())
-                        && activeService.getServiceId().equals(serviceInstanceCounts.getServiceId())))
+                    -> StringUtils.equals(activeService.getOrgidentifier(), serviceInstanceCounts.getOrgidentifier())
+                        && StringUtils.equals(
+                            activeService.getProjectidentifier(), serviceInstanceCounts.getProjectidentifier())
+                        && StringUtils.equals(activeService.getServiceId(), serviceInstanceCounts.getServiceId())))
             .map(serviceInstanceCounts
                 -> new AggregateNgServiceInstanceStats(serviceInstanceCounts.getOrgidentifier(),
                     serviceInstanceCounts.getProjectidentifier(), serviceInstanceCounts.getServiceId(),
@@ -451,12 +452,13 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
 
   private String findServiceName(
       String orgIdentifier, String projectIdentifier, String serviceId, List<Services> serviceNames) {
-    Optional<Services> optionalService = serviceNames.parallelStream()
-                                             .filter(service
-                                                 -> service.getOrgIdentifier().equals(orgIdentifier)
-                                                     && service.getProjectIdentifier().equals(projectIdentifier)
-                                                     && service.getIdentifier().equals(serviceId))
-                                             .findFirst();
+    Optional<Services> optionalService =
+        serviceNames.parallelStream()
+            .filter(service
+                -> StringUtils.equals(service.getOrgIdentifier(), orgIdentifier)
+                    && StringUtils.equals(service.getProjectIdentifier(), projectIdentifier)
+                    && StringUtils.equals(service.getIdentifier(), serviceId))
+            .findFirst();
 
     return optionalService.isPresent() ? optionalService.get().getName() : StringUtils.EMPTY;
   }
