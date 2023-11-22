@@ -1433,11 +1433,19 @@ public class DelegateServiceImpl implements DelegateService {
     final boolean isCiEnabled = isCiEnabled(templateParameters);
 
     String accountSecret = getAccountSecret(templateParameters, isNgDelegate);
-    String base64Secret;
+    String base64Secret = null;
     if (StringUtils.isEmpty(accountSecret)) {
-      accountSecret = String.format(
-          "<No Delegate Token (%s) available, choose a delegate token>", templateParameters.getDelegateTokenName());
-      base64Secret = accountSecret;
+      DelegateTokenDetails delegateTokenDetails = delegateNgTokenService.getDefaultTokenOrOldestActiveDelegateToken(
+          templateParameters.getAccountId(), templateParameters.getDelegateEntityOwner());
+      if (delegateTokenDetails != null) {
+        base64Secret = delegateTokenDetails.getValue();
+        accountSecret = base64Secret;
+      }
+      if (StringUtils.isEmpty(base64Secret)) {
+        accountSecret = String.format(
+            "<No Delegate Token (%s) available, choose a delegate token>", templateParameters.getDelegateTokenName());
+        base64Secret = accountSecret;
+      }
     } else {
       base64Secret = Base64.getEncoder().encodeToString(accountSecret.getBytes());
     }
@@ -4164,9 +4172,9 @@ public class DelegateServiceImpl implements DelegateService {
     checkUniquenessOfDelegateName(accountId, delegateSetupDetails.getName(), true);
     checkK8NamingValidation(delegateSetupDetails.getName());
     // If token name is not provided, use default token
+    DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(
+        delegateSetupDetails.getOrgIdentifier(), delegateSetupDetails.getProjectIdentifier());
     if (StringUtils.isBlank(delegateSetupDetails.getTokenName())) {
-      DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(
-          delegateSetupDetails.getOrgIdentifier(), delegateSetupDetails.getProjectIdentifier());
       delegateSetupDetails.setTokenName(delegateNgTokenService.getDefaultTokenName(owner));
     }
     // If size if not provided, use LAPTOP
@@ -4228,7 +4236,8 @@ public class DelegateServiceImpl implements DelegateService {
                   .k8sPermissionsType(delegateSetupDetails.getK8sConfigDetails().getK8sPermissionType())
                   .logStreamingServiceBaseUrl(mainConfiguration.getLogStreamingServiceConfig().getExternalUrl())
                   .runAsRoot(delegateSetupDetails.getRunAsRoot() == null || delegateSetupDetails.getRunAsRoot())
-                  .delegateTokenName(delegateSetupDetails.getTokenName())),
+                  .delegateTokenName(delegateSetupDetails.getTokenName())
+                  .delegateEntityOwner(owner)),
           true);
 
       File yaml = File.createTempFile(HARNESS_DELEGATE, YAML);
