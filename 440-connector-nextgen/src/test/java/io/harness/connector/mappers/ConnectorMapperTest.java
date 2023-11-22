@@ -7,6 +7,7 @@
 
 package io.harness.connector.mappers;
 
+import static io.harness.connector.ConnectivityStatus.PENDING;
 import static io.harness.delegate.beans.connector.ConnectorType.DOCKER;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,8 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.category.element.UnitTests;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
+import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorsTestBase;
 import io.harness.connector.entities.Connector;
+import io.harness.connector.utils.AWSConnectorTestHelper;
 import io.harness.connector.utils.DockerConnectorTestHelper;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.encryption.Scope;
@@ -104,5 +107,16 @@ public class ConnectorMapperTest extends ConnectorsTestBase {
     assertThat(tagsMap.size()).isEqualTo(2);
     assertThat(tagsMap.get("env")).isEqualTo("service");
     assertThat(tagsMap.get("service")).isEqualTo("ui");
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.NISHANT)
+  @Category(UnitTests.class)
+  public void testWriteDTOForStatus() {
+    Connector connector = AWSConnectorTestHelper.createAWSConnector(
+        accountIdentifier, orgIdentifier, projectIdentifier, identifier, Scope.PROJECT);
+    ConnectorResponseDTO connectorResponseDTO = connectorMapper.writeDTO(connector);
+    assertThat(connectorResponseDTO.getStatus()).isNotNull();
+    assertThat(connectorResponseDTO.getStatus().getStatus()).isEqualTo(PENDING);
   }
 }

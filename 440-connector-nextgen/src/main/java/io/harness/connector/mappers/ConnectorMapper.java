@@ -7,6 +7,7 @@
 
 package io.harness.connector.mappers;
 
+import static io.harness.connector.ConnectivityStatus.PENDING;
 import static io.harness.connector.ConnectivityStatus.UNKNOWN;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -144,6 +145,8 @@ public class ConnectorMapper {
     if (connectivityDetails == null) {
       if (isFromDefaultBranch != null && !isFromDefaultBranch) {
         return ConnectorConnectivityDetails.builder().status(UNKNOWN).build();
+      } else {
+        return ConnectorConnectivityDetails.builder().status(PENDING).build();
       }
     }
     return connectivityDetails;
