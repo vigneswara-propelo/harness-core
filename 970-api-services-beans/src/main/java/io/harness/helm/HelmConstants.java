@@ -43,6 +43,8 @@ public final class HelmConstants {
   public static final String VALUES_YAML = "values.yaml";
   public static final String CHARTS_YAML_KEY = "Chart.yaml";
   public static final String CHART_VERSION = "${CHART_VERSION}";
+  public static final String INDEX_FILE_WARN_LOG =
+      "Index.yaml for helm repo: [%s] is of size %.2fMb which is greater than ideal 20Mb. This can lead to slowness of delegate";
 
   // Add more command types as needed
   enum CommandType { REPO_ADD, REPO_UPDATE }
@@ -132,6 +134,10 @@ public final class HelmConstants {
     public static final String HELM_REPO_FLAGS = " --repository-config ${HELM_CACHE_HOME}/repo-${REPO_NAME}.yaml";
     public static final String HELM_CACHE_HOME = "XDG_CACHE_HOME";
     public static final String HELM_CACHE_HOME_PATH = "${HELM_CACHE_HOME}/repo-${REPO_NAME}";
+    public static final String HELM_CACHE_INDEX_FILE =
+        "${HELM_CACHE_HOME}/repo-${REPO_NAME}/helm/repository/${REPO_NAME}-index.yaml";
+    public static final String HELM_CACHE_INDEX_FILE_FROM_CHART_DIRECTORY =
+        "${HELM_CACHE_HOME}/helm/repository/cache/${REPO_NAME}-index.yaml";
     public static final String HELM_CHART_VERSION_FLAG = " --version ${CHART_VERSION}";
     public static final String HELM_REPO_ADD_FORCE_UPDATE = " --force-update";
     public static final String REGISTRY_CONFIG_SUFFIX = "--registry-config ${REGISTRY_CONFIG}";

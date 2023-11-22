@@ -17,7 +17,10 @@ import static io.harness.filesystem.FileIo.createDirectoryIfDoesNotExist;
 import static io.harness.filesystem.FileIo.deleteDirectoryAndItsContentIfExists;
 import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfProcess;
 import static io.harness.filesystem.FileIo.writeFile;
+import static io.harness.helm.HelmConstants.HELM_CACHE_HOME_PLACEHOLDER;
 import static io.harness.helm.HelmConstants.HELM_HOME_PATH_FLAG;
+import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_INDEX_FILE;
+import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_INDEX_FILE_FROM_CHART_DIRECTORY;
 import static io.harness.k8s.model.HelmVersion.V2;
 import static io.harness.k8s.model.HelmVersion.V3;
 import static io.harness.rule.OwnerRule.ABOSII;
@@ -26,6 +29,7 @@ import static io.harness.rule.OwnerRule.INDER;
 import static io.harness.rule.OwnerRule.MLUKIC;
 import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
 import static io.harness.rule.OwnerRule.PRATYUSH;
+import static io.harness.rule.OwnerRule.TARUN_UBA;
 import static io.harness.rule.OwnerRule.YOGESH;
 
 import static java.lang.String.format;
@@ -49,6 +53,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.harness.CategoryTest;
+import io.harness.LoggerRule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.aws.AwsClient;
 import io.harness.aws.AwsConfig;
@@ -80,8 +85,10 @@ import io.harness.encryption.SecretRefData;
 import io.harness.exception.HelmClientException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.filesystem.FileIo;
 import io.harness.helm.HelmCliCommandType;
 import io.harness.helm.HelmCommandTemplateFactory;
+import io.harness.helm.HelmConstants;
 import io.harness.helm.HelmSubCommandType;
 import io.harness.k8s.config.K8sGlobalConfigService;
 import io.harness.k8s.model.HelmVersion;
@@ -94,7 +101,10 @@ import com.amazonaws.services.ecr.model.AuthorizationData;
 import com.amazonaws.util.Base64;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,6 +114,7 @@ import java.util.concurrent.TimeoutException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
@@ -122,6 +133,8 @@ import org.zeroturnaround.exec.StartedProcess;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HelmTaskHelperBaseTest extends CategoryTest {
   private static final String CHART_NAME = "test-helm-chart";
+  @Rule public final LoggerRule loggerRule = new LoggerRule();
+
   private static final String CHART_VERSION = "1.0.0";
   private static final String REPO_NAME = "helm_charts";
   private static final String REPO_DISPLAY_NAME = "Helm Charts";
@@ -1487,6 +1500,62 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
     deleteDirectoryAndItsContentIfExists(directory);
   }
 
+  @Test
+  @Owner(developers = TARUN_UBA)
+  @Category(UnitTests.class)
+  public void testIndexLogicWhenFilesAreLarge() throws IOException {
+    String cacheDir = "sample/cache/dir";
+    String chartDirectory = "sample/chart/dir";
+    String repoName = "classicRepo";
+    String helmRepoWithCache =
+        HELM_CACHE_INDEX_FILE.replace(HelmConstants.REPO_NAME, repoName).replace(HELM_CACHE_HOME_PLACEHOLDER, cacheDir);
+    String helmRepoWithChartDirectory =
+        HELM_CACHE_INDEX_FILE_FROM_CHART_DIRECTORY.replace(HelmConstants.REPO_NAME, repoName)
+            .replace(HELM_CACHE_HOME_PLACEHOLDER, chartDirectory);
+
+    createFileAndDirectories(helmRepoWithCache, 25);
+    createFileAndDirectories(helmRepoWithChartDirectory, 25);
+    helmTaskHelperBase.checkIndexFile(repoName, cacheDir, null);
+
+    FileIo.deleteDirectoryAndItsContentIfExists(cacheDir);
+    helmTaskHelperBase.checkIndexFile(repoName, "", chartDirectory);
+
+    long numberOfInvocations = loggerRule.getFormattedMessages()
+                                   .stream()
+                                   .filter(log -> log.contains("This can lead to slowness of delegate"))
+                                   .count();
+    assertThat(numberOfInvocations).isEqualTo(2);
+    FileIo.deleteDirectoryAndItsContentIfExists("sample");
+  }
+
+  @Test
+  @Owner(developers = TARUN_UBA)
+  @Category(UnitTests.class)
+  public void testIndexLogicWhenFilesAreSmall() throws IOException {
+    String cacheDir = "sample2/cache/dir";
+    String chartDirectory = "sample2/chart/dir";
+    String repoName = "classicRepo";
+    String helmRepoWithCache =
+        HELM_CACHE_INDEX_FILE.replace(HelmConstants.REPO_NAME, repoName).replace(HELM_CACHE_HOME_PLACEHOLDER, cacheDir);
+    String helmRepoWithChartDirectory =
+        HELM_CACHE_INDEX_FILE_FROM_CHART_DIRECTORY.replace(HelmConstants.REPO_NAME, repoName)
+            .replace(HELM_CACHE_HOME_PLACEHOLDER, chartDirectory);
+
+    createFileAndDirectories(helmRepoWithCache, 15);
+    createFileAndDirectories(helmRepoWithChartDirectory, 15);
+    helmTaskHelperBase.checkIndexFile(repoName, cacheDir, null);
+
+    FileIo.deleteDirectoryAndItsContentIfExists(cacheDir);
+    helmTaskHelperBase.checkIndexFile(repoName, "", chartDirectory);
+
+    long numberOfInvocations = loggerRule.getFormattedMessages()
+                                   .stream()
+                                   .filter(log -> log.contains("This can lead to slowness of delegate"))
+                                   .count();
+    assertThat(numberOfInvocations).isEqualTo(0);
+    FileIo.deleteDirectoryAndItsContentIfExists("sample2");
+  }
+
   private String getHelmCollectionResult() {
     return "NAME\tCHART VERSION\tAPP VERSION\tDESCRIPTION\n"
         + "repoName/chartName\t1.0.2\t0\tDeploys harness delegate\n"
@@ -1551,5 +1620,33 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
   public void createAndWaitForDir(String dir) throws IOException {
     createDirectoryIfDoesNotExist(dir);
     waitForDirectoryToBeAccessibleOutOfProcess(dir, 10);
+  }
+
+  private static void createFileAndDirectories(String filePath, long size) throws IOException {
+    Path path = Paths.get(filePath);
+
+    if (!Files.exists(path.getParent())) {
+      Files.createDirectories(path.getParent());
+    }
+    long fileSizeInMB = size;
+
+    if (!Files.exists(path)) {
+      createLargeFile(filePath, fileSizeInMB);
+    }
+  }
+  private static void createLargeFile(String filePath, long fileSizeInMB) throws IOException {
+    long fileSizeInBytes = fileSizeInMB * 1024 * 1024;
+
+    try (FileOutputStream fos = new FileOutputStream(filePath)) {
+      // Create a buffer of 1 MB to write at a time
+      byte[] buffer = new byte[1024 * 1024];
+      long bytesWritten = 0;
+
+      while (bytesWritten < fileSizeInBytes) {
+        int bytesToWrite = (int) Math.min(buffer.length, fileSizeInBytes - bytesWritten);
+        fos.write(buffer, 0, bytesToWrite);
+        bytesWritten += bytesToWrite;
+      }
+    }
   }
 }
