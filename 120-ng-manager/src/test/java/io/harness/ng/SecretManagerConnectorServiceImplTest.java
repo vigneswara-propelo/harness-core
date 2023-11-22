@@ -35,6 +35,7 @@ import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.entities.embedded.vaultconnector.VaultConnector.VaultConnectorKeys;
+import io.harness.connector.impl.ConnectorErrorMessagesHelper;
 import io.harness.connector.services.ConnectorService;
 import io.harness.connector.services.NGVaultService;
 import io.harness.delegate.beans.connector.ConnectorType;
@@ -92,6 +93,7 @@ public class SecretManagerConnectorServiceImplTest extends CategoryTest {
   private NGVaultService ngVaultService;
   private EnforcementClientService enforcementClientService;
   private TemplateResourceClient templateResourceClient;
+  private ConnectorErrorMessagesHelper connectorErrorMessagesHelper;
 
   @Before
   public void setup() {
@@ -101,8 +103,9 @@ public class SecretManagerConnectorServiceImplTest extends CategoryTest {
     ngVaultService = mock(NGVaultService.class);
     enforcementClientService = mock(EnforcementClientService.class);
     templateResourceClient = mock(TemplateResourceClient.class);
-    secretManagerConnectorService = new SecretManagerConnectorServiceImpl(
-        defaultConnectorService, connectorRepository, ngVaultService, enforcementClientService, templateResourceClient);
+    connectorErrorMessagesHelper = mock(ConnectorErrorMessagesHelper.class);
+    secretManagerConnectorService = new SecretManagerConnectorServiceImpl(defaultConnectorService, connectorRepository,
+        ngVaultService, enforcementClientService, templateResourceClient, connectorErrorMessagesHelper);
   }
 
   private InvalidRequestException getInvalidRequestException() {
@@ -473,6 +476,13 @@ public class SecretManagerConnectorServiceImplTest extends CategoryTest {
   public void testDeleteSecretManager() {
     when(ngSecretManagerService.getSecretManager(any(), any(), any(), any(), eq(true))).thenReturn(null);
     when(defaultConnectorService.delete(any(), any(), any(), any(), any(), eq(false))).thenReturn(true);
+
+    ConnectorInfoDTO connectorInfo = ConnectorInfoDTO.builder().build();
+    connectorInfo.setConnectorType(ConnectorType.VAULT);
+    connectorInfo.setConnectorConfig(VaultConnectorDTO.builder().isDefault(true).build());
+    ConnectorResponseDTO connectorResponseDTO = ConnectorResponseDTO.builder().connector(connectorInfo).build();
+    when(defaultConnectorService.get(any(), any(), any(), any())).thenReturn(Optional.of(connectorResponseDTO));
+
     boolean success = secretManagerConnectorService.delete(ACCOUNT, null, null, "identifier", false);
     assertThat(success).isEqualTo(true);
   }

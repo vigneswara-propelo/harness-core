@@ -29,6 +29,7 @@ import io.harness.connector.entities.Connector;
 import io.harness.connector.entities.Connector.ConnectorKeys;
 import io.harness.connector.entities.embedded.vaultconnector.VaultConnector;
 import io.harness.connector.entities.embedded.vaultconnector.VaultConnector.VaultConnectorKeys;
+import io.harness.connector.impl.ConnectorErrorMessagesHelper;
 import io.harness.connector.services.ConnectorService;
 import io.harness.connector.services.NGVaultService;
 import io.harness.connector.stats.ConnectorStatistics;
@@ -91,6 +92,7 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
   private final NGVaultService ngVaultService;
   private final EnforcementClientService enforcementClientService;
   private final TemplateResourceClient templateResourceClient;
+  private ConnectorErrorMessagesHelper connectorErrorMessagesHelper;
   private static final String ENVIRONMENT_VARIABLES = "environmentVariables";
   private static final String ACCOUNT = "account";
   private static final String EMPTY_STRING = "";
@@ -98,12 +100,14 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
   @Inject
   public SecretManagerConnectorServiceImpl(@Named(DEFAULT_CONNECTOR_SERVICE) ConnectorService defaultConnectorService,
       ConnectorRepository connectorRepository, NGVaultService ngVaultService,
-      EnforcementClientService enforcementClientService, TemplateResourceClient templateResourceClient) {
+      EnforcementClientService enforcementClientService, TemplateResourceClient templateResourceClient,
+      ConnectorErrorMessagesHelper connectorErrorMessagesHelper) {
     this.defaultConnectorService = defaultConnectorService;
     this.connectorRepository = connectorRepository;
     this.ngVaultService = ngVaultService;
     this.enforcementClientService = enforcementClientService;
     this.templateResourceClient = templateResourceClient;
+    this.connectorErrorMessagesHelper = connectorErrorMessagesHelper;
   }
 
   @Override
@@ -362,17 +366,28 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
   @Override
   public boolean delete(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String connectorIdentifier, boolean forceDelete) {
-    Optional<ConnectorResponseDTO> existingConnectorDTO =
+    Optional<ConnectorResponseDTO> existingConnectorOptional =
         get(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
-    boolean alreadyDefaultSM =
-        existingConnectorDTO.filter(connectorResponseDTO -> isDefaultSecretManager(connectorResponseDTO.getConnector()))
-            .isPresent();
-    boolean isDeleted = defaultConnectorService.delete(
-        accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier, NONE, forceDelete);
-    if (isDeleted && alreadyDefaultSM) {
-      setHarnessSecretManagerAsDefault(accountIdentifier, orgIdentifier, projectIdentifier);
+    if (existingConnectorOptional.isEmpty()) {
+      throw new InvalidRequestException(connectorErrorMessagesHelper.createConnectorNotFoundMessage(
+          accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier));
     }
-    return isDeleted;
+
+    boolean deleted = defaultConnectorService.delete(
+        accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier, NONE, forceDelete);
+
+    if (deleted) {
+      try {
+        ConnectorInfoDTO connectorInfoDTO = existingConnectorOptional.get().getConnector();
+        if (isDefaultSecretManager(connectorInfoDTO)) {
+          setHarnessSecretManagerAsDefault(
+              accountIdentifier, connectorInfoDTO.getOrgIdentifier(), connectorInfoDTO.getProjectIdentifier());
+        }
+      } catch (Exception ex) {
+        log.error("Failed to set {} as the default secret manager", HARNESS_SECRET_MANAGER_IDENTIFIER, ex);
+      }
+    }
+    return deleted;
   }
 
   @Override
