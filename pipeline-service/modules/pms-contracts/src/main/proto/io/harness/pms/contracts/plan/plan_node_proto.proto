@@ -39,6 +39,20 @@ message PlanNodeProto {
   ExpressionMode expressionMode = 20;
   map<string, io.harness.pms.contracts.advisers.AdvisorObtainmentList> adviserObtainmentsForExecutionMode = 21;
   repeated string stepInputsKeyExclude = 22;
+  map<string, Export> exports = 23;
+}
+
+message Export {
+  ExportValue value = 1;
+  string desc = 2;
+}
+
+message ExportValue {
+  oneof kind {
+    string stringValue = 3;
+    double numberValue = 2;
+    bool boolValue = 4;
+  }
 }
 
 enum ExpressionMode {

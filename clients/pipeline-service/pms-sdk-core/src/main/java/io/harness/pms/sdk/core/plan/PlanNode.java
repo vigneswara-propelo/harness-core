@@ -6,6 +6,7 @@
  */
 
 package io.harness.pms.sdk.core.plan;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -18,6 +19,7 @@ import io.harness.pms.contracts.plan.ExpressionMode;
 import io.harness.pms.contracts.refobjects.RefObject;
 import io.harness.pms.contracts.steps.SkipType;
 import io.harness.pms.contracts.steps.StepType;
+import io.harness.pms.sdk.core.data.ExportConfig;
 import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.timeout.SdkTimeoutObtainment;
 
@@ -64,4 +66,5 @@ public class PlanNode {
   @Builder.Default @NotNull ExpressionMode expressionMode = ExpressionMode.RETURN_NULL_IF_UNRESOLVED;
   @Builder.Default SkipType skipGraphType = SkipType.NOOP;
   @Builder.Default boolean skipUnresolvedExpressionsCheck = true;
+  Map<String, ExportConfig> exports;
 }
