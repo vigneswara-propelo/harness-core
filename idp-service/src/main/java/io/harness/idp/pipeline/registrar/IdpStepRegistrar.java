@@ -20,14 +20,17 @@ import io.harness.ci.states.V1.InitializeTaskStepV2;
 import io.harness.ci.states.codebase.CodeBaseStep;
 import io.harness.ci.states.codebase.CodeBaseTaskStep;
 import io.harness.idp.pipeline.stages.step.IDPStageStepPMS;
+import io.harness.idp.pipeline.steps.IdpCookieCutterStep;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.core.steps.Step;
 import io.harness.registrar.NGCommonUtilStepsRegistrar;
 
 import java.util.HashMap;
 import java.util.Map;
+import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.IDP)
+@UtilityClass
 public class IdpStepRegistrar {
   public static Map<StepType, Class<? extends Step>> getEngineSteps() {
     Map<StepType, Class<? extends Step>> engineSteps = new HashMap<>();
@@ -42,6 +45,7 @@ public class IdpStepRegistrar {
     engineSteps.put(GitCloneStep.STEP_TYPE, GitCloneStep.class);
     engineSteps.put(BackgroundStep.STEP_TYPE, BackgroundStep.class);
     engineSteps.put(RunTestsStep.STEP_TYPE, RunTestsStep.class);
+    engineSteps.put(IdpCookieCutterStep.STEP_TYPE, IdpCookieCutterStep.class);
 
     engineSteps.putAll(NGCommonUtilStepsRegistrar.getEngineSteps());
     return engineSteps;

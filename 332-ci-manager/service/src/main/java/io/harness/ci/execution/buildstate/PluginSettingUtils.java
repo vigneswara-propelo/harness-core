@@ -73,6 +73,8 @@ import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.docker.DockerConnectorDTO;
 import io.harness.iacm.execution.IACMStepsUtils;
+import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
+import io.harness.idp.utils.IDPStepUtils;
 import io.harness.ng.core.NGAccess;
 import io.harness.plugin.service.PluginServiceImpl;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -162,6 +164,8 @@ public class PluginSettingUtils extends PluginServiceImpl {
 
   @Inject private SlsaVerificationPluginHelper slsaVerificationPluginHelper;
 
+  @Inject private IDPStepUtils idpStepUtils;
+
   @Override
   public Map<String, String> getPluginCompatibleEnvVariables(PluginCompatibleStep stepInfo, String identifier,
       long timeout, Ambiance ambiance, Type infraType, boolean isMandatory, boolean isContainerizedPlugin) {
@@ -215,6 +219,8 @@ public class PluginSettingUtils extends PluginServiceImpl {
       case PROVENANCE:
         return provenancePluginHelper.getProvenanceStepEnvVariables(
             (ProvenanceStepInfo) stepInfo, identifier, ambiance);
+      case IDP_COOKIECUTTER:
+        return idpStepUtils.getIDPCookieCuterStepInfoEnvVariables((IdpCookieCutterStepInfo) stepInfo, identifier);
       default:
         throw new IllegalStateException(
             "Unexpected value in getPluginCompatibleEnvVariables: " + stepInfo.getNonYamlInfo().getStepInfoType());

@@ -254,4 +254,5 @@ enum EntityTypeProtoEnum {
   AQUA_SECURITY = 241;
   IDP_STAGE = 242;
   CHAOS_HUB = 243;
+  IDP_COOKIECUTTER = 244;
 }
