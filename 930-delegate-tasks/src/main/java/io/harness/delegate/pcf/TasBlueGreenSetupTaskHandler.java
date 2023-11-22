@@ -622,6 +622,9 @@ public class TasBlueGreenSetupTaskHandler extends CfCommandTaskNGHandler {
       CfBlueGreenSetupRequestNG blueGreenSetupRequestNG, CfRequestConfig cfRequestConfig, LogCallback logCallback,
       TasApplicationInfo activeApplicationInfo, TasApplicationInfo inActiveApplicationInfo)
       throws PivotalClientApiException {
+    if (!shouldRenameInactiveApp(blueGreenSetupRequestNG.getOlderActiveVersionCountToKeep())) {
+      return null;
+    }
     if (inActiveApplicationInfo == null || isEmpty(inActiveApplicationInfo.getApplicationGuid())
         || previousReleases.size() == 1) {
       return Collections.emptyList();
@@ -825,5 +828,12 @@ public class TasBlueGreenSetupTaskHandler extends CfCommandTaskNGHandler {
     executionLogCallback.saveExecutionLog("# App Details: ");
     pcfCommandTaskBaseHelper.printApplicationDetail(newApplication, executionLogCallback);
     return newApplication;
+  }
+
+  private boolean shouldRenameInactiveApp(Integer olderActiveVersionsCountToKeep) {
+    if (olderActiveVersionsCountToKeep == null) {
+      return true;
+    }
+    return olderActiveVersionsCountToKeep != 0;
   }
 }
