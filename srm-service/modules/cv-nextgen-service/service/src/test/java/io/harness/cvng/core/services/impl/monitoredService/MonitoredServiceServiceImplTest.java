@@ -2288,6 +2288,9 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
             .identifier("ms2")
             .serviceRef("test")
             .template(TemplateDTO.builder()
+                          .accountId(builderFactory.getContext().getAccountId())
+                          .orgIdentifier(builderFactory.getContext().getOrgIdentifier())
+                          .projectIdentifier(builderFactory.getContext().getProjectIdentifier())
                           .templateRef("template1")
                           .versionLabel("v1")
                           .templateVersionNumber(1)
@@ -3030,10 +3033,6 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         .environmentRef(environmentIdentifier)
         .name(monitoredServiceName)
         .tags(tags);
-  }
-
-  private TemplateDTO getTestTemplateDTO() {
-    return TemplateDTO.builder().isTemplateByReference(true).build();
   }
 
   private MonitoredServiceDTO createEnabledMonitoredService() {

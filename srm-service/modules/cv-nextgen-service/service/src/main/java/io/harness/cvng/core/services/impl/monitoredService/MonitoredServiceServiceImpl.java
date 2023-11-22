@@ -763,7 +763,10 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                 .templateRef(monitoredService.getTemplateIdentifier())
                                                 .versionLabel(monitoredService.getTemplateVersionLabel());
     if (monitoredService.getTemplateMetadata() != null) {
-      templateDTOBuilder.isTemplateByReference(monitoredService.isTemplateByReference())
+      templateDTOBuilder.accountId(monitoredService.getTemplateMetadata().getAccountId())
+          .orgIdentifier(monitoredService.getTemplateMetadata().getOrgIdentifier())
+          .projectIdentifier(monitoredService.getTemplateMetadata().getProjectIdentifier())
+          .isTemplateByReference(monitoredService.isTemplateByReference())
           .templateVersionNumber(monitoredService.getTemplateMetadata().getTemplateVersionNumber())
           .templateInputs(monitoredService.getTemplateMetadata().getTemplateInputs())
           .lastReconciliationTime(monitoredService.getTemplateMetadata().getLastReconciliationTime());
