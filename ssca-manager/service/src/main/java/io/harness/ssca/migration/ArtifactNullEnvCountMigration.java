@@ -31,7 +31,7 @@ public class ArtifactNullEnvCountMigration implements NGMigration {
   public void migrate() {
     log.info("Starting Artifact Entity Null Env Counts Migration");
     Criteria criteria =
-        Criteria.where(ArtifactEntityKeys.nonProdEnvCount).isNull().and(ArtifactEntityKeys.invalid).is(false);
+        Criteria.where(ArtifactEntityKeys.nonProdEnvCount).isNull().and(ArtifactEntityKeys.invalid).in(false, null);
     Query query = new Query(criteria);
     FindIterable<Document> iterable =
         mongoTemplate.getCollection(mongoTemplate.getCollectionName(ArtifactEntity.class)).find(query.getQueryObject());
