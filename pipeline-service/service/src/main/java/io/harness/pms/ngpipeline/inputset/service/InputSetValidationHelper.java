@@ -10,6 +10,8 @@ package io.harness.pms.ngpipeline.inputset.service;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.utils.PipelineExceptionsHelper.ERROR_PIPELINE_BRANCH_NOT_PROVIDED;
 
+import static java.lang.String.format;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
@@ -36,16 +38,19 @@ import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
 import io.harness.pms.pipeline.service.PipelineCRUDErrorResponse;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.validator.NGRegexValidatorConstants;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 @CodePulse(
     module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_TEMPLATE_LIBRARY})
 @OwnedBy(PIPELINE)
 @UtilityClass
+@Slf4j
 public class InputSetValidationHelper {
   public void checkForPipelineStoreType(PipelineEntity pipelineEntity) {
     StoreType storeTypeInContext = GitAwareContextHelper.getGitRequestParamsInfo().getStoreType();
@@ -57,8 +62,8 @@ public class InputSetValidationHelper {
   }
 
   // this method is not for old git sync
-  public void validateInputSet(
-      PMSInputSetService inputSetService, InputSetEntity inputSetEntity, boolean hasNewYamlStructure) {
+  public void validateInputSet(PMSInputSetService inputSetService, InputSetEntity inputSetEntity,
+      boolean hasNewYamlStructure, boolean validateInputSetIdentifier) {
     switch (inputSetEntity.getHarnessVersion()) {
       case HarnessYamlVersion.V1:
         return;
@@ -78,6 +83,17 @@ public class InputSetValidationHelper {
       }
     } else {
       OverlayInputSetValidationHelper.validateOverlayInputSet(inputSetService, inputSetEntity);
+    }
+    String inputSetIdentifier = inputSetEntity.getIdentifier();
+    if (validateInputSetIdentifier) {
+      if (EmptyPredicate.isEmpty(inputSetIdentifier)) {
+        throw new InvalidRequestException("InputSet Identifier cannot contain be empty.");
+      } else if (!inputSetIdentifier.matches(NGRegexValidatorConstants.IDENTIFIER_PATTERN)) {
+        throw new InvalidRequestException(
+            format("InputSet Identifier cannot contain special characters or spaces: [%s]", inputSetIdentifier));
+      }
+    } else {
+      log.warn(format("InputSet Identifier cannot contain special characters or spaces: [%s]", inputSetIdentifier));
     }
   }
 
@@ -228,7 +244,7 @@ public class InputSetValidationHelper {
     }
     if (optionalInputSetEntity.isEmpty()) {
       throw new InvalidRequestException(
-          String.format("InputSet with the given ID: %s does not exist or has been deleted", inputSetIdentifier));
+          format("InputSet with the given ID: %s does not exist or has been deleted", inputSetIdentifier));
     }
     return optionalInputSetEntity.get();
   }
