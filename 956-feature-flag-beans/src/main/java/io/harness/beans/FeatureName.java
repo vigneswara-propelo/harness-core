@@ -863,8 +863,6 @@ public enum FeatureName {
   SSCA_ARTIFACTS_ENABLED("FF to enable SSCA Artifacts on Harness UI", HarnessTeam.SSCA),
   CDS_JIRA_APPROVAL_OPTIMIZATION("Optimize Jira Approval to only fetch relevant fields", HarnessTeam.CDC),
   CDS_REMOVE_TIME_BUCKET_GAPFILL_QUERY("This flag removes the usage of time bucket gapfill from CD", HarnessTeam.CDP),
-  CDS_ENABLE_GCS_ARTIFACT_TYPE(
-      "This flag enables GCS artifact type support for SSH/WinRm deployment type", HarnessTeam.CDP),
   CD_CONTAINER_STEP_DELEGATE_SELECTOR(
       "FF to not respect stage/pipeline delegate selectors for container step", HarnessTeam.CDC),
   CDS_GET_SERVICENOW_STANDARD_TEMPLATE("FF to check whether standard template is required or not", HarnessTeam.CDC),
