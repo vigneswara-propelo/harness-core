@@ -8,6 +8,7 @@
 package io.harness.notification.entities;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.notification.NotificationRequest.Email;
 
 import io.harness.annotations.dev.OwnedBy;
@@ -33,15 +34,28 @@ public class EmailChannel implements Channel {
   List<UserGroup> userGroups;
   Map<String, String> templateData;
   String templateId;
+  List<String> ccEmailIds;
+  String subject;
+  String body;
 
   @Override
   public Object toObjectofProtoSchema() {
-    return Email.newBuilder()
-        .addAllEmailIds(emailIds)
-        .putAllTemplateData(templateData)
-        .setTemplateId(templateId)
-        .addAllUserGroup(NotificationUserGroupMapper.toProto(userGroups))
-        .build();
+    Email.Builder builder = Email.newBuilder()
+                                .addAllEmailIds(emailIds)
+                                .putAllTemplateData(templateData)
+                                .setTemplateId(templateId)
+                                .addAllUserGroup(NotificationUserGroupMapper.toProto(userGroups));
+
+    if (isNotEmpty(ccEmailIds)) {
+      builder.addAllCcEmailIds(ccEmailIds);
+    }
+    if (isNotEmpty(subject)) {
+      builder.setSubject(subject);
+    }
+    if (isNotEmpty(body)) {
+      builder.setBody(body);
+    }
+    return builder.build();
   }
 
   @Override
@@ -56,6 +70,9 @@ public class EmailChannel implements Channel {
         .templateData(emailDetails.getTemplateDataMap())
         .templateId(emailDetails.getTemplateId())
         .userGroups(NotificationUserGroupMapper.toEntity(emailDetails.getUserGroupList()))
+        .ccEmailIds(emailDetails.getCcEmailIdsList())
+        .subject(emailDetails.getSubject())
+        .body(emailDetails.getBody())
         .build();
   }
 }

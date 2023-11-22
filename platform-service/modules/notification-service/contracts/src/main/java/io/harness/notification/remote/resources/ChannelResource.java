@@ -10,11 +10,14 @@ package io.harness.notification.remote.resources;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.delegate.beans.NotificationTaskResponse;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.notification.remote.dto.NotificationRequestDTO;
 import io.harness.notification.remote.dto.NotificationSettingDTO;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -39,4 +42,10 @@ public interface ChannelResource {
   @Path("/test")
   @ApiOperation(value = "Test notification setting", nickname = "testNotificationSetting")
   ResponseDTO<Boolean> testNotificationSetting(@NotNull @Valid NotificationSettingDTO notificationSettingDTO);
+
+  @POST
+  @Path("/send")
+  @ApiOperation(value = "Send notification", nickname = "sendNotification")
+  ResponseDTO<NotificationTaskResponse> sendNotification(@NotNull NotificationRequestDTO notificationRequestDTO)
+      throws InvalidProtocolBufferException;
 }

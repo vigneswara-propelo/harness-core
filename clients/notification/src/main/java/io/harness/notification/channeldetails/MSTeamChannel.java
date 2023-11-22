@@ -8,7 +8,10 @@
 package io.harness.notification.channeldetails;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+
+import static java.util.Collections.emptyMap;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.CollectionUtils;
@@ -34,16 +37,18 @@ public class MSTeamChannel extends NotificationChannel {
   String orgIdentifier;
   String projectIdentifier;
   long expressionFunctorToken;
+  String message;
 
   @Builder
   public MSTeamChannel(String accountId, List<NotificationRequest.UserGroup> userGroups, String templateId,
       Map<String, String> templateData, Team team, List<String> msTeamKeys, String orgIdentifier,
-      String projectIdentifier, long expressionFunctorToken) {
+      String projectIdentifier, long expressionFunctorToken, String message) {
     super(accountId, userGroups, templateId, templateData, team);
     this.msTeamKeys = msTeamKeys;
     this.orgIdentifier = orgIdentifier;
     this.projectIdentifier = projectIdentifier;
     this.expressionFunctorToken = expressionFunctorToken;
+    this.message = message;
   }
 
   @Override
@@ -54,16 +59,22 @@ public class MSTeamChannel extends NotificationChannel {
   }
 
   private NotificationRequest.MSTeam buildMSTeams(NotificationRequest.Builder builder) {
-    NotificationRequest.MSTeam.Builder msTeamsBuilder = builder.getMsTeamBuilder()
-                                                            .addAllMsTeamKeys(msTeamKeys)
-                                                            .setTemplateId(templateId)
-                                                            .putAllTemplateData(templateData)
-                                                            .addAllUserGroup(CollectionUtils.emptyIfNull(userGroups));
+    NotificationRequest.MSTeam.Builder msTeamsBuilder =
+        builder.getMsTeamBuilder()
+            .addAllMsTeamKeys(msTeamKeys)
+            .putAllTemplateData(isNotEmpty(templateData) ? templateData : emptyMap())
+            .addAllUserGroup(CollectionUtils.emptyIfNull(userGroups));
     if (orgIdentifier != null) {
       msTeamsBuilder.setOrgIdentifier(orgIdentifier);
     }
     if (projectIdentifier != null) {
       msTeamsBuilder.setProjectIdentifier(projectIdentifier);
+    }
+    if (isNotEmpty(message)) {
+      msTeamsBuilder.setMessage(message);
+    }
+    if (isNotEmpty(templateId)) {
+      msTeamsBuilder.setTemplateId(templateId);
     }
     msTeamsBuilder.setExpressionFunctorToken(expressionFunctorToken);
     return msTeamsBuilder.build();

@@ -11,6 +11,8 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 
+import static java.util.Collections.emptyMap;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.CollectionUtils;
 import io.harness.notification.NotificationRequest;
@@ -36,17 +38,19 @@ public class WebhookChannel extends NotificationChannel {
   String projectIdentifier;
   long expressionFunctorToken;
   Map<String, String> headers;
+  String message;
 
   @Builder
   public WebhookChannel(String accountId, List<NotificationRequest.UserGroup> userGroups, String templateId,
       Map<String, String> templateData, Team team, List<String> webhookUrls, String orgIdentifier,
-      String projectIdentifier, long expressionFunctorToken, Map<String, String> headers) {
+      String projectIdentifier, long expressionFunctorToken, Map<String, String> headers, String message) {
     super(accountId, userGroups, templateId, templateData, team);
     this.webhookUrls = webhookUrls;
     this.orgIdentifier = orgIdentifier;
     this.projectIdentifier = projectIdentifier;
     this.expressionFunctorToken = expressionFunctorToken;
     this.headers = headers;
+    this.message = message;
   }
 
   @Override
@@ -61,11 +65,11 @@ public class WebhookChannel extends NotificationChannel {
   }
 
   private NotificationRequest.Webhook buildWebhook(NotificationRequest.Builder builder) {
-    NotificationRequest.Webhook.Builder webhookBuilder = builder.getWebhookBuilder()
-                                                             .addAllUrls(webhookUrls)
-                                                             .setTemplateId(templateId)
-                                                             .putAllTemplateData(templateData)
-                                                             .addAllUserGroup(CollectionUtils.emptyIfNull(userGroups));
+    NotificationRequest.Webhook.Builder webhookBuilder =
+        builder.getWebhookBuilder()
+            .addAllUrls(webhookUrls)
+            .putAllTemplateData(isNotEmpty(templateData) ? templateData : emptyMap())
+            .addAllUserGroup(CollectionUtils.emptyIfNull(userGroups));
 
     if (orgIdentifier != null) {
       webhookBuilder.setOrgIdentifier(orgIdentifier);
@@ -75,6 +79,12 @@ public class WebhookChannel extends NotificationChannel {
     }
     if (isNotEmpty(headers)) {
       webhookBuilder.putAllHeaders(headers);
+    }
+    if (isNotEmpty(message)) {
+      webhookBuilder.setMessage(message);
+    }
+    if (isNotEmpty(templateId)) {
+      webhookBuilder.setTemplateId(templateId);
     }
     webhookBuilder.setExpressionFunctorToken(expressionFunctorToken);
     return webhookBuilder.build();

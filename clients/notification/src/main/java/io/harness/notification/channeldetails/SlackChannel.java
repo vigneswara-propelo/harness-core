@@ -8,7 +8,10 @@
 package io.harness.notification.channeldetails;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+
+import static java.util.Collections.emptyMap;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.CollectionUtils;
@@ -34,16 +37,18 @@ public class SlackChannel extends NotificationChannel {
   String orgIdentifier;
   String projectIdentifier;
   long expressionFunctorToken;
+  String message;
 
   @Builder
   public SlackChannel(String accountId, List<NotificationRequest.UserGroup> userGroups, String templateId,
       Map<String, String> templateData, Team team, List<String> webhookUrls, String orgIdentifier,
-      String projectIdentifier, long expressionFunctorToken) {
+      String projectIdentifier, long expressionFunctorToken, String message) {
     super(accountId, userGroups, templateId, templateData, team);
     this.webhookUrls = webhookUrls;
     this.orgIdentifier = orgIdentifier;
     this.projectIdentifier = projectIdentifier;
     this.expressionFunctorToken = expressionFunctorToken;
+    this.message = message;
   }
 
   @Override
@@ -54,17 +59,23 @@ public class SlackChannel extends NotificationChannel {
   }
 
   private NotificationRequest.Slack buildSlack(NotificationRequest.Builder builder) {
-    NotificationRequest.Slack.Builder slackBuilder = builder.getSlackBuilder()
-                                                         .addAllSlackWebHookUrls(webhookUrls)
-                                                         .setTemplateId(templateId)
-                                                         .putAllTemplateData(templateData)
-                                                         .addAllUserGroup(CollectionUtils.emptyIfNull(userGroups));
+    NotificationRequest.Slack.Builder slackBuilder =
+        builder.getSlackBuilder()
+            .addAllSlackWebHookUrls(webhookUrls)
+            .putAllTemplateData(isNotEmpty(templateData) ? templateData : emptyMap())
+            .addAllUserGroup(CollectionUtils.emptyIfNull(userGroups));
 
     if (orgIdentifier != null) {
       slackBuilder.setOrgIdentifier(orgIdentifier);
     }
     if (projectIdentifier != null) {
       slackBuilder.setProjectIdentifier(projectIdentifier);
+    }
+    if (isNotEmpty(message)) {
+      slackBuilder.setMessage(message);
+    }
+    if (isNotEmpty(templateId)) {
+      slackBuilder.setTemplateId(templateId);
     }
     slackBuilder.setExpressionFunctorToken(expressionFunctorToken);
     return slackBuilder.build();

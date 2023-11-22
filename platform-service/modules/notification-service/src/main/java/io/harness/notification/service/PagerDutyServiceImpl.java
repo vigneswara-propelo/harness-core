@@ -16,12 +16,17 @@ import static io.harness.notification.NotificationRequest.PagerDuty;
 import static io.harness.notification.NotificationServiceConstants.TEST_PD_TEMPLATE;
 import static io.harness.notification.constant.NotificationClientConstants.HARNESS_NAME;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.stripToNull;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DelegateTaskRequest;
+import io.harness.delegate.beans.DelegateResponseData;
+import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.NotificationProcessingResponse;
+import io.harness.delegate.beans.NotificationTaskResponse;
 import io.harness.delegate.beans.PagerDutyTaskParams;
+import io.harness.exception.DelegateServiceDriverException;
 import io.harness.ngsettings.SettingIdentifiers;
 import io.harness.notification.NotificationChannelType;
 import io.harness.notification.NotificationRequest;
@@ -82,11 +87,6 @@ public class PagerDutyServiceImpl implements ChannelService {
     String templateId = pagerDutyDetails.getTemplateId();
     Map<String, String> templateData = pagerDutyDetails.getTemplateDataMap();
 
-    if (Objects.isNull(stripToNull(templateId))) {
-      log.info("template Id is null for notification request {}", notificationId);
-      return NotificationProcessingResponse.trivialResponseWithNoRetries;
-    }
-
     List<String> pagerDutyKeys = getRecipients(notificationRequest);
     if (isEmpty(pagerDutyKeys)) {
       log.info("No pagerduty integration key found in notification request {}", notificationId);
@@ -100,7 +100,52 @@ public class PagerDutyServiceImpl implements ChannelService {
             pagerDutyDetails.getOrgIdentifier(), pagerDutyDetails.getProjectIdentifier());
 
     return send(pagerDutyKeys, templateId, templateData, notificationRequest.getId(), notificationRequest.getTeam(),
-        notificationRequest.getAccountId(), expressionFunctorToken, abstractionMap);
+        notificationRequest.getAccountId(), expressionFunctorToken, abstractionMap, pagerDutyDetails.getSummary(),
+        pagerDutyDetails.getLinksMap());
+  }
+
+  @Override
+  public NotificationTaskResponse sendSync(NotificationRequest notificationRequest) {
+    if (Objects.isNull(notificationRequest) || !notificationRequest.hasPagerDuty()) {
+      throw new NotificationException("Invalid pager duty notification request", DEFAULT_ERROR_CODE, USER);
+    }
+
+    if (isEmpty(notificationRequest.getAccountId())) {
+      throw new NotificationException(
+          String.format("No account id encountered for %s.", notificationRequest.getId()), DEFAULT_ERROR_CODE, USER);
+    }
+
+    String notificationId = notificationRequest.getId();
+    PagerDuty pagerDutyDetails = notificationRequest.getPagerDuty();
+    String templateId = pagerDutyDetails.getTemplateId();
+    Map<String, String> templateData = pagerDutyDetails.getTemplateDataMap();
+
+    List<String> pagerDutyKeys = getRecipients(notificationRequest);
+    if (isEmpty(pagerDutyKeys)) {
+      log.info("No pagerduty integration key found in notification request {}", notificationId);
+      throw new NotificationException(
+          String.format("No pagerduty integration key found in notification request %s.", notificationRequest.getId()),
+          DEFAULT_ERROR_CODE, USER);
+    }
+
+    int expressionFunctorToken = Math.toIntExact(pagerDutyDetails.getExpressionFunctorToken());
+
+    Map<String, String> abstractionMap =
+        notificationSettingsService.buildTaskAbstractions(notificationRequest.getAccountId(),
+            pagerDutyDetails.getOrgIdentifier(), pagerDutyDetails.getProjectIdentifier());
+
+    NotificationTaskResponse response = sendInSync(pagerDutyKeys, templateId, templateData, notificationRequest.getId(),
+        notificationRequest.getTeam(), notificationRequest.getAccountId(), expressionFunctorToken, abstractionMap,
+        pagerDutyDetails.getSummary(), pagerDutyDetails.getLinksMap());
+
+    if (response.getProcessingResponse() == null || response.getProcessingResponse().getResult().isEmpty()
+        || NotificationProcessingResponse.isNotificationRequestFailed(response.getProcessingResponse())) {
+      throw new NotificationException(
+          String.format("Failed to send pagerduty notification. Check configuration. %s", response.getErrorMessage()),
+          DEFAULT_ERROR_CODE, USER);
+    }
+
+    return response;
   }
 
   @Override
@@ -116,7 +161,7 @@ public class PagerDutyServiceImpl implements ChannelService {
         SettingIdentifiers.PAGERDUTY_NOTIFICATION_INTEGRATION_KEYS_ALLOWLIST);
     NotificationProcessingResponse processingResponse = send(Collections.singletonList(pagerdutyKey), TEST_PD_TEMPLATE,
         Collections.emptyMap(), pagerDutySettingDTO.getNotificationId(), null, notificationSettingDTO.getAccountId(), 0,
-        Collections.emptyMap());
+        Collections.emptyMap(), EMPTY, Collections.emptyMap());
     if (NotificationProcessingResponse.isNotificationRequestFailed(processingResponse)) {
       throw new NotificationException("Invalid pagerduty key encountered while processing Test Connection request "
               + notificationSettingDTO.getNotificationId(),
@@ -127,19 +172,36 @@ public class PagerDutyServiceImpl implements ChannelService {
 
   private NotificationProcessingResponse send(List<String> pagerDutyKeys, String templateId,
       Map<String, String> templateData, String notificationId, Team team, String accountId, int expressionFunctorToken,
-      Map<String, String> abstractionMap) {
-    Optional<PagerDutyTemplate> templateOpt = getTemplate(templateId, team);
-    if (!templateOpt.isPresent()) {
-      log.info("Can't find template with templateId {} for notification request {}", templateId, notificationId);
-      return NotificationProcessingResponse.trivialResponseWithNoRetries;
+      Map<String, String> abstractionMap, String summary, Map<String, String> links) {
+    List<LinkContext> linkContexts = new ArrayList<>();
+    if (isNotEmpty(links)) {
+      linkContexts = links.entrySet()
+                         .stream()
+                         .map(entry -> new LinkContext(entry.getKey(), entry.getValue()))
+                         .collect(Collectors.toList());
     }
-    PagerDutyTemplate template = templateOpt.get();
 
-    StrSubstitutor strSubstitutor = new StrSubstitutor(templateData);
-    String summary = template.getSummary();
-    summary = strSubstitutor.replace(summary);
+    if (isNotEmpty(templateId)) {
+      Optional<PagerDutyTemplate> templateOpt = getTemplate(templateId, team);
+      if (!templateOpt.isPresent()) {
+        log.info("Can't find template with templateId {} for notification request {}", templateId, notificationId);
+        return NotificationProcessingResponse.trivialResponseWithNoRetries;
+      }
+      PagerDutyTemplate template = templateOpt.get();
 
-    List<LinkContext> links = new ArrayList<>();
+      StrSubstitutor strSubstitutor = new StrSubstitutor(templateData);
+      summary = template.getSummary();
+      summary = strSubstitutor.replace(summary);
+
+      linkContexts = new ArrayList<>();
+      if (Objects.nonNull(template.getLink())) {
+        String linkHref = template.getLink().getHref();
+        String linkText = template.getLink().getText();
+        LinkContext linkContext = new LinkContext(linkHref, linkText);
+        linkContexts.add(linkContext);
+      }
+    }
+
     Map<String, String> customDetails =
         templateData.keySet()
             .stream()
@@ -156,12 +218,91 @@ public class PagerDutyServiceImpl implements ChannelService {
                           .setSource(HARNESS_NAME)
                           .build();
 
-    if (Objects.nonNull(template.getLink())) {
-      String linkHref = template.getLink().getHref();
-      String linkText = template.getLink().getText();
-      LinkContext linkContext = new LinkContext(linkHref, linkText);
-      links.add(linkContext);
+    List<String> pagerDutyKeysAllowlist = notificationSettingsHelper.getTargetAllowlistFromSettings(
+        SettingIdentifiers.PAGERDUTY_NOTIFICATION_INTEGRATION_KEYS_ALLOWLIST, accountId);
+
+    NotificationProcessingResponse processingResponse = null;
+    if (notificationSettingsService.checkIfWebhookIsSecret(pagerDutyKeys)) {
+      DelegateTaskRequest delegateTaskRequest = DelegateTaskRequest.builder()
+                                                    .accountId(accountId)
+                                                    .taskType("NOTIFY_PAGERDUTY")
+                                                    .taskParameters(PagerDutyTaskParams.builder()
+                                                                        .notificationId(notificationId)
+                                                                        .pagerDutyKeys(pagerDutyKeys)
+                                                                        .payload(payload)
+                                                                        .links(linkContexts)
+                                                                        .pagerDutyKeysAllowlist(pagerDutyKeysAllowlist)
+                                                                        .build())
+                                                    .taskSetupAbstractions(abstractionMap)
+                                                    .expressionFunctorToken(expressionFunctorToken)
+                                                    .executionTimeout(Duration.ofMinutes(1L))
+                                                    .build();
+      String taskId = delegateGrpcClientWrapper.submitAsyncTaskV2(delegateTaskRequest, Duration.ZERO);
+      log.info("Async delegate task created with taskID {}", taskId);
+      processingResponse = NotificationProcessingResponse.allSent(pagerDutyKeys.size());
+    } else {
+      processingResponse =
+          pagerDutySender.send(pagerDutyKeys, payload, linkContexts, notificationId, pagerDutyKeysAllowlist);
     }
+    log.info(NotificationProcessingResponse.isNotificationRequestFailed(processingResponse)
+            ? "Failed to send notification for request {}"
+            : "Notification request {} sent",
+        notificationId);
+    return processingResponse;
+  }
+
+  private NotificationTaskResponse sendInSync(List<String> pagerDutyKeys, String templateId,
+      Map<String, String> templateData, String notificationId, Team team, String accountId, int expressionFunctorToken,
+      Map<String, String> abstractionMap, String summary, Map<String, String> links) {
+    NotificationTaskResponse notificationTaskResponse;
+    List<LinkContext> linkContexts = new ArrayList<>();
+    if (isNotEmpty(links)) {
+      linkContexts = links.entrySet()
+                         .stream()
+                         .map(entry -> new LinkContext(entry.getKey(), entry.getValue()))
+                         .collect(Collectors.toList());
+    }
+
+    if (isNotEmpty(templateId)) {
+      Optional<PagerDutyTemplate> templateOpt = getTemplate(templateId, team);
+      if (!templateOpt.isPresent()) {
+        log.info("Failed to send notification request {} possibly due to no valid template with name {} found",
+            notificationId, templateId);
+        throw new NotificationException(
+            String.format("Failed to send notification request %s possibly due to no valid template with name %s found",
+                notificationId, templateId),
+            DEFAULT_ERROR_CODE, USER);
+      }
+      PagerDutyTemplate template = templateOpt.get();
+
+      StrSubstitutor strSubstitutor = new StrSubstitutor(templateData);
+      summary = template.getSummary();
+      summary = strSubstitutor.replace(summary);
+
+      linkContexts = new ArrayList<>();
+      if (Objects.nonNull(template.getLink())) {
+        String linkHref = template.getLink().getHref();
+        String linkText = template.getLink().getText();
+        LinkContext linkContext = new LinkContext(linkHref, linkText);
+        linkContexts.add(linkContext);
+      }
+    }
+
+    Map<String, String> customDetails =
+        templateData.keySet()
+            .stream()
+            .filter(key -> !key.equalsIgnoreCase("START_TS_SECS") && !key.equalsIgnoreCase("END_TS_SECS"))
+            .collect(Collectors.toMap(
+                key -> WordUtils.capitalizeFully(key.replace("_", " ")), templateData::get, (a, b) -> b));
+
+    JSONObject jsonObject = new JSONObject(customDetails);
+    Payload payload = Payload.Builder.newBuilder()
+                          .setTimestamp(OffsetDateTime.now())
+                          .setSeverity(Severity.ERROR)
+                          .setCustomDetails(jsonObject)
+                          .setSummary(summary)
+                          .setSource(HARNESS_NAME)
+                          .build();
 
     List<String> pagerDutyKeysAllowlist = notificationSettingsHelper.getTargetAllowlistFromSettings(
         SettingIdentifiers.PAGERDUTY_NOTIFICATION_INTEGRATION_KEYS_ALLOWLIST, accountId);
@@ -175,24 +316,37 @@ public class PagerDutyServiceImpl implements ChannelService {
                                                                         .notificationId(notificationId)
                                                                         .pagerDutyKeys(pagerDutyKeys)
                                                                         .payload(payload)
-                                                                        .links(links)
+                                                                        .links(linkContexts)
                                                                         .pagerDutyKeysAllowlist(pagerDutyKeysAllowlist)
                                                                         .build())
                                                     .taskSetupAbstractions(abstractionMap)
                                                     .expressionFunctorToken(expressionFunctorToken)
                                                     .executionTimeout(Duration.ofMinutes(1L))
                                                     .build();
-      String taskId = delegateGrpcClientWrapper.submitAsyncTaskV2(delegateTaskRequest, Duration.ZERO);
-      log.info("Async delegate task created with taskID {}", taskId);
-      processingResponse = NotificationProcessingResponse.allSent(pagerDutyKeys.size());
+      DelegateResponseData responseData = null;
+      try {
+        responseData = delegateGrpcClientWrapper.executeSyncTaskV2(delegateTaskRequest);
+      } catch (DelegateServiceDriverException exception) {
+        throw new NotificationException(
+            String.format("Failed to send notification %s, %s", notificationId, exception.getMessage()), exception,
+            DEFAULT_ERROR_CODE, USER);
+      }
+      if (responseData instanceof ErrorNotifyResponseData) {
+        throw new NotificationException(String.format("Failed to send notification %s ", notificationId),
+            ((ErrorNotifyResponseData) responseData).getException(), DEFAULT_ERROR_CODE, USER);
+      } else {
+        notificationTaskResponse = (NotificationTaskResponse) responseData;
+      }
     } else {
-      processingResponse = pagerDutySender.send(pagerDutyKeys, payload, links, notificationId, pagerDutyKeysAllowlist);
+      processingResponse =
+          pagerDutySender.send(pagerDutyKeys, payload, linkContexts, notificationId, pagerDutyKeysAllowlist);
+      notificationTaskResponse = NotificationTaskResponse.builder().processingResponse(processingResponse).build();
     }
     log.info(NotificationProcessingResponse.isNotificationRequestFailed(processingResponse)
             ? "Failed to send notification for request {}"
             : "Notification request {} sent",
         notificationId);
-    return processingResponse;
+    return notificationTaskResponse;
   }
 
   private Optional<PagerDutyTemplate> getTemplate(String templateId, Team team) {

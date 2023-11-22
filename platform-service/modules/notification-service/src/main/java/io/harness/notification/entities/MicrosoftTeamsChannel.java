@@ -8,6 +8,7 @@
 package io.harness.notification.entities;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.notification.NotificationRequest.MSTeam;
 
 import io.harness.annotations.dev.OwnedBy;
@@ -33,15 +34,19 @@ public class MicrosoftTeamsChannel implements Channel {
   List<UserGroup> userGroups;
   Map<String, String> templateData;
   String templateId;
+  String message;
 
   @Override
   public Object toObjectofProtoSchema() {
-    return MSTeam.newBuilder()
-        .addAllMsTeamKeys(msTeamKeys)
-        .putAllTemplateData(templateData)
-        .setTemplateId(templateId)
-        .addAllUserGroup(NotificationUserGroupMapper.toProto(userGroups))
-        .build();
+    MSTeam.Builder builder = MSTeam.newBuilder()
+                                 .addAllMsTeamKeys(msTeamKeys)
+                                 .putAllTemplateData(templateData)
+                                 .setTemplateId(templateId)
+                                 .addAllUserGroup(NotificationUserGroupMapper.toProto(userGroups));
+    if (isNotEmpty(message)) {
+      builder.setMessage(message);
+    }
+    return builder.build();
   }
 
   @Override
@@ -56,6 +61,7 @@ public class MicrosoftTeamsChannel implements Channel {
         .templateData(msTeamDetails.getTemplateDataMap())
         .templateId(msTeamDetails.getTemplateId())
         .userGroups(NotificationUserGroupMapper.toEntity(msTeamDetails.getUserGroupList()))
+        .message(msTeamDetails.getMessage())
         .build();
   }
 }

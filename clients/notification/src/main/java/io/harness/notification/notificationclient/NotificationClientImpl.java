@@ -19,6 +19,7 @@ import io.harness.notification.messageclient.MessageClient;
 import io.harness.notification.model.NotificationRuleReferenceDTO;
 import io.harness.notification.remote.NotificationHTTPClient;
 import io.harness.notification.remote.dto.EmailDTO;
+import io.harness.notification.remote.dto.NotificationRequestDTO;
 import io.harness.notification.remote.dto.NotificationSettingDTO;
 import io.harness.notification.remote.dto.TemplateDTO;
 import io.harness.notification.templates.PredefinedTemplate;
@@ -53,6 +54,15 @@ public class NotificationClientImpl implements NotificationClient {
 
     this.messageClient.send(notificationRequest, notificationChannel.getAccountId());
     return NotificationResultWithoutStatus.builder().notificationId(notificationRequest.getId()).build();
+  }
+
+  @Override
+  public Response<ResponseDTO<NotificationTaskResponse>> sendNotificationSync(NotificationChannel notificationChannel)
+      throws IOException {
+    NotificationRequest notificationRequest = notificationChannel.buildNotificationRequest();
+    NotificationRequestDTO notificationRequestDTO =
+        NotificationRequestDTO.builder().bytes(notificationRequest.toByteArray()).build();
+    return notificationHTTPClient.sendNotificationSync(notificationRequestDTO).execute();
   }
 
   public Response<ResponseDTO<NotificationTaskResponse>> sendEmail(EmailDTO emailDTO) throws IOException {
