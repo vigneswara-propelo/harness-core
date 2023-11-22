@@ -274,6 +274,7 @@ public class SLIRecordBucketServiceImplTest extends CvNextGenTestBase {
                               .timeStamp(startTime.plus(Duration.ofMinutes(i)))
                               .badEventCount(badCounts.get(i))
                               .goodEventCount(goodCounts.get(i))
+                              .skipEventCount(0l)
                               .build());
     }
     sliRecordBucketService.create(sliRecordParams, serviceLevelIndicator.getUuid(), 0);
@@ -285,11 +286,13 @@ public class SLIRecordBucketServiceImplTest extends CvNextGenTestBase {
       SLIState sliState = sliStates.get(i);
       long goodCountValue = 0;
       long badCountValue = 0;
-
+      long skipCountValue = 0;
       if (sliState == SLIState.GOOD) {
         goodCountValue = 1;
       } else if (sliState == SLIState.BAD) {
         badCountValue = 1;
+      } else if (sliState == SKIP_DATA) {
+        skipCountValue = 1;
       }
 
       sliRecordParams.add(SLIRecordParam.builder()
@@ -297,6 +300,7 @@ public class SLIRecordBucketServiceImplTest extends CvNextGenTestBase {
                               .timeStamp(startTime.plus(Duration.ofMinutes(i)))
                               .badEventCount(badCountValue)
                               .goodEventCount(goodCountValue)
+                              .skipEventCount(skipCountValue)
                               .build());
     }
     return sliRecordParams;
