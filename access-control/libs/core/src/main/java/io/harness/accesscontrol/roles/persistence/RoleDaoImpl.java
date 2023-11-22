@@ -178,7 +178,9 @@ public class RoleDaoImpl implements RoleDao {
       criteria.and(RoleDBOKeys.scopeIdentifier).is(null);
       criteria.and(RoleDBOKeys.managed).is(true);
     } else if (roleFilter.getManagedFilter().equals(NO_FILTER)) {
-      criteria.and(RoleDBOKeys.scopeIdentifier).in(roleFilter.getScopeIdentifier(), null);
+      if (isNotEmpty(roleFilter.getScopeIdentifier())) {
+        criteria.and(RoleDBOKeys.scopeIdentifier).in(roleFilter.getScopeIdentifier(), null);
+      }
     } else if (roleFilter.getManagedFilter().equals(ONLY_CUSTOM) && roleFilter.isIncludeChildScopes()) {
       Pattern startsWithScope = Pattern.compile("^".concat(roleFilter.getScopeIdentifier()));
       criteria.and(RoleDBOKeys.scopeIdentifier).regex(startsWithScope);
