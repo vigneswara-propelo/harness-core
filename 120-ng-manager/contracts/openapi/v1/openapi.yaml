@@ -4567,7 +4567,7 @@ components:
       required: false
       schema:
         type: integer
-        default: 30
+        default: 20
         maximum: 1000
       description: Number of items to return per page.
     onlyFavorites:
