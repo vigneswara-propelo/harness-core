@@ -7,6 +7,7 @@
 
 package io.harness.pms.sdk.core.plan.creation.creators;
 
+import io.harness.exception.InvalidRequestException;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.yaml.HarnessYamlVersion;
@@ -16,7 +17,16 @@ import java.util.Map;
 import java.util.Set;
 
 public interface PartialPlanCreator<T> {
-  Class<T> getFieldClass();
+  default Class<T> getFieldClass() {
+    throw new InvalidRequestException(
+        String.format("The planCreator %s must implement the getFieldClass method.", this.getClass().getSimpleName()));
+  }
+
+  default T getFieldObject(YamlField field) {
+    throw new InvalidRequestException(
+        String.format("The planCreator %s must implement the getFieldObject method.", this.getClass().getSimpleName()));
+  }
+
   Map<String, Set<String>> getSupportedTypes();
 
   PlanCreationResponse createPlanForField(PlanCreationContext ctx, T field);

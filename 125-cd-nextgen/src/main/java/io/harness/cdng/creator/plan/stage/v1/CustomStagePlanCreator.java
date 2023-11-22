@@ -34,16 +34,17 @@ import io.harness.pms.sdk.core.plan.creation.creators.ChildrenPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.yaml.DependenciesUtils;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.when.utils.v1.RunInfoUtilsV1;
-import io.harness.yaml.core.failurestrategy.v1.FailureConfigV1;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -52,12 +53,17 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.PIPELINE)
-public class CustomStagePlanCreator extends ChildrenPlanCreator<YamlField> {
+public class CustomStagePlanCreator extends ChildrenPlanCreator<CustomStageNodeV1> {
   @Inject private KryoSerializer kryoSerializer;
 
   @Override
-  public Class<YamlField> getFieldClass() {
-    return YamlField.class;
+  public CustomStageNodeV1 getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), CustomStageNodeV1.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException(
+          "Unable to parse custom stage yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   @Override
@@ -68,7 +74,7 @@ public class CustomStagePlanCreator extends ChildrenPlanCreator<YamlField> {
 
   @Override
   public LinkedHashMap<String, PlanCreationResponse> createPlanForChildrenNodes(
-      PlanCreationContext ctx, YamlField field) {
+      PlanCreationContext ctx, CustomStageNodeV1 field) {
     LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap = new LinkedHashMap<>();
     Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
 
@@ -98,32 +104,31 @@ public class CustomStagePlanCreator extends ChildrenPlanCreator<YamlField> {
   }
 
   Dependency getDependencyForStrategy(
-      Map<String, YamlField> dependenciesNodeMap, YamlField field, PlanCreationContext ctx) {
+      Map<String, YamlField> dependenciesNodeMap, CustomStageNodeV1 stageNode, PlanCreationContext ctx) {
     Map<String, HarnessValue> dependencyMetadata = StrategyUtilsV1.getStrategyFieldDependencyMetadataIfPresent(
-        kryoSerializer, ctx, field.getUuid(), dependenciesNodeMap, getBuild(ctx.getDependency()));
+        kryoSerializer, ctx, stageNode.getUuid(), dependenciesNodeMap, getBuild(ctx.getDependency()));
     return Dependency.newBuilder()
         .setNodeMetadata(HarnessStruct.newBuilder().putAllData(dependencyMetadata).build())
         .build();
   }
 
-  Dependency getDependencyForSteps(YamlField field) {
-    List<FailureConfigV1> stageFailureStrategies = PlanCreatorUtilsV1.getFailureStrategies(field.getNode());
-    if (stageFailureStrategies != null) {
+  Dependency getDependencyForSteps(CustomStageNodeV1 stageNode) {
+    if (ParameterField.isNotNull(stageNode.getFailure())) {
       return Dependency.newBuilder()
-          .setParentInfo(
-              HarnessStruct.newBuilder()
-                  .putData(PlanCreatorConstants.STAGE_FAILURE_STRATEGIES,
-                      HarnessValue.newBuilder()
-                          .setBytesValue(ByteString.copyFrom(kryoSerializer.asDeflatedBytes(stageFailureStrategies)))
-                          .build())
-                  .build())
+          .setParentInfo(HarnessStruct.newBuilder()
+                             .putData(PlanCreatorConstants.STAGE_FAILURE_STRATEGIES,
+                                 HarnessValue.newBuilder()
+                                     .setBytesValue(ByteString.copyFrom(
+                                         kryoSerializer.asDeflatedBytes(stageNode.getFailure().getValue())))
+                                     .build())
+                             .build())
           .build();
     }
     return Dependency.newBuilder().setNodeMetadata(HarnessStruct.newBuilder().build()).build();
   }
 
   @Override
-  public GraphLayoutResponse getLayoutNodeInfo(PlanCreationContext context, YamlField config) {
+  public GraphLayoutResponse getLayoutNodeInfo(PlanCreationContext context, CustomStageNodeV1 config) {
     Map<String, GraphLayoutNode> stageYamlFieldMap = new LinkedHashMap<>();
     YamlField stageYamlField = context.getCurrentField();
     String nextNodeUuid = PlanCreatorUtilsV1.getNextNodeUuid(kryoSerializer, context.getDependency());
@@ -134,27 +139,21 @@ public class CustomStagePlanCreator extends ChildrenPlanCreator<YamlField> {
   }
 
   @Override
-  public PlanNode createPlanForParentNode(PlanCreationContext ctx, YamlField config, List<String> childrenNodeIds) {
-    CustomStageNodeV1 customStageNode;
-    try {
-      customStageNode = YamlUtils.read(config.getNode().toString(), CustomStageNodeV1.class);
-    } catch (Exception e) {
-      throw new InvalidYamlException(
-          "Unable to parse custom stage yaml. Please ensure that it is in correct format", e);
-    }
+  public PlanNode createPlanForParentNode(
+      PlanCreationContext ctx, CustomStageNodeV1 customStageNode, List<String> childrenNodeIds) {
     StageElementParametersV1Builder stageParameters = StepParametersUtils.getStageParameters(customStageNode);
     stageParameters.type(YAMLFieldNameConstants.CUSTOM_V1);
     stageParameters.spec(CustomStageSpecParams.builder().childNodeID(childrenNodeIds.get(0)).build());
-    String name = config.getNodeName();
+    String name = customStageNode.getName();
     PlanNodeBuilder builder =
         PlanNode.builder()
-            .uuid(StrategyUtilsV1.getSwappedPlanNodeId(ctx, config.getUuid()))
-            .identifier(StrategyUtilsV1.getIdentifierWithExpression(ctx, config.getId()))
+            .uuid(StrategyUtilsV1.getSwappedPlanNodeId(ctx, customStageNode.getUuid()))
+            .identifier(StrategyUtilsV1.getIdentifierWithExpression(ctx, customStageNode.getId()))
             .stepType(CustomStageStep.STEP_TYPE)
             .group(StepOutcomeGroup.STAGE.name())
             .name(StrategyUtilsV1.getIdentifierWithExpression(ctx, name))
             .skipUnresolvedExpressionsCheck(true)
-            .whenCondition(RunInfoUtilsV1.getStageWhenCondition(config))
+            .whenCondition(RunInfoUtilsV1.getStageWhenCondition(customStageNode.getWhen()))
             .stepParameters(stageParameters.build())
             .facilitatorObtainment(
                 FacilitatorObtainment.newBuilder()
@@ -163,7 +162,7 @@ public class CustomStagePlanCreator extends ChildrenPlanCreator<YamlField> {
             .skipExpressionChain(false);
 
     // If strategy present then don't add advisers. Strategy node will take care of running the stage nodes.
-    if (config.getNode().getField(YAMLFieldNameConstants.SPEC).getNode().getField("strategy") == null) {
+    if (customStageNode.getStrategy() == null) {
       builder.adviserObtainments(getBuild(ctx.getDependency()));
     }
     return builder.build();

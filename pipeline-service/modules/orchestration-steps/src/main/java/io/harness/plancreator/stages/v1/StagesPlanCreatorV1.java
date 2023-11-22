@@ -190,8 +190,8 @@ public class StagesPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
   }
 
   @Override
-  public Class<YamlField> getFieldClass() {
-    return YamlField.class;
+  public YamlField getFieldObject(YamlField field) {
+    return field;
   }
 
   @Override

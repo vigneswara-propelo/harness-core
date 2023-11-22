@@ -64,9 +64,10 @@ public class SpecPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
   }
 
   @Override
-  public Class<YamlField> getFieldClass() {
-    return YamlField.class;
+  public YamlField getFieldObject(YamlField field) {
+    return field;
   }
+
   @Override
   public PlanNode createPlanForParentNode(PlanCreationContext ctx, YamlField config, List<String> childrenNodeIds) {
     StepParameters stepParameters = NGSectionStepParameters.builder().childNodeId(childrenNodeIds.get(0)).build();

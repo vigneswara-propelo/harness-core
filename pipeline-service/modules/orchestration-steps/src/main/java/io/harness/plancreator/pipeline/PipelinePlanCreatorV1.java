@@ -104,6 +104,11 @@ public class PipelinePlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
   }
 
   @Override
+  public YamlField getFieldObject(YamlField field) {
+    return field;
+  }
+
+  @Override
   public Set<String> getSupportedYamlVersions() {
     return Set.of(HarnessYamlVersion.V1);
   }
