@@ -353,8 +353,8 @@ public class RoleServiceImplTest extends AccessControlCoreTestBase {
   public void testDelete() {
     String identifier = randomAlphabetic(10);
     String scopeIdentifier = randomAlphabetic(10);
-    Role role = Role.builder().scopeIdentifier(scopeIdentifier).identifier(identifier).build();
-    when(roleDao.get(identifier, scopeIdentifier, ManagedFilter.ONLY_CUSTOM)).thenReturn(Optional.of(role));
+    Role role = Role.builder().scopeIdentifier(scopeIdentifier).identifier(identifier).managed(false).build();
+    when(roleDao.get(identifier, scopeIdentifier, ManagedFilter.NO_FILTER)).thenReturn(Optional.of(role));
     when(outboxService.save(any())).thenReturn(null);
     when(outboxTransactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock

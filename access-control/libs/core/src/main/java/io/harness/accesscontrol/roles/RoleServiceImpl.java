@@ -7,6 +7,7 @@
 
 package io.harness.accesscontrol.roles;
 
+import static io.harness.accesscontrol.common.filter.ManagedFilter.NO_FILTER;
 import static io.harness.accesscontrol.common.filter.ManagedFilter.ONLY_CUSTOM;
 import static io.harness.accesscontrol.common.filter.ManagedFilter.ONLY_MANAGED;
 import static io.harness.annotations.dev.HarnessTeam.PL;
@@ -222,10 +223,13 @@ public class RoleServiceImpl implements RoleService {
 
   @Override
   public Role delete(String identifier, String scopeIdentifier) {
-    Optional<Role> roleOpt = get(identifier, scopeIdentifier, ONLY_CUSTOM);
+    Optional<Role> roleOpt = get(identifier, scopeIdentifier, NO_FILTER);
     if (!roleOpt.isPresent()) {
       throw new InvalidRequestException(
           String.format("Could not find the role %s in the scope %s", identifier, scopeIdentifier));
+    } else if (roleOpt.get().isManaged()) {
+      throw new InvalidRequestException(
+          String.format("Cannot delete the role %s as it is managed by Harness", identifier));
     }
     return deleteCustomRole(identifier, scopeIdentifier);
   }
