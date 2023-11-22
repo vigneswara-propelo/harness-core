@@ -724,6 +724,8 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
 
   @Override
   public ScmCommitFileResponseDTO updateFile(ScmUpdateFileRequestDTO scmUpdateFileRequestDTO) {
+    validateUpdateFileRequest(scmUpdateFileRequestDTO);
+
     Scope scope = scmUpdateFileRequestDTO.getScope();
     ScmConnector scmConnector = gitSyncConnectorService.getScmConnectorForGivenRepo(scope.getAccountIdentifier(),
         scope.getOrgIdentifier(), scope.getProjectIdentifier(), scmUpdateFileRequestDTO.getConnectorRef(),
@@ -1406,8 +1408,17 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
   }
 
   private void validateCreateFileRequest(ScmCreateFileRequestDTO scmCreateFileRequestDTO, ScmConnector scmConnector) {
+    if (isEmpty(scmCreateFileRequestDTO.getBranchName())) {
+      throw new InvalidRequestException("Branch cannot be empty during create file GIT operation");
+    }
     gitRepoAllowlistHelper.validateRepo(
         scmCreateFileRequestDTO.getScope(), scmConnector, scmCreateFileRequestDTO.getRepoName());
+  }
+
+  private void validateUpdateFileRequest(ScmUpdateFileRequestDTO scmUpdateFileRequestDTO) {
+    if (isEmpty(scmUpdateFileRequestDTO.getBranchName())) {
+      throw new InvalidRequestException("Branch cannot be empty during update file GIT operation");
+    }
   }
 
   private void validateGetFileRequest(
