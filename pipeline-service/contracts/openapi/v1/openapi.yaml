@@ -23,6 +23,9 @@ tags:
   - name: Pipeline Execution
     description: This contains APIs for Pipeline Execution.
     x-displayName: 'Pipeline Execution [Beta]'
+  - name: Triggers
+    description: This contains APIs for performing CRUD operations on Triggers.
+    x-displayName: 'Triggers [Beta]'
 paths:
   '/v1/orgs/{org}/projects/{project}/pipelines':
     parameters:
@@ -143,6 +146,93 @@ paths:
           $ref: '#/components/responses/PipelineCreateResponseBody'
       x-stoplight:
         id: kit3pv5ml2xip
+  '/v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/triggers':
+    parameters:
+      - $ref: '#/components/parameters/OrgParam'
+      - $ref: '#/components/parameters/ProjectParam'
+      - $ref: '#/components/parameters/PipelineParam'
+    post:
+      summary: Create a Trigger
+      operationId: create-trigger
+      description: Create a Trigger.
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      tags:
+        - Triggers
+      requestBody:
+        $ref: '#/components/requestBodies/TriggerCreateRequestBody'
+      responses:
+        '201':
+          $ref: '#/components/responses/TriggerCreateResponseBody'
+      x-stoplight:
+        id: kzt6v4xv0iakl
+  '/v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/triggers/{trigger}':
+    parameters:
+      - $ref: '#/components/parameters/OrgParam'
+      - $ref: '#/components/parameters/ProjectParam'
+      - $ref: '#/components/parameters/PipelineParam'
+      - $ref: '#/components/parameters/TriggerParam'
+    get:
+      summary: Retrieve a Trigger
+      operationId: get-trigger
+      description: Retrieve a Trigger.
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      tags:
+        - Triggers
+      responses:
+        '200':
+          $ref: '#/components/responses/TriggerGetResponseBody'
+    put:
+      summary: Update a Trigger
+      operationId: update-trigger
+      security:
+        - x-api-key: []
+      description: Updates a Trigger.
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      tags:
+        - Triggers
+      requestBody:
+        $ref: '#/components/requestBodies/TriggerUpdateRequestBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/TriggerCreateResponseBody'
+    delete:
+      summary: Delete a Trigger
+      operationId: delete-trigger
+      description: Deletes a Trigger.
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      tags:
+        - Triggers
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+              examples:
+                example-resp:
+                  value: {}
+            application/yaml:
+              schema:
+                type: object
+                properties: {}
+              examples:
+                example-resp:
+                  value: |
+                    {}
   '/v1/orgs/{org}/projects/{project}/pipelines/{pipeline}':
     parameters:
       - $ref: '#/components/parameters/OrgParam'
@@ -1196,6 +1286,254 @@ components:
           type: string
           x-stoplight:
             id: sngk13zmfmbee
+    TriggerCreateRequestBody:
+      title: Trigger Create Request Body
+      type: object
+      description: 'Trigger request body object '
+      properties:
+        description:
+          type: string
+        enabled:
+          type: boolean
+        encrypted_webhook_secret_identifier:
+          type: string
+        identifier:
+          type: string
+          pattern: "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+        input_set_refs:
+          type: array
+          items:
+            type: string
+        inputs:
+          type: object
+          description: inputs to be used in the pipeline
+          additionalProperties:
+            type: object
+        name:
+          type: string
+          pattern: "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+        pipeline_branch_name:
+          type: string
+        source:
+          $ref: '#/components/schemas/TriggerSource'
+        stages_to_execute:
+          type: array
+          items:
+            type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - type
+        - identifier
+        - name
+        - source
+    TriggerUpdateRequestBody:
+      title: Trigger Update Request Body
+      type: object
+      description: 'Trigger request body object'
+      properties:
+        description:
+          type: string
+        enabled:
+          type: boolean
+        encrypted_webhook_secret_identifier:
+          type: string
+        identifier:
+          type: string
+          pattern: "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+        input_set_refs:
+          type: array
+          items:
+            type: string
+        inputs:
+          type: object
+          description: inputs to be used in the pipeline
+          additionalProperties:
+            type: object
+        name:
+          type: string
+          pattern: "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+        pipeline_branch_name:
+          type: string
+        source:
+          $ref: '#/components/schemas/TriggerSource'
+        stages_to_execute:
+          type: array
+          items:
+            type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - identifier
+        - name
+        - source
+    TriggerSource:
+      title: Trigger Source
+      type: object
+      properties:
+        poll_interval:
+          type: string
+          pattern: "(((([1-9])+\\d*[mh])+(\\s/?\\d+[mh])*)|(^$)|(0))$"
+        type:
+          type: string
+          enum:
+            - Webhook
+            - Artifact
+            - Manifest
+            - Scheduled
+            - MultiRegionArtifact
+        webhook_id:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          Scheduled: '#/components/schemas/ScheduledTriggerSource'
+      required:
+        - type
+        - spec
+    ScheduledTriggerSource:
+      title: Scheduled Trigger Source
+      x-discriminator-value: Scheduled
+      allOf:
+        - $ref: '#/components/schemas/TriggerSource'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - GitHttp
+              description: This specifies the type of the trigger
+            spec:
+              $ref: '#/components/schemas/ScheduledTriggerSpec'
+    TriggerConditions:
+      title: Trigger PayloadConditions
+      type: object
+      description: 'Payload Conditions for the Trigger'
+      properties:
+        key:
+          type: string
+        operator:
+          type: string
+        value:
+          type: string
+    ScheduledTriggerSpec:
+      title: Scheduled Trigger Spec
+      type: object
+      description: 'Spec for Scheduled Triggers'
+      properties:
+        type:
+          type: string
+          enum:
+            - Cron
+        spec:
+          $ref: '#/components/schemas/CronScheduledTriggerSpec'
+    CronScheduledTriggerSpec:
+      title: Cron Scheduled Trigger Spec
+      type: object
+      description: 'Spec for Cron Scheduled Triggers'
+      properties:
+        type:
+          type: string
+        expression:
+          type: string
+    TriggerCreateResponseBody:
+      title: Trigger Create Response Body
+      type: object
+      description: Pipeline response body
+      properties:
+        identifier:
+          type: string
+          description: Trigger identifier
+          pattern: '^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$'
+          minLength: 1
+          maxLength: 128
+    TriggerGetResponseBody:
+      title: Trigger Get Response Body
+      description: Trigger response body.
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Trigger identifier
+          pattern: '^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$'
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          description: Trigger name
+          pattern: '^[a-zA-Z_][0-9a-zA-Z-_ ]{0,127}$'
+          minLength: 1
+          maxLength: 128
+        org:
+          type: string
+          pattern: '^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$'
+          minLength: 1
+          maxLength: 128
+          description: Organization identifier
+        project:
+          type: string
+          pattern: '^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$'
+          minLength: 1
+          maxLength: 128
+          description: Project identifier
+        pipeline:
+          type: string
+          pattern: '^[a-zA-Z_][0-9a-zA-Z_$]{0,127}$'
+          minLength: 1
+          maxLength: 128
+          description: Pipeline identifier
+        description:
+          type: string
+          maxLength: 1024
+          description: Trigger description
+        trigger:
+          $ref: '#/components/schemas/TriggerBody'
+    TriggerBody:
+      title: Trigger Body
+      type: object
+      description: 'Trigger object '
+      properties:
+        description:
+          type: string
+        enabled:
+          type: boolean
+        encrypted_webhook_secret_identifier:
+          type: string
+        identifier:
+          type: string
+          pattern: "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+        input_set_refs:
+          type: array
+          items:
+            type: string
+        inputs:
+          type: object
+          description: inputs to be used in the pipeline
+          additionalProperties:
+            type: object
+        name:
+          type: string
+          pattern: "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+        pipeline_branch_name:
+          type: string
+        source:
+          $ref: '#/components/schemas/TriggerSource'
+        stages_to_execute:
+          type: array
+          items:
+            type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - identifier
+        - name
+        - source
     PipelineCreateRequestBody:
       title: Pipeline Create Request Body
       x-stoplight:
@@ -3143,6 +3481,13 @@ components:
       schema:
         type: string
       description: Pipeline identifier
+    TriggerParam:
+      name: trigger
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Trigger identifier
     Sort:
       name: sort
       in: query
@@ -3223,6 +3568,24 @@ components:
             example-pipeline:
               value: |
                 identifier: example_pipeline
+    TriggerCreateResponseBody:
+      description: Trigger response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TriggerCreateResponseBody'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/TriggerCreateResponseBody'
+    TriggerGetResponseBody:
+      description: Pipeline response body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TriggerGetResponseBody'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/TriggerGetResponseBody'
     PipelineValidationResponseBody:
       description: Pipeline Validation response body
       content:
@@ -3912,6 +4275,24 @@ components:
           schema:
             $ref: '#/components/schemas/MergeInputSetResponseBody'
   requestBodies:
+    TriggerCreateRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TriggerCreateRequestBody'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/TriggerCreateRequestBody'
+    TriggerUpdateRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TriggerUpdateRequestBody'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/TriggerUpdateRequestBody'
+      description: Trigger request body
+      required: true
     PipelineCreateRequestBody:
       content:
         application/json:
