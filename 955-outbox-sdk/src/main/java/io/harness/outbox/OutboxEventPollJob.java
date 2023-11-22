@@ -84,7 +84,7 @@ public class OutboxEventPollJob implements Runnable {
   private void pollAndHandleOutboxEvents() {
     try (AcquiredLock<?> lock = persistentLocker.tryToAcquireLock(outboxLockId, Duration.ofMinutes(2))) {
       if (lock == null) {
-        log.warn("Could not acquire lock for outbox poll job");
+        log.debug("Could not acquire lock for outbox poll job");
         return;
       }
       List<OutboxEvent> outboxEvents;

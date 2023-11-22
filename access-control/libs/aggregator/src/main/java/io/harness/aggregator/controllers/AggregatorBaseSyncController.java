@@ -195,7 +195,7 @@ public abstract class AggregatorBaseSyncController implements Runnable {
         aggregatorLock =
             persistentLocker.tryToAcquireInfiniteLockWithPeriodicRefresh(lockIdentifier, Duration.ofSeconds(5));
       } catch (Exception ex) {
-        log.warn("Unable to get {} lock, due to the exception. Will retry again", lockIdentifier, ex);
+        log.debug("Unable to get {} lock, due to the exception. Will retry again", lockIdentifier, ex);
       }
       if (aggregatorLock == null) {
         TimeUnit.SECONDS.sleep(120);
