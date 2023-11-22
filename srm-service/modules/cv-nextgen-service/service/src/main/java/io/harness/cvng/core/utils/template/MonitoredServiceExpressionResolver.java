@@ -55,6 +55,11 @@ public class MonitoredServiceExpressionResolver {
     ObjectNode monitoredService = (ObjectNode) rootNode.get("monitoredService");
     monitoredService.put("identifier", REGULAR_EXPRESSION);
     monitoredService.put("name", REGULAR_EXPRESSION);
+    ObjectNode template = (ObjectNode) monitoredService.get("template");
+    if (template != null && template.get("isTemplateByReference") != null
+        && template.get("isTemplateByReference").asBoolean()) {
+      template.put("templateInputs", YamlUtils.writeYamlString(template.get("templateInputs")));
+    }
     return YamlUtils.writeYamlString(rootYamlNode);
   }
 }

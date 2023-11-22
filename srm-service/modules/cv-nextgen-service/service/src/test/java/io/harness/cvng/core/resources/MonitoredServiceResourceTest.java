@@ -117,7 +117,7 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
-  public void testCreateFromYaml() throws IOException {
+  public void testCreateFromYaml() {
     String yaml = "monitoredService:\n"
         + "  identifier: <+monitoredService.serviceRef>\n"
         + "  type: Application\n"
@@ -1432,8 +1432,8 @@ public class MonitoredServiceResourceTest extends CvNextGenTestBase {
     assertThat(response.getStatus()).isEqualTo(500);
     assertThat(response.readEntity(String.class))
         .contains(String.format(
-            "\"message\":\"io.harness.exception.InvalidRequestException: Monitored Service  with identifier MSIdentifier1, "
-                + "accountId %s, orgIdentifier %s and projectIdentifier %s  is not present\"",
+            "\"message\":\"io.harness.exception.InvalidRequestException: Monitored Service with identifier MSIdentifier1, "
+                + "accountId %s, orgIdentifier %s and projectIdentifier %s is not present\"",
             builderFactory.getContext().getAccountId(), builderFactory.getContext().getOrgIdentifier(),
             builderFactory.getContext().getProjectIdentifier()));
   }
