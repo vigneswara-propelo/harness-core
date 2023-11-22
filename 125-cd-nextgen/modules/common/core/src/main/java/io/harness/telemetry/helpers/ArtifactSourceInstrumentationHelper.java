@@ -7,25 +7,10 @@
 
 package io.harness.telemetry.helpers;
 
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_ACCOUNT;
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_IDENTIFIER;
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_ORG;
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_PROJECT;
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_TYPE;
-import static io.harness.telemetry.helpers.InstrumentationConstants.GLOBAL_ACCOUNT_ID;
-import static io.harness.telemetry.helpers.InstrumentationConstants.IS_ARTIFACT_PRIMARY;
-
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.artifact.bean.ArtifactConfig;
-import io.harness.data.structure.EmptyPredicate;
-import io.harness.telemetry.Category;
-import io.harness.telemetry.Destination;
-import io.harness.telemetry.TelemetryOption;
-import io.harness.telemetry.TelemetryReporter;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
@@ -35,7 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 @OwnedBy(HarnessTeam.CDC)
 public class ArtifactSourceInstrumentationHelper extends InstrumentationHelper {
-  @Inject TelemetryReporter telemetryReporter;
+  public static final String ARTIFACT_TYPE = "artifact_type";
+  public static final String ARTIFACT_IDENTIFIER = "artifact_identifier";
+  public static final String ARTIFACT_ACCOUNT = "artifact_account";
+  public static final String ARTIFACT_ORG = "artifact_org";
+  public static final String ARTIFACT_PROJECT = "artifact_project";
+  public static final String IS_ARTIFACT_PRIMARY = "is_artifact_primary";
 
   private CompletableFuture<Void> publishArtifactInfo(
       ArtifactConfig artifactConfig, String accountId, String orgId, String projectId, String eventName) {
@@ -52,27 +42,5 @@ public class ArtifactSourceInstrumentationHelper extends InstrumentationHelper {
   public CompletableFuture<Void> sendLastPublishedTagExpressionEvent(
       ArtifactConfig artifactConfig, String accountId, String orgId, String projectId) {
     return publishArtifactInfo(artifactConfig, accountId, orgId, projectId, "last_published_tag");
-  }
-
-  private CompletableFuture<Void> sendEvent(
-      String eventName, String accountId, HashMap<String, Object> eventPropertiesMap) {
-    try {
-      if (EmptyPredicate.isNotEmpty(accountId) || !accountId.equals(GLOBAL_ACCOUNT_ID)) {
-        String userId = getUserId();
-        return CompletableFuture.runAsync(
-            ()
-                -> telemetryReporter.sendTrackEvent(eventName, userId, accountId, eventPropertiesMap,
-                    ImmutableMap.<Destination, Boolean>builder()
-                        .put(Destination.AMPLITUDE, true)
-                        .put(Destination.ALL, false)
-                        .build(),
-                    Category.PLATFORM, TelemetryOption.builder().sendForCommunity(true).build()));
-      } else {
-        log.info("There is no account found for account ID = " + accountId + "!. Cannot send " + eventName + " event.");
-      }
-    } catch (Exception e) {
-      log.error(eventName + " event failed for accountID= " + accountId, e);
-    }
-    return null;
   }
 }
