@@ -336,13 +336,14 @@ public class DataCollectionPerpetualTaskExecutor implements PerpetualTaskExecuto
   @VisibleForTesting
   protected void updateStatusWithException(
       DataCollectionPerpetualTaskParams taskParams, DataCollectionTaskDTO dataCollectionTask, Throwable e) {
-    DataCollectionTaskResult result = DataCollectionTaskResult.builder()
-                                          .dataCollectionTaskId(dataCollectionTask.getUuid())
-                                          .status(FAILED)
-                                          .dataCollectionMetadata(dataCollectionTask.getDataCollectionMetadata())
-                                          .exception(ExceptionUtils.getMessage(e))
-                                          .stacktrace(ExceptionUtils.getStackTrace(e))
-                                          .build();
+    DataCollectionTaskResult result =
+        DataCollectionTaskResult.builder()
+            .dataCollectionTaskId(dataCollectionTask.getUuid())
+            .status(FAILED)
+            .dataCollectionMetadata(dataCollectionTask.getDataCollectionMetadata())
+            .exception(isNotEmpty(ExceptionUtils.getMessage(e)) ? ExceptionUtils.getMessage(e)
+                                                                : ExceptionUtils.getRootCauseMessage(e))
+            .build();
     log.error("Data collection task failed for {} with exception Result: {} exception: {}",
         dataCollectionTask.getVerificationTaskId(), result, e);
     try {
