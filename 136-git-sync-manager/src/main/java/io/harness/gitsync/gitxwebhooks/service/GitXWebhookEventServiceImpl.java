@@ -24,6 +24,8 @@ import io.harness.gitsync.gitxwebhooks.dtos.GitXEventDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventUpdateRequestDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListRequestDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListResponseDTO;
+import io.harness.gitsync.gitxwebhooks.dtos.ListGitXWebhookRequestDTO;
+import io.harness.gitsync.gitxwebhooks.dtos.ListGitXWebhookResponseDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.UpdateGitXWebhookCriteriaDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.UpdateGitXWebhookRequestDTO;
 import io.harness.gitsync.gitxwebhooks.entity.Author;
@@ -100,7 +102,14 @@ public class GitXWebhookEventServiceImpl implements GitXWebhookEventService {
             gitXEventsListRequestDTO.setWebhookIdentifier(gitXWebhook.getIdentifier());
           }
         }
-        Query query = buildEventsListQuery(gitXEventsListRequestDTO);
+        List<String> gitxWebhookIdentifiers = new ArrayList<>();
+        if (isEmpty(gitXEventsListRequestDTO.getWebhookIdentifier())) {
+          gitxWebhookIdentifiers = getGitXWebhookIdentifiers(gitXEventsListRequestDTO);
+          if (isEmpty(gitxWebhookIdentifiers)) {
+            return GitXEventsListResponseDTO.builder().build();
+          }
+        }
+        Query query = buildEventsListQuery(gitXEventsListRequestDTO, gitxWebhookIdentifiers);
         List<GitXWebhookEvent> gitXWebhookEventList = gitXWebhookEventsRepository.list(query);
         return GitXEventsListResponseDTO.builder()
             .gitXEventDTOS(prepareGitXWebhookEvents(gitXEventsListRequestDTO, gitXWebhookEventList))
@@ -174,11 +183,16 @@ public class GitXWebhookEventServiceImpl implements GitXWebhookEventService {
         GitXWebhookUtils.compareFolderPaths(Collections.singletonList(entityFilePath), modifiedFilePaths));
   }
 
-  private Criteria buildEventsListCriteria(GitXEventsListRequestDTO gitXEventsListRequestDTO) {
+  private Criteria buildEventsListCriteria(
+      GitXEventsListRequestDTO gitXEventsListRequestDTO, List<String> gitxWebhookIdentifiers) {
     Criteria criteria = new Criteria();
     criteria.and(GitXWebhookEventKeys.accountIdentifier).is(gitXEventsListRequestDTO.getScope().getAccountIdentifier());
     if (isNotEmpty(gitXEventsListRequestDTO.getWebhookIdentifier())) {
       criteria.and(GitXWebhookEventKeys.webhookIdentifierList).is(gitXEventsListRequestDTO.getWebhookIdentifier());
+    } else {
+      if (isNotEmpty(gitxWebhookIdentifiers)) {
+        criteria.and(GitXWebhookEventKeys.webhookIdentifierList).in(gitxWebhookIdentifiers);
+      }
     }
     if (gitXEventsListRequestDTO.getEventStartTime() != null && gitXEventsListRequestDTO.getEventEndTime() != null) {
       criteria.and(GitXWebhookEventKeys.eventTriggeredTime)
@@ -197,8 +211,20 @@ public class GitXWebhookEventServiceImpl implements GitXWebhookEventService {
     return criteria;
   }
 
-  private Query buildEventsListQuery(GitXEventsListRequestDTO gitXEventsListRequestDTO) {
-    Criteria criteria = buildEventsListCriteria(gitXEventsListRequestDTO);
+  private List<String> getGitXWebhookIdentifiers(GitXEventsListRequestDTO gitXEventsListRequestDTO) {
+    ListGitXWebhookResponseDTO listGitXWebhookResponseDTO = gitXWebhookService.listGitXWebhooks(
+        ListGitXWebhookRequestDTO.builder().scope(gitXEventsListRequestDTO.getScope()).build());
+    List<String> gitxWebhookIdentifiers = new ArrayList<>();
+    if (listGitXWebhookResponseDTO != null && isNotEmpty(listGitXWebhookResponseDTO.getGitXWebhooksList())) {
+      listGitXWebhookResponseDTO.getGitXWebhooksList().forEach(
+          gitXWebhookResponseDTO -> { gitxWebhookIdentifiers.add(gitXWebhookResponseDTO.getWebhookIdentifier()); });
+    }
+    return gitxWebhookIdentifiers;
+  }
+
+  private Query buildEventsListQuery(
+      GitXEventsListRequestDTO gitXEventsListRequestDTO, List<String> gitxWebhookIdentifiers) {
+    Criteria criteria = buildEventsListCriteria(gitXEventsListRequestDTO, gitxWebhookIdentifiers);
     Query query = new Query(criteria);
     query.addCriteria(Criteria.where(GitXWebhookEventKeys.createdAt).exists(true))
         .with(Sort.by(Sort.Direction.DESC, GitXWebhookEventKeys.createdAt));
