@@ -847,6 +847,21 @@ public class AzureVaultEncryptorTest extends CategoryTest {
     verify(keyVaultClient, times(1)).purgeDeletedSecret(any());
   }
 
+  @Test
+  @Owner(developers = {RAGHAV_MURALI})
+  @Category(UnitTests.class)
+  public void testFetchSecretInterruptException() {
+    String name = UUIDGenerator.generateUuid();
+    String plainText = UUIDGenerator.generateUuid();
+    EncryptedRecord record = EncryptedRecordData.builder().name(name).path(UUIDGenerator.generateUuid()).build();
+    when(keyVaultClient.getSecretWithResponse(any(), any(), any(Context.class)))
+        .thenThrow(new RuntimeException(new InterruptedException("interrupted")));
+    assertThatThrownBy(
+        () -> azureVaultEncryptor.fetchSecretValue(azureVaultConfig.getAccountId(), record, azureVaultConfig))
+        .isInstanceOf(SecretManagementDelegateException.class)
+        .hasMessageContaining("After 3 tries, decryption for secret " + name + " failed.");
+  }
+
   private KeyVaultSecret mockKeyVaultSecret(String name, String value) {
     return mockKeyVaultSecret(name, name, value);
   }

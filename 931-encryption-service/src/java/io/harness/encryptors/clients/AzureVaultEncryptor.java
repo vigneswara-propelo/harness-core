@@ -12,11 +12,11 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.AZURE_AUTHENTICATION_ERROR;
+import static io.harness.eraro.ErrorCode.AZURE_KEY_VAULT_INTERRUPT_ERROR;
 import static io.harness.eraro.ErrorCode.AZURE_KEY_VAULT_OPERATION_ERROR;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.exception.WingsException.USER_SRE;
 import static io.harness.helpers.GlobalSecretManagerUtils.getValueByJsonPath;
-import static io.harness.helpers.GlobalSecretManagerUtils.parse;
 import static io.harness.threading.Morpheus.sleep;
 
 import static java.lang.String.format;
@@ -398,10 +398,16 @@ public class AzureVaultEncryptor implements VaultEncryptor {
     } catch (KeyVaultErrorException | MsalException ex) {
       throw ex;
     } catch (Exception ex) {
-      log.error("Failed to decrypt azure secret in vault due to exception", ex);
       String message = format("Failed to decrypt Azure secret %s in vault %s in account %s due to error %s",
           parsedSecretReference.getSecretName(), azureVaultConfig.getName(), azureVaultConfig.getAccountId(),
           ex.getMessage());
+      // Do not log an addition exception error dump for Interrupted Exception
+      // as it can flood the log stream. Interrupted exception will be wrapped
+      // within another exception as no method will throw it directly.
+      if ((ex.getCause() != null) && (ex.getCause() instanceof InterruptedException)) {
+        throw new SecretManagementDelegateException(AZURE_KEY_VAULT_INTERRUPT_ERROR, message, USER);
+      }
+      log.error("Failed to decrypt azure secret in vault due to exception.", ex);
       throw new SecretManagementDelegateException(AZURE_KEY_VAULT_OPERATION_ERROR, message, USER);
     }
   }
