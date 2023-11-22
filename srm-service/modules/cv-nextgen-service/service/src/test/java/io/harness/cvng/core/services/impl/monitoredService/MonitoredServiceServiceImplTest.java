@@ -777,7 +777,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         () -> monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO))
         .isInstanceOf(DuplicateFieldException.class)
         .hasMessage(String.format(
-            "Monitored Source Entity with identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
+            "Monitored Service entity with identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
             monitoredServiceDTO.getIdentifier(), monitoredServiceDTO.getOrgIdentifier(),
             monitoredServiceDTO.getProjectIdentifier()));
   }
@@ -793,7 +793,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         () -> monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO))
         .isInstanceOf(DuplicateFieldException.class)
         .hasMessage(String.format(
-            "Monitored Source Entity with duplicate service ref %s, environmentRef %s having identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
+            "Monitored Service entity with duplicate service ref %s, environmentRef %s having identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
             monitoredServiceDTO.getServiceRef(), monitoredServiceDTO.getEnvironmentRef(),
             monitoredServiceDTO.getIdentifier(), monitoredServiceDTO.getOrgIdentifier(),
             monitoredServiceDTO.getProjectIdentifier()));
@@ -1206,7 +1206,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         () -> monitoredServiceService.get(builderFactory.getContext().getProjectParams(), monitoredServiceIdentifier))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(
-            String.format("Monitored Source Entity with identifier %s is not present", monitoredServiceIdentifier));
+            String.format("Monitored Service entity with identifier %s is not present", monitoredServiceIdentifier));
   }
 
   @Test
@@ -1809,7 +1809,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         () -> monitoredServiceService.update(builderFactory.getContext().getAccountId(), monitoredServiceDTO, false))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(String.format(
-            "Monitored Source Entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not present",
+            "Monitored Service entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not present",
             monitoredServiceIdentifier, accountId, orgIdentifier, projectIdentifier));
   }
 
@@ -2277,6 +2277,31 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
             + "  sources:\n"
             + "    healthSources:\n"
             + "    changeSources:\n");
+  }
+
+  @Test
+  @Owner(developers = KARAN_SARASWAT)
+  @Category(UnitTests.class)
+  public void testGetResolvedTemplateInputs() {
+    MonitoredServiceDTO monitoredServiceDTO =
+        builderFactory.monitoredServiceDTOBuilder()
+            .identifier("ms2")
+            .serviceRef("test")
+            .template(TemplateDTO.builder()
+                          .templateRef("template1")
+                          .versionLabel("v1")
+                          .templateVersionNumber(1)
+                          .isTemplateByReference(true)
+                          .templateInputs("type: Application\nserviceRef: test1\n")
+                          .build())
+            .build();
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+
+    String resolvedTemplateInputs = monitoredServiceService.getResolvedTemplateInputs(
+        projectParams, monitoredServiceDTO.getIdentifier(), "template1", "v1");
+    assertThat(resolvedTemplateInputs).isEqualTo("type: Application\nserviceRef: test1\n");
   }
 
   @Test

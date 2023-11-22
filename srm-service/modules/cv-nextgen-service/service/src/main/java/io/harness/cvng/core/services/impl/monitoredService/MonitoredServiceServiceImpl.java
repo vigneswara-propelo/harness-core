@@ -68,7 +68,6 @@ import io.harness.cvng.core.beans.params.logsFilterParams.LiveMonitoringLogsFilt
 import io.harness.cvng.core.beans.template.TemplateDTO;
 import io.harness.cvng.core.beans.template.TemplateDTO.TemplateDTOBuilder;
 import io.harness.cvng.core.beans.template.TemplateMetadata;
-import io.harness.cvng.core.beans.template.TemplateMetadata.TemplateMetadataBuilder;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.EntityDisableTime;
 import io.harness.cvng.core.entities.MonitoredService;
@@ -333,6 +332,20 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     return monitoredServiceDTO;
   }
 
+  @Override
+  public String getResolvedTemplateInputs(
+      ProjectParams projectParams, String identifier, String templateRef, String versionLabel) {
+    MonitoredService monitoredService = getMonitoredService(projectParams, identifier);
+    if (monitoredService.getTemplateMetadata() == null
+        || (!monitoredService.getTemplateIdentifier().equals(templateRef)
+            || !monitoredService.getTemplateVersionLabel().equals(versionLabel))) {
+      throw new InvalidRequestException(String.format(
+          "No resolved template inputs for Monitored Service entity with identifier %s, templateIdentifier %s and versionLabel %s are present",
+          monitoredService.getIdentifier(), templateRef, versionLabel));
+    }
+    return monitoredService.getTemplateMetadata().getTemplateInputs();
+  }
+
   private void validateDependencyMetadata(ProjectParams projectParams, Set<ServiceDependencyDTO> dependencyDTOs) {
     if (dependencyDTOs == null) {
       return;
@@ -383,7 +396,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     MonitoredService monitoredService = getMonitoredService(environmentParams, monitoredServiceDTO.getIdentifier());
     if (monitoredService == null) {
       throw new InvalidRequestException(String.format(
-          "Monitored Source Entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not present",
+          "Monitored Service entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not present",
           monitoredServiceDTO.getIdentifier(), accountId, monitoredServiceDTO.getOrgIdentifier(),
           monitoredServiceDTO.getProjectIdentifier()));
     }
@@ -432,19 +445,19 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     if (monitoredServiceDTO.getTemplate() != null && monitoredServiceDTO.getTemplate().isTemplateByReference()) {
       if (isNotEmpty(monitoredServiceDTO.getSources().getChangeSources())) {
         throw new InvalidRequestException(
-            String.format("Update of Monitored Source entity with identifier: %s is not allowed"
+            String.format("Update of Monitored Service entity with identifier: %s is not allowed"
                     + "with change source if it's created through template by reference.",
                 monitoredServiceDTO.getIdentifier()));
       }
       if (isNotEmpty(monitoredServiceDTO.getNotificationRuleRefs())) {
         throw new InvalidRequestException(
-            String.format("Update of Monitored Source entity with identifier: %s is not allowed"
+            String.format("Update of Monitored Service entity with identifier: %s is not allowed"
                     + "with notification rules if it's created through template by reference.",
                 monitoredServiceDTO.getIdentifier()));
       }
       if (isNotEmpty(monitoredServiceDTO.getDependencies())) {
         throw new InvalidRequestException(
-            String.format("Update of Monitored Source entity with identifier: %s is not allowed"
+            String.format("Update of Monitored Service entity with identifier: %s is not allowed"
                     + "with notification rules if it's created through template by reference.",
                 monitoredServiceDTO.getIdentifier()));
       }
@@ -475,7 +488,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                         .collect(Collectors.toList());
       updateOperations.set(MonitoredServiceKeys.changeSourceIdentifiers, updatedChangeSourceIdentifiers);
     }
-    if (monitoredServiceDTO.getTemplate() != null) {
+    if (monitoredServiceDTO.getTemplate() != null && isUpdatedFromYaml) {
       updateOperations.set(MonitoredServiceKeys.templateIdentifier, monitoredServiceDTO.getTemplate().getTemplateRef());
       updateOperations.set(
           MonitoredServiceKeys.templateVersionLabel, monitoredServiceDTO.getTemplate().getVersionLabel());
@@ -489,15 +502,11 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     if (monitoredServiceDTO.getTemplate() != null
         && featureFlagService.isFeatureFlagEnabled(
             projectParams.getAccountIdentifier(), FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION)
-        && monitoredServiceDTO.getTemplate().isTemplateByReference()) {
-      TemplateMetadataBuilder templateMetadataBuilder =
-          TemplateMetadata.fromTemplateDTO(monitoredServiceDTO.getTemplate());
-      if (isUpdatedFromYaml) {
-        updateOperations.set(
-            MonitoredServiceKeys.templateMetadata, templateMetadataBuilder.lastReconciliationTime(currentTime).build());
-      } else {
-        updateOperations.set(MonitoredServiceKeys.templateMetadata, templateMetadataBuilder.build());
-      }
+        && monitoredServiceDTO.getTemplate().isTemplateByReference() && isUpdatedFromYaml) {
+      updateOperations.set(MonitoredServiceKeys.templateMetadata,
+          TemplateMetadata.fromTemplateDTO(monitoredServiceDTO.getTemplate())
+              .lastReconciliationTime(currentTime)
+              .build());
     }
     updateOperations.set(MonitoredServiceKeys.notificationRuleRefs,
         getNotificationRuleRefs(projectParams, monitoredService, monitoredServiceDTO));
@@ -547,7 +556,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     MonitoredService monitoredService = getMonitoredService(projectParams, identifier);
     if (monitoredService == null) {
       throw new InvalidRequestException(
-          String.format("Monitored Source Entity with identifier %s and accountId %s is not present", identifier,
+          String.format("Monitored Service entity with identifier %s and accountId %s is not present", identifier,
               projectParams.getAccountIdentifier()));
     }
     ServiceEnvironmentParams environmentParams = builderWithProjectParams(projectParams)
@@ -690,7 +699,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     MonitoredService monitoredServiceEntity = getMonitoredService(projectParams, identifier);
     if (monitoredServiceEntity == null) {
       throw new InvalidRequestException(
-          String.format("Monitored Source Entity with identifier %s is not present", identifier));
+          String.format("Monitored Service entity with identifier %s is not present", identifier));
     }
     ServiceEnvironmentParams environmentParams =
         builderWithProjectParams(projectParams)
@@ -1076,7 +1085,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     MonitoredService monitoredServiceEntity = getMonitoredService(serviceEnvironmentParams, identifier);
     if (monitoredServiceEntity != null) {
       throw new DuplicateFieldException(String.format(
-          "Monitored Source Entity with identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
+          "Monitored Service entity with identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
           identifier, serviceEnvironmentParams.getOrgIdentifier(), serviceEnvironmentParams.getProjectIdentifier()));
     }
     if (monitoredServiceType == MonitoredServiceType.APPLICATION) {
@@ -1091,7 +1100,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
               .get();
       if (monitoredServiceEntity != null) {
         throw new DuplicateFieldException(String.format(
-            "Monitored Source Entity with duplicate service ref %s, environmentRef %s having identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
+            "Monitored Service entity with duplicate service ref %s, environmentRef %s having identifier %s and orgIdentifier %s and projectIdentifier %s is already present",
             serviceEnvironmentParams.getServiceIdentifier(), serviceEnvironmentParams.getEnvironmentIdentifier(),
             identifier, serviceEnvironmentParams.getOrgIdentifier(), serviceEnvironmentParams.getProjectIdentifier()));
       }
