@@ -158,14 +158,13 @@ public class SetupUsageEventServiceImpl implements SetupUsageEventService {
 
   private List<EntityDetailProtoDTO> getReferredServiceEntities(
       ProjectParams projectParams, MonitoredServiceDTO monitoredServiceDTO) {
-    Set<String> serviceRefs = new HashSet<>();
-    serviceRefs.add(monitoredServiceDTO.getServiceRef());
+    Set<String> serviceRefs = Sets.newHashSet(monitoredServiceDTO.getServiceRef());
     return getEntityDetailProtoDTOList(projectParams, serviceRefs, SERVICE);
   }
 
   private List<EntityDetailProtoDTO> getReferredEnvironmentEntities(
       ProjectParams projectParams, MonitoredServiceDTO monitoredServiceDTO) {
-    Set<String> environmentRefs = Sets.newHashSet(monitoredServiceDTO.getEnvironmentRef());
+    Set<String> environmentRefs = new HashSet<>(monitoredServiceDTO.getEnvironmentRefList());
     return getEntityDetailProtoDTOList(projectParams, environmentRefs, ENVIRONMENT);
   }
 
