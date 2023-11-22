@@ -330,8 +330,11 @@ public class PMSPipelineServiceHelper {
     try {
       GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
       if (HarnessYamlVersion.isV1(pipelineEntity.getHarnessVersion())) {
+        // preprocessedYaml with ids is needed for template resolution
         String yaml = preProcessPipelineYaml(pipelineEntity.getYaml());
-        pipelineEntity.setYaml(yaml);
+        // withYaml() will return a new object of pipelineEntity and will not modify yaml in existing pipelineEntity
+        // so while saving/updating, yaml will be saved without preprocessing only.
+        pipelineEntity = pipelineEntity.withYaml(yaml);
       }
       if (gitEntityInfo != null && gitEntityInfo.isNewBranch()) {
         GitSyncBranchContext gitSyncBranchContext =

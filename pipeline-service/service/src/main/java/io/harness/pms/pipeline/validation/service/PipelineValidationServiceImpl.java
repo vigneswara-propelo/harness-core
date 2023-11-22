@@ -44,9 +44,10 @@ public class PipelineValidationServiceImpl implements PipelineValidationService 
   @Override
   public boolean validateYaml(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String yamlWithTemplatesResolved, String pipelineYaml, String harnessVersion) {
-    if (harnessVersion.equals(HarnessYamlVersion.V0)) {
-      checkIfRootNodeIsPipeline(pipelineYaml);
+    if (harnessVersion.equals(HarnessYamlVersion.V1)) {
+      return true;
     }
+    checkIfRootNodeIsPipeline(pipelineYaml);
     pmsYamlSchemaService.validateYamlSchema(accountIdentifier, orgIdentifier, projectIdentifier,
         YamlUtils.readAsJsonNode(yamlWithTemplatesResolved), harnessVersion);
     // validate unique fqn in resolveTemplateRefsInPipeline
