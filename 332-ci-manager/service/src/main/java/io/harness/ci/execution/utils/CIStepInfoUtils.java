@@ -19,6 +19,7 @@ import io.harness.beans.FeatureName;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
 import io.harness.beans.steps.CIRegistry;
 import io.harness.beans.steps.CIStepInfoType;
+import io.harness.beans.steps.stepinfo.IACMTerraformPluginInfo;
 import io.harness.beans.steps.stepinfo.SecurityStepInfo;
 import io.harness.beans.steps.stepinfo.security.shared.STOGenericStepInfo;
 import io.harness.beans.sweepingoutputs.StageInfraDetails;
@@ -206,6 +207,15 @@ public class CIStepInfoUtils {
     StepImageConfig defaultImageConfig = ciExecutionConfigService.getPluginVersionForK8(stepInfoType, accountId);
     if (stepInfoType == CIStepInfoType.SECURITY) {
       return getSecurityStepImageConfig(step, ciExecutionConfigService, defaultImageConfig);
+    } else if (stepInfoType == CIStepInfoType.IACM_TERRAFORM_PLUGIN || stepInfoType == CIStepInfoType.IACM_APPROVAL) {
+      if (((IACMTerraformPluginInfo) step).getImage() != null
+          && !((IACMTerraformPluginInfo) step).getImage().getValue().isEmpty()) {
+        return StepImageConfig.builder()
+            .image(((IACMTerraformPluginInfo) step).getImage().getValue())
+            .entrypoint(defaultImageConfig.getEntrypoint())
+            .windowsEntrypoint(defaultImageConfig.getWindowsEntrypoint())
+            .build();
+      }
     }
     return defaultImageConfig;
   }
