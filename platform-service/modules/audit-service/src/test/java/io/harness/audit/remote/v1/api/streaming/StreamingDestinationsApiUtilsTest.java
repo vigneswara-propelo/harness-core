@@ -8,6 +8,7 @@
 package io.harness.audit.remote.v1.api.streaming;
 
 import static io.harness.beans.SortOrder.OrderType.DESC;
+import static io.harness.ng.core.mapper.TagMapper.convertToMap;
 import static io.harness.rule.OwnerRule.NISHANT;
 import static io.harness.spec.server.audit.v1.model.StreamingDestinationSpecDTO.TypeEnum.AWS_S3;
 import static io.harness.utils.PageUtils.SortFields.CREATED;
@@ -26,12 +27,14 @@ import io.harness.audit.entities.streaming.StreamingDestinationFilterProperties;
 import io.harness.beans.SortOrder;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.UnknownEnumTypeException;
+import io.harness.ng.core.common.beans.NGTag;
 import io.harness.rule.Owner;
 import io.harness.spec.server.audit.v1.model.AwsS3StreamingDestinationSpecDTO;
 import io.harness.spec.server.audit.v1.model.StreamingDestinationDTO;
 import io.harness.spec.server.audit.v1.model.StreamingDestinationResponse;
 import io.harness.spec.server.audit.v1.model.StreamingDestinationStatus;
 
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
@@ -101,7 +104,9 @@ public class StreamingDestinationsApiUtilsTest extends CategoryTest {
     String bucket = randomAlphabetic(RANDOM_STRING_CHAR_COUNT_15);
     String accountIdentifier = randomAlphabetic(RANDOM_STRING_CHAR_COUNT_10);
     String identifier = randomAlphabetic(RANDOM_STRING_CHAR_COUNT_10);
+    String description = randomAlphabetic(RANDOM_STRING_CHAR_COUNT_15);
     String name = randomAlphabetic(RANDOM_STRING_CHAR_COUNT_15);
+    List<NGTag> tags = List.of(NGTag.builder().key("tagKey").value("tagValue").build());
     String connectorRef = "account." + randomAlphabetic(RANDOM_STRING_CHAR_COUNT_15);
     StreamingDestinationStatus statusEnum =
         StreamingDestinationStatus.values()[RandomUtils.nextInt(0, StreamingDestinationStatus.values().length - 1)];
@@ -116,6 +121,8 @@ public class StreamingDestinationsApiUtilsTest extends CategoryTest {
     streamingDestination.setConnectorRef(connectorRef);
     streamingDestination.setCreatedAt(createdAt);
     streamingDestination.setLastModifiedDate(lastModifiedAt);
+    streamingDestination.setDescription(description);
+    streamingDestination.setTags(tags);
 
     StreamingDestinationResponse response =
         streamingDestinationsApiUtils.getStreamingDestinationResponse(streamingDestination);
@@ -127,6 +134,8 @@ public class StreamingDestinationsApiUtilsTest extends CategoryTest {
                                       .name(name)
                                       .status(statusEnum)
                                       .connectorRef(connectorRef)
+                                      .description(description)
+                                      .tags(convertToMap(tags))
                                       .spec(new AwsS3StreamingDestinationSpecDTO().bucket(bucket).type(AWS_S3)))
             .created(createdAt)
             .updated(lastModifiedAt);
