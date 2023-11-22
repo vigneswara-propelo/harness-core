@@ -3,6 +3,11 @@
 # that can be found in the licenses directory at the root of this repository, also available at
 # https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
 
+load("//tools/bazel/sonarqube:defs.bzl", "sonarqube")
+load("//project/flags:sonarqube_targets_seperated.bzl", "get_sonarqube_targets_seperated")
+load("@rules_python//python:defs.bzl", "py_runtime", "py_runtime_pair")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+
 exports_files([
     "tools/bazel/signer.sh",
 ])
@@ -213,9 +218,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-load("//tools/bazel/sonarqube:defs.bzl", "sonarqube")
-load("//project/flags:sonarqube_targets_seperated.bzl", "get_sonarqube_targets_seperated")
-
 # For Java Modules, by default language is set to "java" value.
 sonarqube(
     name = "sq_000_399",
@@ -293,8 +295,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-load("@rules_python//python:defs.bzl", "py_runtime", "py_runtime_pair")
-
 py_runtime(
     name = "python3_runtime",
     files = ["@python_interpreter//:files"],
@@ -314,8 +314,6 @@ toolchain(
     toolchain = ":py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
-
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 pkg_tar(
     name = "alpn_boot_8.1.13.v20181017_tar",
