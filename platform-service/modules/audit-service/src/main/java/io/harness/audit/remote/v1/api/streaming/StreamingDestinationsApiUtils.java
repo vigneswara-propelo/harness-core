@@ -84,6 +84,7 @@ public class StreamingDestinationsApiUtils {
     StreamingDestinationDTO streamingDestinationDTO = new StreamingDestinationDTO();
     streamingDestinationDTO.identifier(streamingDestination.getIdentifier())
         .name(streamingDestination.getName())
+        .description(streamingDestination.getDescription())
         .tags(ApiUtils.getTags(streamingDestination.getTags()))
         .status(streamingDestination.getStatus())
         .connectorRef(streamingDestination.getConnectorRef())
