@@ -494,7 +494,8 @@ public class ProjectServiceImplTest extends CategoryTest {
                       .build();
     ArgumentCaptor<Criteria> criteriaArgumentCaptor = ArgumentCaptor.forClass(Criteria.class);
     when(projectRepository.findAll(any(Criteria.class))).thenReturn(List.of(project));
-    when(projectRepository.findAll(any(Criteria.class), any(Pageable.class))).thenReturn(getPage(List.of(project), 1));
+    when(projectRepository.findAllWithCollation(any(Criteria.class), any(Pageable.class)))
+        .thenReturn(getPage(List.of(project), 1));
     when(scopeAccessHelper.getPermittedScopes(any())).thenReturn(List.of(scope));
 
     Set<String> orgIdentifiers = Collections.singleton(orgIdentifier);
@@ -503,7 +504,7 @@ public class ProjectServiceImplTest extends CategoryTest {
         Boolean.FALSE);
 
     verify(projectRepository, times(1)).findAll(any(Criteria.class));
-    verify(projectRepository, times(1)).findAll(criteriaArgumentCaptor.capture(), any(Pageable.class));
+    verify(projectRepository, times(1)).findAllWithCollation(criteriaArgumentCaptor.capture(), any(Pageable.class));
 
     Criteria criteria = criteriaArgumentCaptor.getValue();
     Document criteriaObject = criteria.getCriteriaObject();
@@ -541,7 +542,8 @@ public class ProjectServiceImplTest extends CategoryTest {
                       .build();
     ArgumentCaptor<Criteria> criteriaArgumentCaptor = ArgumentCaptor.forClass(Criteria.class);
     when(projectRepository.findAll(any(Criteria.class))).thenReturn(List.of(project, project2));
-    when(projectRepository.findAll(any(Criteria.class), any(Pageable.class))).thenReturn(getPage(List.of(project2), 1));
+    when(projectRepository.findAllWithCollation(any(Criteria.class), any(Pageable.class)))
+        .thenReturn(getPage(List.of(project2), 1));
     when(scopeAccessHelper.getPermittedScopes(any())).thenReturn(List.of(scope));
     when(favoritesService.getFavorites(accountIdentifier, null, null, null, ResourceType.PROJECT.toString()))
         .thenReturn(List.of(Favorite.builder()
@@ -553,7 +555,7 @@ public class ProjectServiceImplTest extends CategoryTest {
         ProjectFilterDTO.builder().orgIdentifiers(orgIdentifiers).searchTerm(searchTerm).moduleType(CD).build(),
         Boolean.TRUE);
     verify(projectRepository, times(1)).findAll(any(Criteria.class));
-    verify(projectRepository, times(1)).findAll(criteriaArgumentCaptor.capture(), any(Pageable.class));
+    verify(projectRepository, times(1)).findAllWithCollation(criteriaArgumentCaptor.capture(), any(Pageable.class));
 
     Criteria criteria = criteriaArgumentCaptor.getValue();
     Document criteriaObject = criteria.getCriteriaObject();
