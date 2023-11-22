@@ -30,6 +30,7 @@ import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -71,7 +72,7 @@ public class OidcRsaKeyService {
   }
 
   private String encryptPrivateKey(String accountId, String privateKeyPem) {
-    String privateKeyIdentifier = "__INTERNAL_" + accountId + "_oidc_privateKey_PEM__";
+    String privateKeyIdentifier = "__INTERNAL_" + getIdentifierForEncryptedRecord(accountId) + "_oidc_privateKey_PEM__";
     SecretRequestWrapper secretRequestWrapper =
         SecretRequestWrapper.builder()
             .secret(SecretDTOV2.builder()
@@ -92,5 +93,22 @@ public class OidcRsaKeyService {
     ngSecretService.create(accountId, null, null, false, secretRequestWrapper);
     return SecretRefHelper.getSecretConfigString(
         SecretRefData.builder().identifier(privateKeyIdentifier).scope(Scope.ACCOUNT).build());
+  }
+
+  private String getIdentifierForEncryptedRecord(String baseId) {
+    // Define the regex pattern that contains only alphanumeric, underscore and $ characters
+    // and does not start with a number or $
+    String regex = "[^a-zA-Z0-9_\\$]";
+
+    // Replace invalid characters with "_"
+    String replacedString = baseId.replaceAll(regex, "_");
+
+    // Check and replace the first character if it's a number or "$"
+    if (replacedString.length() > 0
+        && (Character.isDigit(replacedString.charAt(0)) || replacedString.charAt(0) == '$')) {
+      replacedString = "_" + replacedString.substring(1);
+    }
+
+    return replacedString;
   }
 }
