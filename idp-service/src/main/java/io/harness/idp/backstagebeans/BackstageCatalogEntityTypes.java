@@ -37,31 +37,6 @@ public enum BackstageCatalogEntityTypes {
     throw new IllegalArgumentException(String.format("Could not find type for %s", text));
   }
 
-  public static Class<?> getTypeReference(String kind) {
-    switch (BackstageCatalogEntityTypes.fromString(kind)) {
-      case DOMAIN:
-        return BackstageCatalogDomainEntity.class;
-      case SYSTEM:
-        return BackstageCatalogSystemEntity.class;
-      case COMPONENT:
-        return BackstageCatalogComponentEntity.class;
-      case API:
-        return BackstageCatalogApiEntity.class;
-      case USER:
-        return BackstageCatalogUserEntity.class;
-      case GROUP:
-        return BackstageCatalogGroupEntity.class;
-      case RESOURCE:
-        return BackstageCatalogResourceEntity.class;
-      case LOCATION:
-        return BackstageCatalogLocationEntity.class;
-      case TEMPLATE:
-        return BackstageCatalogTemplateEntity.class;
-      default:
-        throw new IllegalArgumentException(String.format("Could not get TypeReference for unknown kind %s", kind));
-    }
-  }
-
   public static String getEntityType(BackstageCatalogEntity entity) {
     switch (BackstageCatalogEntityTypes.fromString(entity.getKind())) {
       case API:
@@ -95,6 +70,17 @@ public enum BackstageCatalogEntityTypes {
         return ((BackstageCatalogGroupEntity) entity).getSpec().getOwner();
       case TEMPLATE:
         return ((BackstageCatalogTemplateEntity) entity).getSpec().getOwner();
+      default:
+        return null;
+    }
+  }
+
+  public static String getEntityDomain(BackstageCatalogEntity entity) {
+    switch (BackstageCatalogEntityTypes.fromString(entity.getKind())) {
+      case COMPONENT:
+        return ((BackstageCatalogComponentEntity) entity).getSpec().getDomain();
+      case SYSTEM:
+        return ((BackstageCatalogSystemEntity) entity).getSpec().getDomain();
       default:
         return null;
     }

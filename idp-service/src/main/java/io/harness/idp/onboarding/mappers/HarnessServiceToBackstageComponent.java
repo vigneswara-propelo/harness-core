@@ -102,8 +102,9 @@ public class HarnessServiceToBackstageComponent
   }
 
   private String getBackstageHarnessAnnotationProjectUrlByEnv() {
-    if (envOverrideForHarnessCiCdAnnotation.contains(env))
+    if (envOverrideForHarnessCiCdAnnotation.contains(env)) {
       return BACKSTAGE_HARNESS_ANNOTATION_PROJECT_URL + "-" + env;
+    }
     return BACKSTAGE_HARNESS_ANNOTATION_PROJECT_URL;
   }
 

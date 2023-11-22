@@ -38,6 +38,8 @@ import io.harness.idp.envvariable.jobs.BackstageEnvVariablesSyncJob;
 import io.harness.idp.events.consumers.EntityCrudStreamConsumer;
 import io.harness.idp.events.consumers.IdpEventConsumerController;
 import io.harness.idp.events.consumers.IdpModuleLicenseUsageCaptureEventConsumer;
+import io.harness.idp.governance.beans.Constants;
+import io.harness.idp.governance.services.ScorecardExpansionHandler;
 import io.harness.idp.license.usage.jobs.IDPTelemetryRecordsJob;
 import io.harness.idp.license.usage.jobs.LicenseUsageDailyCountJob;
 import io.harness.idp.license.usage.resources.IDPLicenseUsageResource;
@@ -70,12 +72,17 @@ import io.harness.notification.notificationclient.NotificationClient;
 import io.harness.notification.templates.PredefinedTemplate;
 import io.harness.outbox.OutboxEventPollService;
 import io.harness.persistence.HPersistence;
+import io.harness.pms.contracts.plan.ExpansionRequestType;
+import io.harness.pms.contracts.plan.JsonExpansionInfo;
+import io.harness.pms.contracts.steps.StepCategory;
+import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.events.base.PipelineEventConsumerController;
 import io.harness.pms.listener.NgOrchestrationNotifyEventListenerNonVersioned;
 import io.harness.pms.sdk.PmsSdkConfiguration;
 import io.harness.pms.sdk.PmsSdkInitHelper;
 import io.harness.pms.sdk.PmsSdkModule;
 import io.harness.pms.sdk.core.SdkDeployMode;
+import io.harness.pms.sdk.core.governance.JsonExpansionHandlerInfo;
 import io.harness.pms.sdk.execution.events.facilitators.FacilitatorEventRedisConsumer;
 import io.harness.pms.sdk.execution.events.facilitators.FacilitatorEventRedisConsumerV2;
 import io.harness.pms.sdk.execution.events.interrupts.InterruptEventRedisConsumer;
@@ -91,6 +98,7 @@ import io.harness.pms.sdk.execution.events.plan.CreatePartialPlanRedisConsumer;
 import io.harness.pms.sdk.execution.events.progress.NodeProgressEventRedisConsumerV2;
 import io.harness.pms.sdk.execution.events.progress.ProgressEventRedisConsumer;
 import io.harness.pms.serializer.json.PmsBeansJacksonModule;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.queue.QueueListenerController;
 import io.harness.queue.QueuePublisher;
 import io.harness.request.RequestContextFilter;
@@ -99,7 +107,6 @@ import io.harness.security.InternalApiAuthFilter;
 import io.harness.security.NextGenAuthenticationFilter;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
-import io.harness.serializer.PipelineServiceUtilAdviserRegistrar;
 import io.harness.service.impl.DelegateAsyncServiceImpl;
 import io.harness.service.impl.DelegateProgressServiceImpl;
 import io.harness.service.impl.DelegateSyncServiceImpl;
@@ -146,7 +153,6 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import java.util.logging.LogManager;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ResourceInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -427,8 +433,25 @@ public class IdpApplication extends Application<IdpConfiguration> {
         .executionPoolConfig(configuration.getPmsSdkExecutionPoolConfig())
         .orchestrationEventPoolConfig(configuration.getPmsSdkOrchestrationEventPoolConfig())
         .executionSummaryModuleInfoProviderClass(CIModuleInfoProvider.class)
-        .eventsFrameworkConfiguration(configuration.getEventsFrameworkConfiguration())
+        .jsonExpansionHandlers(getJsonExpansionHandlers())
         .build();
+  }
+
+  private List<JsonExpansionHandlerInfo> getJsonExpansionHandlers() {
+    List<JsonExpansionHandlerInfo> jsonExpansionHandlers = new ArrayList<>();
+    JsonExpansionInfo scorecardInfo =
+        JsonExpansionInfo.newBuilder()
+            .setExpansionType(ExpansionRequestType.LOCAL_FQN)
+            .setKey(YAMLFieldNameConstants.STAGE)
+            .setExpansionKey(Constants.IDP_SCORECARD_EXPANSION_KEY)
+            .setStageType(StepType.newBuilder().setType("Deployment").setStepCategory(StepCategory.STAGE).build())
+            .build();
+    JsonExpansionHandlerInfo scorecardExpansionHandler = JsonExpansionHandlerInfo.builder()
+                                                             .jsonExpansionInfo(scorecardInfo)
+                                                             .expansionHandler(ScorecardExpansionHandler.class)
+                                                             .build();
+    jsonExpansionHandlers.add(scorecardExpansionHandler);
+    return jsonExpansionHandlers;
   }
 
   private void registerPMSSDK(IdpConfiguration configuration, Injector injector) {
