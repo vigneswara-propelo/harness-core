@@ -680,7 +680,7 @@ public class InviteServiceImpl implements InviteService {
       }
 
       if (isPLNoEmailForSamlAccountInvitesEnabled && !twoFactorAuthSettingsInfo.isTwoFactorAuthenticationEnabled()) {
-        return InviteOperationResponse.USER_INVITE_NOT_REQUIRED;
+        return InviteOperationResponse.USER_ADDED_SUCCESSFULLY_TO_ACCOUNT;
       } else {
         ngAuditUserInviteCreateEvent(savedInvite);
       }

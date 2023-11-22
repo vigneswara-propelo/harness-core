@@ -41,6 +41,8 @@ public enum AddUserResponse {
         return USER_ALREADY_INVITED;
       case USER_INVITE_NOT_REQUIRED:
         return USER_INVITE_NOT_REQUIRED;
+      case USER_ADDED_SUCCESSFULLY_TO_ACCOUNT:
+        return USER_ADDED_SUCCESSFULLY;
       case FAIL:
         return FAIL;
       default:

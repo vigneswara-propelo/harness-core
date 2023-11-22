@@ -33,10 +33,10 @@ import static io.harness.ng.core.invites.dto.InviteOperationResponse.ACCOUNT_INV
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.FAIL;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.INVITE_EXPIRED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.INVITE_INVALID;
+import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_ADDED_SUCCESSFULLY_TO_ACCOUNT;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_ALREADY_ADDED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_ALREADY_INVITED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_INVITED_SUCCESSFULLY;
-import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_INVITE_NOT_REQUIRED;
 import static io.harness.persistence.AccountAccess.ACCOUNT_ID_KEY;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
@@ -1688,7 +1688,7 @@ public class UserServiceImpl implements UserService {
         -> auditServiceHelper.reportForAuditingUsingAccountId(accountId, null, userGroupAdded, Type.ADD));
 
     if (isPLNoEmailForSamlAccountInvitesEnabled && !user.isTwoFactorAuthenticationEnabled()) {
-      return USER_INVITE_NOT_REQUIRED;
+      return USER_ADDED_SUCCESSFULLY_TO_ACCOUNT;
     } else {
       eventPublishHelper.publishUserInviteFromAccountEvent(accountId, userInvite.getEmail());
     }

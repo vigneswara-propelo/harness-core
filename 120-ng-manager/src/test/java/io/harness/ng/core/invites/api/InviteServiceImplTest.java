@@ -15,10 +15,10 @@ import static io.harness.ng.core.invites.InviteType.ADMIN_INITIATED_INVITE;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.ACCOUNT_INVITE_ACCEPTED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.INVITE_EXPIRED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.INVITE_INVALID;
+import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_ADDED_SUCCESSFULLY_TO_ACCOUNT;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_ALREADY_ADDED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_ALREADY_INVITED;
 import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_INVITED_SUCCESSFULLY;
-import static io.harness.ng.core.invites.dto.InviteOperationResponse.USER_INVITE_NOT_REQUIRED;
 import static io.harness.rule.OwnerRule.ANKUSH;
 import static io.harness.rule.OwnerRule.KAPIL;
 import static io.harness.rule.OwnerRule.PRATEEK;
@@ -647,7 +647,7 @@ public class InviteServiceImplTest extends CategoryTest {
 
     InviteOperationResponse inviteOperationResponse = inviteService.create(getDummyInvite(), false, false);
 
-    assertThat(inviteOperationResponse).isEqualTo(USER_INVITE_NOT_REQUIRED);
+    assertThat(inviteOperationResponse).isEqualTo(USER_ADDED_SUCCESSFULLY_TO_ACCOUNT);
     verify(notificationClient, times(0)).sendNotificationAsync(any());
   }
 
