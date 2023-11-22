@@ -305,6 +305,9 @@ public class AuthenticationManager {
 
   public User switchAccount(String bearerToken, String accountId) {
     AuthToken authToken = authService.validateToken(bearerToken);
+    if (authToken == null) {
+      throw new AccessDeniedException("User not authorized", USER);
+    }
     User user = authToken.getUser();
     if (user.getAccounts() == null
         || user.getAccounts().stream().noneMatch(account -> account.getUuid().equals(accountId))) {
