@@ -15,6 +15,7 @@ import io.harness.utils.FullyQualifiedIdentifierHelper;
 import com.cronutils.utils.Preconditions;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class ScopedInformation {
@@ -43,28 +44,59 @@ public class ScopedInformation {
     }
   }
   public static ResourceParams getResourceParamsFromScopedIdentifier(String scopedIdentifier) {
-    String[] splitScopedIdentifier = scopedIdentifier.split("\\.");
-    if (splitScopedIdentifier.length == 5 && splitScopedIdentifier[0].equals("PROJECT")) {
-      return ResourceParams.builder()
-          .accountIdentifier(splitScopedIdentifier[1])
-          .orgIdentifier(splitScopedIdentifier[2])
-          .projectIdentifier(splitScopedIdentifier[3])
-          .identifier(splitScopedIdentifier[4])
-          .build();
-    } else if (splitScopedIdentifier.length == 4 && splitScopedIdentifier[0].equals("ORG")) {
-      return ResourceParams.builder()
-          .accountIdentifier(splitScopedIdentifier[1])
-          .orgIdentifier(splitScopedIdentifier[2])
-          .identifier(splitScopedIdentifier[3])
-          .build();
-    } else if (splitScopedIdentifier.length == 3 && splitScopedIdentifier[0].equals("ACCOUNT")) {
-      return ResourceParams.builder()
-          .accountIdentifier(splitScopedIdentifier[1])
-          .identifier(splitScopedIdentifier[2])
-          .build();
-    } else {
-      throw new InvalidArgumentsException("Invalid Scoped Identifier");
+    String scope = scopedIdentifier.contains(".") ? scopedIdentifier.substring(0, scopedIdentifier.indexOf('.'))
+                                                  : scopedIdentifier;
+
+    String rest = scopedIdentifier.substring(scope.length() + 1);
+
+    switch (scope) {
+      case "ACCOUNT":
+        return parseAccountScope(rest);
+
+      case "ORG":
+        return parseOrgScope(rest);
+
+      case "PROJECT":
+        return parseProjectScope(rest);
+
+      default:
+        throw new InvalidArgumentsException("Invalid Scoped Identifier");
     }
+  }
+
+  private static ResourceParams parseAccountScope(String rest) {
+    String accountIdentifier = rest.contains(".") ? StringUtils.substringBefore(rest, ".") : rest;
+    String identifier = rest.substring(accountIdentifier.length() + 1);
+
+    return ResourceParams.builder().accountIdentifier(accountIdentifier).identifier(identifier).build();
+  }
+
+  private static ResourceParams parseOrgScope(String rest) {
+    String accountIdentifier = rest.contains(".") ? StringUtils.substringBefore(rest, ".") : rest;
+    String orgIdentifier = StringUtils.substringBefore(rest.substring(accountIdentifier.length() + 1), ".");
+    String identifier = rest.substring(accountIdentifier.length() + orgIdentifier.length() + 2);
+
+    return ResourceParams.builder()
+        .accountIdentifier(accountIdentifier)
+        .orgIdentifier(orgIdentifier)
+        .identifier(identifier)
+        .build();
+  }
+
+  private static ResourceParams parseProjectScope(String rest) {
+    String accountIdentifier = rest.contains(".") ? StringUtils.substringBefore(rest, ".") : rest;
+    String orgIdentifier = StringUtils.substringBefore(rest.substring(accountIdentifier.length() + 1), ".");
+    String projectIdentifier =
+        StringUtils.substringBefore(rest.substring(accountIdentifier.length() + orgIdentifier.length() + 2), ".");
+    String identifier =
+        rest.substring(accountIdentifier.length() + orgIdentifier.length() + projectIdentifier.length() + 3);
+
+    return ResourceParams.builder()
+        .accountIdentifier(accountIdentifier)
+        .orgIdentifier(orgIdentifier)
+        .projectIdentifier(projectIdentifier)
+        .identifier(identifier)
+        .build();
   }
 
   public static List<ResourceParams> getResourceParamsFromScopedIdentifiers(List<String> scopedIdentifiers) {
