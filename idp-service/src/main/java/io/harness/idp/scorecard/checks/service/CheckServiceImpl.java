@@ -38,7 +38,6 @@ import io.harness.idp.scorecard.checks.mappers.CheckStatsMapper;
 import io.harness.idp.scorecard.checks.repositories.CheckRepository;
 import io.harness.idp.scorecard.checks.repositories.CheckStatusEntityByIdentifier;
 import io.harness.idp.scorecard.checks.repositories.CheckStatusRepository;
-import io.harness.idp.scorecard.datapoints.entity.DataPointEntity;
 import io.harness.idp.scorecard.datapoints.service.DataPointService;
 import io.harness.idp.scorecard.scorecards.service.ScorecardService;
 import io.harness.idp.scorecard.scores.repositories.EntityIdentifierAndCheckStatus;
@@ -62,10 +61,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -74,6 +73,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.tools.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -113,11 +113,7 @@ public class CheckServiceImpl implements CheckService {
   @Override
   public void createCheck(CheckDetails checkDetails, String accountIdentifier) {
     Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
-      generateRuleIdentifiers(checkDetails);
-
-      // TODO: To be removed once UI starts sending input values in the new format.
-      copyInputValues(checkDetails, accountIdentifier);
-
+      generateRuleIdentifiersIfNotPresent(checkDetails);
       validateCheckSaveRequest(checkDetails, accountIdentifier);
 
       if (isCheckAlreadyDeleted(accountIdentifier, checkDetails.getIdentifier())) {
@@ -132,12 +128,9 @@ public class CheckServiceImpl implements CheckService {
   @Override
   public void updateCheck(CheckDetails checkDetails, String accountIdentifier) {
     Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
-      validateRules(checkDetails);
-
-      // TODO: To be removed once UI starts sending input values in the new format.
-      copyInputValues(checkDetails, accountIdentifier);
-
+      generateRuleIdentifiersIfNotPresent(checkDetails);
       validateCheckSaveRequest(checkDetails, accountIdentifier);
+
       CheckEntity oldCheckEntity =
           checkRepository.findByAccountIdentifierAndIdentifier(accountIdentifier, checkDetails.getIdentifier());
       CheckEntity updatedCheckEntity =
@@ -357,24 +350,27 @@ public class CheckServiceImpl implements CheckService {
         throw new InvalidRequestException(format("Data point not found for dataSource: %s, dataPoint: %s",
             rule.getDataSourceIdentifier(), rule.getDataPointIdentifier()));
       }
-      DataPoint dataPoint = dataPointMap.get(key);
-      if (dataPoint.isIsConditional() && isEmpty(rule.getConditionalInputValue())) {
-        throw new InvalidRequestException("Conditional input value is required");
-      }
 
-      // TODO: Enable this validation once UI sends in new fprmat
-      //      if (dataPoint.isIsConditional()) {
-      //        List<InputValue> inputValues = rule.getInputValues();
-      //        if (inputValues.isEmpty()) {
-      //          throw new InvalidRequestException("Input value(s) is/are required");
-      //        }
-      //        for (InputValue inputValue : inputValues) {
-      //          if (isEmpty(inputValue.getValue())) {
-      //            throw new InvalidRequestException(String.format(
-      //                    "Conditional input value for key %s is required", inputValue.getKey()));
-      //          }
-      //        }
-      //      }
+      // TODO: Remove this condition once UI sends in new format
+      if (rule.getInputValues() != null) {
+        DataPoint dataPoint = dataPointMap.get(key);
+        List<InputValue> inputValues = rule.getInputValues();
+        for (InputValue inputValue : inputValues) {
+          Optional<InputDetails> inputDetailsOpt =
+              dataPoint.getInputDetails()
+                  .stream()
+                  .filter(inputDetails -> inputDetails.getKey().equals(inputValue.getKey()))
+                  .findFirst();
+          if (inputDetailsOpt.isEmpty()) {
+            throw new InvalidRequestException(String.format(
+                "Conditional input value for key %s does not match any data point input details", inputValue.getKey()));
+          }
+          if (inputDetailsOpt.get().isRequired() && isEmpty(inputValue.getValue())) {
+            throw new InvalidRequestException(
+                String.format("Conditional input value for key %s is required", inputValue.getKey()));
+          }
+        }
+      }
     }
   }
 
@@ -384,31 +380,11 @@ public class CheckServiceImpl implements CheckService {
     return checkEntity != null;
   }
 
-  private void copyInputValues(CheckDetails checkDetails, String accountIdentifier) {
+  private void generateRuleIdentifiersIfNotPresent(CheckDetails checkDetails) {
     for (Rule rule : checkDetails.getRules()) {
-      DataPointEntity dataPoint = dataPointService.getDataPoint(
-          accountIdentifier, rule.getDataSourceIdentifier(), rule.getDataPointIdentifier());
-      List<InputDetails> inputsDetails = dataPoint.getInputDetails();
-      if (inputsDetails != null && inputsDetails.size() == 1) {
-        InputValue inputValue = new InputValue();
-        inputValue.setKey(inputsDetails.get(0).getKey());
-        inputValue.setValue(rule.getConditionalInputValue());
-        rule.setInputValues(Collections.singletonList(inputValue));
+      if (StringUtils.isBlank(rule.getIdentifier())) {
+        rule.setIdentifier(UUID.randomUUID().toString());
       }
-    }
-  }
-
-  private void validateRules(CheckDetails checkDetails) {
-    for (Rule rule : checkDetails.getRules()) {
-      if (rule.getIdentifier().isBlank()) {
-        throw new InvalidRequestException("Rule identifier cannot be empty");
-      }
-    }
-  }
-
-  private void generateRuleIdentifiers(CheckDetails checkDetails) {
-    for (Rule rule : checkDetails.getRules()) {
-      rule.setIdentifier(UUID.randomUUID().toString());
     }
   }
 }

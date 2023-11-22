@@ -92,7 +92,17 @@ public class CheckDetailsMapper {
   }
 
   private static String getDisplayExpression(Rule rule) {
-    return rule.getDataSourceIdentifier() + DOT_SEPARATOR + rule.getDataPointIdentifier() + rule.getOperator()
-        + rule.getValue();
+    StringBuilder expressionBuilder =
+        new StringBuilder(rule.getDataSourceIdentifier()).append(DOT_SEPARATOR).append(rule.getDataPointIdentifier());
+
+    rule.getInputValues().forEach(inputValue -> {
+      String inputValueReplaced = inputValue.getValue().replace("\"", "");
+      expressionBuilder.append(DOT_SEPARATOR);
+      expressionBuilder.append(inputValueReplaced);
+    });
+
+    expressionBuilder.append(rule.getOperator());
+    expressionBuilder.append(rule.getValue());
+    return expressionBuilder.toString();
   }
 }

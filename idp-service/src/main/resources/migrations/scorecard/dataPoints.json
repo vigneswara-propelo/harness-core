@@ -7,8 +7,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_mean_time_to_merge_pr",
-    "isConditional": true,
-    "conditionalInputValueDescription": "Branch name",
     "inputDetails": [
       {
         "key": "branchName",
@@ -39,8 +37,6 @@
     "type": "BOOLEAN",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_is_branch_protection_set",
-    "isConditional": true,
-    "conditionalInputValueDescription" : "Branch name",
     "inputDetails": [
       {
         "key": "branchName",
@@ -83,8 +79,6 @@
     "type": "BOOLEAN",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_is_file_exists",
-    "isConditional": true,
-    "conditionalInputValueDescription": "File path (e.g. src/index.js)",
     "inputDetails": [
       {
         "key": "filePath",
@@ -192,7 +186,6 @@
     "dataSourceIdentifier": "kubernetes",
     "dataSourceLocationIdentifier": "kubernetes",
     "outcomeExpression":  "kubernetes.workload.spec.replicas",
-    "isConditional": false,
     "description": "Fetches the number of replicas configured for the given service.",
     "detailedDescription": "**How it's calculated:** The label selector configured in the catalog YAML is used to identify the Kubernetes workload and the configured replica count is used. The cluster details configured in the Kubernetes plugin are used. If more than one cluster is configured, the workload search is done in each cluster and a minimum of all the replica counts is taken into consideration.\n\n**Prerequisites:** The Kubernetes plugin needs to be configured and enabled in the admin section. Refer:[Link](https://developer.harness.io/docs/internal-developer-portal/plugins/available-plugins/kubernetes/)"
   },
@@ -205,7 +198,6 @@
     "dataSourceIdentifier": "kubernetes",
     "dataSourceLocationIdentifier": "kubernetes",
     "outcomeExpression":  "kubernetes.workload.status.conditions",
-    "isConditional": false,
     "description": "Fetches the number of days since the most recent deployment was done.",
     "detailedDescription": "**How it's calculated:** The label selector configured in the catalog YAML is used to identify the Kubernetes workload and the lastUpdateTime is used from the conditions section. The cluster details configured in the Kubernetes plugin are used. If more than one cluster is configured, the workload search is done in each cluster and the oldest deployment time of all is taken into consideration.\n\n**Prerequisites:** The Kubernetes plugin needs to be configured and enabled in the admin section. Refer:[Link](https://developer.harness.io/docs/internal-developer-portal/plugins/available-plugins/kubernetes/)"
   },
@@ -217,8 +209,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "bitbucket",
     "dataSourceLocationIdentifier": "bitbucket_mean_time_to_merge_pr",
-    "isConditional": true,
-    "conditionalInputValueDescription": "Branch name",
     "inputDetails": [
       {
         "key": "branchName",
@@ -237,8 +227,6 @@
     "type": "BOOLEAN",
     "dataSourceIdentifier": "bitbucket",
     "dataSourceLocationIdentifier": "bitbucket_is_branch_protection_set",
-    "isConditional": true,
-    "conditionalInputValueDescription" : "Branch name",
     "inputDetails": [
       {
         "key": "branchName",
@@ -257,8 +245,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "jira",
     "dataSourceLocationIdentifier": "jira_mean_time_to_resolve",
-    "isConditional": true,
-    "conditionalInputValueDescription" : "JQL (e.g. issuetype = Bug AND priority in (P0,P1) AND resolved >= -90d)",
     "inputDetails": [
       {
         "key": "jql",
@@ -277,8 +263,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "jira",
     "dataSourceLocationIdentifier": "jira_issues_count",
-    "isConditional": true,
-    "conditionalInputValueDescription" : "JQL (e.g. issuetype = Bug AND priority in (P0,P1) AND statusCategory != Done)",
     "inputDetails": [
       {
         "key": "jql",
@@ -297,8 +281,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "jira",
     "dataSourceLocationIdentifier": "jira_issues_open_close_ratio",
-    "isConditional": true,
-    "conditionalInputValueDescription" : "JQL (e.g issuetype = Bug AND priority in (P0,P1) AND created >= -90d)",
     "inputDetails": [
       {
         "key": "jql",
@@ -317,8 +299,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "gitlab",
     "dataSourceLocationIdentifier": "gitlab_mean_time_to_merge_pr",
-    "isConditional": true,
-    "conditionalInputValueDescription": "Branch name",
     "inputDetails": [
       {
         "key": "branchName",
@@ -337,8 +317,6 @@
     "type": "BOOLEAN",
     "dataSourceIdentifier": "gitlab",
     "dataSourceLocationIdentifier": "gitlab_is_branch_protection_set",
-    "isConditional": true,
-    "conditionalInputValueDescription" : "Branch name",
     "inputDetails": [
       {
         "key": "branchName",
@@ -357,8 +335,6 @@
     "type": "BOOLEAN",
     "dataSourceIdentifier": "gitlab",
     "dataSourceLocationIdentifier": "gitlab_is_file_exists",
-    "isConditional": true,
-    "conditionalInputValueDescription": "File path (e.g. src/index.js)",
     "inputDetails": [
       {
         "key": "filePath",
@@ -388,8 +364,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_workflow_success_rate",
-    "isConditional": true,
-    "conditionalInputValueDescription": "YAML filename with extension (ci-workflow.yml)",
     "inputDetails": [
       {
         "key": "filePath",
@@ -408,8 +382,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_mean_time_to_complete_workflow_runs",
-    "isConditional": true,
-    "conditionalInputValueDescription": "YAML filename with extension (ci-workflow.yml)",
     "inputDetails": [
       {
         "key": "filePath",
@@ -428,8 +400,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_mean_time_to_complete_success_workflow_runs",
-    "isConditional": true,
-    "conditionalInputValueDescription": "YAML filename with extension (ci-workflow.yml)",
     "inputDetails": [
       {
         "key": "filePath",
@@ -448,8 +418,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_open_dependabot_alerts",
-    "isConditional": true,
-    "conditionalInputValueDescription": "Severity type (critical or high)",
     "inputDetails": [
       {
         "key": "severityType",
@@ -468,8 +436,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_open_code_scanning_alerts",
-    "isConditional": true,
-    "conditionalInputValueDescription": "Severity type (critical or high)",
     "inputDetails": [
       {
         "key": "severityType",
@@ -488,7 +454,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_open_secret_scanning_alerts",
-    "isConditional": false,
     "description": "Calculates the total number of open alerts reported in secret scanning",
     "detailedDescription": "**How it's calculated:** Fetches backstage.io/source-location annotation from catalog YAML file to find repository details and calculates the total number of open alerts reported in secret scanning.\n\n**Prerequisites:** GitHub Connector with read access for secret scanning alerts. Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitHub repository."
   },
@@ -500,8 +465,6 @@
     "type": "NUMBER",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_open_pull_requests_by_account",
-    "isConditional": true,
-    "conditionalInputValueDescription": "Account name (e.g: app/dependabot)",
     "inputDetails": [
       {
         "key": "accountName",
@@ -511,5 +474,61 @@
     ],
     "description": "Calculates the total number of open pull requests raised by the given account",
     "detailedDescription": "**How it's calculated:** Fetches backstage.io/source-location annotation from catalog YAML file to find repository details and calculates the total number of open pull requests raised by account.\n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitHub repository. Make sure to mention the username in the conditional input field."
+  },
+  {
+    "id": "653772979a42f41b2bd082fe",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "fileContents",
+    "name": "File contents",
+    "type": "STRING",
+    "dataSourceIdentifier": "github",
+    "dataSourceLocationIdentifier": "github_file_contents",
+    "inputDetails": [
+      {
+        "key": "branchName",
+        "description": "Branch Name",
+        "required": true
+      },
+      {
+        "key": "filePath",
+        "description": "File path (e.g. src/index.js)",
+        "required": true
+      },
+      {
+        "key": "pattern",
+        "description": "Regex Pattern to search for in the file",
+        "required": true
+      }
+    ],
+    "description": "Gets the string matching the pattern from given file from the branch.",
+    "detailedDescription": "**How it's calculated:** If a branch name is specified, it is utilized. However, if no branch name is provided, the system retrieves information from the catalog YAML file using the backstage.io/source-location annotation to determine the branch name and repository details. It is essential to specify the filename with its extension or provide the relative path from the root folder (e.g., README.md or docs/README.md) in the conditional input field. After fetching the file, the designated pattern is then searched within the file contents and it's value is extracted and returned \n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitHub repository."
+  },
+  {
+    "id": "6537ca6bf4f2d0d2eb140d32",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "fileContains",
+    "name": "File contains",
+    "type": "BOOLEAN",
+    "dataSourceIdentifier": "github",
+    "dataSourceLocationIdentifier": "github_file_contents",
+    "inputDetails": [
+      {
+        "key": "branchName",
+        "description": "Branch Name",
+        "required": true
+      },
+      {
+        "key": "filePath",
+        "description": "File path (e.g. src/index.js)",
+        "required": true
+      },
+      {
+        "key": "pattern",
+        "description": "Regex Pattern to search for in the file",
+        "required": true
+      }
+    ],
+    "description": "Matches the pattern in the given file from the branch.",
+    "detailedDescription": "**How it's calculated:** If a branch name is specified, it is utilized. However, if no branch name is provided, the system retrieves information from the catalog YAML file using the backstage.io/source-location annotation to determine the branch name and repository details. It is essential to specify the filename with its extension or provide the relative path from the root folder (e.g., README.md or docs/README.md) in the conditional input field. After fetching the file, the contents are examined to find the pattern. Returns true/false based on whether the pattern was found or not. \n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitHub repository."
   }
 ]

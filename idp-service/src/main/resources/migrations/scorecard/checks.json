@@ -11,7 +11,6 @@
         "identifier": "c318da62-7bbd-40d5-b838-c90d5250fa3f",
         "data_source_identifier": "github",
         "data_point_identifier": "meanTimeToMerge",
-        "conditional_input_value": "\"refs/\"",
         "input_values": [
           {
             "key": "branchName",
@@ -60,7 +59,6 @@
         "identifier": "d7dabd82-5e87-4812-aa7f-b116b3853d58",
         "data_source_identifier": "github",
         "data_point_identifier": "isBranchProtected",
-        "conditional_input_value": "\"refs/\"",
         "input_values":  [
           {
             "key": "branchName",
@@ -130,7 +128,6 @@
         "identifier": "a476c2e3-73c0-48a6-84b7-71159fefe853",
         "data_source_identifier": "github",
         "data_point_identifier": "isFileExists",
-        "conditional_input_value": "\".gitleaks.toml\"",
         "input_values":  [
           {
             "key": "filePath",
@@ -368,7 +365,6 @@
         "identifier": "2a97f5fb-3be6-48a4-a0b1-b2638400c4fe",
         "data_source_identifier": "bitbucket",
         "data_point_identifier": "meanTimeToMerge",
-        "conditional_input_value": "\"refs/\"",
         "input_values":  [
           {
             "key": "branchName",
@@ -396,7 +392,6 @@
         "identifier": "0fb81262-83b2-420b-971e-a0574be41fc8",
         "data_source_identifier": "jira",
         "data_point_identifier": "meanTimeToResolve",
-        "conditional_input_value": "\"issuetype = Bug AND priority in (P0,P1) AND resolved >= -90d\"",
         "input_values":  [
           {
             "key": "jql",
@@ -424,7 +419,6 @@
         "identifier": "68611489-d8ab-4e13-8fee-68956893095b",
         "data_source_identifier": "jira",
         "data_point_identifier": "issuesCount",
-        "conditional_input_value": "\"issuetype = Bug AND priority in (P0,P1) AND statusCategory != Done\"",
         "input_values":  [
           {
             "key": "jql",
@@ -452,7 +446,6 @@
         "identifier": "e623e506-0b0a-4b64-a06b-e61b57d186a3",
         "data_source_identifier": "jira",
         "data_point_identifier": "issuesCount",
-        "conditional_input_value": "\"issuetype in (Epic, 'New Feature') AND resolved >= -90d\"",
         "input_values":  [
           {
             "key": "jql",
@@ -480,7 +473,6 @@
         "identifier": "f63502de-a890-4b90-967c-d7c0e74dccff",
         "data_source_identifier": "jira",
         "data_point_identifier": "issuesOpenCloseRatio",
-        "conditional_input_value": "\"issuetype = Bug AND priority in (P0,P1) AND created >= -90d\"",
         "input_values":  [
           {
             "key": "jql",
@@ -508,7 +500,6 @@
         "identifier": "9444bcaf-62b0-474d-86bc-cb6e0058a73c",
         "data_source_identifier": "gitlab",
         "data_point_identifier": "meanTimeToMerge",
-        "conditional_input_value": "\"refs/\"",
         "input_values":  [
           {
             "key": "branchName",
@@ -536,7 +527,6 @@
         "identifier": "17ff0d2b-e58d-427c-a062-bacfea372d77",
         "data_source_identifier": "gitlab",
         "data_point_identifier": "isBranchProtected",
-        "conditional_input_value": "\"refs/\"",
         "input_values":  [
           {
             "key": "branchName",
@@ -564,7 +554,6 @@
         "identifier": "0692a62d-d9f7-4c76-b5a2-d6a94001fa76",
         "data_source_identifier": "gitlab",
         "data_point_identifier": "isFileExists",
-        "conditional_input_value": "\".gitleaks.toml\"",
         "input_values":  [
           {
             "key": "filePath",
@@ -613,7 +602,6 @@
         "identifier": "e155c3aa-ad1f-4d35-b01d-dfcff12800fc",
         "data_source_identifier": "github",
         "data_point_identifier": "openDependabotAlerts",
-        "conditional_input_value": "critical",
         "input_values":  [
           {
             "key": "severityType",
@@ -641,7 +629,6 @@
         "identifier": "885b99e0-3456-499a-8aff-45f11c885a7f",
         "data_source_identifier": "github",
         "data_point_identifier": "openDependabotAlerts",
-        "conditional_input_value": "high",
         "input_values":  [
           {
             "key": "severityType",
@@ -669,7 +656,6 @@
         "identifier": "b90d69d8-cd9c-4893-8128-c7e97eade60c",
         "data_source_identifier": "github",
         "data_point_identifier": "openCodeScanningAlerts",
-        "conditional_input_value": "critical",
         "input_values":  [
           {
             "key": "severityType",
@@ -697,7 +683,6 @@
         "identifier": "619d9a18-e905-4fde-8dc9-a46c6051663d",
         "data_source_identifier": "github",
         "data_point_identifier": "openCodeScanningAlerts",
-        "conditional_input_value": "high",
         "input_values":  [
           {
             "key": "severityType",
@@ -746,7 +731,6 @@
         "identifier": "a437712d-cb9e-4e17-8236-f93188f669c1",
         "data_source_identifier": "github",
         "data_point_identifier": "openPullRequestsByAccount",
-        "conditional_input_value": "\"app/dependabot\"",
         "input_values":  [
           {
             "key": "accountName",
