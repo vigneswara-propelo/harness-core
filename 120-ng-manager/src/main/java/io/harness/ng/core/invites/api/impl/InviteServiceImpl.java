@@ -478,7 +478,7 @@ public class InviteServiceImpl implements InviteService {
       checkPermissions(newInvite.getAccountIdentifier(), newInvite.getOrgIdentifier(), newInvite.getProjectIdentifier(),
           INVITE_PERMISSION_IDENTIFIER);
       Update update = new Update()
-                          .set(InviteKeys.createdAt, new Date())
+                          .set(InviteKeys.createdAt, Instant.now().toEpochMilli())
                           .set(InviteKeys.validUntil,
                               Date.from(OffsetDateTime.now().plusDays(INVITATION_VALIDITY_IN_DAYS).toInstant()))
                           .set(InviteKeys.roleBindings, newInvite.getRoleBindings())

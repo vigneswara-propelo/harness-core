@@ -89,6 +89,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -233,7 +234,6 @@ public class InviteServiceImplTest extends CategoryTest {
         .thenReturn(Optional.empty());
 
     InviteOperationResponse inviteOperationResponse = inviteService.create(getDummyInvite(), false, false);
-
     assertThat(inviteOperationResponse).isEqualTo(USER_INVITED_SUCCESSFULLY);
     verify(notificationClient, times(1)).sendNotificationAsync(any());
     verify(userClient, times(0)).updateUserTwoFactorAuthInfo(eq(emailId), any(TwoFactorAuthSettingsInfo.class));
@@ -864,5 +864,32 @@ public class InviteServiceImplTest extends CategoryTest {
     assertThat(uri).isNotNull();
     assertThat(uri).isEqualTo(URI.create(String.format("/ng/#/account/%s/home/get-started", accountIdentifier)));
     verify(userClient, never()).sendTwoFactorAuthenticationResetEmail(any(String.class), any(String.class));
+  }
+
+  @Test
+  @Owner(developers = TEJAS)
+  @Category(UnitTests.class)
+  public void testCreate_ResendInvite() throws IOException {
+    UserMetadataDTO user = UserMetadataDTO.builder().name(randomAlphabetic(7)).email(emailId).uuid(userId).build();
+    when(ngUserService.getUserByEmail(any(), anyBoolean())).thenReturn(Optional.of(user));
+    Invite dummyInvite = getDummyInvite();
+    when(inviteRepository.save(any())).thenReturn(dummyInvite);
+    when(inviteRepository.findFirstByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndEmailAndDeletedFalse(
+             any(), any(), any(), any()))
+        .thenReturn(Optional.of(dummyInvite));
+
+    InviteOperationResponse inviteOperationResponse = inviteService.create(dummyInvite, false, false);
+
+    ArgumentCaptor<Update> updateArgumentCaptor = ArgumentCaptor.forClass(Update.class);
+    ArgumentCaptor<String> inviteIdArgumentCaptor = ArgumentCaptor.forClass(String.class);
+
+    verify(inviteRepository, atLeast(1)).updateInvite(inviteIdArgumentCaptor.capture(), updateArgumentCaptor.capture());
+    assertThat(inviteIdArgumentCaptor.getValue()).isEqualTo(dummyInvite.getId());
+    assertThat(((Document) updateArgumentCaptor.getAllValues().get(0).getUpdateObject().get("$set")).get("createdAt"))
+        .isInstanceOf(Long.class);
+
+    assertThat(inviteOperationResponse).isEqualTo(USER_ALREADY_INVITED);
+    verify(notificationClient, times(1)).sendNotificationAsync(any());
+    verify(userClient, times(0)).updateUserTwoFactorAuthInfo(eq(emailId), any(TwoFactorAuthSettingsInfo.class));
   }
 }
