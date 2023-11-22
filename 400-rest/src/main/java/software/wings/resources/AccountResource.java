@@ -493,7 +493,6 @@ public class AccountResource {
   @GET
   @Path("{accountId}")
   @AuthRule(permissionType = LOGGED_IN)
-  @InternalApi
   public RestResponse<Account> getAccount(@PathParam("accountId") @NotEmpty String accountId) {
     return new RestResponse<>(accountService.get(accountId));
   }
