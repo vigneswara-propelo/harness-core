@@ -51,12 +51,7 @@ public class CILicenseObjectMapper implements LicenseObjectMapper<CIModuleLicens
       }
     }
 
-    if (ciModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (ciModuleLicenseDTO.getNumberOfCommitters() != null) {
-        throw new InvalidRequestException(
-            "Both developerLicenses and workloads/serviceInstances cannot be part of the input!");
-      }
-
+    if (ciModuleLicenseDTO.getDeveloperLicenseCount() != null && ciModuleLicenseDTO.getNumberOfCommitters() == null) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       ciModuleLicenseDTO.setNumberOfCommitters(mappingRatio * ciModuleLicenseDTO.getDeveloperLicenseCount());

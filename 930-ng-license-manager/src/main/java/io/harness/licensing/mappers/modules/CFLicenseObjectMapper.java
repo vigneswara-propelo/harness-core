@@ -49,12 +49,8 @@ public class CFLicenseObjectMapper implements LicenseObjectMapper<CFModuleLicens
       }
     }
 
-    if (cfModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (cfModuleLicenseDTO.getNumberOfUsers() != null || cfModuleLicenseDTO.getNumberOfClientMAUs() != null) {
-        throw new InvalidRequestException(
-            "Both developerLicenses and numberOfUsers/numberOfClientMAUs cannot be part of the input!");
-      }
-
+    if (cfModuleLicenseDTO.getDeveloperLicenseCount() != null
+        && (cfModuleLicenseDTO.getNumberOfUsers() == null && cfModuleLicenseDTO.getNumberOfClientMAUs() == null)) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       cfModuleLicenseDTO.setNumberOfUsers(mappingRatio * cfModuleLicenseDTO.getDeveloperLicenseCount());

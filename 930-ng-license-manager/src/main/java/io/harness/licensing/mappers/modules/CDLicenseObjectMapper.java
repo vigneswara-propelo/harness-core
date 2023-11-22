@@ -52,12 +52,8 @@ public class CDLicenseObjectMapper implements LicenseObjectMapper<CDModuleLicens
       }
     }
 
-    if (cdModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (cdModuleLicenseDTO.getWorkloads() != null || cdModuleLicenseDTO.getServiceInstances() != null) {
-        throw new InvalidRequestException(
-            "Both developerLicenses and workloads/serviceInstances cannot be part of the input!");
-      }
-
+    if (cdModuleLicenseDTO.getDeveloperLicenseCount() != null
+        && (cdModuleLicenseDTO.getWorkloads() == null && cdModuleLicenseDTO.getServiceInstances() == null)) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       if (CDLicenseType.SERVICES.equals(cdModuleLicenseDTO.getCdLicenseType())) {

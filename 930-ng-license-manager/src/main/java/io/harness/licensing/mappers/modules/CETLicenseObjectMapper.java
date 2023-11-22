@@ -43,11 +43,7 @@ public class CETLicenseObjectMapper implements LicenseObjectMapper<CETModuleLice
       }
     }
 
-    if (cetModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (cetModuleLicenseDTO.getNumberOfAgents() != null) {
-        throw new InvalidRequestException("Both developerLicenses and numberOfAgents cannot be part of the input!");
-      }
-
+    if (cetModuleLicenseDTO.getDeveloperLicenseCount() != null && cetModuleLicenseDTO.getNumberOfAgents() == null) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       cetModuleLicenseDTO.setNumberOfAgents(mappingRatio * cetModuleLicenseDTO.getDeveloperLicenseCount());

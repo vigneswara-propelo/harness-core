@@ -43,11 +43,7 @@ public class SRMLicenseObjectMapper implements LicenseObjectMapper<SRMModuleLice
       }
     }
 
-    if (srmModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (srmModuleLicenseDTO.getNumberOfServices() != null) {
-        throw new InvalidRequestException("Both developerLicenses and numberOfServices cannot be part of the input!");
-      }
-
+    if (srmModuleLicenseDTO.getDeveloperLicenseCount() != null && srmModuleLicenseDTO.getNumberOfServices() == null) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       srmModuleLicenseDTO.setNumberOfServices(mappingRatio * srmModuleLicenseDTO.getDeveloperLicenseCount());

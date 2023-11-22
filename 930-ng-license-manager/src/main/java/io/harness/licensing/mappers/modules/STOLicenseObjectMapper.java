@@ -43,11 +43,7 @@ public class STOLicenseObjectMapper implements LicenseObjectMapper<STOModuleLice
       }
     }
 
-    if (stoModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (stoModuleLicenseDTO.getNumberOfDevelopers() != null) {
-        throw new InvalidRequestException("Both developerLicenses and numberOfDevelopers cannot be part of the input!");
-      }
-
+    if (stoModuleLicenseDTO.getDeveloperLicenseCount() != null && stoModuleLicenseDTO.getNumberOfDevelopers() == null) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       stoModuleLicenseDTO.setNumberOfDevelopers(mappingRatio * stoModuleLicenseDTO.getDeveloperLicenseCount());

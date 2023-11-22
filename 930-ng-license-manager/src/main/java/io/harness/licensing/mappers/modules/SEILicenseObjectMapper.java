@@ -42,12 +42,8 @@ public class SEILicenseObjectMapper implements LicenseObjectMapper<SEIModuleLice
       }
     }
 
-    if (seiModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (seiModuleLicenseDTO.getNumberOfContributors() != null) {
-        throw new InvalidRequestException(
-            "Both developerLicenses and numberOfContributors cannot be part of the input!");
-      }
-
+    if (seiModuleLicenseDTO.getDeveloperLicenseCount() != null
+        && seiModuleLicenseDTO.getNumberOfContributors() == null) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       seiModuleLicenseDTO.setNumberOfContributors(mappingRatio * seiModuleLicenseDTO.getDeveloperLicenseCount());

@@ -43,12 +43,8 @@ public class IACMLicenseObjectMapper implements LicenseObjectMapper<IACMModuleLi
       }
     }
 
-    if (iacmModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (iacmModuleLicenseDTO.getNumberOfDevelopers() != null) {
-        throw new InvalidRequestException(
-            "Both developerLicenses and workloads/serviceInstances cannot be part of the input!");
-      }
-
+    if (iacmModuleLicenseDTO.getDeveloperLicenseCount() != null
+        && iacmModuleLicenseDTO.getNumberOfDevelopers() == null) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       iacmModuleLicenseDTO.setNumberOfDevelopers(mappingRatio * iacmModuleLicenseDTO.getDeveloperLicenseCount());

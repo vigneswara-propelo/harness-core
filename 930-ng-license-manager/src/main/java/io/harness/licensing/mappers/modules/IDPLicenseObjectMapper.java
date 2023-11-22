@@ -43,11 +43,7 @@ public class IDPLicenseObjectMapper implements LicenseObjectMapper<IDPModuleLice
       }
     }
 
-    if (idpModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (idpModuleLicenseDTO.getNumberOfDevelopers() != null) {
-        throw new InvalidRequestException("Both developerLicenses and numberOfDevelopers cannot be part of the input!");
-      }
-
+    if (idpModuleLicenseDTO.getDeveloperLicenseCount() != null && idpModuleLicenseDTO.getNumberOfDevelopers() == null) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       idpModuleLicenseDTO.setNumberOfDevelopers(mappingRatio * idpModuleLicenseDTO.getDeveloperLicenseCount());

@@ -49,13 +49,9 @@ public class ChaosLicenseObjectMapper implements LicenseObjectMapper<ChaosModule
       }
     }
 
-    if (chaosModuleLicenseDTO.getDeveloperLicenseCount() != null) {
-      if (chaosModuleLicenseDTO.getTotalChaosExperimentRuns() != null
-          || chaosModuleLicenseDTO.getTotalChaosInfrastructures() != null) {
-        throw new InvalidRequestException(
-            "Both developerLicenses and totalChaosExperimentRuns/totalChaosInfrastructures cannot be part of the input!");
-      }
-
+    if (chaosModuleLicenseDTO.getDeveloperLicenseCount() != null
+        && (chaosModuleLicenseDTO.getTotalChaosExperimentRuns() == null
+            && chaosModuleLicenseDTO.getTotalChaosInfrastructures() == null)) {
       // TODO: fetch mapping ratio from DeveloperMapping collection, once that work is complete
       Integer mappingRatio = 1;
       chaosModuleLicenseDTO.setTotalChaosExperimentRuns(
