@@ -7,18 +7,15 @@
 package io.harness.app;
 
 import static io.harness.agent.AgentGatewayConstants.HEADER_AGENT_MTLS_AUTHORITY;
-import static io.harness.eraro.ErrorCode.INVALID_CREDENTIAL;
-import static io.harness.exception.WingsException.USER;
 
 import static javax.ws.rs.Priorities.AUTHENTICATION;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
 
-import io.harness.exception.WingsException;
-import io.harness.managerclient.VerificationManagerClient;
+import io.harness.security.DelegateTokenAuthenticator;
 import io.harness.security.VerificationServiceAuthenticationFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.io.IOException;
 import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -33,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class VerificationAuthFilter extends VerificationServiceAuthenticationFilter implements ContainerRequestFilter {
   @Context private ResourceInfo resourceInfo;
-  @Inject private VerificationManagerClient managerClient;
+  @Inject private DelegateTokenAuthenticator delegateTokenAuthenticator;
 
   @Override
   public void filter(ContainerRequestContext containerRequestContext) {
@@ -47,12 +44,11 @@ public class VerificationAuthFilter extends VerificationServiceAuthenticationFil
         String delegateId = containerRequestContext.getHeaderString("delegateId");
         String delegateTokenName = containerRequestContext.getHeaderString("delegateTokenName");
         String agentMtlsAuthority = containerRequestContext.getHeaderString(HEADER_AGENT_MTLS_AUTHORITY);
-        String token = containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+        String token = substringAfter(containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION), "Delegate ");
         validateDelegateToken(accountId, token, delegateId, delegateTokenName, agentMtlsAuthority);
       } else {
         throw new IllegalStateException("Invalid header:" + header);
       }
-
       return;
     }
 
@@ -62,17 +58,7 @@ public class VerificationAuthFilter extends VerificationServiceAuthenticationFil
   @Override
   public void validateDelegateToken(
       String accountId, String tokenString, String delegateId, String delegateTokenName, String agentMtlsAuthority) {
-    try {
-      if (managerClient
-              .authenticateDelegateRequest(accountId, tokenString, delegateId, delegateTokenName, agentMtlsAuthority)
-              .execute()
-              .body()
-              .getResource()) {
-        return;
-      }
-    } catch (IOException e) {
-      log.error("Can not validate delegate request", e);
-    }
-    throw new WingsException(INVALID_CREDENTIAL, USER);
+    delegateTokenAuthenticator.validateDelegateToken(
+        accountId, tokenString, delegateId, delegateTokenName, agentMtlsAuthority, false);
   }
 }
