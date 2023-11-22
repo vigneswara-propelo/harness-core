@@ -20,6 +20,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.mongo.MongoConfig.NO_LIMIT;
 import static io.harness.mongo.MongoUtils.setUnset;
+import static io.harness.ng.core.account.AuthenticationMechanism.SAML;
 import static io.harness.ng.core.account.AuthenticationMechanism.USER_PASSWORD;
 import static io.harness.ng.core.common.beans.Generation.CG;
 import static io.harness.ng.core.common.beans.Generation.NG;
@@ -2751,11 +2752,19 @@ public class UserServiceImpl implements UserService {
   public LogoutResponse logout(String accountId, String userId) {
     LogoutResponse logoutResponse = new LogoutResponse();
     log.info("Sending logout response from manager for user {} in account {}", userId, accountId);
-    SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
-    log.info("Samlsettings from accountId is {}", samlSettings);
-    if (samlSettings != null && samlSettings.getLogoutUrl() != null) {
-      logoutResponse.setLogoutUrl(samlSettings.getLogoutUrl());
-      log.info("Logout URL from accountId is {}", samlSettings.getLogoutUrl());
+    Account account = null;
+    try {
+      account = authenticationUtils.getAccount(accountId);
+    } catch (Exception ex) {
+      log.error("Error while fetching account details for accountId {}", accountId, ex);
+    }
+    if (account != null && account.getAuthenticationMechanism() == SAML) {
+      SamlSettings samlSettings = ssoSettingService.getSamlSettingsByAccountId(accountId);
+      log.info("Samlsettings Id for accountId {} is {}", accountId, samlSettings.getUuid());
+      if (samlSettings != null && isNotEmpty(samlSettings.getLogoutUrl())) {
+        logoutResponse.setLogoutUrl(samlSettings.getLogoutUrl());
+        log.info("Logout URL from accountId is {}", samlSettings.getLogoutUrl());
+      }
     }
     try {
       User user = get(accountId, userId);

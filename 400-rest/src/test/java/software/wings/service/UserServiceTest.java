@@ -1812,6 +1812,7 @@ public class UserServiceTest extends WingsBaseTest {
     when(ssoSettingService.getSamlSettingsByAccountId(account.getUuid())).thenReturn(samlSettings);
     when(wingsPersistence.get(User.class, user.getUuid())).thenReturn(user);
     when(userGroupService.list(anyString(), any(), anyBoolean(), any(), any(), anyBoolean())).thenReturn(val);
+    when(authenticationUtils.getAccount(any())).thenReturn(account);
 
     LogoutResponse logoutResponse = userService.logout(account.getUuid(), user.getUuid());
     assertThat(logoutResponse.getLogoutUrl()).isNotNull();
