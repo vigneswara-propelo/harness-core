@@ -36,6 +36,7 @@ public class OutboxSDKConstants {
           .maximumRetryAttemptsForAnEvent(DEFAULT_MAX_ATTEMPTS)
           .initialDelayInSeconds(5)
           .pollingIntervalInSeconds(5)
+          .enableMetrics(false)
           .build();
 
   public static final OutboxEventFilter DEFAULT_OUTBOX_EVENT_FILTER =

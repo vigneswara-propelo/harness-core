@@ -238,6 +238,7 @@ outboxPollConfig:
   pollingIntervalInSeconds: ${OUTBOX_POLL_INTERVAL:-5}
   maximumRetryAttemptsForAnEvent: ${OUTBOX_MAX_RETRY_ATTEMPTS:-7}
   lockId: AccessControlService
+  enableMetrics: ${ENABLE_OUTBOX_EVENT_METRICS:-true}
 
 featureFlagClientConfiguration:
   featureFlagServiceConfig:
