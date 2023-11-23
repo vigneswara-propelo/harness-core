@@ -18,6 +18,7 @@ import static org.mockito.Mockito.spy;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
@@ -83,7 +84,15 @@ public class ApprovalStagePlanCreatorTest extends CategoryTest {
     assertThat(planForChildrenNodes).hasSize(2);
     assertThat(planForChildrenNodes.containsKey(specUuid)).isTrue();
     assertThat(planForChildrenNodes.containsKey(executionUuid)).isTrue();
-
+    assertThat(planForChildrenNodes.get(executionUuid)
+                   .getDependencies()
+                   .getDependencyMetadataMap()
+                   .get(executionUuid)
+                   .getParentInfo()
+                   .getDataMap()
+                   .get(PlanCreatorConstants.STAGE_ID)
+                   .getStringValue())
+        .isEqualTo(approvalStageYamlField.getNode().getUuid());
     PlanCreationResponse specPlanCreationResponse = planForChildrenNodes.get(specUuid);
     assertThat(specPlanCreationResponse.getNodes()).hasSize(1);
 
