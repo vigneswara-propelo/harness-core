@@ -77,7 +77,7 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
   }
 
   private void recordMutableServletContextMeter(String metricName, Meter meter) {
-    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME)) {
+    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME)) {
       recordMetric(metricName + "_count", meter.getCount());
     }
   }
@@ -89,20 +89,20 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
       String method = s[s.length - 3];
       String resource = s[s.length - 4];
       try (NextGenMetricsContext ignore =
-               new NextGenMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME, resource, method, statusCode)) {
+               new NextGenMetricsContext(NAMESPACE, SERVICE_NAME, resource, method, statusCode)) {
         recordMetric("io_harness_ng_manager_resources_responses_count", meter.getCount());
       }
     }
   }
 
   private void recordCounter(String metricName, Counter counter) {
-    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME)) {
+    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME)) {
       recordMetric(metricName, counter.getCount());
     }
   }
 
   private void recordGauge(String metricName, Gauge gauge) {
-    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME)) {
+    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME)) {
       Object obj = gauge.getValue();
       double value;
       if (obj instanceof Number) {
@@ -123,7 +123,7 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
     if (checkIfResourceMetrics(metricName)) {
       addTimerMetricsForResources(metricName, timer);
     }
-    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME)) {
+    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME)) {
       recordMetric(metricName + "_count", timer.getCount());
       recordSnapshot(metricName + "_snapshot", timer.getSnapshot());
     }
@@ -134,8 +134,8 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
     if (s.length >= 3) {
       String methodName = s[s.length - 2];
       String resourceName = s[s.length - 3];
-      try (NextGenMetricsContext ignore =
-               new NextGenMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME, resourceName, methodName)) {
+      try (
+          NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME, resourceName, methodName)) {
         String modifiedMetricName = "io_harness_ng_manager_resources_total";
         recordMetric(modifiedMetricName + "_count", timer.getCount());
         Snapshot snapshot = timer.getSnapshot();
@@ -156,7 +156,7 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
   }
 
   private void recordSnapshot(String metricName, Snapshot snapshot) {
-    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME)) {
+    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME)) {
       recordMetric(metricName + "_95thPercentile", snapshot.get95thPercentile() * SNAPSHOT_FACTOR);
       recordMetric(metricName + "_99thPercentile", snapshot.get99thPercentile() * SNAPSHOT_FACTOR);
       recordMetric(metricName + "_999thPercentile", snapshot.get999thPercentile() * SNAPSHOT_FACTOR);

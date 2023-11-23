@@ -2,5 +2,4 @@ name: NextGen Manager Service Metrics Group
 identifier: ngManagerServiceMetricsGroup
 labels:
   - namespace
-  - containerName
   - serviceName
