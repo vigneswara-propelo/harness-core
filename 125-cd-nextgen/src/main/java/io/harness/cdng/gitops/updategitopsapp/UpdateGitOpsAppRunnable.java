@@ -49,6 +49,7 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import retrofit2.Response;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_GITOPS})
@@ -69,6 +70,7 @@ public class UpdateGitOpsAppRunnable implements Runnable {
   private static final String FAILED_TO_GET_APPLICATION = "Failed to get application";
   private static final String FAILED_TO_UPDATE_APPLICATION = "Failed to update application";
   private static final String UPDATE_APP_STEP_FAILED = "Failed to execute Update GitOps Apps step. Error: %s";
+  private static final String UUID = "__uuid";
 
   public UpdateGitOpsAppRunnable(String taskId, Ambiance ambiance, StepElementParameters stepParameters) {
     this.taskId = taskId;
@@ -226,7 +228,7 @@ public class UpdateGitOpsAppRunnable implements Runnable {
     }
   }
 
-  public static ApplicationUpdateRequest getUpdateRequest(
+  public ApplicationUpdateRequest getUpdateRequest(
       ApplicationResource application, UpdateGitOpsAppStepParameters updateGitOpsAppsStepParameters) {
     App applicationEntity = application.getApp();
     ApplicationSpec applicationSpec = applicationEntity.getSpec();
@@ -243,7 +245,7 @@ public class UpdateGitOpsAppRunnable implements Runnable {
     return ApplicationUpdateRequest.builder().application(applicationEntity).build();
   }
 
-  private static void populateUpdateValues(
+  private void populateUpdateValues(
       ApplicationSpec applicationSpec, UpdateGitOpsAppStepParameters updateGitOpsAppsStepParameters) {
     Source source = applicationSpec.getSource();
     if (source == null) {
@@ -270,7 +272,7 @@ public class UpdateGitOpsAppRunnable implements Runnable {
     applicationSpec.setSource(source);
   }
 
-  private static void populateHelmValues(Source source, HelmValues pmsHelmValues) {
+  private void populateHelmValues(Source source, HelmValues pmsHelmValues) {
     HelmSource helmSource = source.getHelm();
     if (helmSource == null) {
       helmSource = HelmSource.builder().build();
@@ -316,7 +318,7 @@ public class UpdateGitOpsAppRunnable implements Runnable {
     source.setHelm(helmSource);
   }
 
-  private static List<HelmSourceParameters> populateHelmParameters(
+  private List<HelmSourceParameters> populateHelmParameters(
       HelmSource helmSource, List<HelmParameters> pmsHelmParameters) {
     Map<String, String> mapOfHelmParams = new HashMap<>();
     if (helmSource.getParameters() != null) {
@@ -344,7 +346,7 @@ public class UpdateGitOpsAppRunnable implements Runnable {
     return finalHelmSourceParameters;
   }
 
-  private static List<HelmSourceFileParameters> populateHelmFileParameters(
+  private List<HelmSourceFileParameters> populateHelmFileParameters(
       HelmSource helmSource, List<HelmFileParameters> pmsHelmFileParameters) {
     Map<String, String> mapOfHelmFileParams = new HashMap<>();
     if (helmSource.getFileParameters() != null) {
@@ -369,7 +371,7 @@ public class UpdateGitOpsAppRunnable implements Runnable {
     return finalHelmSourceFileParameters;
   }
 
-  private static void populateKustomizeValues(Source source, KustomizeValues pmsKustomizeValues) {
+  private void populateKustomizeValues(Source source, KustomizeValues pmsKustomizeValues) {
     KustomizeSource kustomizeSource = source.getKustomize();
     if (kustomizeSource == null) {
       kustomizeSource = KustomizeSource.builder().build();
@@ -378,7 +380,8 @@ public class UpdateGitOpsAppRunnable implements Runnable {
     if (pmsKustomizeValues.getImages() != null && pmsKustomizeValues.getImages().getValue() != null) {
       kustomizeSource.setImages(pmsKustomizeValues.getImages().getValue());
     }
-    if (pmsKustomizeValues.getNamespace() != null && pmsKustomizeValues.getNamespace().getValue() != null) {
+    if (pmsKustomizeValues.getNamespace() != null
+        && StringUtils.isNotBlank(pmsKustomizeValues.getNamespace().getValue())) {
       kustomizeSource.setNamespace(pmsKustomizeValues.getNamespace().getValue());
     }
     if (pmsKustomizeValues.getReplicas() != null && pmsKustomizeValues.getReplicas().getValue() != null) {
@@ -395,7 +398,43 @@ public class UpdateGitOpsAppRunnable implements Runnable {
       }
       kustomizeSource.setReplicas(replicasList);
     }
+    if (StringUtils.isNotBlank(pmsKustomizeValues.getNamePrefix().getValue())) {
+      kustomizeSource.setNamePrefix(pmsKustomizeValues.getNamePrefix().getValue());
+    }
+    if (StringUtils.isNotBlank(pmsKustomizeValues.getNameSuffix().getValue())) {
+      kustomizeSource.setNameSuffix(pmsKustomizeValues.getNameSuffix().getValue());
+    }
+    if (pmsKustomizeValues.getCommonLabels().getValue() != null) {
+      Map<String, String> existingCommonLabels = kustomizeSource.getCommonLabels() == null
+          ? new HashMap<>()
+          : (Map<String, String>) kustomizeSource.getCommonLabels();
+      kustomizeSource.setCommonLabels(
+          mergeFieldsInMap(existingCommonLabels, pmsKustomizeValues.getCommonLabels().getValue()));
+    }
+    if (pmsKustomizeValues.getForceCommonLabels().getValue() != null) {
+      kustomizeSource.setForceCommonLabels(pmsKustomizeValues.getForceCommonLabels().getValue());
+    }
+    if (pmsKustomizeValues.getCommonAnnotations().getValue() != null) {
+      Map<String, String> existingCommonAnnotations = kustomizeSource.getCommonAnnotations() == null
+          ? new HashMap<>()
+          : (Map<String, String>) kustomizeSource.getCommonAnnotations();
+      kustomizeSource.setCommonAnnotations(
+          mergeFieldsInMap(existingCommonAnnotations, pmsKustomizeValues.getCommonAnnotations().getValue()));
+    }
+    if (pmsKustomizeValues.getForceCommonAnnotations().getValue() != null) {
+      kustomizeSource.setForceCommonAnnotations(pmsKustomizeValues.getForceCommonAnnotations().getValue());
+    }
+
     source.setKustomize(kustomizeSource);
+  }
+
+  private Map<String, String> mergeFieldsInMap(Map<String, String> existingParams, Map<String, String> inputParams) {
+    // TODO check if this __uuid can be ignored in the pipeline service itself without any other impact
+    inputParams.remove(UUID);
+
+    Map<String, String> finalParams = new HashMap<>(existingParams);
+    finalParams.putAll(inputParams);
+    return finalParams;
   }
 
   private void notifySuccessfulResponse(Application application, LogCallback logger) {
