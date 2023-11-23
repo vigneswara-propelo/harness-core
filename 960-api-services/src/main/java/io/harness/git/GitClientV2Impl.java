@@ -912,7 +912,7 @@ public class GitClientV2Impl implements GitClientV2 {
         case MODIFY:
           try {
             log.info(gitClientHelper.getGitLogMessagePrefix(gitCommitRequest.getRepoType()) + "Adding git file "
-                + gitFileChange.toString());
+                + gitFileChange.toStringWithoutFileContent());
             FileUtils.forceMkdir(file.getParentFile());
             FileUtils.writeStringToFile(file, gitFileChange.getFileContent(), UTF_8);
             filesToAdd.add(gitFileChange.getFilePath());
@@ -961,7 +961,7 @@ public class GitClientV2Impl implements GitClientV2 {
                   format("Exception in deleting file [%s]", gitFileChange.getFilePath()), ADMIN_SRE);
             }
             log.info(gitClientHelper.getGitLogMessagePrefix(gitCommitRequest.getRepoType()) + "Deleting git file "
-                + gitFileChange.toString());
+                + gitFileChange.toStringWithoutFileContent());
           } else {
             log.warn(gitClientHelper.getGitLogMessagePrefix(gitCommitRequest.getRepoType())
                     + "File already deleted. path: [{}]",

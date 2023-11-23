@@ -34,4 +34,15 @@ public class GitFileChange {
   private Long processingCommitTimeMs;
   private String commitMessage;
   private String processingCommitMessage;
+
+  // Function to avoid logging file content
+  public String toStringWithoutFileContent() {
+    return "GitFileChange{"
+        + "filePath='" + filePath + '\'' + ", rootPath='" + rootPath + '\'' + ", rootPathId='" + rootPathId + '\''
+        + ", accountId='" + accountId + '\'' + ", changeType=" + changeType + ", oldFilePath='" + oldFilePath + '\''
+        + ", syncFromGit=" + syncFromGit + ", commitId='" + commitId + '\'' + ", objectId='" + objectId + '\''
+        + ", processingCommitId='" + processingCommitId + '\'' + ", changeFromAnotherCommit=" + changeFromAnotherCommit
+        + ", commitTimeMs=" + commitTimeMs + ", processingCommitTimeMs=" + processingCommitTimeMs + ", commitMessage='"
+        + commitMessage + '\'' + ", processingCommitMessage='" + processingCommitMessage + '\'' + '}';
+  }
 }
