@@ -162,8 +162,18 @@ public class VmExecuteStepUtils {
         envs.put(entry.getKey(), secret);
         secrets.add(secret);
       }
-    }
+      // Map OIDC config to plugin env variables
+      List<EnvVariableEnum> keyList = Arrays.asList(PLUGIN_POOL_ID, PLUGIN_PROJECT_NUMBER, PLUGIN_PROVIDER_ID,
+          PLUGIN_SERVICE_ACCOUNT_EMAIL, PLUGIN_OIDC_TOKEN_ID);
 
+      Map<EnvVariableEnum, String> envToSecretsMap = runStep.getConnector().getEnvToSecretsMap();
+
+      for (EnvVariableEnum key : keyList) {
+        if (envToSecretsMap.containsKey(key)) {
+          envs.put(key.name(), envToSecretsMap.get(key));
+        }
+      }
+    }
     configBuilder.kind(RUN_STEP_KIND)
         .runConfig(ExecuteStepRequest.RunConfig.builder()
                        .command(Arrays.asList(runStep.getCommand()))
