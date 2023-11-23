@@ -44,6 +44,7 @@ import io.harness.ssca.entities.EnforcementSummaryEntity;
 import io.harness.ssca.entities.EnforcementSummaryEntity.EnforcementSummaryEntityKeys;
 import io.harness.ssca.utils.SBOMUtils;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import java.net.URI;
 import java.time.Instant;
@@ -451,6 +452,21 @@ public class ArtifactServiceImpl implements ArtifactService {
     if (Objects.isNull(body) || Objects.isNull(body.getPolicyViolation())) {
       return criteria;
     }
+    Aggregation aggregation = getPolicyViolationEnforcementAggregation(body);
+
+    // { "aggregate" : "__collection__", "pipeline" : [{ "$sort" : { "createdAt" : -1}}, { "$group" : { "_id" :
+    // "$orchestrationId", "document" : { "$first" : "$$ROOT"}}}, { "$unwind" : "$document"}, { "$match" : {
+    // "document.denylistviolationcount" : { "$ne" : 0}}}]}
+    List<EnforcementSummaryEntity> enforcementSummaryEntities = enforcementSummaryRepo.findAll(aggregation);
+    criteria.and(ArtifactEntityKeys.orchestrationId)
+        .in(enforcementSummaryEntities.stream()
+                .map(EnforcementSummaryEntity::getOrchestrationId)
+                .collect(Collectors.toSet()));
+    return criteria;
+  }
+
+  @VisibleForTesting
+  Aggregation getPolicyViolationEnforcementAggregation(ArtifactListingRequestBody body) {
     Criteria enforcementCriteria = new Criteria();
     switch (body.getPolicyViolation()) {
       case DENY:
@@ -465,6 +481,26 @@ public class ArtifactServiceImpl implements ArtifactService {
                                       + EnforcementSummaryEntityKeys.allowListViolationCount.toLowerCase())
                                   .ne(0);
         break;
+      case ANY:
+        Criteria allowCriteria = Criteria
+                                     .where(EnforcementSummaryDBOKeys.document + "."
+                                         + EnforcementSummaryEntityKeys.allowListViolationCount.toLowerCase())
+                                     .ne(0);
+        Criteria denyCriteria = Criteria
+                                    .where(EnforcementSummaryDBOKeys.document + "."
+                                        + EnforcementSummaryEntityKeys.denyListViolationCount.toLowerCase())
+                                    .ne(0);
+        enforcementCriteria = new Criteria().orOperator(allowCriteria, denyCriteria);
+        break;
+      case NONE:
+        enforcementCriteria = Criteria
+                                  .where(EnforcementSummaryDBOKeys.document + "."
+                                      + EnforcementSummaryEntityKeys.allowListViolationCount.toLowerCase())
+                                  .is(0)
+                                  .and(EnforcementSummaryDBOKeys.document + "."
+                                      + EnforcementSummaryEntityKeys.denyListViolationCount.toLowerCase())
+                                  .is(0);
+        break;
       default:
         log.error("Unknown Policy Violation Type");
     }
@@ -474,17 +510,7 @@ public class ArtifactServiceImpl implements ArtifactService {
     GroupOperation groupByOrchestrationId =
         group(EnforcementSummaryEntityKeys.orchestrationId).first("$$ROOT").as(EnforcementSummaryDBOKeys.document);
     UnwindOperation unwindOperation = unwind(EnforcementSummaryDBOKeys.document);
-    Aggregation aggregation = newAggregation(sortOperation, groupByOrchestrationId, unwindOperation, matchOperation);
-
-    // { "aggregate" : "__collection__", "pipeline" : [{ "$sort" : { "createdAt" : -1}}, { "$group" : { "_id" :
-    // "$orchestrationId", "document" : { "$first" : "$$ROOT"}}}, { "$unwind" : "$document"}, { "$match" : {
-    // "document.denylistviolationcount" : { "$ne" : 0}}}]}
-    List<EnforcementSummaryEntity> enforcementSummaryEntities = enforcementSummaryRepo.findAll(aggregation);
-    criteria.and(ArtifactEntityKeys.orchestrationId)
-        .in(enforcementSummaryEntities.stream()
-                .map(EnforcementSummaryEntity::getOrchestrationId)
-                .collect(Collectors.toSet()));
-    return criteria;
+    return newAggregation(sortOperation, groupByOrchestrationId, unwindOperation, matchOperation);
   }
 
   private Criteria getDeploymentFilterCriteria(ArtifactListingRequestBody body) {

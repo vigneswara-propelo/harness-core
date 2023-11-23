@@ -145,53 +145,79 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
                             .and(CdInstanceSummaryKeys.projectIdentifier)
                             .is(projectIdentifier);
 
-    if (Objects.nonNull(filterBody)) {
-      if (Objects.nonNull(filterBody.getEnvironment())) {
-        Pattern pattern = Pattern.compile("[.]*" + filterBody.getEnvironment() + "[.]*");
-        criteria.and(CdInstanceSummaryKeys.envName).regex(pattern);
-      }
-      if (Objects.nonNull(filterBody.getEnvironmentType())) {
-        switch (filterBody.getEnvironmentType()) {
-          case PROD:
-            criteria.and(CdInstanceSummaryKeys.envType).is(EnvType.Production);
-            break;
-          case NONPROD:
-            criteria.and(CdInstanceSummaryKeys.envType).is(EnvType.PreProduction);
-            break;
-          default:
-            throw new InvalidArgumentsException(
-                String.format("Unknown environment type filter: %s", filterBody.getEnvironmentType()));
-        }
-      }
-      if (Objects.nonNull(filterBody.getPolicyViolation())) {
-        Criteria enforcementSummaryCriteria = Criteria.where(EnforcementSummaryEntityKeys.accountId)
-                                                  .is(accountId)
-                                                  .and(EnforcementSummaryEntityKeys.orgIdentifier)
-                                                  .is(orgIdentifier)
-                                                  .and(EnforcementSummaryEntityKeys.projectIdentifier)
-                                                  .is(projectIdentifier);
-
-        switch (filterBody.getPolicyViolation()) {
-          case ALLOW:
-            enforcementSummaryCriteria.and(EnforcementSummaryEntityKeys.allowListViolationCount).gt(0);
-            break;
-          case DENY:
-            enforcementSummaryCriteria.and(EnforcementSummaryEntityKeys.denyListViolationCount).gt(0);
-            break;
-          default:
-            throw new InvalidArgumentsException(
-                String.format("Unknown policy type filter: %s", filterBody.getPolicyViolation()));
-        }
-
-        List<String> pipelineExecutionIds = enforcementSummaryRepo.findAll(enforcementSummaryCriteria)
-                                                .stream()
-                                                .map(entity -> entity.getPipelineExecutionId())
-                                                .collect(Collectors.toList());
-        criteria.and(CdInstanceSummaryKeys.lastPipelineExecutionId).in(pipelineExecutionIds);
-      }
-    }
+    criteria.andOperator(getEnvironmentFilterCriteria(filterBody), getEnvironmentTypeFilterCriteria(filterBody),
+        getPolicyViolationTypeFilterCriteria(accountId, orgIdentifier, projectIdentifier, filterBody));
 
     return cdInstanceSummaryRepo.findAll(criteria, pageable);
+  }
+
+  private Criteria getEnvironmentFilterCriteria(ArtifactDeploymentViewRequestBody filterBody) {
+    if (Objects.nonNull(filterBody) && Objects.nonNull(filterBody.getEnvironment())) {
+      Pattern pattern = Pattern.compile("[.]*" + filterBody.getEnvironment() + "[.]*");
+      return Criteria.where(CdInstanceSummaryKeys.envName).regex(pattern);
+    }
+    return new Criteria();
+  }
+
+  private Criteria getEnvironmentTypeFilterCriteria(ArtifactDeploymentViewRequestBody filterBody) {
+    if (Objects.nonNull(filterBody) && Objects.nonNull(filterBody.getEnvironmentType())) {
+      switch (filterBody.getEnvironmentType()) {
+        case PROD:
+          return Criteria.where(CdInstanceSummaryKeys.envType).is(EnvType.Production);
+        case NONPROD:
+          return Criteria.where(CdInstanceSummaryKeys.envType).is(EnvType.PreProduction);
+        default:
+          throw new InvalidArgumentsException(
+              String.format("Unknown environment type filter: %s", filterBody.getEnvironmentType()));
+      }
+    }
+    return new Criteria();
+  }
+
+  private Criteria getPolicyViolationTypeFilterCriteria(
+      String accountId, String orgIdentifier, String projectIdentifier, ArtifactDeploymentViewRequestBody filterBody) {
+    if (Objects.isNull(filterBody) || Objects.isNull(filterBody.getPolicyViolation())) {
+      return new Criteria();
+    }
+    Criteria enforcementSummaryCriteria =
+        getPolicyViolationEnforcementCriteria(accountId, orgIdentifier, projectIdentifier, filterBody);
+
+    List<String> pipelineExecutionIds = enforcementSummaryRepo.findAll(enforcementSummaryCriteria)
+                                            .stream()
+                                            .map(entity -> entity.getPipelineExecutionId())
+                                            .collect(Collectors.toList());
+    return Criteria.where(CdInstanceSummaryKeys.lastPipelineExecutionId).in(pipelineExecutionIds);
+  }
+
+  @VisibleForTesting
+  Criteria getPolicyViolationEnforcementCriteria(
+      String accountId, String orgIdentifier, String projectIdentifier, ArtifactDeploymentViewRequestBody filterBody) {
+    Criteria enforcementSummaryCriteria = Criteria.where(EnforcementSummaryEntityKeys.accountId)
+                                              .is(accountId)
+                                              .and(EnforcementSummaryEntityKeys.orgIdentifier)
+                                              .is(orgIdentifier)
+                                              .and(EnforcementSummaryEntityKeys.projectIdentifier)
+                                              .is(projectIdentifier);
+
+    switch (filterBody.getPolicyViolation()) {
+      case ALLOW:
+        return enforcementSummaryCriteria.and(EnforcementSummaryEntityKeys.allowListViolationCount).gt(0);
+      case DENY:
+        return enforcementSummaryCriteria.and(EnforcementSummaryEntityKeys.denyListViolationCount).gt(0);
+      case ANY:
+        Criteria allowCriteria = Criteria.where(EnforcementSummaryEntityKeys.allowListViolationCount).gt(0);
+        Criteria denyCriteria = Criteria.where(EnforcementSummaryEntityKeys.denyListViolationCount).gt(0);
+        return new Criteria().andOperator(
+            enforcementSummaryCriteria, new Criteria().orOperator(allowCriteria, denyCriteria));
+      case NONE:
+        return enforcementSummaryCriteria.and(EnforcementSummaryEntityKeys.denyListViolationCount)
+            .is(0)
+            .and(EnforcementSummaryEntityKeys.allowListViolationCount)
+            .is(0);
+      default:
+        throw new InvalidArgumentsException(
+            String.format("Unknown policy type filter: %s", filterBody.getPolicyViolation()));
+    }
   }
 
   @Override

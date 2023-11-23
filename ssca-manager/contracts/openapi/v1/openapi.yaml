@@ -1,6 +1,6 @@
 openapi: 3.0.0
 x-stoplight:
-  id: 2p5zp23a7cyrb
+  id: j2mnz73mw82fb
 info:
   title: Harness NextGen Software Delivery Platform API Reference
   version: '1.0'
@@ -1014,6 +1014,8 @@ components:
           enum:
             - ALLOW
             - DENY
+            - ANY
+            - NONE
         environment_type:
           type: string
           enum:
@@ -1132,6 +1134,8 @@ components:
           enum:
             - ALLOW
             - DENY
+            - ANY
+            - NONE
     ArtifactComponentViewResponse:
       title: ArtifactComponentViewResponse
       x-stoplight:

@@ -366,6 +366,33 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
   }
 
   @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testPolicyViolationFilter() {
+    ArtifactListingRequestBody body = new ArtifactListingRequestBody();
+    body.setPolicyViolation(PolicyViolationEnum.ALLOW);
+    Aggregation aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
+    assertThat(aggregation.toString())
+        .isEqualTo(
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.allowlistviolationcount\" : { \"$ne\" : 0}}}]}");
+    body.setPolicyViolation(PolicyViolationEnum.DENY);
+    aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
+    assertThat(aggregation.toString())
+        .isEqualTo(
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.denylistviolationcount\" : { \"$ne\" : 0}}}]}");
+    body.setPolicyViolation(PolicyViolationEnum.ANY);
+    aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
+    assertThat(aggregation.toString())
+        .isEqualTo(
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"$or\" : [{ \"document.allowlistviolationcount\" : { \"$ne\" : 0}}, { \"document.denylistviolationcount\" : { \"$ne\" : 0}}]}}]}");
+    body.setPolicyViolation(PolicyViolationEnum.NONE);
+    aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
+    assertThat(aggregation.toString())
+        .isEqualTo(
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.allowlistviolationcount\" : 0, \"document.denylistviolationcount\" : 0}}]}");
+  }
+
+  @Test
   @Owner(developers = REETIKA)
   @Category(UnitTests.class)
   public void testSearchCriteriaForListArtifacts() {
