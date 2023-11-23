@@ -16,8 +16,11 @@ function download_saas_apm_binaries(){
 	echo "INFO: Download Status: ${OT_AGENT##*/}: $STATUS3"
 	chmod 711 ${OT_AGENT##*/}
 
+	curl ${JMX_METRICS_AGENT} --output ${JMX_METRICS_AGENT##*/}; STATUS5=$?
+  echo "INFO: Download Status: ${JMX_METRICS_AGENT##*/}: $STATUS5"
+  chmod 711 ${JMX_METRICS_AGENT##*/}
 
-  if [ "${STATUS1}" -eq 0 ] && [ "${STATUS3}" -eq 0 ] ; then
+  if [ "${STATUS1}" -eq 0 ] && [ "${STATUS3}" -eq 0 ] && [ "${STATUS5}" -eq 0 ]; then
 		echo "Download Finished..."
 	else
 		echo "Failed to Download Saas APM Binaries. Exiting..."
@@ -27,6 +30,7 @@ function download_saas_apm_binaries(){
 
 export ET_AGENT='https://get.et.harness.io/releases/latest/nix/harness-et-agent.tar.gz'
 export OT_AGENT='https://harness.jfrog.io/artifactory/BuildsTools/docker/apm/opentelemetry/1.27.0/opentelemetry-javaagent.jar'
+export JMX_METRICS_AGENT='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.19.0/jmx_prometheus_javaagent-0.19.0.jar'
 
 echo "STEP 1: INFO: Downloading APM Binaries Locally..."
 download_saas_apm_binaries
