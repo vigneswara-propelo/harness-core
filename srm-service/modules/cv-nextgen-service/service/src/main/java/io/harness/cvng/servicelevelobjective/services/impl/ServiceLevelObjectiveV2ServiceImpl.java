@@ -59,6 +59,8 @@ import io.harness.cvng.notification.services.api.NotificationRuleService;
 import io.harness.cvng.notification.services.api.NotificationRuleTemplateDataGenerator;
 import io.harness.cvng.servicelevelobjective.SLORiskCountResponse;
 import io.harness.cvng.servicelevelobjective.beans.CompositeSLOFormulaType;
+import io.harness.cvng.servicelevelobjective.beans.ErrorBudgetBurnDownDTO;
+import io.harness.cvng.servicelevelobjective.beans.ErrorBudgetBurnDownResponse;
 import io.harness.cvng.servicelevelobjective.beans.ErrorBudgetRisk;
 import io.harness.cvng.servicelevelobjective.beans.SLIEvaluationType;
 import io.harness.cvng.servicelevelobjective.beans.SLIMissingDataType;
@@ -92,6 +94,7 @@ import io.harness.cvng.servicelevelobjective.entities.SimpleServiceLevelObjectiv
 import io.harness.cvng.servicelevelobjective.entities.TimePeriod;
 import io.harness.cvng.servicelevelobjective.services.api.AnnotationService;
 import io.harness.cvng.servicelevelobjective.services.api.CompositeSLOService;
+import io.harness.cvng.servicelevelobjective.services.api.ErrorBudgetBurnDownService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOErrorBudgetResetService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOHealthIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOTimeScaleService;
@@ -169,6 +172,7 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
   @Inject private PersistentLocker persistentLocker;
 
   @Inject private NextGenService nextGenService;
+  @Inject private ErrorBudgetBurnDownService errorBudgetBurnDownService;
   @Inject
   private Map<ServiceLevelObjectiveType, AbstractServiceLevelObjectiveUpdatableEntity>
       serviceLevelObjectiveTypeUpdatableEntityTransformerMap;
@@ -981,6 +985,48 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
   public SLOErrorBudgetResetDTO resetErrorBudget(ProjectParams projectParams, SLOErrorBudgetResetDTO resetDTO) {
     return sloErrorBudgetResetService.resetErrorBudget(projectParams, resetDTO);
   }
+
+  @Override
+  public ErrorBudgetBurnDownResponse saveErrorBudgetBurnDown(
+      ProjectParams projectParams, ErrorBudgetBurnDownDTO errorBudgetBurnDownDTO) {
+    ErrorBudgetBurnDownResponse errorBudgetBurnDownResponse =
+        errorBudgetBurnDownService.save(projectParams, errorBudgetBurnDownDTO);
+    // Trigger recalculation
+    LocalDateTime currentLocalDate = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
+    AbstractServiceLevelObjective serviceLevelObjective =
+        getEntity(projectParams, errorBudgetBurnDownDTO.getSloIdentifier());
+    TimePeriod timePeriod = serviceLevelObjective.getCurrentTimeRange(currentLocalDate);
+    String serviceLevelIndicatorIdentifier =
+        ((SimpleServiceLevelObjective) serviceLevelObjective).getServiceLevelIndicators().get(0);
+    ServiceLevelIndicator serviceLevelIndicator =
+        serviceLevelIndicatorService.getServiceLevelIndicator(projectParams, serviceLevelIndicatorIdentifier);
+    serviceLevelIndicatorService.recalculate(
+        serviceLevelIndicator, serviceLevelObjective.getCurrentTimeRange(currentLocalDate));
+    return errorBudgetBurnDownResponse;
+  }
+
+  @Override
+  public PageResponse<ErrorBudgetBurnDownDTO> get(
+      ProjectParams projectParams, String identifier, PageParams pageParams) {
+    AbstractServiceLevelObjective abstractServiceLevelObjective = getEntity(projectParams, identifier);
+    LocalDateTime currentLocalDate =
+        LocalDateTime.ofInstant(clock.instant(), abstractServiceLevelObjective.getZoneOffset());
+    TimePeriod timePeriod = abstractServiceLevelObjective.getCurrentTimeRange(currentLocalDate);
+    Instant startTime = timePeriod.getStartTime(ZoneOffset.UTC);
+    List<ErrorBudgetBurnDownDTO> errorBudgetBurnDownDTOs = errorBudgetBurnDownService.getByStartTimeAndEndTimeDto(
+        projectParams, identifier, startTime.toEpochMilli(), clock.millis());
+    PageResponse<ErrorBudgetBurnDownDTO> errorBudgetBurnDownDTOPageResponse =
+        PageUtils.offsetAndLimit(errorBudgetBurnDownDTOs, pageParams.getPage(), pageParams.getSize());
+    return PageResponse.<ErrorBudgetBurnDownDTO>builder()
+        .pageSize(pageParams.getSize())
+        .pageIndex(pageParams.getPage())
+        .totalPages(errorBudgetBurnDownDTOPageResponse.getTotalPages())
+        .totalItems(errorBudgetBurnDownDTOPageResponse.getTotalItems())
+        .pageItemCount(errorBudgetBurnDownDTOPageResponse.getPageItemCount())
+        .content(errorBudgetBurnDownDTOPageResponse.getContent())
+        .build();
+  }
+
   @Override
   public void handleNotification(AbstractServiceLevelObjective serviceLevelObjective) {
     ProjectParams projectParams = ProjectParams.builder()

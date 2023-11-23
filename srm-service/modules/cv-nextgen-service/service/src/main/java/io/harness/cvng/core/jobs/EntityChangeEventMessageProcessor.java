@@ -32,6 +32,7 @@ import io.harness.cvng.downtime.entities.EntityUnavailabilityStatuses;
 import io.harness.cvng.notification.entities.NotificationRule;
 import io.harness.cvng.servicelevelobjective.entities.AbstractServiceLevelObjective;
 import io.harness.cvng.servicelevelobjective.entities.Annotation;
+import io.harness.cvng.servicelevelobjective.entities.ErrorBudgetBurnDown;
 import io.harness.cvng.servicelevelobjective.entities.SLOErrorBudgetReset;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
@@ -59,7 +60,7 @@ public abstract class EntityChangeEventMessageProcessor implements ConsumerMessa
             TimeSeriesThreshold.class, CVNGStepTask.class, UserJourney.class, ServiceDependency.class,
             SLOHealthIndicator.class, SLOErrorBudgetReset.class, NotificationRule.class,
             EntityUnavailabilityStatuses.class, Downtime.class, SRMAnalysisStepExecutionDetail.class,
-            AutoDiscoveryAgent.class, AsyncAutoDiscoveryReImport.class);
+            AutoDiscoveryAgent.class, AsyncAutoDiscoveryReImport.class, ErrorBudgetBurnDown.class);
     ENTITIES_MAP = new LinkedHashMap<>();
     deleteEntitiesWithDefaultHandler.forEach(entity -> ENTITIES_MAP.put(entity, DeleteEntityByHandler.class));
 

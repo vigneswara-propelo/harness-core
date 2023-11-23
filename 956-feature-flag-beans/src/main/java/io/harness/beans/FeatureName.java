@@ -911,6 +911,7 @@ public enum FeatureName {
   PIE_SECRETS_OBSERVER("Secrets Runtime Usages Observer", PIPELINE),
   PL_GCP_OIDC_AUTHENTICATION("OIDC Authentication for GCP connector", HarnessTeam.PL),
   SRM_AUTO_DISCOVERY_ENABLE("The flag enables the auto discovery feature in SRM.", HarnessTeam.CV),
+  SRM_METRIC_LESS_SLO_ENABLE("Enbale metric less slo creation", CV),
   PIE_INPUTSET_RBAC_PERMISSIONS("Rbac Permissions for InputSets CRUD", PIPELINE),
   CDS_NG_CONVERT_BRANCH_TO_PUSH_WEBHOOK_BITBUCKET_ON_PREM(
       "Converts BitBucket on-prem branch webhook event to push event", HarnessTeam.CDC),

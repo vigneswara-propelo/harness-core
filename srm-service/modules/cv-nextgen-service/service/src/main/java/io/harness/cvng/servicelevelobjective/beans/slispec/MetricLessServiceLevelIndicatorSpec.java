@@ -26,7 +26,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeName("Window")
+@JsonTypeName("MetricLess")
 public class MetricLessServiceLevelIndicatorSpec extends ServiceLevelIndicatorSpec {
   @Override
   public SLIEvaluationType getType() {

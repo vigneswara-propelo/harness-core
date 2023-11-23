@@ -10,6 +10,8 @@ package io.harness.cvng.servicelevelobjective.services.api;
 import io.harness.cvng.servicelevelobjective.beans.SLIAnalyseRequest;
 import io.harness.cvng.servicelevelobjective.beans.SLIAnalyseResponse;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelIndicatorDTO;
+import io.harness.cvng.servicelevelobjective.entities.ErrorBudgetBurnDown;
+import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 
 import java.time.Instant;
 import java.util.List;
@@ -18,4 +20,7 @@ import java.util.Map;
 public interface SLIDataProcessorService {
   List<SLIAnalyseResponse> process(Map<String, List<SLIAnalyseRequest>> sliAnalyseRequest,
       ServiceLevelIndicatorDTO serviceLevelIndicatorDTO, Instant startTime, Instant endTime);
+
+  List<SLIAnalyseResponse> process(List<ErrorBudgetBurnDown> errorBudgetBurnDowns,
+      ServiceLevelIndicator serviceLevelIndicator, Instant startTime, Instant endTime);
 }
