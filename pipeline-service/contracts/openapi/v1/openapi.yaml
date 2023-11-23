@@ -1380,6 +1380,7 @@ components:
           pattern: "(((([1-9])+\\d*[mh])+(\\s/?\\d+[mh])*)|(^$)|(0))$"
         type:
           type: string
+          description: This specifies the type of the trigger
           enum:
             - Webhook
             - Artifact
@@ -1392,6 +1393,7 @@ components:
         propertyName: type
         mapping:
           Scheduled: '#/components/schemas/ScheduledTriggerSource'
+          Webhook: '#/components/schemas/WebhookTriggerSource'
       required:
         - type
         - spec
@@ -1402,15 +1404,19 @@ components:
         - $ref: '#/components/schemas/TriggerSource'
         - type: object
           properties:
-            type:
-              type: string
-              enum:
-                - GitHttp
-              description: This specifies the type of the trigger
             spec:
               $ref: '#/components/schemas/ScheduledTriggerSpec'
+    WebhookTriggerSource:
+      title: Webhook Trigger Source
+      x-discriminator-value: Webhook
+      allOf:
+        - $ref: '#/components/schemas/TriggerSource'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/WebhookTriggerSpec'
     TriggerConditions:
-      title: Trigger PayloadConditions
+      title: Trigger Conditions
       type: object
       description: 'Payload Conditions for the Trigger'
       properties:
@@ -1431,6 +1437,503 @@ components:
             - Cron
         spec:
           $ref: '#/components/schemas/CronScheduledTriggerSpec'
+    WebhookTriggerSpec:
+      title: Webhook Trigger Spec
+      type: object
+      description: 'Spec for Webhook Triggers'
+      properties:
+        type:
+          type: string
+          description: This specifies the type of webhook trigger
+          enum:
+            - Github
+            - Gitlab
+            - Bitbucket
+            - AwsCodeCommit
+            - AzureRepo
+            - Harness
+            - Custom
+      discriminator:
+        propertyName: type
+        mapping:
+          Github: '#/components/schemas/GithubWebhookSpec'
+          Gitlab: '#/components/schemas/GitlabWebhookSpec'
+          Bitbucket: '#/components/schemas/BitbucketWebhookSpec'
+          AwsCodeCommit: '#/components/schemas/AwsCodeCommitWebhookSpec'
+          AzureRepo: '#/components/schemas/AzureRepoWebhookSpec'
+          Harness: '#/components/schemas/HarnessWebhookSpec'
+          Custom: '#/components/schemas/CustomWebhookSpec'
+      required:
+        - type
+        - spec
+    GithubWebhookSpec:
+      title: Github Webhook Trigger Spec
+      x-discriminator-value: Github
+      allOf:
+        - $ref: '#/components/schemas/WebhookTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/GithubWebhookTriggerSpec'
+    GithubWebhookTriggerSpec:
+      title: Github Webhook Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+          description: Reference of Github connector
+        repo_name:
+          type: string
+          description: name of the repository
+        header_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        payload_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        auto_abort_previous_executions:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - PullRequest
+            - Push
+            - IssueComment
+            - Release
+      discriminator:
+        propertyName: type
+        mapping:
+          PullRequest: '#/components/schemas/PullRequestGithubWebhookSpec'
+          Push: '#/components/schemas/PushGithubWebhookSpec'
+          IssueComment: '#/components/schemas/IssueCommentGithubWebhookSpec'
+          Release: '#/components/schemas/ReleaseGithubWebhookSpec'
+    PullRequestGithubWebhookSpec:
+      title: Pull Request Github Webhook Trigger Spec
+      x-discriminator-value: PullRequest
+      allOf:
+        - $ref: '#/components/schemas/GithubWebhookTriggerSpec'
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Close
+                  - Edit
+                  - Open
+                  - Reopen
+                  - Label
+                  - Unlabel
+                  - Synchronize
+                  - ReadyForReview
+    PushGithubWebhookSpec:
+      title: Push Github Webhook Trigger Spec
+      x-discriminator-value: Push
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/GithubWebhookTriggerSpec'
+    IssueCommentGithubWebhookSpec:
+      title: Issue Comment Github Webhook Trigger Spec
+      x-discriminator-value: IssueComment
+      allOf:
+        - $ref: '#/components/schemas/GithubWebhookTriggerSpec'
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+                  - Edit
+                  - Delete
+    ReleaseGithubWebhookSpec:
+      title: Release Github Webhook Trigger Spec
+      x-discriminator-value: Release
+      allOf:
+        - $ref: '#/components/schemas/GithubWebhookTriggerSpec'
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+                  - Edit
+                  - Delete
+                  - Prerelease
+                  - Publish
+                  - Release
+                  - Unpublish
+    GitlabWebhookSpec:
+      title: Gitlab Webhook Trigger Spec
+      x-discriminator-value: Gitlab
+      allOf:
+        - $ref: '#/components/schemas/WebhookTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/GitlabWebhookTriggerSpec'
+    GitlabWebhookTriggerSpec:
+      title: Gitlab Webhook Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+          description: Reference of Gitlab connector
+        repo_name:
+          type: string
+          description: name of the repository
+        header_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        payload_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        auto_abort_previous_executions:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - MergeRequest
+            - Push
+            - MRComment
+      discriminator:
+        propertyName: type
+        mapping:
+          MergeRequest: '#/components/schemas/MergeRequestGitlabWebhookSpec'
+          Push: '#/components/schemas/PushGitlabWebhookSpec'
+          MRComment: '#/components/schemas/MRCommentGitlabWebhookSpec'
+    MergeRequestGitlabWebhookSpec:
+      title: Merge Request Gitlab Webhook Trigger Spec
+      x-discriminator-value: MergeRequest
+      allOf:
+        - $ref: '#/components/schemas/GitlabWebhookTriggerSpec'
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Close
+                  - Merge
+                  - Open
+                  - Reopen
+                  - Update
+                  - Sync
+    PushGitlabWebhookSpec:
+      title: Push Gitlab Webhook Trigger Spec
+      x-discriminator-value: Push
+      allOf:
+        - $ref: '#/components/schemas/GitlabWebhookTriggerSpec'
+    MRCommentGitlabWebhookSpec:
+      title: MR Comment Gitlab Webhook Trigger Spec
+      x-discriminator-value: MRComment
+      allOf:
+        - $ref: '#/components/schemas/GitlabWebhookTriggerSpec'
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+    BitbucketWebhookSpec:
+      title: Bitbucket Webhook Trigger Spec
+      x-discriminator-value: Bitbucket
+      allOf:
+        - $ref: '#/components/schemas/WebhookTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/BitbucketWebhookTriggerSpec'
+    BitbucketWebhookTriggerSpec:
+      title: Bitbucket Webhook Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+          description: Reference of Bitbucket connector
+        repo_name:
+          type: string
+          description: name of the repository
+        header_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        payload_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        auto_abort_previous_executions:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - PullRequest
+            - Push
+            - PRComment
+      discriminator:
+        propertyName: type
+        mapping:
+          PullRequest: '#/components/schemas/PullRequestBitbucketWebhookSpec'
+          Push: '#/components/schemas/PushBitbucketWebhookSpec'
+          PRComment: '#/components/schemas/PRCommentBitbucketWebhookSpec'
+    PullRequestBitbucketWebhookSpec:
+      title: Pull Request Bitbucket Webhook Trigger Spec
+      x-discriminator-value: PullRequest
+      allOf:
+        - $ref: '#/components/schemas/BitbucketWebhookTriggerSpec'
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+                  - Merge
+                  - Update
+                  - Decline
+    PushBitbucketWebhookSpec:
+      title: Push Bitbucket Webhook Trigger Spec
+      x-discriminator-value: Push
+      allOf:
+        - $ref: '#/components/schemas/BitbucketWebhookTriggerSpec'
+    PRCommentBitbucketWebhookSpec:
+      title: PR Comment Bitbucket Webhook Trigger Spec
+      x-discriminator-value: PRComment
+      allOf:
+        - $ref: '#/components/schemas/BitbucketWebhookTriggerSpec'
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+                  - Edit
+                  - Delete
+    AwsCodeCommitWebhookSpec:
+      title: AwsCodeCommit Webhook Trigger Spec
+      x-discriminator-value: AwsCodeCommit
+      allOf:
+        - $ref: '#/components/schemas/WebhookTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/AwsCodeCommitWebhookTriggerSpec'
+    AwsCodeCommitWebhookTriggerSpec:
+      title: AwsCodeCommit Webhook Trigger Spec
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Push
+        spec:
+          $ref: '#/components/schemas/PushAwsCodeCommitWebhookTriggerSpec'
+    PushAwsCodeCommitWebhookTriggerSpec:
+      title: Push Aws Code Commit Webhook Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+          description: Reference of AwsCodeCommit connector
+        repo_name:
+          type: string
+          description: name of the repository
+        payload_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+    AzureRepoWebhookSpec:
+      title: AzureRepo Webhook Trigger Spec
+      x-discriminator-value: AzureRepo
+      allOf:
+        - $ref: '#/components/schemas/WebhookTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/AzureRepoWebhookTriggerSpec'
+    AzureRepoWebhookTriggerSpec:
+      title: AzureRepo Webhook Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+          description: Reference of AzureRepo connector
+        repo_name:
+          type: string
+          description: name of the repository
+        header_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        payload_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        auto_abort_previous_executions:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - PullRequest
+            - Push
+            - IssueComment
+      discriminator:
+        propertyName: type
+        mapping:
+          PullRequest: '#/components/schemas/PullRequestAzureRepoWebhookSpec'
+          Push: '#/components/schemas/PushAzureRepoWebhookSpec'
+          PRComment: '#/components/schemas/IssueCommentAzureRepoWebhookSpec'
+    PushAzureRepoWebhookSpec:
+      title: Push AzureRepo Webhook Trigger Spec
+      x-discriminator-value: Push
+      allOf:
+        - $ref: '#/components/schemas/AzureRepoWebhookTriggerSpec'
+    PullRequestAzureRepoWebhookSpec:
+      title: Pull Request AzureRepo Webhook Trigger Spec
+      x-discriminator-value: PullRequest
+      allOf:
+        - $ref: '#/components/schemas/AzureRepoWebhookTriggerSpec'
+        - properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+                  - Update
+                  - Merge
+    IssueCommentAzureRepoWebhookSpec:
+      title: Issue Comment AzureRepo Webhook Trigger Spec
+      x-discriminator-value: IssueComment
+      allOf:
+        - $ref: '#/components/schemas/AzureRepoWebhookTriggerSpec'
+        - properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+                  - Edit
+                  - Delete
+    HarnessWebhookSpec:
+      title: Harness Webhook Trigger Spec
+      x-discriminator-value: Harness
+      allOf:
+        - $ref: '#/components/schemas/WebhookTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/HarnessWebhookTriggerSpec'
+    HarnessWebhookTriggerSpec:
+      title: Harness Webhook Trigger Spec
+      type: object
+      properties:
+        repo_name:
+          type: string
+          description: name of the repository
+        header_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        payload_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        auto_abort_previous_executions:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - PullRequest
+            - Push
+            - IssueComment
+      discriminator:
+        propertyName: type
+        mapping:
+          PullRequest: '#/components/schemas/PullRequestHarnessWebhookSpec'
+          Push: '#/components/schemas/PushHarnessWebhookSpec'
+          PRComment: '#/components/schemas/IssueCommentHarnessWebhookSpec'
+    PullRequestHarnessWebhookSpec:
+      title: Pull Request Harness Webhook Trigger Spec
+      x-discriminator-value: PullRequest
+      allOf:
+        - $ref: '#/components/schemas/HarnessWebhookTriggerSpec'
+        - properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Close
+                  - Edit
+                  - Open
+                  - Reopen
+                  - Label
+                  - Unlabel
+                  - Synchronize
+    PushHarnessWebhookSpec:
+      title: Push Harness Webhook Trigger Spec
+      x-discriminator-value: Push
+      allOf:
+        - $ref: '#/components/schemas/HarnessWebhookTriggerSpec'
+    IssueCommentHarnessWebhookSpec:
+      title: Issue Comment Harness Webhook Trigger Spec
+      x-discriminator-value: IssueComment
+      allOf:
+        - $ref: '#/components/schemas/HarnessWebhookTriggerSpec'
+        - properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - Create
+                  - Edit
+                  - Delete
+    CustomWebhookSpec:
+      title: Custom Webhook Trigger Spec
+      x-discriminator-value: Custom
+      allOf:
+        - $ref: '#/components/schemas/WebhookTriggerSpec'
+        - type: object
+          properties:
+            header_conditions:
+              type: array
+              items:
+                $ref: '#/components/schemas/TriggerConditions'
+            payload_conditions:
+              type: array
+              items:
+                $ref: '#/components/schemas/TriggerConditions'
+            jexl_condition:
+              type: string
     CronScheduledTriggerSpec:
       title: Cron Scheduled Trigger Spec
       type: object
