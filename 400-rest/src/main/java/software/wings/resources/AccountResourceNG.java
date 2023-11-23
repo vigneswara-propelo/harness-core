@@ -279,19 +279,6 @@ public class AccountResourceNG {
   }
 
   @GET
-  @Path("/trustLevel")
-  public RestResponse<Integer> getAccountTrustLevel(@QueryParam("accountId") String accountId) {
-    return new RestResponse<>(accountService.getTrustLevel(accountId));
-  }
-
-  @GET
-  @Path("/update-trust-level")
-  public RestResponse<Boolean> updateAccountTrustLevel(
-      @QueryParam("accountId") String accountId, @QueryParam("trustLevel") Integer trustLevel) {
-    return new RestResponse<>(accountService.updateTrustLevel(accountId, trustLevel));
-  }
-
-  @GET
   @Path("public-access")
   public RestResponse<Boolean> getPublicAccessEnabled(@QueryParam("accountId") @NotEmpty String accountId) {
     return new RestResponse(accountService.getPublicAccessEnabled(accountId));
