@@ -33,7 +33,6 @@ public class CurrentGenManagerMongoDBMetricsPublisher implements MetricsPublishe
   private static final String CONNECTIONS_CHECKED_OUT = "connections_checked_out";
   private static final String CONNECTION_POOL_MAX_SIZE = "connection_pool_max_size";
   private static final String NAMESPACE = System.getenv("NAMESPACE");
-  private static final String CONTAINER_NAME = System.getenv("CONTAINER_NAME");
 
   @Override
   public void recordMetrics() {
@@ -41,8 +40,7 @@ public class CurrentGenManagerMongoDBMetricsPublisher implements MetricsPublishe
     map.forEach((serverId, harnessConnectionPoolStatistics) -> {
       String serverAddress = sanitizeName(serverId.getAddress().toString());
       String clientDescription = sanitizeName(serverId.getClusterId().getDescription());
-      try (MongoMetricsContext ignore =
-               new MongoMetricsContext(NAMESPACE, CONTAINER_NAME, serverAddress, clientDescription)) {
+      try (MongoMetricsContext ignore = new MongoMetricsContext(NAMESPACE, "", serverAddress, clientDescription)) {
         recordMetric(CONNECTION_POOL_MAX_SIZE, harnessConnectionPoolStatistics.getMaxSize());
         recordMetric(CONNECTION_POOL_SIZE, harnessConnectionPoolStatistics.getSize());
         recordMetric(CONNECTIONS_CHECKED_OUT, harnessConnectionPoolStatistics.getCheckedOutCount());

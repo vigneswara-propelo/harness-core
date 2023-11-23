@@ -18,9 +18,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @OwnedBy(PL)
 public class CurrentGenMetricsContext extends AutoMetricContext {
-  public CurrentGenMetricsContext(String namespace, String containerName, String serviceName) {
+  public CurrentGenMetricsContext(String namespace, String serviceName) {
     put("namespace", namespace);
-    put("containerName", containerName);
     put("serviceName", serviceName);
   }
 }

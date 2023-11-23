@@ -2,5 +2,4 @@ name: CurrentGen Manager Service Metrics Group
 identifier: cgManagerServiceMetricsGroup
 labels:
   - namespace
-  - containerName
   - serviceName
