@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: resourceTypeConfiguration
-version: 38
+version: 39
 resourceTypes:
   - identifier: ACCOUNT
     permissionKey: account
@@ -153,3 +153,5 @@ resourceTypes:
     permissionKey: recommendations
   - identifier: CCM_COMMITMENT_ORCHESTRATOR
     permissionKey: commitmentOrchestrator
+  - identifier: INPUT_SET
+    permissionKey: inputset
