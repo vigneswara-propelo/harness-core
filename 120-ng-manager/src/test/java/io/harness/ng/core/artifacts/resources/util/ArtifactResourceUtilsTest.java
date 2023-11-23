@@ -1674,7 +1674,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(ecrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(ECR_BUILD_DETAILS_DTO)
         .when(ecrResourceService)
@@ -1711,7 +1711,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(ecrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(ECR_BUILD_DETAILS_DTO)
         .when(ecrResourceService)
@@ -1752,7 +1752,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(ecrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(ECR_BUILD_DETAILS_DTO)
         .when(ecrResourceService)
