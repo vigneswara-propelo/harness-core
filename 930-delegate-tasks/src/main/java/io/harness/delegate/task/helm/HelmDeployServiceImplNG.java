@@ -75,6 +75,7 @@ import io.harness.delegate.task.git.ScmFetchFilesHelperNG;
 import io.harness.delegate.task.helm.steadystate.HelmSteadyStateService;
 import io.harness.delegate.task.k8s.ContainerDeploymentDelegateBaseHelper;
 import io.harness.delegate.task.k8s.HelmChartManifestDelegateConfig;
+import io.harness.delegate.task.k8s.HelmTaskDTO;
 import io.harness.delegate.task.k8s.K8sTaskHelperBase;
 import io.harness.delegate.task.k8s.ManifestDelegateConfig;
 import io.harness.delegate.task.localstore.ManifestFiles;
@@ -203,7 +204,8 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
   }
 
   @Override
-  public HelmCommandResponseNG deploy(HelmInstallCommandRequestNG commandRequest) throws Exception {
+  public HelmCommandResponseNG deploy(HelmInstallCommandRequestNG commandRequest, HelmTaskDTO taskData)
+      throws Exception {
     LogCallback logCallback = commandRequest.getLogCallback();
     HelmChartInfo helmChartInfo = null;
     int prevVersion = -1;
@@ -213,8 +215,12 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
     ReleaseHistory releaseHistory = null;
     boolean isImprovedHelmTracking = commandRequest.isImprovedHelmTracking();
     try {
-      kubernetesConfig = containerDeploymentDelegateBaseHelper.createKubernetesConfig(
-          commandRequest.getK8sInfraDelegateConfig(), commandRequest.getWorkingDir(), logCallback);
+      kubernetesConfig = taskData.getKubernetesConfig();
+      if (kubernetesConfig == null) {
+        log.warn("Kubernetes config passed to task is NULL. Creating it again...");
+        kubernetesConfig = containerDeploymentDelegateBaseHelper.createKubernetesConfig(
+            commandRequest.getK8sInfraDelegateConfig(), commandRequest.getWorkingDir(), logCallback);
+      }
 
       List<K8sPod> existingPodList = Collections.emptyList();
       HelmInstallCmdResponseNG commandResponse;
@@ -645,11 +651,16 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
   }
 
   @Override
-  public HelmCommandResponseNG rollback(HelmRollbackCommandRequestNG commandRequest) throws Exception {
+  public HelmCommandResponseNG rollback(HelmRollbackCommandRequestNG commandRequest, HelmTaskDTO taskData)
+      throws Exception {
     LogCallback logCallback = commandRequest.getLogCallback();
-    kubernetesConfig = containerDeploymentDelegateBaseHelper.createKubernetesConfig(
-        commandRequest.getK8sInfraDelegateConfig(), commandRequest.getWorkingDir(), logCallback);
+    kubernetesConfig = taskData.getKubernetesConfig();
     try {
+      if (kubernetesConfig == null) {
+        log.warn("Kubernetes config passed to task is NULL. Creating it again...");
+        kubernetesConfig = containerDeploymentDelegateBaseHelper.createKubernetesConfig(
+            commandRequest.getK8sInfraDelegateConfig(), commandRequest.getWorkingDir(), logCallback);
+      }
       List<KubernetesResource> existingManifest = commandRequest.isImprovedHelmTracking()
           ? helmSteadyStateService.readManifestFromHelmRelease(HelmCommandDataMapperNG.getHelmCmdDataNG(commandRequest))
           : Collections.emptyList();

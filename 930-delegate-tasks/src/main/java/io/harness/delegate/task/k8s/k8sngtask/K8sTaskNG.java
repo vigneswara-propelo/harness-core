@@ -17,7 +17,10 @@ import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfPr
 
 import static java.util.Objects.isNull;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.delegate.beans.DelegateTaskPackage;
 import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
@@ -29,6 +32,7 @@ import io.harness.delegate.k8s.K8sRequestHandler;
 import io.harness.delegate.task.ManifestDelegateConfigHelper;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.delegate.task.common.AbstractDelegateRunnableTask;
+import io.harness.delegate.task.k8s.K8sTaskCleanupDTO.K8sTaskCleanupDTOBuilder;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.k8s.config.K8sGlobalConfigService;
@@ -50,6 +54,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 @Slf4j
 @OwnedBy(CDP)
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
 public class K8sTaskNG extends AbstractDelegateRunnableTask {
   @Inject private Map<String, K8sRequestHandler> k8sTaskTypeToRequestHandler;
   @Inject private ContainerDeploymentDelegateBaseHelper containerDeploymentDelegateBaseHelper;
@@ -100,6 +105,7 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
                                     .toAbsolutePath()
                                     .toString();
       K8sRequestHandler requestHandler = k8sTaskTypeToRequestHandler.get(k8sDeployRequest.getTaskType().name());
+      K8sTaskCleanupDTOBuilder cleanupDTOBuilder = K8sTaskCleanupDTO.builder();
 
       try {
         createDirectoryIfDoesNotExist(workingDirectory);
@@ -107,6 +113,9 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
 
         KubernetesConfig kubernetesConfig = containerDeploymentDelegateBaseHelper.decryptAndGetKubernetesConfig(
             k8sDeployRequest.getK8sInfraDelegateConfig(), workingDirectory);
+        cleanupDTOBuilder.infraDelegateConfig(k8sDeployRequest.getK8sInfraDelegateConfig());
+        cleanupDTOBuilder.generatedKubeConfig(kubernetesConfig);
+
         containerDeploymentDelegateBaseHelper.persistKubernetesConfig(kubernetesConfig, workingDirectory);
 
         createDirectoryIfDoesNotExist(Paths.get(workingDirectory, MANIFEST_FILES_DIR).toString());
@@ -155,6 +164,9 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
             .build();
       } finally {
         cleanup(workingDirectory);
+        if (requestHandler != null) {
+          requestHandler.performCleanup(cleanupDTOBuilder.build());
+        }
       }
     }
   }
