@@ -93,6 +93,8 @@ import io.harness.waiter.WaiterConfiguration;
 import io.harness.waiter.WaiterConfiguration.PersistenceLayer;
 
 import com.codahale.metrics.MetricRegistry;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -102,7 +104,9 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import java.io.Closeable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.cache.Cache;
@@ -290,6 +294,13 @@ public class OrchestrationModule extends AbstractModule implements ServersModule
     return harnessCacheManager.getCache("pmsMetricsCache", String.class, Integer.class,
         AccessedExpiryPolicy.factoryOf(new Duration(TimeUnit.MINUTES, 1)),
         versionInfoManager.getVersionInfo().getBuildNo());
+  }
+
+  @Provides
+  @Singleton
+  @Named("pmsMetricsLoadingCache")
+  public LoadingCache<String, Set<String>> metricsLoadingCache() {
+    return Caffeine.newBuilder().build(s -> new HashSet<>());
   }
 
   @Provides

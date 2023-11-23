@@ -46,7 +46,7 @@ import io.harness.execution.NodeExecution.NodeExecutionKeys;
 import io.harness.execution.PlanExecutionMetadata;
 import io.harness.execution.expansion.PlanExpansionService;
 import io.harness.interrupts.InterruptEffect;
-import io.harness.monitoring.ExecutionCountWithAccountResult;
+import io.harness.monitoring.ExecutionStatistics;
 import io.harness.observer.Subject;
 import io.harness.plan.Node;
 import io.harness.plan.NodeType;
@@ -1135,7 +1135,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   }
 
   @Override
-  public List<ExecutionCountWithAccountResult> aggregateRunningNodesCountPerAccount() {
-    return nodeExecutionReadHelper.aggregateRunningExecutionCountPerAccount();
+  public ExecutionStatistics aggregateRunningNodeExecutionsCount() {
+    return nodeExecutionReadHelper.aggregateRunningExecutionCount();
   }
 }
