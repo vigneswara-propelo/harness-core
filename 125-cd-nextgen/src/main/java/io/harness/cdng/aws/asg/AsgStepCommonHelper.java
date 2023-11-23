@@ -66,6 +66,8 @@ import io.harness.delegate.task.aws.asg.AsgRollingDeployResponse;
 import io.harness.delegate.task.aws.asg.AsgRollingDeployResult;
 import io.harness.delegate.task.aws.asg.AsgRollingRollbackResponse;
 import io.harness.delegate.task.aws.asg.AsgRollingRollbackResult;
+import io.harness.delegate.task.aws.asg.AsgShiftTrafficResponse;
+import io.harness.delegate.task.aws.asg.AsgShiftTrafficResult;
 import io.harness.delegate.task.git.GitFetchFilesConfig;
 import io.harness.delegate.task.git.GitFetchRequest;
 import io.harness.delegate.task.git.GitFetchResponse;
@@ -131,7 +133,7 @@ public class AsgStepCommonHelper extends CDStepHelper {
   @Inject @Named("referenceFalseKryoSerializer") private KryoSerializer referenceFalseKryoSerializer;
   private final LogWrapper logger = new LogWrapper(log);
   private static final String EXEC_STRATEGY_CANARY = "canary";
-  private static final String EXEC_STRATEGY_BLUEGREEN = "blue-green";
+  public static final String EXEC_STRATEGY_BLUEGREEN = "blue-green";
   private static final String EXEC_STRATEGY_ROLLING = "rolling";
   static final String VERSION_DELIMITER = "__";
 
@@ -730,6 +732,20 @@ public class AsgStepCommonHelper extends CDStepHelper {
       serverInstanceInfoList.addAll(AutoScalingGroupContainerToServerInstanceInfoMapper.toServerInstanceInfoList(
           asgBlueGreenSwapServiceResult.getStageAutoScalingGroupContainer(), infrastructureKey, region,
           EXEC_STRATEGY_BLUEGREEN, asgNameWithoutSuffix, false));
+      return serverInstanceInfoList;
+    }
+
+    else if (asgCommandResponse instanceof AsgShiftTrafficResponse) {
+      AsgShiftTrafficResult asgShiftTrafficResult = ((AsgShiftTrafficResponse) asgCommandResponse).getResult();
+      String prodAsgName = asgShiftTrafficResult.getProdAutoScalingGroupContainer().getAutoScalingGroupName();
+      String asgNameWithoutSuffix = prodAsgName.substring(0, prodAsgName.length() - VERSION_DELIMITER.length() - 1);
+      List<ServerInstanceInfo> serverInstanceInfoList = new ArrayList<>();
+      serverInstanceInfoList.addAll(AutoScalingGroupContainerToServerInstanceInfoMapper.toServerInstanceInfoList(
+          asgShiftTrafficResult.getProdAutoScalingGroupContainer(), infrastructureKey, region, EXEC_STRATEGY_BLUEGREEN,
+          asgNameWithoutSuffix, true));
+      serverInstanceInfoList.addAll(AutoScalingGroupContainerToServerInstanceInfoMapper.toServerInstanceInfoList(
+          asgShiftTrafficResult.getStageAutoScalingGroupContainer(), infrastructureKey, region, EXEC_STRATEGY_BLUEGREEN,
+          asgNameWithoutSuffix, false));
       return serverInstanceInfoList;
     }
 

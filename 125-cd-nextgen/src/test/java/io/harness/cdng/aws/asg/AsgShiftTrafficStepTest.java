@@ -166,6 +166,10 @@ public class AsgShiftTrafficStepTest extends CategoryTest {
         .when(instanceInfoService)
         .saveServerInstancesIntoSweepingOutput(any(), any());
 
+    doReturn(mock(InfrastructureOutcome.class))
+        .when(asgStepCommonHelper)
+        .getInfrastructureOutcomeWithUpdatedExpressions(any());
+
     StepResponse stepResponse = asgShiftTrafficStep.handleTaskResultWithSecurityContext(
         ambiance, stepElementParameters, () -> (AsgCommandResponse) responseData);
 
@@ -173,6 +177,8 @@ public class AsgShiftTrafficStepTest extends CategoryTest {
         Collectors.toMap(StepResponse.StepOutcome::getName, StepResponse.StepOutcome::getOutcome));
 
     assertThat(outcomeMap.get(OutcomeExpressionConstants.OUTPUT)).isInstanceOf(AsgShiftTrafficOutcome.class);
+    assertThat(outcomeMap.get(OutcomeExpressionConstants.DEPLOYMENT_INFO_OUTCOME))
+        .isInstanceOf(DeploymentInfoOutcome.class);
   }
 
   @Test

@@ -27,6 +27,7 @@ import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.common.ParameterFieldHelper;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.delegate.beans.instancesync.ServerInstanceInfo;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.task.aws.asg.AsgCommandResponse;
 import io.harness.delegate.task.aws.asg.AsgShiftTrafficRequest;
@@ -185,13 +186,22 @@ public class AsgShiftTrafficStep extends CdTaskExecutable<AsgCommandResponse> {
       executionSweepingOutputService.consume(ambiance, OutcomeExpressionConstants.ASG_SHIFT_TRAFFIC_OUTCOME,
           asgShiftTrafficOutcome, StepOutcomeGroup.STEP.name());
 
-      // TODO instance sync
+      InfrastructureOutcome infrastructureOutcome =
+          asgStepCommonHelper.getInfrastructureOutcomeWithUpdatedExpressions(ambiance);
+
+      List<ServerInstanceInfo> serverInstanceInfos = asgStepCommonHelper.getServerInstanceInfos(asgShiftTrafficResponse,
+          infrastructureOutcome.getInfrastructureKey(),
+          asgStepCommonHelper.getAsgInfraConfig(infrastructureOutcome, ambiance).getRegion());
+
+      StepResponse.StepOutcome stepOutcome =
+          instanceInfoService.saveServerInstancesIntoSweepingOutput(ambiance, serverInstanceInfos);
 
       stepResponse = stepResponseBuilder.status(Status.SUCCEEDED)
                          .stepOutcome(StepResponse.StepOutcome.builder()
                                           .name(OutcomeExpressionConstants.OUTPUT)
                                           .outcome(asgShiftTrafficOutcome)
                                           .build())
+                         .stepOutcome(stepOutcome)
                          .build();
     }
 
