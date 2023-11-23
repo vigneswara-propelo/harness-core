@@ -537,7 +537,7 @@ public enum TaskType {
       TaskGroup.ASG, "AWS Asg Blue Green Prepare Rollback Data for Shift Traffic"),
   HELM_COMMAND_TASK_NG_JOBS_STEADY_STATE_CHECK(
       TaskGroup.HELM, "Helm Command Task with Steady state check for jobs depending on account settings."),
-  ARTIFACT_BUNDLE_FETCH_TASK(TaskGroup.ARTIFACT_BUNDLE, "Artifact bundle fetch task in NG", true),
+  ARTIFACT_BUNDLE_FETCH_TASK(TaskGroup.ARTIFACT_BUNDLE, "Artifact bundle fetch task in NG"),
   AWS_ASG_BLUE_GREEN_DEPLOY_TASK_NG_V3(TaskGroup.ASG, "AWS Asg Blue Green Deploy V3 with Shift Traffic support"),
   TAS_BG_SETUP_SUPPORT_2_APPS_V2(TaskGroup.TAS, "Tas BG Setup task V2", true);
   private final TaskGroup taskGroup;

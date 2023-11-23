@@ -18,5 +18,6 @@ import io.harness.annotations.dev.ProductModule;
 @OwnedBy(CDP)
 public enum ArtifactBundledArtifactType {
   ZIP,
-  TAR
+  TAR,
+  TAR_GZIP
 }

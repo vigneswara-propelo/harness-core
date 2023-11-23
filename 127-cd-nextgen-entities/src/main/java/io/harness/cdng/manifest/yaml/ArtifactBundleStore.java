@@ -112,7 +112,8 @@ public class ArtifactBundleStore implements ArtifactBundleStoreConfig, Visitable
     }
     if (artifactBundleType == null
         || (!artifactBundleType.equals(ArtifactBundledArtifactType.ZIP)
-            && !artifactBundleType.equals(ArtifactBundledArtifactType.TAR))) {
+            && !artifactBundleType.equals(ArtifactBundledArtifactType.TAR)
+            && !artifactBundleType.equals(ArtifactBundledArtifactType.TAR_GZIP))) {
       invalidParameters.add(ArtifactBundleStoreConfigKeys.artifactBundleType);
     }
 
