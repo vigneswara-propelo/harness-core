@@ -1,6 +1,6 @@
 openapi: 3.0.0
 x-stoplight:
-  id: j2mnz73mw82fb
+  id: 2p5zp23a7cyrb
 info:
   title: Harness NextGen Software Delivery Platform API Reference
   version: '1.0'
@@ -83,7 +83,7 @@ paths:
           $ref: '#/components/responses/TokenIssueResponseBody'
       operationId: Token#IssueToken
       x-stoplight:
-        id: kqf9462vpx0fs
+        id: ix3xmnnbm8e2v
       description: Issue a cross-service token
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
@@ -98,7 +98,7 @@ paths:
           $ref: '#/components/responses/ArtifactSbomResponseBody'
       operationId: downloadSbom
       x-stoplight:
-        id: 0kgf4u4kk3b4s
+        id: sgwx0t92h6iyt
       description: Download SBOM for an artifact
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
@@ -132,7 +132,7 @@ paths:
           $ref: '#/components/responses/OrchestrationSummaryResponseBody'
       operationId: getOrchestrationSummary
       x-stoplight:
-        id: uowtixhr33a31
+        id: 4n73bqs38u6d7
       description: Get Orchestration Summary
       security:
         - x-api-key: []
@@ -157,7 +157,7 @@ paths:
           $ref: '#/components/responses/EnforcementSummaryResponseBody'
       operationId: getEnforcementSummary
       x-stoplight:
-        id: fcha1dmeif406
+        id: c6d7scpwjbiqu
       description: Get Enforcement Summary
       security:
         - x-api-key: []
@@ -175,7 +175,7 @@ paths:
           $ref: '#/components/responses/PolicyViolationResponse'
       operationId: getPolicyViolations
       x-stoplight:
-        id: 73d1e712g96sz
+        id: y3u3f1yi9nxew
       security:
         - x-api-key: []
       parameters:
@@ -435,12 +435,64 @@ paths:
         - artifact
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
+  '/v1/org/{org}/project/{project}/orchestration/{orchestration-id}/sbom-scorecard':
+    parameters:
+      - $ref: '#/components/parameters/OrgParam'
+      - $ref: '#/components/parameters/ProjectParam'
+      - schema:
+          type: string
+        name: orchestration-id
+        in: path
+        required: true
+        description: Orchestration ID
+    post:
+      summary: Save Scorecard
+      operationId: saveSbomScorecard
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      x-stoplight:
+        id: 1na17jjqy6cxy
+      description: Save SBOM Scorecard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SbomScorecardRequestBody'
+        description: ''
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      tags:
+        - Scorecard
+    get:
+      summary: Get Scorecard
+      operationId: getSbomScorecard
+      responses:
+        '200':
+          $ref: '#/components/responses/SbomScorecardResponseBody'
+        '400':
+          description: Bad Request
+      x-stoplight:
+        id: hn92isnkdei4r
+      description: Get SBOM Scorecard
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      tags:
+        - Scorecard
 components:
   schemas:
     Artifact:
       title: Artifact
       x-stoplight:
-        id: rrwhrjczfsipf
+        id: kohsxb7y1t6w2
       type: object
       x-examples: {}
       properties:
@@ -471,7 +523,7 @@ components:
     SbomProcess:
       title: SbomProcess
       x-stoplight:
-        id: xpnr59ji5srjl
+        id: br4zemteqh1ci
       type: object
       properties:
         name:
@@ -497,7 +549,7 @@ components:
     Attestation:
       title: Attestation
       x-stoplight:
-        id: dwa09b66wazmd
+        id: monv7ev49z3mr
       type: object
       properties:
         is_attested:
@@ -511,7 +563,7 @@ components:
     SbomMetadata:
       title: SbomMetadata
       x-stoplight:
-        id: m5urz3piummts
+        id: rdrruccgg2wfq
       type: object
       properties:
         format:
@@ -565,7 +617,7 @@ components:
     SbomProcessRequestBody:
       title: SbomProcessRequestBody
       x-stoplight:
-        id: wfe0ul5hxha49
+        id: 3pkjmjsutjh8v
       type: object
       properties:
         artifact:
@@ -579,7 +631,7 @@ components:
     SbomProcessResponseBody:
       title: SbomProcessResponseBody
       x-stoplight:
-        id: 7iprsb7hxh1ud
+        id: huqg37cy3hm5r
       type: object
       properties:
         artifact_id:
@@ -588,7 +640,7 @@ components:
     EnforceSbomResponseBody:
       title: SbomEnforceResponseBody
       x-stoplight:
-        id: an2f9zbv9md7a
+        id: b1utz08o2lnwt
       type: object
       properties:
         enforcement_id:
@@ -602,7 +654,7 @@ components:
     EnforceSbomRequestBody:
       title: SbomEnforceRequestBody
       x-stoplight:
-        id: 9xp7v14i7f3b6
+        id: jxtans9gx5bfv
       type: object
       properties:
         enforcement_id:
@@ -620,7 +672,7 @@ components:
     TokenIssueResponseBody:
       title: TokenIssueResponseBody
       x-stoplight:
-        id: 5dvujb5lcach0
+        id: xuo7e9yt5m9s8
       type: object
       x-internal: true
       properties:
@@ -635,7 +687,7 @@ components:
         token:
           type: string
           x-stoplight:
-            id: 0nehmrph3tcda
+            id: 8lrwhgv8sacgq
           description: Issued cross-service JWT
       required:
         - token
@@ -644,7 +696,7 @@ components:
     ArtifactSbomResponseBody:
       title: ArtifactSbomResponseBody
       x-stoplight:
-        id: 1sta04rq3jftx
+        id: 8s711t2jo8aa0
       type: object
       properties:
         sbom:
@@ -653,16 +705,16 @@ components:
     OrchestrationSummaryResponse:
       title: OrchestrationSummary
       x-stoplight:
-        id: vbcb5naokq2fx
+        id: v9gc808h3qv92
       type: object
       properties:
         step_execution_id:
           type: string
           x-stoplight:
-            id: 9wow49sdm17r6
+            id: aov3m2f4dyod6
         is_attested:
           x-stoplight:
-            id: 1ujykr0wx4br0
+            id: eaz82op13g38l
           type: boolean
         artifact:
           $ref: '#/components/schemas/Artifact'
@@ -671,7 +723,7 @@ components:
     EnforcementSummaryResponse:
       title: EnforcementSummaryResponse
       x-stoplight:
-        id: lo64dfyejca80
+        id: ddad7n9opm0xg
       type: object
       properties:
         artifact:
@@ -679,31 +731,31 @@ components:
         enforcement_id:
           type: string
           x-stoplight:
-            id: 2j23j9zr5bnuu
+            id: 6f6ic4qdhw8n8
         allow_list_violation_count:
           type: integer
           x-stoplight:
-            id: d5y0u66jsxgcu
+            id: riqiqybnawnl1
         deny_list_violation_count:
           type: integer
           x-stoplight:
-            id: rf2n0riubwlyf
+            id: i2nwrsrx8wa2m
         status:
           type: string
           x-stoplight:
-            id: ro09rku9hjea0
+            id: 9gv8qpmacqsu0
       description: Enforcement Summary
     SbomDetails:
       title: SbomDetails
       x-stoplight:
-        id: l4f2mrb65p7k1
+        id: 6tuahrdopfnfw
       type: object
       description: Sbom Details
       properties:
         name:
           type: string
           x-stoplight:
-            id: jvijjppao29je
+            id: 14rir1hv9h1bf
       required:
         - name
     PolicyViolation:
@@ -713,41 +765,41 @@ components:
         enforcement_id:
           type: string
           x-stoplight:
-            id: 8p80wy4a5wr2o
+            id: 2v9jtv0j930ej
         artifact_id:
           type: string
           x-stoplight:
-            id: i2bhs74cgjuf6
+            id: ab9hkgabzxuob
         tag:
           type: string
         image_name:
           type: string
           x-stoplight:
-            id: zd1xf3at0usmi
+            id: cmqkq9ypsy03l
         account:
           type: string
           x-stoplight:
-            id: 5by1hyzbgo9bn
+            id: baab5gdb5be96
         org:
           type: string
           x-stoplight:
-            id: jyuptxu2dbwcl
+            id: blrmz7yop3du7
         project:
           type: string
           x-stoplight:
-            id: 4ogkwadqxgcsz
+            id: 0jbavhvpq2is7
         orchestration_id:
           type: string
           x-stoplight:
-            id: 6po9n8rssvkx3
+            id: anhta0zunlgto
         violation_type:
           type: string
           x-stoplight:
-            id: 2tz64pgdt7qse
+            id: y9sxq9j671z0d
         violation_details:
           type: string
           x-stoplight:
-            id: bath1ch2cf48d
+            id: t5o3vz7uw8h00
         name:
           type: string
         version:
@@ -757,11 +809,11 @@ components:
         supplier_type:
           type: string
           x-stoplight:
-            id: byksszdrav60e
+            id: xr5uvq50586gy
         package_manager:
           type: string
           x-stoplight:
-            id: rj8u9izj78571
+            id: a57hmn5d29yuk
         license:
           type: array
           items:
@@ -772,7 +824,7 @@ components:
     NormalizedSbomComponentDTO:
       title: NormalizedSbomComponentDTO
       x-stoplight:
-        id: x0eg39mhsrhzj
+        id: 4o9qsuxc0nbir
       type: object
       description: Normalized SBOM Component Details
       properties:
@@ -849,7 +901,7 @@ components:
     EnforcementResultDTO:
       title: EnforcementResultDTO
       x-stoplight:
-        id: 89kdbann98z41
+        id: hlz66apnxgx90
       type: object
       description: Enforcement Result Details DTO
       x-examples: {}
@@ -904,7 +956,7 @@ components:
     EnforcementSummaryDTO:
       title: EnforcementSummaryDTO
       x-stoplight:
-        id: 6t9xgq80ru7e8
+        id: 1oqbwkkarpr19
       type: object
       description: Enforcement summary detail DTO
       x-examples: {}
@@ -972,7 +1024,7 @@ components:
     ArtifactListingResponse:
       title: ArtifactListingResponse
       x-stoplight:
-        id: ji6ibh3zytn1r
+        id: qwbmt054io3dj
       type: object
       x-examples: {}
       properties:
@@ -1018,7 +1070,7 @@ components:
       type: object
       x-examples: {}
       x-stoplight:
-        id: wj53ln194zdu3
+        id: dq6tcg89l2ck8
       properties:
         id:
           type: string
@@ -1049,7 +1101,7 @@ components:
     ArtifactComponentViewRequestBody:
       title: ArtifactComponentViewRequestBody
       x-stoplight:
-        id: zoryachweqgg2
+        id: dbsbc7uxrc1z5
       type: object
       properties:
         component_filter:
@@ -1065,7 +1117,7 @@ components:
     ArtifactDeploymentViewRequestBody:
       title: ArtifactDeploymentViewRequestBody
       x-stoplight:
-        id: pbm28tk6mwalv
+        id: iadbyxfvw554t
       type: object
       properties:
         environment:
@@ -1083,7 +1135,7 @@ components:
     ArtifactComponentViewResponse:
       title: ArtifactComponentViewResponse
       x-stoplight:
-        id: zyr1fzn6b3tic
+        id: 80k9scbge5rmw
       type: object
       properties:
         package_name:
@@ -1101,7 +1153,7 @@ components:
     ArtifactDeploymentViewResponse:
       title: ArtifactDeploymentViewResponse
       x-stoplight:
-        id: 767ir9gh94lgz
+        id: ug4u1zi4fesgc
       type: object
       properties:
         env_id:
@@ -1155,7 +1207,7 @@ components:
     Operator:
       title: Operator
       x-stoplight:
-        id: lb8dvco39eqem
+        id: qws1tll6rnsys
       enum:
         - Equals
         - StartsWith
@@ -1191,20 +1243,170 @@ components:
     Slsa:
       title: Slsa
       x-stoplight:
-        id: 3h8gliq334t90
+        id: oxmxczz830q4j
       type: object
       description: Slsa Verification Data
       properties:
         provenance:
           type: string
           x-stoplight:
-            id: vlfa9dlengttp
+            id: d0rlqp5pyzod0
           description: Slsa provenance data
         policy_outcome_status:
           type: string
           x-stoplight:
-            id: fsetl3t2i7srd
+            id: gov75xsqzhf10
           description: Slsa policy outcome
+    Score:
+      title: Score
+      x-stoplight:
+        id: 499tdv2j80dqo
+      type: object
+      properties:
+        category:
+          type: string
+          x-stoplight:
+            id: u71pv9pjwol09
+        feature:
+          type: string
+          x-stoplight:
+            id: 934z90evo9v96
+        score:
+          type: string
+          x-stoplight:
+            id: 5fqrdl36y43a3
+        max_score:
+          type: string
+          x-stoplight:
+            id: jx96duodo9nm9
+        description:
+          type: string
+          x-stoplight:
+            id: q0nhxbpkt80f8
+        ignored:
+          type: string
+          x-stoplight:
+            id: lq4j1ch3332re
+      description: ''
+    ScorecardInfo:
+      title: ScorecardInfo
+      x-stoplight:
+        id: 9a8u1ycps7bdq
+      type: object
+      properties:
+        tool_name:
+          type: string
+          x-stoplight:
+            id: 479cpj278vrm7
+        tool_version:
+          type: string
+          x-stoplight:
+            id: lw8tg6k9my1xt
+    SbomDetailsForScorecard:
+      title: SbomDetailsForScorecard
+      x-stoplight:
+        id: vbc1etterw9zj
+      type: object
+      properties:
+        tool_name:
+          type: string
+          x-stoplight:
+            id: 9y57tegw5ts0g
+        tool_version:
+          type: string
+          x-stoplight:
+            id: 55twstzpiy78y
+        sbom_file_name:
+          type: string
+          x-stoplight:
+            id: q45s9gtfwpr8r
+        sbom_format:
+          type: string
+          x-stoplight:
+            id: unrlgw3e212qj
+        sbom_version:
+          type: string
+          x-stoplight:
+            id: z6zkxalqkzblb
+        file_format:
+          type: string
+          x-stoplight:
+            id: 0gqhmkb8w4a1s
+    SbomScorecardResponseBody:
+      type: object
+      x-examples: {}
+      title: SbomScoreCardResponseBody
+      properties:
+        orchestration_id:
+          type: string
+          x-stoplight:
+            id: q33y6a4j0opa5
+        account_id:
+          type: string
+          x-stoplight:
+            id: rrfvoycaayzbe
+        org_id:
+          type: string
+          x-stoplight:
+            id: da71be81dhkuw
+        project_id:
+          type: string
+          x-stoplight:
+            id: 5k0hqhzlblwki
+        avg_score:
+          type: string
+          x-stoplight:
+            id: txqrhvlxyh3kw
+        creation_on:
+          type: string
+          x-stoplight:
+            id: 63wq11d7qbx6q
+        sbom_details:
+          $ref: '#/components/schemas/SbomDetailsForScorecard'
+        score_card_info:
+          $ref: '#/components/schemas/ScorecardInfo'
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
+    SbomScorecardRequestBody:
+      title: SbomScorecardRequestBody
+      x-stoplight:
+        id: 9bcumci2c8r1m
+      type: object
+      properties:
+        orchestration_id:
+          type: string
+          x-stoplight:
+            id: he5k2ygvk06lr
+        account_id:
+          type: string
+          x-stoplight:
+            id: e0ipd8ej57isp
+        org_id:
+          type: string
+          x-stoplight:
+            id: adma8xa05a9jo
+        project_id:
+          type: string
+          x-stoplight:
+            id: 1joj8ijs45kwq
+        avg_score:
+          type: string
+          x-stoplight:
+            id: ok62eewkovsw4
+        creation_on:
+          type: string
+          x-stoplight:
+            id: xa6qbgcq0arqs
+        sbom_details:
+          $ref: '#/components/schemas/SbomDetailsForScorecard'
+        score_card_info:
+          $ref: '#/components/schemas/ScorecardInfo'
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
   parameters:
     OrgParam:
       name: org
@@ -1292,6 +1494,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ArtifactListingRequestBody'
+    SbomScorecardRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SbomScorecardRequestBody'
   securitySchemes:
     x-api-key:
       name: x-api-key
@@ -1446,5 +1653,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ArtifactDetailResponse'
+    SbomScorecardResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SbomScorecardResponseBody'
 tags:
   - name: sbomProcessor
