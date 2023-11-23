@@ -6,6 +6,7 @@
  */
 
 package io.harness.gitsync.interceptor;
+
 import static io.harness.annotations.dev.HarnessTeam.DX;
 
 import io.harness.annotations.dev.CodePulse;
@@ -31,6 +32,7 @@ public class GitSyncConstants {
   public static final String DEFAULT_STORE_TYPE_FOR_ENTITIES = "default_store_type_for_entities";
   public static final String REPO_ALLOWLIST_FOR_GIT_EXPERIENCE = "git_experience_repo_allowlist";
   public static final String DEFAULT_REPO_FOR_GIT_EXPERIENCE = "default_repo_for_git_experience";
-
   public static final String ENABLE_BI_DIRECTIONAL_SYNC = "enable_bi_directional_sync";
+  public static final String ALLOW_DIFFERENT_REPO_FOR_PIPELINE_AND_INPUTSETS_SETTING =
+      "Allow different repo for Pipeline and InputSets";
 }
