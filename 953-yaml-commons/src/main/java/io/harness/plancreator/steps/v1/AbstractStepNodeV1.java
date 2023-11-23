@@ -20,7 +20,9 @@ import io.harness.plancreator.policy.PolicyConfig;
 import io.harness.plancreator.strategy.v1.StrategyConfigV1;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
+import io.harness.yaml.core.StepSpecType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.List;
@@ -42,4 +44,6 @@ public abstract class AbstractStepNodeV1 {
   ParameterField<List<String>> delegate;
   ParameterField<StrategyConfigV1> strategy;
   PolicyConfig enforce;
+
+  @JsonIgnore public abstract StepSpecType getSpec();
 }
