@@ -2286,11 +2286,8 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     MonitoredServiceDTO monitoredServiceDTO =
         builderFactory.monitoredServiceDTOBuilder()
             .identifier("ms2")
-            .serviceRef("test")
+            .serviceRef("test1")
             .template(TemplateDTO.builder()
-                          .accountId(builderFactory.getContext().getAccountId())
-                          .orgIdentifier(builderFactory.getContext().getOrgIdentifier())
-                          .projectIdentifier(builderFactory.getContext().getProjectIdentifier())
                           .templateRef("template1")
                           .versionLabel("v1")
                           .templateVersionNumber(1)
@@ -2305,6 +2302,48 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     String resolvedTemplateInputs = monitoredServiceService.getResolvedTemplateInputs(
         projectParams, monitoredServiceDTO.getIdentifier(), "template1", "v1");
     assertThat(resolvedTemplateInputs).isEqualTo("type: Application\nserviceRef: test1\n");
+  }
+
+  @Test
+  @Owner(developers = KARAN_SARASWAT)
+  @Category(UnitTests.class)
+  public void testAreTemplateReferencedMSsReconciliationRequired() {
+    MonitoredServiceDTO monitoredServiceDTO =
+        builderFactory.monitoredServiceDTOBuilder()
+            .identifier("ms2")
+            .serviceRef("test1")
+            .template(TemplateDTO.builder()
+                          .templateRef("template1")
+                          .versionLabel("v1")
+                          .templateVersionNumber(1)
+                          .isTemplateByReference(true)
+                          .templateInputs("type: Application\nserviceRef: test1\n")
+                          .build())
+            .build();
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+
+    monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder()
+                              .identifier("ms3")
+                              .serviceRef("test2")
+                              .template(TemplateDTO.builder()
+                                            .templateRef("template1")
+                                            .versionLabel("v1")
+                                            .templateVersionNumber(1)
+                                            .isTemplateByReference(true)
+                                            .templateInputs("type: Application\nserviceRef: test2\n")
+                                            .build())
+                              .build();
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+
+    boolean isReconciliationRequired =
+        monitoredServiceService.isReconciliationRequiredForMonitoredServices(projectParams, "template1", "v1", 1);
+    assertThat(isReconciliationRequired).isFalse();
+
+    isReconciliationRequired =
+        monitoredServiceService.isReconciliationRequiredForMonitoredServices(projectParams, "template1", "v1", 2);
+    assertThat(isReconciliationRequired).isTrue();
   }
 
   @Test

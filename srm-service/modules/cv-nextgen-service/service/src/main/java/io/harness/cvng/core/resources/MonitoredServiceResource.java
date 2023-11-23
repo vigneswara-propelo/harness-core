@@ -340,6 +340,34 @@ public class MonitoredServiceResource {
   }
 
   @GET
+  @Path("/reconciliation-required")
+  @Timed
+  @ExceptionMetered
+  @ResponseMetered
+  @ApiOperation(value = "check if a template referenced monitored services require reconciliation",
+      nickname = "isReconciliationRequiredForMonitoredServices")
+  @Operation(operationId = "isReconciliationRequiredForMonitoredServices",
+      summary = "check if a template referenced monitored services require reconciliation",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
+            description = "check if a template referenced monitored services require reconciliation")
+      })
+  @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = VIEW_PERMISSION)
+  public ResponseDTO<Boolean>
+  isReconciliationRequiredForMonitoredServices(
+      @ApiParam(required = true) @NotNull @BeanParam ProjectScopedProjectParams templateScopedProjectParams,
+      @Parameter(description = "Scoped template identifier used to create the monitored service") @NotNull @QueryParam(
+          "templateIdentifier") String templateIdentifier,
+      @Parameter(description = "Template version Label") @NotNull @QueryParam(
+          NGCommonEntityConstants.VERSION_LABEL_KEY) String versionLabel,
+      @Parameter(description = "Template version number") @NotNull @QueryParam(
+          "templateVersionNumber") int templateVersionNumber) {
+    return ResponseDTO.newResponse(monitoredServiceService.isReconciliationRequiredForMonitoredServices(
+        templateScopedProjectParams.getProjectParams(), templateIdentifier, versionLabel, templateVersionNumber));
+  }
+
+  @GET
   @Timed
   @ExceptionMetered
   @ResponseMetered
@@ -744,11 +772,11 @@ public class MonitoredServiceResource {
       @ApiParam(required = true) @NotNull @BeanParam ProjectScopedProjectParams scopedProjectParams,
       @Parameter(description = NGCommonEntityConstants.IDENTIFIER_PARAM_MESSAGE) @ApiParam(
           required = true) @NotNull @PathParam("identifier") String identifier,
-      @Parameter(description = "Template identifier used to create the monitored service") @NotNull @QueryParam(
-          "templateIdentifier") String templateRef,
+      @Parameter(description = "Scoped template identifier used to create the monitored service") @NotNull @QueryParam(
+          "templateIdentifier") String templateIdentifier,
       @Parameter(description = "Template version Label") @NotNull @QueryParam(
           NGCommonEntityConstants.VERSION_LABEL_KEY) String versionLabel) {
     return ResponseDTO.newResponse(monitoredServiceService.getResolvedTemplateInputs(
-        scopedProjectParams.getProjectParams(), identifier, templateRef, versionLabel));
+        scopedProjectParams.getProjectParams(), identifier, templateIdentifier, versionLabel));
   }
 }

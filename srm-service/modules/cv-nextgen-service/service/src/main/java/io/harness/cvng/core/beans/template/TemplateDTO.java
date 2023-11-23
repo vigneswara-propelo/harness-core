@@ -19,9 +19,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TemplateDTO {
-  String accountId;
-  String orgIdentifier;
-  String projectIdentifier;
   @NotNull String templateRef;
   String versionLabel;
   Integer templateVersionNumber;

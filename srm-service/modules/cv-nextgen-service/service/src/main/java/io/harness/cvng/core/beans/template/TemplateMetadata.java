@@ -14,9 +14,6 @@ import lombok.Data;
 @Data
 @Builder
 public class TemplateMetadata {
-  String accountId;
-  String orgIdentifier;
-  String projectIdentifier;
   @NotNull String templateIdentifier;
   String versionLabel;
   int templateVersionNumber;
@@ -26,9 +23,6 @@ public class TemplateMetadata {
 
   public static TemplateMetadataBuilder fromTemplateDTO(TemplateDTO templateDTO) {
     return TemplateMetadata.builder()
-        .accountId(templateDTO.getAccountId())
-        .orgIdentifier(templateDTO.getOrgIdentifier())
-        .projectIdentifier(templateDTO.getProjectIdentifier())
         .templateIdentifier(templateDTO.getTemplateRef())
         .versionLabel(templateDTO.getVersionLabel())
         .templateVersionNumber(templateDTO.getTemplateVersionNumber())
