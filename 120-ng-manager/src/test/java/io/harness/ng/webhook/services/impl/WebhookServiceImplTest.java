@@ -194,12 +194,12 @@ public class WebhookServiceImplTest extends CategoryTest {
         .hasMessage("message")
         .isInstanceOf(HintException.class);
 
-    doThrow(new ScmException(ErrorCode.SCM_UNAUTHORIZED))
+    doThrow(new ScmException("message", ErrorCode.SCM_UNAUTHORIZED))
         .when(scmOrchestratorService)
         .processScmRequestUsingConnectorSettings(any(), any(), any(), any(), any(), any(), any());
     assertThatThrownBy(() -> webhookService.upsertWebhook(upsertWebhookRequestDTO))
         .hasMessage("The credentials provided in the Github connector identifier are invalid or have expired. "
-            + ErrorCode.SCM_UNAUTHORIZED)
+            + "message")
         .isInstanceOf(ScmUnauthorizedException.class);
 
     doThrow(new SCMRuntimeException("message"))
