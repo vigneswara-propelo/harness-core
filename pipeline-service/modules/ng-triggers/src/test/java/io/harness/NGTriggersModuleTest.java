@@ -136,6 +136,14 @@ public class NGTriggersModuleTest extends CategoryTest {
     });
     modules.add(new ProviderModule() {
       @Provides
+      @Singleton
+      @Named("maxMultiArtifactTriggerSources")
+      public Integer getMaxMultiArtifactTriggerSourcesProvider() {
+        return 10;
+      }
+    });
+    modules.add(new ProviderModule() {
+      @Provides
       @Named("setup_usage")
       @Singleton
       Producer getProducer() {

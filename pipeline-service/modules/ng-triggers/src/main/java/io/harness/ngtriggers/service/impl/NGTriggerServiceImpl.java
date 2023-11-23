@@ -15,7 +15,6 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.exception.WingsException.USER_SRE;
 import static io.harness.ngtriggers.Constants.MANDATE_CUSTOM_WEBHOOK_AUTHORIZATION;
 import static io.harness.ngtriggers.Constants.MANDATE_CUSTOM_WEBHOOK_TRUE_VALUE;
-import static io.harness.ngtriggers.Constants.MAX_MULTI_ARTIFACT_TRIGGER_SOURCES;
 import static io.harness.ngtriggers.beans.source.NGTriggerType.ARTIFACT;
 import static io.harness.ngtriggers.beans.source.NGTriggerType.MANIFEST;
 import static io.harness.ngtriggers.beans.source.NGTriggerType.MULTI_REGION_ARTIFACT;
@@ -95,6 +94,7 @@ import io.harness.ngtriggers.mapper.TriggerFilterHelper;
 import io.harness.ngtriggers.service.NGTriggerService;
 import io.harness.ngtriggers.service.NGTriggerWebhookRegistrationService;
 import io.harness.ngtriggers.service.NGTriggerYamlSchemaService;
+import io.harness.ngtriggers.utils.MaxMultiArtifactTriggerSourcesProvider;
 import io.harness.ngtriggers.utils.PollingSubscriptionHelper;
 import io.harness.ngtriggers.utils.TriggerReferenceHelper;
 import io.harness.ngtriggers.validations.TriggerValidationHandler;
@@ -194,6 +194,7 @@ public class NGTriggerServiceImpl implements NGTriggerService {
   private final NGTriggerYamlSchemaService ngTriggerYamlSchemaService;
   private final TriggerReferenceHelper triggerReferenceHelper;
   private final TriggerSetupUsageHelper triggerSetupUsageHelper;
+  private final MaxMultiArtifactTriggerSourcesProvider maxMultiArtifactTriggerSourcesProvider;
   private static final String TRIGGER = "trigger";
   private static final String INPUT_YAML = "inputYaml";
 
@@ -1175,9 +1176,9 @@ public class NGTriggerServiceImpl implements NGTriggerService {
           break;
         }
       }
-      if (triggerConfig.getSources().size() > MAX_MULTI_ARTIFACT_TRIGGER_SOURCES) {
+      if (triggerConfig.getSources().size() > maxMultiArtifactTriggerSourcesProvider.get()) {
         msg.append("The maximum number of sources for Multi-Artifact trigger is ")
-            .append(MAX_MULTI_ARTIFACT_TRIGGER_SOURCES)
+            .append(maxMultiArtifactTriggerSourcesProvider.get())
             .append(".\n");
         validationFailed = true;
       }
