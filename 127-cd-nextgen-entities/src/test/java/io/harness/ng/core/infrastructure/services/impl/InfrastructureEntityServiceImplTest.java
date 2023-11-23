@@ -9,6 +9,7 @@ package io.harness.ng.core.infrastructure.services.impl;
 
 import static io.harness.rule.OwnerRule.HINGER;
 import static io.harness.rule.OwnerRule.INDER;
+import static io.harness.rule.OwnerRule.PRAGYESH;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 import static io.harness.rule.OwnerRule.YOGESH;
 
@@ -55,8 +56,12 @@ import com.google.common.io.Resources;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -72,6 +77,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
 
@@ -732,5 +738,113 @@ public class InfrastructureEntityServiceImplTest extends CDNGEntitiesTestBase {
     assertThat(gitEntityInfo).isNotNull();
     assertThat(gitEntityInfo.getBranch()).isEqualTo("feature");
     assertThat(gitEntityInfo.getParentEntityRepoName()).isEqualTo("gitRepo");
+  }
+
+  @Test
+  @Owner(developers = PRAGYESH)
+  @Category(UnitTests.class)
+  public void infraScopedToServiceTest() {
+    String filename = "infrastructure-with-scoped-services.yaml";
+    String yaml = readFile(filename);
+    InfrastructureEntity createInfraRequest = InfrastructureEntity.builder()
+                                                  .accountId(ACCOUNT_ID)
+                                                  .identifier("IDENTIFIER2")
+                                                  .orgIdentifier(ORG_ID)
+                                                  .envIdentifier("ENV_IDENTIFIER")
+                                                  .projectIdentifier(PROJECT_ID)
+                                                  .yaml(yaml)
+                                                  .build();
+
+    infrastructureEntityService.create(createInfraRequest);
+
+    infrastructureEntityService.checkIfInfraIsScopedToService(
+        ACCOUNT_ID, ORG_ID, PROJECT_ID, "SERVICE_IDENTIFIER", "ENV_IDENTIFIER", "IDENTIFIER2");
+
+    infrastructureEntityService.checkIfInfraIsScopedToService(
+        ACCOUNT_ID, ORG_ID, PROJECT_ID, "org.SERVICE_IDENTIFIER1", "ENV_IDENTIFIER", "IDENTIFIER2");
+
+    assertThatThrownBy(()
+                           -> infrastructureEntityService.checkIfInfraIsScopedToService(
+                               ACCOUNT_ID, ORG_ID, PROJECT_ID, "SERVICE_IDENTIFIER2", "ENV_IDENTIFIER", "IDENTIFIER2"))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Infrastructure: [IDENTIFIER2] inside Environment: [ENV_IDENTIFIER] doesn't scoped"
+            + "to service: [SERVICE_IDENTIFIER2]");
+
+    assertThatThrownBy(()
+                           -> infrastructureEntityService.checkIfInfraIsScopedToService(ACCOUNT_ID, ORG_ID, PROJECT_ID,
+                               "account.SERVICE_IDENTIFIER", "ENV_IDENTIFIER", "IDENTIFIER2"))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Infrastructure: [IDENTIFIER2] inside Environment: [ENV_IDENTIFIER] doesn't scoped"
+            + "to service: [account.SERVICE_IDENTIFIER]");
+  }
+
+  @Test
+  @Owner(developers = PRAGYESH)
+  @Category(UnitTests.class)
+  public void infraScopedToMultiServiceTest() {
+    String filename = "infrastructure-with-scoped-services.yaml";
+    String yaml = readFile(filename);
+    Map<String, List<String>> envInfraMap = new HashMap<>();
+    for (int i = 3; i < 6; i++) {
+      InfrastructureEntity createInfraRequest = InfrastructureEntity.builder()
+                                                    .accountId(ACCOUNT_ID)
+                                                    .identifier("IDENTIFIER" + i)
+                                                    .orgIdentifier(ORG_ID)
+                                                    .envIdentifier("ENV_IDENTIFIER" + i)
+                                                    .projectIdentifier(PROJECT_ID)
+                                                    .yaml(yaml)
+                                                    .build();
+      infrastructureEntityService.create(createInfraRequest);
+      envInfraMap.put("ENV_IDENTIFIER" + i, List.of("IDENTIFIER" + i));
+    }
+
+    infrastructureEntityService.checkIfInfraIsScopedToService(ACCOUNT_ID, ORG_ID, PROJECT_ID,
+        List.of("SERVICE_IDENTIFIER", "org.SERVICE_IDENTIFIER1", "account.SERVICE_IDENTIFIER2"), envInfraMap);
+
+    assertThatThrownBy(
+        ()
+            -> infrastructureEntityService.checkIfInfraIsScopedToService(ACCOUNT_ID, ORG_ID, PROJECT_ID,
+                List.of("SERVICE_IDENTIFIER5", "org.SERVICE_IDENTIFIER5", "account.SERVICE_IDENTIFIER5"), envInfraMap))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Infrastructure: [IDENTIFIER3] inside Environment: [ENV_IDENTIFIER3] doesn't scoped "
+            + "to services: [[SERVICE_IDENTIFIER5, org.SERVICE_IDENTIFIER5, account.SERVICE_IDENTIFIER5]]");
+  }
+
+  @Test
+  @Owner(developers = PRAGYESH)
+  @Category(UnitTests.class)
+  public void getScopedInfrastructuresTest() {
+    String filename = "infrastructure-with-scoped-services.yaml";
+    String yaml = readFile(filename);
+    List<InfrastructureEntity> allInfrastructureEntities = new ArrayList<>();
+    List<InfrastructureEntity> unScopedInfrastructureEntities = new ArrayList<>();
+    for (int i = 3; i < 6; i++) {
+      InfrastructureEntity infrastructureEntity =
+          InfrastructureEntity.builder()
+              .accountId(ACCOUNT_ID)
+              .identifier("IDENTIFIER" + i)
+              .orgIdentifier(ORG_ID)
+              .envIdentifier("ENV_IDENTIFIER" + i)
+              .projectIdentifier(PROJECT_ID)
+              .yaml((i > 4) ? yaml : readFile("infrastructure-without-runtime-inputs.yaml"))
+              .build();
+      allInfrastructureEntities.add(infrastructureEntity);
+      if (i < 5) {
+        unScopedInfrastructureEntities.add(infrastructureEntity);
+      }
+    }
+
+    Page<InfrastructureEntity> infrastructureEntityPage =
+        new PageImpl<>(allInfrastructureEntities, Pageable.ofSize(10), allInfrastructureEntities.size());
+
+    Page<InfrastructureEntity> scopedInfrastructureEntityPage =
+        infrastructureEntityService.getScopedInfrastructures(infrastructureEntityPage,
+            List.of("SERVICE_IDENTIFIER2", "SERVICE_IDENTIFIER", "org.SERVICE_IDENTIFIER1",
+                "account.SERVICE_IDENTIFIER2", "org.SERVICE_IDENTIFIER2", "account.SERVICE_IDENTIFIER3"));
+    assertThat(scopedInfrastructureEntityPage.getContent()).isEqualTo(unScopedInfrastructureEntities);
+
+    scopedInfrastructureEntityPage = infrastructureEntityService.getScopedInfrastructures(infrastructureEntityPage,
+        List.of("SERVICE_IDENTIFIER", "org.SERVICE_IDENTIFIER1", "account.SERVICE_IDENTIFIER2"));
+    assertThat(scopedInfrastructureEntityPage.getContent()).isEqualTo(allInfrastructureEntities);
   }
 }
