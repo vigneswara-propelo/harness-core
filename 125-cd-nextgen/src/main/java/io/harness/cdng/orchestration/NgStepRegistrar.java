@@ -64,12 +64,15 @@ import io.harness.cdng.ecs.EcsRunTaskStep;
 import io.harness.cdng.ecs.EcsServiceSetupStep;
 import io.harness.cdng.ecs.EcsUpgradeContainerStep;
 import io.harness.cdng.ecs.asyncsteps.EcsBasicRollbackStepV2;
+import io.harness.cdng.ecs.asyncsteps.EcsBlueGreenCreateServiceStepV2;
 import io.harness.cdng.ecs.asyncsteps.EcsBlueGreenRollbackStepV2;
 import io.harness.cdng.ecs.asyncsteps.EcsBlueGreenSwapTargetGroupsStepV2;
 import io.harness.cdng.ecs.asyncsteps.EcsCanaryDeleteStepV2;
 import io.harness.cdng.ecs.asyncsteps.EcsCanaryDeployStepV2;
 import io.harness.cdng.ecs.asyncsteps.EcsRollingDeployStepV2;
 import io.harness.cdng.ecs.asyncsteps.EcsRollingRollbackStepV2;
+import io.harness.cdng.ecs.asyncsteps.EcsRunTaskStepV2;
+import io.harness.cdng.ecs.asyncsteps.EcsServiceSetupStepV2;
 import io.harness.cdng.ecs.asyncsteps.EcsUpgradeContainerStepV2;
 import io.harness.cdng.elastigroup.ElastigroupBGStageSetupStep;
 import io.harness.cdng.elastigroup.ElastigroupServiceSettingsStep;
@@ -308,6 +311,9 @@ public class NgStepRegistrar {
     engineSteps.put(EcsBlueGreenSwapTargetGroupsStepV2.STEP_TYPE, EcsBlueGreenSwapTargetGroupsStepV2.class);
     engineSteps.put(EcsBasicRollbackStepV2.STEP_TYPE, EcsBasicRollbackStepV2.class);
     engineSteps.put(EcsRollingRollbackStepV2.STEP_TYPE, EcsRollingRollbackStepV2.class);
+    engineSteps.put(EcsBlueGreenCreateServiceStepV2.STEP_TYPE, EcsBlueGreenCreateServiceStepV2.class);
+    engineSteps.put(EcsRunTaskStepV2.STEP_TYPE, EcsRunTaskStepV2.class);
+    engineSteps.put(EcsServiceSetupStepV2.STEP_TYPE, EcsServiceSetupStepV2.class);
 
     engineSteps.put(AzureCreateARMResourceStep.STEP_TYPE, AzureCreateARMResourceStep.class);
     engineSteps.put(MultiDeploymentSpawnerStep.STEP_TYPE, MultiDeploymentSpawnerStep.class);
