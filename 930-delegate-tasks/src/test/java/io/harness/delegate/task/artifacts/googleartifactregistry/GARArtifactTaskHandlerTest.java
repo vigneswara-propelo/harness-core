@@ -8,13 +8,17 @@
 package io.harness.delegate.task.artifacts.googleartifactregistry;
 
 import static io.harness.rule.OwnerRule.ABHISHEK;
+import static io.harness.rule.OwnerRule.RAKSHIT_AGARWAL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
@@ -24,10 +28,13 @@ import io.harness.artifacts.gar.service.GARApiServiceImpl;
 import io.harness.beans.ArtifactMetaInfo;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.task.artifacts.gar.GarDelegateRequest;
+import io.harness.delegate.task.artifacts.response.ArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskExecutionResponse;
 import io.harness.rule.Owner;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +54,7 @@ public class GARArtifactTaskHandlerTest extends CategoryTest {
   private static final String SHA_V2 = "shaV2";
   private static final String SHA = "sha";
   private static final String TOKEN = "token";
+  private static final String REGION = "region";
 
   @Test
   @Owner(developers = ABHISHEK)
@@ -65,6 +73,27 @@ public class GARArtifactTaskHandlerTest extends CategoryTest {
         artifactTaskExecutionResponse.getArtifactDelegateResponses().get(0).getBuildDetails().getMetadata();
     assertThat(map.get(ArtifactMetadataKeys.SHAV2)).isEqualTo(SHA_V2);
     assertThat(map.get(ArtifactMetadataKeys.SHA)).isEqualTo(SHA);
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void getRepositoriesTest() throws IOException {
+    GARArtifactTaskHandler garArtifactTaskHandler1 = spy(garArtifactTaskHandler);
+    GarDelegateRequest garDelegateRequest = GarDelegateRequest.builder().region(REGION).build();
+    BuildDetailsInternal buildDetailsInternal = BuildDetailsInternal.builder().build();
+    List<BuildDetailsInternal> builds = Collections.singletonList(buildDetailsInternal);
+
+    when(garApiService.getRepository(any(), anyString())).thenReturn(builds);
+    doReturn(TOKEN).when(garArtifactTaskHandler1).getToken(any(), anyBoolean());
+
+    ArtifactTaskExecutionResponse response = garArtifactTaskHandler1.getRepositories(garDelegateRequest);
+
+    verify(garApiService, times(1)).getRepository(any(), eq(REGION));
+    assertThat(response).isNotNull();
+
+    List<ArtifactDelegateResponse> responseList = response.getArtifactDelegateResponses();
+    assertThat(responseList).hasSize(1);
   }
 
   @Test

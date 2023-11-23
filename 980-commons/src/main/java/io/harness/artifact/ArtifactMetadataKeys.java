@@ -35,6 +35,9 @@ public interface ArtifactMetadataKeys {
   String bucket = "bucket";
 
   String artifactFileName = "artifactFileName";
+  String format = "format";
+  String createTime = "createTime";
+  String updateTime = "updateTime";
 
   String id = "id";
   String planName = "planName";

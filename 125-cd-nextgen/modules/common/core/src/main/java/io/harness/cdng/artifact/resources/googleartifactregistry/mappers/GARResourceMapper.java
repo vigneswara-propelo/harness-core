@@ -9,8 +9,11 @@ package io.harness.cdng.artifact.resources.googleartifactregistry.mappers;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.artifact.ArtifactMetadataKeys;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARBuildDetailsDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARRepositoryDTOList;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARResponseDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRepositoryDTO;
 import io.harness.delegate.task.artifacts.gar.GarDelegateResponse;
 import io.harness.delegate.task.artifacts.response.ArtifactBuildDetailsNG;
 
@@ -31,6 +34,22 @@ public class GARResourceMapper {
     return GARBuildDetailsDTO.builder()
         .version(artifactBuildDetailsNG.getNumber())
         .metadata(artifactBuildDetailsNG.getMetadata())
+        .build();
+  }
+
+  public static GARRepositoryDTOList toGarRepository(List<GarDelegateResponse> garDelegateResponses) {
+    List<GarRepositoryDTO> detailsDTOList = garDelegateResponses.stream()
+                                                .map(response -> toGarRepositoryDTOList(response.getBuildDetails()))
+                                                .collect(Collectors.toList());
+    return GARRepositoryDTOList.builder().garRepositoryDTOS(detailsDTOList).build();
+  }
+
+  public static GarRepositoryDTO toGarRepositoryDTOList(ArtifactBuildDetailsNG artifactBuildDetailsNG) {
+    return GarRepositoryDTO.builder()
+        .repository(artifactBuildDetailsNG.getUiDisplayName())
+        .format(artifactBuildDetailsNG.getMetadata().get(ArtifactMetadataKeys.format))
+        .createTime(artifactBuildDetailsNG.getMetadata().get(ArtifactMetadataKeys.createTime))
+        .updateTime(artifactBuildDetailsNG.getMetadata().get(ArtifactMetadataKeys.updateTime))
         .build();
   }
 }

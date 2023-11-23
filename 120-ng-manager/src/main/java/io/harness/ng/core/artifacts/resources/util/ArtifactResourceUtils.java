@@ -62,7 +62,9 @@ import io.harness.cdng.artifact.resources.gcr.dtos.GcrRequestDTO;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrResponseDTO;
 import io.harness.cdng.artifact.resources.gcr.service.GcrResourceService;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARBuildDetailsDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARRepositoryDTOList;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARResponseDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRepositoryDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRequestDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceService;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusBuildDetailsDTO;
@@ -130,6 +132,7 @@ import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1031,6 +1034,75 @@ public class ArtifactResourceUtils {
 
     return garResourceService.getBuildDetails(connectorRef, resolvedRegion, resolvedRepositoryName, resolvedProject,
         resolvedPackage, version, versionRegex, orgIdentifier, projectIdentifier);
+  }
+
+  public GARRepositoryDTOList getRepositoriesV2GAR(String gcpConnectorIdentifier, String region, String project,
+      String accountId, String orgIdentifier, String pipelineIdentifier, String fqnPath, String serviceRef,
+      String runtimeInputYaml, String projectIdentifier, GitEntityFindInfoDTO gitEntityBasicInfo) {
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier, projectIdentifier,
+          pipelineIdentifier, runtimeInputYaml, fqnPath, gitEntityBasicInfo, serviceRef);
+    }
+
+    if (StringUtils.isNotBlank(serviceRef)) {
+      final ArtifactConfig artifactSpecFromService = locateArtifactInService(accountId, orgIdentifier,
+          projectIdentifier, serviceRef, fqnPath,
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
+
+      GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+          (GoogleArtifactRegistryConfig) artifactSpecFromService;
+
+      if (isBlank(gcpConnectorIdentifier)) {
+        gcpConnectorIdentifier = (String) googleArtifactRegistryConfig.getConnectorRef().fetchFinalValue();
+      }
+
+      if (isBlank(region)) {
+        region = (String) googleArtifactRegistryConfig.getRegion().fetchFinalValue();
+      }
+    }
+    CDYamlExpressionEvaluator yamlExpressionEvaluator =
+        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator();
+
+    gcpConnectorIdentifier = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
+        projectIdentifier, pipelineIdentifier, runtimeInputYaml, gcpConnectorIdentifier, fqnPath, gitEntityBasicInfo,
+        serviceRef, yamlExpressionEvaluator)
+                                 .getValue();
+
+    region = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+        pipelineIdentifier, runtimeInputYaml, region, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                 .getValue();
+
+    IdentifierRef connectorRef =
+        IdentifierRefHelper.getIdentifierRef(gcpConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
+
+    return getRepositoriesGAR(connectorRef, region, project, orgIdentifier, projectIdentifier);
+  }
+
+  public GARRepositoryDTOList getRepositoriesGAR(
+      IdentifierRef connectorRef, String region, String project, String orgIdentifier, String projectIdentifier) {
+    GARRepositoryDTOList buildDetails =
+        garResourceService.getRepositories(connectorRef, region, project, orgIdentifier, projectIdentifier);
+
+    int index = buildDetails.getGarRepositoryDTOS().get(0).getRepository().lastIndexOf("/");
+
+    List<GarRepositoryDTO> modifiedBuilds = new ArrayList<>();
+
+    buildDetails.getGarRepositoryDTOS().forEach(repo -> {
+      String repoName = repo.getRepository().substring(index + 1);
+
+      GarRepositoryDTO modifiedRepo = GarRepositoryDTO.builder()
+                                          .repository(repoName)
+                                          .format(repo.getFormat())
+                                          .createTime(repo.getCreateTime())
+                                          .updateTime(repo.getUpdateTime())
+                                          .build();
+      modifiedBuilds.add(modifiedRepo);
+    });
+    modifiedBuilds.sort(Comparator.comparing(GarRepositoryDTO::getRepository));
+
+    return GARRepositoryDTOList.builder().garRepositoryDTOS(modifiedBuilds).build();
   }
 
   public GARBuildDetailsDTO getLastSuccessfulBuildV2GAR(String gcpConnectorIdentifier, String region,
