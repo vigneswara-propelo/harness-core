@@ -21,6 +21,7 @@ import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.CdInstanceSummary.CdInstanceSummaryKeys;
 import io.harness.ssca.entities.EnforcementSummaryEntity.EnforcementSummaryEntityKeys;
+import io.harness.ssca.utils.PipelineUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -43,6 +44,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
   @Inject ArtifactService artifactService;
   @Inject EnforcementSummaryRepo enforcementSummaryRepo;
   @Inject PipelineServiceClient pipelineServiceClient;
+  @Inject PipelineUtils pipelineUtils;
 
   private static String IDENTIFIER = "identifier";
   private static String STEP_TYPE = "stepType";
@@ -53,7 +55,6 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
   private static String OUTCOMES = "outcomes";
 
   private static String PIPELINE_EXECUTION_SUMMARY = "pipelineExecutionSummary";
-  private static String PIPELINE_NAME = "name";
   private static String RUN_SEQUENCE = "runSequence";
   private static String EXECUTION_TRIGGER_INFO = "executionTriggerInfo";
   private static String TRIGGER_TYPE = "triggerType";
@@ -91,7 +92,9 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
         instance.getPrimaryArtifact().getArtifactIdentity().getImage(), instance.getEnvIdentifier());
 
     if (Objects.nonNull(cdInstanceSummary)) {
-      JsonNode rootNode = getPmsExecutionSummary(instance);
+      JsonNode rootNode = pipelineUtils.getPipelineExecutionSummaryResponse(instance.getLastPipelineExecutionId(),
+          instance.getAccountIdentifier(), instance.getOrgIdentifier(), instance.getProjectIdentifier(),
+          instance.getStageSetupId());
       cdInstanceSummary.getInstanceIds().add(instance.getId());
       cdInstanceSummary.setSlsaVerificationSummary(getSlsaVerificationSummary(rootNode, instance, artifact));
       cdInstanceSummary = setPipelineDetails(cdInstanceSummary, rootNode, instance);
@@ -239,7 +242,9 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
 
   @VisibleForTesting
   public CdInstanceSummary createInstanceSummary(Instance instance, ArtifactEntity artifact) {
-    JsonNode rootNode = getPmsExecutionSummary(instance);
+    JsonNode rootNode = pipelineUtils.getPipelineExecutionSummaryResponse(instance.getLastPipelineExecutionId(),
+        instance.getAccountIdentifier(), instance.getOrgIdentifier(), instance.getProjectIdentifier(),
+        instance.getStageSetupId());
 
     CdInstanceSummary cdInstanceSummary =
         CdInstanceSummary.builder()
@@ -260,8 +265,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
 
   private CdInstanceSummary setPipelineDetails(
       CdInstanceSummary cdInstanceSummary, JsonNode rootNode, Instance instance) {
-    cdInstanceSummary.setLastPipelineName(
-        getNodeValue(parseField(rootNode, PIPELINE_EXECUTION_SUMMARY, PIPELINE_NAME)));
+    cdInstanceSummary.setLastPipelineName(pipelineUtils.parsePipelineName(rootNode));
     cdInstanceSummary.setLastPipelineExecutionName(instance.getLastPipelineExecutionName());
     cdInstanceSummary.setLastPipelineExecutionId(instance.getLastPipelineExecutionId());
     cdInstanceSummary.setSequenceId(getNodeValue(parseField(rootNode, PIPELINE_EXECUTION_SUMMARY, RUN_SEQUENCE)));

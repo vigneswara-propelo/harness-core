@@ -42,8 +42,10 @@ import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityKeys;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.EnforcementSummaryEntity;
 import io.harness.ssca.entities.EnforcementSummaryEntity.EnforcementSummaryEntityKeys;
+import io.harness.ssca.utils.PipelineUtils;
 import io.harness.ssca.utils.SBOMUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import java.net.URI;
@@ -84,6 +86,7 @@ public class ArtifactServiceImpl implements ArtifactService {
   @Inject EnforcementSummaryService enforcementSummaryService;
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
+  @Inject PipelineUtils pipelineUtils;
 
   private final String GCP_REGISTRY_HOST = "grc.io";
 
@@ -181,6 +184,8 @@ public class ArtifactServiceImpl implements ArtifactService {
       throw new NotFoundException(
           String.format("Artifact with artifactId [%s] and tag [%s] is not found", artifactId, tag));
     }
+    JsonNode node = pipelineUtils.getPipelineExecutionSummaryResponse(
+        artifact.getPipelineExecutionId(), accountId, orgIdentifier, projectIdentifier);
     return new ArtifactDetailResponse()
         .id(artifact.getArtifactId())
         .name(artifact.getName())
@@ -191,6 +196,7 @@ public class ArtifactServiceImpl implements ArtifactService {
         .prodEnvCount(artifact.getProdEnvCount().intValue())
         .nonProdEnvCount(artifact.getNonProdEnvCount().intValue())
         .buildPipelineId(artifact.getPipelineId())
+        .buildPipelineName(pipelineUtils.parsePipelineName(node))
         .buildPipelineExecutionId(artifact.getPipelineExecutionId())
         .orchestrationId(artifact.getOrchestrationId());
   }

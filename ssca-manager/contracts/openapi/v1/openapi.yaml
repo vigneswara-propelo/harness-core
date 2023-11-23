@@ -1076,26 +1076,42 @@ components:
       properties:
         id:
           type: string
+          description: Artifact Identifier
         name:
           type: string
+          description: Name of the artifact
         url:
           type: string
+          description: Registry url of the artifact
         tag:
           type: string
+          description: Version of the artifact
         components_count:
           type: integer
+          description: Count of the normalized components within the artifact
         updated:
           type: string
+          description: Last Updated time of artifact
         prod_env_count:
           type: integer
+          description: Count of production env in which artifact is deployed
         non_prod_env_count:
           type: integer
+          description: Count of pre-production env in which artifact is deploye
         build_pipeline_id:
           type: string
+          description: Pipeline id of build pipeline used to orchestrate the artifact
+        build_pipeline_name:
+          type: string
+          x-stoplight:
+            id: 5t7xgnzp3axcv
+          description: Pipeline name of build pipeline used to orchestrate the artifact
         build_pipeline_execution_id:
           type: string
+          description: Pipeline execution id of build pipeline used to orchestrate the artifact
         orchestration_id:
           type: string
+          description: Orchestration step identifier
       required:
         - id
         - name
