@@ -84,7 +84,7 @@ public class AgentMtlsEndpointResource {
   //  @AuthRule(permissionType = ACCOUNT_MANAGEMENT)
   @AuthRule(skipAuth = true)
   @ApiOperation(nickname = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_CREATE_NAME,
-      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_CREATE_DESC)
+      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_CREATE_DESC, hidden = true)
   public RestResponse<AgentMtlsEndpointDetails>
   createEndpointForAccount(@ApiParam(required = true, value = ACCOUNT_ID_DESCRIPTION) @QueryParam(
                                ACCOUNT_ID_PARAM) @NotNull String accountId,
@@ -103,7 +103,7 @@ public class AgentMtlsEndpointResource {
   //  @AuthRule(permissionType = ACCOUNT_MANAGEMENT)
   @AuthRule(skipAuth = true)
   @ApiOperation(nickname = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_UPDATE_NAME,
-      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_UPDATE_DESC)
+      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_UPDATE_DESC, hidden = true)
   public RestResponse<AgentMtlsEndpointDetails>
   updateEndpointForAccount(@ApiParam(required = true, value = ACCOUNT_ID_DESCRIPTION) @QueryParam(
                                ACCOUNT_ID_PARAM) @NotNull String accountId,
@@ -122,7 +122,7 @@ public class AgentMtlsEndpointResource {
   //  @AuthRule(permissionType = ACCOUNT_MANAGEMENT)
   @AuthRule(skipAuth = true)
   @ApiOperation(nickname = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_PATCH_NAME,
-      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_PATCH_DESC)
+      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_PATCH_DESC, hidden = true)
   public RestResponse<AgentMtlsEndpointDetails>
   patchEndpointForAccount(@ApiParam(required = true, value = ACCOUNT_ID_DESCRIPTION) @QueryParam(
                               ACCOUNT_ID_PARAM) @NotNull String accountId,
@@ -141,7 +141,7 @@ public class AgentMtlsEndpointResource {
   //  @AuthRule(permissionType = ACCOUNT_MANAGEMENT)
   @AuthRule(skipAuth = true)
   @ApiOperation(nickname = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_DELETE_NAME,
-      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_DELETE_DESC)
+      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_DELETE_DESC, hidden = true)
   public RestResponse<Boolean>
   deleteEndpointForAccount(@ApiParam(required = true, value = ACCOUNT_ID_DESCRIPTION) @QueryParam(
       ACCOUNT_ID_PARAM) @NotNull String accountId) {
@@ -158,7 +158,7 @@ public class AgentMtlsEndpointResource {
   //  @AuthRule(permissionType = ACCOUNT_MANAGEMENT)
   @AuthRule(skipAuth = true)
   @ApiOperation(nickname = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_GET_NAME,
-      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_GET_DESC)
+      value = AgentMtlsApiConstants.API_OPERATION_ENDPOINT_GET_DESC, hidden = true)
   public RestResponse<AgentMtlsEndpointDetails>
   getEndpointForAccount(@ApiParam(required = true, value = ACCOUNT_ID_DESCRIPTION) @QueryParam(
       ACCOUNT_ID_PARAM) @NotNull String accountId) {
