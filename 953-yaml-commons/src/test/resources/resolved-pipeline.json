@@ -20,7 +20,7 @@
                     "source": {
                       "type": "Inline",
                       "spec": {
-                        "script": "echo <+pipeline.variables.var1> ---\n echo <+pipeline.variables.var2>"
+                        "script": "echo <+pipeline.variables.var1> ---\necho <+pipeline.variables.var2> ---\necho <+pipeline.variables.var3> ---\necho <+pipeline.variables.var4> ---\necho <+pipeline.variables.var5> ---\necho <+pipeline.variables.var6>"
                       }
                     },
                     "environmentVariables": [],
@@ -62,6 +62,30 @@
       "type": "String",
       "description": "",
       "value": "2145"
+    },
+    {
+      "name": "var5",
+      "type": "String",
+      "description": "",
+      "value": "21_45"
+    },
+    {
+      "name": "var6",
+      "type": "String",
+      "description": "",
+      "value": "2014-10-01T20:30:00Z"
+    },
+    {
+      "name": "var7",
+      "type": "String",
+      "description": "",
+      "value": "2014-10-01 20:30:00Z"
+    },
+    {
+      "name": "var8",
+      "type": "String",
+      "description": "",
+      "value": "2014-10-01 20:30:00"
     }
   ]
 }

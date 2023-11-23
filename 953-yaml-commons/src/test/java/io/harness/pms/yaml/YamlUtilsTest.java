@@ -956,6 +956,13 @@ public class YamlUtilsTest extends CategoryTest {
     assertThat(YamlUtils.writeYamlString(Map.of("k", new TextNode("_12321")))).isEqualTo("k: _12321\n");
     assertThat(YamlUtils.writeYamlString(Map.of("k", new TextNode("123_321_")))).isEqualTo("k: \"123_321_\"\n");
     assertThat(YamlUtils.writeYamlString(Map.of("k", new TextNode("12321_")))).isEqualTo("k: \"12321_\"\n");
+    assertThat(YamlUtils.writeYamlString(Map.of("k", new TextNode("abcdef")))).isEqualTo("k: abcdef\n");
+    assertThat(YamlUtils.writeYamlString(Map.of("k", new TextNode("2014-10-01T20:30:00Z"))))
+        .isEqualTo("k: \"2014-10-01T20:30:00Z\"\n");
+    assertThat(YamlUtils.writeYamlString(Map.of("k", new TextNode("2014-10-01 20:30:00Z"))))
+        .isEqualTo("k: \"2014-10-01 20:30:00Z\"\n");
+    assertThat(YamlUtils.writeYamlString(Map.of("k", new TextNode("2014-10-01 20:30:00"))))
+        .isEqualTo("k: \"2014-10-01 20:30:00\"\n");
   }
 
   @Test
