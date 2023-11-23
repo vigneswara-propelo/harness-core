@@ -170,7 +170,6 @@ public class ArtifactStepHelper {
     List<EncryptedDataDetail> encryptedDataDetails = new ArrayList<>();
     ConnectorInfoDTO connectorDTO;
     NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
-
     switch (artifactConfig.getSourceType()) {
       case DOCKER_REGISTRY:
         DockerHubArtifactConfig dockerConfig = (DockerHubArtifactConfig) artifactConfig;

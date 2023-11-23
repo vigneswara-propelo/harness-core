@@ -175,6 +175,7 @@ public class ArtifactsStepV2Test extends CDNGTestBase {
   @Mock private EntityReferenceExtractorUtils entityReferenceExtractorUtils;
   @Mock private SecretRuntimeUsageService secretRuntimeUsageService;
   @Mock private PipelineRbacHelper pipelineRbacHelper;
+  @Mock private ArtifactSourceInstrumentationHelper artifactSourceInstrumentationHelper;
   @InjectMocks private ArtifactsStepV2 step = new ArtifactsStepV2();
   private final ArtifactStepHelper stepHelper = new ArtifactStepHelper();
   @Mock private ConnectorService connectorService;

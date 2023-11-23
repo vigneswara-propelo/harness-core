@@ -80,7 +80,6 @@ import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
-import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.secretusage.SecretRuntimeUsageService;
@@ -90,6 +89,7 @@ import io.harness.steps.EntityReferenceExtractorUtils;
 import io.harness.steps.TaskRequestsUtils;
 import io.harness.steps.executable.AsyncExecutableWithRbac;
 import io.harness.tasks.ResponseData;
+import io.harness.telemetry.helpers.ArtifactSourceInstrumentationHelper;
 import io.harness.template.remote.TemplateResourceClient;
 import io.harness.template.yaml.TemplateRefHelper;
 import io.harness.utils.NGFeatureFlagHelperService;
@@ -140,6 +140,7 @@ public class ArtifactsStepV2 implements AsyncExecutableWithRbac<EmptyStepParamet
   @Inject ServiceEntityService serviceEntityService;
 
   @Inject private NGFeatureFlagHelperService featureFlagHelperService;
+  @Inject private ArtifactSourceInstrumentationHelper artifactSourceInstrumentationHelper;
 
   @Override
   public Class<EmptyStepParameters> getStepParametersClass() {
@@ -236,6 +237,9 @@ public class ArtifactsStepV2 implements AsyncExecutableWithRbac<EmptyStepParamet
       } else if (ACTION.RUN_SYNC.equals(actionForPrimaryArtifact)) {
         artifactConfigMapForNonDelegateTaskTypes.add(artifacts.getPrimary().getSpec());
       }
+      artifactSourceInstrumentationHelper.sendArtifactDeploymentEvent(artifacts.getPrimary().getSpec(),
+          AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
+          AmbianceUtils.getProjectIdentifier(ambiance), service.getServiceDefinition().getType().name(), true);
     }
 
     if (isNotEmpty(artifacts.getSidecars())) {
@@ -258,11 +262,15 @@ public class ArtifactsStepV2 implements AsyncExecutableWithRbac<EmptyStepParamet
                                     .build());
           taskIds.add(taskId);
           artifactConfigMap.put(taskId, sidecar.getSidecar().getSpec());
+
         } else if (ACTION.RUN_SYNC.equals(actionForSidecar)) {
           checkAndWarnIfDoesNotFollowIdentifierRegex(
               sidecar.getSidecar().getSpec().getIdentifier(), "Sidecar", logCallback);
           artifactConfigMapForNonDelegateTaskTypes.add(sidecar.getSidecar().getSpec());
         }
+        artifactSourceInstrumentationHelper.sendArtifactDeploymentEvent(sidecar.getSidecar().getSpec(),
+            AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
+            AmbianceUtils.getProjectIdentifier(ambiance), service.getServiceDefinition().getType().name(), true);
       }
     }
     sweepingOutputService.consume(ambiance, ARTIFACTS_STEP_V_2,
