@@ -177,8 +177,10 @@ public class GitXWebhookServiceImpl implements GitXWebhookService {
         log.info(String.format("Updating Webhook with identifier %s in account %s",
             updateGitXWebhookCriteriaDTO.getWebhookIdentifier(),
             updateGitXWebhookCriteriaDTO.getScope().getAccountIdentifier()));
-        clearCache(
-            updateGitXWebhookCriteriaDTO.getScope().getAccountIdentifier(), updateGitXWebhookRequestDTO.getRepoName());
+        if (shouldClearGitXFileCache(updateGitXWebhookRequestDTO)) {
+          clearCache(updateGitXWebhookCriteriaDTO.getScope().getAccountIdentifier(),
+              updateGitXWebhookRequestDTO.getRepoName());
+        }
         Criteria criteria =
             buildCriteria(updateGitXWebhookCriteriaDTO.getScope(), updateGitXWebhookCriteriaDTO.getWebhookIdentifier());
         Query query = new Query(criteria);
@@ -402,5 +404,10 @@ public class GitXWebhookServiceImpl implements GitXWebhookService {
       throw new InternalServerErrorException(
           String.format("Error occurred while clearing the cache files in repo %s", repoName), ex);
     }
+  }
+
+  private boolean shouldClearGitXFileCache(UpdateGitXWebhookRequestDTO updateGitXWebhookRequestDTO) {
+    return isNotEmpty(updateGitXWebhookRequestDTO.getRepoName())
+        || isNotEmpty(updateGitXWebhookRequestDTO.getConnectorRef());
   }
 }
