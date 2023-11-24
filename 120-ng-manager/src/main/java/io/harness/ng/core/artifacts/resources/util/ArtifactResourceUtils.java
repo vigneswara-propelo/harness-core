@@ -1266,13 +1266,22 @@ public class ArtifactResourceUtils {
   public List<BuildDetails> getCustomGetBuildDetails(String arrayPath, String versionPath,
       CustomScriptInfo customScriptInfo, String serviceRef, String accountId, String orgIdentifier,
       String projectIdentifier, String fqnPath, String pipelineIdentifier, GitEntityFindInfoDTO gitEntityBasicInfo) {
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    // remote services can be linked with a specific branch, so we parse the YAML in one go and store the context data
+    //  has env git branch and service git branch
+    if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier, projectIdentifier,
+          pipelineIdentifier, customScriptInfo.getRuntimeInputYaml(), fqnPath, gitEntityBasicInfo, serviceRef);
+    }
     String script = customScriptInfo.getScript();
     List<NGVariable> inputs = customScriptInfo.getInputs();
     List<TaskSelectorYaml> delegateSelector = customScriptInfo.getDelegateSelector();
     int secretFunctor = HashGenerator.generateIntegerHash();
     if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService =
-          locateArtifactInService(accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
+      final ArtifactConfig artifactSpecFromService = locateArtifactInService(accountId, orgIdentifier,
+          projectIdentifier, serviceRef, fqnPath,
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
       io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig customArtifactConfig =
           (io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig) artifactSpecFromService;
       if (isEmpty(customScriptInfo.getScript())) {
@@ -1340,6 +1349,9 @@ public class ArtifactResourceUtils {
     ResolvedFieldValueWithYamlExpressionEvaluator resolvedFieldValueWithCDExpressionEvaluator = null;
     Map<String, String> inputVariables = NGVariablesUtils.getStringMapVariables(inputs, 0L);
 
+    CDYamlExpressionEvaluator yamlExpressionEvaluator =
+        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator();
+
     if (isNotEmpty(customScriptInfo.getRuntimeInputYaml())) {
       resolvedFieldValueWithCDExpressionEvaluator = getResolvedExpression(accountId, orgIdentifier, projectIdentifier,
           pipelineIdentifier, customScriptInfo.getRuntimeInputYaml(), script, fqnPath, gitEntityBasicInfo, serviceRef,
@@ -1357,7 +1369,7 @@ public class ArtifactResourceUtils {
 
       resolvedFieldValueWithYamlExpressionEvaluator = getResolvedFieldValueWithYamlExpressionEvaluator(accountId,
           orgIdentifier, projectIdentifier, pipelineIdentifier, customScriptInfo.getRuntimeInputYaml(), arrayPath,
-          fqnPath, gitEntityBasicInfo, serviceRef, null);
+          fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator);
       arrayPath = resolvedFieldValueWithYamlExpressionEvaluator.getValue();
       resolvedFieldValueWithYamlExpressionEvaluator =
           getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
