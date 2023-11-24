@@ -159,6 +159,7 @@ public class CustomStagePlanCreator extends ChildrenPlanCreator<CustomStageNodeV
                 FacilitatorObtainment.newBuilder()
                     .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILD).build())
                     .build())
+            .exports(customStageNode.getExports())
             .skipExpressionChain(false);
 
     // If strategy present then don't add advisers. Strategy node will take care of running the stage nodes.

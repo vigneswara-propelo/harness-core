@@ -6,6 +6,7 @@
  */
 
 package io.harness.pms.sdk.core.plan.creation.mappers;
+
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.HarnessStringUtils.emptyIfNull;
 
@@ -16,9 +17,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.data.structure.CollectionUtils;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.plancreator.exports.ExportConfig;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdvisorObtainmentList;
 import io.harness.pms.contracts.plan.ExecutionMode;
+import io.harness.pms.contracts.plan.Export;
+import io.harness.pms.contracts.plan.ExportValue;
 import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.sdk.PmsSdkModuleUtils;
 import io.harness.pms.sdk.core.plan.PlanNode;
@@ -32,6 +36,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.protobuf.ByteString;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +65,7 @@ public class PlanNodeProtoMapper {
             .addAllAdviserObtainments(CollectionUtils.emptyIfNull(node.getAdviserObtainments()))
             .putAllAdviserObtainmentsForExecutionMode(
                 buildAdvisorObtainmentsForExecutionMode(node.getAdvisorObtainmentsForExecutionMode()))
+            .putAllExports(getExportsProtoMap(node.getExports()))
             .addAllFacilitatorObtainments(CollectionUtils.emptyIfNull(node.getFacilitatorObtainments()))
             .setSkipExpressionChain(node.isSkipExpressionChain())
             .setExpressionMode(node.getExpressionMode())
@@ -111,5 +117,33 @@ public class PlanNodeProtoMapper {
                    .setParameters(ByteString.copyFrom(kryoSerializer.asBytes(entry.getParameters())))
                    .build())
         .collect(Collectors.toList());
+  }
+  private Map<String, Export> getExportsProtoMap(Map<String, ExportConfig> exportConfigMap) {
+    if (EmptyPredicate.isEmpty(exportConfigMap)) {
+      return Collections.emptyMap();
+    }
+    Map<String, Export> exportProtoMap = new HashMap<>();
+    for (Map.Entry<String, ExportConfig> entry : exportConfigMap.entrySet()) {
+      ExportValue exportValue = getExportValue(entry.getValue().getValue());
+      if (exportValue == null) {
+        continue;
+      }
+      String desc = entry.getValue().getDesc() != null ? entry.getValue().getDesc() : "";
+      exportProtoMap.put(entry.getKey(), Export.newBuilder().setValue(exportValue).setDesc(desc).build());
+    }
+    return exportProtoMap;
+  }
+
+  private ExportValue getExportValue(Object value) {
+    if (value instanceof String) {
+      return ExportValue.newBuilder().setStringValue((String) value).build();
+    } else if (value instanceof Integer) {
+      return ExportValue.newBuilder().setNumberValue((Integer) value).build();
+    } else if (value instanceof Double) {
+      return ExportValue.newBuilder().setNumberValue((Double) value).build();
+    } else if (value instanceof Boolean) {
+      return ExportValue.newBuilder().setBoolValue((Boolean) value).build();
+    }
+    return null;
   }
 }

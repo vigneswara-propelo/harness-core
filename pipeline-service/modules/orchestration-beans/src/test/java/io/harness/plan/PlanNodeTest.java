@@ -16,11 +16,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
+import io.harness.plancreator.exports.ExportConfig;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdviserType;
 import io.harness.pms.contracts.advisers.AdvisorObtainmentList;
 import io.harness.pms.contracts.plan.ExecutionMode;
+import io.harness.pms.contracts.plan.Export;
+import io.harness.pms.contracts.plan.ExportValue;
 import io.harness.pms.contracts.plan.ExpressionMode;
+import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.expression.ExpressionModeMapper;
 import io.harness.rule.Owner;
 
@@ -65,5 +69,35 @@ public class PlanNodeTest extends CategoryTest {
     assertThat(result).containsKeys(POST_EXECUTION_ROLLBACK, PIPELINE_ROLLBACK);
     assertThat(result.get(POST_EXECUTION_ROLLBACK)).hasSize(1);
     assertThat(result.get(PIPELINE_ROLLBACK)).hasSize(1);
+  }
+
+  @Test
+  @Owner(developers = BRIJESH)
+  @Category(UnitTests.class)
+  public void testGetExportsConfigMap() {
+    PlanNodeProto planNodeProto = PlanNodeProto.newBuilder()
+                                      .putAllExports(Map.of("export_1",
+                                          Export.newBuilder()
+                                              .setDesc("desc1")
+                                              .setValue(ExportValue.newBuilder().setStringValue("stringVal").build())
+                                              .build(),
+                                          "export_2",
+                                          Export.newBuilder()
+                                              .setDesc("desc2")
+                                              .setValue(ExportValue.newBuilder().setNumberValue(2.0).build())
+                                              .build(),
+                                          "export_3",
+                                          Export.newBuilder()
+                                              .setDesc("desc3")
+                                              .setValue(ExportValue.newBuilder().setBoolValue(true).build())
+                                              .build()))
+                                      .build();
+
+    PlanNode planNode = PlanNode.fromPlanNodeProto(planNodeProto);
+
+    assertThat(planNode.getExports())
+        .isEqualTo(Map.of("export_1", ExportConfig.builder().value("stringVal").desc("desc1").build(), "export_2",
+            ExportConfig.builder().value(2.0).desc("desc2").build(), "export_3",
+            ExportConfig.builder().value(true).desc("desc3").build()));
   }
 }

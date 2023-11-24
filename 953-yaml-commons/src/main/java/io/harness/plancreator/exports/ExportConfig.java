@@ -5,12 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.pms.sdk.core.data;
+package io.harness.plancreator.exports;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder
+@AllArgsConstructor
 @OwnedBy(PIPELINE)
 public class ExportConfig {
   // value can be string,number or boolean. But can not be list or complex object.

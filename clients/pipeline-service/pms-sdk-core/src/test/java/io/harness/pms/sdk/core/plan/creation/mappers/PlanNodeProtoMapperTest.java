@@ -15,8 +15,11 @@ import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.category.element.UnitTests;
+import io.harness.plancreator.exports.ExportConfig;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdvisorObtainmentList;
+import io.harness.pms.contracts.plan.Export;
+import io.harness.pms.contracts.plan.ExportValue;
 import io.harness.pms.contracts.plan.ExpressionMode;
 import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.contracts.steps.SkipType;
@@ -43,18 +46,22 @@ public class PlanNodeProtoMapperTest extends PmsSdkCoreTestBase {
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
   public void testToPlanNodeProtoWithDecoratedFields() {
-    PlanNodeBuilder planNodeBuilder = PlanNode.builder()
-                                          .name("name")
-                                          .stageFqn("fqn")
-                                          .uuid("uuid")
-                                          .stepType(StepType.newBuilder().getDefaultInstanceForType())
-                                          .identifier("identifier")
-                                          .skipExpressionChain(false)
-                                          .skipGraphType(SkipType.SKIP_NODE)
-                                          .skipUnresolvedExpressionsCheck(true)
-                                          .whenCondition("when")
-                                          .skipCondition("skip")
-                                          .group("group");
+    PlanNodeBuilder planNodeBuilder =
+        PlanNode.builder()
+            .name("name")
+            .stageFqn("fqn")
+            .uuid("uuid")
+            .stepType(StepType.newBuilder().getDefaultInstanceForType())
+            .identifier("identifier")
+            .skipExpressionChain(false)
+            .skipGraphType(SkipType.SKIP_NODE)
+            .exports(Map.of("export_1", ExportConfig.builder().value("stringVal").desc("desc1").build(), "export_2",
+                ExportConfig.builder().value(2).desc("desc2").build(), "export_3",
+                ExportConfig.builder().value(true).desc("desc3").build()))
+            .skipUnresolvedExpressionsCheck(true)
+            .whenCondition("when")
+            .skipCondition("skip")
+            .group("group");
     PlanNodeProto.Builder response = PlanNodeProto.newBuilder()
                                          .setName("name")
                                          .setStageFqn("fqn")
@@ -63,6 +70,21 @@ public class PlanNodeProtoMapperTest extends PmsSdkCoreTestBase {
                                          .setStepType(StepType.newBuilder().getDefaultInstanceForType())
                                          .setIdentifier("identifier")
                                          .setSkipExpressionChain(false)
+                                         .putAllExports(Map.of("export_1",
+                                             Export.newBuilder()
+                                                 .setDesc("desc1")
+                                                 .setValue(ExportValue.newBuilder().setStringValue("stringVal").build())
+                                                 .build(),
+                                             "export_2",
+                                             Export.newBuilder()
+                                                 .setDesc("desc2")
+                                                 .setValue(ExportValue.newBuilder().setNumberValue(2).build())
+                                                 .build(),
+                                             "export_3",
+                                             Export.newBuilder()
+                                                 .setDesc("desc3")
+                                                 .setValue(ExportValue.newBuilder().setBoolValue(true).build())
+                                                 .build()))
                                          .setExpressionMode(ExpressionMode.RETURN_NULL_IF_UNRESOLVED)
                                          .setSkipType(SkipType.SKIP_NODE)
                                          .setSkipUnresolvedExpressionsCheck(true)

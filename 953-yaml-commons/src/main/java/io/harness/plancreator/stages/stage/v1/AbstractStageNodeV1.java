@@ -16,6 +16,8 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.plancreator.exports.ExportConfig;
+import io.harness.plancreator.exports.ExportsMap;
 import io.harness.plancreator.strategy.v1.StrategyConfigV1;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
@@ -46,6 +48,7 @@ public abstract class AbstractStageNodeV1 {
   ParameterField<StrategyConfigV1> strategy;
   ParameterField<String> timeout;
   Map<String, String> labels;
+  ExportsMap<String, ExportConfig> exports;
 
   @JsonIgnore public abstract String getType();
 }
