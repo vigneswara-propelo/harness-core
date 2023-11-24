@@ -48,10 +48,13 @@ import io.harness.cvng.core.beans.monitoredService.MonitoredServiceDTO.Sources;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceListItemDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceListItemDTO.MonitoredServiceListItemDTOBuilder;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServicePlatformResponse;
+import io.harness.cvng.core.beans.monitoredService.MonitoredServiceReference;
+import io.harness.cvng.core.beans.monitoredService.MonitoredServiceReference.MonitoredServiceReferenceBuilder;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources.HealthSourceSummary;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceYamlDTO;
+import io.harness.cvng.core.beans.monitoredService.ReconciliationStatus;
 import io.harness.cvng.core.beans.monitoredService.RiskData;
 import io.harness.cvng.core.beans.monitoredService.SloHealthIndicatorDTO;
 import io.harness.cvng.core.beans.monitoredService.changeSourceSpec.ChangeSourceWithConnectorSpec;
@@ -68,6 +71,7 @@ import io.harness.cvng.core.beans.params.logsFilterParams.LiveMonitoringLogsFilt
 import io.harness.cvng.core.beans.template.TemplateDTO;
 import io.harness.cvng.core.beans.template.TemplateDTO.TemplateDTOBuilder;
 import io.harness.cvng.core.beans.template.TemplateMetadata;
+import io.harness.cvng.core.beans.template.TemplateMetadata.TemplateMetadataKeys;
 import io.harness.cvng.core.entities.CVConfig;
 import io.harness.cvng.core.entities.EntityDisableTime;
 import io.harness.cvng.core.entities.MonitoredService;
@@ -2367,6 +2371,46 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     }
 
     return activeServiceDTOList;
+  }
+
+  @Override
+  public PageResponse<MonitoredServiceReference> getMonitoredServiceReconciliationStatuses(
+      ProjectParams projectParams, String templateIdentifier, String templateVersionLabel, PageParams pageParams) {
+    List<MonitoredService> monitoredServiceList =
+        hPersistence.createQuery(MonitoredService.class)
+            .disableValidation()
+            .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
+            .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
+            .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier())
+            .filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.isTemplateByReference, true)
+            .filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.templateIdentifier,
+                templateIdentifier)
+            .filter(
+                MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.versionLabel, templateVersionLabel)
+            .asList();
+
+    String templateInputs = templateFacade.getTemplateInputs(projectParams, templateIdentifier, templateVersionLabel);
+
+    Long versionNumber =
+        templateFacade.getTemplateVersionNumber(projectParams, templateIdentifier, templateVersionLabel);
+
+    List<MonitoredServiceReference> monitoredServiceReferences =
+        monitoredServiceList.stream()
+            .map(monitoredService -> {
+              MonitoredServiceReferenceBuilder monitoredServiceReferenceBuilder =
+                  MonitoredServiceReference.builder()
+                      .accountIdentifier(monitoredService.getAccountId())
+                      .projectIdentifier(monitoredService.getProjectIdentifier())
+                      .serviceIdentifier(monitoredService.getServiceIdentifier())
+                      .orgIdentifier(monitoredService.getOrgIdentifier())
+                      .environmentIdentifier(monitoredService.getEnvironmentIdentifier())
+                      .lastReconciledTimestamp(monitoredService.getTemplateMetadata().getLastReconciliationTime());
+              monitoredServiceReferenceBuilder.reconciliationStatus(
+                  ReconciliationStatus.determineStatus(monitoredService, versionNumber, templateInputs));
+              return monitoredServiceReferenceBuilder.build();
+            })
+            .collect(Collectors.toList());
+    return PageUtils.offsetAndLimit(monitoredServiceReferences, pageParams.getPage(), pageParams.getSize());
   }
 
   private ServiceParams getServiceParams(MonitoredService ms) {

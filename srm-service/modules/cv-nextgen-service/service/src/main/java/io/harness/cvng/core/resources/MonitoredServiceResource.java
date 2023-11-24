@@ -37,6 +37,7 @@ import io.harness.cvng.core.beans.monitoredService.MonitoredServiceChangeDetailS
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceListItemDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServicePlatformResponse;
+import io.harness.cvng.core.beans.monitoredService.MonitoredServiceReference;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.HealthSourceDTO;
@@ -781,5 +782,19 @@ public class MonitoredServiceResource {
           NGCommonEntityConstants.VERSION_LABEL_KEY) String versionLabel) {
     return ResponseDTO.newResponse(monitoredServiceService.getResolvedTemplateInputs(
         scopedProjectParams.getProjectParams(), identifier, templateIdentifier, versionLabel));
+  }
+
+  @GET
+  @Path("/reconciliation-status")
+  @Timed
+  @ExceptionMetered
+  @ResponseMetered
+  @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = EDIT_PERMISSION)
+  public RestResponse<PageResponse<MonitoredServiceReference>> getMonitoredServiceReconciliationStatuses(
+      @NotNull @Valid @BeanParam ProjectParams projectParams,
+      @QueryParam("templateIdentifier") String templateIdentifier,
+      @QueryParam("templateVersionLabel") String templateVersionLabel, @BeanParam PageParams pageParams) {
+    return new RestResponse<>(monitoredServiceService.getMonitoredServiceReconciliationStatuses(
+        projectParams, templateIdentifier, templateVersionLabel, pageParams));
   }
 }

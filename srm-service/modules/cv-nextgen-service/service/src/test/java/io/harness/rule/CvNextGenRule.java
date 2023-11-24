@@ -57,6 +57,7 @@ import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.template.TemplateApplyRequestDTO;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ng.core.template.TemplateReferenceSummary;
+import io.harness.ng.core.template.TemplateResponseDTO;
 import io.harness.notification.MongoBackendConfiguration;
 import io.harness.notification.NotificationClientConfiguration;
 import io.harness.notification.constant.NotificationClientSecrets;
@@ -316,6 +317,29 @@ public class CvNextGenRule implements MethodRule, InjectorRuleMixin, MongoRuleMi
                       .build())));
           return call;
         });
+
+    Mockito
+        .when(templateResourceClient.get(
+            Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()))
+        .thenAnswer((Answer<Call<ResponseDTO<TemplateResponseDTO>>>) invocation -> {
+          Call<ResponseDTO<TemplateResponseDTO>> call = Mockito.mock(Call.class);
+          Mockito.when(call.execute())
+              .thenReturn(Response.success(ResponseDTO.newResponse(TemplateResponseDTO.builder().version(1L).build())));
+          return call;
+        });
+
+    Mockito
+        .when(templateResourceClient.getTemplateInputsYaml(
+            Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()))
+        .thenAnswer((Answer<Call<ResponseDTO<String>>>) invocation -> {
+          Call<ResponseDTO<String>> call = Mockito.mock(Call.class);
+          String data = "type: Application\n"
+              + "serviceRef: testservice\n"
+              + "environmentRef: applied";
+          Mockito.when(call.execute()).thenReturn(Response.success(ResponseDTO.newResponse(data)));
+          return call;
+        });
+
     return templateResourceClient;
   }
 

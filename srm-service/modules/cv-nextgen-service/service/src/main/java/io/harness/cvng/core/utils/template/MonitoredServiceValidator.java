@@ -28,6 +28,7 @@ import org.hibernate.validator.internal.engine.path.PathImpl;
 public class MonitoredServiceValidator {
   public static boolean validateTemplateInputs(String nodeToValidateYaml, String sourceNodeInputSetFormatYaml) {
     nodeToValidateYaml = addDummyNodeToYaml(nodeToValidateYaml);
+    sourceNodeInputSetFormatYaml = addDummyNodeToYaml(sourceNodeInputSetFormatYaml);
     return RuntimeInputsValidator.validateInputsAgainstSourceNode(nodeToValidateYaml, sourceNodeInputSetFormatYaml);
   }
 

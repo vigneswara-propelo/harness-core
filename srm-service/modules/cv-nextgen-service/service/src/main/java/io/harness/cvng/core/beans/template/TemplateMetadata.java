@@ -9,10 +9,12 @@ package io.harness.cvng.core.beans.template;
 
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
+import lombok.experimental.FieldNameConstants;
 
-@Data
+@Value
 @Builder
+@FieldNameConstants(innerTypeName = "TemplateMetadataKeys")
 public class TemplateMetadata {
   @NotNull String templateIdentifier;
   String versionLabel;

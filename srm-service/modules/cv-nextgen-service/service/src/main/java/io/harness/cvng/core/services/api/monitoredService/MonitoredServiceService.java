@@ -19,6 +19,7 @@ import io.harness.cvng.core.beans.monitoredService.MonitoredServiceChangeDetailS
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceListItemDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServicePlatformResponse;
+import io.harness.cvng.core.beans.monitoredService.MonitoredServiceReference;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.HealthSourceDTO;
@@ -156,4 +157,7 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
   List<ActiveServiceMonitoredDTO> listActiveServiceMonitored(ProjectParams projectParams);
 
   List<ActiveServiceDTO> listActiveMonitoredServices(ProjectParams projectParams, String serviceIdentifier);
+
+  PageResponse<MonitoredServiceReference> getMonitoredServiceReconciliationStatuses(
+      ProjectParams projectParams, String templateIdentifier, String templateVersionLabel, PageParams pageParams);
 }
