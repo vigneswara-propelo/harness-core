@@ -24,6 +24,9 @@ public interface SetupUsageEventService {
 
   void sendDeleteEventsForMonitoredService(ProjectParams projectParams, MonitoredService monitoredService);
 
+  void sendTemplateDeleteEventForMonitoredService(
+      ProjectParams projectParams, MonitoredService monitoredService, EntityDetailProtoDTO referredByEntity);
+
   void sendEvents(String accountId, EntityDetailProtoDTO referredByEntity, List<EntityDetailProtoDTO> referredEntities,
       EntityTypeProtoEnum referredEntityType);
 }

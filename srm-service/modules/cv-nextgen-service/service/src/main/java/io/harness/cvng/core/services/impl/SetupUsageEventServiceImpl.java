@@ -107,8 +107,24 @@ public class SetupUsageEventServiceImpl implements SetupUsageEventService {
     sendEvents(projectParams.getAccountIdentifier(), referredByEntity, new ArrayList<>(), SERVICE);
     sendEvents(projectParams.getAccountIdentifier(), referredByEntity, new ArrayList<>(), ENVIRONMENT);
     if (monitoredService.isTemplateByReference()) {
-      sendEvents(projectParams.getAccountIdentifier(), referredByEntity, new ArrayList<>(), TEMPLATE);
+      sendTemplateDeleteEventForMonitoredService(projectParams, monitoredService, referredByEntity);
     }
+  }
+
+  @Override
+  public void sendTemplateDeleteEventForMonitoredService(
+      ProjectParams projectParams, MonitoredService monitoredService, EntityDetailProtoDTO referredByEntity) {
+    if (referredByEntity == null) {
+      IdentifierRefProtoDTO referredByIdentifier =
+          identifierRefProtoDTOHelper.createIdentifierRefProtoDTO(projectParams.getAccountIdentifier(),
+              projectParams.getOrgIdentifier(), projectParams.getProjectIdentifier(), monitoredService.getIdentifier());
+      referredByEntity = EntityDetailProtoDTO.newBuilder()
+                             .setIdentifierRef(referredByIdentifier)
+                             .setName(monitoredService.getName())
+                             .setType(MONITORED_SERVICE)
+                             .build();
+    }
+    sendEvents(projectParams.getAccountIdentifier(), referredByEntity, new ArrayList<>(), TEMPLATE);
   }
 
   @Override

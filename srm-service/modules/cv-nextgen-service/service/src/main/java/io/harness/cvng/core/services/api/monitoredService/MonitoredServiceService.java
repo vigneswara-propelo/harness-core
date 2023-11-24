@@ -87,6 +87,7 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
       ProjectParams projectParams, String identifier, String templateIdentifier, String versionLabel);
   boolean isReconciliationRequiredForMonitoredServices(ProjectParams templateProjectParams, String templateIdentifier,
       String versionLabel, String monitoredServiceIdentifier, int templateVersionNumber);
+  boolean detachMonitoredServiceFromTemplate(ProjectParams projectParams, String identifier);
 
   Optional<MonitoredService> getApplicationMonitoredService(ServiceEnvironmentParams serviceEnvironmentParams);
 

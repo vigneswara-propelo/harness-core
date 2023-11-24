@@ -339,7 +339,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public String getResolvedTemplateInputs(
       ProjectParams projectParams, String identifier, String templateIdentifier, String versionLabel) {
-    MonitoredService monitoredService = getMonitoredService(projectParams, identifier);
+    MonitoredService monitoredService = getAndValidateMonitoredService(projectParams, identifier);
     if (monitoredService.getTemplateMetadata() == null
         || (!monitoredService.getTemplateIdentifier().equals(templateIdentifier)
             || !monitoredService.getTemplateVersionLabel().equals(versionLabel))) {
@@ -380,6 +380,24 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     long alreadyReconciledMonitoredServices = query.count();
 
     return allTemplateReferencedMonitoredServices != alreadyReconciledMonitoredServices;
+  }
+
+  @Override
+  public boolean detachMonitoredServiceFromTemplate(ProjectParams projectParams, String identifier) {
+    MonitoredService monitoredService = getAndValidateMonitoredService(projectParams, identifier);
+    if (monitoredService.getTemplateMetadata() == null || !monitoredService.isTemplateByReference()) {
+      throw new InvalidRequestException(String.format(
+          "Monitored Service entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not referring to any template",
+          monitoredService.getIdentifier(), projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
+          projectParams.getProjectIdentifier()));
+    }
+
+    UpdateOperations<MonitoredService> updateOperations = hPersistence.createUpdateOperations(MonitoredService.class);
+    updateOperations.set(
+        MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.isTemplateByReference, false);
+    hPersistence.update(monitoredService, updateOperations);
+    setupUsageEventService.sendTemplateDeleteEventForMonitoredService(projectParams, monitoredService, null);
+    return true;
   }
 
   private void validateDependencyMetadata(ProjectParams projectParams, Set<ServiceDependencyDTO> dependencyDTOs) {
@@ -589,12 +607,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
   @Override
   public boolean delete(ProjectParams projectParams, String identifier) {
-    MonitoredService monitoredService = getMonitoredService(projectParams, identifier);
-    if (monitoredService == null) {
-      throw new InvalidRequestException(
-          String.format("Monitored Service entity with identifier %s and accountId %s is not present", identifier,
-              projectParams.getAccountIdentifier()));
-    }
+    MonitoredService monitoredService = getAndValidateMonitoredService(projectParams, identifier);
     ServiceEnvironmentParams environmentParams = builderWithProjectParams(projectParams)
                                                      .serviceIdentifier(monitoredService.getServiceIdentifier())
                                                      .environmentIdentifier(monitoredService.getEnvironmentIdentifier())
@@ -732,17 +745,13 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
   @Override
   public MonitoredServiceResponse get(ProjectParams projectParams, String identifier) {
-    MonitoredService monitoredServiceEntity = getMonitoredService(projectParams, identifier);
-    if (monitoredServiceEntity == null) {
-      throw new InvalidRequestException(
-          String.format("Monitored Service entity with identifier %s is not present", identifier));
-    }
+    MonitoredService monitoredServiceEntity = getAndValidateMonitoredService(projectParams, identifier);
+
     ServiceEnvironmentParams environmentParams =
         builderWithProjectParams(projectParams)
             .serviceIdentifier(monitoredServiceEntity.getServiceIdentifier())
             .environmentIdentifier(monitoredServiceEntity.getEnvironmentIdentifier())
             .build();
-
     return createMonitoredServiceDTOFromEntity(monitoredServiceEntity, environmentParams);
   }
 
@@ -995,6 +1004,18 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .filter(MonitoredServiceKeys.identifier, identifier)
         .get();
   }
+
+  private MonitoredService getAndValidateMonitoredService(ProjectParams projectParams, String identifier) {
+    MonitoredService monitoredService = getMonitoredService(projectParams, identifier);
+    if (monitoredService == null) {
+      throw new InvalidRequestException(String.format(
+          "Monitored Service entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not present",
+          identifier, projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
+          projectParams.getProjectIdentifier()));
+    }
+    return monitoredService;
+  }
+
   @Override
   public Optional<MonitoredService> getApplicationMonitoredService(ServiceEnvironmentParams serviceEnvironmentParams) {
     return Optional.ofNullable(
@@ -1827,11 +1848,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   @Override
   public AnomaliesSummaryDTO getAnomaliesSummary(
       ProjectParams projectParams, String monitoredServiceIdentifier, TimeRangeParams timeRangeParams) {
-    MonitoredService monitoredService = getMonitoredService(projectParams, monitoredServiceIdentifier);
-    if (monitoredService == null) {
-      throw new InvalidRequestException(
-          String.format("Monitored Service not found for identifier %s", monitoredServiceIdentifier));
-    }
+    MonitoredService monitoredService = getAndValidateMonitoredService(projectParams, monitoredServiceIdentifier);
+
     ServiceEnvironmentParams serviceEnvironmentParams =
         ServiceEnvironmentParams.builderWithProjectParams(projectParams)
             .serviceIdentifier(monitoredService.getServiceIdentifier())

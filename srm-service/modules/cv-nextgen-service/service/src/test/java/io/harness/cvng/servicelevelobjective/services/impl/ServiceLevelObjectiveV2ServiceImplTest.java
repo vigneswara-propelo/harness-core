@@ -860,8 +860,10 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
         (SimpleServiceLevelObjectiveSpec) sloDTO.getSpec();
     assertThatThrownBy(() -> serviceLevelObjectiveV2Service.create(projectParams, sloDTO))
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage(String.format("Monitored Service entity with identifier %s is not present",
-            simpleServiceLevelObjectiveSpec.getMonitoredServiceRef()));
+        .hasMessage(String.format(
+            "Monitored Service entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not present",
+            simpleServiceLevelObjectiveSpec.getMonitoredServiceRef(), projectParams.getAccountIdentifier(),
+            projectParams.getOrgIdentifier(), projectParams.getProjectIdentifier()));
   }
 
   @Test

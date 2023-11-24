@@ -1281,11 +1281,12 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   @Owner(developers = KANHAIYA)
   @Category(UnitTests.class)
   public void testGet_IdentifierNotPresent() {
-    assertThatThrownBy(
-        () -> monitoredServiceService.get(builderFactory.getContext().getProjectParams(), monitoredServiceIdentifier))
+    assertThatThrownBy(() -> monitoredServiceService.get(projectParams, monitoredServiceIdentifier))
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage(
-            String.format("Monitored Service entity with identifier %s is not present", monitoredServiceIdentifier));
+        .hasMessage(String.format(
+            "Monitored Service entity with identifier %s, accountId %s, orgIdentifier %s and projectIdentifier %s is not present",
+            monitoredServiceIdentifier, projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
+            projectParams.getProjectIdentifier()));
   }
 
   @Test
@@ -2433,6 +2434,34 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     isReconciliationRequired = monitoredServiceService.isReconciliationRequiredForMonitoredServices(
         projectParams, "template1", "v1", "ms3", 2);
     assertThat(isReconciliationRequired).isTrue();
+  }
+
+  @Test
+  @Owner(developers = KARAN_SARASWAT)
+  @Category(UnitTests.class)
+  public void testDetachMonitoredServiceFromTemplate() {
+    MonitoredServiceDTO monitoredServiceDTO =
+        builderFactory.monitoredServiceDTOBuilder()
+            .identifier("ms2")
+            .serviceRef("test1")
+            .template(TemplateDTO.builder()
+                          .templateRef("template1")
+                          .versionLabel("v1")
+                          .templateVersionNumber(1)
+                          .isTemplateByReference(true)
+                          .templateInputs("type: Application\nserviceRef: test1\n")
+                          .build())
+            .build();
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+
+    boolean isTemplateDetached =
+        monitoredServiceService.detachMonitoredServiceFromTemplate(projectParams, monitoredServiceDTO.getIdentifier());
+    assertThat(isTemplateDetached).isTrue();
+    MonitoredService monitoredService =
+        monitoredServiceService.getMonitoredService(projectParams, monitoredServiceDTO.getIdentifier());
+    assertThat(monitoredService.isTemplateByReference()).isFalse();
   }
 
   @Test

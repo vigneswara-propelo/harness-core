@@ -784,6 +784,30 @@ public class MonitoredServiceResource {
         scopedProjectParams.getProjectParams(), identifier, templateIdentifier, versionLabel));
   }
 
+  @PUT
+  @Path("/{identifier}/detach-template")
+  @Timed
+  @ExceptionMetered
+  @ResponseMetered
+  @ApiOperation(
+      value = "delete template reference from monitored service", nickname = "detachMonitoredServiceFromTemplate")
+  @Operation(operationId = "detachMonitoredServiceFromTemplate",
+      summary = "delete template reference from monitored service",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(responseCode = "default", description = "delete template reference from monitored service")
+      })
+  @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = EDIT_PERMISSION)
+  public ResponseDTO<Boolean>
+  detachMonitoredServiceFromTemplate(
+      @ApiParam(required = true) @NotNull @BeanParam ProjectScopedProjectParams scopedProjectParams,
+      @Parameter(description = NGCommonEntityConstants.IDENTIFIER_PARAM_MESSAGE) @ApiParam(
+          required = true) @NotNull @PathParam("identifier") String identifier) {
+    return ResponseDTO.newResponse(
+        monitoredServiceService.detachMonitoredServiceFromTemplate(scopedProjectParams.getProjectParams(), identifier));
+  }
+
   @GET
   @Path("/reconciliation-status")
   @Timed
