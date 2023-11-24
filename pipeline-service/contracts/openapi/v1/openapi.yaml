@@ -1394,6 +1394,7 @@ components:
         mapping:
           Scheduled: '#/components/schemas/ScheduledTriggerSource'
           Webhook: '#/components/schemas/WebhookTriggerSource'
+          Manifest: '#/components/schemas/ManifestTriggerSource'
       required:
         - type
         - spec
@@ -1415,6 +1416,15 @@ components:
           properties:
             spec:
               $ref: '#/components/schemas/WebhookTriggerSpec'
+    ManifestTriggerSource:
+      title: Manifest Trigger Source
+      x-discriminator-value: Manifest
+      allOf:
+        - $ref: '#/components/schemas/TriggerSource'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/ManifestTriggerSpec'
     TriggerConditions:
       title: Trigger Conditions
       type: object
@@ -1466,6 +1476,110 @@ components:
       required:
         - type
         - spec
+    ManifestTriggerSpec:
+      title: Manifest Trigger Spec
+      type: object
+      description: 'Spec for Manifest Triggers'
+      properties:
+        type:
+          type: string
+          description: This specifies the type of Manifest trigger
+          enum:
+            - HelmChart
+        spec:
+          $ref: '#/components/schemas/HelmChartManifestTriggerSpec'
+    HelmChartManifestTriggerSpec:
+      type: object
+      title: Helm Chart Manifest Trigger Spec
+      properties:
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        chart_name:
+          type: string
+        chart_version:
+          type: string
+        helm_version:
+          type: string
+          enum:
+            - V2
+            - V3
+            - V380
+        store:
+          $ref: '#/components/schemas/BuildStore'
+    BuildStore:
+      title: Build Store
+      description: Helm Chart Manifest Build store
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Http
+            - S3
+            - Gcs
+      discriminator:
+        propertyName: type
+        mapping:
+          Http: '#/components/schemas/HttpBuildStore'
+          S3: '#/components/schemas/S3BuildStore'
+          Gcs: '#/components/schemas/GcsBuildStore'
+    HttpBuildStore:
+      title: Http Build Store
+      x-discriminator-value: Http
+      allOf:
+        - $ref: '#/components/schemas/BuildStore'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/HttpBuildStoreSpec'
+    HttpBuildStoreSpec:
+      type: object
+      title: Http Build Store Spec
+      properties:
+        connector_ref:
+          type: string
+    S3BuildStore:
+      title: S3 Build Store
+      x-discriminator-value: S3
+      allOf:
+        - $ref: '#/components/schemas/BuildStore'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/S3BuildStoreSpec'
+    S3BuildStoreSpec:
+      title: S3 Build Store Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        bucketName:
+          type: string
+        folder_path:
+          type: string
+        region:
+          type: string
+    GcsBuildStore:
+      title: Gcs Build Store
+      x-discriminator-value: Gcs
+      allOf:
+        - $ref: '#/components/schemas/BuildStore'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/GcsBuildStoreSpec'
+    GcsBuildStoreSpec:
+      title: Gcs Build Store Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        bucketName:
+          type: string
+        folder_path:
+          type: string
     GithubWebhookSpec:
       title: Github Webhook Trigger Spec
       x-discriminator-value: Github
@@ -1924,16 +2038,22 @@ components:
         - $ref: '#/components/schemas/WebhookTriggerSpec'
         - type: object
           properties:
-            header_conditions:
-              type: array
-              items:
-                $ref: '#/components/schemas/TriggerConditions'
-            payload_conditions:
-              type: array
-              items:
-                $ref: '#/components/schemas/TriggerConditions'
-            jexl_condition:
-              type: string
+            spec:
+              $ref: '#/components/schemas/CustomWebhookTriggerSpec'
+    CustomWebhookTriggerSpec:
+      title: Custom Webhook Trigger Spec
+      type: object
+      properties:
+        header_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        payload_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
     CronScheduledTriggerSpec:
       title: Cron Scheduled Trigger Spec
       type: object
