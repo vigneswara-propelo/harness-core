@@ -228,13 +228,16 @@ public class CDLicenseUsageDALTest extends CategoryTest {
         + "    AND t.orgidentifier = services.org_identifier\n"
         + "    AND t.projectidentifier = services.project_identifier\n"
         + "    AND t.serviceIdentifier = services.identifier\n"
+        + "    AND services.deleted = false\n"
         + " LEFT JOIN projects ON\n"
         + "    projects.account_identifier = ?\n"
         + "    AND t.orgidentifier = projects.org_identifier\n"
         + "    AND t.projectidentifier = projects.identifier\n"
+        + "    AND projects.deleted = false\n"
         + " LEFT JOIN organizations ON\n"
         + "    organizations.account_identifier = ?\n"
         + "    AND t.orgidentifier = organizations.identifier\n"
+        + "    AND organizations.deleted = false\n"
         + "ORDER BY lastDeployed DESC NULLS LAST");
   }
 
@@ -287,13 +290,16 @@ public class CDLicenseUsageDALTest extends CategoryTest {
         + "    AND t.orgidentifier = services.org_identifier\n"
         + "    AND t.projectidentifier = services.project_identifier\n"
         + "    AND t.serviceIdentifier = services.identifier\n"
+        + "    AND services.deleted = false\n"
         + " LEFT JOIN projects ON\n"
         + "    projects.account_identifier = ?\n"
         + "    AND t.orgidentifier = projects.org_identifier\n"
         + "    AND t.projectidentifier = projects.identifier\n"
+        + "    AND projects.deleted = false\n"
         + " LEFT JOIN organizations ON\n"
         + "    organizations.account_identifier = ?\n"
         + "    AND t.orgidentifier = organizations.identifier\n"
+        + "    AND organizations.deleted = false\n"
         + "ORDER BY lastDeployed DESC NULLS LAST");
   }
 

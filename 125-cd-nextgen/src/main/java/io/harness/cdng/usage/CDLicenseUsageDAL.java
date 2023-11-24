@@ -274,13 +274,16 @@ public class CDLicenseUsageDAL {
       + "    AND t.orgidentifier = services.org_identifier\n"
       + "    AND t.projectidentifier = services.project_identifier\n"
       + "    AND t.serviceIdentifier = services.identifier\n"
+      + "    AND services.deleted = false\n"
       + " LEFT JOIN projects ON\n"
       + "    projects.account_identifier = ?\n"
       + "    AND t.orgidentifier = projects.org_identifier\n"
       + "    AND t.projectidentifier = projects.identifier\n"
+      + "    AND projects.deleted = false\n"
       + " LEFT JOIN organizations ON\n"
       + "    organizations.account_identifier = ?\n"
       + "    AND t.orgidentifier = organizations.identifier\n"
+      + "    AND organizations.deleted = false\n"
       + "ORDER BY :sortCriteria";
   private static final String FETCH_ACTIVE_SERVICES_NAME_ORG_AND_PROJECT_NAME_QUERY_V2 = ""
       + "SELECT DISTINCT\n"
@@ -303,13 +306,16 @@ public class CDLicenseUsageDAL {
       + "    AND t.orgidentifier = services.org_identifier\n"
       + "    AND t.projectidentifier = services.project_identifier\n"
       + "    AND t.serviceIdentifier = services.identifier\n"
+      + "    AND services.deleted = false\n"
       + " LEFT JOIN projects ON\n"
       + "    projects.account_identifier = ?\n"
       + "    AND t.orgidentifier = projects.org_identifier\n"
       + "    AND t.projectidentifier = projects.identifier\n"
+      + "    AND projects.deleted = false\n"
       + " LEFT JOIN organizations ON\n"
       + "    organizations.account_identifier = ?\n"
       + "    AND t.orgidentifier = organizations.identifier\n"
+      + "    AND organizations.deleted = false\n"
       + "ORDER BY :sortCriteria";
 
   @Inject TimeScaleDBService timeScaleDBService;
