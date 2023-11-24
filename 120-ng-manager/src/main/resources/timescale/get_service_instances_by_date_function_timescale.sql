@@ -57,7 +57,17 @@ BEGIN
             FROM
                 (SELECT percentile_disc(0.95) WITHIN GROUP (ORDER BY instancesPerServicePerReportedat.instancecount) AS instanceCount,
                         orgid, projectid, serviceid
-                 FROM (SELECT date_trunc('minute', reportedat) AS reportedat, orgid, projectid, serviceid, SUM(instancecount) AS instancecount
+                 FROM (SELECT date_trunc('minute', reportedat) AS reportedat,
+                            CASE
+                                WHEN serviceid LIKE 'account.%' THEN NULL
+                                ELSE orgid
+                            END AS orgid,
+                            CASE
+                                WHEN serviceid LIKE 'account.%' OR serviceid LIKE 'org.%' THEN NULL
+                                ELSE projectid
+                            END AS projectid,
+                            serviceid,
+                            SUM(instancecount) AS instancecount
                         FROM ng_instance_stats
                         WHERE accountid = p_accountid
                             -- always follow pattern of >= begin date and < end date
@@ -67,7 +77,17 @@ BEGIN
                             -- It's overall 30 days.
                             AND reportedat >= v_interim_begin_date - INTERVAL '29 day'
                             AND reportedat < v_interim_end_date
-                        GROUP BY orgid, projectid, serviceid, date_trunc('minute', reportedat)
+                        GROUP BY
+                            CASE
+                                WHEN serviceid LIKE 'account.%' THEN NULL
+                                ELSE orgid
+                            END,
+                            CASE
+                                WHEN serviceid LIKE 'account.%' OR serviceid LIKE 'org.%' THEN NULL
+                                ELSE projectid
+                            END,
+                            serviceid,
+                            date_trunc('minute', reportedat)
                         ORDER BY reportedat DESC
                       ) instancesPerServicePerReportedat
                  GROUP BY orgid, projectid, serviceid) instancesPerAllServiceAtDay;

@@ -77,6 +77,8 @@ public class NGCoreTimeScaleMigrationDetails implements MigrationDetails {
         .add(Pair.of(21, CreateHarnessDateBinNGMgrFunction.class))
         .add(Pair.of(22, CreateCustomStageTable.class))
         .add(Pair.of(23, AddColumnsToCustomStageTable.class))
+        .add(Pair.of(24, GetActiveServicesByDateFunction.class))
+        .add(Pair.of(25, GetServiceInstancesByDateFunction.class))
         .build();
   }
 }

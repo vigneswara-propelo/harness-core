@@ -69,8 +69,14 @@ BEGIN
                         -- List all deployed services during specific day or month from service_infra_info table
                         (
                             SELECT
-                                orgidentifier AS orgIdentifier,
-                                projectidentifier AS projectIdentifier,
+                                CASE
+                                    WHEN service_id LIKE 'account.%' THEN NULL
+                                    ELSE orgIdentifier
+                                END AS orgIdentifier,
+                                CASE
+                                    WHEN service_id LIKE 'account.%' OR service_id LIKE 'org.%' THEN NULL
+                                    ELSE projectIdentifier
+                                END AS projectIdentifier,
                                 service_id AS serviceIdentifier
                             FROM
                                 service_infra_info
@@ -83,8 +89,14 @@ BEGIN
                                 AND service_startts >= EXTRACT(EPOCH FROM DATE (v_interim_begin_date - INTERVAL '29 day')) * 1000
                                 AND service_startts < EXTRACT(EPOCH FROM DATE (v_interim_end_date::timestamp)) * 1000
                             GROUP BY
-                                orgidentifier,
-                                projectidentifier,
+                                CASE
+                                    WHEN service_id LIKE 'account.%' THEN NULL
+                                    ELSE orgidentifier
+                                END,
+                                CASE
+                                    WHEN service_id LIKE 'account.%' OR service_id LIKE 'org.%' THEN NULL
+                                    ELSE projectidentifier
+                                END,
                                 service_id
                         ) activeServices
                         LEFT JOIN
@@ -99,8 +111,14 @@ BEGIN
                                 (
                                     SELECT
                                         DATE_TRUNC('minute', reportedat) AS reportedat,
-                                        orgid,
-                                        projectid,
+                                        CASE
+                                            WHEN serviceid LIKE 'account.%' THEN NULL
+                                            ELSE orgid
+                                        END AS orgid,
+                                        CASE
+                                            WHEN serviceid LIKE 'account.%' OR serviceid LIKE 'org.%' THEN NULL
+                                            ELSE projectid
+                                        END AS projectid,
                                         serviceid,
                                         SUM(instancecount) AS instanceCount
                                     FROM
@@ -114,8 +132,14 @@ BEGIN
                                         AND reportedat >= v_interim_begin_date - INTERVAL '29 day'
                                         AND reportedat < v_interim_end_date
                                     GROUP BY
-                                        orgid,
-                                        projectid,
+                                        CASE
+                                            WHEN serviceid LIKE 'account.%' THEN NULL
+                                            ELSE orgid
+                                        END,
+                                        CASE
+                                            WHEN serviceid LIKE 'account.%' OR serviceid LIKE 'org.%' THEN NULL
+                                            ELSE projectid
+                                        END,
                                         serviceid,
                                         DATE_TRUNC('minute', reportedat)
                                 ) instancesPerServicesReportedAt
