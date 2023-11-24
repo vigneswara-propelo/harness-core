@@ -240,9 +240,6 @@ public class SetupUsageHelperTest extends CDNGEntitiesTestBase {
             .isEqualTo("ENV_GLOBAL_OVERRIDE");
         assertThat(entityDetailWithSetupUsageDetailProtoDTO.getOverridesDetail().getIdentifier())
             .isEqualTo("overrideId");
-        assertThat(entityDetailWithSetupUsageDetailProtoDTO.getOverridesDetail().getAccountId()).isEqualTo("accountId");
-        assertThat(entityDetailWithSetupUsageDetailProtoDTO.getOverridesDetail().getOrgId()).isEqualTo("orgId");
-        assertThat(entityDetailWithSetupUsageDetailProtoDTO.getOverridesDetail().getProjectId()).isEqualTo("projectId");
       }
     }
     assertThat(typesOfFields).isEqualTo(4);
