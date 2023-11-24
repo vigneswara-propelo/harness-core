@@ -1232,6 +1232,11 @@ components:
         - Equals
         - StartsWith
         - Contains
+        - NotEquals
+        - GreaterThan
+        - GreaterThanEquals
+        - LessThan
+        - LessThanEquals
     ComponentFilter:
       title: ComponentFilter
       type: object

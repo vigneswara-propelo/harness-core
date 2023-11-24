@@ -13,6 +13,7 @@ import static io.harness.rule.OwnerRule.REETIKA;
 import static junit.framework.TestCase.assertEquals;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,6 +26,7 @@ import io.harness.repositories.SBOMComponentRepo;
 import io.harness.rule.Owner;
 import io.harness.spec.server.ssca.v1.model.Artifact;
 import io.harness.spec.server.ssca.v1.model.ComponentFilter;
+import io.harness.spec.server.ssca.v1.model.ComponentFilter.FieldNameEnum;
 import io.harness.spec.server.ssca.v1.model.LicenseFilter;
 import io.harness.spec.server.ssca.v1.model.Operator;
 import io.harness.ssca.entities.ArtifactEntity;
@@ -52,6 +54,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase {
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
@@ -101,7 +104,7 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
   public void testGetOrchestrationIds() {
     String licenseValue = randomAlphabetic(10);
     String componentValue1 = randomAlphabetic(10);
-    String componentValue2 = randomAlphabetic(10);
+    String componentValue2 = "1.2.1";
     ArgumentCaptor<Criteria> criteriaArgumentCaptor = ArgumentCaptor.forClass(Criteria.class);
     when(sbomComponentRepo.findDistinctOrchestrationIds(any())).thenReturn(List.of("orch1", "orch2"));
     LicenseFilter licenseFilter = new LicenseFilter().operator(Operator.EQUALS).value(licenseValue);
@@ -109,11 +112,7 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
         Lists.newArrayList(new ComponentFilter()
                                .fieldName(ComponentFilter.FieldNameEnum.COMPONENTNAME)
                                .operator(Operator.CONTAINS)
-                               .value(componentValue1),
-            new ComponentFilter()
-                .fieldName(ComponentFilter.FieldNameEnum.COMPONENTVERSION)
-                .operator(Operator.STARTSWITH)
-                .value(componentValue2));
+                               .value(componentValue1));
     List<String> orchestrationIds =
         normalisedSbomComponentService.getOrchestrationIds("account", "org", "project", licenseFilter, componentFilter);
     assertEquals(orchestrationIds.size(), 2);
@@ -127,11 +126,9 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
     assertEquals(licenseDocument.get(NormalizedSBOMEntityKeys.packageLicense), licenseValue);
     Document componetDocument = (Document) filterList.get(1);
     BasicDBList componentFilterList = (BasicDBList) componetDocument.get("$and");
-    assertEquals(componentFilterList.size(), 2);
+    assertEquals(componentFilterList.size(), 1);
     assertThat(((Document) componentFilterList.get(0)).get(NormalizedSBOMEntityKeys.packageName).toString())
         .isEqualTo(componentValue1);
-    assertThat(((Document) componentFilterList.get(1)).get(NormalizedSBOMEntityKeys.packageVersion).toString())
-        .isEqualTo("^" + componentValue2);
   }
 
   @Test
@@ -139,7 +136,7 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
   @Category(UnitTests.class)
   public void testGetOrchestrationIdsWithNoLicenseFilter() {
     String componentValue1 = randomAlphabetic(10);
-    String componentValue2 = randomAlphabetic(10);
+    String componentValue2 = "1.2.1";
     ArgumentCaptor<Criteria> criteriaArgumentCaptor = ArgumentCaptor.forClass(Criteria.class);
     when(sbomComponentRepo.findDistinctOrchestrationIds(any())).thenReturn(List.of("orch1", "orch2"));
     LicenseFilter licenseFilter = null;
@@ -147,11 +144,7 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
         Lists.newArrayList(new ComponentFilter()
                                .fieldName(ComponentFilter.FieldNameEnum.COMPONENTNAME)
                                .operator(Operator.CONTAINS)
-                               .value(componentValue1),
-            new ComponentFilter()
-                .fieldName(ComponentFilter.FieldNameEnum.COMPONENTVERSION)
-                .operator(Operator.STARTSWITH)
-                .value(componentValue2));
+                               .value(componentValue1));
     List<String> orchestrationIds =
         normalisedSbomComponentService.getOrchestrationIds("account", "org", "project", licenseFilter, componentFilter);
     assertEquals(orchestrationIds.size(), 2);
@@ -164,11 +157,9 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
     assertEquals(((Document) filterList.get(0)).size(), 0);
     Document componetDocument = (Document) filterList.get(1);
     BasicDBList componentFilterList = (BasicDBList) componetDocument.get("$and");
-    assertEquals(componentFilterList.size(), 2);
+    assertEquals(componentFilterList.size(), 1);
     assertThat(((Document) componentFilterList.get(0)).get(NormalizedSBOMEntityKeys.packageName).toString())
         .isEqualTo(componentValue1);
-    assertThat(((Document) componentFilterList.get(1)).get(NormalizedSBOMEntityKeys.packageVersion).toString())
-        .isEqualTo("^" + componentValue2);
   }
 
   @Test
@@ -192,5 +183,114 @@ public class NormalisedSbomComponentServiceImplTest extends SSCAManagerTestBase 
     Document licenseDocument = (Document) filterList.get(0);
     assertEquals(licenseDocument.get(NormalizedSBOMEntityKeys.packageLicense), licenseValue);
     assertEquals(((Document) filterList.get(1)).size(), 0);
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testGetComponentVersionFilter_patchVersion() {
+    NormalisedSbomComponentServiceImpl componentService = new NormalisedSbomComponentServiceImpl();
+    ComponentFilter filter =
+        new ComponentFilter().fieldName(FieldNameEnum.COMPONENTVERSION).value("1.2.3").operator(Operator.EQUALS);
+    Criteria criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo("Query: { \"majorVersion\" : 1, \"minorVersion\" : 2, \"patchVersion\" : 3}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.NOTEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{ \"patchVersion\" : { \"$ne\" : 3}}, { \"minorVersion\" : { \"$ne\" : 2}}, { \"majorVersion\" : { \"$ne\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.GREATERTHAN);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{ \"majorVersion\" : 1, \"minorVersion\" : 2, \"$and\" : [{ \"patchVersion\" : { \"$gt\" : 3}}]}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$gt\" : 2}}]}, { \"majorVersion\" : { \"$gt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.GREATERTHANEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{ \"majorVersion\" : 1, \"minorVersion\" : 2, \"$and\" : [{ \"patchVersion\" : { \"$gte\" : 3}}]}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$gt\" : 2}}]}, { \"majorVersion\" : { \"$gt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.LESSTHAN);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{ \"majorVersion\" : 1, \"minorVersion\" : 2, \"$and\" : [{ \"patchVersion\" : { \"$lt\" : 3}}]}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$lt\" : 2}}]}, { \"majorVersion\" : { \"$lt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.LESSTHANEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{ \"majorVersion\" : 1, \"minorVersion\" : 2, \"$and\" : [{ \"patchVersion\" : { \"$lte\" : 3}}]}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$lt\" : 2}}]}, { \"majorVersion\" : { \"$lt\" : 1}}]}, Fields: {}, Sort: {}");
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testGetComponentVersionFilter_minorVersion() {
+    NormalisedSbomComponentServiceImpl componentService = new NormalisedSbomComponentServiceImpl();
+    ComponentFilter filter =
+        new ComponentFilter().fieldName(FieldNameEnum.COMPONENTVERSION).value("1.2").operator(Operator.GREATERTHAN);
+    Criteria criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$gt\" : 2}}]}, { \"majorVersion\" : { \"$gt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.GREATERTHANEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$gt\" : 2}}]}, { \"majorVersion\" : { \"$gt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.LESSTHAN);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$lt\" : 2}}]}, { \"majorVersion\" : { \"$lt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.LESSTHANEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{}, { \"majorVersion\" : 1, \"$and\" : [{ \"minorVersion\" : { \"$lt\" : 2}}]}, { \"majorVersion\" : { \"$lt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.NOTEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo(
+            "Query: { \"$or\" : [{}, { \"minorVersion\" : { \"$ne\" : 2}}, { \"majorVersion\" : { \"$ne\" : 1}}]}, Fields: {}, Sort: {}");
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testGetComponentVersionFilter_majorVersion() {
+    NormalisedSbomComponentServiceImpl componentService = new NormalisedSbomComponentServiceImpl();
+    ComponentFilter filter =
+        new ComponentFilter().fieldName(FieldNameEnum.COMPONENTVERSION).value("1").operator(Operator.GREATERTHAN);
+    Criteria criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo("Query: { \"$or\" : [{}, {}, { \"majorVersion\" : { \"$gt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.GREATERTHANEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo("Query: { \"$or\" : [{}, {}, { \"majorVersion\" : { \"$gt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.LESSTHAN);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo("Query: { \"$or\" : [{}, {}, { \"majorVersion\" : { \"$lt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.LESSTHANEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo("Query: { \"$or\" : [{}, {}, { \"majorVersion\" : { \"$lt\" : 1}}]}, Fields: {}, Sort: {}");
+    filter.setOperator(Operator.NOTEQUALS);
+    criteria = componentService.getComponentVersionFilterCriteria(filter);
+    assertThat(new Query(criteria).toString())
+        .isEqualTo("Query: { \"$or\" : [{}, {}, { \"majorVersion\" : { \"$ne\" : 1}}]}, Fields: {}, Sort: {}");
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testGetComponentVersionFilter_UnsupportedFormat() {
+    NormalisedSbomComponentServiceImpl componentService = new NormalisedSbomComponentServiceImpl();
+    ComponentFilter filter =
+        new ComponentFilter().fieldName(FieldNameEnum.COMPONENTVERSION).value("a.b.c").operator(Operator.EQUALS);
+    assertThatThrownBy(() -> componentService.getComponentVersionFilterCriteria(filter))
+        .hasMessage("Unsupported Version Format");
   }
 }
