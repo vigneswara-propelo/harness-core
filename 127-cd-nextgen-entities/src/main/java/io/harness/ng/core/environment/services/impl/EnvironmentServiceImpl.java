@@ -49,6 +49,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ReferencedEntityException;
 import io.harness.exception.ScmException;
 import io.harness.exception.UnexpectedException;
+import io.harness.exception.WingsException;
 import io.harness.expression.EngineExpressionEvaluator;
 import io.harness.gitsync.beans.StoreType;
 import io.harness.gitx.GitXSettingsHelper;
@@ -93,7 +94,6 @@ import io.harness.utils.IdentifierRefHelper;
 import io.harness.utils.YamlPipelineUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -110,12 +110,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
@@ -145,7 +140,6 @@ public class EnvironmentServiceImpl implements EnvironmentService {
   private final OutboxService outboxService;
   private final RetryPolicy<Object> transactionRetryPolicy = DEFAULT_RETRY_POLICY;
   @Inject @Named(OUTBOX_TRANSACTION_TEMPLATE) private final TransactionTemplate transactionTemplate;
-  @Inject @Named("environment-gitx-executor") private ExecutorService executorService;
   private static final String DUP_KEY_EXP_FORMAT_STRING_FOR_PROJECT =
       "Environment [%s] under Project[%s], Organization [%s] in Account [%s] already exists";
   private static final String DUP_KEY_EXP_FORMAT_STRING_FOR_ORG =
@@ -949,15 +943,18 @@ public class EnvironmentServiceImpl implements EnvironmentService {
       responseDTO = getEnvironmentsInputYamlAndServiceOverridesMetadataInternal(accountIdentifier, orgIdentifier,
           projectIdentifier, envRefs, environmentRefBranchMap, serviceRefs, isServiceOverrideV2FFEnabled,
           loadFromCache);
-    } catch (CompletionException ex) {
-      // internal method always wraps the CompletionException, so we will have a cause
-      log.error(String.format("Error while getting environment inputs: %s", envRefs), ex);
-      Throwables.throwIfUnchecked(ex.getCause());
+    } catch (WingsException ex) {
+      log.error(
+          String.format("Error while getting environment inputs for envs: %s and services: %s", envRefs, serviceRefs),
+          ex);
+      throw ex;
     } catch (Exception ex) {
-      log.error(String.format("Unexpected error occurred while getting environment inputs: %s", envRefs), ex);
+      log.error(String.format("Unexpected error while getting environment inputs for envs: %s and services: %s",
+                    envRefs, serviceRefs),
+          ex);
       throw new InternalServerErrorException(
-          String.format(
-              "Unexpected error occurred while getting environment inputs: %s: [%s]", envRefs, ex.getMessage()),
+          String.format("Unexpected error occurred while getting environment inputs for envs: %s: [%s]", envRefs,
+              ex.getMessage()),
           ex);
     }
 
@@ -968,76 +965,34 @@ public class EnvironmentServiceImpl implements EnvironmentService {
   getEnvironmentsInputYamlAndServiceOverridesMetadataInternal(String accountIdentifier, String orgIdentifier,
       String projectIdentifier, List<String> envRefs, Map<String, String> environmentRefBranchMap,
       List<String> serviceRefs, boolean isServiceOverrideV2FFEnabled, boolean loadFromCache) {
-    // Using SynchronousQueue to avoid ConcurrentModification Issues.
-    Queue<EnvironmentInputSetYamlAndServiceOverridesMetadata> envInputYamlAndServiceOverridesQueue =
-        new ConcurrentLinkedQueue<>();
+    List<EnvironmentInputSetYamlAndServiceOverridesMetadata> envInputYamlAndServiceOverridesMetadata =
+        new ArrayList<>();
     List<Environment> environmentEntities =
         fetchesNonDeletedEnvironmentFromListOfRefs(accountIdentifier, orgIdentifier, projectIdentifier, envRefs);
 
-    // Sorting List so that git calls are made parallelly at the earliest.
-    List<Environment> sortedEnvironmentEntities = sortByStoreType(environmentEntities);
-    for (int i = 0; i < sortedEnvironmentEntities.size(); i += REMOTE_ENVIRONMENTS_BATCH_SIZE) {
-      List<Environment> batch = getBatch(sortedEnvironmentEntities, i);
-      List<CompletableFuture<Void>> batchFutures = new ArrayList<>();
+    for (Environment env : environmentEntities) {
+      if (StoreType.REMOTE.equals(env.getStoreType())) {
+        String envRef = IdentifierRefHelper.getRefFromIdentifierOrRef(
+            env.getAccountId(), env.getOrgIdentifier(), env.getProjectIdentifier(), env.getIdentifier());
+        String branchInfo = environmentRefBranchMap.get(envRef);
 
-      for (Environment env : batch) {
-        if (StoreType.REMOTE.equals(env.getStoreType())) {
-          String envRef = IdentifierRefHelper.getRefFromIdentifierOrRef(
-              env.getAccountId(), env.getOrgIdentifier(), env.getProjectIdentifier(), env.getIdentifier());
-          String branchInfo = environmentRefBranchMap.get(envRef);
+        try (GitXTransientBranchGuard ignore = new GitXTransientBranchGuard(branchInfo)) {
+          Environment environmentFromRemote =
+              environmentRepository.getRemoteEnvironmentWithYaml(env, loadFromCache, false);
 
-          CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            try (GitXTransientBranchGuard ignore = new GitXTransientBranchGuard(branchInfo)) {
-              Environment environmentFromRemote =
-                  environmentRepository.getRemoteEnvironmentWithYaml(env, loadFromCache, false);
-
-              envInputYamlAndServiceOverridesQueue.addAll(fetchEnvInputYamlAndServiceOverrides(accountIdentifier,
-                  orgIdentifier, projectIdentifier, serviceRefs, isServiceOverrideV2FFEnabled, environmentFromRemote));
-            }
-          }, executorService);
-
-          batchFutures.add(future);
-        } else {
-          envInputYamlAndServiceOverridesQueue.addAll(fetchEnvInputYamlAndServiceOverrides(
-              accountIdentifier, orgIdentifier, projectIdentifier, serviceRefs, isServiceOverrideV2FFEnabled, env));
+          envInputYamlAndServiceOverridesMetadata.addAll(fetchEnvInputYamlAndServiceOverrides(accountIdentifier,
+              orgIdentifier, projectIdentifier, serviceRefs, isServiceOverrideV2FFEnabled, environmentFromRemote));
         }
-      }
 
-      // Wait for the batch to complete
-      CompletableFuture<Void> allOf = CompletableFuture.allOf(batchFutures.toArray(new CompletableFuture[0]));
-      allOf.join();
+      } else {
+        envInputYamlAndServiceOverridesMetadata.addAll(fetchEnvInputYamlAndServiceOverrides(
+            accountIdentifier, orgIdentifier, projectIdentifier, serviceRefs, isServiceOverrideV2FFEnabled, env));
+      }
     }
 
     return EnvironmentInputSetYamlAndServiceOverridesMetadataDTO.builder()
-        .environmentsInputYamlAndServiceOverrides(fetchResponsesInListFromQueue(envInputYamlAndServiceOverridesQueue))
+        .environmentsInputYamlAndServiceOverrides(envInputYamlAndServiceOverridesMetadata)
         .build();
-  }
-
-  private List<Environment> sortByStoreType(List<Environment> environmentEntities) {
-    List<Environment> sortedEnvironmentEntities = new ArrayList<>();
-    for (Environment env : environmentEntities) {
-      if (StoreType.REMOTE.equals(env.getStoreType())) {
-        sortedEnvironmentEntities.add(env);
-      }
-    }
-
-    for (Environment env : environmentEntities) {
-      // StoreType can be null.
-      if (!StoreType.REMOTE.equals(env.getStoreType())) {
-        sortedEnvironmentEntities.add(env);
-      }
-    }
-    return sortedEnvironmentEntities;
-  }
-
-  private static List<EnvironmentInputSetYamlAndServiceOverridesMetadata> fetchResponsesInListFromQueue(
-      Queue<EnvironmentInputSetYamlAndServiceOverridesMetadata> envInputYamlAndServiceOverridesQueue) {
-    List<EnvironmentInputSetYamlAndServiceOverridesMetadata> envInputYamlAndServiceOverridesList = new ArrayList<>();
-    while (!envInputYamlAndServiceOverridesQueue.isEmpty()) {
-      EnvironmentInputSetYamlAndServiceOverridesMetadata element = envInputYamlAndServiceOverridesQueue.poll();
-      envInputYamlAndServiceOverridesList.add(element);
-    }
-    return envInputYamlAndServiceOverridesList;
   }
 
   private List<EnvironmentInputSetYamlAndServiceOverridesMetadata> fetchEnvInputYamlAndServiceOverrides(
