@@ -13,14 +13,14 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.executables.CdAsyncChainExecutable;
-import io.harness.cdng.k8s.K8sCanaryStep;
+import io.harness.cdng.k8s.K8sDryRunManifestStep;
 import io.harness.executions.steps.ExecutionNodeType;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
 @OwnedBy(HarnessTeam.CDP)
-public class K8sDryRunManifestStepV2 extends CdAsyncChainExecutable<K8sCanaryStep> {
+public class K8sDryRunManifestStepV2 extends CdAsyncChainExecutable<K8sDryRunManifestStep> {
   public static final StepType STEP_TYPE = StepType.newBuilder()
                                                .setType(ExecutionNodeType.K8S_DRY_RUN_MANIFEST_V2.getName())
                                                .setStepCategory(StepCategory.STEP)
