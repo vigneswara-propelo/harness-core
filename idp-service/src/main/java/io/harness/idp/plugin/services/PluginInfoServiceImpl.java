@@ -139,7 +139,7 @@ public class PluginInfoServiceImpl implements PluginInfoService {
   @Override
   public RequestPlugin savePluginRequest(String harnessAccount, RequestPlugin pluginRequest) {
     PluginRequestEntity pluginRequestEntity = PluginRequestMapper.fromDTO(harnessAccount, pluginRequest);
-    pluginRequestRepository.save(pluginRequestEntity);
+    pluginRequestEntity = pluginRequestRepository.save(pluginRequestEntity);
     sendSlackNotificationForPluginRequest(harnessAccount, pluginRequestEntity);
     return PluginRequestMapper.toDTO(pluginRequestEntity);
   }

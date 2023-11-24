@@ -18,6 +18,10 @@
 				{
 					"type": "mrkdwn",
 					"text": "*Account Name:*\n${accountName}"
+				},
+				{
+					"type": "mrkdwn",
+					"text": "*Requester Email:*\n${requesterEmail}"
 				}
 			]
 		},

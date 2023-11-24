@@ -84,6 +84,7 @@ public class PluginRequestEntity
 
     pluginRequestEntityMap.put(PluginRequestKeys.accountIdentifier, accountIdentifier);
     pluginRequestEntityMap.put(PluginRequestKeys.name, name);
+    pluginRequestEntityMap.put("requesterEmail", createdBy.getEmail());
     pluginRequestEntityMap.put(PluginRequestKeys.creator, creator);
     pluginRequestEntityMap.put(PluginRequestKeys.packageLink, packageLink);
     pluginRequestEntityMap.put(PluginRequestKeys.docLink, docLink);

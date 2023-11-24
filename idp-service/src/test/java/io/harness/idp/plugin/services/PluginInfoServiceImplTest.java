@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.EmbeddedUser;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.idp.common.FileUtils;
@@ -161,7 +162,8 @@ public class PluginInfoServiceImplTest {
   @Owner(developers = SATHISH)
   @Category(UnitTests.class)
   public void testSavePluginRequest() {
-    PluginRequestEntity pluginRequestEntity = PluginRequestEntity.builder().build();
+    PluginRequestEntity pluginRequestEntity =
+        PluginRequestEntity.builder().createdBy(EmbeddedUser.builder().build()).build();
     when(pluginRequestRepository.save(any(PluginRequestEntity.class))).thenReturn(pluginRequestEntity);
     when(notificationConfigs.get(PLUGIN_REQUEST_NOTIFICATION_SLACK_WEBHOOK)).thenReturn("");
     doNothing().when(idpCommonService).sendSlackNotification(any());
