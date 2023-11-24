@@ -227,4 +227,9 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     }
     return createAccount(account, adminUserEmail);
   }
+
+  @Override
+  public List<Account> getAccountsUpdatedSinceTimestamp(long timestamp) {
+    return accountService.getAccountsUpdatedSinceTimestamp(timestamp);
+  }
 }

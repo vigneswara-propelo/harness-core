@@ -22,6 +22,7 @@ import io.harness.datahandler.models.AccountSummary;
 import io.harness.datahandler.models.FeatureFlagBO;
 import io.harness.datahandler.services.AdminAccountService;
 import io.harness.datahandler.services.AdminUserService;
+import io.harness.datahandler.utils.AccountSummaryHelper;
 import io.harness.licensing.beans.modules.AccountLicenseDTO;
 import io.harness.licensing.beans.modules.ModuleLicenseDTO;
 import io.harness.licensing.remote.admin.AdminLicenseHttpClient;
@@ -77,16 +78,18 @@ public class AdminAccountResource {
   private AccessControlAdminClient accessControlAdminClient;
   private DelegateService delegateService;
   private AdminLicenseHttpClient adminLicenseHttpClient;
+  private AccountSummaryHelper accountSummaryHelper;
 
   @Inject
   public AdminAccountResource(AdminAccountService adminAccountService, AdminUserService adminUserService,
       AccessControlAdminClient accessControlAdminClient, DelegateService delegateService,
-      AdminLicenseHttpClient adminLicenseHttpClient) {
+      AdminLicenseHttpClient adminLicenseHttpClient, AccountSummaryHelper accountSummaryHelper) {
     this.adminAccountService = adminAccountService;
     this.adminUserService = adminUserService;
     this.accessControlAdminClient = accessControlAdminClient;
     this.delegateService = delegateService;
     this.adminLicenseHttpClient = adminLicenseHttpClient;
+    this.accountSummaryHelper = accountSummaryHelper;
   }
 
   @Inject CEDataCleanupRequestDao ceDataCleanupRequestDao;
@@ -193,6 +196,13 @@ public class AdminAccountResource {
   @Path("{accountId}/limits")
   public RestResponse<List<ConfiguredLimit>> getLimitsForAccount(@PathParam("accountId") @NotEmpty String accountId) {
     return new RestResponse<>(adminAccountService.getLimitsConfiguredForAccount(accountId));
+  }
+
+  @GET
+  @Path("recently-updated-accounts")
+  public RestResponse<List<AccountSummary>> getRecentlyUpdatedAccounts(@QueryParam("timestamp") long timestamp) {
+    List<Account> updatedAccounts = adminAccountService.getAccountsUpdatedSinceTimestamp(timestamp);
+    return new RestResponse<>(accountSummaryHelper.getAccountSummariesFromAccounts(updatedAccounts));
   }
 
   @PUT
