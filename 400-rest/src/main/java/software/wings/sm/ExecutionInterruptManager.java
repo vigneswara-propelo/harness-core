@@ -57,6 +57,7 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.beans.alert.AlertType.ApprovalNeeded;
 import static software.wings.beans.alert.AlertType.ManualInterventionNeeded;
+import static software.wings.sm.StepType.APPROVAL;
 
 import static java.util.Arrays.asList;
 
@@ -89,6 +90,7 @@ import software.wings.service.intfc.AppService;
 import software.wings.service.intfc.StateExecutionService;
 import software.wings.sm.ExecutionInterrupt.ExecutionInterruptKeys;
 import software.wings.sm.StateExecutionInstance.StateExecutionInstanceKeys;
+import software.wings.sm.states.ApprovalState;
 import software.wings.sm.states.WorkflowState;
 
 import com.google.common.collect.ImmutableMap;
@@ -98,6 +100,7 @@ import com.mongodb.ReadPreference;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Sort;
 import dev.morphia.query.UpdateOperations;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -369,10 +372,19 @@ public class ExecutionInterruptManager {
       StateMachine sm = stateExecutionService.obtainStateMachine(stateExecutionInstance);
       ExecutionContextImpl context = new ExecutionContextImpl(stateExecutionInstance, sm, injector);
       injector.injectMembers(context);
+      List<String> userGroupIds = new ArrayList<>();
 
-      WorkflowState workflowState = getWorkflowState(stateExecutionInstance, context);
-      stateMachineExecutor.sendPipelineNotification(
-          context, workflowState.getUserGroupIds(), stateExecutionInstance, status);
+      if (APPROVAL.getName().equals(stateExecutionInstance.getStateType())) {
+        ApprovalState approvalState =
+            (ApprovalState) stateMachineExecutor.getStateForExecution(context, stateExecutionInstance);
+        userGroupIds.addAll(approvalState.getUserGroups());
+      } else {
+        WorkflowState workflowState = getWorkflowState(stateExecutionInstance, context);
+        if (workflowState != null) {
+          userGroupIds.addAll(workflowState.getUserGroupIds());
+        }
+      }
+      stateMachineExecutor.sendPipelineNotification(context, userGroupIds, stateExecutionInstance, status);
 
     } catch (WingsException exception) {
       ExceptionLogger.logProcessedMessages(exception, MANAGER, log);
@@ -382,7 +394,11 @@ public class ExecutionInterruptManager {
   }
 
   WorkflowState getWorkflowState(StateExecutionInstance stateExecutionInstance, ExecutionContextImpl context) {
-    return (WorkflowState) stateMachineExecutor.getStateForExecution(context, stateExecutionInstance);
+    State state = stateMachineExecutor.getStateForExecution(context, stateExecutionInstance);
+    if (state instanceof WorkflowState) {
+      return (WorkflowState) state;
+    }
+    return null;
   }
 
   private StateExecutionInstance getStateExecutionInstance(
