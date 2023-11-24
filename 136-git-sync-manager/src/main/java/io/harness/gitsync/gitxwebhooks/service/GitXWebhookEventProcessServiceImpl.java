@@ -40,7 +40,9 @@ import io.harness.security.dto.ServicePrincipal;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -131,29 +133,44 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
 
   private ProcessingFilePathResponseDTO getFilesToProcess(
       List<GitXWebhook> gitXWebhookList, GitXWebhookEvent gitXWebhookEvent) {
-    ProcessingFilePathResponseDTO processingFilePathResponseDTO = null;
+    Set<String> modifiedFilePaths = new HashSet<>();
+    Set<String> processingFilePaths = new HashSet<>();
+    ScmConnector scmConnector = null;
+    GitXWebhook gitXWebhookFinal = null;
     for (GitXWebhook gitXWebhook : gitXWebhookList) {
-      try {
-        ScmConnector scmConnector = getScmConnector(gitXWebhook);
-        List<String> modifiedFilePaths =
-            parsePayloadAndGetModifiedFilePaths(gitXWebhook, gitXWebhookEvent, scmConnector);
-        log.info(String.format("Successfully fetched the file paths with GitXWebhook %s", gitXWebhook.getIdentifier()));
-        List<String> processingFilePaths = getMatchingFilePaths(modifiedFilePaths, gitXWebhook);
-        return ProcessingFilePathResponseDTO.builder()
-            .modifiedFilePaths(modifiedFilePaths)
-            .processingFilePaths(processingFilePaths)
-            .scmConnector(scmConnector)
-            .gitXWebhook(gitXWebhook)
-            .build();
-      } catch (Exception exception) {
-        log.error(
-            String.format(
-                "Failed to fetch the modifiedFilePaths data from gitXWebhook identifier %s, will be trying with the next connector",
-                gitXWebhook.getIdentifier()),
-            exception);
+      if (gitXWebhook.getIsEnabled()) {
+        try {
+          if (isEmpty(modifiedFilePaths)) {
+            scmConnector = getScmConnector(gitXWebhook);
+            modifiedFilePaths.addAll(parsePayloadAndGetModifiedFilePaths(gitXWebhook, gitXWebhookEvent, scmConnector));
+            gitXWebhookFinal = gitXWebhook;
+            if (isEmpty(gitXWebhook.getFolderPaths())) {
+              return ProcessingFilePathResponseDTO.builder()
+                  .modifiedFilePaths(new ArrayList<>(modifiedFilePaths))
+                  .processingFilePaths(new ArrayList<>(modifiedFilePaths))
+                  .scmConnector(scmConnector)
+                  .gitXWebhook(gitXWebhookFinal)
+                  .build();
+            }
+          }
+          log.info(
+              String.format("Successfully fetched the file paths with GitXWebhook %s", gitXWebhook.getIdentifier()));
+          processingFilePaths.addAll(getMatchingFilePaths(new ArrayList<>(modifiedFilePaths), gitXWebhook));
+        } catch (Exception exception) {
+          log.error(
+              String.format(
+                  "Failed to fetch the modifiedFilePaths data from gitXWebhook identifier %s, will be trying with the next connector",
+                  gitXWebhook.getIdentifier()),
+              exception);
+        }
       }
     }
-    return processingFilePathResponseDTO;
+    return ProcessingFilePathResponseDTO.builder()
+        .modifiedFilePaths(new ArrayList<>(modifiedFilePaths))
+        .processingFilePaths(new ArrayList<>(processingFilePaths))
+        .scmConnector(scmConnector)
+        .gitXWebhook(gitXWebhookFinal)
+        .build();
   }
 
   private List<String> parsePayloadAndGetModifiedFilePaths(
