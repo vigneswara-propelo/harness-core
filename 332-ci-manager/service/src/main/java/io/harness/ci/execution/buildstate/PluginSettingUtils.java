@@ -74,6 +74,7 @@ import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.docker.DockerConnectorDTO;
 import io.harness.iacm.execution.IACMStepsUtils;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
 import io.harness.idp.utils.IDPStepUtils;
 import io.harness.ng.core.NGAccess;
 import io.harness.plugin.service.PluginServiceImpl;
@@ -220,7 +221,14 @@ public class PluginSettingUtils extends PluginServiceImpl {
         return provenancePluginHelper.getProvenanceStepEnvVariables(
             (ProvenanceStepInfo) stepInfo, identifier, ambiance);
       case IDP_COOKIECUTTER:
-        return idpStepUtils.getIDPCookieCuterStepInfoEnvVariables((IdpCookieCutterStepInfo) stepInfo, identifier);
+        return idpStepUtils.getIDPCookieCutterStepInfoEnvVariables((IdpCookieCutterStepInfo) stepInfo, identifier);
+      case IDP_CREATE_REPO:
+        final String idpConnectorRef = stepInfo.getConnectorRef().getValue();
+        final NGAccess idpNgAccess = AmbianceUtils.getNgAccess(ambiance);
+        final ConnectorDetails idpGitConnector = codebaseUtils.getGitConnector(
+            idpNgAccess, idpConnectorRef, ambiance, ((IdpCreateRepoStepInfo) stepInfo).getRepoName().getValue());
+        return idpStepUtils.getIDPCreateRepoStepInfoEnvVariables(
+            (IdpCreateRepoStepInfo) stepInfo, idpGitConnector, identifier);
       default:
         throw new IllegalStateException(
             "Unexpected value in getPluginCompatibleEnvVariables: " + stepInfo.getNonYamlInfo().getStepInfoType());
@@ -306,6 +314,7 @@ public class PluginSettingUtils extends PluginServiceImpl {
         map.put(EnvVariableEnum.ARTIFACTORY_PASSWORD, PLUGIN_PASSW);
         return map;
       case GIT_CLONE:
+      case IDP_CREATE_REPO:
         return map;
       case IACM_TERRAFORM_PLUGIN:
         map.put(EnvVariableEnum.AWS_ACCESS_KEY, PLUGIN_ACCESS_KEY);

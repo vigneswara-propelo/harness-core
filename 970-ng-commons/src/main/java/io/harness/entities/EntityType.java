@@ -687,7 +687,10 @@ public enum EntityType {
   CHAOS_HUB(ModuleType.CHAOS, EntityTypeConstants.CHAOS_HUB, IdentifierRef.class, EntityYamlRootNames.CHAOS_HUB),
   @JsonProperty(EntityTypeConstants.IDP_COOKIECUTTER)
   IDP_COOKIECUTTER(
-      ModuleType.IDP, EntityTypeConstants.IDP_COOKIECUTTER, IdentifierRef.class, EntityYamlRootNames.IDP_COOKIECUTTER);
+      ModuleType.IDP, EntityTypeConstants.IDP_COOKIECUTTER, IdentifierRef.class, EntityYamlRootNames.IDP_COOKIECUTTER),
+  @JsonProperty(EntityTypeConstants.IDP_CREATE_REPO)
+  IDP_CREATE_REPO(
+      ModuleType.IDP, EntityTypeConstants.IDP_CREATE_REPO, IdentifierRef.class, EntityYamlRootNames.IDP_CREATE_REPO);
 
   private final ModuleType moduleType;
   String yamlName;

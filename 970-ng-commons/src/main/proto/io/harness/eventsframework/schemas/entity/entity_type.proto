@@ -255,4 +255,5 @@ enum EntityTypeProtoEnum {
   IDP_STAGE = 242;
   CHAOS_HUB = 243;
   IDP_COOKIECUTTER = 244;
+  IDP_CREATE_REPO = 245;
 }

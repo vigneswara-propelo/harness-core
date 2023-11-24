@@ -7,7 +7,6 @@
 package io.harness.idp.steps.beans.stepinfo;
 
 import static io.harness.beans.SwaggerConstants.STRING_CLASSPATH;
-import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
@@ -15,23 +14,25 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
 import io.harness.beans.steps.CIStepInfoType;
 import io.harness.beans.steps.TypeInfo;
+import io.harness.filters.WithConnectorRef;
 import io.harness.idp.steps.Constants;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlNode;
-import io.harness.yaml.YamlSchemaTypes;
 import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,13 +42,13 @@ import org.springframework.data.annotation.TypeAlias;
 
 @Data
 @NoArgsConstructor
-@JsonTypeName(Constants.IDP_COOKIECUTTER)
-@TypeAlias("IdpCookieCutterStepInfo")
+@JsonTypeName(Constants.IDP_CREATE_REPO)
+@TypeAlias("IdpCreateRepoStepInfo")
 @OwnedBy(HarnessTeam.IDP)
 @Builder
 @AllArgsConstructor
-@RecasterAlias("io.harness.idp.pipeline.steps.beans.stepinfo.IdpCookieCutterStepInfo")
-public class IdpCookieCutterStepInfo implements PluginCompatibleStep {
+@RecasterAlias("io.harness.idp.pipeline.steps.beans.stepinfo.IdpCreateRepoStepInfo")
+public class IdpCreateRepoStepInfo implements PluginCompatibleStep, WithConnectorRef {
   @VariableExpression(skipVariableExpression = true) public static final int DEFAULT_RETRY = 1;
 
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
@@ -60,25 +61,27 @@ public class IdpCookieCutterStepInfo implements PluginCompatibleStep {
 
   @VariableExpression(skipVariableExpression = true) @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
 
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> isPublicTemplate;
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> publicTemplateUrl;
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> pathForTemplate;
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> outputDirectory;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> orgName;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> repoName;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> description;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> isPrivateRepo;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> defaultBranch;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> workspace; // needed in case of bitbucket
+  @ApiModelProperty(dataType = STRING_CLASSPATH)
+  ParameterField<String> project; // needed in case of gitlab and bitbucket
+
+  @NotNull @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> connectorRef;
 
   ContainerResource resources;
 
-  @VariableExpression(skipVariableExpression = true)
-  @YamlSchemaTypes(value = {string})
-  protected ParameterField<Map<String, JsonNode>> cookieCutterVariables;
-
   @Override
   public TypeInfo getNonYamlInfo() {
-    return TypeInfo.builder().stepInfoType(CIStepInfoType.IDP_COOKIECUTTER).build();
+    return TypeInfo.builder().stepInfoType(CIStepInfoType.IDP_CREATE_REPO).build();
   }
 
   @Override
   public StepType getStepType() {
-    return Constants.IDP_COOKIECUTTER_STEP_TYPE;
+    return Constants.IDP_CREATE_REPO_STEP_TYPE;
   }
 
   @Override
@@ -93,9 +96,10 @@ public class IdpCookieCutterStepInfo implements PluginCompatibleStep {
   }
 
   @Override
-  @ApiModelProperty(hidden = true)
-  public ParameterField<String> getConnectorRef() {
-    return null;
+  public Map<String, ParameterField<String>> extractConnectorRefs() {
+    Map<String, ParameterField<String>> connectorRefMap = new HashMap<>();
+    connectorRefMap.put(YAMLFieldNameConstants.CONNECTOR_REF, connectorRef);
+    return connectorRefMap;
   }
 
   @Override

@@ -11,7 +11,11 @@ import io.harness.pms.contracts.steps.StepType;
 
 public interface Constants {
   String IDP_COOKIECUTTER = "IdpCookieCutter";
+  String IDP_CREATE_REPO = "IdpCreateRepo";
   String IDP_COOKIECUTTER_STEP_NODE = "IdpCookieCutterStepNode";
+  String IDP_CREATE_REPO_STEP_NODE = "IdpCreateRepoStepNode";
   StepType IDP_COOKIECUTTER_STEP_TYPE =
       StepType.newBuilder().setType(IDP_COOKIECUTTER).setStepCategory(StepCategory.STEP).build();
+  StepType IDP_CREATE_REPO_STEP_TYPE =
+      StepType.newBuilder().setType(IDP_CREATE_REPO).setStepCategory(StepCategory.STEP).build();
 }

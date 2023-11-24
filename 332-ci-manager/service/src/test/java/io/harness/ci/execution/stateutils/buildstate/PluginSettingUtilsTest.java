@@ -69,6 +69,7 @@ import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.exception.ngexception.CIStageExecutionUserException;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
 import io.harness.idp.utils.IDPStepUtils;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.yaml.ParameterField;
@@ -134,7 +135,6 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
     on(pluginSettingUtils).set("ciCodebaseUtils", ciCodebaseUtils);
     on(pluginSettingUtils).set("sscaOrchestrationPluginUtils", sscaOrchestrationPluginUtils);
     on(codebaseUtils).set("connectorUtils", connectorUtils);
-    on(pluginSettingUtils).set("idpStepUtils", idpStepUtils);
   }
 
   @Test
@@ -1291,6 +1291,36 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
     Ambiance ambiance = Ambiance.newBuilder().build();
     Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
         idpCookieCutterStepInfo, "identifier", 100, ambiance, Type.K8, false, true);
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  @Owner(developers = DEVESH)
+  @Category(UnitTests.class)
+  public void testIdpCreateRepoStepEnvVariables() {
+    String testName = "test-name";
+
+    String isPrivateRepo = "true";
+    String repoName = "test-repo-name";
+    String orgName = "test-org-name";
+
+    IdpCreateRepoStepInfo idpCreateRepoStepInfo = IdpCreateRepoStepInfo.builder()
+                                                      .isPrivateRepo(ParameterField.createValueField(isPrivateRepo))
+                                                      .repoName(ParameterField.createValueField(repoName))
+                                                      .name(testName)
+                                                      .orgName(ParameterField.createValueField(orgName))
+                                                      .connectorRef(ParameterField.createValueField("myConnectorRef"))
+                                                      .build();
+
+    Map<String, String> expected = new HashMap<>();
+    expected.put("IDP_ORG_NAME", orgName);
+    expected.put("IS_PRIVATE_REPO", isPrivateRepo);
+    expected.put("IDP_REPO_NAME", repoName);
+
+    Ambiance ambiance = Ambiance.newBuilder().build();
+    Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
+        idpCreateRepoStepInfo, "identifier", 100, ambiance, Type.K8, false, true);
 
     assertThat(actual).isEqualTo(expected);
   }

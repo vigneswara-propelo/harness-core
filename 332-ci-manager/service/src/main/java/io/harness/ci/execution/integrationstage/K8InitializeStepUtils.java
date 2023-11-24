@@ -327,6 +327,7 @@ public class K8InitializeStepUtils {
       case PROVENANCE:
       case SLSA_VERIFICATION:
       case IDP_COOKIECUTTER:
+      case IDP_CREATE_REPO:
         return createPluginCompatibleStepContainerDefinition((PluginCompatibleStep) ciStepInfo, stageNode,
             ciExecutionArgs, portFinder, stepIndex, stepElement.getIdentifier(), stepElement.getName(),
             stepElement.getType(), timeout, accountId, os, ambiance, extraMemoryPerStep, extraCPUPerStep);
@@ -1114,6 +1115,7 @@ public class K8InitializeStepUtils {
       case PROVENANCE:
       case SLSA_VERIFICATION:
       case IDP_COOKIECUTTER:
+      case IDP_CREATE_REPO:
         return ((PluginCompatibleStep) ciStepInfo).getResources();
       default:
         throw new CIStageExecutionException(
