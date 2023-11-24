@@ -251,7 +251,7 @@ public class K8sApplyStepTest extends AbstractK8sStepExecutorTestBase {
         StepElementParameters.builder().spec(stepParameters).timeout(ParameterField.ofNull()).build();
     k8sApplyStep.startChainLink(ambiance, stepElementParameters, StepInputPackage.builder().build());
     verify(k8sStepHelper, times(1)).resolveManifestsConfigExpressions(eq(ambiance), eq(stepParameters.overrides));
-
+    verify(k8sStepHelper, times(1)).resolveManifestsSourceExpressions(eq(ambiance), eq(stepParameters.manifestSource));
     verify(k8sStepHelper, times(1)).startChainLink(eq(k8sApplyStep), eq(ambiance), eq(stepElementParameters));
     gitStoreStepLevelSource.setPaths(ParameterField.createValueField(asList("path/to/k8s/manifest/templates")));
     storeConfigWrapper = StoreConfigWrapper.builder().spec(gitStoreStepLevelSource).build();

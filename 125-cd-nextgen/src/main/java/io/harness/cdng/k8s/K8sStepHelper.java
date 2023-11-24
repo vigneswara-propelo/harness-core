@@ -54,6 +54,7 @@ import io.harness.cdng.manifest.yaml.KustomizePatchesManifestOutcome;
 import io.harness.cdng.manifest.yaml.ManifestConfig;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
+import io.harness.cdng.manifest.yaml.ManifestSourceWrapper;
 import io.harness.cdng.manifest.yaml.OpenshiftManifestOutcome;
 import io.harness.cdng.manifest.yaml.OpenshiftManifestOutcome.OpenshiftManifestOutcomeKeys;
 import io.harness.cdng.manifest.yaml.OpenshiftParamManifestOutcome;
@@ -460,6 +461,10 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
     List<ManifestConfig> configs =
         manifestConfigWrappers.stream().map(ManifestConfigWrapper::getManifest).collect(Collectors.toList());
     cdExpressionResolver.updateExpressions(ambiance, configs);
+  }
+
+  public void resolveManifestsSourceExpressions(Ambiance ambiance, ManifestSourceWrapper manifestSource) {
+    cdExpressionResolver.updateExpressions(ambiance, manifestSource);
   }
 
   public TaskChainResponse startChainLink(
