@@ -19,9 +19,13 @@ import io.harness.spec.server.ssca.v1.model.Attestation;
 import io.harness.spec.server.ssca.v1.model.EnforcementResultDTO;
 import io.harness.spec.server.ssca.v1.model.EnforcementSummaryDTO;
 import io.harness.spec.server.ssca.v1.model.NormalizedSbomComponentDTO;
+import io.harness.spec.server.ssca.v1.model.SbomDetailsForScorecard;
 import io.harness.spec.server.ssca.v1.model.SbomMetadata;
 import io.harness.spec.server.ssca.v1.model.SbomProcess;
 import io.harness.spec.server.ssca.v1.model.SbomProcessRequestBody;
+import io.harness.spec.server.ssca.v1.model.SbomScorecardRequestBody;
+import io.harness.spec.server.ssca.v1.model.Score;
+import io.harness.spec.server.ssca.v1.model.ScorecardInfo;
 import io.harness.ssca.beans.CyclonedxDTO;
 import io.harness.ssca.beans.CyclonedxDTO.CyclonedxDTOBuilder;
 import io.harness.ssca.beans.EnvType;
@@ -43,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -385,5 +390,47 @@ public class BuilderFactory {
         .version("version")
         .violationDetails("violationDetails")
         .violationType("violationType");
+  }
+
+  public SbomScorecardRequestBody getSbomScorecardRequestBody() {
+    return new SbomScorecardRequestBody()
+        .accountId(context.accountId)
+        .orgId(context.getOrgIdentifier())
+        .projectId(context.getProjectIdentifier())
+        .orchestrationId("orchestrationId")
+        .avgScore("8.0")
+        .creationOn(clock.instant().toString())
+        .sbomDetails(getSbomScorecardDetails())
+        .scoreCardInfo(new ScorecardInfo().toolName("sbomqs").toolVersion("v0.0.25"))
+        .scores(getScores());
+  }
+
+  private SbomDetailsForScorecard getSbomScorecardDetails() {
+    return new SbomDetailsForScorecard()
+        .toolName("trivy")
+        .toolVersion("0.46.0")
+        .sbomFileName("working_sbom.json")
+        .sbomFormat("cyclonedx")
+        .sbomVersion("1.5")
+        .fileFormat("json");
+  }
+
+  private List<Score> getScores() {
+    List<Score> scores = new ArrayList<>();
+    scores.add(new Score()
+                   .score("10")
+                   .maxScore("10")
+                   .category("Structural")
+                   .feature("sbom_spec")
+                   .description("provided sbom is in a supported sbom format of spdx,cyclonedx")
+                   .ignored("false"));
+    scores.add(new Score()
+                   .score("3.82")
+                   .maxScore("10")
+                   .category("NTIA-minimum-elements")
+                   .feature("comp_with_supplier")
+                   .description("160/418 have supplier names")
+                   .ignored("false"));
+    return scores;
   }
 }
