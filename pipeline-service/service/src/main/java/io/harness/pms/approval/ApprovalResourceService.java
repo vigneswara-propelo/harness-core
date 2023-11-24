@@ -8,6 +8,8 @@
 package io.harness.pms.approval;
 
 import io.harness.accesscontrol.AccountIdentifier;
+import io.harness.accesscontrol.OrgIdentifier;
+import io.harness.accesscontrol.ProjectIdentifier;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
@@ -29,6 +31,9 @@ public interface ApprovalResourceService {
   ApprovalInstanceResponseDTO get(@NotNull String approvalInstanceId, @AccountIdentifier String accountId);
   ApprovalInstanceResponseDTO addHarnessApprovalActivity(
       @NotNull String approvalInstanceId, @NotNull @Valid HarnessApprovalActivityRequestDTO request);
+  ApprovalInstanceResponseDTO addHarnessApprovalActivityByPlanExecutionId(@NotNull @AccountIdentifier String accountId,
+      @NotNull @OrgIdentifier String orgIdentifier, @NotNull @ProjectIdentifier String projectIdentifier,
+      @NotNull String planExecutionId, @NotNull @Valid HarnessApprovalActivityRequestDTO request);
   List<ApprovalInstanceResponseDTO> getApprovalInstancesByExecutionId(@NotEmpty String planExecutionId,
       @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId);
   HarnessApprovalInstanceAuthorizationDTO getHarnessApprovalInstanceAuthorization(

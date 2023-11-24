@@ -27,6 +27,7 @@ import io.harness.pms.plan.execution.service.PMSExecutionService;
 import io.harness.pms.rbac.PipelineRbacPermissions;
 import io.harness.spec.server.pipeline.v1.ApprovalsApi;
 import io.harness.spec.server.pipeline.v1.model.ApprovalInstanceResponseBody;
+import io.harness.spec.server.pipeline.v1.model.HarnessApprovalActivityRequestBody;
 import io.harness.steps.approval.step.beans.ApprovalInstanceResponseDTO;
 import io.harness.steps.approval.step.beans.ApprovalStatus;
 import io.harness.steps.approval.step.beans.ApprovalType;
@@ -35,6 +36,7 @@ import com.google.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -48,6 +50,34 @@ import lombok.extern.slf4j.Slf4j;
 public class ApprovalsApiImpl implements ApprovalsApi {
   private final ApprovalResourceService approvalResourceService;
   private final PMSExecutionService pmsExecutionService;
+
+  @Override
+  @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
+  public Response addHarnessApprovalActivityByPipelineExecutionId(@OrgIdentifier String org,
+      @ProjectIdentifier String project, String executionId, @Valid HarnessApprovalActivityRequestBody body,
+      @AccountIdentifier String harnessAccount) {
+    if (isNull(harnessAccount)) {
+      // harnessAccount is required to passed when using bearer token for rbac check
+      throw new InvalidRequestException("harnessAccount param value is required");
+    }
+    try {
+      pmsExecutionService.getPipelineExecutionSummaryEntity(harnessAccount, org, project, executionId, false);
+    } catch (EntityNotFoundException ex) {
+      log.warn("Invalid execution id provided", ex);
+      throw new InvalidRequestException(String.format(
+          "execution_id param value provided doesn't belong to Account: %s, Org: %s, Project: %s or the pipeline has been deleted",
+          harnessAccount, org, project));
+    } catch (Exception ex) {
+      log.warn("An error occurred validating execution_id param", ex);
+      throw new InvalidRequestException("An unexpected error occurred while validating execution_id param");
+    }
+
+    ApprovalInstanceResponseDTO approvalInstanceResponseDTO =
+        approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
+            harnessAccount, org, project, executionId, ApprovalsAPIUtils.toHarnessApprovalActivityRequestDTO(body));
+
+    return Response.ok().entity(ApprovalsAPIUtils.toApprovalInstanceResponseBody(approvalInstanceResponseDTO)).build();
+  }
 
   @Override
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)

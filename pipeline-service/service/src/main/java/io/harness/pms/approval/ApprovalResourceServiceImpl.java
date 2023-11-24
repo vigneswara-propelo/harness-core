@@ -12,6 +12,10 @@ import static io.harness.security.dto.PrincipalType.USER;
 
 import static java.util.Objects.isNull;
 
+import io.harness.accesscontrol.AccountIdentifier;
+import io.harness.accesscontrol.NGAccessControlCheck;
+import io.harness.accesscontrol.OrgIdentifier;
+import io.harness.accesscontrol.ProjectIdentifier;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
@@ -31,6 +35,7 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.helpers.CurrentUserHelper;
+import io.harness.pms.rbac.PipelineRbacPermissions;
 import io.harness.remote.client.CGRestUtils;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.security.dto.Principal;
@@ -118,6 +123,27 @@ public class ApprovalResourceServiceImpl implements ApprovalResourceService {
     }
     approvalInstanceService.closeHarnessApprovalStep(instance);
     return approvalInstanceResponseMapper.toApprovalInstanceResponseDTO(instance);
+  }
+
+  @Override
+  @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
+  public ApprovalInstanceResponseDTO addHarnessApprovalActivityByPlanExecutionId(
+      @NotNull @AccountIdentifier String accountId, @NotNull @OrgIdentifier String orgIdentifier,
+      @NotNull @ProjectIdentifier String projectIdentifier, @NotNull String planExecutionId,
+      @NotNull @Valid HarnessApprovalActivityRequestDTO request) {
+    List<ApprovalInstanceResponseDTO> approvalInstances =
+        getApprovalInstancesByExecutionId(planExecutionId, ApprovalStatus.WAITING, ApprovalType.HARNESS_APPROVAL, null);
+    if (EmptyPredicate.isEmpty(approvalInstances)) {
+      throw new InvalidRequestException(
+          "Found no Harness Approval Instance waiting for the given pipeline execution id");
+    }
+
+    if (approvalInstances.size() > 1) {
+      throw new InvalidRequestException(
+          "Found more than 1 Harness Approval Instance waiting for the given pipeline execution id");
+    }
+
+    return addHarnessApprovalActivity(approvalInstances.get(0).getId(), request);
   }
 
   public void rejectPreviousExecutions(HarnessApprovalInstance instance) {

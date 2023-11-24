@@ -9,6 +9,7 @@ package io.harness.pms.approval.api;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.rule.OwnerRule.NAMANG;
+import static io.harness.rule.OwnerRule.RISHABH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -26,6 +27,9 @@ import io.harness.pms.approval.ApprovalResourceService;
 import io.harness.pms.plan.execution.service.PMSExecutionService;
 import io.harness.rule.Owner;
 import io.harness.spec.server.pipeline.v1.model.ApprovalInstanceResponseBody;
+import io.harness.spec.server.pipeline.v1.model.ApproverInputDTO;
+import io.harness.spec.server.pipeline.v1.model.HarnessApprovalActivityRequestBody;
+import io.harness.spec.server.pipeline.v1.model.HarnessApprovalActivityRequestBody.ActionEnum;
 import io.harness.steps.approval.step.beans.ApprovalInstanceResponseDTO;
 import io.harness.steps.approval.step.beans.ApprovalStatus;
 import io.harness.steps.approval.step.beans.ApprovalType;
@@ -115,6 +119,54 @@ public class ApprovalsApiImplTest extends PipelineServiceTestBase {
             ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER));
 
     verify(pmsExecutionService, times(2))
+        .getPipelineExecutionSummaryEntity(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, false);
+  }
+
+  @Test
+  @Owner(developers = RISHABH)
+  @Category(UnitTests.class)
+  public void testAddHarnessApprovalActivityByPipelineExecutionIdNegativeCases() {
+    HarnessApprovalActivityRequestBody harnessApprovalActivityRequestBody = new HarnessApprovalActivityRequestBody();
+    assertThatThrownBy(()
+                           -> approvalsApiImpl.addHarnessApprovalActivityByPipelineExecutionId(ORG_IDENTIFIER,
+                               PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, harnessApprovalActivityRequestBody, ACCOUNT_ID))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("action in request body should be one of [APPROVE, REJECT]");
+
+    harnessApprovalActivityRequestBody.setAction(ActionEnum.APPROVE);
+    assertThatCode(()
+                       -> approvalsApiImpl.addHarnessApprovalActivityByPipelineExecutionId(ORG_IDENTIFIER,
+                           PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, harnessApprovalActivityRequestBody, ACCOUNT_ID))
+        .doesNotThrowAnyException();
+
+    harnessApprovalActivityRequestBody.setApproverInputs(new ArrayList<>());
+    assertThatCode(()
+                       -> approvalsApiImpl.addHarnessApprovalActivityByPipelineExecutionId(ORG_IDENTIFIER,
+                           PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, harnessApprovalActivityRequestBody, ACCOUNT_ID))
+        .doesNotThrowAnyException();
+
+    ApproverInputDTO approverInputDTO = new ApproverInputDTO();
+    approverInputDTO.setName("example");
+    approverInputDTO.setValue("example");
+    harnessApprovalActivityRequestBody.getApproverInputs().add(approverInputDTO);
+    assertThatCode(()
+                       -> approvalsApiImpl.addHarnessApprovalActivityByPipelineExecutionId(ORG_IDENTIFIER,
+                           PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, harnessApprovalActivityRequestBody, ACCOUNT_ID))
+        .doesNotThrowAnyException();
+
+    when(pmsExecutionService.getPipelineExecutionSummaryEntity(
+             ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, false))
+        .thenThrow(new EntityNotFoundException("summary doesn't exist"));
+
+    assertThatThrownBy(()
+                           -> approvalsApiImpl.addHarnessApprovalActivityByPipelineExecutionId(
+                               ORG_IDENTIFIER, PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, null, ACCOUNT_ID))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(String.format(
+            "execution_id param value provided doesn't belong to Account: %s, Org: %s, Project: %s or the pipeline has been deleted",
+            ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER));
+
+    verify(pmsExecutionService, times(5))
         .getPipelineExecutionSummaryEntity(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, false);
   }
 
