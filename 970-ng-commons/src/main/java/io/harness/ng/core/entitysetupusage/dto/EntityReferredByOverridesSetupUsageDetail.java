@@ -23,7 +23,4 @@ import org.springframework.data.annotation.TypeAlias;
 public class EntityReferredByOverridesSetupUsageDetail implements SetupUsageDetail {
   @NonNull String identifier;
   @NonNull String overrideType;
-  @NonNull String accountId;
-  String orgId;
-  String projectId;
 }

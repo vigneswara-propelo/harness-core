@@ -199,9 +199,6 @@ public class SetupUsageHelper {
                       EntityDetailWithSetupUsageDetailProtoDTO.OverridesDetailsSetupUsageDetailProtoDTO.newBuilder()
                           .setIdentifier(ownerEntity.getIdentifier())
                           .setOverrideType(overrideType)
-                          .setAccountId(ownerEntity.getAccountId())
-                          .setOrgId(ownerEntity.getOrgIdentifier())
-                          .setProjectId(ownerEntity.getProjectIdentifier())
                           .build())
                   .build());
         }

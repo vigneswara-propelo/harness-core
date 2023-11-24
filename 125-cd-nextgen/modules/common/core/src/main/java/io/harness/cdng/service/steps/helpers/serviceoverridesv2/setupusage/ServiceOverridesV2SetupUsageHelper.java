@@ -39,8 +39,13 @@ public class ServiceOverridesV2SetupUsageHelper {
 
   public void createSetupUsages(@NonNull NGServiceOverridesEntity entity, Set<EntityDetailProtoDTO> referredEntities) {
     final SetupUsageOwnerEntity ownerEntity = getOwnerEntity(entity);
-    if (isNotEmpty(referredEntities)) {
-      setupUsageHelper.publishOverridesEntitySetupUsage(ownerEntity, referredEntities, entity.getType().name());
+    try {
+      if (isNotEmpty(referredEntities)) {
+        setupUsageHelper.publishOverridesEntitySetupUsage(ownerEntity, referredEntities, entity.getType().name());
+      }
+    } catch (Exception e) {
+      log.error(String.format(
+          "Failed to create entity setup usage for override with identifier : [%s]", entity.getIdentifier()));
     }
   }
 
@@ -48,11 +53,16 @@ public class ServiceOverridesV2SetupUsageHelper {
    * Update setup usages for the current override entity with referred entities
    */
   public void updateSetupUsages(NGServiceOverridesEntity entity, Set<EntityDetailProtoDTO> referredEntities) {
-    final SetupUsageOwnerEntity ownerEntity = getOwnerEntity(entity);
-    if (isEmpty(referredEntities)) {
-      setupUsageHelper.deleteEntitySetupUsages(ownerEntity);
-    } else {
-      setupUsageHelper.publishOverridesEntitySetupUsage(ownerEntity, referredEntities, entity.getType().name());
+    try {
+      final SetupUsageOwnerEntity ownerEntity = getOwnerEntity(entity);
+      if (isEmpty(referredEntities)) {
+        setupUsageHelper.deleteEntitySetupUsages(ownerEntity);
+      } else {
+        setupUsageHelper.publishOverridesEntitySetupUsage(ownerEntity, referredEntities, entity.getType().name());
+      }
+    } catch (Exception e) {
+      log.error(String.format(
+          "Failed to update entity setup usage for override with identifier : [%s]", entity.getIdentifier()));
     }
   }
 
@@ -60,7 +70,12 @@ public class ServiceOverridesV2SetupUsageHelper {
    * Delete all setup usages where the 'referred by' is the current override entity
    */
   public void deleteSetupUsages(NGServiceOverridesEntity entity) {
-    setupUsageHelper.deleteEntitySetupUsages(getOwnerEntity(entity));
+    try {
+      setupUsageHelper.deleteEntitySetupUsages(getOwnerEntity(entity));
+    } catch (Exception e) {
+      log.error(String.format(
+          "Failed to delete entity setup usage for override with identifier : [%s]", entity.getIdentifier()));
+    }
   }
 
   public Set<EntityDetailProtoDTO> getAllReferredEntities(NGServiceOverridesEntity entity) {

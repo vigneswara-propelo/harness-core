@@ -49,9 +49,6 @@ message EntityDetailWithSetupUsageDetailProtoDTO {
   message OverridesDetailsSetupUsageDetailProtoDTO {
     string identifier = 1;
     string overrideType = 2;
-    string accountId = 3;
-    string orgId = 4;
-    string projectId = 5;
   }
 
   enum PipelineDetailType {

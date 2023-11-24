@@ -46,9 +46,6 @@ public class SetupUsageDetailProtoToRestMapper {
       return EntityReferredByOverridesSetupUsageDetail.builder()
           .identifier(setupUsageDetailProtoDTO.getOverridesDetail().getIdentifier())
           .overrideType(setupUsageDetailProtoDTO.getOverridesDetail().getOverrideType())
-          .accountId(setupUsageDetailProtoDTO.getOverridesDetail().getAccountId())
-          .orgId(setupUsageDetailProtoDTO.getOverridesDetail().getOrgId())
-          .projectId(setupUsageDetailProtoDTO.getOverridesDetail().getProjectId())
           .build();
     }
 
