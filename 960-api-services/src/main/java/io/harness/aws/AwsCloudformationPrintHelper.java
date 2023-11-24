@@ -16,6 +16,7 @@ import io.harness.logging.LogCallback;
 import com.amazonaws.services.cloudformation.model.StackEvent;
 import com.amazonaws.services.cloudformation.model.StackResource;
 import com.google.inject.Singleton;
+import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,34 @@ public class AwsCloudformationPrintHelper {
             event.getPhysicalResourceId()));
         if (currentLatestTs == -1) {
           currentLatestTs = tsForEvent;
+        }
+      }
+    }
+    if (currentLatestTs != -1) {
+      stackEventsTs = currentLatestTs;
+    }
+    return stackEventsTs;
+  }
+
+  public long printStackEventsInReverseOrder(
+      List<StackEvent> stackEvents, long stackEventsTs, LogCallback executionLogCallback) {
+    boolean printed = false;
+    long currentLatestTs = -1;
+    Collections.reverse(stackEvents);
+    int lastStackIndex = stackEvents.size() - 1;
+    if (lastStackIndex >= 0 && stackEvents.get(lastStackIndex).getTimestamp().getTime() > stackEventsTs) {
+      currentLatestTs = stackEvents.get(lastStackIndex).getTimestamp().getTime();
+      for (StackEvent event : stackEvents) {
+        long tsForEvent = event.getTimestamp().getTime();
+        if (tsForEvent > stackEventsTs) {
+          if (!printed) {
+            executionLogCallback.saveExecutionLog("******************** Cloud Formation Events ********************");
+            executionLogCallback.saveExecutionLog("********[Status] [Type] [Logical Id] [Status Reason] ***********");
+            printed = true;
+          }
+          executionLogCallback.saveExecutionLog(format("[%s] [%s] [%s] [%s] [%s]", event.getResourceStatus(),
+              event.getResourceType(), event.getLogicalResourceId(), getStatusReason(event.getResourceStatusReason()),
+              event.getPhysicalResourceId()));
         }
       }
     }
