@@ -49,7 +49,6 @@ import io.harness.cvng.core.beans.monitoredService.MonitoredServiceListItemDTO;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceListItemDTO.MonitoredServiceListItemDTOBuilder;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServicePlatformResponse;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceReference;
-import io.harness.cvng.core.beans.monitoredService.MonitoredServiceReference.MonitoredServiceReferenceBuilder;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources;
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceWithHealthSources.HealthSourceSummary;
@@ -354,17 +353,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   public boolean isReconciliationRequiredForMonitoredServices(ProjectParams templateProjectParams,
       String templateIdentifier, String versionLabel, String monitoredServiceIdentifier, int templateVersionNumber) {
     Query<MonitoredService> query =
-        hPersistence.createQuery(MonitoredService.class)
-            .filter(MonitoredServiceKeys.accountId, templateProjectParams.getAccountIdentifier())
-            .filter(MonitoredServiceKeys.templateMetadata + ".templateIdentifier", templateIdentifier)
-            .filter(MonitoredServiceKeys.templateMetadata + ".versionLabel", versionLabel)
-            .filter(MonitoredServiceKeys.templateMetadata + ".isTemplateByReference", true);
-    if (templateProjectParams.getOrgIdentifier() != null) {
-      query = query.filter(MonitoredServiceKeys.orgIdentifier, templateProjectParams.getOrgIdentifier());
-    }
-    if (templateProjectParams.getProjectIdentifier() != null) {
-      query = query.filter(MonitoredServiceKeys.projectIdentifier, templateProjectParams.getProjectIdentifier());
-    }
+        createQueryForTemplateReferencedMSs(templateProjectParams, templateIdentifier, versionLabel);
     if (monitoredServiceIdentifier != null) {
       query = query.filter(MonitoredServiceKeys.identifier, monitoredServiceIdentifier);
     }
@@ -376,7 +365,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     }
 
     // get already reconciled monitored services count
-    query = query.filter(MonitoredServiceKeys.templateMetadata + ".templateVersionNumber", templateVersionNumber);
+    query = query.filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.templateVersionNumber,
+        templateVersionNumber);
     long alreadyReconciledMonitoredServices = query.count();
 
     return allTemplateReferencedMonitoredServices != alreadyReconciledMonitoredServices;
@@ -2393,42 +2383,64 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
   @Override
   public PageResponse<MonitoredServiceReference> getMonitoredServiceReconciliationStatuses(
-      ProjectParams projectParams, String templateIdentifier, String templateVersionLabel, PageParams pageParams) {
+      ProjectParams templateProjectParams, String templateIdentifier, String templateVersionLabel,
+      PageParams pageParams) {
     List<MonitoredService> monitoredServiceList =
-        hPersistence.createQuery(MonitoredService.class)
-            .disableValidation()
-            .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
-            .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
-            .filter(MonitoredServiceKeys.projectIdentifier, projectParams.getProjectIdentifier())
-            .filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.isTemplateByReference, true)
-            .filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.templateIdentifier,
-                templateIdentifier)
-            .filter(
-                MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.versionLabel, templateVersionLabel)
+        createQueryForTemplateReferencedMSs(templateProjectParams, templateIdentifier, templateVersionLabel)
+            .order(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.lastReconciliationTime)
             .asList();
+    PageResponse<MonitoredService> monitoredServicePageResponse =
+        PageUtils.offsetAndLimit(monitoredServiceList, pageParams.getPage(), pageParams.getSize());
 
-    String templateInputs = templateFacade.getTemplateInputs(projectParams, templateIdentifier, templateVersionLabel);
-
+    String templateInputs =
+        templateFacade.getTemplateInputs(templateProjectParams, templateIdentifier, templateVersionLabel);
     Long versionNumber =
-        templateFacade.getTemplateVersionNumber(projectParams, templateIdentifier, templateVersionLabel);
+        templateFacade.getTemplateVersionNumber(templateProjectParams, templateIdentifier, templateVersionLabel);
 
     List<MonitoredServiceReference> monitoredServiceReferences =
-        monitoredServiceList.stream()
-            .map(monitoredService -> {
-              MonitoredServiceReferenceBuilder monitoredServiceReferenceBuilder =
-                  MonitoredServiceReference.builder()
-                      .accountIdentifier(monitoredService.getAccountId())
-                      .projectIdentifier(monitoredService.getProjectIdentifier())
-                      .serviceIdentifier(monitoredService.getServiceIdentifier())
-                      .orgIdentifier(monitoredService.getOrgIdentifier())
-                      .environmentIdentifier(monitoredService.getEnvironmentIdentifier())
-                      .lastReconciledTimestamp(monitoredService.getTemplateMetadata().getLastReconciliationTime());
-              monitoredServiceReferenceBuilder.reconciliationStatus(
-                  ReconciliationStatus.determineStatus(monitoredService, versionNumber, templateInputs));
-              return monitoredServiceReferenceBuilder.build();
-            })
+        monitoredServicePageResponse.getContent()
+            .stream()
+            .map(monitoredService
+                -> MonitoredServiceReference.builder()
+                       .accountIdentifier(monitoredService.getAccountId())
+                       .orgIdentifier(monitoredService.getOrgIdentifier())
+                       .projectIdentifier(monitoredService.getProjectIdentifier())
+                       .identifier(monitoredService.getIdentifier())
+                       .serviceIdentifier(monitoredService.getServiceIdentifier())
+                       .environmentIdentifiers(monitoredService.getEnvironmentIdentifierList())
+                       .lastReconciledTimestamp(monitoredService.getTemplateMetadata().getLastReconciliationTime())
+                       .reconciliationStatus(
+                           ReconciliationStatus.determineStatus(monitoredService, versionNumber, templateInputs))
+                       .build())
             .collect(Collectors.toList());
-    return PageUtils.offsetAndLimit(monitoredServiceReferences, pageParams.getPage(), pageParams.getSize());
+
+    return PageResponse.<MonitoredServiceReference>builder()
+        .pageSize(pageParams.getSize())
+        .pageIndex(pageParams.getPage())
+        .totalPages(monitoredServicePageResponse.getTotalPages())
+        .totalItems(monitoredServicePageResponse.getTotalItems())
+        .pageItemCount(monitoredServicePageResponse.getPageItemCount())
+        .content(monitoredServiceReferences)
+        .build();
+  }
+
+  private Query<MonitoredService> createQueryForTemplateReferencedMSs(
+      ProjectParams templateProjectParams, String templateIdentifier, String versionLabel) {
+    Query<MonitoredService> query =
+        hPersistence.createQuery(MonitoredService.class)
+            .disableValidation()
+            .filter(MonitoredServiceKeys.accountId, templateProjectParams.getAccountIdentifier())
+            .filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.templateIdentifier,
+                templateIdentifier)
+            .filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.versionLabel, versionLabel)
+            .filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.isTemplateByReference, true);
+    if (templateProjectParams.getOrgIdentifier() != null) {
+      query = query.filter(MonitoredServiceKeys.orgIdentifier, templateProjectParams.getOrgIdentifier());
+    }
+    if (templateProjectParams.getProjectIdentifier() != null) {
+      query = query.filter(MonitoredServiceKeys.projectIdentifier, templateProjectParams.getProjectIdentifier());
+    }
+    return query;
   }
 
   private ServiceParams getServiceParams(MonitoredService ms) {

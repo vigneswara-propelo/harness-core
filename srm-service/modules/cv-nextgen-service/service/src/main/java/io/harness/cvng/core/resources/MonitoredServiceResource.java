@@ -357,7 +357,7 @@ public class MonitoredServiceResource {
   @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = VIEW_PERMISSION)
   public ResponseDTO<Boolean>
   isReconciliationRequiredForMonitoredServices(
-      @ApiParam(required = true) @NotNull @BeanParam ProjectScopedProjectParams templateScopedProjectParams,
+      @ApiParam(required = true) @NotNull @BeanParam ProjectScopedProjectParams scopedTemplateProjectParams,
       @Parameter(description = "Scoped template identifier used to create the monitored service") @NotNull @QueryParam(
           "templateIdentifier") String templateIdentifier,
       @Parameter(description = "Template version Label") @NotNull @QueryParam(
@@ -367,7 +367,7 @@ public class MonitoredServiceResource {
       @Parameter(description = "filter to check if reconciliation required for a particular monitored service") @NotNull
       @QueryParam("monitoredServiceIdentifier") String monitoredServiceIdentifier) {
     return ResponseDTO.newResponse(monitoredServiceService.isReconciliationRequiredForMonitoredServices(
-        templateScopedProjectParams.getProjectParams(), templateIdentifier, versionLabel, monitoredServiceIdentifier,
+        scopedTemplateProjectParams.getProjectParams(), templateIdentifier, versionLabel, monitoredServiceIdentifier,
         templateVersionNumber));
   }
 
@@ -813,12 +813,14 @@ public class MonitoredServiceResource {
   @Timed
   @ExceptionMetered
   @ResponseMetered
-  @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = EDIT_PERMISSION)
+  @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = VIEW_PERMISSION)
   public RestResponse<PageResponse<MonitoredServiceReference>> getMonitoredServiceReconciliationStatuses(
-      @NotNull @Valid @BeanParam ProjectParams projectParams,
-      @QueryParam("templateIdentifier") String templateIdentifier,
-      @QueryParam("templateVersionLabel") String templateVersionLabel, @BeanParam PageParams pageParams) {
+      @ApiParam(required = true) @NotNull @BeanParam ProjectScopedProjectParams scopedTemplateProjectParams,
+      @Parameter(description = "Scoped template identifier used to create the monitored service") @NotNull @QueryParam(
+          "templateIdentifier") String templateIdentifier,
+      @Parameter(description = "Template version Label") @NotNull @QueryParam("templateVersionLabel")
+      String templateVersionLabel, @BeanParam PageParams pageParams) {
     return new RestResponse<>(monitoredServiceService.getMonitoredServiceReconciliationStatuses(
-        projectParams, templateIdentifier, templateVersionLabel, pageParams));
+        scopedTemplateProjectParams.getProjectParams(), templateIdentifier, templateVersionLabel, pageParams));
   }
 }

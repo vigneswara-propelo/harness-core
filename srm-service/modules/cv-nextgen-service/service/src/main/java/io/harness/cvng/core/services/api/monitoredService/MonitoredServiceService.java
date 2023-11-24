@@ -159,6 +159,6 @@ public interface MonitoredServiceService extends DeleteEntityByHandler<Monitored
 
   List<ActiveServiceDTO> listActiveMonitoredServices(ProjectParams projectParams, String serviceIdentifier);
 
-  PageResponse<MonitoredServiceReference> getMonitoredServiceReconciliationStatuses(
-      ProjectParams projectParams, String templateIdentifier, String templateVersionLabel, PageParams pageParams);
+  PageResponse<MonitoredServiceReference> getMonitoredServiceReconciliationStatuses(ProjectParams templateProjectParams,
+      String templateIdentifier, String templateVersionLabel, PageParams pageParams);
 }

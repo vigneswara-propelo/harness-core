@@ -7,6 +7,7 @@
 
 package io.harness.cvng.core.beans.monitoredService;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +20,9 @@ public class MonitoredServiceReference {
   @NotNull String orgIdentifier;
   @NotNull String projectIdentifier;
   @NotNull String accountIdentifier;
-  String templateIdentifier;
+  @NotNull String identifier;
   String serviceIdentifier;
-  String environmentIdentifier;
+  List<String> environmentIdentifiers;
   long lastReconciledTimestamp;
   ReconciliationStatus reconciliationStatus;
 }

@@ -17,11 +17,11 @@ public enum ReconciliationStatus {
   NO_INPUT_REQUIRED_FOR_RECONCILIATION;
 
   public static ReconciliationStatus determineStatus(
-      MonitoredService monitoredService, Long versionNumber, String templateInput) {
+      MonitoredService monitoredService, Long versionNumber, String templateInputs) {
     if (monitoredService.getTemplateMetadata().getTemplateVersionNumber() == versionNumber) {
       return NO_RECONCILIATION_REQUIRED;
     } else if (MonitoredServiceValidator.validateTemplateInputs(
-                   monitoredService.getTemplateMetadata().getTemplateInputs(), templateInput)) {
+                   monitoredService.getTemplateMetadata().getTemplateInputs(), templateInputs)) {
       return NO_INPUT_REQUIRED_FOR_RECONCILIATION;
     } else {
       return INPUT_REQUIRED_FOR_RECONCILIATION;
