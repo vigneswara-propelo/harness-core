@@ -6,6 +6,8 @@
  */
 package io.harness.licensing.services;
 
+import io.harness.ModuleType;
+import io.harness.SecondaryEntitlement;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.DuplicateFieldException;
@@ -23,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.GTM)
 @Slf4j
 public class DeveloperMappingServiceImpl implements DeveloperMappingService {
+  public static final String GLOBAL_ACCOUNT_ID = "__GLOBAL_ACCOUNT_ID__";
   private final DeveloperMappingRepository developerMappingRepository;
   private final DeveloperMappingObjectConverter developerMappingObjectConverter;
 
@@ -48,6 +51,13 @@ public class DeveloperMappingServiceImpl implements DeveloperMappingService {
     return developerMappingObjectConverter.toDTO(savedDeveloperMapping);
   }
 
+  @Override
+  public DeveloperMapping getModuleDefaultDeveloperToSecondaryEntitlementMapping(
+      ModuleType moduleType, SecondaryEntitlement secondaryEntitlement) {
+    return developerMappingRepository.findByAccountIdentifierAndModuleTypeAndSecondaryEntitlement(
+        GLOBAL_ACCOUNT_ID, moduleType, secondaryEntitlement);
+  }
+
   private void validateDTO(String accountIdentifier, DeveloperMappingDTO developerMappingDTO) {
     if (!accountIdentifier.equals(developerMappingDTO.getAccountIdentifier())) {
       String errorMessage =
@@ -57,10 +67,10 @@ public class DeveloperMappingServiceImpl implements DeveloperMappingService {
       throw new InvalidRequestException(errorMessage);
     }
 
-    List<DeveloperMapping> existingDeveloperMapping =
+    DeveloperMapping existingDeveloperMapping =
         developerMappingRepository.findByAccountIdentifierAndModuleTypeAndSecondaryEntitlement(
             accountIdentifier, developerMappingDTO.getModuleType(), developerMappingDTO.getSecondaryEntitlement());
-    if (!existingDeveloperMapping.isEmpty()) {
+    if (existingDeveloperMapping != null) {
       throw new DuplicateFieldException(String.format(
           "Developer Mapping with accountIdentifier [%s], moduleType [%s] and secondary entitlement [%s] already exists",
           accountIdentifier, developerMappingDTO.getModuleType(), developerMappingDTO.getSecondaryEntitlement()));

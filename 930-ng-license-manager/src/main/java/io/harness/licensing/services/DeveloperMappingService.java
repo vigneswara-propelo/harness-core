@@ -6,9 +6,12 @@
  */
 package io.harness.licensing.services;
 
+import io.harness.ModuleType;
+import io.harness.SecondaryEntitlement;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.licensing.beans.modules.DeveloperMappingDTO;
+import io.harness.licensing.entities.developer.DeveloperMapping;
 
 import java.util.List;
 
@@ -18,4 +21,7 @@ public interface DeveloperMappingService {
 
   DeveloperMappingDTO createAccountLevelDeveloperMapping(
       String accountIdentifier, DeveloperMappingDTO developerMappingDTO);
+
+  DeveloperMapping getModuleDefaultDeveloperToSecondaryEntitlementMapping(
+      ModuleType moduleType, SecondaryEntitlement secondaryEntitlement);
 }

@@ -25,6 +25,6 @@ public interface DeveloperMappingRepository extends CrudRepository<DeveloperMapp
 
   List<DeveloperMapping> findByAccountIdentifierAndModuleType(String accountIdentifier, ModuleType moduleType);
 
-  List<DeveloperMapping> findByAccountIdentifierAndModuleTypeAndSecondaryEntitlement(
+  DeveloperMapping findByAccountIdentifierAndModuleTypeAndSecondaryEntitlement(
       String accountIdentifier, ModuleType moduleType, SecondaryEntitlement secondaryEntitlement);
 }
