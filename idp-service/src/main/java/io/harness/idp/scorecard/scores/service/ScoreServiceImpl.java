@@ -34,11 +34,13 @@ import io.harness.idp.scorecard.scores.repositories.EntityIdentifierAndScore;
 import io.harness.idp.scorecard.scores.repositories.ScoreEntityByScorecardIdentifier;
 import io.harness.idp.scorecard.scores.repositories.ScoreRepository;
 import io.harness.idp.scorecard.scores.repositories.ScorecardIdentifierAndScore;
+import io.harness.remote.client.CGRestUtils;
 import io.harness.spec.server.idp.v1.model.CheckStatus;
 import io.harness.spec.server.idp.v1.model.EntityScores;
 import io.harness.spec.server.idp.v1.model.ScorecardDetails;
 import io.harness.spec.server.idp.v1.model.ScorecardFilter;
 import io.harness.spec.server.idp.v1.model.ScorecardGraphSummaryInfo;
+import io.harness.spec.server.idp.v1.model.ScorecardRecalibrateInfo;
 import io.harness.spec.server.idp.v1.model.ScorecardScore;
 import io.harness.spec.server.idp.v1.model.ScorecardSummaryInfo;
 import io.harness.springdata.TransactionHelper;
@@ -47,6 +49,7 @@ import com.google.inject.Inject;
 import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +73,7 @@ public class ScoreServiceImpl implements ScoreService {
   @Inject NamespaceService namespaceService;
   ScorecardService scorecardService;
   ScoreRepository scoreRepository;
+  AsyncScoreComputationService asyncScoreComputationService;
 
   @Override
   public void populateData(
@@ -100,6 +104,11 @@ public class ScoreServiceImpl implements ScoreService {
         scoreRepository.getAllLatestScoresByScorecardsForAnEntity(accountIdentifier, entityIdentifier)
             .getMappedResults());
 
+    Set<String> scorecardIdentifiers =
+        scorecardEntities.stream().map(ScorecardEntity::getIdentifier).collect(Collectors.toSet());
+    Map<String, ScorecardRecalibrateInfo> recalibrateInfoMap =
+        getRecalibrateInfoMap(accountIdentifier, scorecardIdentifiers, entityIdentifier);
+
     // deleting scores for deleted scorecards
     deleteScoresForDeletedScoreCards(
         accountIdentifier, scorecardIdentifierEntityMapping, lastComputedScoresForScorecards);
@@ -107,9 +116,12 @@ public class ScoreServiceImpl implements ScoreService {
     List<ScorecardSummaryInfo> returnData = new ArrayList<>();
 
     for (Map.Entry<String, ScorecardEntity> entry : scorecardIdentifierEntityMapping.entrySet()) {
-      if (scoreComputerService.isFilterMatchingWithAnEntity(entry.getValue().getFilter(), entity)) {
-        returnData.add(ScorecardSummaryInfoMapper.toDTO(lastComputedScoresForScorecards.get(entry.getKey()),
-            entry.getValue().getName(), entry.getValue().getDescription(), entry.getValue().getIdentifier()));
+      String scorecardIdentifier = entry.getKey();
+      ScorecardEntity scorecard = entry.getValue();
+      if (scoreComputerService.isFilterMatchingWithAnEntity(scorecard.getFilter(), entity)) {
+        returnData.add(ScorecardSummaryInfoMapper.toDTO(lastComputedScoresForScorecards.get(scorecardIdentifier),
+            scorecard.getName(), scorecard.getDescription(), scorecard.getIdentifier(),
+            recalibrateInfoMap.get(scorecardIdentifier)));
       }
     }
     return returnData;
@@ -179,7 +191,7 @@ public class ScoreServiceImpl implements ScoreService {
             accountIdentifier, entityIdentifier, scorecardIdentifier);
       }
       return ScorecardSummaryInfoMapper.toDTO(latestComputedScoreForScorecard, scorecardDetails.getName(),
-          scorecardDetails.getDescription(), scorecardIdentifier);
+          scorecardDetails.getDescription(), scorecardIdentifier, null);
     }
     return null;
   }
@@ -325,5 +337,15 @@ public class ScoreServiceImpl implements ScoreService {
     }
 
     return iterator.next();
+  }
+
+  private Map<String, ScorecardRecalibrateInfo> getRecalibrateInfoMap(
+      String accountIdentifier, Set<String> scorecardIdentifiers, String entityIdentifier) {
+    Map<String, ScorecardRecalibrateInfo> recalibrateInfoMap = new HashMap<>();
+    for (String scorecardIdentifier : scorecardIdentifiers) {
+      recalibrateInfoMap.put(scorecardIdentifier,
+          asyncScoreComputationService.getRecalibrateInfo(accountIdentifier, scorecardIdentifier, entityIdentifier));
+    }
+    return recalibrateInfoMap;
   }
 }

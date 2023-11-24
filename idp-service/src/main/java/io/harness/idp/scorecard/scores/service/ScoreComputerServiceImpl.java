@@ -134,8 +134,7 @@ public class ScoreComputerServiceImpl implements ScoreComputerService {
   public ScorecardRecalibrateInfo computeScoresAsync(
       String accountIdentifier, String scorecardIdentifier, String entityIdentifier) {
     ScorecardRecalibrateInfo scorecardRecalibrateInfo =
-        asyncScoreComputationService.getStartTimeOfInProgressScoreComputation(
-            accountIdentifier, scorecardIdentifier, entityIdentifier);
+        asyncScoreComputationService.getRecalibrateInfo(accountIdentifier, scorecardIdentifier, entityIdentifier);
     if (scorecardRecalibrateInfo != null) {
       log.info("Score computation is already in progress for scorecard {}, entity {} and account {}",
           scorecardIdentifier, entityIdentifier, accountIdentifier);

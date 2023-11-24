@@ -1338,6 +1338,27 @@ paths:
         - $ref: '#/components/parameters/AccountHeader'
       requestBody:
         $ref: '#/components/requestBodies/ScorecardRecalibrateRequest'
+      x-internal: true
+  /v1/scores/recalibrate/status:
+    get:
+      summary: Get score recalibration status
+      tags:
+        - Scores
+      responses:
+        '200':
+          $ref: '#/components/responses/ScorecardRecalibrateResponseV2'
+      operationId: get-scores-recalibrate-status
+      x-stoplight:
+        id: 2qlp5rle9cmv8
+      description: Get status of score computation request
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/ScorecardRecalibrateRequest'
+      x-internal: true
+    parameters: []
 components:
   schemas:
     BackstageEnvVariable:
@@ -3024,6 +3045,8 @@ components:
           type: string
           x-stoplight:
             id: 8ug477to6b52k
+        recalibrate_info:
+          $ref: '#/components/schemas/ScorecardRecalibrateInfo'
       required:
         - scorecard_name
         - timestamp

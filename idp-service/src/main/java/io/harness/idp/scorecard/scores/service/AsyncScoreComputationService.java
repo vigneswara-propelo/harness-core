@@ -14,7 +14,7 @@ import io.harness.spec.server.idp.v1.model.ScorecardRecalibrateInfo;
 
 @OwnedBy(HarnessTeam.IDP)
 public interface AsyncScoreComputationService {
-  ScorecardRecalibrateInfo getStartTimeOfInProgressScoreComputation(
+  ScorecardRecalibrateInfo getRecalibrateInfo(
       String harnessAccount, String scorecardIdentifier, String entityIdentifier);
 
   ScorecardRecalibrateInfo logScoreComputationRequestAndPublishEvent(

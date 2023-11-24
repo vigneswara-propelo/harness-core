@@ -32,7 +32,7 @@ public class AsyncScoreComputationServiceImpl implements AsyncScoreComputationSe
   private ScoreComputerService scoreComputerService;
 
   @Override
-  public ScorecardRecalibrateInfo getStartTimeOfInProgressScoreComputation(
+  public ScorecardRecalibrateInfo getRecalibrateInfo(
       String harnessAccount, String scorecardIdentifier, String entityIdentifier) {
     // Check if score computation was started due to a re-run request
     Optional<AsyncScoreComputationEntity> scoreComputationEntityOpt =
