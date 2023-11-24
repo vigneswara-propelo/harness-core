@@ -15,10 +15,7 @@ import io.harness.plancreator.stages.PmsAbstractStageNode;
 import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.plancreator.strategy.StrategyUtils;
 import io.harness.pms.contracts.plan.Dependency;
-import io.harness.pms.contracts.plan.HarnessStruct;
-import io.harness.pms.contracts.plan.HarnessValue;
 import io.harness.pms.contracts.steps.StepType;
-import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.sdk.core.plan.PlanNode;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
@@ -29,7 +26,6 @@ import io.harness.serializer.KryoSerializer;
 import io.harness.steps.approval.stage.ApprovalStageSpecParameters;
 import io.harness.steps.approval.stage.ApprovalStageStep;
 import io.harness.utils.CommonPlanCreatorUtils;
-import io.harness.utils.PlanCreatorUtilsCommon;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -97,26 +93,12 @@ public class ApprovalStagePlanCreatorV2 extends AbstractPmsStagePlanCreator<PmsA
                     .toBuilder()
                     .putDependencyMetadata(field.getUuid(), Dependency.newBuilder().putAllMetadata(metadataMap).build())
                     .putDependencyMetadata(executionField.getNode().getUuid(),
-                        Dependency.newBuilder().setParentInfo(generateParentInfo(ctx, field)).build())
+                        Dependency.newBuilder()
+                            .setParentInfo(generateParentInfo(ctx, field, getFinalPlanNodeId(ctx, field),
+                                StrategyUtils.isWrappedUnderStrategy(ctx.getCurrentField())))
+                            .build())
                     .build())
             .build());
     return planCreationResponseMap;
-  }
-
-  private HarnessStruct generateParentInfo(PlanCreationContext ctx, PmsAbstractStageNode stageNode) {
-    YamlField field = ctx.getCurrentField();
-    HarnessStruct.Builder parentInfo = HarnessStruct.newBuilder();
-    parentInfo.putData(PlanCreatorConstants.STAGE_ID,
-        HarnessValue.newBuilder().setStringValue(getFinalPlanNodeId(ctx, stageNode)).build());
-    if (StrategyUtils.isWrappedUnderStrategy(field)) {
-      String strategyId = stageNode.getUuid();
-      parentInfo.putData(
-          PlanCreatorConstants.NEAREST_STRATEGY_ID, HarnessValue.newBuilder().setStringValue(strategyId).build());
-      parentInfo.putData(PlanCreatorConstants.ALL_STRATEGY_IDS,
-          PlanCreatorUtilsCommon.appendToParentInfoList(PlanCreatorConstants.ALL_STRATEGY_IDS, strategyId, ctx));
-      parentInfo.putData(PlanCreatorConstants.STRATEGY_NODE_TYPE,
-          HarnessValue.newBuilder().setStringValue(YAMLFieldNameConstants.STAGE).build());
-    }
-    return parentInfo.build();
   }
 }

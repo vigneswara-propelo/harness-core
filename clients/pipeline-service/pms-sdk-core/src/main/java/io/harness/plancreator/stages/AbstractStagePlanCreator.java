@@ -26,7 +26,10 @@ import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.contracts.plan.ExecutionMode;
 import io.harness.pms.contracts.plan.GraphLayoutNode;
+import io.harness.pms.contracts.plan.HarnessStruct;
+import io.harness.pms.contracts.plan.HarnessValue;
 import io.harness.pms.contracts.steps.StepType;
+import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.sdk.core.plan.PlanNode;
 import io.harness.pms.sdk.core.plan.PlanNode.PlanNodeBuilder;
 import io.harness.pms.sdk.core.plan.creation.beans.GraphLayoutResponse;
@@ -38,6 +41,7 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.serializer.KryoSerializer;
+import io.harness.utils.PlanCreatorUtilsCommon;
 import io.harness.utils.TimeoutUtils;
 import io.harness.yaml.core.timeout.Timeout;
 
@@ -161,5 +165,26 @@ public abstract class AbstractStagePlanCreator<T extends AbstractStageNode> exte
     StrategyUtils.addStrategyFieldDependencyIfPresent(kryoSerializer, ctx, field.getUuid(), field.getName(),
         field.getIdentifier(), planCreationResponseMap, metadataMap,
         StrategyUtils.getAdviserObtainments(ctx.getCurrentField(), kryoSerializer, false), true);
+  }
+
+  protected HarnessStruct generateParentInfo(
+      PlanCreationContext ctx, T stageNode, String finalPlanNodeId, boolean shouldAddStrategyParentInfo) {
+    HarnessStruct.Builder parentInfo = HarnessStruct.newBuilder();
+    parentInfo.putData(
+        PlanCreatorConstants.STAGE_ID, HarnessValue.newBuilder().setStringValue(finalPlanNodeId).build());
+    if (shouldAddStrategyParentInfo) {
+      String strategyId = stageNode.getUuid();
+      parentInfo.putData(
+          PlanCreatorConstants.NEAREST_STRATEGY_ID, HarnessValue.newBuilder().setStringValue(strategyId).build());
+      parentInfo.putData(PlanCreatorConstants.ALL_STRATEGY_IDS,
+          PlanCreatorUtilsCommon.appendToParentInfoList(PlanCreatorConstants.ALL_STRATEGY_IDS, strategyId, ctx));
+      parentInfo.putData(PlanCreatorConstants.STRATEGY_NODE_TYPE,
+          HarnessValue.newBuilder().setStringValue(YAMLFieldNameConstants.STAGE).build());
+    }
+    return parentInfo.build();
+  }
+
+  protected String getFinalPlanNodeId(PlanCreationContext ctx, T stageNode) {
+    return StrategyUtils.getSwappedPlanNodeId(ctx, stageNode.getUuid());
   }
 }

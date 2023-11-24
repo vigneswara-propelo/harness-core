@@ -73,14 +73,11 @@ import io.harness.pms.contracts.plan.Dependencies;
 import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.contracts.plan.EdgeLayoutList;
 import io.harness.pms.contracts.plan.GraphLayoutNode;
-import io.harness.pms.contracts.plan.HarnessStruct;
-import io.harness.pms.contracts.plan.HarnessValue;
 import io.harness.pms.contracts.plan.YamlUpdates;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.execution.utils.SkipInfoUtils;
 import io.harness.pms.merger.helpers.RuntimeInputFormHelper;
-import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.plan.creation.PlanCreatorUtils;
 import io.harness.pms.sdk.core.plan.PlanNode;
 import io.harness.pms.sdk.core.plan.PlanNode.PlanNodeBuilder;
@@ -99,7 +96,6 @@ import io.harness.rbac.CDNGRbacUtility;
 import io.harness.serializer.KryoSerializer;
 import io.harness.strategy.StrategyValidationUtils;
 import io.harness.utils.NGFeatureFlagHelperService;
-import io.harness.utils.PlanCreatorUtilsCommon;
 import io.harness.when.utils.RunInfoUtils;
 import io.harness.yaml.core.failurestrategy.FailureStrategyConfig;
 
@@ -807,11 +803,16 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     executionYamlFieldMap.put(executionField.getNode().getUuid(), executionField);
     planCreationResponseMap.put(executionField.getNode().getUuid(),
         PlanCreationResponse.builder()
-            .dependencies(DependenciesUtils.toDependenciesProto(executionYamlFieldMap)
-                              .toBuilder()
-                              .putDependencyMetadata(executionField.getNode().getUuid(),
-                                  Dependency.newBuilder().setParentInfo(generateParentInfo(ctx, stageNode)).build())
-                              .build())
+            .dependencies(
+                DependenciesUtils.toDependenciesProto(executionYamlFieldMap)
+                    .toBuilder()
+                    .putDependencyMetadata(executionField.getNode().getUuid(),
+                        Dependency.newBuilder()
+                            .setParentInfo(generateParentInfo(ctx, stageNode, getFinalPlanNodeId(ctx, stageNode),
+                                StrategyUtils.isWrappedUnderStrategy(ctx.getCurrentField())
+                                    || MultiDeploymentSpawnerUtils.hasMultiDeploymentConfigured(stageNode)))
+                            .build())
+                    .build())
             .build());
   }
 
@@ -856,24 +857,8 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     return deploymentStageConfig.getGitOpsEnabled();
   }
 
-  private HarnessStruct generateParentInfo(PlanCreationContext ctx, DeploymentStageNode stageNode) {
-    YamlField field = ctx.getCurrentField();
-    HarnessStruct.Builder parentInfo = HarnessStruct.newBuilder();
-    parentInfo.putData(PlanCreatorConstants.STAGE_ID,
-        HarnessValue.newBuilder().setStringValue(getFinalPlanNodeId(ctx, stageNode)).build());
-    if (StrategyUtils.isWrappedUnderStrategy(field)) {
-      String strategyId = stageNode.getUuid();
-      parentInfo.putData(
-          PlanCreatorConstants.NEAREST_STRATEGY_ID, HarnessValue.newBuilder().setStringValue(strategyId).build());
-      parentInfo.putData(PlanCreatorConstants.ALL_STRATEGY_IDS,
-          PlanCreatorUtilsCommon.appendToParentInfoList(PlanCreatorConstants.ALL_STRATEGY_IDS, strategyId, ctx));
-      parentInfo.putData(PlanCreatorConstants.STRATEGY_NODE_TYPE,
-          HarnessValue.newBuilder().setStringValue(YAMLFieldNameConstants.STAGE).build());
-    }
-    return parentInfo.build();
-  }
-
-  private String getFinalPlanNodeId(PlanCreationContext ctx, DeploymentStageNode stageNode) {
+  @Override
+  protected String getFinalPlanNodeId(PlanCreationContext ctx, DeploymentStageNode stageNode) {
     String uuid = MultiDeploymentSpawnerUtils.getUuidForMultiDeployment(stageNode);
     return StrategyUtils.getSwappedPlanNodeId(ctx, uuid);
   }
