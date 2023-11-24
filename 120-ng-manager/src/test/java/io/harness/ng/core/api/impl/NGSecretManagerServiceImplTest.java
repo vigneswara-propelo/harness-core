@@ -8,6 +8,7 @@
 package io.harness.ng.core.api.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.rule.OwnerRule.BHAVYA;
 import static io.harness.rule.OwnerRule.PHOENIKX;
 import static io.harness.rule.OwnerRule.VIKAS_M;
 
@@ -60,6 +61,7 @@ import software.wings.service.impl.security.NGEncryptorService;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -121,6 +123,18 @@ public class NGSecretManagerServiceImplTest extends CategoryTest {
     SecretManagerConfigDTO savedDTO = ngSecretManagerService.createSecretManager(random(VaultConfigDTO.class));
 
     assertThat(savedDTO).isEqualTo(dto);
+  }
+
+  @Test
+  @Owner(developers = BHAVYA)
+  @Category(UnitTests.class)
+  public void testValidateSecretManager_forReadOnlyVaultWhenFFDisabled() throws IOException {
+    VaultConfigDTO dto = random(VaultConfigDTO.class);
+    dto.setReadOnly(true);
+    dto.setEncryptionType(EncryptionType.VAULT);
+    when(ngFeatureFlagHelperService.isEnabled(any(), any())).thenReturn(false);
+    Pair<String, Boolean> value = ngSecretManagerService.validateNGSecretManager("account", dto);
+    assertThat(value.getValue()).isEqualTo(true);
   }
 
   @Test
