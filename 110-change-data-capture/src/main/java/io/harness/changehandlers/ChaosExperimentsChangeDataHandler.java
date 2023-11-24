@@ -7,14 +7,9 @@
 
 package io.harness.changehandlers;
 
-import io.harness.changestreamsframework.ChangeEvent;
 import io.harness.entities.subscriptions.ChaosExperiments.ChaosExperimentsKeys;
 
-import com.mongodb.DBObject;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ChaosExperimentsChangeDataHandler extends BasicEntityToColumnsChangeDataHandler<ChaosExperimentsKeys> {
   @Override

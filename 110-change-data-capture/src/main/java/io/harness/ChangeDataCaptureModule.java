@@ -11,7 +11,6 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.changehandlers.ChaosInfrastructuresChangeDataHandler;
 import io.harness.entities.AccountEntity;
 import io.harness.entities.CDCEntity;
 import io.harness.entities.CDStageExecutionCDCEntity;

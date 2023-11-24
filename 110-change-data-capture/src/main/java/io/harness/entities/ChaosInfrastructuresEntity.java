@@ -8,10 +8,8 @@
 package io.harness.entities;
 
 import io.harness.ChangeHandler;
-import io.harness.changehandlers.ChaosExperimentRunsChangeDataHandler;
 import io.harness.changehandlers.ChaosExperimentsTagsChangeDataHandler;
 import io.harness.changehandlers.ChaosInfrastructuresChangeDataHandler;
-import io.harness.entities.subscriptions.ChaosExperimentRuns;
 import io.harness.entities.subscriptions.ChaosInfrastructures;
 
 import com.google.inject.Inject;

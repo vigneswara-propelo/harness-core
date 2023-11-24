@@ -9,9 +9,7 @@ package io.harness.entities;
 
 import io.harness.ChangeHandler;
 import io.harness.changehandlers.ChaosExperimentsTagsChangeDataHandler;
-import io.harness.changehandlers.ChaosInfrastructuresChangeDataHandler;
 import io.harness.changehandlers.ChaosLinuxInfrastructuresChangeDataHandler;
-import io.harness.entities.subscriptions.ChaosInfrastructures;
 import io.harness.entities.subscriptions.ChaosLinuxInfrastructures;
 
 import com.google.inject.Inject;

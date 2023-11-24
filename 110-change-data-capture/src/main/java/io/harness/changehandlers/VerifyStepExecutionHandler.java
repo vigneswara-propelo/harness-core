@@ -131,7 +131,10 @@ public class VerifyStepExecutionHandler extends AbstractChangeDataHandler {
   private static String parseDuration(String durationWithUnits) {
     return durationWithUnits.substring(0, durationWithUnits.length() - 1);
   }
-
+  @Override
+  public boolean shouldUpdateOnConflict() {
+    return true;
+  }
   private static String parseAppliedVerificationTypes(Object appliedVerificationTypesObject) {
     Collection<String> appliedVerificationTypes = ((Map<String, String>) appliedVerificationTypesObject).values();
     if (CollectionUtils.isNotEmpty(appliedVerificationTypes)) {
