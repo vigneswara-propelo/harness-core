@@ -38,7 +38,6 @@ public interface ArtifactMetadataKeys {
   String format = "format";
   String createTime = "createTime";
   String updateTime = "updateTime";
-
   String id = "id";
   String planName = "planName";
 }

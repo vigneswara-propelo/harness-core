@@ -72,6 +72,8 @@ import io.harness.cdng.artifact.resources.gcr.dtos.GcrRequestDTO;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrResponseDTO;
 import io.harness.cdng.artifact.resources.gcr.service.GcrResourceService;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARBuildDetailsDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARPackageDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARPackageDTOList;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARRepositoryDTOList;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARResponseDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRepositoryDTO;
@@ -883,6 +885,331 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(spyartifactResourceUtils.getBuildDetailsV2GAR(null, null, null, null, null, "accountId", "orgId",
                    "projectId", "pipeId", "version", "versionRegex", "", "", "serviceref", null))
         .isEqualTo(buildDetails);
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetPackagesV2GAR() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+        GoogleArtifactRegistryConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value(CONNECTOR_REF).build())
+            .project(ParameterField.<String>builder().value(PROJECT).build())
+            .repositoryName(ParameterField.<String>builder().value(REPO_NAME).build())
+            .region(ParameterField.<String>builder().value(REGION).build())
+            .build();
+
+    GARPackageDTOList packageDetails = GARPackageDTOList.builder()
+                                           .garPackagesDTO(List.of(GARPackageDTO.builder()
+                                                                       .packageName("myRepo/package1")
+                                                                       .createTime("2023-01-01T12:00:00Z")
+                                                                       .updateTime("2023-01-02T12:00:00Z")
+                                                                       .build()))
+                                           .build();
+
+    IdentifierRef identifierRef = IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID);
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), any());
+
+    doReturn(packageDetails)
+        .when(garResourceService)
+        .getPackages(identifierRef, REGION, REPO_NAME, PROJECT, ORG_ID, PROJECT_ID);
+
+    GARPackageDTOList modifiedRepositoryDetails = spyartifactResourceUtils.getPackagesV2GAR(
+        null, null, null, PROJECT, ACCOUNT_ID, ORG_ID, PIPELINE_ID, "", SERVICE_REF, "", PROJECT_ID, null);
+
+    assertThat(modifiedRepositoryDetails).isNotNull();
+    assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
+
+    GARPackageDTO modifiedRepo = modifiedRepositoryDetails.getGarPackagesDTO().get(0);
+    assertThat(modifiedRepo.getPackageName()).isEqualTo("package1");
+    assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
+    assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetPackagesV2GARForRemoteService() {
+    ArtifactResourceUtils spyArtifactResourceUtils = spy(artifactResourceUtils);
+
+    // Creating GoogleArtifactRegistryConfig for mock
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+        GoogleArtifactRegistryConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value(CONNECTOR_REF).build())
+            .region(ParameterField.<String>builder().value(REGION).build())
+            .repositoryName(ParameterField.<String>builder().value(REPO_NAME).build())
+            .project(ParameterField.<String>builder().value(PROJECT).build())
+            .build();
+
+    GARPackageDTOList repositoryDetails = GARPackageDTOList.builder()
+                                              .garPackagesDTO(List.of(GARPackageDTO.builder()
+                                                                          .packageName("myRepo/package1")
+                                                                          .createTime("2023-01-01T12:00:00Z")
+                                                                          .updateTime("2023-01-02T12:00:00Z")
+                                                                          .build()))
+                                              .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyArtifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef = IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID);
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyArtifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(true).when(spyArtifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    doReturn(repositoryDetails)
+        .when(garResourceService)
+        .getPackages(identifierRef, REGION, REPO_NAME, PROJECT, ORG_ID, PROJECT_ID);
+
+    GARPackageDTOList modifiedRepositoryDetails = spyArtifactResourceUtils.getPackagesV2GAR(
+        null, null, null, PROJECT, ACCOUNT_ID, ORG_ID, PIPELINE_ID, "", SERVICE_REF, "", PROJECT_ID, null);
+
+    assertThat(modifiedRepositoryDetails).isNotNull();
+    assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
+
+    GARPackageDTO modifiedRepo = modifiedRepositoryDetails.getGarPackagesDTO().get(0);
+    assertThat(modifiedRepo.getPackageName()).isEqualTo("package1");
+    assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
+    assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetPackagesV2GAR_ValuesFromConfig() {
+    ArtifactResourceUtils spyArtifactResourceUtils = spy(artifactResourceUtils);
+
+    // Creating GoogleArtifactRegistryConfig for mock
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+        GoogleArtifactRegistryConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value(CONNECTOR_REF).build())
+            .region(ParameterField.<String>builder().value(REGION).build())
+            .repositoryName(ParameterField.<String>builder().value(REPO_NAME).build())
+            .build();
+
+    GARPackageDTOList packageDetails = GARPackageDTOList.builder()
+                                           .garPackagesDTO(List.of(GARPackageDTO.builder()
+                                                                       .packageName("myRepo/repo1")
+                                                                       .createTime("2023-01-01T12:00:00Z")
+                                                                       .updateTime("2023-01-02T12:00:00Z")
+                                                                       .build()))
+                                           .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyArtifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    //    IdentifierRef identifierRef = IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, ACCOUNT_ID, ORG_ID,
+    //    PROJECT_ID);
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyArtifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(true).when(spyArtifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    doReturn(packageDetails)
+        .when(garResourceService)
+        .getPackages(IDENTIFIER_REF, REGION, REPO_NAME, PROJECT, ORG_ID, PROJECT_ID);
+
+    // Call the method you want to test
+    GARPackageDTOList modifiedRepositoryDetails = spyArtifactResourceUtils.getPackagesV2GAR(null, null, null, PROJECT,
+        ACCOUNT_ID, ORG_ID, PIPELINE_ID, FQN, SERVICE_REF, pipelineYamlWithoutTemplates, PROJECT_ID, null);
+
+    // Perform assertions
+    assertThat(modifiedRepositoryDetails).isNotNull();
+    assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
+
+    // Update the verify statement to match the actual calls in getRepositoriesV2GAR
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REGION, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, CONNECTOR_REF, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REPO_NAME, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetPackagesV2GAR_ValuesFromParams() {
+    ArtifactResourceUtils spyArtifactResourceUtils = spy(artifactResourceUtils);
+
+    // Creating GoogleArtifactRegistryConfig for mock
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig = GoogleArtifactRegistryConfig.builder().build();
+
+    GARPackageDTOList packageDetails = GARPackageDTOList.builder()
+                                           .garPackagesDTO(List.of(GARPackageDTO.builder()
+                                                                       .packageName("myRepo/repo1")
+                                                                       .createTime("2023-01-01T12:00:00Z")
+                                                                       .updateTime("2023-01-02T12:00:00Z")
+                                                                       .build()))
+                                           .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyArtifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef = IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID);
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyArtifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(true).when(spyArtifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    doReturn(packageDetails)
+        .when(garResourceService)
+        .getPackages(identifierRef, REGION, REPO_NAME, PROJECT, ORG_ID, PROJECT_ID);
+
+    // Call the method you want to test
+    GARPackageDTOList modifiedRepositoryDetails =
+        spyArtifactResourceUtils.getPackagesV2GAR(CONNECTOR_REF, REGION, REPO_NAME, PROJECT, ACCOUNT_ID, ORG_ID,
+            PIPELINE_ID, FQN, SERVICE_REF, pipelineYamlWithoutTemplates, PROJECT_ID, null);
+
+    // Perform assertions
+    assertThat(modifiedRepositoryDetails).isNotNull();
+    assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
+
+    // Update the verify statement to match the actual calls in getRepositoriesV2GAR
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REGION, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, CONNECTOR_REF, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REPO_NAME, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetPackagesV2GAR_ValuesFromResolvedExpression() {
+    ArtifactResourceUtils spyArtifactResourceUtils = spy(artifactResourceUtils);
+
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+        GoogleArtifactRegistryConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value(CONNECTOR_REF_2).build())
+            .region(ParameterField.<String>builder().value(REGION_2).build())
+            .repositoryName(ParameterField.<String>builder().value(REPO_NAME).build())
+            .build();
+
+    GARPackageDTOList repositoryDetails = GARPackageDTOList.builder()
+                                              .garPackagesDTO(List.of(GARPackageDTO.builder()
+                                                                          .packageName("myRepo/repo1")
+                                                                          .createTime("2023-01-01T12:00:00Z")
+                                                                          .updateTime("2023-01-02T12:00:00Z")
+                                                                          .build()))
+                                              .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyArtifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef = IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID);
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyArtifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(ResolvedFieldValueWithYamlExpressionEvaluator.builder().value(CONNECTOR_REF).build())
+        .when(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, CONNECTOR_REF_2, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    doReturn(ResolvedFieldValueWithYamlExpressionEvaluator.builder().value(REGION).build())
+        .when(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REGION_2, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    doReturn(ResolvedFieldValueWithYamlExpressionEvaluator.builder().value(REPO_NAME).build())
+        .when(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REPO_NAME_2, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+
+    doReturn(true).when(spyArtifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    doReturn(repositoryDetails)
+        .when(garResourceService)
+        .getPackages(identifierRef, REGION, REPO_NAME, PROJECT, ORG_ID, PROJECT_ID);
+
+    GARPackageDTOList modifiedRepositoryDetails =
+        spyArtifactResourceUtils.getPackagesV2GAR(CONNECTOR_REF_2, REGION_2, REPO_NAME_2, PROJECT, ACCOUNT_ID, ORG_ID,
+            PIPELINE_ID, FQN, SERVICE_REF, pipelineYamlWithoutTemplates, PROJECT_ID, null);
+
+    assertThat(modifiedRepositoryDetails).isNotNull();
+    assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
+
+    // Update the verify statement to match the actual calls in getRepositoriesV2GAR
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REGION_2, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, CONNECTOR_REF_2, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
+    verify(spyArtifactResourceUtils)
+        .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+            pipelineYamlWithoutTemplates, REPO_NAME_2, FQN, null, SERVICE_REF,
+            yamlExpressionEvaluatorWithContext.getYamlExpressionEvaluator());
   }
 
   @Test
@@ -3431,6 +3758,33 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     for (BucketResponseDTO bucketResponseDTO : buildList) {
       assertThat(bucketResponseDTO.getBucketName()).isEqualTo("test-bucket");
     }
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetPackagesGAR() {
+    GARPackageDTO packageDTO = GARPackageDTO.builder()
+                                   .packageName("myRepo/package1")
+                                   .createTime("2023-01-01T12:00:00Z")
+                                   .updateTime("2023-01-02T12:00:00Z")
+                                   .build();
+    GARPackageDTOList buildDetails = GARPackageDTOList.builder().garPackagesDTO(List.of(packageDTO)).build();
+    doReturn(buildDetails)
+        .when(garResourceService)
+        .getPackages(eq(IDENTIFIER_REF), eq(REGION), eq(REPO_NAME), eq(PROJECT), eq(ORG_ID), eq(PROJECT_ID));
+
+    GARPackageDTOList modifiedBuildDetails =
+        garResourceService.getPackages(IDENTIFIER_REF, REGION, REPO_NAME, PROJECT, ORG_ID, PROJECT_ID);
+
+    int index = modifiedBuildDetails.getGarPackagesDTO().get(0).getPackageName().lastIndexOf("/");
+    assertThat(modifiedBuildDetails).isNotNull();
+    assertThat(modifiedBuildDetails.getGarPackagesDTO()).hasSize(1);
+
+    GARPackageDTO modifiedRepo = modifiedBuildDetails.getGarPackagesDTO().get(0);
+    assertThat(modifiedRepo.getPackageName().substring(index + 1)).isEqualTo("package1");
+    assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
+    assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
   }
 
   @Test

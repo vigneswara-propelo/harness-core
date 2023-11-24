@@ -55,6 +55,7 @@ public class GARArtifactTaskHandlerTest extends CategoryTest {
   private static final String SHA = "sha";
   private static final String TOKEN = "token";
   private static final String REGION = "region";
+  private static final String REPO_NAME = "reponame";
 
   @Test
   @Owner(developers = ABHISHEK)
@@ -90,6 +91,27 @@ public class GARArtifactTaskHandlerTest extends CategoryTest {
     ArtifactTaskExecutionResponse response = garArtifactTaskHandler1.getRepositories(garDelegateRequest);
 
     verify(garApiService, times(1)).getRepository(any(), eq(REGION));
+    assertThat(response).isNotNull();
+
+    List<ArtifactDelegateResponse> responseList = response.getArtifactDelegateResponses();
+    assertThat(responseList).hasSize(1);
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void getPackagesTest() throws IOException {
+    GARArtifactTaskHandler garArtifactTaskHandler1 = spy(garArtifactTaskHandler);
+    GarDelegateRequest garDelegateRequest =
+        GarDelegateRequest.builder().region(REGION).repositoryName(REPO_NAME).build();
+    BuildDetailsInternal buildDetailsInternal = BuildDetailsInternal.builder().build();
+    List<BuildDetailsInternal> builds = Collections.singletonList(buildDetailsInternal);
+
+    when(garApiService.getPackages(any(), anyString(), anyString())).thenReturn(builds);
+    doReturn(TOKEN).when(garArtifactTaskHandler1).getToken(any(), anyBoolean());
+
+    ArtifactTaskExecutionResponse response = garArtifactTaskHandler1.getPackages(garDelegateRequest);
+    verify(garApiService, times(1)).getPackages(any(), eq(REGION), eq(REPO_NAME));
     assertThat(response).isNotNull();
 
     List<ArtifactDelegateResponse> responseList = response.getArtifactDelegateResponses();

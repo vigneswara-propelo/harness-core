@@ -23,6 +23,7 @@ import io.harness.artifacts.docker.service.ArtifactUtils;
 import io.harness.artifacts.docker.service.DockerRegistryUtils;
 import io.harness.artifacts.gar.GarDockerRestClient;
 import io.harness.artifacts.gar.GarRestClient;
+import io.harness.artifacts.gar.beans.GARPackageResponse;
 import io.harness.artifacts.gar.beans.GarInternalConfig;
 import io.harness.artifacts.gar.beans.GarPackageVersionResponse;
 import io.harness.artifacts.gar.beans.GarRepositoryResponse;
@@ -111,6 +112,20 @@ public class GARApiServiceImpl implements GarApiService {
     } catch (IOException e) {
       throw NestedExceptionUtils.hintWithExplanationException("Could not fetch versions for the package",
           "Please check if the package exists and if the permissions are scoped for the authenticated user",
+          new ArtifactServerException(ExceptionUtils.getMessage(e), e, WingsException.USER));
+    }
+  }
+
+  @Override
+  public List<BuildDetailsInternal> getPackages(
+      GarInternalConfig garinternalConfig, String region, String repositoryName) {
+    try {
+      GarRestClient garRestClient = getGarRestClient(garinternalConfig);
+      return getPackage(garinternalConfig, garRestClient, region, repositoryName);
+    } catch (IOException e) {
+      throw NestedExceptionUtils.hintWithExplanationException(
+          "Could not fetch packages for the region:" + region + "and repository:" + repositoryName,
+          "Please check if the repositoryName exists and if the permissions are scoped for the authenticated user",
           new ArtifactServerException(ExceptionUtils.getMessage(e), e, WingsException.USER));
     }
   }
@@ -236,6 +251,49 @@ public class GARApiServiceImpl implements GarApiService {
     return details.stream().collect(Collectors.toList());
   }
 
+  private List<BuildDetailsInternal> getPackage(GarInternalConfig garinternalConfig, GarRestClient garRestClient,
+      String region, String repositoryName) throws WingsException, IOException {
+    List<BuildDetailsInternal> details = new ArrayList<>();
+
+    String nextPage = "";
+    String project = garinternalConfig.getProject();
+    // process rest of pages
+    do {
+      Response<GARPackageResponse> response =
+          garRestClient
+              .getPackage(garinternalConfig.getBearerToken(), project, region, repositoryName, PAGESIZENEW, nextPage)
+              .execute();
+
+      if (response == null) {
+        throw NestedExceptionUtils.hintWithExplanationException("Response Is Null",
+            "Please Check Whether package exists for the given region:" + region + " and repository:" + repositoryName,
+            new InvalidArtifactServerException(response.errorBody().toString(), USER));
+      }
+      if (!response.isSuccessful()) {
+        log.warn("Request for Google Artifact Registry packages not successful for region:" + region
+            + " and repository:" + repositoryName + " Reason: {}");
+        if (!isSuccessful_package(response.code(), response.errorBody().toString())) {
+          log.error("Request not successful. Reason: {}", response);
+          throw NestedExceptionUtils.hintWithExplanationException(
+              "Unable to fetch packages for the region:" + region + "and repository:" + repositoryName,
+              "Please check region and repository field", new InvalidArtifactServerException(response.message(), USER));
+        }
+      }
+
+      GARPackageResponse page = response.body();
+      List<BuildDetailsInternal> pageDetails = processPackagePage(page, garinternalConfig);
+      details.addAll(pageDetails);
+
+      if (page == null || StringUtils.isBlank(page.getNextPageToken())) {
+        break;
+      }
+
+      nextPage = StringUtils.defaultIfBlank(page.getNextPageToken(), null);
+    } while (StringUtils.isNotBlank(nextPage));
+
+    return details.stream().collect(Collectors.toList());
+  }
+
   private List<BuildDetailsInternal> paginate(GarInternalConfig garinternalConfig, GarRestClient garRestClient,
       String versionRegex, int maxNumberOfBuilds) throws WingsException, IOException {
     List<BuildDetailsInternal> details = new ArrayList<>();
@@ -331,6 +389,30 @@ public class GARApiServiceImpl implements GarApiService {
     }
   }
 
+  private boolean isSuccessful_package(int code, String errormessage) {
+    switch (code) {
+      case 404:
+        throw new HintException("Please provide valid values for region, project and repository fields.");
+      case 400:
+        return false;
+      case 401:
+        throw NestedExceptionUtils.hintWithExplanationException(
+            "The connector provided does not have sufficient privileges to access Google artifact registry",
+            "Please check connector's permission and credentials",
+            new InvalidArtifactServerException(errormessage, USER));
+      case 403:
+        throw new HintException("Connector provided does not have access to project. Please check the project field.");
+      default:
+        throw NestedExceptionUtils.hintWithExplanationException(
+            "The server could have failed authenticate ,Please check your credentials",
+            " Server responded with the following error code",
+            new InvalidArtifactServerException(StringUtils.isNotBlank(errormessage)
+                    ? errormessage
+                    : String.format("Server responded with the following error code - %d", code),
+                USER));
+    }
+  }
+
   public List<BuildDetailsInternal> processPage(
       GarPackageVersionResponse versionsPage, String versionRegex, GarInternalConfig garinternalConfig) {
     if (versionsPage != null && EmptyPredicate.isNotEmpty(versionsPage.getVersions())) {
@@ -405,6 +487,37 @@ public class GARApiServiceImpl implements GarApiService {
         log.warn("Google Artifact Registry repository response was null for the region:" + region);
       } else {
         log.warn("Google Artifact Registry repository response had an empty list.");
+      }
+      return Collections.emptyList();
+    }
+  }
+
+  public List<BuildDetailsInternal> processPackagePage(
+      GARPackageResponse RepositoryPage, GarInternalConfig garinternalConfig) {
+    String region = garinternalConfig.getRegion();
+    String repository = garinternalConfig.getRepositoryName();
+    if (RepositoryPage != null && EmptyPredicate.isNotEmpty(RepositoryPage.getPackages())) {
+      List<BuildDetailsInternal> buildDetails =
+          RepositoryPage.getPackages()
+              .stream()
+              .map(repo -> {
+                String repoName = repo.getName();
+                String createTime = repo.getCreateTime();
+                String updateTime = repo.getUpdateTime();
+                Map<String, String> metadata = new HashMap();
+                metadata.put(ArtifactMetadataKeys.createTime, createTime);
+                metadata.put(ArtifactMetadataKeys.updateTime, updateTime);
+                return BuildDetailsInternal.builder().uiDisplayName(repoName).metadata(metadata).build();
+              })
+              .collect(toList());
+
+      return buildDetails.stream().collect(toList());
+
+    } else {
+      if (RepositoryPage == null) {
+        log.warn("Failed to fetch Packages for the repository:" + repository, "and region:" + region);
+      } else {
+        log.warn("Google Artifact Registry Package response had an empty list.");
       }
       return Collections.emptyList();
     }
