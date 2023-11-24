@@ -344,14 +344,14 @@ public class MonitoredServiceResource {
   @Timed
   @ExceptionMetered
   @ResponseMetered
-  @ApiOperation(value = "check if a template referenced monitored services require reconciliation",
+  @ApiOperation(value = "check if a template referenced monitored service(s) require reconciliation",
       nickname = "isReconciliationRequiredForMonitoredServices")
   @Operation(operationId = "isReconciliationRequiredForMonitoredServices",
-      summary = "check if a template referenced monitored services require reconciliation",
+      summary = "check if a template referenced monitored service(s) require reconciliation",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
-            description = "check if a template referenced monitored services require reconciliation")
+            description = "check if a template referenced monitored service(s) require reconciliation")
       })
   @NGAccessControlCheck(resourceType = MONITORED_SERVICE, permission = VIEW_PERMISSION)
   public ResponseDTO<Boolean>
@@ -362,9 +362,12 @@ public class MonitoredServiceResource {
       @Parameter(description = "Template version Label") @NotNull @QueryParam(
           NGCommonEntityConstants.VERSION_LABEL_KEY) String versionLabel,
       @Parameter(description = "Template version number") @NotNull @QueryParam(
-          "templateVersionNumber") int templateVersionNumber) {
+          "templateVersionNumber") int templateVersionNumber,
+      @Parameter(description = "filter to check if reconciliation required for a particular monitored service") @NotNull
+      @QueryParam("monitoredServiceIdentifier") String monitoredServiceIdentifier) {
     return ResponseDTO.newResponse(monitoredServiceService.isReconciliationRequiredForMonitoredServices(
-        templateScopedProjectParams.getProjectParams(), templateIdentifier, versionLabel, templateVersionNumber));
+        templateScopedProjectParams.getProjectParams(), templateIdentifier, versionLabel, monitoredServiceIdentifier,
+        templateVersionNumber));
   }
 
   @GET

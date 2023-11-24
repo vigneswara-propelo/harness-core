@@ -347,8 +347,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   }
 
   @Override
-  public boolean isReconciliationRequiredForMonitoredServices(
-      ProjectParams templateProjectParams, String templateIdentifier, String versionLabel, int templateVersionNumber) {
+  public boolean isReconciliationRequiredForMonitoredServices(ProjectParams templateProjectParams,
+      String templateIdentifier, String versionLabel, String monitoredServiceIdentifier, int templateVersionNumber) {
     Query<MonitoredService> query =
         hPersistence.createQuery(MonitoredService.class)
             .filter(MonitoredServiceKeys.accountId, templateProjectParams.getAccountIdentifier())
@@ -361,10 +361,17 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     if (templateProjectParams.getProjectIdentifier() != null) {
       query = query.filter(MonitoredServiceKeys.projectIdentifier, templateProjectParams.getProjectIdentifier());
     }
-    // all template referenced monitored services count
-    long allTemplateReferencedMonitoredServices = query.count();
+    if (monitoredServiceIdentifier != null) {
+      query = query.filter(MonitoredServiceKeys.identifier, monitoredServiceIdentifier);
+    }
 
-    // get already reconciled Monitored services count
+    // template referenced monitored services count
+    long allTemplateReferencedMonitoredServices = query.count();
+    if (allTemplateReferencedMonitoredServices == 0) {
+      return false;
+    }
+
+    // get already reconciled monitored services count
     query = query.filter(MonitoredServiceKeys.templateMetadata + ".templateVersionNumber", templateVersionNumber);
     long alreadyReconciledMonitoredServices = query.count();
 

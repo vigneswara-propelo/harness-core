@@ -2307,7 +2307,7 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = KARAN_SARASWAT)
   @Category(UnitTests.class)
-  public void testAreTemplateReferencedMSsReconciliationRequired() {
+  public void testIsReconciliationRequiredForMonitoredServices() {
     MonitoredServiceDTO monitoredServiceDTO =
         builderFactory.monitoredServiceDTOBuilder()
             .identifier("ms2")
@@ -2338,11 +2338,21 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
 
     boolean isReconciliationRequired =
-        monitoredServiceService.isReconciliationRequiredForMonitoredServices(projectParams, "template1", "v1", 1);
+        monitoredServiceService.isReconciliationRequiredForMonitoredServices(projectParams, "template1", "v1", null, 1);
     assertThat(isReconciliationRequired).isFalse();
 
     isReconciliationRequired =
-        monitoredServiceService.isReconciliationRequiredForMonitoredServices(projectParams, "template1", "v1", 2);
+        monitoredServiceService.isReconciliationRequiredForMonitoredServices(projectParams, "template1", "v1", null, 2);
+    assertThat(isReconciliationRequired).isTrue();
+
+    // check for template with no referring monitored services
+    isReconciliationRequired =
+        monitoredServiceService.isReconciliationRequiredForMonitoredServices(projectParams, "template2", "v1", null, 1);
+    assertThat(isReconciliationRequired).isFalse();
+
+    // check with monitored service identifier filter
+    isReconciliationRequired = monitoredServiceService.isReconciliationRequiredForMonitoredServices(
+        projectParams, "template1", "v1", "ms3", 2);
     assertThat(isReconciliationRequired).isTrue();
   }
 
