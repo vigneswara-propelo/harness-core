@@ -7,10 +7,10 @@
 
 package io.harness.idp.scorecard.datapoints.parser.factory;
 
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.FILE_CONTAINS;
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.FILE_CONTENTS;
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.EXTRACT_STRING_FROM_A_FILE;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_BRANCH_PROTECTED;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_FILE_EXISTS;
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.MATCH_STRING_IN_A_FILE;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.MEAN_TIME_TO_COMPLETE_SUCCESS_WORKFLOW_RUNS;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.MEAN_TIME_TO_COMPLETE_WORKFLOW_RUNS;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.OPEN_CODE_SCANNING_ALERTS;
@@ -60,9 +60,9 @@ public class GithubDataPointParserFactory implements DataPointParserFactory {
         return githubIsBranchProtectedParser;
       case IS_FILE_EXISTS:
         return githubFileExistsParser;
-      case FILE_CONTENTS:
+      case EXTRACT_STRING_FROM_A_FILE:
         return githubFileContentsParser;
-      case FILE_CONTAINS:
+      case MATCH_STRING_IN_A_FILE:
         return githubFileContainsParser;
       case WORKFLOWS_COUNT:
         return githubWorkflowsCountParser;

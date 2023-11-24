@@ -478,25 +478,25 @@
   {
     "id": "653772979a42f41b2bd082fe",
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
-    "identifier": "fileContents",
-    "name": "File contents",
+    "identifier": "extractStringFromAFile",
+    "name": "Extract string from a file",
     "type": "STRING",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_file_contents",
     "inputDetails": [
       {
         "key": "branchName",
-        "description": "Branch Name",
-        "required": true
+        "description": "Branch Name (Optional)",
+        "required": false
       },
       {
         "key": "filePath",
-        "description": "File path (e.g. src/index.js)",
+        "description": "File path (e.g. src/package.json)",
         "required": true
       },
       {
         "key": "pattern",
-        "description": "Regex Pattern to search for in the file",
+        "description": "Regex Pattern to extract",
         "required": true
       }
     ],
@@ -506,20 +506,20 @@
   {
     "id": "6537ca6bf4f2d0d2eb140d32",
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
-    "identifier": "fileContains",
-    "name": "File contains",
+    "identifier": "matchStringInAFile",
+    "name": "Match string in a file",
     "type": "BOOLEAN",
     "dataSourceIdentifier": "github",
     "dataSourceLocationIdentifier": "github_file_contents",
     "inputDetails": [
       {
         "key": "branchName",
-        "description": "Branch Name",
-        "required": true
+        "description": "Branch Name (Optional)",
+        "required": false
       },
       {
         "key": "filePath",
-        "description": "File path (e.g. src/index.js)",
+        "description": "File path (e.g. src/package.json)",
         "required": true
       },
       {
