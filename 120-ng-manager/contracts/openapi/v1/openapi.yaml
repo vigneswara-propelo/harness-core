@@ -1807,7 +1807,7 @@ paths:
           in: query
           name: event_status
       tags:
-        - Org Gitx Webhooks
+        - Org Gitx Webhooks Events
       x-internal: true
       description: List GitX webhook Events at org level
   '/v1/orgs/{org}/projects/{project}/gitx-webhooks':
@@ -1905,7 +1905,7 @@ paths:
     get:
       summary: Lists all the GitX Webhooks events at project level
       tags:
-        - Project Gitx Webhooks
+        - Project Gitx Webhooks Events
       responses:
         '200':
           $ref: '#/components/responses/ListGitXWebhookEventResponse'
