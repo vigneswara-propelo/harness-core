@@ -7,7 +7,7 @@
 
 package io.harness.idp.scorecard.datasourcelocations.locations.scm.github;
 
-import static io.harness.idp.common.Constants.DEFAULT_BRANCH_KEY_ESCAPED;
+import static io.harness.idp.common.Constants.DEFAULT_BRANCH_KEY;
 import static io.harness.idp.scorecard.datapoints.constants.Inputs.BRANCH_NAME;
 
 import io.harness.annotations.dev.HarnessTeam;
@@ -39,7 +39,7 @@ public class GithubMeanTimeToMergePRDsl extends ScmBaseDslNoLoop {
       String inputValue = inputValueOpt.get().getValue();
       inputValue = inputValue.replace("\"", "");
       if (!inputValue.isEmpty()) {
-        if (!inputValue.equals(DEFAULT_BRANCH_KEY_ESCAPED)) {
+        if (!inputValue.equals(DEFAULT_BRANCH_KEY)) {
           requestBody = requestBody.replace(REPOSITORY_BRANCH_NAME_REPLACER,
               ",baseRefName:"
                   + "\\"
