@@ -79,6 +79,7 @@ import software.wings.helpers.ext.servicenow.ServiceNowRestClient;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -1322,7 +1323,9 @@ public class ServiceNowTaskNgHelper {
     if (response.errorBody() == null) {
       throw new ServiceNowException(message + " : " + response.message(), SERVICENOW_ERROR, USER);
     }
-    throw new ServiceNowException(message + " : " + response.errorBody().string(), SERVICENOW_ERROR, USER);
+
+    throw new ServiceNowException(
+        message + " : " + getFormattedError(response.errorBody().string()), SERVICENOW_ERROR, USER);
   }
 
   @NotNull
@@ -1331,7 +1334,21 @@ public class ServiceNowTaskNgHelper {
         "Check if the ServiceNow url and credentials are correct and accessible from delegate",
         "Not able to access the given ServiceNow url with the credentials", e);
   }
+  private static String getFormattedError(String errorBody) {
+    try {
+      // processing the error
+      ObjectMapper objectMapper = new ObjectMapper();
+      JsonNode jsonNode = objectMapper.readTree(errorBody);
 
+      // processing the error
+      ServiceNowErrorResponse serviceNowErrorResponse = new ServiceNowErrorResponse(jsonNode);
+
+      return serviceNowErrorResponse.getFormattedError();
+    } catch (Exception ex) {
+      log.warn("Error occurred while trying to format Service Now error body", ex);
+      return errorBody;
+    }
+  }
   private void saveLogs(LogCallback executionLogCallback, String message) {
     if (executionLogCallback != null) {
       executionLogCallback.saveExecutionLog(message);

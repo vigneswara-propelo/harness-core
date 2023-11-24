@@ -2012,4 +2012,25 @@ public class ServiceNowTaskNGHelperTest extends CategoryTest {
       verify(serviceNowRestClient, times(3)).updateUsingTemplate(anyString(), anyString(), anyString(), anyString());
     }
   }
+
+  @Test
+  @Owner(developers = vivekveman)
+  @Category(UnitTests.class)
+  public void testHandleFormatError() throws Exception {
+    ClassLoader classLoader = this.getClass().getClassLoader();
+    assertThatThrownBy(()
+                           -> serviceNowTaskNgHelper.handleResponse(
+                               getJsonNodeResponseFromJsonFileFailure(
+                                   "servicenow/serviceNowTicketTypeMissingACLResponse.json", classLoader),
+                               "Failed to get ServiceNow Standard template"))
+        .hasMessage(
+            "Failed to get ServiceNow Standard template : [failure] : User Not Authorized : User is unauthorized to access table: sys_db_object");
+  }
+  private Response<JsonNode> getJsonNodeResponseFromJsonFileFailure(String filePath, ClassLoader classLoader)
+      throws Exception {
+    URL jsonFile = classLoader.getResource(filePath);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode responseNode = mapper.readTree(jsonFile);
+    return Response.error(403, ResponseBody.create(MediaType.parse("application/json"), String.valueOf(responseNode)));
+  }
 }
