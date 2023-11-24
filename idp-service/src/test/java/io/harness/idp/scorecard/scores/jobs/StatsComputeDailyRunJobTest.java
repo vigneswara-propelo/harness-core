@@ -19,7 +19,7 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.idp.scorecard.checks.service.CheckService;
+import io.harness.idp.scorecard.scores.service.StatsComputeService;
 import io.harness.rule.Owner;
 
 import java.time.LocalDate;
@@ -42,11 +42,11 @@ import org.mockito.MockitoAnnotations;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.IDP)
-public class CheckStatusDailyRunJobTest extends CategoryTest {
+public class StatsComputeDailyRunJobTest extends CategoryTest {
   AutoCloseable openMocks;
-  @InjectMocks private CheckStatusDailyRunJob job;
+  @InjectMocks private StatsComputeDailyRunJob job;
   @Mock private ScheduledExecutorService executorService;
-  @Mock private CheckService checkService;
+  @Mock private StatsComputeService statsComputeService;
 
   @Before
   public void setUp() {
@@ -79,16 +79,18 @@ public class CheckStatusDailyRunJobTest extends CategoryTest {
   @Test
   @Owner(developers = VIGNESWARA)
   @Category(UnitTests.class)
-  public void testCheckStatusDailyRunJob() {
+  public void testStatsComputeDailyRunJob() {
     job.run();
-    verify(checkService).computeCheckStatus();
+    verify(statsComputeService).populateStatsData();
   }
 
   @Test(expected = Exception.class)
   @Owner(developers = VIGNESWARA)
   @Category(UnitTests.class)
-  public void testCheckStatusDailyRunJobThrowsException() {
-    willAnswer(invocation -> { throw new Exception("Exception Throw"); }).given(checkService).computeCheckStatus();
+  public void testStatsComputeDailyRunJobThrowsException() {
+    willAnswer(invocation -> { throw new Exception("Exception Throw"); })
+        .given(statsComputeService)
+        .populateStatsData();
     job.run();
   }
 

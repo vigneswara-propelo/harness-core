@@ -4,7 +4,8 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
-package io.harness.idp.scorecard.scores.repositories;
+
+package io.harness.idp.scorecard.scorecards.repositories;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -15,7 +16,8 @@ import lombok.Getter;
 @Getter
 @Builder
 @OwnedBy(HarnessTeam.IDP)
-public class EntityIdentifierAndScore {
-  private String entityIdentifier;
-  private int score;
+public class ScorecardIdentifierAndScore {
+  private String scorecardIdentifier;
+  private int count;
+  private double percentage;
 }

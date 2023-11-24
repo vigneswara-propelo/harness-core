@@ -9,7 +9,7 @@ package io.harness.idp.scorecard.scores.jobs;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.scorecard.checks.service.CheckService;
+import io.harness.idp.scorecard.scores.service.StatsComputeService;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
@@ -27,23 +27,23 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 @Slf4j
 @OwnedBy(HarnessTeam.IDP)
-public class CheckStatusDailyRunJob implements Managed {
+public class StatsComputeDailyRunJob implements Managed {
   private ScheduledExecutorService executorService;
-  private final CheckService checkService;
+  private final StatsComputeService statsComputeService;
 
   @Inject
-  public CheckStatusDailyRunJob(
-      @Named("checkStatusDailyRunJob") ScheduledExecutorService executorService, CheckService checkService) {
+  public StatsComputeDailyRunJob(@Named("statsComputeDailyRunJob") ScheduledExecutorService executorService,
+      StatsComputeService statsComputeService) {
     this.executorService = executorService;
-    this.checkService = checkService;
+    this.statsComputeService = statsComputeService;
   }
 
   @Override
   public void start() throws Exception {
     executorService = Executors.newSingleThreadScheduledExecutor(
-        new ThreadFactoryBuilder().setNameFormat("check-status-daily-run-job").build());
+        new ThreadFactoryBuilder().setNameFormat("stats-compute-daily-run-job").build());
     long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
-    log.info("Scheduling CheckStatusDailyRunJob with initial delay of {} minutes from current time", midnight);
+    log.info("Scheduling StatsComputeDailyRunJob with initial delay of {} minutes from current time", midnight);
     executorService.scheduleAtFixedRate(this::run, midnight + 10, TimeUnit.DAYS.toMinutes(1), TimeUnit.MINUTES);
   }
 
@@ -51,18 +51,18 @@ public class CheckStatusDailyRunJob implements Managed {
   public void stop() throws Exception {
     executorService.shutdownNow();
     if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
-      log.error("CheckStatusDailyRunJob executorService terminated after the timeout of 30 seconds");
+      log.error("StatsComputeDailyRunJob executorService terminated after the timeout of 30 seconds");
     }
   }
 
   public void run() {
-    log.info("Check status daily run job started");
+    log.info("Stats compute daily run job started");
     try {
-      checkService.computeCheckStatus();
+      statsComputeService.populateStatsData();
     } catch (Exception ex) {
-      log.error("Error in CheckStatusDailyRunJob. Error = {}", ex.getMessage(), ex);
+      log.error("Error in StatsComputeDailyRunJob. Error = {}", ex.getMessage(), ex);
       throw ex;
     }
-    log.info("Check status daily run job completed");
+    log.info("Stats compute daily run job completed");
   }
 }

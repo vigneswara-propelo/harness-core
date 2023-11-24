@@ -5,19 +5,22 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.scorecard.scores.repositories;
+package io.harness.idp.scorecard.scorecards.beans;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.spec.server.idp.v1.model.CheckStatus;
 
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @Builder
 @OwnedBy(HarnessTeam.IDP)
-public class EntityIdentifierAndCheckStatus {
-  private String entityIdentifier;
-  private CheckStatus.StatusEnum status;
+public class StatsMetadata {
+  private String name;
+  private String kind;
+  private String namespace;
+  private String type;
+  private String owner;
+  private String system;
 }

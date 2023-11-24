@@ -14,7 +14,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.scorecard.checks.entity.CheckEntity;
 import io.harness.idp.scorecard.scorecards.entity.ScorecardEntity;
-import io.harness.idp.scorecard.scores.repositories.ScorecardIdentifierAndScore;
+import io.harness.idp.scorecard.scorecards.repositories.ScorecardIdentifierAndScore;
 import io.harness.spec.server.idp.v1.model.Check;
 import io.harness.spec.server.idp.v1.model.Scorecard;
 import io.harness.spec.server.idp.v1.model.ScorecardResponse;

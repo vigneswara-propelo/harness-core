@@ -30,7 +30,6 @@ public interface CheckService {
   List<CheckEntity> getChecksByAccountIdAndIdentifiers(String accountIdentifier, Set<String> identifiers);
   CheckStatsResponse getCheckStats(String accountIdentifier, String identifier, Boolean custom);
   List<CheckGraph> getCheckGraph(String accountIdentifier, String identifier, Boolean custom);
-  void computeCheckStatus();
   Map<String, CheckStatusEntity> getCheckStatusByAccountIdAndIdentifiers(
       String accountIdentifier, List<String> identifiers);
 }

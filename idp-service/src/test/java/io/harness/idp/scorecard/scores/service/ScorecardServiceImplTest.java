@@ -24,18 +24,18 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.clients.BackstageResourceClient;
 import io.harness.exception.InvalidRequestException;
-import io.harness.idp.backstagebeans.BackstageCatalogComponentEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
 import io.harness.idp.common.GsonUtils;
 import io.harness.idp.scorecard.checks.entity.CheckEntity;
 import io.harness.idp.scorecard.checks.service.CheckService;
+import io.harness.idp.scorecard.scorecards.beans.BackstageCatalogEntityFacets;
+import io.harness.idp.scorecard.scorecards.beans.ScorecardAndChecks;
+import io.harness.idp.scorecard.scorecards.beans.StatsMetadata;
 import io.harness.idp.scorecard.scorecards.entity.ScorecardEntity;
+import io.harness.idp.scorecard.scorecards.entity.ScorecardStatsEntity;
+import io.harness.idp.scorecard.scorecards.repositories.ScorecardIdentifierAndScore;
 import io.harness.idp.scorecard.scorecards.repositories.ScorecardRepository;
+import io.harness.idp.scorecard.scorecards.repositories.ScorecardStatsRepository;
 import io.harness.idp.scorecard.scorecards.service.ScorecardServiceImpl;
-import io.harness.idp.scorecard.scores.beans.BackstageCatalogEntityFacets;
-import io.harness.idp.scorecard.scores.beans.ScorecardAndChecks;
-import io.harness.idp.scorecard.scores.repositories.EntityIdentifierAndScore;
-import io.harness.idp.scorecard.scores.repositories.ScorecardIdentifierAndScore;
 import io.harness.outbox.api.OutboxService;
 import io.harness.rule.Owner;
 import io.harness.spec.server.idp.v1.model.Facets;
@@ -54,8 +54,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 import org.junit.Before;
@@ -73,9 +71,8 @@ import retrofit2.Response;
 public class ScorecardServiceImplTest extends CategoryTest {
   private ScorecardServiceImpl scorecardServiceImpl;
   @Mock ScorecardRepository scorecardRepository;
+  @Mock ScorecardStatsRepository scorecardStatsRepository;
   @Mock CheckService checkService;
-  @Mock ScoreService scoreService;
-  @Mock ScoreComputerService scoreComputerService;
   @Mock BackstageResourceClient backstageResourceClient;
   @Mock Call<Object> call;
   @Mock ObjectMapper objectMapper;
@@ -95,14 +92,13 @@ public class ScorecardServiceImplTest extends CategoryTest {
   private static final String TEST_CHECK_IDENTIFIER = "test-check-identifier";
   private static final boolean TEST_CHECK_IS_CUSTOM = false;
   private static final double TEST_CHECK_WRIGHT = 1.0;
-  private static final String IDP_SERVICE_ENTITY_ID = "03bc314a-437b-4d15-b75b-b819179e7859";
   private static final String IDP_SERVICE_ENTITY_NAME = "idp-service";
 
   @Before
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    scorecardServiceImpl = new ScorecardServiceImpl(scorecardRepository, checkService, scoreService,
-        scoreComputerService, backstageResourceClient, transactionTemplate, outboxService);
+    scorecardServiceImpl = new ScorecardServiceImpl(scorecardRepository, scorecardStatsRepository, checkService,
+        backstageResourceClient, transactionTemplate, outboxService);
   }
 
   @Test
@@ -111,9 +107,9 @@ public class ScorecardServiceImplTest extends CategoryTest {
   public void testGetAllScorecardsAndChecksDetails() {
     ScorecardEntity scorecardEntity = getScorecardEntity();
     when(scorecardRepository.findByAccountIdentifier(ACCOUNT_ID)).thenReturn(List.of(scorecardEntity));
+    when(scorecardStatsRepository.computeScoresPercentageByScorecard(ACCOUNT_ID, List.of(SCORECARD_ID)))
+        .thenReturn(getScorecardIdentifierAndScore());
     when(checkService.getChecksByAccountIdAndIdentifiers(any(), any())).thenReturn(getCheckEntities());
-    when(scoreService.getComputedScoresForScorecards(ACCOUNT_ID, List.of(SCORECARD_ID)))
-        .thenReturn(getScorecardIdentifierAndScoreMap());
     List<Scorecard> scorecards = scorecardServiceImpl.getAllScorecardsAndChecksDetails(ACCOUNT_ID);
     assertEquals(1, scorecards.size());
     assertEquals(1, scorecards.get(0).getChecksMissing().size());
@@ -240,9 +236,8 @@ public class ScorecardServiceImplTest extends CategoryTest {
   public void testGetScorecardStats() {
     when(scorecardRepository.findByAccountIdentifierAndIdentifier(ACCOUNT_ID, SCORECARD_ID))
         .thenReturn(getScorecardEntity());
-    when(scoreComputerService.getAllEntities(any(), any(), any())).thenReturn(getBackstageCatalogEntities());
-    when(scoreService.getScoresForEntityIdentifiersAndScorecardIdentifiers(any(), any(), any()))
-        .thenReturn(getEntityIdentifierAndScore());
+    when(scorecardStatsRepository.findByAccountIdentifierAndScorecardIdentifier(ACCOUNT_ID, SCORECARD_ID))
+        .thenReturn(getScorecardStatsEntities());
     ScorecardStatsResponse response = scorecardServiceImpl.getScorecardStats(ACCOUNT_ID, SCORECARD_ID);
     assertEquals(SCORECARD_NAME, response.getName());
     assertEquals(1, response.getStats().size());
@@ -437,28 +432,22 @@ public class ScorecardServiceImplTest extends CategoryTest {
         .build();
   }
 
-  private Map<String, ScorecardIdentifierAndScore> getScorecardIdentifierAndScoreMap() {
-    return Map.of(SCORECARD_ID,
+  private List<ScorecardIdentifierAndScore> getScorecardIdentifierAndScore() {
+    return List.of(
         ScorecardIdentifierAndScore.builder().scorecardIdentifier(SCORECARD_ID).count(3).percentage(0.6666).build());
   }
 
-  private Set<BackstageCatalogEntity> getBackstageCatalogEntities() {
-    BackstageCatalogComponentEntity entity = new BackstageCatalogComponentEntity();
-    BackstageCatalogEntity.Metadata metadata = new BackstageCatalogEntity.Metadata();
-    metadata.setUid(IDP_SERVICE_ENTITY_ID);
-    metadata.setName(IDP_SERVICE_ENTITY_NAME);
-    entity.setMetadata(metadata);
-
-    BackstageCatalogComponentEntity.Spec spec = new BackstageCatalogComponentEntity.Spec();
-    spec.setType("service");
-    spec.setLifecycle("experimental");
-    spec.setOwner("team-a");
-    spec.setSystem("Unknown");
-    entity.setSpec(spec);
-    return Set.of(entity);
-  }
-
-  private List<EntityIdentifierAndScore> getEntityIdentifierAndScore() {
-    return List.of(EntityIdentifierAndScore.builder().entityIdentifier(IDP_SERVICE_ENTITY_ID).score(75).build());
+  private List<ScorecardStatsEntity> getScorecardStatsEntities() {
+    ScorecardStatsEntity scorecardStatsEntity = ScorecardStatsEntity.builder()
+                                                    .metadata(StatsMetadata.builder()
+                                                                  .name(IDP_SERVICE_ENTITY_NAME)
+                                                                  .owner("team-a")
+                                                                  .system("Unknown")
+                                                                  .kind("component")
+                                                                  .type("service")
+                                                                  .build())
+                                                    .score(75)
+                                                    .build();
+    return List.of(scorecardStatsEntity);
   }
 }

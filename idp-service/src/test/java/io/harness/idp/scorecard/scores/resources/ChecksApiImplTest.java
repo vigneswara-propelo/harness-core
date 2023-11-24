@@ -214,7 +214,6 @@ public class ChecksApiImplTest extends CategoryTest {
             .accountIdentifier(ACCOUNT_ID)
             .identifier(CHECK_ID)
             .isCustom(true)
-            .name(CHECK_NAME)
             .total(10)
             .passCount(5)
             .build());

@@ -22,10 +22,12 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.clients.BackstageResourceClient;
 import io.harness.exception.InvalidRequestException;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
 import io.harness.idp.scorecard.checks.entity.CheckEntity;
 import io.harness.idp.scorecard.checks.service.CheckService;
+import io.harness.idp.scorecard.scorecards.beans.BackstageCatalogEntityFacets;
+import io.harness.idp.scorecard.scorecards.beans.ScorecardAndChecks;
 import io.harness.idp.scorecard.scorecards.entity.ScorecardEntity;
+import io.harness.idp.scorecard.scorecards.entity.ScorecardStatsEntity;
 import io.harness.idp.scorecard.scorecards.events.ScorecardCreateEvent;
 import io.harness.idp.scorecard.scorecards.events.ScorecardDeleteEvent;
 import io.harness.idp.scorecard.scorecards.events.ScorecardUpdateEvent;
@@ -33,13 +35,9 @@ import io.harness.idp.scorecard.scorecards.mappers.ScorecardAndChecksMapper;
 import io.harness.idp.scorecard.scorecards.mappers.ScorecardDetailsMapper;
 import io.harness.idp.scorecard.scorecards.mappers.ScorecardMapper;
 import io.harness.idp.scorecard.scorecards.mappers.ScorecardStatsMapper;
+import io.harness.idp.scorecard.scorecards.repositories.ScorecardIdentifierAndScore;
 import io.harness.idp.scorecard.scorecards.repositories.ScorecardRepository;
-import io.harness.idp.scorecard.scores.beans.BackstageCatalogEntityFacets;
-import io.harness.idp.scorecard.scores.beans.ScorecardAndChecks;
-import io.harness.idp.scorecard.scores.repositories.EntityIdentifierAndScore;
-import io.harness.idp.scorecard.scores.repositories.ScorecardIdentifierAndScore;
-import io.harness.idp.scorecard.scores.service.ScoreComputerService;
-import io.harness.idp.scorecard.scores.service.ScoreService;
+import io.harness.idp.scorecard.scorecards.repositories.ScorecardStatsRepository;
 import io.harness.outbox.api.OutboxService;
 import io.harness.spec.server.idp.v1.model.Facets;
 import io.harness.spec.server.idp.v1.model.Scorecard;
@@ -71,9 +69,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Slf4j
 public class ScorecardServiceImpl implements ScorecardService {
   private final ScorecardRepository scorecardRepository;
+  private final ScorecardStatsRepository scorecardStatsRepository;
   private final CheckService checkService;
-  private final ScoreService scoreService;
-  private final ScoreComputerService scoreComputerService;
   private final BackstageResourceClient backstageResourceClient;
 
   @Inject @Named(OUTBOX_TRANSACTION_TEMPLATE) private TransactionTemplate transactionTemplate;
@@ -89,14 +86,13 @@ public class ScorecardServiceImpl implements ScorecardService {
       + "&facet=" + OWNERS_FILTER + "&facet=" + TAGS_FILTER + "&facet=" + LIFECYCLE_FILTER;
 
   @Inject
-  public ScorecardServiceImpl(ScorecardRepository scorecardRepository, CheckService checkService,
-      ScoreService scoreService, ScoreComputerService scoreComputerService,
+  public ScorecardServiceImpl(ScorecardRepository scorecardRepository,
+      ScorecardStatsRepository scorecardStatsRepository, CheckService checkService,
       BackstageResourceClient backstageResourceClient, TransactionTemplate transactionTemplate,
       OutboxService outboxService) {
     this.scorecardRepository = scorecardRepository;
+    this.scorecardStatsRepository = scorecardStatsRepository;
     this.checkService = checkService;
-    this.scoreService = scoreService;
-    this.scoreComputerService = scoreComputerService;
     this.backstageResourceClient = backstageResourceClient;
     this.transactionTemplate = transactionTemplate;
     this.outboxService = outboxService;
@@ -118,7 +114,10 @@ public class ScorecardServiceImpl implements ScorecardService {
                                             .map(ScorecardEntity::getIdentifier)
                                             .collect(Collectors.toList());
     Map<String, ScorecardIdentifierAndScore> scorecardIdScoreMap =
-        scoreService.getComputedScoresForScorecards(accountIdentifier, scorecardIdentifiers);
+        scorecardStatsRepository.computeScoresPercentageByScorecard(accountIdentifier, scorecardIdentifiers)
+            .stream()
+            .collect(Collectors.toMap(ScorecardIdentifierAndScore::getScorecardIdentifier,
+                scorecardIdentifierAndScore -> scorecardIdentifierAndScore));
 
     for (ScorecardEntity scorecardEntity : scorecardEntities) {
       scorecards.add(
@@ -300,20 +299,12 @@ public class ScorecardServiceImpl implements ScorecardService {
   public ScorecardStatsResponse getScorecardStats(String accountIdentifier, String identifier) {
     ScorecardEntity scorecardEntity =
         scorecardRepository.findByAccountIdentifierAndIdentifier(accountIdentifier, identifier);
-    if (scorecardEntity == null || !scorecardEntity.isPublished()) {
+    if (scorecardEntity == null) {
       throw new InvalidRequestException(String.format("Scorecard stats not found for scorecardId [%s]", identifier));
     }
-    Set<BackstageCatalogEntity> entities =
-        scoreComputerService.getAllEntities(accountIdentifier, null, List.of(scorecardEntity.getFilter()));
-    Map<String, Integer> scoreMap =
-        scoreService
-            .getScoresForEntityIdentifiersAndScorecardIdentifiers(accountIdentifier,
-                entities.stream().map(entity -> entity.getMetadata().getUid()).collect(Collectors.toList()),
-                List.of(identifier))
-            .stream()
-            .collect(
-                Collectors.toMap(EntityIdentifierAndScore::getEntityIdentifier, EntityIdentifierAndScore::getScore));
-    return ScorecardStatsMapper.toDTO(entities, scoreMap, scorecardEntity.getName());
+    List<ScorecardStatsEntity> scorecardStatsEntities =
+        scorecardStatsRepository.findByAccountIdentifierAndScorecardIdentifier(accountIdentifier, identifier);
+    return ScorecardStatsMapper.toDTO(scorecardStatsEntities, scorecardEntity.getName());
   }
 
   @Override

@@ -10,8 +10,8 @@ package io.harness.idp.scorecard.scorecards.mappers;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.scorecard.checks.entity.CheckEntity;
+import io.harness.idp.scorecard.scorecards.beans.ScorecardAndChecks;
 import io.harness.idp.scorecard.scorecards.entity.ScorecardEntity;
-import io.harness.idp.scorecard.scores.beans.ScorecardAndChecks;
 
 import java.util.List;
 import lombok.experimental.UtilityClass;

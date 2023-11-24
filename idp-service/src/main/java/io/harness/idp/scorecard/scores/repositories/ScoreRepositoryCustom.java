@@ -13,25 +13,17 @@ import io.harness.spec.server.idp.v1.model.CheckStatus;
 
 import com.mongodb.client.result.UpdateResult;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 
 @OwnedBy(HarnessTeam.IDP)
 public interface ScoreRepositoryCustom {
   AggregationResults<ScoreEntityByScorecardIdentifier> getAllLatestScoresByScorecardsForAnEntity(
       String accountIdentifier, String entityIdentifier);
-  AggregationResults<ScorecardIdentifierAndScore> computeScoresPercentageByScorecard(
-      String accountIdentifier, List<String> scorecardIdentifiers);
 
   ScoreEntity getLatestComputedScoreForEntityAndScorecard(
       String accountIdentifier, String entityIdentifier, String scoreCardIdentifier);
 
-  AggregationResults<EntityIdentifierAndScore> getScoresForEntityIdentifiersAndScorecardIdentifiers(
-      String accountIdentifier, List<String> entityIdentifiers, List<String> scorecardIdentifiers);
-
-  AggregationResults<EntityIdentifierAndCheckStatus> getCheckStatusForLatestComputedScores(String accountIdentifier,
-      List<String> entityIdentifiers, List<String> scorecardIdentifiers, Pair<Long, Long> previousDay24HourTimeFrame,
-      String checkIdentifier, boolean custom);
+  List<ScoreEntityByEntityIdentifier> getLatestScoresForScorecard(String accountIdentifier, String scorecardIdentifier);
 
   UpdateResult updateCheckIdentifier(ScoreEntity score, List<CheckStatus> checkStatuses);
 }

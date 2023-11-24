@@ -9,7 +9,7 @@ package io.harness.idp.scorecard.scorecards.service;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.scorecard.scores.beans.ScorecardAndChecks;
+import io.harness.idp.scorecard.scorecards.beans.ScorecardAndChecks;
 import io.harness.spec.server.idp.v1.model.Facets;
 import io.harness.spec.server.idp.v1.model.Scorecard;
 import io.harness.spec.server.idp.v1.model.ScorecardDetailsRequest;

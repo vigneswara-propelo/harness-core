@@ -9,35 +9,31 @@ package io.harness.idp.scorecard.scorecards.mappers;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogEntityTypes;
+import io.harness.idp.scorecard.scorecards.beans.StatsMetadata;
+import io.harness.idp.scorecard.scorecards.entity.ScorecardStatsEntity;
 import io.harness.spec.server.idp.v1.model.ScorecardStats;
 import io.harness.spec.server.idp.v1.model.ScorecardStatsResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.IDP)
 @UtilityClass
 public class ScorecardStatsMapper {
-  public ScorecardStatsResponse toDTO(
-      Set<BackstageCatalogEntity> entities, Map<String, Integer> scoreMap, String name) {
+  public ScorecardStatsResponse toDTO(List<ScorecardStatsEntity> scorecardStatsEntities, String name) {
     ScorecardStatsResponse response = new ScorecardStatsResponse();
     response.setName(name);
     List<ScorecardStats> scorecardStats = new ArrayList<>();
-    for (BackstageCatalogEntity entity : entities) {
+    for (ScorecardStatsEntity scorecardStatsEntity : scorecardStatsEntities) {
       ScorecardStats stats = new ScorecardStats();
-      stats.setName(entity.getMetadata().getName());
-      stats.setOwner(BackstageCatalogEntityTypes.getEntityOwner(entity));
-      stats.setSystem(BackstageCatalogEntityTypes.getEntitySystem(entity));
-      stats.setKind(entity.getKind());
-      stats.setType(BackstageCatalogEntityTypes.getEntityType(entity));
-      if (scoreMap.containsKey(entity.getMetadata().getUid())) {
-        stats.setScore(scoreMap.get(entity.getMetadata().getUid()));
-      }
+      StatsMetadata metadata = scorecardStatsEntity.getMetadata();
+      stats.setName(metadata.getName());
+      stats.setOwner(metadata.getOwner());
+      stats.setSystem(metadata.getSystem());
+      stats.setKind(metadata.getKind());
+      stats.setType(metadata.getType());
+      stats.setScore(scorecardStatsEntity.getScore());
       scorecardStats.add(stats);
     }
     response.setStats(scorecardStats);

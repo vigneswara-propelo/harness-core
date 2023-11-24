@@ -10,62 +10,55 @@ package io.harness.idp.scorecard.checks.entity;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.EmbeddedUser;
+import io.harness.idp.scorecard.scorecards.beans.StatsMetadata;
 import io.harness.mongo.index.CompoundMongoIndex;
-import io.harness.mongo.index.FdTtlIndex;
 import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.persistence.CreatedAtAware;
-import io.harness.persistence.CreatedByAware;
 import io.harness.persistence.PersistentEntity;
 
-import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import java.time.OffsetDateTime;
-import java.util.Date;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
-@FieldNameConstants(innerTypeName = "CheckStatusKeys")
+@FieldNameConstants(innerTypeName = "CheckStatsKeys")
 @StoreIn(DbAliases.IDP)
-@Entity(value = "checkStatus", noClassnameStored = true)
-@Document("checkStatus")
+@Entity(value = "checkStats", noClassnameStored = true)
+@Document("checkStats")
 @Persistent
 @OwnedBy(HarnessTeam.IDP)
-public class CheckStatusEntity implements PersistentEntity, CreatedByAware, CreatedAtAware {
-  public static final long TTL_MONTHS = 6;
-
+public class CheckStatsEntity implements PersistentEntity, CreatedAtAware {
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
         .add(CompoundMongoIndex.builder()
-                 .name("unique_account_identifier_custom_timestamp")
+                 .name("unique_account_entityIdentifier_checkIdentifier_custom")
                  .unique(true)
-                 .field(CheckStatusKeys.accountIdentifier)
-                 .field(CheckStatusKeys.identifier)
-                 .field(CheckStatusKeys.isCustom)
-                 .field(CheckStatusKeys.timestamp)
+                 .field(CheckStatsKeys.accountIdentifier)
+                 .field(CheckStatsKeys.entityIdentifier)
+                 .field(CheckStatsKeys.checkIdentifier)
+                 .field(CheckStatsKeys.isCustom)
                  .build())
         .build();
   }
 
   @Id private String id;
   private String accountIdentifier;
-  private String identifier;
+  private String entityIdentifier;
+  private String checkIdentifier;
   private boolean isCustom;
-  private int passCount;
-  private int total;
-  private long timestamp;
-  @Builder.Default @FdTtlIndex Date validUntil = Date.from(OffsetDateTime.now().plusMonths(TTL_MONTHS).toInstant());
-  @SchemaIgnore @CreatedBy private EmbeddedUser createdBy;
+  private StatsMetadata metadata;
+  private String status;
+
   @Builder.Default @CreatedDate private long createdAt = System.currentTimeMillis();
+  @LastModifiedDate long lastUpdatedAt;
 }

@@ -6,9 +6,7 @@
  */
 package io.harness.idp.scorecard.scores.repositories;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.idp.common.Constants.DOT_SEPARATOR;
-import static io.harness.idp.common.DateUtils.yesterdayInMilliseconds;
+import static io.harness.idp.common.DateUtils.getPreviousDay24HourTimeFrame;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -25,11 +23,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
-import org.springframework.data.mongodb.core.aggregation.BooleanOperators;
-import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
-import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -68,43 +61,6 @@ public class ScoreRepositoryCustomImpl implements ScoreRepositoryCustom {
   }
 
   @Override
-  public AggregationResults<ScorecardIdentifierAndScore> computeScoresPercentageByScorecard(
-      String accountIdentifier, List<String> scorecardIdentifiers) {
-    Criteria criteria = Criteria.where(ScoreEntity.ScoreKeys.accountIdentifier)
-                            .is(accountIdentifier)
-                            .and(ScoreEntity.ScoreKeys.scorecardIdentifier)
-                            .in(scorecardIdentifiers)
-                            .and(ScoreEntity.ScoreKeys.lastComputedTimestamp)
-                            .gt(yesterdayInMilliseconds());
-    ProjectionOperation projectionOperation =
-        Aggregation.project()
-            .andExpression(Constants.ID_KEY)
-            .as(Constants.SCORECARD_IDENTIFIER_KEY)
-            .andExpression(Constants.COUNT_KEY)
-            .as(Constants.COUNT_KEY)
-            .and(
-                ConditionalOperators.when(Criteria.where(Constants.COUNT_KEY).ne(0))
-                    .then(
-                        ArithmeticOperators.valueOf(Constants.SCORES_GREATER_THAN_74_KEY).divideBy(Constants.COUNT_KEY))
-                    .otherwise(0))
-            .as(Constants.PERCENTAGE_KEY);
-
-    Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(criteria),
-        Aggregation.sort(Sort.Direction.DESC, ScoreEntity.ScoreKeys.lastComputedTimestamp),
-        Aggregation.group(ScoreEntity.ScoreKeys.scorecardIdentifier, ScoreEntity.ScoreKeys.entityIdentifier)
-            .first(Constants.SCORE_KEY)
-            .as(Constants.SCORE_KEY),
-        Aggregation.group(Constants.ID_KEY + DOT_SEPARATOR + Constants.SCORECARD_IDENTIFIER_KEY)
-            .count()
-            .as(Constants.COUNT_KEY)
-            .sum(ConditionalOperators.when(Criteria.where(Constants.SCORE_KEY).gt(74)).then(1).otherwise(0))
-            .as(Constants.SCORES_GREATER_THAN_74_KEY),
-        projectionOperation);
-
-    return mongoTemplate.aggregate(aggregation, Constants.SCORE_COLLECTION_NAME, ScorecardIdentifierAndScore.class);
-  }
-
-  @Override
   public ScoreEntity getLatestComputedScoreForEntityAndScorecard(
       String accountIdentifier, String entityIdentifier, String scoreCardIdentifier) {
     Criteria criteria = Criteria.where(ScoreEntity.ScoreKeys.accountIdentifier)
@@ -119,24 +75,22 @@ public class ScoreRepositoryCustomImpl implements ScoreRepositoryCustom {
   }
 
   @Override
-  public AggregationResults<EntityIdentifierAndScore> getScoresForEntityIdentifiersAndScorecardIdentifiers(
-      String accountIdentifier, List<String> entityIdentifiers, List<String> scorecardIdentifiers) {
-    Criteria criteria = Criteria.where(ScoreEntity.ScoreKeys.accountIdentifier).is(accountIdentifier);
+  public List<ScoreEntityByEntityIdentifier> getLatestScoresForScorecard(
+      String accountIdentifier, String scorecardIdentifier) {
+    Pair<Long, Long> previousDay24HourTimeFrame = getPreviousDay24HourTimeFrame();
+    Criteria criteria = Criteria.where(ScoreEntity.ScoreKeys.accountIdentifier)
+                            .is(accountIdentifier)
+                            .and(ScoreEntity.ScoreKeys.scorecardIdentifier)
+                            .is(scorecardIdentifier)
+                            .and(ScoreEntity.ScoreKeys.lastComputedTimestamp)
+                            .gt(previousDay24HourTimeFrame.getLeft())
+                            .lt(previousDay24HourTimeFrame.getRight());
 
-    if (!isEmpty(entityIdentifiers)) {
-      criteria.and(ScoreEntity.ScoreKeys.entityIdentifier).in(entityIdentifiers);
-    }
-
-    if (!isEmpty(scorecardIdentifiers)) {
-      criteria.and(ScoreEntity.ScoreKeys.scorecardIdentifier).in(scorecardIdentifiers);
-    }
-
-    ProjectionOperation projectionOperation =
-        Aggregation.project()
-            .andExpression(Constants.ID_KEY)
-            .as(ScoreEntity.ScoreKeys.entityIdentifier)
-            .andExpression(Constants.SCORE_ENTITY_KEY + DOT_SEPARATOR + Constants.SCORE_KEY)
-            .as(Constants.SCORE_KEY);
+    ProjectionOperation projectionOperation = Aggregation.project()
+                                                  .andExpression(Constants.ID_KEY)
+                                                  .as(ScoreEntity.ScoreKeys.entityIdentifier)
+                                                  .andExpression(Constants.SCORE_ENTITY_KEY)
+                                                  .as(Constants.SCORE_ENTITY_KEY);
 
     Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(criteria),
         Aggregation.sort(Sort.Direction.DESC, ScoreEntity.ScoreKeys.lastComputedTimestamp),
@@ -146,54 +100,8 @@ public class ScoreRepositoryCustomImpl implements ScoreRepositoryCustom {
             .first(Aggregation.ROOT)
             .as(Constants.SCORE_ENTITY_KEY),
         projectionOperation);
-    return mongoTemplate.aggregate(aggregation, Constants.SCORE_COLLECTION_NAME, EntityIdentifierAndScore.class);
-  }
-
-  @Override
-  public AggregationResults<EntityIdentifierAndCheckStatus> getCheckStatusForLatestComputedScores(
-      String accountIdentifier, List<String> entityIdentifiers, List<String> scorecardIdentifiers,
-      Pair<Long, Long> previousDay24HourTimeFrame, String checkIdentifier, boolean custom) {
-    Criteria criteria = Criteria.where(ScoreEntity.ScoreKeys.accountIdentifier).is(accountIdentifier);
-
-    if (!isEmpty(entityIdentifiers)) {
-      criteria.and(ScoreEntity.ScoreKeys.entityIdentifier).in(entityIdentifiers);
-    }
-
-    if (!isEmpty(scorecardIdentifiers)) {
-      criteria.and(ScoreEntity.ScoreKeys.scorecardIdentifier).in(scorecardIdentifiers);
-    }
-
-    if (previousDay24HourTimeFrame != null) {
-      criteria.and(ScoreEntity.ScoreKeys.lastComputedTimestamp)
-          .gt(previousDay24HourTimeFrame.getLeft())
-          .lt(previousDay24HourTimeFrame.getRight());
-    }
-
-    ProjectionOperation filterProjection =
-        Aggregation.project()
-            .andExpression(Constants.ID_KEY)
-            .as(ScoreEntity.ScoreKeys.entityIdentifier)
-            .and(ArrayOperators.Filter.filter("scoreEntity.checkStatus")
-                     .as(Constants.CHECK_KEY)
-                     .by(BooleanOperators.And.and(
-                         ComparisonOperators.valueOf("check.identifier").equalToValue(checkIdentifier),
-                         ComparisonOperators.valueOf("check.custom").equalToValue(custom))))
-            .as(Constants.CHECK_STATUS_KEY);
-    ProjectionOperation mapProjection = Aggregation.project()
-                                            .andExpression(ScoreEntity.ScoreKeys.entityIdentifier)
-                                            .as(ScoreEntity.ScoreKeys.entityIdentifier)
-                                            .and(ArrayOperators.arrayOf("checkStatus.status").elementAt(0))
-                                            .as(Constants.STATUS_KEY);
-
-    Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(criteria),
-        Aggregation.sort(Sort.Direction.DESC, ScoreEntity.ScoreKeys.lastComputedTimestamp),
-        Aggregation.group(ScoreEntity.ScoreKeys.entityIdentifier)
-            .push(ScoreEntity.ScoreKeys.entityIdentifier)
-            .as(ScoreEntity.ScoreKeys.entityIdentifier)
-            .first(Aggregation.ROOT)
-            .as(Constants.SCORE_ENTITY_KEY),
-        filterProjection, mapProjection);
-    return mongoTemplate.aggregate(aggregation, Constants.SCORE_COLLECTION_NAME, EntityIdentifierAndCheckStatus.class);
+    return mongoTemplate.aggregate(aggregation, Constants.SCORE_COLLECTION_NAME, ScoreEntityByEntityIdentifier.class)
+        .getMappedResults();
   }
 
   @Override
