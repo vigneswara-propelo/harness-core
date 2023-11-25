@@ -127,6 +127,18 @@ resourceTypes:
     permissionKey: downtime
   - identifier: IDP_SETTINGS
     permissionKey: idpsettings
+  - identifier: IDP_PLUGIN
+    permissionKey: plugin
+  - identifier: IDP_SCORECARD
+    permissionKey: scorecard
+  - identifier: IDP_LAYOUT
+    permissionKey: layout
+  - identifier: IDP_CATALOG_ACCESS_POLICY
+    permissionKey: catalogaccesspolicy
+  - identifier: IDP_INTEGRATION
+    permissionKey: integration
+  - identifier: IDP_ADVANCED_CONFIGURATION
+    permissionKey: advancedconfiguration
   - identifier: CODE_REPOSITORY
     permissionKey: repo
   - identifier: NETWORK_MAP

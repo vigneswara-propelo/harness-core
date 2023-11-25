@@ -1424,6 +1424,126 @@ permissions:
     includedInAllRoles: false
     allowedScopeLevels:
       - account
+  - identifier: idp_plugin_view
+    name: View IDP custom plugins
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_plugin_edit
+    name: Create or Edit IDP custom plugins
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_plugin_toggle
+    name: Enable or Disable an IDP Plugin
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_plugin_delete
+    name: Delete IDP custom plugins
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_scorecard_view
+    name: View IDP Scorecards
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_scorecard_edit
+    name: Create or Edit IDP Scorecards
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_scorecard_delete
+    name: Delete IDP Scorecards
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_layout_view
+    name: View IDP Layout Configurations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_layout_edit
+    name: Create or Edit IDP Layout Configurations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_catalogaccesspolicy_view
+    name: View IDP Catalog Access Control Policies
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_catalogaccesspolicy_create
+    name: Create IDP Catalog Access Control Policies
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_catalogaccesspolicy_edit
+    name: Edit IDP Catalog Access Control Policies
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_catalogaccesspolicy_delete
+    name: Delete IDP Catalog Access Control Policies
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_integration_view
+    name: View IDP Integrations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_integration_create
+    name: Create IDP Integrations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_integration_edit
+    name: Edit IDP Integrations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_integration_delete
+    name: Delete IDP Integrations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_advancedconfiguration_view
+    name: View IDP Advanced Configurations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_advancedconfiguration_edit
+    name: Create or Edit IDP Advanced Configurations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
+  - identifier: idp_advancedconfiguration_delete
+    name: Delete IDP Advanced Configurations
+    status: STAGING
+    includedInAllRoles: false
+    allowedScopeLevels:
+      - account
   - identifier: code_repo_view
     name: View a Code Repository
     status: ACTIVE
