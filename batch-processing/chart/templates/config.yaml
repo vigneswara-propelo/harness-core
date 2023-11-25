@@ -52,6 +52,8 @@ data:
   {{- if .Values.global.database.clickhouse.enabled }}
   CLICKHOUSE_URL: "jdbc:ch://clickhouse.{{ .Release.Namespace }}.svc.cluster.local:8123"
   CLICKHOUSE_SOCKET_TIMEOUT: '{{ .Values.clickhouse.socketTimeout }}'
+  CLICKHOUSE_URL_PYTHON: "clickhouse.{{ .Release.Namespace }}.svc.cluster.local"
+  CLICKHOUSE_PORT_PYTHON: "8123"
   {{- end }}
   USE_WORKLOAD_IDENTITY: {{ .Values.workloadIdentity.enabled | quote }}
   AWS_ACCOUNT_TAGS_COLLECTION_JOB_ENABLED: {{ .Values.awsAccountTagsCollectionJobConfig.enabled | quote }}

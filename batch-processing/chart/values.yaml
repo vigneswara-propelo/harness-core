@@ -255,6 +255,14 @@ imageClickhouseEnabled:
 # image pull secrets to use for batch-processing image
   imagePullSecrets: []
 
+imageAzureDataPipeline:
+  registry: docker.io
+  repository: harness/azure-datapipeline-signed
+  pullPolicy: Always
+  tag: "1"
+  digest: ""
+  imagePullSecrets: []
+
 waitForInitContainer:
   image:
     registry: docker.io
@@ -331,6 +339,9 @@ cloudProviderConfig:
   S3_SYNC_CONFIG_REGION: "us-east-1"
 
 azureConfig:
+  AZURE_SMP_ENABLED: false
+  AZURE_SMP_REPORT_RETRIES: 5
+  AZURE_SMP_HISTORY_TIME_DELTA: 1
   HARNESS_CE_AZURE_CONTAINER_NAME: ""
   HARNESS_CE_AZURE_STORAGE_NAME: ""
   HARNESS_CE_AZURE_IS_SYNC_JOB_DISABLED: ""
@@ -339,7 +350,9 @@ awsAccountTagsCollectionJobConfig:
   enabled: true
 
 clickhouse:
+  sendReceiveTimeout: "86400"
   socketTimeout: "86400000"
+  queryRetries: "3"
   username: "default"
   password:
     name: clickhouse

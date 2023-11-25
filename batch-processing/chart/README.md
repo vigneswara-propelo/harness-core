@@ -1,6 +1,6 @@
 # batch-processing
 
-![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81103](https://img.shields.io/badge/AppVersion-0.0.81103-informational?style=flat-square)
+![Version: 0.12.1](https://img.shields.io/badge/Version-0.12.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81103](https://img.shields.io/badge/AppVersion-0.0.81103-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -25,6 +25,12 @@ A Helm chart for Kubernetes
 | awsAccountTagsCollectionJobConfig.enabled | bool | `true` |  |
 | awsSecret.S3_SYNC_CONFIG_ACCESSKEY | string | `""` |  |
 | awsSecret.S3_SYNC_CONFIG_SECRETKEY | string | `""` |  |
+| azureConfig.AZURE_SMP_ENABLED | bool | `false` |  |
+| azureConfig.AZURE_SMP_HISTORY_TIME_DELTA | int | `1` |  |
+| azureConfig.AZURE_SMP_REPORT_RETRIES | int | `5` |  |
+| azureConfig.HARNESS_CE_AZURE_CONTAINER_NAME | string | `""` |  |
+| azureConfig.HARNESS_CE_AZURE_IS_SYNC_JOB_DISABLED | string | `""` |  |
+| azureConfig.HARNESS_CE_AZURE_STORAGE_NAME | string | `""` |  |
 | ceBatchGCPCredentials | string | `""` |  |
 | ceGCPHomeProjectCreds | string | `""` |  |
 | cliProxy.enabled | bool | `false` |  |
@@ -35,6 +41,8 @@ A Helm chart for Kubernetes
 | cliProxy.username | string | `""` |  |
 | clickhouse.password.key | string | `"admin-password"` |  |
 | clickhouse.password.name | string | `"clickhouse"` |  |
+| clickhouse.queryRetries | string | `"3"` |  |
+| clickhouse.sendReceiveTimeout | string | `"86400"` |  |
 | clickhouse.socketTimeout | string | `"86400000"` |  |
 | clickhouse.username | string | `"default"` |  |
 | cloudProviderConfig.CLUSTER_DATA_GCS_BACKUP_BUCKET | string | `"clusterdata-onprem-backup"` |  |
@@ -142,6 +150,12 @@ A Helm chart for Kubernetes
 | image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"harness/batch-processing-signed"` |  |
 | image.tag | string | `"81103-000"` |  |
+| imageAzureDataPipeline.digest | string | `""` |  |
+| imageAzureDataPipeline.imagePullSecrets | list | `[]` |  |
+| imageAzureDataPipeline.pullPolicy | string | `"Always"` |  |
+| imageAzureDataPipeline.registry | string | `"docker.io"` |  |
+| imageAzureDataPipeline.repository | string | `"harness/azure-datapipeline-signed"` |  |
+| imageAzureDataPipeline.tag | string | `"1"` |  |
 | imageClickhouseEnabled.digest | string | `""` |  |
 | imageClickhouseEnabled.imagePullSecrets | list | `[]` |  |
 | imageClickhouseEnabled.pullPolicy | string | `"Always"` |  |
@@ -180,14 +194,30 @@ A Helm chart for Kubernetes
 | resources.requests.cpu | string | `"1024m"` |  |
 | resources.requests.memory | string | `"10Gi"` |  |
 | secrets.default.CE_NG_SERVICE_SECRET | string | `"IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM"` |  |
+| secrets.default.HARNESS_CE_AZURE_CLIENTID | string | `""` |  |
+| secrets.default.HARNESS_CE_AZURE_CLIENTSECRET | string | `""` |  |
+| secrets.default.HARNESS_CE_AZURE_SAS | string | `""` |  |
+| secrets.default.HARNESS_CE_AZURE_TENANTID | string | `""` |  |
 | secrets.default.NEXT_GEN_MANAGER_SECRET | string | `"IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM"` |  |
 | secrets.kubernetesSecrets[0].keys.CE_NG_SERVICE_SECRET | string | `""` |  |
+| secrets.kubernetesSecrets[0].keys.HARNESS_CE_AZURE_CLIENTID | string | `""` |  |
+| secrets.kubernetesSecrets[0].keys.HARNESS_CE_AZURE_CLIENTSECRET | string | `""` |  |
+| secrets.kubernetesSecrets[0].keys.HARNESS_CE_AZURE_SAS | string | `""` |  |
+| secrets.kubernetesSecrets[0].keys.HARNESS_CE_AZURE_TENANTID | string | `""` |  |
 | secrets.kubernetesSecrets[0].keys.NEXT_GEN_MANAGER_SECRET | string | `""` |  |
 | secrets.kubernetesSecrets[0].keys.S3_SYNC_CONFIG_ACCESSKEY | string | `""` |  |
 | secrets.kubernetesSecrets[0].keys.S3_SYNC_CONFIG_SECRETKEY | string | `""` |  |
 | secrets.kubernetesSecrets[0].secretName | string | `""` |  |
 | secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CE_NG_SERVICE_SECRET.name | string | `""` |  |
 | secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CE_NG_SERVICE_SECRET.property | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_CLIENTID.name | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_CLIENTID.property | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_CLIENTSECRET.name | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_CLIENTSECRET.property | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_SAS.name | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_SAS.property | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_TENANTID.name | string | `""` |  |
+| secrets.secretManagement.externalSecretsOperator[0].remoteKeys.HARNESS_CE_AZURE_TENANTID.property | string | `""` |  |
 | secrets.secretManagement.externalSecretsOperator[0].remoteKeys.NEXT_GEN_MANAGER_SECRET.name | string | `""` |  |
 | secrets.secretManagement.externalSecretsOperator[0].remoteKeys.NEXT_GEN_MANAGER_SECRET.property | string | `""` |  |
 | secrets.secretManagement.externalSecretsOperator[0].remoteKeys.S3_SYNC_CONFIG_ACCESSKEY.name | string | `""` |  |

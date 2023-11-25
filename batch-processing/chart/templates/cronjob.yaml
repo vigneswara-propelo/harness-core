@@ -1,0 +1,71 @@
+{{- if and .Values.global.database.clickhouse.enabled .Values.azureConfig.AZURE_SMP_ENABLED }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: azure-data-pipeline-{{ lower ( randAlphaNum 6 ) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "batch-processing.labels" . | nindent 4 }}
+    {{- if .Values.global.commonLabels }}
+    {{- include "harnesscommon.tplvalues.render" ( dict "value" .Values.global.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.global.commonAnnotations }}
+  annotations: {{- include "harnesscommon.tplvalues.render" ( dict "value" .Values.global.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  schedule: "0 1 * * *"
+  jobTemplate:
+    spec:
+      parallelism: 1
+      backoffLimit: 0
+      template:
+        spec:
+          containers:
+          - name: azure-data-pipeline
+            image: {{ include "common.images.image" (dict "imageRoot" .Values.imageAzureDataPipeline "global" .Values.global) }}
+            env:
+              - name: CLICKHOUSE_URL
+                valueFrom:
+                    configMapKeyRef:
+                        name: batch-processing
+                        key: CLICKHOUSE_URL_PYTHON
+              - name: CLICKHOUSE_PORT
+                valueFrom:
+                    configMapKeyRef:
+                        name: batch-processing
+                        key: CLICKHOUSE_PORT_PYTHON
+              - name: CLICKHOUSE_SEND_RECEIVE_TIMEOUT
+                value: {{ .Values.clickhouse.sendReceiveTimeout | quote }}
+              - name: CLICKHOUSE_QUERY_RETRIES
+                value: {{ .Values.clickhouse.queryRetries | quote }}
+              - name: AZURE_STORAGE_ACCOUNT
+                valueFrom:
+                    configMapKeyRef:
+                        name: batch-processing
+                        key: HARNESS_CE_AZURE_STORAGE_NAME
+              - name: AZURE_CONTAINER
+                valueFrom:
+                    configMapKeyRef:
+                        name: batch-processing
+                        key: HARNESS_CE_AZURE_CONTAINER_NAME
+              - name: AZURE_SAS_TOKEN
+                valueFrom:
+                    secretKeyRef:
+                        name: batch-processing
+                        key: HARNESS_CE_AZURE_SAS
+              - name: AZURE_REPORT_RETRIES
+                value: {{ .Values.azureConfig.AZURE_SMP_REPORT_RETRIES | quote }}
+              - name: TIME_DELTA
+                value: {{ .Values.azureConfig.AZURE_SMP_HISTORY_TIME_DELTA | quote }}
+              {{- $globalClickhouseESOSecretIdentifier := include "harnesscommon.secrets.globalESOSecretCtxIdentifier" (dict "ctx" $  "ctxIdentifier" "clickhouse") }}
+              {{- include "harnesscommon.secrets.manageEnv" (dict "ctx" $ "variableName" "CLICKHOUSE_USERNAME" "defaultValue" .Values.clickhouse.username "extKubernetesSecretCtxs" (list .Values.global.database.clickhouse.secrets.kubernetesSecrets) "esoSecretCtxs" (list (dict "secretCtxIdentifier" $globalClickhouseESOSecretIdentifier "secretCtx" .Values.global.database.clickhouse.secrets.secretManagement.externalSecretsOperator))) | indent 14 }}
+              {{- include "harnesscommon.secrets.manageEnv" (dict "ctx" $ "variableName" "CLICKHOUSE_PASSWORD" "defaultKubernetesSecretName" .Values.clickhouse.password.name "defaultKubernetesSecretKey" .Values.clickhouse.password.key "extKubernetesSecretCtxs" (list .Values.global.database.clickhouse.secrets.kubernetesSecrets) "esoSecretCtxs" (list (dict "secretCtxIdentifier" $globalClickhouseESOSecretIdentifier "secretCtx" .Values.global.database.clickhouse.secrets.secretManagement.externalSecretsOperator))) | indent 14 }}
+            resources:
+              requests:
+                cpu: "1"
+                memory: "2Gi"
+              limits:
+                cpu: "1"
+                memory: "2Gi"
+          restartPolicy: Never
+{{- end }}
