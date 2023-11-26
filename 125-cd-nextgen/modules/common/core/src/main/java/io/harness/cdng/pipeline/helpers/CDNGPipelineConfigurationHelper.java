@@ -103,6 +103,9 @@ public class CDNGPipelineConfigurationHelper {
         || ServiceDefinitionType.WINRM.getYamlName().equals(yamlName)) {
       return generateSshWinRmExecutionStrategyYaml(
           accountIdentifier, serviceDefinitionType, executionStrategyType, includeVerify, strategyParameters);
+    } else if (ServiceDefinitionType.ASG.getYamlName().equals(yamlName)) {
+      return generateAsgExecutionStrategyYaml(
+          serviceDefinitionType, executionStrategyType, includeVerify, strategyParameters);
     }
     throw new InvalidRequestException(
         String.format("Execution Strategy not supported for service type, yamlName: %s", yamlName));
@@ -124,6 +127,25 @@ public class CDNGPipelineConfigurationHelper {
       return getExecutionStrategyYaml(
           serviceDefinitionType, executionStrategyType, includeVerify, null, accountIdentifier);
     }
+  }
+
+  private String generateAsgExecutionStrategyYaml(ServiceDefinitionType serviceDefinitionType,
+      ExecutionStrategyType executionStrategyType, boolean includeVerify, StrategyParameters strategyParameters)
+      throws IOException {
+    String withVerify = includeVerify ? "-with-verify" : "";
+    String withShiftTraffic = Boolean.TRUE.equals(strategyParameters.getShiftTraffic()) ? "-shift-traffic" : "";
+
+    if (ExecutionStrategyType.BLUE_GREEN.equals(executionStrategyType)) {
+      ClassLoader classLoader = this.getClass().getClassLoader();
+      return Resources.toString(
+          Objects.requireNonNull(classLoader.getResource(
+              String.format("executionStrategyYaml/%s-%s%s%s.yaml", serviceDefinitionType.getYamlName().toLowerCase(),
+                  executionStrategyType.getDisplayName().toLowerCase(), withShiftTraffic, withVerify))),
+          StandardCharsets.UTF_8);
+    }
+
+    throw new InvalidRequestException(
+        String.format("Execution Strategy %s not supported for Asg via Post", executionStrategyType.name()));
   }
 
   public String getProvisionerExecutionStrategyYaml(ProvisionerType type) throws IOException {

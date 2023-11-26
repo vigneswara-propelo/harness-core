@@ -1,0 +1,38 @@
+failureStrategies:
+  - onFailure:
+      errors:
+        - AllErrors
+      action:
+        type: StageRollback
+spec:
+  execution:
+    steps:
+      - stepGroup:
+          name: Blue Green Deployment
+          identifier: blueGreenDepoyment
+          steps:
+            - step:
+                name: "Asg Blue Green Deploy"
+                identifier: AsgBlueGreenDeploy
+                type: AsgBlueGreenDeploy
+                timeout: 10m
+                spec: {}
+            - step:
+                type: Verify
+                name: Verify
+                identifier: Verify
+                timeout: 2h
+                spec: {}
+            - step:
+                name: "Asg Shift Traffic"
+                identifier: AsgShiftTraffic
+                type: AsgShiftTraffic
+                timeout: 10m
+                spec: {}
+    rollbackSteps:
+      - step:
+          name: "Asg Blue Green Rollback"
+          identifier: AsgBlueGreenRollback
+          type: AsgBlueGreenRollback
+          timeout: 10m
+          spec: {}

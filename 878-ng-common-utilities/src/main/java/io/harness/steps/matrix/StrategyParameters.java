@@ -28,4 +28,5 @@ public class StrategyParameters {
   @JsonProperty("unitType") NGInstanceUnitType unitType;
   @JsonProperty("phases") Integer[] phases;
   @JsonProperty("artifactType") ArtifactType artifactType;
+  @JsonProperty("shiftTraffic") Boolean shiftTraffic;
 }
