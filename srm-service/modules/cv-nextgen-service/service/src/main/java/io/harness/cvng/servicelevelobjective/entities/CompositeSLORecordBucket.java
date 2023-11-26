@@ -7,13 +7,14 @@
 
 package io.harness.cvng.servicelevelobjective.entities;
 
+import static io.harness.cvng.CVConstants.SLO_RECORDS_TTL_DAYS;
+
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.analysis.entities.VerificationTaskBase;
 import io.harness.mongo.index.CompoundMongoIndex;
-import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
@@ -66,11 +67,13 @@ public class CompositeSLORecordBucket extends VerificationTaskBase implements Pe
   }
   @Version long version;
   @Id private String uuid;
-  @FdIndex private String verificationTaskId;
+  private String verificationTaskId;
   private Instant bucketStartTime; // minute
-  private double runningBadCount;
-  private double runningGoodCount;
+  private Double runningBadCount;
+  private Double runningGoodCount;
   private Map<String, SLIRecordBucket> scopedIdentifierSLIRecordBucketMap;
   private int sloVersion;
-  @Builder.Default @FdTtlIndex private Date validUntil = Date.from(OffsetDateTime.now().plusDays(92).toInstant());
+  @Builder.Default
+  @FdTtlIndex
+  private Date validUntil = Date.from(OffsetDateTime.now().plusDays(SLO_RECORDS_TTL_DAYS).toInstant());
 }

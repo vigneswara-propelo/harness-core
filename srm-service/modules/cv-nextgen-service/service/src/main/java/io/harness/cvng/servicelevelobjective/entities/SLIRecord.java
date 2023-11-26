@@ -7,6 +7,8 @@
 
 package io.harness.cvng.servicelevelobjective.entities;
 
+import static io.harness.cvng.CVConstants.SLO_RECORDS_TTL_DAYS;
+
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
@@ -105,5 +107,7 @@ public class SLIRecord extends VerificationTaskBase implements PersistentEntity,
 
   private int sliVersion;
 
-  @Builder.Default @FdTtlIndex private Date validUntil = Date.from(OffsetDateTime.now().plusDays(92).toInstant());
+  @Builder.Default
+  @FdTtlIndex
+  private Date validUntil = Date.from(OffsetDateTime.now().plusDays(SLO_RECORDS_TTL_DAYS).toInstant());
 }

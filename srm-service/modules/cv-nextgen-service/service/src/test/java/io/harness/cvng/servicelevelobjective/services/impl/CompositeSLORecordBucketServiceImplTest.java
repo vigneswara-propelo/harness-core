@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.MockitoAnnotations;
@@ -440,8 +439,8 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<CompositeSLORecordBucket> sloRecords =
         sloRecordService.getSLORecordBuckets(requestVerificationTaskId, startTime, endTime);
     assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isZero();
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isZero();
+    assertThat(sloRecords.get(0).getRunningBadCount()).isNull();
+    assertThat(sloRecords.get(0).getRunningGoodCount()).isNull();
     assertThat(sloRecords.get(0).getScopedIdentifierSLIRecordBucketMap().size()).isEqualTo(2);
     assertThat(sloRecords.get(0)
                    .getScopedIdentifierSLIRecordBucketMap()
@@ -511,8 +510,8 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<CompositeSLORecordBucket> sloRecords =
         sloRecordService.getSLORecordBuckets(requestVerificationTaskId, startTime, endTime);
     assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isEqualTo(0);
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isEqualTo(0);
+    assertThat(sloRecords.get(0).getRunningBadCount()).isNull();
+    assertThat(sloRecords.get(0).getRunningGoodCount()).isNull();
     assertThat(sloRecords.get(0).getScopedIdentifierSLIRecordBucketMap().size()).isEqualTo(2);
     assertThat(sloRecords.get(0)
                    .getScopedIdentifierSLIRecordBucketMap()
@@ -572,11 +571,11 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<Double> runningGoodCount = Arrays.asList(0.75, 1.75, 1.75, 2.5, 2.75);
     List<Double> runningBadCount = Arrays.asList(0.25, 0.25, 1.25, 1.5, 2.25);
     createSLORecordBuckets(startTime, endTime, runningGoodCount, runningBadCount, verificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords =
+    List<CompositeSLORecordBucket> sloRecordBucketsInDB =
         sloRecordService.getSLORecordBuckets(verificationTaskId, startTime, endTime);
-    assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isEqualTo(2.25);
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isEqualTo(2.75);
+    assertThat(sloRecordBucketsInDB.size()).isEqualTo(1);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningBadCount()).isEqualTo(2.25);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningGoodCount()).isEqualTo(2.75);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD, SLIState.NO_DATA, SLIState.GOOD);
@@ -591,12 +590,12 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId1, sliStateList1);
     createSLIRecordBuckets(sliId3, sliStateList3);
     sloRecordService.create(compositeServiceLevelObjective2, startTime, endTime, verificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords1 =
+    List<CompositeSLORecordBucket> updatedSLORecordBuckets =
         sloRecordService.getSLORecordBuckets(verificationTaskId, startTime, endTime);
-    assertThat(sloRecords1.size()).isEqualTo(1);
-    assertThat(sloRecords1.get(0).getRunningBadCount()).isEqualTo(0.0);
-    assertThat(sloRecords1.get(0).getRunningGoodCount()).isEqualTo(0.0);
-    assertThat(sloRecords1.get(0).getSloVersion()).isEqualTo(0);
+    assertThat(updatedSLORecordBuckets.size()).isEqualTo(1);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningBadCount()).isEqualTo(0.0);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningGoodCount()).isEqualTo(0.0);
+    assertThat(updatedSLORecordBuckets.get(0).getSloVersion()).isEqualTo(0);
   }
 
   @Test
@@ -606,11 +605,11 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<Double> runningGoodCount = Arrays.asList(0.75, 1.75, 1.75, 2.5, 2.75);
     List<Double> runningBadCount = Arrays.asList(0.25, 0.25, 1.25, 1.5, 2.25);
     createSLORecordBuckets(startTime, endTime, runningGoodCount, runningBadCount, leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords =
+    List<CompositeSLORecordBucket> sloRecordBucketsInDB =
         sloRecordService.getSLORecordBuckets(leastPerformantVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isEqualTo(2.25);
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isEqualTo(2.75);
+    assertThat(sloRecordBucketsInDB.size()).isEqualTo(1);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningBadCount()).isEqualTo(2.25);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningGoodCount()).isEqualTo(2.75);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD, SLIState.NO_DATA, SLIState.GOOD);
@@ -628,12 +627,12 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId2, sliStateList2);
     sloRecordService.create(
         leastPerformantCompositeServiceLevelObjective, startTime, endTime, leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords1 =
+    List<CompositeSLORecordBucket> updatedSLORecordBuckets =
         sloRecordService.getSLORecordBuckets(leastPerformantVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords1.size()).isEqualTo(1);
-    assertThat(sloRecords1.get(0).getRunningBadCount()).isEqualTo(2.6, offset(0.01));
-    assertThat(sloRecords1.get(0).getRunningGoodCount()).isEqualTo(2.4, offset(0.01));
-    assertThat(sloRecords1.get(0).getSloVersion()).isEqualTo(0);
+    assertThat(updatedSLORecordBuckets.size()).isEqualTo(1);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningBadCount()).isEqualTo(2.6, offset(0.01));
+    assertThat(updatedSLORecordBuckets.get(0).getRunningGoodCount()).isEqualTo(2.4, offset(0.01));
+    assertThat(updatedSLORecordBuckets.get(0).getSloVersion()).isEqualTo(0);
   }
 
   @Test
@@ -644,11 +643,11 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<Double> runningGoodCount = Arrays.asList(0.75, 1.75, 1.75, 2.5, 2.75);
     List<Double> runningBadCount = Arrays.asList(0.25, 0.25, 1.25, 1.5, 2.25);
     createSLORecordBuckets(startTime, endTime, runningGoodCount, runningBadCount, leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords =
+    List<CompositeSLORecordBucket> sloRecordBucketsInDB =
         sloRecordService.getSLORecordBuckets(leastPerformantVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isEqualTo(2.25);
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isEqualTo(2.75);
+    assertThat(sloRecordBucketsInDB.size()).isEqualTo(1);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningBadCount()).isEqualTo(2.25);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningGoodCount()).isEqualTo(2.75);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD, SLIState.NO_DATA, SLIState.GOOD);
@@ -664,27 +663,26 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId3, sliStateList3);
     sloRecordService.create(
         leastPerformantCompositeServiceLevelObjective2, startTime, endTime, leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords1 =
+    List<CompositeSLORecordBucket> updatedSLORecordBuckets =
         sloRecordService.getSLORecordBuckets(leastPerformantVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords1.size()).isEqualTo(1);
-    assertThat(sloRecords1.get(0).getRunningBadCount()).isEqualTo(0.0, offset(0.001));
-    assertThat(sloRecords1.get(0).getRunningGoodCount()).isEqualTo(0.0, offset(0.001));
-    assertThat(sloRecords1.get(0).getSloVersion()).isEqualTo(0);
+    assertThat(updatedSLORecordBuckets.size()).isEqualTo(1);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningBadCount()).isEqualTo(0.0, offset(0.001));
+    assertThat(updatedSLORecordBuckets.get(0).getRunningGoodCount()).isEqualTo(0.0, offset(0.001));
+    assertThat(updatedSLORecordBuckets.get(0).getSloVersion()).isEqualTo(0);
   }
 
   @Test
   @Owner(developers = ANSUMAN)
   @Category(UnitTests.class)
-  @Ignore("Enable the test case, once request issue is fixed")
   public void testUpdate_completeOverlap_request() {
     Map<String, SLIRecordBucket> scopedIdentifierToSLIRecordMap = new HashMap<>();
     createSLORecordBuckets(startTime, endTime, scopedIdentifierToSLIRecordMap);
-    List<CompositeSLORecordBucket> sloRecordBuckets =
+    List<CompositeSLORecordBucket> sloRecordBucketsInDB =
         sloRecordService.getSLORecordBuckets(requestVerificationTaskId, startTime, endTime);
-    assertThat(sloRecordBuckets.size()).isEqualTo(1);
-    assertThat(sloRecordBuckets.get(0).getRunningBadCount()).isEqualTo(0);
-    assertThat(sloRecordBuckets.get(0).getRunningGoodCount()).isEqualTo(0);
-    assertThat(Objects.isNull(sloRecordBuckets.get(0).getScopedIdentifierSLIRecordBucketMap())).isEqualTo(true);
+    assertThat(sloRecordBucketsInDB.size()).isEqualTo(1);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningBadCount()).isNull();
+    assertThat(sloRecordBucketsInDB.get(0).getRunningGoodCount()).isNull();
+    assertThat(Objects.isNull(sloRecordBucketsInDB.get(0).getScopedIdentifierSLIRecordBucketMap())).isEqualTo(true);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.GOOD, SLIState.GOOD, SLIState.GOOD, SLIState.GOOD, SLIState.GOOD);
@@ -708,24 +706,24 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId2, sliStateList2, goodCounts2, badCounts2);
 
     sloRecordService.create(requestCompositeServiceLevelObjective, startTime, endTime, verificationTaskId);
-    List<CompositeSLORecordBucket> sloRecordBuckets1 =
+    List<CompositeSLORecordBucket> updatedSLORecordBuckets =
         sloRecordService.getSLORecordBuckets(requestVerificationTaskId, startTime, endTime);
-    assertThat(sloRecordBuckets1.size()).isEqualTo(1);
-    assertThat(sloRecordBuckets1.get(0).getRunningBadCount()).isEqualTo(0);
-    assertThat(sloRecordBuckets1.get(0).getRunningGoodCount()).isEqualTo(0);
-    assertThat(sloRecordBuckets1.get(0).getScopedIdentifierSLIRecordBucketMap().size()).isEqualTo(2);
-    assertThat(sloRecordBuckets1.get(0)
+    assertThat(updatedSLORecordBuckets.size()).isEqualTo(1);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningBadCount()).isNull();
+    assertThat(updatedSLORecordBuckets.get(0).getRunningGoodCount()).isNull();
+    assertThat(updatedSLORecordBuckets.get(0).getScopedIdentifierSLIRecordBucketMap().size()).isEqualTo(2);
+    assertThat(updatedSLORecordBuckets.get(0)
                    .getScopedIdentifierSLIRecordBucketMap()
                    .get(serviceLevelObjectiveV2Service.getScopedIdentifier(
                        requestCompositeServiceLevelObjective.getServiceLevelObjectivesDetails().get(0)))
                    .getSliId())
         .isEqualTo(sliId1);
-    assertThat(sloRecordBuckets1.get(0)
+    assertThat(updatedSLORecordBuckets.get(0)
                    .getScopedIdentifierSLIRecordBucketMap()
                    .get(serviceLevelObjectiveV2Service.getScopedIdentifier(
                        requestCompositeServiceLevelObjective.getServiceLevelObjectivesDetails().get(0)))
                    .getRunningGoodCount())
-        .isEqualTo(300);
+        .isEqualTo(400);
   }
 
   // TODO we need tests with 2-3 windows
@@ -736,11 +734,11 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<Double> runningGoodCount = Arrays.asList(0.75, 1.75, 1.75, 2.75, 3.75, 4.75, 5.75, 6.75, 7.75, 8.75);
     List<Double> runningBadCount = Arrays.asList(0.25, 0.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25);
     createSLORecordBuckets(startTime.minusSeconds(300), endTime, runningGoodCount, runningBadCount, verificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords =
+    List<CompositeSLORecordBucket> sloRecordBucketsInDB =
         sloRecordService.getSLORecordBuckets(verificationTaskId, startTime, endTime);
-    assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isEqualTo(1.25);
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isEqualTo(8.75);
+    assertThat(sloRecordBucketsInDB.size()).isEqualTo(1);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningBadCount()).isEqualTo(1.25);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningGoodCount()).isEqualTo(8.75);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD, SLIState.NO_DATA, SLIState.GOOD);
@@ -757,12 +755,12 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId1, sliStateList1);
     createSLIRecordBuckets(sliId2, sliStateList2);
     sloRecordService.create(compositeServiceLevelObjective, startTime, endTime, verificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords1 =
+    List<CompositeSLORecordBucket> updatedSLORecordBuckets =
         sloRecordService.getSLORecordBuckets(verificationTaskId, startTime, endTime);
-    assertThat(sloRecords1.size()).isEqualTo(1);
-    assertThat(sloRecords1.get(0).getRunningBadCount()).isEqualTo(3.0);
-    assertThat(sloRecords1.get(0).getRunningGoodCount()).isEqualTo(7.0);
-    assertThat(sloRecords1.get(0).getSloVersion()).isEqualTo(0);
+    assertThat(updatedSLORecordBuckets.size()).isEqualTo(1);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningBadCount()).isEqualTo(3.0);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningGoodCount()).isEqualTo(7.0);
+    assertThat(updatedSLORecordBuckets.get(0).getSloVersion()).isEqualTo(0);
   }
 
   @Test
@@ -808,11 +806,11 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<Double> runningBadCount = Arrays.asList(0.25, 0.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25);
     createSLORecordBuckets(startTime.minusSeconds(600), endTime.minusSeconds(300), runningGoodCount, runningBadCount,
         leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords = sloRecordService.getSLORecordBuckets(
+    List<CompositeSLORecordBucket> sloRecordBucketInDB = sloRecordService.getSLORecordBuckets(
         leastPerformantVerificationTaskId, startTime.minusSeconds(600), endTime.minusSeconds(300));
-    assertThat(sloRecords.size()).isEqualTo(2);
-    assertThat(sloRecords.get(1).getRunningBadCount()).isEqualTo(1.25);
-    assertThat(sloRecords.get(1).getRunningGoodCount()).isEqualTo(8.75);
+    assertThat(sloRecordBucketInDB.size()).isEqualTo(2);
+    assertThat(sloRecordBucketInDB.get(1).getRunningBadCount()).isEqualTo(1.25);
+    assertThat(sloRecordBucketInDB.get(1).getRunningGoodCount()).isEqualTo(8.75);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD, SLIState.SKIP_DATA, SLIState.GOOD);
@@ -830,12 +828,12 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId2, sliStateList2);
     sloRecordService.create(
         leastPerformantCompositeServiceLevelObjective, startTime, endTime, leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords1 =
+    List<CompositeSLORecordBucket> updatedSLORecordBuckets =
         sloRecordService.getSLORecordBuckets(leastPerformantVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords1.size()).isEqualTo(1);
-    assertThat(sloRecords1.get(0).getRunningBadCount()).isEqualTo(3.55, offset(0.01)); // TODO recheck
-    assertThat(sloRecords1.get(0).getRunningGoodCount()).isEqualTo(10.45, offset(0.01));
-    assertThat(sloRecords1.get(0).getSloVersion()).isEqualTo(0);
+    assertThat(updatedSLORecordBuckets.size()).isEqualTo(1);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningBadCount()).isEqualTo(3.55, offset(0.01)); // TODO recheck
+    assertThat(updatedSLORecordBuckets.get(0).getRunningGoodCount()).isEqualTo(10.45, offset(0.01));
+    assertThat(updatedSLORecordBuckets.get(0).getSloVersion()).isEqualTo(0);
   }
 
   @Test
@@ -847,11 +845,11 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     List<Double> runningBadCount = Arrays.asList(0.25, 0.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25);
     createSLORecordBuckets(
         startTime.minusSeconds(300), endTime, runningGoodCount, runningBadCount, leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords =
+    List<CompositeSLORecordBucket> sloRecordBucketsInDB =
         sloRecordService.getSLORecordBuckets(leastPerformantVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isEqualTo(1.25);
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isEqualTo(8.75);
+    assertThat(sloRecordBucketsInDB.size()).isEqualTo(1);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningBadCount()).isEqualTo(1.25);
+    assertThat(sloRecordBucketsInDB.get(0).getRunningGoodCount()).isEqualTo(8.75);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD, SLIState.SKIP_DATA, SLIState.GOOD);
@@ -867,27 +865,26 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId3, sliStateList3);
     sloRecordService.create(
         leastPerformantCompositeServiceLevelObjective2, startTime, endTime, leastPerformantVerificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords1 =
+    List<CompositeSLORecordBucket> updatedSLORecordBuckets =
         sloRecordService.getSLORecordBuckets(leastPerformantVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords1.size()).isEqualTo(1);
-    assertThat(sloRecords1.get(0).getRunningBadCount()).isEqualTo(1.25, offset(0.01));
-    assertThat(sloRecords1.get(0).getRunningGoodCount()).isEqualTo(3.75, offset(0.01));
-    assertThat(sloRecords1.get(0).getSloVersion()).isEqualTo(0);
+    assertThat(updatedSLORecordBuckets.size()).isEqualTo(1);
+    assertThat(updatedSLORecordBuckets.get(0).getRunningBadCount()).isEqualTo(1.25, offset(0.01));
+    assertThat(updatedSLORecordBuckets.get(0).getRunningGoodCount()).isEqualTo(3.75, offset(0.01));
+    assertThat(updatedSLORecordBuckets.get(0).getSloVersion()).isEqualTo(0);
   }
 
   @Test
   @Owner(developers = ANSUMAN)
   @Category(UnitTests.class)
-  @Ignore("Enable the test case, once request issue is fixed")
   public void testUpdate_partialOverlap_request() {
     Map<String, SLIRecordBucket> scopedIdentifierToSLIRecordMap = new HashMap<>();
     createSLORecordBuckets(startTime.minusSeconds(300), endTime, scopedIdentifierToSLIRecordMap);
-    List<CompositeSLORecordBucket> sloRecords =
+    List<CompositeSLORecordBucket> sloRecordsInDB =
         sloRecordService.getSLORecordBuckets(requestVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords.size()).isEqualTo(1);
-    assertThat(sloRecords.get(0).getRunningBadCount()).isEqualTo(0);
-    assertThat(sloRecords.get(0).getRunningGoodCount()).isEqualTo(0);
-    assertThat(Objects.isNull(sloRecords.get(0).getScopedIdentifierSLIRecordBucketMap())).isEqualTo(true);
+    assertThat(sloRecordsInDB.size()).isEqualTo(1);
+    assertThat(sloRecordsInDB.get(0).getRunningBadCount()).isNull();
+    assertThat(sloRecordsInDB.get(0).getRunningGoodCount()).isNull();
+    assertThat(Objects.isNull(sloRecordsInDB.get(0).getScopedIdentifierSLIRecordBucketMap())).isEqualTo(true);
 
     List<SLIState> sliStateList1 =
         Arrays.asList(SLIState.BAD, SLIState.BAD, SLIState.GOOD, SLIState.GOOD, SLIState.GOOD);
@@ -908,19 +905,19 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     createSLIRecordBuckets(sliId1, sliStateList1, goodCounts1, badCounts1);
     createSLIRecordBuckets(sliId2, sliStateList2, goodCounts2, badCounts2);
     sloRecordService.create(requestCompositeServiceLevelObjective, startTime, endTime, verificationTaskId);
-    List<CompositeSLORecordBucket> sloRecords1 =
+    List<CompositeSLORecordBucket> updatedSLORecords =
         sloRecordService.getSLORecordBuckets(requestVerificationTaskId, startTime, endTime);
-    assertThat(sloRecords1.size()).isEqualTo(1);
-    assertThat(sloRecords1.get(0).getRunningBadCount()).isEqualTo(0.0);
-    assertThat(sloRecords1.get(0).getRunningGoodCount()).isEqualTo(0.0);
-    assertThat(sloRecords1.get(0).getSloVersion()).isEqualTo(0);
-    assertThat(sloRecords1.get(2)
+    assertThat(updatedSLORecords.size()).isEqualTo(1);
+    assertThat(updatedSLORecords.get(0).getRunningBadCount()).isNull();
+    assertThat(updatedSLORecords.get(0).getRunningGoodCount()).isNull();
+    assertThat(updatedSLORecords.get(0).getSloVersion()).isEqualTo(0);
+    assertThat(updatedSLORecords.get(0)
                    .getScopedIdentifierSLIRecordBucketMap()
                    .get(serviceLevelObjectiveV2Service.getScopedIdentifier(
                        requestCompositeServiceLevelObjective.getServiceLevelObjectivesDetails().get(0)))
                    .getSliId())
         .isEqualTo(sliId1);
-    assertThat(sloRecords1.get(2)
+    assertThat(updatedSLORecords.get(0)
                    .getScopedIdentifierSLIRecordBucketMap()
                    .get(serviceLevelObjectiveV2Service.getScopedIdentifier(
                        requestCompositeServiceLevelObjective.getServiceLevelObjectivesDetails().get(0)))
@@ -956,10 +953,10 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
     // Insert duplicates
     sloRecordBuckets = sloRecordService.getLatestCountSLORecords(compositeServiceLevelObjective.getUuid(), 2);
     assertThat(sloRecordBuckets.size()).isEqualTo(1);
-    int count = 0;
+    double count = 0;
     for (CompositeSLORecordBucket sloRecordBucket : sloRecordBuckets) {
       sloRecordBucket.setUuid(generateUuid());
-      sloRecordBucket.setRunningBadCount(0);
+      sloRecordBucket.setRunningBadCount(0.0d);
       sloRecordBucket.setRunningGoodCount(count);
       count += 1;
     }
@@ -1061,8 +1058,6 @@ public class CompositeSLORecordBucketServiceImplTest extends CvNextGenTestBase {
             CompositeSLORecordBucket.builder()
                 .verificationTaskId(requestVerificationTaskId)
                 .version(0)
-                .runningBadCount(0)
-                .runningGoodCount(0)
                 .sloVersion(0)
                 .scopedIdentifierSLIRecordBucketMap(test)
                 .bucketStartTime(instant.minus(SLI_RECORD_BUCKET_SIZE, ChronoUnit.MINUTES))

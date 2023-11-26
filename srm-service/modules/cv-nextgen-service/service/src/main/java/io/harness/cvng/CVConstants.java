@@ -87,4 +87,5 @@ public interface CVConstants {
       "io_harness_cvng_mongodb_connection_pool_max_size", "io_harness_cvng_mongodb_connections_checked_out",
       "io_harness_cvng_mongodb_connection_pool_size"));
   String METRIC_LESS_SLI_IDENTIFIER = "metric_less_vyczachdfd";
+  int SLO_RECORDS_TTL_DAYS = 92;
 }

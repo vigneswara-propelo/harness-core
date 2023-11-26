@@ -45,9 +45,7 @@ import org.mockito.MockitoAnnotations;
 
 public class SLIRecordBucketServiceImplTest extends CvNextGenTestBase {
   @Inject SLIRecordBucketService sliRecordBucketService;
-
   @Inject private HPersistence hPersistence;
-
   @Inject private ServiceLevelIndicatorService serviceLevelIndicatorService;
   @Inject private MonitoredServiceService monitoredServiceService;
 
