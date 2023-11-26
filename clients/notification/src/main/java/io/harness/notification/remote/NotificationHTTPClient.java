@@ -43,6 +43,9 @@ public interface NotificationHTTPClient {
       @Query("projectIdentifier") String projectIdentifier, @Query("notificationEntity") String notificationEntity,
       @Query("notificationEvent") String notificationEvent);
 
+  @GET("channels/is-default-smtp-present")
+  Call<ResponseDTO<Boolean>> isDefaultSMTPPresent(@Query(value = "accountId") String accountId);
+
   @POST("channels/send")
   Call<ResponseDTO<NotificationTaskResponse>> sendNotificationSync(@Body NotificationRequestDTO notificationRequestDTO);
 }
