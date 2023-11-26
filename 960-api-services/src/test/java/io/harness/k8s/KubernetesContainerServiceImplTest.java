@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.encoding.EncodingUtils.compressString;
 import static io.harness.data.encoding.EncodingUtils.encodeBase64;
 import static io.harness.data.encoding.EncodingUtils.encodeBase64ToByteArray;
+import static io.harness.k8s.K8sConstants.HARNESS_KUBERNETES_REVISION_LABEL_KEY;
 import static io.harness.k8s.K8sConstants.KUBECONFIG_FILENAME;
 import static io.harness.k8s.KubernetesConvention.CompressedReleaseHistoryFlag;
 import static io.harness.k8s.KubernetesConvention.ReleaseHistoryKeyName;
@@ -71,6 +72,7 @@ import com.github.scribejava.apis.openid.OpenIdOAuth2AccessToken;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.TimeLimiter;
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
@@ -80,6 +82,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.PodTemplateSpec;
+import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
 import io.fabric8.kubernetes.api.model.ReplicationController;
 import io.fabric8.kubernetes.api.model.ReplicationControllerList;
 import io.fabric8.kubernetes.api.model.ReplicationControllerSpec;
@@ -116,10 +119,15 @@ import io.fabric8.openshift.client.dsl.DeployableScalableResource;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.ApiResponse;
+import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.Pair;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapBuilder;
 import io.kubernetes.client.openapi.models.V1ConfigMapList;
+import io.kubernetes.client.openapi.models.V1DaemonSet;
+import io.kubernetes.client.openapi.models.V1DaemonSetList;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1ListMetaBuilder;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1ObjectMetaBuilder;
@@ -128,11 +136,17 @@ import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.openapi.models.V1PodListBuilder;
 import io.kubernetes.client.openapi.models.V1PodStatus;
 import io.kubernetes.client.openapi.models.V1PodStatusBuilder;
+import io.kubernetes.client.openapi.models.V1ReplicaSet;
+import io.kubernetes.client.openapi.models.V1ReplicaSetList;
+import io.kubernetes.client.openapi.models.V1ReplicationController;
+import io.kubernetes.client.openapi.models.V1ReplicationControllerList;
 import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1SecretBuilder;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1ServiceBuilder;
 import io.kubernetes.client.openapi.models.V1ServiceList;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
+import io.kubernetes.client.openapi.models.V1StatefulSetList;
 import io.kubernetes.client.openapi.models.V1Status;
 import io.kubernetes.client.openapi.models.V1StatusBuilder;
 import io.kubernetes.client.openapi.models.VersionInfo;
@@ -206,6 +220,8 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
 
   @Mock private RollableScalableResource<ReplicationController> scalableReplicationController;
   @Mock private ServiceResource<Service> serviceResource;
+  @Mock private FilterWatchListDeletable<Service, ServiceList, ServiceResource<Service>> serviceFilteredList;
+  @Mock private ServiceList serviceList;
   @Mock private Resource<Secret> secretResource;
   @Mock private Resource<ConfigMap> configMapResource;
   @Mock
@@ -330,6 +346,7 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
     when(services.inNamespace(anyString())).thenReturn(namespacedServices);
     when(namespacedReplicationControllers.withName(anyString())).thenReturn(scalableReplicationController);
     when(namespacedServices.withName(anyString())).thenReturn(serviceResource);
+    when(namespacedServices.withLabels(anyMap())).thenReturn(serviceFilteredList);
     when(namespacedSecrets.withName(anyString())).thenReturn(secretResource);
     when(namespacedSecrets.createOrReplace(any(Secret.class))).thenReturn(releaseHistory);
     when(namespacedConfigMaps.withName(anyString())).thenReturn(configMapResource);
@@ -342,6 +359,7 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
     when(namespacedDeployments.withName(anyString())).thenReturn(scalableDeployment);
     when(namespacedDeployments.withLabels(any(Map.class))).thenReturn(deploymentFilteredList);
     when(deploymentFilteredList.list()).thenReturn(new DeploymentList());
+    when(serviceFilteredList.list()).thenReturn(serviceList);
 
     when(appsAPIGroupClient.statefulSets()).thenReturn(statefulSetOperations);
     when(statefulSetOperations.inNamespace("default")).thenReturn(namespacedStatefulsets);
@@ -1837,6 +1855,261 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
     List<V1Pod> result = kubernetesContainerService.getRunningPodsWithLabels(KUBERNETES_CONFIG, "default", labels);
 
     assertThat(result).isEmpty();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithoutKubeconfig() {
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(null, "metadata.name=controllerName");
+    assertThat(controller).isNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithReplicaController() throws ApiException {
+    V1ReplicationController v1ReplicationController = new V1ReplicationController();
+    v1ReplicationController.setMetadata(new V1ObjectMeta());
+    V1ReplicationControllerList v1ReplicationControllerList = new V1ReplicationControllerList();
+    v1ReplicationControllerList.setItems(Collections.singletonList(v1ReplicationController));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1ReplicationControllerList));
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(KUBERNETES_CONFIG, "metadata.name=controllerName");
+    assertThat(controller).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithDeploymentController() throws ApiException {
+    V1Deployment v1Deployment = new V1Deployment();
+    v1Deployment.setMetadata(new V1ObjectMeta());
+    V1DeploymentList v1DeploymentList = new V1DeploymentList();
+    v1DeploymentList.setItems(Collections.singletonList(v1Deployment));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), null));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DeploymentList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1DeploymentList));
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(KUBERNETES_CONFIG, "metadata.name=controllerName");
+    assertThat(controller).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithReplicaSetController() throws ApiException {
+    V1ReplicaSet v1ReplicaSet = new V1ReplicaSet();
+    v1ReplicaSet.setMetadata(new V1ObjectMeta());
+    V1ReplicaSetList v1ReplicaSetList = new V1ReplicaSetList();
+    v1ReplicaSetList.setItems(Collections.singletonList(v1ReplicaSet));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DeploymentList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicaSetList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1ReplicaSetList));
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(KUBERNETES_CONFIG, "metadata.name=controllerName");
+    assertThat(controller).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithStatefulSetController() throws ApiException {
+    V1StatefulSet v1StatefulSet = new V1StatefulSet();
+    v1StatefulSet.setMetadata(new V1ObjectMeta());
+    V1StatefulSetList v1StatefulSetList = new V1StatefulSetList();
+    v1StatefulSetList.setItems(Collections.singletonList(v1StatefulSet));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DeploymentList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicaSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1StatefulSetList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1StatefulSetList));
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(KUBERNETES_CONFIG, "metadata.name=controllerName");
+    assertThat(controller).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithDaemonSetController() throws ApiException {
+    V1DaemonSet v1DaemonSet = new V1DaemonSet();
+    v1DaemonSet.setMetadata(new V1ObjectMeta());
+    V1DaemonSetList v1DaemonSetList = new V1DaemonSetList();
+    v1DaemonSetList.setItems(Collections.singletonList(v1DaemonSet));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DeploymentList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicaSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1StatefulSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DaemonSetList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1DaemonSetList));
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(KUBERNETES_CONFIG, "metadata.name=controllerName");
+    assertThat(controller).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithDeploymentConfigController() throws ApiException {
+    String deploymentConfigList = "{\n"
+        + "  \"kind\": \"DeploymentConfigList\",\n"
+        + "  \"apiVersion\": \"apps.openshift.io/v1\",\n"
+        + "  \"metadata\": {},\n"
+        + "  \"items\": [\n"
+        + "    {\n"
+        + "      \"kind\": \"DeploymentConfig\",\n"
+        + "      \"apiVersion\": \"apps.openshift.io/v1\",\n"
+        + "      \"metadata\": {\n"
+        + "        \"name\": \"example-object\",\n"
+        + "        \"namespace\": \"mynamespace\"\n"
+        + "      },\n"
+        + "      \"spec\": {\n"
+        + "      }\n"
+        + "    }\n"
+        + "  ]\n"
+        + "}\n";
+    Gson gson = new Gson();
+    Object deploymentConfigListObject = gson.fromJson(deploymentConfigList, Object.class);
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DeploymentList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicaSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1StatefulSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DaemonSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), deploymentConfigListObject));
+    when(k8sApiClient.getJSON()).thenReturn(new JSON());
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(KUBERNETES_CONFIG, "metadata.name=controllerName");
+    assertThat(controller).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetControllerWithNoController() throws ApiException {
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DeploymentList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicaSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1StatefulSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1DaemonSetList>() {}).getType()))
+        .thenThrow(new ApiException());
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType())).thenThrow(new ApiException());
+    V1ObjectMeta controller =
+        kubernetesContainerService.getControllerUsingK8sClient(KUBERNETES_CONFIG, "metadata.name=controllerName");
+    assertThat(controller).isNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetServiceListUsingK8sClientFail() throws ApiException {
+    V1ServiceList serviceList = kubernetesContainerService.getServiceListUsingK8sClient(null, "");
+    assertThat(serviceList).isNull();
+
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ServiceList>() {}).getType()))
+        .thenThrow(new ApiException(404, "Failed to fetch resource"));
+    serviceList = kubernetesContainerService.getServiceListUsingK8sClient(KUBERNETES_CONFIG, "");
+    assertThat(serviceList).isNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetServiceListUsingK8sClientInvalidRequestException() throws ApiException {
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ServiceList>() {}).getType())).thenThrow(new ApiException());
+    assertThatThrownBy(() -> kubernetesContainerService.getServiceListUsingK8sClient(KUBERNETES_CONFIG, ""))
+        .isInstanceOf(InvalidRequestException.class);
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetServiceListUsingK8sClientPass() throws ApiException {
+    V1ServiceList v1ServiceList = new V1ServiceList();
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ServiceList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1ServiceList));
+    V1ServiceList serviceList = kubernetesContainerService.getServiceListUsingK8sClient(KUBERNETES_CONFIG, "");
+    assertThat(serviceList).isEqualTo(v1ServiceList);
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetK8sServiceMetadataUsingK8sClient() throws ApiException {
+    String controllerServiceName = "containerServiceName";
+    String serviceName = "serviceName";
+    Map<String, String> map = new HashMap<>();
+    map.put("key", "value");
+    map.put(HARNESS_KUBERNETES_REVISION_LABEL_KEY, "value2");
+    V1ObjectMeta objectMeta = new V1ObjectMeta();
+    objectMeta.setName(controllerServiceName);
+    objectMeta.setLabels(map);
+    V1ReplicationController v1ReplicationController = new V1ReplicationController();
+    v1ReplicationController.setMetadata(objectMeta);
+    V1ReplicationControllerList v1ReplicationControllerList = new V1ReplicationControllerList();
+    v1ReplicationControllerList.setItems(Collections.singletonList(v1ReplicationController));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ReplicationControllerList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1ReplicationControllerList));
+
+    V1ServiceList v1ServiceList = new V1ServiceList();
+    V1Service v1Service = new V1Service();
+    V1ObjectMeta v1ServiceObjectMeta = new V1ObjectMeta();
+    v1ServiceObjectMeta.setName(serviceName);
+    v1Service.setMetadata(v1ServiceObjectMeta);
+    v1ServiceList.setItems(Collections.singletonList(v1Service));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<V1ServiceList>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), v1ServiceList));
+
+    K8sServiceMetadata k8sServiceMetadata = kubernetesContainerService.getK8sServiceMetadataUsingK8sClient(
+        KUBERNETES_CONFIG, controllerServiceName, "accId");
+    assertThat(k8sServiceMetadata).isEqualTo(K8sServiceMetadata.builder().name(serviceName).labels(map).build());
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetK8sServiceMetadataUsingFabric8() {
+    String controllerServiceName = "controllerServiceName";
+    String serviceName = "serviceName";
+    ObjectMeta objectMeta = new ObjectMeta();
+    objectMeta.setName(controllerServiceName);
+    replicationController.setMetadata(objectMeta);
+    Map<String, String> map = ImmutableMap.of("app", "MyApp");
+    PodTemplateSpec podTemplateSpec =
+        new PodTemplateSpecBuilder().withNewMetadata().withLabels(map).endMetadata().build();
+
+    spec.setTemplate(podTemplateSpec);
+    replicationController.setSpec(spec);
+    service.setMetadata(new ObjectMeta(
+        null, null, null, null, null, null, null, null, null, serviceName, null, null, null, null, null));
+    when(serviceList.getItems()).thenReturn(Collections.singletonList(service));
+
+    K8sServiceMetadata k8sServiceMetadata =
+        kubernetesContainerService.getK8sServiceMetadataUsingFabric8(KUBERNETES_CONFIG, controllerServiceName, "accId");
+    assertThat(k8sServiceMetadata).isEqualTo(K8sServiceMetadata.builder().name(serviceName).labels(map).build());
   }
 
   private static final String EXPECTED_KUBECONFIG = "apiVersion: v1\n"

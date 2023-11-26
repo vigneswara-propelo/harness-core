@@ -84,6 +84,7 @@ import io.harness.exception.UrlNotReachableException;
 import io.harness.exception.WingsException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.filesystem.FileIo;
+import io.harness.k8s.K8sServiceMetadata.K8sServiceMetadataBuilder;
 import io.harness.k8s.apiclient.K8sApiClientHelper;
 import io.harness.k8s.apiclient.KubernetesApiCall;
 import io.harness.k8s.config.K8sGlobalConfigService;
@@ -94,6 +95,7 @@ import io.harness.k8s.model.KubernetesClusterAuthType;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
 import io.harness.k8s.oidc.OidcTokenRetriever;
+import io.harness.k8s.utils.ObjectYamlUtils;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 import io.harness.logging.Misc;
@@ -159,6 +161,7 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.AuthenticationV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.apis.CustomObjectsApi;
 import io.kubernetes.client.openapi.apis.VersionApi;
 import io.kubernetes.client.openapi.auth.ApiKeyAuth;
 import io.kubernetes.client.openapi.auth.Authentication;
@@ -166,16 +169,22 @@ import io.kubernetes.client.openapi.auth.HttpBasicAuth;
 import io.kubernetes.client.openapi.auth.HttpBearerAuth;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapBuilder;
+import io.kubernetes.client.openapi.models.V1DaemonSetList;
 import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1ObjectMetaBuilder;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodList;
+import io.kubernetes.client.openapi.models.V1ReplicaSetList;
+import io.kubernetes.client.openapi.models.V1ReplicationControllerList;
 import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1SecretBuilder;
 import io.kubernetes.client.openapi.models.V1SecretList;
 import io.kubernetes.client.openapi.models.V1SelfSubjectAccessReview;
 import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1ServiceList;
+import io.kubernetes.client.openapi.models.V1StatefulSetList;
 import io.kubernetes.client.openapi.models.V1Status;
 import io.kubernetes.client.openapi.models.V1TokenReview;
 import io.kubernetes.client.openapi.models.V1TokenReviewBuilder;
@@ -202,6 +211,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.Deflater;
@@ -229,6 +239,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   public static final String METRICS_SERVER_ABSENT = "CE.MetricsServerCheck: Please install metrics server.";
   public static final String RESOURCE_PERMISSION_REQUIRED =
       "CE: The provided serviceaccount is missing the following permissions: %n %s. Please grant these to the service account.";
+  private static final String METADATA_NAME = "metadata.name=";
   @Inject private KubernetesHelperService kubernetesHelperService = new KubernetesHelperService();
   @Inject private TimeLimiter timeLimiter;
   @Inject private Clock clock;
@@ -254,7 +265,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
       controller =
           replicaOperations(kubernetesConfig, kubernetesConfig.getNamespace()).createOrReplace((ReplicaSet) definition);
     } else if (definition instanceof StatefulSet) {
-      HasMetadata existing = getController(kubernetesConfig, name);
+      HasMetadata existing = getControllerUsingFabric8Client(kubernetesConfig, name);
       if (existing != null && existing.getKind().equals("StatefulSet")) {
         controller = statefulOperations(kubernetesConfig, kubernetesConfig.getNamespace())
                          .withName(name)
@@ -271,12 +282,12 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   }
 
   @Override
-  public HasMetadata getController(KubernetesConfig kubernetesConfig, String name) {
-    return getController(kubernetesConfig, name, kubernetesConfig.getNamespace());
+  public HasMetadata getControllerUsingFabric8Client(KubernetesConfig kubernetesConfig, String name) {
+    return getControllerUsingFabric8Client(kubernetesConfig, name, kubernetesConfig.getNamespace());
   }
 
   @Override
-  public HasMetadata getController(KubernetesConfig kubernetesConfig, String name, String namespace) {
+  public HasMetadata getControllerUsingFabric8Client(KubernetesConfig kubernetesConfig, String name, String namespace) {
     try {
       Callable<HasMetadata> controller = getControllerInternal(kubernetesConfig, name, namespace);
       return HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofMinutes(2), controller);
@@ -294,7 +305,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
       KubernetesConfig kubernetesConfig, String name, String namespace) {
     return () -> {
       HasMetadata controller = null;
-      log.info("Trying to get controller for name {}", name);
+      log.info("Trying to get controller using fabric8 for name {}", name);
       if (isNotBlank(name)) {
         boolean success = false;
         boolean allFailed = true;
@@ -387,6 +398,112 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
       log.info("Got controller for name {}", name);
       return controller;
     };
+  }
+
+  @Override
+  public V1ObjectMeta getControllerUsingK8sClient(KubernetesConfig kubernetesConfig, String fieldSelector) {
+    AtomicReference<V1ObjectMeta> controller = new AtomicReference<>();
+    if (kubernetesConfig == null) {
+      return null;
+    }
+    ApiClient apiClient = kubernetesHelperService.getApiClientWithReadTimeout(kubernetesConfig);
+    try {
+      V1ReplicationControllerList v1ReplicationControllerList =
+          new CoreV1Api(apiClient).listNamespacedReplicationController(
+              kubernetesConfig.getNamespace(), null, null, null, fieldSelector, null, null, null, null, null, null);
+      if (v1ReplicationControllerList != null && isNotEmpty(v1ReplicationControllerList.getItems())) {
+        controller.set(v1ReplicationControllerList.getItems().get(0).getMetadata());
+      }
+    } catch (ApiException exception) {
+      if (!isResourceNotFoundException(exception.getCode())) {
+        String message = format("Unable to get ReplicationController/%s. Code: %s, message: %s",
+            kubernetesConfig.getNamespace(), exception.getCode(), getErrorMessage(exception));
+        log.warn(message);
+      }
+    }
+
+    if (controller.get() == null) {
+      try {
+        V1DeploymentList v1DeploymentList = new AppsV1Api(apiClient).listNamespacedDeployment(
+            kubernetesConfig.getNamespace(), null, null, null, fieldSelector, null, null, null, null, null, null);
+        if (v1DeploymentList != null && isNotEmpty(v1DeploymentList.getItems())) {
+          controller.set(v1DeploymentList.getItems().get(0).getMetadata());
+        }
+      } catch (ApiException exception) {
+        if (!isResourceNotFoundException(exception.getCode())) {
+          String message = format("Unable to get Deployment/%s. Code: %s, message: %s", kubernetesConfig.getNamespace(),
+              exception.getCode(), getErrorMessage(exception));
+          log.warn(message);
+        }
+      }
+    }
+
+    if (controller.get() == null) {
+      try {
+        V1ReplicaSetList v1ReplicaSetList = new AppsV1Api(apiClient).listNamespacedReplicaSet(
+            kubernetesConfig.getNamespace(), null, null, null, fieldSelector, null, null, null, null, null, null);
+        if (v1ReplicaSetList != null && isNotEmpty(v1ReplicaSetList.getItems())) {
+          controller.set(v1ReplicaSetList.getItems().get(0).getMetadata());
+        }
+      } catch (ApiException exception) {
+        if (!isResourceNotFoundException(exception.getCode())) {
+          String message = format("Unable to get ReplicaSet/%s. Code: %s, message: %s", kubernetesConfig.getNamespace(),
+              exception.getCode(), getErrorMessage(exception));
+          log.warn(message);
+        }
+      }
+    }
+
+    if (controller.get() == null) {
+      try {
+        V1StatefulSetList v1StatefulSetList = new AppsV1Api(apiClient).listNamespacedStatefulSet(
+            kubernetesConfig.getNamespace(), null, null, null, fieldSelector, null, null, null, null, null, null);
+        if (v1StatefulSetList != null && isNotEmpty(v1StatefulSetList.getItems())) {
+          controller.set(v1StatefulSetList.getItems().get(0).getMetadata());
+        }
+      } catch (ApiException exception) {
+        if (!isResourceNotFoundException(exception.getCode())) {
+          String message = format("Unable to get StatefulSet/%s. Code: %s, message: %s",
+              kubernetesConfig.getNamespace(), exception.getCode(), getErrorMessage(exception));
+          log.warn(message);
+        }
+      }
+    }
+
+    if (controller.get() == null) {
+      try {
+        V1DaemonSetList v1DaemonSetList = new AppsV1Api(apiClient).listNamespacedDaemonSet(
+            kubernetesConfig.getNamespace(), null, null, null, fieldSelector, null, null, null, null, null, null);
+        if (v1DaemonSetList != null && isNotEmpty(v1DaemonSetList.getItems())) {
+          controller.set(v1DaemonSetList.getItems().get(0).getMetadata());
+        }
+      } catch (ApiException exception) {
+        if (!isResourceNotFoundException(exception.getCode())) {
+          String message = format("Unable to get DaemonSet/%s. Code: %s, message: %s", kubernetesConfig.getNamespace(),
+              exception.getCode(), getErrorMessage(exception));
+          log.warn(message);
+        }
+      }
+    }
+
+    if (controller.get() == null) {
+      try {
+        CustomObjectsApi customObjectsApi = new CustomObjectsApi(apiClient);
+        Object deploymentConfigList =
+            customObjectsApi.listNamespacedCustomObject("apps.openshift.io", "v1", kubernetesConfig.getNamespace(),
+                "deploymentconfigs", null, null, null, fieldSelector, null, null, null, null, null, null);
+        Object v1ObjectMeta = ObjectYamlUtils.getField(deploymentConfigList, "items[0].metadata");
+        controller.set(
+            customObjectsApi.getApiClient().getJSON().deserialize(v1ObjectMeta.toString(), V1ObjectMeta.class));
+      } catch (ApiException exception) {
+        if (!isResourceNotFoundException(exception.getCode())) {
+          String message = format("Unable to get DeploymentConfig/%s. Code: %s, message: %s",
+              kubernetesConfig.getNamespace(), exception.getCode(), getErrorMessage(exception));
+          log.warn(message);
+        }
+      }
+    }
+    return controller.get();
   }
 
   @Override
@@ -740,7 +857,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   public void deleteController(KubernetesConfig kubernetesConfig, String name) {
     log.info("Deleting controller {}", name);
     if (isNotBlank(name)) {
-      HasMetadata controller = getController(kubernetesConfig, name);
+      HasMetadata controller = getControllerUsingFabric8Client(kubernetesConfig, name);
       if (controller instanceof ReplicationController) {
         rcOperations(kubernetesConfig, kubernetesConfig.getNamespace()).withName(name).delete();
       } else if (controller instanceof Deployment) {
@@ -805,7 +922,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
     if (sizeChanged) {
       logCallback.saveExecutionLog(format("Resizing controller [%s] in cluster [%s] from %s to %s instances",
           controllerName, clusterName, previousCount, desiredCount));
-      HasMetadata controller = getController(kubernetesConfig, controllerName);
+      HasMetadata controller = getControllerUsingFabric8Client(kubernetesConfig, controllerName);
 
       if (controller == null) {
         throw new WingsException(ErrorCode.INVALID_ARGUMENT)
@@ -850,7 +967,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
                          serviceSteadyStateTimeout, originalPods, isNotVersioned, startTime, namespace, logCallback)
                           : originalPods;
 
-    HasMetadata controllerInfo = getController(kubernetesConfig, controllerName, namespace);
+    HasMetadata controllerInfo = getControllerUsingFabric8Client(kubernetesConfig, controllerName, namespace);
     if (controllerInfo == null) {
       throw new InvalidRequestException(format("Could not find a controller named %s", controllerName));
     }
@@ -889,7 +1006,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
                                                       .podName(podName)
                                                       .newContainer(!originalPodNames.contains(podName));
 
-      HasMetadata controller = getController(kubernetesConfig, controllerName, namespace);
+      HasMetadata controller = getControllerUsingFabric8Client(kubernetesConfig, controllerName, namespace);
       PodTemplateSpec podTemplateSpec = null;
       if (null != controller) {
         podTemplateSpec = getPodTemplateSpec(controller);
@@ -1054,7 +1171,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
 
   @Override
   public Optional<Integer> getControllerPodCount(KubernetesConfig kubernetesConfig, String name) {
-    HasMetadata controller = getController(kubernetesConfig, name);
+    HasMetadata controller = getControllerUsingFabric8Client(kubernetesConfig, name);
     if (controller != null) {
       Integer count = getControllerPodCount(controller);
       return count == null ? Optional.empty() : Optional.of(count);
@@ -1287,7 +1404,30 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   }
 
   @Override
-  public List<Service> getServices(KubernetesConfig kubernetesConfig, Map<String, String> labels) {
+  public V1ServiceList getServiceListUsingK8sClient(KubernetesConfig kubernetesConfig, String labelSelector) {
+    if (kubernetesConfig == null) {
+      return null;
+    }
+    final Supplier<V1ServiceList> v1ServiceListSupplier = Retry.decorateSupplier(retry, () -> {
+      try {
+        ApiClient apiClient = kubernetesHelperService.getApiClientWithReadTimeout(kubernetesConfig);
+        return new CoreV1Api(apiClient).listNamespacedService(
+            kubernetesConfig.getNamespace(), null, null, null, null, labelSelector, null, null, null, null, null);
+      } catch (ApiException exception) {
+        if (isResourceNotFoundException(exception.getCode())) {
+          return null;
+        }
+        String message = format("Unable to get Service/%s with labelSelector %s. Code: %s, message: %s",
+            kubernetesConfig.getNamespace(), labelSelector, exception.getCode(), getErrorMessage(exception));
+        log.error(message);
+        throw new InvalidRequestException(message, exception, USER);
+      }
+    });
+    return v1ServiceListSupplier.get();
+  }
+
+  @Override
+  public List<Service> getServicesUsingFabric8Client(KubernetesConfig kubernetesConfig, Map<String, String> labels) {
     try (KubernetesClient kubernetesClient = kubernetesHelperService.getKubernetesClient(kubernetesConfig)) {
       return kubernetesClient.services()
           .inNamespace(kubernetesConfig.getNamespace())
@@ -1774,7 +1914,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   private List<Pod> waitForPodsToBeRunning(KubernetesConfig kubernetesConfig, String controllerName, int previousCount,
       int desiredCount, int serviceSteadyStateTimeout, List<Pod> originalPods, boolean isNotVersioned, long startTime,
       String namespace, LogCallback executionLogCallback) {
-    HasMetadata controller = getController(kubernetesConfig, controllerName, namespace);
+    HasMetadata controller = getControllerUsingFabric8Client(kubernetesConfig, controllerName, namespace);
     if (controller == null) {
       throw new InvalidArgumentsException(Pair.of(controllerName, "is null"));
     }
@@ -1800,7 +1940,8 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
           while (true) {
             try {
               int absoluteDesiredCount = desiredCount;
-              HasMetadata currentController = getController(kubernetesConfig, controllerName, namespace);
+              HasMetadata currentController =
+                  getControllerUsingFabric8Client(kubernetesConfig, controllerName, namespace);
               if (currentController != null) {
                 int controllerDesiredCount = getControllerPodCount(currentController);
                 absoluteDesiredCount = (desiredCount == -1) ? controllerDesiredCount : desiredCount;
@@ -1970,7 +2111,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
 
   @Override
   public List<Pod> getRunningPods(KubernetesConfig kubernetesConfig, String controllerName) {
-    HasMetadata controller = getController(kubernetesConfig, controllerName);
+    HasMetadata controller = getControllerUsingFabric8Client(kubernetesConfig, controllerName);
     PodTemplateSpec podTemplateSpec = getPodTemplateSpec(controller);
     if (podTemplateSpec == null) {
       return emptyList();
@@ -2384,5 +2525,60 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
     } catch (Exception e) {
       log.warn("Error updating file permissions", ExceptionMessageSanitizer.sanitizeException(e));
     }
+  }
+
+  public K8sServiceMetadata getK8sServiceMetadataUsingK8sClient(
+      KubernetesConfig kubernetesConfig, String containerServiceName, String accountId) {
+    K8sServiceMetadataBuilder k8sServiceMetadataBuilder = K8sServiceMetadata.builder();
+    try {
+      String fieldSelector = METADATA_NAME + containerServiceName;
+      V1ObjectMeta controller = getControllerUsingK8sClient(kubernetesConfig, fieldSelector);
+      if (controller != null) {
+        String controllerName = controller.getName();
+        log.debug("Got k8s client controller {} for account {}", controllerName, accountId);
+        Map<String, String> labels = controller.getLabels();
+        if (labels == null) {
+          labels = new HashMap<>();
+        }
+        k8sServiceMetadataBuilder.labels(labels);
+        Map<String, String> serviceLabels = new HashMap<>(labels);
+        serviceLabels.remove(HARNESS_KUBERNETES_REVISION_LABEL_KEY);
+        String serviceLabelString = isEmpty(serviceLabels) ? StringUtils.EMPTY
+                                                           : labels.entrySet()
+                                                                 .stream()
+                                                                 .map(entry -> entry.getKey() + "=" + entry.getValue())
+                                                                 .collect(Collectors.joining(","));
+        V1ServiceList serviceList = getServiceListUsingK8sClient(kubernetesConfig, serviceLabelString);
+        if (serviceList != null && isNotEmpty(serviceList.getItems())
+            && isNotEmpty(serviceList.getItems().get(0).getMetadata().getName())) {
+          k8sServiceMetadataBuilder.name(serviceList.getItems().get(0).getMetadata().getName());
+        } else {
+          log.info("Unable to fetch service name with labels: {}", serviceLabels);
+        }
+      }
+    } catch (Exception exception) {
+      log.warn("Unable to fetch service name.", exception);
+    }
+    return k8sServiceMetadataBuilder.build();
+  }
+
+  public K8sServiceMetadata getK8sServiceMetadataUsingFabric8(
+      KubernetesConfig kubernetesConfig, String containerServiceName, String accountId) {
+    K8sServiceMetadataBuilder k8sServiceMetadataBuilder = K8sServiceMetadata.builder();
+    HasMetadata fabric8Controller = getControllerUsingFabric8Client(kubernetesConfig, containerServiceName);
+    if (fabric8Controller != null) {
+      String controllerName = fabric8Controller.getMetadata().getName();
+      log.debug("Got controller {} for account {}", controllerName, accountId);
+      Map<String, String> labels = getPodTemplateSpec(fabric8Controller).getMetadata().getLabels();
+      k8sServiceMetadataBuilder.labels(labels);
+      Map<String, String> serviceLabels = new HashMap<>(labels);
+      serviceLabels.remove(HARNESS_KUBERNETES_REVISION_LABEL_KEY);
+      List<io.fabric8.kubernetes.api.model.Service> services =
+          getServicesUsingFabric8Client(kubernetesConfig, serviceLabels);
+      if (isNotEmpty(services)) {
+        k8sServiceMetadataBuilder.name(services.get(0).getMetadata().getName());
+      }
+    }
+    return k8sServiceMetadataBuilder.build();
   }
 }

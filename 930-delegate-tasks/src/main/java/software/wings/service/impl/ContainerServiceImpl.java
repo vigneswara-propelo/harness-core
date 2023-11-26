@@ -11,7 +11,6 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
-import static io.harness.k8s.K8sConstants.HARNESS_KUBERNETES_REVISION_LABEL_KEY;
 import static io.harness.validation.Validator.notNullCheck;
 
 import static software.wings.beans.infrastructure.instance.info.EcsContainerInfo.Builder.anEcsContainerInfo;
@@ -24,6 +23,7 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.WingsException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.helm.HelmConstants;
+import io.harness.k8s.K8sServiceMetadata;
 import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
@@ -58,7 +58,6 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.kubernetes.client.openapi.models.V1Pod;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,20 +136,20 @@ public class ContainerServiceImpl implements ContainerService {
       KubernetesConfig kubernetesConfig = getKubernetesConfig(containerServiceParams, isInstanceSync);
       notNullCheck("KubernetesConfig", kubernetesConfig);
       if (isNotEmpty(containerServiceName)) {
-        HasMetadata controller = kubernetesContainerService.getController(kubernetesConfig, containerServiceName);
-        if (controller != null) {
-          log.info("Got controller {} for account {}", controller.getMetadata().getName(), accountId);
-          Map<String, String> labels =
-              kubernetesContainerService.getPodTemplateSpec(controller).getMetadata().getLabels();
-          Map<String, String> serviceLabels = new HashMap<>(labels);
-          serviceLabels.remove(HARNESS_KUBERNETES_REVISION_LABEL_KEY);
-          // Migrate to K8s Native Java Client
-          List<io.fabric8.kubernetes.api.model.Service> services =
-              kubernetesContainerService.getServices(kubernetesConfig, serviceLabels);
-          String serviceName = services.isEmpty() ? "None" : services.get(0).getMetadata().getName();
-          log.info("Got Service {} for controller {} for account {}", serviceName, containerServiceName, accountId);
+        K8sServiceMetadata k8sServiceMetadata = kubernetesContainerService.getK8sServiceMetadataUsingK8sClient(
+            kubernetesConfig, containerServiceName, accountId);
+        if (isEmpty(k8sServiceMetadata.getName())) {
+          k8sServiceMetadata = kubernetesContainerService.getK8sServiceMetadataUsingFabric8(
+              kubernetesConfig, containerServiceName, accountId);
+          if (isNotEmpty(k8sServiceMetadata.getName())) {
+            log.warn("Fetched service name using Fabric8 client but unable to fetch using kubernetes client");
+          }
+        }
+        if (isNotEmpty(k8sServiceMetadata.getName())) {
+          log.debug("Got Service {} for controller {} for account {}", k8sServiceMetadata.getName(),
+              containerServiceName, accountId);
           List<V1Pod> pods = kubernetesContainerService.getRunningPodsWithLabels(
-              kubernetesConfig, containerServiceParams.getNamespace(), labels);
+              kubernetesConfig, containerServiceParams.getNamespace(), k8sServiceMetadata.getLabels());
           log.info("Got {} pods for controller {} for account {}", pods != null ? pods.size() : 0, containerServiceName,
               accountId);
           if (isEmpty(pods)) {
@@ -167,7 +166,7 @@ public class ContainerServiceImpl implements ContainerService {
                              .podName(pod.getMetadata().getName())
                              .ip(pod.getStatus().getPodIP())
                              .controllerName(containerServiceName)
-                             .serviceName(serviceName)
+                             .serviceName(k8sServiceMetadata.getName())
                              .namespace(containerServiceParams.getNamespace())
                              .releaseName(containerServiceParams.getReleaseName())
                              .build());
