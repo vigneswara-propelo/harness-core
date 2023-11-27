@@ -9,7 +9,6 @@ package io.harness.telemetry.helpers;
 
 public class InstrumentationConstants {
   public static final String GLOBAL_ACCOUNT_ID = "__GLOBAL_ACCOUNT_ID__";
-  public static final String ACCOUNT_ID = "account_id";
   public static final String ACCOUNT = "account";
   public static final String ORG = "org";
   public static final String PROJECT = "project";
@@ -22,4 +21,5 @@ public class InstrumentationConstants {
   public static final String IS_ARTIFACT_PRIMARY = "is_artifact_primary";
   public static final String DEPLOYMENT_TYPE = "deployment_type";
   public static final String IS_SERVICE_V2 = "is_service_v2";
+  public static final String STAGE_IDENTIFIER = "stage_id";
 }
