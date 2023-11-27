@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: azure-data-pipeline-{{ lower ( randAlphaNum 6 ) }}
+  name: ccm-azure-smp-{{ lower ( randAlphaNum 6 ) }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "batch-processing.labels" . | nindent 4 }}
@@ -21,7 +21,7 @@ spec:
       template:
         spec:
           containers:
-          - name: azure-data-pipeline
+          - name: ccm-azure-smp
             image: {{ include "common.images.image" (dict "imageRoot" .Values.imageAzureDataPipeline "global" .Values.global) }}
             env:
               - name: CLICKHOUSE_URL

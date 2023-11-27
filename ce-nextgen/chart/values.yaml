@@ -300,6 +300,9 @@ timescaleSecret:
     name: harness-secrets
     key: timescaledbPostgresPassword
 
+azureSecret:
+  AZURE_APP_CLIENT_SECRET: ""
+
 awsSecret:
   AWS_ACCESS_KEY: ""
   AWS_SECRET_KEY: ""

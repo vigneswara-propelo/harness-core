@@ -96,6 +96,7 @@ AWS_ACCOUNT_ID: {{ include "harnesscommon.secrets.passwords.manage" (dict "secre
 AWS_DESTINATION_BUCKET: {{ include "harnesscommon.secrets.passwords.manage" (dict "secret" "nextgen-ce" "key" "AWS_DESTINATION_BUCKET" "providedValues" (list "awsSecret.AWS_DESTINATION_BUCKET") "length" 10 "context" $) }}
 AWS_TEMPLATE_LINK: {{ include "harnesscommon.secrets.passwords.manage" (dict "secret" "nextgen-ce" "key" "AWS_TEMPLATE_LINK" "providedValues" (list "awsSecret.AWS_TEMPLATE_LINK") "length" 10 "context" $) }}
 CE_AWS_TEMPLATE_URL: {{ include "harnesscommon.secrets.passwords.manage" (dict "secret" "nextgen-ce" "key" "CE_AWS_TEMPLATE_URL" "providedValues" (list "awsSecret.CE_AWS_TEMPLATE_URL") "length" 10 "context" $) }}
+AZURE_APP_CLIENT_SECRET: {{ include "harnesscommon.secrets.passwords.manage" (dict "secret" "nextgen-ce" "key" "AZURE_APP_CLIENT_SECRET" "providedValues" (list "azureSecret.AZURE_APP_CLIENT_SECRET") "length" 10 "context" $) }}
     {{- $hasAtleastOneSecret := true }}
     {{- $localESOSecretCtxIdentifier := (include "harnesscommon.secrets.localESOSecretCtxIdentifier" (dict "ctx" $ )) }}
     {{- if eq (include "harnesscommon.secrets.isDefaultAppSecret" (dict "ctx" $ "variableName" "JWT_AUTH_SECRET")) "true" }}
