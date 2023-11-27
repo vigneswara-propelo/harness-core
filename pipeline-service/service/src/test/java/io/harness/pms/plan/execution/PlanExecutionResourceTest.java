@@ -8,6 +8,7 @@
 package io.harness.pms.plan.execution;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import static io.harness.beans.FeatureName.CI_YAML_VERSIONING;
 import static io.harness.beans.FeatureName.PIE_GET_FILE_CONTENT_ONLY;
 import static io.harness.rule.OwnerRule.ADITHYA;
 import static io.harness.rule.OwnerRule.NAMAN;
@@ -116,6 +117,7 @@ public class PlanExecutionResourceTest extends CategoryTest {
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
   public void testGetStagesExecutionList() {
+    doReturn(false).when(pmsFeatureFlagService).isEnabled(ACCOUNT_ID, CI_YAML_VERSIONING);
     doReturn(Optional.of(entity))
         .when(pmsPipelineService)
         .getPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, false, false, false, false);
@@ -138,6 +140,7 @@ public class PlanExecutionResourceTest extends CategoryTest {
   @Owner(developers = UTKARSH_CHOUBEY)
   @Category(UnitTests.class)
   public void testGetStagesExecutionListWhenFfIsOn() {
+    doReturn(false).when(pmsFeatureFlagService).isEnabled(ACCOUNT_ID, CI_YAML_VERSIONING);
     doReturn(Optional.of(entity))
         .when(pmsPipelineService)
         .getPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, false, false, false, true);

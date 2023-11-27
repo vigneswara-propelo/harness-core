@@ -48,6 +48,7 @@ import lombok.experimental.NonFinal;
 public class YamlNode implements Visitable {
   public static final String UUID_FIELD_NAME = "__uuid";
   public static final String IDENTIFIER_FIELD_NAME = "identifier";
+  public static final String ID_FIELD_NAME = "id";
   public static final String TYPE_FIELD_NAME = "type";
   public static final String NAME_FIELD_NAME = "name";
   public static final String KEY_FIELD_NAME = "key";
@@ -400,6 +401,10 @@ public class YamlNode implements Visitable {
 
   public String getIdentifier() {
     return getStringValue(IDENTIFIER_FIELD_NAME);
+  }
+
+  public String getId() {
+    return getStringValue(ID_FIELD_NAME);
   }
 
   public String getType() {

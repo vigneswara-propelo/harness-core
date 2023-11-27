@@ -25,6 +25,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.beans.FeatureName;
 import io.harness.engine.executions.plan.PlanExecutionService;
 import io.harness.engine.executions.retry.RetryHistoryResponseDto;
 import io.harness.engine.executions.retry.RetryInfo;
@@ -56,6 +57,7 @@ import io.harness.pms.preflight.service.PreflightService;
 import io.harness.pms.rbac.PipelineRbacPermissions;
 import io.harness.pms.stages.StageExecutionResponse;
 import io.harness.pms.stages.StageExecutionSelectorHelper;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.repositories.orchestrationEventLog.OrchestrationEventLogRepository;
@@ -406,17 +408,23 @@ public class PlanExecutionResourceImpl implements PlanExecutionResource {
                  .getMergedPipelineYaml();
     }
     boolean shouldAllowStageExecutions;
-    try {
-      BasicPipeline basicPipeline = YamlUtils.read(yaml, BasicPipeline.class);
-      shouldAllowStageExecutions = basicPipeline.isAllowStageExecutions();
-    } catch (IOException e) {
-      throw new InvalidRequestException("Cannot create pipeline entity due to " + e.getMessage(), e);
+    if (HarnessYamlVersion.V0.equals(pipelineEntity.getHarnessVersion())) {
+      try {
+        BasicPipeline basicPipeline = YamlUtils.read(yaml, BasicPipeline.class);
+        shouldAllowStageExecutions = basicPipeline.isAllowStageExecutions();
+      } catch (IOException e) {
+        throw new InvalidRequestException("Cannot create pipeline entity due to " + e.getMessage(), e);
+      }
+    } else {
+      shouldAllowStageExecutions = true;
     }
 
     if (!shouldAllowStageExecutions) {
       return ResponseDTO.newResponse(Collections.emptyList());
     }
-    List<StageExecutionResponse> stageExecutionResponse = StageExecutionSelectorHelper.getStageExecutionResponse(yaml);
+    boolean isYamlSimplificationEnabled = pmsFeatureFlagService.isEnabled(accountId, FeatureName.CI_YAML_VERSIONING);
+    List<StageExecutionResponse> stageExecutionResponse =
+        StageExecutionSelectorHelper.getStageExecutionResponse(yaml, isYamlSimplificationEnabled);
 
     return ResponseDTO.newResponse(stageExecutionResponse);
   }

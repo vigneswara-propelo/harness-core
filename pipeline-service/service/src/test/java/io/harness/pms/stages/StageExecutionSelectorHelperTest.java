@@ -40,7 +40,7 @@ public class StageExecutionSelectorHelperTest extends CategoryTest {
   public void testGetStageExecutionResponse() {
     String pipelineYaml = getPipelineYamlForStagesRequired();
     List<StageExecutionResponse> stageExecutionResponse =
-        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml);
+        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml, false);
     assertThat(stageExecutionResponse).hasSize(4);
 
     StageExecutionResponse s1 = stageExecutionResponse.get(0);
@@ -78,7 +78,7 @@ public class StageExecutionSelectorHelperTest extends CategoryTest {
   public void testGetStageExecutionResponseWithCIUseFromStage() {
     String pipelineYaml = getPipelineYamlForStagesRequiredWithCIUseFromStage();
     List<StageExecutionResponse> stageExecutionResponse =
-        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml);
+        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml, false);
     assertThat(stageExecutionResponse).hasSize(4);
 
     StageExecutionResponse s1 = stageExecutionResponse.get(0);
@@ -116,7 +116,7 @@ public class StageExecutionSelectorHelperTest extends CategoryTest {
   public void testGetStageExecutionResponseForStageTemplates() {
     String pipelineYaml = getPipelineWithStageTemplates();
     List<StageExecutionResponse> stageExecutionResponse =
-        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml);
+        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml, false);
     assertThat(stageExecutionResponse).hasSize(2);
     StageExecutionResponse s0 = stageExecutionResponse.get(0);
     assertThat(s0.getStageIdentifier()).isEqualTo("d1");
