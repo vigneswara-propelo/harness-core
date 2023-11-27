@@ -14,9 +14,11 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Value;
 
 @Value
+@Builder
 @JsonTypeName(YAMLFieldNameConstants.DEPLOYMENT_STAGE_V1)
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_PIPELINE})
 public class DeploymentStageNodeV1 extends DeploymentAbstractStageNodeV1 {

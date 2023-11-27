@@ -71,6 +71,7 @@ import io.harness.cdng.chaos.ChaosStepPlanCreator;
 import io.harness.cdng.chaos.ChaosStepVariableCreator;
 import io.harness.cdng.creator.filters.CustomStageFilterCreator;
 import io.harness.cdng.creator.filters.DeploymentStageFilterJsonCreatorV2;
+import io.harness.cdng.creator.filters.v1.DeploymentStageFilterJsonCreator;
 import io.harness.cdng.creator.plan.CDStepsPlanCreator;
 import io.harness.cdng.creator.plan.artifact.ArtifactsPlanCreator;
 import io.harness.cdng.creator.plan.artifact.PrimaryArtifactPlanCreator;
@@ -89,6 +90,7 @@ import io.harness.cdng.creator.plan.service.ServiceDefinitionPlanCreator;
 import io.harness.cdng.creator.plan.service.ServicePlanCreator;
 import io.harness.cdng.creator.plan.stage.CustomStagePlanCreator;
 import io.harness.cdng.creator.plan.stage.DeploymentStagePMSPlanCreatorV2;
+import io.harness.cdng.creator.plan.stage.v1.DeploymentStagePlanCreator;
 import io.harness.cdng.creator.plan.steps.AzureARMRollbackResourceStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.AzureCreateARMResourceStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.AzureCreateBPResourceStepPlanCreator;
@@ -417,6 +419,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new GitOpsFetchLinkedAppsStepPlanCreatorV2());
     planCreators.add(new GitOpsSyncStepPlanCreator());
     planCreators.add(new DeploymentStagePMSPlanCreatorV2());
+    planCreators.add(new DeploymentStagePlanCreator());
     planCreators.add(new K8sCanaryStepPlanCreator());
     planCreators.add(new K8sApplyStepPlanCreator());
     planCreators.add(new K8sBlueGreenStepPlanCreator());
@@ -569,6 +572,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
   public List<FilterJsonCreator> getFilterJsonCreators() {
     List<FilterJsonCreator> filterJsonCreators = new ArrayList<>();
     filterJsonCreators.add(new DeploymentStageFilterJsonCreatorV2());
+    filterJsonCreators.add(new DeploymentStageFilterJsonCreator());
     filterJsonCreators.add(new CDPMSStepFilterJsonCreator());
     filterJsonCreators.add(new CDPMSStepFilterJsonCreatorV2());
     filterJsonCreators.add(new CDPMSCommandStepFilterJsonCreator());
@@ -605,6 +609,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     variableCreators.add(new GitOpsFetchLinkedAppsStepVariableCreator());
     variableCreators.add(new GitOpsSyncStepVariableCreator());
     variableCreators.add(deploymentStageVariableCreator);
+    variableCreators.add(new EmptyVariableCreator(STAGE, Set.of(YAMLFieldNameConstants.DEPLOYMENT_STAGE_V1)));
     variableCreators.add(new StepGroupVariableCreator());
     variableCreators.add(new K8sApplyStepVariableCreator());
     variableCreators.add(new K8sBGSwapServicesVariableCreator());
