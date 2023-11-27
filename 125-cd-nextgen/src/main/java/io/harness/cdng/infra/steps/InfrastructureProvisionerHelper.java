@@ -35,6 +35,7 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.expression.common.ExpressionMode;
 import io.harness.ng.core.infrastructure.InfrastructureKind;
 import io.harness.pms.contracts.ambiance.Ambiance;
+import io.harness.pms.yaml.ParameterField;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -173,6 +174,10 @@ public class InfrastructureProvisionerHelper {
         K8sAwsInfrastructure k8sAwsInfrastructure = (K8sAwsInfrastructure) infrastructure;
         expressionEvaluator.resolve(k8sAwsInfrastructure.getNamespace(), ExpressionMode.THROW_EXCEPTION_IF_UNRESOLVED);
         expressionEvaluator.resolve(k8sAwsInfrastructure.getCluster(), ExpressionMode.THROW_EXCEPTION_IF_UNRESOLVED);
+        if (!ParameterField.isBlank(k8sAwsInfrastructure.getRegion())) {
+          expressionEvaluator.resolve(
+              k8sAwsInfrastructure.getRegion(), ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED);
+        }
         expressionEvaluator.resolve(
             k8sAwsInfrastructure.getReleaseName(), ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED);
         break;
