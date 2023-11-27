@@ -287,7 +287,11 @@ public class CheckServiceImpl implements CheckService {
             throw new InvalidRequestException(String.format(
                 "Conditional input value for key %s does not match any data point input details", inputValue.getKey()));
           }
-          if (inputDetailsOpt.get().isRequired() && isEmpty(inputValue.getValue())) {
+          String value = inputValue.getValue();
+          if (value != null && value.startsWith("\"") && value.endsWith("\"")) {
+            value = value.substring(1, value.length() - 1);
+          }
+          if (inputDetailsOpt.get().isRequired() && isEmpty(value)) {
             throw new InvalidRequestException(
                 String.format("Conditional input value for key %s is required", inputValue.getKey()));
           }
