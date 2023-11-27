@@ -73,4 +73,9 @@ public class FakeNotificationClient implements NotificationClient {
       String projectIdentifier, String notificationEntity, String notificationEvent) {
     return null;
   }
+
+  @Override
+  public boolean isDefaultSMTPPresent(String accountId) {
+    return false;
+  }
 }
