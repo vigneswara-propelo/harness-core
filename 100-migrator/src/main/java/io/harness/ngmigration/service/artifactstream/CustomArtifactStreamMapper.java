@@ -40,6 +40,7 @@ import software.wings.beans.Variable;
 import software.wings.beans.artifact.ArtifactStream;
 import software.wings.beans.artifact.CustomArtifactStream;
 import software.wings.beans.template.Template;
+import software.wings.beans.template.artifactsource.CustomRepositoryMapping;
 import software.wings.beans.trigger.Trigger;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.ngmigration.CgEntityNode;
@@ -53,6 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.ListUtils;
@@ -99,22 +101,25 @@ public class CustomArtifactStreamMapper implements ArtifactStreamMapper {
                                  .fetchAllArtifacts(
                                      FetchAllArtifacts.builder()
                                          .artifactsArrayPath(ParameterField.createValueField(
-                                             primaryScript.getCustomRepositoryMapping().getArtifactRoot()))
+                                             Optional.ofNullable(primaryScript.getCustomRepositoryMapping())
+                                                 .map(CustomRepositoryMapping::getArtifactRoot)
+                                                 .orElse(RUNTIME_INPUT)))
                                          .versionPath(ParameterField.createValueField(
-                                             primaryScript.getCustomRepositoryMapping().getBuildNoPath()))
-                                         .attributes(
-                                             ListUtils
-                                                 .emptyIfNull(
-                                                     primaryScript.getCustomRepositoryMapping().getArtifactAttributes())
-                                                 .stream()
-                                                 .map(attribute
-                                                     -> StringNGVariable.builder()
-                                                            .name(attribute.getMappedAttribute())
-                                                            .type(NGVariableType.STRING)
-                                                            .value(ParameterField.createValueField(
-                                                                attribute.getRelativePath()))
-                                                            .build())
-                                                 .collect(Collectors.toList()))
+                                             Optional.ofNullable(primaryScript.getCustomRepositoryMapping())
+                                                 .map(CustomRepositoryMapping::getBuildNoPath)
+                                                 .orElse(RUNTIME_INPUT)))
+                                         .attributes(Optional.ofNullable(primaryScript.getCustomRepositoryMapping())
+                                                         .map(CustomRepositoryMapping::getArtifactAttributes)
+                                                         .orElse(Collections.emptyList())
+                                                         .stream()
+                                                         .map(attribute
+                                                             -> StringNGVariable.builder()
+                                                                    .name(attribute.getMappedAttribute())
+                                                                    .type(NGVariableType.STRING)
+                                                                    .value(ParameterField.createValueField(
+                                                                        attribute.getRelativePath()))
+                                                                    .build())
+                                                         .collect(Collectors.toList()))
                                          .shellScriptBaseStepInfo(
                                              CustomArtifactScriptInfo.builder()
                                                  .shell(ShellType.Bash)
