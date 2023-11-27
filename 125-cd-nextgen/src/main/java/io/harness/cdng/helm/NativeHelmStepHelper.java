@@ -159,9 +159,6 @@ public class NativeHelmStepHelper extends K8sHelmCommonStepHelper {
 
   private TaskType getHelmTaskType(HelmCommandRequestNG helmCommandRequest, Ambiance ambiance) {
     ManifestDelegateConfig manifestDelegateConfig = helmCommandRequest.getManifestDelegateConfig();
-    if (helmCommandRequest.isUseSteadyStateCheckForJobs()) {
-      return TaskType.HELM_COMMAND_TASK_NG_JOBS_STEADY_STATE_CHECK;
-    }
 
     if (manifestDelegateConfig != null && manifestDelegateConfig.getStoreDelegateConfig() != null
         && OCI_HELM.equals(manifestDelegateConfig.getStoreDelegateConfig().getType())

@@ -2925,15 +2925,6 @@ public class NativeHelmStepHelperTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = PRATYUSH)
-  @Category(UnitTests.class)
-  public void testTaskTypeSteadyStateForJobs() {
-    K8sInfraDelegateConfig k8sInfraDelegateConfig = DirectK8sInfraDelegateConfig.builder().build();
-    TaskType expectedTaskType = TaskType.HELM_COMMAND_TASK_NG_JOBS_STEADY_STATE_CHECK;
-    checkTaskType(k8sInfraDelegateConfig, expectedTaskType, null, true);
-  }
-
-  @Test
   @Owner(developers = ABHINAV2)
   @Category(UnitTests.class)
   public void testTaskTypeRancher() {
