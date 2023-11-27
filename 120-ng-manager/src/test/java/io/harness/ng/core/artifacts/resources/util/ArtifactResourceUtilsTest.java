@@ -50,6 +50,7 @@ import io.harness.cdng.artifact.bean.yaml.EcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GoogleArtifactRegistryConfig;
 import io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig;
+import io.harness.cdng.artifact.bean.yaml.nexusartifact.Nexus2RegistryArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusConstant;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryDockerConfig;
 import io.harness.cdng.artifact.resources.acr.dtos.AcrRegistriesDTO;
@@ -88,6 +89,7 @@ import io.harness.cdng.k8s.resources.azure.service.AzureResourceService;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.delegate.beans.azure.AcrBuildDetailsDTO;
 import io.harness.delegate.beans.azure.AcrResponseDTO;
+import io.harness.delegate.task.artifacts.ArtifactSourceType;
 import io.harness.evaluators.CDExpressionEvaluator;
 import io.harness.evaluators.CDYamlExpressionEvaluator;
 import io.harness.exception.InvalidRequestException;
@@ -831,6 +833,106 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(spyartifactResourceUtils.getBuildDetailsV2GAR(null, null, null, null, null, "accountId", "orgId",
                    "projectId", "pipeId", "version", "versionRegex", "", "", "serviceref", null))
         .isEqualTo(buildDetails);
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetNexusArtifactIds() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+    ParameterField<String> connectorRef = ParameterField.<String>builder().value(CONNECTOR_REF).build();
+    Nexus2RegistryArtifactConfig nexus2RegistryArtifactConfig =
+        Nexus2RegistryArtifactConfig.builder()
+            .connectorRef(connectorRef)
+            .repositoryFormat(ParameterField.<String>builder().value(NexusConstant.MAVEN).build())
+            .repository(ParameterField.<String>builder().value("test").build())
+            .build();
+
+    GARResponseDTO buildDetails = GARResponseDTO.builder().build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, "accountId", "orgId", "projectId");
+
+    doReturn(nexus2RegistryArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    List<String> artifactIDs = new ArrayList<>();
+    artifactIDs.add("artifactId");
+
+    doReturn(artifactIDs)
+        .when(nexusResourceService)
+        .getArtifactIds(ACCOUNT_ID, ORG_ID, PROJECT_ID, identifierRef, NexusConstant.MAVEN, "test", "groupId",
+            ArtifactSourceType.NEXUS2_REGISTRY);
+
+    assertThat(spyartifactResourceUtils.getNexusArtifactIds(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+                   NexusConstant.MAVEN, "test", "groupId", "Nexus2Registry", null, null, "", SERVICE_REF))
+        .isEqualTo(artifactIDs);
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetNexusGroupIds() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+    ParameterField<String> connectorRef = ParameterField.<String>builder().value(CONNECTOR_REF).build();
+    Nexus2RegistryArtifactConfig nexus2RegistryArtifactConfig =
+        Nexus2RegistryArtifactConfig.builder()
+            .connectorRef(connectorRef)
+            .repositoryFormat(ParameterField.<String>builder().value(NexusConstant.MAVEN).build())
+            .repository(ParameterField.<String>builder().value("test").build())
+            .build();
+
+    GARResponseDTO buildDetails = GARResponseDTO.builder().build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, "accountId", "orgId", "projectId");
+
+    doReturn(nexus2RegistryArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    List<String> artifactIDs = new ArrayList<>();
+    artifactIDs.add("artifactId");
+
+    doReturn(artifactIDs)
+        .when(nexusResourceService)
+        .getGroupIds(ACCOUNT_ID, ORG_ID, PROJECT_ID, identifierRef, NexusConstant.MAVEN, "test",
+            ArtifactSourceType.NEXUS2_REGISTRY);
+
+    assertThat(spyartifactResourceUtils.getNexusGroupIds(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+                   NexusConstant.MAVEN, "test", null, null, "", SERVICE_REF))
+        .isEqualTo(artifactIDs);
   }
 
   @Test
@@ -2842,7 +2944,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(nexusRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(NEXUS_BUILD_DETAILS_DTO)
         .when(nexusResourceService)
@@ -2891,7 +2993,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(nexusRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(NEXUS_BUILD_DETAILS_DTO)
         .when(nexusResourceService)
@@ -2968,7 +3070,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(nexusRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     assertThatThrownBy(()
                            -> spyartifactResourceUtils.getLastSuccessfulBuildV2Nexus3(null, null, null, null, null,
@@ -2990,7 +3092,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(nexusRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(NEXUS_BUILD_DETAILS_DTO)
         .when(nexusResourceService)

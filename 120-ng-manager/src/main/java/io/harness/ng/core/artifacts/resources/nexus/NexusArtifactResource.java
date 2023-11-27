@@ -6,7 +6,7 @@
  */
 
 package io.harness.ng.core.artifacts.resources.nexus;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.cdng.service.steps.constants.ServiceStepV3Constants.SERVICE_GIT_BRANCH;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.NGCommonEntityConstants;
@@ -18,17 +18,14 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.IdentifierRef;
 import io.harness.cdng.artifact.NGArtifactConstants;
 import io.harness.cdng.artifact.bean.ArtifactConfig;
-import io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig;
-import io.harness.cdng.artifact.bean.yaml.nexusartifact.Nexus2RegistryArtifactConfig;
-import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryMavenConfig;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusRequestDTO;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusResponseDTO;
 import io.harness.cdng.artifact.resources.nexus.service.NexusResourceService;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
-import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
 import io.harness.ng.core.artifacts.resources.util.ArtifactResourceUtils;
+import io.harness.ng.core.artifacts.resources.util.YamlExpressionEvaluatorWithContext;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -117,21 +114,31 @@ public class NexusArtifactResource {
       @QueryParam("fqnPath") String fqnPath, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
       String runtimeInputYaml, @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef) {
     NexusResponseDTO buildDetails;
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    // remote services can be linked with a specific branch, so we parse the YAML in one go and store the context data
+    //  has env git branch and service git branch
+    if (isNotEmpty(serviceRef)
+        && artifactResourceUtils.isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = artifactResourceUtils.getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier,
+          projectIdentifier, pipelineIdentifier, runtimeInputYaml, fqnPath, gitEntityBasicInfo, serviceRef);
+    }
     if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath.trim());
+      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(accountId,
+          orgIdentifier, projectIdentifier, serviceRef, fqnPath.trim(),
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
       if (artifactSpecFromService.getSourceType().equals(ArtifactSourceType.NEXUS2_REGISTRY)) {
         buildDetails = artifactResourceUtils.getBuildDetailsNexus2(nexusConnectorIdentifier, repository, repositoryPort,
             artifactPath, repositoryFormat, artifactRepositoryUrl, orgIdentifier, projectIdentifier, groupId,
             artifactId, extension, classifier, packageName, pipelineIdentifier, fqnPath, gitEntityBasicInfo,
-            runtimeInputYaml, serviceRef, accountId, group);
+            runtimeInputYaml, serviceRef, accountId, group, baseEvaluatorWithContext);
         return ResponseDTO.newResponse(buildDetails);
       }
     }
     buildDetails = artifactResourceUtils.getBuildDetails(nexusConnectorIdentifier, repository, repositoryPort,
         artifactPath, repositoryFormat, artifactRepositoryUrl, orgIdentifier, projectIdentifier, groupId, artifactId,
         extension, classifier, packageName, pipelineIdentifier, fqnPath.trim(), gitEntityBasicInfo, runtimeInputYaml,
-        serviceRef, accountId, group);
+        serviceRef, accountId, group, baseEvaluatorWithContext);
     return ResponseDTO.newResponse(buildDetails);
   }
 
@@ -207,18 +214,28 @@ public class NexusArtifactResource {
       @QueryParam("repositoryFormat") String repositoryFormat, @QueryParam("fqnPath") String fqnPath,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, String runtimeInputYaml,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef) {
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    // remote services can be linked with a specific branch, so we parse the YAML in one go and store the context data
+    //  has env git branch and service git branch
+    if (isNotEmpty(serviceRef)
+        && artifactResourceUtils.isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = artifactResourceUtils.getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier,
+          projectIdentifier, pipelineIdentifier, runtimeInputYaml, fqnPath, gitEntityBasicInfo, serviceRef);
+    }
     if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
+      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(accountId,
+          orgIdentifier, projectIdentifier, serviceRef, fqnPath,
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
       if (artifactSpecFromService.getSourceType().equals(ArtifactSourceType.NEXUS2_REGISTRY)) {
         return ResponseDTO.newResponse(artifactResourceUtils.getRepositoriesNexus2(orgIdentifier, projectIdentifier,
             repositoryFormat, accountId, pipelineIdentifier, runtimeInputYaml, nexusConnectorIdentifier, fqnPath,
-            gitEntityBasicInfo, serviceRef));
+            gitEntityBasicInfo, serviceRef, baseEvaluatorWithContext));
       }
     }
-    return ResponseDTO.newResponse(
-        artifactResourceUtils.getRepositoriesNexus3(orgIdentifier, projectIdentifier, repositoryFormat, accountId,
-            pipelineIdentifier, runtimeInputYaml, nexusConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef));
+    return ResponseDTO.newResponse(artifactResourceUtils.getRepositoriesNexus3(orgIdentifier, projectIdentifier,
+        repositoryFormat, accountId, pipelineIdentifier, runtimeInputYaml, nexusConnectorIdentifier, fqnPath,
+        gitEntityBasicInfo, serviceRef, baseEvaluatorWithContext));
   }
 
   @POST
@@ -233,72 +250,9 @@ public class NexusArtifactResource {
       @QueryParam("repositoryFormat") String repositoryFormat, @QueryParam("repository") String repository,
       @QueryParam("fqnPath") String fqnPath, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
       String runtimeInputYaml, @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef) {
-    ArtifactSourceType artifactSourceType = null;
-
-    if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
-
-      if (artifactSpecFromService.getSourceType().equals(ArtifactSourceType.NEXUS3_REGISTRY)) {
-        NexusRegistryArtifactConfig nexusRegistryArtifactConfig = (NexusRegistryArtifactConfig) artifactSpecFromService;
-
-        artifactSourceType = ArtifactSourceType.NEXUS3_REGISTRY;
-
-        if (isEmpty(nexusConnectorIdentifier)) {
-          nexusConnectorIdentifier = (String) nexusRegistryArtifactConfig.getConnectorRef().fetchFinalValue();
-        }
-
-        if (isEmpty(repositoryFormat)) {
-          repositoryFormat = (String) nexusRegistryArtifactConfig.getRepositoryFormat().fetchFinalValue();
-        }
-
-        if (isEmpty(repository)) {
-          repository = (String) nexusRegistryArtifactConfig.getRepository().fetchFinalValue();
-        }
-
-      } else if (artifactSpecFromService.getSourceType().equals(ArtifactSourceType.NEXUS2_REGISTRY)) {
-        Nexus2RegistryArtifactConfig nexus2RegistryArtifactConfig =
-            (Nexus2RegistryArtifactConfig) artifactSpecFromService;
-
-        artifactSourceType = ArtifactSourceType.NEXUS2_REGISTRY;
-
-        if (isEmpty(nexusConnectorIdentifier)) {
-          nexusConnectorIdentifier = (String) nexus2RegistryArtifactConfig.getConnectorRef().fetchFinalValue();
-        }
-
-        if (isEmpty(repositoryFormat)) {
-          repositoryFormat = (String) nexus2RegistryArtifactConfig.getRepositoryFormat().fetchFinalValue();
-        }
-
-        if (isEmpty(repository)) {
-          repository = (String) nexus2RegistryArtifactConfig.getRepository().fetchFinalValue();
-        }
-      }
-    }
-
-    nexusConnectorIdentifier = artifactResourceUtils
-                                   .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
-                                       projectIdentifier, pipelineIdentifier, runtimeInputYaml,
-                                       nexusConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                                   .getValue();
-
-    repositoryFormat =
-        artifactResourceUtils
-            .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                pipelineIdentifier, runtimeInputYaml, repositoryFormat, fqnPath, gitEntityBasicInfo, serviceRef, null)
-            .getValue();
-
-    repository =
-        artifactResourceUtils
-            .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                pipelineIdentifier, runtimeInputYaml, repository, fqnPath, gitEntityBasicInfo, serviceRef, null)
-            .getValue();
-
-    IdentifierRef connectorRef =
-        IdentifierRefHelper.getIdentifierRef(nexusConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-
-    List<String> groupIds = nexusResourceService.getGroupIds(
-        accountId, orgIdentifier, projectIdentifier, connectorRef, repositoryFormat, repository, artifactSourceType);
+    List<String> groupIds = artifactResourceUtils.getNexusGroupIds(nexusConnectorIdentifier, accountId, orgIdentifier,
+        projectIdentifier, pipelineIdentifier, repositoryFormat, repository, fqnPath, gitEntityBasicInfo,
+        runtimeInputYaml, serviceRef);
 
     return ResponseDTO.newResponse(groupIds);
   }
@@ -316,106 +270,9 @@ public class NexusArtifactResource {
       @QueryParam("groupId") String groupId, @QueryParam("nexusSourceType") String sourceType,
       @QueryParam("fqnPath") String fqnPath, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
       String runtimeInputYaml, @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef) {
-    ArtifactSourceType artifactSourceType = null;
-
-    if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
-
-      if (artifactSpecFromService.getSourceType().equals(ArtifactSourceType.NEXUS3_REGISTRY)) {
-        NexusRegistryArtifactConfig nexusRegistryArtifactConfig = (NexusRegistryArtifactConfig) artifactSpecFromService;
-
-        artifactSourceType = ArtifactSourceType.NEXUS3_REGISTRY;
-
-        if (isEmpty(nexusConnectorIdentifier)) {
-          nexusConnectorIdentifier = (String) nexusRegistryArtifactConfig.getConnectorRef().fetchFinalValue();
-        }
-
-        if (isEmpty(repositoryFormat)) {
-          repositoryFormat = (String) nexusRegistryArtifactConfig.getRepositoryFormat().fetchFinalValue();
-        }
-
-        if (isEmpty(repository)) {
-          repository = (String) nexusRegistryArtifactConfig.getRepository().fetchFinalValue();
-        }
-
-        if (isEmpty(groupId)) {
-          if (repositoryFormat.equals("maven")) {
-            NexusRegistryMavenConfig mavenConfig =
-                (NexusRegistryMavenConfig) nexusRegistryArtifactConfig.getNexusRegistryConfigSpec();
-            groupId = (String) mavenConfig.getGroupId().fetchFinalValue();
-          }
-        }
-
-      } else if (artifactSpecFromService.getSourceType().equals(ArtifactSourceType.NEXUS2_REGISTRY)) {
-        Nexus2RegistryArtifactConfig nexus2RegistryArtifactConfig =
-            (Nexus2RegistryArtifactConfig) artifactSpecFromService;
-
-        artifactSourceType = ArtifactSourceType.NEXUS2_REGISTRY;
-
-        if (isEmpty(nexusConnectorIdentifier)) {
-          nexusConnectorIdentifier = (String) nexus2RegistryArtifactConfig.getConnectorRef().fetchFinalValue();
-        }
-
-        if (isEmpty(repositoryFormat)) {
-          repositoryFormat = (String) nexus2RegistryArtifactConfig.getRepositoryFormat().fetchFinalValue();
-        }
-
-        if (isEmpty(repository)) {
-          repository = (String) nexus2RegistryArtifactConfig.getRepository().fetchFinalValue();
-        }
-
-        if (isEmpty(groupId)) {
-          if (repositoryFormat.equals("maven")) {
-            NexusRegistryMavenConfig mavenConfig =
-                (NexusRegistryMavenConfig) nexus2RegistryArtifactConfig.getNexusRegistryConfigSpec();
-            groupId = (String) mavenConfig.getGroupId().fetchFinalValue();
-          }
-        }
-      } else {
-        throw new InvalidRequestException("Invalid artifact source type.");
-      }
-    }
-
-    nexusConnectorIdentifier = artifactResourceUtils
-                                   .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
-                                       projectIdentifier, pipelineIdentifier, runtimeInputYaml,
-                                       nexusConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                                   .getValue();
-
-    repositoryFormat =
-        artifactResourceUtils
-            .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                pipelineIdentifier, runtimeInputYaml, repositoryFormat, fqnPath, gitEntityBasicInfo, serviceRef, null)
-            .getValue();
-
-    repository =
-        artifactResourceUtils
-            .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                pipelineIdentifier, runtimeInputYaml, repository, fqnPath, gitEntityBasicInfo, serviceRef, null)
-            .getValue();
-
-    groupId = artifactResourceUtils
-                  .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                      pipelineIdentifier, runtimeInputYaml, groupId, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                  .getValue();
-
-    IdentifierRef connectorRef =
-        IdentifierRefHelper.getIdentifierRef(nexusConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-
-    String nexus3Registry = "Nexus3Registry";
-    String nexus2Registry = "Nexus2Registry";
-
-    if (nexus3Registry.equals(sourceType)) {
-      artifactSourceType = ArtifactSourceType.NEXUS3_REGISTRY;
-    } else if (nexus2Registry.equals(sourceType)) {
-      artifactSourceType = ArtifactSourceType.NEXUS2_REGISTRY;
-    } else {
-      throw new InvalidRequestException("Invalid artifact source type.");
-    }
-
-    List<String> artifactIds = nexusResourceService.getArtifactIds(accountId, orgIdentifier, projectIdentifier,
-        connectorRef, repositoryFormat, repository, groupId, artifactSourceType);
+    List<String> artifactIds = artifactResourceUtils.getNexusArtifactIds(nexusConnectorIdentifier, accountId,
+        orgIdentifier, projectIdentifier, pipelineIdentifier, repositoryFormat, repository, groupId, sourceType,
+        fqnPath, gitEntityBasicInfo, runtimeInputYaml, serviceRef);
 
     return ResponseDTO.newResponse(artifactIds);
   }
