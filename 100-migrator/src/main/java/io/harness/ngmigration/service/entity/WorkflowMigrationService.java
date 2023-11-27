@@ -296,17 +296,18 @@ public class WorkflowMigrationService extends NgMigrationService {
             .build();
       }
       yamlDTO = PipelineConfig.builder()
-                    .pipelineInfoConfig(PipelineInfoConfig.builder()
-                                            .identifier(identifier)
-                                            .name(name)
-                                            .description(ParameterField.createValueField(description))
-                                            .projectIdentifier(projectIdentifier)
-                                            .orgIdentifier(orgIdentifier)
-                                            .stages(stages)
-                                            .allowStageExecutions(true)
-                                            .tags(MigratorUtility.getTags(workflow.getTagLinks()))
-                                            .variables(workflowHandler.getVariables(migrationContext, workflow, stages))
-                                            .build())
+                    .pipelineInfoConfig(
+                        PipelineInfoConfig.builder()
+                            .identifier(identifier)
+                            .name(name)
+                            .description(ParameterField.createValueField(description))
+                            .projectIdentifier(projectIdentifier)
+                            .orgIdentifier(orgIdentifier)
+                            .stages(stages)
+                            .allowStageExecutions(true)
+                            .tags(MigratorUtility.getTags(workflow.getTagLinks()))
+                            .variables(workflowHandler.getVariables(migrationContext, workflow, stages, false))
+                            .build())
                     .build();
       ngType = PIPELINE;
     } else {

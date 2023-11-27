@@ -231,7 +231,8 @@ public abstract class WorkflowHandler {
     return JsonPipelineUtils.asTree(whenCondition);
   }
 
-  public List<NGVariable> getVariables(MigrationContext context, Workflow workflow, Object ngEntitySpec) {
+  public List<NGVariable> getVariables(
+      MigrationContext context, Workflow workflow, Object ngEntitySpec, boolean includeSteps) {
     Set<Variable> variables = new HashSet<>();
     // We get the list of expressions that have not been replaced in next gen.
     Set<String> expressions = MigratorExpressionUtils.getExpressions(ngEntitySpec);
@@ -260,9 +261,11 @@ public abstract class WorkflowHandler {
       variables.addAll(userVariables);
     }
 
-    List<GraphNode> steps = MigratorUtility.getSteps(workflow);
-    for (GraphNode step : steps) {
-      variables.addAll(stepMapperFactory.getStepMapper(step.getType()).getCustomVariables(step));
+    if (includeSteps) {
+      List<GraphNode> steps = MigratorUtility.getSteps(workflow);
+      for (GraphNode step : steps) {
+        variables.addAll(stepMapperFactory.getStepMapper(step.getType()).getCustomVariables(step));
+      }
     }
 
     MigratorExpressionUtils.render(
@@ -835,7 +838,7 @@ public abstract class WorkflowHandler {
             .put("type", "Deployment")
             .put("spec", stageConfig)
             .put("failureStrategies", getDefaultFailureStrategy(context))
-            .put("variables", getVariables(migrationContext, context.getWorkflow(), stageConfig))
+            .put("variables", getVariables(migrationContext, context.getWorkflow(), stageConfig, true))
             .put("when", getSkipCondition())
             .build();
     return JsonPipelineUtils.asTree(templateSpec);
@@ -882,7 +885,7 @@ public abstract class WorkflowHandler {
             .put("type", "Custom")
             .put("spec", customStageConfig)
             .put("failureStrategies", getDefaultFailureStrategy(context))
-            .put("variables", getVariables(migrationContext, workflow, customStageConfig))
+            .put("variables", getVariables(migrationContext, workflow, customStageConfig, true))
             .put("when", getSkipCondition())
             .build();
     return JsonPipelineUtils.asTree(templateSpec);
@@ -933,19 +936,35 @@ public abstract class WorkflowHandler {
     stageNode.setIdentifier(MigratorUtility.generateIdentifier(phase.getName(), context.getIdentifierCaseFormat()));
     stageNode.setDeploymentStageConfig(stageConfig);
     stageNode.setFailureStrategies(getDefaultFailureStrategy(context));
-    if (EmptyPredicate.isNotEmpty(phase.getVariableOverrides())) {
-      stageNode.setVariables(phase.getVariableOverrides()
-                                 .stream()
-                                 .filter(sv -> StringUtils.isNotBlank(sv.getName()))
-                                 .map(sv
-                                     -> StringNGVariable.builder()
-                                            .name(sv.getName())
-                                            .type(NGVariableType.STRING)
-                                            .value(ParameterField.createValueField(
-                                                StringUtils.isNotBlank(sv.getValue()) ? sv.getValue() : ""))
-                                            .build())
-                                 .collect(Collectors.toList()));
+    List<NGVariable> variables = new ArrayList<>();
+    List<GraphNode> steps = MigratorUtility.getStepsFromPhases(Collections.singletonList(phase));
+    for (GraphNode step : steps) {
+      variables.addAll(stepMapperFactory.getStepMapper(step.getType())
+                           .getCustomVariables(step)
+                           .stream()
+                           .map(var
+                               -> StringNGVariable.builder()
+                                      .name(var.getName())
+                                      .type(NGVariableType.STRING)
+                                      .value(ParameterField.createValueField(
+                                          StringUtils.isNotBlank(var.getValue()) ? var.getValue() : ""))
+                                      .build())
+                           .toList());
     }
+    if (EmptyPredicate.isNotEmpty(phase.getVariableOverrides())) {
+      variables.addAll(phase.getVariableOverrides()
+                           .stream()
+                           .filter(sv -> StringUtils.isNotBlank(sv.getName()))
+                           .map(sv
+                               -> StringNGVariable.builder()
+                                      .name(sv.getName())
+                                      .type(NGVariableType.STRING)
+                                      .value(ParameterField.createValueField(
+                                          StringUtils.isNotBlank(sv.getValue()) ? sv.getValue() : ""))
+                                      .build())
+                           .toList());
+    }
+    stageNode.setVariables(variables);
     return stageNode;
   }
 
@@ -1025,7 +1044,7 @@ public abstract class WorkflowHandler {
             .put("type", "Deployment")
             .put("spec", stageConfig)
             .put("failureStrategies", getDefaultFailureStrategy(context))
-            .put("variables", getVariables(migrationContext, context.getWorkflow(), stageConfig))
+            .put("variables", getVariables(migrationContext, context.getWorkflow(), stageConfig, true))
             .put("when", getSkipCondition())
             .build();
     return JsonPipelineUtils.asTree(templateSpec);
