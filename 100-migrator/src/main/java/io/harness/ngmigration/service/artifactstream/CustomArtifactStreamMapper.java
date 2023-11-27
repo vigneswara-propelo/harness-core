@@ -28,6 +28,8 @@ import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.utils.MigratorUtility;
 import io.harness.ngtriggers.beans.source.artifact.ArtifactType;
 import io.harness.ngtriggers.beans.source.artifact.ArtifactTypeSpec;
+import io.harness.ngtriggers.beans.source.artifact.CustomArtifactSpec;
+import io.harness.ngtriggers.beans.source.webhook.v2.TriggerEventDataCondition;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.steps.shellscript.ShellType;
 import io.harness.template.resources.beans.yaml.NGTemplateConfig;
@@ -149,7 +151,26 @@ public class CustomArtifactStreamMapper implements ArtifactStreamMapper {
   @Override
   public ArtifactTypeSpec getTriggerSpec(Map<CgEntityId, CgEntityNode> entities, ArtifactStream artifactStream,
       Map<CgEntityId, NGYamlFile> migratedEntities, Trigger trigger) {
-    return null;
+    CustomArtifactStream customArtifactStream = (CustomArtifactStream) artifactStream;
+    List<TriggerEventDataCondition> eventConditions = getEventConditions(trigger);
+    if (isNotEmpty(customArtifactStream.getScripts())) {
+      return CustomArtifactSpec.builder()
+          .script(customArtifactStream.getScripts().get(0).getScriptString())
+          .eventConditions(eventConditions)
+          .versionPath(Optional.ofNullable(customArtifactStream.getScripts().get(0).getCustomRepositoryMapping())
+                           .map(CustomRepositoryMapping::getBuildNoPath)
+                           .orElse(RUNTIME_INPUT))
+          .artifactsArrayPath(Optional.ofNullable(customArtifactStream.getScripts().get(0).getCustomRepositoryMapping())
+                                  .map(CustomRepositoryMapping::getArtifactRoot)
+                                  .orElse(RUNTIME_INPUT))
+          .build();
+    }
+    return CustomArtifactSpec.builder()
+        .script(RUNTIME_INPUT)
+        .eventConditions(Collections.emptyList())
+        .versionPath(RUNTIME_INPUT)
+        .artifactsArrayPath(RUNTIME_INPUT)
+        .build();
   }
 
   private JsonNode generateInput(Map<CgEntityId, CgEntityNode> entities, CustomArtifactStream customArtifactStream) {
