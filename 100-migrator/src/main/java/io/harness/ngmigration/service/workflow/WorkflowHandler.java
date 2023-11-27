@@ -732,11 +732,12 @@ public abstract class WorkflowHandler {
     }
     List<ExecutionWrapperConfig> rollbackSteps = getStepGroups(migrationContext, context, rollbackPhase, false);
     return getDeploymentStageConfig(
-        serviceDefinitionType, stepGroups, rollbackSteps, context.getIdentifierCaseFormat());
+        context, phase, serviceDefinitionType, stepGroups, rollbackSteps, context.getIdentifierCaseFormat());
   }
 
-  DeploymentStageConfig getDeploymentStageConfig(ServiceDefinitionType serviceDefinitionType,
-      List<ExecutionWrapperConfig> steps, List<ExecutionWrapperConfig> rollbackSteps, CaseFormat caseFormat) {
+  DeploymentStageConfig getDeploymentStageConfig(WorkflowMigrationContext context, WorkflowPhase phase,
+      ServiceDefinitionType serviceDefinitionType, List<ExecutionWrapperConfig> steps,
+      List<ExecutionWrapperConfig> rollbackSteps, CaseFormat caseFormat) {
     List<ExecutionWrapperConfig> allSteps = new ArrayList<>();
     if (EmptyPredicate.isEmpty(steps)) {
       AbstractStepNode waitStepNode = MigratorUtility.getWaitStepNode("Wait", 60, true, caseFormat);
@@ -760,10 +761,18 @@ public abstract class WorkflowHandler {
 
     return DeploymentStageConfig.builder()
         .deploymentType(serviceDefinitionType)
-        .service(ServiceYamlV2.builder().serviceRef(RUNTIME_INPUT).serviceInputs(getRuntimeInput()).build())
+        .service(ServiceYamlV2.builder()
+                     .serviceRef(ParameterField.createValueField(phase != null
+                             ? MigratorUtility.getIdentifierWithScope(
+                                 context.getMigratedEntities(), phase.getServiceId(), NGMigrationEntityType.SERVICE)
+                             : NGMigrationConstants.RUNTIME_INPUT))
+                     .serviceInputs(getRuntimeInput())
+                     .build())
         .environment(EnvironmentYamlV2.builder()
                          .deployToAll(ParameterField.createValueField(false))
-                         .environmentRef(RUNTIME_INPUT)
+                         .environmentRef(ParameterField.createValueField(
+                             MigratorUtility.getIdentifierWithScope(context.getMigratedEntities(),
+                                 context.getWorkflow().getEnvId(), NGMigrationEntityType.ENVIRONMENT)))
                          .environmentInputs(getRuntimeInput())
                          .serviceOverrideInputs(getRuntimeInput())
                          .infrastructureDefinitions(ParameterField.createExpressionField(true, "<+input>", null, false))
@@ -775,7 +784,7 @@ public abstract class WorkflowHandler {
   DeploymentStageConfig getDeploymentStageConfig(WorkflowMigrationContext context, List<ExecutionWrapperConfig> steps,
       List<ExecutionWrapperConfig> rollbackSteps) {
     return getDeploymentStageConfig(
-        inferServiceDefinitionType(context), steps, rollbackSteps, context.getIdentifierCaseFormat());
+        context, null, inferServiceDefinitionType(context), steps, rollbackSteps, context.getIdentifierCaseFormat());
   }
 
   public static ParameterField<List<FailureStrategyConfig>> getDefaultFailureStrategy() {
