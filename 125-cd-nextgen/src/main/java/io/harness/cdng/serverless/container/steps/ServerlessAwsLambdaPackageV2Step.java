@@ -13,8 +13,8 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.callback.DelegateCallbackToken;
-import io.harness.cdng.aws.sam.AwsSamStepHelper;
 import io.harness.cdng.instance.info.InstanceInfoService;
+import io.harness.cdng.plugininfoproviders.ServerlessV2PluginInfoProviderHelper;
 import io.harness.cdng.serverless.ServerlessStepCommonHelper;
 import io.harness.executions.steps.ExecutionNodeType;
 import io.harness.plancreator.steps.common.StepElementParameters;
@@ -31,7 +31,6 @@ import io.harness.yaml.core.timeout.Timeout;
 
 import com.google.inject.Inject;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +44,8 @@ public class ServerlessAwsLambdaPackageV2Step extends AbstractContainerStepV2<St
 
   @Inject ServerlessStepCommonHelper serverlessStepCommonHelper;
 
-  @Inject AwsSamStepHelper awsSamStepHelper;
+  @Inject ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
+
   @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
 
   @Inject private InstanceInfoService instanceInfoService;
@@ -75,8 +75,12 @@ public class ServerlessAwsLambdaPackageV2Step extends AbstractContainerStepV2<St
     // Check if image exists
     serverlessStepCommonHelper.verifyPluginImageIsProvider(serverlessAwsLambdaPackageV2StepParameters.getImage());
 
-    Map<String, String> envVarMap = new HashMap<>();
+    Map<String, String> envVarMap = serverlessV2PluginInfoProviderHelper.getEnvironmentVariables(
+        ambiance, serverlessAwsLambdaPackageV2StepParameters);
     serverlessStepCommonHelper.putValuesYamlEnvVars(ambiance, serverlessAwsLambdaPackageV2StepParameters, envVarMap);
+
+    serverlessV2PluginInfoProviderHelper.removeAllEnvVarsWithSecretRef(envVarMap);
+    serverlessV2PluginInfoProviderHelper.validateEnvVariables(envVarMap);
 
     return getUnitStep(ambiance, stepElementParameters, accountId, logKey, parkedTaskId,
         serverlessAwsLambdaPackageV2StepParameters, envVarMap);

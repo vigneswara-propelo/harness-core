@@ -23,9 +23,9 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.cdng.aws.sam.AwsSamStepHelper;
 import io.harness.cdng.infra.beans.ServerlessAwsLambdaInfrastructureOutcome;
 import io.harness.cdng.instance.info.InstanceInfoService;
+import io.harness.cdng.plugininfoproviders.ServerlessV2PluginInfoProviderHelper;
 import io.harness.cdng.serverless.ServerlessStepCommonHelper;
 import io.harness.delegate.beans.instancesync.ServerInstanceInfo;
 import io.harness.delegate.beans.serverless.ServerlessAwsLambdaFunction;
@@ -76,7 +76,7 @@ public class ServerlessAwsLambdaDeployStepV2Test extends CategoryTest {
 
   @Mock private InstanceInfoService instanceInfoService;
 
-  @Mock private AwsSamStepHelper awsSamStepHelper;
+  @Mock private ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
 
   @Mock private ContainerStepExecutionResponseHelper containerStepExecutionResponseHelper;
 
@@ -228,6 +228,7 @@ public class ServerlessAwsLambdaDeployStepV2Test extends CategoryTest {
     StepElementParameters stepElementParameters = StepElementParameters.builder().spec(stepParameters).build();
     long timeout = 1000;
     String parkedTaskId = "parkedTaskId";
+    doReturn(new HashMap<>()).when(serverlessV2PluginInfoProviderHelper).getEnvironmentVariables(any(), any());
     UnitStep unit = serverlessAwsLambdaDeployV2Step.getSerialisedStep(
         ambiance, stepElementParameters, accountId, logKey, timeout, parkedTaskId);
     assertThat(unit.getContainerPort()).isEqualTo(port);

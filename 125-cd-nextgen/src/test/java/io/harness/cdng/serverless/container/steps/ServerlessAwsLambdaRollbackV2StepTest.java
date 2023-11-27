@@ -25,6 +25,7 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.cdng.plugininfoproviders.ServerlessV2PluginInfoProviderHelper;
 import io.harness.cdng.serverless.ServerlessStepCommonHelper;
 import io.harness.delegate.beans.serverless.StackDetails;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
@@ -69,6 +70,8 @@ public class ServerlessAwsLambdaRollbackV2StepTest extends CategoryTest {
 
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
   @Mock private ContainerStepExecutionResponseHelper containerStepExecutionResponseHelper;
+
+  @Mock private ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
 
   @InjectMocks @Spy private ServerlessAwsLambdaRollbackV2Step serverlessAwsLambdaRollbackV2Step;
 
@@ -132,6 +135,7 @@ public class ServerlessAwsLambdaRollbackV2StepTest extends CategoryTest {
     doReturn(displayName).when(unitStep).getDisplayName();
     doReturn(id).when(unitStep).getId();
     doReturn(logKey).when(unitStep).getLogKey();
+    doReturn(new HashMap<>()).when(serverlessV2PluginInfoProviderHelper).getEnvironmentVariables(any(), any());
     doReturn(unitStep)
         .when(serverlessAwsLambdaRollbackV2Step)
         .getUnitStep(any(), any(), any(), any(), any(), any(), any());

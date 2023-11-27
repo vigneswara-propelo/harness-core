@@ -15,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.callback.DelegateCallbackToken;
 import io.harness.cdng.instance.info.InstanceInfoService;
+import io.harness.cdng.plugininfoproviders.ServerlessV2PluginInfoProviderHelper;
 import io.harness.cdng.serverless.ServerlessStepCommonHelper;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.data.structure.EmptyPredicate;
@@ -44,7 +45,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +60,8 @@ public class ServerlessAwsLambdaRollbackV2Step extends AbstractContainerStepV2<S
   @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
 
   @Inject private ContainerStepExecutionResponseHelper containerStepExecutionResponseHelper;
+
+  @Inject private ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
 
   @Inject private StepHelper stepHelper;
   @Inject private AccountService accountService;
@@ -92,8 +94,12 @@ public class ServerlessAwsLambdaRollbackV2Step extends AbstractContainerStepV2<S
     // Check if image exists
     serverlessStepCommonHelper.verifyPluginImageIsProvider(serverlessAwsLambdaRollbackV2StepParameters.getImage());
 
-    Map<String, String> envVarMap = new HashMap<>();
+    Map<String, String> envVarMap = serverlessV2PluginInfoProviderHelper.getEnvironmentVariables(
+        ambiance, serverlessAwsLambdaRollbackV2StepParameters);
     populateEnvVariablesForRollbackStep(serverlessAwsLambdaRollbackV2StepParameters, ambiance, envVarMap);
+
+    serverlessV2PluginInfoProviderHelper.removeAllEnvVarsWithSecretRef(envVarMap);
+    serverlessV2PluginInfoProviderHelper.validateEnvVariables(envVarMap);
 
     return getUnitStep(ambiance, stepElementParameters, accountId, logKey, parkedTaskId,
         serverlessAwsLambdaRollbackV2StepParameters, envVarMap);

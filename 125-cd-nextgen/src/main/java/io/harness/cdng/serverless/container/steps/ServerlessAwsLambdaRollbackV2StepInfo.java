@@ -86,6 +86,11 @@ public class ServerlessAwsLambdaRollbackV2StepInfo
   public SpecParameters getSpecParameters() {
     return ServerlessAwsLambdaRollbackV2StepParameters.infoBuilder()
         .serverlessAwsLambdaRollbackFnq(serverlessAwsLambdaRollbackFnq)
+        .connectorRef(this.getConnectorRef())
+        .resources(this.getResources())
+        .privileged(this.getPrivileged())
+        .runAsUser(this.getRunAsUser())
+        .imagePullPolicy(this.getImagePullPolicy())
         .image(getImage())
         .envVariables(getEnvVariables())
         .delegateSelectors(this.getDelegateSelectors())

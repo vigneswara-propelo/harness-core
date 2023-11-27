@@ -106,6 +106,8 @@ public class ServerlessPrepareRollbackPluginInfoProviderTest extends CategoryTes
             .build();
     doReturn(serverlessAwsLambdaPrepareRollbackContainerStepInfo).when(cdAbstractStepNode).getStepSpecType();
     doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvironmentVariables(any(), any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvVarsWithSecretRef(any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).validateEnvVariables(any());
     PluginCreationResponseWrapper pluginCreationResponseWrapper = mock(PluginCreationResponseWrapper.class);
     doReturn(pluginCreationResponseWrapper)
         .when(serverlessPrepareRollbackPluginInfoProvider)
@@ -146,6 +148,8 @@ public class ServerlessPrepareRollbackPluginInfoProviderTest extends CategoryTes
             .build();
     doReturn(serverlessAwsLambdaPrepareRollbackContainerStepInfo).when(cdAbstractStepNode).getStepSpecType();
     doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvironmentVariables(any(), any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvVarsWithSecretRef(any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).validateEnvVariables(any());
     PluginCreationResponseWrapper pluginCreationResponseWrapper = mock(PluginCreationResponseWrapper.class);
     doReturn(pluginCreationResponseWrapper)
         .when(serverlessPrepareRollbackPluginInfoProvider)

@@ -7,6 +7,7 @@
  */
 
 package io.harness.cdng.serverless.container.steps;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -14,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.callback.DelegateCallbackToken;
 import io.harness.cdng.instance.info.InstanceInfoService;
+import io.harness.cdng.plugininfoproviders.ServerlessV2PluginInfoProviderHelper;
 import io.harness.cdng.serverless.ServerlessStepCommonHelper;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.delegate.beans.serverless.StackDetails;
@@ -38,7 +40,6 @@ import io.harness.yaml.core.timeout.Timeout;
 
 import com.google.inject.Inject;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,8 @@ public class ServerlessAwsLambdaPrepareRollbackV2Step extends AbstractContainerS
   @Inject Supplier<DelegateCallbackToken> delegateCallbackTokenSupplier;
 
   @Inject ServerlessStepCommonHelper serverlessStepCommonHelper;
+
+  @Inject ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
   @Inject private ExecutionSweepingOutputService executionSweepingOutputService;
 
   @Inject private ContainerStepExecutionResponseHelper containerStepExecutionResponseHelper;
@@ -82,9 +85,12 @@ public class ServerlessAwsLambdaPrepareRollbackV2Step extends AbstractContainerS
     serverlessStepCommonHelper.verifyPluginImageIsProvider(
         serverlessAwsLambdaPrepareRollbackV2StepParameters.getImage());
 
-    Map<String, String> envVarMap = new HashMap<>();
+    Map<String, String> envVarMap = serverlessV2PluginInfoProviderHelper.getEnvironmentVariables(
+        ambiance, serverlessAwsLambdaPrepareRollbackV2StepParameters);
     serverlessStepCommonHelper.putValuesYamlEnvVars(
         ambiance, serverlessAwsLambdaPrepareRollbackV2StepParameters, envVarMap);
+    serverlessV2PluginInfoProviderHelper.removeAllEnvVarsWithSecretRef(envVarMap);
+    serverlessV2PluginInfoProviderHelper.validateEnvVariables(envVarMap);
 
     return getUnitStep(ambiance, stepElementParameters, accountId, logKey, parkedTaskId,
         serverlessAwsLambdaPrepareRollbackV2StepParameters, envVarMap);

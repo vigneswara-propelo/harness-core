@@ -10,6 +10,7 @@ package io.harness.cdng.plugininfoproviders;
 import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
 import static io.harness.connector.ConnectorModule.DEFAULT_CONNECTOR_SERVICE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.k8s.manifest.ManifestHelper.normalizeFolderPath;
 
@@ -38,9 +39,10 @@ import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.cdng.serverless.ArtifactType;
 import io.harness.cdng.serverless.ServerlessEntityHelper;
-import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaDeployV2StepInfo;
-import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPackageV2StepInfo;
-import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaV2BaseStepInfo;
+import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaDeployV2StepParameters;
+import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPackageV2StepParameters;
+import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPrepareRollbackV2StepParameters;
+import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaRollbackV2StepParameters;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
@@ -58,8 +60,10 @@ import io.harness.delegate.task.serverless.ServerlessAwsLambdaInfraConfig;
 import io.harness.delegate.task.serverless.ServerlessInfraConfig;
 import io.harness.encryption.SecretRefData;
 import io.harness.exception.GeneralException;
+import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.NGAccess;
+import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.contracts.steps.StepType;
@@ -95,6 +99,8 @@ public class ServerlessV2PluginInfoProviderHelper {
 
   @Inject PluginInfoProviderUtils pluginInfoProviderUtils;
   private static final String PLUGIN_PATH_PREFIX = "harness";
+
+  private static String NG_SECRET_MANAGER = "ngSecretManager";
 
   public ManifestOutcome getServerlessAwsLambdaDirectoryManifestOutcome(Collection<ManifestOutcome> manifestOutcomes) {
     List<ManifestOutcome> manifestOutcomeList =
@@ -136,9 +142,8 @@ public class ServerlessV2PluginInfoProviderHelper {
     return path.replaceAll("/$", "");
   }
 
-  public Map<String, String> getEnvironmentVariables(
-      Ambiance ambiance, ServerlessAwsLambdaV2BaseStepInfo serverlessAwsLambdaV2BaseStepInfo) {
-    ParameterField<Map<String, String>> envVariables = serverlessAwsLambdaV2BaseStepInfo.getEnvVariables();
+  public Map<String, String> getEnvironmentVariables(Ambiance ambiance, SpecParameters serverlessSpecParameters) {
+    ParameterField<Map<String, String>> envVariables = getEnvVariables(serverlessSpecParameters);
 
     ManifestsOutcome manifestsOutcome = fetchManifestsOutcome(ambiance);
     ManifestOutcome serverlessManifestOutcome = pluginInfoProviderUtils.getServerlessManifestOutcome(
@@ -213,7 +218,7 @@ public class ServerlessV2PluginInfoProviderHelper {
 
     HashMap<String, String> environmentVariablesMap = new HashMap<>();
 
-    populateCommandOptions(ambiance, serverlessAwsLambdaV2BaseStepInfo, environmentVariablesMap);
+    populateCommandOptions(ambiance, serverlessSpecParameters, environmentVariablesMap);
 
     environmentVariablesMap.put("PLUGIN_SERVERLESS_DIR", serverlessDirectory);
     environmentVariablesMap.put("PLUGIN_SERVERLESS_YAML_CUSTOM_PATH", configOverridePath);
@@ -253,6 +258,52 @@ public class ServerlessV2PluginInfoProviderHelper {
     return environmentVariablesMap;
   }
 
+  public Map<String, String> validateEnvVariables(Map<String, String> environmentVariables) {
+    if (isEmpty(environmentVariables)) {
+      return environmentVariables;
+    }
+
+    List<String> envVarsWithNullValue = environmentVariables.entrySet()
+                                            .stream()
+                                            .filter(entry -> entry.getValue() == null)
+                                            .map(Map.Entry::getKey)
+                                            .collect(Collectors.toList());
+    if (isNotEmpty(envVarsWithNullValue)) {
+      throw new InvalidArgumentsException(format("Not found value for environment variable%s: %s",
+          envVarsWithNullValue.size() == 1 ? "" : "s", String.join(",", envVarsWithNullValue)));
+    }
+
+    return environmentVariables;
+  }
+
+  private ParameterField<Map<String, String>> getEnvVariables(SpecParameters serverlessSpecParameters) {
+    if (serverlessSpecParameters instanceof ServerlessAwsLambdaPrepareRollbackV2StepParameters) {
+      return ((ServerlessAwsLambdaPrepareRollbackV2StepParameters) serverlessSpecParameters).getEnvVariables();
+    } else if (serverlessSpecParameters instanceof ServerlessAwsLambdaPackageV2StepParameters) {
+      return ((ServerlessAwsLambdaPackageV2StepParameters) serverlessSpecParameters).getEnvVariables();
+    } else if (serverlessSpecParameters instanceof ServerlessAwsLambdaDeployV2StepParameters) {
+      return ((ServerlessAwsLambdaDeployV2StepParameters) serverlessSpecParameters).getEnvVariables();
+    } else if (serverlessSpecParameters instanceof ServerlessAwsLambdaRollbackV2StepParameters) {
+      return ((ServerlessAwsLambdaRollbackV2StepParameters) serverlessSpecParameters).getEnvVariables();
+    } else {
+      throw new InvalidRequestException("Invalid Step Type for Fetching Env Variables for Serverless V2");
+    }
+  }
+
+  public Map<String, String> getEnvVarsWithSecretRef(Map<String, String> envVars) {
+    return envVars.entrySet()
+        .stream()
+        .filter(entry -> entry.getValue() != null && entry.getValue().contains(NG_SECRET_MANAGER))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  public Map<String, String> removeAllEnvVarsWithSecretRef(Map<String, String> envVars) {
+    final Map<String, String> secretEnvVariables = getEnvVarsWithSecretRef(envVars);
+    envVars.entrySet().removeAll(secretEnvVariables.entrySet());
+
+    return secretEnvVariables;
+  }
+
   public String getValuesPathFromValuesManifestOutcome(ValuesManifestOutcome valuesManifestOutcome) {
     GitStoreConfig gitStoreConfig = (GitStoreConfig) valuesManifestOutcome.getStore();
     String path = String.format("/%s/%s/%s", PLUGIN_PATH_PREFIX,
@@ -261,24 +312,24 @@ public class ServerlessV2PluginInfoProviderHelper {
     return removeTrailingSlashesInString(path);
   }
 
-  public void populateCommandOptions(Ambiance ambiance,
-      ServerlessAwsLambdaV2BaseStepInfo serverlessAwsLambdaV2BaseStepInfo,
+  public void populateCommandOptions(Ambiance ambiance, SpecParameters serverlessSpecParameters,
       HashMap<String, String> serverlessPrepareRollbackEnvironmentVariablesMap) {
-    if (serverlessAwsLambdaV2BaseStepInfo instanceof ServerlessAwsLambdaDeployV2StepInfo) {
-      ServerlessAwsLambdaDeployV2StepInfo serverlessAwsLambdaDeployV2StepInfo =
-          (ServerlessAwsLambdaDeployV2StepInfo) serverlessAwsLambdaV2BaseStepInfo;
-      ParameterField<List<String>> deployCommandOptions = serverlessAwsLambdaDeployV2StepInfo.getDeployCommandOptions();
-      if (deployCommandOptions != null) {
+    if (serverlessSpecParameters instanceof ServerlessAwsLambdaDeployV2StepParameters) {
+      ServerlessAwsLambdaDeployV2StepParameters serverlessAwsLambdaDeployV2StepParameters =
+          (ServerlessAwsLambdaDeployV2StepParameters) serverlessSpecParameters;
+      ParameterField<List<String>> deployCommandOptions =
+          serverlessAwsLambdaDeployV2StepParameters.getDeployCommandOptions();
+      if (deployCommandOptions != null && deployCommandOptions.getValue() != null) {
         cdExpressionResolver.updateExpressions(ambiance, deployCommandOptions);
         serverlessPrepareRollbackEnvironmentVariablesMap.put(
             "PLUGIN_DEPLOY_COMMAND_OPTIONS", String.join(" ", deployCommandOptions.getValue()));
       }
-    } else if (serverlessAwsLambdaV2BaseStepInfo instanceof ServerlessAwsLambdaPackageV2StepInfo) {
-      ServerlessAwsLambdaPackageV2StepInfo serverlessAwsLambdaPackageV2StepInfo =
-          (ServerlessAwsLambdaPackageV2StepInfo) serverlessAwsLambdaV2BaseStepInfo;
+    } else if (serverlessSpecParameters instanceof ServerlessAwsLambdaPackageV2StepParameters) {
+      ServerlessAwsLambdaPackageV2StepParameters serverlessAwsLambdaPackageV2StepParameters =
+          (ServerlessAwsLambdaPackageV2StepParameters) serverlessSpecParameters;
       ParameterField<List<String>> packageCommandOptions =
-          serverlessAwsLambdaPackageV2StepInfo.getPackageCommandOptions();
-      if (packageCommandOptions != null) {
+          serverlessAwsLambdaPackageV2StepParameters.getPackageCommandOptions();
+      if (packageCommandOptions != null && packageCommandOptions.getValue() != null) {
         cdExpressionResolver.updateExpressions(ambiance, packageCommandOptions);
         serverlessPrepareRollbackEnvironmentVariablesMap.put(
             "PLUGIN_PACKAGE_COMMAND_OPTIONS", String.join(" ", packageCommandOptions.getValue()));

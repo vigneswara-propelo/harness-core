@@ -23,8 +23,8 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.cdng.aws.sam.AwsSamStepHelper;
 import io.harness.cdng.instance.info.InstanceInfoService;
+import io.harness.cdng.plugininfoproviders.ServerlessV2PluginInfoProviderHelper;
 import io.harness.cdng.serverless.ServerlessStepCommonHelper;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -61,7 +61,7 @@ public class ServerlessAwsLambdaPackageStepV2Test extends CategoryTest {
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
   @Mock private InstanceInfoService instanceInfoService;
 
-  @Mock AwsSamStepHelper awsSamStepHelper;
+  @Mock private ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
 
   @InjectMocks @Spy private ServerlessAwsLambdaPackageV2Step serverlessAwsLambdaPackageV2Step;
 
@@ -102,6 +102,7 @@ public class ServerlessAwsLambdaPackageStepV2Test extends CategoryTest {
 
     long timeout = 1000;
     String parkedTaskId = "parkedTaskId";
+    doReturn(new HashMap<>()).when(serverlessV2PluginInfoProviderHelper).getEnvironmentVariables(any(), any());
     UnitStep unit = serverlessAwsLambdaPackageV2Step.getSerialisedStep(
         ambiance, stepElementParameters, accountId, logKey, timeout, parkedTaskId);
     assertThat(unit.getContainerPort()).isEqualTo(port);

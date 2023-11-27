@@ -110,6 +110,8 @@ public class ServerlessAwsLambdaPackageV2PluginInfoProviderTest extends Category
             .build();
     doReturn(serverlessAwsLambdaPackageV2StepInfo).when(cdAbstractStepNode).getStepSpecType();
     doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvironmentVariables(any(), any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvVarsWithSecretRef(any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).validateEnvVariables(any());
     PluginCreationResponseWrapper pluginCreationResponseWrapper = mock(PluginCreationResponseWrapper.class);
     doReturn(pluginCreationResponseWrapper)
         .when(serverlessAwsLambdaPackageV2PluginInfoProvider)
@@ -150,6 +152,8 @@ public class ServerlessAwsLambdaPackageV2PluginInfoProviderTest extends Category
             .build();
     doReturn(serverlessAwsLambdaPackageV2StepInfo).when(cdAbstractStepNode).getStepSpecType();
     doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvironmentVariables(any(), any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).getEnvVarsWithSecretRef(any());
+    doReturn(Collections.emptyMap()).when(serverlessV2PluginInfoProviderHelper).validateEnvVariables(any());
     PluginCreationResponseWrapper pluginCreationResponseWrapper = mock(PluginCreationResponseWrapper.class);
     doReturn(pluginCreationResponseWrapper)
         .when(serverlessAwsLambdaPackageV2PluginInfoProvider)

@@ -95,6 +95,12 @@ public class ServerlessAwsLambdaDeployV2StepInfo
   public SpecParameters getSpecParameters() {
     return ServerlessAwsLambdaDeployV2StepParameters.infoBuilder()
         .downloadManifestsFqn(downloadManifestsFqn)
+        .connectorRef(this.getConnectorRef())
+        .resources(this.getResources())
+        .privileged(this.getPrivileged())
+        .runAsUser(this.getRunAsUser())
+        .imagePullPolicy(this.getImagePullPolicy())
+        .deployCommandOptions(this.getDeployCommandOptions())
         .image(getImage())
         .envVariables(getEnvVariables())
         .delegateSelectors(this.getDelegateSelectors())
