@@ -22,8 +22,12 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = false)
 public abstract class ResourceScope {
   String scope;
-
+  String uniqueId;
   public ResourceScope(String scope) {
     this.scope = scope;
+  }
+  public ResourceScope(String scope, String uniqueId) {
+    this.scope = scope;
+    this.uniqueId = uniqueId;
   }
 }

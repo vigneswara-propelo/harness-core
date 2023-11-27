@@ -27,8 +27,17 @@ public class ProjectScope extends ResourceScope {
   @NotEmpty String orgIdentifier;
   @NotEmpty String projectIdentifier;
 
+  public ProjectScope() {
+    super("project");
+  }
   public ProjectScope(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
     super("project");
+    this.accountIdentifier = accountIdentifier;
+    this.orgIdentifier = orgIdentifier;
+    this.projectIdentifier = projectIdentifier;
+  }
+  public ProjectScope(String accountIdentifier, String orgIdentifier, String projectIdentifier, String uniqueId) {
+    super("project", uniqueId);
     this.accountIdentifier = accountIdentifier;
     this.orgIdentifier = orgIdentifier;
     this.projectIdentifier = projectIdentifier;
