@@ -159,4 +159,7 @@ public interface K8sDeployRequest extends TaskParameters, ExecutionCapabilityDem
 
     return capabilities;
   }
+  default boolean hasTrafficRoutingConfig() {
+    return false;
+  }
 }

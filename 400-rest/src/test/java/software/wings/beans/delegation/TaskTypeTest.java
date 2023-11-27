@@ -528,7 +528,7 @@ public class TaskTypeTest extends CategoryTest {
     taskTypeOrdinalMapping.put(488, "ARTIFACT_BUNDLE_FETCH_TASK");
     taskTypeOrdinalMapping.put(489, "AWS_ASG_BLUE_GREEN_DEPLOY_TASK_NG_V3");
     taskTypeOrdinalMapping.put(490, "TAS_BG_SETUP_SUPPORT_2_APPS_V2");
-
+    taskTypeOrdinalMapping.put(491, "K8S_COMMAND_TASK_NG_TRAFFIC_ROUTING");
     taskTypeConstantMapping =
         taskTypeOrdinalMapping.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
   }

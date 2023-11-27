@@ -181,6 +181,9 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
   }
 
   private TaskType getK8sTaskType(K8sDeployRequest k8sDeployRequest, Ambiance ambiance) {
+    if (k8sDeployRequest.hasTrafficRoutingConfig()) {
+      return TaskType.K8S_COMMAND_TASK_NG_TRAFFIC_ROUTING;
+    }
     ManifestDelegateConfig manifestDelegateConfig = k8sDeployRequest.getManifestDelegateConfig();
     if (manifestDelegateConfig != null && manifestDelegateConfig.getStoreDelegateConfig() != null
         && OCI_HELM.equals(manifestDelegateConfig.getStoreDelegateConfig().getType())

@@ -10,11 +10,8 @@ package io.harness.cdng.k8s.trafficrouting;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.beans.SwaggerConstants;
-import io.harness.pms.yaml.ParameterField;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
@@ -42,8 +39,8 @@ public class K8sTrafficRoutingHeaderRuleSpec extends K8sTrafficRoutingRuleSpec {
   @Builder
   @AllArgsConstructor
   static class HeaderSpec {
-    @NotEmpty @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> key;
-    @NotEmpty @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> value;
+    @NotEmpty String key;
+    @NotEmpty String value;
     MatchType matchType;
   }
 }

@@ -15,6 +15,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
+import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfig;
 import io.harness.expression.Expression;
 
 import software.wings.beans.ServiceHookDelegateConfig;
@@ -55,4 +56,10 @@ public class K8sBGDeployRequest implements K8sDeployRequest {
   boolean skipUnchangedManifest;
   boolean storeReleaseHash;
   ReleaseMetadata releaseMetadata;
+  K8sTrafficRoutingConfig trafficRoutingConfig;
+
+  @Override
+  public boolean hasTrafficRoutingConfig() {
+    return trafficRoutingConfig != null;
+  }
 }

@@ -32,6 +32,7 @@ import lombok.experimental.FieldDefaults;
 public class K8sTrafficRoutingRule {
   Rule rule;
 
+  @Value
   @Builder
   @FieldDefaults(level = AccessLevel.PRIVATE)
   @JsonIgnoreProperties(ignoreUnknown = true)

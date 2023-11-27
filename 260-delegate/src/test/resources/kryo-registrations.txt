@@ -2885,3 +2885,14 @@
 20001005:io.harness.delegate.task.artifactBundle.response.ArtifactBundleFetchResponse
 20001006:io.harness.delegate.task.artifactBundle.ArtifactBundleDelegateConfig
 20001007:io.harness.delegate.task.artifactBundle.PackageArtifactConfig
+20002000:io.harness.delegate.task.k8s.trafficrouting.HeaderConfig
+20002001:io.harness.delegate.task.k8s.trafficrouting.IstioProviderConfig
+20002002:io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfig
+20002003:io.harness.delegate.task.k8s.trafficrouting.SMIProviderConfig
+20002004:io.harness.delegate.task.k8s.trafficrouting.TrafficRoute
+20002005:io.harness.delegate.task.k8s.trafficrouting.TrafficRouteRule
+20002006:io.harness.delegate.task.k8s.trafficrouting.TrafficRoutingDestination
+20002007:io.harness.delegate.task.k8s.trafficrouting.MatchType
+20002008:io.harness.delegate.task.k8s.trafficrouting.ProviderType
+20002009:io.harness.delegate.task.k8s.trafficrouting.RuleType
+20002010:io.harness.delegate.task.k8s.trafficrouting.RouteType
