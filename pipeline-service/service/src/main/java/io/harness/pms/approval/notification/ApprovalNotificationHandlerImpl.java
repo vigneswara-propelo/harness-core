@@ -63,6 +63,7 @@ import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance;
 import io.harness.usergroups.UserGroupClient;
 import io.harness.utils.IdentifierRefHelper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -136,7 +137,8 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
     }
   }
 
-  private void sendNotificationInternal(
+  @VisibleForTesting
+  protected void sendNotificationInternal(
       HarnessApprovalInstance approvalInstance, Ambiance ambiance, NGLogCallback logCallback) {
     try {
       log.info("Sending notification to user groups for harness approval");
@@ -191,7 +193,8 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
     return approvalSummary;
   }
 
-  private List<String> findInvalidInputUserGroups(
+  @VisibleForTesting
+  protected List<String> findInvalidInputUserGroups(
       List<UserGroupDTO> validatedUserGroups, List<String> inputUserGroups) {
     if (isEmpty(inputUserGroups)) {
       return null;
@@ -273,7 +276,8 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
     }
   }
 
-  private NotificationChannel getNotificationChannel(HarnessApprovalInstance instance,
+  @VisibleForTesting
+  protected NotificationChannel getNotificationChannel(HarnessApprovalInstance instance,
       NotificationSettingConfigDTO notificationSettingConfig, UserGroupDTO userGroup,
       Map<String, String> templateData) {
     if (isNull(userGroup)) {
@@ -421,7 +425,8 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
     return action;
   }
 
-  private String getUserIdentification(EmbeddedUser user) {
+  @VisibleForTesting
+  protected String getUserIdentification(EmbeddedUser user) {
     if (isEmpty(user.getEmail()) && isEmpty(user.getName())) {
       return "Unknown";
     } else if (isEmpty(user.getEmail())) {
