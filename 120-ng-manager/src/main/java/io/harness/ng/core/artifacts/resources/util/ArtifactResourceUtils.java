@@ -171,6 +171,7 @@ public class ArtifactResourceUtils {
 
   public final String SERVICE_GIT_BRANCH = "serviceGitBranch";
   public final String ENV_GIT_BRANCH = "envGitBranch";
+  public final String DOCKER = "DOCKER";
 
   // Checks whether field is fixed value or not, if empty then also we return false for fixed value.
   public static boolean isFieldFixedValue(String fieldValue) {
@@ -1093,14 +1094,15 @@ public class ArtifactResourceUtils {
 
     buildDetails.getGarRepositoryDTOS().forEach(repo -> {
       String repoName = repo.getRepository().substring(index + 1);
-
-      GarRepositoryDTO modifiedRepo = GarRepositoryDTO.builder()
-                                          .repository(repoName)
-                                          .format(repo.getFormat())
-                                          .createTime(repo.getCreateTime())
-                                          .updateTime(repo.getUpdateTime())
-                                          .build();
-      modifiedBuilds.add(modifiedRepo);
+      if (DOCKER.equals(repo.getFormat())) {
+        GarRepositoryDTO modifiedRepo = GarRepositoryDTO.builder()
+                                            .repository(repoName)
+                                            .format(repo.getFormat())
+                                            .createTime(repo.getCreateTime())
+                                            .updateTime(repo.getUpdateTime())
+                                            .build();
+        modifiedBuilds.add(modifiedRepo);
+      }
     });
     modifiedBuilds.sort(Comparator.comparing(GarRepositoryDTO::getRepository));
 

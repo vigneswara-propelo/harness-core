@@ -1047,7 +1047,6 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(modifiedRepositoryDetails).isNotNull();
     assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
 
-    // Update the verify statement to match the actual calls in getRepositoriesV2GAR
     verify(spyArtifactResourceUtils)
         .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
             pipelineYamlWithoutTemplates, REGION, FQN, null, SERVICE_REF,
@@ -1113,7 +1112,6 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(modifiedRepositoryDetails).isNotNull();
     assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
 
-    // Update the verify statement to match the actual calls in getRepositoriesV2GAR
     verify(spyArtifactResourceUtils)
         .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
             pipelineYamlWithoutTemplates, REGION, FQN, null, SERVICE_REF,
@@ -1197,7 +1195,6 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(modifiedRepositoryDetails).isNotNull();
     assertThat(modifiedRepositoryDetails.getGarPackagesDTO()).hasSize(1);
 
-    // Update the verify statement to match the actual calls in getRepositoriesV2GAR
     verify(spyArtifactResourceUtils)
         .getResolvedFieldValueWithYamlExpressionEvaluator(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
             pipelineYamlWithoutTemplates, REGION_2, FQN, null, SERVICE_REF,
@@ -3831,7 +3828,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     GARRepositoryDTOList repositoryDetails = GARRepositoryDTOList.builder()
                                                  .garRepositoryDTOS(List.of(GarRepositoryDTO.builder()
                                                                                 .repository("myRepo/repo1")
-                                                                                .format("format1")
+                                                                                .format("DOCKER")
                                                                                 .createTime("2023-01-01T12:00:00Z")
                                                                                 .updateTime("2023-01-02T12:00:00Z")
                                                                                 .build()))
@@ -3858,9 +3855,47 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     GarRepositoryDTO modifiedRepo = modifiedRepositoryDetails.getGarRepositoryDTOS().get(0);
 
     assertThat(modifiedRepo.getRepository().substring(index + 1)).isEqualTo("repo1");
-    assertThat(modifiedRepo.getFormat()).isEqualTo("format1");
+    assertThat(modifiedRepo.getFormat()).isEqualTo("DOCKER");
     assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
     assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetRepositoriesV2GAR_Empty() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+        GoogleArtifactRegistryConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value(CONNECTOR_REF).build())
+            .project(ParameterField.<String>builder().value(PROJECT).build())
+            .region(ParameterField.<String>builder().value(REGION).build())
+            .build();
+
+    GARRepositoryDTOList repositoryDetails = GARRepositoryDTOList.builder()
+                                                 .garRepositoryDTOS(List.of(GarRepositoryDTO.builder()
+                                                                                .repository("myRepo/repo1")
+                                                                                .format("format1")
+                                                                                .createTime("2023-01-01T12:00:00Z")
+                                                                                .updateTime("2023-01-02T12:00:00Z")
+                                                                                .build()))
+                                                 .build();
+
+    IdentifierRef identifierRef = IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID);
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), any());
+
+    doReturn(repositoryDetails)
+        .when(garResourceService)
+        .getRepositories(identifierRef, REGION, PROJECT, ORG_ID, PROJECT_ID);
+
+    GARRepositoryDTOList modifiedRepositoryDetails = spyartifactResourceUtils.getRepositoriesV2GAR(
+        null, null, PROJECT, ACCOUNT_ID, ORG_ID, PIPELINE_ID, "", SERVICE_REF, "", PROJECT_ID, null);
+
+    assertThat(modifiedRepositoryDetails.getGarRepositoryDTOS()).hasSize(0);
   }
 
   @Test
@@ -3879,7 +3914,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     GARRepositoryDTOList repositoryDetails = GARRepositoryDTOList.builder()
                                                  .garRepositoryDTOS(List.of(GarRepositoryDTO.builder()
                                                                                 .repository("myRepo/repo1")
-                                                                                .format("format1")
+                                                                                .format("DOCKER")
                                                                                 .createTime("2023-01-01T12:00:00Z")
                                                                                 .updateTime("2023-01-02T12:00:00Z")
                                                                                 .build()))
@@ -3941,7 +3976,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     GARRepositoryDTOList repositoryDetails = GARRepositoryDTOList.builder()
                                                  .garRepositoryDTOS(List.of(GarRepositoryDTO.builder()
                                                                                 .repository("myRepo/repo1")
-                                                                                .format("format1")
+                                                                                .format("DOCKER")
                                                                                 .createTime("2023-01-01T12:00:00Z")
                                                                                 .updateTime("2023-01-02T12:00:00Z")
                                                                                 .build()))
@@ -4003,7 +4038,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     GARRepositoryDTOList repositoryDetails = GARRepositoryDTOList.builder()
                                                  .garRepositoryDTOS(List.of(GarRepositoryDTO.builder()
                                                                                 .repository("myRepo/repo1")
-                                                                                .format("format1")
+                                                                                .format("DOCKER")
                                                                                 .createTime("2023-01-01T12:00:00Z")
                                                                                 .updateTime("2023-01-02T12:00:00Z")
                                                                                 .build()))
@@ -4084,7 +4119,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     GARRepositoryDTOList repositoryDetails = GARRepositoryDTOList.builder()
                                                  .garRepositoryDTOS(List.of(GarRepositoryDTO.builder()
                                                                                 .repository("myRepo/repo1")
-                                                                                .format("format1")
+                                                                                .format("DOCKER")
                                                                                 .createTime("2023-01-01T12:00:00Z")
                                                                                 .updateTime("2023-01-02T12:00:00Z")
                                                                                 .build()))
@@ -4126,7 +4161,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     GarRepositoryDTO modifiedRepo = modifiedRepositoryDetails.getGarRepositoryDTOS().get(0);
     assertThat(modifiedRepo.getRepository()).isEqualTo("repo1");
-    assertThat(modifiedRepo.getFormat()).isEqualTo("format1");
+    assertThat(modifiedRepo.getFormat()).isEqualTo("DOCKER");
     assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
     assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
   }
@@ -4135,6 +4170,39 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
   @Owner(developers = RAKSHIT_AGARWAL)
   @Category(UnitTests.class)
   public void testGetRepositoriesGAR() {
+    ArtifactResourceUtils spyArtifactResourceUtils = spy(artifactResourceUtils);
+
+    GarRepositoryDTO repositoryDTO = GarRepositoryDTO.builder()
+                                         .repository("myRepo/repo1")
+                                         .format("DOCKER")
+                                         .createTime("2023-01-01T12:00:00Z")
+                                         .updateTime("2023-01-02T12:00:00Z")
+                                         .build();
+    GARRepositoryDTOList buildDetails =
+        GARRepositoryDTOList.builder().garRepositoryDTOS(List.of(repositoryDTO)).build();
+    doReturn(buildDetails)
+        .when(garResourceService)
+        .getRepositories(eq(IDENTIFIER_REF), eq(REGION), eq(PROJECT), eq(ORG_ID), eq(PROJECT_ID));
+
+    GARRepositoryDTOList modifiedBuildDetails =
+        spyArtifactResourceUtils.getRepositoriesGAR(IDENTIFIER_REF, REGION, PROJECT, ORG_ID, PROJECT_ID);
+
+    assertThat(modifiedBuildDetails).isNotNull();
+    assertThat(modifiedBuildDetails.getGarRepositoryDTOS()).hasSize(1);
+
+    GarRepositoryDTO modifiedRepo = modifiedBuildDetails.getGarRepositoryDTOS().get(0);
+    assertThat(modifiedRepo.getRepository()).isEqualTo("repo1");
+    assertThat(modifiedRepo.getFormat()).isEqualTo("DOCKER");
+    assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
+    assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testGetRepositoriesGAR_Empty() {
+    ArtifactResourceUtils spyArtifactResourceUtils = spy(artifactResourceUtils);
+
     GarRepositoryDTO repositoryDTO = GarRepositoryDTO.builder()
                                          .repository("myRepo/repo1")
                                          .format("format1")
@@ -4148,17 +4216,9 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
         .getRepositories(eq(IDENTIFIER_REF), eq(REGION), eq(PROJECT), eq(ORG_ID), eq(PROJECT_ID));
 
     GARRepositoryDTOList modifiedBuildDetails =
-        garResourceService.getRepositories(IDENTIFIER_REF, REGION, PROJECT, ORG_ID, PROJECT_ID);
+        spyArtifactResourceUtils.getRepositoriesGAR(IDENTIFIER_REF, REGION, PROJECT, ORG_ID, PROJECT_ID);
 
-    int index = modifiedBuildDetails.getGarRepositoryDTOS().get(0).getRepository().lastIndexOf("/");
-    assertThat(modifiedBuildDetails).isNotNull();
-    assertThat(modifiedBuildDetails.getGarRepositoryDTOS()).hasSize(1);
-
-    GarRepositoryDTO modifiedRepo = modifiedBuildDetails.getGarRepositoryDTOS().get(0);
-    assertThat(modifiedRepo.getRepository().substring(index + 1)).isEqualTo("repo1");
-    assertThat(modifiedRepo.getFormat()).isEqualTo("format1");
-    assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
-    assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
+    assertThat(modifiedBuildDetails.getGarRepositoryDTOS()).hasSize(0);
   }
 
   private void mockEnvironmentGetCall() {
