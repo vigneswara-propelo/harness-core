@@ -49,6 +49,7 @@ public class ProjectMapper {
         .identifier(project.getIdentifier())
         .name(project.getName())
         .uniqueId(project.getUniqueId())
+        .parentUniqueId(project.getParentId())
         .description(project.getDescription())
         .color(project.getColor())
         .tags(convertToMap(project.getTags()))
