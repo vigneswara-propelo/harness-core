@@ -1410,7 +1410,6 @@ components:
             - Artifact
             - Manifest
             - Scheduled
-            - MultiRegionArtifact
         webhook_id:
           type: string
       discriminator:
@@ -1419,6 +1418,7 @@ components:
           Scheduled: '#/components/schemas/ScheduledTriggerSource'
           Webhook: '#/components/schemas/WebhookTriggerSource'
           Manifest: '#/components/schemas/ManifestTriggerSource'
+          Artifact: '#/components/schemas/ArtifactTriggerSource'
       required:
         - type
         - spec
@@ -1449,6 +1449,15 @@ components:
           properties:
             spec:
               $ref: '#/components/schemas/ManifestTriggerSpec'
+    ArtifactTriggerSource:
+      title: Artifact Trigger Source
+      x-discriminator-value: Artifact
+      allOf:
+        - $ref: '#/components/schemas/TriggerSource'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/ArtifactTriggerSpec'
     TriggerConditions:
       title: Trigger Conditions
       type: object
@@ -1512,6 +1521,610 @@ components:
             - HelmChart
         spec:
           $ref: '#/components/schemas/HelmChartManifestTriggerSpec'
+    ArtifactTriggerSpec:
+      title: Artifact Trigger Spec
+      type: object
+      description: 'Spec for Artifact Triggers'
+      properties:
+        type:
+          type: string
+          description: This specifies the type of Artifact trigger
+          enum:
+            - Gcr
+            - Ecr
+            - Acr
+            - DockerRegistry
+            - Nexus3Registry
+            - Nexus2Registry
+            - ArtifactoryRegistry
+            - AmazonS3
+            - Jenkins
+            - CustomArtifact
+            - GoogleArtifactRegistry
+            - GithubPackageRegistry
+            - AzureArtifacts
+            - AmazonMachineImage
+            - GoogleCloudStorage
+            - Bamboo
+        stage_identifier:
+          type: string
+        artifact_ref:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          Gcr: '#/components/schemas/GcrArtifactSpec'
+          Ecr: '#/components/schemas/EcrArtifactSpec'
+          Acr: '#/components/schemas/AcrArtifactSpec'
+          DockerRegistry: '#/components/schemas/DockerRegistryArtifactSpec'
+          Nexus3Registry: '#/components/schemas/Nexus3RegistryArtifactSpec'
+          Nexus2Registry: '#/components/schemas/Nexus2RegistryArtifactSpec'
+          ArtifactoryRegistry: '#/components/schemas/ArtifactoryRegistryArtifactSpec'
+          AmazonS3: '#/components/schemas/AmazonS3ArtifactSpec'
+          Jenkins: '#/components/schemas/JenkinsArtifactSpec'
+          CustomArtifact: '#/components/schemas/CustomArtifactSpec'
+          GoogleArtifactRegistry: '#/components/schemas/GoogleArtifactRegistryArtifactSpec'
+          GithubPackageRegistry: '#/components/schemas/GithubPackageRegistryArtifactSpec'
+          AzureArtifacts: '#/components/schemas/AzureArtifactsArtifactSpec'
+          AmazonMachineImage: '#/components/schemas/AmazonMachineImageArtifactSpec'
+          GoogleCloudStorage: '#/components/schemas/GoogleCloudStorageArtifactSpec'
+          Bamboo: '#/components/schemas/BambooArtifactSpec'
+    GcrArtifactSpec:
+      title: Gcr Artifact Spec
+      x-discriminator-value: Gcr
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/GcrArtifactTriggerSpec'
+    GcrArtifactTriggerSpec:
+      title: Gcr Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        registry_hostname:
+          type: string
+        image_path:
+          type: string
+        tag:
+          type: string
+    EcrArtifactSpec:
+      title: Ecr Artifact Spec
+      x-discriminator-value: Ecr
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/EcrArtifactTriggerSpec'
+    EcrArtifactTriggerSpec:
+      title: Ecr Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        region:
+          type: string
+        image_path:
+          type: string
+        tag:
+          type: string
+        registry_id:
+          type: string
+    AcrArtifactSpec:
+      title: Acr Artifact Spec
+      x-discriminator-value: Acr
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/AcrArtifactTriggerSpec'
+    AcrArtifactTriggerSpec:
+      title: Acr Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        subscription_id:
+          type: string
+        repository:
+          type: string
+        tag:
+          type: string
+        registry:
+          type: string
+    DockerRegistryArtifactSpec:
+      title: Docker Registry Artifact Spec
+      x-discriminator-value: DockerRegistry
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/DockerRegistryArtifactTriggerSpec'
+    DockerRegistryArtifactTriggerSpec:
+      title: Docker Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        tag:
+          type: string
+        image_path:
+          type: string
+    Nexus3RegistryArtifactSpec:
+      title: Nexus3 Registry Artifact Spec
+      x-discriminator-value: Nexus3Registry
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/Nexus3RegistryArtifactTriggerSpec'
+    Nexus3RegistryArtifactTriggerSpec:
+      title: Nexus3 Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        repository:
+          type: string
+        image_path:
+          type: string
+        repository_format:
+          type: string
+        artifact_id:
+          type: string
+        package_name:
+          type: string
+        group_id:
+          type: string
+        repository_url:
+          type: string
+        classifier:
+          type: string
+        extension:
+          type: string
+        group:
+          type: string
+        tag:
+          type: string
+    Nexus2RegistryArtifactSpec:
+      title: Nexus2Registry Artifact Spec
+      x-discriminator-value: Nexus2Registry
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/Nexus2RegistryArtifactTriggerSpec'
+    Nexus2RegistryArtifactTriggerSpec:
+      title: Nexus2 Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        repository_name:
+          type: string
+        repository_format:
+          type: string
+        artifact_id:
+          type: string
+        package_name:
+          type: string
+        group_id:
+          type: string
+        repository_url:
+          type: string
+        classifier:
+          type: string
+        extension:
+          type: string
+        tag:
+          type: string
+    ArtifactoryRegistryArtifactSpec:
+      title: ArtifactoryRegistry Artifact Spec
+      x-discriminator-value: ArtifactoryRegistry
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/ArtifactoryRegistryArtifactTriggerSpec'
+    ArtifactoryRegistryArtifactTriggerSpec:
+      title: Artifactory Registry Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        artifact_directory:
+          type: string
+        artifact_path:
+          type: string
+        repository:
+          type: string
+        repository_format:
+          type: string
+        repository_url:
+          type: string
+        artifact_filter:
+          type: string
+    AmazonS3ArtifactSpec:
+      title: AmazonS3 Artifact Spec
+      x-discriminator-value: AmazonS3
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/AmazonS3ArtifactTriggerSpec'
+    AmazonS3ArtifactTriggerSpec:
+      title: AmazonS3 Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        region:
+          type: string
+        bucket_name:
+          type: string
+        file_path_regex:
+          type: string
+    JenkinsArtifactSpec:
+      title: Jenkins Artifact Spec
+      x-discriminator-value: Jenkins
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/JenkinsArtifactTriggerSpec'
+    JenkinsArtifactTriggerSpec:
+      title: Jenkins Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        job_name:
+          type: string
+        artifact_path:
+          type: string
+        build:
+          type: string
+    CustomArtifactSpec:
+      title: Custom Artifact Spec
+      x-discriminator-value: CustomArtifact
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/CustomArtifactTriggerSpec'
+    CustomArtifactTriggerSpec:
+      title: Custom Artifact Trigger Spec
+      type: object
+      properties:
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        version:
+          type: string
+        script:
+          type: string
+        artifacts_array_path:
+          type: string
+        version_path:
+          type: string
+        metadata:
+          type: object
+        additionalProperties:
+          type: string
+        inputs:
+          type: object
+          additionalProperties:
+            type: object
+    GoogleArtifactRegistryArtifactSpec:
+      title: GoogleArtifactRegistry Artifact Spec
+      x-discriminator-value: GoogleArtifactRegistry
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/GoogleArtifactRegistryArtifactTriggerSpec'
+    GoogleArtifactRegistryArtifactTriggerSpec:
+      title: Google Artifact Registry Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        version:
+          type: string
+        region:
+          type: string
+        project:
+          type: string
+        repository_name:
+          type: string
+        pkg:
+          type: string
+    GithubPackageRegistryArtifactSpec:
+      title: GithubPackageRegistry Artifact Spec
+      x-discriminator-value: GithubPackageRegistry
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/GithubPackageRegistryArtifactTriggerSpec'
+    GithubPackageRegistryArtifactTriggerSpec:
+      title: Github Package Registry Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        org:
+          type: string
+        package_name:
+          type: string
+        package_type:
+          type: string
+    AzureArtifactsArtifactSpec:
+      title: AzureArtifacts Artifact Spec
+      x-discriminator-value: AzureArtifacts
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/AzureArtifactsArtifactTriggerSpec'
+    AzureArtifactsArtifactTriggerSpec:
+      title: Azure Artifacts Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        project:
+          type: string
+        package_name:
+          type: string
+        package_type:
+          type: string
+        feed:
+          type: string
+        version:
+          type: string
+        version_regex:
+          type: string
+    AmazonMachineImageArtifactSpec:
+      title: AmazonMachineImage Artifact Spec
+      x-discriminator-value: AmazonMachineImage
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/AmazonMachineImageArtifactTriggerSpec'
+    AmazonMachineImageArtifactTriggerSpec:
+      title: Amazon Machine Image Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        region:
+          type: string
+        tags:
+          type: string
+        filters:
+          type: string
+        version:
+          type: string
+        version_regex:
+          type: string
+    GoogleCloudStorageArtifactSpec:
+      title: GoogleCloudStorage Artifact Spec
+      x-discriminator-value: GoogleCloudStorage
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/GoogleCloudStorageArtifactTriggerSpec'
+    GoogleCloudStorageArtifactTriggerSpec:
+      title: Google Cloud Storage Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        project:
+          type: string
+        bucket:
+          type: string
+        artifact_path:
+          type: string
+    BambooArtifactSpec:
+      title: Bamboo Artifact Spec
+      x-discriminator-value: Bamboo
+      allOf:
+        - $ref: '#/components/schemas/ArtifactTriggerSpec'
+        - type: object
+          properties:
+            spec:
+              $ref: '#/components/schemas/BambooArtifactTriggerSpec'
+    BambooArtifactTriggerSpec:
+      title: Bamboo Artifact Trigger Spec
+      type: object
+      properties:
+        connector_ref:
+          type: string
+        event_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        meta_data_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerConditions'
+        jexl_condition:
+          type: string
+        plan_key:
+          type: string
+        build:
+          type: string
+        artifact_paths:
+          type: array
+          items:
+            type: string
     HelmChartManifestTriggerSpec:
       type: object
       title: Helm Chart Manifest Trigger Spec
