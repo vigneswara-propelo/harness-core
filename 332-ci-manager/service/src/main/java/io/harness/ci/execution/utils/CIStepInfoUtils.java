@@ -208,8 +208,8 @@ public class CIStepInfoUtils {
     if (stepInfoType == CIStepInfoType.SECURITY) {
       return getSecurityStepImageConfig(step, ciExecutionConfigService, defaultImageConfig);
     } else if (stepInfoType == CIStepInfoType.IACM_TERRAFORM_PLUGIN || stepInfoType == CIStepInfoType.IACM_APPROVAL) {
-      if (((IACMTerraformPluginInfo) step).getImage() != null
-          && !((IACMTerraformPluginInfo) step).getImage().getValue().isEmpty()) {
+      if (((IACMTerraformPluginInfo) step).getImage().getValue() != null
+          && isNotEmpty(((IACMTerraformPluginInfo) step).getImage().getValue())) {
         return StepImageConfig.builder()
             .image(((IACMTerraformPluginInfo) step).getImage().getValue())
             .entrypoint(defaultImageConfig.getEntrypoint())
