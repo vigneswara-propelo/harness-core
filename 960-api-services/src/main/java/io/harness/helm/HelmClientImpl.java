@@ -15,6 +15,7 @@ import static io.harness.helm.HelmConstants.V3Commands.HELM_REPO_ADD_FORCE_UPDAT
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.logging.LogLevel.ERROR;
+import static io.harness.logging.LogLevel.WARN;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -50,6 +51,7 @@ import io.vavr.CheckedFunction0;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -328,6 +330,13 @@ public class HelmClientImpl implements HelmClient {
   @Override
   public HelmCliResponse renderChart(HelmCommandData helmCommandData, String chartLocation, String namespace,
       List<String> valuesOverrides, boolean isErrorFrameworkEnabled) throws Exception {
+    LogCallback logCallback = helmCommandData.getLogCallback();
+
+    if (!Files.exists(Paths.get(String.format("%s/templates", chartLocation)))) {
+      logCallback.saveExecutionLog(
+          "The templates folder is missing in the chart location. For more info check the chart file structure: https://helm.sh/docs/topics/charts/#the-chart-file-structure",
+          WARN);
+    }
     String kubeConfigLocation = Optional.ofNullable(helmCommandData.getKubeConfigLocation()).orElse("");
     String keyValueOverrides = constructValueOverrideFile(valuesOverrides);
 
@@ -341,7 +350,7 @@ public class HelmClientImpl implements HelmClient {
     command = applyCommandFlags(command, commandType, helmCommandData.getCommandFlags(),
         helmCommandData.isHelmCmdFlagsNull(), helmCommandData.getValueMap(), helmCommandData.getHelmVersion());
     command = applyKubeConfigToCommand(command, kubeConfigLocation);
-    logHelmCommandInExecutionLogs(command, helmCommandData.getLogCallback());
+    logHelmCommandInExecutionLogs(command, logCallback);
     String errorMessagePrefix = "Failed to render helm chart. ";
 
     return executeHelmCLICommand(helmCommandData, isErrorFrameworkEnabled, command, commandType, errorMessagePrefix);
