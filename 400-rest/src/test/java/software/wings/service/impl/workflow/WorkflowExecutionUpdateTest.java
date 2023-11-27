@@ -12,6 +12,7 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.AADITI;
 import static io.harness.rule.OwnerRule.RAMA;
 import static io.harness.rule.OwnerRule.UJJAWAL;
+import static io.harness.rule.OwnerRule.XIN;
 import static io.harness.rule.OwnerRule.YUVRAJ;
 
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
@@ -172,6 +173,20 @@ public class WorkflowExecutionUpdateTest extends WingsBaseTest {
     workflowExecution.setServiceIds(Arrays.asList(generateUuid()));
     workflowExecutionUpdate.reportDeploymentEventToSegment(workflowExecution);
     verify(segmentHandler).reportTrackEvent(eq(account), anyString(), nullable(String.class), anyMap(), anyMap());
+  }
+
+  @Test
+  @Owner(developers = XIN)
+  @Category(UnitTests.class)
+  public void shouldReportDeploymentEventToSegmentWithUserEmail() throws URISyntaxException {
+    Account account = testUtils.createAccount();
+    User user = testUtils.createUser(account);
+    ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+    when(accountService.getFromCacheWithFallback(anyString())).thenReturn(account);
+    WorkflowExecution workflowExecution = createWorkflowExecution(user);
+    workflowExecutionUpdate.reportDeploymentEventToSegment(workflowExecution);
+    verify(segmentHandler).reportTrackEvent(eq(account), anyString(), captor.capture(), anyMap(), anyMap());
+    assertThat(captor.getValue()).isEqualTo(user.getEmail());
   }
 
   @Test
