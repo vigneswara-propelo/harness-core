@@ -101,6 +101,7 @@ import software.amazon.awssdk.services.ecs.model.ListServicesRequest;
 import software.amazon.awssdk.services.ecs.model.ListServicesResponse;
 import software.amazon.awssdk.services.ecs.model.ListTasksRequest;
 import software.amazon.awssdk.services.ecs.model.ListTasksResponse;
+import software.amazon.awssdk.services.ecs.model.LoadBalancer;
 import software.amazon.awssdk.services.ecs.model.RegisterTaskDefinitionRequest;
 import software.amazon.awssdk.services.ecs.model.RegisterTaskDefinitionResponse;
 import software.amazon.awssdk.services.ecs.model.RunTaskRequest;
@@ -146,6 +147,25 @@ public class EcsCommandTaskNGHelper {
   public static final String BG_BLUE = "BLUE";
   private static final int DESCRIBE_SERVICE_API_MAX_LIMIT = 10;
   private static final int SERVICE_REVISION_FOR_FIRST_DEPLOYMENT = 1;
+  private static final String INVALID_LOAD_BALANCER_CONFIG_ERROR = "Invalid Load balancer configuration in Service.";
+  private static final String INVALID_TARGET_GROUP_ERROR_HINT =
+      "Service should be attached with prod target group or stage target group but not both";
+  private static final String NO_TARGET_GROUP_ERROR_EXPLANATION =
+      "Service: %s is not associated with any target group. "
+      + "Blue/Green Service should be attached with prod target group or stage target group.";
+  private static final String BOTH_TARGET_GROUP_ERROR_EXPLANATION =
+      "Service: %s is associated with both prod target group: %s and stage target group: %s. "
+      + "Blue/Green Service should be attached with prod target group or stage target group but not both.";
+  private static final String OTHER_TARGET_GROUP_ERROR_EXPLANATION =
+      "Service: %s is associated with following target groups: %s "
+      + "Blue/Green Service should be attached with prod target group or stage target group.";
+  private static final String BOTH_SERVICE_WITH_SAME_TARGET_GROUP_ERROR_HINT =
+      "Only one version of Service should be attached with %s target group but not both.";
+  private static final String BOTH_SERVICE_WITH_SAME_TARGET_GROUP_ERROR_EXPLANATION =
+      "Service: %s and Service: %s is associated with %s target group: %s. "
+      + "We can't decide actual %s service between these two service, so only one service should be attached with %s target group.";
+  private static final String PROD_SERVICE = "prod";
+  private static final String STAGE_SERVICE = "stage";
 
   public RegisterTaskDefinitionResponse createTaskDefinition(
       RegisterTaskDefinitionRequest registerTaskDefinitionRequest, String region, AwsConnectorDTO awsConnectorDTO) {
@@ -948,7 +968,7 @@ public class EcsCommandTaskNGHelper {
       List<String> ecsScalableTargetManifestContentList, List<String> ecsScalingPolicyManifestContentList,
       EcsInfraConfig ecsInfraConfig, LogCallback logCallback, long timeoutInMillis, String targetGroupArnKey,
       String taskDefinitionArn, String targetGroupArn, boolean isSameAsAlreadyRunningInstances,
-      boolean removeAutoScalingFromBlueService) {
+      boolean removeAutoScalingFromBlueService, boolean updateGreenService) {
     // render target group arn value in its expression in ecs service definition yaml
     ecsServiceDefinitionManifestContent =
         updateTargetGroupArn(ecsServiceDefinitionManifestContent, targetGroupArn, targetGroupArnKey);
@@ -963,8 +983,10 @@ public class EcsCommandTaskNGHelper {
     Optional<Service> optionalService = describeService(
         ecsInfraConfig.getCluster(), stageServiceName, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
 
+    boolean greenServiceExist = optionalService.isPresent();
+
     // delete the existing non-blue version
-    if (optionalService.isPresent() && isServiceActive(optionalService.get())) {
+    if (optionalService.isPresent() && isServiceActive(optionalService.get()) && !updateGreenService) {
       Service service = optionalService.get();
       logCallback.saveExecutionLog(
           format("Deleting existing non-blue version Service: %s", service.serviceName()), LogLevel.INFO);
@@ -976,6 +998,7 @@ public class EcsCommandTaskNGHelper {
           service.serviceName(), ecsInfraConfig.getRegion(), (int) TimeUnit.MILLISECONDS.toMinutes(timeoutInMillis));
       logCallback.saveExecutionLog(
           format("Deleted non-blue version Service: %s %n%n", service.serviceName()), LogLevel.INFO);
+      greenServiceExist = false;
     } else if (optionalService.isPresent() && isServiceDraining(optionalService.get())) {
       logCallback.saveExecutionLog(
           format("An existing non-blue version Service with name %s draining, waiting for it to reach "
@@ -987,6 +1010,7 @@ public class EcsCommandTaskNGHelper {
       logCallback.saveExecutionLog(
           format("An existed non-blue version Service with name %s reached inactive state %n", stageServiceName),
           LogLevel.INFO);
+      greenServiceExist = false;
     }
 
     // add green tag in create service request
@@ -1017,22 +1041,51 @@ public class EcsCommandTaskNGHelper {
                                .taskDefinition(taskDefinitionArn)
                                .build();
 
-    logCallback.saveExecutionLog(format("Creating Stage Service %s with task definition %s and desired count %s %n",
-                                     createServiceRequest.serviceName(), createServiceRequest.taskDefinition(),
-                                     createServiceRequest.desiredCount()),
-        LogLevel.INFO);
+    if (updateGreenService && greenServiceExist) {
+      deleteScalingPolicies(ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.serviceName(),
+          ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(), logCallback);
+      deregisterScalableTargets(ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.serviceName(),
+          ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(), logCallback);
 
-    CreateServiceResponse createServiceResponse =
-        createService(createServiceRequest, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
+      logCallback.saveExecutionLog(format("Updating Stage Service %s with task definition %s and desired count %s %n",
+                                       createServiceRequest.serviceName(), createServiceRequest.taskDefinition(),
+                                       createServiceRequest.desiredCount()),
+          LogLevel.INFO);
 
-    List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(createServiceResponse.service().events());
+      UpdateServiceRequest updateServiceRequest =
+          EcsMapper.createServiceRequestToUpdateServiceRequest(createServiceRequest, true);
 
-    ecsServiceSteadyStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
-        createServiceRequest.serviceName(), ecsInfraConfig.getRegion(), timeoutInMillis, eventsAlreadyProcessed);
+      UpdateServiceResponse updateServiceResponse =
+          updateService(updateServiceRequest, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
 
-    logCallback.saveExecutionLog(format("Created Stage Service %s with Arn %s %n%n", createServiceRequest.serviceName(),
-                                     createServiceResponse.service().serviceArn()),
-        LogLevel.INFO);
+      List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(updateServiceResponse.service().events());
+
+      ecsServiceSteadyStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
+          createServiceRequest.serviceName(), ecsInfraConfig.getRegion(), timeoutInMillis, eventsAlreadyProcessed);
+
+      logCallback.saveExecutionLog(
+          format("Updated Stage Service %s with Arn %s %n%n", createServiceRequest.serviceName(),
+              updateServiceResponse.service().serviceArn()),
+          LogLevel.INFO);
+    } else {
+      logCallback.saveExecutionLog(format("Creating Stage Service %s with task definition %s and desired count %s %n",
+                                       createServiceRequest.serviceName(), createServiceRequest.taskDefinition(),
+                                       createServiceRequest.desiredCount()),
+          LogLevel.INFO);
+
+      CreateServiceResponse createServiceResponse =
+          createService(createServiceRequest, ecsInfraConfig.getRegion(), ecsInfraConfig.getAwsConnectorDTO());
+
+      List<ServiceEvent> eventsAlreadyProcessed = new ArrayList<>(createServiceResponse.service().events());
+
+      ecsServiceSteadyStateCheck(logCallback, ecsInfraConfig.getAwsConnectorDTO(), createServiceRequest.cluster(),
+          createServiceRequest.serviceName(), ecsInfraConfig.getRegion(), timeoutInMillis, eventsAlreadyProcessed);
+
+      logCallback.saveExecutionLog(
+          format("Created Stage Service %s with Arn %s %n%n", createServiceRequest.serviceName(),
+              createServiceResponse.service().serviceArn()),
+          LogLevel.INFO);
+    }
 
     logCallback.saveExecutionLog(format("Target Group with Arn: %s is associated with Stage Service %s", targetGroupArn,
                                      createServiceRequest.serviceName()),
@@ -1043,13 +1096,11 @@ public class EcsCommandTaskNGHelper {
         LogLevel.INFO);
 
     registerScalableTargets(ecsScalableTargetManifestContentList, ecsInfraConfig.getAwsConnectorDTO(),
-        createServiceResponse.service().serviceName(), ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(),
-        logCallback);
+        createServiceRequest.serviceName(), ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(), logCallback);
 
     attachScalingPolicies(ecsScalingPolicyManifestContentList, ecsInfraConfig.getAwsConnectorDTO(),
-        createServiceResponse.service().serviceName(), ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(),
-        logCallback);
-    return createServiceResponse.service().serviceName();
+        createServiceRequest.serviceName(), ecsInfraConfig.getCluster(), ecsInfraConfig.getRegion(), logCallback);
+    return createServiceRequest.serviceName();
   }
 
   private void deleteBGServiceAutoScaling(
@@ -1272,6 +1323,107 @@ public class EcsCommandTaskNGHelper {
       nextToken = describeRulesResponse.nextMarker();
     } while (nextToken != null);
     return false;
+  }
+
+  public void validateTagsInService(EcsLoadBalancerConfig loadBalancerConfig, String servicePrefix,
+      EcsInfraConfig infraConfig, LogCallback logCallback) {
+    String firstVersionServiceName = servicePrefix + 1;
+    String secondVersionServiceName = servicePrefix + 2;
+    Optional<Service> firstService = describeService(
+        infraConfig.getCluster(), firstVersionServiceName, infraConfig.getRegion(), infraConfig.getAwsConnectorDTO());
+    Optional<Service> secondService = describeService(
+        infraConfig.getCluster(), secondVersionServiceName, infraConfig.getRegion(), infraConfig.getAwsConnectorDTO());
+
+    List<String> firstServiceTargetGroups = null;
+    List<String> secondServiceTargetGroups = null;
+
+    if (firstService.isPresent()) {
+      firstServiceTargetGroups = validateTargetGroup(loadBalancerConfig, firstService.get());
+    }
+
+    if (secondService.isPresent()) {
+      secondServiceTargetGroups = validateTargetGroup(loadBalancerConfig, secondService.get());
+    }
+
+    if (CollectionUtils.isEmpty(firstServiceTargetGroups) || CollectionUtils.isEmpty(secondServiceTargetGroups)) {
+      return;
+    } else if (!loadBalancerConfig.getProdTargetGroupArn().equals(loadBalancerConfig.getStageTargetGroupArn())) {
+      if (firstServiceTargetGroups.contains(loadBalancerConfig.getProdTargetGroupArn())
+          && secondServiceTargetGroups.contains(loadBalancerConfig.getProdTargetGroupArn())) {
+        throwSameTargetGroupException(PROD_SERVICE, firstService.get().serviceName(), secondService.get().serviceName(),
+            loadBalancerConfig.getProdTargetGroupArn());
+      } else if (firstServiceTargetGroups.contains(loadBalancerConfig.getStageTargetGroupArn())
+          && secondServiceTargetGroups.contains(loadBalancerConfig.getStageTargetGroupArn())) {
+        throwSameTargetGroupException(STAGE_SERVICE, firstService.get().serviceName(),
+            secondService.get().serviceName(), loadBalancerConfig.getStageTargetGroupArn());
+      }
+    }
+    // check if we can update tags in invalid configuration
+    updateTags(infraConfig, loadBalancerConfig, firstService.get(), secondService.get(), logCallback,
+        firstServiceTargetGroups, secondServiceTargetGroups);
+  }
+
+  private void throwSameTargetGroupException(
+      String serviceType, String firstService, String secondService, String targetGroup) {
+    throw NestedExceptionUtils.hintWithExplanationException(
+        format(BOTH_SERVICE_WITH_SAME_TARGET_GROUP_ERROR_HINT, serviceType),
+        format(BOTH_SERVICE_WITH_SAME_TARGET_GROUP_ERROR_EXPLANATION, firstService, secondService, targetGroup,
+            serviceType, serviceType, serviceType),
+        new InvalidRequestException(INVALID_LOAD_BALANCER_CONFIG_ERROR));
+  }
+
+  private void updateTags(EcsInfraConfig infraConfig, EcsLoadBalancerConfig loadBalancerConfig, Service firstService,
+      Service secondService, LogCallback logCallback, List<String> firstServiceTargetGroups,
+      List<String> secondServiceTargetGroups) {
+    AwsInternalConfig awsInternalConfig = awsNgConfigMapper.createAwsInternalConfig(infraConfig.getAwsConnectorDTO());
+    if (loadBalancerConfig.getProdTargetGroupArn().equals(loadBalancerConfig.getStageTargetGroupArn())) {
+      if (firstService.desiredCount() > secondService.desiredCount()) {
+        updateTag(firstService.serviceName(), infraConfig, BG_BLUE, awsInternalConfig, logCallback);
+        updateTag(secondService.serviceName(), infraConfig, BG_GREEN, awsInternalConfig, logCallback);
+      } else {
+        updateTag(firstService.serviceName(), infraConfig, BG_GREEN, awsInternalConfig, logCallback);
+        updateTag(secondService.serviceName(), infraConfig, BG_BLUE, awsInternalConfig, logCallback);
+      }
+    } else {
+      updateServiceTag(infraConfig, loadBalancerConfig, firstService, logCallback, firstServiceTargetGroups);
+      updateServiceTag(infraConfig, loadBalancerConfig, secondService, logCallback, secondServiceTargetGroups);
+    }
+  }
+
+  private void updateServiceTag(EcsInfraConfig infraConfig, EcsLoadBalancerConfig loadBalancerConfig, Service service,
+      LogCallback logCallback, List<String> targetGroups) {
+    AwsInternalConfig awsInternalConfig = awsNgConfigMapper.createAwsInternalConfig(infraConfig.getAwsConnectorDTO());
+    if (targetGroups.contains(loadBalancerConfig.getProdTargetGroupArn())) {
+      updateTag(service.serviceName(), infraConfig, BG_BLUE, awsInternalConfig, logCallback);
+    } else if (targetGroups.contains(loadBalancerConfig.getStageTargetGroupArn())) {
+      updateTag(service.serviceName(), infraConfig, BG_GREEN, awsInternalConfig, logCallback);
+    }
+  }
+
+  private List<String> validateTargetGroup(EcsLoadBalancerConfig loadBalancerConfig, Service service) {
+    List<LoadBalancer> loadBalancers = service.loadBalancers();
+    List<String> targetGroups = newArrayList();
+    if (loadBalancers != null) {
+      targetGroups = loadBalancers.stream().map(LoadBalancer::targetGroupArn).collect(toList());
+    }
+    if (CollectionUtils.isEmpty(targetGroups)) {
+      throw NestedExceptionUtils.hintWithExplanationException(INVALID_TARGET_GROUP_ERROR_HINT,
+          format(NO_TARGET_GROUP_ERROR_EXPLANATION, service.serviceName()),
+          new InvalidRequestException(INVALID_LOAD_BALANCER_CONFIG_ERROR));
+    } else if (targetGroups.contains(loadBalancerConfig.getProdTargetGroupArn())
+        && targetGroups.contains(loadBalancerConfig.getStageTargetGroupArn())
+        && !loadBalancerConfig.getProdTargetGroupArn().equals(loadBalancerConfig.getStageTargetGroupArn())) {
+      throw NestedExceptionUtils.hintWithExplanationException(INVALID_TARGET_GROUP_ERROR_HINT,
+          format(BOTH_TARGET_GROUP_ERROR_EXPLANATION, service.serviceName(), loadBalancerConfig.getProdTargetGroupArn(),
+              loadBalancerConfig.getStageTargetGroupArn()),
+          new InvalidRequestException(INVALID_LOAD_BALANCER_CONFIG_ERROR));
+    } else if (!targetGroups.contains(loadBalancerConfig.getProdTargetGroupArn())
+        && !targetGroups.contains(loadBalancerConfig.getStageTargetGroupArn())) {
+      throw NestedExceptionUtils.hintWithExplanationException(INVALID_TARGET_GROUP_ERROR_HINT,
+          format(OTHER_TARGET_GROUP_ERROR_EXPLANATION, service.serviceName(), targetGroups),
+          new InvalidRequestException(INVALID_LOAD_BALANCER_CONFIG_ERROR));
+    }
+    return targetGroups;
   }
 
   public Optional<String> getBlueVersionServiceName(String servicePrefix, EcsInfraConfig ecsInfraConfig) {

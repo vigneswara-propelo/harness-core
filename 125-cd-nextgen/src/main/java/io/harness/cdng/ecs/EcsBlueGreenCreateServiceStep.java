@@ -131,6 +131,8 @@ public class EcsBlueGreenCreateServiceStep extends CdTaskChainExecutable impleme
                 && ecsStepExecutorParams.getProdTargetGroupArn().equals(ecsStepExecutorParams.getStageTargetGroupArn()))
             .sameAsAlreadyRunningInstances(ParameterFieldHelper.getBooleanParameterFieldValue(
                 ecsBlueGreenCreateServiceStepParameters.getSameAsAlreadyRunningInstances()))
+            .updateGreenService(ParameterFieldHelper.getBooleanParameterFieldValue(
+                ecsBlueGreenCreateServiceStepParameters.getUpdateGreenService()))
             .build();
     return ecsStepCommonHelper.queueEcsTask(stepParameters, ecsBlueGreenCreateServiceRequest, ambiance,
         executionPassThroughData, true, TaskType.ECS_COMMAND_TASK_NG);
@@ -163,6 +165,8 @@ public class EcsBlueGreenCreateServiceStep extends CdTaskChainExecutable impleme
             .ecsLoadBalancerConfig(ecsLoadBalancerConfig)
             .greenServiceRollbackEnabled(cdFeatureFlagHelper.isEnabled(
                 AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_ECS_BG_GREEN_SERVICE_ROLLBACK))
+            .validateBlueGreenService(
+                cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_ECS_BG_VALIDATION))
             .build();
     return ecsStepCommonHelper.queueEcsTask(stepParameters, ecsBlueGreenPrepareRollbackRequest, ambiance,
         ecsStepPassThroughData, false, TaskType.ECS_COMMAND_TASK_NG);
@@ -281,6 +285,8 @@ public class EcsBlueGreenCreateServiceStep extends CdTaskChainExecutable impleme
                 && ecsStepExecutorParams.getProdTargetGroupArn().equals(ecsStepExecutorParams.getStageTargetGroupArn()))
             .sameAsAlreadyRunningInstances(ParameterFieldHelper.getBooleanParameterFieldValue(
                 ecsBlueGreenCreateServiceStepParameters.getSameAsAlreadyRunningInstances()))
+            .updateGreenService(ParameterFieldHelper.getBooleanParameterFieldValue(
+                ecsBlueGreenCreateServiceStepParameters.getUpdateGreenService()))
             .build();
 
     return ecsStepCommonHelper.queueEcsTask(stepElementParameters, ecsTaskArnBlueGreenCreateServiceRequest, ambiance,

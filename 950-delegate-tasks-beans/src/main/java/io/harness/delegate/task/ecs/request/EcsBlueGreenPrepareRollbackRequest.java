@@ -36,4 +36,5 @@ public class EcsBlueGreenPrepareRollbackRequest
   @NonFinal @Expression(ALLOW_SECRETS) Integer timeoutIntervalInMin;
   @NonFinal @Expression(ALLOW_SECRETS) EcsLoadBalancerConfig ecsLoadBalancerConfig;
   boolean greenServiceRollbackEnabled;
+  boolean validateBlueGreenService;
 }

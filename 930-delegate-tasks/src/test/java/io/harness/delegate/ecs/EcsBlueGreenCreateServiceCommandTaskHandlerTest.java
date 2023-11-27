@@ -120,7 +120,7 @@ public class EcsBlueGreenCreateServiceCommandTaskHandlerTest extends CategoryTes
     doReturn(ecsBlueGreenCreateServiceResponse)
         .when(ecsDeploymentHelper)
         .deployStageService(eq(createServiceLogCallback), eq(ecsCommandRequest), anyList(), anyList(), anyString(),
-            anyString(), eq(null), eq(ecsLoadBalancerConfig), anyString(), anyBoolean(), anyBoolean());
+            anyString(), eq(null), eq(ecsLoadBalancerConfig), anyString(), anyBoolean(), anyBoolean(), anyBoolean());
 
     EcsBlueGreenCreateServiceResponse actualEcsBlueGreenCreateServiceResponse =
         (EcsBlueGreenCreateServiceResponse) ecsBlueGreenCreateServiceCommandTaskHandler.executeTaskInternal(
