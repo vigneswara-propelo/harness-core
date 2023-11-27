@@ -22,11 +22,13 @@ public class MigratorResolveFunctor implements ExpressionResolveFunctor {
 
   private final ExpressionEvaluator expressionEvaluator = new ExpressionEvaluator();
   private static final String REPLACE_EXPRESSION = "\\.replace\\(.*?\\)";
+  private static final String REPLACE_ALL_EXPRESSION = "\\.replaceAll\\(.*?\\)";
   private static final String SPLIT_EXPRESSION = "\\.split\\(.*?\\)";
   private static final String LOWER_EXPRESSION = ".toLowerCase()";
   private static final String UPPER_EXPRESSION = ".toUpperCase()";
 
   private static final Pattern REPLACE_PATTERN = Pattern.compile(REPLACE_EXPRESSION);
+  private static final Pattern REPLACE_ALL_PATTERN = Pattern.compile(REPLACE_ALL_EXPRESSION);
   private static final Pattern SPLIT_PATTERN = Pattern.compile(SPLIT_EXPRESSION);
 
   public MigratorResolveFunctor(Map<String, Object> context) {
@@ -36,6 +38,7 @@ public class MigratorResolveFunctor implements ExpressionResolveFunctor {
   @Override
   public String processString(String expression) {
     Matcher replaceMatcher = REPLACE_PATTERN.matcher(expression);
+    Matcher replaceAllMatcher = REPLACE_ALL_PATTERN.matcher(expression);
     Matcher splitMatcher = SPLIT_PATTERN.matcher(expression);
     if (expression.contains(LOWER_EXPRESSION)) {
       String treatedExpression = expression.replace(LOWER_EXPRESSION, "");
@@ -49,6 +52,11 @@ public class MigratorResolveFunctor implements ExpressionResolveFunctor {
       String replaceContent = replaceMatcher.group();
       String treatedExpression = expression.replaceAll(REPLACE_EXPRESSION, "");
       return expressionEvaluator.substitute(treatedExpression, context) + replaceContent;
+    }
+    if (replaceAllMatcher.find()) {
+      String replaceAllContent = replaceAllMatcher.group();
+      String treatedExpression = expression.replaceAll(REPLACE_ALL_EXPRESSION, "");
+      return expressionEvaluator.substitute(treatedExpression, context) + replaceAllContent;
     }
     if (splitMatcher.find()) {
       String splitContent = splitMatcher.group();
