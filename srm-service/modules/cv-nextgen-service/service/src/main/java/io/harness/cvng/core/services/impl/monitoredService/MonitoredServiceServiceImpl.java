@@ -262,7 +262,9 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                      .environmentIdentifier(monitoredServiceDTO.getEnvironmentRef())
                                                      .build();
 
-    validate(monitoredServiceDTO, accountId);
+    boolean isTemplateByReference =
+        monitoredServiceDTO.getTemplate() != null && monitoredServiceDTO.getTemplate().isTemplateByReference();
+    validate(monitoredServiceDTO, accountId, isTemplateByReference, false);
     checkIfAlreadyPresent(accountId, environmentParams, monitoredServiceDTO.getIdentifier(),
         monitoredServiceDTO.getSources(), monitoredServiceDTO.getType());
 
@@ -444,9 +446,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
           monitoredServiceDTO.getIdentifier(), accountId, monitoredServiceDTO.getOrgIdentifier(),
           monitoredServiceDTO.getProjectIdentifier()));
     }
-    if (featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION)) {
-      validateTemplateMetadata(monitoredServiceDTO);
-    }
+
     Preconditions.checkArgument(monitoredService.getServiceIdentifier().equals(monitoredServiceDTO.getServiceRef()),
         "serviceRef update is not allowed");
     if (monitoredService.getType() == MonitoredServiceType.APPLICATION) {
@@ -461,14 +461,18 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     monitoredServiceHandlers.forEach(baseMonitoredServiceHandler
         -> baseMonitoredServiceHandler.beforeUpdate(
             environmentParams, existingMonitoredServiceDTO, monitoredServiceDTO));
-    validate(monitoredServiceDTO, accountId);
-
-    updateHealthSources(monitoredService, monitoredServiceDTO);
-    changeSourceService.update(MonitoredServiceParams.builderWithProjectParams(environmentParams)
-                                   .monitoredServiceIdentifier(monitoredService.getIdentifier())
-                                   .build(),
-        monitoredServiceDTO.getSources().getChangeSources());
-    updateMonitoredService(monitoredService, monitoredServiceDTO, isUpdatedFromYaml);
+    boolean isTemplateByReference =
+        monitoredService.getTemplateMetadata() != null && monitoredService.isTemplateByReference();
+    validate(monitoredServiceDTO, accountId, isTemplateByReference, isUpdatedFromYaml);
+    if (this.validateUpdate(accountId, isTemplateByReference, isUpdatedFromYaml, true)) {
+      // health sources and change sources are templatised
+      updateHealthSources(monitoredService, monitoredServiceDTO);
+      changeSourceService.update(MonitoredServiceParams.builderWithProjectParams(environmentParams)
+                                     .monitoredServiceIdentifier(monitoredService.getIdentifier())
+                                     .build(),
+          monitoredServiceDTO.getSources().getChangeSources());
+    }
+    updateMonitoredService(monitoredService, monitoredServiceDTO, isUpdatedFromYaml, isTemplateByReference);
     outboxService.save(
         MonitoredServiceUpdateEvent.builder()
             .resourceName(monitoredServiceDTO.getName())
@@ -485,31 +489,22 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     return get(environmentParams, monitoredServiceDTO.getIdentifier());
   }
 
-  private void validateTemplateMetadata(MonitoredServiceDTO monitoredServiceDTO) {
-    if (monitoredServiceDTO.getTemplate() != null && monitoredServiceDTO.getTemplate().isTemplateByReference()) {
-      if (isNotEmpty(monitoredServiceDTO.getSources().getChangeSources())) {
-        throw new InvalidRequestException(
-            String.format("Update of Monitored Service entity with identifier: %s is not allowed"
-                    + "with change source if it's created through template by reference.",
-                monitoredServiceDTO.getIdentifier()));
-      }
-      if (isNotEmpty(monitoredServiceDTO.getNotificationRuleRefs())) {
-        throw new InvalidRequestException(
-            String.format("Update of Monitored Service entity with identifier: %s is not allowed"
-                    + "with notification rules if it's created through template by reference.",
-                monitoredServiceDTO.getIdentifier()));
-      }
-      if (isNotEmpty(monitoredServiceDTO.getDependencies())) {
-        throw new InvalidRequestException(
-            String.format("Update of Monitored Service entity with identifier: %s is not allowed"
-                    + "with notification rules if it's created through template by reference.",
-                monitoredServiceDTO.getIdentifier()));
+  private boolean validateUpdate(
+      String accountId, boolean isTemplateByReference, boolean isUpdateFromYaml, boolean isTemplatised) {
+    boolean isFeatureEnabled =
+        featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION);
+    if (isTemplatised && isFeatureEnabled) {
+      return !isTemplateByReference || isUpdateFromYaml;
+    } else if (!isTemplatised && isFeatureEnabled) {
+      if (isTemplateByReference && isUpdateFromYaml) {
+        return false;
       }
     }
+    return true;
   }
 
-  private void updateMonitoredService(
-      MonitoredService monitoredService, MonitoredServiceDTO monitoredServiceDTO, boolean isUpdatedFromYaml) {
+  private void updateMonitoredService(MonitoredService monitoredService, MonitoredServiceDTO monitoredServiceDTO,
+      boolean isUpdatedFromYaml, boolean isTemplateByReference) {
     UpdateOperations<MonitoredService> updateOperations = hPersistence.createUpdateOperations(MonitoredService.class);
     updateOperations.set(MonitoredServiceKeys.name, monitoredServiceDTO.getName());
     if (monitoredServiceDTO.getDescription() != null) {
@@ -519,18 +514,20 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
       updateOperations.set(MonitoredServiceKeys.tags, TagMapper.convertToList(monitoredServiceDTO.getTags()));
     }
     if (monitoredServiceDTO.getSources() != null) {
-      List<String> updatedHealthSourceIdentifiers = monitoredServiceDTO.getSources()
-                                                        .getHealthSources()
-                                                        .stream()
-                                                        .map(HealthSource::getIdentifier)
-                                                        .collect(Collectors.toList());
-      updateOperations.set(MonitoredServiceKeys.healthSourceIdentifiers, updatedHealthSourceIdentifiers);
-      List<String> updatedChangeSourceIdentifiers = monitoredServiceDTO.getSources()
-                                                        .getChangeSources()
-                                                        .stream()
-                                                        .map(ChangeSourceDTO::getIdentifier)
-                                                        .collect(Collectors.toList());
-      updateOperations.set(MonitoredServiceKeys.changeSourceIdentifiers, updatedChangeSourceIdentifiers);
+      if (this.validateUpdate(monitoredService.getAccountId(), isTemplateByReference, isUpdatedFromYaml, true)) {
+        List<String> updatedHealthSourceIdentifiers = monitoredServiceDTO.getSources()
+                                                          .getHealthSources()
+                                                          .stream()
+                                                          .map(HealthSource::getIdentifier)
+                                                          .collect(Collectors.toList());
+        updateOperations.set(MonitoredServiceKeys.healthSourceIdentifiers, updatedHealthSourceIdentifiers);
+        List<String> updatedChangeSourceIdentifiers = monitoredServiceDTO.getSources()
+                                                          .getChangeSources()
+                                                          .stream()
+                                                          .map(ChangeSourceDTO::getIdentifier)
+                                                          .collect(Collectors.toList());
+        updateOperations.set(MonitoredServiceKeys.changeSourceIdentifiers, updatedChangeSourceIdentifiers);
+      }
     }
     if (monitoredServiceDTO.getTemplate() != null && isUpdatedFromYaml) {
       updateOperations.set(MonitoredServiceKeys.templateIdentifier, monitoredServiceDTO.getTemplate().getTemplateRef());
@@ -546,19 +543,20 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     if (monitoredServiceDTO.getTemplate() != null
         && featureFlagService.isFeatureFlagEnabled(
             projectParams.getAccountIdentifier(), FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION)
-        && monitoredServiceDTO.getTemplate().isTemplateByReference() && isUpdatedFromYaml) {
+        && monitoredService.isTemplateByReference() && isUpdatedFromYaml) {
       updateOperations.set(MonitoredServiceKeys.templateMetadata,
           TemplateMetadata.fromTemplateDTO(monitoredServiceDTO.getTemplate())
               .lastReconciliationTime(currentTime)
               .build());
     }
-    updateOperations.set(MonitoredServiceKeys.notificationRuleRefs,
-        getNotificationRuleRefs(projectParams, monitoredService, monitoredServiceDTO));
+    if (this.validateUpdate(monitoredService.getAccountId(), isTemplateByReference, isUpdatedFromYaml, false)) {
+      updateOperations.set(MonitoredServiceKeys.notificationRuleRefs,
+          getNotificationRuleRefs(projectParams, monitoredService, monitoredServiceDTO));
+      validateDependencyMetadata(projectParams, monitoredServiceDTO.getDependencies());
+      serviceDependencyService.updateDependencies(
+          projectParams, monitoredService.getIdentifier(), monitoredServiceDTO.getDependencies());
+    }
     updateOperations.set(MonitoredServiceKeys.lastUpdatedAt, currentTime);
-    validateDependencyMetadata(projectParams, monitoredServiceDTO.getDependencies());
-    serviceDependencyService.updateDependencies(
-        projectParams, monitoredService.getIdentifier(), monitoredServiceDTO.getDependencies());
-
     hPersistence.update(monitoredService, updateOperations);
   }
 
@@ -1440,7 +1438,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
             monitoredService.getIdentifier()));
   }
 
-  private void validate(MonitoredServiceDTO monitoredServiceDTO, String accountId) {
+  private void validate(MonitoredServiceDTO monitoredServiceDTO, String accountId, boolean isTemplateByReference,
+      boolean isUpdateFromYaml) {
     ProjectParams projectParams = ProjectParams.builder()
                                       .accountIdentifier(accountId)
                                       .orgIdentifier(monitoredServiceDTO.getOrgIdentifier())
@@ -1464,7 +1463,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     }
 
     if (featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION.name())
-        && monitoredServiceDTO.getTemplate() != null && monitoredServiceDTO.getTemplate().isTemplateByReference()) {
+        && isTemplateByReference) {
       if (monitoredServiceDTO.getTemplate().getTemplateInputs() == null) {
         throw new InvalidRequestException(String.format(
             "Template inputs cannot be null if the template is used by reference for monitored service with identifier: %s",
@@ -1482,17 +1481,21 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
       }
     }
 
-    if (monitoredServiceDTO.getSources() != null) {
-      Set<String> identifiers = new HashSet<>();
-      monitoredServiceDTO.getSources().getHealthSources().forEach(healthSource -> {
-        if (!identifiers.add(healthSource.getIdentifier())) {
-          throw new InvalidRequestException(String.format(
-              "Multiple Health Sources exists with the same identifier %s", healthSource.getIdentifier()));
-        }
-        healthSource.getSpec().validate();
-      });
+    if (this.validateUpdate(accountId, isTemplateByReference, isUpdateFromYaml, true)) {
+      if (monitoredServiceDTO.getSources() != null) {
+        Set<String> identifiers = new HashSet<>();
+        monitoredServiceDTO.getSources().getHealthSources().forEach(healthSource -> {
+          if (!identifiers.add(healthSource.getIdentifier())) {
+            throw new InvalidRequestException(String.format(
+                "Multiple Health Sources exists with the same identifier %s", healthSource.getIdentifier()));
+          }
+          healthSource.getSpec().validate();
+        });
+      }
     }
-    notificationRuleService.validateNotification(monitoredServiceDTO.getNotificationRuleRefs(), projectParams);
+    if (this.validateUpdate(accountId, isTemplateByReference, isUpdateFromYaml, false)) {
+      notificationRuleService.validateNotification(monitoredServiceDTO.getNotificationRuleRefs(), projectParams);
+    }
     filterOutHarnessCDChangeSource(monitoredServiceDTO);
   }
 

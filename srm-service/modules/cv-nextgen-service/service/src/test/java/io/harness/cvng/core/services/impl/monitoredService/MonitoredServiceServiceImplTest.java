@@ -465,6 +465,124 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
+  @Owner(developers = NAVEEN)
+  @Category(UnitTests.class)
+  public void testUpdateFromYaml_changeSourceUpdate_false() {
+    String yaml = "monitoredService:\n"
+        + "  template:\n"
+        + "   templateRef: templateRef123\n"
+        + "   versionLabel: versionLabel123\n"
+        + "   templateVersionNumber: 4\n"
+        + "   isTemplateByReference: true\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
+        + "  sources:\n"
+        + "      healthSources:\n"
+        + "      changeSources: \n"
+        + "  tags: {}\n"
+        + "  variables:\n"
+        + "    -   name: environmentIdentifier\n"
+        + "        type: String\n"
+        + "        value: env3";
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    MonitoredServiceResponse monitoredServiceResponse =
+        monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml);
+
+    MonitoredServiceDTO updateMonitoredServiceDTO = monitoredServiceResponse.getMonitoredServiceDTO();
+    updateMonitoredServiceDTO.setSources(
+        MonitoredServiceDTO.Sources.builder()
+            .changeSources(new HashSet<>(List.of(builderFactory.getPagerDutyChangeSourceDTOBuilder().build())))
+            .build());
+    MonitoredServiceResponse updatedMonitoredServiceResponse =
+        monitoredServiceService.update(accountId, monitoredServiceResponse.getMonitoredServiceDTO(), false);
+    MonitoredServiceDTO monitoredServiceDTO = updatedMonitoredServiceResponse.getMonitoredServiceDTO();
+    assertThat(monitoredServiceDTO.getSources().getChangeSources().size()).isZero();
+  }
+
+  @Test
+  @Owner(developers = NAVEEN)
+  @Category(UnitTests.class)
+  public void testUpdateFromYaml_changeSourceUpdate_true() {
+    String yaml = "monitoredService:\n"
+        + "  template:\n"
+        + "   templateRef: templateRef123\n"
+        + "   versionLabel: versionLabel123\n"
+        + "   templateVersionNumber: 4\n"
+        + "   isTemplateByReference: true\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
+        + "  sources:\n"
+        + "      healthSources:\n"
+        + "      changeSources: \n"
+        + "  tags: {}\n"
+        + "  variables:\n"
+        + "    -   name: environmentIdentifier\n"
+        + "        type: String\n"
+        + "        value: env3";
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    MonitoredServiceResponse monitoredServiceResponse =
+        monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml);
+
+    MonitoredServiceDTO updateMonitoredServiceDTO = monitoredServiceResponse.getMonitoredServiceDTO();
+    updateMonitoredServiceDTO.setSources(
+        MonitoredServiceDTO.Sources.builder()
+            .changeSources(new HashSet<>(List.of(builderFactory.getPagerDutyChangeSourceDTOBuilder().build())))
+            .build());
+    MonitoredServiceResponse updatedMonitoredServiceResponse =
+        monitoredServiceService.update(accountId, monitoredServiceResponse.getMonitoredServiceDTO(), true);
+    MonitoredServiceDTO monitoredServiceDTO = updatedMonitoredServiceResponse.getMonitoredServiceDTO();
+    assertThat(monitoredServiceDTO.getSources().getChangeSources().size()).isEqualTo(1);
+  }
+
+  @Test
+  @Owner(developers = NAVEEN)
+  @Category(UnitTests.class)
+  public void testUpdateFromYaml_notificationUpdate_true() {
+    String yaml = "monitoredService:\n"
+        + "  template:\n"
+        + "   templateRef: templateRef123\n"
+        + "   versionLabel: versionLabel123\n"
+        + "   templateVersionNumber: 4\n"
+        + "   isTemplateByReference: true\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
+        + "  sources:\n"
+        + "      healthSources:\n"
+        + "      changeSources: \n"
+        + "  tags: {}\n"
+        + "  variables:\n"
+        + "    -   name: environmentIdentifier\n"
+        + "        type: String\n"
+        + "        value: env3";
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    MonitoredServiceResponse monitoredServiceResponse =
+        monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml);
+
+    MonitoredServiceDTO updateMonitoredServiceDTO = monitoredServiceResponse.getMonitoredServiceDTO();
+    updateMonitoredServiceDTO.setNotificationRuleRefs(Arrays.asList(
+        NotificationRuleRefDTO.builder().notificationRuleRef("notification_rules").enabled(true).build()));
+    MonitoredServiceResponse updatedMonitoredServiceResponse =
+        monitoredServiceService.update(accountId, monitoredServiceResponse.getMonitoredServiceDTO(), true);
+    MonitoredServiceDTO monitoredServiceDTO = updatedMonitoredServiceResponse.getMonitoredServiceDTO();
+    assertThat(monitoredServiceDTO.getSources().getChangeSources().size()).isEqualTo(0);
+  }
+
+  @Test
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testCreateFromYaml() {

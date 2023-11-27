@@ -13,6 +13,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.MonitoredServiceType;
 import io.harness.cvng.core.beans.template.TemplateMetadata;
+import io.harness.cvng.core.beans.template.TemplateMetadata.TemplateMetadataKeys;
 import io.harness.cvng.notification.beans.NotificationRuleRef;
 import io.harness.iterator.PersistentRegularIterable;
 import io.harness.mongo.index.CompoundMongoIndex;
@@ -64,6 +65,15 @@ public final class MonitoredService implements PersistentEntity, UuidAware, Acco
                  .field(MonitoredServiceKeys.projectIdentifier)
                  .field(MonitoredServiceKeys.identifier)
                  .unique(true)
+                 .build())
+        .add(CompoundMongoIndex.builder()
+                 .name("reconciliation_idx")
+                 .field(MonitoredServiceKeys.accountId)
+                 .field(MonitoredServiceKeys.orgIdentifier)
+                 .field(MonitoredServiceKeys.projectIdentifier)
+                 .field(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.isTemplateByReference)
+                 .field(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.templateIdentifier)
+                 .field(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.versionLabel)
                  .build())
         .build();
   }
