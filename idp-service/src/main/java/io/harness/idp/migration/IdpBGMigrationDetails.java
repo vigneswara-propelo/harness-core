@@ -79,6 +79,7 @@ public class IdpBGMigrationDetails implements MigrationDetails {
         .add(Pair.of(45, PluginInfoMigration.class))
         .add(Pair.of(46, ScorecardMigration.class))
         .add(Pair.of(47, ScorecardMigration.class))
+        .add(Pair.of(48, PluginInfoMigration.class))
         .build();
   }
 }
