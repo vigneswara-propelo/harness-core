@@ -189,6 +189,8 @@ public class PipelineServiceConfiguration extends Configuration {
   private Integer asyncFilterCreationConsumerSleepIntervalMs;
   @JsonProperty("publishAdviserEventForCustomAdvisers") private Boolean publishAdviserEventForCustomAdvisers;
   @JsonProperty(value = "disableCustomStageInPipelineService") private Boolean disableCustomStageInPipelineService;
+  @JsonProperty("pipelineExecutionDetailsDeleteMaxBatchSize")
+  private Integer pipelineExecutionDetailsDeleteMaxBatchSize;
   private boolean useQueueServiceForWebhookTriggers;
 
   private String managerServiceSecret;

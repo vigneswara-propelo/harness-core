@@ -70,7 +70,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.util.CloseableIterator;
@@ -99,14 +98,10 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
     MockitoAnnotations.initMocks(this);
-    MockedStatic<NGRestUtils> mockRestStatic = Mockito.mockStatic(NGRestUtils.class);
-    mockRestStatic.when(() -> NGRestUtils.getResponse(any()))
-        .thenReturn(SettingValueResponseDTO.builder().value("false").build());
-
     pipelineEntityCRUDStreamListener = Mockito.spy(new PipelineEntityCRUDStreamListener(ngTriggerService,
         pipelineMetadataService, pmsExecutionSummaryService, barrierService, preflightService, pmsSweepingOutputService,
         pmsOutcomeService, interruptService, graphGenerationService, nodeExecutionService, ngTriggerEventsService,
-        planExecutionService, planExpansionService, ngSettingsClient, pipelineExecutorService));
+        planExecutionService, planExpansionService, ngSettingsClient, pipelineExecutorService, 200));
   }
 
   @Test
@@ -256,7 +251,7 @@ public class PipelineEntityCRUDStreamListenerTest extends CategoryTest {
     // Execution ids call only once as empty list
     verify(pmsExecutionSummaryService, times(1)).fetchPlanExecutionIdsFromAnalytics(any(), any(), any(), any());
 
-    verify(pipelineEntityCRUDStreamListener, times(2)).deletePipelineExecutionsDetailsInternal(any(), anyBoolean());
+    verify(pipelineEntityCRUDStreamListener, times(3)).deletePipelineExecutionsDetailsInternal(any(), anyBoolean());
   }
 
   @Test

@@ -932,4 +932,11 @@ public class PipelineServiceModule extends AbstractModule {
   public Boolean getDisableCustomStageInPipelineService() {
     return configuration.getDisableCustomStageInPipelineService();
   }
+
+  @Provides
+  @Singleton
+  @Named("pipelineExecutionDetailsDeleteMaxBatchSize")
+  public Integer getPipelineExecutionDetailsDeleteMaxBatchSize() {
+    return configuration.getPipelineExecutionDetailsDeleteMaxBatchSize();
+  }
 }

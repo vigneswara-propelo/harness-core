@@ -671,3 +671,5 @@ streamPerServiceConfiguration: ${PIE_STREAM_PER_SERVICE:- false}
 publishAdviserEventForCustomAdvisers: ${PUBLISH_ADVISER_EVENT_FOR_CUSTOM_ADVISERS:-true}
 
 disableCustomStageInPipelineService: ${DISABLE_CUSTOM_STAGE_IN_PIPELINE_SERVICE:-false}
+
+pipelineExecutionDetailsDeleteMaxBatchSize: ${PIPELINE_EXECUTION_DETAILS_DELETE_MAX_BATCH_SIZE:-200}

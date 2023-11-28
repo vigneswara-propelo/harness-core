@@ -857,10 +857,10 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
     List<NodeExecution> nodeExecutionList = new LinkedList<>();
     Set<String> firstBatchNodeExecutionIds = new HashSet<>();
     Set<String> secondBatchNodeExecutionIds = new HashSet<>();
-    for (int i = 0; i < 1200; i++) {
+    for (int i = 0; i < 900; i++) {
       String uuid = generateUuid();
       nodeExecutionList.add(NodeExecution.builder().uuid(uuid).build());
-      if (i < 1000) {
+      if (i < 500) {
         firstBatchNodeExecutionIds.add(uuid);
       } else {
         secondBatchNodeExecutionIds.add(uuid);

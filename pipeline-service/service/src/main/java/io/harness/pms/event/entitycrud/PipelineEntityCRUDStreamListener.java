@@ -60,9 +60,6 @@ import org.springframework.data.util.CloseableIterator;
 @Slf4j
 @Singleton
 public class PipelineEntityCRUDStreamListener implements MessageListener {
-  // Max batch size of planExecutionIds to delete related metadata, so that delete records are in limited range
-  private static final int MAX_DELETION_BATCH_PROCESSING = 500;
-
   private final NGTriggerService ngTriggerService;
   private final PipelineMetadataService pipelineMetadataService;
   private final PmsExecutionSummaryService pmsExecutionSummaryService;
@@ -78,6 +75,8 @@ public class PipelineEntityCRUDStreamListener implements MessageListener {
   private final PlanExpansionService planExpansionService;
   private final NGSettingsClient ngSettingsClient;
   private final ExecutorService pipelineExecutorService;
+  // Max batch size of planExecutionIds to delete related metadata, so that delete records are in limited range
+  private final Integer MAX_DELETION_BATCH_PROCESSING;
 
   @Inject
   public PipelineEntityCRUDStreamListener(NGTriggerService ngTriggerService,
@@ -87,7 +86,8 @@ public class PipelineEntityCRUDStreamListener implements MessageListener {
       InterruptService interruptService, GraphGenerationService graphGenerationService,
       NodeExecutionService nodeExecutionService, NGTriggerEventsService ngTriggerEventsService,
       PlanExecutionService planExecutionService, PlanExpansionService planExpansionService,
-      NGSettingsClient ngSettingsClient, @Named("PipelineExecutorService") ExecutorService pipelineExecutorService) {
+      NGSettingsClient ngSettingsClient, @Named("PipelineExecutorService") ExecutorService pipelineExecutorService,
+      @Named("pipelineExecutionDetailsDeleteMaxBatchSize") Integer max_deletion_batch_processing) {
     this.ngTriggerService = ngTriggerService;
     this.pipelineMetadataService = pipelineMetadataService;
     this.pmsExecutionSummaryService = pmsExecutionSummaryService;
@@ -103,6 +103,7 @@ public class PipelineEntityCRUDStreamListener implements MessageListener {
     this.planExpansionService = planExpansionService;
     this.ngSettingsClient = ngSettingsClient;
     this.pipelineExecutorService = pipelineExecutorService;
+    this.MAX_DELETION_BATCH_PROCESSING = max_deletion_batch_processing;
   }
 
   @Override
@@ -172,9 +173,6 @@ public class PipelineEntityCRUDStreamListener implements MessageListener {
         pipelineIdentifier, accountId, orgIdentifier, projectIdentifier));
     deletePipelineExecutionsDetails(
         accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, retainPipelineExecutionDetailsAfterDelete);
-    log.info(String.format("Processed deleting execution details for "
-            + "given pipeline %s in accountId [%s] and orgIdentifier [%s] and projectIdentifier [%s]",
-        pipelineIdentifier, accountId, orgIdentifier, projectIdentifier));
     return true;
   }
 
@@ -196,12 +194,14 @@ public class PipelineEntityCRUDStreamListener implements MessageListener {
   private void deletePipelineExecutionsDetails(String accountId, String orgIdentifier, String projectIdentifier,
       String pipelineIdentifier, boolean retainPipelineExecutionDetailsAfterDelete) {
     Set<String> toBeDeletedPlanExecutions = new HashSet<>();
+    int executionCount = 0;
 
     try (CloseableIterator<PipelineExecutionSummaryEntity> iterator =
              pmsExecutionSummaryService.fetchPlanExecutionIdsFromAnalytics(
                  accountId, orgIdentifier, projectIdentifier, pipelineIdentifier)) {
       while (iterator.hasNext()) {
         toBeDeletedPlanExecutions.add(iterator.next().getPlanExecutionId());
+        executionCount++;
 
         // If max deletion batch is reached, delete all its related entities
         // We don't want to delete all executions for a pipeline together as total delete could be very high
@@ -215,6 +215,9 @@ public class PipelineEntityCRUDStreamListener implements MessageListener {
     if (EmptyPredicate.isNotEmpty(toBeDeletedPlanExecutions)) {
       deletePipelineExecutionsDetailsInternal(toBeDeletedPlanExecutions, retainPipelineExecutionDetailsAfterDelete);
     }
+    log.info(String.format("Processed deleting execution details for "
+            + "given pipeline %s having %s executions in accountId [%s] and orgIdentifier [%s] and projectIdentifier [%s]",
+        pipelineIdentifier, executionCount, accountId, orgIdentifier, projectIdentifier));
   }
 
   @VisibleForTesting
