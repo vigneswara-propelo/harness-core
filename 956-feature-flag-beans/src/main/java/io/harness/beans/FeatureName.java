@@ -857,6 +857,7 @@ public enum FeatureName {
   CDS_NG_BARRIER_STEPS_WITHIN_LOOPING_STRATEGIES("Support barrier steps within looping strategies", HarnessTeam.CDC),
   CDS_ECS_BG_GREEN_SERVICE_ROLLBACK(
       "This flag enables the rollback of green service in ECS BG Deployment", HarnessTeam.CDP),
+  CDS_AIDA_SUPPORT_DEFLECTION("FF for AIDA support Deflection", HarnessTeam.CDP),
   CDS_NAV_2_0("FF for Navigation 2.0", HarnessTeam.CDP),
   SSCA_SLSA_COMPLIANCE("Feature flag for SLSA Compliance", HarnessTeam.SSCA),
   PL_RUN_INVALID_AUDITS_CLEANUP("Run iterator to cleanup audits with null accountIds", HarnessTeam.PL, Scope.GLOBAL),
