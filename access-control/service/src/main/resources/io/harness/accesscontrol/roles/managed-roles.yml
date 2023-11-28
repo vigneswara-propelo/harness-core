@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: rolesConfiguration
-version: 65
+version: 66
 roles:
     - identifier: _project_admin
       name: Project Admin
@@ -681,6 +681,26 @@ roles:
         - ccm_cloudAssetGovernanceEnforcement_view
         - ccm_cloudAssetGovernanceEnforcement_delete
         - idp_idpsettings_manage
+        - idp_plugin_view
+        - idp_plugin_edit
+        - idp_plugin_toggle
+        - idp_plugin_delete
+        - idp_scorecard_view
+        - idp_scorecard_edit
+        - idp_scorecard_delete
+        - idp_layout_view
+        - idp_layout_edit
+        - idp_catalogaccesspolicy_view
+        - idp_catalogaccesspolicy_create
+        - idp_catalogaccesspolicy_edit
+        - idp_catalogaccesspolicy_delete
+        - idp_integration_view
+        - idp_integration_create
+        - idp_integration_edit
+        - idp_integration_delete
+        - idp_advancedconfiguration_view
+        - idp_advancedconfiguration_edit
+        - idp_advancedconfiguration_delete
         - code_repo_view
         - code_repo_edit
         - code_repo_delete
@@ -1185,3 +1205,48 @@ roles:
         - account
         - organization
         - project
+    - identifier: _idp_admin
+      name: IDP Admin
+      description: Can create, edit, delete and view IDP Resources
+      permissions:
+        - idp_idpsettings_manage
+        - idp_plugin_view
+        - idp_plugin_edit
+        - idp_plugin_toggle
+        - idp_plugin_delete
+        - idp_scorecard_view
+        - idp_scorecard_edit
+        - idp_scorecard_delete
+        - idp_layout_view
+        - idp_layout_edit
+        - idp_catalogaccesspolicy_view
+        - idp_catalogaccesspolicy_create
+        - idp_catalogaccesspolicy_edit
+        - idp_catalogaccesspolicy_delete
+        - idp_integration_view
+        - idp_integration_create
+        - idp_integration_edit
+        - idp_integration_delete
+        - idp_advancedconfiguration_view
+        - idp_advancedconfiguration_edit
+        - idp_advancedconfiguration_delete
+      managed: true
+      allowedScopeLevels:
+        - account
+    - identifier: _idp_platform_engineer
+      name: IDP Platform Engineer
+      description: Can create, edit, delete and view IDP Plugins, Scorecards, Advanced configuration Resources
+      permissions:
+        - idp_plugin_view
+        - idp_plugin_edit
+        - idp_plugin_toggle
+        - idp_plugin_delete
+        - idp_scorecard_view
+        - idp_scorecard_edit
+        - idp_scorecard_delete
+        - idp_advancedconfiguration_view
+        - idp_advancedconfiguration_edit
+        - idp_advancedconfiguration_delete
+      managed: true
+      allowedScopeLevels:
+        - account

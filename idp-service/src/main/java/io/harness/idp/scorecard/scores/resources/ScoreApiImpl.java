@@ -7,6 +7,11 @@
 
 package io.harness.idp.scorecard.scores.resources;
 
+import static io.harness.idp.common.RbacConstants.IDP_SCORECARD;
+import static io.harness.idp.common.RbacConstants.IDP_SCORECARD_EDIT;
+
+import io.harness.accesscontrol.AccountIdentifier;
+import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ResponseMessage;
@@ -62,8 +67,9 @@ public class ScoreApiImpl implements ScoresApi {
   }
 
   @Override
+  @NGAccessControlCheck(resourceType = IDP_SCORECARD, permission = IDP_SCORECARD_EDIT)
   public Response scorecardRecalibrate(
-      @Valid ScorecardRecalibrateRequest scorecardRecalibrateRequest, String harnessAccount) {
+      @Valid ScorecardRecalibrateRequest scorecardRecalibrateRequest, @AccountIdentifier String harnessAccount) {
     try {
       ScorecardSummaryInfo scorecardSummaryInfo = scoreService.getScorecardRecalibratedScoreInfoForAnEntityAndScorecard(
           harnessAccount, scorecardRecalibrateRequest.getIdentifiers().getEntityIdentifier(),
