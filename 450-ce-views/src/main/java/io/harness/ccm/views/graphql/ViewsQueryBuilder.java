@@ -539,7 +539,12 @@ public class ViewsQueryBuilder {
   // Query to get columns of a bq table
   public SelectQuery getInformationSchemaQueryForColumns(String informationSchemaView, String table) {
     SelectQuery selectQuery = new SelectQuery();
-    selectQuery.addCustomFromTable(informationSchemaView);
+    if (isClickHouseEnabled) {
+      selectQuery.addCustomFromTable("INFORMATION_SCHEMA.COLUMNS");
+      selectQuery.addCondition(BinaryCondition.equalTo(new CustomSql("table_schema"), "ccm"));
+    } else {
+      selectQuery.addCustomFromTable(informationSchemaView);
+    }
 
     // Adding group by column
     selectQuery.addCustomColumns(new CustomSql("column_name"));
