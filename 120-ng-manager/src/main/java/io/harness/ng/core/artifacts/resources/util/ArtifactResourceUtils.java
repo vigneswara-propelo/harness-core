@@ -1812,22 +1812,26 @@ public class ArtifactResourceUtils {
       }
     }
 
+    CDYamlExpressionEvaluator yamlExpressionEvaluator =
+        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator();
+
     dockerConnectorIdentifier = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
         projectIdentifier, pipelineIdentifier, requestDTO.getRuntimeInputYaml(), dockerConnectorIdentifier, fqnPath,
-        gitEntityBasicInfo, serviceRef, null)
+        gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
                                     .getValue();
     imagePath = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-        pipelineIdentifier, requestDTO.getRuntimeInputYaml(), imagePath, fqnPath, gitEntityBasicInfo, serviceRef, null)
+        pipelineIdentifier, requestDTO.getRuntimeInputYaml(), imagePath, fqnPath, gitEntityBasicInfo, serviceRef,
+        yamlExpressionEvaluator)
                     .getValue();
 
     requestDTO.setTag(getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
         pipelineIdentifier, requestDTO.getRuntimeInputYaml(), requestDTO.getTag(), fqnPath, gitEntityBasicInfo,
-        serviceRef, null)
+        serviceRef, yamlExpressionEvaluator)
                           .getValue());
 
     requestDTO.setTagRegex(getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
         pipelineIdentifier, requestDTO.getRuntimeInputYaml(), requestDTO.getTagRegex(), fqnPath, gitEntityBasicInfo,
-        serviceRef, null)
+        serviceRef, yamlExpressionEvaluator)
                                .getValue());
 
     IdentifierRef connectorRef =

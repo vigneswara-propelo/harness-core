@@ -25,6 +25,7 @@ import io.harness.cdng.artifact.resources.docker.dtos.DockerResponseDTO;
 import io.harness.cdng.artifact.resources.docker.service.DockerResourceService;
 import io.harness.common.NGExpressionUtils;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.evaluators.CDYamlExpressionEvaluator;
 import io.harness.exception.InvalidRequestException;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
 import io.harness.ng.core.artifacts.resources.util.ArtifactResourceUtils;
@@ -146,18 +147,20 @@ public class DockerArtifactResource {
       }
     }
 
+    CDYamlExpressionEvaluator yamlExpressionEvaluator =
+        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator();
+
     dockerConnectorIdentifier =
         artifactResourceUtils
             .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
                 pipelineIdentifier, runtimeInputYaml, dockerConnectorIdentifier, fqnPath, gitEntityBasicInfo,
-                serviceRef,
-                baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator())
+                serviceRef, yamlExpressionEvaluator)
             .getValue();
 
     imagePath = artifactResourceUtils
                     .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
                         pipelineIdentifier, runtimeInputYaml, imagePath, fqnPath, gitEntityBasicInfo, serviceRef,
-                        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator())
+                        yamlExpressionEvaluator)
                     .getValue();
 
     IdentifierRef connectorRef =
