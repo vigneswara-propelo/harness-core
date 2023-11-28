@@ -381,6 +381,7 @@ import io.harness.cvng.servicelevelobjective.beans.slospec.LeastPerformanceCompo
 import io.harness.cvng.servicelevelobjective.beans.slospec.WeightedAverageCompositeSLOEvaluator;
 import io.harness.cvng.servicelevelobjective.entities.AbstractServiceLevelObjective.AbstractServiceLevelObjectiveUpdatableEntity;
 import io.harness.cvng.servicelevelobjective.entities.CompositeServiceLevelObjective.CompositeServiceLevelObjectiveUpdatableEntity;
+import io.harness.cvng.servicelevelobjective.entities.MetricLessServiceLevelIndicator.MetricLessServiceLevelIndicatorUpdatableEntity;
 import io.harness.cvng.servicelevelobjective.entities.RatioServiceLevelIndicator.RatioServiceLevelIndicatorUpdatableEntity;
 import io.harness.cvng.servicelevelobjective.entities.RequestServiceLevelIndicator.RequestServiceLevelIndicatorUpdatableEntity;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
@@ -1011,7 +1012,10 @@ public class CVServiceModule extends AbstractModule {
         .addBinding(ServiceLevelIndicator.getEvaluationAndMetricType(SLIEvaluationType.REQUEST, null))
         .to(RequestServiceLevelIndicatorUpdatableEntity.class)
         .in(Scopes.SINGLETON);
-
+    serviceLevelIndicatorMapBinder
+        .addBinding(ServiceLevelIndicator.getEvaluationAndMetricType(SLIEvaluationType.METRIC_LESS, null))
+        .to(MetricLessServiceLevelIndicatorUpdatableEntity.class)
+        .in(Scopes.SINGLETON);
     MapBinder<ServiceLevelObjectiveType, AbstractServiceLevelObjectiveUpdatableEntity>
         serviceLevelObjectiveTypeUpdatableEntityMapBinder = MapBinder.newMapBinder(
             binder(), ServiceLevelObjectiveType.class, AbstractServiceLevelObjectiveUpdatableEntity.class);

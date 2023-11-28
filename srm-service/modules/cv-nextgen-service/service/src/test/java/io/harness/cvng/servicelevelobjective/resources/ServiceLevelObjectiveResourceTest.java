@@ -311,6 +311,36 @@ public class ServiceLevelObjectiveResourceTest extends CvNextGenTestBase {
   @Test
   @Owner(developers = DEEPAK_CHHIKARA)
   @Category(UnitTests.class)
+  public void testCreate_updateSLO() {
+    ServiceLevelObjectiveV2DTO sloDTO = builderFactory.getSimpleServiceLevelObjectiveV2DTOBuilder().build();
+    ((SimpleServiceLevelObjectiveSpec) sloDTO.getSpec())
+        .setServiceLevelIndicators(
+            Collections.singletonList(builderFactory.getMetricLessServiceLevelIndicatorDTOBuilder().build()));
+    Response response = V2_RESOURCES.client()
+                            .target("http://localhost:9998/slo/v2/")
+                            .queryParam("accountId", builderFactory.getContext().getAccountId())
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .post(Entity.json(sloDTO));
+    assertThat(response.getStatus()).isEqualTo(200);
+    RestResponse<ServiceLevelObjectiveV2Response> restResponse =
+        response.readEntity(new GenericType<RestResponse<ServiceLevelObjectiveV2Response>>() {});
+    assertThat(restResponse.getResource().getServiceLevelObjectiveV2DTO()).isEqualTo(sloDTO);
+    sloDTO.setName("Updated Name");
+    response = V2_RESOURCES.client()
+                   .target("http://localhost:9998/slo/v2/" + sloDTO.getIdentifier())
+                   .queryParam("accountId", builderFactory.getContext().getAccountId())
+                   .queryParam("orgIdentifier", builderFactory.getContext().getOrgIdentifier())
+                   .queryParam("projectIdentifier", builderFactory.getContext().getProjectIdentifier())
+                   .request(MediaType.APPLICATION_JSON_TYPE)
+                   .put(Entity.json(sloDTO));
+    assertThat(response.getStatus()).isEqualTo(200);
+    restResponse = response.readEntity(new GenericType<RestResponse<ServiceLevelObjectiveV2Response>>() {});
+    assertThat(restResponse.getResource().getServiceLevelObjectiveV2DTO()).isEqualTo(sloDTO);
+  }
+
+  @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
   public void testDelete_MetricLessSLO() {
     ServiceLevelObjectiveV2DTO sloDTO = builderFactory.getSimpleServiceLevelObjectiveV2DTOBuilder().build();
     ((SimpleServiceLevelObjectiveSpec) sloDTO.getSpec())

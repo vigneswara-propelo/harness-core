@@ -1050,6 +1050,9 @@ public class SLODashboardServiceImpl implements SLODashboardService {
   }
 
   private String getHealthSourceName(MonitoredServiceDTO monitoredServiceDTO, String healthSourceRef) {
+    if (Objects.isNull(healthSourceRef)) {
+      return null;
+    }
     return monitoredServiceDTO.getSources()
         .getHealthSources()
         .stream()
