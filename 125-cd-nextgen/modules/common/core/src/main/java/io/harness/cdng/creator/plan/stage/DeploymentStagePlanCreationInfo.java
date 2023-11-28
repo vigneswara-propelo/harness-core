@@ -73,13 +73,6 @@ public class DeploymentStagePlanCreationInfo implements PersistentEntity, UuidAw
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
         .add(CompoundMongoIndex.builder()
-                 .name("deployment_stage_plan_creation_info_using_plan_execution_id_idx")
-                 .field(DeploymentStagePlanCreationInfoKeys.accountIdentifier)
-                 .field(DeploymentStagePlanCreationInfoKeys.orgIdentifier)
-                 .field(DeploymentStagePlanCreationInfoKeys.projectIdentifier)
-                 .field(DeploymentStagePlanCreationInfoKeys.planExecutionId)
-                 .build())
-        .add(CompoundMongoIndex.builder()
                  .name("unique_deployment_stage_plan_creation_info_using_plan_execution_id_stage_id_idx")
                  .field(DeploymentStagePlanCreationInfoKeys.accountIdentifier)
                  .field(DeploymentStagePlanCreationInfoKeys.orgIdentifier)
