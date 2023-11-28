@@ -6,11 +6,7 @@
  */
 
 package io.harness.delegate.app.modules;
-import static io.harness.configuration.DeployMode.DEPLOY_MODE;
-import static io.harness.configuration.DeployMode.isOnPrem;
 import static io.harness.delegate.service.DelegateAgentServiceImpl.getDelegateId;
-import static io.harness.grpc.utils.DelegateGrpcConfigExtractor.extractAndPrepareAuthority;
-import static io.harness.grpc.utils.DelegateGrpcConfigExtractor.extractTarget;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -92,39 +88,15 @@ public class DelegateAgentModule extends AbstractModule {
   }
 
   private void configureCcmEventPublishing() {
-    final String deployMode = System.getenv(DEPLOY_MODE);
-    final String managerHostAndPort = System.getenv("MANAGER_HOST_AND_PORT");
-    if (isNotBlank(managerHostAndPort)) {
-      log.info("Running delegate, starting CCM event tailer");
-      final DelegateTailerModule.Config tailerConfig;
-      if (isOnPrem(deployMode)) {
-        log.info("fetching OnPrem ChronicleEventsTailer Config");
-        tailerConfig = getOnPremTailerConfig();
-      } else {
-        tailerConfig = getTailerConfig(managerHostAndPort);
-      }
-      install(new DelegateTailerModule(tailerConfig));
-    } else {
-      log.warn("Unable to configure event publisher configs. Event publisher will be disabled");
-    }
+    log.info("Running delegate, starting CCM event tailer");
+    final DelegateTailerModule.Config tailerConfig = getTailerConfig();
+    install(new DelegateTailerModule(tailerConfig));
     final Config appenderConfig = Config.builder().queueFilePath(configuration.getQueueFilePath()).build();
     install(new AppenderModule(appenderConfig, () -> getDelegateId().orElse("UNREGISTERED")));
     install(new EventPublisherModule());
   }
 
-  private DelegateTailerModule.Config getTailerConfig(String managerHostAndPort) {
-    return DelegateTailerModule.Config.builder()
-        .queueFilePath(configuration.getQueueFilePath())
-        .publishTarget(extractTarget(managerHostAndPort))
-        .publishAuthority(extractAndPrepareAuthority(
-            managerHostAndPort, "events", configuration.isGrpcAuthorityModificationDisabled()))
-        .clientCertificateFilePath(configuration.getClientCertificateFilePath())
-        .clientCertificateKeyFilePath(configuration.getClientCertificateKeyFilePath())
-        .trustAllCertificates(configuration.isTrustAllCertificates())
-        .build();
-  }
-
-  private DelegateTailerModule.Config getOnPremTailerConfig() {
+  private DelegateTailerModule.Config getTailerConfig() {
     return DelegateTailerModule.Config.builder()
         .queueFilePath(configuration.getQueueFilePath())
         .clientCertificateFilePath(configuration.getClientCertificateFilePath())

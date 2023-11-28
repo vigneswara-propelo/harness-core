@@ -19,21 +19,32 @@ import retrofit2.Response;
 @OwnedBy(CE)
 @Slf4j
 public class EventServiceRestUtils {
-  public static <T> T executeRestCall(Call<T> call) throws IOException {
-    try {
-      Response<T> response = call.execute();
-      log.info("Rest call to CE Event Service isSuccessful: {}", response.isSuccessful());
-      if (response.isSuccessful()) {
-        return response.body();
-      } else {
-        String errorResponse = (response.errorBody() != null) ? response.errorBody().string() : "";
-        final int errorCode = response.code();
-        throw new IOException(
-            String.format("CE Event Rest call received %d Error Response: %s", errorCode, errorResponse));
+  private static final int MAX_ATTEMPTS = 3;
+
+  public static <T> T executeRestCallWithRetry(Call<T> call) throws IOException {
+    int attempt = 0;
+    while (attempt < MAX_ATTEMPTS) {
+      attempt++;
+      try {
+        Response<T> response = call.clone().execute();
+        log.info("Rest call to CE Event Service isSuccessful: {}", response.isSuccessful());
+        if (response.isSuccessful()) {
+          return response.body();
+        } else {
+          String errorResponse = (response.errorBody() != null) ? response.errorBody().string() : "";
+          final int errorCode = response.code();
+          throw new IOException(
+              String.format("CE Event Rest call received %d Error Response: %s", errorCode, errorResponse));
+        }
+      } catch (Exception e) {
+        if (attempt <= MAX_ATTEMPTS) {
+          log.warn("Error executing rest call {}, retrying..., attempt {}", e, attempt);
+        } else {
+          log.error("Error executing rest call", e);
+          throw new IOException(e);
+        }
       }
-    } catch (Exception e) {
-      log.error("Error executing rest call", e);
-      throw new IOException(e);
     }
+    return null;
   }
 }
