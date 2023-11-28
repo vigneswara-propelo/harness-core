@@ -64,8 +64,8 @@ import org.jooq.SelectOrderByStep;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-@CodePulse(
-    module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_PLG_LICENSING})
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
+    components = {HarnessModuleComponent.CDS_PLG_LICENSING, HarnessModuleComponent.CDS_DASHBOARD})
 @Slf4j
 @OwnedBy(PIPELINE)
 public class TimeScaleDAL {

@@ -14,7 +14,10 @@ import static org.jooq.impl.DSL.row;
 import io.harness.aggregates.AggregateProjectInfo;
 import io.harness.aggregates.AggregateServiceInfo;
 import io.harness.aggregates.TimeWiseExecutionSummary;
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.cd.CDDashboardServiceHelper;
 import io.harness.cd.NgServiceInfraInfoUtils;
 import io.harness.cd.TimeScaleDAL;
@@ -52,6 +55,7 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 @OwnedBy(PIPELINE)
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public class CDLandingDashboardServiceImpl implements CDLandingDashboardService {
   public static final long DAY_IN_MS = 86400000; // 24*60*60*1000
 

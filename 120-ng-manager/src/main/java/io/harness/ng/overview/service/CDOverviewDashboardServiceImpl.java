@@ -22,8 +22,11 @@ import static io.harness.ng.core.template.TemplateListType.STABLE_TEMPLATE_TYPE;
 import static java.util.Objects.isNull;
 
 import io.harness.NGDateUtils;
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.cd.CDDashboardServiceHelper;
 import io.harness.cd.NGPipelineSummaryCDConstants;
 import io.harness.cd.NGServiceConstants;
@@ -190,6 +193,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @OwnedBy(HarnessTeam.CDC)
 @Singleton
 @Slf4j
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public class CDOverviewDashboardServiceImpl implements CDOverviewDashboardService {
   @Inject TimeScaleDBService timeScaleDBService;
   @Inject ServiceEntityService serviceEntityService;

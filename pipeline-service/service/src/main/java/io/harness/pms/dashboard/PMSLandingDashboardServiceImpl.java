@@ -12,6 +12,9 @@ import static io.harness.timescaledb.Tables.PIPELINE_EXECUTION_SUMMARY;
 
 import static org.jooq.impl.DSL.row;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.ng.core.OrgProjectIdentifier;
 import io.harness.pms.dashboards.ExecutionsCount;
@@ -28,6 +31,7 @@ import org.jooq.Row2;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public class PMSLandingDashboardServiceImpl implements PMSLandingDashboardService {
   @Inject private DSLContext dsl;
   private static String ORG_ID = "orgId";

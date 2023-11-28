@@ -7,8 +7,11 @@
 
 package io.harness.repositories.instancestats;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.IdentifierRef;
 import io.harness.exception.InvalidRequestException;
 import io.harness.models.InstanceStats;
@@ -27,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @Slf4j
 @OwnedBy(HarnessTeam.PL)
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public class InstanceStatsRepositoryImpl implements InstanceStatsRepository {
   private TimeScaleDBService timeScaleDBService;
   private static final int MAX_RETRY_COUNT = 3;

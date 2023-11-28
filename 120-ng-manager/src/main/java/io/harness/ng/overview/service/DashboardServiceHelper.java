@@ -49,8 +49,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 
-@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
-    components = {HarnessModuleComponent.CDS_DASHBOARD, HarnessModuleComponent.CDS_PCF})
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 @UtilityClass
 public class DashboardServiceHelper {
   private static final String SERVICE_INFRA_INFO = "service_infra_info";

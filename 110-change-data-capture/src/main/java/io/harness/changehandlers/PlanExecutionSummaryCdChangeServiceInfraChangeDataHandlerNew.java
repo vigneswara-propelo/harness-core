@@ -10,8 +10,11 @@ package io.harness.changehandlers;
 import static io.harness.changehandlers.AbstractChangeDataHandler.escapeSql;
 
 import io.harness.ChangeHandler;
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.changestreamsframework.ChangeEvent;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
@@ -37,6 +40,7 @@ import org.bson.types.BasicBSONList;
 
 @OwnedBy(HarnessTeam.CDC)
 @Slf4j
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public class PlanExecutionSummaryCdChangeServiceInfraChangeDataHandlerNew implements ChangeHandler {
   private static final int MAX_RETRY_COUNT = 5;
 

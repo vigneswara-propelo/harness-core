@@ -18,8 +18,11 @@ import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ResourceIdentifier;
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.cd.NGServiceConstants;
 import io.harness.cdng.service.beans.CustomSequenceDTO;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
@@ -129,6 +132,7 @@ import lombok.extern.slf4j.Slf4j;
               schema = @Schema(implementation = ErrorDTO.class))
     })
 @Slf4j
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public class CDDashboardOverviewResource {
   private final CDOverviewDashboardService cdOverviewDashboardService;
   private final long HR_IN_MS = 60 * 60 * 1000;

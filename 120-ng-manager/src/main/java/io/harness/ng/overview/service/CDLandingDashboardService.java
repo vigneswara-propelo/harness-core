@@ -9,7 +9,10 @@ package io.harness.ng.overview.service;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.dashboards.DeploymentStatsSummary;
 import io.harness.dashboards.EnvCount;
 import io.harness.dashboards.PipelinesExecutionDashboardInfo;
@@ -24,6 +27,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 @OwnedBy(PIPELINE)
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public interface CDLandingDashboardService {
   ServicesDashboardInfo getActiveServices(@NotNull String accountIdentifier,
       @NotNull List<OrgProjectIdentifier> orgProjectIdentifiers, long startInterval, long endInterval,

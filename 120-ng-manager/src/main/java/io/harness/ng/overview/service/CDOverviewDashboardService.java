@@ -7,8 +7,11 @@
 
 package io.harness.ng.overview.service;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.service.beans.CustomSequenceDTO;
 import io.harness.models.InstanceDetailGroupedByPipelineExecutionList;
 import io.harness.models.InstanceDetailsByBuildId;
@@ -56,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.CDC)
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 public interface CDOverviewDashboardService {
   HealthDeploymentDashboard getHealthDeploymentDashboard(String accountId, String orgId, String projectId,
       long startInterval, long endInterval, long previousStartInterval);
