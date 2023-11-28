@@ -241,8 +241,17 @@ public class TasBGAppSetupStep extends TaskChainExecutableWithRollbackAndRbac im
               .build();
     }
 
-    Integer olderActiveVersionCountToKeep =
+    int olderActiveVersionCountToKeep =
         Integer.parseInt(getParameterFieldValue(tasBGAppSetupStepParameters.getExistingVersionToKeep()));
+
+    if (olderActiveVersionCountToKeep == 0
+        && !cdFeatureFlagHelper.isEnabled(
+            AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_PCF_SUPPORT_BG_WITH_2_APPS_NG)) {
+      throw new AccessDeniedException(
+          "CDS_PCF_SUPPORT_BG_WITH_2_APPS_NG FF is not enabled for this account. Please contact harness customer care.",
+          ErrorCode.NG_ACCESS_DENIED, WingsException.USER);
+    }
+
     CfBlueGreenSetupRequestNG taskParameters =
         CfBlueGreenSetupRequestNG.builder()
             .accountId(AmbianceUtils.getAccountId(ambiance))

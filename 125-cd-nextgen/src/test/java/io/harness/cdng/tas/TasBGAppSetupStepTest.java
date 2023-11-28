@@ -14,8 +14,10 @@ import static io.harness.cdng.tas.TasStepHelperTest.MANIFEST_YML_WITH_ROUTES;
 import static io.harness.cdng.tas.TasStepHelperTest.VARS_WITH_INVALID_ROUTES_YML;
 import static io.harness.cdng.tas.TasStepHelperTest.VARS_YML_1;
 import static io.harness.rule.OwnerRule.RISHABH;
+import static io.harness.rule.OwnerRule.VLICA;
 
 import static software.wings.beans.TaskType.TAS_BG_SETUP;
+import static software.wings.beans.TaskType.TAS_BG_SETUP_SUPPORT_2_APPS_V2;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -595,6 +597,51 @@ public class TasBGAppSetupStepTest extends CDNGTestBase {
     assertThat(requestParameters.isUseAppAutoScalar()).isFalse();
     assertThat(requestParameters.getTasManifestsPackage()).isEqualTo(tasManifestsPackage);
     assertThat(requestParameters.getOlderActiveVersionCountToKeep()).isEqualTo(3);
+    assertThat(requestParameters.getRouteMaps()).isEqualTo(new ArrayList<>());
+    assertThat(requestParameters.isUseCfCLI()).isTrue();
+    assertThat(requestParameters.getTasInfraConfig()).isEqualTo(tasInfraConfig);
+    assertThat(requestParameters.getCfCommandTypeNG()).isEqualTo(CfCommandTypeNG.TAS_BG_SETUP);
+    assertThat(requestParameters.getCommandName()).isEqualTo(CfCommandUnitConstants.PcfSetup);
+    assertThat(requestParameters.getAccountId()).isEqualTo("account");
+    assertThat(requestParameters.getTimeoutIntervalInMin()).isEqualTo(10);
+  }
+
+  @Test
+  @Owner(developers = VLICA)
+  @Category(UnitTests.class)
+  public void testExecuteTasTaskWithBG2Apps() {
+    TasManifestsPackage tasManifestsPackage =
+        TasManifestsPackage.builder().manifestYml(MANIFEST_YML).variableYmls(List.of(VARS_YML_1)).build();
+    TasExecutionPassThroughData tasExecutionPassThroughData = TasExecutionPassThroughData.builder()
+                                                                  .tasManifestsPackage(tasManifestsPackage)
+                                                                  .applicationName("tas-test")
+                                                                  .cfCliVersion(CfCliVersionNG.V7)
+                                                                  .build();
+    ArgumentCaptor<TaskData> taskDataArgumentCaptor = ArgumentCaptor.forClass(TaskData.class);
+    Mockito.mockStatic(TaskRequestsUtils.class);
+    when(TaskRequestsUtils.prepareCDTaskRequest(
+             any(), taskDataArgumentCaptor.capture(), any(), any(), any(), any(), any()))
+        .thenReturn(TaskRequest.newBuilder().build());
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(anyString(), eq(FeatureName.CDS_PCF_SUPPORT_BG_WITH_2_APPS_NG));
+
+    ((TasBGAppSetupStepParameters) stepElementParametersFromManifest.getSpec())
+        .setExistingVersionToKeep(ParameterField.createValueField("0"));
+
+    TaskChainResponse taskChainResponse =
+        tasBGAppSetupStep.executeTasTask(null, ambiance, stepElementParametersFromManifest, tasExecutionPassThroughData,
+            true, UnitProgressData.builder().unitProgresses(new ArrayList<>()).build());
+    assertThat(taskChainResponse).isNotNull();
+
+    CfBlueGreenSetupRequestNG requestParameters =
+        (CfBlueGreenSetupRequestNG) taskDataArgumentCaptor.getValue().getParameters()[0];
+
+    assertThat(taskDataArgumentCaptor.getValue().getTaskType()).isEqualTo(TAS_BG_SETUP_SUPPORT_2_APPS_V2.toString());
+    assertThat(requestParameters.getCfCliVersion()).isEqualTo(CfCliVersion.V7);
+    assertThat(requestParameters.getReleaseNamePrefix()).isEqualTo("tas-test");
+    assertThat(requestParameters.isUseAppAutoScalar()).isFalse();
+    assertThat(requestParameters.getTasManifestsPackage()).isEqualTo(tasManifestsPackage);
+    assertThat(requestParameters.getOlderActiveVersionCountToKeep()).isEqualTo(0);
     assertThat(requestParameters.getRouteMaps()).isEqualTo(new ArrayList<>());
     assertThat(requestParameters.isUseCfCLI()).isTrue();
     assertThat(requestParameters.getTasInfraConfig()).isEqualTo(tasInfraConfig);

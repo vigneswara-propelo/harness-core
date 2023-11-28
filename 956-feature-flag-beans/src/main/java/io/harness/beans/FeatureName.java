@@ -943,6 +943,7 @@ public enum FeatureName {
   CDS_ASG_SHIFT_TRAFFIC_STEP_NG("Enable Shift Traffic step for Asg Blue-Green deployments", CDC),
   PL_READ_ONLY_VAULT_TEST_CONNECTION("Enable to check test connection for Hashicorp read only vault", HarnessTeam.PL),
   CDS_ENABLE_TAS_ARTIFACT_AS_MANIFEST_SOURCE_NG("Artifact Bundle Support for Tas Deployment in NG", HarnessTeam.CDP),
+  CDS_PCF_SUPPORT_BG_WITH_2_APPS_NG("Feature flag to support PCF Blue/Green with 2 apps", HarnessTeam.CDP),
   SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED(
       "FF to enable use of both native SSCA policies and OPA policies for the SSCA enforcement step", HarnessTeam.SSCA),
   CDS_ECS_BG_VALIDATION("Enable some conditions, which we will execute before the deployment. "
