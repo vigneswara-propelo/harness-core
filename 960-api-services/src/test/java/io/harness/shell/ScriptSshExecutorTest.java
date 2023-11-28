@@ -8,25 +8,36 @@
 package io.harness.shell;
 
 import static io.harness.rule.OwnerRule.HINGER;
+import static io.harness.rule.OwnerRule.SARTHAK_KASAT;
 import static io.harness.rule.OwnerRule.VED;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
+import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
+import io.harness.shell.ssh.SshClientManager;
+import io.harness.shell.ssh.connection.ExecRequest;
+import io.harness.shell.ssh.connection.ExecResponse;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -81,6 +92,38 @@ public class ScriptSshExecutorTest extends CategoryTest {
     assertThat(executor.getExecutionId()).isEqualTo(ACTIVITY_ID);
     assertThat(executor.getHost()).isEqualTo("host");
     assertThat(executor.getCommandUnitName()).isEqualTo("MyCommandUnit");
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testExecuteCommandString() {
+    String workingDirectory = "$HOME/tmp";
+    String command = "echo 1";
+    String commandWithWorkingDirectory = "cd \"$HOME/tmp\"\necho 1";
+
+    SshSessionConfig config = new SshSessionConfig();
+    config.setAccountId(ACCOUNT_ID);
+    config.setAppId(APP_ID);
+    config.setExecutionId(ACTIVITY_ID);
+    config.setWorkingDirectory(workingDirectory);
+    config.setCommandUnitName("MyCommandUnit");
+    config.setHost("host");
+
+    ScriptSshExecutor executor = new ScriptSshExecutor(logCallback, false, config);
+    ExecRequest request = ExecRequest.builder().command(commandWithWorkingDirectory).displayCommand(false).build();
+    ExecResponse response =
+        ExecResponse.builder().status(CommandExecutionStatus.SUCCESS).exitCode(0).output("1").build();
+    Mockito.mockStatic(SshClientManager.class);
+    ArgumentCaptor<ExecRequest> requestArgumentCaptor = ArgumentCaptor.forClass(ExecRequest.class);
+    when(SshClientManager.exec(any(), any(), any())).thenReturn(response);
+    ExecuteCommandResponse executeCommandResponse = executor.executeCommandString(
+        command, Collections.emptyList(), Collections.emptyList(), null, workingDirectory);
+    PowerMockito.verifyStatic(SshClientManager.class, times(1));
+    SshClientManager.exec(requestArgumentCaptor.capture(), any(), any());
+    assertThat(executeCommandResponse).isNotNull();
+    assertThat(executeCommandResponse.getStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
+    assertThat(requestArgumentCaptor.getValue().getCommand()).isEqualTo(commandWithWorkingDirectory);
   }
 
   @Test
