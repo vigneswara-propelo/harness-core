@@ -263,7 +263,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                      .build();
 
     boolean isTemplateByReference =
-        monitoredServiceDTO.getTemplate() != null && monitoredServiceDTO.getTemplate().isTemplateByReference();
+        monitoredServiceDTO.getTemplate() != null && monitoredServiceDTO.getTemplate().getIsTemplateByReference();
     validate(monitoredServiceDTO, accountId, isTemplateByReference, false);
     checkIfAlreadyPresent(accountId, environmentParams, monitoredServiceDTO.getIdentifier(),
         monitoredServiceDTO.getSources(), monitoredServiceDTO.getType());

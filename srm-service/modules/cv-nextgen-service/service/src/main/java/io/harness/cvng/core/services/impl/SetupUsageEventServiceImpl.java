@@ -85,7 +85,7 @@ public class SetupUsageEventServiceImpl implements SetupUsageEventService {
     sendEvents(projectParams.getAccountIdentifier(), referredByEntity, referredEnvEntities, ENVIRONMENT);
 
     if (!Objects.isNull(monitoredServiceDTO.getTemplate())
-        && monitoredServiceDTO.getTemplate().isTemplateByReference()) {
+        && monitoredServiceDTO.getTemplate().getIsTemplateByReference()) {
       sendEvents(projectParams.getAccountIdentifier(), referredByEntity,
           Collections.singletonList(getTemplateReferenceProtoDTOFromDTO(projectParams, monitoredServiceDTO)), TEMPLATE);
     }

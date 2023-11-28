@@ -23,6 +23,13 @@ public class TemplateDTO {
   String versionLabel;
   Integer templateVersionNumber;
   String templateInputs;
-  boolean isTemplateByReference;
-  long lastReconciliationTime;
+  Boolean isTemplateByReference;
+  Long lastReconciliationTime;
+
+  public boolean getIsTemplateByReference() {
+    if (isTemplateByReference == null) {
+      return false;
+    }
+    return isTemplateByReference;
+  }
 }

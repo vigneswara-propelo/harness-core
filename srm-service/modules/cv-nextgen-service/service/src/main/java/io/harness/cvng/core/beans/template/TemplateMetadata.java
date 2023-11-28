@@ -7,6 +7,7 @@
 
 package io.harness.cvng.core.beans.template;
 
+import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
@@ -27,8 +28,8 @@ public class TemplateMetadata {
     return TemplateMetadata.builder()
         .templateIdentifier(templateDTO.getTemplateRef())
         .versionLabel(templateDTO.getVersionLabel())
-        .templateVersionNumber(templateDTO.getTemplateVersionNumber())
+        .templateVersionNumber(Optional.ofNullable(templateDTO.getTemplateVersionNumber()).orElse(0))
         .templateInputs(templateDTO.getTemplateInputs())
-        .isTemplateByReference(templateDTO.isTemplateByReference());
+        .isTemplateByReference(templateDTO.getIsTemplateByReference());
   }
 }

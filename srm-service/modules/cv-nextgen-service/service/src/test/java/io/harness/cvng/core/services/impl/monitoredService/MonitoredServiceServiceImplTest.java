@@ -425,15 +425,51 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
-  @Owner(developers = NAVEEN)
+  @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
-  public void testCreateFromYaml_isTemplateByReferenceTrue_validationSuccess() {
+  public void testCreateFromYaml() {
+    String yaml = "monitoredService:\n"
+        + "  template:\n"
+        + "   templateRef: templateRef123\n"
+        + "   versionLabel: versionLabel123\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
+        + "  sources:\n"
+        + "      healthSources:\n"
+        + "      changeSources: \n"
+        + "  tags: {}\n"
+        + "  variables:\n"
+        + "    -   name: environmentIdentifier\n"
+        + "        type: String\n"
+        + "        value: env3";
+    MonitoredServiceResponse monitoredServiceResponse =
+        monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml);
+    assertThat(monitoredServiceResponse.getMonitoredServiceDTO()).isNotNull();
+    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getName()).isEqualTo("service1_env3");
+    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getEnvironmentRef()).isEqualTo("env3");
+    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplate().getTemplateRef())
+        .isEqualTo("templateRef123");
+    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplate().getVersionLabel())
+        .isEqualTo("versionLabel123");
+  }
+
+  @Test
+  @Owner(developers = KARAN_SARASWAT)
+  @Category(UnitTests.class)
+  public void testCreateFromYaml_isTemplateByReferenceFalseWithFeatureFlagOn_validationSuccess() {
     String yaml = "monitoredService:\n"
         + "  template:\n"
         + "   templateRef: templateRef123\n"
         + "   versionLabel: versionLabel123\n"
         + "   templateVersionNumber: 4\n"
-        + "   isTemplateByReference: true\n"
+        + "   isTemplateByReference: false\n"
+        + "   templateInputs:\n"
+        + "      type: Application\n"
+        + "      serviceRef: service1\n"
         + "  type: Application\n"
         + "  description: description\n"
         + "  identifier: <+monitoredService.serviceRef>\n"
@@ -462,6 +498,125 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
     assertThat(templateDTO.getTemplateRef()).isEqualTo("templateRef123");
     assertThat(templateDTO.getVersionLabel()).isEqualTo("versionLabel123");
     assertThat(templateDTO.getTemplateVersionNumber()).isEqualTo(4);
+    assertThat(templateDTO.getIsTemplateByReference()).isFalse();
+    assertThat(templateDTO.getTemplateInputs()).isEqualTo("type: Application\nserviceRef: service1\n");
+  }
+
+  @Test
+  @Owner(developers = KARAN_SARASWAT)
+  @Category(UnitTests.class)
+  public void testCreateFromYaml_isTemplateByReferenceTrueWithFeatureFlagOff_validationSuccess() {
+    String yaml = "monitoredService:\n"
+        + "  template:\n"
+        + "   templateRef: templateRef123\n"
+        + "   versionLabel: versionLabel123\n"
+        + "   templateVersionNumber: 4\n"
+        + "   isTemplateByReference: true\n"
+        + "   templateInputs:\n"
+        + "      type: Application\n"
+        + "      serviceRef: service1\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
+        + "  sources:\n"
+        + "      healthSources:\n"
+        + "      changeSources: \n"
+        + "  tags: {}\n"
+        + "  variables:\n"
+        + "    -   name: environmentIdentifier\n"
+        + "        type: String\n"
+        + "        value: env3";
+    MonitoredServiceResponse monitoredServiceResponse =
+        monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml);
+    MonitoredServiceDTO monitoredServiceDTO = monitoredServiceResponse.getMonitoredServiceDTO();
+    assertThat(monitoredServiceDTO).isNotNull();
+    assertThat(monitoredServiceDTO.getServiceRef()).isEqualTo("service1");
+    assertThat(monitoredServiceDTO.getEnvironmentRef()).isEqualTo("env3");
+    assertThat(monitoredServiceDTO.getIdentifier()).isEqualTo("service1_env3");
+    assertThat(monitoredServiceDTO.getTemplate()).isNotNull();
+    TemplateDTO templateDTO = monitoredServiceDTO.getTemplate();
+    assertThat(templateDTO.getTemplateRef()).isEqualTo("templateRef123");
+    assertThat(templateDTO.getVersionLabel()).isEqualTo("versionLabel123");
+  }
+
+  @Test
+  @Owner(developers = KARAN_SARASWAT)
+  @Category(UnitTests.class)
+  public void testCreateFromYaml_isTemplateByReferenceTrueWithFeatureFlagOn_validationFailure() {
+    String yaml = "monitoredService:\n"
+        + "  template:\n"
+        + "   templateRef: templateRef123\n"
+        + "   versionLabel: versionLabel123\n"
+        + "   templateVersionNumber: 4\n"
+        + "   isTemplateByReference: true\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
+        + "  sources:\n"
+        + "      healthSources:\n"
+        + "      changeSources: \n"
+        + "  tags: {}\n"
+        + "  variables:\n"
+        + "    -   name: environmentIdentifier\n"
+        + "        type: String\n"
+        + "        value: env3";
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    assertThatThrownBy(() -> monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(
+            "Template inputs cannot be null if the template is used by reference for monitored service with identifier: service1_env3");
+  }
+
+  @Test
+  @Owner(developers = NAVEEN)
+  @Category(UnitTests.class)
+  public void testCreateFromYaml_isTemplateByReferenceTrueWithFeatureFlagOn_validationSuccess() {
+    String yaml = "monitoredService:\n"
+        + "  template:\n"
+        + "   templateRef: templateRef123\n"
+        + "   versionLabel: versionLabel123\n"
+        + "   templateVersionNumber: 4\n"
+        + "   isTemplateByReference: true\n"
+        + "   templateInputs:\n"
+        + "      type: Application\n"
+        + "      serviceRef: service1\n"
+        + "  type: Application\n"
+        + "  description: description\n"
+        + "  identifier: <+monitoredService.serviceRef>\n"
+        + "  name: <+monitoredService.identifier>\n"
+        + "  serviceRef: service1\n"
+        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
+        + "  sources:\n"
+        + "      healthSources:\n"
+        + "      changeSources: \n"
+        + "  tags: {}\n"
+        + "  variables:\n"
+        + "    -   name: environmentIdentifier\n"
+        + "        type: String\n"
+        + "        value: env3";
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureFlagNames.SRM_ENABLE_MS_TEMPLATE_RECONCILIATION))
+        .thenReturn(true);
+    MonitoredServiceResponse monitoredServiceResponse =
+        monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml);
+    MonitoredServiceDTO monitoredServiceDTO = monitoredServiceResponse.getMonitoredServiceDTO();
+    assertThat(monitoredServiceDTO).isNotNull();
+    assertThat(monitoredServiceDTO.getServiceRef()).isEqualTo("service1");
+    assertThat(monitoredServiceDTO.getEnvironmentRef()).isEqualTo("env3");
+    assertThat(monitoredServiceDTO.getIdentifier()).isEqualTo("service1_env3");
+    assertThat(monitoredServiceDTO.getTemplate()).isNotNull();
+    TemplateDTO templateDTO = monitoredServiceDTO.getTemplate();
+    assertThat(templateDTO.getTemplateRef()).isEqualTo("templateRef123");
+    assertThat(templateDTO.getVersionLabel()).isEqualTo("versionLabel123");
+    assertThat(templateDTO.getTemplateVersionNumber()).isEqualTo(4);
+    assertThat(templateDTO.getIsTemplateByReference()).isTrue();
+    assertThat(templateDTO.getTemplateInputs()).isEqualTo("type: Application\nserviceRef: service1\n");
   }
 
   @Test
@@ -474,6 +629,9 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         + "   versionLabel: versionLabel123\n"
         + "   templateVersionNumber: 4\n"
         + "   isTemplateByReference: true\n"
+        + "   templateInputs:\n"
+        + "      type: Application\n"
+        + "      serviceRef: service1\n"
         + "  type: Application\n"
         + "  description: description\n"
         + "  identifier: <+monitoredService.serviceRef>\n"
@@ -514,6 +672,9 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         + "   versionLabel: versionLabel123\n"
         + "   templateVersionNumber: 4\n"
         + "   isTemplateByReference: true\n"
+        + "   templateInputs:\n"
+        + "      type: Application\n"
+        + "      serviceRef: service1\n"
         + "  type: Application\n"
         + "  description: description\n"
         + "  identifier: <+monitoredService.serviceRef>\n"
@@ -554,6 +715,9 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         + "   versionLabel: versionLabel123\n"
         + "   templateVersionNumber: 4\n"
         + "   isTemplateByReference: true\n"
+        + "   templateInputs:\n"
+        + "      type: Application\n"
+        + "      serviceRef: service1\n"
         + "  type: Application\n"
         + "  description: description\n"
         + "  identifier: <+monitoredService.serviceRef>\n"
@@ -583,39 +747,6 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
-  @Owner(developers = ABHIJITH)
-  @Category(UnitTests.class)
-  public void testCreateFromYaml() {
-    String yaml = "monitoredService:\n"
-        + "  template:\n"
-        + "   templateRef: templateRef123\n"
-        + "   versionLabel: versionLabel123\n"
-        + "  type: Application\n"
-        + "  description: description\n"
-        + "  identifier: <+monitoredService.serviceRef>\n"
-        + "  name: <+monitoredService.identifier>\n"
-        + "  serviceRef: service1\n"
-        + "  environmentRef: <+monitoredService.variables.environmentIdentifier>\n"
-        + "  sources:\n"
-        + "      healthSources:\n"
-        + "      changeSources: \n"
-        + "  tags: {}\n"
-        + "  variables:\n"
-        + "    -   name: environmentIdentifier\n"
-        + "        type: String\n"
-        + "        value: env3";
-    MonitoredServiceResponse monitoredServiceResponse =
-        monitoredServiceService.createFromYaml(builderFactory.getProjectParams(), yaml);
-    assertThat(monitoredServiceResponse.getMonitoredServiceDTO()).isNotNull();
-    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getName()).isEqualTo("service1_env3");
-    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getEnvironmentRef()).isEqualTo("env3");
-    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplate().getTemplateRef())
-        .isEqualTo("templateRef123");
-    assertThat(monitoredServiceResponse.getMonitoredServiceDTO().getTemplate().getVersionLabel())
-        .isEqualTo("versionLabel123");
-  }
-
-  @Test
   @Owner(developers = NAVEEN)
   @Category(UnitTests.class)
   public void testGetMonitoredServiceReconciliationStatuses_noReconciliationRequired() {
@@ -625,7 +756,10 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         + "   versionLabel: versionLabel123\n"
         + "   templateVersionNumber: 1\n"
         + "   isTemplateByReference: true\n"
-        + "   inputSetYaml: \"\"\n"
+        + "   templateInputs:\n"
+        + "      type: Application\n"
+        + "      serviceRef: service1\n"
+        + "      environmentRef: env1\n"
         + "  type: Application\n"
         + "  description: description\n"
         + "  identifier: id1\n"
@@ -664,8 +798,8 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
         + "   isTemplateByReference: true\n"
         + "   templateInputs:\n"
         + "      type: Application\n"
-        + "      serviceRef: testservice\n"
-        + "      environmentRef: applied\n"
+        + "      serviceRef: service1\n"
+        + "      environmentRef: env1\n"
         + "  type: Application\n"
         + "  description: description\n"
         + "  identifier: id1\n"
