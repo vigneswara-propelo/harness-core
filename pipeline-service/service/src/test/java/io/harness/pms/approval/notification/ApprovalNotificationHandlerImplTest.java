@@ -1131,6 +1131,10 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testFormatDuration() {
     assertThat(ApprovalNotificationHandlerImpl.formatDuration(1L)).isEqualTo("0s");
+    assertThat(ApprovalNotificationHandlerImpl.formatDuration(60000L)).isEqualTo("1m");
+    assertThat(ApprovalNotificationHandlerImpl.formatDuration(3600000L)).isEqualTo("1h");
+    assertThat(ApprovalNotificationHandlerImpl.formatDuration(86400000L)).isEqualTo("1d");
+    assertThat(ApprovalNotificationHandlerImpl.formatDuration(99999000L)).isEqualTo("1d 3h 46m 39s");
   }
 
   @Test
