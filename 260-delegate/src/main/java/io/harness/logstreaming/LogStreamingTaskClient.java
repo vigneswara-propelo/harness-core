@@ -35,6 +35,7 @@ import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.delegatetasks.DelegateLogService;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -220,5 +221,24 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
       markers = new HashSet<>();
     }
     return markers;
+  }
+
+  @Override
+  public void log(LogLevel logLevel, String message) {
+    LogLine logLine =
+        LogLine.builder().level(logLevel).message(message).timestamp(OffsetDateTime.now().toInstant()).build();
+    this.writeLogLine(logLine, "");
+  }
+
+  public static ILogStreamingTaskClient getInstance(String loggingToken, String logKey,
+      LogStreamingClient logStreamingClient, String accountId, DelegateLogService delegateLogService) {
+    return LogStreamingTaskClient.builder()
+        .logStreamingClient(logStreamingClient)
+        .accountId(accountId)
+        .token(loggingToken)
+        .logStreamingSanitizer(LogStreamingSanitizer.builder().build())
+        .baseLogKey(logKey)
+        .logService(delegateLogService)
+        .build();
   }
 }

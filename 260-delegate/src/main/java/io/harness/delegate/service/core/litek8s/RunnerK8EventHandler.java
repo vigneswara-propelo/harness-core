@@ -1,54 +1,44 @@
 /*
  * Copyright 2021 Harness Inc. All rights reserved.
- * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+ * Use of this source code is governed by the PolyForm Shield 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
- * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+ * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.delegate.task.citasks.cik8handler;
-import static io.harness.annotations.dev.HarnessTeam.CI;
+package io.harness.delegate.service.core.litek8s;
+
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import io.harness.annotations.dev.CodePulse;
-import io.harness.annotations.dev.HarnessModuleComponent;
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.ProductModule;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
-import io.harness.k8s.apiclient.ApiClientFactory;
-import io.harness.k8s.model.KubernetesConfig;
 import io.harness.logging.LogLevel;
-import io.harness.logstreaming.LogLine;
 
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.CoreV1Event;
 import io.kubernetes.client.util.Watch;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
-    components = {HarnessModuleComponent.CDS_AMI_ASG, HarnessModuleComponent.CDS_DASHBOARD})
 @Slf4j
 @Singleton
-@OwnedBy(CI)
-public class K8EventHandler {
-  @Inject private ApiClientFactory apiClientFactory;
+@RequiredArgsConstructor(onConstructor_ = @Inject)
+public class RunnerK8EventHandler {
+  final private CoreV1Api coreApi;
 
   private static Integer watchTimeout = 8 * 60;
 
   public Watch<CoreV1Event> startAsyncPodEventWatch(
-      KubernetesConfig kubernetesConfig, String namespace, String pod, ILogStreamingTaskClient logStreamingTaskClient) {
+      String namespace, String pod, ILogStreamingTaskClient logStreamingTaskClient) {
     String fieldSelector = String.format("involvedObject.name=%s,involvedObject.kind=Pod", pod);
     try {
-      Watch<CoreV1Event> watch = createWatch(kubernetesConfig, namespace, fieldSelector);
+      Watch<CoreV1Event> watch = createWatch(namespace, fieldSelector);
       new Thread(() -> {
         try {
           logWatchEvents(watch, logStreamingTaskClient);
@@ -59,8 +49,7 @@ public class K8EventHandler {
       return watch;
 
     } catch (ApiException e) {
-      streamLogLine(
-          logStreamingTaskClient, LogLevel.ERROR, String.format("failed to watch pod event: %s", e.getMessage()));
+      logStreamingTaskClient.log(LogLevel.ERROR, String.format("failed to watch pod event: %s", e.getMessage()));
       log.error("failed to create watch on pod events", e);
       return null;
     }
@@ -83,12 +72,9 @@ public class K8EventHandler {
     }
   }
 
-  private Watch<CoreV1Event> createWatch(KubernetesConfig kubernetesConfig, String namespace, String fieldSelector)
-      throws ApiException {
-    ApiClient apiClient = apiClientFactory.getClient(kubernetesConfig);
-    CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-    return Watch.createWatch(apiClient,
-        coreV1Api.listNamespacedEventCall(
+  private Watch<CoreV1Event> createWatch(String namespace, String fieldSelector) throws ApiException {
+    return Watch.createWatch(coreApi.getApiClient(),
+        coreApi.listNamespacedEventCall(
             namespace, null, false, null, fieldSelector, null, null, null, null, watchTimeout, Boolean.TRUE, null),
         new TypeToken<Watch.Response<CoreV1Event>>() {}.getType());
   }
@@ -98,11 +84,13 @@ public class K8EventHandler {
     try {
       for (Watch.Response<CoreV1Event> item : watch) {
         if (item != null && item.object != null && isNotEmpty(item.object.getMessage())) {
-          streamLogLine(logStreamingTaskClient, getLogLevel(item.object.getType()), item.object.getMessage());
+          logStreamingTaskClient.log(getLogLevel(item.object.getType()), item.object.getMessage());
           log.info(
               "{}: Event- {}, Reason - {}", item.object.getType(), item.object.getMessage(), item.object.getReason());
         }
       }
+    } catch (Exception ex) {
+      log.warn("Unable to watch pod event with exception ", ex);
     } finally {
       watch.close();
     }
@@ -113,11 +101,5 @@ public class K8EventHandler {
       return LogLevel.WARN;
     }
     return LogLevel.INFO;
-  }
-
-  private void streamLogLine(ILogStreamingTaskClient logStreamingTaskClient, LogLevel logLevel, String message) {
-    LogLine logLine =
-        LogLine.builder().level(logLevel).message(message).timestamp(OffsetDateTime.now().toInstant()).build();
-    logStreamingTaskClient.writeLogLine(logLine, "");
   }
 }
