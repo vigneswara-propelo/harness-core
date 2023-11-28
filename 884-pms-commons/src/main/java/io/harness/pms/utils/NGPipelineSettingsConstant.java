@@ -18,7 +18,8 @@ public enum NGPipelineSettingsConstant {
   ENABLE_EXPRESSION_ENGINE_V2("enable_expression_engine_v2"),
   DO_NOT_DELETE_PIPELINE_EXECUTION_DETAILS("do_not_delete_pipeline_execution_details"),
   MAX_STAGE_TIMEOUT("stage_timeout"),
-  MAX_PIPELINE_TIMEOUT("pipeline_timeout");
+  MAX_PIPELINE_TIMEOUT("pipeline_timeout"),
+  CONCURRENT_ACTIVE_PIPELINE_EXECUTIONS("concurrent_active_pipeline_executions");
   private final String name;
 
   NGPipelineSettingsConstant(String name) {
