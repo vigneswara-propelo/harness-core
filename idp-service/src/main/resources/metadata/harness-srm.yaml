@@ -1,5 +1,5 @@
 identifier: harness-srm
-name: Harness Service Reliability Management
+name: Harness Service Reliability
 description: This plugin tracks the defined SLOs and Error Budgets for your Monitored services in Harness SRM Module.
 createdBy: harness.io
 category: Quality
@@ -23,9 +23,9 @@ exports:
     - type: TAB_CONTENT
       name: EntityHarnessSrmContent
       addByDefault: true
-      defaultRoute: /service-reliability
+      defaultRoute: /slos
       layoutSchemaSpecs:
         name: EntityHarnessSrmContent
-        title: Service Reliability
+        title: SLOs
         contents:
           - component: EntityHarnessSrmContent
