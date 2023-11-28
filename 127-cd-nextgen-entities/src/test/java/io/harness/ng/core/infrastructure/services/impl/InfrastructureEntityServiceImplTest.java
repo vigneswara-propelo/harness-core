@@ -133,14 +133,16 @@ public class InfrastructureEntityServiceImplTest extends CDNGEntitiesTestBase {
     infrastructureEntityService.create(createInfraRequest);
     verify(infrastructureEntitySetupUsageHelper, times(1)).createSetupUsages(eq(createInfraRequest), any());
 
-    String infrastructureInputsFromYaml = infrastructureEntityService.createInfrastructureInputsFromYaml(ACCOUNT_ID,
-        ORG_ID, PROJECT_ID, "ENV_IDENTIFIER", Arrays.asList("IDENTIFIER"), false, NoInputMergeInputAction.RETURN_EMPTY);
+    String infrastructureInputsFromYaml =
+        infrastructureEntityService.createInfrastructureInputsFromYaml(ACCOUNT_ID, ORG_ID, PROJECT_ID, "ENV_IDENTIFIER",
+            null, Arrays.asList("IDENTIFIER"), false, NoInputMergeInputAction.RETURN_EMPTY);
     String resFile = "infrastructure-with-runtime-inputs-res.yaml";
     String resInputs = readFile(resFile);
     assertThat(infrastructureInputsFromYaml).isEqualTo(resInputs);
 
-    infrastructureInputsFromYaml = infrastructureEntityService.createInfrastructureInputsFromYaml(ACCOUNT_ID, ORG_ID,
-        PROJECT_ID, "ENV_IDENTIFIER", Arrays.asList("IDENTIFIER"), false, NoInputMergeInputAction.ADD_IDENTIFIER_NODE);
+    infrastructureInputsFromYaml =
+        infrastructureEntityService.createInfrastructureInputsFromYaml(ACCOUNT_ID, ORG_ID, PROJECT_ID, "ENV_IDENTIFIER",
+            null, Arrays.asList("IDENTIFIER"), false, NoInputMergeInputAction.ADD_IDENTIFIER_NODE);
     assertThat(infrastructureInputsFromYaml).isEqualTo(resInputs);
   }
 
@@ -163,7 +165,7 @@ public class InfrastructureEntityServiceImplTest extends CDNGEntitiesTestBase {
 
     String infrastructureInputsFromYaml =
         infrastructureEntityService.createInfrastructureInputsFromYaml(ACCOUNT_ID, ORG_ID, PROJECT_ID, "ENV_IDENTIFIER",
-            Arrays.asList("IDENTIFIER1"), false, NoInputMergeInputAction.RETURN_EMPTY);
+            null, Arrays.asList("IDENTIFIER1"), false, NoInputMergeInputAction.RETURN_EMPTY);
 
     assertThat(infrastructureInputsFromYaml).isNull();
   }
@@ -187,7 +189,7 @@ public class InfrastructureEntityServiceImplTest extends CDNGEntitiesTestBase {
 
     String infrastructureInputsFromYaml =
         infrastructureEntityService.createInfrastructureInputsFromYaml(ACCOUNT_ID, ORG_ID, PROJECT_ID, "ENV_IDENTIFIER",
-            Arrays.asList("IDENTIFIER"), false, NoInputMergeInputAction.ADD_IDENTIFIER_NODE);
+            null, Arrays.asList("IDENTIFIER"), false, NoInputMergeInputAction.ADD_IDENTIFIER_NODE);
 
     assertThat(infrastructureInputsFromYaml).isNotNull().isNotEmpty();
     String resInputs = readFile("infra-inputset-yaml-with-no-runtime-inputs.yaml");
@@ -846,5 +848,50 @@ public class InfrastructureEntityServiceImplTest extends CDNGEntitiesTestBase {
     scopedInfrastructureEntityPage = infrastructureEntityService.getScopedInfrastructures(infrastructureEntityPage,
         List.of("SERVICE_IDENTIFIER", "org.SERVICE_IDENTIFIER1", "account.SERVICE_IDENTIFIER2"));
     assertThat(scopedInfrastructureEntityPage.getContent()).isEqualTo(allInfrastructureEntities);
+  }
+  @Owner(developers = HINGER)
+  @Category(UnitTests.class)
+  public void testGetInfrastructuresWithYamlUsingIdentifierList() throws IOException {
+    Environment inlineEnvironment = Environment.builder()
+                                        .accountId(ACCOUNT_ID)
+                                        .identifier("IDENTIFIER")
+                                        .orgIdentifier(ORG_ID)
+                                        .projectIdentifier(PROJECT_ID)
+                                        .yaml("")
+                                        .build();
+    when(environmentService.getMetadata(eq(ACCOUNT_ID), eq(ORG_ID), eq(PROJECT_ID), eq("ENV_IDENTIFIER"), eq(false)))
+        .thenReturn(Optional.of(inlineEnvironment));
+
+    String filename = "infrastructure-without-runtime-inputs.yaml";
+    String yaml = readFile(filename);
+    InfrastructureEntity createInfraRequest = InfrastructureEntity.builder()
+                                                  .accountId(ACCOUNT_ID)
+                                                  .identifier("IDENTIFIER")
+                                                  .orgIdentifier(ORG_ID)
+                                                  .projectIdentifier(PROJECT_ID)
+                                                  .envIdentifier("ENV_IDENTIFIER")
+                                                  .yaml(yaml)
+                                                  .build();
+    infrastructureEntityService.create(createInfraRequest);
+    List<InfrastructureEntity> entitiesByIdentifierList =
+        infrastructureEntityService.getAllInfrastructuresWithYamlFromIdentifierList(
+            ACCOUNT_ID, ORG_ID, PROJECT_ID, "ENV_IDENTIFIER", null, Arrays.asList("IDENTIFIER"));
+    assertThat(entitiesByIdentifierList).hasSize(1);
+
+    // another infra in same env
+    InfrastructureEntity createInfraRequest2 = InfrastructureEntity.builder()
+                                                   .accountId(ACCOUNT_ID)
+                                                   .identifier("IDENTIFIER_2")
+                                                   .orgIdentifier(ORG_ID)
+                                                   .projectIdentifier(PROJECT_ID)
+                                                   .envIdentifier("ENV_IDENTIFIER")
+                                                   .yaml(yaml)
+                                                   .build();
+    infrastructureEntityService.create(createInfraRequest2);
+
+    List<InfrastructureEntity> entitiesByEnvironmentRef =
+        infrastructureEntityService.getAllInfrastructuresWithYamlFromEnvRef(
+            ACCOUNT_ID, ORG_ID, PROJECT_ID, "ENV_IDENTIFIER", null);
+    assertThat(entitiesByEnvironmentRef).hasSize(2);
   }
 }

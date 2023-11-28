@@ -86,6 +86,16 @@ public class RefreshInputsHelper {
     return yamlNode;
   }
 
+  public static String getBranchFromNode(YamlNode node) {
+    YamlField gitBranchField = node.getField(GIT_BRANCH);
+    if (gitBranchField != null) {
+      JsonNode gitBranchNode = gitBranchField.getNode().getCurrJsonNode();
+      return gitBranchNode.asText();
+    }
+
+    return null;
+  }
+
   private Map<String, Object> refreshInputsInObject(YamlNode yamlNode, EntityRefreshContext context) {
     Map<String, Object> resObjectMap = new LinkedHashMap<>();
     for (YamlField childYamlField : yamlNode.fields()) {
