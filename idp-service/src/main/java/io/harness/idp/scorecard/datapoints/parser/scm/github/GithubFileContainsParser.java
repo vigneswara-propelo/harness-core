@@ -9,13 +9,18 @@ package io.harness.idp.scorecard.datapoints.parser.scm.github;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.common.CommonUtils;
+import io.harness.idp.scorecard.datapoints.parser.scm.ScmFileContainsParser;
 
-import java.util.regex.Matcher;
+import java.util.Map;
 
 @OwnedBy(HarnessTeam.IDP)
-public class GithubFileContainsParser extends GithubFileParser {
+public class GithubFileContainsParser extends ScmFileContainsParser {
   @Override
-  Object parseRegex(Matcher matcher) {
-    return matcher.find();
+  protected String getFileContent(Map<String, Object> data) {
+    if (CommonUtils.findObjectByName(data, "object") == null) {
+      return null;
+    }
+    return (String) CommonUtils.findObjectByName(data, "text");
   }
 }

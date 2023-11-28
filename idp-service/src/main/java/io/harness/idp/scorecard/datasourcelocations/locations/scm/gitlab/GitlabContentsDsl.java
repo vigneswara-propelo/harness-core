@@ -5,28 +5,21 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.scorecard.datasourcelocations.locations.scm.github;
+package io.harness.idp.scorecard.datasourcelocations.locations.scm.gitlab;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.backstagebeans.BackstageCatalogEntity;
 import io.harness.idp.scorecard.datapoints.entity.DataPointEntity;
-import io.harness.idp.scorecard.datasourcelocations.locations.scm.ScmBaseDslNoLoop;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.ScmContentsDsl;
 import io.harness.spec.server.idp.v1.model.InputValue;
 
 import java.util.List;
 
 @OwnedBy(HarnessTeam.IDP)
-public class GithubContentsDsl extends ScmBaseDslNoLoop implements ScmContentsDsl {
+public class GitlabContentsDsl extends GitlabBaseDsl implements ScmContentsDsl {
   @Override
-  protected String replaceInputValuePlaceholdersIfAnyInRequestUrl(
-      String url, DataPointEntity dataPoint, List<InputValue> inputValues) {
-    return url;
-  }
-
-  @Override
-  public String replaceInputValuePlaceholdersIfAnyInRequestBody(String requestBody, DataPointEntity dataPoint,
+  protected String replaceInputValuePlaceholdersIfAnyInRequestBody(String requestBody, DataPointEntity dataPoint,
       List<InputValue> inputValues, BackstageCatalogEntity backstageCatalogEntity) {
     return replaceInputValuePlaceholders(requestBody, inputValues);
   }

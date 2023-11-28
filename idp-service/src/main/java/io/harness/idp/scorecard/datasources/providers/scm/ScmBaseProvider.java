@@ -10,6 +10,7 @@ package io.harness.idp.scorecard.datasources.providers.scm;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_BRANCH;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_NAME;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_OWNER;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_SUB_FOLDER;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPO_SCM;
 
 import io.harness.annotations.dev.HarnessTeam;
@@ -70,6 +71,14 @@ public abstract class ScmBaseProvider extends HttpDataSourceProvider {
       if (catalogLocationParts.length > 6) {
         possibleReplaceableRequestBodyPairs.put(REPOSITORY_BRANCH, catalogLocationParts[6]);
       }
+
+      StringBuilder subFolder = new StringBuilder();
+      if (catalogLocationParts.length > 7) {
+        for (int i = 7; i < catalogLocationParts.length; i++) {
+          subFolder.append(catalogLocationParts[i]).append("/");
+        }
+      }
+      possibleReplaceableRequestBodyPairs.put(REPOSITORY_SUB_FOLDER, subFolder.toString());
     }
 
     return possibleReplaceableRequestBodyPairs;

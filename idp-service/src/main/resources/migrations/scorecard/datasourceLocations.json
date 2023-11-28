@@ -422,7 +422,36 @@
       "headers": {
         "Content-Type": "application/json"
       },
-      "requestBody": "{\"query\": \"{ repository(owner: \\\"{REPOSITORY_OWNER}\\\", name: \\\"{REPOSITORY_NAME}\\\") { object(expression: \\\"{REPOSITORY_BRANCH}:{FILE_PATH_REPLACER}\\\") { ... on Blob { text } } } }\"}"
+      "requestBody": "{\"query\": \"{ repository(owner: \\\"{REPOSITORY_OWNER}\\\", name: \\\"{REPOSITORY_NAME}\\\") { object(expression: \\\"{REPOSITORY_BRANCH}:{REPOSITORY_SUB_FOLDER}{FILE_PATH_REPLACER}\\\") { ... on Blob { text } } } }\"}"
+    }
+  },
+  {
+    "id": "6562addf80634fccaacfd852",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "gitlab_file_contents",
+    "dataSourceIdentifier": "gitlab",
+    "type": "DirectHttp",
+    "apiRequestDetails": {
+      "method": "POST",
+      "url": "/api/graphql",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "requestBody": "{\"query\":\"{\\n  project(fullPath: \\\"{REPOSITORY_OWNER}/{REPOSITORY_NAME}\\\") {\\n    repository {\\n      blobs(ref: \\\"{REPOSITORY_BRANCH}\\\", paths: \\\"{REPOSITORY_SUB_FOLDER}{FILE_PATH_REPLACER}\\\") {\\n        nodes {\\n          rawTextBlob\\n        }\\n      }\\n    }\\n  }\\n}\\n\",\"variables\":{}}"
+    }
+  },
+  {
+    "id": "6565714a131ebd82a2ba0962",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "bitbucket_file_contents",
+    "dataSourceIdentifier": "bitbucket",
+    "type": "DirectHttp",
+    "apiRequestDetails": {
+      "method": "GET",
+      "url": "/2.0/repositories/{REPOSITORY_OWNER}/{REPOSITORY_NAME}/src/{REPOSITORY_BRANCH}/{REPOSITORY_SUB_FOLDER}{FILE_PATH_REPLACER}",
+      "headers": {
+        "Content-Type": "application/json"
+      }
     }
   }
 ]

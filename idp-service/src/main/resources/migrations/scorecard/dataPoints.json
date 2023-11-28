@@ -217,7 +217,7 @@
       }
     ],
     "description": "Calculates average time taken to merge pull requests.",
-    "detailedDescription": "**How it's calculated:** Fetches backstage.io/source-location annotation from catalog YAML file to find repository details and calculates the average time for the last 100 pull requests.\n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitHub repository. Make sure to mention the branch name in the conditional input field."
+    "detailedDescription": "**How it's calculated:** Fetches backstage.io/source-location annotation from catalog YAML file to find repository details and calculates the average time for the last 100 pull requests.\n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source Bitbucket repository. Make sure to mention the branch name in the conditional input field."
   },
   {
     "id": "650afc30838d877cd2c8f881",
@@ -530,5 +530,117 @@
     ],
     "description": "Matches the pattern in the given file from the branch.",
     "detailedDescription": "**How it's calculated:** If a branch name is specified, it is utilized. However, if no branch name is provided, the system retrieves information from the catalog YAML file using the backstage.io/source-location annotation to determine the branch name and repository details. It is essential to specify the filename with its extension or provide the relative path from the root folder (e.g., README.md or docs/README.md) in the conditional input field. After fetching the file, the contents are examined to find the pattern. Returns true/false based on whether the pattern was found or not. \n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitHub repository."
+  },
+  {
+    "id": "6562ae81fad391b6ec156888",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "extractStringFromAFile",
+    "name": "Extract string from a file",
+    "type": "STRING",
+    "dataSourceIdentifier": "gitlab",
+    "dataSourceLocationIdentifier": "gitlab_file_contents",
+    "inputDetails": [
+      {
+        "key": "branchName",
+        "description": "Branch Name (Optional)",
+        "required": false
+      },
+      {
+        "key": "filePath",
+        "description": "File path (e.g. src/package.json)",
+        "required": true
+      },
+      {
+        "key": "pattern",
+        "description": "Regex Pattern to extract",
+        "required": true
+      }
+    ],
+    "description": "Gets the string matching the pattern from given file from the branch.",
+    "detailedDescription": "**How it's calculated:** If a branch name is specified, it is utilized. However, if no branch name is provided, the system retrieves information from the catalog YAML file using the backstage.io/source-location annotation to determine the branch name and repository details. It is essential to specify the filename with its extension or provide the relative path from the root folder (e.g., README.md or docs/README.md) in the conditional input field. After fetching the file, the designated pattern is then searched within the file contents and it's value is extracted and returned \n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitLab project."
+  },
+  {
+    "id": "6562ae88d9f2336978e150ef",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "matchStringInAFile",
+    "name": "Match string in a file",
+    "type": "BOOLEAN",
+    "dataSourceIdentifier": "gitlab",
+    "dataSourceLocationIdentifier": "gitlab_file_contents",
+    "inputDetails": [
+      {
+        "key": "branchName",
+        "description": "Branch Name (Optional)",
+        "required": false
+      },
+      {
+        "key": "filePath",
+        "description": "File path (e.g. src/package.json)",
+        "required": true
+      },
+      {
+        "key": "pattern",
+        "description": "Regex Pattern to search for in the file",
+        "required": true
+      }
+    ],
+    "description": "Matches the pattern in the given file from the branch.",
+    "detailedDescription": "**How it's calculated:** If a branch name is specified, it is utilized. However, if no branch name is provided, the system retrieves information from the catalog YAML file using the backstage.io/source-location annotation to determine the branch name and repository details. It is essential to specify the filename with its extension or provide the relative path from the root folder (e.g., README.md or docs/README.md) in the conditional input field. After fetching the file, the contents are examined to find the pattern. Returns true/false based on whether the pattern was found or not. \n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source GitLab project."
+  },
+  {
+    "id": "6565b04674e52dedc44274ef",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "extractStringFromAFile",
+    "name": "Extract string from a file",
+    "type": "STRING",
+    "dataSourceIdentifier": "bitbucket",
+    "dataSourceLocationIdentifier": "bitbucket_file_contents",
+    "inputDetails": [
+      {
+        "key": "branchName",
+        "description": "Branch Name (Optional)",
+        "required": false
+      },
+      {
+        "key": "filePath",
+        "description": "File path (e.g. src/package.json)",
+        "required": true
+      },
+      {
+        "key": "pattern",
+        "description": "Regex Pattern to extract",
+        "required": true
+      }
+    ],
+    "description": "Gets the string matching the pattern from given file from the branch.",
+    "detailedDescription": "**How it's calculated:** If a branch name is specified, it is utilized. However, if no branch name is provided, the system retrieves information from the catalog YAML file using the backstage.io/source-location annotation to determine the branch name and repository details. It is essential to specify the filename with its extension or provide the relative path from the root folder (e.g., README.md or docs/README.md) in the conditional input field. After fetching the file, the designated pattern is then searched within the file contents and it's value is extracted and returned \n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source Bitbucket repository."
+  },
+  {
+    "id": "6565b04c5b5f410fe2f65d07",
+    "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
+    "identifier": "matchStringInAFile",
+    "name": "Match string in a file",
+    "type": "BOOLEAN",
+    "dataSourceIdentifier": "bitbucket",
+    "dataSourceLocationIdentifier": "bitbucket_file_contents",
+    "inputDetails": [
+      {
+        "key": "branchName",
+        "description": "Branch Name (Optional)",
+        "required": false
+      },
+      {
+        "key": "filePath",
+        "description": "File path (e.g. src/package.json)",
+        "required": true
+      },
+      {
+        "key": "pattern",
+        "description": "Regex Pattern to search for in the file",
+        "required": true
+      }
+    ],
+    "description": "Matches the pattern in the given file from the branch.",
+    "detailedDescription": "**How it's calculated:** If a branch name is specified, it is utilized. However, if no branch name is provided, the system retrieves information from the catalog YAML file using the backstage.io/source-location annotation to determine the branch name and repository details. It is essential to specify the filename with its extension or provide the relative path from the root folder (e.g., README.md or docs/README.md) in the conditional input field. After fetching the file, the contents are examined to find the pattern. Returns true/false based on whether the pattern was found or not. \n\n**Prerequisites:** Provide suitable backstage.io/source-location annotation if the catalog YAML file is present outside the source Bitbucket repository."
   }
 ]

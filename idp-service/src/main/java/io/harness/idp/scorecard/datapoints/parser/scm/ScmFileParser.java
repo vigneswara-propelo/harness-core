@@ -5,16 +5,16 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.scorecard.datapoints.parser.scm.github;
+package io.harness.idp.scorecard.datapoints.parser.scm;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.idp.common.Constants.ERROR_MESSAGE_KEY;
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.INVALID_CONDITIONAL_INPUT;
-import static io.harness.idp.scorecard.datapoints.constants.DataPoints.INVALID_FILE_NAME_ERROR;
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.*;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.INVALID_PATTERN;
 import static io.harness.idp.scorecard.datapoints.constants.Inputs.PATTERN;
 
-import io.harness.idp.common.CommonUtils;
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.scorecard.datapoints.parser.DataPointParser;
 import io.harness.idp.scorecard.scores.beans.DataFetchDTO;
 import io.harness.spec.server.idp.v1.model.InputValue;
@@ -26,7 +26,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class GithubFileParser implements DataPointParser {
+@OwnedBy(HarnessTeam.IDP)
+public abstract class ScmFileParser implements DataPointParser {
   @Override
   public Object parseDataPoint(Map<String, Object> data, DataFetchDTO dataFetchDTO) {
     Map<String, Object> dataPointData = new HashMap<>();
@@ -44,12 +45,12 @@ public abstract class GithubFileParser implements DataPointParser {
       return dataPointData;
     }
 
-    if (CommonUtils.findObjectByName(data, "object") == null) {
+    String text = this.getFileContent(data);
+    if (text == null) {
       dataPointData.putAll(constructDataPointInfo(dataFetchDTO, null, INVALID_FILE_NAME_ERROR));
       return dataPointData;
     }
 
-    String text = (String) CommonUtils.findObjectByName(data, "text");
     Optional<InputValue> patternOpt =
         inputValues.stream().filter(inputValue -> inputValue.getKey().equals(PATTERN)).findFirst();
     if (patternOpt.isEmpty()) {
@@ -74,5 +75,7 @@ public abstract class GithubFileParser implements DataPointParser {
     return dataPointData;
   }
 
-  abstract Object parseRegex(Matcher matcher);
+  protected abstract Object parseRegex(Matcher matcher);
+
+  protected abstract String getFileContent(Map<String, Object> data);
 }

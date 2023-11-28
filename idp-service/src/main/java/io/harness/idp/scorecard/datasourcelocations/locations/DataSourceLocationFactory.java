@@ -7,6 +7,8 @@
 
 package io.harness.idp.scorecard.datasourcelocations.locations;
 
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.BITBUCKET_FILE_CONTAINS;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.BITBUCKET_FILE_CONTENTS;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.BITBUCKET_IS_BRANCH_PROTECTION_SET;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.BITBUCKET_MEAN_TIME_TO_MERGE_PR;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.CATALOG;
@@ -23,6 +25,8 @@ import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceL
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITHUB_OPEN_SECRET_SCANNING_ALERTS;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITHUB_WORKFLOWS_COUNT;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITHUB_WORKFLOW_SUCCESS_RATE;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITLAB_FILE_CONTAINS;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITLAB_FILE_CONTENTS;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITLAB_FILE_EXISTS;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITLAB_IS_BRANCH_PROTECTION_SET;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.GITLAB_MEAN_TIME_TO_MERGE_PR;
@@ -47,6 +51,7 @@ import io.harness.idp.scorecard.datasourcelocations.locations.jira.JiraMeanTimeT
 import io.harness.idp.scorecard.datasourcelocations.locations.kubernetes.KubernetesProxyThroughDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.pagerduty.PagerDutyIncidents;
 import io.harness.idp.scorecard.datasourcelocations.locations.pagerduty.PagerDutyServiceDirectory;
+import io.harness.idp.scorecard.datasourcelocations.locations.scm.bitbucket.BitbucketContentsDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.bitbucket.BitbucketIsBranchProtectionSetDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.bitbucket.BitbucketMeanTimeToMergePRDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.github.GithubContentsDsl;
@@ -61,6 +66,7 @@ import io.harness.idp.scorecard.datasourcelocations.locations.scm.github.GithubO
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.github.GithubOpenSecretScanningAlertsDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.github.GithubWorkflowSuccessRateDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.github.GithubWorkflowsCountDsl;
+import io.harness.idp.scorecard.datasourcelocations.locations.scm.gitlab.GitlabContentsDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.gitlab.GitlabFileExistsDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.gitlab.GitlabIsBranchProtectionSetDsl;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.gitlab.GitlabMeanTimeToMergePRDsl;
@@ -85,8 +91,10 @@ public class DataSourceLocationFactory {
   private GithubOpenPullRequestsByAccountDsl githubOpenPullRequestsByAccountDsl;
   private BitbucketMeanTimeToMergePRDsl bitbucketMeanTimeToMergePRDsl;
   private BitbucketIsBranchProtectionSetDsl bitbucketIsBranchProtectionSetDsl;
+  private BitbucketContentsDsl bitbucketContentsDsl;
   private GitlabMeanTimeToMergePRDsl gitlabMeanTimeToMergePRDsl;
   private GitlabFileExistsDsl gitlabFileExistsDsl;
+  private GitlabContentsDsl gitlabContentsDsl;
   private GitlabIsBranchProtectionSetDsl gitlabIsBranchProtectionSetDsl;
   private HarnessProxyThroughDsl harnessProxyThroughDsl;
   private NoOpDsl noOpDsl;
@@ -131,6 +139,9 @@ public class DataSourceLocationFactory {
         return bitbucketMeanTimeToMergePRDsl;
       case BITBUCKET_IS_BRANCH_PROTECTION_SET:
         return bitbucketIsBranchProtectionSetDsl;
+      case BITBUCKET_FILE_CONTAINS:
+      case BITBUCKET_FILE_CONTENTS:
+        return bitbucketContentsDsl;
 
       // Gitlab
       case GITLAB_MEAN_TIME_TO_MERGE_PR:
@@ -139,6 +150,9 @@ public class DataSourceLocationFactory {
         return gitlabIsBranchProtectionSetDsl;
       case GITLAB_FILE_EXISTS:
         return gitlabFileExistsDsl;
+      case GITLAB_FILE_CONTAINS:
+      case GITLAB_FILE_CONTENTS:
+        return gitlabContentsDsl;
 
         // Harness
       case HARNESS_STO_SCAN_SETUP_DSL:

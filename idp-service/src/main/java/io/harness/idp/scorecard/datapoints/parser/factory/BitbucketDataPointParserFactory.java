@@ -7,12 +7,16 @@
 
 package io.harness.idp.scorecard.datapoints.parser.factory;
 
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.EXTRACT_STRING_FROM_A_FILE;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.IS_BRANCH_PROTECTED;
+import static io.harness.idp.scorecard.datapoints.constants.DataPoints.MATCH_STRING_IN_A_FILE;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.PULL_REQUEST_MEAN_TIME_TO_MERGE;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.scorecard.datapoints.parser.DataPointParser;
+import io.harness.idp.scorecard.datapoints.parser.scm.bitbucket.BitbucketFileContainsParser;
+import io.harness.idp.scorecard.datapoints.parser.scm.bitbucket.BitbucketFileContentsParser;
 import io.harness.idp.scorecard.datapoints.parser.scm.bitbucket.BitbucketIsBranchProtectedParser;
 import io.harness.idp.scorecard.datapoints.parser.scm.bitbucket.BitbucketMeanTimeToMergeParser;
 
@@ -24,6 +28,8 @@ import lombok.AllArgsConstructor;
 public class BitbucketDataPointParserFactory implements DataPointParserFactory {
   private BitbucketMeanTimeToMergeParser bitbucketMeanTimeToMergeParser;
   private BitbucketIsBranchProtectedParser bitbucketIsBranchProtectedParser;
+  private BitbucketFileContainsParser bitbucketFileContainsParser;
+  private BitbucketFileContentsParser bitbucketFileContentsParser;
 
   @Override
   public DataPointParser getParser(String identifier) {
@@ -32,6 +38,10 @@ public class BitbucketDataPointParserFactory implements DataPointParserFactory {
         return bitbucketMeanTimeToMergeParser;
       case IS_BRANCH_PROTECTED:
         return bitbucketIsBranchProtectedParser;
+      case EXTRACT_STRING_FROM_A_FILE:
+        return bitbucketFileContentsParser;
+      case MATCH_STRING_IN_A_FILE:
+        return bitbucketFileContainsParser;
       default:
         throw new UnsupportedOperationException(String.format("Could not find DataPoint parser for %s", identifier));
     }

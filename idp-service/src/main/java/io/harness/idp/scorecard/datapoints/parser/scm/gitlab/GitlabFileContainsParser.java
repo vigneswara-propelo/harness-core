@@ -5,22 +5,26 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.scorecard.datapoints.parser.scm.github;
+package io.harness.idp.scorecard.datapoints.parser.scm.gitlab;
+
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.common.CommonUtils;
-import io.harness.idp.scorecard.datapoints.parser.scm.ScmFileContentsParser;
+import io.harness.idp.scorecard.datapoints.parser.scm.ScmFileContainsParser;
 
+import java.util.List;
 import java.util.Map;
 
 @OwnedBy(HarnessTeam.IDP)
-public class GithubFileContentsParser extends ScmFileContentsParser {
+public class GitlabFileContainsParser extends ScmFileContainsParser {
   @Override
   protected String getFileContent(Map<String, Object> data) {
-    if (CommonUtils.findObjectByName(data, "object") == null) {
+    List<Map<String, Object>> nodes = (List<Map<String, Object>>) CommonUtils.findObjectByName(data, "nodes");
+    if (isEmpty(nodes)) {
       return null;
     }
-    return (String) CommonUtils.findObjectByName(data, "text");
+    return (String) nodes.get(0).get("rawTextBlob");
   }
 }
