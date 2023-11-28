@@ -1801,7 +1801,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(artifactoryRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(any(), any(), any(), any(), any());
+        .locateArtifactInService(any(), any(), any(), any(), any(), any());
 
     doReturn(result)
         .when(artifactoryResourceService)
@@ -3325,7 +3325,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(artifactoryRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(ARTIFACTORY_DOCKER_BUILD_DETAILS_DTO)
         .when(artifactoryResourceService)
@@ -3367,7 +3367,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(artifactoryRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(ARTIFACTORY_DOCKER_BUILD_DETAILS_DTO)
         .when(artifactoryResourceService)
@@ -3412,7 +3412,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(artifactoryRegistryArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(ARTIFACTORY_DOCKER_BUILD_DETAILS_DTO)
         .when(artifactoryResourceService)
