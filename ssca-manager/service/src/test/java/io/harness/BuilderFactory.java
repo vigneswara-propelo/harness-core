@@ -35,6 +35,9 @@ import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityBuilder;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.CdInstanceSummary.CdInstanceSummaryBuilder;
+import io.harness.ssca.entities.ConfigEntity;
+import io.harness.ssca.entities.ConfigEntity.ConfigEntityBuilder;
+import io.harness.ssca.entities.ConfigEntity.ConfigInfo;
 import io.harness.ssca.entities.EnforcementResultEntity;
 import io.harness.ssca.entities.EnforcementResultEntity.EnforcementResultEntityBuilder;
 import io.harness.ssca.entities.EnforcementSummaryEntity;
@@ -49,8 +52,10 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -390,6 +395,34 @@ public class BuilderFactory {
         .version("version")
         .violationDetails("violationDetails")
         .violationType("violationType");
+  }
+
+  public ConfigEntityBuilder getConfigEntityBuilder() {
+    return ConfigEntity.builder()
+        .accountId(context.accountId)
+        .orgId(context.getOrgIdentifier())
+        .projectId(context.getProjectIdentifier())
+        .configId("configId")
+        .name("sbomqs")
+        .type("scorecard")
+        .creationOn("2023-10-17T16:00:54+00:00")
+        .userId("example user")
+        .configInfos(getConfigInfoList());
+  }
+
+  private List<ConfigInfo> getConfigInfoList() {
+    List<ConfigInfo> configInfoList = new ArrayList<>();
+
+    Map<String, String> config = new HashMap<>();
+    config.put("key1", "value1");
+    config.put("key2", "value2");
+    configInfoList.add(ConfigEntity.ConfigInfo.builder()
+                           .id("example id")
+                           .categoryName("example category name")
+                           .config(config)
+                           .build());
+
+    return configInfoList;
   }
 
   public SbomScorecardRequestBody getSbomScorecardRequestBody() {
