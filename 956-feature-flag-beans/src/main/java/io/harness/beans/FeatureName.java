@@ -284,6 +284,7 @@ public enum FeatureName {
   CI_CODEBASE_SELECTOR("Feature flag to select delegate selector for codebase tasks", HarnessTeam.CI),
   CI_EXTRA_ADDON_RESOURCE("Feature flag for extra addon resource", HarnessTeam.CI),
   CI_ENABLE_TTY_LOGS("Feature flag to enable tty logs", HarnessTeam.CI),
+  CI_SECURE_TUNNEL("Feature flag to enable tunneling for CI executions", HarnessTeam.CI),
   CLEAN_UP_OLD_MANAGER_VERSIONS(Scope.PER_ACCOUNT),
   CLOUDFORMATION_CHANGE_SET,
   CLOUDFORMATION_SKIP_WAIT_FOR_RESOURCES,

@@ -16,6 +16,7 @@
       "branchName" : "example_branch",
       "delegateSelectors" : [ ],
       "executeOnDelegate" : false,
+      "proxyUrl" : null,
       "type" : "Ssh",
       "connectionType" : "Repo",
       "spec" : {

@@ -26,6 +26,7 @@ java_library(
         "//980-commons/src/main/java/io/harness/exception/runtime:module",
         "//980-commons/src/main/java/io/harness/filesystem:module",
         "//980-commons/src/main/java/io/harness/govern:module",
+        "//980-commons/src/main/java/io/harness/network:module",
         "//980-commons/src/main/java/io/harness/secret:module",
         "//980-commons/src/main/java/io/harness/validation:module",
         "//980-commons/src/main/java/software/wings/misc:module",

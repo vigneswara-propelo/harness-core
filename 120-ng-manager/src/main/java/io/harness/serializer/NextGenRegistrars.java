@@ -30,6 +30,7 @@ import io.harness.serializer.morphia.NgUserGroupMorphiaRegistrar;
 import io.harness.serializer.morphia.NgUserMorphiaRegistrar;
 import io.harness.serializer.morphia.NgUserProfileMorphiaRegistrars;
 import io.harness.serializer.morphia.ServiceAccountMorphiaRegistrars;
+import io.harness.serializer.morphia.TunnelMorphiaRegistrars;
 import io.harness.serializer.morphia.WebhookMorphiaRegistrars;
 import io.harness.serializer.spring.convertors.EntityUsageDetailReadConvertor;
 import io.harness.serializer.spring.convertors.EntityUsageDetailWriteConvertor;
@@ -89,6 +90,7 @@ public class NextGenRegistrars {
           .addAll(IpAllowlistRegistrars.morphiaRegistrars)
           .addAll(EulaRegistrar.morphiaRegistrars)
           .addAll(OidcRegistrars.morphiaRegistrars)
+          .add(TunnelMorphiaRegistrars.class)
           .build();
 
   public static final ImmutableList<YamlSchemaRootClass> yamlSchemaRegistrars =

@@ -295,6 +295,7 @@ import io.harness.ng.serviceaccounts.service.api.ServiceAccountService;
 import io.harness.ng.serviceaccounts.service.impl.ServiceAccountServiceImpl;
 import io.harness.ng.servicediscovery.AbstractServiceDiscoveryModule;
 import io.harness.ng.support.client.CannyConfig;
+import io.harness.ng.tunnel.services.impl.TunnelServiceImpl;
 import io.harness.ng.userprofile.commons.SCMType;
 import io.harness.ng.userprofile.entities.AwsCodeCommitSCM.AwsCodeCommitSCMMapper;
 import io.harness.ng.userprofile.entities.AzureRepoSCM.AzureRepoSCMMapper;
@@ -354,6 +355,7 @@ import io.harness.serializer.kryo.KryoConverterFactory;
 import io.harness.service.DelegateServiceDriverModule;
 import io.harness.service.InstanceModule;
 import io.harness.service.stats.usagemetrics.eventconsumer.InstanceStatsEventListener;
+import io.harness.services.TunnelService;
 import io.harness.signup.SignupModule;
 import io.harness.subscription.SubscriptionModule;
 import io.harness.telemetry.AbstractTelemetryModule;
@@ -901,6 +903,7 @@ public class NextGenModule extends AbstractModule {
     bind(DelegateMetricsService.class).to(DelegateMetricsServiceImpl.class);
     bind(FrozenExecutionService.class).to(FrozenExecutionServiceImpl.class);
     bind(CDNGStageSummaryResource.class).to(CDNGStageSummaryResourceImpl.class);
+    bind(TunnelService.class).to(TunnelServiceImpl.class);
     install(new ProviderModule() {
       @Provides
       @Singleton

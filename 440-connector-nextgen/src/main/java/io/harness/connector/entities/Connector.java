@@ -108,6 +108,7 @@ public abstract class Connector implements PersistentEntity, NGAccountAccess, Gi
   String invalidYamlString; // TODO: remove this field after RenameInvalidYamlStringToYamlMigration runs
   String yaml;
   @FdIndex Long connectorDisconnectIteration;
+  Boolean proxy = Boolean.FALSE;
 
   public void setEntityInvalid(boolean isEntityInvalid) {
     this.isEntityInvalid = isEntityInvalid;

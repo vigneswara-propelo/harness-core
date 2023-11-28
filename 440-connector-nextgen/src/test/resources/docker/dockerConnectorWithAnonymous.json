@@ -18,7 +18,9 @@
       "auth": {
         "type": "Anonymous"
       },
-      "executeOnDelegate": true
+      "executeOnDelegate": true,
+      "proxy": false,
+      "proxyUrl": null
     }
   }
 }

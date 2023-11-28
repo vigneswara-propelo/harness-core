@@ -41,6 +41,8 @@ import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_COMM
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_COMMIT_SHA;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_GIT_HTTP_URL;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_GIT_SSH_URL;
+import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_HTTP_PROXY_PORT;
+import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_HTTP_PROXY_URL;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_NETRC_MACHINE;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_NETRC_PORT;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_NETRC_USERNAME;
@@ -88,6 +90,7 @@ import io.harness.beans.sweepingoutputs.CodebaseSweepingOutput;
 import io.harness.ci.execution.execution.GitBuildStatusUtility;
 import io.harness.ci.execution.integrationstage.BuildEnvironmentUtils;
 import io.harness.ci.execution.integrationstage.IntegrationStageUtils;
+import io.harness.connector.WithProxy;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
@@ -124,6 +127,7 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
+import io.harness.utils.ProxyUtils;
 import io.harness.yaml.extended.ci.codebase.CodeBase;
 
 import com.google.inject.Inject;
@@ -148,6 +152,10 @@ public class CodebaseUtils {
       Ambiance ambiance, CIExecutionArgs ciExecutionArgs, ConnectorDetails gitConnectorDetails) {
     Map<String, String> envVars = BuildEnvironmentUtils.getBuildEnvironmentVariables(ciExecutionArgs);
     envVars.putAll(getRuntimeCodebaseVars(ambiance, gitConnectorDetails));
+    if (gitConnectorDetails != null && gitConnectorDetails.getConnectorConfig() instanceof WithProxy) {
+      WithProxy withProxy = (WithProxy) gitConnectorDetails.getConnectorConfig();
+      envVars.putAll(getDroneProxyEnvVars(withProxy));
+    }
     return envVars;
   }
 
@@ -160,6 +168,16 @@ public class CodebaseUtils {
 
     return envVarMap;
   }
+
+  private Map<String, String> getDroneProxyEnvVars(WithProxy withProxy) {
+    Map<String, String> envVarMap = new HashMap<>();
+    if (withProxy != null && isNotEmpty(withProxy.getProxyUrl())) {
+      envVarMap.put(DRONE_HTTP_PROXY_URL, ProxyUtils.getProxyHost(withProxy.getProxyUrl()));
+      envVarMap.put(DRONE_HTTP_PROXY_PORT, String.valueOf(ProxyUtils.getProxyPort(withProxy.getProxyUrl())));
+    }
+    return envVarMap;
+  }
+
   public Map<String, String> getRuntimeCodebaseVars(Ambiance ambiance, ConnectorDetails gitConnectorDetails) {
     Map<String, String> codebaseRuntimeVars = new HashMap<>();
 
