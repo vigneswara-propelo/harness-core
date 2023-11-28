@@ -558,7 +558,8 @@ public class ServiceEnvironmentV2MigrationService {
     DeploymentStageConfig deploymentStageConfig = getDeploymentStageConfig(resolvedStageYaml);
     YamlNode templateStageYamlNode = stageField.getNode().getField("template").getNode();
     ObjectNode specNode = objectMapper.createObjectNode();
-    if (templateStageYamlNode.getField("templateInputs") != null) {
+    if (templateStageYamlNode.getField("templateInputs") != null
+        && templateStageYamlNode.getField("templateInputs").getNode().getField("spec") != null) {
       specNode = (ObjectNode) templateStageYamlNode.getField("templateInputs")
                      .getNode()
                      .getField("spec")
@@ -571,6 +572,11 @@ public class ServiceEnvironmentV2MigrationService {
 
     migrateEnv(accountId, requestDto, serviceType, deploymentStageConfig, resolvedStageField, specNode,
         stageIdentifierToSvcObjectMap, stageIdentifierToEnvObjectMap);
+
+    if (!specNode.isEmpty() && templateStageYamlNode.getField("templateInputs") != null
+        && templateStageYamlNode.getField("templateInputs").getNode().getField("spec") == null) {
+      ((ObjectNode) templateStageYamlNode.getField("templateInputs").getNode().getCurrJsonNode()).set("spec", specNode);
+    }
 
     String templateKey = templateStageYamlNode.getField("templateRef").getNode().getCurrJsonNode().textValue() + "@"
         + templateStageYamlNode.getField("versionLabel").getNode().getCurrJsonNode().textValue();
