@@ -15,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.artifact.outcome.ArtifactOutcome;
 import io.harness.cdng.configfile.ConfigFileOutcome;
 import io.harness.cdng.execution.ExecutionDetails;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.pcf.request.TasManifestsPackage;
 import io.harness.expression.Expression;
 
@@ -42,6 +43,7 @@ public class TasStageExecutionDetails implements ExecutionDetails {
   @Expression(ALLOW_SECRETS) private List<String> routeMaps;
   private Integer desiredCount;
   private Boolean isFirstDeployment;
+  private ArtifactBundleDetails artifactBundleDetails;
   @Override
   public List<ArtifactOutcome> getArtifactsOutcome() {
     return artifactsOutcome;

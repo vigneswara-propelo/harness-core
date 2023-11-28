@@ -36,9 +36,9 @@ import io.harness.delegate.task.common.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.git.TaskStatus;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.filesystem.FileIo;
-import io.harness.k8s.K8sCommandUnitConstants;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
+import io.harness.pcf.CfCommandUnitConstants;
 
 import software.wings.beans.LogColor;
 import software.wings.beans.LogWeight;
@@ -83,8 +83,9 @@ public class ArtifactBundleFetchTask extends AbstractDelegateRunnableTask {
     try {
       log.info("Running ArtifactBundleFetchRequest for activityId {}", artifactBundleFetchRequest.getActivityId());
 
-      LogCallback executionLogCallback = new NGDelegateLogCallback(getLogStreamingTaskClient(),
-          K8sCommandUnitConstants.FetchFiles, artifactBundleFetchRequest.isShouldOpenLogStream(), commandUnitsProgress);
+      LogCallback executionLogCallback =
+          new NGDelegateLogCallback(getLogStreamingTaskClient(), CfCommandUnitConstants.ArtifactBundleFetchFiles,
+              artifactBundleFetchRequest.isShouldOpenLogStream(), commandUnitsProgress);
 
       Map<String, List<FileData> > filesFromArtifactBundle;
       ArtifactBundleDelegateConfig artifactBundleDelegateConfig =

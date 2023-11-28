@@ -50,6 +50,7 @@ import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.beans.pcf.TasApplicationInfo;
 import io.harness.delegate.cf.PcfCommandTaskBaseHelper;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.cf.CfCommandTaskHelperNG;
 import io.harness.delegate.task.cf.TasArtifactDownloadContext;
 import io.harness.delegate.task.cf.TasArtifactDownloadResponse;
@@ -161,6 +162,11 @@ public class TasBasicSetupTaskHandler extends CfCommandTaskNGHandler {
 
       artifactFile = downloadArtifactFile(basicSetupRequestNG, workingDirectory, logCallback);
 
+      ArtifactBundleDetails artifactBundleDetails = basicSetupRequestNG.getArtifactBundleDetails();
+
+      String artifactPath =
+          tasTaskHelperBase.getArtifactPath(artifactBundleDetails, artifactFile, workingDirectory, logCallback);
+
       deleteOlderApplications(previousReleases, cfRequestConfig, basicSetupRequestNG, cfAppAutoscalarRequestData,
           logCallback, currentProdInfo);
 
@@ -174,7 +180,7 @@ public class TasBasicSetupTaskHandler extends CfCommandTaskNGHandler {
                                    .applicationName(basicSetupRequestNG.getReleaseNamePrefix())
                                    .routeMaps(basicSetupRequestNG.getRouteMaps())
                                    .build())
-              .artifactPath(artifactFile == null ? null : artifactFile.getAbsolutePath())
+              .artifactPath(artifactPath)
               .configPathVar(workingDirectory.getAbsolutePath())
               .newReleaseName(basicSetupRequestNG.getReleaseNamePrefix())
               .pcfManifestFileData(pcfManifestFileData)

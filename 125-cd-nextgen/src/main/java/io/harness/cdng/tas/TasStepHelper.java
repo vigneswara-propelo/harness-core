@@ -126,6 +126,7 @@ import io.harness.delegate.beans.logstreaming.UnitProgressDataMapper;
 import io.harness.delegate.beans.pcf.artifact.TasArtifactRegistryType;
 import io.harness.delegate.beans.storeconfig.GitStoreDelegateConfig;
 import io.harness.delegate.task.artifactBundle.ArtifactBundleDelegateConfig;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.artifactBundle.ArtifactBundleFetchRequest;
 import io.harness.delegate.task.artifactBundle.PackageArtifactConfig;
 import io.harness.delegate.task.artifactBundle.response.ArtifactBundleFetchResponse;
@@ -496,6 +497,18 @@ public class TasStepHelper {
     updates.put(String.format(
                     "%s.%s", StageExecutionInfoKeys.executionDetails, TasStageExecutionDetailsKeys.tasManifestsPackage),
         tasManifestsPackage);
+    stageExecutionInfoService.update(scope, ambiance.getStageExecutionId(), updates);
+  }
+
+  public void updateArtifactBundleDetails(
+      Ambiance ambiance, ArtifactBundleDetails artifactBundleDetails, String appName, TasInfraConfig tasInfraConfig) {
+    Scope scope = Scope.of(AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
+        AmbianceUtils.getProjectIdentifier(ambiance));
+    Map<String, Object> updates = new HashMap<>();
+    updates.put(StageExecutionInfoKeys.deploymentIdentifier, getDeploymentIdentifier(tasInfraConfig, appName));
+    updates.put(String.format("%s.%s", StageExecutionInfoKeys.executionDetails,
+                    TasStageExecutionDetailsKeys.artifactBundleDetails),
+        artifactBundleDetails);
     stageExecutionInfoService.update(scope, ambiance.getStageExecutionId(), updates);
   }
 
@@ -1544,6 +1557,8 @@ public class TasStepHelper {
             .allFilesFetched(allFilesFetched)
             .commandUnits(tasStepPassThroughData.getCommandUnits())
             .rawScript(tasStepPassThroughData.getRawScript())
+            .tasManifestOutcome(
+                tasManifestOutcome.getType().equals(TAS_MANIFEST) ? (TasManifestOutcome) tasManifestOutcome : null)
             .build(),
         tasStepPassThroughData.getShouldOpenFetchFilesStream(),
         UnitProgressData.builder().unitProgresses(tasStepPassThroughData.getUnitProgresses()).build());
@@ -1573,6 +1588,8 @@ public class TasStepHelper {
     tasStepPassThroughData.getUnitProgresses().add(unitProgress.build());
     return tasStepExecutor.executeTasTask(tasManifestOutcome, ambiance, stepElementParameters,
         TasExecutionPassThroughData.builder()
+            .tasManifestOutcome(
+                tasManifestOutcome.getType().equals(TAS_MANIFEST) ? (TasManifestOutcome) tasManifestOutcome : null)
             .applicationName(fetchTasApplicationName(tasManifestsPackage))
             .zippedManifestId(tasStepPassThroughData.getZippedManifestFileId())
             .tasManifestsPackage(tasManifestsPackage)

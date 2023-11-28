@@ -30,6 +30,7 @@ import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.PcfAutoScalarCapability;
 import io.harness.delegate.beans.executioncapability.PcfInstallationCapability;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.pcf.CfCommandTypeNG;
 import io.harness.delegate.task.pcf.artifact.TasArtifactConfig;
 import io.harness.delegate.task.pcf.artifact.TasArtifactType;
@@ -55,13 +56,14 @@ public class CfRollingDeployRequestNG extends AbstractTasTaskRequest {
   boolean useAppAutoScalar;
   @Expression(ALLOW_SECRETS) TasManifestsPackage tasManifestsPackage;
   int desiredCount;
+  ArtifactBundleDetails artifactBundleDetails;
 
   @Builder
   public CfRollingDeployRequestNG(String accountId, CfCommandTypeNG cfCommandTypeNG, String commandName,
       CommandUnitsProgress commandUnitsProgress, TasInfraConfig tasInfraConfig, boolean useCfCLI,
       CfCliVersion cfCliVersion, Integer timeoutIntervalInMin, TasArtifactConfig tasArtifactConfig,
       List<String> routeMaps, boolean useAppAutoScalar, TasManifestsPackage tasManifestsPackage, String applicationName,
-      int desiredCount) {
+      int desiredCount, ArtifactBundleDetails artifactBundleDetails) {
     super(timeoutIntervalInMin, accountId, commandName, cfCommandTypeNG, commandUnitsProgress, tasInfraConfig, useCfCLI,
         cfCliVersion);
     this.applicationName = applicationName;
@@ -70,6 +72,7 @@ public class CfRollingDeployRequestNG extends AbstractTasTaskRequest {
     this.routeMaps = routeMaps;
     this.useAppAutoScalar = useAppAutoScalar;
     this.tasManifestsPackage = tasManifestsPackage;
+    this.artifactBundleDetails = artifactBundleDetails;
   }
 
   @Override

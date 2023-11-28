@@ -7,6 +7,8 @@
 
 package io.harness.cdng.tas;
 
+import static io.harness.cdng.manifest.ManifestStoreType.ARTIFACT_BUNDLE;
+import static io.harness.cdng.manifest.ManifestType.TAS_MANIFEST;
 import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
 
 import static java.util.Objects.isNull;
@@ -28,7 +30,9 @@ import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.k8s.beans.CustomFetchResponsePassThroughData;
 import io.harness.cdng.k8s.beans.GitFetchResponsePassThroughData;
 import io.harness.cdng.k8s.beans.StepExceptionPassThroughData;
+import io.harness.cdng.manifest.yaml.ArtifactBundleStore;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
+import io.harness.cdng.manifest.yaml.TasManifestOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.cdng.tas.outcome.TasRollingDeployOutcome;
 import io.harness.delegate.beans.TaskData;
@@ -38,6 +42,7 @@ import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.beans.logstreaming.UnitProgressDataMapper;
 import io.harness.delegate.beans.pcf.CfInternalInstanceElement;
 import io.harness.delegate.task.TaskParameters;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.pcf.CfCommandTypeNG;
 import io.harness.delegate.task.pcf.request.CfRollingDeployRequestNG;
 import io.harness.delegate.task.pcf.response.CfRollingDeployResponseNG;
@@ -192,6 +197,18 @@ public class TasRollingDeployStep extends CdTaskChainExecutable implements TasSt
               .deploymentStarted(response.isDeploymentStarted())
               .routeMaps(response.getNewApplicationInfo().getAttachedRoutes())
               .build();
+
+      TasManifestOutcome tasManifestOutcome = tasExecutionPassThroughData.getTasManifestOutcome();
+      ArtifactBundleDetails artifactBundleDetails = null;
+      if (tasManifestOutcome != null && tasManifestOutcome.getStore().getKind().equals(ARTIFACT_BUNDLE)) {
+        ArtifactBundleStore artifactBundleStore = (ArtifactBundleStore) tasManifestOutcome.getStore();
+        artifactBundleDetails =
+            ArtifactBundleDetails.builder()
+                .deployableUnitPath(getParameterFieldValue(artifactBundleStore.getDeployableUnitPath()))
+                .artifactBundleType(artifactBundleStore.getArtifactBundleType().toString())
+                .activityId(ambiance.getStageExecutionId())
+                .build();
+      }
       List<ServerInstanceInfo> serverInstanceInfoList = getServerInstanceInfoList(response, ambiance);
       StepResponse.StepOutcome stepOutcome =
           instanceInfoService.saveServerInstancesIntoSweepingOutput(ambiance, serverInstanceInfoList);
@@ -206,6 +223,7 @@ public class TasRollingDeployStep extends CdTaskChainExecutable implements TasSt
           ambiance, tasExecutionPassThroughData.getDesiredCountInFinalYaml(), appName, tasInfraConfig);
       tasStepHelper.updateIsFirstDeploymentField(
           ambiance, response.getCurrentProdInfo() == null, appName, tasInfraConfig);
+      tasStepHelper.updateArtifactBundleDetails(ambiance, artifactBundleDetails, appName, tasInfraConfig);
 
       return StepResponse.builder()
           .status(Status.SUCCEEDED)
@@ -245,6 +263,19 @@ public class TasRollingDeployStep extends CdTaskChainExecutable implements TasSt
     List<String> routeMaps = tasStepHelper.getRouteMaps(executionPassThroughData.getTasManifestsPackage(),
         getParameterFieldValue(tasRollingDeployStepParameters.getAdditionalRoutes()));
     TasInfraConfig tasInfraConfig = cdStepHelper.getTasInfraConfig(infrastructureOutcome, ambiance);
+
+    ArtifactBundleDetails artifactBundleDetails = null;
+    if (tasManifestOutcome != null && tasManifestOutcome.getType().equals(TAS_MANIFEST)
+        && tasManifestOutcome.getStore().getKind().equals(ARTIFACT_BUNDLE)) {
+      ArtifactBundleStore artifactBundleStore = (ArtifactBundleStore) tasManifestOutcome.getStore();
+      artifactBundleDetails =
+          ArtifactBundleDetails.builder()
+              .artifactBundleType(artifactBundleStore.getArtifactBundleType().toString())
+              .deployableUnitPath(getParameterFieldValue(artifactBundleStore.getDeployableUnitPath()))
+              .activityId(ambiance.getStageExecutionId())
+              .build();
+    }
+
     TaskParameters taskParameters =
         CfRollingDeployRequestNG.builder()
             .applicationName(executionPassThroughData.getApplicationName())
@@ -261,6 +292,7 @@ public class TasRollingDeployStep extends CdTaskChainExecutable implements TasSt
             .timeoutIntervalInMin(CDStepHelper.getTimeoutInMin(stepParameters))
             .useAppAutoScalar(!isNull(executionPassThroughData.getTasManifestsPackage().getAutoscalarManifestYml()))
             .desiredCount(executionPassThroughData.getDesiredCountInFinalYaml())
+            .artifactBundleDetails(artifactBundleDetails)
             .build();
 
     TasStageExecutionDetails tasStageExecutionDetails = tasStepHelper.findLastSuccessfulStageExecutionDetails(

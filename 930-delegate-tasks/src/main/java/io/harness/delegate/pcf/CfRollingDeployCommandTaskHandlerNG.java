@@ -6,6 +6,7 @@
  */
 
 package io.harness.delegate.pcf;
+
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -45,6 +46,7 @@ import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.beans.pcf.CfInternalInstanceElement;
 import io.harness.delegate.beans.pcf.TasApplicationInfo;
 import io.harness.delegate.cf.PcfCommandTaskBaseHelper;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.cf.CfCommandTaskHelperNG;
 import io.harness.delegate.task.cf.TasArtifactDownloadContext;
 import io.harness.delegate.task.cf.TasArtifactDownloadResponse;
@@ -155,6 +157,11 @@ public class CfRollingDeployCommandTaskHandlerNG extends CfCommandTaskNGHandler 
 
       artifactFile = downloadArtifactFile(cfRollingDeployRequestNG, workingDirectory, logCallback);
 
+      ArtifactBundleDetails artifactBundleDetails = cfRollingDeployRequestNG.getArtifactBundleDetails();
+
+      String artifactPath =
+          tasTaskHelperBase.getArtifactPath(artifactBundleDetails, artifactFile, workingDirectory, logCallback);
+
       boolean varsYmlPresent = checkIfVarsFilePresent(cfRollingDeployRequestNG);
       CfCreateApplicationRequestData requestData =
           CfCreateApplicationRequestData.builder()
@@ -163,7 +170,7 @@ public class CfRollingDeployCommandTaskHandlerNG extends CfCommandTaskNGHandler 
                                    .routeMaps(cfRollingDeployRequestNG.getRouteMaps())
                                    .timeOutIntervalInMins(cfRollingDeployRequestNG.getTimeoutIntervalInMin())
                                    .build())
-              .artifactPath(artifactFile == null ? null : artifactFile.getAbsolutePath())
+              .artifactPath(artifactPath)
               .configPathVar(workingDirectory.getAbsolutePath())
               .newReleaseName(cfRollingDeployRequestNG.getApplicationName())
               .pcfManifestFileData(pcfManifestFileData)

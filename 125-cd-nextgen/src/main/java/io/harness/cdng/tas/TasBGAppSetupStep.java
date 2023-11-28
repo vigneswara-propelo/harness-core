@@ -7,6 +7,8 @@
 
 package io.harness.cdng.tas;
 
+import static io.harness.cdng.manifest.ManifestStoreType.ARTIFACT_BUNDLE;
+import static io.harness.cdng.manifest.ManifestType.TAS_MANIFEST;
 import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
@@ -24,6 +26,7 @@ import io.harness.cdng.artifact.outcome.ArtifactOutcome;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.cdng.k8s.beans.StepExceptionPassThroughData;
+import io.harness.cdng.manifest.yaml.ArtifactBundleStore;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.cdng.tas.outcome.TasSetupDataOutcome;
@@ -35,6 +38,7 @@ import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.beans.logstreaming.UnitProgressDataMapper;
 import io.harness.delegate.beans.pcf.TasResizeStrategyType;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.pcf.CfCommandTypeNG;
 import io.harness.delegate.task.pcf.request.CfBlueGreenSetupRequestNG;
 import io.harness.delegate.task.pcf.request.TasManifestsPackage;
@@ -225,6 +229,18 @@ public class TasBGAppSetupStep extends TaskChainExecutableWithRollbackAndRbac im
     if (tasBGAppSetupStepParameters.getTasInstanceCountType().equals(TasInstanceCountType.FROM_MANIFEST)) {
       maxCount = tasStepHelper.fetchMaxCountFromManifest(executionPassThroughData.getTasManifestsPackage());
     }
+    ArtifactBundleDetails artifactBundleDetails = null;
+    if (tasManifestOutcome != null && tasManifestOutcome.getType().equals(TAS_MANIFEST)
+        && tasManifestOutcome.getStore().getKind().equals(ARTIFACT_BUNDLE)) {
+      ArtifactBundleStore artifactBundleStore = (ArtifactBundleStore) tasManifestOutcome.getStore();
+      artifactBundleDetails =
+          ArtifactBundleDetails.builder()
+              .artifactBundleType(artifactBundleStore.getArtifactBundleType().toString())
+              .deployableUnitPath(getParameterFieldValue(artifactBundleStore.getDeployableUnitPath()))
+              .activityId(ambiance.getStageExecutionId())
+              .build();
+    }
+
     Integer olderActiveVersionCountToKeep =
         Integer.parseInt(getParameterFieldValue(tasBGAppSetupStepParameters.getExistingVersionToKeep()));
     CfBlueGreenSetupRequestNG taskParameters =
@@ -245,6 +261,7 @@ public class TasBGAppSetupStep extends TaskChainExecutableWithRollbackAndRbac im
             .routeMaps(getParameterFieldValue(tasBGAppSetupStepParameters.getTempRoutes()))
             .useAppAutoScalar(!isNull(executionPassThroughData.getTasManifestsPackage().getAutoscalarManifestYml()))
             .tempRoutes(getParameterFieldValue(tasBGAppSetupStepParameters.getTempRoutes()))
+            .artifactBundleDetails(artifactBundleDetails)
             .build();
 
     TaskData taskData = TaskData.builder()

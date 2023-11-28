@@ -36,12 +36,14 @@ import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.cdng.infra.beans.TanzuApplicationServiceInfrastructureOutcome;
 import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.k8s.beans.StepExceptionPassThroughData;
+import io.harness.cdng.manifest.yaml.ArtifactBundleStore;
 import io.harness.cdng.manifest.yaml.TasManifestOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.delegate.beans.instancesync.info.TasServerInstanceInfo;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.beans.pcf.CfInternalInstanceElement;
 import io.harness.delegate.beans.pcf.TasApplicationInfo;
+import io.harness.delegate.task.artifactBundle.ArtifactBundledArtifactType;
 import io.harness.delegate.task.pcf.request.TasManifestsPackage;
 import io.harness.delegate.task.pcf.response.CfRollingDeployResponseNG;
 import io.harness.delegate.task.pcf.response.TasInfraConfig;
@@ -208,7 +210,14 @@ public class TasRollingDeployStepTest extends CDNGTestBase {
         .thenReturn(TaskRequest.newBuilder().build());
     doReturn(EnvironmentType.PROD).when(stepHelper).getEnvironmentType(ambiance);
 
-    TasManifestOutcome tasManifestOutcome = TasManifestOutcome.builder().build();
+    TasManifestOutcome tasManifestOutcome =
+        TasManifestOutcome.builder()
+            .store(ArtifactBundleStore.builder()
+                       .manifestPath(ParameterField.createValueField("manifestPath"))
+                       .deployableUnitPath(ParameterField.createValueField("deployableUnitPath"))
+                       .artifactBundleType(ArtifactBundledArtifactType.TAR)
+                       .build())
+            .build();
     TaskChainResponse taskChainResponse = tasRollingDeployStep.executeTasTask(
         tasManifestOutcome, ambiance, stepElementParameters, tasExecutionPassThroughData, true, unitProgressData);
 

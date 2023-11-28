@@ -22,6 +22,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FileData;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.task.artifactBundle.ArtifactBundleDelegateConfig;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.artifactBundle.ArtifactBundleFetchTaskHelper;
 import io.harness.delegate.task.artifactBundle.ArtifactBundledArtifactType;
 import io.harness.delegate.task.artifactBundle.PackageArtifactConfig;
@@ -199,6 +200,36 @@ public class ArtifactBundleFetchTaskHelperTest extends CategoryTest {
             workingDir, artifactBundleFile, artifactBundleDelegateConfig, "activityId", logCallback);
     assertThat(filesFromArtifactBundle).isNotNull();
     assertThat(filesFromArtifactBundle.get("0").size()).isEqualTo(2);
+    deleteDirectoryAndItsContentIfExists(temporaryDir.toString());
+  }
+
+  @Test
+  @Owner(developers = NAMAN_TALAYCHA)
+  @Category(UnitTests.class)
+  public void getArtifactPathOfArtifactBundle() throws Exception {
+    ClassLoader classLoader = ArtifactBundleFetchTaskHelperTest.class.getClassLoader();
+    LogCallback logCallback = mock(LogCallback.class);
+    Path temporaryDir = Files.createTempDirectory("testDir");
+    Path destinationPath = Paths.get(temporaryDir.toString(), "artifactBundleCorrect.tar").normalize();
+    Files.copy(classLoader.getResourceAsStream("task/artifactbundle/artifactBundleCorrect.tar"), destinationPath,
+        StandardCopyOption.REPLACE_EXISTING);
+
+    File workingDir = new File(temporaryDir.toString());
+    ArtifactBundleDetails artifactBundleDetails = ArtifactBundleDetails.builder()
+                                                      .deployableUnitPath("artifactBundle/todolist-4.0.war")
+                                                      .artifactBundleType(ArtifactBundledArtifactType.TAR.toString())
+                                                      .activityId("activityId")
+                                                      .build();
+    File artifactBundleFile = new File(destinationPath.toString());
+
+    String artifactBundlePath = artifactBundleFetchTaskHelper.getArtifactPathOfArtifactBundle(
+        artifactBundleDetails, artifactBundleFile, workingDir, logCallback);
+    assertThat(artifactBundlePath).isNotNull();
+    assertThat(artifactBundlePath)
+        .isEqualTo(
+            Paths.get(temporaryDir.toString(), "/artifactBundleManifests-activityId/artifactBundle/todolist-4.0.war")
+                .normalize()
+                .toString());
     deleteDirectoryAndItsContentIfExists(temporaryDir.toString());
   }
 }

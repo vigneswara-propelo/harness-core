@@ -15,6 +15,7 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.cdng.manifest.yaml.TasManifestOutcome;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.task.pcf.request.TasManifestsPackage;
 import io.harness.expression.Expression;
@@ -48,4 +49,5 @@ public class TasExecutionPassThroughData implements PassThroughData {
   List<String> pathsFromScript;
   @Setter @NonFinal Map<String, String> resolvedOutputVariables;
   int desiredCountInFinalYaml;
+  TasManifestOutcome tasManifestOutcome;
 }

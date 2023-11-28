@@ -62,6 +62,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -128,36 +129,29 @@ public class ArtifactBundleFetchTaskHelper {
       throws Exception {
     try {
       logCallback.saveExecutionLog(
-          color(format("%n Extracting Artifact Bundle : %s ", artifactBundleFile.toPath().getFileName()),
-              LogColor.White, LogWeight.Bold),
-          INFO);
-      File file;
+          format("%n Extracting Artifact Bundle : %s ", artifactBundleFile.toPath().getFileName()), INFO);
+      File file = extractArtifactBundle(
+          artifactBundleDelegateConfig.getArtifactBundleType(), artifactBundleFile, workingDirectory, activityId);
       Map<String, List<FileData>> manifestsFromArtifactBundle = new HashMap<>();
-      if (artifactBundleDelegateConfig.getArtifactBundleType().equals(ZIP.toString())) {
-        file = extractZipFile(artifactBundleFile, workingDirectory, activityId);
-      } else if (artifactBundleDelegateConfig.getArtifactBundleType().equals(TAR.toString())) {
-        file = extractTarFile(artifactBundleFile, workingDirectory, activityId);
-      } else if (artifactBundleDelegateConfig.getArtifactBundleType().equals(TAR_GZIP.toString())) {
-        file = extractTarGzFile(artifactBundleFile, workingDirectory, activityId);
-      } else {
-        throw new UnsupportedTypeException("Ony ZIP, TAR and TAR_GZ Type of Artifact Bundle source is Supported");
-      }
-      if (file == null) {
-        throw new UnexpectedException("Failed to get Artifact Bundle source manifest files");
-      }
 
       logCallback.saveExecutionLog(
-          color(format("%n Successfully Extracted Artifact Bundle : %s ", artifactBundleFile.toPath().getFileName()),
-              LogColor.White, LogWeight.Bold),
-          INFO);
+          format("%n Successfully Extracted Artifact Bundle : %s ", artifactBundleFile.toPath().getFileName()), INFO);
 
+      logCallback.saveExecutionLog(format("%n Starting Reading Manifest From Artifact Bundle."), INFO);
       if (isNotEmpty(artifactBundleDelegateConfig.getFilePaths())) {
+        logCallback.saveExecutionLog(" Got the following Manifest: ", INFO);
         List<FileData> filePathList = new ArrayList<>();
         for (String filePath : artifactBundleDelegateConfig.getFilePaths()) {
-          filePathList.addAll(readManifestFiles(file.getAbsolutePath(), filePath, logCallback));
+          List<FileData> fileDatas = readManifestFiles(file.getAbsolutePath(), filePath, logCallback);
+          for (FileData fileData : fileDatas) {
+            logCallback.saveExecutionLog(format(" -> %s ", fileData.getFilePath()), INFO);
+          }
+          filePathList.addAll(fileDatas);
         }
         manifestsFromArtifactBundle.put(artifactBundleDelegateConfig.getIdentifier(), filePathList);
       }
+
+      logCallback.saveExecutionLog(" Successfully Read Manifest From Artifact Bundle.", INFO);
       return manifestsFromArtifactBundle;
 
     } catch (IOException e) {
@@ -176,6 +170,24 @@ public class ArtifactBundleFetchTaskHelper {
     createDirectoryIfDoesNotExist(workingDirectory + fileName);
     File file = new File(workingDirectory, fileName);
     unzipManifestFiles(file, zipInputStream);
+    return file;
+  }
+
+  public File extractArtifactBundle(
+      String artifactBundleType, File artifactBundleFile, File workingDirectory, String activityId) throws Exception {
+    File file;
+    if (artifactBundleType.equals(ZIP.toString())) {
+      file = extractZipFile(artifactBundleFile, workingDirectory, activityId);
+    } else if (artifactBundleType.equals(TAR.toString())) {
+      file = extractTarFile(artifactBundleFile, workingDirectory, activityId);
+    } else if (artifactBundleType.equals(TAR_GZIP.toString())) {
+      file = extractTarGzFile(artifactBundleFile, workingDirectory, activityId);
+    } else {
+      throw new UnsupportedTypeException("Ony ZIP, TAR and TAR_GZ Type of Artifact Bundle source is Supported");
+    }
+    if (file == null) {
+      throw new UnexpectedException("Failed to get Artifact Bundle source manifest files");
+    }
     return file;
   }
 
@@ -379,5 +391,22 @@ public class ArtifactBundleFetchTaskHelper {
       return treeMap.containsKey(NAME_MANIFEST_YML_ELEMENT);
     }
     return false;
+  }
+
+  public String getArtifactPathOfArtifactBundle(ArtifactBundleDetails artifactBundleDetails, File artifactFile,
+      File workingDirectory, LogCallback logCallback) throws Exception {
+    if (artifactFile == null) {
+      throw new IOException("Failed to download Artifact Bundle from the Artifact source");
+    }
+    File artifactBundleFile = extractArtifactBundle(artifactBundleDetails.getArtifactBundleType(), artifactFile,
+        workingDirectory, artifactBundleDetails.getActivityId());
+    String artifactPath = Paths.get(artifactBundleFile.getAbsolutePath(), artifactBundleDetails.getDeployableUnitPath())
+                              .normalize()
+                              .toString();
+    logCallback.saveExecutionLog(
+        color(format("Using Artifact '%s' from the Artifact Bundle '%s' ",
+                  artifactBundleDetails.getDeployableUnitPath(), artifactBundleFile.toPath().getFileName()),
+            LogColor.White, LogWeight.Bold));
+    return artifactPath;
   }
 }

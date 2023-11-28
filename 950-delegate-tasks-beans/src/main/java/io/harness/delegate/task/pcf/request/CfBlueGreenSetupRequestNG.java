@@ -33,6 +33,7 @@ import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.PcfAutoScalarCapability;
 import io.harness.delegate.beans.executioncapability.PcfInstallationCapability;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.pcf.CfCommandTypeNG;
 import io.harness.delegate.task.pcf.artifact.TasArtifactConfig;
 import io.harness.delegate.task.pcf.artifact.TasArtifactType;
@@ -65,6 +66,7 @@ public class CfBlueGreenSetupRequestNG extends AbstractTasTaskRequest {
   @Expression(ALLOW_SECRETS) List<String> routeMaps;
   boolean useAppAutoScalar;
   @Expression(ALLOW_SECRETS) TasManifestsPackage tasManifestsPackage;
+  ArtifactBundleDetails artifactBundleDetails;
 
   @Builder
   public CfBlueGreenSetupRequestNG(String accountId, CfCommandTypeNG cfCommandTypeNG, String commandName,
@@ -72,7 +74,7 @@ public class CfBlueGreenSetupRequestNG extends AbstractTasTaskRequest {
       CfCliVersion cfCliVersion, Integer timeoutIntervalInMin, String releaseNamePrefix,
       TasArtifactConfig tasArtifactConfig, Integer olderActiveVersionCountToKeep, Integer maxCount,
       Integer currentRunningCount, boolean useCurrentCount, List<String> routeMaps, boolean useAppAutoScalar,
-      TasManifestsPackage tasManifestsPackage, List<String> tempRoutes) {
+      TasManifestsPackage tasManifestsPackage, List<String> tempRoutes, ArtifactBundleDetails artifactBundleDetails) {
     super(timeoutIntervalInMin, accountId, commandName, cfCommandTypeNG, commandUnitsProgress, tasInfraConfig, useCfCLI,
         cfCliVersion);
     this.releaseNamePrefix = releaseNamePrefix;
@@ -85,6 +87,7 @@ public class CfBlueGreenSetupRequestNG extends AbstractTasTaskRequest {
     this.useAppAutoScalar = useAppAutoScalar;
     this.tasManifestsPackage = tasManifestsPackage;
     this.tempRoutes = tempRoutes;
+    this.artifactBundleDetails = artifactBundleDetails;
   }
 
   public TaskType getDelegateTaskType() {

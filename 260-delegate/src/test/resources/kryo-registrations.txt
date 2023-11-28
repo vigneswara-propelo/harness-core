@@ -2896,3 +2896,5 @@
 20002008:io.harness.delegate.task.k8s.trafficrouting.ProviderType
 20002009:io.harness.delegate.task.k8s.trafficrouting.RuleType
 20002010:io.harness.delegate.task.k8s.trafficrouting.RouteType
+20002011:io.harness.delegate.task.artifactBundle.ArtifactBundleDetails
+

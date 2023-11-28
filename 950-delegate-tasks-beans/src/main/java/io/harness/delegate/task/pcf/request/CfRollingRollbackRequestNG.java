@@ -30,6 +30,7 @@ import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.PcfAutoScalarCapability;
 import io.harness.delegate.beans.executioncapability.PcfInstallationCapability;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.pcf.CfCommandTypeNG;
 import io.harness.delegate.task.pcf.artifact.TasArtifactConfig;
 import io.harness.delegate.task.pcf.artifact.TasArtifactType;
@@ -56,13 +57,14 @@ public class CfRollingRollbackRequestNG extends AbstractTasTaskRequest {
   @Expression(ALLOW_SECRETS) TasManifestsPackage tasManifestsPackage;
   boolean isFirstDeployment;
   int desiredCount;
+  ArtifactBundleDetails artifactBundleDetails;
 
   @Builder
   public CfRollingRollbackRequestNG(String accountId, CfCommandTypeNG cfCommandTypeNG, String commandName,
       CommandUnitsProgress commandUnitsProgress, TasInfraConfig tasInfraConfig, boolean useCfCLI,
       CfCliVersion cfCliVersion, Integer timeoutIntervalInMin, TasArtifactConfig tasArtifactConfig,
       List<String> routeMaps, boolean useAppAutoScalar, TasManifestsPackage tasManifestsPackage, String applicationName,
-      int desiredCount, boolean isFirstDeployment) {
+      int desiredCount, boolean isFirstDeployment, ArtifactBundleDetails artifactBundleDetails) {
     super(timeoutIntervalInMin, accountId, commandName, cfCommandTypeNG, commandUnitsProgress, tasInfraConfig, useCfCLI,
         cfCliVersion);
     this.applicationName = applicationName;
@@ -72,6 +74,7 @@ public class CfRollingRollbackRequestNG extends AbstractTasTaskRequest {
     this.tasManifestsPackage = tasManifestsPackage;
     this.isFirstDeployment = isFirstDeployment;
     this.desiredCount = desiredCount;
+    this.artifactBundleDetails = artifactBundleDetails;
   }
 
   @Override

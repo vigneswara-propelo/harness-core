@@ -30,6 +30,7 @@ import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.PcfAutoScalarCapability;
 import io.harness.delegate.beans.executioncapability.PcfInstallationCapability;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.pcf.CfCommandTypeNG;
 import io.harness.delegate.task.pcf.artifact.TasArtifactConfig;
 import io.harness.delegate.task.pcf.artifact.TasArtifactType;
@@ -58,6 +59,7 @@ public class CfBasicSetupRequestNG extends AbstractTasTaskRequest {
   @Expression(ALLOW_SECRETS) List<String> routeMaps;
   boolean useAppAutoScalar;
   @Expression(ALLOW_SECRETS) TasManifestsPackage tasManifestsPackage;
+  ArtifactBundleDetails artifactBundleDetails;
 
   @Builder
   public CfBasicSetupRequestNG(String accountId, CfCommandTypeNG cfCommandTypeNG, String commandName,
@@ -65,7 +67,7 @@ public class CfBasicSetupRequestNG extends AbstractTasTaskRequest {
       CfCliVersion cfCliVersion, Integer timeoutIntervalInMin, String releaseNamePrefix,
       TasArtifactConfig tasArtifactConfig, Integer olderActiveVersionCountToKeep, Integer maxCount,
       Integer currentRunningCount, boolean useCurrentCount, List<String> routeMaps, boolean useAppAutoScalar,
-      TasManifestsPackage tasManifestsPackage) {
+      TasManifestsPackage tasManifestsPackage, ArtifactBundleDetails artifactBundleDetails) {
     super(timeoutIntervalInMin, accountId, commandName, cfCommandTypeNG, commandUnitsProgress, tasInfraConfig, useCfCLI,
         cfCliVersion);
     this.releaseNamePrefix = releaseNamePrefix;
@@ -77,6 +79,7 @@ public class CfBasicSetupRequestNG extends AbstractTasTaskRequest {
     this.routeMaps = routeMaps;
     this.useAppAutoScalar = useAppAutoScalar;
     this.tasManifestsPackage = tasManifestsPackage;
+    this.artifactBundleDetails = artifactBundleDetails;
   }
 
   @Override

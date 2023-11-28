@@ -2539,6 +2539,7 @@ public class TasStepHelperTest extends CategoryTest {
                     .applicationName("test-tas")
                     .lastActiveUnitProgressData(null)
                     .zippedManifestId("zip")
+                    .tasManifestOutcome(tasManifestOutcome)
                     .tasManifestsPackage(TasManifestsPackage.builder()
                                              .manifestYml(MANIFEST_YML)
                                              .variableYmls(asList(VARS_YML_1))
@@ -2754,6 +2755,7 @@ public class TasStepHelperTest extends CategoryTest {
                                                        .autoscalarManifestYml(AUTOSCALAR_YML)
                                                        .build())
                     .desiredCountInFinalYaml(3)
+                    .tasManifestOutcome(tasManifestOutcome)
                     .allFilesFetched(allFilesFetched)
                     .build()),
             eq(true), any());
