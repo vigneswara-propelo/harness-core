@@ -4388,7 +4388,6 @@ public class UserServiceImpl implements UserService {
     FindOptions findOptions = new FindOptions().skip(offset).limit(pageSize);
     List<User> userList = query.asList(findOptions);
     if (filterForGeneration) {
-      filterListForGeneration(accountId, userList, CG);
       userServiceHelper.processForSCIMUsers(accountId, userList, CG);
     }
     if (loadUserGroups) {
