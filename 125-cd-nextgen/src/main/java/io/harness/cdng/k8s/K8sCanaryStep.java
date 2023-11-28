@@ -29,6 +29,7 @@ import io.harness.cdng.k8s.beans.HelmValuesFetchResponsePassThroughData;
 import io.harness.cdng.k8s.beans.K8sCanaryExecutionOutput;
 import io.harness.cdng.k8s.beans.K8sExecutionPassThroughData;
 import io.harness.cdng.k8s.beans.StepExceptionPassThroughData;
+import io.harness.cdng.k8s.trafficrouting.K8sTrafficRoutingHelper;
 import io.harness.cdng.manifest.ManifestType;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
@@ -87,6 +88,7 @@ public class K8sCanaryStep extends CdTaskChainExecutable implements K8sStepExecu
   @Inject private InstanceInfoService instanceInfoService;
   @Inject private CDFeatureFlagHelper cdFeatureFlagHelper;
   @Inject private ReleaseMetadataFactory releaseMetadataFactory;
+  @Inject private K8sTrafficRoutingHelper trafficRoutingHelper;
 
   @Override
   public void validateResources(Ambiance ambiance, StepBaseParameters stepParameters) {
@@ -157,6 +159,11 @@ public class K8sCanaryStep extends CdTaskChainExecutable implements K8sStepExecu
     }
     if (cdStepHelper.shouldPassReleaseMetadata(accountId)) {
       canaryRequestBuilder.releaseMetadata(releaseMetadataFactory.createReleaseMetadata(infrastructure, ambiance));
+    }
+    if (cdFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_K8S_TRAFFIC_ROUTING_NG)) {
+      canaryRequestBuilder.trafficRoutingConfig(
+          trafficRoutingHelper.validateAndGetTrafficRoutingConfig(canaryStepParameters.getTrafficRouting())
+              .orElse(null));
     }
     Map<String, String> k8sCommandFlag =
         k8sStepHelper.getDelegateK8sCommandFlag(canaryStepParameters.getCommandFlags(), ambiance);

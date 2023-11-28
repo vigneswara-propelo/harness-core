@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.k8s.trafficrouting.K8sTrafficRouting;
 import io.harness.cdng.manifest.yaml.K8sStepCommandFlag;
 import io.harness.cdng.pipeline.steps.CDAbstractStepInfo;
 import io.harness.cdng.visitor.helpers.cdstepinfo.K8sCanaryStepInfoVisitorHelper;
@@ -59,8 +60,8 @@ public class K8sCanaryStepInfo extends K8sCanaryBaseStepInfo implements CDAbstra
   @Builder(builderMethodName = "infoBuilder")
   public K8sCanaryStepInfo(InstanceSelectionWrapper instanceSelection, ParameterField<Boolean> skipDryRun,
       ParameterField<List<TaskSelectorYaml>> delegateSelectors, String name, String identifier,
-      List<K8sStepCommandFlag> commandFlags) {
-    super(instanceSelection, skipDryRun, delegateSelectors, commandFlags);
+      List<K8sStepCommandFlag> commandFlags, K8sTrafficRouting trafficRouting) {
+    super(instanceSelection, skipDryRun, delegateSelectors, commandFlags, trafficRouting);
     this.name = name;
     this.identifier = identifier;
   }
@@ -87,6 +88,7 @@ public class K8sCanaryStepInfo extends K8sCanaryBaseStepInfo implements CDAbstra
         .skipDryRun(skipDryRun)
         .delegateSelectors(delegateSelectors)
         .commandFlags(commandFlags)
+        .trafficRouting(trafficRouting)
         .build();
   }
 
