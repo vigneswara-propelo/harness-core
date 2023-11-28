@@ -49,6 +49,7 @@ import io.harness.cdng.artifact.bean.yaml.DockerHubArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.EcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GoogleArtifactRegistryConfig;
+import io.harness.cdng.artifact.bean.yaml.JenkinsArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.Nexus2RegistryArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusConstant;
@@ -80,6 +81,8 @@ import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARRespons
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRepositoryDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRequestDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceService;
+import io.harness.cdng.artifact.resources.jenkins.dtos.JenkinsJobDetailsDTO;
+import io.harness.cdng.artifact.resources.jenkins.service.JenkinsResourceService;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusRequestDTO;
 import io.harness.cdng.artifact.resources.nexus.service.NexusResourceService;
@@ -120,6 +123,7 @@ import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.core.variables.StringNGVariable;
 
 import software.wings.helpers.ext.jenkins.BuildDetails;
+import software.wings.helpers.ext.jenkins.JobDetails;
 
 import com.google.common.io.Resources;
 import java.io.IOException;
@@ -164,6 +168,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
   @Mock CDYamlExpressionEvaluator cdYamlExpressionEvaluator;
   @Mock CDExpressionEvaluator cdExpressionEvaluator;
   @Mock S3ResourceService s3ResourceService;
+  @Mock JenkinsResourceService jenkinsResourceService;
   private static final String ACCOUNT_ID = "accountId";
   private static final String ORG_ID = "orgId";
   private static final String PROJECT_ID = "projectId";
@@ -833,6 +838,181 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(spyartifactResourceUtils.getBuildDetailsV2GAR(null, null, null, null, null, "accountId", "orgId",
                    "projectId", "pipeId", "version", "versionRegex", "", "", "serviceref", null))
         .isEqualTo(buildDetails);
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetJenkinsJobDetails() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    JenkinsArtifactConfig jenkinsArtifactConfig =
+        JenkinsArtifactConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value("connectorref").build())
+            .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    // Creating IdentifierRef for mock
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, "accountId", "orgId", "projectId");
+
+    doReturn(jenkinsArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, "main-patch");
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    JenkinsJobDetailsDTO buildDetails = JenkinsJobDetailsDTO.builder().build();
+
+    doReturn(buildDetails).when(jenkinsResourceService).getJobDetails(identifierRef, ORG_ID, PROJECT_ID, "");
+
+    assertThat(spyartifactResourceUtils.getJenkinsJobDetails(
+                   CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, "", null, FQN, SERVICE_REF, ""))
+        .isEqualTo(buildDetails);
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetJenkinsJobParameters() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    JenkinsArtifactConfig jenkinsArtifactConfig =
+        JenkinsArtifactConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value("connectorref").build())
+            .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    // Creating IdentifierRef for mock
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, "accountId", "orgId", "projectId");
+
+    doReturn(jenkinsArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, "main-patch");
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    List<JobDetails> jobDetails = new ArrayList<>();
+    jobDetails.add(new JobDetails("jobName", "", new ArrayList<>()));
+
+    doReturn(jobDetails).when(jenkinsResourceService).getJobParameters(identifierRef, ORG_ID, PROJECT_ID, "jobName");
+
+    assertThat(spyartifactResourceUtils.getJenkinsJobParameters(
+                   CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, "jobName", null, FQN, SERVICE_REF, ""))
+        .isEqualTo(jobDetails.get(0).getParameters());
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetJenkinsBuildJobDetails() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    JenkinsArtifactConfig jenkinsArtifactConfig =
+        JenkinsArtifactConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value("connectorref").build())
+            .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    // Creating IdentifierRef for mock
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, "accountId", "orgId", "projectId");
+
+    doReturn(jenkinsArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, "main-patch");
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    List<BuildDetails> buildDetails = new ArrayList<>();
+
+    doReturn(buildDetails)
+        .when(jenkinsResourceService)
+        .getBuildForJob(identifierRef, ORG_ID, PROJECT_ID, "", new ArrayList<>());
+
+    assertThat(spyartifactResourceUtils.getJenkinsJobBuildsV2(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID,
+                   PIPELINE_ID, "jobName", "artifactPath", null, FQN, SERVICE_REF, ""))
+        .isEqualTo(buildDetails);
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetJenkinsArtifactPaths() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    JenkinsArtifactConfig jenkinsArtifactConfig =
+        JenkinsArtifactConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value("connectorref").build())
+            .build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    // Creating IdentifierRef for mock
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, "accountId", "orgId", "projectId");
+
+    doReturn(jenkinsArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, "main-patch");
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    List<String> artifactPaths = new ArrayList<>();
+
+    doReturn(artifactPaths).when(jenkinsResourceService).getArtifactPath(identifierRef, ORG_ID, PROJECT_ID, "");
+
+    assertThat(spyartifactResourceUtils.getJenkinsArtifactPaths(
+                   CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, "jobName", null, FQN, SERVICE_REF, ""))
+        .isEqualTo(artifactPaths);
   }
 
   @Test

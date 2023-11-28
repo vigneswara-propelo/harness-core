@@ -35,6 +35,7 @@ import io.harness.cdng.artifact.bean.yaml.DockerHubArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.EcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GoogleArtifactRegistryConfig;
+import io.harness.cdng.artifact.bean.yaml.JenkinsArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.Nexus2RegistryArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusConstant;
@@ -70,6 +71,8 @@ import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARRespons
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRepositoryDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRequestDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceService;
+import io.harness.cdng.artifact.resources.jenkins.dtos.JenkinsJobDetailsDTO;
+import io.harness.cdng.artifact.resources.jenkins.service.JenkinsResourceService;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusRequestDTO;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusResponseDTO;
@@ -126,6 +129,7 @@ import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.utils.NGVariablesUtils;
 
 import software.wings.helpers.ext.jenkins.BuildDetails;
+import software.wings.helpers.ext.jenkins.JobDetails;
 import software.wings.helpers.ext.nexus.NexusRepositories;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -134,6 +138,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -169,6 +174,7 @@ public class ArtifactResourceUtils {
   @Inject CustomResourceService customResourceService;
   @Inject S3ResourceService s3ResourceService;
   @Inject BucketsResourceUtils bucketsResourceUtils;
+  @Inject JenkinsResourceService jenkinsResourceService;
 
   public final String SERVICE_GIT_BRANCH = "serviceGitBranch";
   public final String ENV_GIT_BRANCH = "envGitBranch";
@@ -1458,6 +1464,161 @@ public class ArtifactResourceUtils {
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(nexusConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
     return nexusResourceService.getRepositories(connectorRef, orgIdentifier, projectIdentifier, repositoryFormat);
+  }
+
+  public JenkinsJobDetailsDTO getJenkinsJobDetails(String jenkinsConnectorIdentifier, String accountId,
+      String orgIdentifier, String projectIdentifier, String pipelineIdentifier, String parentJobName,
+      GitEntityFindInfoDTO gitEntityBasicInfo, String fqnPath, String serviceRef, String runtimeInputYaml) {
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    // remote services can be linked with a specific branch, so we parse the YAML in one go and store the context data
+    //  has env git branch and service git branch
+    if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier, projectIdentifier,
+          pipelineIdentifier, runtimeInputYaml, fqnPath, gitEntityBasicInfo, serviceRef);
+    }
+    if (isNotEmpty(serviceRef)) {
+      final ArtifactConfig artifactSpecFromService = locateArtifactInService(accountId, orgIdentifier,
+          projectIdentifier, serviceRef, fqnPath,
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
+      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
+      if (isEmpty(jenkinsConnectorIdentifier)) {
+        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
+      }
+    }
+
+    jenkinsConnectorIdentifier =
+        getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+            pipelineIdentifier, runtimeInputYaml, jenkinsConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef,
+            baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator())
+            .getValue();
+
+    IdentifierRef connectorRef =
+        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
+    return jenkinsResourceService.getJobDetails(connectorRef, orgIdentifier, projectIdentifier, parentJobName);
+  }
+
+  public List<String> getJenkinsArtifactPaths(String jenkinsConnectorIdentifier, String accountId, String orgIdentifier,
+      String projectIdentifier, String pipelineIdentifier, String jobName, GitEntityFindInfoDTO gitEntityBasicInfo,
+      String fqnPath, String serviceRef, String runtimeInputYaml) {
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    // remote services can be linked with a specific branch, so we parse the YAML in one go and store the context data
+    //  has env git branch and service git branch
+    if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier, projectIdentifier,
+          pipelineIdentifier, runtimeInputYaml, fqnPath, gitEntityBasicInfo, serviceRef);
+    }
+    if (isNotEmpty(serviceRef)) {
+      final ArtifactConfig artifactSpecFromService = locateArtifactInService(accountId, orgIdentifier,
+          projectIdentifier, serviceRef, fqnPath,
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
+      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
+      if (isEmpty(jenkinsConnectorIdentifier)) {
+        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
+      }
+
+      if (isEmpty(jobName)) {
+        jobName = (String) jenkinsArtifactConfig.getJobName().fetchFinalValue();
+      }
+    }
+    CDYamlExpressionEvaluator yamlExpressionEvaluator =
+        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator();
+    jenkinsConnectorIdentifier = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
+        projectIdentifier, pipelineIdentifier, runtimeInputYaml, jenkinsConnectorIdentifier, fqnPath,
+        gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                                     .getValue();
+    jobName = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+        pipelineIdentifier, runtimeInputYaml, jobName, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                  .getValue();
+    IdentifierRef connectorRef =
+        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
+    return jenkinsResourceService.getArtifactPath(connectorRef, orgIdentifier, projectIdentifier, jobName);
+  }
+
+  public List<BuildDetails> getJenkinsJobBuildsV2(String jenkinsConnectorIdentifier, String accountId,
+      String orgIdentifier, String projectIdentifier, String pipelineIdentifier, String jobName, String artifactPath,
+      GitEntityFindInfoDTO gitEntityBasicInfo, String fqnPath, String serviceRef, String runtimeInputYaml) {
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    // remote services can be linked with a specific branch, so we parse the YAML in one go and store the context data
+    //  has env git branch and service git branch
+    if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier, projectIdentifier,
+          pipelineIdentifier, runtimeInputYaml, fqnPath, gitEntityBasicInfo, serviceRef);
+    }
+    if (isNotEmpty(serviceRef)) {
+      final ArtifactConfig artifactSpecFromService = locateArtifactInService(accountId, orgIdentifier,
+          projectIdentifier, serviceRef, fqnPath,
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
+      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
+      if (isEmpty(jenkinsConnectorIdentifier)) {
+        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
+      }
+      if (isEmpty(jobName)) {
+        jobName = (String) jenkinsArtifactConfig.getJobName().fetchFinalValue();
+      }
+      if (isEmpty(artifactPath)) {
+        artifactPath = (String) jenkinsArtifactConfig.getArtifactPath().fetchFinalValue();
+      }
+    }
+    CDYamlExpressionEvaluator yamlExpressionEvaluator =
+        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator();
+    jenkinsConnectorIdentifier = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
+        projectIdentifier, pipelineIdentifier, runtimeInputYaml, jenkinsConnectorIdentifier, fqnPath,
+        gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                                     .getValue();
+    jobName = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+        pipelineIdentifier, runtimeInputYaml, jobName, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                  .getValue();
+    artifactPath = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+        pipelineIdentifier, runtimeInputYaml, artifactPath, fqnPath, gitEntityBasicInfo, serviceRef,
+        yamlExpressionEvaluator)
+                       .getValue();
+    IdentifierRef connectorRef =
+        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
+    return jenkinsResourceService.getBuildForJob(
+        connectorRef, orgIdentifier, projectIdentifier, jobName, Arrays.asList(artifactPath));
+  }
+
+  public List<JobDetails.JobParameter> getJenkinsJobParameters(String jenkinsConnectorIdentifier, String accountId,
+      String orgIdentifier, String projectIdentifier, String pipelineIdentifier, String jobName,
+      GitEntityFindInfoDTO gitEntityBasicInfo, String fqnPath, String serviceRef, String runtimeInputYaml) {
+    YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
+
+    // remote services can be linked with a specific branch, so we parse the YAML in one go and store the context data
+    //  has env git branch and service git branch
+    if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
+      baseEvaluatorWithContext = getYamlExpressionEvaluatorWithContext(accountId, orgIdentifier, projectIdentifier,
+          pipelineIdentifier, runtimeInputYaml, fqnPath, gitEntityBasicInfo, serviceRef);
+    }
+    if (isNotEmpty(serviceRef)) {
+      final ArtifactConfig artifactSpecFromService = locateArtifactInService(accountId, orgIdentifier,
+          projectIdentifier, serviceRef, fqnPath,
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
+      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
+      if (isEmpty(jenkinsConnectorIdentifier)) {
+        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
+      }
+
+      if (isEmpty(jobName)) {
+        jobName = (String) jenkinsArtifactConfig.getJobName().fetchFinalValue();
+      }
+    }
+    CDYamlExpressionEvaluator yamlExpressionEvaluator =
+        baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getYamlExpressionEvaluator();
+    jenkinsConnectorIdentifier = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
+        projectIdentifier, pipelineIdentifier, runtimeInputYaml, jenkinsConnectorIdentifier, fqnPath,
+        gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                                     .getValue();
+    jobName = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+        pipelineIdentifier, runtimeInputYaml, jobName, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                  .getValue();
+    IdentifierRef connectorRef =
+        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
+    List<JobDetails> jobDetails =
+        jenkinsResourceService.getJobParameters(connectorRef, orgIdentifier, projectIdentifier, jobName);
+    return jobDetails.get(0).getParameters();
   }
 
   public List<NexusRepositories> getRepositoriesNexus2(String orgIdentifier, String projectIdentifier,

@@ -7,8 +7,6 @@
 
 package io.harness.ng.core.artifacts.resources.jenkins;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.NGCommonEntityConstants;
 import io.harness.annotations.dev.CodePulse;
@@ -16,8 +14,6 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.IdentifierRef;
-import io.harness.cdng.artifact.bean.ArtifactConfig;
-import io.harness.cdng.artifact.bean.yaml.JenkinsArtifactConfig;
 import io.harness.cdng.artifact.resources.jenkins.dtos.JenkinsJobDetailsDTO;
 import io.harness.cdng.artifact.resources.jenkins.service.JenkinsResourceService;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
@@ -145,25 +141,9 @@ public class JenkinsArtifactResource {
       @QueryParam(NGCommonEntityConstants.PARENT_JOB_NAME) String parentJobName,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @QueryParam(NGCommonEntityConstants.FQN_PATH) String fqnPath,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef, String runtimeInputYaml) {
-    if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
-      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
-      if (isEmpty(jenkinsConnectorIdentifier)) {
-        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
-      }
-    }
-
-    jenkinsConnectorIdentifier = artifactResourceUtils
-                                     .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
-                                         projectIdentifier, pipelineIdentifier, runtimeInputYaml,
-                                         jenkinsConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                                     .getValue();
-
-    IdentifierRef connectorRef =
-        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    JenkinsJobDetailsDTO buildDetails =
-        jenkinsResourceService.getJobDetails(connectorRef, orgIdentifier, projectIdentifier, parentJobName);
+    JenkinsJobDetailsDTO buildDetails = artifactResourceUtils.getJenkinsJobDetails(jenkinsConnectorIdentifier,
+        accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, parentJobName, gitEntityBasicInfo, fqnPath,
+        serviceRef, runtimeInputYaml);
     return ResponseDTO.newResponse(buildDetails);
   }
 
@@ -179,32 +159,10 @@ public class JenkinsArtifactResource {
       @QueryParam(NGCommonEntityConstants.JOB_NAME) String jobName, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
       @QueryParam(NGCommonEntityConstants.FQN_PATH) String fqnPath,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef, String runtimeInputYaml) {
-    if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
-      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
-      if (isEmpty(jenkinsConnectorIdentifier)) {
-        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
-      }
-
-      if (isEmpty(jobName)) {
-        jobName = (String) jenkinsArtifactConfig.getJobName().fetchFinalValue();
-      }
-    }
-    jenkinsConnectorIdentifier = artifactResourceUtils
-                                     .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
-                                         projectIdentifier, pipelineIdentifier, runtimeInputYaml,
-                                         jenkinsConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                                     .getValue();
-    jobName = artifactResourceUtils
-                  .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                      pipelineIdentifier, runtimeInputYaml, jobName, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                  .getValue();
-    IdentifierRef connectorRef =
-        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-
-    return ResponseDTO.newResponse(
-        jenkinsResourceService.getArtifactPath(connectorRef, orgIdentifier, projectIdentifier, jobName));
+    List<String> jenkinsArtifactPaths =
+        artifactResourceUtils.getJenkinsArtifactPaths(jenkinsConnectorIdentifier, accountId, orgIdentifier,
+            projectIdentifier, pipelineIdentifier, jobName, gitEntityBasicInfo, fqnPath, serviceRef, runtimeInputYaml);
+    return ResponseDTO.newResponse(jenkinsArtifactPaths);
   }
 
   @POST
@@ -221,39 +179,10 @@ public class JenkinsArtifactResource {
       @QueryParam(NGCommonEntityConstants.ARTIFACT_PATH) String artifactPath,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @QueryParam(NGCommonEntityConstants.FQN_PATH) String fqnPath,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef, String runtimeInputYaml) {
-    if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
-      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
-      if (isEmpty(jenkinsConnectorIdentifier)) {
-        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
-      }
-      if (isEmpty(jobName)) {
-        jobName = (String) jenkinsArtifactConfig.getJobName().fetchFinalValue();
-      }
-      if (isEmpty(artifactPath)) {
-        artifactPath = (String) jenkinsArtifactConfig.getArtifactPath().fetchFinalValue();
-      }
-    }
-    jenkinsConnectorIdentifier = artifactResourceUtils
-                                     .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
-                                         projectIdentifier, pipelineIdentifier, runtimeInputYaml,
-                                         jenkinsConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                                     .getValue();
-    jobName = artifactResourceUtils
-                  .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                      pipelineIdentifier, runtimeInputYaml, jobName, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                  .getValue();
-    artifactPath =
-        artifactResourceUtils
-            .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                pipelineIdentifier, runtimeInputYaml, artifactPath, fqnPath, gitEntityBasicInfo, serviceRef, null)
-            .getValue();
-    IdentifierRef connectorRef =
-        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-
-    return ResponseDTO.newResponse(jenkinsResourceService.getBuildForJob(
-        connectorRef, orgIdentifier, projectIdentifier, jobName, Arrays.asList(artifactPath)));
+    List<BuildDetails> buildDetails = artifactResourceUtils.getJenkinsJobBuildsV2(jenkinsConnectorIdentifier, accountId,
+        orgIdentifier, projectIdentifier, pipelineIdentifier, jobName, artifactPath, gitEntityBasicInfo, fqnPath,
+        serviceRef, runtimeInputYaml);
+    return ResponseDTO.newResponse(buildDetails);
   }
 
   @POST
@@ -269,32 +198,9 @@ public class JenkinsArtifactResource {
       @QueryParam(NGCommonEntityConstants.JOB_NAME) String jobName, @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo,
       @QueryParam(NGCommonEntityConstants.FQN_PATH) String fqnPath,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef, String runtimeInputYaml) {
-    if (isNotEmpty(serviceRef)) {
-      final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(
-          accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
-      JenkinsArtifactConfig jenkinsArtifactConfig = (JenkinsArtifactConfig) artifactSpecFromService;
-      if (isEmpty(jenkinsConnectorIdentifier)) {
-        jenkinsConnectorIdentifier = (String) jenkinsArtifactConfig.getConnectorRef().fetchFinalValue();
-      }
-
-      if (isEmpty(jobName)) {
-        jobName = (String) jenkinsArtifactConfig.getJobName().fetchFinalValue();
-      }
-    }
-    jenkinsConnectorIdentifier = artifactResourceUtils
-                                     .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier,
-                                         projectIdentifier, pipelineIdentifier, runtimeInputYaml,
-                                         jenkinsConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                                     .getValue();
-    jobName = artifactResourceUtils
-                  .getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
-                      pipelineIdentifier, runtimeInputYaml, jobName, fqnPath, gitEntityBasicInfo, serviceRef, null)
-                  .getValue();
-    IdentifierRef connectorRef =
-        IdentifierRefHelper.getIdentifierRef(jenkinsConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    List<JobDetails> jobDetails =
-        jenkinsResourceService.getJobParameters(connectorRef, orgIdentifier, projectIdentifier, jobName);
-    List<JobParameter> jobParameters = jobDetails.get(0).getParameters();
+    List<JobParameter> jobParameters =
+        artifactResourceUtils.getJenkinsJobParameters(jenkinsConnectorIdentifier, accountId, orgIdentifier,
+            projectIdentifier, pipelineIdentifier, jobName, gitEntityBasicInfo, fqnPath, serviceRef, runtimeInputYaml);
 
     return ResponseDTO.newResponse(jobParameters);
   }
