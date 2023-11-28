@@ -27,6 +27,8 @@ import io.harness.exception.ExplanationException;
 import io.harness.exception.HintException;
 import io.harness.exception.InternalServerErrorException;
 import io.harness.exception.ScmException;
+import io.harness.exception.WebhookException;
+import io.harness.exception.WingsException;
 import io.harness.gitsync.caching.beans.GitFileCacheKey;
 import io.harness.gitsync.caching.service.GitFileCacheService;
 import io.harness.gitsync.common.helper.GitRepoHelper;
@@ -101,7 +103,7 @@ public class GitXWebhookServiceImpl implements GitXWebhookService {
         if (createdGitXWebhook == null) {
           log.error(String.format("Error while saving webhook [%s] in DB", gitXWebhook.getIdentifier()));
           throw new InternalServerErrorException(
-              String.format("Error while saving webhook [%s] in DB", gitXWebhook.getIdentifier()));
+              String.format("Unexpected error while saving webhook [%s] in Harness", gitXWebhook.getIdentifier()));
         }
         return CreateGitXWebhookResponseDTO.builder().webhookIdentifier(createdGitXWebhook.getIdentifier()).build();
       } catch (DuplicateKeyException ex) {
@@ -114,6 +116,14 @@ public class GitXWebhookServiceImpl implements GitXWebhookService {
                 createGitXWebhookRequestDTO.getRepoName(),
                 createGitXWebhookRequestDTO.getScope().getAccountIdentifier()),
             USER_SRE, ex);
+      } catch (InternalServerErrorException exception) {
+        log.error("Unexpected error occurred while creating GitX webhook {}",
+            createGitXWebhookRequestDTO.getWebhookIdentifier(), exception);
+        throw exception;
+      } catch (WingsException wingsException) {
+        String errorMessage = "Error occurred while creating webhook";
+        log.error(errorMessage, wingsException);
+        throw new WebhookException(errorMessage, wingsException);
       } catch (Exception exception) {
         log.error(String.format(WEBHOOK_FAILURE_ERROR_MESSAGE, CREATING), exception);
         throw new InternalServerErrorException(String.format(WEBHOOK_FAILURE_ERROR_MESSAGE, CREATING));
@@ -200,9 +210,13 @@ public class GitXWebhookServiceImpl implements GitXWebhookService {
         }
         return UpdateGitXWebhookResponseDTO.builder().webhookIdentifier(updatedGitXWebhook.getIdentifier()).build();
       } catch (InternalServerErrorException exception) {
-        log.error("Unexpected error occurred while updating the GitX webhook {}",
+        log.error("Unexpected error occurred while updating GitX webhook {}",
             updateGitXWebhookCriteriaDTO.getWebhookIdentifier(), exception);
         throw exception;
+      } catch (WingsException wingsException) {
+        String errorMessage = "Error occurred while updating webhook";
+        log.error(errorMessage, wingsException);
+        throw new WebhookException(errorMessage, wingsException);
       } catch (Exception exception) {
         log.error(String.format(WEBHOOK_FAILURE_ERROR_MESSAGE, UPDATING), exception);
         throw new InternalServerErrorException(String.format(WEBHOOK_FAILURE_ERROR_MESSAGE, UPDATING));

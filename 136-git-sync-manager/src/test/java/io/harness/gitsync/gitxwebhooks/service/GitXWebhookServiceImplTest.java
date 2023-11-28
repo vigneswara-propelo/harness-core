@@ -23,6 +23,8 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InternalServerErrorException;
+import io.harness.exception.ScmBadRequestException;
+import io.harness.exception.WebhookException;
 import io.harness.gitsync.GitSyncTestBase;
 import io.harness.gitsync.caching.service.GitFileCacheService;
 import io.harness.gitsync.common.helper.GitRepoHelper;
@@ -133,6 +135,9 @@ public class GitXWebhookServiceImplTest extends GitSyncTestBase {
     when(webhookEventService.upsertWebhook(any())).thenReturn(upsertWebhookResponseDTO);
     assertThrows(
         InternalServerErrorException.class, () -> gitXWebhookService.createGitXWebhook(createGitXWebhookRequestDTO));
+
+    when(webhookEventService.upsertWebhook(any())).thenThrow(new ScmBadRequestException("Webhook failure"));
+    assertThrows(WebhookException.class, () -> gitXWebhookService.createGitXWebhook(createGitXWebhookRequestDTO));
   }
 
   @Test
@@ -246,8 +251,12 @@ public class GitXWebhookServiceImplTest extends GitSyncTestBase {
                                                                     .scope(Scope.of(ACCOUNT_IDENTIFIER))
                                                                     .build();
     UpdateGitXWebhookRequestDTO updateGitXWebhookRequestDTO =
-        UpdateGitXWebhookRequestDTO.builder().isEnabled(true).build();
+        UpdateGitXWebhookRequestDTO.builder().repoName("repo").connectorRef("connector").isEnabled(true).build();
     assertThrows(InternalServerErrorException.class,
+        () -> gitXWebhookService.updateGitXWebhook(updateGitXWebhookCriteriaDTO, updateGitXWebhookRequestDTO));
+
+    when(webhookEventService.upsertWebhook(any())).thenThrow(new ScmBadRequestException("Webhook failure"));
+    assertThrows(WebhookException.class,
         () -> gitXWebhookService.updateGitXWebhook(updateGitXWebhookCriteriaDTO, updateGitXWebhookRequestDTO));
   }
 
