@@ -19,6 +19,7 @@ import io.harness.mongo.AbstractMongoModule;
 import io.harness.mongo.MongoConfig;
 import io.harness.mongo.MongoPersistence;
 import io.harness.morphia.MorphiaRegistrar;
+import io.harness.opaclient.OpaClientModule;
 import io.harness.persistence.HPersistence;
 import io.harness.persistence.NoopUserProvider;
 import io.harness.persistence.UserProvider;
@@ -55,6 +56,8 @@ import io.harness.ssca.services.NormalisedSbomComponentService;
 import io.harness.ssca.services.NormalisedSbomComponentServiceImpl;
 import io.harness.ssca.services.OrchestrationStepService;
 import io.harness.ssca.services.OrchestrationStepServiceImpl;
+import io.harness.ssca.services.PolicyMgmtService;
+import io.harness.ssca.services.PolicyMgmtServiceImpl;
 import io.harness.ssca.services.RuleEngineService;
 import io.harness.ssca.services.RuleEngineServiceImpl;
 import io.harness.ssca.services.S3StoreService;
@@ -116,6 +119,7 @@ public class SSCAManagerModule extends AbstractModule {
     bind(NormalisedSbomComponentService.class).to(NormalisedSbomComponentServiceImpl.class);
     bind(ArtifactApi.class).to(ArtifactApiImpl.class);
     bind(CdInstanceSummaryService.class).to(CdInstanceSummaryServiceImpl.class);
+    bind(PolicyMgmtService.class).to(PolicyMgmtServiceImpl.class);
     install(new TokenClientModule(this.configuration.getNgManagerServiceHttpClientConfig(),
         this.configuration.getNgManagerServiceSecret(), SSCA_SERVICE.getServiceId()));
     install(new SSCAEventsFrameworkModule(
@@ -125,6 +129,22 @@ public class SSCAManagerModule extends AbstractModule {
     install(TimeModule.getInstance());
     install(new PipelineRemoteClientModule(configuration.getPipelineServiceConfiguration(),
         configuration.getPipelineServiceSecret(), SSCA_SERVICE.getServiceId()));
+    install(new OpaClientModule(configuration.getPolicyMgmtServiceConfiguration(),
+        configuration.getPolicyMgmtServiceSecret(), SSCA_SERVICE.getServiceId()));
+  }
+
+  @Provides
+  @Singleton
+  @Named("policyMgmtServiceClientConfig")
+  public ServiceHttpClientConfig policyMgmtServiceClientConfig() {
+    return this.configuration.getPolicyMgmtServiceConfiguration();
+  }
+
+  @Provides
+  @Singleton
+  @Named("policyMgmtServiceSecret")
+  public String policyMgmtServiceSecret() {
+    return this.configuration.getPolicyMgmtServiceSecret();
   }
 
   @Provides

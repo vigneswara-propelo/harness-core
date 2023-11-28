@@ -822,10 +822,11 @@ components:
           type: string
         pipeline_execution_id:
           type: string
+        policy_set_ref:
+          type: string
       required:
         - enforcement_id
         - artifact
-        - policy_file_id
     TokenIssueResponseBody:
       title: TokenIssueResponseBody
       x-stoplight:

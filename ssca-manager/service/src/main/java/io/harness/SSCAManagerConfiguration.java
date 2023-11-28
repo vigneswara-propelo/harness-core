@@ -81,6 +81,8 @@ public class SSCAManagerConfiguration extends Configuration {
   @JsonProperty("pipelineServiceSecret") private String pipelineServiceSecret;
 
   @JsonProperty("s3Config") S3Config s3Config;
+  @JsonProperty("policyMgmtServiceClientConfig") private ServiceHttpClientConfig policyMgmtServiceConfiguration;
+  @JsonProperty("policyMgmtServiceSecret") private String policyMgmtServiceSecret;
 
   public SwaggerBundleConfiguration getSwaggerBundleConfiguration() {
     SwaggerBundleConfiguration defaultSwaggerBundleConfiguration = new SwaggerBundleConfiguration();

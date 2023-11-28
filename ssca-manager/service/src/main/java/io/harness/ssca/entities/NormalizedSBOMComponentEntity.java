@@ -37,6 +37,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @TypeAlias("sbomComponent")
 @HarnessEntity(exportable = true)
 public class NormalizedSBOMComponentEntity implements PersistentEntity {
+  @Field("_id") String uuid;
   @Field("orchestrationid") String orchestrationId;
   @Field("sbomversion") String sbomVersion;
 

@@ -226,6 +226,10 @@ if [[ "" != "$PIPELINE_SERVICE_SECRET" ]]; then
   export PIPELINE_SERVICE_SECRET; yq -i '.pipelineServiceSecret=env(PIPELINE_SERVICE_SECRET)' $CONFIG_FILE
 fi
 
+if [[ "" != "$POLICY_MGMT_SERVICE_SECRET" ]]; then
+  export POLICY_MGMT_SERVICE_SECRET; yq -i '.policyMgmtServiceSecret=env(POLICY_MGMT_SERVICE_SECRET)' $CONFIG_FILE
+fi
+
 replace_key_value eventsFramework.redis.sentinel $EVENTS_FRAMEWORK_USE_SENTINEL
 replace_key_value eventsFramework.redis.envNamespace $EVENTS_FRAMEWORK_ENV_NAMESPACE
 replace_key_value eventsFramework.redis.redisUrl $EVENTS_FRAMEWORK_REDIS_URL
