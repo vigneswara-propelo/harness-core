@@ -10,10 +10,8 @@ package io.harness.ssca.services;
 import io.harness.entities.Instance;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.pipeline.remote.PipelineServiceClient;
-import io.harness.remote.client.NGRestUtils;
 import io.harness.repositories.CdInstanceSummaryRepo;
 import io.harness.repositories.EnforcementSummaryRepo;
-import io.harness.serializer.JsonUtils;
 import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewRequestBody;
 import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.SLSAVerificationSummary;
@@ -338,19 +336,6 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
       }
     }
     return false;
-  }
-
-  private JsonNode getPmsExecutionSummary(Instance instance) {
-    JsonNode rootNode = null;
-    try {
-      Object pmsExecutionSummary = NGRestUtils.getResponse(pipelineServiceClient.getExecutionDetailV2(
-          instance.getLastPipelineExecutionId(), instance.getAccountIdentifier(), instance.getOrgIdentifier(),
-          instance.getProjectIdentifier(), instance.getStageSetupId()));
-      rootNode = JsonUtils.asTree(pmsExecutionSummary);
-    } catch (Exception e) {
-      log.error(String.format("PMS Request Failed. Exception: %s", e));
-    }
-    return rootNode;
   }
 
   private JsonNode parseField(JsonNode rootNode, String... path) {

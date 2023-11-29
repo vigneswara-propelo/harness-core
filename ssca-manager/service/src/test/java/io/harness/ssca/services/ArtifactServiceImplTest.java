@@ -324,6 +324,38 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
   @Test
   @Owner(developers = ARPITJ)
   @Category(UnitTests.class)
+  public void testListLatestArtifacts_aggregationQuery() {
+    List<ArtifactEntity> artifactEntities = Arrays.asList(builderFactory.getArtifactEntityBuilder()
+                                                              .artifactId("artifactId")
+                                                              .artifactCorrelationId("artifactCorrelationId")
+                                                              .build(),
+        builderFactory.getArtifactEntityBuilder()
+            .artifactId("artifact2")
+            .artifactCorrelationId("artifactCorrelation2")
+            .build());
+    Mockito.when(artifactRepository.findAll(any(Aggregation.class))).thenReturn(artifactEntities);
+
+    Mockito.when(artifactRepository.getCount(any())).thenReturn(3L);
+
+    Mockito.when(enforcementSummaryRepo.findAll(any(Aggregation.class)))
+        .thenReturn(List.of(builderFactory.getEnforcementSummaryBuilder().build()));
+
+    Pageable pageable = PageResponseUtils.getPageable(0, 2, ArtifactApiUtils.getSortFieldMapping("name"), "ASC");
+    artifactService.listLatestArtifacts(builderFactory.getContext().getAccountId(),
+        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(), pageable);
+
+    ArgumentCaptor<Aggregation> argument = ArgumentCaptor.forClass(Aggregation.class);
+    Mockito.verify(artifactRepository).findAll(argument.capture());
+    assertThat(argument.getValue().toString())
+        .isEqualTo(String.format(
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$match\" : { \"accountId\" : \"%s\", \"orgId\" : \"%s\", \"projectId\" : \"%s\", \"invalid\" : false}}, { \"$sort\" : { \"createdOn\" : -1}}, { \"$group\" : { \"_id\" : \"$artifactId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$sort\" : { \"document.name\" : 1}}, { \"$project\" : { \"_id\" : 0}}, { \"$skip\" : 0}, { \"$limit\" : 2}]}",
+            builderFactory.getContext().getAccountId(), builderFactory.getContext().getOrgIdentifier(),
+            builderFactory.getContext().getProjectIdentifier()));
+  }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
   public void testListArtifacts() {
     List<ArtifactEntity> artifactEntities = Arrays.asList(builderFactory.getArtifactEntityBuilder()
                                                               .artifactId("artifactId")
@@ -387,22 +419,22 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
     Aggregation aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
     assertThat(aggregation.toString())
         .isEqualTo(
-            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.allowlistviolationcount\" : { \"$ne\" : 0}}}]}");
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.allowlistviolationcount\" : { \"$ne\" : 0}}}, { \"$project\" : { \"orchestrationid\" : \"$document.orchestrationid\"}}]}");
     body.setPolicyViolation(PolicyViolationEnum.DENY);
     aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
     assertThat(aggregation.toString())
         .isEqualTo(
-            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.denylistviolationcount\" : { \"$ne\" : 0}}}]}");
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.denylistviolationcount\" : { \"$ne\" : 0}}}, { \"$project\" : { \"orchestrationid\" : \"$document.orchestrationid\"}}]}");
     body.setPolicyViolation(PolicyViolationEnum.ANY);
     aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
     assertThat(aggregation.toString())
         .isEqualTo(
-            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"$or\" : [{ \"document.allowlistviolationcount\" : { \"$ne\" : 0}}, { \"document.denylistviolationcount\" : { \"$ne\" : 0}}]}}]}");
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"$or\" : [{ \"document.allowlistviolationcount\" : { \"$ne\" : 0}}, { \"document.denylistviolationcount\" : { \"$ne\" : 0}}]}}, { \"$project\" : { \"orchestrationid\" : \"$document.orchestrationid\"}}]}");
     body.setPolicyViolation(PolicyViolationEnum.NONE);
     aggregation = new ArtifactServiceImpl().getPolicyViolationEnforcementAggregation(body);
     assertThat(aggregation.toString())
         .isEqualTo(
-            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.allowlistviolationcount\" : 0, \"document.denylistviolationcount\" : 0}}]}");
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$sort\" : { \"createdAt\" : -1}}, { \"$group\" : { \"_id\" : \"$orchestrationId\", \"document\" : { \"$first\" : \"$$ROOT\"}}}, { \"$unwind\" : \"$document\"}, { \"$match\" : { \"document.allowlistviolationcount\" : 0, \"document.denylistviolationcount\" : 0}}, { \"$project\" : { \"orchestrationid\" : \"$document.orchestrationid\"}}]}");
   }
 
   @Test

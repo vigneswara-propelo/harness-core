@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -463,11 +464,8 @@ public class ArtifactServiceImpl implements ArtifactService {
     // { "aggregate" : "__collection__", "pipeline" : [{ "$sort" : { "createdAt" : -1}}, { "$group" : { "_id" :
     // "$orchestrationId", "document" : { "$first" : "$$ROOT"}}}, { "$unwind" : "$document"}, { "$match" : {
     // "document.denylistviolationcount" : { "$ne" : 0}}}]}
-    List<EnforcementSummaryEntity> enforcementSummaryEntities = enforcementSummaryRepo.findAll(aggregation);
-    criteria.and(ArtifactEntityKeys.orchestrationId)
-        .in(enforcementSummaryEntities.stream()
-                .map(EnforcementSummaryEntity::getOrchestrationId)
-                .collect(Collectors.toSet()));
+    Set<String> orchestrationIds = enforcementSummaryRepo.findAllOrchestrationId(aggregation);
+    criteria.and(ArtifactEntityKeys.orchestrationId).in(orchestrationIds);
     return criteria;
   }
 
@@ -516,7 +514,9 @@ public class ArtifactServiceImpl implements ArtifactService {
     GroupOperation groupByOrchestrationId =
         group(EnforcementSummaryEntityKeys.orchestrationId).first("$$ROOT").as(EnforcementSummaryDBOKeys.document);
     UnwindOperation unwindOperation = unwind(EnforcementSummaryDBOKeys.document);
-    return newAggregation(sortOperation, groupByOrchestrationId, unwindOperation, matchOperation);
+    ProjectionOperation projectionOperation = Aggregation.project(
+        EnforcementSummaryDBOKeys.document + "." + EnforcementSummaryEntityKeys.orchestrationId.toLowerCase());
+    return newAggregation(sortOperation, groupByOrchestrationId, unwindOperation, matchOperation, projectionOperation);
   }
 
   private Criteria getDeploymentFilterCriteria(ArtifactListingRequestBody body) {
