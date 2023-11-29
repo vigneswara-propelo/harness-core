@@ -45,10 +45,10 @@ public class NotificationMapper {
   }
 
   public static Notification toNotification(
-      NotificationRule notificationRule, NotificationChannel notificationChannel) {
+      NotificationRule notificationRule, NotificationChannel notificationChannel, String notificationRequestId) {
     try {
       return Notification.builder()
-          .id(notificationRule.getUuid())
+          .id(notificationRequestId)
           .accountIdentifier(notificationRule.getAccountIdentifier())
           .channel(notificationChannel)
           .build();
@@ -62,12 +62,13 @@ public class NotificationMapper {
       NotificationRule notificationRule, NotificationChannel notificationChannel, Map<String, String> templateData) {
     NotificationRequest.Builder notificationRequestBuilder =
         NotificationRequest.newBuilder().setAccountId(notificationRule.getAccountIdentifier());
+    String channelType = notificationChannel.getNotificationChannelType().getDisplayName();
     switch (notificationChannel.getNotificationChannelType()) {
       case EMAIL:
         EmailChannel emailChannel = (EmailChannel) notificationChannel.getChannel();
         emailChannel.setTemplateData(templateData);
         String templateId = templateData != null && templateData.get(TEMPLATE_IDENTIFIER) != null
-            ? templateData.get(TEMPLATE_IDENTIFIER)
+            ? String.format("%s_%s", templateData.get(TEMPLATE_IDENTIFIER), channelType)
             : "templateId";
         emailChannel.setTemplateData(templateData);
         emailChannel.setTemplateId(templateId);
@@ -82,7 +83,7 @@ public class NotificationMapper {
         PagerDutyChannel pagerDutyChannel = (PagerDutyChannel) notificationChannel.getChannel();
         pagerDutyChannel.setTemplateData(templateData);
         String pagerTemplateId = templateData != null && templateData.get(TEMPLATE_IDENTIFIER) != null
-            ? templateData.get(TEMPLATE_IDENTIFIER)
+            ? String.format("%s_%s", templateData.get(TEMPLATE_IDENTIFIER), channelType)
             : "templateId";
         pagerDutyChannel.setTemplateId(pagerTemplateId);
         notificationRequestBuilder.setPagerDuty(
@@ -92,7 +93,7 @@ public class NotificationMapper {
         MicrosoftTeamsChannel msTeamChannel = (MicrosoftTeamsChannel) notificationChannel.getChannel();
         msTeamChannel.setTemplateData(templateData);
         String msTeamTemplateId = templateData != null && templateData.get(TEMPLATE_IDENTIFIER) != null
-            ? templateData.get(TEMPLATE_IDENTIFIER)
+            ? String.format("%s_%s", templateData.get(TEMPLATE_IDENTIFIER), channelType)
             : "templateId";
         msTeamChannel.setTemplateId(msTeamTemplateId);
         notificationRequestBuilder.setMsTeam((NotificationRequest.MSTeam) msTeamChannel.toObjectofProtoSchema());

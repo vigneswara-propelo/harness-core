@@ -7,6 +7,7 @@
 
 package io.harness.notification.service;
 
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.JENNY;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -218,7 +219,8 @@ public class NotificationServiceTest extends CategoryTest {
     NotificationRule notificationRule = notificationRuleEmail();
     NotificationChannel notificationChannel =
         notificationRule.getNotificationChannelForEvent(NotificationEvent.DELEGATE_DOWN).get(0);
-    Notification notification = NotificationMapper.toNotification(notificationRule, notificationChannel);
+    Notification notification =
+        NotificationMapper.toNotification(notificationRule, notificationChannel, generateUuid());
     assertThat(notification).isNotNull();
     assertThat(notification.getAccountIdentifier()).isEqualTo(ACCOUNT_IDENTIFIER);
     assertThat(notification.getChannel().getChannelType()).isEqualTo(NotificationChannelType.EMAIL);

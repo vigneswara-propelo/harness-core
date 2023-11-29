@@ -45,7 +45,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @StoreIn(DbAliases.NOTIFICATION)
 @Entity(value = "notificationRule", noClassnameStored = true)
-@Document("NotificationRule")
+@Document("notificationRule")
 @TypeAlias("notificationRule")
 @HarnessEntity(exportable = true)
 @OwnedBy(HarnessTeam.PL)
@@ -118,7 +118,7 @@ public class NotificationRule implements PersistentEntity, PersistentRegularIter
     public static final String notificationEventConfig =
         NotificationRuleKeys.notificationConditions + "." + NotificationConditionKeys.notificationEventConfigs;
     public static final String notificationEntity =
-        notificationEventConfig + NotificationEventConfigKeys.notificationEntity;
+        notificationEventConfig + "." + NotificationEventConfigKeys.notificationEntity;
     public static final String notificationEvent =
         notificationEventConfig + "." + NotificationEventConfigKeys.notificationEvent;
   }

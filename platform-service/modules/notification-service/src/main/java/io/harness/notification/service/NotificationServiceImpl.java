@@ -140,15 +140,16 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationEvent.valueOf(notificationTriggerRequest.getEvent()));
     boolean notificationSend = false;
     for (NotificationChannel notificationChannel : notificationChannels) {
-      notificationSend =
-          sendNotification(notificationRule, notificationChannel, notificationTriggerRequest.getTemplateDataMap());
+      notificationSend = sendNotification(notificationRule, notificationChannel,
+          notificationTriggerRequest.getTemplateDataMap(), notificationTriggerRequest.getId());
     }
     return notificationSend;
   }
 
-  private boolean sendNotification(
-      NotificationRule notificationRule, NotificationChannel notificationChannel, Map<String, String> templateData) {
-    Notification notification = NotificationMapper.toNotification(notificationRule, notificationChannel);
+  private boolean sendNotification(NotificationRule notificationRule, NotificationChannel notificationChannel,
+      Map<String, String> templateData, String notificationRequestId) {
+    Notification notification =
+        NotificationMapper.toNotification(notificationRule, notificationChannel, notificationRequestId);
 
     if (Objects.isNull(notification)) {
       log.error("Ignoring notification request for processing {}", notificationRule.getUuid());

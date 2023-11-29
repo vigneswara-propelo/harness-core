@@ -7,4 +7,20 @@
 
 package io.harness.notification;
 
-public enum NotificationChannelType { EMAIL, SLACK, PAGERDUTY, MSTEAMS, WEBHOOK }
+public enum NotificationChannelType {
+  EMAIL("email"),
+  SLACK("slack"),
+  PAGERDUTY("pagerduty"),
+  MSTEAMS("msteams"),
+  WEBHOOK("webhook");
+
+  private String displayName;
+
+  NotificationChannelType(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+}
