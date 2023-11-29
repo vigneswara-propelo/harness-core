@@ -225,8 +225,10 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
       ServiceEntityValidator serviceEntityValidator =
           serviceEntityValidatorFactory.getServiceEntityValidator(serviceEntity);
       serviceEntityValidator.validate(serviceEntity);
-      applyGitXSettingsIfApplicable(
-          serviceEntity.getAccountId(), serviceEntity.getOrgIdentifier(), serviceEntity.getProjectIdentifier());
+      if (StoreType.REMOTE.equals(serviceEntity.getStoreType())) {
+        applyGitXSettingsIfApplicable(
+            serviceEntity.getAccountId(), serviceEntity.getOrgIdentifier(), serviceEntity.getProjectIdentifier());
+      }
       ServiceEntity createdService =
           Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
             ServiceEntity service = serviceRepository.saveGitAware(serviceEntity);

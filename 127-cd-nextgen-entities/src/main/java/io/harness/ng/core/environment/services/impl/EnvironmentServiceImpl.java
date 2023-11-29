@@ -196,8 +196,10 @@ public class EnvironmentServiceImpl implements EnvironmentService {
       modifyEnvironmentRequest(environment);
 
       Set<EntityDetailProtoDTO> referredEntities = getAndValidateReferredEntities(environment);
-      applyGitXSettingsIfApplicable(
-          environment.getAccountId(), environment.getOrgIdentifier(), environment.getProjectIdentifier());
+      if (StoreType.REMOTE.equals(environment.getStoreType())) {
+        applyGitXSettingsIfApplicable(
+            environment.getAccountId(), environment.getOrgIdentifier(), environment.getProjectIdentifier());
+      }
       Environment createdEnvironment =
           Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
             Environment tempEnvironment = environmentRepository.saveGitAware(environment);
