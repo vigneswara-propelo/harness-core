@@ -1,6 +1,6 @@
 #Any edit in this file should accompany an increment in version.
 name : settingsConfiguration
-version : 36
+version : 37
 settings :
   - identifier: mandate_webhook_secrets_for_github_triggers
     name: Mandate Webhook Secrets for Github Triggers
@@ -377,6 +377,14 @@ settings :
       - PROJECT
       - ACCOUNT
       - ORGANIZATION
+  - identifier: skip_fail_fast_validation_checks_for_pipeline_execute
+    name: Skip Fail Fast Validation Checks for Pipeline Execute
+    category: PMS
+    defaultValue: false
+    valueType: BOOLEAN
+    allowOverrides: false
+    allowedScopes:
+      - ACCOUNT
   - identifier: export_service_variables_as_env_variables
     name: Export service variables as ENV variables in shell script
     category: PMS

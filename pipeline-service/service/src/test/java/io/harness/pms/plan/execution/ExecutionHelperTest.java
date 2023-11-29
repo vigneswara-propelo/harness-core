@@ -15,6 +15,7 @@ import static io.harness.rule.OwnerRule.BRIJESH;
 import static io.harness.rule.OwnerRule.NAMAN;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
+import static io.harness.rule.OwnerRule.RISHIKESH;
 import static io.harness.rule.OwnerRule.SHALINI;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
@@ -25,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -49,10 +51,13 @@ import io.harness.execution.PlanExecution.PlanExecutionKeys;
 import io.harness.execution.PlanExecutionMetadata;
 import io.harness.gitaware.helper.GitAwareContextHelper;
 import io.harness.gitsync.beans.StoreType;
+import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
+import io.harness.ngsettings.SettingValueType;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.ngsettings.dto.SettingDTO;
 import io.harness.ngsettings.dto.SettingResponseDTO;
+import io.harness.ngsettings.dto.SettingValueResponseDTO;
 import io.harness.opaclient.model.OpaConstants;
 import io.harness.plan.Plan;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
@@ -109,6 +114,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import retrofit2.Call;
+import retrofit2.Response;
 
 @OwnedBy(PIPELINE)
 @PrepareForTest({PlanExecutionUtils.class, UUIDGenerator.class})
@@ -136,6 +143,7 @@ public class ExecutionHelperTest extends CategoryTest {
   @Mock PlanService planService;
   @Mock NGSettingsClient settingsClient;
   @Mock PMSPipelineServiceHelper pmsPipelineServiceHelper;
+  @Mock private Call<ResponseDTO<SettingValueResponseDTO>> request;
 
   String accountId = "accountId";
   String orgId = "orgId";
@@ -233,6 +241,7 @@ public class ExecutionHelperTest extends CategoryTest {
     aStatic.when(UUIDGenerator::generateUuid).thenReturn(generatedExecutionId);
 
     pipelineYamlV1 = readFile("simplified-pipeline.yaml");
+    request = Mockito.mock(Call.class);
   }
 
   @After
@@ -683,6 +692,13 @@ public class ExecutionHelperTest extends CategoryTest {
                                         .identifier(pipelineId)
                                         .yaml(pipelineYaml)
                                         .build();
+    doReturn(request)
+        .when(settingsClient)
+        .getSetting(eq("skip_fail_fast_validation_checks_for_pipeline_execute"), eq(pipelineEntity.getAccountId()),
+            eq(null), eq(null));
+    SettingValueResponseDTO settingValueResponseDTOForFalseValue =
+        SettingValueResponseDTO.builder().value("false").valueType(SettingValueType.BOOLEAN).build();
+    doReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTOForFalseValue))).when(request).execute();
     executionHelper.getPipelineYamlAndValidateStaticallyReferredEntities(
         YamlUtils.readAsJsonNode(mergedRuntimeInputYaml), pipelineEntity);
     verify(pipelineRbacServiceImpl, times(1))
@@ -690,6 +706,15 @@ public class ExecutionHelperTest extends CategoryTest {
             accountId, orgId, projectId, pipelineId, YamlUtils.readAsJsonNode(mergedRuntimeInputYaml));
     verify(pipelineRbacServiceImpl, times(0))
         .extractAndValidateStaticallyReferredEntities(accountId, orgId, projectId, pipelineId, resolvedYaml);
+
+    SettingValueResponseDTO settingValueResponseDTOForTrueValue =
+        SettingValueResponseDTO.builder().value("true").valueType(SettingValueType.BOOLEAN).build();
+    doReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTOForTrueValue))).when(request).execute();
+    executionHelper.getPipelineYamlAndValidateStaticallyReferredEntities(
+        YamlUtils.readAsJsonNode(mergedRuntimeInputYaml), pipelineEntity);
+    verify(pipelineRbacServiceImpl, times(1))
+        .extractAndValidateStaticallyReferredEntities(
+            accountId, orgId, projectId, pipelineId, YamlUtils.readAsJsonNode(mergedRuntimeInputYaml));
   }
 
   @Test
@@ -1031,5 +1056,30 @@ public class ExecutionHelperTest extends CategoryTest {
     } catch (IOException e) {
       throw new InvalidRequestException("Could not read resource file: " + filename);
     }
+  }
+
+  @Test
+  @Owner(developers = RISHIKESH)
+  @Category(UnitTests.class)
+  public void testIsSkipFailFastValidationEnabled() throws IOException {
+    doReturn(request)
+        .when(settingsClient)
+        .getSetting(eq("skip_fail_fast_validation_checks_for_pipeline_execute"), eq(pipelineEntity.getAccountId()),
+            eq(null), eq(null));
+
+    SettingValueResponseDTO settingValueResponseDTOForFalseValue =
+        SettingValueResponseDTO.builder().value("false").valueType(SettingValueType.BOOLEAN).build();
+    doReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTOForFalseValue))).when(request).execute();
+    assertThat(executionHelper.isSkipFailFastValidationEnabled(pipelineEntity)).isFalse();
+
+    SettingValueResponseDTO settingValueResponseDTOForTrueValue =
+        SettingValueResponseDTO.builder().value("true").valueType(SettingValueType.BOOLEAN).build();
+    doReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTOForTrueValue))).when(request).execute();
+    assertThat(executionHelper.isSkipFailFastValidationEnabled(pipelineEntity)).isTrue();
+
+    doThrow(new IOException("Could not find skip fail fast validation checks for pipeline execute setting"))
+        .when(request)
+        .execute();
+    assertThat(executionHelper.isSkipFailFastValidationEnabled(pipelineEntity)).isFalse();
   }
 }

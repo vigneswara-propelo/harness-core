@@ -57,4 +57,6 @@ public class SettingIdentifiers {
       "pagerduty_notification_integration_keys_allowlist";
   public static String AIDA = "aida";
   public static final String ENABLE_STEADY_STATE_FOR_JOBS_KEY_IDENTIFIER = "native_helm_enable_steady_state_for_jobs";
+  public static final String SKIP_FAIL_FAST_VALIDATION_CHECKS_FOR_PIPELINE_EXECUTE =
+      "skip_fail_fast_validation_checks_for_pipeline_execute";
 }
