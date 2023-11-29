@@ -40,7 +40,8 @@ pipeline:
           environment:
             environmentRef: <+input>
             deployToAll: false
-            infrastructureDefinitions: <+input>
+            infrastructureDefinitions:
+              - identifier: infra2
             environmentInputs: <+input>
         tags: {}
         failureStrategies:

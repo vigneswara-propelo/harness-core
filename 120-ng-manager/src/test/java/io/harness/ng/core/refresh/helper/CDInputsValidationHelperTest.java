@@ -313,7 +313,7 @@ public class CDInputsValidationHelperTest extends NgManagerTestBase {
     InputsValidationResponse validationResponse =
         CDInputsValidationHelper.validateInputsForYaml(ACCOUNT_ID, ORG_ID, PROJECT_ID, pipelineYmlWithService, null);
     assertThat(validationResponse).isNotNull();
-    assertThat(validationResponse.isValid()).isFalse();
+    assertThat(validationResponse.isValid()).isTrue();
     assertThat(validationResponse.getChildrenErrorNodes()).isNullOrEmpty();
   }
 
