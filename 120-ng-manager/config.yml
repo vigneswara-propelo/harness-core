@@ -544,6 +544,11 @@ pluginExecutionConfig:
     image: harness/drone-git:1.4.1-rootless
     entrypoint:
       - /usr/local/bin/clone
+  downloadAwsS3Config:
+    # Use rootless image only for K8 download aws s3
+    image: harnessdev/download-aws-s3:1.0.0-rootless-linux
+    entrypoint:
+      - /usr/local/bin/download
   apiUrl: https://localhost:8181/#/
 
 signupDomainDenylistConfig:

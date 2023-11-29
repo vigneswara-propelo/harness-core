@@ -1318,3 +1318,6 @@ io.harness.cdng.manifest.yaml.ArtifactBundleStore
 io.harness.cdng.gitops.steps.ClusterAgentRef
 io.harness.cdng.tas.beans.ArtifactBundleFetchResponsePassThroughData
 io.harness.plancreator.steps.common.v1.StageElementParametersV1
+io.harness.cdng.containerStepGroup.DownloadAwsS3StepNode
+io.harness.cdng.containerStepGroup.DownloadAwsS3StepParameters
+io.harness.cdng.containerStepGroup.DownloadAwsS3StepInfo

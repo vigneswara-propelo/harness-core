@@ -256,4 +256,5 @@ enum EntityTypeProtoEnum {
   CHAOS_HUB = 243;
   IDP_COOKIECUTTER = 244;
   IDP_CREATE_REPO = 245;
+  DOWNLOAD_AWS_S3 = 246;
 }

@@ -6,6 +6,7 @@
  */
 
 package io.harness.cdng.plugininfoproviders;
+
 import static io.harness.ci.commonconstants.ContainerExecutionConstants.PORT_STARTING_RANGE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
@@ -103,7 +104,9 @@ public class PluginInfoProviderHelper {
     }
 
     return ImageDetails.newBuilder()
-        .setConnectorDetails(ConnectorDetails.newBuilder().setConnectorRef(connectorRef.getValue()).build())
+        .setConnectorDetails(ConnectorDetails.newBuilder()
+                                 .setConnectorRef(connectorRef.getValue() == null ? "" : connectorRef.getValue())
+                                 .build())
         .setImageInformation(ImageInformation.newBuilder()
                                  .setImageName(StringValue.of(image.getValue()))
                                  .setImagePullPolicy(imagePullPolicyStr)

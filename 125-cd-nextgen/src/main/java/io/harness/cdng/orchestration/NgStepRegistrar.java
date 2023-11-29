@@ -51,6 +51,7 @@ import io.harness.cdng.chaos.ChaosStep;
 import io.harness.cdng.configfile.steps.ConfigFilesStep;
 import io.harness.cdng.configfile.steps.ConfigFilesStepV2;
 import io.harness.cdng.configfile.steps.IndividualConfigFileStep;
+import io.harness.cdng.containerStepGroup.DownloadAwsS3Step;
 import io.harness.cdng.customDeployment.FetchInstanceScriptStep;
 import io.harness.cdng.ecs.EcsBasicRollbackStep;
 import io.harness.cdng.ecs.EcsBlueGreenCreateServiceStep;
@@ -425,6 +426,9 @@ public class NgStepRegistrar {
 
     engineSteps.put(HelmDeployStepV2.STEP_TYPE, HelmDeployStepV2.class);
     engineSteps.put(HelmRollbackStepV2.STEP_TYPE, HelmRollbackStepV2.class);
+
+    // CD Container Step Group Common Steps
+    engineSteps.put(DownloadAwsS3Step.STEP_TYPE, DownloadAwsS3Step.class);
 
     return engineSteps;
   }

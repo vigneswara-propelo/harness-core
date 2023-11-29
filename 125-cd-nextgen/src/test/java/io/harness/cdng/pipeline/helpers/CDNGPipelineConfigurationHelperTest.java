@@ -50,7 +50,7 @@ public class CDNGPipelineConfigurationHelperTest extends CategoryTest {
     StepCategory result = cdngPipelineConfigurationHelper.getSteps(ServiceDefinitionType.KUBERNETES);
     assertThat(result.getName()).isEqualTo(CDNGPipelineConfigurationHelper.LIBRARY);
     assertThat(result.getStepsData()).isEqualTo(new ArrayList<>());
-    assertThat(result.getStepCategories().size()).isEqualTo(7);
+    assertThat(result.getStepCategories().size()).isEqualTo(8);
   }
 
   @Test
@@ -60,7 +60,7 @@ public class CDNGPipelineConfigurationHelperTest extends CategoryTest {
     StepCategory result = cdngPipelineConfigurationHelper.getSteps(ServiceDefinitionType.SSH);
     assertThat(result.getName()).isEqualTo(CDNGPipelineConfigurationHelper.LIBRARY);
     assertThat(result.getStepsData()).isEqualTo(new ArrayList<>());
-    assertThat(result.getStepCategories().size()).isEqualTo(7);
+    assertThat(result.getStepCategories().size()).isEqualTo(8);
   }
 
   @Test
@@ -70,7 +70,7 @@ public class CDNGPipelineConfigurationHelperTest extends CategoryTest {
     StepCategory result = cdngPipelineConfigurationHelper.getSteps(ServiceDefinitionType.WINRM);
     assertThat(result.getName()).isEqualTo(CDNGPipelineConfigurationHelper.LIBRARY);
     assertThat(result.getStepsData()).isEqualTo(new ArrayList<>());
-    assertThat(result.getStepCategories().size()).isEqualTo(7);
+    assertThat(result.getStepCategories().size()).isEqualTo(8);
   }
 
   @Test

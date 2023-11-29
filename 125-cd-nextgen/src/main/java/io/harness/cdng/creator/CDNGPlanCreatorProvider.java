@@ -163,6 +163,7 @@ import io.harness.cdng.creator.plan.steps.azure.webapp.AzureWebAppRollbackStepPl
 import io.harness.cdng.creator.plan.steps.azure.webapp.AzureWebAppSlotDeploymentStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.azure.webapp.AzureWebAppSlotSwapSlotPlanCreator;
 import io.harness.cdng.creator.plan.steps.azure.webapp.AzureWebAppTrafficShiftStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.containerStepGroup.DownloadAwsS3StepPlanCreator;
 import io.harness.cdng.creator.plan.steps.ecs.EcsBasicRollbackStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.ecs.EcsBlueGreenCreateServiceStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.ecs.EcsBlueGreenRollbackStepPlanCreator;
@@ -264,6 +265,7 @@ import io.harness.cdng.creator.variables.aws.AwsLambdaRollbackStepVariableCreato
 import io.harness.cdng.creator.variables.aws.sam.AwsSamBuildStepVariableCreator;
 import io.harness.cdng.creator.variables.aws.sam.AwsSamDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.aws.sam.AwsSamRollbackStepVariableCreator;
+import io.harness.cdng.creator.variables.containerStepGroup.DownloadAwsS3StepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsDeployWithoutTrafficStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsGenOneDeployStepVariableCreator;
@@ -340,6 +342,8 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
   private static final String CLOUDFORMATION_STEP_METADATA = "Cloudformation";
   private static final String AWS_CDK_STEP_METADATA = "AWS CDK";
+
+  private static final String CD_STEP_GROUP_CONTAINER_STEPS_METADATA = "CD Common Steps";
   private static final String AZURE = "Azure";
   private static final String HELM = "Helm";
   private static final String PROVISIONER = "Provisioner";
@@ -365,6 +369,9 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
   private static final List<String> TERRAFORM_CLOUD_CATEGORY = Arrays.asList(KUBERNETES, PROVISIONER, HELM, ECS,
       COMMANDS, SERVERLESS_AWS_LAMBDA, ASG, GOOGLE_CLOUD_FUNCTIONS, ServiceSpecType.AWS_LAMBDA);
   private static final String BUILD_STEP = "Builds";
+
+  private static final List<String> CD_STEP_GROUP_CONTAINER_STEPS_CATEGORY =
+      Arrays.asList(CD_STEP_GROUP_CONTAINER_STEPS_METADATA, PLUGIN);
 
   private static final List<String> AZURE_RESOURCE_CATEGORY =
       Arrays.asList(KUBERNETES, PROVISIONER, AZURE, HELM, AZURE_WEBAPP, COMMANDS);
@@ -564,6 +571,9 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new CustomStagePlanCreator());
     planCreators.add(new io.harness.cdng.creator.plan.stage.v1.CustomStagePlanCreator());
 
+    // CD Container Step Group Common Steps
+    planCreators.add(new DownloadAwsS3StepPlanCreator());
+
     injectorUtils.injectMembers(planCreators);
     return planCreators;
   }
@@ -730,6 +740,9 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     variableCreators.add(new AwsCdkDeployVariableCreator());
     variableCreators.add(new AwsCdkDestroyVariableCreator());
     variableCreators.add(new AwsCdkRollbackVariableCreator());
+
+    // CD Container Step Group Common Steps
+    variableCreators.add(new DownloadAwsS3StepVariableCreator());
 
     variableCreators.add(customStageVariableCreator);
 
@@ -1599,6 +1612,16 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                 StepMetaData.newBuilder().addAllCategory(AWS_CDK_CATEGORY).setFolderPath(AWS_CDK_STEP_METADATA).build())
             .build();
 
+    StepInfo downloadAwsS3 = StepInfo.newBuilder()
+                                 .setName("DOWNLOAD AWS S3")
+                                 .setType(StepSpecTypeConstants.DOWNLOAD_AWS_S3)
+                                 .setStepMetaData(StepMetaData.newBuilder()
+                                                      .addAllCategory(CD_STEP_GROUP_CONTAINER_STEPS_CATEGORY)
+                                                      .setFolderPath(CD_STEP_GROUP_CONTAINER_STEPS_METADATA)
+                                                      .build())
+                                 .setFeatureFlag(FeatureName.CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD.name())
+                                 .build();
+
     List<StepInfo> stepInfos = new ArrayList<>();
 
     stepInfos.add(gitOpsMergePR);
@@ -1705,6 +1728,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     stepInfos.add(ecsServiceSetup);
     stepInfos.add(ecsUpgradeContainer);
     stepInfos.add(ecsBasicRollback);
+    stepInfos.add(downloadAwsS3);
     return stepInfos;
   }
 }

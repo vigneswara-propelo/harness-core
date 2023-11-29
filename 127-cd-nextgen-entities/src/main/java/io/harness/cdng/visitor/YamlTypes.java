@@ -246,4 +246,6 @@ public interface YamlTypes {
   String AWS_CDK_DEPLOY = StepSpecTypeConstants.AWS_CDK_DEPLOY;
   String AWS_CDK_DESTROY = StepSpecTypeConstants.AWS_CDK_DESTROY;
   String AWS_CDK_ROLLBACK = StepSpecTypeConstants.AWS_CDK_ROLLBACK;
+
+  String DOWNLOAD_AWS_S3 = StepSpecTypeConstants.DOWNLOAD_AWS_S3;
 }

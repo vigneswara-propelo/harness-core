@@ -689,7 +689,10 @@ public enum EntityType {
       ModuleType.IDP, EntityTypeConstants.IDP_COOKIECUTTER, IdentifierRef.class, EntityYamlRootNames.IDP_COOKIECUTTER),
   @JsonProperty(EntityTypeConstants.IDP_CREATE_REPO)
   IDP_CREATE_REPO(
-      ModuleType.IDP, EntityTypeConstants.IDP_CREATE_REPO, IdentifierRef.class, EntityYamlRootNames.IDP_CREATE_REPO);
+      ModuleType.IDP, EntityTypeConstants.IDP_CREATE_REPO, IdentifierRef.class, EntityYamlRootNames.IDP_CREATE_REPO),
+  @JsonProperty(EntityTypeConstants.DOWNLOAD_AWS_S3)
+  DOWNLOAD_AWS_S3(
+      ModuleType.CD, EntityTypeConstants.DOWNLOAD_AWS_S3, IdentifierRef.class, EntityYamlRootNames.DOWNLOAD_AWS_S3);
 
   private final ModuleType moduleType;
   String yamlName;

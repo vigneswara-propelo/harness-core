@@ -81,6 +81,7 @@ public class CDCreatorUtils {
         StepSpecTypeConstants.SERVERLESS_AWS_LAMBDA_PACKAGE_V2, StepSpecTypeConstants.GITOPS_REVERT_PR,
         StepSpecTypeConstants.AWS_CDK_BOOTSTRAP, StepSpecTypeConstants.AWS_CDK_SYNTH,
         StepSpecTypeConstants.AWS_CDK_DIFF, StepSpecTypeConstants.AWS_CDK_DEPLOY, StepSpecTypeConstants.AWS_CDK_DESTROY,
-        StepSpecTypeConstants.AWS_CDK_ROLLBACK, StepSpecTypeConstants.UPDATE_GITOPS_APP);
+        StepSpecTypeConstants.AWS_CDK_ROLLBACK, StepSpecTypeConstants.UPDATE_GITOPS_APP,
+        StepSpecTypeConstants.DOWNLOAD_AWS_S3);
   }
 }
