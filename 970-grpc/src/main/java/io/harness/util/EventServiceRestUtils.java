@@ -8,6 +8,9 @@
 package io.harness.util;
 
 import static io.harness.annotations.dev.HarnessTeam.CE;
+import static io.harness.threading.Morpheus.sleep;
+
+import static java.time.Duration.ofSeconds;
 
 import io.harness.annotations.dev.OwnedBy;
 
@@ -23,6 +26,7 @@ public class EventServiceRestUtils {
 
   public static <T> T executeRestCallWithRetry(Call<T> call) throws IOException {
     int attempt = 0;
+    long backoff = 15;
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
       try {
@@ -38,7 +42,9 @@ public class EventServiceRestUtils {
         }
       } catch (Exception e) {
         if (attempt <= MAX_ATTEMPTS) {
-          log.warn("Error executing rest call {}, retrying..., attempt {}", e, attempt);
+          log.warn("Error executing rest call {}, retrying after {}seconds..., attempt {}", e, backoff, attempt);
+          sleep(ofSeconds(backoff));
+          backoff *= 2;
         } else {
           log.error("Error executing rest call", e);
           throw new IOException(e);
