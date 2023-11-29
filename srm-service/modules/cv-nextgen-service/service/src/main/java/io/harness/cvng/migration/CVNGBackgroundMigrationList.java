@@ -35,6 +35,9 @@ import io.harness.cvng.migration.list.CVNGBaseMigration;
 import io.harness.cvng.migration.list.CleanUpMonitoringSourcePerpetualTask;
 import io.harness.cvng.migration.list.CleanUpOldDocuments;
 import io.harness.cvng.migration.list.CleanupDeprecatedDocuments;
+import io.harness.cvng.migration.list.CompositeSLORecordBucketCleanupMigration;
+import io.harness.cvng.migration.list.CompositeSLORecordBucketMigration;
+import io.harness.cvng.migration.list.CompositeSLORecordCleanUpMigration;
 import io.harness.cvng.migration.list.CustomHealthCustomPackForExistingProjects;
 import io.harness.cvng.migration.list.DeleteActivitiesNotAssociatedWithMonitoredServices;
 import io.harness.cvng.migration.list.DeleteHarnessCDChangeSourceMigration;
@@ -156,6 +159,9 @@ public class CVNGBackgroundMigrationList {
         .add(Pair.of(70, SLIRecordMigration.class))
         .add(Pair.of(71, PopulateVerificationStatusInVerificationJobInstances.class))
         .add(Pair.of(72, AddStartQuarterToQuarterlySLOMigration.class))
+        .add(Pair.of(73, CompositeSLORecordCleanUpMigration.class))
+        .add(Pair.of(74, CompositeSLORecordBucketCleanupMigration.class))
+        .add(Pair.of(75, CompositeSLORecordBucketMigration.class))
         .build();
   }
 }
