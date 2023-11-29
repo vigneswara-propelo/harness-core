@@ -7,20 +7,20 @@
 
 package software.wings.resources;
 
-import io.harness.annotations.dev.HarnessModule;
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
-import io.harness.rest.RestResponse;
-import io.harness.security.annotations.NextGenManagerAuth;
+import static io.harness.annotations.dev.HarnessTeam.CI;
 
-import software.wings.security.annotations.ExternalFacingApiAuth;
+import static software.wings.security.PermissionAttribute.PermissionType.LOGGED_IN;
+
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.rest.RestResponse;
+
+import software.wings.security.annotations.AuthRule;
 import software.wings.service.intfc.AccountService;
 
+import com.codahale.metrics.annotation.ExceptionMetered;
+import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -28,30 +28,21 @@ import javax.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "/ng/accounts")
-@Path("/ng/accounts")
+@Api(value = "/ng/accounts/external")
+@Path("/ng/accounts/external")
 @Produces("application/json")
-@Consumes("application/json")
-@NextGenManagerAuth
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @Slf4j
-@OwnedBy(HarnessTeam.PL)
-@TargetModule(HarnessModule._955_ACCOUNT_MGMT)
-public class TrustLevelResourceNG {
+@OwnedBy(CI)
+public class ExternalResource {
   private final AccountService accountService;
 
   @GET
   @Path("/trustLevel")
-  @ExternalFacingApiAuth
+  @Timed
+  @AuthRule(permissionType = LOGGED_IN)
+  @ExceptionMetered
   public RestResponse<Integer> getAccountTrustLevel(@QueryParam("accountId") String accountId) {
     return new RestResponse<>(accountService.getTrustLevel(accountId));
-  }
-
-  @GET
-  @Path("/update-trust-level")
-  @ApiOperation(value = "Used to update the trust level", hidden = true)
-  public RestResponse<Boolean> updateAccountTrustLevel(
-      @QueryParam("accountId") String accountId, @QueryParam("trustLevel") Integer trustLevel) {
-    return new RestResponse<>(accountService.updateTrustLevel(accountId, trustLevel));
   }
 }
