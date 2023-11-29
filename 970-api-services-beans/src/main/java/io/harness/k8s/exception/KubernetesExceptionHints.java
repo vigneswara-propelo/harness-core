@@ -102,7 +102,7 @@ public class KubernetesExceptionHints {
   public final String MANIFEST_RENDER_ERROR_GO_TEMPLATE =
       "Please check if the given manifests are valid and can be rendered by Go template. To know more about Go templating, refer: \nhttps://community.harness.io/t/harness-local-go-templating/460 \nhttps://docs.harness.io/article/mwy6zgz8gu-use-go-templating-in-kubernetes-manifests#notes";
   public final String MANIFEST_RENDER_ERROR_HELM =
-      "Please check if the given manifests are valid and can be rendered by the `helm template` command.";
+      "Please check if the given manifests are valid and can be rendered by the `helm template` command. \n- The templates folder should not be a part of the specified path for the helm chart.\nFor more info check the chart file structure: https://helm.sh/docs/topics/charts/#the-chart-file-structure";
   public final String IMMUTABLE_FIELD = "Please delete the conflicting resource from the cluster and try again.";
   public final String MISSING_RESOURCE =
       "Please check manifest(s) for any references to missing resources and create them.";
