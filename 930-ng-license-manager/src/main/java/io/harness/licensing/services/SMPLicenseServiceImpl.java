@@ -29,6 +29,7 @@ import io.harness.lock.PersistentLocker;
 import io.harness.ng.core.account.AuthenticationMechanism;
 import io.harness.ng.core.account.DefaultExperience;
 import io.harness.ng.core.dto.AccountDTO;
+import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.ModuleLicenseRepository;
 import io.harness.smp.license.models.AccountInfo;
 import io.harness.smp.license.models.SMPLicense;
@@ -62,10 +63,11 @@ public class SMPLicenseServiceImpl extends DefaultLicenseServiceImpl {
       LicenseComplianceResolver licenseComplianceResolver, @Named(LICENSE_CACHE_NAMESPACE) Cache<String, List> cache,
       LicenseGenerator licenseGenerator, LicenseValidator licenseValidator, SMPLicenseMapper smpLicenseMapper,
       SMPLicenseValidationJob licenseValidationJob,
-      @Named(EventsFrameworkConstants.MODULE_LICENSE) Producer eventProducer, PersistentLocker persistentLocker) {
+      @Named(EventsFrameworkConstants.MODULE_LICENSE) Producer eventProducer, PersistentLocker persistentLocker,
+      OutboxService outboxService) {
     super(moduleLicenseRepository, licenseObjectConverter, licenseInterface, accountService, telemetryReporter,
         ceLicenseClient, licenseComplianceResolver, cache, licenseGenerator, licenseValidator, smpLicenseMapper,
-        eventProducer);
+        eventProducer, outboxService);
     this.licenseValidationJob = licenseValidationJob;
     this.persistentLocker = persistentLocker;
   }

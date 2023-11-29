@@ -70,11 +70,14 @@ import io.harness.licensing.entities.modules.CDModuleLicense;
 import io.harness.licensing.entities.modules.CEModuleLicense;
 import io.harness.licensing.entities.modules.CIModuleLicense;
 import io.harness.licensing.entities.modules.ModuleLicense;
+import io.harness.licensing.event.ModuleLicenseCreateEvent;
+import io.harness.licensing.event.ModuleLicenseUpdateEvent;
 import io.harness.licensing.interfaces.ModuleLicenseInterface;
 import io.harness.licensing.mappers.LicenseObjectConverter;
 import io.harness.licensing.mappers.SMPLicenseMapper;
 import io.harness.ng.core.account.DefaultExperience;
 import io.harness.ng.core.dto.AccountDTO;
+import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.ModuleLicenseRepository;
 import io.harness.rule.Owner;
 import io.harness.smp.license.models.SMPLicenseValidationResult;
@@ -116,6 +119,7 @@ public class DefaultLicenseServiceImplTest extends CategoryTest {
   @Mock SMPLicenseMapper smpLicenseMapper;
   @Mock Cache<String, List> cache;
   @Mock Producer eventProducer;
+  @Mock OutboxService outboxService;
   @InjectMocks DefaultLicenseServiceImpl licenseService;
 
   private StartTrialDTO startTrialRequestDTO;
@@ -262,6 +266,7 @@ public class DefaultLicenseServiceImplTest extends CategoryTest {
         .sendTrackEvent(eq(SUCCEED_START_FREE_OPERATION), any(), any(), eq(io.harness.telemetry.Category.SIGN_UP));
     verify(cache, times(1)).remove(any());
     verify(eventProducer, times(1)).send(any());
+    verify(outboxService, times(1)).save(any(ModuleLicenseCreateEvent.class));
     assertThat(result).isEqualTo(ciModuleLicenseDTO);
   }
 
@@ -324,6 +329,7 @@ public class DefaultLicenseServiceImplTest extends CategoryTest {
     verify(telemetryReporter, times(1)).sendGroupEvent(eq(ACCOUNT_IDENTIFIER), any(), any());
     verify(telemetryReporter, times(1))
         .sendTrackEvent(eq(SUCCEED_START_TRIAL_OPERATION), any(), any(), eq(io.harness.telemetry.Category.SIGN_UP));
+    verify(outboxService, times(1)).save(any(ModuleLicenseCreateEvent.class));
     verifyNoInteractions(ceLicenseClient);
     assertThat(result).isEqualTo(DEFAULT_CI_MODULE_LICENSE_DTO);
     verify(cache, times(1)).remove(any());
@@ -388,6 +394,7 @@ public class DefaultLicenseServiceImplTest extends CategoryTest {
     assertThat(result).isEqualTo(DEFAULT_CI_MODULE_LICENSE_DTO);
     verify(cache, times(1)).remove(any());
     verify(eventProducer, times(1)).send(any());
+    verify(outboxService, times(1)).save(any(ModuleLicenseUpdateEvent.class));
 
     ArgumentCaptor<ModuleLicense> extendedLicense = ArgumentCaptor.forClass(ModuleLicense.class);
     verify(moduleLicenseRepository, times(1)).save(extendedLicense.capture());

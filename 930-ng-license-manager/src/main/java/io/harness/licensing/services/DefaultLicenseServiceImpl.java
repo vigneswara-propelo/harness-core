@@ -48,6 +48,10 @@ import io.harness.licensing.beans.response.CheckExpiryResultDTO;
 import io.harness.licensing.beans.summary.LicensesWithSummaryDTO;
 import io.harness.licensing.checks.LicenseComplianceResolver;
 import io.harness.licensing.entities.modules.ModuleLicense;
+import io.harness.licensing.event.ModuleLicenseCreateEvent;
+import io.harness.licensing.event.ModuleLicenseDeleteEvent;
+import io.harness.licensing.event.ModuleLicenseUpdateEvent;
+import io.harness.licensing.event.ModuleLicenseYamlDTO;
 import io.harness.licensing.helpers.ModuleLicenseHelper;
 import io.harness.licensing.helpers.ModuleLicenseSummaryHelper;
 import io.harness.licensing.interfaces.ModuleLicenseInterface;
@@ -55,6 +59,7 @@ import io.harness.licensing.mappers.LicenseObjectConverter;
 import io.harness.licensing.mappers.SMPLicenseMapper;
 import io.harness.ng.core.account.DefaultExperience;
 import io.harness.ng.core.dto.AccountDTO;
+import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.ModuleLicenseRepository;
 import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.security.dto.Principal;
@@ -106,6 +111,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
 
   protected final AccountService accountService;
   private final Producer eventProducer;
+  private final OutboxService outboxService;
 
   static final String FAILED_OPERATION = "START_TRIAL_ATTEMPT_FAILED";
   static final String SUCCEED_START_FREE_OPERATION = "FREE_PLAN";
@@ -121,7 +127,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
       AccountService accountService, TelemetryReporter telemetryReporter, CeLicenseClient ceLicenseClient,
       LicenseComplianceResolver licenseComplianceResolver, @Named(LICENSE_CACHE_NAMESPACE) Cache<String, List> cache,
       LicenseGenerator licenseGenerator, LicenseValidator licenseValidator, SMPLicenseMapper smpLicenseMapper,
-      @Named(MODULE_LICENSE) Producer eventProducer) {
+      @Named(MODULE_LICENSE) Producer eventProducer, OutboxService outboxService) {
     this.moduleLicenseRepository = moduleLicenseRepository;
     this.licenseObjectConverter = licenseObjectConverter;
     this.licenseInterface = licenseInterface;
@@ -134,6 +140,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     this.licenseValidator = licenseValidator;
     this.smpLicenseMapper = smpLicenseMapper;
     this.eventProducer = eventProducer;
+    this.outboxService = outboxService;
   }
 
   @Override
@@ -210,6 +217,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     moduleLicenseRepository.deleteById(id);
     evictCache(moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType());
     publishLicenseEvent(moduleLicense, DELETE_ACTION);
+    ngAuditModuleLicenseDeleteEvent(licenseObjectConverter.toDTO(moduleLicense));
     log.info("Deleted license [{}] for module [{}] in account [{}]", id, moduleLicense.getModuleType(),
         moduleLicense.getAccountIdentifier());
   }
@@ -237,6 +245,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     ModuleLicense savedEntity = saveLicense(moduleLicense);
     // Send telemetry
     publishLicenseEvent(savedEntity, CREATE_ACTION);
+    ngAuditModuleLicenseCreateEvent(licenseObjectConverter.toDTO(savedEntity));
 
     log.info("Created license for module [{}] in account [{}]", savedEntity.getModuleType(),
         savedEntity.getAccountIdentifier());
@@ -251,11 +260,13 @@ public class DefaultLicenseServiceImpl implements LicenseService {
       throw new NotFoundException(String.format("ModuleLicense with identifier [%s] not found", moduleLicense.getId()));
     }
 
-    ModuleLicense existedLicense = existingEntityOptional.get();
-    ModuleLicense updateLicense = ModuleLicenseHelper.compareAndUpdate(existedLicense, moduleLicense);
+    ModuleLicense existingModuleLicense = existingEntityOptional.get();
+    ModuleLicenseDTO existingModuleLicenseDTO = licenseObjectConverter.toDTO(existingModuleLicense);
+    ModuleLicense updateLicense = ModuleLicenseHelper.compareAndUpdate(existingModuleLicense, moduleLicense);
 
     updateLicense.setLastUpdatedBy(EmbeddedUser.builder().email(getEmailFromPrincipal()).build());
     ModuleLicense updatedLicense = saveLicense(updateLicense);
+    ngAuditModuleLicenseUpdateEvent(existingModuleLicenseDTO, licenseObjectConverter.toDTO(updatedLicense));
 
     log.info("Updated license for module [{}] in account [{}]", updatedLicense.getModuleType(),
         updatedLicense.getAccountIdentifier());
@@ -280,6 +291,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     ModuleLicense savedEntity = saveLicense(trialLicense);
     sendSucceedTelemetryEvents(SUCCEED_START_FREE_OPERATION, savedEntity, accountIdentifier, referer, gaClientId);
     publishLicenseEvent(savedEntity, CREATE_ACTION);
+    ngAuditModuleLicenseCreateEvent(licenseObjectConverter.toDTO(savedEntity));
 
     log.info("Free license for module [{}] is started in account [{}]", moduleType, accountIdentifier);
 
@@ -328,6 +340,7 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     ModuleLicense savedEntity = saveLicense(trialLicense);
     sendSucceedTelemetryEvents(SUCCEED_START_TRIAL_OPERATION, savedEntity, accountIdentifier, referer, null);
     publishLicenseEvent(savedEntity, CREATE_ACTION);
+    ngAuditModuleLicenseCreateEvent(licenseObjectConverter.toDTO(savedEntity));
 
     log.info("Trial license for module [{}] is started in account [{}]", startTrialRequestDTO.getModuleType(),
         accountIdentifier);
@@ -348,11 +361,13 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     }
 
     ModuleLicense licenseToBeExtended = existing.get(0);
+    ModuleLicenseDTO existingModuleLicenseDTO = licenseObjectConverter.toDTO(licenseToBeExtended);
     licenseToBeExtended.setTrialExtended(true);
     licenseToBeExtended.setExpiryTime(Instant.now().plus(TRIAL_DURATION, ChronoUnit.DAYS).toEpochMilli());
     licenseToBeExtended.setStatus(LicenseStatus.ACTIVE);
     licenseComplianceResolver.preCheck(licenseToBeExtended, EditionAction.EXTEND_TRIAL);
     ModuleLicense savedEntity = saveLicense(licenseToBeExtended);
+    ngAuditModuleLicenseUpdateEvent(existingModuleLicenseDTO, licenseObjectConverter.toDTO(savedEntity));
 
     sendSucceedTelemetryEvents(SUCCEED_EXTEND_TRIAL_OPERATION, savedEntity, accountIdentifier, null, null);
     publishLicenseEvent(savedEntity, UPDATE_ACTION);
@@ -730,6 +745,46 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     } catch (Exception ex) {
       log.error("Failure to send event to events framework for account: {} on entity: {} with action: {}",
           moduleLicense.getAccountIdentifier(), MODULE_LICENSE, action, ex);
+    }
+  }
+
+  private void ngAuditModuleLicenseCreateEvent(ModuleLicenseDTO newModuleLicenseDTO) {
+    try {
+      outboxService.save(
+          ModuleLicenseCreateEvent.builder()
+              .accountIdentifier(newModuleLicenseDTO.getAccountIdentifier())
+              .oldModuleLicenseYamlDTO(ModuleLicenseYamlDTO.builder().moduleLicenseDTO(null).build())
+              .newModuleLicenseYamlDTO(ModuleLicenseYamlDTO.builder().moduleLicenseDTO(newModuleLicenseDTO).build())
+              .build());
+    } catch (Exception ex) {
+      log.error("Audit trails for ModuleLicense create event failed with exception: ", ex);
+    }
+  }
+
+  private void ngAuditModuleLicenseUpdateEvent(
+      ModuleLicenseDTO oldModuleLicenseDTO, ModuleLicenseDTO newModuleLicenseDTO) {
+    try {
+      outboxService.save(
+          ModuleLicenseUpdateEvent.builder()
+              .accountIdentifier(newModuleLicenseDTO.getAccountIdentifier())
+              .oldModuleLicenseYamlDTO(ModuleLicenseYamlDTO.builder().moduleLicenseDTO(oldModuleLicenseDTO).build())
+              .newModuleLicenseYamlDTO(ModuleLicenseYamlDTO.builder().moduleLicenseDTO(newModuleLicenseDTO).build())
+              .build());
+    } catch (Exception ex) {
+      log.error("Audit trails for ModuleLicense update event failed with exception: ", ex);
+    }
+  }
+
+  private void ngAuditModuleLicenseDeleteEvent(ModuleLicenseDTO oldModuleLicenseDTO) {
+    try {
+      outboxService.save(
+          ModuleLicenseDeleteEvent.builder()
+              .accountIdentifier(oldModuleLicenseDTO.getAccountIdentifier())
+              .oldModuleLicenseYamlDTO(ModuleLicenseYamlDTO.builder().moduleLicenseDTO(oldModuleLicenseDTO).build())
+              .newModuleLicenseYamlDTO(ModuleLicenseYamlDTO.builder().moduleLicenseDTO(null).build())
+              .build());
+    } catch (Exception ex) {
+      log.error("Audit trails for ModuleLicense delete event failed with exception: ", ex);
     }
   }
 }
