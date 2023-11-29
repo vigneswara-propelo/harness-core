@@ -277,7 +277,8 @@ public class StageVariableCreatorHelper {
         infrastructureConfig.getInfrastructureDefinitionConfig().getSpec(), EnvironmentOutcome.builder().build(),
         ServiceStepOutcome.builder().build(), infrastructureEntity.getAccountId(),
         infrastructureEntity.getOrgIdentifier(), infrastructureEntity.getProjectIdentifier(),
-        infrastructureConfig.getInfrastructureDefinitionConfig().getTags());
+        infrastructureConfig.getInfrastructureDefinitionConfig().getTags(),
+        infrastructureConfig.getInfrastructureDefinitionConfig().getDescription());
 
     List<String> infraStepOutputExpressions =
         VariableCreatorHelper.getExpressionsInObject(infrastructureOutcome, OutputExpressionConstants.INFRA);

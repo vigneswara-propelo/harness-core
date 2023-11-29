@@ -66,7 +66,7 @@ public class InfrastructureTaskExecutableStep extends AbstractInfrastructureTask
       Ambiance ambiance, Infrastructure infrastructureSpec, StepInputPackage inputPackage) {
     final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true, "Execute");
     return obtainTaskInternal(ambiance, infrastructureSpec, logCallback, null,
-        infrastructureStepHelper.getSkipInstances(infrastructureSpec), new HashMap<>())
+        infrastructureStepHelper.getSkipInstances(infrastructureSpec), new HashMap<>(), null)
         .getTaskRequest();
   }
 

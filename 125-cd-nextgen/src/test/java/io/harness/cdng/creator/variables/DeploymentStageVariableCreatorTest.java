@@ -632,8 +632,9 @@ public class DeploymentStageVariableCreatorTest extends CategoryTest {
             .expectedEnvFqn(List.of("env.name", "env.identifier", "env.description", "env.type", "env.v1Type",
                 "env.tags", "env.environmentRef", "env.variables.envVar1", "env.variables.svar1", "env.envGroupRef",
                 "env.envGroupName"))
-            .expectedInfraFqn(List.of("infra.connectorRef", "infra.namespace", "infra.releaseName",
-                "infra.infrastructureKey", "infra.infrastructureKeyShort", "infra.connector", "infra.tags"))
+            .expectedInfraFqn(
+                List.of("infra.connectorRef", "infra.namespace", "infra.releaseName", "infra.infrastructureKey",
+                    "infra.infrastructureKeyShort", "infra.connector", "infra.tags", "infra.description"))
             .envFqnIndex(0)
             .infraFqnIndex(1)
             .svcFqnIndex(2)
@@ -660,8 +661,9 @@ public class DeploymentStageVariableCreatorTest extends CategoryTest {
             .expectedEnvFqn(List.of("env.name", "env.identifier", "env.description", "env.type", "env.v1Type",
                 "env.tags", "env.environmentRef", "env.variables.envVar1", "env.variables.svar1", "env.envGroupRef",
                 "env.envGroupName"))
-            .expectedInfraFqn(List.of("infra.connectorRef", "infra.namespace", "infra.releaseName",
-                "infra.infrastructureKey", "infra.infrastructureKeyShort", "infra.connector", "infra.tags"))
+            .expectedInfraFqn(
+                List.of("infra.connectorRef", "infra.namespace", "infra.releaseName", "infra.infrastructureKey",
+                    "infra.infrastructureKeyShort", "infra.connector", "infra.tags", "infra.description"))
             .provisionerDependencyIndex(-1)
             .envFqnIndex(0)
             .infraFqnIndex(1)
@@ -699,8 +701,9 @@ public class DeploymentStageVariableCreatorTest extends CategoryTest {
             .expectedEnvFqn(List.of("env.name", "env.identifier", "env.description", "env.type", "env.v1Type",
                 "env.tags", "env.environmentRef", "env.variables.envVar1", "env.variables.svar1", "env.envGroupRef",
                 "env.envGroupName"))
-            .expectedInfraFqn(List.of("infra.connectorRef", "infra.namespace", "infra.releaseName",
-                "infra.infrastructureKey", "infra.infrastructureKeyShort", "infra.connector", "infra.tags"))
+            .expectedInfraFqn(
+                List.of("infra.connectorRef", "infra.namespace", "infra.releaseName", "infra.infrastructureKey",
+                    "infra.infrastructureKeyShort", "infra.connector", "infra.tags", "infra.description"))
             .provisionerDependencyIndex(-1)
             .envFqnIndex(0)
             .infraFqnIndex(1)
@@ -738,8 +741,9 @@ public class DeploymentStageVariableCreatorTest extends CategoryTest {
             .expectedEnvFqn(List.of("env.name", "env.identifier", "env.description", "env.type", "env.v1Type",
                 "env.tags", "env.environmentRef", "env.variables.envVar1", "env.variables.svar1", "env.envGroupRef",
                 "env.envGroupName"))
-            .expectedInfraFqn(List.of("infra.connectorRef", "infra.namespace", "infra.releaseName",
-                "infra.infrastructureKey", "infra.infrastructureKeyShort", "infra.connector", "infra.tags"))
+            .expectedInfraFqn(
+                List.of("infra.connectorRef", "infra.namespace", "infra.releaseName", "infra.infrastructureKey",
+                    "infra.infrastructureKeyShort", "infra.connector", "infra.tags", "infra.description"))
             .provisionerDependencyIndex(0)
             .envFqnIndex(1)
             .infraFqnIndex(2)
@@ -778,8 +782,9 @@ public class DeploymentStageVariableCreatorTest extends CategoryTest {
             .expectedEnvFqn(List.of("env.name", "env.identifier", "env.description", "env.type", "env.v1Type",
                 "env.tags", "env.environmentRef", "env.variables.envVar1", "env.variables.svar1", "env.envGroupRef",
                 "env.envGroupName"))
-            .expectedInfraFqn(List.of("infra.connectorRef", "infra.namespace", "infra.releaseName",
-                "infra.infrastructureKey", "infra.infrastructureKeyShort", "infra.connector", "infra.tags"))
+            .expectedInfraFqn(
+                List.of("infra.connectorRef", "infra.namespace", "infra.releaseName", "infra.infrastructureKey",
+                    "infra.infrastructureKeyShort", "infra.connector", "infra.tags", "infra.description"))
             .provisionerDependencyIndex(-1)
             .envFqnIndex(0)
             .infraFqnIndex(1)

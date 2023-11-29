@@ -110,15 +110,15 @@ public class InfrastructureMapper {
 
   public InfrastructureOutcome toOutcome(@Nonnull Infrastructure infrastructure, EnvironmentOutcome environmentOutcome,
       ServiceStepOutcome service, String accountIdentifier, String orgIdentifier, String projectIdentifier,
-      Map<String, String> tags) {
-    return toOutcome(
-        infrastructure, null, environmentOutcome, service, accountIdentifier, orgIdentifier, projectIdentifier, tags);
+      Map<String, String> tags, String description) {
+    return toOutcome(infrastructure, null, environmentOutcome, service, accountIdentifier, orgIdentifier,
+        projectIdentifier, tags, description);
   }
 
   @NotNull
   public InfrastructureOutcome toOutcome(@Nonnull Infrastructure infrastructure, Ambiance ambiance,
       EnvironmentOutcome environmentOutcome, ServiceStepOutcome service, String accountIdentifier, String orgIdentifier,
-      String projectIdentifier, Map<String, String> tags) {
+      String projectIdentifier, Map<String, String> tags, String description) {
     Map<String, String> mergedTags = new HashMap<>();
     Map<String, String> hostTags;
 
@@ -505,6 +505,8 @@ public class InfrastructureMapper {
     if (EmptyPredicate.isNotEmpty(mergedTags)) {
       infrastructureOutcome.setTags(mergedTags);
     }
+    infrastructureOutcome.setDescription(description);
+
     return infrastructureOutcome;
   }
 

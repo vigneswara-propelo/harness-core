@@ -236,7 +236,7 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
                         .found(true)
                         .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(azureSshInfraDelegateConfig);
-    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
+    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap(), any()))
         .thenReturn(SshWinRmAzureInfrastructureOutcome.builder()
                         .connectorRef("connectorRef")
                         .subscriptionId("subscriptionId")
@@ -275,7 +275,7 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
                         .found(true)
                         .build());
     when(cdStepHelper.getSshInfraDelegateConfig(any(), eq(ambiance))).thenReturn(awsSshInfraDelegateConfig);
-    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
+    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap(), any()))
         .thenReturn(SshWinRmAwsInfrastructureOutcome.builder()
                         .connectorRef("connectorRef")
                         .region("region")
@@ -314,7 +314,7 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
                         .found(true)
                         .build());
     when(cdStepHelper.getWinRmInfraDelegateConfig(any(), eq(ambiance))).thenReturn(azureWinrmInfraDelegateConfig);
-    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
+    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap(), any()))
         .thenReturn(SshWinRmAzureInfrastructureOutcome.builder()
                         .connectorRef("connectorRef")
                         .subscriptionId("subscriptionId")
@@ -353,7 +353,7 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
                         .found(true)
                         .build());
     when(cdStepHelper.getWinRmInfraDelegateConfig(any(), eq(ambiance))).thenReturn(awsWinrmInfraDelegateConfig);
-    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap()))
+    when(infrastructureOutcomeProvider.getOutcome(any(), any(), any(), any(), any(), any(), any(), anyMap(), any()))
         .thenReturn(SshWinRmAwsInfrastructureOutcome.builder()
                         .connectorRef("connectorRef")
                         .credentialsRef("sshKeyRef")

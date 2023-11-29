@@ -32,8 +32,8 @@ public class InfrastructureOutcomeProvider {
 
   public InfrastructureOutcome getOutcome(Ambiance ambiance, @Nonnull Infrastructure infrastructure,
       EnvironmentOutcome environmentOutcome, ServiceStepOutcome service, final String accountIdentifier,
-      final String orgIdentifier, final String projectIdentifier, Map<String, String> tags) {
+      final String orgIdentifier, final String projectIdentifier, Map<String, String> tags, String description) {
     return infrastructureMapper.toOutcome(infrastructure, ambiance, environmentOutcome, service, accountIdentifier,
-        orgIdentifier, projectIdentifier, tags);
+        orgIdentifier, projectIdentifier, tags, description);
   }
 }

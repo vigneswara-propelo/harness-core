@@ -197,7 +197,8 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
     if (isTaskStep(infraSpec.getKind())) {
       final TaskRequestData taskRequest = obtainTaskInternal(ambiance, infraSpec, logCallback,
           !infrastructureConfig.getInfrastructureDefinitionConfig().isAllowSimultaneousDeployments(), skipInstances,
-          infrastructureConfig.getInfrastructureDefinitionConfig().getTags());
+          infrastructureConfig.getInfrastructureDefinitionConfig().getTags(),
+          infrastructureConfig.getInfrastructureDefinitionConfig().getDescription());
       final DelegateTaskRequest delegateTaskRequest =
           cdStepHelper.mapTaskRequestToDelegateTaskRequest(taskRequest.getTaskRequest(), taskRequest.getTaskData(),
               CollectionUtils.emptyIfNull(taskRequest.getTaskSelectorYamls())
@@ -361,7 +362,8 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
 
     final InfrastructureOutcome infrastructureOutcome = infrastructureOutcomeProvider.getOutcome(ambiance, spec,
         environmentOutcome, serviceOutcome, ngAccess.getAccountIdentifier(), ngAccess.getOrgIdentifier(),
-        ngAccess.getProjectIdentifier(), infrastructure.getInfrastructureDefinitionConfig().getTags());
+        ngAccess.getProjectIdentifier(), infrastructure.getInfrastructureDefinitionConfig().getTags(),
+        infrastructure.getInfrastructureDefinitionConfig().getDescription());
 
     // save spec sweeping output for further use within the step
     executionSweepingOutputService.consume(ambiance, INFRA_TASK_EXECUTABLE_STEP_OUTPUT,
