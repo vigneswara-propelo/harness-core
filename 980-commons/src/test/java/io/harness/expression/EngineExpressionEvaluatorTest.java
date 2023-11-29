@@ -373,13 +373,10 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
     map.put("v9", "<+company>/archit-<+f1>");
     map.put("v10", "<+company> <+<+w>.replace('-','')>");
     map.put("v11", "<+company> <+(<+w>).replace('-','')>");
-    map.put("v12", "<+f>><+company>");
+    map.put("v12", "<b> <+w> </b>");
     map.put("v13", "<+company><+j><+f>");
-    map.put("v14", "<+company>><+j>");
-    map.put("v15", "<+company> > <+j>");
     map.put("v16", "<+secret1>");
     map.put("v17", "<+c>");
-    map.put("v18", "<+w>.replaceAll(\"-\",\"_\")><+<+w>.replaceAll(\"-\",\"_\").concat(\".py\")>");
 
     EngineExpressionEvaluator evaluator = prepareEngineExpressionEvaluator(
         new ImmutableMap.Builder<String, Object>()
@@ -415,7 +412,7 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
 
     assertThat(evaluator.resolve("<+variables>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED))
         .isEqualTo(
-            "{\"v6\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v7\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v8\":\"harness/archit-abc\",\"v9\":\"harness/archit-<+f1>\",\"v10\":\"harness architharness\",\"v12\":\"false\",\"v11\":\"harness architharness\",\"v14\":\"true\",\"v13\":\"harnessabc\",\"v16\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v1\":\"abcdef\",\"v15\":\"true\",\"v2\":\"harnessabcdef\",\"v18\":\"false\",\"v3\":\"abcdefharness\",\"v17\":\"29\",\"v4\":\"abcdef\",\"v5\":\"archit-harness\"}");
+            "{\"v6\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v7\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v8\":\"harness/archit-abc\",\"v9\":\"harness/archit-<+f1>\",\"v10\":\"harness architharness\",\"v12\":\"<b> archit-harness </b>\",\"v11\":\"harness architharness\",\"v13\":\"harnessabc\",\"v16\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v1\":\"abcdef\",\"v2\":\"harnessabcdef\",\"v3\":\"abcdefharness\",\"v17\":\"29\",\"v4\":\"abcdef\",\"v5\":\"archit-harness\"}");
 
     assertThat(evaluator.evaluateExpression("<+if ((<+j> == null) || (empty(<+j>))) {\"emptyVar\";} else {<+f>;}>   "))
         .isEqualTo("emptyVar");
@@ -565,11 +562,8 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
     assertThat(evaluator.resolve("<+variables.v7>", true)).isEqualTo("${ngSecretManager.obtain(\"org.v2\", 123)}");
     assertThat(evaluator.resolve("<+variables.v10>", true)).isEqualTo("harness architharness");
     assertThat(evaluator.resolve("<+variables.v11>", true)).isEqualTo("harness architharness");
-    assertThat(evaluator.resolve("<+variables.v12>", true)).isEqualTo("false");
+    assertThat(evaluator.resolve("<+variables.v12>", true)).isEqualTo("<b> archit-harness </b>");
     assertThat(evaluator.resolve("<+variables.v13>", true)).isEqualTo("harnessabc");
-    assertThat(evaluator.resolve("<+variables.v14>", true)).isEqualTo("true");
-    assertThat(evaluator.resolve("<+variables.v15>", true)).isEqualTo("true");
-    assertThat(evaluator.resolve("<+variables.v18>", true)).isEqualTo("false");
 
     // an expression used in path of existing expression
     assertThat(evaluator.resolve("<+variables.<+h>>", true)).isEqualTo("harnessabcdef");
