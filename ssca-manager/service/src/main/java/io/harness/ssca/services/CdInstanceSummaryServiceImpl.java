@@ -96,6 +96,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
       cdInstanceSummary.getInstanceIds().add(instance.getId());
       cdInstanceSummary.setSlsaVerificationSummary(getSlsaVerificationSummary(rootNode, instance, artifact));
       cdInstanceSummary = setPipelineDetails(cdInstanceSummary, rootNode, instance);
+      artifactService.updateArtifactEnvCount(artifact, cdInstanceSummary.getEnvType(), 0);
       cdInstanceSummaryRepo.save(cdInstanceSummary);
     } else {
       CdInstanceSummary newCdInstanceSummary = createInstanceSummary(instance, artifact);
@@ -120,13 +121,14 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
 
     if (Objects.nonNull(cdInstanceSummary)) {
       cdInstanceSummary.getInstanceIds().remove(instance.getId());
+      ArtifactEntity artifact =
+          artifactService.getArtifactByCorrelationId(instance.getAccountIdentifier(), instance.getOrgIdentifier(),
+              instance.getProjectIdentifier(), instance.getPrimaryArtifact().getArtifactIdentity().getImage());
       if (cdInstanceSummary.getInstanceIds().isEmpty()) {
-        ArtifactEntity artifact =
-            artifactService.getArtifactByCorrelationId(instance.getAccountIdentifier(), instance.getOrgIdentifier(),
-                instance.getProjectIdentifier(), instance.getPrimaryArtifact().getArtifactIdentity().getImage());
         artifactService.updateArtifactEnvCount(artifact, cdInstanceSummary.getEnvType(), -1);
         cdInstanceSummaryRepo.delete(cdInstanceSummary);
       } else {
+        artifactService.updateArtifactEnvCount(artifact, cdInstanceSummary.getEnvType(), 0);
         cdInstanceSummaryRepo.save(cdInstanceSummary);
       }
     }

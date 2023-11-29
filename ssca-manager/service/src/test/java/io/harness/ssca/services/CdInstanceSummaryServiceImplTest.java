@@ -53,12 +53,14 @@ import org.springframework.data.mongodb.core.query.Query;
 public class CdInstanceSummaryServiceImplTest extends SSCAManagerTestBase {
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
   @Mock CdInstanceSummaryRepo cdInstanceSummaryRepo;
+  @Mock ArtifactService artifactService;
   private BuilderFactory builderFactory;
 
   @Before
   public void setup() throws IllegalAccessException {
     MockitoAnnotations.initMocks(this);
     FieldUtils.writeField(cdInstanceSummaryService, "cdInstanceSummaryRepo", cdInstanceSummaryRepo, true);
+    FieldUtils.writeField(cdInstanceSummaryService, "artifactService", artifactService, true);
     builderFactory = BuilderFactory.getDefault();
   }
 
@@ -92,6 +94,9 @@ public class CdInstanceSummaryServiceImplTest extends SSCAManagerTestBase {
     assertThat(response).isEqualTo(true);
     Mockito.when(cdInstanceSummaryRepo.findOne(Mockito.any()))
         .thenReturn(builderFactory.getCdInstanceSummaryBuilder().build());
+
+    Mockito.when(artifactService.getArtifactByCorrelationId(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        .thenReturn(builderFactory.getArtifactEntityBuilder().build());
 
     response = cdInstanceSummaryService.removeInstance(builderFactory.getInstanceNGEntityBuilder().build());
     assertThat(response).isEqualTo(true);
