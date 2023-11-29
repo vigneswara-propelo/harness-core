@@ -15,6 +15,7 @@ import io.harness.security.SourcePrincipalContextBuilder;
 import io.harness.security.dto.UserPrincipal;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -27,10 +28,13 @@ import lombok.extern.slf4j.Slf4j;
 public class IdpServiceRequestInterceptor implements ContainerRequestFilter {
   public static final String REQUEST_START_TIME = "requestStartTime";
   @Inject IDPModuleLicenseUsage idpModuleLicenseUsage;
+  @Inject @Named("enableMetrics") private boolean enableMetrics;
 
   @Override
   public void filter(ContainerRequestContext containerRequestContext) throws IOException {
-    containerRequestContext.setProperty(REQUEST_START_TIME, System.currentTimeMillis());
+    if (enableMetrics) {
+      containerRequestContext.setProperty(REQUEST_START_TIME, System.currentTimeMillis());
+    }
     captureLicenseUsageIfApplicable(containerRequestContext);
   }
 

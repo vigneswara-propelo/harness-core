@@ -989,6 +989,13 @@ public class IdpModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @Named("enableMetrics")
+  public Boolean enableMetrics() {
+    return this.appConfig.isEnableMetrics();
+  }
+
+  @Provides
+  @Singleton
   @Named("harnessCodeGitBaseUrl")
   String getHarnessCodeGitBaseUrl() {
     String gitUrl = this.appConfig.getHarnessCodeGitUrl();

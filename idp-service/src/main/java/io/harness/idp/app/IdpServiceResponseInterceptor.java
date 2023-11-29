@@ -14,6 +14,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.metrics.IdpServiceApiMetricsPublisher;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -30,23 +31,27 @@ public class IdpServiceResponseInterceptor implements ContainerResponseFilter {
   public static final String HARNESS_ACCOUNT_HEADER = "Harness-Account";
   public static final String ACCOUNT_IDENTIFIER_PARAM = "accountIdentifier";
   @Inject IdpServiceApiMetricsPublisher idpServiceApiMetricsPublisher;
+  @Inject @Named("enableMetrics") private boolean enableMetrics;
 
   @Override
   public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext)
       throws IOException {
-    try {
-      int status = containerResponseContext.getStatus();
-      String accountIdentifier = getAccountIdentifier(containerRequestContext);
-      String path = containerRequestContext.getUriInfo().getPath();
-      String method = containerRequestContext.getMethod();
-      long startTime = (long) containerRequestContext.getProperty(REQUEST_START_TIME);
-      long duration = System.currentTimeMillis() - startTime;
-      log.info("ACCOUNT {} - API REQUEST {} - METHOD {} - RESPONSE STATUS {}", accountIdentifier, path, method, status);
-      if (StringUtils.isNotBlank(accountIdentifier)) {
-        idpServiceApiMetricsPublisher.recordMetric(accountIdentifier, path, status, method, duration);
+    if (enableMetrics) {
+      try {
+        int status = containerResponseContext.getStatus();
+        String accountIdentifier = getAccountIdentifier(containerRequestContext);
+        String path = containerRequestContext.getUriInfo().getPath();
+        String method = containerRequestContext.getMethod();
+        long startTime = (long) containerRequestContext.getProperty(REQUEST_START_TIME);
+        long duration = System.currentTimeMillis() - startTime;
+        log.info(
+            "ACCOUNT {} - API REQUEST {} - METHOD {} - RESPONSE STATUS {}", accountIdentifier, path, method, status);
+        if (StringUtils.isNotBlank(accountIdentifier)) {
+          idpServiceApiMetricsPublisher.recordMetric(accountIdentifier, path, status, method, duration);
+        }
+      } catch (Exception e) {
+        log.warn("Error intercepting response", e);
       }
-    } catch (Exception e) {
-      log.warn("Error intercepting response", e);
     }
   }
 
