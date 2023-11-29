@@ -51,6 +51,7 @@ import io.harness.cdng.artifact.bean.yaml.GcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GoogleArtifactRegistryConfig;
 import io.harness.cdng.artifact.bean.yaml.JenkinsArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig;
+import io.harness.cdng.artifact.bean.yaml.nexusartifact.BambooArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.Nexus2RegistryArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusConstant;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryDockerConfig;
@@ -62,6 +63,8 @@ import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryDockerBuil
 import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryImagePathsDTO;
 import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryRequestDTO;
 import io.harness.cdng.artifact.resources.artifactory.service.ArtifactoryResourceService;
+import io.harness.cdng.artifact.resources.bamboo.BambooResourceService;
+import io.harness.cdng.artifact.resources.bamboo.dtos.BambooPlanKeysDTO;
 import io.harness.cdng.artifact.resources.custom.CustomResourceService;
 import io.harness.cdng.artifact.resources.docker.dtos.DockerBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.docker.dtos.DockerRequestDTO;
@@ -168,6 +171,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
   @Mock CDYamlExpressionEvaluator cdYamlExpressionEvaluator;
   @Mock CDExpressionEvaluator cdExpressionEvaluator;
   @Mock S3ResourceService s3ResourceService;
+  @Mock BambooResourceService bambooResourceService;
   @Mock JenkinsResourceService jenkinsResourceService;
   private static final String ACCOUNT_ID = "accountId";
   private static final String ORG_ID = "orgId";
@@ -4477,6 +4481,140 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(modifiedRepo.getFormat()).isEqualTo("DOCKER");
     assertThat(modifiedRepo.getCreateTime()).isEqualTo("2023-01-01T12:00:00Z");
     assertThat(modifiedRepo.getUpdateTime()).isEqualTo("2023-01-02T12:00:00Z");
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetBambooPlanKeys() {
+    // spy for ArtifactResourceUtils
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    // Creating GoogleArtifactRegistryConfig for mock
+    BambooArtifactConfig bambooArtifactConfig =
+        BambooArtifactConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value("connectorref").build())
+            .build();
+
+    BambooPlanKeysDTO planKeys = BambooPlanKeysDTO.builder().build();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef("connectorref", "accountId", "orgId", "projectId");
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    doReturn(bambooArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(planKeys).when(bambooResourceService).getPlanName(identifierRef, "orgId", "projectId");
+
+    assertThat(spyartifactResourceUtils.getBambooPlanKeys(
+                   "connectorref", "accountId", "orgId", "projectId", "pipeId", null, "", "serviceref", ""))
+        .isEqualTo(planKeys);
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetBambooArtifactPaths() {
+    // spy for ArtifactResourceUtils
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    // Creating GoogleArtifactRegistryConfig for mock
+    BambooArtifactConfig bambooArtifactConfig =
+        BambooArtifactConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value("connectorref").build())
+            .build();
+
+    List<String> artifactPaths = new ArrayList<>();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef("connectorref", "accountId", "orgId", "projectId");
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    doReturn(bambooArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(artifactPaths).when(bambooResourceService).getArtifactPath(identifierRef, "orgId", "projectId", "plan");
+
+    assertThat(spyartifactResourceUtils.getBambooArtifactPaths(
+                   "connectorref", "accountId", "orgId", "projectId", "pipeId", "plan", null, "serviceref", "", ""))
+        .isEqualTo(artifactPaths);
+  }
+
+  @Test
+  @Owner(developers = SARTHAK_KASAT)
+  @Category(UnitTests.class)
+  public void testGetBambooArtifactBuildDetails() {
+    // spy for ArtifactResourceUtils
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    // Creating GoogleArtifactRegistryConfig for mock
+    BambooArtifactConfig bambooArtifactConfig =
+        BambooArtifactConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value("connectorref").build())
+            .build();
+
+    List<BuildDetails> buildDetails = new ArrayList<>();
+
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put("serviceGitBranch", "main-patch");
+
+    YamlExpressionEvaluatorWithContext yamlExpressionEvaluatorWithContext =
+        YamlExpressionEvaluatorWithContext.builder()
+            .yamlExpressionEvaluator(cdYamlExpressionEvaluator)
+            .contextMap(contextMap)
+            .build();
+
+    doReturn(yamlExpressionEvaluatorWithContext)
+        .when(spyartifactResourceUtils)
+        .getYamlExpressionEvaluatorWithContext(any(), any(), any(), any(), any(), any(), any(), any());
+
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef("connectorref", "accountId", "orgId", "projectId");
+
+    doReturn(true).when(spyartifactResourceUtils).isRemoteService(any(), any(), any(), any());
+
+    doReturn(bambooArtifactConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(any(), any(), any(), any(), any(), eq("main-patch"));
+
+    doReturn(buildDetails)
+        .when(bambooResourceService)
+        .getBuilds(identifierRef, "orgId", "projectId", "plan", Collections.EMPTY_LIST);
+
+    assertThat(spyartifactResourceUtils.getBambooArtifactBuildDetails("connectorref", "accountId", "orgId", "projectId",
+                   "pipeId", "plan", Collections.EMPTY_LIST, null, "serviceref", "", ""))
+        .isEqualTo(buildDetails);
   }
 
   @Test
