@@ -24,6 +24,7 @@ import io.harness.cdng.k8s.beans.K8sExecutionPassThroughData;
 import io.harness.cdng.manifest.yaml.K8sCommandFlagType;
 import io.harness.cdng.manifest.yaml.K8sManifestOutcome;
 import io.harness.cdng.manifest.yaml.K8sStepCommandFlag;
+import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.task.k8s.K8sDeployRequest;
@@ -92,6 +93,18 @@ public abstract class AbstractK8sStepExecutorTestBase extends CategoryTest {
         K8sExecutionPassThroughData.builder().infrastructure(infrastructureOutcome).build();
     getK8sStepExecutor().executeK8sTask(
         manifestOutcome, ambiance, stepElementParameters, emptyList(), passThroughData, true, unitProgressData);
+    ArgumentCaptor<T> requestCaptor = ArgumentCaptor.forClass(requestType);
+    verify(k8sStepHelper, times(1))
+        .queueK8sTask(eq(stepElementParameters), requestCaptor.capture(), eq(ambiance), eq(passThroughData));
+    return requestCaptor.getValue();
+  }
+
+  protected <T extends K8sDeployRequest> T executeTask(
+      ManifestOutcome k8sManifestOutcome, StepElementParameters stepElementParameters, Class<T> requestType) {
+    K8sExecutionPassThroughData passThroughData =
+        K8sExecutionPassThroughData.builder().infrastructure(infrastructureOutcome).build();
+    getK8sStepExecutor().executeK8sTask(
+        k8sManifestOutcome, ambiance, stepElementParameters, emptyList(), passThroughData, true, unitProgressData);
     ArgumentCaptor<T> requestCaptor = ArgumentCaptor.forClass(requestType);
     verify(k8sStepHelper, times(1))
         .queueK8sTask(eq(stepElementParameters), requestCaptor.capture(), eq(ambiance), eq(passThroughData));

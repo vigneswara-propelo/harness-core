@@ -200,7 +200,7 @@ public class K8sApplyStep extends CdTaskChainExecutable implements K8sStepExecut
       applyRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
     }
 
-    setFilePathsInRequest(k8sApplyStepParameters, applyRequestBuilder, accountId);
+    setFilePathsInRequest(k8sManifestOutcome, k8sApplyStepParameters, applyRequestBuilder, accountId);
 
     Map<String, String> k8sCommandFlag =
         k8sStepHelper.getDelegateK8sCommandFlag(k8sApplyStepParameters.getCommandFlags(), ambiance);
@@ -285,13 +285,12 @@ public class K8sApplyStep extends CdTaskChainExecutable implements K8sStepExecut
             .build());
   }
 
-  private void setFilePathsInRequest(
-      K8sApplyStepParameters k8sApplyStepParameters, K8sApplyRequestBuilder applyRequestBuilder, String accountId) {
+  private void setFilePathsInRequest(ManifestOutcome k8sManifestOutcome, K8sApplyStepParameters k8sApplyStepParameters,
+      K8sApplyRequestBuilder applyRequestBuilder, String accountId) {
     if (!isEmpty(getParameterFieldValue(k8sApplyStepParameters.getFilePaths()))) {
       applyRequestBuilder.filePaths(k8sApplyStepParameters.getFilePaths().getValue());
     } else if (cdFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_K8S_APPLY_MANIFEST_WITHOUT_SERVICE_NG)) {
-      applyRequestBuilder.filePaths(
-          k8sApplyStepParameters.getManifestSource().getSpec().getStoreConfig().retrieveFilePaths());
+      applyRequestBuilder.filePaths(k8sManifestOutcome.getStore().retrieveFilePaths());
       applyRequestBuilder.useManifestSource(true);
     } else {
       throw NestedExceptionUtils.hintWithExplanationException(KubernetesExceptionHints.APPLY_NO_FILEPATH_SPECIFIED,

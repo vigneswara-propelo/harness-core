@@ -43,6 +43,7 @@ import io.harness.cdng.manifest.yaml.K8sManifestOutcome;
 import io.harness.cdng.manifest.yaml.K8sStepCommandFlag;
 import io.harness.cdng.manifest.yaml.ManifestConfig;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
+import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.ManifestSourceWrapper;
 import io.harness.cdng.manifest.yaml.OpenshiftManifestOutcome;
 import io.harness.cdng.manifest.yaml.kinds.HelmChartManifest;
@@ -125,7 +126,7 @@ public class K8sApplyStepTest extends AbstractK8sStepExecutorTestBase {
     GitStore gitStoreStepLevelSource =
         GitStore.builder()
             .branch(ParameterField.createValueField("master"))
-            .paths(ParameterField.createValueField(asList("deployment.yaml", "service.yaml")))
+            .paths(ParameterField.createValueField(asList("<+pipeline.variable.file1>", "<+pipeline.variable.file2>")))
             .connectorRef(ParameterField.createValueField("git-connector"))
             .build();
     StoreConfigWrapper storeConfigWrapper = StoreConfigWrapper.builder().spec(gitStoreStepLevelSource).build();
@@ -150,7 +151,14 @@ public class K8sApplyStepTest extends AbstractK8sStepExecutorTestBase {
     when(cdFeatureFlagHelper.isEnabled(any(), any())).thenReturn(true);
     final StepElementParameters stepElementParameters =
         StepElementParameters.builder().spec(stepParameters).timeout(ParameterField.createValueField("30m")).build();
-    K8sApplyRequest request = executeTask(stepElementParameters, K8sApplyRequest.class);
+    ManifestOutcome k8sManifestOutcome =
+        K8sManifestOutcome.builder()
+            .store(GitStore.builder()
+                       .paths(ParameterField.createValueField(asList("deployment.yaml", "service.yaml")))
+                       .build())
+            .build();
+
+    K8sApplyRequest request = executeTask(k8sManifestOutcome, stepElementParameters, K8sApplyRequest.class);
     assertThat(request.getAccountId()).isEqualTo(accountId);
     assertThat(request.getFilePaths()).containsExactlyInAnyOrder("deployment.yaml", "service.yaml");
     assertThat(request.getTaskType()).isEqualTo(K8sTaskType.APPLY);
@@ -159,7 +167,6 @@ public class K8sApplyStepTest extends AbstractK8sStepExecutorTestBase {
     assertThat(request.getTimeoutIntervalInMin()).isEqualTo(30);
     assertThat(request.getK8sCommandFlags()).isEqualTo(k8sCommandFlag);
     assertThat(request.isUseManifestSource()).isTrue();
-
     ArgumentCaptor<String> releaseNameCaptor = ArgumentCaptor.forClass(String.class);
     verify(k8sStepHelper, times(1)).publishReleaseNameStepDetails(eq(ambiance), releaseNameCaptor.capture());
     assertThat(releaseNameCaptor.getValue()).isEqualTo(releaseName);
