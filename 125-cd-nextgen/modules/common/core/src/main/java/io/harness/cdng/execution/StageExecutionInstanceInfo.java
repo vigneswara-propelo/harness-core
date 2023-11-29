@@ -59,8 +59,7 @@ public class StageExecutionInstanceInfo implements PersistentEntity, UuidAware {
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
         .add(CompoundMongoIndex.builder()
-                 .name("unique_idx")
-                 .unique(true)
+                 .name("acc_org_proj_pipelineexecId_stageexecid")
                  .field(StageExecutionInstanceInfoKeys.accountIdentifier)
                  .field(StageExecutionInstanceInfoKeys.orgIdentifier)
                  .field(StageExecutionInstanceInfoKeys.projectIdentifier)
