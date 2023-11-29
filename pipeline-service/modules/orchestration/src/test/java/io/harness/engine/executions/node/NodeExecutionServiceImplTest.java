@@ -18,6 +18,7 @@ import static io.harness.rule.OwnerRule.AYUSHI_TIWARI;
 import static io.harness.rule.OwnerRule.NAMAN;
 import static io.harness.rule.OwnerRule.PRASHANT;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
+import static io.harness.rule.OwnerRule.ROHITKARELIA;
 import static io.harness.rule.OwnerRule.SAHIL;
 import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 
@@ -1059,6 +1060,55 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
         nodeExecutionService.fetchStageExecutionsWithProjection("planExecutionId", fieldsToBeIncluded);
     verify(mongoTemplateMock, times(1)).find(any(), any());
     assertThat(nodeExecution).isEqualTo(actualNodeExecution);
+  }
+
+  @Test
+  @Owner(developers = ROHITKARELIA)
+  @Category(UnitTests.class)
+  public void fetchStageExecutionsWithEndTsAndStatusProjection() {
+    MongoTemplate mongoTemplateMock = Mockito.mock(MongoTemplate.class);
+    Reflect.on(nodeExecutionService).set("mongoTemplate", mongoTemplateMock);
+
+    String planExecutionUuid = generateUuid();
+    String parentId = generateUuid();
+    NodeExecution nodeExecution =
+        NodeExecution.builder()
+            .uuid(generateUuid())
+            .parentId(parentId)
+            .ambiance(Ambiance.newBuilder().setPlanExecutionId(planExecutionUuid).build())
+            .mode(ExecutionMode.SYNC)
+            .uuid(generateUuid())
+            .name("name")
+            .identifier(generateUuid())
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .module("CD")
+            .startTs(System.currentTimeMillis())
+            .status(SUCCEEDED)
+            .build();
+    NodeExecution nodeExecution1 =
+        NodeExecution.builder()
+            .uuid(generateUuid())
+            .parentId(parentId)
+            .ambiance(Ambiance.newBuilder().setPlanExecutionId(planExecutionUuid).build())
+            .mode(ExecutionMode.SYNC)
+            .uuid(generateUuid())
+            .name("name")
+            .identifier(generateUuid())
+            .stepType(StepType.newBuilder().setType("DUMMY").setStepCategory(StepCategory.STEP).build())
+            .module("CD")
+            .startTs(System.currentTimeMillis())
+            .status(Status.SKIPPED)
+            .build();
+
+    List<NodeExecution> nodeExecutionList = Arrays.asList(nodeExecution, nodeExecution1);
+
+    doReturn(nodeExecutionList).when(mongoTemplateMock).find(any(), any());
+
+    List<NodeExecution> executionList =
+        nodeExecutionService.fetchStageExecutionsWithEndTsAndStatusProjection(planExecutionUuid);
+    verify(mongoTemplateMock, times(1)).find(any(), any());
+    assertThat(Arrays.asList(executionList.get(0).getStatus(), executionList.get(1).getStatus()))
+        .contains(Status.SKIPPED);
   }
 
   @Test

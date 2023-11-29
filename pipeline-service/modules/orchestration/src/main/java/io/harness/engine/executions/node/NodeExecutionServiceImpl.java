@@ -15,7 +15,6 @@ import static io.harness.pms.contracts.execution.Status.ABORTED;
 import static io.harness.pms.contracts.execution.Status.DISCONTINUING;
 import static io.harness.pms.contracts.execution.Status.ERRORED;
 import static io.harness.pms.contracts.execution.Status.EXPIRED;
-import static io.harness.pms.contracts.execution.Status.SKIPPED;
 import static io.harness.springdata.PersistenceUtils.DEFAULT_RETRY_POLICY;
 import static io.harness.springdata.SpringDataMongoUtils.returnNewOptions;
 
@@ -926,7 +925,6 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
   public List<NodeExecution> fetchStageExecutionsWithEndTsAndStatusProjection(String planExecutionId) {
     Query query =
         query(where(NodeExecutionKeys.planExecutionId).is(planExecutionId))
-            .addCriteria(where(NodeExecutionKeys.status).ne(SKIPPED))
             .addCriteria(
                 where(NodeExecutionKeys.stepCategory).in(Arrays.asList(StepCategory.STAGE, StepCategory.STRATEGY)));
     query.fields()
