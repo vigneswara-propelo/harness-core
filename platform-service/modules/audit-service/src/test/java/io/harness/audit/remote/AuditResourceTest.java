@@ -16,7 +16,6 @@ import static io.harness.utils.PageTestUtils.getPage;
 import static java.util.Collections.emptyList;
 import static junit.framework.TestCase.assertEquals;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -34,7 +33,6 @@ import io.harness.audit.beans.ResourceScopeDTO;
 import io.harness.audit.entities.AuditEvent.AuditEventKeys;
 import io.harness.beans.SortOrder;
 import io.harness.category.element.UnitTests;
-import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.rule.Owner;
 
@@ -120,9 +118,20 @@ public class AuditResourceTest extends CategoryTest {
         PageRequest.builder()
             .sortOrders(
                 List.of(SortOrder.Builder.aSortOrder().withField("dummyField", SortOrder.OrderType.DESC).build()))
+            .pageSize(10)
             .build();
-    assertThatThrownBy(() -> auditResource.list(accountIdentifier, pageRequest, null))
-        .isInstanceOf(InvalidRequestException.class);
+
+    ResourceScopeDTO scopeDTO = ResourceScopeDTO.builder().accountIdentifier(accountIdentifier).build();
+    doNothing().when(auditPermissionValidator).validate(accountIdentifier, scopeDTO);
+    when(auditService.list(eq(accountIdentifier), any(), eq(null))).thenReturn(getPage(emptyList(), 0));
+    auditResource.list(accountIdentifier, pageRequest, null);
+    ArgumentCaptor<PageRequest> pageRequestCaptor = ArgumentCaptor.forClass(PageRequest.class);
+    verify(auditService).list(any(), pageRequestCaptor.capture(), any());
+    SortOrder order = pageRequestCaptor.getValue().getSortOrders().get(0);
+    assertEquals(order.getOrderType(), DESC);
+    assertEquals(order.getFieldName(), AuditEventKeys.timestamp);
+    verify(auditPermissionValidator, times(1)).validate(accountIdentifier, scopeDTO);
+    verifyAuditServiceInvocation(accountIdentifier, null);
   }
 
   @Test
