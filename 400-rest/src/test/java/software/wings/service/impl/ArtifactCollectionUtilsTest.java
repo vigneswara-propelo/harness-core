@@ -123,7 +123,7 @@ public class ArtifactCollectionUtilsTest extends WingsBaseTest {
     when(artifactService.prepareArtifactWithMetadataQuery(any(ArtifactStream.class), anyBoolean()))
         .thenReturn(artifactQuery);
     when(artifactQuery.limit(anyInt())).thenReturn(artifactQuery);
-    when(artifactQuery.fetch()).thenReturn(artifactIterator);
+    when(artifactQuery.fetch(any())).thenReturn(artifactIterator);
     when(artifactIterator.hasNext()).thenReturn(true).thenReturn(false);
     when(artifactIterator.next()).thenReturn(anArtifact().build());
     when(featureFlagService.isEnabled(ArgumentMatchers.eq(FeatureName.ARTIFACT_COLLECTION_CONFIGURABLE), any()))

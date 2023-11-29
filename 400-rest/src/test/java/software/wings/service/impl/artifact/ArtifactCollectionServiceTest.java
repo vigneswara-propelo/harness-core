@@ -896,7 +896,7 @@ public class ArtifactCollectionServiceTest extends WingsBaseTest {
         .thenReturn(Service.builder().artifactType(ArtifactType.JAR).build());
     when(artifactService.prepareArtifactWithMetadataQuery(any(), anyBoolean())).thenReturn(query);
     when(query.limit(anyInt())).thenReturn(query);
-    when(query.fetch()).thenReturn(artifactIterator);
+    when(query.fetch(any())).thenReturn(artifactIterator);
     when(artifactIterator.hasNext()).thenReturn(true).thenReturn(false);
     Map<String, String> map = new HashMap<>();
     map.put("buildNo", "10");
@@ -938,7 +938,7 @@ public class ArtifactCollectionServiceTest extends WingsBaseTest {
         .thenReturn(Service.builder().artifactType(ArtifactType.WAR).build());
     when(artifactService.prepareArtifactWithMetadataQuery(any(), anyBoolean())).thenReturn(query);
     when(query.limit(anyInt())).thenReturn(query);
-    when(query.fetch()).thenReturn(artifactIterator);
+    when(query.fetch(any())).thenReturn(artifactIterator);
     when(artifactIterator.hasNext()).thenReturn(true).thenReturn(false);
     Map<String, String> map = new HashMap<>();
     map.put("artifactPath", "myfolder/todolist.war");

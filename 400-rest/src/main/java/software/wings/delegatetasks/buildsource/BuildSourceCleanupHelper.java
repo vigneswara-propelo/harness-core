@@ -111,10 +111,10 @@ public class BuildSourceCleanupHelper {
     Set<String> buildNumbers =
         isEmpty(builds) ? new HashSet<>() : builds.stream().map(BuildDetails::getNumber).collect(Collectors.toSet());
     List<Artifact> deletedArtifactsNew = new ArrayList<>();
+    FindOptions findOptions = createFindOptionsToHitSecondaryNode(artifactStream.getAccountId());
+    findOptions.batchSize(1000);
     try (HIterator<Artifact> artifacts =
-             new HIterator<>(artifactService.prepareCleanupQuery(artifactStream)
-                                 .limit(NO_LIMIT)
-                                 .fetch(createFindOptionsToHitSecondaryNode(artifactStream.getAccountId())))) {
+             new HIterator<>(artifactService.prepareCleanupQuery(artifactStream).limit(NO_LIMIT).fetch(findOptions))) {
       for (Artifact artifact : artifacts) {
         if (!buildNumbers.contains(artifact.getBuildNo())) {
           deletedArtifactsNew.add(artifact);
@@ -133,9 +133,10 @@ public class BuildSourceCleanupHelper {
     Set<String> revisionNumbers =
         isEmpty(builds) ? new HashSet<>() : builds.stream().map(BuildDetails::getRevision).collect(Collectors.toSet());
     List<Artifact> artifactsToBeDeleted = new ArrayList<>();
+    FindOptions findOptions = createFindOptionsToHitSecondaryNode(artifactStream.getAccountId());
+    findOptions.batchSize(1000);
     try (HIterator<Artifact> artifacts =
-             new HIterator<>(artifactService.prepareCleanupQuery(artifactStream)
-                                 .fetch(createFindOptionsToHitSecondaryNode(artifactStream.getAccountId())))) {
+             new HIterator<>(artifactService.prepareCleanupQuery(artifactStream).fetch(findOptions))) {
       for (Artifact artifact : artifacts) {
         if (artifact != null && (artifact.getRevision() != null) && !revisionNumbers.contains(artifact.getRevision())) {
           artifactsToBeDeleted.add(artifact);
@@ -168,10 +169,10 @@ public class BuildSourceCleanupHelper {
         ArtifactCollectionUtils.getArtifactKeyFn(artifactStream.getArtifactStreamType(), artifactStreamAttributes);
     List<Artifact> toBeDeletedArtifacts = new ArrayList<>();
     int deletedCount = 0;
+    FindOptions findOptions = createFindOptionsToHitSecondaryNode(artifactStream.getAccountId());
+    findOptions.batchSize(1000);
     try (HIterator<Artifact> artifactHIterator =
-             new HIterator<>(artifactService.prepareCleanupQuery(artifactStream)
-                                 .limit(NO_LIMIT)
-                                 .fetch(createFindOptionsToHitSecondaryNode(artifactStream.getAccountId())))) {
+             new HIterator<>(artifactService.prepareCleanupQuery(artifactStream).limit(NO_LIMIT).fetch(findOptions))) {
       for (Artifact artifact : artifactHIterator) {
         if (!buildDetailsMap.containsKey(artifactKeyFn.apply(artifact))) {
           toBeDeletedArtifacts.add(artifact);
