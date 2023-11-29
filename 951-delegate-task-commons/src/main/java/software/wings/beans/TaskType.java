@@ -539,7 +539,7 @@ public enum TaskType {
       TaskGroup.HELM, "Helm Command Task with Steady state check for jobs depending on account settings."),
   ARTIFACT_BUNDLE_FETCH_TASK(TaskGroup.ARTIFACT_BUNDLE, "Artifact bundle fetch task in NG"),
   AWS_ASG_BLUE_GREEN_DEPLOY_TASK_NG_V3(TaskGroup.ASG, "AWS Asg Blue Green Deploy V3 with Shift Traffic support"),
-  TAS_BG_SETUP_SUPPORT_2_APPS_V2(TaskGroup.TAS, "Tas BG Setup task V2", true),
+  TAS_BG_SETUP_SUPPORT_2_APPS_V2(TaskGroup.TAS, "Tas BG Setup task V2"),
   K8S_COMMAND_TASK_NG_TRAFFIC_ROUTING(TaskGroup.K8S, "K8s Task with Traffic routing config", true);
 
   private final TaskGroup taskGroup;

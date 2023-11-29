@@ -10,6 +10,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.artifacts.azureartifacts.beans.AzureArtifactsExceptionConstants.DOWNLOAD_FROM_AZURE_ARTIFACTS_EXPLANATION;
 import static io.harness.artifacts.azureartifacts.beans.AzureArtifactsExceptionConstants.DOWNLOAD_FROM_AZURE_ARTIFACTS_FAILED;
 import static io.harness.artifacts.azureartifacts.beans.AzureArtifactsExceptionConstants.DOWNLOAD_FROM_AZURE_ARTIFACTS_HINT;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.beans.connector.gcpconnector.GcpCredentialType.INHERIT_FROM_DELEGATE;
 import static io.harness.delegate.task.serverless.exception.ServerlessExceptionConstants.BLANK_ARTIFACT_PATH_EXPLANATION;
@@ -998,6 +999,10 @@ public class CfCommandTaskHelperNG {
       CfRequestConfig cfRequestConfig, List<CfServiceData> downSizeList, boolean isUseAppAutoScalar,
       CfAppAutoscalarRequestData autoscalarRequestData) throws PivotalClientApiException {
     executionLogCallback.saveExecutionLog("\n");
+    if (isEmpty(downSizeList)) {
+      executionLogCallback.saveExecutionLog("No application To Downsize");
+      return;
+    }
     for (CfServiceData cfServiceData : downSizeList) {
       executionLogCallback.saveExecutionLog(color("# Downsizing application:", White, Bold));
       executionLogCallback.saveExecutionLog(CFLogCallbackFormatter.formatAppInstancesState(

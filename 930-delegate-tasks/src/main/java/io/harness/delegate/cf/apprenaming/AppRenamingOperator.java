@@ -33,7 +33,8 @@ public interface AppRenamingOperator {
     VERSION_TO_NON_VERSION,
     NON_VERSION_TO_NON_VERSION,
     NON_VERSION_TO_VERSION,
-    ROLLBACK_OPERATOR
+    ROLLBACK_OPERATOR,
+    ROLLBACK_OPERATOR_BG_NON_VERSION_TO_NON_VERSION
   }
 
   CfInBuiltVariablesUpdateValues renameApp(CfRouteUpdateRequestConfigData cfRouteUpdateConfigData,
@@ -50,6 +51,8 @@ public interface AppRenamingOperator {
         return new NonVersionToNonVersionOperator();
       case ROLLBACK_OPERATOR:
         return new AppRenamingRollbackOperator();
+      case ROLLBACK_OPERATOR_BG_NON_VERSION_TO_NON_VERSION:
+        return new RollbackBGNonVersionToNonVersion();
       default:
         throw new PivotalClientApiException(String.format("%s is not supported", transition.name()));
     }

@@ -8,15 +8,19 @@
 package io.harness.delegate.pcf;
 
 import static io.harness.delegate.cf.CfTestConstants.ACCOUNT_ID;
+import static io.harness.delegate.cf.CfTestConstants.RUNNING;
 import static io.harness.delegate.cf.CfTestConstants.STOPPED;
 import static io.harness.delegate.cf.apprenaming.AppRenamingOperator.NamingTransition.ROLLBACK_OPERATOR;
 import static io.harness.rule.OwnerRule.PIYUSH_BHUWALKA;
+import static io.harness.rule.OwnerRule.VLICA;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
@@ -282,6 +286,364 @@ public class CfSwapRollbackCommandTaskHandlerTest extends CategoryTest {
     cfCommandExecutionResponse = pcfRollbackCommandTaskHandler.executeTaskInternal(
         cfRollbackCommandRequestNG, logStreamingTaskClient, commandUnitsProgress);
     assertThat(cfCommandExecutionResponse.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.FAILURE);
+  }
+
+  @Test
+  @Owner(developers = VLICA)
+  @Category(UnitTests.class)
+  public void executeTaskInternalTestWhenIsBGWithOnly2Apps() throws PivotalClientApiException, IOException {
+    TasInfraConfig tasInfraConfig = TasInfraConfig.builder().build();
+    char[] password = {'a'};
+    char[] username = {'b'};
+    CloudFoundryConfig cfConfig = CloudFoundryConfig.builder().userName(username).password(password).build();
+    CommandUnitsProgress commandUnitsProgress = CommandUnitsProgress.builder().build();
+
+    File file = new File("/gs");
+    doReturn(file).when(pcfCommandTaskHelper).generateWorkingDirectoryForDeployment();
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.SwapRollback, true, commandUnitsProgress);
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.Upsize, true, commandUnitsProgress);
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.Downsize, true, commandUnitsProgress);
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.Wrapup, true, commandUnitsProgress);
+
+    doReturn(cfConfig)
+        .when(tasNgConfigMapper)
+        .mapTasConfigWithDecryption(tasInfraConfig.getTasConnectorDTO(), tasInfraConfig.getEncryptionDataDetails());
+
+    String inactiveApplicationGuid = "id-inactive";
+    String activeApplicationGuid = "id-active";
+
+    String inactiveRoute = "inactive-route";
+    String tempRoute = "temp-route";
+    String activeRoute = "active-route";
+
+    int activeInstanceCount = 1;
+    int inactiveInstanceCount = 1;
+    TasApplicationInfo activeApplicationDetails = TasApplicationInfo.builder()
+                                                      .applicationName("a_s_e__5-active-app")
+                                                      .runningCount(activeInstanceCount)
+                                                      .applicationGuid(activeApplicationGuid)
+                                                      .attachedRoutes(List.of(activeRoute))
+                                                      .build();
+    TasApplicationInfo newApplicationDetails = TasApplicationInfo.builder()
+                                                   .applicationName("a_s_e__3")
+                                                   .attachedRoutes(List.of("temp-route"))
+                                                   .applicationGuid(inactiveApplicationGuid)
+                                                   .attachedRoutes(List.of(tempRoute))
+                                                   .build();
+    TasApplicationInfo inactiveApplicationDetails = TasApplicationInfo.builder()
+                                                        .applicationName("a_s_e__3")
+                                                        .runningCount(inactiveInstanceCount)
+                                                        .applicationGuid(inactiveApplicationGuid)
+                                                        .attachedRoutes(List.of(inactiveRoute))
+                                                        .build();
+
+    CfSwapRollbackCommandRequestNG cfRollbackCommandRequestNG =
+        CfSwapRollbackCommandRequestNG.builder()
+            .tasInfraConfig(tasInfraConfig)
+            .cfCommandTypeNG(CfCommandTypeNG.SWAP_ROLLBACK)
+            .accountId(ACCOUNT_ID)
+            .swapRouteOccurred(true)
+            .instanceData(Arrays.asList(CfServiceData.builder()
+                                            .id("id-active")
+                                            .name("a_s_e__5-active-app")
+                                            .previousCount(1)
+                                            .desiredCount(1)
+                                            .build(),
+                CfServiceData.builder().id("id-inactive").name("a_s_e__3").previousCount(0).desiredCount(1).build()))
+            .timeoutIntervalInMin(5)
+            .newApplicationDetails(newApplicationDetails)
+            .inActiveApplicationDetails(inactiveApplicationDetails)
+            .activeApplicationDetails(activeApplicationDetails)
+            .downsizeOldApplication(true)
+            .upsizeInActiveApp(true)
+            .useAppAutoScalar(false)
+            .olderActiveVersionCountToKeep(0)
+            .routeMaps(List.of("apps.test.unit.io"))
+            .tempRoutes(List.of("temp.route.test.unit.io"))
+            .build();
+
+    String cfCliPath = "cfCliPath";
+    doReturn(cfCliPath)
+        .when(pcfCommandTaskHelper)
+        .getCfCliPathOnDelegate(true, cfRollbackCommandRequestNG.getCfCliVersion());
+
+    CfRequestConfig cfRequestConfig =
+        CfRequestConfig.builder()
+            .userName(String.valueOf(cfConfig.getUserName()))
+            .endpointUrl(cfConfig.getEndpointUrl())
+            .password(String.valueOf(cfConfig.getPassword()))
+            .orgName(tasInfraConfig.getOrganization())
+            .spaceName(tasInfraConfig.getSpace())
+            .timeOutIntervalInMins(cfRollbackCommandRequestNG.getTimeoutIntervalInMin())
+            .cfHomeDirPath(file.getAbsolutePath())
+            .cfCliPath(pcfCommandTaskHelper.getCfCliPathOnDelegate(true, cfRollbackCommandRequestNG.getCfCliVersion()))
+            .cfCliVersion(cfRollbackCommandRequestNG.getCfCliVersion())
+            .useCFCLI(true)
+            .build();
+
+    CfRouteUpdateRequestConfigData cfRouteUpdateConfigData =
+        CfRouteUpdateRequestConfigData.builder()
+            .isRollback(true)
+            .existingApplicationDetails(activeApplicationDetails != null
+                    ? Collections.singletonList(activeApplicationDetails.toCfAppSetupTimeDetails())
+                    : null)
+            .cfAppNamePrefix(cfRollbackCommandRequestNG.getCfAppNamePrefix())
+            .downsizeOldApplication(cfRollbackCommandRequestNG.isDownsizeOldApplication())
+            .existingApplicationNames(List.of("a_s_e__5-active-app"))
+            .existingInActiveApplicationDetails(cfRollbackCommandRequestNG.getInActiveApplicationDetails() != null
+                    ? cfRollbackCommandRequestNG.getInActiveApplicationDetails().toCfAppSetupTimeDetails()
+                    : null)
+            .tempRoutes(cfRollbackCommandRequestNG.getTempRoutes())
+            .skipRollback(false)
+            .isStandardBlueGreen(true)
+            .newApplicationDetails(cfRollbackCommandRequestNG.getNewApplicationDetails().toCfAppSetupTimeDetails())
+            .upSizeInActiveApp(cfRollbackCommandRequestNG.isUpsizeInActiveApp())
+            .versioningChanged(false)
+            .nonVersioning(true)
+            .newApplicationName(cfRollbackCommandRequestNG.getNewApplicationDetails().getApplicationName())
+            .finalRoutes(cfRollbackCommandRequestNG.getRouteMaps())
+            .isMapRoutesOperation(false)
+            .isBGWithOnly2Apps(true)
+            .build();
+
+    CfInBuiltVariablesUpdateValues cfInBuiltVariablesUpdateValues = CfInBuiltVariablesUpdateValues.builder().build();
+    doReturn(cfInBuiltVariablesUpdateValues)
+        .when(pcfCommandTaskHelper)
+        .performAppRenaming(ROLLBACK_OPERATOR, cfRouteUpdateConfigData, cfRequestConfig, executionLogCallback);
+
+    String newAppName = "a_s_e__3";
+    List<String> newApps = List.of(newAppName);
+    doReturn(newApps)
+        .when(pcfCommandTaskHelper)
+        .getAppNameBasedOnGuidForBlueGreenDeployment(
+            cfRequestConfig, cfRouteUpdateConfigData.getCfAppNamePrefix(), newApplicationDetails.getApplicationGuid());
+
+    ApplicationDetail applicationDetail = ApplicationDetail.builder()
+                                              .id("Guid:id-inactive")
+                                              .diskQuota(1)
+                                              .instances(0)
+                                              .memoryLimit(1)
+                                              .name("a_s_e__3")
+                                              .requestedState(RUNNING)
+                                              .stack("")
+                                              .runningInstances(0)
+                                              .build();
+    doReturn(applicationDetail).when(cfDeploymentManager).getApplicationByName(any());
+
+    String appName = "app";
+    ApplicationSummary previousRelease = ApplicationSummary.builder()
+                                             .id(inactiveApplicationGuid)
+                                             .diskQuota(1)
+                                             .instances(0)
+                                             .memoryLimit(1)
+                                             .name(appName)
+                                             .requestedState(STOPPED)
+                                             .runningInstances(0)
+                                             .build();
+    List<ApplicationSummary> previousReleases = List.of(previousRelease);
+    doReturn(previousReleases).when(cfDeploymentManager).getPreviousReleases(any(), any());
+
+    CfCommandResponseNG cfCommandExecutionResponse = pcfRollbackCommandTaskHandler.executeTaskInternal(
+        cfRollbackCommandRequestNG, logStreamingTaskClient, commandUnitsProgress);
+
+    verify(pcfCommandTaskHelper, times(1)).performAppRenaming(any(), any(), any(), any());
+    verify(pcfCommandTaskHelper, times(0)).deleteNewApp(any(), any(), any(), any());
+    assertThat(cfCommandExecutionResponse.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
+  }
+
+  @Test
+  @Owner(developers = VLICA)
+  @Category(UnitTests.class)
+  public void executeTaskInternalTestSwapDidntOccurAndIsBGWith2Apps() throws PivotalClientApiException, IOException {
+    TasInfraConfig tasInfraConfig = TasInfraConfig.builder().build();
+    char[] password = {'a'};
+    char[] username = {'b'};
+    CloudFoundryConfig cfConfig = CloudFoundryConfig.builder().userName(username).password(password).build();
+    CommandUnitsProgress commandUnitsProgress = CommandUnitsProgress.builder().build();
+
+    File file = new File("/gs");
+    doReturn(file).when(pcfCommandTaskHelper).generateWorkingDirectoryForDeployment();
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.SwapRollback, true, commandUnitsProgress);
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.Upsize, true, commandUnitsProgress);
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.Downsize, true, commandUnitsProgress);
+
+    doReturn(executionLogCallback)
+        .when(tasTaskHelperBase)
+        .getLogCallback(logStreamingTaskClient, CfCommandUnitConstants.Wrapup, true, commandUnitsProgress);
+
+    doReturn(cfConfig)
+        .when(tasNgConfigMapper)
+        .mapTasConfigWithDecryption(tasInfraConfig.getTasConnectorDTO(), tasInfraConfig.getEncryptionDataDetails());
+
+    String inactiveApplicationGuid = "id-inactive";
+    String activeApplicationGuid = "id-active";
+
+    String inactiveRoute = "inactive-route";
+    String tempRoute = "temp-route";
+    String activeRoute = "active-route";
+
+    int activeInstanceCount = 1;
+    int inactiveInstanceCount = 1;
+    TasApplicationInfo activeApplicationDetails = TasApplicationInfo.builder()
+                                                      .applicationName("a_s_e__5-active-app")
+                                                      .runningCount(activeInstanceCount)
+                                                      .applicationGuid(activeApplicationGuid)
+                                                      .attachedRoutes(List.of(activeRoute))
+                                                      .build();
+    TasApplicationInfo newApplicationDetails = TasApplicationInfo.builder()
+                                                   .applicationName("a_s_e__3")
+                                                   .attachedRoutes(List.of("temp-route"))
+                                                   .applicationGuid(inactiveApplicationGuid)
+                                                   .attachedRoutes(List.of(tempRoute))
+                                                   .build();
+    TasApplicationInfo inactiveApplicationDetails = TasApplicationInfo.builder()
+                                                        .applicationName("a_s_e__3")
+                                                        .runningCount(inactiveInstanceCount)
+                                                        .applicationGuid(inactiveApplicationGuid)
+                                                        .attachedRoutes(List.of(inactiveRoute))
+                                                        .build();
+
+    CfSwapRollbackCommandRequestNG cfRollbackCommandRequestNG =
+        CfSwapRollbackCommandRequestNG.builder()
+            .tasInfraConfig(tasInfraConfig)
+            .cfCommandTypeNG(CfCommandTypeNG.SWAP_ROLLBACK)
+            .accountId(ACCOUNT_ID)
+            .swapRouteOccurred(false)
+            .instanceData(Arrays.asList(CfServiceData.builder()
+                                            .id("id-active")
+                                            .name("a_s_e__5-active-app")
+                                            .previousCount(1)
+                                            .desiredCount(1)
+                                            .build(),
+                CfServiceData.builder().id("id-inactive").name("a_s_e__3").previousCount(0).desiredCount(1).build()))
+            .timeoutIntervalInMin(5)
+            .newApplicationDetails(newApplicationDetails)
+            .inActiveApplicationDetails(inactiveApplicationDetails)
+            .activeApplicationDetails(activeApplicationDetails)
+            .downsizeOldApplication(false)
+            .upsizeInActiveApp(true)
+            .useAppAutoScalar(false)
+            .olderActiveVersionCountToKeep(0)
+            .build();
+
+    String cfCliPath = "cfCliPath";
+    doReturn(cfCliPath)
+        .when(pcfCommandTaskHelper)
+        .getCfCliPathOnDelegate(true, cfRollbackCommandRequestNG.getCfCliVersion());
+
+    CfRequestConfig cfRequestConfig =
+        CfRequestConfig.builder()
+            .userName(String.valueOf(cfConfig.getUserName()))
+            .endpointUrl(cfConfig.getEndpointUrl())
+            .password(String.valueOf(cfConfig.getPassword()))
+            .orgName(tasInfraConfig.getOrganization())
+            .spaceName(tasInfraConfig.getSpace())
+            .timeOutIntervalInMins(cfRollbackCommandRequestNG.getTimeoutIntervalInMin())
+            .cfHomeDirPath(file.getAbsolutePath())
+            .cfCliPath(pcfCommandTaskHelper.getCfCliPathOnDelegate(true, cfRollbackCommandRequestNG.getCfCliVersion()))
+            .cfCliVersion(cfRollbackCommandRequestNG.getCfCliVersion())
+            .useCFCLI(true)
+            .build();
+
+    CfRouteUpdateRequestConfigData cfRouteUpdateConfigData =
+        CfRouteUpdateRequestConfigData.builder()
+            .isRollback(true)
+            .existingApplicationDetails(activeApplicationDetails != null
+                    ? Collections.singletonList(activeApplicationDetails.toCfAppSetupTimeDetails())
+                    : null)
+            .cfAppNamePrefix(cfRollbackCommandRequestNG.getCfAppNamePrefix())
+            .downsizeOldApplication(cfRollbackCommandRequestNG.isDownsizeOldApplication())
+            .existingApplicationNames(List.of("a_s_e__5-active-app"))
+            .existingInActiveApplicationDetails(cfRollbackCommandRequestNG.getInActiveApplicationDetails() != null
+                    ? cfRollbackCommandRequestNG.getInActiveApplicationDetails().toCfAppSetupTimeDetails()
+                    : null)
+            .tempRoutes(cfRollbackCommandRequestNG.getTempRoutes())
+            .skipRollback(false)
+            .isStandardBlueGreen(true)
+            .newApplicationDetails(cfRollbackCommandRequestNG.getNewApplicationDetails().toCfAppSetupTimeDetails())
+            .upSizeInActiveApp(cfRollbackCommandRequestNG.isUpsizeInActiveApp())
+            .versioningChanged(false)
+            .nonVersioning(true)
+            .newApplicationName(cfRollbackCommandRequestNG.getNewApplicationDetails().getApplicationName())
+            .finalRoutes(cfRollbackCommandRequestNG.getRouteMaps())
+            .isMapRoutesOperation(false)
+            .isBGWithOnly2Apps(true)
+            .build();
+
+    CfInBuiltVariablesUpdateValues cfInBuiltVariablesUpdateValues = CfInBuiltVariablesUpdateValues.builder().build();
+    doReturn(cfInBuiltVariablesUpdateValues)
+        .when(pcfCommandTaskHelper)
+        .performAppRenaming(ROLLBACK_OPERATOR, cfRouteUpdateConfigData, cfRequestConfig, executionLogCallback);
+
+    String newAppName = "app";
+    List<String> newApps = List.of(newAppName);
+    doReturn(newApps)
+        .when(pcfCommandTaskHelper)
+        .getAppNameBasedOnGuidForBlueGreenDeployment(
+            cfRequestConfig, cfRouteUpdateConfigData.getCfAppNamePrefix(), newApplicationDetails.getApplicationGuid());
+
+    ApplicationDetail applicationDetail = ApplicationDetail.builder()
+                                              .id("Guid:id-active")
+                                              .diskQuota(1)
+                                              .instances(0)
+                                              .memoryLimit(1)
+                                              .name("a_s_e__5-active-app")
+                                              .requestedState(RUNNING)
+                                              .stack("")
+                                              .runningInstances(0)
+                                              .build();
+    doReturn(applicationDetail).when(cfDeploymentManager).getApplicationByName(any());
+
+    ApplicationSummary applicationSummary1 = ApplicationSummary.builder()
+                                                 .id(inactiveApplicationGuid)
+                                                 .diskQuota(1)
+                                                 .instances(1)
+                                                 .memoryLimit(1)
+                                                 .name("a_s_e__3")
+                                                 .requestedState(RUNNING)
+                                                 .runningInstances(1)
+                                                 .build();
+    ApplicationSummary applicationSummary2 = ApplicationSummary.builder()
+                                                 .id(inactiveApplicationGuid)
+                                                 .diskQuota(1)
+                                                 .instances(1)
+                                                 .memoryLimit(1)
+                                                 .name("a_s_e__5-active-app")
+                                                 .requestedState(RUNNING)
+                                                 .runningInstances(1)
+                                                 .build();
+    List<ApplicationSummary> previousReleases = List.of(applicationSummary1, applicationSummary2);
+    doReturn(previousReleases)
+        .when(cfDeploymentManager)
+        .getPreviousReleases(cfRequestConfig, cfRouteUpdateConfigData.getCfAppNamePrefix());
+
+    CfCommandResponseNG cfCommandExecutionResponse = pcfRollbackCommandTaskHandler.executeTaskInternal(
+        cfRollbackCommandRequestNG, logStreamingTaskClient, commandUnitsProgress);
+
+    verify(pcfCommandTaskHelper, times(0)).performAppRenaming(any(), any(), any(), any());
+    verify(pcfCommandTaskHelper, times(0)).deleteNewApp(any(), any(), any(), any());
+    assertThat(cfCommandExecutionResponse.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
   }
 
   @Test
