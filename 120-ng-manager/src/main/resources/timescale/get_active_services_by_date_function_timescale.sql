@@ -147,8 +147,11 @@ BEGIN
                                 orgid,
                                 projectid,
                                 serviceid
-                        ) instancesPerServices ON activeServices.orgIdentifier = instancesPerServices.orgid
-                            AND activeServices.projectIdentifier = instancesPerServices.projectid
+                        ) instancesPerServices
+                        ON (activeServices.orgIdentifier = instancesPerServices.orgid
+                                OR (activeServices.orgIdentifier IS NULL AND instancesPerServices.orgid IS NULL))
+                            AND (activeServices.projectIdentifier = instancesPerServices.projectid
+                                OR (activeServices.projectIdentifier IS NULL AND instancesPerServices.projectid IS NULL))
                             AND activeServices.serviceIdentifier = instancesPerServices.serviceid
                 ) servicesLicenses;
 
