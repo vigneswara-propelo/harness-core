@@ -56,6 +56,7 @@ data:
   {{- if .Values.global.chaos.enabled }}
   CHAOS_SERVICE_BASE_URL: http://chaos-web-service.{{ .Release.Namespace }}.svc.cluster.local:8184/
   {{- end }}
+  SERVICE_DISCOVERY_SERVICE_BASE_URL: http://service-discovery-manager:8080/
   CENG_CLIENT_BASEURL: 'http://nextgen-ce.{{ .Release.Namespace }}.svc.cluster.local:6340/ccm/api/'
   CE_NG_CLIENT_BASEURL: 'http://nextgen-ce.{{ .Release.Namespace }}.svc.cluster.local:6340/ccm/api/'
   CE_SETUP_CONFIG_GCP_PROJECT_ID: '{{ .Values.ceGcpSetupConfigGcpProjectId }}'
