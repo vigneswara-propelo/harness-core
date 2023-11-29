@@ -163,6 +163,9 @@ public class CIExecutionConfigService {
       case IDP_CREATE_REPO:
         executionConfig.setIdpCreateRepo(value);
         break;
+      case IDP_CODE_PUSH:
+        executionConfig.setIdpCodePush(value);
+        break;
       default:
         throw new BadRequestException(format("Field %s does not exist for infra type: K8", field));
     }
@@ -225,6 +228,9 @@ public class CIExecutionConfigService {
         break;
       case IDP_CREATE_REPO:
         vmImageConfig.setIdpCreateRepo(value);
+        break;
+      case IDP_CODE_PUSH:
+        vmImageConfig.setIdpCodePush(value);
         break;
       default:
         throw new BadRequestException(format("Field %s does not exist for infra type: VM", field));
@@ -591,6 +597,9 @@ public class CIExecutionConfigService {
       case IDP_CREATE_REPO:
         return getApplicableImage(
             stepInfoType, accountLevelExecutionConfig.getIdpCreateRepo(), globalExecutionConfig.getIdpCreateRepo());
+      case IDP_CODE_PUSH:
+        return getApplicableImage(
+            stepInfoType, accountLevelExecutionConfig.getIdpCodePush(), globalExecutionConfig.getIdpCodePush());
       case IACM_TERRAFORM_PLUGIN:
       case IACM_APPROVAL:
         return Strings.EMPTY;
@@ -660,6 +669,8 @@ public class CIExecutionConfigService {
         return ciExecutionServiceConfig.getStepConfig().getIdpCookieCutter();
       case IDP_CREATE_REPO:
         return ciExecutionServiceConfig.getStepConfig().getIdpCreateRepo();
+      case IDP_CODE_PUSH:
+        return ciExecutionServiceConfig.getStepConfig().getIdpCodePush();
       default:
         throw new BadRequestException(format(UNEXPECTED_ERR_FORMAT, stepInfoType));
     }
@@ -735,6 +746,9 @@ public class CIExecutionConfigService {
       case IDP_CREATE_REPO:
         return getApplicableImage(
             stepInfoType, accountLevelImageConfig.getIdpCreateRepo(), globalImageConfig.getIdpCreateRepo());
+      case IDP_CODE_PUSH:
+        return getApplicableImage(
+            stepInfoType, accountLevelImageConfig.getIdpCodePush(), globalImageConfig.getIdpCodePush());
       default:
         throw new BadRequestException(format(UNEXPECTED_ERR_FORMAT, stepInfoType));
     }
@@ -796,6 +810,7 @@ public class CIExecutionConfigService {
       case SSCA_ENFORCEMENT:
       case IDP_COOKIECUTTER:
       case IDP_CREATE_REPO:
+      case IDP_CODE_PUSH:
         break;
       default:
         throw new BadRequestException(format(UNEXPECTED_ERR_FORMAT, stepInfoType));
@@ -844,6 +859,8 @@ public class CIExecutionConfigService {
         return vmImageConfig.getIdpCookieCutter();
       case IDP_CREATE_REPO:
         return vmImageConfig.getIdpCreateRepo();
+      case IDP_CODE_PUSH:
+        return vmImageConfig.getIdpCodePush();
       default:
         throw new BadRequestException(format(UNEXPECTED_ERR_FORMAT, stepInfoType));
     }

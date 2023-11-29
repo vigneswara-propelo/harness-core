@@ -410,6 +410,8 @@ ciExecutionServiceConfig:
       image: deveshharness2306/cookiecutter:latest
     idpCreateRepo:
       image: deveshharness2306/createrepo:latest
+    idpCodePush:
+      image: deveshharness2306/codepush:latest
     vmImageConfig:
       # Use root image for VM git clone
       gitClone: harness/drone-git:1.2.7
@@ -426,6 +428,7 @@ ciExecutionServiceConfig:
       iacmTerraform: plugins/harness_terraform:dev
       idpCookieCutter: deveshharness2306/cookiecutter:latest
       idpCreateRepo: deveshharness2306/createrepo:latest
+      idpCodePush: deveshharness2306/codepush:latest
 
 
 iacmServiceConfig:

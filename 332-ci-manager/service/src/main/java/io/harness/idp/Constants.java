@@ -26,4 +26,7 @@ public class Constants {
 
   public static final String REPO_PROJECT = "REPO_PROJECT";
   public static final String REPO_WORKSPACE = "REPO_WORKSPACE";
+  public static final String CODE_DIRECTORY = "CODE_DIRECTORY";
+  public static final String CODE_OUTPUT_DIRECTORY = "CODE_OUTPUT_DIRECTORY";
+  public static final String CODE_PUSH_BRANCH = "CODE_PUSH_BRANCH";
 }

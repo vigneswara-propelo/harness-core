@@ -19,6 +19,7 @@ import io.harness.cimanager.serializer.CIContractsKryoRegistrar;
 import io.harness.idp.pipeline.stages.node.IDPStageNode;
 import io.harness.idp.serializer.kryo.IdpServiceKryoRegistrar;
 import io.harness.idp.serializer.morphia.IdpServiceMorphiaRegistrar;
+import io.harness.idp.steps.beans.stepnode.IdpCodePushStepNode;
 import io.harness.idp.steps.beans.stepnode.IdpCookieCutterStepNode;
 import io.harness.idp.steps.beans.stepnode.IdpCreateRepoStepNode;
 import io.harness.morphia.MorphiaRegistrar;
@@ -150,6 +151,17 @@ public class IdpServiceRegistrars {
                                            .build())
                    .availableAtAccountLevel(false)
                    .clazz(IdpCreateRepoStepNode.class)
+                   .build())
+          .add(YamlSchemaRootClass.builder()
+                   .entityType(EntityType.IDP_CODE_PUSH)
+                   .availableAtProjectLevel(true)
+                   .availableAtOrgLevel(false)
+                   .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .modulesSupported(Collections.singletonList(ModuleType.IDP))
+                                           .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
+                                           .build())
+                   .availableAtAccountLevel(false)
+                   .clazz(IdpCodePushStepNode.class)
                    .build())
           .build();
 }

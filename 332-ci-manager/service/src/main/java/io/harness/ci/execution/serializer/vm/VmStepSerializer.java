@@ -86,6 +86,7 @@ public class VmStepSerializer {
       case SSCA_ENFORCEMENT:
       case IDP_COOKIECUTTER:
       case IDP_CREATE_REPO:
+      case IDP_CODE_PUSH:
         return vmPluginCompatibleStepSerializer.serialize(
             ambiance, (PluginCompatibleStep) stepInfo, stageInfraDetails, identifier, parameterFieldTimeout, stepName);
       case IACM_TERRAFORM_PLUGIN:

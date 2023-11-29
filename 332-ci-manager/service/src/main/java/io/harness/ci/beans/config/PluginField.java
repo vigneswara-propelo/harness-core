@@ -32,6 +32,7 @@ public enum PluginField {
   SLSA_VERIFICATION_GCR("slsaVerificationGcrTag"),
   IDP_COOKIECUTTER("IdpCookieCutter"),
   IDP_CREATE_REPO("IdpCreateRepo"),
+  IDP_CODE_PUSH("IdpCodePush"),
   UNKNOWN("unknown");
 
   public final String label;

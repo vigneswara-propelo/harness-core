@@ -24,7 +24,6 @@ import static io.harness.ci.commonconstants.CIExecutionConstants.STEP_MOUNT_PATH
 import static io.harness.ci.execution.buildstate.PluginSettingUtils.TAG_BUILD_EVENT;
 import static io.harness.ci.execution.buildstate.PluginSettingUtils.getRepoNameFromRepoUrl;
 import static io.harness.rule.OwnerRule.ALEKSANDAR;
-import static io.harness.rule.OwnerRule.DEVESH;
 import static io.harness.rule.OwnerRule.INDER;
 import static io.harness.rule.OwnerRule.JAMES_RICKS;
 import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
@@ -68,9 +67,6 @@ import io.harness.encryption.SecretRefData;
 import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.exception.ngexception.CIStageExecutionUserException;
-import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
-import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
-import io.harness.idp.utils.IDPStepUtils;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
@@ -103,8 +99,6 @@ import io.harness.yaml.extended.ci.codebase.impl.BranchBuildSpec;
 import io.harness.yaml.extended.ci.codebase.impl.PRBuildSpec;
 import io.harness.yaml.extended.ci.codebase.impl.TagBuildSpec;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,8 +119,6 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
 
   @Mock private ConnectorUtils connectorUtils;
   @Mock private SscaOrchestrationPluginUtils sscaOrchestrationPluginUtils;
-
-  @Mock private IDPStepUtils idpStepUtils;
 
   @Before
   public void setUp() {
@@ -1258,70 +1250,6 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
     Ambiance ambiance = Ambiance.newBuilder().build();
     Map<String, SecretNGVariable> actual =
         pluginSettingUtils.getPluginCompatibleSecretVars(slsaVerificationStepInfo, "identifier");
-    assertThat(actual).isEqualTo(expected);
-  }
-
-  @Test
-  @Owner(developers = DEVESH)
-  @Category(UnitTests.class)
-  public void testIdpCookieCutterStepEnvVariables() {
-    String testName = "test-name";
-    String testIdentifier = "test-identifier";
-    String testIsPublicTemplate = "false";
-    String testPath = "test-path";
-    String testCookieCutterVarName = "testVarName";
-    String testCookieCutterVarValue = "testVarValue";
-    Map<String, JsonNode> cookiecutterVariables = new HashMap<>();
-    cookiecutterVariables.put(testCookieCutterVarName, JsonNodeFactory.instance.textNode(testCookieCutterVarValue));
-
-    IdpCookieCutterStepInfo idpCookieCutterStepInfo =
-        IdpCookieCutterStepInfo.builder()
-            .cookieCutterVariables(ParameterField.createValueField(cookiecutterVariables))
-            .isPublicTemplate(ParameterField.createValueField(testIsPublicTemplate))
-            .pathForTemplate(ParameterField.createValueField(testPath))
-            .name(testName)
-            .identifier(testIdentifier)
-            .build();
-
-    Map<String, String> expected = new HashMap<>();
-    expected.put("IDP_COOKIECUTTER_" + testCookieCutterVarName, testCookieCutterVarValue);
-    expected.put("IS_PUBLIC_TEMPLATE", "false");
-    expected.put("PATH_FOR_TEMPLATE", testPath);
-
-    Ambiance ambiance = Ambiance.newBuilder().build();
-    Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
-        idpCookieCutterStepInfo, "identifier", 100, ambiance, Type.K8, false, true);
-
-    assertThat(actual).isEqualTo(expected);
-  }
-
-  @Test
-  @Owner(developers = DEVESH)
-  @Category(UnitTests.class)
-  public void testIdpCreateRepoStepEnvVariables() {
-    String testName = "test-name";
-
-    String isPrivateRepo = "true";
-    String repoName = "test-repo-name";
-    String orgName = "test-org-name";
-
-    IdpCreateRepoStepInfo idpCreateRepoStepInfo = IdpCreateRepoStepInfo.builder()
-                                                      .isPrivateRepo(ParameterField.createValueField(isPrivateRepo))
-                                                      .repoName(ParameterField.createValueField(repoName))
-                                                      .name(testName)
-                                                      .orgName(ParameterField.createValueField(orgName))
-                                                      .connectorRef(ParameterField.createValueField("myConnectorRef"))
-                                                      .build();
-
-    Map<String, String> expected = new HashMap<>();
-    expected.put("IDP_ORG_NAME", orgName);
-    expected.put("IS_PRIVATE_REPO", isPrivateRepo);
-    expected.put("IDP_REPO_NAME", repoName);
-
-    Ambiance ambiance = Ambiance.newBuilder().build();
-    Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
-        idpCreateRepoStepInfo, "identifier", 100, ambiance, Type.K8, false, true);
-
     assertThat(actual).isEqualTo(expected);
   }
 

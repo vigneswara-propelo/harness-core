@@ -73,6 +73,7 @@ import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.docker.DockerConnectorDTO;
 import io.harness.iacm.execution.IACMStepsUtils;
+import io.harness.idp.steps.beans.stepinfo.IdpCodePushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
 import io.harness.idp.utils.IDPStepUtils;
@@ -229,6 +230,13 @@ public class PluginSettingUtils extends PluginServiceImpl {
             idpNgAccess, idpConnectorRef, ambiance, ((IdpCreateRepoStepInfo) stepInfo).getRepoName().getValue());
         return idpStepUtils.getIDPCreateRepoStepInfoEnvVariables(
             (IdpCreateRepoStepInfo) stepInfo, idpGitConnector, identifier);
+      case IDP_CODE_PUSH:
+        final String idpCodePushConnectorRef = stepInfo.getConnectorRef().getValue();
+        final NGAccess idpCodePushNgAccess = AmbianceUtils.getNgAccess(ambiance);
+        final ConnectorDetails idpCodePushGitConnector = codebaseUtils.getGitConnector(idpCodePushNgAccess,
+            idpCodePushConnectorRef, ambiance, ((IdpCodePushStepInfo) stepInfo).getRepoName().getValue());
+        return idpStepUtils.getIDPCodePushStepInfoEnvVariables(
+            (IdpCodePushStepInfo) stepInfo, idpCodePushGitConnector, identifier);
       default:
         throw new IllegalStateException(
             "Unexpected value in getPluginCompatibleEnvVariables: " + stepInfo.getNonYamlInfo().getStepInfoType());
@@ -315,6 +323,7 @@ public class PluginSettingUtils extends PluginServiceImpl {
         return map;
       case GIT_CLONE:
       case IDP_CREATE_REPO:
+      case IDP_CODE_PUSH:
         return map;
       case IACM_TERRAFORM_PLUGIN:
         map.put(EnvVariableEnum.AWS_ACCESS_KEY, PLUGIN_ACCESS_KEY);

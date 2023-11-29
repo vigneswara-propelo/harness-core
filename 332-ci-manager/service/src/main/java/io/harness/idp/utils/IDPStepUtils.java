@@ -9,6 +9,10 @@ package io.harness.idp.utils;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveJsonNodeMapParameter;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameterV2;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.idp.Constants.CODE_DIRECTORY;
+import static io.harness.idp.Constants.CODE_OUTPUT_DIRECTORY;
+import static io.harness.idp.Constants.CODE_PUSH_BRANCH;
+import static io.harness.idp.Constants.CONNECTOR_TYPE;
 import static io.harness.idp.Constants.DEFAULT_BRANCH_FOR_REPO;
 import static io.harness.idp.Constants.DESCRIPTION_FOR_CREATING_REPO;
 import static io.harness.idp.Constants.IS_PRIVATE_REPO;
@@ -27,6 +31,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.ci.execution.serializer.SerializerUtils;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.idp.steps.Constants;
+import io.harness.idp.steps.beans.stepinfo.IdpCodePushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
 import io.harness.plugin.service.PluginServiceImpl;
@@ -86,7 +91,7 @@ public class IDPStepUtils extends PluginServiceImpl {
             "defaultBranch", Constants.IDP_CREATE_REPO, identifier, stepInfo.getDefaultBranch(), false));
 
     PluginServiceImpl.setMandatoryEnvironmentVariable(envVarMap, REPO_NAME_FOR_CREATING_REPO,
-        resolveStringParameterV2("repoName", Constants.IDP_CREATE_REPO, identifier, stepInfo.getRepoName(), true));
+        resolveStringParameterV2("repoName", Constants.IDP_CREATE_REPO, identifier, stepInfo.getRepoName(), false));
 
     PluginServiceImpl.setMandatoryEnvironmentVariable(envVarMap, IS_PRIVATE_REPO,
         resolveStringParameterV2(
@@ -102,7 +107,42 @@ public class IDPStepUtils extends PluginServiceImpl {
     PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, REPO_WORKSPACE,
         resolveStringParameterV2("workspace", Constants.IDP_CREATE_REPO, identifier, stepInfo.getWorkspace(), false));
 
-    //    envVarMap.put(CONNECTOR_TYPE, gitConnector.getConnectorType().getDisplayName());
+    envVarMap.put(CONNECTOR_TYPE, gitConnector.getConnectorType().getDisplayName());
+
+    envVarMap.values().removeAll(Collections.singleton(null));
+    return envVarMap;
+  }
+
+  public Map<String, String> getIDPCodePushStepInfoEnvVariables(
+      IdpCodePushStepInfo stepInfo, ConnectorDetails gitConnector, String identifier) {
+    Map<String, String> envVarMap = new HashMap<>();
+
+    envVarMap.putAll(getGitEnvVars(gitConnector, stepInfo.getRepoName().getValue()));
+
+    PluginServiceImpl.setMandatoryEnvironmentVariable(envVarMap, REPO_NAME_FOR_CREATING_REPO,
+        resolveStringParameterV2("repoName", Constants.IDP_CODE_PUSH, identifier, stepInfo.getRepoName(), false));
+
+    PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, ORG_NAME_FOR_CREATING_REPO,
+        resolveStringParameterV2("orgName", Constants.IDP_CODE_PUSH, identifier, stepInfo.getOrgName(), false));
+
+    PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, REPO_PROJECT,
+        resolveStringParameterV2("project", Constants.IDP_CODE_PUSH, identifier, stepInfo.getProject(), false));
+
+    PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, REPO_WORKSPACE,
+        resolveStringParameterV2("workspace", Constants.IDP_CODE_PUSH, identifier, stepInfo.getWorkspace(), false));
+
+    PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, CODE_DIRECTORY,
+        resolveStringParameterV2(
+            "codeDirectory", Constants.IDP_CODE_PUSH, identifier, stepInfo.getCodeDirectory(), true));
+
+    PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, CODE_OUTPUT_DIRECTORY,
+        resolveStringParameterV2(
+            "codeOutputDirectory", Constants.IDP_CODE_PUSH, identifier, stepInfo.getCodeOutputDirectory(), false));
+
+    PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, CODE_PUSH_BRANCH,
+        resolveStringParameterV2("branch", Constants.IDP_CODE_PUSH, identifier, stepInfo.getBranch(), true));
+
+    envVarMap.put(CONNECTOR_TYPE, gitConnector.getConnectorType().getDisplayName());
 
     envVarMap.values().removeAll(Collections.singleton(null));
     return envVarMap;

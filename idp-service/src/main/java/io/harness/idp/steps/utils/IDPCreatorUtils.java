@@ -18,8 +18,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 @OwnedBy(HarnessTeam.IDP)
 public class IDPCreatorUtils {
-  Set<String> supportedSteps = Sets.newHashSet(
-      "Run", "Plugin", "GitClone", "liteEngineTask", Constants.IDP_COOKIECUTTER, Constants.IDP_CREATE_REPO);
+  Set<String> supportedSteps = Sets.newHashSet("Run", "Plugin", "GitClone", "liteEngineTask",
+      Constants.IDP_COOKIECUTTER, Constants.IDP_CREATE_REPO, Constants.IDP_CODE_PUSH);
   public Set<String> getSupportedSteps() {
     return supportedSteps;
   }

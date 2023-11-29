@@ -17,6 +17,7 @@ import io.harness.idp.pipeline.stages.plancreator.IDPStepPlanCreator;
 import io.harness.idp.pipeline.stages.variablecreator.IDPStageVariableCreator;
 import io.harness.idp.steps.StepSpecTypeConstants;
 import io.harness.idp.steps.execution.filter.IDPStepFilterJsonCreator;
+import io.harness.idp.steps.execution.plan.IdpCodePushStepPlanCreator;
 import io.harness.idp.steps.execution.plan.IdpCookieCutterStepPlanCreator;
 import io.harness.idp.steps.execution.plan.IdpCreateRepoStepPlanCreator;
 import io.harness.idp.steps.execution.variable.IDPStepVariableCreator;
@@ -47,6 +48,7 @@ public class IdpPipelineServiceInfoProvider implements PipelineServiceInfoProvid
     planCreators.add(new IDPStepPlanCreator());
     planCreators.add(new IdpCookieCutterStepPlanCreator());
     planCreators.add(new IdpCreateRepoStepPlanCreator());
+    planCreators.add(new IdpCodePushStepPlanCreator());
     planCreators.add(new InitializeStepPlanCreator());
     injectorUtils.injectMembers(planCreators);
     return planCreators;

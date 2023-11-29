@@ -36,4 +36,5 @@ public class VmImageConfig {
   String slsaVerification;
   String idpCookieCutter;
   String idpCreateRepo;
+  String idpCodePush;
 }
