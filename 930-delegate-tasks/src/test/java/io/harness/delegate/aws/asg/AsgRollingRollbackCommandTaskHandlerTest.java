@@ -8,15 +8,20 @@
 package io.harness.delegate.aws.asg;
 
 import static io.harness.rule.OwnerRule.LOVISH_BANSAL;
+import static io.harness.rule.OwnerRule.VITALIE;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import io.harness.CategoryTest;
+import io.harness.aws.asg.AsgContentParser;
 import io.harness.aws.asg.AsgSdkManager;
 import io.harness.aws.beans.AwsInternalConfig;
 import io.harness.category.element.UnitTests;
@@ -36,8 +41,14 @@ import io.harness.rule.Owner;
 import software.wings.service.impl.AwsUtils;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
+import com.amazonaws.services.autoscaling.model.CreateAutoScalingGroupRequest;
+import com.amazonaws.services.autoscaling.model.LaunchTemplateSpecification;
+import com.amazonaws.services.autoscaling.model.StartInstanceRefreshResult;
 import com.amazonaws.services.ec2.model.LaunchTemplate;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,7 +85,6 @@ public class AsgRollingRollbackCommandTaskHandlerTest extends CategoryTest {
     doReturn(asgSdkManager).when(asgTaskHelper).getAsgSdkManager(any(), any(), any());
     doReturn(AwsInternalConfig.builder().build()).when(awsUtils).getAwsInternalConfig(any(), anyString());
     doReturn(LAUNCH_TEMPLATE_CONTENT).when(asgTaskHelper).getAsgLaunchTemplateContent(any());
-    doReturn(CONFIG_CONTENT).when(asgTaskHelper).getAsgConfigurationContent(any());
     doReturn(new LaunchTemplate().withLatestVersionNumber(1L))
         .when(asgSdkManager)
         .createLaunchTemplate(anyString(), any());
@@ -82,6 +92,16 @@ public class AsgRollingRollbackCommandTaskHandlerTest extends CategoryTest {
     doReturn(AutoScalingGroupContainer.builder().autoScalingGroupName(ASG_NAME).build())
         .when(asgTaskHelper)
         .mapToAutoScalingGroupContainer(any());
+    doReturn(new StartInstanceRefreshResult().withInstanceRefreshId("id"))
+        .when(asgSdkManager)
+        .startInstanceRefresh(any(), any(), any(), any());
+
+    CreateAutoScalingGroupRequest createAutoScalingGroupRequest =
+        new CreateAutoScalingGroupRequest().withAutoScalingGroupName(ASG_NAME).withLaunchTemplate(
+            new LaunchTemplateSpecification().withVersion("version"));
+    String createAutoScalingGroupRequestContent = AsgContentParser.toString(createAutoScalingGroupRequest, false);
+
+    doReturn(createAutoScalingGroupRequestContent).when(asgTaskHelper).getAsgConfigurationContent(any());
   }
 
   @Test
@@ -98,6 +118,35 @@ public class AsgRollingRollbackCommandTaskHandlerTest extends CategoryTest {
     AsgRollingRollbackResult result = response.getAsgRollingRollbackResult();
 
     assertThat(result.getAutoScalingGroupContainer().getAutoScalingGroupName()).isEqualTo(null);
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void executeRollingRollbackWithInstanceRefresh() {
+    Map<String, List<String>> asgManifestsDataForRollback = Map.of("not empty", Collections.EMPTY_LIST);
+    AwsInternalConfig awsInternalConfig = AwsInternalConfig.builder().build();
+
+    AutoScalingGroupContainer result = taskHandler.executeRollingRollbackWithInstanceRefresh(
+        asgSdkManager, asgManifestsDataForRollback, ASG_NAME, false, false, awsInternalConfig, "region");
+    verify(asgSdkManager, times(1))
+        .startInstanceRefresh(anyString(), anyBoolean(), nullable(Integer.class), nullable(Integer.class));
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void executeRollingRollbackWithInstanceRefreshInProgress() {
+    Map<String, List<String>> asgManifestsDataForRollback = Map.of("not empty", Collections.EMPTY_LIST);
+    AwsInternalConfig awsInternalConfig = AwsInternalConfig.builder().build();
+
+    doReturn(true).when(asgSdkManager).checkInstanceRefreshInProgress(anyString());
+
+    taskHandler.executeRollingRollbackWithInstanceRefresh(
+        asgSdkManager, asgManifestsDataForRollback, ASG_NAME, false, false, awsInternalConfig, "region");
+    verify(asgSdkManager, times(1)).deleteAsg(anyString());
+    verify(asgSdkManager, times(0))
+        .startInstanceRefresh(anyString(), anyBoolean(), nullable(Integer.class), nullable(Integer.class));
   }
 
   private AsgRollingRollbackRequest createRequest() {

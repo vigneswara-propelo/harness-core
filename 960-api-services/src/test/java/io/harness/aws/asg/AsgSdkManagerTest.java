@@ -44,10 +44,12 @@ import com.amazonaws.services.autoscaling.model.CreateAutoScalingGroupRequest;
 import com.amazonaws.services.autoscaling.model.CreateAutoScalingGroupResult;
 import com.amazonaws.services.autoscaling.model.DeleteAutoScalingGroupResult;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
+import com.amazonaws.services.autoscaling.model.DescribeInstanceRefreshesResult;
 import com.amazonaws.services.autoscaling.model.DescribeLifecycleHooksResult;
 import com.amazonaws.services.autoscaling.model.DescribePoliciesRequest;
 import com.amazonaws.services.autoscaling.model.DescribePoliciesResult;
 import com.amazonaws.services.autoscaling.model.Instance;
+import com.amazonaws.services.autoscaling.model.InstanceRefresh;
 import com.amazonaws.services.autoscaling.model.LifecycleHook;
 import com.amazonaws.services.autoscaling.model.LifecycleHookSpecification;
 import com.amazonaws.services.autoscaling.model.RefreshPreferences;
@@ -750,5 +752,27 @@ public class AsgSdkManagerTest extends CategoryTest {
     assertThat(result.get(3).getResourceId()).isEqualTo(asgName);
     assertThat(result.get(3).getResourceType()).isEqualTo(ASG_RESOURCE_TYPE);
     assertThat(result.get(3).getPropagateAtLaunch()).isTrue();
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void checkInstanceRefreshInProgress() {
+    DescribeInstanceRefreshesResult describeInstanceRefreshesResult = new DescribeInstanceRefreshesResult();
+    doReturn(describeInstanceRefreshesResult).when(amazonAutoScalingClient).describeInstanceRefreshes(any());
+    boolean result = asgSdkManager.checkInstanceRefreshInProgress("asg");
+    assertThat(result).isFalse();
+
+    describeInstanceRefreshesResult =
+        new DescribeInstanceRefreshesResult().withInstanceRefreshes(new InstanceRefresh().withStatus("In progress"));
+    doReturn(describeInstanceRefreshesResult).when(amazonAutoScalingClient).describeInstanceRefreshes(any());
+    result = asgSdkManager.checkInstanceRefreshInProgress("asg");
+    assertThat(result).isTrue();
+
+    describeInstanceRefreshesResult =
+        new DescribeInstanceRefreshesResult().withInstanceRefreshes(new InstanceRefresh().withStatus("Successful"));
+    doReturn(describeInstanceRefreshesResult).when(amazonAutoScalingClient).describeInstanceRefreshes(any());
+    result = asgSdkManager.checkInstanceRefreshInProgress("asg");
+    assertThat(result).isFalse();
   }
 }

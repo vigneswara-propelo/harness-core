@@ -996,4 +996,22 @@ public class AsgSdkManager {
                    .withResourceId(asgName));
     return result;
   }
+
+  public boolean checkInstanceRefreshInProgress(String asgName) {
+    DescribeInstanceRefreshesRequest describeInstanceRefreshesRequest =
+        new DescribeInstanceRefreshesRequest().withAutoScalingGroupName(asgName);
+
+    DescribeInstanceRefreshesResult describeInstanceRefreshesResult =
+        asgCall(asgClient -> asgClient.describeInstanceRefreshes(describeInstanceRefreshesRequest));
+
+    List<InstanceRefresh> instanceRefreshes = describeInstanceRefreshesResult.getInstanceRefreshes();
+
+    if (isEmpty(instanceRefreshes)) {
+      return false;
+    }
+
+    // take latest instance refresh
+    InstanceRefresh instanceRefresh = instanceRefreshes.get(0);
+    return !instanceRefresh.getStatus().equalsIgnoreCase(INSTANCE_REFRESH_STATUS_SUCCESSFUL);
+  }
 }
