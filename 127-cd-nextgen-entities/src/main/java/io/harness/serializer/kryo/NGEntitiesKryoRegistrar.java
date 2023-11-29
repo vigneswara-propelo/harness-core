@@ -173,6 +173,7 @@ import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.cdng.manifestConfigs.ManifestConfigurations;
+import io.harness.cdng.manifestConfigs.outcome.ManifestConfigurationsOutcome;
 import io.harness.cdng.service.beans.AsgServiceSpec;
 import io.harness.cdng.service.beans.AzureWebAppServiceSpec;
 import io.harness.cdng.service.beans.CustomDeploymentServiceSpec;
@@ -418,6 +419,7 @@ public class NGEntitiesKryoRegistrar implements KryoRegistrar {
     kryo.register(GoogleCloudFunctionGenOneDefinitionManifestOutcome.class, 1800002);
     kryo.register(ManifestConfigurations.class, 160005);
     kryo.register(OciHelmChartStoreEcrConfig.class, 160006);
+    kryo.register(ManifestConfigurationsOutcome.class, 160007);
     kryo.register(ArtifactBundleStore.class, 160008);
   }
 }

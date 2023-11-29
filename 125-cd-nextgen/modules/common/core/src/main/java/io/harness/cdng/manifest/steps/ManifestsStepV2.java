@@ -54,6 +54,7 @@ import io.harness.cdng.manifest.yaml.kinds.HelmRepoOverrideManifest;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.cdng.manifest.yaml.summary.ManifestSummary;
 import io.harness.cdng.manifestConfigs.ManifestConfigurations;
+import io.harness.cdng.manifestConfigs.outcome.ManifestConfigurationsOutcome;
 import io.harness.cdng.service.steps.constants.ServiceStepV3Constants;
 import io.harness.cdng.steps.EmptyStepParameters;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
@@ -131,6 +132,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -174,10 +177,14 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
   public AsyncExecutableResponse executeAsync(Ambiance ambiance, EmptyStepParameters stepParameters,
       StepInputPackage inputPackage, PassThroughData passThroughData) {
     final NGLogCallback logCallback = serviceEnvironmentsLogUtility.getLogCallback(ambiance, false);
-    Optional<ManifestsOutcome> manifestsOutcome = resolveManifestsOutcome(ambiance, logCallback);
+    Optional<ManifestSpec> manifestSpec = resolveManifestsOutcome(ambiance, logCallback);
 
     List<String> callbackIds = new ArrayList<>();
-    manifestsOutcome.ifPresent(manifests -> handleManifests(ambiance, manifests, callbackIds, logCallback));
+    if (manifestSpec.isPresent()) {
+      Optional<ManifestsOutcome> manifestsOutcome = manifestSpec.get().getOptionalManifestsOutcome();
+      manifestsOutcome.ifPresent(manifests -> handleManifests(ambiance, manifests, callbackIds, logCallback));
+      saveManifestConfigurationOutcome(ambiance, manifestSpec.get().getPrimaryManifestId());
+    }
 
     return AsyncExecutableResponse.newBuilder().addAllCallbackIds(callbackIds).build();
   }
@@ -226,12 +233,16 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
   public StepResponse executeSync(Ambiance ambiance, EmptyStepParameters stepParameters, StepInputPackage inputPackage,
       PassThroughData passThroughData) {
     final NGLogCallback logCallback = serviceEnvironmentsLogUtility.getLogCallback(ambiance, false);
-    Optional<ManifestsOutcome> manifestsOutcome = resolveManifestsOutcome(ambiance, logCallback);
+    Optional<ManifestSpec> manifestSpec = resolveManifestsOutcome(ambiance, logCallback);
 
-    manifestsOutcome.ifPresent(outcome -> saveManifestsOutcome(ambiance, outcome, new HashMap<>()));
-    manifestsOutcome.ifPresent(outcome -> saveManifestExecutionDataToStageInfo(ambiance, outcome));
+    if (manifestSpec.isPresent()) {
+      Optional<ManifestsOutcome> manifestsOutcome = manifestSpec.get().getOptionalManifestsOutcome();
+      manifestsOutcome.ifPresent(outcome -> saveManifestsOutcome(ambiance, outcome, new HashMap<>()));
+      manifestsOutcome.ifPresent(outcome -> saveManifestExecutionDataToStageInfo(ambiance, outcome));
+      saveManifestConfigurationOutcome(ambiance, manifestSpec.get().getPrimaryManifestId());
+    }
 
-    return manifestsOutcome.map(ignored -> StepResponse.builder().status(Status.SUCCEEDED).build())
+    return manifestSpec.map(ignored -> StepResponse.builder().status(Status.SUCCEEDED).build())
         .orElseGet(() -> StepResponse.builder().status(Status.SKIPPED).build());
   }
 
@@ -287,7 +298,16 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
     }
   }
 
-  private Optional<ManifestsOutcome> resolveManifestsOutcome(Ambiance ambiance, NGLogCallback logCallback) {
+  private void saveManifestConfigurationOutcome(Ambiance ambiance, String primaryManifestId) {
+    if (isNotEmpty(primaryManifestId)) {
+      ManifestConfigurationsOutcome outcome =
+          ManifestConfigurationsOutcome.builder().primaryManifestId(primaryManifestId).build();
+      sweepingOutputService.consume(
+          ambiance, OutcomeExpressionConstants.MANIFEST_CONFIG, outcome, StepCategory.STAGE.name());
+    }
+  }
+
+  private Optional<ManifestSpec> resolveManifestsOutcome(Ambiance ambiance, NGLogCallback logCallback) {
     final NgManifestsMetadataSweepingOutput ngManifestsMetadataSweepingOutput =
         fetchManifestsMetadataFromSweepingOutput(ambiance);
 
@@ -380,7 +400,10 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
       manifestsOutcome.put(manifestOutcome.getIdentifier(), manifestOutcome);
     }
 
-    return Optional.of(manifestsOutcome);
+    return Optional.of(ManifestSpec.builder()
+                           .optionalManifestsOutcome(Optional.of(manifestsOutcome))
+                           .primaryManifestId(primaryManifestId)
+                           .build());
   }
 
   private static boolean isNoManifestConfiguredV2(List<ManifestConfigWrapper> svcManifests,
@@ -732,5 +755,12 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
           primaryManifestId, String.join(", ", MULTIPLE_SUPPORTED_MANIFEST_TYPES)));
     }
     return updatedSvcManifests;
+  }
+
+  @Builder
+  @Data
+  private static class ManifestSpec {
+    private Optional<ManifestsOutcome> optionalManifestsOutcome;
+    private String primaryManifestId;
   }
 }

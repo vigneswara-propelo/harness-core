@@ -62,6 +62,7 @@ import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.cdng.manifest.yaml.summary.HelmChartManifestSummary;
 import io.harness.cdng.manifestConfigs.ManifestConfigurations;
+import io.harness.cdng.manifestConfigs.outcome.ManifestConfigurationsOutcome;
 import io.harness.cdng.service.beans.ServiceDefinitionType;
 import io.harness.cdng.service.steps.constants.ServiceStepV3Constants;
 import io.harness.cdng.steps.EmptyStepParameters;
@@ -281,6 +282,9 @@ public class ManifestsStepV2Test extends CategoryTest {
     UnresolvedManifestsOutput unresolvedManifestsOutput = captor.getValue();
     assertThat(unresolvedManifestsOutput.getTaskIdMapping()).isEqualTo(ImmutableMap.of("taskId", "file1"));
     assertThat(unresolvedManifestsOutput.getManifestsOutcome().keySet()).containsExactlyInAnyOrder("file1");
+    verify(sweepingOutputService, never())
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG),
+            any(ManifestConfigurationsOutcome.class), anyString());
   }
 
   private <T> T testExecute(Supplier<T> executeMethod) {
@@ -331,6 +335,9 @@ public class ManifestsStepV2Test extends CategoryTest {
     assertThat(outcome.keySet()).containsExactlyInAnyOrder("file1", "file2", "file3");
     assertThat(outcome.get("file2").getOrder()).isEqualTo(1);
     assertThat(outcome.get("file3").getOrder()).isEqualTo(2);
+    verify(sweepingOutputService, never())
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG),
+            any(ManifestConfigurationsOutcome.class), anyString());
     verify(pipelineRbacHelper, times(1)).checkRuntimePermissions(any(), any(List.class), any(Boolean.class));
 
     return response;
@@ -391,6 +398,9 @@ public class ManifestsStepV2Test extends CategoryTest {
 
     assertThat(outcome.keySet()).containsExactlyInAnyOrder("file1", "file2");
     assertThat(outcome.get("file2").getOrder()).isEqualTo(1);
+    verify(sweepingOutputService, never())
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG),
+            any(ManifestConfigurationsOutcome.class), anyString());
     verify(pipelineRbacHelper, times(1)).checkRuntimePermissions(any(), any(List.class), any(Boolean.class));
 
     return response;
@@ -448,6 +458,13 @@ public class ManifestsStepV2Test extends CategoryTest {
     assertThat(outcome.keySet()).containsExactlyInAnyOrder("file2", "file3", "file4");
     assertThat(outcome.get("file3").getOrder()).isEqualTo(1);
     assertThat(outcome.get("file4").getOrder()).isEqualTo(2);
+    ArgumentCaptor<ManifestConfigurationsOutcome> captor2 =
+        ArgumentCaptor.forClass(ManifestConfigurationsOutcome.class);
+    verify(sweepingOutputService, times(1))
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG), captor2.capture(), eq("STAGE"));
+    ManifestConfigurationsOutcome manifestConfigurationsOutcome = captor2.getValue();
+    assertThat(manifestConfigurationsOutcome.getPrimaryManifestId()).isEqualTo("file2");
+
     verify(pipelineRbacHelper, times(1)).checkRuntimePermissions(any(), any(List.class), any(Boolean.class));
 
     return response;
@@ -874,6 +891,9 @@ public class ManifestsStepV2Test extends CategoryTest {
     assertThat(manifestsOutcome.values().stream().map(ManifestOutcome::getIdentifier).collect(Collectors.toList()))
         .containsExactlyInAnyOrder("id1", "id2", "id3");
 
+    verify(sweepingOutputService, never())
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG),
+            any(ManifestConfigurationsOutcome.class), anyString());
     verify(expressionResolver).updateExpressions(any(), listArgumentCaptor.capture());
     List<ManifestAttributes> manifestAttributes = listArgumentCaptor.getValue();
     assertThat(manifestAttributes.size()).isEqualTo(3);
@@ -934,6 +954,9 @@ public class ManifestsStepV2Test extends CategoryTest {
     assertThat(manifestsOutcome).isNotNull();
     assertThat(manifestsOutcome.values().stream().map(ManifestOutcome::getIdentifier).collect(Collectors.toList()))
         .containsExactlyInAnyOrder("helm1");
+    verify(sweepingOutputService, never())
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG),
+            any(ManifestConfigurationsOutcome.class), anyString());
   }
 
   @Test
@@ -1002,6 +1025,12 @@ public class ManifestsStepV2Test extends CategoryTest {
     assertThat(manifestsOutcome).isNotNull();
     assertThat(manifestsOutcome.values().stream().map(ManifestOutcome::getIdentifier).collect(Collectors.toList()))
         .containsExactlyInAnyOrder("helm1");
+    ArgumentCaptor<ManifestConfigurationsOutcome> captor2 =
+        ArgumentCaptor.forClass(ManifestConfigurationsOutcome.class);
+    verify(sweepingOutputService, times(1))
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG), captor2.capture(), eq("STAGE"));
+    ManifestConfigurationsOutcome manifestConfigurationsOutcome = captor2.getValue();
+    assertThat(manifestConfigurationsOutcome.getPrimaryManifestId()).isEqualTo("helm1");
   }
 
   @Test
@@ -1051,6 +1080,9 @@ public class ManifestsStepV2Test extends CategoryTest {
     assertThat(manifestsOutcome).isNotNull();
     assertThat(manifestsOutcome.values().stream().map(ManifestOutcome::getIdentifier).collect(Collectors.toList()))
         .containsExactlyInAnyOrder("id1");
+    verify(sweepingOutputService, never())
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG),
+            any(ManifestConfigurationsOutcome.class), anyString());
   }
 
   @Test
@@ -1122,6 +1154,9 @@ public class ManifestsStepV2Test extends CategoryTest {
     verify(sweepingOutputService, never())
         .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFESTS), any(ExecutionSweepingOutput.class),
             anyString());
+    verify(sweepingOutputService, never())
+        .consume(any(Ambiance.class), eq(OutcomeExpressionConstants.MANIFEST_CONFIG),
+            any(ManifestConfigurationsOutcome.class), anyString());
   }
 
   private <T> T svcAndEnvLevelOverridesV2NoManifest(Supplier<T> executeMethod) throws IOException {
