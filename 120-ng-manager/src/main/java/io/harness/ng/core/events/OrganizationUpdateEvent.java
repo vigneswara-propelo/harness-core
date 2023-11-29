@@ -50,7 +50,12 @@ public class OrganizationUpdateEvent implements Event {
   public Resource getResource() {
     Map<String, String> labels = new HashMap<>();
     labels.put(ResourceConstants.LABEL_KEY_RESOURCE_NAME, newOrganization.getName());
-    return Resource.builder().identifier(newOrganization.getIdentifier()).type(ORGANIZATION).labels(labels).build();
+    return Resource.builder()
+        .identifier(newOrganization.getIdentifier())
+        .uniqueId(newOrganization.getUniqueId())
+        .type(ORGANIZATION)
+        .labels(labels)
+        .build();
   }
 
   @JsonIgnore

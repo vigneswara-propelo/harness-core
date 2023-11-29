@@ -47,7 +47,12 @@ public class OrganizationDeleteEvent implements Event {
   public Resource getResource() {
     Map<String, String> labels = new HashMap<>();
     labels.put(ResourceConstants.LABEL_KEY_RESOURCE_NAME, organization.getName());
-    return Resource.builder().identifier(organization.getIdentifier()).type(ORGANIZATION).labels(labels).build();
+    return Resource.builder()
+        .identifier(organization.getIdentifier())
+        .uniqueId(organization.getUniqueId())
+        .type(ORGANIZATION)
+        .labels(labels)
+        .build();
   }
 
   @JsonIgnore
