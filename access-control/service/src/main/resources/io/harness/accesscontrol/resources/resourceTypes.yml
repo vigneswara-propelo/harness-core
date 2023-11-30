@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: resourceTypeConfiguration
-version: 39
+version: 40
 resourceTypes:
   - identifier: ACCOUNT
     permissionKey: account
