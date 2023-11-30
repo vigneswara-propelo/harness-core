@@ -523,6 +523,7 @@ import io.harness.googlefunctions.GoogleCloudFunctionGenOneClient;
 import io.harness.googlefunctions.GoogleCloudFunctionGenOneClientImpl;
 import io.harness.googlefunctions.GoogleCloudRunClient;
 import io.harness.googlefunctions.GoogleCloudRunClientImpl;
+import io.harness.helm.HelmCliExecutorFactory;
 import io.harness.helm.HelmClient;
 import io.harness.helm.HelmClientImpl;
 import io.harness.helpers.EncryptDecryptHelperImpl;
@@ -1080,6 +1081,13 @@ public class DelegateModule extends AbstractModule {
   public ExecutorService k8sSteadyStateExecutor() {
     return Executors.newCachedThreadPool(
         new ThreadFactoryBuilder().setNameFormat("k8sSteadyState-%d").setPriority(Thread.MAX_PRIORITY).build());
+  }
+
+  @Provides
+  @Singleton
+  @Named("helmCliExecutor")
+  public ExecutorService helmCliExecutor() {
+    return HelmCliExecutorFactory.create();
   }
 
   @Provides

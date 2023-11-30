@@ -93,6 +93,7 @@ import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.filesystem.FileIo;
 import io.harness.helm.HelmCliCommandType;
 import io.harness.helm.HelmCommandFlagsUtils;
+import io.harness.helm.HelmCommandRunner;
 import io.harness.helm.HelmCommandTemplateFactory;
 import io.harness.helm.HelmCommandType;
 import io.harness.helm.HelmSubCommandType;
@@ -165,6 +166,7 @@ public class HelmTaskHelperBase {
   @Inject private SecretDecryptionService decryptionService;
   @Inject private AwsClient awsClient;
   @Inject private AwsNgConfigMapper awsNgConfigMapper;
+  @Inject private HelmCommandRunner helmCommandRunner;
   public static final String RESOURCE_DIR_BASE = "./repository/helm/resources/";
   public static final String VERSION_KEY = "version:";
   public static final String NAME_KEY = "name:";
@@ -526,6 +528,10 @@ public class HelmTaskHelperBase {
 
   public ProcessResult executeCommand(Map<String, String> envVars, String command, String directoryPath,
       String errorMessage, long timeoutInMillis, HelmCliCommandType helmCliCommandType) {
+    if (helmCommandRunner.isEnabled()) {
+      return helmCommandRunner.execute(helmCliCommandType, command, directoryPath, envVars, timeoutInMillis);
+    }
+
     ProcessExecutor processExecutor = createProcessExecutor(command, directoryPath, timeoutInMillis, envVars);
     return executeCommand(processExecutor, errorMessage, helmCliCommandType);
   }

@@ -87,6 +87,7 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.filesystem.FileIo;
 import io.harness.helm.HelmCliCommandType;
+import io.harness.helm.HelmCommandRunner;
 import io.harness.helm.HelmCommandTemplateFactory;
 import io.harness.helm.HelmConstants;
 import io.harness.helm.HelmSubCommandType;
@@ -110,6 +111,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -143,6 +145,7 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
   @Mock K8sGlobalConfigService k8sGlobalConfigService;
   @Mock NgChartmuseumClientFactory ngChartmuseumClientFactory;
   @Mock ChartmuseumClient chartmuseumClient;
+  @Mock HelmCommandRunner helmCommandRunner;
 
   @InjectMocks @Spy HelmTaskHelperBase helmTaskHelperBase;
 
@@ -164,6 +167,7 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
 
     doReturn(processExecutor).when(helmTaskHelperBase).createProcessExecutor(any(), any(), anyLong(), anyMap());
     doReturn(processExecutor).when(helmTaskHelperBase).createProcessExecutor(any(), any(), anyLong(), anyMap());
+    doReturn(false).when(helmCommandRunner).isEnabled();
 
     chartMuseumServer =
         ChartMuseumServer.builder().port(CHARTMUSEUM_SERVER_PORT).startedProcess(chartmuseumStartedProcess).build();
@@ -1554,6 +1558,21 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
                                    .count();
     assertThat(numberOfInvocations).isEqualTo(0);
     FileIo.deleteDirectoryAndItsContentIfExists("sample2");
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  public void testExecuteCommandWithHelmCommandRunner() {
+    final Map<String, String> envs = Map.of("k1", "v1", "k2", "v2");
+    final String command = "helm add repo";
+    final String directory = "directory";
+
+    doReturn(true).when(helmCommandRunner).isEnabled();
+
+    helmTaskHelperBase.executeCommand(envs, command, directory, "error", 10L, HelmCliCommandType.REPO_ADD);
+
+    verify(helmCommandRunner).execute(HelmCliCommandType.REPO_ADD, command, directory, envs, 10L);
   }
 
   private String getHelmCollectionResult() {

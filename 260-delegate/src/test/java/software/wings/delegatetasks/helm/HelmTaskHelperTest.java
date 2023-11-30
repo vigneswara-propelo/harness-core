@@ -73,6 +73,7 @@ import io.harness.exception.HelmClientException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.helm.HelmCliCommandType;
+import io.harness.helm.HelmCommandRunner;
 import io.harness.k8s.config.K8sGlobalConfigService;
 import io.harness.k8s.model.HelmVersion;
 import io.harness.rule.Owner;
@@ -140,6 +141,7 @@ public class HelmTaskHelperTest extends WingsBaseTest {
   @Mock private ChartmuseumClient chartmuseumClient;
   @Mock DelegateFileManagerBase delegateFileManagerBase;
   @Mock private StartedProcess startedProcess;
+  @Mock private HelmCommandRunner helmCommandRunner;
   @Spy @InjectMocks private HelmTaskHelper helmTaskHelper;
   @Spy @InjectMocks private HelmTaskHelperBase helmTaskHelperBase;
 
@@ -154,6 +156,7 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     testChartMuseumServer = ChartMuseumServer.builder().port(1234).startedProcess(startedProcess).build();
 
     doReturn(testChartMuseumServer).when(chartmuseumClient).start();
+    doReturn(false).when(helmCommandRunner).isEnabled();
   }
 
   @Test
