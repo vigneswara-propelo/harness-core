@@ -51,6 +51,7 @@ hostname: ${HOSTNAME:-localhost}
 basePathPrefix: ${BASE_PATH_PREFIX:-""}
 
 enableAuth: true
+exportMetricsToStackDriver: false
 
 s3Config:
   accessKeyId: "access-key-id"

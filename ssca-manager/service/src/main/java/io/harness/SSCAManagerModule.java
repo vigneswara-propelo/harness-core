@@ -10,6 +10,7 @@ package io.harness;
 import static io.harness.annotations.dev.HarnessTeam.SSCA;
 import static io.harness.authorization.AuthorizationServiceHeader.SSCA_SERVICE;
 import static io.harness.lock.DistributedLockImplementation.REDIS;
+import static io.harness.outbox.OutboxSDKConstants.DEFAULT_OUTBOX_POLL_CONFIGURATION;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.app.PrimaryVersionManagerModule;
@@ -20,6 +21,7 @@ import io.harness.mongo.MongoConfig;
 import io.harness.mongo.MongoPersistence;
 import io.harness.morphia.MorphiaRegistrar;
 import io.harness.opaclient.OpaClientModule;
+import io.harness.outbox.TransactionOutboxModule;
 import io.harness.persistence.HPersistence;
 import io.harness.persistence.NoopUserProvider;
 import io.harness.persistence.UserProvider;
@@ -131,6 +133,8 @@ public class SSCAManagerModule extends AbstractModule {
         configuration.getPipelineServiceSecret(), SSCA_SERVICE.getServiceId()));
     install(new OpaClientModule(configuration.getPolicyMgmtServiceConfiguration(),
         configuration.getPolicyMgmtServiceSecret(), SSCA_SERVICE.getServiceId()));
+    install(new TransactionOutboxModule(
+        DEFAULT_OUTBOX_POLL_CONFIGURATION, SSCA_SERVICE.getServiceId(), configuration.isExportMetricsToStackDriver()));
   }
 
   @Provides
