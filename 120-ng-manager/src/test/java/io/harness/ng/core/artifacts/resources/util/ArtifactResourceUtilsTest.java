@@ -3644,7 +3644,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(amazonS3ArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(builds)
         .when(s3ResourceService)
@@ -3691,7 +3691,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(amazonS3ArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(builds)
         .when(s3ResourceService)
@@ -3738,7 +3738,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(amazonS3ArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(builds)
         .when(s3ResourceService)
@@ -3802,7 +3802,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(amazonS3ArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(builds).when(s3ResourceService).getBuckets(eq(IDENTIFIER_REF), eq(REGION), eq(ORG_ID), eq(PROJECT_ID));
 
@@ -3835,7 +3835,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(amazonS3ArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(builds).when(s3ResourceService).getBuckets(eq(IDENTIFIER_REF), eq(REGION), eq(ORG_ID), eq(PROJECT_ID));
 
@@ -3869,7 +3869,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(amazonS3ArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doReturn(builds).when(s3ResourceService).getBuckets(eq(IDENTIFIER_REF), eq(REGION), eq(ORG_ID), eq(PROJECT_ID));
 
