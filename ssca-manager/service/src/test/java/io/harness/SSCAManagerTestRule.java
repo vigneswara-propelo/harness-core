@@ -14,6 +14,8 @@ import io.harness.govern.ProviderModule;
 import io.harness.mongo.MongoConfig;
 import io.harness.mongo.MongoPersistence;
 import io.harness.morphia.MorphiaRegistrar;
+import io.harness.outbox.api.OutboxService;
+import io.harness.outbox.api.impl.OutboxServiceImpl;
 import io.harness.persistence.HPersistence;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.repositories.ArtifactRepository;
@@ -165,6 +167,13 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
       public boolean getSerializationForDelegate() {
         return false;
       }
+
+      @Provides
+      @Singleton
+      @Named("isElasticSearchEnabled")
+      public boolean isElasticSearchEnabled() {
+        return false;
+      }
     });
 
     modules.add(new AbstractModule() {
@@ -196,6 +205,7 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
         bind(TokenApi.class).to(TokenApiImpl.class);
         bind(MongoTemplate.class).toInstance(mock(MongoTemplate.class));
         bind(PipelineServiceClient.class).toInstance(mock(PipelineServiceClient.class));
+        bind(OutboxService.class).toInstance(mock(OutboxServiceImpl.class));
       }
     });
     modules.add(TimeModule.getInstance());

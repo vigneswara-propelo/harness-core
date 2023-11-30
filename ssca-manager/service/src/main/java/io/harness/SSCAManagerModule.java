@@ -173,6 +173,13 @@ public class SSCAManagerModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @Named("isElasticSearchEnabled")
+  public boolean isElasticSearchEnabled() {
+    return this.configuration.isEnableElasticsearch();
+  }
+
+  @Provides
+  @Singleton
   @Named("jwtAuthSecret")
   public String jwtAuthSecret() {
     return this.configuration.getJwtAuthSecret();
