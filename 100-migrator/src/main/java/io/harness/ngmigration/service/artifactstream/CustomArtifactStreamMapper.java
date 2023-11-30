@@ -155,7 +155,8 @@ public class CustomArtifactStreamMapper implements ArtifactStreamMapper {
     List<TriggerEventDataCondition> eventConditions = getEventConditions(trigger);
     if (isNotEmpty(customArtifactStream.getScripts())) {
       return CustomArtifactSpec.builder()
-          .script(customArtifactStream.getScripts().get(0).getScriptString())
+          .script(customArtifactStream.getScripts().get(0).getScriptString().replace(
+              "${ARTIFACT_RESULT_PATH}", "$HARNESS_ARTIFACT_RESULT_PATH"))
           .eventConditions(eventConditions)
           .versionPath(Optional.ofNullable(customArtifactStream.getScripts().get(0).getCustomRepositoryMapping())
                            .map(CustomRepositoryMapping::getBuildNoPath)

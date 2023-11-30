@@ -119,16 +119,19 @@ public class CustomArtifactSourceTemplateService implements NgTemplateService {
                                 ParameterField.createValueField(customRepositoryMapping.getArtifactRoot()))
                             .versionPath(ParameterField.createValueField(customRepositoryMapping.getBuildNoPath()))
                             .attributes(attributes)
-                            .shellScriptBaseStepInfo(CustomArtifactScriptInfo.builder()
-                                                         .shell(ShellType.Bash)
-                                                         .source(CustomArtifactScriptSourceWrapper.builder()
-                                                                     .type("Inline")
-                                                                     .spec(CustomScriptInlineSource.builder()
-                                                                               .script(ParameterField.createValueField(
-                                                                                   artifactSource.getScript()))
-                                                                               .build())
-                                                                     .build())
-                                                         .build())
+                            .shellScriptBaseStepInfo(
+                                CustomArtifactScriptInfo.builder()
+                                    .shell(ShellType.Bash)
+                                    .source(
+                                        CustomArtifactScriptSourceWrapper.builder()
+                                            .type("Inline")
+                                            .spec(CustomScriptInlineSource.builder()
+                                                      .script(ParameterField.createValueField(
+                                                          artifactSource.getScript().replace("${ARTIFACT_RESULT_PATH}",
+                                                              "$HARNESS_ARTIFACT_RESULT_PATH")))
+                                                      .build())
+                                            .build())
+                                    .build())
                             .build())
                     .build())
             .build();
