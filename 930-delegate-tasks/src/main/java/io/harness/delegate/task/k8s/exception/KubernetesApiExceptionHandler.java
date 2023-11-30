@@ -9,6 +9,10 @@ package io.harness.delegate.task.k8s.exception;
 
 import static java.lang.String.format;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
+import io.harness.annotations.dev.ProductModule;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.FailureType;
 import io.harness.exception.KubernetesApiTaskException;
 import io.harness.exception.NestedExceptionUtils;
@@ -30,13 +34,14 @@ import javax.net.ssl.SSLHandshakeException;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
 @Slf4j
 @Singleton
 public class KubernetesApiExceptionHandler implements ExceptionHandler {
   private static final String API_CALL_FAIL_MESSAGE = "Kubernetes API call failed with message: %s";
   private static final String API_CALL_FAIL_MESSAGE_WITH_CODE = "Kubernetes API call failed with message: %s, code: %s";
   private static final String UNAUTHORIZED_ERROR_REGEX =
-      ".* forbidden: User \"(.*?)\".* resource \"(.*?)\" in API group \"(.*?)\".* namespace \"(.*?)\"";
+      ".* forbidden: User \"(.*?)\" cannot (.*?) resource \"(.*?)\" in API group \"(.*?)\".* namespace \"(.*?)\"";
   private static final Pattern UNAUTHORIZED_ERROR_PATTERN =
       Pattern.compile(UNAUTHORIZED_ERROR_REGEX, Pattern.MULTILINE);
 
@@ -76,8 +81,9 @@ public class KubernetesApiExceptionHandler implements ExceptionHandler {
       switch (apiException.getCode()) {
         case 403:
           String parsedExceptionMessage = parseUnauthorizedError(apiException.getResponseBody());
-          return NestedExceptionUtils.hintWithExplanationException(KubernetesExceptionHints.K8S_API_FORBIDDEN_EXCEPTION,
-              parsedExceptionMessage,
+          String hintMessage = format("%s%n%s", KubernetesExceptionHints.K8S_API_FORBIDDEN_EXCEPTION,
+              generateHintForUnauthorisedError(apiException.getResponseBody()));
+          return NestedExceptionUtils.hintWithExplanationException(hintMessage, parsedExceptionMessage,
               new KubernetesApiTaskException(
                   format(API_CALL_FAIL_MESSAGE, apiException.getMessage()), FailureType.AUTHORIZATION_ERROR));
 
@@ -101,14 +107,30 @@ public class KubernetesApiExceptionHandler implements ExceptionHandler {
     }
   }
 
+  private String generateHintForUnauthorisedError(String responseBody) {
+    try {
+      JSONObject apiExceptionBody = new JSONObject(responseBody);
+      String errorMessage = apiExceptionBody.getString("message");
+      Matcher matcher = UNAUTHORIZED_ERROR_PATTERN.matcher(errorMessage);
+      if (matcher.find() && EmptyPredicate.isNotEmpty(matcher.group(1)) && EmptyPredicate.isNotEmpty(matcher.group(2))
+          && EmptyPredicate.isNotEmpty(matcher.group(3)) && EmptyPredicate.isNotEmpty(matcher.group(5))) {
+        return String.format(KubernetesExceptionHints.K8S_KUBECTL_AUTH_HINT_TEMPLATE, matcher.group(2),
+            matcher.group(3), matcher.group(1), matcher.group(5));
+      }
+    } catch (Exception e) {
+      return KubernetesExceptionHints.K8S_KUBECTL_AUTH_DEFAULT_HINT;
+    }
+    return KubernetesExceptionHints.K8S_KUBECTL_AUTH_DEFAULT_HINT;
+  }
+
   private String parseUnauthorizedError(String responseBody) {
     try {
       JSONObject apiExceptionBody = new JSONObject(responseBody);
       String errorMessage = apiExceptionBody.getString("message");
       Matcher matcher = UNAUTHORIZED_ERROR_PATTERN.matcher(errorMessage);
       if (matcher.find()) {
-        return String.format(KubernetesExceptionExplanation.K8S_API_FORBIDDEN_ERROR, matcher.group(1), matcher.group(4),
-            matcher.group(2), matcher.group(3));
+        return String.format(KubernetesExceptionExplanation.K8S_API_FORBIDDEN_ERROR, matcher.group(1), matcher.group(5),
+            matcher.group(3), matcher.group(4));
       }
     } catch (Exception e) {
       return KubernetesExceptionExplanation.K8S_API_FORBIDDEN_EXCEPTION;
