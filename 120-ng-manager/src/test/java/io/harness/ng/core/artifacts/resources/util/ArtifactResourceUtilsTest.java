@@ -2497,7 +2497,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2543,7 +2543,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2589,7 +2589,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2671,7 +2671,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2710,7 +2710,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2750,7 +2750,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2812,7 +2812,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2848,7 +2848,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2885,7 +2885,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2939,7 +2939,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -2972,7 +2972,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -3005,7 +3005,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -3049,7 +3049,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -3077,7 +3077,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
@@ -3105,7 +3105,7 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
 
     doReturn(acrArtifactConfig)
         .when(spyartifactResourceUtils)
-        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN, null);
 
     doNothing()
         .when(spyartifactResourceUtils)
