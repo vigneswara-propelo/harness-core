@@ -428,6 +428,7 @@ public class EventJobScheduler {
       }
       log.info("running aws account tags collection job");
       awsAccountTagsCollectionService.update();
+      log.info("Done with AwsAccountTagsCollectionJob");
     } catch (Exception ex) {
       log.error("Exception while running runAwsAccountTagsCollectionJob", ex);
     }

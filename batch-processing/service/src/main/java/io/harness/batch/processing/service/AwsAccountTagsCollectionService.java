@@ -20,6 +20,7 @@ import io.harness.batch.processing.config.BatchMainConfig;
 import io.harness.batch.processing.pricing.gcp.bigquery.BQConst;
 import io.harness.batch.processing.shard.AccountShardService;
 import io.harness.ccm.bigQuery.BigQueryService;
+import io.harness.ccm.commons.helper.ModuleLicenseHelper;
 import io.harness.ccm.service.intf.AWSOrganizationHelperService;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResourceClient;
@@ -44,6 +45,7 @@ import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.inject.Singleton;
 import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +60,7 @@ public class AwsAccountTagsCollectionService {
   @Autowired private ConnectorResourceClient connectorResourceClient;
   @Autowired private BatchMainConfig mainConfig;
   @Autowired private AccountShardService accountShardService;
+  @Autowired private ModuleLicenseHelper moduleLicenseHelper;
   @Autowired AWSOrganizationHelperService awsOrganizationHelperService;
   @Autowired BigQueryService bigQueryService;
   @Autowired AwsClientImpl awsClient;
@@ -67,15 +70,20 @@ public class AwsAccountTagsCollectionService {
     List<String> accountIds = accountShardService.getCeEnabledAccountIds();
     log.info("accounts size: {}", accountIds.size());
     for (String accountId : accountIds) {
+      if (!moduleLicenseHelper.isEnterpriseEditionModuleLicense(accountId)) {
+        log.info("Skipping account tags collection as license edition is not Enterprise for account: {}", accountId);
+        continue;
+      }
       log.info("Fetching connectors for accountId {}", accountId);
       List<ConnectorResponseDTO> nextGenAwsConnectorResponses = getNextGenAwsConnectorResponses(accountId);
+      String tableName = createBQTable(accountId);
       for (ConnectorResponseDTO connector : nextGenAwsConnectorResponses) {
         ConnectorInfoDTO connectorInfo = connector.getConnector();
         CEAwsConnectorDTO ceAwsConnectorDTO = (CEAwsConnectorDTO) connectorInfo.getConnectorConfig();
         try {
-          processAndInsertTags(ceAwsConnectorDTO, accountId);
+          processAndInsertTags(ceAwsConnectorDTO, accountId, tableName);
         } catch (Exception e) {
-          log.warn("Exception processing aws tags for connectorId: {} for CCM accountId: {}",
+          log.error("Exception processing aws tags for connectorId: {} for CCM accountId: {}",
               connectorInfo.getIdentifier(), accountId, e);
         }
       }
@@ -87,8 +95,7 @@ public class AwsAccountTagsCollectionService {
         accountId, Arrays.asList(ConnectorType.CE_AWS), Arrays.asList(CEFeatures.BILLING), Collections.emptyList());
   }
 
-  public void processAndInsertTags(CEAwsConnectorDTO ceAwsConnectorDTO, String accountId) {
-    String tableName = createBQTable(accountId); // This can be moved to connector creation part
+  public void processAndInsertTags(CEAwsConnectorDTO ceAwsConnectorDTO, String accountId, String tableName) {
     log.info("awsAccountId: {}, roleArn: {}, externalId: {}", ceAwsConnectorDTO.getAwsAccountId(),
         ceAwsConnectorDTO.getCrossAccountAccess().getCrossAccountRoleArn(),
         ceAwsConnectorDTO.getCrossAccountAccess().getExternalId());
@@ -144,16 +151,20 @@ public class AwsAccountTagsCollectionService {
   public void insertInBQ(String tableName, String cloudProviderId, String entityId, String entityType,
       String entityName, List<Tag> tagsList) {
     String tagsBQFormat = getTagsBQFormat(tagsList);
-    String formattedQuery =
-        format(BQConst.CLOUD_PROVIDER_ENTITY_TAGS_INSERT, tableName, cloudProviderId, entityId, entityType, tableName,
-            cloudProviderId, entityId, entityType, entityName, tagsBQFormat, Instant.now().toString());
+    // BQ dislikes nanosecond format timestamp.
+    // Query error: Could not cast literal "2023-11-28T07:40:57.524526902Z" to type TIMESTAMP at [1:1134]
+    String formattedQuery = format(BQConst.CLOUD_PROVIDER_ENTITY_TAGS_INSERT, tableName, cloudProviderId, entityId,
+        entityType, tableName, cloudProviderId, entityId, entityType, entityName, tagsBQFormat,
+        Instant.now().with(ChronoField.NANO_OF_SECOND, 0).toString());
     log.info("Inserting tags in BQ for entityId: {} query: '{}'", entityId, formattedQuery);
-    QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(formattedQuery).build();
+    QueryJobConfiguration queryConfig =
+        QueryJobConfiguration.newBuilder(formattedQuery).setPriority(QueryJobConfiguration.Priority.BATCH).build();
+
     try {
       bigQueryService.get().query(queryConfig);
       log.info("Inserted tags in BQ for entityId: {}", entityId);
     } catch (BigQueryException | InterruptedException bigQueryException) {
-      log.warn("Error: ", bigQueryException);
+      log.error("Error: ", bigQueryException);
     }
   }
 
