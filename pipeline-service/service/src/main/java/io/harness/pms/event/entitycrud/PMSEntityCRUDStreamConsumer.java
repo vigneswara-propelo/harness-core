@@ -102,7 +102,9 @@ public class PMSEntityCRUDStreamConsumer extends RedisTraceConsumer {
     boolean messageProcessed;
     messages = redisConsumer.read(Duration.ofSeconds(WAIT_TIME_IN_SECONDS));
     List<String> messageIds = messages.stream().map(Message::getId).collect(Collectors.toList());
-    log.info("Received events with eventIds [{}] from redis", messageIds);
+    if (messageIds.size() > 0) {
+      log.info("Received events with eventIds [{}] from redis", messageIds);
+    }
     for (Message message : messages) {
       messageId = message.getId();
       messageProcessed = handleMessage(message);
@@ -117,7 +119,7 @@ public class PMSEntityCRUDStreamConsumer extends RedisTraceConsumer {
     AtomicBoolean success = new AtomicBoolean(true);
     pipelineExecutorService.submit(() -> messageListenersList.forEach(messageListener -> {
       if (!messageListener.handleMessage(message)) {
-        log.info("Failed to process event with event id : {}", message.getId());
+        log.error("Failed to process event with event id : {}", message.getId());
       }
     }));
     return success.get();
