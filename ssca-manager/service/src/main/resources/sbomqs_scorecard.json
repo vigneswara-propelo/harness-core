@@ -1,0 +1,164 @@
+{
+  "name": "sbomqs",
+  "type": "scorecard",
+  "config_info": [
+    {
+      "id": "8bf62e5d-24da-4dab-84e8-7f192c7642f3",
+      "name": "Structural",
+      "config": [
+        {
+          "key": "isEnabled",
+          "value": "true"
+        },
+        {
+          "key": "sbom_spec",
+          "value": "true"
+        },
+        {
+          "key": "sbom_spec_version",
+          "value": "true"
+        },
+        {
+          "key": "sbom_spec_file_format",
+          "value": "true"
+        },
+        {
+          "key": "sbom_parsable",
+          "value": "true"
+        },
+        {
+          "key": "weightage",
+          "value" : ""
+        }
+      ]
+    },
+    {
+      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
+      "name": "NTIA-minimum-elements",
+      "config": [
+        {
+          "key": "isEnabled",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_supplier",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_name",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_version",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_uniq_ids",
+          "value": "true"
+        },
+        {
+          "key": "sbom_dependencies",
+          "value": "true"
+        },
+        {
+          "key": "sbom_authors",
+          "value": "true"
+        },
+        {
+          "key": "sbom_creation_timestamp",
+          "value": "true"
+        },
+        {
+          "key": "weightage",
+          "value" : ""
+        }
+      ]
+    },
+    {
+      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
+      "name": "Semantic",
+      "config": [
+        {
+          "key": "isEnabled",
+          "value": "true"
+        },
+        {
+          "key": "sbom_required_fields",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_licenses",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_checksums",
+          "value": "true"
+        },
+        {
+          "key": "weightage",
+          "value" : ""
+        }
+      ]
+    },
+    {
+      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
+      "name": "Quality",
+      "config": [
+        {
+          "key": "isEnabled",
+          "value": "true"
+        },
+        {
+          "key": "comp_valid_licenses",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_primary_purpose",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_deprecated_licenses",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_restrictive_licenses",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_any_vuln_lookup_id",
+          "value": "true"
+        },
+        {
+          "key": "comp_with_multi_vuln_lookup_id",
+          "value": "true"
+        },
+        {
+          "key": "sbom_with_creator_and_version",
+          "value": "true"
+        },
+        {
+          "key": "weightage",
+          "value" : ""
+        }
+      ]
+    },
+    {
+      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
+      "name": "Sharing",
+      "config": [
+        {
+          "key": "isEnabled",
+          "value": "true"
+        },
+        {
+          "key": "sbom_sharable",
+          "value": "true"
+        },
+        {
+          "key": "weightage",
+          "value" : ""
+        }
+      ]
+    }
+  ]
+}

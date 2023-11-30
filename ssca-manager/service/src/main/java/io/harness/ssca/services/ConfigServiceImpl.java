@@ -17,8 +17,16 @@ import io.harness.spec.server.ssca.v1.model.ConfigRequestBody;
 import io.harness.spec.server.ssca.v1.model.ConfigResponseBody;
 import io.harness.ssca.entities.ConfigEntity;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import com.google.inject.Inject;
 import com.mongodb.client.result.DeleteResult;
+import java.io.IOException;
+import java.net.URL;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +57,12 @@ public class ConfigServiceImpl implements ConfigService {
     return toConfigResponse(configEntity);
   }
 
+  protected String getResource(String filePath) throws IOException {
+    ClassLoader classLoader = this.getClass().getClassLoader();
+    final URL testFile = classLoader.getResource(filePath);
+    return Resources.toString(testFile, Charsets.UTF_8);
+  }
+
   @Override
   public ConfigResponseBody getConfigByNameAndType(
       String orgId, String projectId, String name, String type, String accountId) {
@@ -63,8 +77,27 @@ public class ConfigServiceImpl implements ConfigService {
     ConfigEntity configEntity =
         configRepo.findByAccountIdAndProjectIdAndOrgIdAndNameAndType(accountId, orgId, projectId, name, type);
     if (configEntity == null) {
-      throw new NotFoundException(String.format("Config not found for name [%s] and type [%s]", name, type));
+      ConfigRequestBody scorecardConfig = null;
+      String configFileName = name + "_" + type + ".json";
+      try {
+        String configResource = getResource(configFileName);
+        ObjectMapper objectMapper = new ObjectMapper();
+        scorecardConfig = objectMapper.readValue(configResource, ConfigRequestBody.class);
+      } catch (Exception e) {
+        throw new NotFoundException(
+            String.format("Could not fetch the default config for name [%s] and type [%s]", name, type));
+      }
+      scorecardConfig.setAccountId(accountId);
+      scorecardConfig.setOrgId(orgId);
+      scorecardConfig.setProjectId(projectId);
+      ZonedDateTime currentTime = ZonedDateTime.now();
+      String formattedTime = currentTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+      scorecardConfig.setCreationOn(formattedTime);
+      scorecardConfig.setConfigId(UUID.randomUUID().toString().replace("-", ""));
+      configEntity = toConfigEntity(scorecardConfig);
+      configRepo.save(configEntity);
     }
+
     return toConfigResponse(configEntity);
   }
 
