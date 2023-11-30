@@ -30,6 +30,7 @@ import io.harness.cache.HarnessCacheManager;
 import io.harness.callback.DelegateCallback;
 import io.harness.callback.DelegateCallbackToken;
 import io.harness.callback.MongoDatabase;
+import io.harness.cdstage.CDNGStageSummaryResourceClientModule;
 import io.harness.ci.CiServiceResourceClientModule;
 import io.harness.cistatus.service.GithubService;
 import io.harness.cistatus.service.GithubServiceImpl;
@@ -84,6 +85,8 @@ import io.harness.pms.approval.api.ApprovalsApiImpl;
 import io.harness.pms.approval.custom.CustomApprovalHelperServiceImpl;
 import io.harness.pms.approval.jira.JiraApprovalHelperServiceImpl;
 import io.harness.pms.approval.notification.ApprovalNotificationHandlerImpl;
+import io.harness.pms.approval.notification.stagemetadata.StageMetadataNotificationHelper;
+import io.harness.pms.approval.notification.stagemetadata.StageMetadataNotificationHelperImpl;
 import io.harness.pms.approval.resources.ApprovalResource;
 import io.harness.pms.approval.resources.ApprovalResourceImpl;
 import io.harness.pms.approval.servicenow.ServiceNowApprovalHelperServiceImpl;
@@ -424,6 +427,8 @@ public class PipelineServiceModule extends AbstractModule {
 
     install(new FileStoreClientModule(configuration.getNgManagerServiceHttpClientConfig(),
         configuration.getManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
+    install(new CDNGStageSummaryResourceClientModule(configuration.getNgManagerServiceHttpClientConfig(),
+        configuration.getNgManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
 
     registerOutboxEventHandlers();
     bind(OutboxEventHandler.class).to(PMSOutboxEventHandler.class);
@@ -477,6 +482,7 @@ public class PipelineServiceModule extends AbstractModule {
                 .setNameFormat("pipeline-telemetry-publisher-Thread-%d")
                 .setPriority(Thread.NORM_PRIORITY)
                 .build()));
+    bind(StageMetadataNotificationHelper.class).to(StageMetadataNotificationHelperImpl.class);
 
     MapBinder<String, FilterPropertiesMapper> filterPropertiesMapper =
         MapBinder.newMapBinder(binder(), String.class, FilterPropertiesMapper.class);

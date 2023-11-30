@@ -16,9 +16,9 @@
           "type" : "section",
           "text" : {"type" : "mrkdwn", "text" : "*Pipeline execution summary*"},
           "fields" : [
-            {"type" : "mrkdwn", "text" : "Upcoming stages:\n${upcomingStages}"},
-            {"type" : "mrkdwn", "text" : "Completed stages:\n${finishedStages}"},
-            {"type" : "mrkdwn", "text" : "Running stages:\n${runningStages}"}
+            {"type" : "mrkdwn", "text" : "*Upcoming stages:*\n${upcomingStages}"},
+            {"type" : "mrkdwn", "text" : "*Completed stages:*\n${finishedStages}"},
+            {"type" : "mrkdwn", "text" : "*Running stages:*\n${runningStages}"}
           ]
         },
     {

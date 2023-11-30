@@ -9,6 +9,7 @@ package io.harness.pms.approval.notification;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.rule.OwnerRule.BRIJESH;
+import static io.harness.rule.OwnerRule.NAMANG;
 import static io.harness.rule.OwnerRule.SANDESH_SALUNKHE;
 import static io.harness.rule.OwnerRule.SOURABH;
 import static io.harness.rule.OwnerRule.vivekveman;
@@ -16,9 +17,12 @@ import static io.harness.rule.OwnerRule.vivekveman;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
@@ -29,6 +33,7 @@ import static org.mockito.Mockito.when;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
+import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
 import io.harness.category.element.UnitTests;
 import io.harness.encryption.Scope;
@@ -53,6 +58,7 @@ import io.harness.notification.notificationclient.NotificationClient;
 import io.harness.notification.templates.PredefinedTemplate;
 import io.harness.organization.remote.OrganizationClient;
 import io.harness.pms.approval.notification.ApprovalSummary.ApprovalSummaryKeys;
+import io.harness.pms.approval.notification.stagemetadata.StageMetadataNotificationHelper;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.plan.EdgeLayoutList;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
@@ -79,6 +85,7 @@ import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivity;
 import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance;
 import io.harness.usergroups.UserGroupClient;
 import io.harness.utils.IdentifierRefHelper;
+import io.harness.utils.PmsFeatureFlagHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,6 +96,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
@@ -114,6 +122,8 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   @Mock private LogStreamingStepClientFactory logStreamingStepClientFactory;
   @Mock private ProjectClient projectClient;
   @Mock private OrganizationClient organizationClient;
+  @Mock private StageMetadataNotificationHelper stageMetadataNotificationHelper;
+  @Mock private PmsFeatureFlagHelper pmsFeatureFlagHelper;
   @InjectMocks ApprovalNotificationHandlerImpl approvalNotificationHandler;
   private static String accountId = "accountId";
 
@@ -122,11 +132,39 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   private static String projectIdentifier = "projectIdentifier";
   private static String pipelineIdentifier = "pipelineIdentifier";
   private static String startingNodeId = "startingNodeId";
+  private static String secondNodeId = "secondNodeId";
+  private static String thirdNodeId = "thirdNodeId";
   private static String pipelineName = "pipeline name";
   private static String orgName = "org name";
   private static String projectName = "project name";
   private static String userUuid = "XXXX YYYY XXXX";
   private static String userId = "userID";
+  private static Ambiance ambiance = Ambiance.newBuilder()
+                                         .putSetupAbstractions("accountId", accountId)
+                                         .putSetupAbstractions("orgIdentifier", orgIdentifier)
+                                         .putSetupAbstractions("projectIdentifier", projectIdentifier)
+                                         .putSetupAbstractions("pipelineIdentifier", pipelineIdentifier)
+                                         .build();
+
+  private static List<UserGroupDTO> basicUserGroupDTOS = Collections.singletonList(
+      UserGroupDTO.builder()
+          .identifier(userGroupIdentifier)
+          .notificationConfigs(List.of(SlackConfigDTO.builder().build(), EmailConfigDTO.builder().build()))
+          .build());
+
+  private static HarnessApprovalInstance basicApprovalInstance =
+      HarnessApprovalInstance.builder()
+          .approvers(ApproversDTO.builder().userGroups(Collections.singletonList("user")).build())
+          .build();
+
+  private static PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity =
+      PipelineExecutionSummaryEntity.builder()
+          .accountId(accountId)
+          .orgIdentifier(orgIdentifier)
+          .projectIdentifier(projectIdentifier)
+          .pipelineIdentifier(pipelineIdentifier)
+          .startingNodeId(startingNodeId)
+          .build();
 
   @Before
   public void setup() throws Exception {
@@ -150,12 +188,24 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
     ResponseDTO<Optional<ProjectResponse>> projRestResponse = ResponseDTO.newResponse(Optional.of(projectResponse));
     Response<ResponseDTO<Optional<ProjectResponse>>> projResponse = Response.success(projRestResponse);
     when(projDTOCall.execute()).thenReturn(projResponse);
+
+    // improved notification metadata FF off by default
+    when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA))
+        .thenReturn(false);
+
+    basicApprovalInstance.setAmbiance(ambiance);
+    basicApprovalInstance.setCreatedAt(System.currentTimeMillis());
+    basicApprovalInstance.setDeadline(2L * System.currentTimeMillis());
+    basicApprovalInstance.setType(ApprovalType.HARNESS_APPROVAL);
+    basicApprovalInstance.setIncludePipelineExecutionHistory(true);
+    basicApprovalInstance.setValidatedUserGroups(basicUserGroupDTOS);
   }
 
   @Test
   @Owner(developers = BRIJESH)
   @Category(UnitTests.class)
   public void testSendNotification() throws Exception {
+    // isIncludePipelineExecutionHistory false
     try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
       String url =
           "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
@@ -278,6 +328,7 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   @Owner(developers = vivekveman)
   @Category(UnitTests.class)
   public void testSendNotification1() throws IOException {
+    // isIncludePipelineExecutionHistory true with an approval stage; FF off
     try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
       String url =
           "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
@@ -290,55 +341,27 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
                                             .setNodeGroup("STAGE")
                                             .build();
       GraphLayoutNodeDTO graphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(graphLayoutNode);
+      graphLayoutNodeDTO.setStatus(ExecutionStatus.APPROVAL_WAITING);
       HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
       layoutNodeDTOMap.put(startingNodeId, graphLayoutNodeDTO);
 
-      Ambiance ambiance = Ambiance.newBuilder()
-                              .putSetupAbstractions("accountId", accountId)
-                              .putSetupAbstractions("orgIdentifier", orgIdentifier)
-                              .putSetupAbstractions("projectIdentifier", projectIdentifier)
-                              .putSetupAbstractions("pipelineIdentifier", pipelineIdentifier)
-                              .build();
-      HarnessApprovalInstance approvalInstance =
-          HarnessApprovalInstance.builder()
-              .approvers(ApproversDTO.builder().userGroups(Collections.singletonList("user")).build())
-              .build();
-      approvalInstance.setAmbiance(ambiance);
-      approvalInstance.setCreatedAt(System.currentTimeMillis());
-      approvalInstance.setDeadline(2L * System.currentTimeMillis());
-      approvalInstance.setType(ApprovalType.HARNESS_APPROVAL);
-      approvalInstance.setIncludePipelineExecutionHistory(true);
-
-      PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity = PipelineExecutionSummaryEntity.builder()
-                                                                          .accountId(accountId)
-                                                                          .orgIdentifier(orgIdentifier)
-                                                                          .projectIdentifier(projectIdentifier)
-                                                                          .pipelineIdentifier(pipelineIdentifier)
-                                                                          .startingNodeId(startingNodeId)
-                                                                          .layoutNodeMap(layoutNodeDTOMap)
-                                                                          .build();
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
       doReturn(pipelineExecutionSummaryEntity)
           .when(pmsExecutionService)
           .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
-      List<NotificationSettingConfigDTO> notificationSettingConfigDTOS = new ArrayList<>();
-      notificationSettingConfigDTOS.add(SlackConfigDTO.builder().build());
-      notificationSettingConfigDTOS.add(EmailConfigDTO.builder().build());
 
-      List<UserGroupDTO> userGroupDTOS =
-          Collections.singletonList(UserGroupDTO.builder()
-                                        .identifier(userGroupIdentifier)
-                                        .notificationConfigs(notificationSettingConfigDTOS)
-                                        .build());
-      Call<ResponseDTO<List<UserGroupDTO>>> responseDTOCall = mock(Call.class);
-      when(userGroupClient.getFilteredUserGroups(any())).thenReturn(responseDTOCall);
-      ResponseDTO<List<UserGroupDTO>> restResponse = ResponseDTO.newResponse(userGroupDTOS);
-      Response<ResponseDTO<List<UserGroupDTO>>> response = Response.success(restResponse);
-      when(responseDTOCall.execute()).thenReturn(response);
-
-      approvalInstance.setValidatedUserGroups(userGroupDTOS);
+      mockUserGroupResponse(basicUserGroupDTOS);
 
       doReturn(url).when(notificationHelper).generateUrl(ambiance);
-      approvalNotificationHandler.sendNotification(approvalInstance, ambiance);
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
+
+      ArgumentCaptor<NotificationChannel> notificationChannelArgumentCaptor =
+          ArgumentCaptor.forClass(NotificationChannel.class);
+      verify(notificationClient, times(2)).sendNotificationAsync(notificationChannelArgumentCaptor.capture());
+      List<NotificationChannel> notificationChannels = notificationChannelArgumentCaptor.getAllValues();
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.runningStages))
+          .isEqualTo("Node name");
+
       verify(ngLogCallback.constructed().get(0), times(2)).saveExecutionLog(anyString());
       verify(ngLogCallback.constructed().get(0), times(1)).saveExecutionLog(anyString(), eq(LogLevel.WARN));
     }
@@ -348,72 +371,72 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   @Owner(developers = vivekveman)
   @Category(UnitTests.class)
   public void testSendNotification2() throws IOException {
+    // isIncludePipelineExecutionHistory true with 3 approval stages; two completed, one waiting; FF off
     try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
       String url =
           "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
 
-      GraphLayoutNode graphLayoutNode = GraphLayoutNode.newBuilder()
-                                            .setNodeIdentifier("nodeIdentifier")
-                                            .setNodeType("Approval")
-                                            .setNodeUUID("aBcDeFgH")
-                                            .setName("Node name")
-                                            //                    .status(ExecutionStatus.SUCCESS)
-                                            .setNodeGroup("STAGE")
-                                            .build();
+      GraphLayoutNode firstGraphLayoutNode =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("firstIdentifier")
+              .setNodeType("Approval")
+              .setNodeUUID("aBcDeFgH")
+              .setName("First Name")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(secondNodeId).build())
+              .build();
 
-      GraphLayoutNodeDTO graphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(graphLayoutNode);
-      graphLayoutNodeDTO.setStatus(ExecutionStatus.SUCCESS);
+      GraphLayoutNodeDTO firstGraphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(firstGraphLayoutNode);
+      firstGraphLayoutNodeDTO.setStatus(ExecutionStatus.SUCCESS);
+
+      GraphLayoutNode secondGraphLayoutNode =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("secondIdentifier")
+              .setNodeType("Approval")
+              .setNodeUUID("aBcDeFgH")
+              .setName("Second Name")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(thirdNodeId).build())
+              .build();
+      GraphLayoutNodeDTO secondGraphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(secondGraphLayoutNode);
+      secondGraphLayoutNodeDTO.setStatus(ExecutionStatus.SUCCESS);
+
+      GraphLayoutNode thirdGraphLayoutNode = GraphLayoutNode.newBuilder()
+                                                 .setNodeIdentifier("thirdIdentifier")
+                                                 .setNodeType("Approval")
+                                                 .setNodeUUID("aBcDeFgH")
+                                                 .setName("Third Name")
+                                                 .setNodeGroup("STAGE")
+                                                 .build();
+      GraphLayoutNodeDTO thirdGraphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(thirdGraphLayoutNode);
+      thirdGraphLayoutNodeDTO.setStatus(ExecutionStatus.APPROVAL_WAITING);
 
       //    graphLayoutNodeDTO.status= ExecutionStatus.SUCCESS;
       HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
-      layoutNodeDTOMap.put(startingNodeId, graphLayoutNodeDTO);
+      layoutNodeDTOMap.put(startingNodeId, firstGraphLayoutNodeDTO);
+      layoutNodeDTOMap.put(secondNodeId, secondGraphLayoutNodeDTO);
+      layoutNodeDTOMap.put(thirdNodeId, thirdGraphLayoutNodeDTO);
 
-      Ambiance ambiance = Ambiance.newBuilder()
-                              .putSetupAbstractions("accountId", accountId)
-                              .putSetupAbstractions("orgIdentifier", orgIdentifier)
-                              .putSetupAbstractions("projectIdentifier", projectIdentifier)
-                              .putSetupAbstractions("pipelineIdentifier", pipelineIdentifier)
-                              .build();
-      HarnessApprovalInstance approvalInstance =
-          HarnessApprovalInstance.builder()
-              .approvers(ApproversDTO.builder().userGroups(Collections.singletonList("user")).build())
-              .build();
-      approvalInstance.setAmbiance(ambiance);
-      approvalInstance.setCreatedAt(System.currentTimeMillis());
-      approvalInstance.setDeadline(2L * System.currentTimeMillis());
-      approvalInstance.setType(ApprovalType.HARNESS_APPROVAL);
-      approvalInstance.setIncludePipelineExecutionHistory(true);
-
-      PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity = PipelineExecutionSummaryEntity.builder()
-                                                                          .accountId(accountId)
-                                                                          .orgIdentifier(orgIdentifier)
-                                                                          .projectIdentifier(projectIdentifier)
-                                                                          .pipelineIdentifier(pipelineIdentifier)
-                                                                          .startingNodeId(startingNodeId)
-                                                                          .layoutNodeMap(layoutNodeDTOMap)
-                                                                          .build();
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
       doReturn(pipelineExecutionSummaryEntity)
           .when(pmsExecutionService)
           .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
-      List<NotificationSettingConfigDTO> notificationSettingConfigDTOS = new ArrayList<>();
-      notificationSettingConfigDTOS.add(SlackConfigDTO.builder().build());
-      notificationSettingConfigDTOS.add(EmailConfigDTO.builder().build());
 
-      List<UserGroupDTO> userGroupDTOS =
-          Collections.singletonList(UserGroupDTO.builder()
-                                        .identifier(userGroupIdentifier)
-                                        .notificationConfigs(notificationSettingConfigDTOS)
-                                        .build());
-      Call<ResponseDTO<List<UserGroupDTO>>> responseDTOCall = mock(Call.class);
-      when(userGroupClient.getFilteredUserGroups(any())).thenReturn(responseDTOCall);
-      ResponseDTO<List<UserGroupDTO>> restResponse = ResponseDTO.newResponse(userGroupDTOS);
-      Response<ResponseDTO<List<UserGroupDTO>>> response = Response.success(restResponse);
-      when(responseDTOCall.execute()).thenReturn(response);
-
-      approvalInstance.setValidatedUserGroups(userGroupDTOS);
+      mockUserGroupResponse(basicUserGroupDTOS);
 
       doReturn(url).when(notificationHelper).generateUrl(ambiance);
-      approvalNotificationHandler.sendNotification(approvalInstance, ambiance);
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
+
+      ArgumentCaptor<NotificationChannel> notificationChannelArgumentCaptor =
+          ArgumentCaptor.forClass(NotificationChannel.class);
+      verify(notificationClient, times(2)).sendNotificationAsync(notificationChannelArgumentCaptor.capture());
+      List<NotificationChannel> notificationChannels = notificationChannelArgumentCaptor.getAllValues();
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.finishedStages))
+          .isEqualTo("First Name, Second Name");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.runningStages))
+          .isEqualTo("Third Name");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.upcomingStages))
+          .isEqualTo("N/A");
 
       verify(ngLogCallback.constructed().get(0), times(2)).saveExecutionLog(anyString());
       verify(ngLogCallback.constructed().get(0), times(1)).saveExecutionLog(anyString(), eq(LogLevel.WARN));
@@ -424,72 +447,98 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   @Owner(developers = vivekveman)
   @Category(UnitTests.class)
   public void testSendNotification3() throws IOException {
+    // isIncludePipelineExecutionHistory true with 3 approval stages; two completed, one waiting; FF on
     try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
+      when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA))
+          .thenReturn(true);
       String url =
           "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
 
-      GraphLayoutNode graphLayoutNode = GraphLayoutNode.newBuilder()
-                                            .setNodeIdentifier("nodeIdentifier")
-                                            .setNodeType("Approval")
-                                            .setNodeUUID("aBcDeFgH")
-                                            .setName("Node name")
-                                            //                    .status(ExecutionStatus.SUCCESS)
-                                            .setNodeGroup("STAGE")
-                                            .build();
-
-      GraphLayoutNodeDTO graphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(graphLayoutNode);
-      graphLayoutNodeDTO.setStatus(ExecutionStatus.ASYNCWAITING);
-
-      //    graphLayoutNodeDTO.status= ExecutionStatus.SUCCESS;
-      HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
-      layoutNodeDTOMap.put(startingNodeId, graphLayoutNodeDTO);
-
-      Ambiance ambiance = Ambiance.newBuilder()
-                              .putSetupAbstractions("accountId", accountId)
-                              .putSetupAbstractions("orgIdentifier", orgIdentifier)
-                              .putSetupAbstractions("projectIdentifier", projectIdentifier)
-                              .putSetupAbstractions("pipelineIdentifier", pipelineIdentifier)
-                              .build();
-      HarnessApprovalInstance approvalInstance =
-          HarnessApprovalInstance.builder()
-              .approvers(ApproversDTO.builder().userGroups(Collections.singletonList("user")).build())
+      GraphLayoutNode firstGraphLayoutNode =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("firstIdentifier")
+              .setNodeType("Approval")
+              .setNodeUUID("aBcDeFgH")
+              .setName("First Name")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(secondNodeId).build())
               .build();
-      approvalInstance.setAmbiance(ambiance);
-      approvalInstance.setCreatedAt(System.currentTimeMillis());
-      approvalInstance.setDeadline(2L * System.currentTimeMillis());
-      approvalInstance.setType(ApprovalType.HARNESS_APPROVAL);
-      approvalInstance.setIncludePipelineExecutionHistory(true);
 
-      PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity = PipelineExecutionSummaryEntity.builder()
-                                                                          .accountId(accountId)
-                                                                          .orgIdentifier(orgIdentifier)
-                                                                          .projectIdentifier(projectIdentifier)
-                                                                          .pipelineIdentifier(pipelineIdentifier)
-                                                                          .startingNodeId(startingNodeId)
-                                                                          .layoutNodeMap(layoutNodeDTOMap)
-                                                                          .build();
+      GraphLayoutNodeDTO firstGraphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(firstGraphLayoutNode);
+      firstGraphLayoutNodeDTO.setStatus(ExecutionStatus.SUCCESS);
+
+      GraphLayoutNode secondGraphLayoutNode =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("secondIdentifier")
+              .setNodeType("Approval")
+              .setNodeUUID("aBcDeFgH")
+              .setName("Second Name")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(thirdNodeId).build())
+              .build();
+      GraphLayoutNodeDTO secondGraphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(secondGraphLayoutNode);
+      secondGraphLayoutNodeDTO.setStatus(ExecutionStatus.SUCCESS);
+
+      GraphLayoutNode thirdGraphLayoutNode = GraphLayoutNode.newBuilder()
+                                                 .setNodeIdentifier("thirdIdentifier")
+                                                 .setNodeType("Approval")
+                                                 .setNodeUUID("aBcDeFgH")
+                                                 .setName("Third Name")
+                                                 .setNodeGroup("STAGE")
+                                                 .build();
+      GraphLayoutNodeDTO thirdGraphLayoutNodeDTO = GraphLayoutDtoMapper.toDto(thirdGraphLayoutNode);
+      thirdGraphLayoutNodeDTO.setStatus(ExecutionStatus.APPROVAL_WAITING);
+
+      HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
+      layoutNodeDTOMap.put(startingNodeId, firstGraphLayoutNodeDTO);
+      layoutNodeDTOMap.put(secondNodeId, secondGraphLayoutNodeDTO);
+      layoutNodeDTOMap.put(thirdNodeId, thirdGraphLayoutNodeDTO);
+
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
       doReturn(pipelineExecutionSummaryEntity)
           .when(pmsExecutionService)
           .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
-      List<NotificationSettingConfigDTO> notificationSettingConfigDTOS = new ArrayList<>();
-      notificationSettingConfigDTOS.add(SlackConfigDTO.builder().build());
-      notificationSettingConfigDTOS.add(EmailConfigDTO.builder().build());
-
-      List<UserGroupDTO> userGroupDTOS =
-          Collections.singletonList(UserGroupDTO.builder()
-                                        .identifier(userGroupIdentifier)
-                                        .notificationConfigs(notificationSettingConfigDTOS)
-                                        .build());
-      Call<ResponseDTO<List<UserGroupDTO>>> responseDTOCall = mock(Call.class);
-      when(userGroupClient.getFilteredUserGroups(any())).thenReturn(responseDTOCall);
-      ResponseDTO<List<UserGroupDTO>> restResponse = ResponseDTO.newResponse(userGroupDTOS);
-      Response<ResponseDTO<List<UserGroupDTO>>> response = Response.success(restResponse);
-      when(responseDTOCall.execute()).thenReturn(response);
-
-      approvalInstance.setValidatedUserGroups(userGroupDTOS);
+      mockUserGroupResponse(basicUserGroupDTOS);
 
       doReturn(url).when(notificationHelper).generateUrl(ambiance);
-      approvalNotificationHandler.sendNotification(approvalInstance, ambiance);
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.addAll(List.of("First Name", "Second Name"));
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfFinishedStages(anySet(), anySet(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.add("Third Name");
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfRunningStages(anySet(), anySet(), any(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfUpcomingStages(anySet(), anySet(), any(), any());
+
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
+
+      ArgumentCaptor<NotificationChannel> notificationChannelArgumentCaptor =
+          ArgumentCaptor.forClass(NotificationChannel.class);
+      verify(notificationClient, times(2)).sendNotificationAsync(notificationChannelArgumentCaptor.capture());
+      List<NotificationChannel> notificationChannels = notificationChannelArgumentCaptor.getAllValues();
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.finishedStages))
+          .isEqualTo("First Name\n Second Name");
+      assertThat(notificationChannels.get(1).getTemplateData().get(ApprovalSummaryKeys.finishedStages))
+          .isEqualTo("First Name<br> Second Name");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.runningStages))
+          .isEqualTo("Third Name");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.upcomingStages))
+          .isEqualTo("N/A");
 
       verify(ngLogCallback.constructed().get(0), times(2)).saveExecutionLog(anyString());
       verify(ngLogCallback.constructed().get(0), times(1)).saveExecutionLog(anyString(), eq(LogLevel.WARN));
@@ -500,6 +549,7 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   @Owner(developers = vivekveman)
   @Category(UnitTests.class)
   public void testSendNotification4() throws IOException {
+    // when FF off, running CD stage with approval, followed by custom stage
     try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
       String url =
           "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
@@ -507,75 +557,222 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
       GraphLayoutNode graphLayoutNode1 =
           GraphLayoutNode.newBuilder()
               .setNodeIdentifier("nodeIdentifier")
-              .setNodeType("Approval")
+              .setNodeType("Deployment")
               .setNodeUUID("aBcDeFgH")
-              .setName("Node name")
+              .setName("cd stage")
               .setNodeGroup("STAGE")
               .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(PlanCreatorConstants.NEXT_ID).build())
               .build();
       GraphLayoutNodeDTO graphLayoutNodeDTO1 = GraphLayoutDtoMapper.toDto(graphLayoutNode1);
+      graphLayoutNodeDTO1.setModule("cd");
+      graphLayoutNodeDTO1.setStatus(ExecutionStatus.APPROVAL_WAITING);
       HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
       layoutNodeDTOMap.put(startingNodeId, graphLayoutNodeDTO1);
 
       GraphLayoutNode graphLayoutNode2 = GraphLayoutNode.newBuilder()
                                              .setNodeIdentifier("nodeIdentifier")
-                                             .setNodeType("Approval")
+                                             .setNodeType("Custom")
                                              .setNodeUUID("aBcDeFgH")
-                                             .setName("Node name")
+                                             .setName("custom stage")
                                              .setNodeGroup("STAGE")
                                              .build();
       GraphLayoutNodeDTO graphLayoutNodeDTO2 = GraphLayoutDtoMapper.toDto(graphLayoutNode2);
       layoutNodeDTOMap.put(PlanCreatorConstants.NEXT_ID, graphLayoutNodeDTO2);
 
-      Ambiance ambiance = Ambiance.newBuilder()
-                              .putSetupAbstractions("accountId", accountId)
-                              .putSetupAbstractions("orgIdentifier", orgIdentifier)
-                              .putSetupAbstractions("projectIdentifier", projectIdentifier)
-                              .putSetupAbstractions("pipelineIdentifier", pipelineIdentifier)
-                              .build();
-      HarnessApprovalInstance approvalInstance =
-          HarnessApprovalInstance.builder()
-              .approvers(ApproversDTO.builder().userGroups(Collections.singletonList("user")).build())
-              .build();
-      approvalInstance.setAmbiance(ambiance);
-      approvalInstance.setCreatedAt(System.currentTimeMillis());
-      approvalInstance.setDeadline(2L * System.currentTimeMillis());
-      approvalInstance.setType(ApprovalType.HARNESS_APPROVAL);
-      approvalInstance.setIncludePipelineExecutionHistory(true);
-
-      PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity = PipelineExecutionSummaryEntity.builder()
-                                                                          .accountId(accountId)
-                                                                          .orgIdentifier(orgIdentifier)
-                                                                          .projectIdentifier(projectIdentifier)
-                                                                          .pipelineIdentifier(pipelineIdentifier)
-                                                                          .startingNodeId(startingNodeId)
-                                                                          .layoutNodeMap(layoutNodeDTOMap)
-                                                                          .build();
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
       doReturn(pipelineExecutionSummaryEntity)
           .when(pmsExecutionService)
           .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
-      List<NotificationSettingConfigDTO> notificationSettingConfigDTOS = new ArrayList<>();
-      notificationSettingConfigDTOS.add(SlackConfigDTO.builder().build());
-      notificationSettingConfigDTOS.add(EmailConfigDTO.builder().build());
 
-      List<UserGroupDTO> userGroupDTOS =
-          Collections.singletonList(UserGroupDTO.builder()
-                                        .identifier(userGroupIdentifier)
-                                        .notificationConfigs(notificationSettingConfigDTOS)
-                                        .build());
-      Call<ResponseDTO<List<UserGroupDTO>>> responseDTOCall = mock(Call.class);
-      when(userGroupClient.getFilteredUserGroups(any())).thenReturn(responseDTOCall);
-      ResponseDTO<List<UserGroupDTO>> restResponse = ResponseDTO.newResponse(userGroupDTOS);
-      Response<ResponseDTO<List<UserGroupDTO>>> response = Response.success(restResponse);
-      when(responseDTOCall.execute()).thenReturn(response);
-
-      approvalInstance.setValidatedUserGroups(userGroupDTOS);
+      mockUserGroupResponse(basicUserGroupDTOS);
 
       doReturn(url).when(notificationHelper).generateUrl(ambiance);
-      approvalNotificationHandler.sendNotification(approvalInstance, ambiance);
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
 
       verify(ngLogCallback.constructed().get(0), times(2)).saveExecutionLog(anyString());
       verify(ngLogCallback.constructed().get(0), times(1)).saveExecutionLog(anyString(), eq(LogLevel.WARN));
+
+      ArgumentCaptor<NotificationChannel> notificationChannelArgumentCaptor =
+          ArgumentCaptor.forClass(NotificationChannel.class);
+      verify(notificationClient, times(2)).sendNotificationAsync(notificationChannelArgumentCaptor.capture());
+      List<NotificationChannel> notificationChannels = notificationChannelArgumentCaptor.getAllValues();
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.finishedStages))
+          .isEqualTo("N/A");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.runningStages))
+          .isEqualTo("cd stage");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.upcomingStages))
+          .isEqualTo("custom stage");
+    }
+  }
+
+  @Test
+  @Owner(developers = NAMANG)
+  @Category(UnitTests.class)
+  public void testSendNotification5() throws IOException {
+    // when FF on, running CD stage with approval, followed by custom stage
+    try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
+      when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA))
+          .thenReturn(true);
+      String url =
+          "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
+
+      GraphLayoutNode graphLayoutNode1 =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("nodeIdentifier")
+              .setNodeType("Deployment")
+              .setNodeUUID("aBcDeFgH")
+              .setName("cd stage")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(PlanCreatorConstants.NEXT_ID).build())
+              .build();
+      GraphLayoutNodeDTO graphLayoutNodeDTO1 = GraphLayoutDtoMapper.toDto(graphLayoutNode1);
+      graphLayoutNodeDTO1.setModule("cd");
+      graphLayoutNodeDTO1.setStatus(ExecutionStatus.APPROVAL_WAITING);
+      HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
+      layoutNodeDTOMap.put(startingNodeId, graphLayoutNodeDTO1);
+
+      GraphLayoutNode graphLayoutNode2 = GraphLayoutNode.newBuilder()
+                                             .setNodeIdentifier("nodeIdentifier")
+                                             .setNodeType("Custom")
+                                             .setNodeUUID("aBcDeFgH")
+                                             .setName("custom stage")
+                                             .setNodeGroup("STAGE")
+                                             .build();
+      GraphLayoutNodeDTO graphLayoutNodeDTO2 = GraphLayoutDtoMapper.toDto(graphLayoutNode2);
+      layoutNodeDTOMap.put(PlanCreatorConstants.NEXT_ID, graphLayoutNodeDTO2);
+
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
+      doReturn(pipelineExecutionSummaryEntity)
+          .when(pmsExecutionService)
+          .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
+
+      mockUserGroupResponse(basicUserGroupDTOS);
+
+      doReturn(url).when(notificationHelper).generateUrl(ambiance);
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfFinishedStages(anySet(), anySet(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.add("cd stage : \n"
+            + "     Service  :  service name\n"
+            + "     Environment  :  env name\n"
+            + "     Infrastructure Definition  :  infra name");
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfRunningStages(anySet(), anySet(), any(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.add("custom stage");
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfUpcomingStages(anySet(), anySet(), any(), any());
+
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
+
+      verify(ngLogCallback.constructed().get(0), times(2)).saveExecutionLog(anyString());
+      verify(ngLogCallback.constructed().get(0), times(1)).saveExecutionLog(anyString(), eq(LogLevel.WARN));
+
+      ArgumentCaptor<NotificationChannel> notificationChannelArgumentCaptor =
+          ArgumentCaptor.forClass(NotificationChannel.class);
+      verify(notificationClient, times(2)).sendNotificationAsync(notificationChannelArgumentCaptor.capture());
+      List<NotificationChannel> notificationChannels = notificationChannelArgumentCaptor.getAllValues();
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.finishedStages))
+          .isEqualTo("N/A");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.runningStages))
+          .isEqualTo("cd stage : \n"
+              + "     Service  :  service name\n"
+              + "     Environment  :  env name\n"
+              + "     Infrastructure Definition  :  infra name");
+      assertThat(notificationChannels.get(1).getTemplateData().get(ApprovalSummaryKeys.runningStages))
+          .isEqualTo("cd stage : <br>"
+              + "     Service  :  service name<br>"
+              + "     Environment  :  env name<br>"
+              + "     Infrastructure Definition  :  infra name");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.upcomingStages))
+          .isEqualTo("custom stage");
+    }
+  }
+
+  @Test
+  @Owner(developers = NAMANG)
+  @Category(UnitTests.class)
+  public void testSendNotification6WhenGetErrorWhileStageFormatting() throws IOException {
+    // when FF on, running CD stage with approval, followed by custom stage
+    try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
+      when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA))
+          .thenReturn(true);
+      String url =
+          "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
+
+      GraphLayoutNode graphLayoutNode1 =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("nodeIdentifier")
+              .setNodeType("Deployment")
+              .setNodeUUID("aBcDeFgH")
+              .setName("cd stage")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(PlanCreatorConstants.NEXT_ID).build())
+              .build();
+      GraphLayoutNodeDTO graphLayoutNodeDTO1 = GraphLayoutDtoMapper.toDto(graphLayoutNode1);
+      graphLayoutNodeDTO1.setModule("cd");
+      graphLayoutNodeDTO1.setStatus(ExecutionStatus.APPROVAL_WAITING);
+      HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
+      layoutNodeDTOMap.put(startingNodeId, graphLayoutNodeDTO1);
+
+      GraphLayoutNode graphLayoutNode2 = GraphLayoutNode.newBuilder()
+                                             .setNodeIdentifier("nodeIdentifier")
+                                             .setNodeType("Custom")
+                                             .setNodeUUID("aBcDeFgH")
+                                             .setName("custom stage")
+                                             .setNodeGroup("STAGE")
+                                             .build();
+      GraphLayoutNodeDTO graphLayoutNodeDTO2 = GraphLayoutDtoMapper.toDto(graphLayoutNode2);
+      layoutNodeDTOMap.put(PlanCreatorConstants.NEXT_ID, graphLayoutNodeDTO2);
+
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
+      doReturn(pipelineExecutionSummaryEntity)
+          .when(pmsExecutionService)
+          .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
+
+      mockUserGroupResponse(basicUserGroupDTOS);
+
+      doReturn(url).when(notificationHelper).generateUrl(ambiance);
+
+      doThrow(new IllegalStateException("dummy"))
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfFinishedStages(anySet(), anySet(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.add("cd stage : \n"
+            + "     Service  :  service name\n"
+            + "     Environment  :  env name\n"
+            + "     Infrastructure Definition  :  infra name");
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfRunningStages(anySet(), anySet(), any(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.add("custom stage");
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfUpcomingStages(anySet(), anySet(), any(), any());
+
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
+
+      verify(ngLogCallback.constructed().get(0), times(1)).saveExecutionLog(anyString());
     }
   }
 
@@ -881,6 +1078,151 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = NAMANG)
+  @Category(UnitTests.class)
+  public void testSendNotificationForApprovalActionWithStageMetadata() throws IOException {
+    // when FF on, CD stage with approval completed, followed by 2 upcoming custom stages
+    try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
+      when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA))
+          .thenReturn(true);
+      String url =
+          "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
+
+      GraphLayoutNode graphLayoutNode1 =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("nodeIdentifier")
+              .setNodeType("Deployment")
+              .setNodeUUID("aBcDeFgH")
+              .setName("cd stage")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(PlanCreatorConstants.NEXT_ID).build())
+              .build();
+      GraphLayoutNodeDTO graphLayoutNodeDTO1 = GraphLayoutDtoMapper.toDto(graphLayoutNode1);
+      graphLayoutNodeDTO1.setModule("cd");
+      graphLayoutNodeDTO1.setStatus(ExecutionStatus.SUCCESS);
+      HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
+      layoutNodeDTOMap.put(startingNodeId, graphLayoutNodeDTO1);
+
+      GraphLayoutNode graphLayoutNode2 =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("nodeIdentifier")
+              .setNodeType("Custom")
+              .setNodeUUID("aBcDeFgH")
+              .setName("custom stage upcoming 1")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds(thirdNodeId).build())
+              .build();
+      GraphLayoutNodeDTO graphLayoutNodeDTO2 = GraphLayoutDtoMapper.toDto(graphLayoutNode2);
+      layoutNodeDTOMap.put(PlanCreatorConstants.NEXT_ID, graphLayoutNodeDTO2);
+
+      GraphLayoutNode graphLayoutNode3 = GraphLayoutNode.newBuilder()
+                                             .setNodeIdentifier(thirdNodeId)
+                                             .setNodeType("Custom")
+                                             .setNodeUUID("aBcDeFgH")
+                                             .setName("custom stage upcoming 2")
+                                             .setNodeGroup("STAGE")
+                                             .build();
+      GraphLayoutNodeDTO graphLayoutNodeDTO3 = GraphLayoutDtoMapper.toDto(graphLayoutNode3);
+      layoutNodeDTOMap.put(thirdNodeId, graphLayoutNodeDTO3);
+
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
+      doReturn(pipelineExecutionSummaryEntity)
+          .when(pmsExecutionService)
+          .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
+
+      mockUserGroupResponse(basicUserGroupDTOS);
+
+      doReturn(url).when(notificationHelper).generateUrl(ambiance);
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.add("cd stage : \n"
+            + "     Service  :  service name\n"
+            + "     Environment  :  env name\n"
+            + "     Infrastructure Definition  :  infra name");
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfFinishedStages(anySet(), anySet(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfRunningStages(anySet(), anySet(), any(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.addAll(List.of("custom stage upcoming 1", "custom stage upcoming 2"));
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfUpcomingStages(anySet(), anySet(), any(), any());
+
+      basicApprovalInstance.setStatus(ApprovalStatus.APPROVED);
+      basicApprovalInstance.setApprovalActivities(Arrays.asList(HarnessApprovalActivity.builder()
+                                                                    .user(EmbeddedUser.builder().email("email").build())
+                                                                    .approvedAt(20000000)
+                                                                    .action(HarnessApprovalAction.APPROVE)
+                                                                    .build(),
+          HarnessApprovalActivity.builder()
+              .user(EmbeddedUser.builder().email("email2").build())
+              .approvedAt(20000020)
+              .action(HarnessApprovalAction.APPROVE)
+              .build()));
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
+
+      ArgumentCaptor<NotificationChannel> notificationChannelArgumentCaptor =
+          ArgumentCaptor.forClass(NotificationChannel.class);
+      verify(notificationClient, times(2)).sendNotificationAsync(notificationChannelArgumentCaptor.capture());
+      List<NotificationChannel> notificationChannels = notificationChannelArgumentCaptor.getAllValues();
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.runningStages)).isEqualTo("N/A");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.finishedStages))
+          .isEqualTo("cd stage : \n"
+              + "     Service  :  service name\n"
+              + "     Environment  :  env name\n"
+              + "     Infrastructure Definition  :  infra name");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.upcomingStages))
+          .isEqualTo("custom stage upcoming 1\n custom stage upcoming 2");
+
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.pipelineName))
+          .isEqualTo(pipelineIdentifier);
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.orgName)).isEqualTo(orgName);
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.projectName))
+          .isEqualTo(projectName);
+
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.status))
+          .isEqualTo(ApprovalStatus.APPROVED.toString().toLowerCase(Locale.ROOT));
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.action)).contains("email");
+
+      // get userId in triggeredBy because email is not present
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.triggeredBy))
+          .isEqualTo("Unknown");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.pipelineExecutionLink))
+          .isEqualTo(url);
+      // checking whether line breaks are added properly in case of multiple approval activities for email only
+      // two comparisons are made to prevent flakiness depend on system's locale
+      String actionNonEmail = notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.action);
+      assertThat(
+          actionNonEmail.equals("email approved on Jan 01, 05:33 AM GMT   \nemail2 approved on Jan 01, 05:33 AM GMT   ")
+          || actionNonEmail.equals(
+              "email approved on Jan 01, 05:33 am GMT   \nemail2 approved on Jan 01, 05:33 am GMT   "))
+          .isTrue();
+      String actionEmail = notificationChannels.get(1).getTemplateData().get(ApprovalSummaryKeys.action);
+      assertThat(
+          actionEmail.equals("email approved on Jan 01, 05:33 AM GMT   <br>email2 approved on Jan 01, 05:33 AM GMT   ")
+          || actionEmail.equals(
+              "email approved on Jan 01, 05:33 am GMT   <br>email2 approved on Jan 01, 05:33 am GMT   "))
+          .isTrue();
+
+      assertThat(notificationChannels.get(0).getTeam()).isEqualTo(Team.PIPELINE);
+      verify(pmsExecutionService, times(1))
+          .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
+    }
+  }
+
+  @Test
   @Owner(developers = SOURABH)
   @Category(UnitTests.class)
   public void testSendNotificationForApprovalActionWithParallelStages() throws Exception {
@@ -1149,5 +1491,15 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
     EmbeddedUser user_without_name = EmbeddedUser.builder().email("email@email.com").build();
     assertThat(approvalNotificationHandler.getUserIdentification(user_without_name))
         .isEqualTo(user_without_name.getEmail());
+  }
+
+  private void mockUserGroupResponse(List<UserGroupDTO> userGroupDTOS) throws IOException {
+    ResponseDTO<List<UserGroupDTO>> restResponse = ResponseDTO.newResponse(userGroupDTOS);
+    Response<ResponseDTO<List<UserGroupDTO>>> response = Response.success(restResponse);
+
+    Call<ResponseDTO<List<UserGroupDTO>>> responseDTOCall = mock(Call.class);
+    when(responseDTOCall.execute()).thenReturn(response);
+
+    when(userGroupClient.getFilteredUserGroups(any())).thenReturn(responseDTOCall);
   }
 }

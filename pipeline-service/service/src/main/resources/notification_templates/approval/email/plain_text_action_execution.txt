@@ -11,9 +11,12 @@ body: "
 <b>Triggered by:</b> ${triggeredBy}<br><br>
 
 <b>Pipeline execution summary:</b><br>
-Upcoming Stages: ${upcomingStages}<br>
-Completed Stages: ${finishedStages}<br>
-Running Stages: ${runningStages}<br><br>
+<b>Upcoming Stages:</b><br>
+${upcomingStages}<br>
+<b>Completed Stages:</b><br>
+${finishedStages}<br>
+<b>Running Stages:</b><br>
+${runningStages}<br><br>
 
 <i>Pipeline started on ${startedAt} </i><br>
 </html>

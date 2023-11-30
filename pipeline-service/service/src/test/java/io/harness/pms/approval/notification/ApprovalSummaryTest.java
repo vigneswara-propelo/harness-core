@@ -17,10 +17,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.rule.Owner;
+import io.harness.steps.approval.step.beans.ApprovalStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -52,8 +54,9 @@ public class ApprovalSummaryTest extends CategoryTest {
                                           .upcomingStages(Collections.emptySet())
                                           .pipelineExecutionLink("this.link.executes.io")
                                           .timeRemainingForApproval("6d")
+                                          .status(ApprovalStatus.WAITING)
                                           .build();
-    Map<String, String> params = approvalSummary.toParams();
+    Map<String, String> params = approvalSummary.toParams(ApprovalSummary.DEFAULT_STAGE_DELIMITER);
     assertThat(params).hasSize(14);
     assertThat(params.get("pipelineName")).isEqualTo("p1");
     assertThat(params.get("orgName")).isEqualTo("default");
@@ -66,6 +69,20 @@ public class ApprovalSummaryTest extends CategoryTest {
     assertThat(params.get("runningStages")).isEqualTo("a4");
     assertThat(params.get("upcomingStages")).isEqualTo("N/A");
     assertThat(params.get("pipelineExecutionLink")).isEqualTo("this.link.executes.io");
+    assertThat(params.get("status")).isEqualTo("waiting");
     assertThat(params.get("timeRemainingForApproval")).isEqualTo("6d");
+
+    params = approvalSummary.toParams(ApprovalSummary.NEWLINE_STAGE_DELIMITER);
+    assertThat(params.get("finishedStages")).isEqualTo("a1\n a2\n a3");
+    assertThat(params.get("runningStages")).isEqualTo("a4");
+    assertThat(params.get("upcomingStages")).isEqualTo("N/A");
+  }
+
+  @Test
+  @Owner(developers = NAMAN)
+  @Category(UnitTests.class)
+  public void testStaticTextFields() {
+    assertThat(ApprovalSummary.TEXT_FIELDS_IN_APPROVAL_SUMMARY)
+        .isEqualTo(List.of("approvalMessage", "action", "finishedStages", "runningStages", "upcomingStages"));
   }
 }

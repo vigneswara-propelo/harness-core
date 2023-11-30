@@ -11,6 +11,8 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.task.shell.ShellScriptTaskNG.COMMAND_UNIT;
+import static io.harness.pms.approval.notification.ApprovalSummary.DEFAULT_STAGE_DELIMITER;
+import static io.harness.pms.approval.notification.ApprovalSummary.NEWLINE_STAGE_DELIMITER;
 import static io.harness.remote.client.NGRestUtils.getResponse;
 import static io.harness.utils.IdentifierRefHelper.IDENTIFIER_REF_DELIMITER;
 
@@ -19,9 +21,11 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
+import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.encryption.Scope;
+import io.harness.exception.ApprovalStepNGException;
 import io.harness.exception.ExceptionUtils;
 import io.harness.logging.AutoLogContext;
 import io.harness.logging.LogLevel;
@@ -43,6 +47,8 @@ import io.harness.notification.channeldetails.SlackChannel;
 import io.harness.notification.notificationclient.NotificationClient;
 import io.harness.notification.templates.PredefinedTemplate;
 import io.harness.organization.remote.OrganizationClient;
+import io.harness.pms.approval.notification.stagemetadata.StageMetadataNotificationHelper;
+import io.harness.pms.approval.notification.stagemetadata.StagesSummary;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.plan.ExecutionTriggerInfo;
 import io.harness.pms.execution.ExecutionStatus;
@@ -62,6 +68,7 @@ import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivity;
 import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance;
 import io.harness.usergroups.UserGroupClient;
 import io.harness.utils.IdentifierRefHelper;
+import io.harness.utils.PmsFeatureFlagHelper;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -98,12 +105,15 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
   private final LogStreamingStepClientFactory logStreamingStepClientFactory;
   private final ProjectClient projectClient;
   private final OrganizationClient organizationClient;
+  private final StageMetadataNotificationHelper stageMetadataNotificationHelper;
+  private final PmsFeatureFlagHelper pmsFeatureFlagHelper;
 
   @Inject
   public ApprovalNotificationHandlerImpl(@Named("PRIVILEGED") UserGroupClient userGroupClient,
       NotificationClient notificationClient, NotificationHelper notificationHelper,
       PMSExecutionService pmsExecutionService, LogStreamingStepClientFactory logStreamingStepClientFactory,
-      @Named("PRIVILEGED") OrganizationClient organizationClient, @Named("PRIVILEGED") ProjectClient projectClient) {
+      @Named("PRIVILEGED") OrganizationClient organizationClient, @Named("PRIVILEGED") ProjectClient projectClient,
+      StageMetadataNotificationHelper stageMetadataNotificationHelper, PmsFeatureFlagHelper pmsFeatureFlagHelper) {
     this.userGroupClient = userGroupClient;
     this.notificationClient = notificationClient;
     this.notificationHelper = notificationHelper;
@@ -111,6 +121,8 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
     this.logStreamingStepClientFactory = logStreamingStepClientFactory;
     this.organizationClient = organizationClient;
     this.projectClient = projectClient;
+    this.stageMetadataNotificationHelper = stageMetadataNotificationHelper;
+    this.pmsFeatureFlagHelper = pmsFeatureFlagHelper;
   }
 
   @Override
@@ -123,8 +135,12 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
         try {
           ApprovalSummary approvalSummary =
               getApprovalSummary(ambiance, approvalInstance, getPipelineExecutionSummary(ambiance));
-          sendNotificationInternal(
-              approvalInstance, approvalInstance.getValidatedUserGroups(), approvalSummary.toParams(), logCallback);
+          sendNotificationInternal(approvalInstance, approvalInstance.getValidatedUserGroups(),
+              approvalSummary.toParams(pmsFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance),
+                                           FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA)
+                      ? NEWLINE_STAGE_DELIMITER
+                      : DEFAULT_STAGE_DELIMITER),
+              logCallback);
         } catch (Exception e) {
           logCallback.saveExecutionLog(
               String.format("Error sending notification to user groups for Harness approval Action: %s",
@@ -156,7 +172,12 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
       }
 
       ApprovalSummary approvalSummary = getApprovalSummary(ambiance, approvalInstance, pipelineExecutionSummaryEntity);
-      sendNotificationInternal(approvalInstance, userGroups, approvalSummary.toParams(), logCallback);
+      sendNotificationInternal(approvalInstance, userGroups,
+          approvalSummary.toParams(pmsFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance),
+                                       FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA)
+                  ? NEWLINE_STAGE_DELIMITER
+                  : DEFAULT_STAGE_DELIMITER),
+          logCallback);
     } catch (Exception e) {
       logCallback.saveExecutionLog(String.format(
           "Error sending notification to user groups for harness approval: %s", ExceptionUtils.getMessage(e)));
@@ -223,22 +244,43 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
   private void generateModuleSpecificSummary(
       ApprovalSummary approvalSummary, PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity) {
     String startingNodeId = pipelineExecutionSummaryEntity.getStartingNodeId();
-    traverseGraph(approvalSummary, pipelineExecutionSummaryEntity.getLayoutNodeMap(), startingNodeId);
+    StagesSummary stagesSummary = StagesSummary.builder().build();
+    traverseGraph(stagesSummary, pipelineExecutionSummaryEntity.getLayoutNodeMap(), startingNodeId);
+    io.harness.beans.Scope scope = io.harness.beans.Scope.of(pipelineExecutionSummaryEntity.getAccountId(),
+        pipelineExecutionSummaryEntity.getOrgIdentifier(), pipelineExecutionSummaryEntity.getProjectIdentifier());
+    if (pmsFeatureFlagHelper.isEnabled(pipelineExecutionSummaryEntity.getAccountId(),
+            FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA)) {
+      try {
+        stageMetadataNotificationHelper.setFormattedSummaryOfFinishedStages(
+            stagesSummary.getFinishedStages(), approvalSummary.getFinishedStages(), scope);
+        stageMetadataNotificationHelper.setFormattedSummaryOfRunningStages(stagesSummary.getRunningStages(),
+            approvalSummary.getRunningStages(), scope, pipelineExecutionSummaryEntity.getPlanExecutionId());
+        stageMetadataNotificationHelper.setFormattedSummaryOfUpcomingStages(stagesSummary.getUpcomingStages(),
+            approvalSummary.getUpcomingStages(), scope, pipelineExecutionSummaryEntity.getPlanExecutionId());
+      } catch (Exception ex) {
+        log.warn("Error occurred while formatting stage metadata: {}", ExceptionUtils.getMessage(ex), ex);
+        throw new ApprovalStepNGException(
+            String.format("Error occurred while formatting stage metadata: %s", ExceptionUtils.getMessage(ex)), false,
+            ex);
+      }
+    } else {
+      StageMetadataNotificationHelper.addStageMetadataWhenFFOff(stagesSummary, approvalSummary);
+    }
   }
 
   private void traverseGraph(
-      ApprovalSummary approvalSummary, Map<String, GraphLayoutNodeDTO> layoutNodeMap, String currentNodeId) {
+      StagesSummary stagesSummary, Map<String, GraphLayoutNodeDTO> layoutNodeMap, String currentNodeId) {
     GraphLayoutNodeDTO node = layoutNodeMap.get(currentNodeId);
     if (node.getNodeGroup().matches(STAGE_IDENTIFIER)) {
       if (node.getStatus() == ExecutionStatus.NOTSTARTED) {
         if (!isEmpty(node.getName())) {
-          approvalSummary.getUpcomingStages().add(node.getName());
+          StageMetadataNotificationHelper.addStageNodeToStagesSummary(stagesSummary.getUpcomingStages(), node);
         }
       } else if (StatusUtils.finalStatuses().stream().anyMatch(
                      status -> ExecutionStatus.getExecutionStatus(status) == node.getStatus())) {
-        approvalSummary.getFinishedStages().add(node.getName());
+        StageMetadataNotificationHelper.addStageNodeToStagesSummary(stagesSummary.getFinishedStages(), node);
       } else {
-        approvalSummary.getRunningStages().add(node.getName());
+        StageMetadataNotificationHelper.addStageNodeToStagesSummary(stagesSummary.getRunningStages(), node);
       }
     }
 
@@ -246,12 +288,12 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
       if (!isEmpty(node.getEdgeLayoutList().getCurrentNodeChildren())) {
         for (String nextNodeChildrenId : node.getEdgeLayoutList().getCurrentNodeChildren()) {
           // iterating through stages which are set to run in parallel
-          traverseGraph(approvalSummary, layoutNodeMap, nextNodeChildrenId);
+          traverseGraph(stagesSummary, layoutNodeMap, nextNodeChildrenId);
         }
       }
 
       for (String nextId : node.getEdgeLayoutList().getNextIds()) {
-        traverseGraph(approvalSummary, layoutNodeMap, nextId);
+        traverseGraph(stagesSummary, layoutNodeMap, nextId);
       }
     }
   }
