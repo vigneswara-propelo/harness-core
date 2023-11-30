@@ -161,7 +161,8 @@ public class CVNGBackgroundMigrationList {
         .add(Pair.of(72, AddStartQuarterToQuarterlySLOMigration.class))
         .add(Pair.of(73, CompositeSLORecordCleanUpMigration.class))
         .add(Pair.of(74, CompositeSLORecordBucketCleanupMigration.class))
-        .add(Pair.of(75, CompositeSLORecordBucketMigration.class))
+        .add(Pair.of(75, CVNGBaseMigration.class))
+        .add(Pair.of(76, CompositeSLORecordBucketMigration.class))
         .build();
   }
 }

@@ -50,10 +50,9 @@ public class CompositeSLORecordBucketMigration implements CVNGMigration {
       }
       List<String> sloIds = getSLOIdsFromSchemaObject();
       while (!sloIds.isEmpty()) {
-        Query<CompositeSLORecord> queryToAddToBucket =
-            hPersistence.createQuery(CompositeSLORecord.class)
-                .filter(CompositeSLORecordKeys.verificationTaskId, sloIds.get(0))
-                .order(Sort.ascending(CompositeSLORecordKeys.timestamp));
+        Query<CompositeSLORecord> queryToAddToBucket = hPersistence.createQuery(CompositeSLORecord.class)
+                                                           .filter(CompositeSLORecordKeys.sloId, sloIds.get(0))
+                                                           .order(Sort.ascending(CompositeSLORecordKeys.timestamp));
         List<CompositeSLORecord> currentBucket = new ArrayList<>();
         sloRecordBucketsToSave = new ArrayList<>();
         int offset = 0;
