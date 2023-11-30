@@ -56,6 +56,8 @@ import io.harness.template.resources.beans.TemplateUpdateGitMetadataResponse;
 import io.harness.template.resources.beans.TemplateWrapperResponseDTO;
 import io.harness.template.resources.beans.yaml.NGTemplateConfig;
 
+import com.codahale.metrics.annotation.ResponseMetered;
+import com.codahale.metrics.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -127,6 +129,8 @@ public interface NGTemplateResource {
   @GET
   @Path("{templateIdentifier}")
   @ApiOperation(value = "Gets Template", nickname = "getTemplate")
+  @Timed
+  @ResponseMetered
   @Operation(operationId = "getTemplate", summary = "Get Template",
       responses =
       {
@@ -153,6 +157,8 @@ public interface NGTemplateResource {
 
   @POST
   @ApiOperation(value = "Creates a Template", nickname = "createTemplate")
+  @Timed
+  @ResponseMetered
   @Operation(operationId = "createTemplate", summary = "Create a Template",
       responses =
       {
@@ -184,6 +190,8 @@ public interface NGTemplateResource {
 
   @PUT
   @Path("/updateStableTemplate/{templateIdentifier}/{versionLabel}")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Updating stable template version", nickname = "updateStableTemplate")
   @Operation(operationId = "updateStableTemplate", summary = "Update Stable Template Version",
       responses =
@@ -208,6 +216,8 @@ public interface NGTemplateResource {
 
   @PUT
   @Path("/update/{templateIdentifier}/{versionLabel}")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Updating existing template version", nickname = "updateExistingTemplateVersion")
   @Operation(operationId = "updateExistingTemplateVersion", summary = "Update Template Version",
       responses =
@@ -241,6 +251,8 @@ public interface NGTemplateResource {
 
   @DELETE
   @Path("/{templateIdentifier}/{versionLabel}")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Deletes template version", nickname = "deleteTemplateVersion")
   @Operation(operationId = "deleteTemplateVersion", summary = "Delete Template Version",
       responses =
@@ -334,6 +346,8 @@ public interface NGTemplateResource {
 
   @POST
   @Path("/list-metadata")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Gets all template list", nickname = "getTemplateMetadataList")
   @Operation(operationId = "getTemplateMetadataList", summary = "Gets all metadata of template list",
       responses =
@@ -399,6 +413,8 @@ public interface NGTemplateResource {
 
   @GET
   @Path("/templateInputs/{templateIdentifier}")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Gets template input set yaml", nickname = "getTemplateInputSetYaml")
   @Operation(operationId = "getTemplateInputSetYaml", summary = "Gets Template Input Set YAML",
       responses =
@@ -644,6 +660,8 @@ public interface NGTemplateResource {
 
   @POST
   @Path("/move-config/{templateIdentifier}")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Move Template YAML from inline to remote", nickname = "moveTemplateConfigs")
   @Operation(operationId = "moveTemplateConfigs", summary = "Move Template YAML from inline to remote",
       responses =
@@ -664,6 +682,8 @@ public interface NGTemplateResource {
 
   @POST
   @Path("/update/git-metadata/{templateIdentifier}/{versionLabel}")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Update git metadata details for a remote template", nickname = "updateGitDetails")
   @Operation(operationId = "updateGitDetails", summary = "Update git metadata details for a remote template",
       responses =

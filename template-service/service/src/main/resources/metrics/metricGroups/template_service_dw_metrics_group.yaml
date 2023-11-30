@@ -1,0 +1,5 @@
+name: Template Service DW Metrics Group
+identifier: TemplateServiceDwMetricsGroup
+labels:
+  - namespace
+  - serviceName

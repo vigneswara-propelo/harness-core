@@ -27,6 +27,8 @@ import io.harness.template.resources.beans.NGTemplateConstants;
 import io.harness.template.resources.beans.TemplateFilterPropertiesDTO;
 import io.harness.template.resources.beans.TemplateWrapperResponseDTO;
 
+import com.codahale.metrics.annotation.ResponseMetered;
+import com.codahale.metrics.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -115,6 +117,8 @@ public interface NGGlobalTemplateResource {
 
   @GET
   @Path("/inputs/{globalTemplateIdentifier}")
+  @Timed
+  @ResponseMetered
   @ApiOperation(value = "Gets global template input set yaml", nickname = "getGlobalTemplateInputSetYaml")
   @Operation(operationId = "getGlobalTemplateInputSetYaml", summary = "Gets Global Template Input Set YAML",
       responses =
