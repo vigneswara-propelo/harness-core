@@ -251,6 +251,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -2664,15 +2666,48 @@ public class TasStepHelperTest extends CategoryTest {
             .autoScalerPath(ParameterField.createValueField(List.of("autoscalerPath")))
             .store(ArtifactBundleStore.builder().build())
             .build();
+    AutoScalerManifestOutcome autoScalerManifestOutcome = AutoScalerManifestOutcome.builder()
+                                                              .identifier("autoScalerService")
+                                                              .store(CustomRemoteStoreConfig.builder().build())
+                                                              .order(1)
+                                                              .build();
+    VarsManifestOutcome varsManifestOutcome = VarsManifestOutcome.builder()
+                                                  .identifier("varsManifestService")
+                                                  .store(CustomRemoteStoreConfig.builder().build())
+                                                  .order(2)
+                                                  .build();
     TasManifestOutcome tasManifestOutcome2 = TasManifestOutcome.builder()
-                                                 .order(1)
-                                                 .identifier("ArtifactBundleStoreTaskManifest")
+                                                 .order(3)
+                                                 .identifier("CustomTaskManifestEnvOverride")
                                                  .store(CustomRemoteStoreConfig.builder().build())
                                                  .build();
-    Collection<ManifestOutcome> manifestOutcomes = List.of(tasManifestOutcome1, tasManifestOutcome2);
-    assertThatThrownBy(() -> tasStepHelper.filterManifestOutcomesByType(passThroughData, manifestOutcomes))
-        .hasMessageContaining(
-            "Tas Manifest of Artifact Bundle Store type doesn't support Additional Manifest of type Tas Manifest.Expected count of Tas Manifest is 1 but found : 2");
+    TasManifestOutcome tasManifestOutcome3 = TasManifestOutcome.builder()
+                                                 .order(4)
+                                                 .identifier("ArtifactBundleStoreManifestEnvServiceOverride")
+                                                 .store(ArtifactBundleStore.builder().build())
+                                                 .build();
+    AutoScalerManifestOutcome autoScalerManifestOutcome2 = AutoScalerManifestOutcome.builder()
+                                                               .identifier("autoScalerEnvServiceOverride")
+                                                               .store(CustomRemoteStoreConfig.builder().build())
+                                                               .order(5)
+                                                               .build();
+    VarsManifestOutcome varsManifestOutcome2 = VarsManifestOutcome.builder()
+                                                   .identifier("varsManifestEnvServiceOverrride")
+                                                   .store(CustomRemoteStoreConfig.builder().build())
+                                                   .order(6)
+                                                   .build();
+    List<ManifestOutcome> manifestOutcomes =
+        new ArrayList<>(List.of(tasManifestOutcome1, autoScalerManifestOutcome, varsManifestOutcome,
+            tasManifestOutcome2, tasManifestOutcome3, autoScalerManifestOutcome2, varsManifestOutcome2));
+    Collections.sort(manifestOutcomes, Comparator.comparing(ManifestOutcome::getOrder));
+    Collections.reverse(manifestOutcomes);
+    tasStepHelper.filterManifestOutcomesByType(passThroughData, manifestOutcomes);
+    assertThat(passThroughData).isNotNull();
+    assertThat(passThroughData.getTasManifestOutcome().getIdentifier())
+        .isEqualTo("ArtifactBundleStoreManifestEnvServiceOverride");
+    assertThat(passThroughData.getVarsManifestOutcomeList().size()).isEqualTo(2);
+    assertThat(passThroughData.getAutoScalerManifestOutcome().getIdentifier())
+        .isEqualTo("autoScalerEnvServiceOverride");
   }
 
   @Test
@@ -2683,19 +2718,51 @@ public class TasStepHelperTest extends CategoryTest {
     TasManifestOutcome tasManifestOutcome1 =
         TasManifestOutcome.builder()
             .order(0)
-            .identifier("ArtifactBundleStoreTaskManifest")
+            .identifier("TasManifestService")
             .autoScalerPath(ParameterField.createValueField(List.of("autoscalerPath")))
-            .store(ArtifactBundleStore.builder().build())
+            .store(CustomRemoteStoreConfig.builder().build())
             .build();
-    AutoScalerManifestOutcome tasManifestOutcome2 = AutoScalerManifestOutcome.builder()
-                                                        .order(1)
-                                                        .identifier("ArtifactBundleStoreTaskManifest")
-                                                        .store(CustomRemoteStoreConfig.builder().build())
-                                                        .build();
-    Collection<ManifestOutcome> manifestOutcomes = List.of(tasManifestOutcome1, tasManifestOutcome2);
-    assertThatThrownBy(() -> tasStepHelper.filterManifestOutcomesByType(passThroughData, manifestOutcomes))
-        .hasMessageContaining(
-            "Tas Manifest of Artifact Bundle Store type having Autoscaler manifest configured doesn't support Autoscaler manifest type Separately.");
+    AutoScalerManifestOutcome autoScalerManifestOutcome = AutoScalerManifestOutcome.builder()
+                                                              .identifier("autoScalerService")
+                                                              .store(CustomRemoteStoreConfig.builder().build())
+                                                              .order(1)
+                                                              .build();
+    VarsManifestOutcome varsManifestOutcome = VarsManifestOutcome.builder()
+                                                  .identifier("varsManifestService")
+                                                  .store(CustomRemoteStoreConfig.builder().build())
+                                                  .order(2)
+                                                  .build();
+    TasManifestOutcome tasManifestOutcome2 = TasManifestOutcome.builder()
+                                                 .order(3)
+                                                 .identifier("CustomTaskManifestEnvOverride")
+                                                 .store(CustomRemoteStoreConfig.builder().build())
+                                                 .build();
+    TasManifestOutcome tasManifestOutcome3 = TasManifestOutcome.builder()
+                                                 .order(4)
+                                                 .identifier("ArtifactBundleStoreManifestEnvServiceOverride")
+                                                 .store(ArtifactBundleStore.builder().build())
+                                                 .build();
+    AutoScalerManifestOutcome autoScalerManifestOutcome2 = AutoScalerManifestOutcome.builder()
+                                                               .identifier("autoScalerEnvServiceOverride")
+                                                               .store(CustomRemoteStoreConfig.builder().build())
+                                                               .order(5)
+                                                               .build();
+    VarsManifestOutcome varsManifestOutcome2 = VarsManifestOutcome.builder()
+                                                   .identifier("varsManifestEnvServiceOverrride")
+                                                   .store(CustomRemoteStoreConfig.builder().build())
+                                                   .order(6)
+                                                   .build();
+    List<ManifestOutcome> manifestOutcomes =
+        new ArrayList<>(List.of(tasManifestOutcome1, autoScalerManifestOutcome, varsManifestOutcome,
+            tasManifestOutcome2, tasManifestOutcome3, autoScalerManifestOutcome2, varsManifestOutcome2));
+    Collections.sort(manifestOutcomes, Comparator.comparing(ManifestOutcome::getOrder));
+    Collections.reverse(manifestOutcomes);
+    tasStepHelper.filterManifestOutcomesByType(passThroughData, manifestOutcomes);
+    assertThat(passThroughData).isNotNull();
+    assertThat(passThroughData.getTasManifestOutcome().getIdentifier()).isEqualTo("CustomTaskManifestEnvOverride");
+    assertThat(passThroughData.getVarsManifestOutcomeList().size()).isEqualTo(2);
+    assertThat(passThroughData.getAutoScalerManifestOutcome().getIdentifier())
+        .isEqualTo("autoScalerEnvServiceOverride");
   }
 
   @Test
