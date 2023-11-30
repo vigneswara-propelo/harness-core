@@ -1,0 +1,15 @@
+# Copyright 2023 Harness Inc. All rights reserved.
+# Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+# that can be found in the licenses directory at the root of this repository, also available at
+# https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+
+FROM us.gcr.io/platform-205701/harness/ubi8/python3:3.11
+
+ADD scripts/terraform/cloudfunctions/ce/src/python/k8sCronJob /data-pipeline
+
+USER root
+WORKDIR /data-pipeline
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN chmod +x /data-pipeline/azure_billing_clickhouse.py
+ENTRYPOINT ["python", "/data-pipeline/azure_billing_clickhouse.py"]

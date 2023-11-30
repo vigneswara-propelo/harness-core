@@ -160,3 +160,36 @@ ENGINE = MergeTree
 ORDER BY tuple(lastSuccessfullExecutionAt)
 SETTINGS allow_nullable_key = 1
 """
+
+create_azure_cost_table = """
+CREATE TABLE `%s`.`%s`
+(
+    `azureSubscriptionGuid` String,
+    `azureResourceGroup` String,
+    `ResourceLocation` String,
+    `startTime` Date,
+    `MeterCategory` String,
+    `MeterSubcategory` String,
+    `MeterId` String,
+    `MeterName` String,
+    `MeterRegion` String,
+    `UsageQuantity` Float64,
+    `azureResourceRate` Float64,
+    `cost` Float64,
+    `ConsumedService` String,
+    `ResourceType` String,
+    `azureInstanceId` String,
+    `Tags` String,
+    `OfferId` String,
+    `AdditionalInfo` String,
+    `ServiceInfo1` String,
+    `ServiceInfo2` String,
+    `ServiceName` String,
+    `ServiceTier` String,
+    `Currency` String,
+    `UnitOfMeasure` String
+)
+ENGINE = MergeTree
+ORDER BY tuple(startTime)
+SETTINGS allow_nullable_key = 1
+"""
