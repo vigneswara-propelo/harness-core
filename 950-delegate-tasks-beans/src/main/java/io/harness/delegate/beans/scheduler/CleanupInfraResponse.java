@@ -11,8 +11,9 @@ import io.harness.delegate.beans.DelegateResponseData;
 
 import lombok.RequiredArgsConstructor;
 
-// TODO: should be proto
 @RequiredArgsConstructor
-public class InitializeExecutionInfraResponse implements DelegateResponseData {
+public class CleanupInfraResponse implements DelegateResponseData {
+  private final String taskId;
   private final String infraRefId;
+  private final boolean success;
 }

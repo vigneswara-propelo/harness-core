@@ -31,6 +31,7 @@ import io.harness.delegate.beans.FileBucket;
 import io.harness.delegate.beans.connector.ConnectorHeartbeatDelegateResponse;
 import io.harness.delegate.beans.instancesync.InstanceSyncPerpetualTaskResponse;
 import io.harness.delegate.core.beans.AcquireTasksResponse;
+import io.harness.delegate.core.beans.CleanupInfraResponse;
 import io.harness.delegate.core.beans.SetupInfraResponse;
 import io.harness.delegate.task.validation.DelegateConnectionResultDetail;
 import io.harness.perpetualtask.HeartbeatRequest;
@@ -271,9 +272,15 @@ public interface DelegateAgentManagerClient {
       @Query("delegateInstanceId") String delegateInstanceId);
 
   @Consumes({"application/x-protobuf"})
-  @POST("executions/response/{executionId}/execution-infra")
+  @POST("executions/response/{executionId}/infra-setup")
   Call<ResponseBody> sendSetupInfraResponse(@Path("executionId") String uuid, @Query("delegateId") String delegateId,
       @Query("accountId") String accountId, @Body SetupInfraResponse response);
+
+  @Consumes({"application/x-protobuf"})
+  @POST("executions/response/{executionId}/infra-cleanup/{infraId}")
+  Call<ResponseBody> sendCleanupInfraResponse(@Path("executionId") String uuid, @Path("infraId") String infraId,
+      @Query("accountId") String accountId, @Query("delegateId") String delegateId,
+      @Body CleanupInfraResponse response);
 
   @GET("agent/delegates/jreVersion")
   Call<RestResponse<String>> getJREVersion(
