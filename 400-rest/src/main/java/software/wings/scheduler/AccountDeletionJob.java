@@ -61,9 +61,7 @@ public class AccountDeletionJob implements Runnable {
   }
 
   void execute() {
-    if (!isWeekend()) {
-      return;
-    } else {
+    if (isWeekend() || mainConfiguration.isRunAccountDeletionOnWeekdays()) {
       try (ResponseTimeRecorder ignore1 =
                new ResponseTimeRecorder("Deleting accounts that have been MARKED-FOR-DELETION")) {
         try {

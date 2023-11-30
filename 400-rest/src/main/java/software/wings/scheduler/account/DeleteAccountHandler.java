@@ -25,6 +25,7 @@ import io.harness.mongo.iterator.filter.MorphiaFilterExpander;
 import io.harness.mongo.iterator.provider.MorphiaPersistenceProvider;
 
 import software.wings.app.JobsFrequencyConfig;
+import software.wings.app.MainConfiguration;
 import software.wings.beans.Account;
 import software.wings.beans.Account.AccountKeys;
 import software.wings.beans.account.AccountStatus;
@@ -45,6 +46,7 @@ public class DeleteAccountHandler extends IteratorPumpAndRedisModeHandler implem
   @Inject private AccountService accountService;
   @Inject private JobsFrequencyConfig jobsFrequencyConfig;
   @Inject private MorphiaPersistenceProvider<Account> persistenceProvider;
+  @Inject private MainConfiguration mainConfiguration;
 
   @Override
   protected void createAndStartIterator(
@@ -100,7 +102,8 @@ public class DeleteAccountHandler extends IteratorPumpAndRedisModeHandler implem
   @Override
   public void handle(Account account) {
     // Delete accounts only on weekend
-    if (isWeekend() && AccountStatus.MARKED_FOR_DELETION.equals(account.getLicenseInfo().getAccountStatus())) {
+    if ((isWeekend() || mainConfiguration.isRunAccountDeletionOnWeekdays())
+        && AccountStatus.MARKED_FOR_DELETION.equals(account.getLicenseInfo().getAccountStatus())) {
       accountService.delete(account.getUuid());
     }
   }

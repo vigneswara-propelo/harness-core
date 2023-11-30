@@ -824,3 +824,4 @@ awsServiceEndpointUrls:
   cloudwatchEndPointUrl: https://monitoring.us-east-1.amazonaws.com
 
 maxAccountsToDeleteInParallel: 6
+runAccountDeletionOnWeekdays: ${RUN_ACCOUNT_DELETION_ON_WEEKDAYS:-false}

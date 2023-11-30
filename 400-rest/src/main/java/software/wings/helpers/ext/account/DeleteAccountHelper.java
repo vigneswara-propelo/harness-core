@@ -9,10 +9,12 @@ package software.wings.helpers.ext.account;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.beans.FeatureName.CDS_QUERY_OPTIMIZATION;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.eventsframework.EventsFrameworkMetadataConstants.DELETE_ACTION;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.beans.Base.ACCOUNT_ID_KEY2;
 
+import static java.lang.String.format;
 import static java.lang.reflect.Modifier.isAbstract;
 
 import io.harness.annotation.HarnessEntity;
@@ -23,6 +25,11 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.FeatureName;
 import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.event.timeseries.processor.TimescaleDataCleanup;
+import io.harness.eventsframework.EventsFrameworkConstants;
+import io.harness.eventsframework.EventsFrameworkMetadataConstants;
+import io.harness.eventsframework.api.Producer;
+import io.harness.eventsframework.entity_crud.account.AccountEntityChangeDTO;
+import io.harness.eventsframework.producer.Message;
 import io.harness.ff.FeatureFlagService;
 import io.harness.limits.checker.rate.UsageBucket;
 import io.harness.limits.checker.rate.UsageBucket.UsageBucketKeys;
@@ -53,6 +60,7 @@ import software.wings.service.intfc.UserService;
 import software.wings.service.intfc.ownership.OwnedByAccount;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.mongodb.ReadPreference;
@@ -99,6 +107,8 @@ public class DeleteAccountHelper {
 
   @Inject private ChurnedConfigFilesAndChunksCleanup churnedConfigFilesAndChunksCleanup;
   @Inject private TimescaleDataCleanup timescaleDataCleanup;
+
+  @Inject @Named(EventsFrameworkConstants.ENTITY_CRUD) private Producer eventProducer;
 
   public List<String> deleteAllEntities(String accountId) {
     List<String> entitiesRemainingForDeletion = new ArrayList<>();
@@ -282,6 +292,7 @@ public class DeleteAccountHelper {
   public void handleDeletedAccount(DeletedEntity deletedAccount) {
     if (CURRENT_DELETION_ALGO_NUM > deletedAccount.getDeletionAlgoNum()) {
       deleteAccount(deletedAccount.getEntityId(), true);
+      publishAccountChangeEventViaEventFramework(deletedAccount.getEntityId(), DELETE_ACTION);
     }
   }
 
@@ -345,6 +356,19 @@ public class DeleteAccountHelper {
     } else {
       log.info("Entities Remaining For Deletion for accountID: " + accountId
           + "are: " + entitiesRemainingForDeletion.toString());
+    }
+  }
+
+  private void publishAccountChangeEventViaEventFramework(String accountId, String action) {
+    try {
+      eventProducer.send(
+          Message.newBuilder()
+              .putAllMetadata(ImmutableMap.of(EventsFrameworkMetadataConstants.ENTITY_TYPE,
+                  EventsFrameworkMetadataConstants.ACCOUNT_ENTITY, EventsFrameworkMetadataConstants.ACTION, action))
+              .setData(AccountEntityChangeDTO.newBuilder().setAccountId(accountId).build().toByteString())
+              .build());
+    } catch (Exception ex) {
+      log.error(format("Failed to publish account %s event for accountId %s via event framework.", action, accountId));
     }
   }
 }
