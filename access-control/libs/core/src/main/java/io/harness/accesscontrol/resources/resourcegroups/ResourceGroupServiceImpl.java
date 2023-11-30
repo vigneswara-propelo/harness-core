@@ -76,6 +76,9 @@ public class ResourceGroupServiceImpl implements ResourceGroupService {
         get(resourceGroup.getIdentifier(), resourceGroup.getScopeIdentifier(), managedFilter);
     if (currentResourceGroupOptional.isPresent()) {
       ResourceGroup currentResourceGroup = currentResourceGroupOptional.get();
+      if (currentResourceGroup.equals(resourceGroup)) {
+        return currentResourceGroup;
+      }
       if (areScopeLevelsUpdated(currentResourceGroup, resourceGroup) && !resourceGroup.isManaged()) {
         throw new InvalidRequestException("Cannot change the the scopes at which this resource group can be used.");
       }

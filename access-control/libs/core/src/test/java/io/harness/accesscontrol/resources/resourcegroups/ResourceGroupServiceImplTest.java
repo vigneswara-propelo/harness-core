@@ -9,6 +9,7 @@ package io.harness.accesscontrol.resources.resourcegroups;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
+import static io.harness.rule.OwnerRule.JIMIT_GANDHI;
 import static io.harness.rule.OwnerRule.KARAN;
 
 import static java.util.Collections.singleton;
@@ -134,6 +135,28 @@ public class ResourceGroupServiceImplTest extends AccessControlCoreTestBase {
     verify(outboxService, times(1)).save(argumentCaptor.capture());
     ResourceGroupUpdateEvent resourceGroupUpdateEventResult = argumentCaptor.getValue();
     assertEquals(resourceGroupUpdateEvent, resourceGroupUpdateEventResult);
+  }
+
+  @Test
+  @Owner(developers = JIMIT_GANDHI)
+  @Category(UnitTests.class)
+  public void skipUpsert_IfStateIsSame() {
+    ResourceGroup currentResourceGroup = getResourceGroup(5, false);
+    ResourceGroup currentResourceGroupClone = (ResourceGroup) HObjectMapper.clone(currentResourceGroup);
+
+    ResourceGroup updatedResourceGroup = (ResourceGroup) HObjectMapper.clone(currentResourceGroupClone);
+    when(resourceGroupDao.get(updatedResourceGroup.getIdentifier(), updatedResourceGroup.getScopeIdentifier(),
+             ManagedFilter.ONLY_CUSTOM))
+        .thenReturn(Optional.of(currentResourceGroup));
+
+    when(resourceGroupDao.upsert(updatedResourceGroup)).thenReturn(updatedResourceGroup);
+    ResourceGroup resourceGroupUpdateResult = resourceGroupService.upsert(updatedResourceGroup);
+
+    assertEquals(updatedResourceGroup, resourceGroupUpdateResult);
+    verify(outboxTransactionTemplate, never()).execute(any());
+    verify(resourceGroupDao, times(1)).get(any(), any(), any());
+    verify(resourceGroupDao, never()).upsert(any());
+    verify(outboxService, never()).save(any());
   }
 
   @Test
