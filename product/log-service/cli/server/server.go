@@ -177,6 +177,7 @@ func (c *serverCommand) run(*kingpin.ParseContext) error {
 
 	ngClient := client.NewHTTPClient(config.Platform.BaseURL, false, "")
 	ngPlatformClient := client.NewHTTPClient(config.Platform.VanityBaseURL, false, "")
+	aclClient := client.NewHTTPClient(config.Platform.ACLBaseURL, false, "")
 
 	var gcsClient gcputils.GCS
 	if config.S3.CredentialsPath != "" {
@@ -189,7 +190,7 @@ func (c *serverCommand) run(*kingpin.ParseContext) error {
 	server := server.Server{
 		Acme:    config.Server.Acme,
 		Addr:    config.Server.Bind,
-		Handler: handler.Handler(queue, cache, stream, store, stackdriver, config, ngClient, ngPlatformClient, gcsClient),
+		Handler: handler.Handler(queue, cache, stream, store, stackdriver, config, ngClient, ngPlatformClient, aclClient, gcsClient),
 	}
 
 	// trap the os signal to gracefully shutdown the

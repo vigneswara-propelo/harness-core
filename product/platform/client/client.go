@@ -7,6 +7,7 @@ package client
 
 import (
 	"context"
+	"net/http"
 )
 
 // Error represents a json-encoded API error.
@@ -92,8 +93,57 @@ type Account struct {
 	ResponseMessages []interface{} `json:"responseMessages"`
 }
 
+type ACLRequest struct {
+	Permissions []Permission `json:"permissions"`
+}
+
+type Permission struct {
+	ResourceScope      ResourceScope `json:"resourceScope"`
+	ResourceType       string        `json:"resourceType"`
+	ResourceIdentifier string        `json:"resourceIdentifier"`
+	Permission         string        `json:"permission"`
+}
+
+type ResourceScope struct {
+	AccountIdentifier string `json:"accountIdentifier"`
+	OrgIdentifier     string `json:"orgIdentifier"`
+	ProjectIdentifier string `json:"projectIdentifier"`
+}
+
+type ACLPrincipal struct {
+	PrincipalIdentifier string `json:"principalIdentifier"`
+	PrincipalType       string `json:"principalType"`
+}
+
+type ACLResourceScope struct {
+	AccountIdentifier string `json:"accountIdentifier"`
+	OrgIdentifier     string `json:"orgIdentifier"`
+	ProjectIdentifier string `json:"projectIdentifier"`
+}
+
+type ACLAccessControl struct {
+	Permission         string           `json:"permission"`
+	ResourceScope      ACLResourceScope `json:"resourceScope"`
+	ResourceType       string           `json:"resourceType"`
+	ResourceIdentifier string           `json:"resourceIdentifier"`
+	Permitted          bool             `json:"permitted"`
+}
+
+type ACLResponse struct {
+	Status        string      `json:"status"`
+	Data          Data        `json:"data"`
+	MetaData      interface{} `json:"metaData"`
+	CorrelationID string      `json:"correlationId"`
+}
+
+type Data struct {
+	Principal         ACLPrincipal       `json:"principal"`
+	AccessControlList []ACLAccessControl `json:"accessControlList"`
+}
+
 // Client defines a log service client.
 type Client interface {
 	// Validate apikey of an account for auth.
 	ValidateApiKey(ctx context.Context, accountID, routingId, apiKey string) error
+	ValidateAccessforPipeline(ctx context.Context, cookies []*http.Cookie, request *ACLRequest) (bool, error)
 }

@@ -9,6 +9,7 @@ go_library(
     name = "client",
     srcs = [
         "client.go",
+        "helper.go",
         "http.go",
     ],
     importpath = "github.com/harness/harness-core/product/platform/client",

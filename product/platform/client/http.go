@@ -28,6 +28,7 @@ import (
 const (
 	apiKeyEndpoint    = "/ng/api/token/validate?accountIdentifier=%s"
 	accountEndpoint   = "/gateway/api/account/%s"
+	aclEndpoint       = "/acl"
 	authAPIKeyHeader  = "x-api-key"
 	bearerTokenHeader = "Authorization"
 )
@@ -150,6 +151,18 @@ func (c *HTTPClient) GetVanityURL(ctx context.Context, accountID, token string) 
 	return account.Resource.SubdomainURL, nil
 }
 
+func (c *HTTPClient) ValidateAccessforPipeline(ctx context.Context, token, accountID, pipelineID, projectID, orgID, resource, permission string) (bool, error) {
+
+	response := new(ACLResponse)
+	aclRequest := GetACLRequest(accountID, pipelineID, projectID, orgID, resource, permission)
+
+	_, err := c.do(ctx, c.Endpoint+aclEndpoint, "POST", "", token, aclRequest, response)
+	if err != nil {
+		return false, err
+	}
+	return response.Data.AccessControlList[0].Permitted, nil
+}
+
 func createBackoff(maxElapsedTime time.Duration) *backoff.ExponentialBackOff {
 	exp := backoff.NewExponentialBackOff()
 	exp.MaxElapsedTime = maxElapsedTime
@@ -224,6 +237,7 @@ func (c *HTTPClient) do(ctx context.Context, path, method, apiKey, token string,
 	} else {
 		req.Header.Add(bearerTokenHeader, token)
 	}
+	req.Header.Add("content-type", "application/json")
 	res, err := c.client().Do(req)
 	if res != nil {
 		defer func() {
