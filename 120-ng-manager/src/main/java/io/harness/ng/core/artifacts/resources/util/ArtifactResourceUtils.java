@@ -7,7 +7,6 @@
 
 package io.harness.ng.core.artifacts.resources.util;
 
-import static io.harness.cdng.service.steps.constants.ServiceStepV3Constants.SERVICE_GIT_BRANCH;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.gitcaching.GitCachingConstants.BOOLEAN_FALSE_VALUE;
@@ -124,6 +123,7 @@ import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.pms.yaml.validation.RuntimeInputValuesValidator;
 import io.harness.remote.client.NGRestUtils;
+import io.harness.telemetry.helpers.ArtifactSourceInstrumentationHelper;
 import io.harness.template.remote.TemplateResourceClient;
 import io.harness.template.resources.beans.NGTemplateConstants;
 import io.harness.template.yaml.TemplateRefHelper;
@@ -177,12 +177,15 @@ public class ArtifactResourceUtils {
   @Inject CustomResourceService customResourceService;
   @Inject S3ResourceService s3ResourceService;
   @Inject BucketsResourceUtils bucketsResourceUtils;
+  @Inject ArtifactSourceInstrumentationHelper artifactSourceInstrumentationHelper;
   @Inject JenkinsResourceService jenkinsResourceService;
   @Inject BambooResourceService bambooResourceService;
 
   public final String SERVICE_GIT_BRANCH = "serviceGitBranch";
   public final String ENV_GIT_BRANCH = "envGitBranch";
   public final String DOCKER = "DOCKER";
+  public final String FETCH_PACKAGES = "fetch_packages";
+  public final String FETCH_REPOSITORIES = "fetch_repositories";
 
   // Checks whether field is fixed value or not, if empty then also we return false for fixed value.
   public static boolean isFieldFixedValue(String fieldValue) {
@@ -1376,7 +1379,7 @@ public class ArtifactResourceUtils {
 
   public GARRepositoryDTOList getRepositoriesV2GAR(String gcpConnectorIdentifier, String region, String project,
       String accountId, String orgIdentifier, String pipelineIdentifier, String fqnPath, String serviceRef,
-      String runtimeInputYaml, String projectIdentifier, GitEntityFindInfoDTO gitEntityBasicInfo) {
+      String runtimeInputYaml, String projectIdentifier, GitEntityFindInfoDTO gitEntityBasicInfo, boolean isServiceV2) {
     YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
 
     if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
@@ -1415,13 +1418,15 @@ public class ArtifactResourceUtils {
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(gcpConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
 
-    return getRepositoriesGAR(connectorRef, region, project, orgIdentifier, projectIdentifier);
+    return getRepositoriesGAR(connectorRef, region, project, accountId, orgIdentifier, projectIdentifier, isServiceV2);
   }
 
-  public GARRepositoryDTOList getRepositoriesGAR(
-      IdentifierRef connectorRef, String region, String project, String orgIdentifier, String projectIdentifier) {
+  public GARRepositoryDTOList getRepositoriesGAR(IdentifierRef connectorRef, String region, String project,
+      String accountId, String orgIdentifier, String projectIdentifier, boolean isServiceV2) {
+    long timeStart = System.currentTimeMillis();
     GARRepositoryDTOList buildDetails =
         garResourceService.getRepositories(connectorRef, region, project, orgIdentifier, projectIdentifier);
+    long timeTaken = System.currentTimeMillis() - timeStart;
 
     int index = buildDetails.getGarRepositoryDTOS().get(0).getRepository().lastIndexOf("/");
 
@@ -1440,6 +1445,9 @@ public class ArtifactResourceUtils {
       }
     });
     modifiedBuilds.sort(Comparator.comparing(GarRepositoryDTO::getRepository));
+
+    artifactSourceInstrumentationHelper.sendArtifactApiEvent(ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, accountId,
+        orgIdentifier, projectIdentifier, FETCH_REPOSITORIES, timeTaken, modifiedBuilds.size(), isServiceV2, true);
 
     return GARRepositoryDTOList.builder().garRepositoryDTOS(modifiedBuilds).build();
   }
@@ -2703,7 +2711,8 @@ public class ArtifactResourceUtils {
 
   public GARPackageDTOList getPackagesV2GAR(String gcpConnectorIdentifier, String region, String repositoryName,
       String project, String accountId, String orgIdentifier, String pipelineIdentifier, String fqnPath,
-      String serviceRef, String runtimeInputYaml, String projectIdentifier, GitEntityFindInfoDTO gitEntityBasicInfo) {
+      String serviceRef, String runtimeInputYaml, String projectIdentifier, GitEntityFindInfoDTO gitEntityBasicInfo,
+      Boolean isServiceV2) {
     YamlExpressionEvaluatorWithContext baseEvaluatorWithContext = null;
 
     if (isNotEmpty(serviceRef) && isRemoteService(accountId, orgIdentifier, projectIdentifier, serviceRef)) {
@@ -2750,13 +2759,16 @@ public class ArtifactResourceUtils {
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(gcpConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
 
-    return getPackagesGAR(connectorRef, region, repositoryName, project, orgIdentifier, projectIdentifier);
+    return getPackagesGAR(
+        connectorRef, region, repositoryName, project, accountId, orgIdentifier, projectIdentifier, isServiceV2);
   }
 
   public GARPackageDTOList getPackagesGAR(IdentifierRef connectorRef, String region, String repositoryName,
-      String project, String orgIdentifier, String projectIdentifier) {
+      String project, String accountId, String orgIdentifier, String projectIdentifier, Boolean isServiceV2) {
+    long timeStart = System.currentTimeMillis();
     GARPackageDTOList buildDetails =
         garResourceService.getPackages(connectorRef, region, repositoryName, project, orgIdentifier, projectIdentifier);
+    long timeTaken = System.currentTimeMillis() - timeStart;
 
     int index = buildDetails.getGarPackagesDTO().get(0).getPackageName().lastIndexOf("/");
 
@@ -2773,6 +2785,9 @@ public class ArtifactResourceUtils {
       modifiedBuilds.add(modifiedRepo);
     });
     modifiedBuilds.sort(Comparator.comparing(GARPackageDTO::getPackageName));
+
+    artifactSourceInstrumentationHelper.sendArtifactApiEvent(ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, accountId,
+        orgIdentifier, projectIdentifier, FETCH_PACKAGES, timeTaken, modifiedBuilds.size(), isServiceV2, true);
 
     return GARPackageDTOList.builder().garPackagesDTO(modifiedBuilds).build();
   }

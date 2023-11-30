@@ -157,8 +157,8 @@ public class GARArtifactResource {
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(GCPConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    GARRepositoryDTOList modifiedBuildDetails =
-        artifactResourceUtils.getRepositoriesGAR(connectorRef, region, project, orgIdentifier, projectIdentifier);
+    GARRepositoryDTOList modifiedBuildDetails = artifactResourceUtils.getRepositoriesGAR(
+        connectorRef, region, project, accountId, orgIdentifier, projectIdentifier, false);
 
     return ResponseDTO.newResponse(modifiedBuildDetails);
   }
@@ -179,7 +179,7 @@ public class GARArtifactResource {
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
     GARRepositoryDTOList buildDetails =
         artifactResourceUtils.getRepositoriesV2GAR(GCPConnectorIdentifier, region, project, accountId, orgIdentifier,
-            pipelineIdentifier, fqnPath, serviceRef, runtimeInputYaml, projectIdentifier, gitEntityBasicInfo);
+            pipelineIdentifier, fqnPath, serviceRef, runtimeInputYaml, projectIdentifier, gitEntityBasicInfo, true);
     return ResponseDTO.newResponse(buildDetails);
   }
 
@@ -195,7 +195,7 @@ public class GARArtifactResource {
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(GCPConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
     GARPackageDTOList buildDetails = artifactResourceUtils.getPackagesGAR(
-        connectorRef, region, repositoryName, project, orgIdentifier, projectIdentifier);
+        connectorRef, region, repositoryName, project, accountId, orgIdentifier, projectIdentifier, false);
     return ResponseDTO.newResponse(buildDetails);
   }
 
@@ -217,7 +217,7 @@ public class GARArtifactResource {
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
     GARPackageDTOList buildDetails = artifactResourceUtils.getPackagesV2GAR(GCPConnectorIdentifier, region,
         repositoryName, project, accountId, orgIdentifier, pipelineIdentifier, fqnPath, serviceRef, runtimeInputYaml,
-        projectIdentifier, gitEntityBasicInfo);
+        projectIdentifier, gitEntityBasicInfo, true);
     return ResponseDTO.newResponse(buildDetails);
   }
   @GET

@@ -7,16 +7,18 @@
 
 package io.harness.telemetry.helpers;
 
+import static io.harness.rule.OwnerRule.RAKSHIT_AGARWAL;
 import static io.harness.rule.OwnerRule.SARTHAK_KASAT;
 import static io.harness.rule.OwnerRule.vivekveman;
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_ACCOUNT;
+import static io.harness.telemetry.helpers.InstrumentationConstants.ACCOUNT;
+import static io.harness.telemetry.helpers.InstrumentationConstants.API_TYPE;
 import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_IDENTIFIER;
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_ORG;
-import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_PROJECT;
 import static io.harness.telemetry.helpers.InstrumentationConstants.ARTIFACT_TYPE;
 import static io.harness.telemetry.helpers.InstrumentationConstants.DEPLOYMENT_TYPE;
 import static io.harness.telemetry.helpers.InstrumentationConstants.IS_ARTIFACT_PRIMARY;
 import static io.harness.telemetry.helpers.InstrumentationConstants.IS_SERVICE_V2;
+import static io.harness.telemetry.helpers.InstrumentationConstants.ORG;
+import static io.harness.telemetry.helpers.InstrumentationConstants.PROJECT;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,9 +45,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class ArtifactSourceInstrumentationHelperTest extends CategoryTest {
-  private static final String ACCOUNT = "account";
-  private static final String ORG = "org";
-  private static final String PROJECT = "project";
   @InjectMocks ArtifactSourceInstrumentationHelper instrumentationHelper;
   @Mock TelemetryReporter telemetryReporter;
   @Before
@@ -79,14 +78,24 @@ public class ArtifactSourceInstrumentationHelperTest extends CategoryTest {
     telemetryTask.join();
     verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), captor.capture(), any(), any(), any());
     HashMap<String, Object> eventPropertiesMap = captor.getValue();
-    assert (eventPropertiesMap.get(ARTIFACT_ACCOUNT)).equals("account");
-    assert (eventPropertiesMap.get(ARTIFACT_ORG)).equals("org");
+    assert (eventPropertiesMap.get(ACCOUNT)).equals("account");
+    assert (eventPropertiesMap.get(ORG)).equals("org");
     assert (eventPropertiesMap.get(ARTIFACT_TYPE)).equals(ArtifactSourceType.DOCKER_REGISTRY);
     assert (eventPropertiesMap.get(ARTIFACT_IDENTIFIER)).equals("identifier");
     assert (eventPropertiesMap.get(IS_ARTIFACT_PRIMARY)).equals(false);
-    assert (eventPropertiesMap.get(ARTIFACT_PROJECT)).equals("project");
+    assert (eventPropertiesMap.get(PROJECT)).equals("project");
     assert (eventPropertiesMap.get(DEPLOYMENT_TYPE)).equals("ssh");
     assert (eventPropertiesMap.get(IS_SERVICE_V2)).equals(true);
+    assertTrue(telemetryTask.isDone());
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testArtifactApiEvent() {
+    CompletableFuture<Void> telemetryTask = instrumentationHelper.sendArtifactApiEvent(
+        ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, ACCOUNT, ORG, PROJECT, API_TYPE, 1200, 10, false, true);
+    telemetryTask.join();
     assertTrue(telemetryTask.isDone());
   }
 }
