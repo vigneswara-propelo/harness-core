@@ -51,6 +51,6 @@ public class ScorecardRepoImpl implements ScorecardRepo {
     return scorecardEntity != null && isNotEmpty(scorecardEntity.getAccountId())
         && isNotEmpty(scorecardEntity.getOrgId()) && isNotEmpty(scorecardEntity.getProjectId())
         && isNotEmpty(scorecardEntity.getOrchestrationId()) && scorecardEntity.getSbom() != null
-        && scorecardEntity.getScorecardInfo() != null && isNotEmpty(scorecardEntity.getScores());
+        && scorecardEntity.getScorecardInfo() != null && isNotEmpty(scorecardEntity.getCategories());
   }
 }

@@ -7,30 +7,33 @@
 
 package io.harness.ssca.services;
 
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
+import io.harness.exception.InvalidRequestException;
 import io.harness.repositories.ScorecardRepo;
+import io.harness.spec.server.ssca.v1.model.CategoryScorecard;
+import io.harness.spec.server.ssca.v1.model.CategoryScorecardChecks;
 import io.harness.spec.server.ssca.v1.model.SbomDetailsForScorecard;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardRequestBody;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardResponseBody;
-import io.harness.spec.server.ssca.v1.model.Score;
 import io.harness.spec.server.ssca.v1.model.ScorecardInfo;
 import io.harness.ssca.entities.ScorecardEntity;
+import io.harness.ssca.entities.ScorecardEntity.Checks;
 
 import com.google.inject.Inject;
+import java.util.List;
 import java.util.stream.Collectors;
+import javax.ws.rs.NotFoundException;
 
 public class ScorecardServiceImpl implements ScorecardService {
   @Inject ScorecardRepo scorecardRepo;
 
   @Override
-  public boolean save(SbomScorecardRequestBody body) {
-    if (validateRequest(body)) {
-      ScorecardEntity scorecardEntity = scorecardRequestToEntity(body);
-      scorecardRepo.save(scorecardEntity);
-      return true;
-    }
-    return false;
+  public void save(SbomScorecardRequestBody body) {
+    validateRequest(body);
+
+    ScorecardEntity scorecardEntity = scorecardRequestToEntity(body);
+    scorecardRepo.save(scorecardEntity);
   }
 
   @Override
@@ -40,15 +43,11 @@ public class ScorecardServiceImpl implements ScorecardService {
     SbomScorecardResponseBody sbomScorecardResponseBody = null;
     if (scorecardEntity != null) {
       sbomScorecardResponseBody = scorecardEntityToResponse(scorecardEntity);
+    } else {
+      throw new NotFoundException(String.format("Scorecard not found for orchestrationId [%s]", orchestrateId));
     }
 
     return sbomScorecardResponseBody;
-  }
-
-  private boolean validateRequest(SbomScorecardRequestBody body) {
-    return body != null && isNotEmpty(body.getAccountId()) && isNotEmpty(body.getOrgId())
-        && isNotEmpty(body.getProjectId()) && isNotEmpty(body.getOrchestrationId()) && body.getSbomDetails() != null
-        && body.getScores() != null && body.getScoreCardInfo() != null;
   }
 
   public static ScorecardEntity scorecardRequestToEntity(SbomScorecardRequestBody body) {
@@ -59,6 +58,7 @@ public class ScorecardServiceImpl implements ScorecardService {
         .orchestrationId(body.getOrchestrationId())
         .creationOn(body.getCreationOn())
         .avgScore(body.getAvgScore())
+        .maxScore(body.getMaxScore())
         .sbom(ScorecardEntity.SBOM.builder()
                   .toolName(body.getSbomDetails().getToolName())
                   .toolVersion(body.getSbomDetails().getToolVersion())
@@ -71,18 +71,18 @@ public class ScorecardServiceImpl implements ScorecardService {
                            .toolName(body.getScoreCardInfo().getToolName())
                            .toolVersion(body.getScoreCardInfo().getToolVersion())
                            .build())
-        .scores(body.getScores()
-                    .stream()
-                    .map(score
-                        -> ScorecardEntity.Score.builder()
-                               .score(score.getScore())
-                               .maxScore(score.getMaxScore())
-                               .category(score.getCategory())
-                               .description(score.getDescription())
-                               .feature(score.getFeature())
-                               .ignored(score.getIgnored())
-                               .build())
-                    .collect(Collectors.toList()))
+        .categories(body.getCategory()
+                        .stream()
+                        .map(category
+                            -> ScorecardEntity.Category.builder()
+                                   .score(category.getScore())
+                                   .maxScore(category.getMaxScore())
+                                   .name(category.getName())
+                                   .weightage(category.getWeightage())
+                                   .isEnabled(category.getIsEnabled())
+                                   .checks(getChecksFromRequestBody(category.getChecks()))
+                                   .build())
+                        .collect(Collectors.toList()))
         .build();
   }
 
@@ -93,6 +93,7 @@ public class ScorecardServiceImpl implements ScorecardService {
         .orgId(scorecardEntity.getOrgId())
         .projectId(scorecardEntity.getProjectId())
         .avgScore(scorecardEntity.getAvgScore())
+        .maxScore(scorecardEntity.getMaxScore())
         .creationOn(scorecardEntity.getCreationOn())
         .sbomDetails(new SbomDetailsForScorecard()
                          .toolName(scorecardEntity.getSbom().getToolName())
@@ -104,16 +105,56 @@ public class ScorecardServiceImpl implements ScorecardService {
         .scoreCardInfo(new ScorecardInfo()
                            .toolName(scorecardEntity.getScorecardInfo().getToolName())
                            .toolVersion(scorecardEntity.getScorecardInfo().getToolVersion()))
-        .scores(scorecardEntity.getScores()
-                    .stream()
-                    .map(score
-                        -> new Score()
-                               .score(score.getScore())
-                               .maxScore(score.getMaxScore())
-                               .category(score.getCategory())
-                               .description(score.getDescription())
-                               .feature(score.getFeature())
-                               .ignored(score.getIgnored()))
-                    .collect(Collectors.toList()));
+        .category(scorecardEntity.getCategories()
+                      .stream()
+                      .map(category
+                          -> new CategoryScorecard()
+                                 .score(category.getScore())
+                                 .maxScore(category.getMaxScore())
+                                 .weightage(category.getWeightage())
+                                 .isEnabled(category.getIsEnabled())
+                                 .name(category.getName())
+                                 .checks(getChecksFromEntity(category.getChecks())))
+                      .collect(Collectors.toList()));
+  }
+
+  private static List<Checks> getChecksFromRequestBody(List<CategoryScorecardChecks> checks) {
+    return checks.stream()
+        .map(check
+            -> Checks.builder()
+                   .score(check.getScore())
+                   .maxScore(check.getMaxScore())
+                   .description(check.getDescription())
+                   .isEnabled(check.getIsEnabled())
+                   .name(check.getName())
+                   .build())
+        .collect(Collectors.toList());
+  }
+
+  private static List<CategoryScorecardChecks> getChecksFromEntity(List<Checks> checks) {
+    return checks.stream()
+        .map(check
+            -> new CategoryScorecardChecks()
+                   .description(check.getDescription())
+                   .name(check.getName())
+                   .score(check.getScore())
+                   .maxScore(check.getMaxScore())
+                   .isEnabled(check.getIsEnabled()))
+        .collect(Collectors.toList());
+  }
+
+  private void validateRequest(SbomScorecardRequestBody body) {
+    if (isEmpty(body.getAccountId())) {
+      throw new InvalidRequestException("Account Id should not be null or empty");
+    }
+    if (isEmpty(body.getOrgId())) {
+      throw new InvalidRequestException("Org Id should not be null or empty");
+    }
+    if (isEmpty(body.getProjectId())) {
+      throw new InvalidRequestException("Project Id should not be null or empty");
+    }
+    if (isEmpty(body.getOrchestrationId())) {
+      throw new InvalidRequestException("Orchestration Id should not be null or empty");
+    }
   }
 }

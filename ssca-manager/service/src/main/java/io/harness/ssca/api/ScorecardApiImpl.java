@@ -8,6 +8,7 @@
 package io.harness.ssca.api;
 
 import io.harness.spec.server.ssca.v1.ScorecardApi;
+import io.harness.spec.server.ssca.v1.model.SaveResponse;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardRequestBody;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardResponseBody;
 import io.harness.ssca.services.ScorecardService;
@@ -29,7 +30,7 @@ public class ScorecardApiImpl implements ScorecardApi {
   @Override
   public Response saveSbomScorecard(
       String org, String project, String orchestrateId, @Valid SbomScorecardRequestBody body, String harnessAccount) {
-    Boolean response = scorecardService.save(body);
-    return Response.ok().status(200).build();
+    scorecardService.save(body);
+    return Response.ok().status(200).entity(new SaveResponse().status("SUCCESS")).build();
   }
 }

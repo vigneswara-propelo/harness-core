@@ -41,9 +41,10 @@ public class ScorecardEntity implements PersistentEntity {
   String orchestrationId;
   String creationOn;
   String avgScore;
+  String maxScore;
   SBOM sbom;
   ScorecardInfo scorecardInfo;
-  List<Score> scores;
+  List<Category> categories;
 
   @Value
   @Builder
@@ -65,12 +66,22 @@ public class ScorecardEntity implements PersistentEntity {
 
   @Value
   @Builder
-  public static class Score {
-    String category;
-    String feature;
+  public static class Category {
+    String name;
+    String isEnabled;
+    String weightage;
+    String score;
+    String maxScore;
+    List<Checks> checks;
+  }
+
+  @Value
+  @Builder
+  public static class Checks {
+    String name;
+    String isEnabled;
     String score;
     String maxScore;
     String description;
-    String ignored;
   }
 }
