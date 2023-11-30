@@ -6,6 +6,7 @@
  */
 
 package io.harness.async;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -42,7 +43,7 @@ public abstract class AsyncCreatorBaseEventHandler<T extends Message, C extends 
   protected abstract C extractContext(T message);
 
   @Override
-  public void handleEvent(T event, Map<String, String> metadataMap, long messageTimeStamp, long readTs) {
+  public void handleEvent(T event, Map<String, String> metadataMap, Map<String, Object> metricInfo) {
     try {
       AsyncCreatorResponse finalResponse =
           handleDependenciesRecursive(extractDependencies(event), extractContext(event));

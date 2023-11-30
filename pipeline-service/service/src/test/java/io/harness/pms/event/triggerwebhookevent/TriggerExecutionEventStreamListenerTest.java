@@ -12,7 +12,7 @@ import static io.harness.eventsframework.EventsFrameworkMetadataConstants.ENTITY
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.PIPELINE_ENTITY;
 import static io.harness.rule.OwnerRule.YUVRAJ;
 
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -72,8 +72,7 @@ public class TriggerExecutionEventStreamListenerTest extends CategoryTest {
                                           .setData(triggerExecutionDTO.toByteString())
                                           .build())
                           .build();
-    triggerExecutionEventStreamListener.handleMessage(message, System.currentTimeMillis());
-    verify(triggerWebhookEventExecutionService, times(1))
-        .handleEvent(eq(triggerExecutionDTO), eq(metadata), anyLong(), anyLong());
+    triggerExecutionEventStreamListener.handleMessage(message, new HashMap<>());
+    verify(triggerWebhookEventExecutionService, times(1)).handleEvent(eq(triggerExecutionDTO), eq(metadata), any());
   }
 }

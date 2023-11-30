@@ -21,6 +21,7 @@ import io.harness.pms.contracts.plan.PartialPlanResponse;
 import io.harness.rule.Owner;
 import io.harness.waiter.WaitNotifyEngine;
 
+import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,7 +45,7 @@ public class PartialPlanResponseEventHandlerTest extends CategoryTest {
   public void testHandleEvent() {
     String notifyId = "s";
     PartialPlanResponse partialPlanResponse = PartialPlanResponse.newBuilder().setNotifyId(notifyId).build();
-    eventHandler.handleEvent(partialPlanResponse, null, 0, 0);
+    eventHandler.handleEvent(partialPlanResponse, null, new HashMap<>());
     verify(waitNotifyEngine, times(1))
         .doneWith(notifyId, PartialPlanCreatorResponseData.builder().partialPlanResponse(partialPlanResponse).build());
   }

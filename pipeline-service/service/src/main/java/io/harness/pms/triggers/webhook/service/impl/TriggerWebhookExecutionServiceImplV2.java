@@ -119,7 +119,7 @@ public class TriggerWebhookExecutionServiceImplV2 implements TriggerWebhookExecu
   }
 
   @Override
-  public void handleEvent(WebhookDTO webhookDTO, Map<String, String> metadataMap, long messageTimeStamp, long readTs) {
+  public void handleEvent(WebhookDTO webhookDTO, Map<String, String> metadataMap, Map<String, Object> metricInfo) {
     if (webhookDTO == null) {
       return;
     }

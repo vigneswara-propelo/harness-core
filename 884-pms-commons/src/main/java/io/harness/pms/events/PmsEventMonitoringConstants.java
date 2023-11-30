@@ -19,4 +19,8 @@ public class PmsEventMonitoringConstants {
   public String STATUS = "status";
   public String EDITION = "edition";
   public String PIPELINE_IDENTIFIER = "pipelineIdentifier";
+  public String EVENT_TYPE = "eventType";
+  public String STREAM_NAME = "streamName";
+  public String EVENT_RECEIVE_TS = "eventReceiveTs";
+  public String EVENT_SEND_TS = "eventSendTs";
 }

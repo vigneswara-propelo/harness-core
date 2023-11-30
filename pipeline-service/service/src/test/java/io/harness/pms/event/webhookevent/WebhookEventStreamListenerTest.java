@@ -16,7 +16,7 @@ import static io.harness.rule.OwnerRule.BRIJESH;
 import static io.harness.rule.OwnerRule.MEET;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,8 +69,8 @@ public class WebhookEventStreamListenerTest extends CategoryTest {
     Map<String, String> metadata = new HashMap<>();
     metadata.put(ENTITY_TYPE, PIPELINE_ENTITY);
     metadata.put(ACTION, DELETE_ACTION);
-    webhookEventStreamListener.handleMessage(message, System.currentTimeMillis());
-    verify(triggerWebhookExecutionServiceV2, times(1)).handleEvent(eq(webhookDTO), eq(metadata), anyLong(), anyLong());
+    webhookEventStreamListener.handleMessage(message, new HashMap<>());
+    verify(triggerWebhookExecutionServiceV2, times(1)).handleEvent(eq(webhookDTO), eq(metadata), any());
   }
 
   @Test
@@ -78,7 +78,7 @@ public class WebhookEventStreamListenerTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testHandleMessageForGitlabTrigger() {
     Message message = Message.newBuilder().build();
-    assertTrue(webhookEventStreamListener.handleMessage(message, System.currentTimeMillis()));
+    assertTrue(webhookEventStreamListener.handleMessage(message, new HashMap<>()));
     WebhookDTO webhookDTO =
         WebhookDTO.newBuilder()
             .setJsonPayload("{\n"
@@ -95,7 +95,7 @@ public class WebhookEventStreamListenerTest extends CategoryTest {
                                   .setData(webhookDTO.toByteString())
                                   .build())
                   .build();
-    webhookEventStreamListener.handleMessage(message, System.currentTimeMillis());
-    verify(triggerWebhookExecutionServiceV2, times(1)).handleEvent(eq(webhookDTO), eq(metadata), anyLong(), anyLong());
+    webhookEventStreamListener.handleMessage(message, new HashMap<>());
+    verify(triggerWebhookExecutionServiceV2, times(1)).handleEvent(eq(webhookDTO), eq(metadata), any());
   }
 }

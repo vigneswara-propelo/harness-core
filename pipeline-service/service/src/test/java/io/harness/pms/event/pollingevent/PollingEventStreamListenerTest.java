@@ -14,7 +14,7 @@ import static io.harness.eventsframework.EventsFrameworkMetadataConstants.ENTITY
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.PIPELINE_ENTITY;
 import static io.harness.rule.OwnerRule.BRIJESH;
 
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
@@ -72,8 +72,8 @@ public class PollingEventStreamListenerTest extends CategoryTest {
                                           .build())
                           .build();
 
-    pollingEventStreamListener.handleMessage(message, System.currentTimeMillis());
+    pollingEventStreamListener.handleMessage(message, new HashMap<>());
 
-    verify(pollingResponseHandler).handleEvent(eq(pollingResponse), eq(metadata), anyLong(), anyLong());
+    verify(pollingResponseHandler).handleEvent(eq(pollingResponse), eq(metadata), any());
   }
 }

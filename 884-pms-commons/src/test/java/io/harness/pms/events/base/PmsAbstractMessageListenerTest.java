@@ -35,6 +35,7 @@ import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -112,7 +113,7 @@ public class PmsAbstractMessageListenerTest extends PmsCommonsTestBase {
                             .setData(InterruptEvent.newBuilder().setType(InterruptType.ABORT).build().toByteString())
                             .build())
             .build(),
-        System.currentTimeMillis());
+        new HashMap<>());
     assertThat(handled).isTrue();
   }
 
@@ -137,7 +138,7 @@ public class PmsAbstractMessageListenerTest extends PmsCommonsTestBase {
                                          .toByteString())
                             .build())
             .build(),
-        System.currentTimeMillis());
+        new HashMap<>());
     assertThat(handled).isTrue();
   }
 

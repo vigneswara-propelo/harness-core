@@ -23,7 +23,7 @@ public class NotifyEventHandler implements PmsCommonsBaseEventHandler<NotifyEven
   @Inject NotifyEventListenerHelper notifyEventListenerHelper;
 
   @Override
-  public void handleEvent(NotifyEventProto event, Map<String, String> metadataMap, long messageTimeStamp, long readTs) {
+  public void handleEvent(NotifyEventProto event, Map<String, String> metadataMap, Map<String, Object> metricInfo) {
     notifyEventListenerHelper.onMessage(event.getWaitInstanceId());
   }
 }

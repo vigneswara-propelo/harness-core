@@ -26,17 +26,21 @@ import io.harness.eventsframework.api.EventsFrameworkDownException;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.impl.redis.RedisTraceConsumer;
 import io.harness.logging.AutoLogContext;
+import io.harness.pms.events.PmsEventMonitoringConstants;
 import io.harness.queue.QueueController;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import javax.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_PIPELINE})
 @OwnedBy(HarnessTeam.PIPELINE)
@@ -159,7 +163,7 @@ public abstract class PmsAbstractRedisConsumer<T extends PmsAbstractMessageListe
         try (AutoLogContext ignore = new MessageLogContext(message)) {
           // Check and log for time taken to schedule the thread
           checkAndLogSchedulingDelays(message.getId(), readTs);
-          messageListener.handleMessage(message, readTs);
+          messageListener.handleMessage(message, getMetricInfo(readTs));
         } catch (Exception ex) {
           log.error("[PMS_MESSAGE_LISTENER] Exception occurred while processing {} event with messageId: {}",
               messageListener.getClass().getSimpleName(), message.getId(), ex);
@@ -167,6 +171,14 @@ public abstract class PmsAbstractRedisConsumer<T extends PmsAbstractMessageListe
       });
     }
     return success.get();
+  }
+
+  @NotNull
+  private Map<String, Object> getMetricInfo(long readTs) {
+    Map<String, Object> metricInfo = new HashMap<>();
+    metricInfo.put(PmsEventMonitoringConstants.STREAM_NAME, redisConsumer.getTopicName());
+    metricInfo.put(PmsEventMonitoringConstants.EVENT_RECEIVE_TS, readTs);
+    return metricInfo;
   }
 
   private boolean isAlreadyProcessed(Message message) {

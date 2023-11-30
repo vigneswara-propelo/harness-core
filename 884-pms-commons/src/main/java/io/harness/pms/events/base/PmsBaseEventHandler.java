@@ -57,20 +57,19 @@ public abstract class PmsBaseEventHandler<T extends Message> implements PmsCommo
         .put(PmsEventMonitoringConstants.ORG_ID, AmbianceUtils.getOrgIdentifier(ambiance))
         .put(PmsEventMonitoringConstants.PROJECT_ID, AmbianceUtils.getProjectIdentifier(ambiance))
         .put(PmsEventMonitoringConstants.STEP_TYPE, AmbianceUtils.getCurrentStepType(ambiance).getType())
-        .put(PmsEventMonitoringConstants.MODULE, metadataMap.get(PmsEventFrameworkConstants.SERVICE_NAME))
+        .put(PmsEventMonitoringConstants.MODULE, getModuleName(metadataMap))
         .build();
   }
 
   protected abstract String getMetricPrefix(T message);
 
-  public void handleEvent(T event, Map<String, String> metadataMap, long messageTimeStamp, long readTs) {
+  public void handleEvent(T event, Map<String, String> metadataMap, Map<String, Object> metricInfo) {
     try (PmsGitSyncBranchContextGuard ignore1 = gitSyncContext(event); AutoLogContext ignore2 = autoLogContext(event);
-         PmsMetricContextGuard metricContext =
-             new PmsMetricContextGuard(metadataMap, extractMetricContext(metadataMap, event))) {
+         PmsMetricContextGuard metricContext = new PmsMetricContextGuard(extractMetricContext(metadataMap, event))) {
       log.debug("[PMS_MESSAGE_LISTENER] Starting to process {} event ", event.getClass().getSimpleName());
       MonitoringInfo monitoringInfo = MonitoringInfo.builder()
-                                          .createdAt(messageTimeStamp)
-                                          .readTs(readTs)
+                                          .createdAt((Long) metricInfo.get(PmsEventMonitoringConstants.EVENT_SEND_TS))
+                                          .readTs((Long) metricInfo.get(PmsEventMonitoringConstants.EVENT_RECEIVE_TS))
                                           .metricPrefix(getMetricPrefix(event))
                                           .metricContext(metricContext)
                                           .accountId(AmbianceUtils.getAccountId(extractAmbiance(event)))
@@ -88,6 +87,12 @@ public abstract class PmsBaseEventHandler<T extends Message> implements PmsCommo
             "[PMS_MESSAGE_LISTENER] Event Handler Processing Finished for {} event", event.getClass().getSimpleName());
       }
     }
+  }
+
+  protected String getModuleName(Map<String, String> metadataMap) {
+    return metadataMap.get(PmsEventFrameworkConstants.SERVICE_NAME) != null
+        ? metadataMap.get(PmsEventFrameworkConstants.SERVICE_NAME)
+        : "pms";
   }
 
   protected abstract void handleEventWithContext(T event);

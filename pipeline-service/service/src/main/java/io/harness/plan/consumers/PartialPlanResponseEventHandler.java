@@ -25,8 +25,7 @@ public class PartialPlanResponseEventHandler implements PmsCommonsBaseEventHandl
   @Inject WaitNotifyEngine waitNotifyEngine;
 
   @Override
-  public void handleEvent(
-      PartialPlanResponse event, Map<String, String> metadataMap, long messageTimeStamp, long readTs) {
+  public void handleEvent(PartialPlanResponse event, Map<String, String> metadataMap, Map<String, Object> metricInfo) {
     waitNotifyEngine.doneWith(
         event.getNotifyId(), PartialPlanCreatorResponseData.builder().partialPlanResponse(event).build());
   }
