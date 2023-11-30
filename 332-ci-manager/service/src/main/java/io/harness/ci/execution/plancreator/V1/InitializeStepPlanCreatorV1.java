@@ -31,6 +31,7 @@ import io.harness.plancreator.stages.stage.AbstractStageNode;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.utils.IdentifierGeneratorUtils;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.core.timeout.Timeout;
 import io.harness.yaml.extended.ci.codebase.CodeBase;
@@ -126,5 +127,10 @@ public class InitializeStepPlanCreatorV1 extends CIPMSStepPlanCreatorV2<Initiali
   @Override
   public Class<InitializeStepNode> getFieldClass() {
     return InitializeStepNode.class;
+  }
+
+  @Override
+  public Set<String> getSupportedYamlVersions() {
+    return Set.of(HarnessYamlVersion.V1);
   }
 }

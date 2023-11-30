@@ -215,4 +215,9 @@ public class StagesPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
         ctx.getDependency(), kryoSerializer, PlanCreatorConstants.IS_INSIDE_PARALLEL_NODE, false);
     return value.isPresent() && (boolean) value.get();
   }
+
+  @Override
+  public Set<String> getSupportedYamlVersions() {
+    return Set.of(HarnessYamlVersion.V1);
+  }
 }

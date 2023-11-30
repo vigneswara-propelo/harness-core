@@ -20,6 +20,7 @@ import io.harness.ci.plan.creator.step.CIPMSStepPlanCreatorV2;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.core.timeout.Timeout;
 import io.harness.yaml.extended.ci.codebase.CodeBase;
@@ -76,5 +77,10 @@ public class GitClonePlanCreator extends CIPMSStepPlanCreatorV2<GitCloneStepNode
   @Override
   public Class<GitCloneStepNode> getFieldClass() {
     return GitCloneStepNode.class;
+  }
+
+  @Override
+  public Set<String> getSupportedYamlVersions() {
+    return Set.of(HarnessYamlVersion.V1);
   }
 }
