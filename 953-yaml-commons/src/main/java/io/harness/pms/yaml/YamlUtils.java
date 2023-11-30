@@ -215,7 +215,11 @@ public class YamlUtils {
       return;
     }
     if (baseNode.getNodeType() != valueNode.getNodeType()) {
-      throw new InvalidRequestException("Both jsonNodes must be of same nodeType. Can not replace the values.");
+      log.warn(String.format(
+          "baseNode %s with type %s is not of the same type as valueNode %s with type %s. Skipping replacement of field %s",
+          baseNode.get(fieldName), baseNode.getNodeType(), valueNode.get(fieldName), valueNode.getNodeType(),
+          fieldName));
+      return;
     }
     if (baseNode.isObject()) {
       injectUuidInObjectWithLeafValues(baseNode, valueNode, fieldName);
