@@ -5981,7 +5981,7 @@ plain_artifacts = [
     "com.datadoghq:java-dogstatsd-client:2.3",
     "com.deftlabs:mongo-java-distributed-lock:0.1.7",
     "com.eclipsesource.j2v8:j2v8_macosx_x86_64:4.6.0",
-    "com.esotericsoftware.yamlbeans:yamlbeans:1.13",
+    "com.esotericsoftware.yamlbeans:yamlbeans:1.17",
     "com.esotericsoftware:kryo:4.0.3",
     "com.esotericsoftware:minlog:1.3.0",
     "com.esotericsoftware:reflectasm:1.11.6",
