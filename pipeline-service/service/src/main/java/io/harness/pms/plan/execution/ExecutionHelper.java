@@ -259,9 +259,13 @@ public class ExecutionHelper {
       String pipelineYamlWithTemplateRef = pipelineMetadataInternalDTO.getPipelineYamlWithTemplateRef();
       List<NotificationRules> notificationRules = new ArrayList<>();
       boolean allowedStageExecution = false;
-      if (basicPipeline != null) {
-        notificationRules = basicPipeline.getNotificationRules();
-        allowedStageExecution = pipelineMetadataInternalDTO.getBasicPipeline().isAllowStageExecutions();
+      if (HarnessYamlVersion.V0.equals(pipelineEntity.getHarnessVersion())) {
+        if (basicPipeline != null) {
+          notificationRules = basicPipeline.getNotificationRules();
+          allowedStageExecution = pipelineMetadataInternalDTO.getBasicPipeline().isAllowStageExecutions();
+        }
+      } else {
+        allowedStageExecution = true;
       }
 
       // TODO(Shalini): Change these methods to use jsonNode instead of yaml in processing.
@@ -349,11 +353,14 @@ public class ExecutionHelper {
       RetryExecutionInfo retryExecutionInfo) throws Exception {
     Builder planExecutionMetadataBuilder = obtainPlanExecutionMetadata(mergedRuntimeInputYaml, executionId,
         stagesExecutionInfo, originalExecutionId, retryExecutionParameters, notifyOnlyUser, notes, pipelineEntity);
-    if (stagesExecutionInfo.isStagesExecution()) {
-      pipelineEnforcementService.validateExecutionEnforcementsBasedOnStage(pipelineEntity.getAccountId(),
-          YamlUtils.extractPipelineField(planExecutionMetadataBuilder.build().getProcessedYaml()));
-    } else {
-      pipelineEnforcementService.validateExecutionEnforcementsBasedOnStage(pipelineEntity);
+    // TODO - @utkarsh @brijesh - CDS-85458 - Add Enforcement Check for V1 Pipelines
+    if (HarnessYamlVersion.V0.equals(pipelineEntity.getHarnessVersion())) {
+      if (stagesExecutionInfo.isStagesExecution()) {
+        pipelineEnforcementService.validateExecutionEnforcementsBasedOnStage(pipelineEntity.getAccountId(),
+            YamlUtils.extractPipelineField(planExecutionMetadataBuilder.build().getProcessedYaml()));
+      } else {
+        pipelineEnforcementService.validateExecutionEnforcementsBasedOnStage(pipelineEntity);
+      }
     }
 
     String branch = GitAwareContextHelper.getBranchInRequestOrFromSCMGitMetadata();

@@ -19,6 +19,8 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.InvalidYamlException;
 import io.harness.expression.common.ExpressionMode;
+import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.NGYamlHelper;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
@@ -70,7 +72,14 @@ public class StagesExpressionExtractor {
 
   Map<String, List<String>> getAllExpressionsInListOfStages(String pipelineYaml, List<String> stageIdentifiers) {
     Map<String, List<String>> stageIdToListOfExpressions = new LinkedHashMap<>();
-    List<BasicStageInfo> stageYamlList = getStageYamlList(pipelineYaml, stageIdentifiers);
+    List<BasicStageInfo> stageYamlList;
+    String pipelineVersion = NGYamlHelper.getVersion(pipelineYaml, true);
+    if (HarnessYamlVersion.V0.equals(pipelineVersion)) {
+      stageYamlList = getStageYamlList(pipelineYaml, stageIdentifiers);
+    } else {
+      stageYamlList = getStageYamlListV1(pipelineYaml, stageIdentifiers);
+    }
+
     stageYamlList.forEach(stageYaml -> {
       List<String> listOfExpressions = getListOfExpressions(stageYaml.getYaml());
       stageIdToListOfExpressions.put(stageYaml.getIdentifier(), listOfExpressions);
@@ -112,11 +121,76 @@ public class StagesExpressionExtractor {
     }
   }
 
+  List<BasicStageInfo> getStageYamlListV1(String pipelineYaml, List<String> stageIdentifiers) {
+    try {
+      List<BasicStageInfo> stageYamlList = new ArrayList<>();
+      YamlField pipelineYamlField = YamlUtils.readTree(pipelineYaml);
+      List<YamlNode> stagesYamlNodes = pipelineYamlField.getNode()
+                                           .getField(YAMLFieldNameConstants.SPEC)
+                                           .getNode()
+                                           .getField(YAMLFieldNameConstants.STAGES)
+                                           .getNode()
+                                           .asArray();
+      for (YamlNode stageYamlNode : stagesYamlNodes) {
+        if (YAMLFieldNameConstants.PARALLEL.equals(
+                stageYamlNode.getField(YamlNode.TYPE_FIELD_NAME).getNode().asText())) {
+          List<YamlNode> parallelStagesYamlNode = stageYamlNode.getField(YAMLFieldNameConstants.SPEC)
+                                                      .getNode()
+                                                      .getField(YAMLFieldNameConstants.STAGES)
+                                                      .getNode()
+                                                      .asArray();
+          for (YamlNode parallelStageYamlNode : parallelStagesYamlNode) {
+            if (parallelStageYamlNode.getField(YAMLFieldNameConstants.ID) != null) {
+              BasicStageInfo basicStageInfoWithYaml = getBasicStageInfoWithYamlV1(parallelStageYamlNode);
+              if (stageIdentifiers.contains(basicStageInfoWithYaml.getIdentifier())) {
+                stageYamlList.add(basicStageInfoWithYaml);
+              }
+            }
+          }
+          continue;
+        }
+
+        if (stageYamlNode.getField(YAMLFieldNameConstants.ID) != null) {
+          BasicStageInfo basicStageInfoWithYaml = getBasicStageInfoWithYamlV1(stageYamlNode);
+          if (stageIdentifiers.contains(basicStageInfoWithYaml.getIdentifier())) {
+            stageYamlList.add(basicStageInfoWithYaml);
+          }
+        }
+      }
+      return stageYamlList;
+    } catch (IOException e) {
+      log.error("Could not read pipeline yaml while extracting stage yaml list. Yaml:\n" + pipelineYaml, e);
+      throw new InvalidYamlException("Could not read pipeline yaml while extracting stage yaml list");
+    }
+  }
+
   @VisibleForTesting
   BasicStageInfo getBasicStageInfoWithYaml(YamlNode stageYamlNode) throws IOException {
     String identifier = stageYamlNode.getField(YAMLFieldNameConstants.STAGE).getNode().getIdentifier();
     String name = stageYamlNode.getField(YAMLFieldNameConstants.STAGE).getNode().getName();
     String type = stageYamlNode.getField(YAMLFieldNameConstants.STAGE).getNode().getType();
+    if (StepSpecTypeConstants.PIPELINE_STAGE.equals(type)) {
+      /* We need to ignore expressions in Pipeline Chaining stage outputs, since they are referring to
+         the chained pipeline, and we don't support selective stage execution in chained pipelines anyway. */
+      stageYamlNode.getField(YAMLFieldNameConstants.STAGE)
+          .getNode()
+          .getField(YAMLFieldNameConstants.SPEC)
+          .getNode()
+          .removePath(YAMLFieldNameConstants.OUTPUTS);
+    }
+    String yaml = YamlPipelineUtils.getYamlString(stageYamlNode.getCurrJsonNode());
+
+    return BasicStageInfo.builder().identifier(identifier).name(name).type(type).yaml(yaml).build();
+  }
+
+  @VisibleForTesting
+  BasicStageInfo getBasicStageInfoWithYamlV1(YamlNode stageYamlNode) throws IOException {
+    String identifier = stageYamlNode.getId();
+    String name = stageYamlNode.getName();
+    if (EmptyPredicate.isEmpty(name) && EmptyPredicate.isNotEmpty(identifier)) {
+      name = identifier;
+    }
+    String type = stageYamlNode.getType();
     if (StepSpecTypeConstants.PIPELINE_STAGE.equals(type)) {
       /* We need to ignore expressions in Pipeline Chaining stage outputs, since they are referring to
          the chained pipeline, and we don't support selective stage execution in chained pipelines anyway. */

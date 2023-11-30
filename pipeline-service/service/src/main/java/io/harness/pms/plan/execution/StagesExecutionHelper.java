@@ -15,6 +15,8 @@ import io.harness.pms.merger.helpers.InputSetMergeHelper;
 import io.harness.pms.plan.execution.beans.StagesExecutionInfo;
 import io.harness.pms.stages.BasicStageInfo;
 import io.harness.pms.stages.StageExecutionSelectorHelper;
+import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.NGYamlHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,13 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class StagesExecutionHelper {
   public void throwErrorIfAllStagesAreDeleted(String pipelineYaml, List<String> stagesToRun) {
-    List<BasicStageInfo> stageInfoList = StageExecutionSelectorHelper.getStageInfoList(pipelineYaml);
+    String pipelineVersion = NGYamlHelper.getVersion(pipelineYaml, true);
+    List<BasicStageInfo> stageInfoList;
+    if (HarnessYamlVersion.V0.equals(pipelineVersion)) {
+      stageInfoList = StageExecutionSelectorHelper.getStageInfoList(pipelineYaml);
+    } else {
+      stageInfoList = StageExecutionSelectorHelper.getStageInfoListV1(pipelineYaml);
+    }
     Set<String> remainingStages = stageInfoList.stream().map(BasicStageInfo::getIdentifier).collect(Collectors.toSet());
     int numDeletedStages = 0;
     for (String identifier : stagesToRun) {

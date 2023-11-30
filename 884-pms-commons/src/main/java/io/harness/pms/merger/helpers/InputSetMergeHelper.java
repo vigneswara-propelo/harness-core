@@ -14,12 +14,16 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.jackson.JsonNodeUtils;
 import io.harness.pms.merger.fqn.FQN;
+import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.NGYamlHelper;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.JsonUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -100,8 +104,47 @@ public class InputSetMergeHelper {
     return YamlMapGenerator.generateYamlMap(inputSetFQNMap, inputSetPipelineCompJsonNode, false);
   }
 
-  public String removeNonRequiredStages(String inputSetPipelineCompYaml, List<String> stageIdentifiers) {
+  public JsonNode removeNonRequiredStagesV1(JsonNode mergedRuntimeInputYaml, List<String> stageIdentifiers) {
+    JsonNode stages = mergedRuntimeInputYaml.get(YAMLFieldNameConstants.SPEC).get(YAMLFieldNameConstants.STAGES);
+    if (stages instanceof ArrayNode) {
+      ArrayNode stagesArray = (ArrayNode) stages;
+      Iterator<JsonNode> it = stagesArray.iterator();
+      while (it.hasNext()) {
+        JsonNode stage = it.next();
+        if (stage.get(YAMLFieldNameConstants.TYPE).asText().equals(YAMLFieldNameConstants.PARALLEL)) {
+          JsonNode childStages = stage.get(YAMLFieldNameConstants.SPEC).get(YAMLFieldNameConstants.STAGES);
+          if (childStages instanceof ArrayNode) {
+            ArrayNode childStagesArray = (ArrayNode) childStages;
+            Iterator<JsonNode> iterator = childStagesArray.iterator();
+            while (iterator.hasNext()) {
+              JsonNode childStage = iterator.next();
+              removeStagesFromJsonNode(iterator, stageIdentifiers, childStage);
+            }
+          }
+        } else {
+          removeStagesFromJsonNode(it, stageIdentifiers, stage);
+        }
+      }
+    }
+    return mergedRuntimeInputYaml;
+  }
+
+  private void removeStagesFromJsonNode(Iterator<JsonNode> it, List<String> stageIdentifiers, JsonNode stage) {
+    if (!stage.has(YAMLFieldNameConstants.ID)) {
+      it.remove();
+      return;
+    }
+    if (!stageIdentifiers.contains(stage.get(YAMLFieldNameConstants.ID).asText())) {
+      it.remove();
+    }
+  }
+
+  public String removeNonRequiredStages(String mergedRuntimeInputYaml, List<String> stageIdentifiers) {
+    if (HarnessYamlVersion.V0.equals(NGYamlHelper.getVersion(mergedRuntimeInputYaml))) {
+      return YamlUtils.writeYamlString(
+          removeNonRequiredStages(YamlUtils.readAsJsonNode(mergedRuntimeInputYaml), stageIdentifiers));
+    }
     return YamlUtils.writeYamlString(
-        removeNonRequiredStages(YamlUtils.readAsJsonNode(inputSetPipelineCompYaml), stageIdentifiers));
+        removeNonRequiredStagesV1(YamlUtils.readAsJsonNode(mergedRuntimeInputYaml), stageIdentifiers));
   }
 }
