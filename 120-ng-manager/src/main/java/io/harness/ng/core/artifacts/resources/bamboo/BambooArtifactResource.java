@@ -15,7 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.artifact.resources.bamboo.dtos.BambooPlanKeysDTO;
 import io.harness.gitsync.interceptor.GitEntityFindInfoDTO;
-import io.harness.ng.core.artifacts.resources.util.ArtifactResourceUtils;
+import io.harness.ng.core.artifacts.resources.util.BambooResourceUtils;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @Slf4j
 public class BambooArtifactResource {
-  private final ArtifactResourceUtils artifactResourceUtils;
+  private final BambooResourceUtils bambooResourceUtils;
 
   @POST
   @Path("plans")
@@ -66,7 +66,7 @@ public class BambooArtifactResource {
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @QueryParam(NGCommonEntityConstants.FQN_PATH) String fqnPath,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef, String runtimeInputYaml) {
     BambooPlanKeysDTO buildDetails =
-        artifactResourceUtils.getBambooPlanKeys(bambooConnectorIdentifier, accountId, orgIdentifier, projectIdentifier,
+        bambooResourceUtils.getBambooPlanKeys(bambooConnectorIdentifier, accountId, orgIdentifier, projectIdentifier,
             pipelineIdentifier, gitEntityBasicInfo, fqnPath, serviceRef, runtimeInputYaml);
     return ResponseDTO.newResponse(buildDetails);
   }
@@ -83,7 +83,7 @@ public class BambooArtifactResource {
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @QueryParam(NGCommonEntityConstants.FQN_PATH) String fqnPath,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef, String runtimeInputYaml) {
     List<String> artifactPaths =
-        artifactResourceUtils.getBambooArtifactPaths(bambooConnectorIdentifier, accountId, orgIdentifier,
+        bambooResourceUtils.getBambooArtifactPaths(bambooConnectorIdentifier, accountId, orgIdentifier,
             projectIdentifier, pipelineIdentifier, planName, gitEntityBasicInfo, fqnPath, serviceRef, runtimeInputYaml);
     return ResponseDTO.newResponse(artifactPaths);
   }
@@ -100,7 +100,7 @@ public class BambooArtifactResource {
       @QueryParam(NGCommonEntityConstants.ARTIFACT_PATH) List<String> artifactPath,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @QueryParam(NGCommonEntityConstants.FQN_PATH) String fqnPath,
       @QueryParam(NGCommonEntityConstants.SERVICE_KEY) String serviceRef, String runtimeInputYaml) {
-    List<BuildDetails> artifactPaths = artifactResourceUtils.getBambooArtifactBuildDetails(bambooConnectorIdentifier,
+    List<BuildDetails> artifactPaths = bambooResourceUtils.getBambooArtifactBuildDetails(bambooConnectorIdentifier,
         accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, planName, artifactPath, gitEntityBasicInfo,
         fqnPath, serviceRef, runtimeInputYaml);
     return ResponseDTO.newResponse(artifactPaths);

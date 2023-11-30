@@ -8,6 +8,7 @@
 package io.harness.ng.core.artifacts.resources.ecr;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.cdng.artifact.NGArtifactConstants.REGISTRY_ID;
+import static io.harness.cdng.service.steps.constants.ServiceStepV3Constants.SERVICE_GIT_BRANCH;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
@@ -114,9 +115,7 @@ public class EcrArtifactResource {
     if (isNotEmpty(serviceRef)) {
       final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(accountId,
           orgIdentifier, projectIdentifier, serviceRef, fqnPath,
-          baseEvaluatorWithContext == null
-              ? null
-              : baseEvaluatorWithContext.getContextMap().get(artifactResourceUtils.SERVICE_GIT_BRANCH));
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
 
       EcrArtifactConfig ecrArtifactConfig = (EcrArtifactConfig) artifactSpecFromService;
       if (isEmpty(registryId) && ParameterField.isNotNull(ecrArtifactConfig.getRegistryId())) {
@@ -307,9 +306,7 @@ public class EcrArtifactResource {
     if (isNotEmpty(serviceRef)) {
       final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(accountId,
           orgIdentifier, projectIdentifier, serviceRef, fqnPath,
-          baseEvaluatorWithContext == null
-              ? null
-              : baseEvaluatorWithContext.getContextMap().get(artifactResourceUtils.SERVICE_GIT_BRANCH));
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
 
       EcrArtifactConfig ecrArtifactConfig = (EcrArtifactConfig) artifactSpecFromService;
       if (isEmpty(registryId) && ParameterField.isNotNull(ecrArtifactConfig.getRegistryId())) {

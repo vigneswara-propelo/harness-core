@@ -7,6 +7,7 @@
 
 package io.harness.ng.core.artifacts.resources.githubpackages;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.cdng.service.steps.constants.ServiceStepV3Constants.SERVICE_GIT_BRANCH;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.NGCommonEntityConstants;
@@ -120,9 +121,7 @@ public class GithubPackagesArtifactResource {
     if (StringUtils.isNotBlank(serviceRef)) {
       final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(accountId,
           orgIdentifier, projectIdentifier, serviceRef, fqnPath,
-          baseEvaluatorWithContext == null
-              ? null
-              : baseEvaluatorWithContext.getContextMap().get(artifactResourceUtils.SERVICE_GIT_BRANCH));
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
 
       GithubPackagesArtifactConfig githubPackagesArtifactConfig =
           (GithubPackagesArtifactConfig) artifactSpecFromService;
@@ -227,9 +226,7 @@ public class GithubPackagesArtifactResource {
     if (StringUtils.isNotBlank(serviceRef)) {
       final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(accountId,
           orgIdentifier, projectIdentifier, serviceRef, fqnPath,
-          baseEvaluatorWithContext == null
-              ? null
-              : baseEvaluatorWithContext.getContextMap().get(artifactResourceUtils.SERVICE_GIT_BRANCH));
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
 
       GithubPackagesArtifactConfig githubPackagesArtifactConfig =
           (GithubPackagesArtifactConfig) artifactSpecFromService;
@@ -363,9 +360,7 @@ public class GithubPackagesArtifactResource {
     if (StringUtils.isNotBlank(serviceRef)) {
       final ArtifactConfig artifactSpecFromService = artifactResourceUtils.locateArtifactInService(accountId,
           orgIdentifier, projectIdentifier, serviceRef, fqnPath,
-          baseEvaluatorWithContext == null
-              ? null
-              : baseEvaluatorWithContext.getContextMap().get(artifactResourceUtils.SERVICE_GIT_BRANCH));
+          baseEvaluatorWithContext == null ? null : baseEvaluatorWithContext.getContextMap().get(SERVICE_GIT_BRANCH));
 
       GithubPackagesArtifactConfig githubPackagesArtifactConfig =
           (GithubPackagesArtifactConfig) artifactSpecFromService;
