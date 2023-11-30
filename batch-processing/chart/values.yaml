@@ -259,7 +259,7 @@ imageAzureDataPipeline:
   registry: docker.io
   repository: harness/ccm-azure-smp-signed
   pullPolicy: Always
-  tag: "1"
+  tag: "10010"
   digest: ""
   imagePullSecrets: []
 
@@ -375,6 +375,13 @@ resources:
   requests:
     cpu: "1024m"
     memory: "10Gi"
+
+azureCronJobResources:
+  limits:
+    memory: "2Gi"
+  requests:
+    cpu: "1"
+    memory: "2Gi"
 
 additionalConfigs: {}
 java17flags: ""

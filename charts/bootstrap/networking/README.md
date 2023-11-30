@@ -1,6 +1,6 @@
 # networking
 
-![Version: 0.9.3](https://img.shields.io/badge/Version-0.9.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 0.9.5](https://img.shields.io/badge/Version-0.9.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -23,6 +23,7 @@ A Helm chart for Kubernetes
 | defaultbackend.image.tag | string | `"1.5"` |  |
 | defaultbackend.nodeSelector | object | `{}` |  |
 | defaultbackend.podLabels | object | `{}` |  |
+| defaultbackend.replicaCount | int | `1` |  |
 | defaultbackend.resources.limits.memory | string | `"20Mi"` |  |
 | defaultbackend.resources.requests.cpu | string | `"10m"` |  |
 | defaultbackend.resources.requests.memory | string | `"20Mi"` |  |
@@ -30,11 +31,11 @@ A Helm chart for Kubernetes
 | defaultbackend.tolerations | list | `[]` |  |
 | global.commonAnnotations | object | `{}` |  |
 | global.commonLabels | object | `{}` |  |
-| global.ggIngress.className | string | `"harness-global"` |  |
-| global.ggIngress.enabled | bool | `false` |  |
-| global.ggIngress.hosts[0] | string | `"myhost.example.com"` |  |
-| global.ggIngress.tls.enabled | bool | `true` |  |
-| global.ggIngress.tls.secretName | string | `"harness-cert"` |  |
+| global.globalIngress.className | string | `"harness-global"` |  |
+| global.globalIngress.enabled | bool | `false` |  |
+| global.globalIngress.hosts[0] | string | `"myhost.example.com"` |  |
+| global.globalIngress.tls.enabled | bool | `true` |  |
+| global.globalIngress.tls.secretName | string | `"harness-cert"` |  |
 | global.ingress.className | string | `"harness"` |  |
 | global.ingress.enabled | bool | `false` |  |
 | global.ingress.hosts[0] | string | `"myhost.example.com"` |  |
@@ -67,6 +68,7 @@ A Helm chart for Kubernetes
 | nginx.nodeSelector | object | `{}` |  |
 | nginx.objects.annotations | object | `{}` | annotations to be added to ingress Objects |
 | nginx.podLabels | object | `{}` |  |
+| nginx.replicaCount | int | `1` |  |
 | nginx.resources.limits.memory | string | `"512Mi"` |  |
 | nginx.resources.requests.cpu | string | `"0.5"` |  |
 | nginx.resources.requests.memory | string | `"512Mi"` |  |

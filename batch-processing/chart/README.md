@@ -1,6 +1,6 @@
 # batch-processing
 
-![Version: 0.12.2](https://img.shields.io/badge/Version-0.12.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81103](https://img.shields.io/badge/AppVersion-0.0.81103-informational?style=flat-square)
+![Version: 0.12.3](https://img.shields.io/badge/Version-0.12.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81103](https://img.shields.io/badge/AppVersion-0.0.81103-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -31,6 +31,9 @@ A Helm chart for Kubernetes
 | azureConfig.HARNESS_CE_AZURE_CONTAINER_NAME | string | `""` |  |
 | azureConfig.HARNESS_CE_AZURE_IS_SYNC_JOB_DISABLED | string | `""` |  |
 | azureConfig.HARNESS_CE_AZURE_STORAGE_NAME | string | `""` |  |
+| azureCronJobResources.limits.memory | string | `"2Gi"` |  |
+| azureCronJobResources.requests.cpu | string | `"1"` |  |
+| azureCronJobResources.requests.memory | string | `"2Gi"` |  |
 | ceBatchGCPCredentials | string | `""` |  |
 | ceGCPHomeProjectCreds | string | `""` |  |
 | cliProxy.enabled | bool | `false` |  |
@@ -155,7 +158,7 @@ A Helm chart for Kubernetes
 | imageAzureDataPipeline.pullPolicy | string | `"Always"` |  |
 | imageAzureDataPipeline.registry | string | `"docker.io"` |  |
 | imageAzureDataPipeline.repository | string | `"harness/ccm-azure-smp-signed"` |  |
-| imageAzureDataPipeline.tag | string | `"1"` |  |
+| imageAzureDataPipeline.tag | string | `"10010"` |  |
 | imageClickhouseEnabled.digest | string | `""` |  |
 | imageClickhouseEnabled.imagePullSecrets | list | `[]` |  |
 | imageClickhouseEnabled.pullPolicy | string | `"Always"` |  |

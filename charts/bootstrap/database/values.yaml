@@ -214,10 +214,10 @@ clickhouse:
   podLabels: { app: clickhouse }
   resources:
     limits:
-      memory: "8Gi"
+      memory: "16Gi"
     requests:
-      cpu: 6
-      memory: "8Gi"
+      cpu: 12
+      memory: "16Gi"
   persistence:
     size: 1Ti
   defaultConfigurationOverrides: |

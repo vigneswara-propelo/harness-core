@@ -61,11 +61,6 @@ spec:
               {{- include "harnesscommon.secrets.manageEnv" (dict "ctx" $ "variableName" "CLICKHOUSE_USERNAME" "defaultValue" .Values.clickhouse.username "extKubernetesSecretCtxs" (list .Values.global.database.clickhouse.secrets.kubernetesSecrets) "esoSecretCtxs" (list (dict "secretCtxIdentifier" $globalClickhouseESOSecretIdentifier "secretCtx" .Values.global.database.clickhouse.secrets.secretManagement.externalSecretsOperator))) | indent 14 }}
               {{- include "harnesscommon.secrets.manageEnv" (dict "ctx" $ "variableName" "CLICKHOUSE_PASSWORD" "defaultKubernetesSecretName" .Values.clickhouse.password.name "defaultKubernetesSecretKey" .Values.clickhouse.password.key "extKubernetesSecretCtxs" (list .Values.global.database.clickhouse.secrets.kubernetesSecrets) "esoSecretCtxs" (list (dict "secretCtxIdentifier" $globalClickhouseESOSecretIdentifier "secretCtx" .Values.global.database.clickhouse.secrets.secretManagement.externalSecretsOperator))) | indent 14 }}
             resources:
-              requests:
-                cpu: "1"
-                memory: "2Gi"
-              limits:
-                cpu: "1"
-                memory: "2Gi"
+              {{- toYaml .Values.azureCronJobResources | nindent 14 }}
           restartPolicy: Never
 {{- end }}

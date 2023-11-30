@@ -1,6 +1,6 @@
 # database
 
-![Version: 0.9.6](https://img.shields.io/badge/Version-0.9.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 0.10.1](https://img.shields.io/badge/Version-0.10.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -14,6 +14,7 @@ A Helm chart for Kubernetes
 | https://charts.bitnami.com/bitnami | minio | 11.9.1 |
 | https://charts.bitnami.com/bitnami | mongodb | 13.1.2 |
 | https://charts.bitnami.com/bitnami | postgresql | 12.4.2 |
+| https://harness.github.io/helm-common | harness-common | 1.x.x |
 
 ## Values
 
@@ -27,34 +28,100 @@ A Helm chart for Kubernetes
 | clickhouse.persistence.size | string | `"1Ti"` |  |
 | clickhouse.podLabels.app | string | `"clickhouse"` |  |
 | clickhouse.replicaCount | int | `1` |  |
-| clickhouse.resources.limits.memory | string | `"8Gi"` |  |
-| clickhouse.resources.requests.cpu | int | `6` |  |
-| clickhouse.resources.requests.memory | string | `"8Gi"` |  |
+| clickhouse.resources.limits.memory | string | `"16Gi"` |  |
+| clickhouse.resources.requests.cpu | int | `12` |  |
+| clickhouse.resources.requests.memory | string | `"16Gi"` |  |
 | clickhouse.shards | int | `1` |  |
 | clickhouse.zookeeper.enabled | bool | `false` |  |
 | clickhouse.zookeeper.fullnameOverride | string | `"clickhouse-zookeeper"` |  |
 | clickhouse.zookeeper.replicaCount | int | `1` |  |
 | global.database.clickhouse.enabled | bool | `false` |  |
+| global.database.clickhouse.secrets.kubernetesSecrets[0].keys.CLICKHOUSE_PASSWORD | string | `""` |  |
+| global.database.clickhouse.secrets.kubernetesSecrets[0].keys.CLICKHOUSE_USERNAME | string | `""` |  |
+| global.database.clickhouse.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| global.database.clickhouse.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_PASSWORD.name | string | `""` |  |
+| global.database.clickhouse.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_PASSWORD.property | string | `""` |  |
+| global.database.clickhouse.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_USERNAME.name | string | `""` |  |
+| global.database.clickhouse.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_USERNAME.property | string | `""` |  |
+| global.database.clickhouse.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| global.database.clickhouse.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
 | global.database.minio.installed | bool | `true` |  |
-| global.database.mongodb.installed | bool | `true` |  |
+| global.database.minio.secrets.kubernetesSecrets[0].keys.S3_PASSWORD | string | `""` |  |
+| global.database.minio.secrets.kubernetesSecrets[0].keys.S3_USER | string | `""` |  |
+| global.database.minio.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| global.database.minio.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.S3_PASSWORD.name | string | `""` |  |
+| global.database.minio.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.S3_PASSWORD.property | string | `""` |  |
+| global.database.minio.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.S3_USER.name | string | `""` |  |
+| global.database.minio.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.S3_USER.property | string | `""` |  |
+| global.database.minio.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| global.database.minio.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
+| global.database.mongo.installed | bool | `true` |  |
+| global.database.mongo.secrets.kubernetesSecrets[0].keys.MONGO_PASSWORD | string | `""` |  |
+| global.database.mongo.secrets.kubernetesSecrets[0].keys.MONGO_REPLICA_SET_KEY | string | `""` |  |
+| global.database.mongo.secrets.kubernetesSecrets[0].keys.MONGO_USER | string | `""` |  |
+| global.database.mongo.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.name | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.property | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_REPLICA_SET_KEY.name | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_REPLICA_SET_KEY.property | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.name | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.property | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| global.database.mongo.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
 | global.database.postgres.installed | bool | `true` |  |
+| global.database.postgres.secrets.kubernetesSecrets[0].keys.POSTGRES_PASSWORD | string | `""` |  |
+| global.database.postgres.secrets.kubernetesSecrets[0].keys.POSTGRES_USER | string | `""` |  |
+| global.database.postgres.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| global.database.postgres.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.POSTGRES_PASSWORD.name | string | `""` |  |
+| global.database.postgres.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.POSTGRES_PASSWORD.property | string | `""` |  |
+| global.database.postgres.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.POSTGRES_USER.name | string | `""` |  |
+| global.database.postgres.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.POSTGRES_USER.property | string | `""` |  |
+| global.database.postgres.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| global.database.postgres.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
 | global.database.redis.installed | bool | `true` |  |
+| global.database.redis.secrets.kubernetesSecrets[0].keys.CLICKHOUSE_PASSWORD | string | `""` |  |
+| global.database.redis.secrets.kubernetesSecrets[0].keys.CLICKHOUSE_USERNAME | string | `""` |  |
+| global.database.redis.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| global.database.redis.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_PASSWORD.name | string | `""` |  |
+| global.database.redis.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_PASSWORD.property | string | `""` |  |
+| global.database.redis.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_USERNAME.name | string | `""` |  |
+| global.database.redis.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.CLICKHOUSE_USERNAME.property | string | `""` |  |
+| global.database.redis.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| global.database.redis.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
 | global.database.timescaledb.installed | bool | `true` |  |
-| minio.auth.existingSecret | string | `"minio"` |  |
+| global.database.timescaledb.secrets.kubernetesSecrets[0].keys.TIMESCALEDB_ADMIN_PASSWORD | string | `""` |  |
+| global.database.timescaledb.secrets.kubernetesSecrets[0].keys.TIMESCALEDB_PASSWORD | string | `""` |  |
+| global.database.timescaledb.secrets.kubernetesSecrets[0].keys.TIMESCALEDB_REPLICATION_PASSWORD | string | `""` |  |
+| global.database.timescaledb.secrets.kubernetesSecrets[0].keys.TIMESCALEDB_SSL_ROOT_CERT | string | `""` |  |
+| global.database.timescaledb.secrets.kubernetesSecrets[0].keys.TIMESCALEDB_USERNAME | string | `""` |  |
+| global.database.timescaledb.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_ADMIN_PASSWORD.name | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_ADMIN_PASSWORD.property | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_PASSWORD.name | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_PASSWORD.property | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_REPLICATION_PASSWORD.name | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_REPLICATION_PASSWORD.property | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_SSL_ROOT_CERT.name | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_SSL_ROOT_CERT.property | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_USERNAME.name | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.TIMESCALEDB_USERNAME.property | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| global.database.timescaledb.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
+| minio.auth.existingSecret | string | `"{{ include \"harnesscommon.secrets.InstalledDBSecret\" (dict \"ctx\" $ \"dbKey\" \"minio\" \"defaultSecret\" \"minio\") }}"` |  |
 | minio.defaultBuckets | string | `"logs, sbom-store, policy-store"` |  |
 | minio.fullnameOverride | string | `"minio"` |  |
 | minio.image.tag | string | `"2023.7.18-debian-11-r2"` |  |
 | minio.mode | string | `"standalone"` |  |
 | minio.persistence.size | string | `"200Gi"` |  |
-| mongodb | object | `{"arbiter":{"enabled":true},"architecture":"replicaset","auth":{"existingSecret":"mongodb-replicaset-chart","rootUser":"admin"},"fullnameOverride":"mongodb-replicaset-chart","image":{"registry":"docker.io","repository":"harness/mongo","tag":"4.4.22"},"persistence":{"size":"200Gi"},"podLabels":{"app":"mongodb-replicaset"},"replicaCount":3,"resources":{"limits":{"cpu":4,"memory":"8192Mi"},"requests":{"cpu":4,"memory":"8192Mi"}},"service":{"nameOverride":"mongodb-replicaset-chart"}}` | configurations for mongodb |
+| mongodb | object | `{"arbiter":{"enabled":true},"architecture":"replicaset","auth":{"existingSecret":"{{ include \"harnesscommon.secrets.InstalledDBSecret\" (dict \"ctx\" $ \"dbKey\" \"mongo\" \"defaultSecret\" \"mongodb-replicaset-chart\") }}","rootUser":"admin"},"fullnameOverride":"mongodb-replicaset-chart","image":{"registry":"docker.io","repository":"harness/mongo","tag":"4.4.22"},"persistence":{"size":"200Gi"},"podLabels":{"app":"mongodb-replicaset"},"replicaCount":3,"resources":{"limits":{"cpu":4,"memory":"8192Mi"},"requests":{"cpu":4,"memory":"8192Mi"}},"service":{"nameOverride":"mongodb-replicaset-chart"}}` | configurations for mongodb |
 | postgresql.auth.database | string | `"overops"` |  |
-| postgresql.auth.existingSecret | string | `"postgres"` |  |
+| postgresql.auth.existingSecret | string | `"{{ include \"harnesscommon.secrets.InstalledDBSecret\" (dict \"ctx\" $ \"dbKey\" \"postgres\" \"defaultSecret\" \"postgres\") }}"` |  |
 | postgresql.commonLabels.app | string | `"postgres"` |  |
 | postgresql.fullnameOverride | string | `"postgres"` |  |
 | postgresql.image.digest | string | `""` |  |
 | postgresql.image.registry | string | `"docker.io"` |  |
 | postgresql.image.repository | string | `"bitnami/postgresql"` |  |
-| postgresql.image.tag | string | `"14.8.0-debian-11-r17"` |  |
+| postgresql.image.tag | string | `"14.9.0-debian-11-r60"` |  |
 | postgresql.primary.persistence.size | string | `"200Gi"` |  |
 | postgresql.primary.resources.limits.cpu | int | `4` |  |
 | postgresql.primary.resources.limits.memory | string | `"8192Mi"` |  |
@@ -62,6 +129,7 @@ A Helm chart for Kubernetes
 | postgresql.primary.resources.requests.memory | string | `"8192Mi"` |  |
 | postgresql.serviceAccount.create | bool | `true` |  |
 | postgresql.serviceAccount.name | string | `"postgres"` |  |
+| timescaledb.secrets.credentialsSecretName | string | `"{{ include \"harnesscommon.secrets.InstalledDBSecret\" (dict \"ctx\" $ \"dbKey\" \"timescaledb\" \"defaultSecret\" \"harness-secrets\") }}"` |  |
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.11.0](https://github.com/norwoodj/helm-docs/releases/v1.11.0)
