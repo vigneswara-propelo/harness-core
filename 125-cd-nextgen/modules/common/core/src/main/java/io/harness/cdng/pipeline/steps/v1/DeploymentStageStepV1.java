@@ -78,7 +78,6 @@ public class DeploymentStageStepV1 implements ChildExecutable<StageElementParame
   @Override
   public ChildExecutableResponse obtainChild(
       Ambiance ambiance, StageElementParametersV1 stepParameters, StepInputPackage inputPackage) {
-    log.info("Executing deployment stage with params [{}]", stepParameters);
     DeploymentStageStepParametersV1 stageStepParameters = (DeploymentStageStepParametersV1) stepParameters.getSpec();
     final String serviceNodeId = stageStepParameters.getChildNodeID();
     stageExecutionInfoService.upsertStageExecutionInfo(
@@ -103,7 +102,6 @@ public class DeploymentStageStepV1 implements ChildExecutable<StageElementParame
         return createStepResponseFromChildResponse(combinedRollbackOutput.getResponseDataMap());
       }
     }
-    log.info("Executed deployment stage [{}]", stepParameters);
     RollbackUtility.publishRollbackInformation(ambiance, responseDataMap, executionSweepingOutputService);
     StepResponse stepResponse = createStepResponseFromChildResponse(responseDataMap);
     stageExecutionInfoService.upsertStageExecutionInfo(

@@ -72,7 +72,6 @@ public class CustomStageStep implements ChildExecutable<StageElementParametersV1
   @Override
   public ChildExecutableResponse obtainChild(
       Ambiance ambiance, StageElementParametersV1 stepParameters, StepInputPackage inputPackage) {
-    log.info("Executing custom stage with params [{}]", stepParameters);
     CustomStageSpecParams specParameters = (CustomStageSpecParams) stepParameters.getSpec();
     String executionNodeId = specParameters.getChildNodeID();
     dashboardExecutorService.submit(()
@@ -84,7 +83,6 @@ public class CustomStageStep implements ChildExecutable<StageElementParametersV1
   @Override
   public StepResponse handleChildResponse(
       Ambiance ambiance, StageElementParametersV1 stepParameters, Map<String, ResponseData> responseDataMap) {
-    log.info("Executed custom stage [{}]", stepParameters);
     StepResponse stepResponse = createStepResponseFromChildResponse(responseDataMap);
     dashboardExecutorService.submit(()
                                         -> stageExecutionInfoService.upsertStageExecutionInfo(ambiance,
