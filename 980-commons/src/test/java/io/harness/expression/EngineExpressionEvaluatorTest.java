@@ -377,6 +377,7 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
     map.put("v13", "<+company><+j><+f>");
     map.put("v16", "<+secret1>");
     map.put("v17", "<+c>");
+    map.put("v18", "values-for-<+f>.yaml");
 
     EngineExpressionEvaluator evaluator = prepareEngineExpressionEvaluator(
         new ImmutableMap.Builder<String, Object>()
@@ -412,12 +413,14 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
 
     assertThat(evaluator.resolve("<+variables>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED))
         .isEqualTo(
-            "{\"v6\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v7\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v8\":\"harness/archit-abc\",\"v9\":\"harness/archit-<+f1>\",\"v10\":\"harness architharness\",\"v12\":\"<b> archit-harness </b>\",\"v11\":\"harness architharness\",\"v13\":\"harnessabc\",\"v16\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v1\":\"abcdef\",\"v2\":\"harnessabcdef\",\"v3\":\"abcdefharness\",\"v17\":\"29\",\"v4\":\"abcdef\",\"v5\":\"archit-harness\"}");
-
+            "{\"v6\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v7\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v8\":\"harness/archit-abc\",\"v9\":\"harness/archit-<+f1>\",\"v10\":\"harness architharness\",\"v12\":\"<b> archit-harness </b>\",\"v11\":\"harness architharness\",\"v13\":\"harnessabc\",\"v16\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v1\":\"abcdef\",\"v2\":\"harnessabcdef\",\"v18\":\"values-for-abc.yaml\",\"v3\":\"abcdefharness\",\"v17\":\"29\",\"v4\":\"abcdef\",\"v5\":\"archit-harness\"}");
+    assertThat(evaluator.resolve("<+variables.v18>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED))
+        .isEqualTo("values-for-abc.yaml");
     assertThat(evaluator.evaluateExpression("<+if ((<+j> == null) || (empty(<+j>))) {\"emptyVar\";} else {<+f>;}>   "))
         .isEqualTo("emptyVar");
     assertThat(evaluator.evaluateExpression("<+if ((<+f> == null) || (empty(<+f>))) {\"emptyVar\";} else {<+f>;}>   "))
         .isEqualTo("abc");
+    assertThat(evaluator.evaluateExpression("<+variables.v18>")).isEqualTo("values-for-abc.yaml");
     // concat expressions
     assertThat(evaluator.resolve("archit-<+company>", true)).isEqualTo("archit-harness");
     assertThat(evaluator.evaluateExpression("archit-<+company>")).isEqualTo("archit-harness");
