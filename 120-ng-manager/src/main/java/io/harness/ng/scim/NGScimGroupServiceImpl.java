@@ -417,8 +417,9 @@ public class NGScimGroupServiceImpl implements ScimGroupService {
     String userGroupIdentifier = isNotEmpty(groupQuery.getDisplayName())
         ? UuidAndIdentifierUtils.generateHarnessUIFormatIdentifier(groupQuery.getDisplayName())
         : groupQuery.getDisplayName();
+    String userGroupName = UuidAndIdentifierUtils.generateHarnessUIFormatName(groupQuery.getDisplayName());
     UserGroupDTOBuilder userGroupDTOBuilder = UserGroupDTO.builder()
-                                                  .name(groupQuery.getDisplayName())
+                                                  .name(userGroupName)
                                                   .users(fetchMembersOfUserGroup(groupQuery))
                                                   .accountIdentifier(accountId)
                                                   .identifier(userGroupIdentifier)

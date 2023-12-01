@@ -84,4 +84,12 @@ public class UuidValidatorTest extends CategoryTest {
     String name = "$%^abc.ksxjx_+$++&UII J";
     assertThat(UuidAndIdentifierUtils.generateHarnessUIFormatIdentifier(name)).isEqualTo("abcksxjx_$UII_J");
   }
+
+  @Test
+  @Owner(developers = BHAVYA)
+  @Category(UnitTests.class)
+  public void test_harnessUIFormatName() {
+    String name = "$%^/abc.ksxjx_+$++&U-II J";
+    assertThat(UuidAndIdentifierUtils.generateHarnessUIFormatName(name)).isEqualTo("____/abc.ksxjx______U-II J");
+  }
 }
