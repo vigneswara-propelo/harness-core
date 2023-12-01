@@ -12,7 +12,7 @@ metadata:
   {{- end }}
 data:
   DEPLOY_MODE: KUBERNETES_ONPREM
-  MANAGER_CLIENT_BASE_URL: 'http://harness-manager.{{ .Release.Namespace }}.svc.cluster.local:9090/api/'
+  MANAGER_CLIENT_BASE_URL: 'http://harness-manager:9090/api/'
   NG_MANAGER_GITSYNC_TARGET: ng-manager:13002
   NG_MANAGER_GITSYNC_AUTHORITY: ng-manager:13002
   NG_MANAGER_BASE_URL: 'http://ng-manager:7090/'
@@ -42,7 +42,10 @@ data:
   ENABLE_AUDIT: "false"
   AUDIT_SERVICE_BASE_URL: http://platform-service:9005/api/
   MEMORY: {{ .Values.java.memory | quote }}
-  BACKSTAGE_MASTER_URL: "TBD"    #TBD
+  BACKSTAGE_MASTER_URL: https://34.105.122.104
+  BACKSTAGE_SA_TOKEN: "TBD"
+  BACKSTAGE_SA_CA_CRT: "TBD"
+  
   BACKSTAGE_POD_LABEL: "TBD"     #TBD
   TRIGGER_PIPELINE_URL: "TBD"    #TBD
   BACKSTAGE_ENTITIES_FETCH_LIMIT: {{.Values.backstageEntitiesFetchLimit}}
@@ -73,4 +76,8 @@ data:
   SEGMENT_URL: {{.Values.segmentUrl | quote}}
   SEGMENT_APIKEY: {{.Values.segmentApikey | quote}}
   SEGMENT_VERIFY_CERT: {{.Values.segmentVerifyCert | quote}}
+  DEFAULT_BACKSTAGE_NAMESPACE: {{.Values.prEnvDefaultBackstageNamespace | quote}}
+  PROXY_ALLOW_LIST_CONFIG_SERVICES: |-
+{{ toYaml .Values.proxyAllowListConfigServices | indent 4 }}
+
 

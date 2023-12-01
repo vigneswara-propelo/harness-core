@@ -230,19 +230,19 @@ proxyAllowListConfigServices:
   manager:
     proxyPath: v1/idp-proxy-service/manager
     clientConfig:
-      baseUrl: envSpecific
+      baseUrl: 'http://harness-manager:9090/api/'
       connectTimeOutSeconds: 15
       readTimeOutSeconds: 15
-    secret: envSpecific
+    secret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
     allowList:
       - /users/validate-support-user
   ng-manager:
     proxyPath: v1/idp-proxy-service/ng-manager
     clientConfig:
-      baseUrl: envSpecific
+      baseUrl: 'http://ng-manager:7090/'
       connectTimeOutSeconds: 15
       readTimeOutSeconds: 15
-    secret: envSpecific
+    secret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
     allowList:
       - /user/aggregate
       - /aggregate/acl/usergroups
@@ -255,3 +255,4 @@ segmentEnabled: "false"
 segmentUrl: "segment_url_place_holder"
 segmentApikey: "segment_api_key"
 segmentVerifyCert: "false"
+prEnvDefaultBackstageNamespace: "laxmiharness"

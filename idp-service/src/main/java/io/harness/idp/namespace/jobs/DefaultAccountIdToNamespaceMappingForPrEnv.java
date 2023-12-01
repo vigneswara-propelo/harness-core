@@ -30,9 +30,9 @@ public class DefaultAccountIdToNamespaceMappingForPrEnv implements Managed {
   private ExecutorService executorService;
   private final NamespaceService namespaceService;
 
-  private static final String DEFAULT_PR_ENV_ACCOUNT_ID = "kmpySmUISimoRrJL6NL73w";
+  private static final String DEFAULT_PR_ENV_ACCOUNT_ID = "VVfCEh_ZRTm7pJWtAH-PrA";
 
-  private static final String PR_ENV_TYPE = "pr";
+  private static final String PR_ENV_TYPE = "dev-spaces";
 
   @Inject
   public DefaultAccountIdToNamespaceMappingForPrEnv(

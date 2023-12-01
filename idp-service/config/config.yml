@@ -160,7 +160,7 @@ provisionModuleConfig:
   triggerPipelineUrl: ""
 
 env: "local"
-prEnvDefaultBackstageNamespace: ""
+prEnvDefaultBackstageNamespace: "laxmiharness"
 
 backstageAppBaseUrl: https://localhost:3000
 backstagePostgresHost: ""
