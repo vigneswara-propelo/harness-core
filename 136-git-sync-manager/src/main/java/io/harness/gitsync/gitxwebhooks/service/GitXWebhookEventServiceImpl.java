@@ -32,6 +32,7 @@ import io.harness.gitsync.gitxwebhooks.entity.Author;
 import io.harness.gitsync.gitxwebhooks.entity.GitXWebhook;
 import io.harness.gitsync.gitxwebhooks.entity.GitXWebhookEvent;
 import io.harness.gitsync.gitxwebhooks.entity.GitXWebhookEvent.GitXWebhookEventKeys;
+import io.harness.gitsync.gitxwebhooks.helper.GitXWebhookHelper;
 import io.harness.gitsync.gitxwebhooks.loggers.GitXWebhookEventLogContext;
 import io.harness.gitsync.gitxwebhooks.loggers.GitXWebhookLogContext;
 import io.harness.gitsync.gitxwebhooks.utils.GitXWebhookUtils;
@@ -60,6 +61,8 @@ public class GitXWebhookEventServiceImpl implements GitXWebhookEventService {
   @Inject GitXWebhookService gitXWebhookService;
   @Inject HsqsClientService hsqsClientService;
 
+  @Inject GitXWebhookHelper gitXWebhookHelper;
+
   private static final String QUEUE_TOPIC_PREFIX = "ng";
   private static final String WEBHOOK_FAILURE_ERROR_MESSAGE =
       "Unexpected error occurred while [%s] git webhook. Please contact Harness Support.";
@@ -70,6 +73,9 @@ public class GitXWebhookEventServiceImpl implements GitXWebhookEventService {
   public void processEvent(WebhookDTO webhookDTO) {
     try (GitXWebhookEventLogContext context = new GitXWebhookEventLogContext(webhookDTO)) {
       try {
+        if (!gitXWebhookHelper.isBiDirectionalSyncEnabledInSettings(webhookDTO.getAccountId())) {
+          return;
+        }
         List<GitXWebhook> gitXWebhookList =
             fetchGitXWebhook(webhookDTO.getAccountId(), webhookDTO.getParsedResponse().getPush().getRepo().getName());
         if (isEmpty(gitXWebhookList)) {
