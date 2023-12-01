@@ -22,6 +22,7 @@ fi
 
 cp ${HOME}/.bazel-dirs/bin/debezium-service/service/module_deploy.jar debezium-service-capsule.jar
 cp ../../debezium-service/config/config.yml .
+cp ../../debezium-service/config/jmx_prometheus_config.yml   .
 cp ../../debezium-service/service/src/main/resources/redisson-jcache.yaml .
 
 cp ../../dockerization/base-images/apm/inject-onprem-apm-bins-into-dockerimage.sh .
