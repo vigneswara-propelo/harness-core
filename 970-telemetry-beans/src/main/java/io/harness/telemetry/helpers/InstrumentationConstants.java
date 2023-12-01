@@ -13,6 +13,9 @@ public class InstrumentationConstants {
   public static final String ORG = "org";
   public static final String PROJECT = "project";
   public static final String PIPELINE_ID = "pipeline_id";
+  public static final String PIPELINE_EXECUTION_ID = "pipeline_execution_id";
+  public static final String STATUS = "status";
+  public static final String FAILURE_TYPE = "failure_type";
   public static final String ARTIFACT_TYPE = "artifact_type";
   public static final String API_TYPE = "api_type";
   public static final String TIME_TAKEN = "time_taken";

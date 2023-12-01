@@ -49,6 +49,7 @@ import io.harness.steps.approval.step.harness.beans.HarnessApprovalAction;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivityRequestDTO;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalInstanceAuthorizationDTO;
 import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance;
+import io.harness.telemetry.helpers.ApprovalApiInstrumentationHelper;
 import io.harness.user.remote.UserClient;
 import io.harness.usergroups.UserGroupClient;
 import io.harness.utils.IdentifierRefHelper;
@@ -82,12 +83,14 @@ public class ApprovalResourceServiceImpl implements ApprovalResourceService {
   private final CurrentUserHelper currentUserHelper;
   private final LogStreamingStepClientFactory logStreamingStepClientFactory;
   private final UserClient userClient;
+  private final ApprovalApiInstrumentationHelper instrumentationHelper;
 
   @Inject
   public ApprovalResourceServiceImpl(ApprovalInstanceService approvalInstanceService,
       ApprovalInstanceResponseMapper approvalInstanceResponseMapper, PlanExecutionService planExecutionService,
       @Named("PRIVILEGED") UserGroupClient userGroupClient, CurrentUserHelper currentUserHelper, UserClient userClient,
-      LogStreamingStepClientFactory logStreamingStepClientFactory) {
+      LogStreamingStepClientFactory logStreamingStepClientFactory,
+      ApprovalApiInstrumentationHelper instrumentationHelper) {
     this.approvalInstanceService = approvalInstanceService;
     this.approvalInstanceResponseMapper = approvalInstanceResponseMapper;
     this.planExecutionService = planExecutionService;
@@ -95,6 +98,7 @@ public class ApprovalResourceServiceImpl implements ApprovalResourceService {
     this.currentUserHelper = currentUserHelper;
     this.userClient = userClient;
     this.logStreamingStepClientFactory = logStreamingStepClientFactory;
+    this.instrumentationHelper = instrumentationHelper;
   }
 
   @Override
@@ -134,11 +138,15 @@ public class ApprovalResourceServiceImpl implements ApprovalResourceService {
     List<ApprovalInstanceResponseDTO> approvalInstances =
         getApprovalInstancesByExecutionId(planExecutionId, ApprovalStatus.WAITING, ApprovalType.HARNESS_APPROVAL, null);
     if (EmptyPredicate.isEmpty(approvalInstances)) {
+      instrumentationHelper.sendApprovalApiEvent(accountId, orgIdentifier, projectIdentifier, planExecutionId,
+          ApprovalApiInstrumentationHelper.FAILURE, ApprovalApiInstrumentationHelper.NO_APPROVALS_FOUND);
       throw new InvalidRequestException(
           "Found no Harness Approval Instance waiting for the given pipeline execution id");
     }
 
     if (approvalInstances.size() > 1) {
+      instrumentationHelper.sendApprovalApiEvent(accountId, orgIdentifier, projectIdentifier, planExecutionId,
+          ApprovalApiInstrumentationHelper.FAILURE, ApprovalApiInstrumentationHelper.MULTIPLE_APPROVALS_FOUND);
       throw new InvalidRequestException(
           "Found more than 1 Harness Approval Instance waiting for the given pipeline execution id");
     }

@@ -61,6 +61,7 @@ import io.harness.steps.approval.step.harness.beans.HarnessApprovalAction;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivity;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivityRequestDTO;
 import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance;
+import io.harness.telemetry.helpers.ApprovalApiInstrumentationHelper;
 import io.harness.user.remote.UserClient;
 import io.harness.usergroups.UserGroupClient;
 
@@ -91,6 +92,7 @@ public class ApprovalResourceImplServiceImplTest extends CategoryTest {
   @Mock private CurrentUserHelper currentUserHelper;
   @Mock private UserClient userClient;
   @Mock private LogStreamingStepClientFactory logStreamingStepClientFactory;
+  @Mock private ApprovalApiInstrumentationHelper instrumentationHelper;
   @Mock private PmsEngineExpressionService pmsEngineExpressionService;
   private static final Long CREATED_AT = 1000L;
   private static final String ACCOUNT_ID = "accountId";
@@ -98,8 +100,9 @@ public class ApprovalResourceImplServiceImplTest extends CategoryTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    approvalResourceService = new ApprovalResourceServiceImpl(approvalInstanceService, approvalInstanceResponseMapper,
-        planExecutionService, userGroupClient, currentUserHelper, userClient, logStreamingStepClientFactory);
+    approvalResourceService =
+        new ApprovalResourceServiceImpl(approvalInstanceService, approvalInstanceResponseMapper, planExecutionService,
+            userGroupClient, currentUserHelper, userClient, logStreamingStepClientFactory, instrumentationHelper);
   }
 
   @Test

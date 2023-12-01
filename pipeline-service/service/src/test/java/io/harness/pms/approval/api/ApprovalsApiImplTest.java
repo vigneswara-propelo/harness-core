@@ -33,6 +33,7 @@ import io.harness.spec.server.pipeline.v1.model.HarnessApprovalActivityRequestBo
 import io.harness.steps.approval.step.beans.ApprovalInstanceResponseDTO;
 import io.harness.steps.approval.step.beans.ApprovalStatus;
 import io.harness.steps.approval.step.beans.ApprovalType;
+import io.harness.telemetry.helpers.ApprovalApiInstrumentationHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import org.mockito.Mock;
 public class ApprovalsApiImplTest extends PipelineServiceTestBase {
   @Mock ApprovalResourceService approvalResourceService;
   @Mock PMSExecutionService pmsExecutionService;
+  @Mock ApprovalApiInstrumentationHelper instrumentationHelper;
   @InjectMocks ApprovalsApiImpl approvalsApiImpl;
   private static final String ACCOUNT_ID = "accountId";
   private static final String ORG_IDENTIFIER = "orgId";
@@ -166,6 +168,9 @@ public class ApprovalsApiImplTest extends PipelineServiceTestBase {
             "execution_id param value provided doesn't belong to Account: %s, Org: %s, Project: %s or the pipeline has been deleted",
             ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER));
 
+    verify(instrumentationHelper)
+        .sendApprovalApiEvent(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, EXECUTION_IDENTIFIER,
+            ApprovalApiInstrumentationHelper.FAILURE, ApprovalApiInstrumentationHelper.EXECUTION_ID_NOT_FOUND);
     verify(pmsExecutionService, times(5))
         .getPipelineExecutionSummaryEntity(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, EXECUTION_IDENTIFIER, false);
   }
