@@ -34,6 +34,8 @@ import io.harness.pms.annotations.PipelineServiceAuthIfHasApiKey;
 import io.harness.pms.pipeline.PipelineResourceConstants;
 import io.harness.security.annotations.PublicApi;
 
+import com.codahale.metrics.annotation.ResponseMetered;
+import com.codahale.metrics.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -247,6 +249,8 @@ public interface NGTriggerWebhookConfigResource {
   @Path("/custom")
   @ApiOperation(value = "accept custom webhook event", nickname = "customWebhookEndpoint")
   @PipelineServiceAuthIfHasApiKey
+  @Timed
+  @ResponseMetered
   ResponseDTO<String>
   processWebhookEvent(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -266,6 +270,8 @@ public interface NGTriggerWebhookConfigResource {
   @Path("/custom/v2")
   @ApiOperation(value = "accept custom webhook event V2", nickname = "customWebhookEndpointV2")
   @PipelineServiceAuthIfHasApiKey
+  @Timed
+  @ResponseMetered
   ResponseDTO<NGProcessWebhookResponseDTO>
   processWebhookEventV2(@Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
                             NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
@@ -289,6 +295,8 @@ public interface NGTriggerWebhookConfigResource {
   @Path("/custom/{webhookToken}/v3")
   @ApiOperation(value = "accept custom webhook event V3", nickname = "customWebhookEndpointV3")
   @PipelineServiceAuthIfHasApiKey
+  @Timed
+  @ResponseMetered
   ResponseDTO<NGProcessWebhookResponseDTO>
   processWebhookEventV3(@Parameter(description = "Custom Webhook token for custom webhook triggers") @NotNull
                         @PathParam(WEBHOOK_TOKEN) String webhookToken,
@@ -313,6 +321,8 @@ public interface NGTriggerWebhookConfigResource {
   @Path("/triggerProcessingDetails")
   @ApiOperation(value = "fetch webhook event details", nickname = "triggerProcessingDetails")
   @PublicApi
+  @Timed
+  @ResponseMetered
   ResponseDTO<WebhookEventProcessingDetails>
   fetchWebhookDetails(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @NotNull @QueryParam("eventId") String eventId);
@@ -328,6 +338,8 @@ public interface NGTriggerWebhookConfigResource {
   @Path("/triggerExecutionDetails/{eventId}")
   @ApiOperation(value = "fetch webhook event details with execution summary", nickname = "triggerExecutionDetails")
   @PublicApi
+  @Timed
+  @ResponseMetered
   ResponseDTO<WebhookExecutionDetails>
   fetchWebhookExecutionDetails(@NotNull @PathParam("eventId") String eventId,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier);

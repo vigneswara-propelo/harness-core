@@ -44,6 +44,7 @@ import io.harness.rest.RestResponse;
 import io.harness.security.annotations.InternalApi;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
+import com.codahale.metrics.annotation.ResponseMetered;
 import com.codahale.metrics.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -107,6 +108,8 @@ public interface NGTriggerResource {
         ApiResponse(responseCode = "default", description = "Returns details of the created Trigger.")
       })
   @ApiOperation(value = "Create Trigger", nickname = "createTrigger")
+  @Timed
+  @ResponseMetered
   ResponseDTO<NGTriggerResponseDTO>
   create(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
@@ -135,6 +138,8 @@ public interface NGTriggerResource {
       })
   @ApiOperation(value = "Gets a trigger by identifier", nickname = "getTrigger")
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
+  @Timed
+  @ResponseMetered
   ResponseDTO<NGTriggerResponseDTO>
   get(@NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
@@ -152,6 +157,8 @@ public interface NGTriggerResource {
       })
   @Path("/{triggerIdentifier}")
   @ApiOperation(value = "Update a trigger by identifier", nickname = "updateTrigger")
+  @Timed
+  @ResponseMetered
   ResponseDTO<NGTriggerResponseDTO>
   update(@HeaderParam(IF_MATCH) String ifMatch,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
@@ -213,6 +220,8 @@ public interface NGTriggerResource {
   @Path("{triggerIdentifier}")
   @ApiOperation(value = "Delete a trigger by identifier", nickname = "deleteTrigger")
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_DELETE)
+  @Timed
+  @ResponseMetered
   ResponseDTO<Boolean>
   delete(@HeaderParam(IF_MATCH) String ifMatch,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
@@ -260,6 +269,8 @@ public interface NGTriggerResource {
   @ApiOperation(value = "Fetches Trigger details for a specific pipeline and trigger identifier, ",
       nickname = "getTriggerDetails")
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
+  @Timed
+  @ResponseMetered
   ResponseDTO<NGTriggerDetailsResponseDTO>
   getTriggerDetails(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,

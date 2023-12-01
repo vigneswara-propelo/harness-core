@@ -27,6 +27,8 @@ import io.harness.ngtriggers.beans.dto.NGTriggerEventHistoryDTO;
 import io.harness.pms.annotations.PipelineServiceAuth;
 import io.harness.pms.pipeline.PipelineResourceConstants;
 
+import com.codahale.metrics.annotation.ResponseMetered;
+import com.codahale.metrics.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -83,6 +85,8 @@ public interface NGTriggerEventHistoryResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns the Trigger Event History response")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<Page<NGTriggerEventHistoryDTO>>
   getTriggerEventHistory(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
@@ -111,6 +115,8 @@ public interface NGTriggerEventHistoryResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns the Trigger Event History response")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<Page<NGTriggerEventHistoryDTO>>
   listTriggerEventHistory(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
@@ -157,6 +163,8 @@ public interface NGTriggerEventHistoryResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns the Trigger catalogue response")
       })
+  @Timed
+  @ResponseMetered
   ResponseDTO<Page<NGTriggerEventHistoryDTO>>
   getTriggerHistoryEventCorrelationV2(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
