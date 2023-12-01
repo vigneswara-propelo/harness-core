@@ -679,8 +679,6 @@ public class WingsApplication extends Application<MainConfiguration> {
       registerAtmosphereStreams(environment, injector);
     }
 
-    initializeFeatureFlags(configuration, injector);
-
     if (isManager()) {
       registerHealthChecksManager(environment, injector);
     }
@@ -690,6 +688,9 @@ public class WingsApplication extends Application<MainConfiguration> {
 
     registerStores(configuration, injector);
     registerDataStores(injector);
+
+    initializeFeatureFlags(configuration, injector);
+
     if (configuration.getMongoConnectionFactory().getTraceMode() == TraceMode.ENABLED) {
       registerQueryTracer(injector);
     }
