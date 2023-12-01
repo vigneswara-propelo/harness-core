@@ -40,7 +40,7 @@ public class AccountOrgProjectValidator {
       try {
         return getResponse(accountClient.getAccountDTO(accountIdentifier)) != null;
       } catch (InvalidRequestException exception) {
-        log.error(String.format("Account with accountIdentifier %s not found", accountIdentifier));
+        log.debug(String.format("Account with accountIdentifier %s not found", accountIdentifier));
         return false;
       }
     } else if (isEmpty(projectIdentifier)) {
