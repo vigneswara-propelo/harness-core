@@ -7,6 +7,7 @@
 
 package io.harness.cdng.k8s;
 
+import static io.harness.cdng.manifest.yaml.harness.HarnessStoreConstants.HARNESS_STORE_TYPE;
 import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -37,6 +38,7 @@ import io.harness.delegate.task.k8s.K8sApplyRequest;
 import io.harness.delegate.task.k8s.K8sApplyRequest.K8sApplyRequestBuilder;
 import io.harness.delegate.task.k8s.K8sDeployResponse;
 import io.harness.delegate.task.k8s.K8sTaskType;
+import io.harness.delegate.task.localstore.ManifestFiles;
 import io.harness.eventsframework.protohelper.IdentifierRefProtoDTOHelper;
 import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.eventsframework.schemas.entity.EntityUsageDetailProto;
@@ -71,7 +73,9 @@ import com.google.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -200,6 +204,15 @@ public class K8sApplyStep extends CdTaskChainExecutable implements K8sStepExecut
       applyRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
     }
 
+    if (k8sManifestOutcome != null && k8sManifestOutcome.getStore() != null
+        && HARNESS_STORE_TYPE.equals(k8sManifestOutcome.getStore().getKind())
+        && isNotEmpty(getParameterFieldValue(k8sApplyStepParameters.getFilePaths()))) {
+      // if Harness Store has been used for Manifest all specified file paths should be present in the manifestFiles
+      // should only cover if the manifest is specified in the service definition
+      validateFilePathsAgainstManifestFiles(
+          getParameterFieldValue(k8sApplyStepParameters.getFilePaths()), executionPassThroughData.getManifestFiles());
+    }
+
     setFilePathsInRequest(k8sManifestOutcome, k8sApplyStepParameters, applyRequestBuilder, accountId);
 
     Map<String, String> k8sCommandFlag =
@@ -296,6 +309,22 @@ public class K8sApplyStep extends CdTaskChainExecutable implements K8sStepExecut
       throw NestedExceptionUtils.hintWithExplanationException(KubernetesExceptionHints.APPLY_NO_FILEPATH_SPECIFIED,
           KubernetesExceptionExplanation.APPLY_NO_FILEPATH_SPECIFIED,
           new KubernetesTaskException(KubernetesExceptionMessages.APPLY_NO_FILEPATH_SPECIFIED));
+    }
+  }
+
+  private void validateFilePathsAgainstManifestFiles(List<String> filePaths, List<ManifestFiles> manifestFiles) {
+    if (manifestFiles != null) {
+      Set<String> manifestPaths =
+          manifestFiles.stream().map(ManifestFiles::getFilePath).filter(Objects::nonNull).collect(Collectors.toSet());
+      Set<String> normalizedFilePaths =
+          filePaths.stream().map(path -> path.charAt(0) == '/' ? path : "/" + path).collect(Collectors.toSet());
+
+      normalizedFilePaths.removeAll(manifestPaths);
+      if (isNotEmpty(normalizedFilePaths)) {
+        throw new KubernetesTaskException(
+            format(KubernetesExceptionMessages.PROVIDED_PATHS_ARE_NOT_PART_OF_THE_MANIFEST,
+                String.join("\n- ", normalizedFilePaths)));
+      }
     }
   }
 }

@@ -12,6 +12,7 @@ import static io.harness.ng.core.entityusageactivity.EntityUsageTypes.PIPELINE_E
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ACASIAN;
 import static io.harness.rule.OwnerRule.ACHYUTH;
+import static io.harness.rule.OwnerRule.BUHA;
 import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
 import static io.harness.rule.OwnerRule.TARUN_UBA;
 
@@ -53,9 +54,11 @@ import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.task.k8s.K8sApplyRequest;
 import io.harness.delegate.task.k8s.K8sDeployResponse;
 import io.harness.delegate.task.k8s.K8sTaskType;
+import io.harness.delegate.task.localstore.ManifestFiles;
 import io.harness.eventsframework.schemas.entity.EntityUsageDetailProto;
 import io.harness.exception.GeneralException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.KubernetesTaskException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.execution.Status;
@@ -437,6 +440,28 @@ public class K8sApplyStepTest extends AbstractK8sStepExecutorTestBase {
     stepParameters.setFilePaths(ParameterField.createValueField(Arrays.asList("file1.yaml", "file2.yaml")));
 
     testPublishSecretRuntimeUsage(stepParameters, manifestSourceWrapper);
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testFilePathsAreNotPartOfTheManifest() {
+    doReturn("Harness").when(storeConfig).getKind();
+    manifestFiles = List.of(ManifestFiles.builder().filePath("/k8s/firstPath.yaml").build(),
+        ManifestFiles.builder().filePath("/k8s/secondPath.yaml").build());
+
+    K8sApplyStepParameters stepParameters = new K8sApplyStepParameters();
+    stepParameters.setFilePaths(
+        ParameterField.createValueField(asList("/k8s/firstPath.yaml", "k8s/secondPath.yaml", "notExistingPath.yaml")));
+    final StepElementParameters stepElementParameters =
+        StepElementParameters.builder().spec(stepParameters).timeout(ParameterField.createValueField("30m")).build();
+
+    assertThatThrownBy(() -> executeTask(stepElementParameters, K8sApplyRequest.class))
+        .isInstanceOf(KubernetesTaskException.class)
+        .hasMessage("Please check specified file paths. \n"
+            + "All files should be part of the manifest specified in the service definition. \n"
+            + "The following files could not be found in the manifest: \n"
+            + "- /notExistingPath.yaml \n");
   }
 
   private void testPublishSecretRuntimeUsage(K8sApplyStepParameters applyStepParameters, Object visitable) {

@@ -30,6 +30,7 @@ import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.task.k8s.K8sDeployRequest;
 import io.harness.delegate.task.k8s.K8sInfraDelegateConfig;
 import io.harness.delegate.task.k8s.K8sManifestDelegateConfig;
+import io.harness.delegate.task.localstore.ManifestFiles;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.sdk.core.steps.executables.TaskChainResponse;
@@ -39,6 +40,7 @@ import software.wings.beans.TaskType;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.mockito.ArgumentCaptor;
@@ -54,6 +56,7 @@ public abstract class AbstractK8sStepExecutorTestBase extends CategoryTest {
   @Mock protected StoreConfig storeConfig;
 
   protected K8sManifestOutcome manifestOutcome;
+  protected List<ManifestFiles> manifestFiles;
   protected final String accountId = "accountId";
   protected final String releaseName = "releaseName";
   protected final Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
@@ -89,8 +92,10 @@ public abstract class AbstractK8sStepExecutorTestBase extends CategoryTest {
 
   protected <T extends K8sDeployRequest> T executeTask(
       StepElementParameters stepElementParameters, Class<T> requestType) {
-    K8sExecutionPassThroughData passThroughData =
-        K8sExecutionPassThroughData.builder().infrastructure(infrastructureOutcome).build();
+    K8sExecutionPassThroughData passThroughData = K8sExecutionPassThroughData.builder()
+                                                      .infrastructure(infrastructureOutcome)
+                                                      .manifestFiles(manifestFiles)
+                                                      .build();
     getK8sStepExecutor().executeK8sTask(
         manifestOutcome, ambiance, stepElementParameters, emptyList(), passThroughData, true, unitProgressData);
     ArgumentCaptor<T> requestCaptor = ArgumentCaptor.forClass(requestType);
