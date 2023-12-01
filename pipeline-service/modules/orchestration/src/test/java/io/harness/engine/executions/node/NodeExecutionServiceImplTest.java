@@ -18,6 +18,7 @@ import static io.harness.rule.OwnerRule.AYUSHI_TIWARI;
 import static io.harness.rule.OwnerRule.NAMAN;
 import static io.harness.rule.OwnerRule.PRASHANT;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
+import static io.harness.rule.OwnerRule.RISHIKESH;
 import static io.harness.rule.OwnerRule.ROHITKARELIA;
 import static io.harness.rule.OwnerRule.SAHIL;
 import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
@@ -1336,5 +1337,41 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
     assertThat(executionStatistics.getAccountStats().get(1).getCount()).isEqualTo(1);
     assertThat(executionStatistics.getModuleStats().get(0).getCount()).isEqualTo(2);
     assertThat(executionStatistics.getStepTypeStats().get(0).getCount()).isEqualTo(2);
+  }
+
+  @Test
+  @Owner(developers = RISHIKESH)
+  @Category(UnitTests.class)
+  public void testFetchStageExecutionsWithEndTsAndStatusProjection() {
+    String planExecutionUuid = generateUuid();
+    Criteria criteria = Criteria.where(NodeExecutionKeys.planExecutionId)
+                            .is(planExecutionUuid)
+                            .and(NodeExecutionKeys.stepCategory)
+                            .in(Arrays.asList(StepCategory.STAGE, StepCategory.STRATEGY));
+    Query query = new Query(criteria);
+    query.fields()
+        .include(NodeExecutionKeys.uuid)
+        .include(NodeExecutionKeys.status)
+        .include(NodeExecutionKeys.startTs)
+        .include(NodeExecutionKeys.endTs)
+        .include(NodeExecutionKeys.createdAt)
+        .include(NodeExecutionKeys.mode)
+        .include(NodeExecutionKeys.stepType)
+        .include(NodeExecutionKeys.ambiance)
+        .include(NodeExecutionKeys.nodeId)
+        .include(NodeExecutionKeys.parentId)
+        .include(NodeExecutionKeys.oldRetry)
+        .include(NodeExecutionKeys.ambiance)
+        .include(NodeExecutionKeys.resolvedParams)
+        .include(NodeExecutionKeys.failureInfo)
+        .include(NodeExecutionKeys.executableResponses);
+    query.with(Sort.by(NodeExecutionKeys.createdAt));
+
+    MongoTemplate mongoTemplateMock = Mockito.mock(MongoTemplate.class);
+    Reflect.on(nodeExecutionService).set("mongoTemplate", mongoTemplateMock);
+    ArgumentCaptor<Query> queryArgumentCaptor = ArgumentCaptor.forClass(Query.class);
+    nodeExecutionService.fetchStageExecutionsWithEndTsAndStatusProjection(planExecutionUuid);
+    verify(mongoTemplateMock, times(1)).find(queryArgumentCaptor.capture(), eq(NodeExecution.class));
+    assertThat(queryArgumentCaptor.getValue().getQueryObject()).isEqualTo(query.getQueryObject());
   }
 }

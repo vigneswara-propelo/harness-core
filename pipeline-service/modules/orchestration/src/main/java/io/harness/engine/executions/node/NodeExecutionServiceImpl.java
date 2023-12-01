@@ -930,6 +930,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
     query.fields()
         .include(NodeExecutionKeys.uuid)
         .include(NodeExecutionKeys.status)
+        .include(NodeExecutionKeys.startTs)
         .include(NodeExecutionKeys.endTs)
         .include(NodeExecutionKeys.createdAt)
         .include(NodeExecutionKeys.mode)
@@ -940,6 +941,7 @@ public class NodeExecutionServiceImpl implements NodeExecutionService {
         .include(NodeExecutionKeys.oldRetry)
         .include(NodeExecutionKeys.ambiance)
         .include(NodeExecutionKeys.resolvedParams)
+        .include(NodeExecutionKeys.failureInfo)
         .include(NodeExecutionKeys.executableResponses);
 
     query.with(by(NodeExecutionKeys.createdAt));
