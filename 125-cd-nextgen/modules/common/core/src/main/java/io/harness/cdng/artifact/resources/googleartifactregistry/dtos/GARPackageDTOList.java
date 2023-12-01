@@ -23,5 +23,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GARPackageDTOList {
-  List<GARPackageDTO> garPackagesDTO;
+  List<GARPackageDTO> garPackageDTOList;
 }

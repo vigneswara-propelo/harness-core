@@ -43,7 +43,7 @@ public class GARResourceMapper {
     List<GarRepositoryDTO> detailsDTOList = garDelegateResponses.stream()
                                                 .map(response -> toGarRepositoryDTOList(response.getBuildDetails()))
                                                 .collect(Collectors.toList());
-    return GARRepositoryDTOList.builder().garRepositoryDTOS(detailsDTOList).build();
+    return GARRepositoryDTOList.builder().garRepositoryDTOList(detailsDTOList).build();
   }
 
   public static GarRepositoryDTO toGarRepositoryDTOList(ArtifactBuildDetailsNG artifactBuildDetailsNG) {
@@ -58,7 +58,7 @@ public class GARResourceMapper {
     List<GARPackageDTO> detailsDTOList = garDelegateResponses.stream()
                                              .map(response -> toGarPackageDTOList(response.getBuildDetails()))
                                              .collect(Collectors.toList());
-    return GARPackageDTOList.builder().garPackagesDTO(detailsDTOList).build();
+    return GARPackageDTOList.builder().garPackageDTOList(detailsDTOList).build();
   }
 
   public static GARPackageDTO toGarPackageDTOList(ArtifactBuildDetailsNG artifactBuildDetailsNG) {

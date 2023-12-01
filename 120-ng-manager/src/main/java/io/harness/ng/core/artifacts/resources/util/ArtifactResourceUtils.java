@@ -1285,6 +1285,9 @@ public class ArtifactResourceUtils {
       if (isBlank(gcpConnectorIdentifier)) {
         gcpConnectorIdentifier = (String) googleArtifactRegistryConfig.getConnectorRef().fetchFinalValue();
       }
+      if (isBlank(project)) {
+        project = (String) googleArtifactRegistryConfig.getProject().fetchFinalValue();
+      }
 
       if (isBlank(region)) {
         region = (String) googleArtifactRegistryConfig.getRegion().fetchFinalValue();
@@ -1302,6 +1305,10 @@ public class ArtifactResourceUtils {
         pipelineIdentifier, runtimeInputYaml, region, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
                  .getValue();
 
+    project = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+        pipelineIdentifier, runtimeInputYaml, project, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                  .getValue();
+
     IdentifierRef connectorRef =
         IdentifierRefHelper.getIdentifierRef(gcpConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
 
@@ -1315,11 +1322,11 @@ public class ArtifactResourceUtils {
         garResourceService.getRepositories(connectorRef, region, project, orgIdentifier, projectIdentifier);
     long timeTaken = System.currentTimeMillis() - timeStart;
 
-    int index = buildDetails.getGarRepositoryDTOS().get(0).getRepository().lastIndexOf("/");
+    int index = buildDetails.getGarRepositoryDTOList().get(0).getRepository().lastIndexOf("/");
 
     List<GarRepositoryDTO> modifiedBuilds = new ArrayList<>();
 
-    buildDetails.getGarRepositoryDTOS().forEach(repo -> {
+    buildDetails.getGarRepositoryDTOList().forEach(repo -> {
       String repoName = repo.getRepository().substring(index + 1);
       if (DOCKER.equals(repo.getFormat())) {
         GarRepositoryDTO modifiedRepo = GarRepositoryDTO.builder()
@@ -1336,7 +1343,7 @@ public class ArtifactResourceUtils {
     artifactSourceInstrumentationHelper.sendArtifactApiEvent(ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, accountId,
         orgIdentifier, projectIdentifier, FETCH_REPOSITORIES, timeTaken, modifiedBuilds.size(), isServiceV2, true);
 
-    return GARRepositoryDTOList.builder().garRepositoryDTOS(modifiedBuilds).build();
+    return GARRepositoryDTOList.builder().garRepositoryDTOList(modifiedBuilds).build();
   }
 
   public GARBuildDetailsDTO getLastSuccessfulBuildV2GAR(String gcpConnectorIdentifier, String region,
@@ -2724,7 +2731,9 @@ public class ArtifactResourceUtils {
       if (isBlank(gcpConnectorIdentifier)) {
         gcpConnectorIdentifier = (String) googleArtifactRegistryConfig.getConnectorRef().fetchFinalValue();
       }
-
+      if (isBlank(project)) {
+        project = (String) googleArtifactRegistryConfig.getProject().fetchFinalValue();
+      }
       if (isBlank(region)) {
         region = (String) googleArtifactRegistryConfig.getRegion().fetchFinalValue();
       }
@@ -2739,6 +2748,10 @@ public class ArtifactResourceUtils {
         projectIdentifier, pipelineIdentifier, runtimeInputYaml, gcpConnectorIdentifier, fqnPath, gitEntityBasicInfo,
         serviceRef, yamlExpressionEvaluator)
                                  .getValue();
+
+    project = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
+        pipelineIdentifier, runtimeInputYaml, project, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
+                  .getValue();
 
     region = getResolvedFieldValueWithYamlExpressionEvaluator(accountId, orgIdentifier, projectIdentifier,
         pipelineIdentifier, runtimeInputYaml, region, fqnPath, gitEntityBasicInfo, serviceRef, yamlExpressionEvaluator)
@@ -2763,11 +2776,11 @@ public class ArtifactResourceUtils {
         garResourceService.getPackages(connectorRef, region, repositoryName, project, orgIdentifier, projectIdentifier);
     long timeTaken = System.currentTimeMillis() - timeStart;
 
-    int index = buildDetails.getGarPackagesDTO().get(0).getPackageName().lastIndexOf("/");
+    int index = buildDetails.getGarPackageDTOList().get(0).getPackageName().lastIndexOf("/");
 
     List<GARPackageDTO> modifiedBuilds = new ArrayList<>();
 
-    buildDetails.getGarPackagesDTO().forEach(repo -> {
+    buildDetails.getGarPackageDTOList().forEach(repo -> {
       String packageName = repo.getPackageName().substring(index + 1);
 
       GARPackageDTO modifiedRepo = GARPackageDTO.builder()
@@ -2782,7 +2795,7 @@ public class ArtifactResourceUtils {
     artifactSourceInstrumentationHelper.sendArtifactApiEvent(ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, accountId,
         orgIdentifier, projectIdentifier, FETCH_PACKAGES, timeTaken, modifiedBuilds.size(), isServiceV2, true);
 
-    return GARPackageDTOList.builder().garPackagesDTO(modifiedBuilds).build();
+    return GARPackageDTOList.builder().garPackageDTOList(modifiedBuilds).build();
   }
 
   @Data
