@@ -24,7 +24,7 @@ import lombok.Value;
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MultiSvcEnvTelemetryInfo {
+public class SvcEnvTelemetryInfo {
   String pipelineIdentifier;
   String stageIdentifier;
   String accountIdentifier;

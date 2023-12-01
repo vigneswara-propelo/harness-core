@@ -60,7 +60,7 @@ import io.harness.freeze.service.FreezeEvaluateService;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
 import io.harness.ng.core.serviceoverride.services.ServiceOverrideService;
-import io.harness.ng.core.telemetry.entity.MultiSvcEnvTelemetryInfo;
+import io.harness.ng.core.telemetry.entity.SvcEnvTelemetryInfo;
 import io.harness.plancreator.stages.AbstractStagePlanCreator;
 import io.harness.plancreator.steps.GenericStepPMSPlanCreator;
 import io.harness.plancreator.steps.common.SpecParameters;
@@ -96,7 +96,7 @@ import io.harness.pms.yaml.YamlUtils;
 import io.harness.rbac.CDNGRbacUtility;
 import io.harness.serializer.KryoSerializer;
 import io.harness.strategy.StrategyValidationUtils;
-import io.harness.telemetry.helpers.MultiSvcEnvInstrumentationHelper;
+import io.harness.telemetry.helpers.SvcEnvInstrumentationHelper;
 import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.when.utils.RunInfoUtils;
 import io.harness.yaml.core.failurestrategy.FailureStrategyConfig;
@@ -174,7 +174,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
   @Inject private StagePlanCreatorHelper stagePlanCreatorHelper;
   @Inject private DeploymentStagePlanCreationInfoService deploymentStagePlanCreationInfoService;
   @Inject @Named("deployment-stage-plan-creation-info-executor") private ExecutorService executorService;
-  @Inject private MultiSvcEnvInstrumentationHelper instrumentationHelper;
+  @Inject private SvcEnvInstrumentationHelper instrumentationHelper;
 
   @Override
   public Set<String> getSupportedStageTypes() {
@@ -428,6 +428,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
         ? useServicesYamlFromStage(stageConfig, specField)
         : stageConfig.getServices();
     stageConfig.setServices(finalServicesYaml);
+    sendTelemetryEventForSvcEnv(ctx, stageNode);
 
     MultiDeploymentSpawnerUtils.validateMultiServiceInfra(stageConfig);
     if (stageConfig.getServices() == null && stageConfig.getEnvironments() == null
@@ -456,7 +457,6 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     }
 
     saveDeploymentStagePlanCreationSummaryForMultiServiceMultiEnvAsync(ctx, stageNode, specField);
-    sendTelemetryEventForMultiSvcEnv(ctx, stageNode);
 
     MultiDeploymentStepParameters stepParameters =
         MultiDeploymentStepParameters.builder()
@@ -922,14 +922,14 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     });
   }
 
-  private void sendTelemetryEventForMultiSvcEnv(PlanCreationContext ctx, DeploymentStageNode stageNode) {
+  private void sendTelemetryEventForSvcEnv(PlanCreationContext ctx, DeploymentStageNode stageNode) {
     try {
       DeploymentStageConfig deploymentStageConfig = stageNode.getDeploymentStageConfig();
       if (deploymentStageConfig == null) {
         return;
       }
-      MultiSvcEnvTelemetryInfo multiSvcEnvTelemetryInfo =
-          MultiSvcEnvTelemetryInfo.builder()
+      SvcEnvTelemetryInfo svcEnvTelemetryInfo =
+          SvcEnvTelemetryInfo.builder()
               .accountIdentifier(ctx.getAccountIdentifier())
               .orgIdentifier(ctx.getOrgIdentifier())
               .projectIdentifier(ctx.getProjectIdentifier())
@@ -948,7 +948,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
                   || EnvironmentInfraFilterUtils.areFiltersPresent(deploymentStageConfig.getEnvironmentGroup()))
               .build();
 
-      instrumentationHelper.sendMultiSvcEnvEvent(multiSvcEnvTelemetryInfo);
+      instrumentationHelper.sendSvcEnvEvent(svcEnvTelemetryInfo);
     } catch (Exception ex) {
       log.warn("Exception occurred while sending telemetry event for multi deployment stage: {}",
           ExceptionUtils.getMessage(ex), ex);
