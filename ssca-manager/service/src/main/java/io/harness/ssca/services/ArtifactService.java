@@ -35,6 +35,8 @@ public interface ArtifactService {
   Optional<ArtifactEntity> getArtifact(
       String accountId, String orgIdentifier, String projectIdentifier, String artifactId, Sort sort);
 
+  String getArtifactName(String accountId, String orgIdentifier, String projectIdentifier, String artifactId);
+
   ArtifactEntity getArtifactByCorrelationId(
       String accountId, String orgIdentifier, String projectIdentifier, String artifactCorrelationId);
 

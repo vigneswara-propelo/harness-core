@@ -22,6 +22,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 public interface ArtifactRepositoryCustom {
   void invalidateOldArtifact(ArtifactEntity artifact);
   ArtifactEntity findOne(Criteria criteria);
+  ArtifactEntity findOne(Criteria criteria, Pageable pageable, List<String> projectionFields);
   Page<ArtifactEntity> findAll(Criteria criteria, Pageable pageable);
   List<ArtifactEntity> findAll(Aggregation aggregation);
   long getCount(Aggregation aggregation);

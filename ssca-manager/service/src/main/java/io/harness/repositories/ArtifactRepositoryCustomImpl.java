@@ -10,6 +10,7 @@ package io.harness.repositories;
 import static io.harness.annotations.dev.HarnessTeam.SSCA;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.ssca.beans.ArtifactDBO;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityKeys;
@@ -59,6 +60,20 @@ public class ArtifactRepositoryCustomImpl implements ArtifactRepositoryCustom {
   @Override
   public ArtifactEntity findOne(Criteria criteria) {
     Query query = new Query(criteria);
+    return mongoTemplate.findOne(query, ArtifactEntity.class);
+  }
+
+  @Override
+  public ArtifactEntity findOne(Criteria criteria, Pageable pageable, List<String> projectionFields) {
+    Query query = new Query(criteria);
+    if (pageable != null) {
+      query.with(pageable);
+    }
+    if (EmptyPredicate.isNotEmpty(projectionFields)) {
+      for (String projection : projectionFields) {
+        query.fields().include(projection);
+      }
+    }
     return mongoTemplate.findOne(query, ArtifactEntity.class);
   }
 
