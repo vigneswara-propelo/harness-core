@@ -147,6 +147,7 @@ public class ViewsQueryBuilder {
   private static final String searchFilter = "REGEXP_CONTAINS( LOWER(%s), LOWER('%s') )";
   private static final String searchFilterClickHouse = "%s LIKE %s";
   private static final String regexFilter = "REGEXP_CONTAINS( %s, r'%s' )";
+  private static final String regexFilterClickhouse = "match( %s, '%s' )";
   private static final String labelsSubQuery = "(SELECT value FROM UNNEST(labels) WHERE KEY='%s')";
   private static final String leftJoinLabels = " LEFT JOIN UNNEST(labels) as labelsUnnested";
   private static final String leftJoinSelectiveLabels =
@@ -1925,8 +1926,8 @@ public class ViewsQueryBuilder {
         }
         break;
       case LIKE:
-        condition =
-            new CustomCondition(String.format(regexFilter, conditionKey, handleSingleQuotes(filter.getValues()[0])));
+        condition = new CustomCondition(String.format(isClickHouseQuery() ? regexFilterClickhouse : regexFilter,
+            conditionKey, handleSingleQuotes(filter.getValues()[0])));
         break;
       case SEARCH:
         // Searching capability for idFilters only
