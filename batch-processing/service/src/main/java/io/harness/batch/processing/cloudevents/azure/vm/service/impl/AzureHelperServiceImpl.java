@@ -234,27 +234,46 @@ public class AzureHelperServiceImpl implements AzureHelperService {
       return null;
     }
 
-    Double currentSkuAvgCpuUtilisation = azureMetricsUtilisationService.getAverageAzureVmMetricUtilisationData(
-        vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_CPU);
-    Double currentSkuMaxCpuUtilisation = azureMetricsUtilisationService.getMaximumAzureVmMetricUtilisationData(
-        vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_CPU);
-    Double currentSkuAvgMemoryUtilisation = azureMetricsUtilisationService.getAverageAzureVmMetricUtilisationData(
-        vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_MEMORY);
-    Double currentSkuMaxMemoryUtilisation = azureMetricsUtilisationService.getMaximumAzureVmMetricUtilisationData(
-        vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_MEMORY);
+    Double currentSkuAvgCpuUtilisation, currentSkuMaxCpuUtilisation, currentSkuAvgMemoryUtilisation,
+        currentSkuMaxMemoryUtilisation;
+    Double targetSkuAvgCpuUtilisation, targetSkuMaxCpuUtilisation, targetSkuAvgMemoryUtilisation,
+        targetSkuMaxMemoryUtilisation;
+    if (configuration.isClickHouseEnabled()) {
+      currentSkuAvgCpuUtilisation = Double.parseDouble(extendedProperties.get(MAX_CPU_P95));
+      currentSkuAvgMemoryUtilisation = Double.parseDouble(extendedProperties.get(MAX_MEMORY_P95));
+      currentSkuMaxCpuUtilisation = null;
+      currentSkuMaxMemoryUtilisation = null;
+
+      targetSkuAvgCpuUtilisation = getTargetAverageAzureVmMetricUtilisation(
+          currentVmDetails.getNumberOfCores(), targetVmDetails.getNumberOfCores(), currentSkuAvgCpuUtilisation);
+      targetSkuAvgMemoryUtilisation = getTargetAverageAzureVmMetricUtilisation(
+          currentVmDetails.getMemoryInMB(), targetVmDetails.getMemoryInMB(), currentSkuAvgMemoryUtilisation);
+      targetSkuMaxCpuUtilisation = null;
+      targetSkuMaxMemoryUtilisation = null;
+    } else {
+      currentSkuAvgCpuUtilisation = azureMetricsUtilisationService.getAverageAzureVmMetricUtilisationData(
+          vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_CPU);
+      currentSkuMaxCpuUtilisation = azureMetricsUtilisationService.getMaximumAzureVmMetricUtilisationData(
+          vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_CPU);
+      currentSkuAvgMemoryUtilisation = azureMetricsUtilisationService.getAverageAzureVmMetricUtilisationData(
+          vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_MEMORY);
+      currentSkuMaxMemoryUtilisation = azureMetricsUtilisationService.getMaximumAzureVmMetricUtilisationData(
+          vmId, accountId, Integer.parseInt(duration), AzureVmMetricType.PERCENTAGE_MEMORY);
+
+      targetSkuAvgCpuUtilisation = getTargetAverageAzureVmMetricUtilisation(
+          currentVmDetails.getNumberOfCores(), targetVmDetails.getNumberOfCores(), currentSkuAvgCpuUtilisation);
+      targetSkuMaxCpuUtilisation = getTargetAverageAzureVmMetricUtilisation(
+          currentVmDetails.getNumberOfCores(), targetVmDetails.getNumberOfCores(), currentSkuMaxCpuUtilisation);
+      targetSkuAvgMemoryUtilisation = getTargetAverageAzureVmMetricUtilisation(
+          currentVmDetails.getMemoryInMB(), targetVmDetails.getMemoryInMB(), currentSkuAvgMemoryUtilisation);
+      targetSkuMaxMemoryUtilisation = getTargetAverageAzureVmMetricUtilisation(
+          currentVmDetails.getMemoryInMB(), targetVmDetails.getMemoryInMB(), currentSkuMaxMemoryUtilisation);
+    }
     currentVmDetails.setAvgCpuUtilisation(currentSkuAvgCpuUtilisation);
     currentVmDetails.setMaxCpuUtilisation(currentSkuMaxCpuUtilisation);
     currentVmDetails.setAvgMemoryUtilisation(currentSkuAvgMemoryUtilisation);
     currentVmDetails.setMaxMemoryUtilisation(currentSkuMaxMemoryUtilisation);
 
-    Double targetSkuAvgCpuUtilisation = getTargetAverageAzureVmMetricUtilisation(
-        currentVmDetails.getNumberOfCores(), targetVmDetails.getNumberOfCores(), currentSkuAvgCpuUtilisation);
-    Double targetSkuMaxCpuUtilisation = getTargetAverageAzureVmMetricUtilisation(
-        currentVmDetails.getNumberOfCores(), targetVmDetails.getNumberOfCores(), currentSkuMaxCpuUtilisation);
-    Double targetSkuAvgMemoryUtilisation = getTargetAverageAzureVmMetricUtilisation(
-        currentVmDetails.getMemoryInMB(), targetVmDetails.getMemoryInMB(), currentSkuAvgMemoryUtilisation);
-    Double targetSkuMaxMemoryUtilisation = getTargetAverageAzureVmMetricUtilisation(
-        currentVmDetails.getMemoryInMB(), targetVmDetails.getMemoryInMB(), currentSkuMaxMemoryUtilisation);
     targetVmDetails.setAvgCpuUtilisation(targetSkuAvgCpuUtilisation);
     targetVmDetails.setMaxCpuUtilisation(targetSkuMaxCpuUtilisation);
     targetVmDetails.setAvgMemoryUtilisation(targetSkuAvgMemoryUtilisation);
