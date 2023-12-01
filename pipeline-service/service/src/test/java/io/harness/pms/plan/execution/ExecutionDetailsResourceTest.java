@@ -72,6 +72,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -650,6 +651,19 @@ public class ExecutionDetailsResourceTest extends CategoryTest {
   public void testGetExecutions() {
     ExecutionDataResponseDTO mockExecutionDataResponseDTO = ExecutionDataResponseDTO.builder().build();
     when(pmsExecutionService.getExecutionData(eq(PLAN_EXECUTION_ID))).thenReturn(mockExecutionDataResponseDTO);
+    PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity = PipelineExecutionSummaryEntity.builder()
+                                                                        .accountId(ACCOUNT_ID)
+                                                                        .orgIdentifier(ORG_IDENTIFIER)
+                                                                        .projectIdentifier(PROJ_IDENTIFIER)
+                                                                        .pipelineIdentifier(PIPELINE_IDENTIFIER)
+                                                                        .pipelineDeleted(false)
+                                                                        .planExecutionId(PLAN_EXECUTION_ID)
+                                                                        .build();
+    doReturn(pipelineExecutionSummaryEntity)
+        .when(pmsExecutionSummaryService)
+        .getPipelineExecutionSummaryWithProjections(PLAN_EXECUTION_ID,
+            Set.of(PlanExecutionSummaryKeys.accountId, PlanExecutionSummaryKeys.orgIdentifier,
+                PlanExecutionSummaryKeys.projectIdentifier, PlanExecutionSummaryKeys.pipelineIdentifier));
 
     ResponseDTO<ExecutionDataResponseDTO> responseDTO =
         executionDetailsResource.getExecutions(ACCOUNT_ID, PLAN_EXECUTION_ID);

@@ -80,6 +80,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.ws.rs.BeanParam;
@@ -144,6 +145,7 @@ public class ExecutionDetailsResource {
   private final String INVALID_PAGE_REQUEST_EXCEPTION_MESSAGE =
       "Please Verify Executions list parameters for page and size, page should be >= 0 and size should be > 0 and <=1000";
   private final String PIPELINE_RESOURCE_TYPE = "PIPELINE";
+  private final String PERMISSION_MISSING_MESSAGE = "Missing permission %s on %s";
 
   @POST
   @Path("/summary")
@@ -498,7 +500,6 @@ public class ExecutionDetailsResource {
   @GET
   @Path("/{planExecutionId}/metadata")
   @ApiOperation(value = "Get metadata of an execution", nickname = "getExecutionData")
-  @NGAccessControlCheck(resourceType = PIPELINE_RESOURCE_TYPE, permission = PipelineRbacPermissions.PIPELINE_VIEW)
   @Operation(operationId = "getExecutionData", summary = "Get execution metadata of a pipeline execution",
       responses =
       {
@@ -511,6 +512,16 @@ public class ExecutionDetailsResource {
                 @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
       @NotNull @PathParam(NGCommonEntityConstants.PLAN_KEY) @Parameter(
           description = "ExecutionId of the execution for which we want to get Metadata") String planExecutionId) {
+    PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity =
+        pmsExecutionSummaryService.getPipelineExecutionSummaryWithProjections(planExecutionId,
+            Set.of(PlanExecutionSummaryKeys.accountId, PlanExecutionSummaryKeys.orgIdentifier,
+                PlanExecutionSummaryKeys.projectIdentifier, PlanExecutionSummaryKeys.pipelineIdentifier));
+    accessControlClient.checkForAccessOrThrow(
+        ResourceScope.of(accountId, pipelineExecutionSummaryEntity.getOrgIdentifier(),
+            pipelineExecutionSummaryEntity.getProjectIdentifier()),
+        Resource.of(PIPELINE_RESOURCE_TYPE, pipelineExecutionSummaryEntity.getPipelineIdentifier()),
+        PipelineRbacPermissions.PIPELINE_VIEW,
+        String.format(PERMISSION_MISSING_MESSAGE, PipelineRbacPermissions.PIPELINE_VIEW, "pipeline"));
     ExecutionDataResponseDTO executionDetailsResponseDTO = pmsExecutionService.getExecutionData(planExecutionId);
     return ResponseDTO.newResponse(executionDetailsResponseDTO);
   }
