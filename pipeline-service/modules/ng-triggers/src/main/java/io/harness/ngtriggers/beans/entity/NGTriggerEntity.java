@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngtriggers.beans.entity;
+
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotation.HarnessEntity;
@@ -27,6 +28,7 @@ import io.harness.ngtriggers.beans.entity.metadata.status.TriggerStatus;
 import io.harness.ngtriggers.beans.source.NGTriggerType;
 import io.harness.ngtriggers.beans.target.TargetType;
 import io.harness.persistence.PersistentEntity;
+import io.harness.pms.yaml.HarnessYamlVersion;
 
 import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
@@ -35,8 +37,10 @@ import java.util.List;
 import javax.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Setter;
 import lombok.Singular;
 import lombok.experimental.FieldNameConstants;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -143,6 +147,8 @@ public class NGTriggerEntity implements PersistentEntity, PersistentNGCronIterab
   String customWebhookToken;
   String encryptedWebhookSecretIdentifier;
   List<String> stagesToExecute;
+  TriggerConfigWrapper triggerConfigWrapper;
+  @Setter @NonFinal String harnessVersion;
   @FdIndex private List<Long> nextIterations; // List of activation times for cron triggers
   @Builder.Default Long ymlVersion = Long.valueOf(3);
 
@@ -172,5 +178,12 @@ public class NGTriggerEntity implements PersistentEntity, PersistentNGCronIterab
 
   public Boolean getWithServiceV2() {
     return withServiceV2 != null && withServiceV2;
+  }
+
+  public String getHarnessVersion() {
+    if (harnessVersion == null) {
+      return HarnessYamlVersion.V0;
+    }
+    return harnessVersion;
   }
 }

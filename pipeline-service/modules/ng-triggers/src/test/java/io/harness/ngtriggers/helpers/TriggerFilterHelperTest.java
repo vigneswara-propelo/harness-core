@@ -242,6 +242,8 @@ public class TriggerFilterHelperTest extends CategoryTest {
     expected.set(NGTriggerEntityKeys.tags, Collections.emptyList());
     expected.set(NGTriggerEntityKeys.deleted, false);
     expected.set(NGTriggerEntityKeys.triggerStatus, TriggerStatus.builder().build());
+    expected.set(NGTriggerEntityKeys.triggerConfigWrapper, null);
+    expected.set(NGTriggerEntityKeys.harnessVersion, "0");
     expected.set(NGTriggerEntityKeys.pollInterval, "5m");
     expected.set(NGTriggerEntityKeys.webhookId, "123");
     expected.set(NGTriggerEntityKeys.encryptedWebhookSecretIdentifier, "secret");

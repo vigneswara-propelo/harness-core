@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngtriggers.mapper;
+
 import static io.harness.NGResourceFilterConstants.CASE_INSENSITIVE_MONGO_OPTIONS;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -211,6 +212,8 @@ public class TriggerFilterHelper {
     update.set(NGTriggerEntityKeys.tags, triggerEntity.getTags());
     update.set(NGTriggerEntityKeys.deleted, false);
     update.set(NGTriggerEntityKeys.triggerStatus, triggerEntity.getTriggerStatus());
+    update.set(NGTriggerEntityKeys.triggerConfigWrapper, triggerEntity.getTriggerConfigWrapper());
+    update.set(NGTriggerEntityKeys.harnessVersion, triggerEntity.getHarnessVersion());
     if (triggerEntity.getPollInterval() != null) {
       update.set(NGTriggerEntityKeys.pollInterval, triggerEntity.getPollInterval());
     }

@@ -151,6 +151,7 @@ paths:
       - $ref: '#/components/parameters/OrgParam'
       - $ref: '#/components/parameters/ProjectParam'
       - $ref: '#/components/parameters/PipelineParam'
+      - $ref: '#/components/parameters/IgnoreError'
     post:
       summary: Create a Trigger
       operationId: create-trigger
@@ -162,10 +163,10 @@ paths:
       tags:
         - Triggers
       requestBody:
-        $ref: '#/components/requestBodies/TriggerCreateRequestBody'
+        $ref: '#/components/requestBodies/TriggerRequestBody'
       responses:
         '201':
-          $ref: '#/components/responses/TriggerCreateResponseBody'
+          $ref: '#/components/responses/TriggerResponseBody'
       x-stoplight:
         id: qd6yrxxmqs0u7
   '/v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/triggers/{trigger}':
@@ -195,13 +196,14 @@ paths:
       description: Updates a Trigger.
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
+        - $ref: '#/components/parameters/IgnoreError'
       tags:
         - Triggers
       requestBody:
-        $ref: '#/components/requestBodies/TriggerUpdateRequestBody'
+        $ref: '#/components/requestBodies/TriggerRequestBody'
       responses:
         '200':
-          $ref: '#/components/responses/TriggerCreateResponseBody'
+          $ref: '#/components/responses/TriggerResponseBody'
     delete:
       summary: Delete a Trigger
       operationId: delete-trigger
@@ -1402,11 +1404,13 @@ components:
           type: string
           x-stoplight:
             id: ascg15v7c0vlx
-    TriggerCreateRequestBody:
-      title: Trigger Create Request Body
+    TriggerRequestBody:
+      title: Trigger Request Body
       type: object
       description: 'Trigger request body object '
       properties:
+        with_service_v2:
+          type: boolean
         description:
           type: string
         enabled:
@@ -1421,10 +1425,8 @@ components:
           items:
             type: string
         inputs:
-          type: object
-          description: inputs to be used in the pipeline
-          additionalProperties:
-            type: object
+          type: string
+          description: input yaml to be used in the pipeline
         name:
           type: string
           pattern: '^[a-zA-Z_0-9-.][-0-9a-zA-Z_\s.]{0,127}$'
@@ -1442,48 +1444,6 @@ components:
             type: string
       required:
         - type
-        - identifier
-        - name
-        - source
-    TriggerUpdateRequestBody:
-      title: Trigger Update Request Body
-      type: object
-      description: Trigger request body object
-      properties:
-        description:
-          type: string
-        enabled:
-          type: boolean
-        encrypted_webhook_secret_identifier:
-          type: string
-        identifier:
-          type: string
-          pattern: '^[a-zA-Z_][0-9a-zA-Z_]{0,127}$'
-        input_set_refs:
-          type: array
-          items:
-            type: string
-        inputs:
-          type: object
-          description: inputs to be used in the pipeline
-          additionalProperties:
-            type: object
-        name:
-          type: string
-          pattern: '^[a-zA-Z_0-9-.][-0-9a-zA-Z_\s.]{0,127}$'
-        pipeline_branch_name:
-          type: string
-        source:
-          $ref: '#/components/schemas/TriggerSource'
-        stages_to_execute:
-          type: array
-          items:
-            type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-      required:
         - identifier
         - name
         - source
@@ -1575,7 +1535,7 @@ components:
     WebhookTriggerSpec:
       title: Webhook Trigger Spec
       type: object
-      description: Spec for Webhook Triggers
+      description: 'Spec for Webhook Triggers'
       properties:
         type:
           type: string
@@ -1604,7 +1564,7 @@ components:
     ManifestTriggerSpec:
       title: Manifest Trigger Spec
       type: object
-      description: Spec for Manifest Triggers
+      description: 'Spec for Manifest Triggers'
       properties:
         type:
           type: string
@@ -2792,8 +2752,8 @@ components:
           type: string
         expression:
           type: string
-    TriggerCreateResponseBody:
-      title: Trigger Create Response Body
+    TriggerResponseBody:
+      title: Trigger Response Body
       type: object
       description: Pipeline response body
       properties:
@@ -2849,27 +2809,17 @@ components:
       type: object
       description: 'Trigger object '
       properties:
-        description:
-          type: string
         enabled:
           type: boolean
         encrypted_webhook_secret_identifier:
           type: string
-        identifier:
-          type: string
-          pattern: '^[a-zA-Z_][0-9a-zA-Z_]{0,127}$'
         input_set_refs:
           type: array
           items:
             type: string
         inputs:
-          type: object
-          description: inputs to be used in the pipeline
-          additionalProperties:
-            type: object
-        name:
           type: string
-          pattern: '^[a-zA-Z_0-9-.][-0-9a-zA-Z_\s.]{0,127}$'
+          description: input yaml to be used in the pipeline
         pipeline_branch_name:
           type: string
         source:
@@ -4895,6 +4845,12 @@ components:
       schema:
         type: string
       description: Pipeline identifier
+    IgnoreError:
+      name: ignoreError
+      in: path
+      required: false
+      schema:
+        type: boolean
     TriggerParam:
       name: trigger
       in: path
@@ -4982,15 +4938,15 @@ components:
             example-pipeline:
               value: |
                 identifier: example_pipeline
-    TriggerCreateResponseBody:
+    TriggerResponseBody:
       description: Trigger response body
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/TriggerCreateResponseBody'
+            $ref: '#/components/schemas/TriggerResponseBody'
         application/yaml:
           schema:
-            $ref: '#/components/schemas/TriggerCreateResponseBody'
+            $ref: '#/components/schemas/TriggerResponseBody'
     TriggerGetResponseBody:
       description: Pipeline response body
       content:
@@ -5689,22 +5645,14 @@ components:
           schema:
             $ref: '#/components/schemas/MergeInputSetResponseBody'
   requestBodies:
-    TriggerCreateRequestBody:
+    TriggerRequestBody:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/TriggerCreateRequestBody'
+            $ref: '#/components/schemas/TriggerRequestBody'
         application/yaml:
           schema:
-            $ref: '#/components/schemas/TriggerCreateRequestBody'
-    TriggerUpdateRequestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/TriggerUpdateRequestBody'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/TriggerUpdateRequestBody'
+            $ref: '#/components/schemas/TriggerRequestBody'
       description: Trigger request body
       required: true
     PipelineCreateRequestBody:

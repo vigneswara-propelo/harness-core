@@ -106,6 +106,7 @@ import io.harness.pms.merger.fqn.FQN;
 import io.harness.pms.merger.helpers.YamlSubMapExtractor;
 import io.harness.pms.pipeline.PMSPipelineResponseDTO;
 import io.harness.pms.rbac.PipelineRbacPermissions;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
@@ -1237,9 +1238,15 @@ public class NGTriggerServiceImpl implements NGTriggerService {
 
   public NGTriggerEntity validateTrigger(NGTriggerEntity ngTriggerEntity) {
     try {
-      ValidationResult validationResult = triggerValidationHandler.applyValidations(
-          ngTriggerElementMapper.toTriggerDetails(ngTriggerEntity.getAccountId(), ngTriggerEntity.getOrgIdentifier(),
-              ngTriggerEntity.getProjectIdentifier(), ngTriggerEntity.getYaml(), ngTriggerEntity.getWithServiceV2()));
+      ValidationResult validationResult;
+      if (HarnessYamlVersion.V0.equals(ngTriggerEntity.getHarnessVersion())) {
+        validationResult = triggerValidationHandler.applyValidations(
+            ngTriggerElementMapper.toTriggerDetails(ngTriggerEntity.getAccountId(), ngTriggerEntity.getOrgIdentifier(),
+                ngTriggerEntity.getProjectIdentifier(), ngTriggerEntity.getYaml(), ngTriggerEntity.getWithServiceV2()));
+      } else {
+        validationResult =
+            triggerValidationHandler.applyValidations(ngTriggerElementMapper.toTriggerDetails(ngTriggerEntity));
+      }
       if (!validationResult.isSuccess()) {
         ngTriggerEntity.setEnabled(false);
       }
@@ -1299,6 +1306,17 @@ public class NGTriggerServiceImpl implements NGTriggerService {
     }
 
     return ngTriggerEntity;
+  }
+
+  @Override
+  public TriggerDetails fetchTriggerEntityV1(String accountId, String orgId, String projectId, String pipelineId,
+      String triggerId, NGTriggerConfigV2 config, NGTriggerEntity entity, boolean withServiceV2) {
+    Optional<NGTriggerEntity> existingEntity = get(accountId, orgId, projectId, pipelineId, triggerId, false);
+    if (existingEntity.isPresent()) {
+      ngTriggerElementMapper.copyEntityFieldsOutsideOfYml(existingEntity.get(), entity);
+    }
+
+    return TriggerDetails.builder().ngTriggerConfigV2(config).ngTriggerEntity(entity).build();
   }
 
   @Override

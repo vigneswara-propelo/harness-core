@@ -8,21 +8,28 @@
 package io.harness.pms.triggers.api;
 
 import io.harness.accesscontrol.NGAccessControlCheck;
+import io.harness.accesscontrol.acl.api.Resource;
+import io.harness.accesscontrol.acl.api.ResourceScope;
+import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.exception.EntityNotFoundException;
+import io.harness.exception.InvalidRequestException;
+import io.harness.ngtriggers.beans.dto.TriggerDetails;
+import io.harness.ngtriggers.beans.entity.NGTriggerEntity;
+import io.harness.ngtriggers.service.NGTriggerEventsService;
 import io.harness.ngtriggers.service.NGTriggerService;
 import io.harness.pms.annotations.PipelineServiceAuth;
 import io.harness.pms.rbac.PipelineRbacPermissions;
+import io.harness.pms.triggers.v1.NGTriggerApiUtils;
 import io.harness.spec.server.pipeline.v1.TriggersApi;
-import io.harness.spec.server.pipeline.v1.model.TriggerCreateRequestBody;
-import io.harness.spec.server.pipeline.v1.model.TriggerCreateResponseBody;
-import io.harness.spec.server.pipeline.v1.model.TriggerGetResponseBody;
-import io.harness.spec.server.pipeline.v1.model.TriggerUpdateRequestBody;
+import io.harness.spec.server.pipeline.v1.model.TriggerRequestBody;
 
 import com.google.inject.Inject;
+import java.util.Optional;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 import lombok.AccessLevel;
@@ -36,30 +43,89 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TriggersApiImpl implements TriggersApi {
   private final NGTriggerService ngTriggerService;
+  private final AccessControlClient accessControlClient;
+  private final NGTriggerEventsService ngTriggerEventsService;
+  private final NGTriggerApiUtils ngTriggerApiUtils;
 
   @Override
-  @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
-  public Response createTrigger(
-      String org, String project, String pipeline, @Valid TriggerCreateRequestBody body, String harnessAccount) {
-    return Response.ok().entity(new TriggerCreateResponseBody()).build();
+  public Response createTrigger(@Valid TriggerRequestBody body, String org, String project, String pipeline,
+      Boolean ignoreError, String harnessAccount) {
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(harnessAccount, org, project),
+        Resource.of("PIPELINE", pipeline), PipelineRbacPermissions.PIPELINE_CREATE_AND_EDIT);
+
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(harnessAccount, org, project),
+        Resource.of("PIPELINE", pipeline), PipelineRbacPermissions.PIPELINE_EXECUTE);
+    NGTriggerEntity createdEntity;
+    try {
+      boolean withServiceV2 = body.isWithServiceV2() != null && body.isWithServiceV2();
+      TriggerDetails triggerDetails =
+          ngTriggerApiUtils.toTriggerDetails(harnessAccount, org, project, body, withServiceV2, pipeline);
+      ngTriggerService.validateTriggerConfig(triggerDetails);
+      if (ignoreError != null && ignoreError) {
+        createdEntity = ngTriggerService.create(triggerDetails.getNgTriggerEntity());
+      } else {
+        ngTriggerService.validatePipelineRef(triggerDetails);
+        createdEntity = ngTriggerService.create(triggerDetails.getNgTriggerEntity());
+      }
+      return Response.ok().entity(ngTriggerApiUtils.toResponseDTO(createdEntity)).build();
+    } catch (Exception e) {
+      throw new InvalidRequestException("Failed while Saving Trigger: " + e.getMessage());
+    }
   }
 
   @Override
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
   public Response getTrigger(String org, String project, String pipeline, String trigger, String harnessAccount) {
-    return Response.ok().entity(new TriggerGetResponseBody()).build();
+    Optional<NGTriggerEntity> ngTriggerEntity =
+        ngTriggerService.get(harnessAccount, org, project, pipeline, trigger, false);
+
+    if (!ngTriggerEntity.isPresent()) {
+      throw new EntityNotFoundException(String.format("Trigger %s does not exist", trigger));
+    }
+    return Response.ok().entity(ngTriggerApiUtils.toGetResponseDTO(ngTriggerEntity.get())).build();
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
-  public Response updateTrigger(@Valid TriggerUpdateRequestBody body, String org, String project, String pipeline,
-      String trigger, String harnessAccount) {
-    return Response.ok().entity(new TriggerCreateResponseBody()).build();
+  public Response updateTrigger(@Valid TriggerRequestBody body, String org, String project, String pipeline,
+      String trigger, Boolean ignoreError, String harnessAccount) {
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(harnessAccount, org, project),
+        Resource.of("PIPELINE", pipeline), PipelineRbacPermissions.PIPELINE_CREATE_AND_EDIT);
+
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(harnessAccount, org, project),
+        Resource.of("PIPELINE", pipeline), PipelineRbacPermissions.PIPELINE_EXECUTE);
+    Optional<NGTriggerEntity> ngTriggerEntity =
+        ngTriggerService.get(harnessAccount, org, project, pipeline, trigger, false);
+    if (!ngTriggerEntity.isPresent()) {
+      throw new EntityNotFoundException(String.format("Trigger %s does not exist", trigger));
+    }
+    boolean withServiceV2 = body.isWithServiceV2() != null && body.isWithServiceV2();
+    try {
+      TriggerDetails triggerDetails =
+          ngTriggerApiUtils.toTriggerDetails(harnessAccount, org, project, body, withServiceV2, pipeline);
+      triggerDetails = ngTriggerService.fetchTriggerEntityV1(harnessAccount, org, project, pipeline, trigger,
+          triggerDetails.getNgTriggerConfigV2(), triggerDetails.getNgTriggerEntity(), withServiceV2);
+
+      ngTriggerService.validateTriggerConfig(triggerDetails);
+      NGTriggerEntity updatedEntity;
+      if (ignoreError != null && ignoreError) {
+        updatedEntity = ngTriggerService.update(triggerDetails.getNgTriggerEntity(), ngTriggerEntity.get());
+      } else {
+        ngTriggerService.validatePipelineRef(triggerDetails);
+        updatedEntity = ngTriggerService.update(triggerDetails.getNgTriggerEntity(), ngTriggerEntity.get());
+      }
+      return Response.ok().entity(ngTriggerApiUtils.toResponseDTO(updatedEntity)).build();
+    } catch (Exception e) {
+      throw new InvalidRequestException("Failed while updating Trigger: " + e.getMessage());
+    }
   }
 
   @Override
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
   public Response deleteTrigger(String org, String project, String pipeline, String trigger, String harnessAccount) {
-    return Response.ok().build();
+    boolean triggerDeleted = ngTriggerService.delete(harnessAccount, org, project, pipeline, trigger, null);
+    if (triggerDeleted) {
+      ngTriggerEventsService.deleteTriggerEventHistory(harnessAccount, org, project, pipeline, trigger);
+    }
+    return Response.status(204).build();
   }
 }
