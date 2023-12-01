@@ -121,6 +121,9 @@ public class InputSetMergeHelper {
               removeStagesFromJsonNode(iterator, stageIdentifiers, childStage);
             }
           }
+          if (stage.get(YAMLFieldNameConstants.SPEC).get(YAMLFieldNameConstants.STAGES).isEmpty()) {
+            it.remove();
+          }
         } else {
           removeStagesFromJsonNode(it, stageIdentifiers, stage);
         }
