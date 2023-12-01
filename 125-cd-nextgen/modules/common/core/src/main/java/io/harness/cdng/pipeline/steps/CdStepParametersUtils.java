@@ -46,6 +46,11 @@ public class CdStepParametersUtils {
   }
 
   public StageElementParametersBuilder getStageParameters(AbstractStageNodeWithFailureInfo stageNode) {
+    return getStageParameters(stageNode, false);
+  }
+
+  public StageElementParametersBuilder getStageParameters(
+      AbstractStageNodeWithFailureInfo stageNode, boolean addDelegateSelectors) {
     TagUtils.removeUuidFromTags(stageNode.getTags());
 
     StageElementParametersBuilder stageBuilder = StageElementParameters.builder();
@@ -61,7 +66,10 @@ public class CdStepParametersUtils {
     stageBuilder.variables(
         ParameterField.createValueField(NGVariablesUtils.getMapOfVariables(stageNode.getVariables())));
     stageBuilder.tags(CollectionUtils.emptyIfNull(stageNode.getTags()));
-    stageBuilder.delegateSelectors(stageNode.getDelegateSelectors());
+
+    if (addDelegateSelectors) {
+      stageBuilder.delegateSelectors(stageNode.getDelegateSelectors());
+    }
 
     return stageBuilder;
   }

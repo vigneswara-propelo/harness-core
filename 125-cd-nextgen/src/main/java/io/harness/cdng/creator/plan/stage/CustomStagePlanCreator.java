@@ -102,7 +102,7 @@ public class CustomStagePlanCreator extends AbstractStagePlanCreator<CustomStage
       PlanCreationContext ctx, CustomStageNode stageNode, List<String> childrenNodeIds) {
     stageNode.setIdentifier(StrategyUtils.getIdentifierWithExpression(ctx, stageNode.getIdentifier()));
     stageNode.setName(StrategyUtils.getIdentifierWithExpression(ctx, stageNode.getName()));
-    StageElementParametersBuilder stageParameters = CdStepParametersUtils.getStageParameters(stageNode);
+    StageElementParametersBuilder stageParameters = CdStepParametersUtils.getStageParameters(stageNode, true);
     YamlField specField =
         Preconditions.checkNotNull(ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC));
     stageParameters.specConfig(getSpecParameters(specField.getNode().getUuid(), ctx, stageNode));
