@@ -169,7 +169,7 @@ public class TemplateMigrationService extends NgMigrationService {
     Response<ResponseDTO<TemplateWrapperResponseDTO>> resp =
         templateClient
             .createTemplate(inputDTO.getDestinationAuthToken(), inputDTO.getDestinationAccountIdentifier(),
-                inputDTO.getOrgIdentifier(), inputDTO.getProjectIdentifier(),
+                yamlFile.getNgEntityDetail().getOrgIdentifier(), yamlFile.getNgEntityDetail().getProjectIdentifier(),
                 RequestBody.create(MediaType.parse("application/yaml"), YamlUtils.writeYamlString(yamlFile.getYaml())),
                 StoreType.INLINE)
             .execute();
@@ -177,7 +177,7 @@ public class TemplateMigrationService extends NgMigrationService {
       resp =
           templateClient
               .createTemplate(inputDTO.getDestinationAuthToken(), inputDTO.getDestinationAccountIdentifier(),
-                  inputDTO.getOrgIdentifier(), inputDTO.getProjectIdentifier(),
+                  yamlFile.getNgEntityDetail().getOrgIdentifier(), yamlFile.getNgEntityDetail().getProjectIdentifier(),
                   RequestBody.create(MediaType.parse("application/yaml"), getYamlStringV2(yamlFile)), StoreType.INLINE)
               .execute();
     }
