@@ -12,9 +12,7 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.beans.FeatureName;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
-import io.harness.cdng.provision.terraform.TerraformApplyStep;
 import io.harness.cdng.provision.terraform.TerraformApplyStepNode;
 import io.harness.cdng.provision.terraform.TerraformApplyStepV2;
 import io.harness.executions.steps.StepSpecTypeConstants;
@@ -50,21 +48,11 @@ public class TerraformApplyStepPlanCreator extends CDPMSStepPlanCreatorV2<Terraf
 
   @Override
   public StepType getStepSpecType(PlanCreationContext ctx, TerraformApplyStepNode stepElement) {
-    if (featureFlagService.isEnabled(ctx.getMetadata().getAccountIdentifier(),
-            FeatureName.CDS_SUPPORT_EXPRESSION_REMOTE_TERRAFORM_VAR_FILES_NG)) {
-      return TerraformApplyStepV2.STEP_TYPE;
-    } else {
-      return TerraformApplyStep.STEP_TYPE;
-    }
+    return TerraformApplyStepV2.STEP_TYPE;
   }
 
   @Override
   public String getFacilitatorType(PlanCreationContext ctx, TerraformApplyStepNode stepElement) {
-    if (featureFlagService.isEnabled(ctx.getMetadata().getAccountIdentifier(),
-            FeatureName.CDS_SUPPORT_EXPRESSION_REMOTE_TERRAFORM_VAR_FILES_NG)) {
-      return OrchestrationFacilitatorType.TASK_CHAIN;
-    } else {
-      return OrchestrationFacilitatorType.TASK;
-    }
+    return OrchestrationFacilitatorType.TASK_CHAIN;
   }
 }
