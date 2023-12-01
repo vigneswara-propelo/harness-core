@@ -1519,6 +1519,16 @@ components:
           type: string
         operator:
           type: string
+          enum:
+            - In
+            - Equals
+            - NotEquals
+            - StartsWith
+            - EndsWith
+            - Contains
+            - DoesNotContain
+            - Regex
+            - NotIn
         value:
           type: string
     ScheduledTriggerSpec:

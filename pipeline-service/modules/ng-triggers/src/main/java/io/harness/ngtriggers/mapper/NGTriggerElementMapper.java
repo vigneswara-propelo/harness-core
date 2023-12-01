@@ -158,7 +158,7 @@ public class NGTriggerElementMapper {
     }
   }
 
-  public NGTriggerConfigV2 toTriggerConfigV2ForV1Yaml(NGTriggerEntity entity) {
+  public NGTriggerConfigV2 toTriggerConfigV2ForYamlSimplification(NGTriggerEntity entity) {
     return NGTriggerConfigV2.builder()
         .pipelineIdentifier(entity.getTargetIdentifier())
         .identifier(entity.getIdentifier())
@@ -206,7 +206,7 @@ public class NGTriggerElementMapper {
 
   public NGTriggerConfigV2 toTriggerConfigV2(NGTriggerEntity ngTriggerEntity) {
     if (HarnessYamlVersion.V1.equals(ngTriggerEntity.getHarnessVersion())) {
-      return toTriggerConfigV2ForV1Yaml(ngTriggerEntity);
+      return toTriggerConfigV2ForYamlSimplification(ngTriggerEntity);
     }
     try {
       if (ngTriggerEntity.getYmlVersion() == null || ngTriggerEntity.getYmlVersion() < 2) {
@@ -233,7 +233,7 @@ public class NGTriggerElementMapper {
     if (HarnessYamlVersion.V0.equals(ngTriggerEntity.getHarnessVersion())) {
       config = toTriggerConfigV2(ngTriggerEntity.getYaml());
     } else {
-      config = toTriggerConfigV2ForV1Yaml(ngTriggerEntity);
+      config = toTriggerConfigV2ForYamlSimplification(ngTriggerEntity);
     }
     return TriggerDetails.builder().ngTriggerConfigV2(config).ngTriggerEntity(ngTriggerEntity).build();
   }

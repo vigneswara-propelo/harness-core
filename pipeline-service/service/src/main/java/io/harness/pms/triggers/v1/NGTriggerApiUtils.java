@@ -31,6 +31,7 @@ import io.harness.ngtriggers.beans.source.NGTriggerSpecV2;
 import io.harness.ngtriggers.beans.source.NGTriggerType;
 import io.harness.ngtriggers.beans.source.scheduled.CronTriggerSpec;
 import io.harness.ngtriggers.beans.source.scheduled.ScheduledTriggerConfig;
+import io.harness.ngtriggers.beans.source.webhook.v2.WebhookTriggerConfigV2;
 import io.harness.ngtriggers.beans.target.TargetType;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.spec.server.pipeline.v1.model.CronScheduledTriggerSpec;
@@ -41,6 +42,8 @@ import io.harness.spec.server.pipeline.v1.model.TriggerGetResponseBody;
 import io.harness.spec.server.pipeline.v1.model.TriggerRequestBody;
 import io.harness.spec.server.pipeline.v1.model.TriggerResponseBody;
 import io.harness.spec.server.pipeline.v1.model.TriggerSource;
+import io.harness.spec.server.pipeline.v1.model.WebhookTriggerSource;
+import io.harness.spec.server.pipeline.v1.model.WebhookTriggerSpec;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -56,6 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(PIPELINE)
 public class NGTriggerApiUtils {
   io.harness.ngtriggers.mapper.NGTriggerElementMapper ngTriggerElementMapper;
+  NGWebhookTriggerApiUtils ngWebhookTriggerApiUtils;
 
   public TriggerDetails toTriggerDetails(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       TriggerRequestBody body, boolean withServiceV2, String pipeline) {
@@ -168,6 +172,12 @@ public class NGTriggerApiUtils {
                       .type(spec.getSpec().getType())
                       .expression(spec.getSpec().getExpression())
                       .build())
+            .build();
+      case WEBHOOK:
+        WebhookTriggerSpec webhookSpec = ((WebhookTriggerSource) source).getSpec();
+        return WebhookTriggerConfigV2.builder()
+            .type(ngWebhookTriggerApiUtils.toWebhookTriggerType(webhookSpec.getType()))
+            .spec(ngWebhookTriggerApiUtils.toWebhookTriggerSpec(webhookSpec))
             .build();
       default:
         throw new InvalidRequestException("Type " + source.getType().toString() + " is invalid");
