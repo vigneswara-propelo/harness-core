@@ -15,6 +15,7 @@ import io.harness.idp.pipeline.stages.filtercreator.IDPStageFilterCreator;
 import io.harness.idp.pipeline.stages.plancreator.IDPStagePlanCreator;
 import io.harness.idp.pipeline.stages.plancreator.IDPStepPlanCreator;
 import io.harness.idp.pipeline.stages.variablecreator.IDPStageVariableCreator;
+import io.harness.idp.steps.Constants;
 import io.harness.idp.steps.StepSpecTypeConstants;
 import io.harness.idp.steps.execution.filter.IDPStepFilterJsonCreator;
 import io.harness.idp.steps.execution.plan.IdpCodePushStepPlanCreator;
@@ -96,11 +97,36 @@ public class IdpPipelineServiceInfoProvider implements PipelineServiceInfoProvid
             .setType(StepSpecTypeConstants.GIT_CLONE)
             .setStepMetaData(StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Build").build())
             .build();
+    StepInfo cookicutterStepInfo =
+        StepInfo.newBuilder()
+            .setName("Cookiecutter")
+            .setType(Constants.IDP_COOKIECUTTER)
+            .setStepMetaData(StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Code Generators").build())
+            .build();
+
+    StepInfo createRepoStepInfo =
+        StepInfo.newBuilder()
+            .setName("Create Repo")
+            .setType(Constants.IDP_CREATE_REPO)
+            .setStepMetaData(
+                StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Git Repository Setup").build())
+            .build();
+
+    StepInfo codePushStepInfo =
+        StepInfo.newBuilder()
+            .setName("Code Push")
+            .setType(Constants.IDP_CODE_PUSH)
+            .setStepMetaData(
+                StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Git Repository Setup").build())
+            .build();
 
     ArrayList<StepInfo> stepInfos = new ArrayList<>();
     stepInfos.add(runStepInfo);
     stepInfos.add(pluginStepInfo);
     stepInfos.add(gitCloneStepInfo);
+    stepInfos.add(cookicutterStepInfo);
+    stepInfos.add(createRepoStepInfo);
+    stepInfos.add(codePushStepInfo);
     return stepInfos;
   }
 }
