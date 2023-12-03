@@ -84,6 +84,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -447,8 +448,15 @@ public class MigratorUtility {
 
   public static List<NGVariable> getVariables(MigrationContext migrationContext, List<Variable> cgVariables) {
     List<NGVariable> variables = new ArrayList<>();
+    Set<String> keySet = new HashSet<>();
     if (EmptyPredicate.isNotEmpty(cgVariables)) {
-      cgVariables.forEach(serviceVariable -> variables.add(getNGVariable(migrationContext, serviceVariable)));
+      cgVariables.forEach(serviceVariable -> {
+        NGVariable ngVariable = getNGVariable(migrationContext, serviceVariable);
+        if (!keySet.contains(ngVariable.getName())) {
+          variables.add(ngVariable);
+          keySet.add(ngVariable.getName());
+        }
+      });
     }
     return variables;
   }
