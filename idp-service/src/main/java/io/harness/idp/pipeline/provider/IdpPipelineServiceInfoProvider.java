@@ -82,20 +82,20 @@ public class IdpPipelineServiceInfoProvider implements PipelineServiceInfoProvid
     StepInfo runStepInfo = StepInfo.newBuilder()
                                .setName("Run")
                                .setType(StepSpecTypeConstants.RUN)
-                               .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Build").build())
+                               .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Miscellaneous").build())
                                .build();
 
     StepInfo pluginStepInfo = StepInfo.newBuilder()
                                   .setName("Plugin")
                                   .setType(StepSpecTypeConstants.PLUGIN)
-                                  .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Build").build())
+                                  .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Miscellaneous").build())
                                   .build();
 
     StepInfo gitCloneStepInfo =
         StepInfo.newBuilder()
             .setName("Git Clone")
             .setType(StepSpecTypeConstants.GIT_CLONE)
-            .setStepMetaData(StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Build").build())
+            .setStepMetaData(StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Miscellaneous").build())
             .build();
     StepInfo cookicutterStepInfo =
         StepInfo.newBuilder()
