@@ -81,8 +81,8 @@ public class CDNGPipelineConfigurationHelper {
             serviceDefinitionType, deploymentMetaDataYaml, executionStrategyType);
       }
       if (ServiceDefinitionType.SERVERLESS_AWS_LAMBDA.equals(serviceDefinitionType)
-          && ExecutionStrategyType.BASIC.equals(executionStrategyType) && EmptyPredicate.isNotEmpty(accountIdentifier)
-          && featureFlagHelper.isEnabled(accountIdentifier, FeatureName.CDS_SERVERLESS_V2)) {
+          && ExecutionStrategyType.BASIC.equals(executionStrategyType)
+          && EmptyPredicate.isNotEmpty(accountIdentifier)) {
         executionStrategyTypeValue = "basic-plugin";
       }
       return Resources.toString(

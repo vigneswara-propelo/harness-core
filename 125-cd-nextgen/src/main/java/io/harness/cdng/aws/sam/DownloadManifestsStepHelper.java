@@ -64,7 +64,6 @@ public class DownloadManifestsStepHelper {
       checkSamFeatureFlagEnabled(ambiance);
       return awsSamDownloadManifestsStepHelper.executeAsyncAfterRbac(ambiance, inputPackage, gitCloneStep);
     } else if (ServiceSpecType.SERVERLESS_AWS_LAMBDA.equals(serviceOutcome.getType())) {
-      checkServerlessV2FeatureFlagEnabled(ambiance);
       return serverlessDownloadManifestsStepHelper.executeAsyncAfterRbac(ambiance, inputPackage, gitCloneStep);
     } else {
       throw new InvalidRequestException(DEPLOYMENT_TYPE_NOT_SUPPORTED_EXCEPTION_MESSAGE, USER);
@@ -80,7 +79,6 @@ public class DownloadManifestsStepHelper {
       checkSamFeatureFlagEnabled(ambiance);
       return awsSamDownloadManifestsStepHelper.handleAsyncResponse(ambiance, responseDataMap);
     } else if (ServiceSpecType.SERVERLESS_AWS_LAMBDA.equals(serviceOutcome.getType())) {
-      checkServerlessV2FeatureFlagEnabled(ambiance);
       return serverlessDownloadManifestsStepHelper.handleAsyncResponse(ambiance, responseDataMap);
     } else {
       throw new InvalidRequestException(DEPLOYMENT_TYPE_NOT_SUPPORTED_EXCEPTION_MESSAGE, USER);
@@ -96,7 +94,6 @@ public class DownloadManifestsStepHelper {
       checkSamFeatureFlagEnabled(ambiance);
       return awsSamDownloadManifestsStepHelper.getPluginInfoList(request, usedPorts, ambiance);
     } else if (ServiceSpecType.SERVERLESS_AWS_LAMBDA.equals(serviceOutcome.getType())) {
-      checkServerlessV2FeatureFlagEnabled(ambiance);
       return serverlessDownloadManifestsStepHelper.getPluginInfoList(request, usedPorts, ambiance);
     } else {
       throw new InvalidRequestException(DEPLOYMENT_TYPE_NOT_SUPPORTED_EXCEPTION_MESSAGE, USER);
@@ -107,14 +104,6 @@ public class DownloadManifestsStepHelper {
     if (!cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), FeatureName.CDP_AWS_SAM)) {
       throw new AccessDeniedException(
           "CDP_AWS_SAM FF is not enabled for this account. Please contact harness customer care.",
-          ErrorCode.NG_ACCESS_DENIED, WingsException.USER);
-    }
-  }
-
-  public void checkServerlessV2FeatureFlagEnabled(Ambiance ambiance) {
-    if (!cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_SERVERLESS_V2)) {
-      throw new AccessDeniedException(
-          "CDS_SERVERLESS_V2 FF is not enabled for this account. Please contact harness customer care.",
           ErrorCode.NG_ACCESS_DENIED, WingsException.USER);
     }
   }

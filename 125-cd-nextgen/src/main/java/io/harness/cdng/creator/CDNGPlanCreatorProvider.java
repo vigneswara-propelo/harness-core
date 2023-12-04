@@ -1527,7 +1527,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                  .addCategory(PLUGIN)
                                  .setFolderPath("Serverless Lambda")
                                  .build())
-            .setFeatureFlag(FeatureName.CDS_SERVERLESS_V2.name())
             .build();
 
     StepInfo serverlessAwsLambdaRollbackV2 = StepInfo.newBuilder()
@@ -1538,7 +1537,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                                                       .addCategory(PLUGIN)
                                                                       .setFolderPath("Serverless Lambda")
                                                                       .build())
-                                                 .setFeatureFlag(FeatureName.CDS_SERVERLESS_V2.name())
                                                  .build();
 
     StepInfo serverlessAwsLambdaDeployV2 = StepInfo.newBuilder()
@@ -1549,7 +1547,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                                                     .addCategory(PLUGIN)
                                                                     .setFolderPath("Serverless Lambda")
                                                                     .build())
-                                               .setFeatureFlag(FeatureName.CDS_SERVERLESS_V2.name())
                                                .build();
 
     StepInfo serverlessAwsLambdaPackageV2 = StepInfo.newBuilder()
@@ -1560,7 +1557,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                                                      .addCategory(PLUGIN)
                                                                      .setFolderPath("Serverless Lambda")
                                                                      .build())
-                                                .setFeatureFlag(FeatureName.CDS_SERVERLESS_V2.name())
                                                 .build();
 
     StepInfo awsCdkBootstrap =
