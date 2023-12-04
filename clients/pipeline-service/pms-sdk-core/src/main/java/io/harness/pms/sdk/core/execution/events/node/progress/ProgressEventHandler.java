@@ -39,7 +39,7 @@ public class ProgressEventHandler extends PmsBaseEventHandler<ProgressEvent> {
   @Inject @Named("referenceFalseKryoSerializer") private KryoSerializer referenceFalseKryoSerializer;
 
   @Override
-  protected String getMetricPrefix(ProgressEvent message) {
+  protected String getEventType(ProgressEvent message) {
     return "progress_event";
   }
 

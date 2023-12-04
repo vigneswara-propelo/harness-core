@@ -25,7 +25,6 @@ import io.harness.pms.contracts.execution.events.SdkResponseEventType;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
-import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -68,16 +67,8 @@ public class SdkResponseHandlerTest extends OrchestrationTestBase {
   @Test
   @Owner(developers = SHALINI)
   @Category(UnitTests.class)
-  public void testExtractMetricContext() {
-    Map<String, String> map = sdkResponseHandler.extractMetricContext(new HashMap<>(), event);
-    assertEquals(map.get("eventType"), SdkResponseEventType.ADD_EXECUTABLE_RESPONSE.name());
-  }
-
-  @Test
-  @Owner(developers = SHALINI)
-  @Category(UnitTests.class)
   public void testGetMetricPrefix() {
-    assertEquals(sdkResponseHandler.getMetricPrefix(event), "sdk_response_event");
+    assertEquals(sdkResponseHandler.getEventType(event), "ADD_EXECUTABLE_RESPONSE");
   }
 
   @Test

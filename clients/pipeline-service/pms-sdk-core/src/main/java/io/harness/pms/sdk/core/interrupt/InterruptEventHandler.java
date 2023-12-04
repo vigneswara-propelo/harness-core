@@ -53,13 +53,8 @@ public class InterruptEventHandler extends PmsBaseEventHandler<InterruptEvent> {
   }
 
   @Override
-  protected Map<String, String> extractMetricContext(Map<String, String> metadataMap, InterruptEvent message) {
-    return ImmutableMap.of();
-  }
-
-  @Override
-  protected String getMetricPrefix(InterruptEvent message) {
-    return null;
+  protected String getEventType(InterruptEvent message) {
+    return "interrupt_event";
   }
 
   @Override

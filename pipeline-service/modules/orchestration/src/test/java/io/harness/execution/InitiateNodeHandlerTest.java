@@ -24,6 +24,7 @@ import io.harness.engine.OrchestrationEngine;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.events.InitiateMode;
 import io.harness.pms.contracts.execution.events.InitiateNodeEvent;
+import io.harness.pms.events.PmsEventMonitoringConstants;
 import io.harness.rule.Owner;
 import io.harness.utils.PmsFeatureFlagService;
 
@@ -50,8 +51,12 @@ public class InitiateNodeHandlerTest extends OrchestrationTestBase {
                                   .setNodeId(generateUuid())
                                   .setRuntimeId(generateUuid())
                                   .build();
-    assertThat(initiateNodeHandler.extractMetricContext(new HashMap<>(), event))
-        .isEqualTo(ImmutableMap.of("eventType", "TRIGGER_NODE"));
+    assertThat(initiateNodeHandler.extractMetricContext(new HashMap<>(), event, "RANDOM_STREAM"))
+        .isEqualTo(ImmutableMap.<String, String>builder()
+                       .put(PmsEventMonitoringConstants.MODULE, "pms")
+                       .put(PmsEventMonitoringConstants.EVENT_TYPE, "trigger_node_event")
+                       .put(PmsEventMonitoringConstants.STREAM_NAME, "RANDOM_STREAM")
+                       .build());
   }
 
   @Test
@@ -64,7 +69,7 @@ public class InitiateNodeHandlerTest extends OrchestrationTestBase {
                                   .setNodeId(generateUuid())
                                   .setRuntimeId(generateUuid())
                                   .build();
-    assertThat(initiateNodeHandler.getMetricPrefix(event)).isEqualTo("trigger_node_event");
+    assertThat(initiateNodeHandler.getEventType(event)).isEqualTo("trigger_node_event");
   }
 
   @Test

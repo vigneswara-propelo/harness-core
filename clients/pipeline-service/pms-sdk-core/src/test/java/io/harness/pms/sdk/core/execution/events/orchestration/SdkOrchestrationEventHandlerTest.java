@@ -32,7 +32,6 @@ import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
@@ -62,21 +61,8 @@ public class SdkOrchestrationEventHandlerTest extends PmsSdkCoreTestBase {
   @Test
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
-  public void testExtractMetricContext() {
-    Map<String, String> metricsMap =
-        sdkOrchestrationEventHandler.extractMetricContext(new HashMap<>(), orchestrationEvent);
-    assertThat(metricsMap.isEmpty()).isFalse();
-    assertThat(metricsMap.size()).isEqualTo(3);
-    assertThat(metricsMap.get("accountId")).isEqualTo(AmbianceTestUtils.ACCOUNT_ID);
-    assertThat(metricsMap.get("orgIdentifier")).isEqualTo(AmbianceTestUtils.ORG_ID);
-    assertThat(metricsMap.get("projectIdentifier")).isEqualTo(AmbianceTestUtils.PROJECT_ID);
-  }
-
-  @Test
-  @Owner(developers = SAHIL)
-  @Category(UnitTests.class)
   public void testMetricPrefix() {
-    assertThat(sdkOrchestrationEventHandler.getMetricPrefix(orchestrationEvent)).isEqualTo("orchestration_event");
+    assertThat(sdkOrchestrationEventHandler.getEventType(orchestrationEvent)).isEqualTo("orchestration_event");
   }
 
   @Test

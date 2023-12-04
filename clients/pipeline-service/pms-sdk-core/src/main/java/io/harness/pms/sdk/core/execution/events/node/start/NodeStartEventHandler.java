@@ -49,7 +49,7 @@ public class NodeStartEventHandler extends PmsBaseEventHandler<NodeStartEvent> {
   }
 
   @Override
-  protected String getMetricPrefix(NodeStartEvent message) {
+  protected String getEventType(NodeStartEvent message) {
     return "start_event";
   }
 

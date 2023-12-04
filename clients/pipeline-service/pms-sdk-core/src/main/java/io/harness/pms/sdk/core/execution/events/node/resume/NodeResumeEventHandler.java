@@ -59,7 +59,7 @@ public class NodeResumeEventHandler extends PmsBaseEventHandler<NodeResumeEvent>
   @Inject @Named("referenceFalseKryoSerializer") private KryoSerializer referenceFalseKryoSerializer;
 
   @Override
-  protected String getMetricPrefix(NodeResumeEvent message) {
+  protected String getEventType(NodeResumeEvent message) {
     return "resume_event";
   }
 

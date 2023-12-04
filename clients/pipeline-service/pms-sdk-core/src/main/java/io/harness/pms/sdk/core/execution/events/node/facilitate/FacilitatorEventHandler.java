@@ -39,7 +39,7 @@ public class FacilitatorEventHandler extends PmsBaseEventHandler<FacilitatorEven
   @Inject private EngineObtainmentHelper engineObtainmentHelper;
 
   @Override
-  protected String getMetricPrefix(FacilitatorEvent message) {
+  protected String getEventType(FacilitatorEvent message) {
     return "facilitator_event";
   }
 

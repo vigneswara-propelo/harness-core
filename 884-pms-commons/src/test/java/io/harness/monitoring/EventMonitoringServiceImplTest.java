@@ -43,8 +43,8 @@ public class EventMonitoringServiceImplTest extends PmsCommonsTestBase {
   @Category(UnitTests.class)
   public void testSendMetric() {
     String metricName = "m";
-    eventMonitoringService.sendMetric(metricName, null, new HashMap<>());
+    eventMonitoringService.sendMetric(metricName, new HashMap<>());
     verify(metricService, never()).recordMetric(anyString(), anyDouble());
-    eventMonitoringService.sendMetric(metricName, null, Collections.emptyMap());
+    eventMonitoringService.sendMetric(metricName, Collections.emptyMap());
   }
 }

@@ -17,7 +17,6 @@ import io.harness.logging.AutoLogContext;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.events.OrchestrationEvent;
 import io.harness.pms.events.base.PmsBaseEventHandler;
-import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.gitsync.PmsGitSyncBranchContextGuard;
 import io.harness.pms.sdk.PmsSdkModuleUtils;
 import io.harness.pms.sdk.core.events.OrchestrationEventHandler;
@@ -50,16 +49,7 @@ public class SdkOrchestrationEventHandler extends PmsBaseEventHandler<Orchestrat
   }
 
   @Override
-  protected Map<String, String> extractMetricContext(Map<String, String> metadataMap, OrchestrationEvent message) {
-    return ImmutableMap.<String, String>builder()
-        .put("accountId", AmbianceUtils.getAccountId(message.getAmbiance()))
-        .put("orgIdentifier", AmbianceUtils.getOrgIdentifier(message.getAmbiance()))
-        .put("projectIdentifier", AmbianceUtils.getProjectIdentifier(message.getAmbiance()))
-        .build();
-  }
-
-  @Override
-  protected String getMetricPrefix(OrchestrationEvent message) {
+  protected String getEventType(OrchestrationEvent message) {
     return "orchestration_event";
   }
 

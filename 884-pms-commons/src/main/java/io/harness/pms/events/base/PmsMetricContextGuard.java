@@ -9,19 +9,12 @@ package io.harness.pms.events.base;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.manage.GlobalContextManager;
 import io.harness.metrics.ThreadAutoLogContext;
-import io.harness.monitoring.MonitoringContext;
 
 import java.util.Map;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PmsMetricContextGuard extends ThreadAutoLogContext {
-  public PmsMetricContextGuard(Map<String, String> metadataMap, Map<String, String> contextMap) {
-    super(contextMap);
-    GlobalContextManager.upsertGlobalContextRecord(MonitoringContext.builder().build());
-  }
-
   public PmsMetricContextGuard(Map<String, String> contextMap) {
     super(contextMap);
   }

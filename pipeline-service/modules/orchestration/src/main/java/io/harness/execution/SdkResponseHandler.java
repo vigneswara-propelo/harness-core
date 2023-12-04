@@ -38,13 +38,8 @@ public class SdkResponseHandler extends PmsBaseEventHandler<SdkResponseEventProt
   }
 
   @Override
-  protected Map<String, String> extractMetricContext(Map<String, String> metadataMap, SdkResponseEventProto event) {
-    return ImmutableMap.of("eventType", event.getSdkResponseEventType().name());
-  }
-
-  @Override
-  protected String getMetricPrefix(SdkResponseEventProto message) {
-    return "sdk_response_event";
+  protected String getEventType(SdkResponseEventProto message) {
+    return message.getSdkResponseEventType().name();
   }
 
   @Override

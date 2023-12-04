@@ -28,12 +28,13 @@ public class NoopPmsEventHandler extends PmsBaseEventHandler<InterruptEvent> {
   }
 
   @Override
-  protected Map<String, String> extractMetricContext(Map<String, String> metadataMap, InterruptEvent message) {
+  public Map<String, String> extractMetricContext(
+      Map<String, String> metadataMap, InterruptEvent message, String stream) {
     return Collections.emptyMap();
   }
 
   @Override
-  protected String getMetricPrefix(InterruptEvent message) {
+  protected String getEventType(InterruptEvent message) {
     return null;
   }
 

@@ -40,7 +40,7 @@ public class NodeAdviseEventHandler extends PmsBaseEventHandler<AdviseEvent> imp
   @Inject private SdkNodeExecutionService sdkNodeExecutionService;
 
   @Override
-  protected String getMetricPrefix(AdviseEvent message) {
+  protected String getEventType(AdviseEvent message) {
     return "advise_event";
   }
 

@@ -83,7 +83,7 @@ public class NodeAdviseEventHandlerTest extends PmsSdkCoreTestBase {
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
   public void testMetricPrefix() {
-    assertThat(nodeAdviseEventHandler.getMetricPrefix(adviseEvent)).isEqualTo("advise_event");
+    assertThat(nodeAdviseEventHandler.getEventType(adviseEvent)).isEqualTo("advise_event");
   }
 
   @Test

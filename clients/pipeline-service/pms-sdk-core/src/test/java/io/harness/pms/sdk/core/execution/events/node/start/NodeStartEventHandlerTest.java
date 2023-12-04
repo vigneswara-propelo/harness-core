@@ -67,7 +67,7 @@ public class NodeStartEventHandlerTest extends PmsSdkCoreTestBase {
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
   public void testMetricPrefix() {
-    assertThat(nodeStartEventHandler.getMetricPrefix(nodeStartEvent)).isEqualTo("start_event");
+    assertThat(nodeStartEventHandler.getEventType(nodeStartEvent)).isEqualTo("start_event");
   }
 
   @Test

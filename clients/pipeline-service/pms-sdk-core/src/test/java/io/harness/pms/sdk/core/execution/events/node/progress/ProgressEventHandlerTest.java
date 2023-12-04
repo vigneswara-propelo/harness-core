@@ -69,7 +69,7 @@ public class ProgressEventHandlerTest extends PmsSdkCoreTestBase {
   @Owner(developers = SAHIL)
   @Category(UnitTests.class)
   public void testMetricPrefix() {
-    assertThat(progressEventHandler.getMetricPrefix(progressEvent)).isEqualTo("progress_event");
+    assertThat(progressEventHandler.getEventType(progressEvent)).isEqualTo("progress_event");
   }
 
   @Test
