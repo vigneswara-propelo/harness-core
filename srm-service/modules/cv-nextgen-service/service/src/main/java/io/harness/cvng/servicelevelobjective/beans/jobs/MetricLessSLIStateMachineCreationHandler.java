@@ -9,6 +9,7 @@ package io.harness.cvng.servicelevelobjective.beans.jobs;
 
 import io.harness.cvng.core.services.api.VerificationTaskService;
 import io.harness.cvng.core.utils.DateTimeUtils;
+import io.harness.cvng.servicelevelobjective.beans.SLIEvaluationType;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
@@ -33,7 +34,8 @@ public class MetricLessSLIStateMachineCreationHandler
   public void handle(ServiceLevelIndicator serviceLevelIndicator) {
     Optional<String> sliVerificationTaskId = verificationTaskService.getSLIVerificationTaskId(
         serviceLevelIndicator.getAccountId(), serviceLevelIndicator.getUuid());
-    if (sliVerificationTaskId.isPresent()) {
+    if (sliVerificationTaskId.isPresent()
+        && SLIEvaluationType.METRIC_LESS.equals(serviceLevelIndicator.getSLIEvaluationType())) {
       SLIRecord latestSLIRecord = sliRecordService.getLatestSLIRecord(sliVerificationTaskId.get());
       Instant currentTime = DateTimeUtils.roundDownTo5MinBoundary(clock.instant());
       if (latestSLIRecord.getTimestamp().plus(5, ChronoUnit.MINUTES).isBefore(currentTime)) {

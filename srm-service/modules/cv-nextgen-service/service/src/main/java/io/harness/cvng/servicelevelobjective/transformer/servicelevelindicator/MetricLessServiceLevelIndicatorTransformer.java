@@ -8,6 +8,7 @@
 package io.harness.cvng.servicelevelobjective.transformer.servicelevelindicator;
 
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.servicelevelobjective.beans.SLIEvaluationType;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelIndicatorDTO;
 import io.harness.cvng.servicelevelobjective.beans.slispec.MetricLessServiceLevelIndicatorSpec;
 import io.harness.cvng.servicelevelobjective.entities.MetricLessServiceLevelIndicator;
@@ -25,6 +26,7 @@ public class MetricLessServiceLevelIndicatorTransformer
         .identifier(serviceLevelIndicatorDTO.getIdentifier())
         .name(serviceLevelIndicatorDTO.getName())
         .monitoredServiceIdentifier(monitoredServiceIndicator)
+        .sliEvaluationType(SLIEvaluationType.METRIC_LESS)
         .enabled(isEnabled)
         .build();
   }
