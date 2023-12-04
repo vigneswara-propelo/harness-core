@@ -1,7 +1,8 @@
 identifier: datadog
 name: Datadog
 description: Embed Datadog graphs and dashboards in Backstage.
-createdBy: roadie.io
+accountIdentifier: __GLOBAL_ACCOUNT_ID__
+creator: roadie.io
 category: Monitoring
 source: https://roadie.io/backstage/plugins/datadog/
 iconUrl: https://roadie.io/images/logos/datadog-white-background.png

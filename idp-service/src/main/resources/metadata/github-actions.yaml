@@ -1,7 +1,8 @@
 identifier: github-actions
 name: GitHub Actions
 description: GitHub Actions makes it easy to automate all your software workflows, now with world-class CI/CD. Build, test, and deploy your code right from GitHub.
-createdBy: Spotify
+accountIdentifier: __GLOBAL_ACCOUNT_ID__
+creator: Spotify
 category: CI/CD
 source: https://github.com/backstage/backstage/tree/master/plugins/github-actions
 iconUrl: https://avatars2.githubusercontent.com/u/44036562?s=400&v=4

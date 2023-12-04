@@ -1,7 +1,8 @@
 identifier: firehydrant
 name: Firehydrant
 description: View service incidents information from FireHydrant, such as active incidents and incident metrics, directly within Backstage.
-createdBy: FireHydrant
+accountIdentifier: __GLOBAL_ACCOUNT_ID__
+creator: FireHydrant
 category: Incident Management
 source: https://github.com/backstage/backstage/blob/master/plugins/firehydrant/README.md
 iconUrl: https://raw.githubusercontent.com/backstage/backstage/master/plugins/firehydrant/doc/firehydrant_logo.png

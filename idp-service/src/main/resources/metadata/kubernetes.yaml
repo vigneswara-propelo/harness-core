@@ -1,7 +1,8 @@
 identifier: kubernetes
 name: Kubernetes
 description: Monitor all your service's deployments at a glance, even across clusters.
-createdBy: Spotify
+accountIdentifier: __GLOBAL_ACCOUNT_ID__
+creator: Spotify
 category: Core Feature
 source: https://backstage.io/docs/features/kubernetes/
 iconUrl: https://avatars.githubusercontent.com/u/13629408

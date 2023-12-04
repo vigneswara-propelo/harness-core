@@ -10,12 +10,13 @@ package io.harness.idp.plugin.beans;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.mongo.index.FdUniqueIndex;
+import io.harness.mongo.index.CompoundMongoIndex;
+import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.persistence.PersistentEntity;
-import io.harness.spec.server.idp.v1.model.PluginInfo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import java.util.List;
@@ -34,11 +35,23 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Persistent
 @OwnedBy(HarnessTeam.IDP)
 public class PluginInfoEntity implements PersistentEntity {
+  public static List<MongoIndex> mongoIndexes() {
+    return ImmutableList.<MongoIndex>builder()
+        .add(CompoundMongoIndex.builder()
+                 .name("unique_account_identifier")
+                 .unique(true)
+                 .field(PluginInfoEntityKeys.accountIdentifier)
+                 .field(PluginInfoEntityKeys.identifier)
+                 .build())
+        .build();
+  }
+
   @Id @org.mongodb.morphia.annotations.Id private String id;
-  @FdUniqueIndex private String identifier;
+  private String identifier;
+  private String accountIdentifier;
   private String name;
   private String description;
-  private String createdBy;
+  private String creator;
   private String category;
   @Builder.Default private boolean core = false;
   private String source;

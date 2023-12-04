@@ -1,7 +1,8 @@
 identifier: pager-duty
 name: PagerDuty
 description: PagerDuty offers a simple way to identify any active incidents for an entity and the escalation policy.
-createdBy: Spotify
+accountIdentifier: __GLOBAL_ACCOUNT_ID__
+creator: Spotify
 category: Monitoring
 source: https://github.com/backstage/backstage/tree/master/plugins/pagerduty
 iconUrl: https://avatars2.githubusercontent.com/u/766800?s=200&v=4

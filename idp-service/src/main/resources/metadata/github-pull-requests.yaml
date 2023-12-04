@@ -1,7 +1,8 @@
 identifier: github-pull-requests
 name: GitHub Pull Requests
 description: View GitHub pull requests for your service in Backstage.
-createdBy: roadie.io
+accountIdentifier: __GLOBAL_ACCOUNT_ID__
+creator: roadie.io
 category: Source Control Mgmt
 source: https://roadie.io/backstage/plugins/github-pull-requests/?utm_source=backstage.io&utm_medium=marketplace&utm_campaign=github-pull-requests
 iconUrl: https://roadie.io/images/logos/github.png
