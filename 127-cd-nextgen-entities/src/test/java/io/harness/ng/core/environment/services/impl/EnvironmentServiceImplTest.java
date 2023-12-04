@@ -43,6 +43,7 @@ import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
 import io.harness.ng.core.entitysetupusage.service.EntitySetupUsageService;
 import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.environment.beans.Environment.EnvironmentKeys;
+import io.harness.ng.core.environment.beans.EnvironmentInputSetYamlAndServiceOverridesMetadataDTO;
 import io.harness.ng.core.environment.beans.EnvironmentInputsMergedResponseDto;
 import io.harness.ng.core.environment.dto.EnvironmentResponseDTO;
 import io.harness.ng.core.environment.mappers.EnvironmentMapper;
@@ -627,6 +628,40 @@ public class EnvironmentServiceImplTest extends CDNGEntitiesTestBase {
     assertThat(environments).contains(accEnv);
     assertThat(environments).contains(orgEnv);
     assertThat(environments).contains(projectEnv);
+  }
+
+  @Test
+  @Owner(developers = HINGER)
+  @Category(UnitTests.class)
+  public void testCreateEnvironmentMetadataInAccountLevelStageTemplate() {
+    String filename = "env-with-runtime-inputs.yaml";
+    String yaml = readFile(filename);
+    Environment createEnvironmentRequest =
+        Environment.builder().accountId("ACCOUNT_ID").identifier("IDENTIFIER").yaml(yaml).build();
+
+    environmentService.create(createEnvironmentRequest);
+
+    // account level stage template using account level environment
+    // will make calls without orgId and projectId and with envRef: account.IDENTIFIER
+    EnvironmentInputSetYamlAndServiceOverridesMetadataDTO environmentMetadata =
+        environmentService.getEnvironmentsInputYamlAndServiceOverridesMetadata("ACCOUNT_ID", null, null,
+            List.of("account.IDENTIFIER"), Collections.singletonMap("account.IDENTIFIER", null),
+            Collections.emptyList(), false, false);
+
+    String metadataYamlForAccountLevelTemplate =
+        environmentMetadata.getEnvironmentsInputYamlAndServiceOverrides().get(0).getEnvRuntimeInputYaml();
+    String resFile = "env-with-runtime-inputs-res.yaml";
+    String expectedYaml = readFile(resFile);
+    assertThat(metadataYamlForAccountLevelTemplate).isEqualTo(expectedYaml);
+
+    // project level stage template using account level environment
+    // will make calls with some orgId and projectId and with envRef: account.IDENTIFIER
+    environmentMetadata = environmentService.getEnvironmentsInputYamlAndServiceOverridesMetadata("ACCOUNT_ID", "ORG_ID",
+        "PROJECT_ID", List.of("account.IDENTIFIER"), Collections.singletonMap("account.IDENTIFIER", null),
+        Collections.emptyList(), false, false);
+    String metadataYamlForProjectLevelTemplate =
+        environmentMetadata.getEnvironmentsInputYamlAndServiceOverrides().get(0).getEnvRuntimeInputYaml();
+    assertThat(metadataYamlForProjectLevelTemplate).isEqualTo(expectedYaml);
   }
 
   private Object[][] data() {
