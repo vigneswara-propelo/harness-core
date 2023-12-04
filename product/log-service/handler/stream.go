@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/harness/harness-core/product/log-service/logger"
+	"github.com/harness/harness-core/product/log-service/metric"
 	"github.com/harness/harness-core/product/log-service/store"
 	"github.com/harness/harness-core/product/log-service/stream"
 
@@ -171,7 +172,9 @@ func HandleClose(logStream stream.Stream, store store.Store, scanBatch int64) ht
 
 // HandleWrite returns an http.HandlerFunc that writes
 // to the live stream.
-func HandleWrite(s stream.Stream) http.HandlerFunc {
+func HandleWrite(s stream.Stream, metrics *metric.Metrics) http.HandlerFunc {
+	// Increment the Stream write count
+	metrics.StreamWriteCount.Inc()
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		st := time.Now()
@@ -214,12 +217,14 @@ func HandleWrite(s stream.Stream) http.HandlerFunc {
 			WithField("num_lines", len(in)).
 			Infoln("api: successfully wrote to stream")
 		w.WriteHeader(http.StatusNoContent)
+		metrics.StreamWriteLatency.Set(time.Since(st).Seconds())
 	}
 }
 
 // HandleTail returns an http.HandlerFunc that tails
 // the live stream.
-func HandleTail(s stream.Stream) http.HandlerFunc {
+func HandleTail(s stream.Stream, metrics *metric.Metrics) http.HandlerFunc {
+	metrics.StreamTailCount.Inc()
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		accountID := r.FormValue(accountIDParam)
