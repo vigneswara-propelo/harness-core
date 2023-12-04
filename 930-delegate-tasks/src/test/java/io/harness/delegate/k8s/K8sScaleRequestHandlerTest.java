@@ -142,6 +142,7 @@ public class K8sScaleRequestHandlerTest extends CategoryTest {
     K8sScaleResponse scaleResponse = (K8sScaleResponse) response.getK8sNGTaskResponse();
     assertThat(scaleResponse.getK8sPodList()).isNotEmpty();
     assertThat(scaleResponse.getK8sPodList()).containsAll(pods);
+    assertThat(scaleResponse.getPreviousK8sPodList()).containsAll(pods);
 
     verify(k8sTaskHelperBase, times(1))
         .getCurrentReplicas(any(Kubectl.class), eq(deployment), eq(delegateTaskParams), eq(logCallback));
