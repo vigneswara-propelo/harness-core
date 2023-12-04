@@ -8,20 +8,24 @@
 package io.harness.notification.service;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
-import static io.harness.exception.WingsException.USER;
+
+import static java.lang.String.format;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.notification.entities.NotificationChannel;
 import io.harness.notification.entities.NotificationChannel.NotificationChannelKeys;
 import io.harness.notification.repositories.NotificationChannelRepository;
+import io.harness.notification.utils.NotificationChannelFilterProperties;
 
 import com.google.inject.Inject;
+import com.mongodb.DuplicateKeyException;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
@@ -34,22 +38,20 @@ public class NotificationChannelManagementServiceImpl
   @Override
   public NotificationChannel create(NotificationChannel notificationChannel) {
     try {
-      //@TODO Validation check
       return notificationChannelRepository.save(notificationChannel);
     } catch (DuplicateKeyException duplicateKeyException) {
       throw new DuplicateFieldException(
-          "Duplicate identifier, please try again with a new identifier", USER, duplicateKeyException);
+          format("Notification channel exists with same name %s exists", notificationChannel.getIdentifier()));
     }
   }
 
   @Override
   public NotificationChannel update(NotificationChannel notificationChannel) {
     try {
-      //@TODO Validation check
       return notificationChannelRepository.save(notificationChannel);
     } catch (DuplicateKeyException duplicateKeyException) {
       throw new DuplicateFieldException(
-          "Duplicate identifier, please try again with a new identifier", USER, duplicateKeyException);
+          format("Notification channel exists with same name %s exists", notificationChannel.getIdentifier()));
     }
   }
 
@@ -72,6 +74,16 @@ public class NotificationChannelManagementServiceImpl
   public boolean delete(NotificationChannel notificationChannel) {
     notificationChannelRepository.delete(notificationChannel);
     return true;
+  }
+
+  @Override
+  public Page<NotificationChannel> list(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      Pageable pageable, NotificationChannelFilterProperties notificationChannelFilterProperties) {
+    Criteria criteria = createScopeCriteria(accountIdentifier, orgIdentifier, projectIdentifier);
+    criteria.and(notificationChannelFilterProperties.getSearchTerm());
+    criteria.and(NotificationChannelKeys.notificationChannelType)
+        .is(notificationChannelFilterProperties.getNotificationChannelType().name());
+    return notificationChannelRepository.findAll(criteria, pageable);
   }
 
   private Criteria createNotificationChannelFetchCriteria(

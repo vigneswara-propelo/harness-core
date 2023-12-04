@@ -13,12 +13,15 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
 import io.harness.iterator.PersistentRegularIterable;
+import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.FdIndex;
+import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.notification.entities.NotificationCondition.NotificationConditionKeys;
 import io.harness.notification.entities.NotificationEventConfig.NotificationEventConfigKeys;
 import io.harness.persistence.PersistentEntity;
 
+import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +53,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @HarnessEntity(exportable = true)
 @OwnedBy(HarnessTeam.PL)
 public class NotificationRule implements PersistentEntity, PersistentRegularIterable {
+  public static List<MongoIndex> mongoIndexes() {
+    return ImmutableList.<MongoIndex>builder()
+        .add(CompoundMongoIndex.builder()
+                 .name("unique_rule_identifier_idx")
+                 .unique(true)
+                 .field(NotificationRuleKeys.accountIdentifier)
+                 .field(NotificationRuleKeys.orgIdentifier)
+                 .field(NotificationRuleKeys.projectIdentifier)
+                 .field(NotificationRuleKeys.identifier)
+                 .build())
+        .build();
+  }
+
   @Id @dev.morphia.annotations.Id String uuid;
 
   String identifier;

@@ -8,9 +8,12 @@
 package io.harness.notification.entities;
 
 import io.harness.notification.NotificationChannelType;
+import io.harness.spec.server.notification.v1.model.ChannelDTO;
 
 public interface Channel {
   Object toObjectofProtoSchema();
 
   NotificationChannelType getChannelType();
+
+  ChannelDTO dto();
 }

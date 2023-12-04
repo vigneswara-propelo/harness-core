@@ -15,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.notification.NotificationChannelType;
 import io.harness.notification.dtos.UserGroup;
 import io.harness.notification.mapper.NotificationUserGroupMapper;
+import io.harness.spec.server.notification.v1.model.ChannelDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -50,6 +51,11 @@ public class SlackChannel implements Channel {
   @JsonIgnore
   public NotificationChannelType getChannelType() {
     return NotificationChannelType.SLACK;
+  }
+
+  @Override
+  public ChannelDTO dto() {
+    return new ChannelDTO().slackWebhookUrls(slackWebHookUrls);
   }
 
   public static SlackChannel toSlackEntity(Slack slackDetails) {

@@ -13,12 +13,17 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
 import io.harness.iterator.PersistentRegularIterable;
+import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.FdIndex;
+import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.notification.NotificationChannelType;
 import io.harness.persistence.PersistentEntity;
+import io.harness.spec.server.notification.v1.model.ChannelDTO;
 
+import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -39,12 +44,24 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @StoreIn(DbAliases.NOTIFICATION)
 @Entity(value = "notificationChannel", noClassnameStored = true)
-@Document("NotificationChannel")
+@Document("notificationChannel")
 @TypeAlias("notificationChannel")
 @HarnessEntity(exportable = true)
 @OwnedBy(HarnessTeam.PL)
 @Slf4j
 public class NotificationChannel implements PersistentEntity, PersistentRegularIterable, Channel {
+  public static List<MongoIndex> mongoIndexes() {
+    return ImmutableList.<MongoIndex>builder()
+        .add(CompoundMongoIndex.builder()
+                 .name("unique_channel_identifier_idx")
+                 .unique(true)
+                 .field(NotificationChannelKeys.accountIdentifier)
+                 .field(NotificationChannelKeys.orgIdentifier)
+                 .field(NotificationChannelKeys.projectIdentifier)
+                 .field(NotificationChannelKeys.identifier)
+                 .build())
+        .build();
+  }
   @Id @dev.morphia.annotations.Id String uuid;
 
   String identifier;
@@ -89,6 +106,12 @@ public class NotificationChannel implements PersistentEntity, PersistentRegularI
   @Override
   public NotificationChannelType getChannelType() {
     return notificationChannelType;
+  }
+
+  @Override
+  public ChannelDTO dto() {
+    // No implementation
+    return null;
   }
 
   public enum Status {

@@ -15,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.notification.NotificationChannelType;
 import io.harness.notification.dtos.UserGroup;
 import io.harness.notification.mapper.NotificationUserGroupMapper;
+import io.harness.spec.server.notification.v1.model.ChannelDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -53,6 +54,11 @@ public class MicrosoftTeamsChannel implements Channel {
   @JsonIgnore
   public NotificationChannelType getChannelType() {
     return NotificationChannelType.MSTEAMS;
+  }
+
+  @Override
+  public ChannelDTO dto() {
+    return new ChannelDTO().msTeamKeys(msTeamKeys);
   }
 
   public static MicrosoftTeamsChannel toMicrosoftTeamsEntity(MSTeam msTeamDetails) {

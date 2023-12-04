@@ -15,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.notification.NotificationChannelType;
 import io.harness.notification.dtos.UserGroup;
 import io.harness.notification.mapper.NotificationUserGroupMapper;
+import io.harness.spec.server.notification.v1.model.ChannelDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -53,6 +54,11 @@ public class WebhookChannel implements Channel {
   @JsonIgnore
   public NotificationChannelType getChannelType() {
     return NotificationChannelType.WEBHOOK;
+  }
+
+  @Override
+  public ChannelDTO dto() {
+    return new ChannelDTO().webhookUrls(webHookUrls);
   }
 
   public static WebhookChannel toWebhookEntity(Webhook webhookDetails) {

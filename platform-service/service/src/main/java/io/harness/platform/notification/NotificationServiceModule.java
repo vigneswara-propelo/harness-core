@@ -19,6 +19,7 @@ import static io.harness.notification.NotificationServiceConstants.WEBHOOKSERVIC
 
 import static java.time.Duration.ofSeconds;
 
+import io.harness.AccessControlClientModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.callback.DelegateCallback;
 import io.harness.callback.DelegateCallbackToken;
@@ -211,6 +212,8 @@ public class NotificationServiceModule extends AbstractModule {
     install(new ValidationModule(getValidatorFactory()));
 
     install(new NotificationPersistenceModule());
+    install(AccessControlClientModule.getInstance(
+        appConfig.getAccessControlClientConfig(), NOTIFICATION_SERVICE.getServiceId()));
 
     install(new UserGroupClientModule(appConfig.getRbacServiceConfig(),
         appConfig.getPlatformSecrets().getNgManagerServiceSecret(), NOTIFICATION_SERVICE.getServiceId()));
