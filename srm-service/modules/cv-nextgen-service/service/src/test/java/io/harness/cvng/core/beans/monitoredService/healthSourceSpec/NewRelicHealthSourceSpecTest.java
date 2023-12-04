@@ -8,6 +8,7 @@
 package io.harness.cvng.core.beans.monitoredService.healthSourceSpec;
 
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.rule.OwnerRule.ABHIJITH;
 import static io.harness.rule.OwnerRule.DHRUVX;
 import static io.harness.rule.OwnerRule.KANHAIYA;
 
@@ -131,6 +132,38 @@ public class NewRelicHealthSourceSpecTest extends CvNextGenTestBase {
         .isEqualTo("metricValueJsonPath");
     assertThat(newRelicCVConfig.getGroupName()).isEqualTo("groupName");
     assertThat(newRelicCVConfig.isCustomQuery()).isTrue();
+  }
+
+  @Test
+  @Owner(developers = ABHIJITH)
+  @Category(UnitTests.class)
+  public void getCVConfigUpdateResult_withNoApplicationId() {
+    NewRelicMetricDefinition newRelicMetricDefinition =
+        NewRelicMetricDefinition.builder()
+            .metricName("metricName")
+            .groupName("groupName")
+            .nrql("nrql")
+            .identifier("identifier")
+            .responseMapping(MetricResponseMapping.builder()
+                                 .metricValueJsonPath("metricValueJsonPath")
+                                 .timestampJsonPath("timestampJsonPath")
+                                 .build())
+            .riskProfile(RiskProfile.builder().riskCategory(RiskCategory.ERROR).build())
+            .build();
+    newRelicHealthSourceSpec.setMetricPacks(Collections.singleton(
+        TimeSeriesMetricPackDTO.builder().identifier(CVNextGenConstants.CUSTOM_PACK_IDENTIFIER).build()));
+    newRelicHealthSourceSpec.setApplicationId(null);
+    newRelicHealthSourceSpec.setApplicationName(null);
+    newRelicHealthSourceSpec.setNewRelicMetricDefinitions(Collections.singletonList(newRelicMetricDefinition));
+    CVConfigUpdateResult cvConfigUpdateResult = newRelicHealthSourceSpec.getCVConfigUpdateResult(accountId,
+        orgIdentifier, projectIdentifier, envIdentifier, serviceIdentifier, monitoredServiceIdentifier, identifier,
+        name, Collections.emptyList(), metricPackService);
+    List<CVConfig> added = cvConfigUpdateResult.getAdded();
+
+    List<NewRelicCVConfig> newRelicCVConfigs = (List<NewRelicCVConfig>) (List<?>) added;
+    assertThat(newRelicCVConfigs).hasSize(1);
+    NewRelicCVConfig newRelicCVConfig = newRelicCVConfigs.get(0);
+    assertThat(newRelicCVConfig.getMetricInfos().size()).isEqualTo(1);
   }
 
   @Test
