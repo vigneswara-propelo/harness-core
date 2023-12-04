@@ -34,6 +34,8 @@ import io.harness.ssca.beans.SpdxDTO;
 import io.harness.ssca.beans.SpdxDTO.SpdxDTOBuilder;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityBuilder;
+import io.harness.ssca.entities.BaselineEntity;
+import io.harness.ssca.entities.BaselineEntity.BaselineEntityBuilder;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.CdInstanceSummary.CdInstanceSummaryBuilder;
 import io.harness.ssca.entities.ConfigEntity;
@@ -396,6 +398,15 @@ public class BuilderFactory {
         .version("version")
         .violationDetails("violationDetails")
         .violationType("violationType");
+  }
+
+  public BaselineEntityBuilder getBaselineEntityBuilder() {
+    return BaselineEntity.builder()
+        .accountIdentifier(context.getAccountId())
+        .orgIdentifier(context.orgIdentifier)
+        .projectIdentifier(context.projectIdentifier)
+        .artifactId("artifact")
+        .tag("tag");
   }
 
   public ConfigEntityBuilder getConfigEntityBuilder() {
