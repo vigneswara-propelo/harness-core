@@ -65,6 +65,7 @@ public class GitlabToGitMapper {
       GitConfigDTO gitConfigForHttp = GitConfigCreater.getGitConfigForHttp(connectionType, url, validationRepo,
           username, usernameRef, passwordRef, gitlabConnectorDTO.getDelegateSelectors());
       gitConfigForHttp.setExecuteOnDelegate(gitlabConnectorDTO.getExecuteOnDelegate());
+      gitConfigForHttp.setProxyUrl(gitlabConnectorDTO.getProxyUrl());
       return gitConfigForHttp;
     } else if (authType == GitAuthType.SSH) {
       final GitlabSshCredentialsDTO credentials =

@@ -216,6 +216,7 @@ public class ConnectorMapper {
     if (connectorDTO instanceof WithProxy) {
       WithProxy withProxy = (WithProxy) connectorDTO;
       if (tunnelService != null && Optional.ofNullable(connector.getProxy()).orElse(false)
+          && !Optional.ofNullable(connector.getExecuteOnDelegate()).orElse(true)
           && (accountClient != null
               && getResponse(accountClient.isFeatureFlagEnabled(
                   FeatureName.CI_SECURE_TUNNEL.name(), connector.getAccountIdentifier())))) {

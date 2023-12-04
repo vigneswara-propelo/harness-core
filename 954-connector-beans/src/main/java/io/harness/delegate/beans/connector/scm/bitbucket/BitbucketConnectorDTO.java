@@ -74,7 +74,7 @@ public class BitbucketConnectorDTO
   Boolean executeOnDelegate = true;
   private String gitConnectionUrl;
   Boolean proxy;
-  String proxyUrl;
+  @JsonIgnore String proxyUrl;
 
   @Builder
   public BitbucketConnectorDTO(GitConnectionType connectionType, String url, String validationRepo,

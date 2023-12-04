@@ -23,4 +23,6 @@ public interface GcpClient {
   Container getGkeContainerService();
 
   Container getGkeContainerService(char[] serviceAccountKey);
+
+  Container getGkeContainerServiceWithProxy(char[] serviceAccountKey, String proxyUrl);
 }

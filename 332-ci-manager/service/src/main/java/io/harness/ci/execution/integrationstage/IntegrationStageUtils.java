@@ -12,6 +12,7 @@ import static io.harness.beans.execution.WebhookEvent.Type.PR;
 import static io.harness.beans.execution.WebhookEvent.Type.RELEASE;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveOSType;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameter;
+import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameterV2;
 import static io.harness.beans.yaml.extended.infrastrucutre.Infrastructure.Type.HOSTED_VM;
 import static io.harness.beans.yaml.extended.infrastrucutre.Infrastructure.Type.KUBERNETES_DIRECT;
 import static io.harness.beans.yaml.extended.infrastrucutre.Infrastructure.Type.VM;
@@ -34,6 +35,8 @@ import static io.harness.pms.yaml.YAMLFieldNameConstants.CI_CODE_BASE;
 import static io.harness.pms.yaml.YAMLFieldNameConstants.PROPERTIES;
 
 import static java.lang.String.format;
+import static org.springframework.util.StringUtils.trimLeadingCharacter;
+import static org.springframework.util.StringUtils.trimTrailingCharacter;
 
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
@@ -56,6 +59,9 @@ import io.harness.beans.stages.IntegrationStageNode;
 import io.harness.beans.steps.CIAbstractStepNode;
 import io.harness.beans.steps.CIStepInfo;
 import io.harness.beans.steps.stepinfo.BackgroundStepInfo;
+import io.harness.beans.steps.stepinfo.DockerStepInfo;
+import io.harness.beans.steps.stepinfo.ECRStepInfo;
+import io.harness.beans.steps.stepinfo.GCRStepInfo;
 import io.harness.beans.steps.stepinfo.InitializeStepInfo;
 import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
@@ -68,6 +74,7 @@ import io.harness.beans.yaml.extended.infrastrucutre.OSType;
 import io.harness.beans.yaml.extended.infrastrucutre.VmInfraYaml;
 import io.harness.beans.yaml.extended.infrastrucutre.VmPoolYaml;
 import io.harness.beans.yaml.extended.platform.ArchType;
+import io.harness.ci.commonconstants.CIExecutionConstants;
 import io.harness.ci.execution.buildstate.CodebaseUtils;
 import io.harness.ci.execution.buildstate.ConnectorUtils;
 import io.harness.ci.execution.buildstate.InfraInfoUtils;
@@ -133,6 +140,7 @@ import java.util.HashMap;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 @CodePulse(
     module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_COMMON_STEPS})
@@ -672,6 +680,13 @@ public class IntegrationStageUtils {
     }
   }
 
+  public static String getRegistryFromFullyQualifiedImage(String image) {
+    if (isEmpty(image)) {
+      return image;
+    }
+    return image.split("/")[0];
+  }
+
   private static ManualExecutionSource buildCustomExecutionSource(
       String identifier, ParameterField<Build> parameterFieldBuild) {
     if (parameterFieldBuild == null) {
@@ -770,6 +785,42 @@ public class IntegrationStageUtils {
     return connectorIdentifiers;
   }
 
+  public static List<Pair<String, ConnectorDetails>> populateConnectorAndImageIdentifiers(
+      NGAccess ngAccess, ConnectorUtils connectorUtils, List<ExecutionWrapperConfig> wrappers) {
+    List<Pair<String, ConnectorDetails>> list = new ArrayList<>();
+    for (ExecutionWrapperConfig executionWrapper : wrappers) {
+      if (executionWrapper.getStep() != null && !executionWrapper.getStep().isNull()) {
+        CIAbstractStepNode stepNode = IntegrationStageUtils.getStepNode(executionWrapper);
+        Pair<String, ConnectorDetails> registryDetails =
+            getRegistryAndConnectorDetails(ngAccess, stepNode, connectorUtils);
+        if (registryDetails != null) {
+          list.add(registryDetails);
+        }
+      } else if (executionWrapper.getParallel() != null && !executionWrapper.getParallel().isNull()) {
+        ParallelStepElementConfig parallelStepElementConfig =
+            IntegrationStageUtils.getParallelStepElementConfig(executionWrapper);
+        if (isNotEmpty(parallelStepElementConfig.getSections())) {
+          List<Pair<String, ConnectorDetails>> registryDetailsForParallel =
+              populateConnectorAndImageIdentifiers(ngAccess, connectorUtils, parallelStepElementConfig.getSections());
+          if (registryDetailsForParallel.size() > 0) {
+            list.addAll(registryDetailsForParallel);
+          }
+        }
+      } else {
+        StepGroupElementConfig stepGroupElementConfig =
+            IntegrationStageUtils.getStepGroupElementConfig(executionWrapper);
+        if (isNotEmpty(stepGroupElementConfig.getSteps())) {
+          List<Pair<String, ConnectorDetails>> registryDetailsForStepGroup =
+              populateConnectorAndImageIdentifiers(ngAccess, connectorUtils, stepGroupElementConfig.getSteps());
+          if (registryDetailsForStepGroup.size() > 0) {
+            list.addAll(registryDetailsForStepGroup);
+          }
+        }
+      }
+    }
+    return list;
+  }
+
   public static List<String> getStageConnectorRefs(IntegrationStageConfig integrationStageConfig) {
     ArrayList<String> connectorIdentifiers = new ArrayList<>();
     connectorIdentifiers = populateConnectorIdentifiers(integrationStageConfig.getExecution().getSteps());
@@ -832,12 +883,100 @@ public class IntegrationStageUtils {
     return null;
   }
 
+  private static Pair<String, ConnectorDetails> getRegistryAndConnectorDetails(
+      NGAccess ngAccess, CIAbstractStepNode stepElementConfig, ConnectorUtils connectorUtils) {
+    if (stepElementConfig.getStepSpecType() instanceof CIStepInfo) {
+      CIStepInfo ciStepInfo = (CIStepInfo) stepElementConfig.getStepSpecType();
+      switch (ciStepInfo.getNonYamlInfo().getStepInfoType()) {
+        case RUN:
+          RunStepInfo runStepInfo = (RunStepInfo) ciStepInfo;
+          String image = resolveImageName(runStepInfo.getImage(), runStepInfo.getIdentifier());
+          String connectorIdentifier =
+              resolveConnectorIdentifier(runStepInfo.getConnectorRef(), runStepInfo.getIdentifier());
+          if (isNotEmpty(image) && isNotEmpty(connectorIdentifier)) {
+            return Pair.of(image, connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier));
+          }
+          break;
+        case BACKGROUND:
+          BackgroundStepInfo backgroundStepInfo = (BackgroundStepInfo) ciStepInfo;
+          image = resolveImageName(backgroundStepInfo.getImage(), backgroundStepInfo.getIdentifier());
+          connectorIdentifier =
+              resolveConnectorIdentifier(backgroundStepInfo.getConnectorRef(), backgroundStepInfo.getIdentifier());
+          if (isNotEmpty(image) && isNotEmpty(connectorIdentifier)) {
+            return Pair.of(image, connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier));
+          }
+          break;
+        case PLUGIN:
+          PluginStepInfo pluginStepInfo = (PluginStepInfo) ciStepInfo;
+          image = resolveImageName(pluginStepInfo.getImage(), pluginStepInfo.getIdentifier());
+          connectorIdentifier =
+              resolveConnectorIdentifier(pluginStepInfo.getConnectorRef(), pluginStepInfo.getIdentifier());
+          if (isNotEmpty(image) && isNotEmpty(connectorIdentifier)) {
+            return Pair.of(image, connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier));
+          }
+          break;
+        case RUN_TESTS:
+          RunTestsStepInfo runTestsStepInfo = (RunTestsStepInfo) ciStepInfo;
+          image = resolveImageName(runTestsStepInfo.getImage(), runTestsStepInfo.getIdentifier());
+          connectorIdentifier =
+              resolveConnectorIdentifier(runTestsStepInfo.getConnectorRef(), runTestsStepInfo.getIdentifier());
+          if (isNotEmpty(image) && isNotEmpty(connectorIdentifier)) {
+            return Pair.of(image, connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier));
+          }
+          break;
+        case DOCKER:
+          DockerStepInfo dockerStepInfo = (DockerStepInfo) ciStepInfo;
+          String repo = resolveStringParameterV2(
+              "repo", dockerStepInfo.getIdentifier(), dockerStepInfo.getIdentifier(), dockerStepInfo.getRepo(), true);
+          connectorIdentifier =
+              resolveConnectorIdentifier(dockerStepInfo.getConnectorRef(), dockerStepInfo.getIdentifier());
+          if (isNotEmpty(repo) && isNotEmpty(connectorIdentifier)) {
+            return Pair.of(repo, connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier));
+          }
+          break;
+        case ECR:
+          ECRStepInfo ecrStepInfo = (ECRStepInfo) ciStepInfo;
+          String account = resolveStringParameterV2(
+              "account", "BuildAndPushECR", ecrStepInfo.getIdentifier(), ecrStepInfo.getAccount(), true);
+          String region = resolveStringParameterV2(
+              "region", "BuildAndPushECR", ecrStepInfo.getIdentifier(), ecrStepInfo.getRegion(), true);
+          String registry = format(CIExecutionConstants.ECR_REGISTRY_PATTERN, account, region);
+          connectorIdentifier = resolveConnectorIdentifier(ecrStepInfo.getConnectorRef(), ecrStepInfo.getIdentifier());
+          if (isNotEmpty(registry) && isNotEmpty(connectorIdentifier)) {
+            return Pair.of(registry, connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier));
+          }
+          break;
+        case GCR:
+          GCRStepInfo gcrStepInfo = (GCRStepInfo) ciStepInfo;
+          String host = resolveStringParameterV2(
+              "host", "BuildAndPushGCR", gcrStepInfo.getIdentifier(), gcrStepInfo.getHost(), true);
+          String project = resolveStringParameterV2(
+              "project", "BuildAndPushGCR", gcrStepInfo.getIdentifier(), gcrStepInfo.getProjectID(), true);
+          connectorIdentifier = resolveConnectorIdentifier(gcrStepInfo.getConnectorRef(), gcrStepInfo.getIdentifier());
+          registry = format("%s/%s", trimTrailingCharacter(host, '/'), trimLeadingCharacter(project, '/'));
+          if (isNotEmpty(registry) && isNotEmpty(connectorIdentifier)) {
+            return Pair.of(registry, connectorUtils.getConnectorDetails(ngAccess, connectorIdentifier));
+          }
+          break;
+        default:
+      }
+    }
+    return null;
+  }
+
   private static String resolveConnectorIdentifier(ParameterField<String> connectorRef, String stepIdentifier) {
     if (connectorRef != null) {
       String connectorIdentifier = resolveStringParameter("connectorRef", "Run", stepIdentifier, connectorRef, false);
       if (!StringUtils.isEmpty(connectorIdentifier)) {
         return connectorIdentifier;
       }
+    }
+    return null;
+  }
+
+  private static String resolveImageName(ParameterField<String> image, String stepIdentifier) {
+    if (!ParameterField.isBlank(image)) {
+      return resolveStringParameter("image", stepIdentifier, stepIdentifier, image, false);
     }
     return null;
   }

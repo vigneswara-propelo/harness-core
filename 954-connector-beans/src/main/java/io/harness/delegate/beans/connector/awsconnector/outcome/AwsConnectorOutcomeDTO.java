@@ -14,6 +14,7 @@ import io.harness.connector.DelegateSelectable;
 import io.harness.connector.ManagerExecutable;
 import io.harness.delegate.beans.connector.ConnectorConfigOutcomeDTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Set;
 import javax.validation.Valid;
@@ -32,4 +33,6 @@ public class AwsConnectorOutcomeDTO extends ConnectorConfigOutcomeDTO implements
   @Valid AwsSdkClientBackoffStrategyOutcomeDTO awsSdkClientBackOffStrategyOverride;
   Set<String> delegateSelectors;
   @Builder.Default Boolean executeOnDelegate = true;
+  @Builder.Default Boolean proxy = Boolean.FALSE;
+  @JsonIgnore String proxyUrl;
 }

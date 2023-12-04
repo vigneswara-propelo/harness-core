@@ -43,6 +43,13 @@ public class GcpCredentialsHelperService {
         JacksonFactory.getDefaultInstance()));
   }
 
+  public GoogleCredential getGoogleCredentialWithProxyConfiguredHttpTransport(
+      char[] serviceAccountKeyFileContent, HttpTransport httpTransport) throws IOException {
+    return appendScopesIfRequired(GoogleCredential.fromStream(
+        IOUtils.toInputStream(String.valueOf(serviceAccountKeyFileContent), Charset.defaultCharset()), httpTransport,
+        JacksonFactory.getDefaultInstance()));
+  }
+
   public static GoogleCredential getGoogleCredentialFromFile(char[] serviceAccountKeyFileContent) throws IOException {
     String tokenUri =
         (String) (JsonUtils.asObject(new String(serviceAccountKeyFileContent), HashMap.class)).get("token_uri");

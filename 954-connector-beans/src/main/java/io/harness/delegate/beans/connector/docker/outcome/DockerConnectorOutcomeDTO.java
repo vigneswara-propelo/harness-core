@@ -16,6 +16,7 @@ import io.harness.connector.ManagerExecutable;
 import io.harness.delegate.beans.connector.ConnectorConfigOutcomeDTO;
 import io.harness.delegate.beans.connector.docker.DockerRegistryProviderType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Set;
 import javax.validation.Valid;
@@ -47,5 +48,5 @@ public class DockerConnectorOutcomeDTO
   Set<String> delegateSelectors;
   @Builder.Default Boolean executeOnDelegate = true;
   @Builder.Default Boolean proxy = false;
-  String proxyUrl;
+  @JsonIgnore String proxyUrl;
 }

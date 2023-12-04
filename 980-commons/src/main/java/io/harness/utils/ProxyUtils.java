@@ -41,4 +41,17 @@ public class ProxyUtils {
     }
     return null;
   }
+
+  public String getProxyProtocol(String urlString) {
+    if (isEmpty(urlString)) {
+      return null;
+    }
+    try {
+      URL url = new URL(urlString);
+      return url.getProtocol();
+    } catch (Exception e) {
+      log.error("Unable to parse proxy url to get protocol", e);
+    }
+    return null;
+  }
 }

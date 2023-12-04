@@ -19,8 +19,10 @@ java_library(
     deps = [
         "//:lombok",
         "//960-api-services/src/main/java/io/harness/gcp/client:module",
+        "//960-api-services/src/main/java/io/harness/gcp/helpers:module",
         "//980-commons/src/main/java/io/harness/eraro:module",
         "//980-commons/src/main/java/io/harness/exception:module",
+        "//980-commons/src/main/java/io/harness/utils:module",
         "//999-annotations/src/main/java/io/harness/annotations/dev:module",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_google_api_client_google_api_client",

@@ -107,4 +107,5 @@ public class CIExecutionConstants extends ContainerExecutionConstants {
 
   public static final String DOCKER_IO = "*.docker.io";
   public static final String DOCKER_COM = "*.docker.com";
+  public static final String ECR_REGISTRY_PATTERN = "%s.dkr.ecr.%s.amazonaws.com";
 }

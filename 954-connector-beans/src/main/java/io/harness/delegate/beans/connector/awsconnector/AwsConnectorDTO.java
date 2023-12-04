@@ -17,6 +17,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.connector.DelegateSelectable;
 import io.harness.connector.ManagerExecutable;
+import io.harness.connector.WithProxy;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.ConnectorConfigOutcomeDTO;
 import io.harness.delegate.beans.connector.awsconnector.outcome.AwsConnectorOutcomeDTO;
@@ -25,6 +26,7 @@ import io.harness.delegate.beans.connector.awsconnector.outcome.AwsCredentialOut
 import io.harness.delegate.beans.connector.awsconnector.outcome.AwsSdkClientBackoffStrategyOutcomeDTO;
 import io.harness.exception.InvalidRequestException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,11 +47,13 @@ import lombok.EqualsAndHashCode;
 @ApiModel("AwsConnector")
 @Schema(name = "AwsConnector", description = "This contains details of the AWS connector")
 @RecasterAlias("io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO")
-public class AwsConnectorDTO extends ConnectorConfigDTO implements DelegateSelectable, ManagerExecutable {
+public class AwsConnectorDTO extends ConnectorConfigDTO implements DelegateSelectable, ManagerExecutable, WithProxy {
   @Valid @NotNull AwsCredentialDTO credential;
   @Valid AwsSdkClientBackoffStrategyDTO awsSdkClientBackOffStrategyOverride;
   Set<String> delegateSelectors;
   @Builder.Default Boolean executeOnDelegate = true;
+  @Builder.Default Boolean proxy = Boolean.FALSE;
+  @JsonIgnore String proxyUrl;
 
   @Override
   public List<DecryptableEntity> getDecryptableEntities() {

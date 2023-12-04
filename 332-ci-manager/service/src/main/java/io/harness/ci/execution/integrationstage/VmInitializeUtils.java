@@ -80,18 +80,20 @@ import io.harness.cimanager.stages.IntegrationStageConfig;
 import io.harness.connector.WithProxy;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
-import io.harness.delegate.beans.connector.docker.DockerConnectorDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.ng.core.NGAccess;
+import io.harness.ng.core.dto.TunnelResponseDTO;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
 import io.harness.plancreator.steps.ParallelStepElementConfig;
 import io.harness.plancreator.steps.StepGroupElementConfig;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.remote.client.NGRestUtils;
 import io.harness.stoserviceclient.STOServiceUtils;
-import io.harness.utils.ProxyUtils;
+import io.harness.tunnel.TunnelResourceClient;
+import io.harness.utils.CiIntegrationStageUtils;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -101,12 +103,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Singleton
 @Slf4j
 @OwnedBy(HarnessTeam.CI)
 public class VmInitializeUtils {
   @Inject CIFeatureFlagService featureFlagService;
+  @Inject TunnelResourceClient tunnelResourceClient;
 
   public void validateStageConfig(IntegrationStageConfig integrationStageConfig, String accountId) {
     for (ExecutionWrapperConfig executionWrapper : integrationStageConfig.getExecution().getSteps()) {
@@ -268,20 +272,27 @@ public class VmInitializeUtils {
       return envVars;
     }
 
-    List<String> connectorsRef = IntegrationStageUtils.getStageConnectorRefs(integrationStageConfig);
-    for (String connectorRef : connectorsRef) {
-      ConnectorDetails connectorDetails = connectorUtils.getConnectorDetails(ngAccess, connectorRef);
+    TunnelResponseDTO tunnelResponseDTO =
+        NGRestUtils.getResponse(tunnelResourceClient.getTunnel(ngAccess.getAccountIdentifier()));
+    if (tunnelResponseDTO != null && isNotEmpty(tunnelResponseDTO.getServerUrl())
+        && isNotEmpty(tunnelResponseDTO.getPort())) {
+      envVars.put(DRONE_HTTP_PROXY, tunnelResponseDTO.getServerUrl() + ":" + tunnelResponseDTO.getPort());
+    } else {
+      return envVars;
+    }
 
+    List<Pair<String, ConnectorDetails>> registries = IntegrationStageUtils.populateConnectorAndImageIdentifiers(
+        ngAccess, connectorUtils, integrationStageConfig.getExecution().getSteps());
+    for (Pair<String, ConnectorDetails> registry : registries) {
+      ConnectorDetails connectorDetails = registry.getRight();
       if (connectorDetails != null) {
         ConnectorConfigDTO configDTO = connectorDetails.getConnectorConfig();
         if (configDTO instanceof WithProxy) {
           WithProxy connectorProxy = (WithProxy) configDTO;
-          if (connectorProxy.getProxy() == Boolean.TRUE && isNotEmpty(connectorProxy.getProxyUrl())) {
-            envVars.put(DRONE_HTTP_PROXY, connectorProxy.getProxyUrl());
-          }
-          if (configDTO instanceof DockerConnectorDTO) {
-            DockerConnectorDTO dockerConfigDTO = (DockerConnectorDTO) configDTO;
-            String registryHost = ProxyUtils.getProxyHost(dockerConfigDTO.getDockerRegistryUrl());
+          if (!CiIntegrationStageUtils.isDockerhubConnector(registry.getRight())) {
+            String imageName =
+                IntegrationStageUtils.getFullyQualifiedImageName(registry.getLeft(), registry.getRight());
+            String registryHost = IntegrationStageUtils.getRegistryFromFullyQualifiedImage(imageName);
             if (connectorProxy.getProxy()) {
               shouldProxyRegistries.add(registryHost);
               noProxyVars.remove(registryHost);
@@ -293,7 +304,7 @@ public class VmInitializeUtils {
       }
     }
 
-    if (envVars.containsKey(DRONE_HTTP_PROXY)) {
+    if (!shouldProxyRegistries.isEmpty()) {
       noProxyVars.addAll(Set.of(CIExecutionConstants.DOCKER_IO, CIExecutionConstants.DOCKER_COM));
       envVars.put(DRONE_NO_PROXY, String.join(",", noProxyVars));
     }

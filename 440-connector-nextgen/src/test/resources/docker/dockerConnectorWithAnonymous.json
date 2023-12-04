@@ -19,8 +19,7 @@
         "type": "Anonymous"
       },
       "executeOnDelegate": true,
-      "proxy": false,
-      "proxyUrl": null
+      "proxy": false
     }
   }
 }

@@ -11,6 +11,7 @@ import io.harness.connector.DelegateSelectable;
 import io.harness.connector.ManagerExecutable;
 import io.harness.delegate.beans.connector.ConnectorConfigOutcomeDTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Set;
 import javax.validation.Valid;
@@ -34,4 +35,6 @@ public class GcpConnectorOutcomeDTO extends ConnectorConfigOutcomeDTO implements
   @Valid @NotNull GcpConnectorCredentialOutcomeDTO credential;
   Set<String> delegateSelectors;
   @Builder.Default Boolean executeOnDelegate = true;
+  @Builder.Default Boolean proxy = false;
+  @JsonIgnore String proxyUrl;
 }

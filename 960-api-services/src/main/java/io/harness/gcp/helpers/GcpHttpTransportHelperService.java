@@ -70,4 +70,15 @@ public class GcpHttpTransportHelperService {
     final HttpTransport httpTransport = new ApacheHttpTransport(httpClient.build());
     return () -> httpTransport;
   }
+
+  public static HttpTransportFactory getHttpTransportFactory(String proxyHost, int proxyPort) {
+    HttpHost proxyHostDetails = new HttpHost(proxyHost, proxyPort);
+    HttpRoutePlanner httpRoutePlanner = new DefaultProxyRoutePlanner(proxyHostDetails);
+    HttpClientBuilder httpClient = ApacheHttpTransport.newDefaultHttpClientBuilder()
+                                       .setRoutePlanner(httpRoutePlanner)
+                                       .setProxyAuthenticationStrategy(ProxyAuthenticationStrategy.INSTANCE);
+
+    final HttpTransport httpTransport = new ApacheHttpTransport(httpClient.build());
+    return () -> httpTransport;
+  }
 }

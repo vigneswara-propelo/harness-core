@@ -12,19 +12,25 @@ import static io.harness.eraro.ErrorCode.INVALID_CLOUD_PROVIDER;
 import static io.harness.exception.WingsException.USER;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.NestedExceptionUtils;
 import io.harness.exception.WingsException;
 import io.harness.gcp.client.GcpClient;
+import io.harness.gcp.helpers.GcpCredentialsHelperService;
+import io.harness.gcp.helpers.GcpHttpTransportHelperService;
+import io.harness.utils.ProxyUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.container.Container;
 import com.google.api.services.container.ContainerScopes;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -37,6 +43,8 @@ import org.apache.commons.io.IOUtils;
 @Singleton
 @OwnedBy(CDP)
 public class GcpClientImpl implements GcpClient {
+  @Inject private GcpCredentialsHelperService gcpCredentialsHelperService;
+
   @Override
   public void validateDefaultCredentials() {
     getGkeContainerService();
@@ -85,6 +93,28 @@ public class GcpClientImpl implements GcpClient {
     }
   }
 
+  @Override
+  public Container getGkeContainerServiceWithProxy(char[] serviceAccountKey, String proxyUrl) {
+    try {
+      JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+      HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+      String proxyHost = ProxyUtils.getProxyHost(proxyUrl);
+      Integer proxyPort = ProxyUtils.getProxyPort(proxyUrl);
+      if (EmptyPredicate.isNotEmpty(proxyHost) && proxyPort != null) {
+        transport = GcpHttpTransportHelperService.getHttpTransportFactory(proxyHost, proxyPort).create();
+      }
+      GoogleCredential credential = getGoogleCredential(serviceAccountKey, transport);
+      return new Container.Builder(transport, jsonFactory, credential).setApplicationName("Harness").build();
+    } catch (GeneralSecurityException e) {
+      log.error("Security registeredException getting Google container service", e);
+      throw new WingsException(INVALID_CLOUD_PROVIDER, USER)
+          .addParam("message", "Invalid Google Cloud Platform credentials.");
+    } catch (IOException e) {
+      log.error("Error getting Google container service", e);
+      throw convertIntoHintException(e);
+    }
+  }
+
   private RuntimeException convertIntoHintException(Exception ex) {
     if (ex instanceof JsonParseException) {
       return NestedExceptionUtils.hintWithExplanationException(
@@ -103,5 +133,11 @@ public class GcpClientImpl implements GcpClient {
       credential = credential.createScoped(Collections.singletonList(ContainerScopes.CLOUD_PLATFORM));
     }
     return credential;
+  }
+
+  public GoogleCredential getGoogleCredential(char[] serviceAccountKeyFileContent, HttpTransport httpTransport)
+      throws IOException {
+    return gcpCredentialsHelperService.getGoogleCredentialWithProxyConfiguredHttpTransport(
+        serviceAccountKeyFileContent, httpTransport);
   }
 }

@@ -217,6 +217,7 @@ public class ScmGitProviderMapper {
         .setEndpoint(GitClientHelper.getGitlabApiURL(gitlabConnector.getUrl(), getGitlabApiUrl(gitlabConnector)))
         .setSkipVerify(skipVerify)
         .setAdditionalCertsPath(getAdditionalCertsPath())
+        .setProxy(Optional.ofNullable(gitlabConnector.getProxyUrl()).orElse(""))
         .build();
   }
 

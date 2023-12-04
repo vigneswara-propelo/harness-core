@@ -35,6 +35,7 @@ import io.harness.exception.NestedExceptionUtils;
 import io.harness.exception.WingsException;
 import io.harness.remote.CEAwsServiceEndpointConfig;
 import io.harness.remote.CEProxyConfig;
+import io.harness.utils.ProxyUtils;
 
 import software.wings.service.impl.AwsApiHelperService;
 import software.wings.service.impl.aws.client.CloseableAmazonWebServiceClient;
@@ -266,10 +267,17 @@ public class AwsClientImpl implements AwsClient {
   @VisibleForTesting
   AmazonEC2Client getAmazonEc2Client(AwsConfig awsConfig, String region) {
     AWSCredentialsProvider credentialsProvider = getCredentialProvider(awsConfig, region);
-    return (AmazonEC2Client) AmazonEC2ClientBuilder.standard()
-        .withRegion(region)
-        .withCredentials(credentialsProvider)
-        .build();
+    AmazonEC2ClientBuilder amazonEC2ClientBuilder =
+        AmazonEC2ClientBuilder.standard().withRegion(region).withCredentials(credentialsProvider);
+    if (isNotEmpty(awsConfig.getProxyUrl())) {
+      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      clientConfiguration.setProxyHost(ProxyUtils.getProxyHost(awsConfig.getProxyUrl()));
+      clientConfiguration.setProxyPort(ProxyUtils.getProxyPort(awsConfig.getProxyUrl()));
+      String protocol = ProxyUtils.getProxyProtocol(awsConfig.getProxyUrl());
+      clientConfiguration.setProxyProtocol("http".equalsIgnoreCase(protocol) ? Protocol.HTTP : Protocol.HTTPS);
+      amazonEC2ClientBuilder.withClientConfiguration(clientConfiguration);
+    }
+    return (AmazonEC2Client) amazonEC2ClientBuilder.build();
   }
 
   @VisibleForTesting

@@ -21,6 +21,7 @@ import io.harness.delegate.beans.connector.docker.outcome.DockerAuthenticationOu
 import io.harness.delegate.beans.connector.docker.outcome.DockerConnectorOutcomeDTO;
 import io.harness.exception.InvalidRequestException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Collections;
@@ -54,7 +55,7 @@ public class DockerConnectorDTO extends ConnectorConfigDTO implements DelegateSe
   Set<String> delegateSelectors;
   @Builder.Default Boolean executeOnDelegate = true;
   @Builder.Default Boolean proxy = false;
-  String proxyUrl;
+  @JsonIgnore String proxyUrl;
 
   @Override
   public List<DecryptableEntity> getDecryptableEntities() {

@@ -104,4 +104,26 @@ public class CiIntegrationStageUtils {
     String prefixRegistryPath = registryHostName + url.getPath();
     return trimTrailingCharacter(prefixRegistryPath, '/') + '/' + trimLeadingCharacter(imageName, '/');
   }
+
+  public static boolean isDockerhubConnector(ConnectorDetails connectorDetails) {
+    if (connectorDetails != null && connectorDetails.getConnectorType() == DOCKER) {
+      DockerConnectorDTO dockerConnectorDTO = (DockerConnectorDTO) connectorDetails.getConnectorConfig();
+      String dockerRegistryUrl = dockerConnectorDTO.getDockerRegistryUrl();
+      URL url;
+      try {
+        url = new URL(dockerRegistryUrl);
+      } catch (MalformedURLException e) {
+        throw new InvalidArgumentsException(format("Malformed registryUrl %s in docker connector id: %s",
+            dockerRegistryUrl, connectorDetails.getIdentifier()));
+      }
+
+      String registryHostName = url.getHost();
+      if (url.getPort() != -1) {
+        registryHostName = url.getHost() + ":" + url.getPort();
+      }
+
+      return registryHostName.equals("index.docker.io") || registryHostName.equals("registry.hub.docker.com");
+    }
+    return false;
+  }
 }
