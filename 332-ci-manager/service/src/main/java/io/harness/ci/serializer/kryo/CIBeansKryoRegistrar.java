@@ -15,6 +15,7 @@ import io.harness.app.beans.entities.PluginMetadataConfig;
 import io.harness.app.beans.entities.PluginMetadataStatus;
 import io.harness.app.beans.entities.ResourceDetails;
 import io.harness.app.beans.entities.ResourceDetails.Type;
+import io.harness.app.beans.entities.StepExecutionParameters;
 import io.harness.beans.build.BuildStatusUpdateParameter;
 import io.harness.beans.build.BuildUpdateType;
 import io.harness.beans.build.CIPipelineDetails;
@@ -122,5 +123,6 @@ public class CIBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(ResourceDetails.class, 110151);
     kryo.register(Type.class, 110152);
     kryo.register(InfraResourceDetails.class, 110153);
+    kryo.register(StepExecutionParameters.class, 110154);
   }
 }

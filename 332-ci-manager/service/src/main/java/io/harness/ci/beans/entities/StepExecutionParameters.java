@@ -6,35 +6,68 @@
  */
 package io.harness.app.beans.entities;
 
+import static io.harness.annotations.dev.HarnessTeam.CI;
+
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.StoreIn;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.mongo.index.CompoundMongoIndex;
+import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
+import io.harness.persistence.CreatedAtAware;
+import io.harness.persistence.PersistentEntity;
+import io.harness.persistence.UpdatedAtAware;
+import io.harness.persistence.UuidAware;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotBlank;
-import org.mongodb.morphia.annotations.Entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
+@OwnedBy(CI)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @FieldNameConstants(innerTypeName = "StepExecutionParametersKeys")
 @StoreIn(DbAliases.CIMANAGER)
 @Entity(value = "stepexecutionparameters", noClassnameStored = true)
 @Document("stepexecutionparameters")
-@HarnessEntity(exportable = true)
 @TypeAlias("stepexecutionparameters")
 @RecasterAlias("io.harness.app.beans.entities.StepExecutionParameters")
-public class StepExecutionParameters {
+@HarnessEntity(exportable = true)
+public class StepExecutionParameters implements UuidAware, PersistentEntity, CreatedAtAware, UpdatedAtAware {
   @Id @dev.morphia.annotations.Id String uuid;
   @NotBlank String stepParameters;
   String accountId;
+  @NotNull long createdAt;
+  @NotNull long lastUpdatedAt;
   String runTimeId;
   String stageRunTimeId;
+
+  public static List<MongoIndex> mongoIndexes() {
+    return ImmutableList.<MongoIndex>builder()
+        .add(CompoundMongoIndex.builder()
+                 .name("account_runtime")
+                 .field(StepExecutionParametersKeys.accountId)
+                 .field(StepExecutionParametersKeys.runTimeId)
+                 .build())
+        .add(CompoundMongoIndex.builder()
+                 .name("account_stageruntime")
+                 .field(StepExecutionParametersKeys.accountId)
+                 .field(StepExecutionParametersKeys.stageRunTimeId)
+                 .build())
+        .build();
+  }
 }

@@ -12,8 +12,11 @@ import static io.harness.annotations.dev.HarnessTeam.CI;
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.ng.DbAliases;
+import io.harness.persistence.PersistentEntity;
+import io.harness.persistence.UuidAware;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.morphia.annotations.Entity;
@@ -37,10 +40,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("ciLogKeyMetadata")
 @TypeAlias("ciLogKeyMetadata")
 @HarnessEntity(exportable = true)
-public class CILogKeyMetadata {
+public class CILogKeyMetadata implements PersistentEntity, UuidAware {
   @Id @org.springframework.data.annotation.Id String uuid;
 
-  String stageExecutionId;
+  @FdIndex String stageExecutionId;
   List<String> logKeys;
 
   @Builder.Default

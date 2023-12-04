@@ -11,11 +11,15 @@ ciExecutionMetadata {"name": "accountIdAndStatus", "background": true} {"account
 ciExecutionMetadata {"name": "expireAfter_1", "background": true, "expireAfterSeconds": 0} {"expireAfter": 1}
 ciExecutionMetadata {"name": "stageExecutionIdAndAccountId", "background": true} {"stageExecutionId": 1, "accountId": 1}
 ciLogKeyMetadata {"name": "expireAfter_1", "background": true, "expireAfterSeconds": 0} {"expireAfter": 1}
+ciLogKeyMetadata {"name": "stageExecutionId_1", "background": true} {"stageExecutionId": 1}
 ciResourceCleanup {"name": "processAfterAndShouldStartAndType", "background": true} {"processAfter": 1, "shouldStart": 1, "type": 1}
 ciResourceCleanup {"name": "stageExecutionId_1", "background": true} {"stageExecutionId": 1}
 ciResourceCleanup {"name": "validUntil_1", "background": true, "expireAfterSeconds": 86400} {"validUntil": 1}
 ciTelemetrySentStatus {"name": "no_dup", "unique": true} {"accountId": 1}
 cibuild {"name": "createdAt_1", "background": true} {"createdAt": 1}
+citaskdetails {"name": "accountId_1", "background": true} {"accountId": 1}
+citaskdetails {"name": "stageExecutionId_1", "background": true} {"stageExecutionId": 1}
+executionqueuelimit {"name": "accountIdentifier_1", "background": true} {"accountIdentifier": 1}
 filters {"name": "unique_accountId_orgId_projectId_name_type_Index", "unique": true} {"accountIdentifier": 1, "orgIdentifier": 1, "projectIdentifier": 1, "name": 1, "filterType": 1}
 filters {"name": "unique_accountId_organizationId_projectId_type", "unique": true} {"fullyQualifiedIdentifier": 1, "filterType": 1}
 gitProcessRequestSdk {"name": "accountId_repo_branch_commit_index", "background": true} {"accountId": 1, "repoUrl": 1, "branch": 1, "commitId": 1}
@@ -35,6 +39,8 @@ progressUpdate {"name": "createdAt_1", "background": true} {"createdAt": 1}
 progressUpdate {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 stageDetails {"name": "accountId_1", "background": true} {"accountId": 1}
 stepStatusMetadata {"name": "expireAfter_1", "background": true, "expireAfterSeconds": 0} {"expireAfter": 1}
+stepexecutionparameters {"name": "account_runtime", "background": true} {"accountId": 1, "runTimeId": 1}
+stepexecutionparameters {"name": "account_stageruntime", "background": true} {"accountId": 1, "stageRunTimeId": 1}
 waitInstances {"name": "correlationIds_1", "background": true} {"correlationIds": 1}
 waitInstances {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 waitInstances {"name": "waitingOnCorrelationIds_1", "background": true} {"waitingOnCorrelationIds": 1}

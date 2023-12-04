@@ -12,6 +12,7 @@ import io.harness.app.beans.entities.CIResourceCleanup;
 import io.harness.app.beans.entities.ExecutionQueueLimit;
 import io.harness.app.beans.entities.PluginMetadataConfig;
 import io.harness.app.beans.entities.PluginMetadataStatus;
+import io.harness.app.beans.entities.StepExecutionParameters;
 import io.harness.beans.outcomes.VmDetailsOutcome;
 import io.harness.beans.steps.CILogKeyMetadata;
 import io.harness.beans.steps.StepStatusMetadata;
@@ -64,6 +65,7 @@ public class CIBeansMorphiaRegistrar implements MorphiaRegistrar {
     set.add(CIAccountDataStatus.class);
     set.add(CILogKeyMetadata.class);
     set.add(CIResourceCleanup.class);
+    set.add(StepExecutionParameters.class);
   }
 
   @Override

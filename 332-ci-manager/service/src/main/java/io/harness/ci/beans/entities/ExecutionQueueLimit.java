@@ -9,14 +9,20 @@ package io.harness.app.beans.entities;
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.StoreIn;
+import io.harness.mongo.index.FdIndex;
 import io.harness.ng.DbAliases;
+import io.harness.persistence.CreatedAtAware;
+import io.harness.persistence.PersistentEntity;
+import io.harness.persistence.UpdatedAtAware;
+import io.harness.persistence.UuidAware;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotBlank;
-import org.mongodb.morphia.annotations.Entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -31,9 +37,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @HarnessEntity(exportable = true)
 @TypeAlias("executionqueuelimit")
 @RecasterAlias("io.harness.app.beans.entities.ExecutionQueueLimit")
-public class ExecutionQueueLimit {
+public class ExecutionQueueLimit implements UuidAware, PersistentEntity, CreatedAtAware, UpdatedAtAware {
   @Id @dev.morphia.annotations.Id String uuid;
-  @NotBlank String accountIdentifier;
+  @NotBlank @FdIndex String accountIdentifier;
+  @NotNull long createdAt;
+  @NotNull long lastUpdatedAt;
   String macExecLimit;
   String totalExecLimit;
 }

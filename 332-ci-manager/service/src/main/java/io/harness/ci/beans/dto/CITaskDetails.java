@@ -9,6 +9,9 @@ package io.harness.app.beans.dto;
 
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.StoreIn;
+import io.harness.mongo.index.FdIndex;
+import io.harness.persistence.PersistentEntity;
+import io.harness.persistence.UuidAware;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.morphia.annotations.Entity;
@@ -26,11 +29,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("citaskdetails")
 @HarnessEntity(exportable = true)
 @TypeAlias("ciTaskDetails")
-public class CITaskDetails {
+public class CITaskDetails implements PersistentEntity, UuidAware {
   @Id @dev.morphia.annotations.Id String uuid;
   String taskId;
-  String accountId;
-  String stageExecutionId;
+  @FdIndex String accountId;
+  @FdIndex String stageExecutionId;
   String delegateId;
   String taskType;
 }
