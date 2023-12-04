@@ -8,6 +8,7 @@
 package io.harness.delegate.beans.ci.k8s;
 
 import io.harness.delegate.beans.ci.CIExecuteStepTaskParams;
+import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
 import io.harness.delegate.beans.executioncapability.LiteEngineConnectionCapability;
@@ -27,6 +28,11 @@ public class CIK8ExecuteStepTaskParams implements CIExecuteStepTaskParams, Execu
   @NotNull private String ip;
   @NotNull private int port;
   @NotNull private String delegateSvcEndpoint;
+  @NotNull private String podName;
+  @NotNull private String namespace;
+
+  @NotNull private ConnectorDetails k8sConnectorDetails;
+
   private boolean isLocal;
   @NotNull private byte[] serializedStep;
 
@@ -39,7 +45,13 @@ public class CIK8ExecuteStepTaskParams implements CIExecuteStepTaskParams, Execu
 
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
-    return Collections.singletonList(
-        LiteEngineConnectionCapability.builder().ip(ip).port(port).isLocal(isLocal).build());
+    return Collections.singletonList(LiteEngineConnectionCapability.builder()
+                                         .ip(ip)
+                                         .port(port)
+                                         .isLocal(isLocal)
+                                         .podName(podName)
+                                         .k8sConnectorDetails(k8sConnectorDetails)
+                                         .namespace(namespace)
+                                         .build());
   }
 }

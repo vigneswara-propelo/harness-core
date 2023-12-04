@@ -61,6 +61,7 @@ import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.ci.logserviceclient.CILogServiceUtils;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
+import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest;
 import io.harness.delegate.beans.ci.vm.steps.VmRunStep;
@@ -128,6 +129,8 @@ public class RunStepTest extends CIExecutionTestBase {
   @Mock private ExecutionSweepingOutputService executionSweepingOutputResolver;
   @Mock private OutcomeService outcomeService;
   @Mock private ConnectorUtils connectorUtils;
+
+  @Mock io.harness.utils.ConnectorUtils ngConnectorUtils;
   @Mock private CIDelegateTaskExecutor ciDelegateTaskExecutor;
   @Mock private RunStepProtobufSerializer runStepProtobufSerializer;
   @Mock private CIExecutionServiceConfig ciExecutionServiceConfig;
@@ -234,6 +237,7 @@ public class RunStepTest extends CIExecutionTestBase {
                                     .infrastructure(K8sDirectInfraYaml.builder()
                                                         .spec(K8sDirectInfraYamlSpec.builder()
                                                                   .connectorRef(ParameterField.createValueField("fd"))
+                                                                  .namespace(ParameterField.createValueField("test"))
                                                                   .build())
                                                         .build())
                                     .containerNames(new ArrayList<>())
@@ -265,6 +269,7 @@ public class RunStepTest extends CIExecutionTestBase {
     when(runStepProtobufSerializer.serializeStepWithStepParameters(
              any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(UnitStep.newBuilder().build());
+    when(ngConnectorUtils.getConnectorDetails(any(), any())).thenReturn(ConnectorDetails.builder().build());
 
     AsyncExecutableResponse asyncExecutableResponse =
         runStep.executeAsync(ambiance, stepElementParameters, stepInputPackage, null);
