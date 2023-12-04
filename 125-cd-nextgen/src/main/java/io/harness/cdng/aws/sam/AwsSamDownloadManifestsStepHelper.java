@@ -6,6 +6,7 @@
  */
 
 package io.harness.cdng.aws.sam;
+
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import static java.lang.String.format;
@@ -114,7 +115,7 @@ public class AwsSamDownloadManifestsStepHelper {
     StepElementParameters valuesStepElementParameters =
         downloadManifestsCommonHelper.getGitStepElementParameters(valuesManifestOutcome, valuesGitCloneStepInfo);
 
-    Ambiance ambianceForValuesManifest = downloadManifestsCommonHelper.buildAmbianceForGitClone(
+    Ambiance ambianceForValuesManifest = downloadManifestsCommonHelper.buildAmbiance(
         ambiance, downloadManifestsCommonHelper.getGitCloneStepIdentifier(valuesManifestOutcome));
 
     return gitCloneStep.executeAsyncAfterRbac(ambianceForValuesManifest, valuesStepElementParameters, inputPackage);
@@ -131,7 +132,7 @@ public class AwsSamDownloadManifestsStepHelper {
     StepElementParameters stepElementParameters =
         downloadManifestsCommonHelper.getGitStepElementParameters(awsSamDirectoryManifestOutcome, gitCloneStepInfo);
 
-    Ambiance ambianceForAwsSamDirectoryManifest = downloadManifestsCommonHelper.buildAmbianceForGitClone(
+    Ambiance ambianceForAwsSamDirectoryManifest = downloadManifestsCommonHelper.buildAmbiance(
         ambiance, downloadManifestsCommonHelper.getGitCloneStepIdentifier(awsSamDirectoryManifestOutcome));
     return gitCloneStep.executeAsyncAfterRbac(ambianceForAwsSamDirectoryManifest, stepElementParameters, inputPackage);
   }

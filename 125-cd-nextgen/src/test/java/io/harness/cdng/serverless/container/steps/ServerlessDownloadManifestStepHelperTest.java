@@ -226,7 +226,7 @@ public class ServerlessDownloadManifestStepHelperTest extends CategoryTest {
 
     doReturn("iden").when(downloadManifestsCommonHelper).getGitCloneStepIdentifier(any());
 
-    doReturn(ambiance).when(downloadManifestsCommonHelper).buildAmbianceForGitClone(any(), any());
+    doReturn(ambiance).when(downloadManifestsCommonHelper).buildAmbiance(any(), any());
 
     GitCloneStep gitCloneStep = mock(GitCloneStep.class);
 
