@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngmigration.service.step;
+
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.ngmigration.utils.NGMigrationConstants.RUNTIME_INPUT;
 import static io.harness.ngmigration.utils.NGMigrationConstants.SERVICE_COMMAND_TEMPLATE_SEPARATOR;
@@ -27,26 +28,35 @@ import io.harness.steps.template.TemplateStepNode;
 
 import software.wings.beans.GraphNode;
 import software.wings.beans.PhaseStep;
+import software.wings.beans.Service;
 import software.wings.beans.Workflow;
+import software.wings.beans.WorkflowExecution;
 import software.wings.beans.WorkflowPhase;
 import software.wings.beans.command.ServiceCommand;
 import software.wings.ngmigration.CgEntityId;
 import software.wings.ngmigration.NGMigrationEntityType;
+import software.wings.service.intfc.ServiceResourceService;
+import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.sm.State;
 import software.wings.sm.states.CommandState;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_MIGRATOR})
 @Slf4j
 public class CommandStepMapperImpl extends StepMapper {
+  @Inject ServiceResourceService serviceResourceService;
+  @Inject WorkflowExecutionService workflowExecutionService;
+
   @Override
   public SupportStatus stepSupportStatus(GraphNode graphNode) {
     return SupportStatus.SUPPORTED;
@@ -66,7 +76,7 @@ public class CommandStepMapperImpl extends StepMapper {
           CgEntityId.builder().id(templateId).type(NGMigrationEntityType.TEMPLATE).build());
     } else {
       String commandName = (String) graphNode.getProperties().get("commandName");
-      String serviceId = stepIdToServiceIdMap.getOrDefault(graphNode.getId(), UNKNOWN_SERVICE);
+      String serviceId = getServiceIdOfWorkflowPhase(stepIdToServiceIdMap, graphNode, workflow);
       return Collections.singletonList(CgEntityId.builder()
                                            .id(serviceId + SERVICE_COMMAND_TEMPLATE_SEPARATOR + commandName)
                                            .type(NGMigrationEntityType.SERVICE_COMMAND_TEMPLATE)
@@ -95,7 +105,7 @@ public class CommandStepMapperImpl extends StepMapper {
       WorkflowHandler workflowHandler = workflowHandlerFactory.getWorkflowHandler(context.getWorkflow());
       Map<String, String> stepIdToServiceIdMap = workflowHandler.getStepIdToServiceIdMap(context.getWorkflow());
       String commandName = (String) graphNode.getProperties().get("commandName");
-      String serviceId = stepIdToServiceIdMap.getOrDefault(graphNode.getId(), UNKNOWN_SERVICE);
+      String serviceId = getServiceIdOfWorkflowPhase(stepIdToServiceIdMap, graphNode, context.getWorkflow());
       CgEntityId commandId = CgEntityId.builder()
                                  .id(serviceId + SERVICE_COMMAND_TEMPLATE_SEPARATOR + commandName)
                                  .type(NGMigrationEntityType.SERVICE_COMMAND_TEMPLATE)
@@ -150,5 +160,24 @@ public class CommandStepMapperImpl extends StepMapper {
     }
     // Fix delegate selectors in the workflow
     overrideTemplateDelegateSelectorInputs(templateInputs, state.getDelegateSelectors());
+  }
+
+  private String getServiceIdOfWorkflowPhase(
+      Map<String, String> stepIdToServiceIdMap, GraphNode graphNode, Workflow workflow) {
+    String appId = workflow.getAppId();
+    String serviceId = stepIdToServiceIdMap.getOrDefault(graphNode.getId(), UNKNOWN_SERVICE);
+    Service service = serviceResourceService.get(appId, serviceId);
+    if (service == null) {
+      List<WorkflowExecution> workflowExecutions =
+          workflowExecutionService.getLastSuccessfulWorkflowExecutions(appId, workflow.getUuid(), null);
+      if (CollectionUtils.isEmpty(workflowExecutions)) {
+        return serviceId;
+      }
+      List<String> serviceIds = workflowExecutions.get(0).getServiceIds();
+      if (CollectionUtils.isNotEmpty(serviceIds)) {
+        return serviceIds.get(0);
+      }
+    }
+    return serviceId;
   }
 }
