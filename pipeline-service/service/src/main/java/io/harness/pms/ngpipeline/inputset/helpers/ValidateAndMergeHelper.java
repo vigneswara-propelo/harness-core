@@ -255,11 +255,23 @@ public class ValidateAndMergeHelper {
     Set<String> inputSetVersions = inputSetMetadataDTO.getInputSetVersions();
     List<JsonNode> inputSetJsonNodeList = inputSetMetadataDTO.getInputSetJsonNodeList();
     JsonNode pipelineTemplate = inputSetMetadataDTO.getPipelineTemplate();
+    String pipelineVersion = inputSetMetadataDTO.getPipelineVersion();
     if (inputSetVersions.contains(HarnessYamlVersion.V0) && inputSetVersions.contains(HarnessYamlVersion.V1)) {
       throw new InvalidRequestException("Input set versions 0 and 1 are not compatible");
+    } else if (!inputSetVersions.isEmpty()) {
+      String inputSetVersion = inputSetVersions.iterator().next();
+      if (!inputSetVersion.equals(pipelineVersion)) {
+        throw new InvalidRequestException("Different versions of Pipeline and InputSet are not supported");
+      }
     }
-    if (inputSetVersions.contains(HarnessYamlVersion.V1)) {
-      return InputSetMergeHelper.mergeInputSetsV1(inputSetJsonNodeList);
+    if (HarnessYamlVersion.V1.equals(pipelineVersion)) {
+      List<JsonNode> sanitizedInputSetJsonNodeList =
+          pmsInputSetService.getSanitizedInputsFromInputSetV1(inputSetJsonNodeList);
+      if (!EmptyPredicate.isEmpty(lastJsonNodeToMerge)) {
+        sanitizedInputSetJsonNodeList.add(
+            pmsInputSetService.getSanitizedInputsFromInputSetV1(List.of(lastJsonNodeToMerge)).get(0));
+      }
+      return InputSetMergeHelper.mergeInputSetsV1(sanitizedInputSetJsonNodeList);
     }
 
     if (!EmptyPredicate.isEmpty(lastJsonNodeToMerge)) {
@@ -284,6 +296,7 @@ public class ValidateAndMergeHelper {
     }
     JsonNode pipelineJsonNode = YamlUtils.readAsJsonNode(pipelineEntity.getYaml());
     JsonNode pipelineTemplate = null;
+    String pipelineVersion = HarnessYamlVersion.V0;
     if (HarnessYamlVersion.V0.equals(pipelineEntity.getHarnessVersion())) {
       if (keepDefaultValues) {
         pipelineTemplate = EmptyPredicate.isEmpty(stageIdentifiers)
@@ -298,6 +311,8 @@ public class ValidateAndMergeHelper {
         throw new InvalidRequestException(
             "Pipeline " + pipelineIdentifier + " does not have any runtime input. All existing input sets are invalid");
       }
+    } else {
+      pipelineVersion = HarnessYamlVersion.V1;
     }
     List<JsonNode> inputSetJsonNodeList = new ArrayList<>();
     Set<String> inputSetVersions = new HashSet<>();
@@ -331,6 +346,7 @@ public class ValidateAndMergeHelper {
         .inputSetVersions(inputSetVersions)
         .inputSetJsonNodeList(inputSetJsonNodeList)
         .pipelineTemplate(pipelineTemplate)
+        .pipelineVersion(pipelineVersion)
         .build();
   }
 

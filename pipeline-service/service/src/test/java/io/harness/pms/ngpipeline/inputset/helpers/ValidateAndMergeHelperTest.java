@@ -16,6 +16,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
 import io.harness.PipelineServiceTestBase;
@@ -34,6 +35,7 @@ import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
 import io.harness.pms.pipeline.service.PMSPipelineTemplateHelper;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 import io.harness.serializer.JsonUtils;
@@ -504,7 +506,12 @@ public class ValidateAndMergeHelperTest extends PipelineServiceTestBase {
     doReturn(Optional.of(overlay))
         .when(pmsInputSetService)
         .getWithoutValidations(accountId, orgId, projectId, pipelineId, overlayId, false, false, false);
-
+    List<JsonNode> sanitizedInputSet = new ArrayList<>();
+    sanitizedInputSet.add(YamlUtils.readAsJsonNode(inputSet1.getYaml()).get(YAMLFieldNameConstants.SPEC));
+    sanitizedInputSet.add(YamlUtils.readAsJsonNode(inputSet2.getYaml()).get(YAMLFieldNameConstants.SPEC));
+    sanitizedInputSet.add(YamlUtils.readAsJsonNode(inputSet3.getYaml()).get(YAMLFieldNameConstants.SPEC));
+    sanitizedInputSet.add(YamlUtils.readAsJsonNode(inputSet4.getYaml()).get(YAMLFieldNameConstants.SPEC));
+    doReturn(sanitizedInputSet).when(pmsInputSetService).getSanitizedInputsFromInputSetV1(any());
     JsonNode mergedInputSets = validateAndMergeHelper.getMergeInputSetFromPipelineTemplateWithJsonNode(
         accountId, orgId, projectId, pipelineId, Arrays.asList(inputSetId1, inputSetId2, overlayId), null, null, null);
     assertThat(mergedInputSets)

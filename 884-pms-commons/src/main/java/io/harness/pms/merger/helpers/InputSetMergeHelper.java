@@ -81,7 +81,7 @@ public class InputSetMergeHelper {
       return null;
     }
     JsonNode mergedInputSetNode = getMergedInputSetNodeWithJsonNode(inputSetJsonNodeList);
-    return mergedInputSetNode != null ? mergedInputSetNode.get(YAMLFieldNameConstants.SPEC) : JsonUtils.readTree("{}");
+    return mergedInputSetNode != null ? mergedInputSetNode : JsonUtils.readTree("{}");
   }
 
   private JsonNode getMergedInputSetNodeWithJsonNode(List<JsonNode> inputSetJsonNodeList) {

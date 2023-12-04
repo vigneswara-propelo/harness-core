@@ -19,6 +19,7 @@ import io.harness.pms.pipeline.PMSInputSetListRepoResponse;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.gitsync.PMSUpdateGitDetailsParams;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -83,4 +84,7 @@ public interface PMSInputSetService {
 
   String updateGitMetadata(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String pipelineIdentifier, String inputSetIdentifier, PMSUpdateGitDetailsParams updateGitDetailsParams);
+
+  // getSanitizedInputsFromInputSetV1 returns the list of the Spec of all the given V1 InputSets to be merged
+  List<JsonNode> getSanitizedInputsFromInputSetV1(List<JsonNode> inputSetJsonNodeList);
 }

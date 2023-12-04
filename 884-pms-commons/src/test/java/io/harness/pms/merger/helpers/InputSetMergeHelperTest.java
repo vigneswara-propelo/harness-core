@@ -22,6 +22,7 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 
@@ -394,11 +395,14 @@ public class InputSetMergeHelperTest extends CategoryTest {
         + "count: 1\n"
         + "tag: latest\n");
     JsonNode mergedInputSetYaml = InputSetMergeHelper.mergeInputSetsV1(inputSetYamlList);
-    assertThat(possibleResponses.contains(YamlUtils.writeYamlString(mergedInputSetYaml))).isTrue();
+    assertThat(
+        possibleResponses.contains(YamlUtils.writeYamlString(mergedInputSetYaml.get(YAMLFieldNameConstants.SPEC))))
+        .isTrue();
 
     inputSetYamlList = Arrays.asList(YamlUtils.readAsJsonNode("spec:\n  a: a"),
         YamlUtils.readAsJsonNode("spec:\n  b: b"), YamlUtils.readAsJsonNode("spec:\n  c: c"));
-    assertThat(YamlUtils.writeYamlString(InputSetMergeHelper.mergeInputSetsV1(inputSetYamlList)))
+    assertThat(YamlUtils.writeYamlString(
+                   InputSetMergeHelper.mergeInputSetsV1(inputSetYamlList).get(YAMLFieldNameConstants.SPEC)))
         .isEqualTo("a: a\n"
             + "b: b\n"
             + "c: c\n");
