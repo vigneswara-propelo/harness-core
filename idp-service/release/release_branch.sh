@@ -46,8 +46,8 @@ function check_file_present(){
 export PURPOSE=idp-service
 export STATUS_ID_TO_MOVE=151
 
-git config --global user.email "bot@harness.io"
-git config --global user.name "bot-harness"
+git config --global user.email $BOT_EMAIL
+git config --global user.name $BOT_USERNAME
 
 git remote set-url origin https://${DRONE_NETRC_USERNAME}:${BOT_PASSWORD}@github.com/harness/harness-core.git
 
