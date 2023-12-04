@@ -107,6 +107,14 @@ HARNESS_CE_AZURE_CLIENTID: '{{ .ctx.Values.secrets.default.HARNESS_CE_AZURE_CLIE
     {{- $hasAtleastOneSecret = true }}
 HARNESS_CE_AZURE_TENANTID: '{{ .ctx.Values.secrets.default.HARNESS_CE_AZURE_TENANTID | b64enc }}'
     {{- end }}
+    {{- if eq (include "harnesscommon.secrets.isDefaultAppSecret" (dict "ctx" $ "variableName" "HMAC_ACCESS_KEY")) "true" }}
+    {{- $hasAtleastOneSecret = true }}
+HMAC_ACCESS_KEY: '{{ .ctx.Values.secrets.default.HMAC_ACCESS_KEY | b64enc }}'
+    {{- end }}
+    {{- if eq (include "harnesscommon.secrets.isDefaultAppSecret" (dict "ctx" $ "variableName" "HMAC_SECRET_KEY")) "true" }}
+    {{- $hasAtleastOneSecret = true }}
+HMAC_SECRET_KEY: '{{ .ctx.Values.secrets.default.HMAC_SECRET_KEY | b64enc }}'
+    {{- end }}
     {{- if not $hasAtleastOneSecret }}
 {}
     {{- end }}

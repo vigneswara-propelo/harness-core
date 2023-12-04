@@ -418,6 +418,8 @@ secrets:
     HARNESS_CE_AZURE_SAS: ""
     HARNESS_CE_AZURE_CLIENTID: ""
     HARNESS_CE_AZURE_TENANTID: ""
+    HMAC_ACCESS_KEY: ""
+    HMAC_SECRET_KEY: ""
   kubernetesSecrets:
     - secretName: ""
       keys:
@@ -429,6 +431,8 @@ secrets:
         HARNESS_CE_AZURE_SAS: ""
         HARNESS_CE_AZURE_CLIENTID: ""
         HARNESS_CE_AZURE_TENANTID: ""
+        HMAC_ACCESS_KEY: ""
+        HMAC_SECRET_KEY: ""
   secretManagement:
     externalSecretsOperator:
       - secretStore:
@@ -459,5 +463,10 @@ secrets:
           HARNESS_CE_AZURE_TENANTID:
             name: ""
             property: ""
-
+          HMAC_ACCESS_KEY:
+            name: ""
+            property: ""
+          HMAC_SECRET_KEY:
+            name: ""
+            property: ""
 

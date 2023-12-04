@@ -87,6 +87,8 @@ spec:
             {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "HARNESS_CE_AZURE_SAS" "defaultKubernetesSecretName" "batch-processing" "defaultKubernetesSecretKey" "HARNESS_CE_AZURE_SAS") | indent 12 }}
             {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "HARNESS_CE_AZURE_CLIENTID" "defaultKubernetesSecretName" "batch-processing" "defaultKubernetesSecretKey" "HARNESS_CE_AZURE_CLIENTID") | indent 12 }}
             {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "HARNESS_CE_AZURE_TENANTID" "defaultKubernetesSecretName" "batch-processing" "defaultKubernetesSecretKey" "HARNESS_CE_AZURE_TENANTID") | indent 12 }}
+            {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "HMAC_ACCESS_KEY" "defaultKubernetesSecretName" "batch-processing" "defaultKubernetesSecretKey" "HMAC_ACCESS_KEY") | indent 12 }}
+            {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "HMAC_SECRET_KEY" "defaultKubernetesSecretName" "batch-processing" "defaultKubernetesSecretKey" "HMAC_SECRET_KEY") | indent 12 }}
             {{- include "harnesscommon.dbconnectionv2.timescaleEnv" (dict "ctx" .) | indent 12 }}
             - name: MONGO_URI
               value: {{ include "harnesscommon.dbconnectionv2.mongoConnection" (dict "ctx" $ "database" "harness" ) }}
