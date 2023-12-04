@@ -384,6 +384,7 @@ public class AccountResource {
   @ExceptionMetered
   public RestResponse<Account> updateCannyUsernameAbbreviationEnabled(
       @PathParam("accountId") @NotEmpty String accountId,
+      @QueryParam("clientAccountId") @NotNull String clientAccountId,
       @QueryParam("cannyUsernameAbbreviationEnabled") @DefaultValue(
           "false") boolean isCannyUsernameAbbreviationEnabled) {
     User existingUser = UserThreadLocal.get();
@@ -393,7 +394,7 @@ public class AccountResource {
 
     if (harnessUserGroupService.isHarnessSupportUser(existingUser.getUuid())) {
       return new RestResponse<>(
-          accountService.updateCannyUsernameAbbreviationEnabled(accountId, isCannyUsernameAbbreviationEnabled));
+          accountService.updateCannyUsernameAbbreviationEnabled(clientAccountId, isCannyUsernameAbbreviationEnabled));
     } else {
       return RestResponse.Builder.aRestResponse()
           .withResponseMessages(Lists.newArrayList(
