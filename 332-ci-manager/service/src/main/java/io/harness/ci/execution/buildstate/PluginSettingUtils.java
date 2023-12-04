@@ -146,6 +146,8 @@ public class PluginSettingUtils extends PluginServiceImpl {
   public static final String PLUGIN_BACKEND = "PLUGIN_BACKEND";
   public static final String PLUGIN_OVERRIDE = "PLUGIN_OVERRIDE";
   public static final String PLUGIN_ARCHIVE_FORMAT = "PLUGIN_ARCHIVE_FORMAT";
+  public static final String PLUGIN_ACL = "PLUGIN_ACL";
+  public static final String PLUGIN_ACL_PRIVATE = "private";
   public static final String ZSTD_ARCHIVE_FORMAT = "zstd";
   public static final String PLUGIN_ARTIFACT_FILE = "PLUGIN_ARTIFACT_FILE";
   public static final String PLUGIN_DAEMON_OFF = "PLUGIN_DAEMON_OFF";

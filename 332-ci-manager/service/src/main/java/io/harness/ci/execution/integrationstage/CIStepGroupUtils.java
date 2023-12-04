@@ -22,6 +22,8 @@ import static io.harness.ci.commonconstants.CIExecutionConstants.RESTORE_CACHE_S
 import static io.harness.ci.commonconstants.CIExecutionConstants.RESTORE_CACHE_STEP_NAME;
 import static io.harness.ci.commonconstants.CIExecutionConstants.SAVE_CACHE_STEP_ID;
 import static io.harness.ci.commonconstants.CIExecutionConstants.SAVE_CACHE_STEP_NAME;
+import static io.harness.ci.execution.buildstate.PluginSettingUtils.PLUGIN_ACL;
+import static io.harness.ci.execution.buildstate.PluginSettingUtils.PLUGIN_ACL_PRIVATE;
 import static io.harness.ci.execution.buildstate.PluginSettingUtils.PLUGIN_ARCHIVE_FORMAT;
 import static io.harness.ci.execution.buildstate.PluginSettingUtils.PLUGIN_AUTO_CACHE_ACCOUNT_ID;
 import static io.harness.ci.execution.buildstate.PluginSettingUtils.PLUGIN_AUTO_DETECT_CACHE;
@@ -515,6 +517,7 @@ public class CIStepGroupUtils {
         envVariables.put(PLUGIN_CACHE_KEY, ParameterField.createValueField(cacheKey));
       }
     }
+    envVariables.put(PLUGIN_ACL, ParameterField.createValueField(PLUGIN_ACL_PRIVATE));
     envVariables.put(PLUGIN_ARCHIVE_FORMAT, ParameterField.createValueField(ZSTD_ARCHIVE_FORMAT));
     envVariables.put(PLUGIN_AUTO_DETECT_CACHE, ParameterField.createValueField(STRING_TRUE));
     envVariables.put(PLUGIN_AUTO_CACHE_ACCOUNT_ID, ParameterField.createValueField(accountId));
