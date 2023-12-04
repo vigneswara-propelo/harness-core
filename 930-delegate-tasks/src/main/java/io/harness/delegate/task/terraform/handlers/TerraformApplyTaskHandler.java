@@ -76,11 +76,10 @@ public class TerraformApplyTaskHandler extends TerraformAbstractTaskHandler {
 
   @Override
   public TerraformTaskNGResponse executeTaskInternal(TerraformTaskNGParameters taskParameters, String delegateId,
-      String taskId, LogCallback logCallback, AtomicBoolean isAborted)
+      String taskId, LogCallback logCallback, String baseDir, AtomicBoolean isAborted)
       throws TerraformCommandExecutionException, IOException, TimeoutException, InterruptedException {
     handleAborted(isAborted);
     String scriptDirectory;
-    String baseDir = terraformBaseHelper.getBaseDir(taskParameters.getEntityId());
     Map<String, String> commitIdToFetchedFilesMap = new HashMap<>();
     Map<String, Map<String, String> > keyVersionMap = new HashMap<>();
 

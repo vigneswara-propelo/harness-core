@@ -99,11 +99,11 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
       EncryptedRecordData.builder().name("planName").encryptedValue("encryptedPlan".toCharArray()).build();
   private static final String gitUsername = "username";
   private static final String gitPasswordRefId = "git_password";
+  private static final String baseDir = "./some/dir/entityId";
 
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
-    when(terraformBaseHelper.getBaseDir(any())).thenReturn("./some/dir/entityId");
     doReturn(GitConfigDTO.builder().build()).when(scmConnectorMapperDelegate).toGitConfigDTO(any(), any());
   }
 
@@ -131,7 +131,7 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
                     CliResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).exitCode(2).build())
                 .build());
     TerraformTaskNGResponse response = terraformPlanTaskHandler.executeTaskInternal(
-        getTerraformTaskParameters().build(), "delegateId", "taskId", logCallback, new AtomicBoolean());
+        getTerraformTaskParameters().build(), "delegateId", "taskId", logCallback, baseDir, new AtomicBoolean());
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     assertThat(response.getDetailedExitCode()).isEqualTo(2);
@@ -169,8 +169,8 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
         .checkoutRemoteVarFileAndConvertToVarFilePaths(any(), any(), any(), any(), any(), any(), anyBoolean(), any());
 
     assertThatThrownBy(()
-                           -> terraformPlanTaskHandler.executeTaskInternal(
-                               getTerraformTaskParameters().build(), "delegateId", "taskId", logCallback, isAborted))
+                           -> terraformPlanTaskHandler.executeTaskInternal(getTerraformTaskParameters().build(),
+                               "delegateId", "taskId", logCallback, baseDir, isAborted))
         .isInstanceOf(InterruptedException.class);
 
     verify(terraformBaseHelper)
@@ -205,7 +205,7 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
                 .build());
     TerraformTaskNGResponse response =
         terraformPlanTaskHandler.executeTaskInternal(getTerraformTaskParameters().skipStateStorage(true).build(),
-            "delegateId", "taskId", logCallback, new AtomicBoolean());
+            "delegateId", "taskId", logCallback, baseDir, new AtomicBoolean());
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     assertThat(response.getDetailedExitCode()).isEqualTo(2);
@@ -242,7 +242,7 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
                 .build());
     TerraformTaskNGResponse response =
         terraformPlanTaskHandler.executeTaskInternal(getTerraformTaskParameters().isTerraformCloudCli(true).build(),
-            "delegateId", "taskId", logCallback, new AtomicBoolean());
+            "delegateId", "taskId", logCallback, baseDir, new AtomicBoolean());
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     assertThat(response.getDetailedExitCode()).isEqualTo(2);
@@ -276,8 +276,9 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
                 .cliResponse(
                     CliResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).exitCode(0).build())
                 .build());
-    TerraformTaskNGResponse response = terraformPlanTaskHandler.executeTaskInternal(
-        getTerraformTaskParametersWithArtifactoryConfig(), "delegateId", "taskId", logCallback, new AtomicBoolean());
+    TerraformTaskNGResponse response =
+        terraformPlanTaskHandler.executeTaskInternal(getTerraformTaskParametersWithArtifactoryConfig(), "delegateId",
+            "taskId", logCallback, baseDir, new AtomicBoolean());
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     assertThat(response.getDetailedExitCode()).isEqualTo(0);
@@ -310,8 +311,9 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
                 .cliResponse(
                     CliResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).exitCode(0).build())
                 .build());
-    TerraformTaskNGResponse response = terraformPlanTaskHandler.executeTaskInternal(
-        getTerraformTaskParametersWithBackendConfig(), "delegateId", "taskId", logCallback, new AtomicBoolean());
+    TerraformTaskNGResponse response =
+        terraformPlanTaskHandler.executeTaskInternal(getTerraformTaskParametersWithBackendConfig(), "delegateId",
+            "taskId", logCallback, baseDir, new AtomicBoolean());
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     assertThat(response.getDetailedExitCode()).isEqualTo(0);
@@ -344,7 +346,7 @@ public class TerraformPlanTaskHandlerTest extends CategoryTest {
                     CliResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).exitCode(0).build())
                 .build());
     TerraformTaskNGResponse response = terraformPlanTaskHandler.executeTaskInternal(
-        getTerraformTaskParametersWithS3Config(), "delegateId", "taskId", logCallback, new AtomicBoolean());
+        getTerraformTaskParametersWithS3Config(), "delegateId", "taskId", logCallback, baseDir, new AtomicBoolean());
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     assertThat(response.getDetailedExitCode()).isZero();

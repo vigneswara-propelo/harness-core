@@ -12,6 +12,7 @@ import static io.harness.rule.OwnerRule.VLICA;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -52,7 +53,7 @@ public class TerraformAbstractTaskHandlerTest {
   TerraformApplyTaskHandler terraformApplyTaskHandler = new TerraformApplyTaskHandler() {
     @Override
     public TerraformTaskNGResponse executeTaskInternal(TerraformTaskNGParameters taskParameters, String delegateId,
-        String taskId, LogCallback logCallback, AtomicBoolean isAborted) {
+        String taskId, LogCallback logCallback, String baseDir, AtomicBoolean isAborted) {
       return TerraformTaskNGResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).build();
     }
   };
@@ -63,7 +64,7 @@ public class TerraformAbstractTaskHandlerTest {
   TerraformApplyTaskHandler terraformApplyTaskHandlerException = new TerraformApplyTaskHandler() {
     @Override
     public TerraformTaskNGResponse executeTaskInternal(TerraformTaskNGParameters taskParameters, String delegateId,
-        String taskId, LogCallback logCallback, AtomicBoolean isAborted) {
+        String taskId, LogCallback logCallback, String baseDir, AtomicBoolean isAborted) {
       throw new InterruptedRuntimeException(new InterruptedException());
     }
   };
@@ -79,7 +80,8 @@ public class TerraformAbstractTaskHandlerTest {
 
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
-    verify(terraformBaseHelper, times(1)).performCleanupOfTfDirs(eq(taskNGParameters), eq(logCallback));
+    verify(terraformBaseHelper, times(1)).getBaseDir(eq(taskNGParameters.getEntityId()));
+    verify(terraformBaseHelper, times(1)).performCleanupOfTfDirs(eq(taskNGParameters), eq(logCallback), any());
   }
 
   @Test
@@ -93,7 +95,8 @@ public class TerraformAbstractTaskHandlerTest {
                         -> terraformApplyTaskHandlerException.executeTask(
                             taskNGParameters, "delegateId", "taskId", logCallback, new AtomicBoolean()));
 
-    verify(terraformBaseHelper, times(1)).performCleanupOfTfDirs(eq(taskNGParameters), eq(logCallback));
+    verify(terraformBaseHelper, times(1)).getBaseDir(eq(taskNGParameters.getEntityId()));
+    verify(terraformBaseHelper, times(1)).performCleanupOfTfDirs(eq(taskNGParameters), eq(logCallback), any());
     verify(logCallback).saveExecutionLog("Interrupt received.", LogLevel.ERROR, CommandExecutionStatus.RUNNING);
   }
 
