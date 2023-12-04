@@ -228,12 +228,12 @@ maxSurge: 1
 maxUnavailable: 0
 allowedOrigins: ""
 image:
-  registry: us.gcr.io/platform-205701
+  registry: docker.io
   digest: ""
-  repository: pipeline-service
+  repository: harness/pipeline-service-signed
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.4.0-develop-e54df1"
+  tag: "1.41.3"
   imagePullSecrets: []
 waitForInitContainer:
   image:
