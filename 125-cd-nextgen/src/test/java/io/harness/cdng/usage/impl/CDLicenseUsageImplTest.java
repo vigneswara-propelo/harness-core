@@ -119,8 +119,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 10));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceWithInstanceCountList)))
         .thenReturn(servicesList);
@@ -165,8 +165,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceList)))
         .thenReturn(servicesList);
@@ -233,8 +233,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceList)))
         .thenReturn(servicesList);
@@ -301,8 +301,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceList)))
         .thenReturn(servicesList);
@@ -369,8 +369,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceList)))
         .thenReturn(servicesList);
@@ -439,10 +439,10 @@ public class CDLicenseUsageImplTest extends CategoryTest {
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier2,
-        serviceName2, false, null, null));
+        serviceName2, false, null, null, null, serviceIdentifier2));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceList)))
         .thenReturn(servicesList);
@@ -538,8 +538,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceList)))
         .thenReturn(servicesList);
@@ -843,8 +843,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         .thenReturn(emptyList());
 
     List<Services> servicesList = new ArrayList<>();
-    servicesList.add(new Services(
-        null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier, serviceName, false, null, null));
+    servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
+        serviceName, false, null, null, null, serviceIdentifier));
     when(timeScaleDAL.getNamesForServiceIds(
              accountIdentifier, NgServiceInfraInfoUtils.getOrgProjectServiceTable(activeServiceList)))
         .thenReturn(servicesList);

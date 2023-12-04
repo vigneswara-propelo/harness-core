@@ -28,6 +28,8 @@ public class Services implements Serializable {
   private Boolean deleted;
   private Long createdAt;
   private Long lastModifiedAt;
+  private Long deletedAt;
+  private String fullyQualifiedIdentifier;
 
   public Services() {}
 
@@ -41,10 +43,13 @@ public class Services implements Serializable {
     this.deleted = value.deleted;
     this.createdAt = value.createdAt;
     this.lastModifiedAt = value.lastModifiedAt;
+    this.deletedAt = value.deletedAt;
+    this.fullyQualifiedIdentifier = value.fullyQualifiedIdentifier;
   }
 
   public Services(String id, String accountId, String orgIdentifier, String projectIdentifier, String identifier,
-      String name, Boolean deleted, Long createdAt, Long lastModifiedAt) {
+      String name, Boolean deleted, Long createdAt, Long lastModifiedAt, Long deletedAt,
+      String fullyQualifiedIdentifier) {
     this.id = id;
     this.accountId = accountId;
     this.orgIdentifier = orgIdentifier;
@@ -54,6 +59,8 @@ public class Services implements Serializable {
     this.deleted = deleted;
     this.createdAt = createdAt;
     this.lastModifiedAt = lastModifiedAt;
+    this.deletedAt = deletedAt;
+    this.fullyQualifiedIdentifier = fullyQualifiedIdentifier;
   }
 
   /**
@@ -191,6 +198,36 @@ public class Services implements Serializable {
     return this;
   }
 
+  /**
+   * Getter for <code>public.services.deleted_at</code>.
+   */
+  public Long getDeletedAt() {
+    return this.deletedAt;
+  }
+
+  /**
+   * Setter for <code>public.services.deleted_at</code>.
+   */
+  public Services setDeletedAt(Long deletedAt) {
+    this.deletedAt = deletedAt;
+    return this;
+  }
+
+  /**
+   * Getter for <code>public.services.fully_qualified_identifier</code>.
+   */
+  public String getFullyQualifiedIdentifier() {
+    return this.fullyQualifiedIdentifier;
+  }
+
+  /**
+   * Setter for <code>public.services.fully_qualified_identifier</code>.
+   */
+  public Services setFullyQualifiedIdentifier(String fullyQualifiedIdentifier) {
+    this.fullyQualifiedIdentifier = fullyQualifiedIdentifier;
+    return this;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -245,6 +282,16 @@ public class Services implements Serializable {
         return false;
     } else if (!lastModifiedAt.equals(other.lastModifiedAt))
       return false;
+    if (deletedAt == null) {
+      if (other.deletedAt != null)
+        return false;
+    } else if (!deletedAt.equals(other.deletedAt))
+      return false;
+    if (fullyQualifiedIdentifier == null) {
+      if (other.fullyQualifiedIdentifier != null)
+        return false;
+    } else if (!fullyQualifiedIdentifier.equals(other.fullyQualifiedIdentifier))
+      return false;
     return true;
   }
 
@@ -261,6 +308,8 @@ public class Services implements Serializable {
     result = prime * result + ((this.deleted == null) ? 0 : this.deleted.hashCode());
     result = prime * result + ((this.createdAt == null) ? 0 : this.createdAt.hashCode());
     result = prime * result + ((this.lastModifiedAt == null) ? 0 : this.lastModifiedAt.hashCode());
+    result = prime * result + ((this.deletedAt == null) ? 0 : this.deletedAt.hashCode());
+    result = prime * result + ((this.fullyQualifiedIdentifier == null) ? 0 : this.fullyQualifiedIdentifier.hashCode());
     return result;
   }
 
@@ -277,6 +326,8 @@ public class Services implements Serializable {
     sb.append(", ").append(deleted);
     sb.append(", ").append(createdAt);
     sb.append(", ").append(lastModifiedAt);
+    sb.append(", ").append(deletedAt);
+    sb.append(", ").append(fullyQualifiedIdentifier);
 
     sb.append(")");
     return sb.toString();

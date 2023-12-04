@@ -21,7 +21,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row9;
+import org.jooq.Row11;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -103,6 +103,18 @@ public class Services extends TableImpl<ServicesRecord> {
   public final TableField<ServicesRecord, Long> LAST_MODIFIED_AT =
       createField(DSL.name("last_modified_at"), SQLDataType.BIGINT, this, "");
 
+  /**
+   * The column <code>public.services.deleted_at</code>.
+   */
+  public final TableField<ServicesRecord, Long> DELETED_AT =
+      createField(DSL.name("deleted_at"), SQLDataType.BIGINT, this, "");
+
+  /**
+   * The column <code>public.services.fully_qualified_identifier</code>.
+   */
+  public final TableField<ServicesRecord, String> FULLY_QUALIFIED_IDENTIFIER =
+      createField(DSL.name("fully_qualified_identifier"), SQLDataType.CLOB, this, "");
+
   private Services(Name alias, Table<ServicesRecord> aliased) {
     this(alias, aliased, null);
   }
@@ -143,7 +155,7 @@ public class Services extends TableImpl<ServicesRecord> {
 
   @Override
   public List<Index> getIndexes() {
-    return Arrays.<Index>asList(Indexes.SERVICES_ACCOUNT_ID_CREATED_AT_IDX);
+    return Arrays.<Index>asList(Indexes.SERVICES_ACCOUNT_ID_CREATED_AT_IDX, Indexes.SERVICES_PKEY);
   }
 
   @Override
@@ -173,11 +185,11 @@ public class Services extends TableImpl<ServicesRecord> {
   }
 
   // -------------------------------------------------------------------------
-  // Row9 type methods
+  // Row11 type methods
   // -------------------------------------------------------------------------
 
   @Override
-  public Row9<String, String, String, String, String, String, Boolean, Long, Long> fieldsRow() {
-    return (Row9) super.fieldsRow();
+  public Row11<String, String, String, String, String, String, Boolean, Long, Long, Long, String> fieldsRow() {
+    return (Row11) super.fieldsRow();
   }
 }

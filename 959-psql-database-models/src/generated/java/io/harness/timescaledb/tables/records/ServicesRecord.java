@@ -13,8 +13,8 @@ package io.harness.timescaledb.tables.records;
 import io.harness.timescaledb.tables.Services;
 
 import org.jooq.Field;
-import org.jooq.Record9;
-import org.jooq.Row9;
+import org.jooq.Record11;
+import org.jooq.Row11;
 import org.jooq.impl.TableRecordImpl;
 
 /**
@@ -22,7 +22,7 @@ import org.jooq.impl.TableRecordImpl;
  */
 @SuppressWarnings({"all", "unchecked", "rawtypes"})
 public class ServicesRecord extends TableRecordImpl<ServicesRecord>
-    implements Record9<String, String, String, String, String, String, Boolean, Long, Long> {
+    implements Record11<String, String, String, String, String, String, Boolean, Long, Long, Long, String> {
   private static final long serialVersionUID = 1L;
 
   /**
@@ -160,18 +160,48 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
     return (Long) get(8);
   }
 
+  /**
+   * Setter for <code>public.services.deleted_at</code>.
+   */
+  public ServicesRecord setDeletedAt(Long value) {
+    set(9, value);
+    return this;
+  }
+
+  /**
+   * Getter for <code>public.services.deleted_at</code>.
+   */
+  public Long getDeletedAt() {
+    return (Long) get(9);
+  }
+
+  /**
+   * Setter for <code>public.services.fully_qualified_identifier</code>.
+   */
+  public ServicesRecord setFullyQualifiedIdentifier(String value) {
+    set(10, value);
+    return this;
+  }
+
+  /**
+   * Getter for <code>public.services.fully_qualified_identifier</code>.
+   */
+  public String getFullyQualifiedIdentifier() {
+    return (String) get(10);
+  }
+
   // -------------------------------------------------------------------------
-  // Record9 type implementation
+  // Record11 type implementation
   // -------------------------------------------------------------------------
 
   @Override
-  public Row9<String, String, String, String, String, String, Boolean, Long, Long> fieldsRow() {
-    return (Row9) super.fieldsRow();
+  public Row11<String, String, String, String, String, String, Boolean, Long, Long, Long, String> fieldsRow() {
+    return (Row11) super.fieldsRow();
   }
 
   @Override
-  public Row9<String, String, String, String, String, String, Boolean, Long, Long> valuesRow() {
-    return (Row9) super.valuesRow();
+  public Row11<String, String, String, String, String, String, Boolean, Long, Long, Long, String> valuesRow() {
+    return (Row11) super.valuesRow();
   }
 
   @Override
@@ -220,6 +250,16 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
   }
 
   @Override
+  public Field<Long> field10() {
+    return Services.SERVICES.DELETED_AT;
+  }
+
+  @Override
+  public Field<String> field11() {
+    return Services.SERVICES.FULLY_QUALIFIED_IDENTIFIER;
+  }
+
+  @Override
   public String component1() {
     return getId();
   }
@@ -265,6 +305,16 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
   }
 
   @Override
+  public Long component10() {
+    return getDeletedAt();
+  }
+
+  @Override
+  public String component11() {
+    return getFullyQualifiedIdentifier();
+  }
+
+  @Override
   public String value1() {
     return getId();
   }
@@ -307,6 +357,16 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
   @Override
   public Long value9() {
     return getLastModifiedAt();
+  }
+
+  @Override
+  public Long value10() {
+    return getDeletedAt();
+  }
+
+  @Override
+  public String value11() {
+    return getFullyQualifiedIdentifier();
   }
 
   @Override
@@ -364,8 +424,20 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
   }
 
   @Override
+  public ServicesRecord value10(Long value) {
+    setDeletedAt(value);
+    return this;
+  }
+
+  @Override
+  public ServicesRecord value11(String value) {
+    setFullyQualifiedIdentifier(value);
+    return this;
+  }
+
+  @Override
   public ServicesRecord values(String value1, String value2, String value3, String value4, String value5, String value6,
-      Boolean value7, Long value8, Long value9) {
+      Boolean value7, Long value8, Long value9, Long value10, String value11) {
     value1(value1);
     value2(value2);
     value3(value3);
@@ -375,6 +447,8 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
     value7(value7);
     value8(value8);
     value9(value9);
+    value10(value10);
+    value11(value11);
     return this;
   }
 
@@ -393,7 +467,8 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
    * Create a detached, initialised ServicesRecord
    */
   public ServicesRecord(String id, String accountId, String orgIdentifier, String projectIdentifier, String identifier,
-      String name, Boolean deleted, Long createdAt, Long lastModifiedAt) {
+      String name, Boolean deleted, Long createdAt, Long lastModifiedAt, Long deletedAt,
+      String fullyQualifiedIdentifier) {
     super(Services.SERVICES);
 
     setId(id);
@@ -405,5 +480,7 @@ public class ServicesRecord extends TableRecordImpl<ServicesRecord>
     setDeleted(deleted);
     setCreatedAt(createdAt);
     setLastModifiedAt(lastModifiedAt);
+    setDeletedAt(deletedAt);
+    setFullyQualifiedIdentifier(fullyQualifiedIdentifier);
   }
 }

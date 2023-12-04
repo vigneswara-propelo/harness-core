@@ -17,6 +17,7 @@ import io.harness.ng.core.migration.timescale.AddChartVersionToCDStageHelmManife
 import io.harness.ng.core.migration.timescale.AddColumnsToCDStageTable;
 import io.harness.ng.core.migration.timescale.AddColumnsToCustomStageTable;
 import io.harness.ng.core.migration.timescale.AddDeletedAtColumns;
+import io.harness.ng.core.migration.timescale.AddFullyQualifiedIdentifierColumnToServices;
 import io.harness.ng.core.migration.timescale.AddIndexToServiceInfraInfoTable;
 import io.harness.ng.core.migration.timescale.AddModuleTypeSpecificColumnsToModuleLicensesTable;
 import io.harness.ng.core.migration.timescale.AddRollbackDurationToServiceInfraInfoTable;
@@ -79,6 +80,7 @@ public class NGCoreTimeScaleMigrationDetails implements MigrationDetails {
         .add(Pair.of(23, AddColumnsToCustomStageTable.class))
         .add(Pair.of(24, GetActiveServicesByDateFunction.class))
         .add(Pair.of(25, GetServiceInstancesByDateFunction.class))
+        .add(Pair.of(26, AddFullyQualifiedIdentifierColumnToServices.class))
         .build();
   }
 }

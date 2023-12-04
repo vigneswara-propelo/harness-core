@@ -54,6 +54,7 @@ public class ServicesChangeDataHandler extends AbstractChangeDataHandler {
 
     if (dbObject.get(ServiceEntityKeys.identifier) != null) {
       columnValueMapping.put("identifier", dbObject.get(ServiceEntityKeys.identifier).toString());
+      columnValueMapping.put("fully_qualified_identifier", getFullyQualifiedIdentifier(dbObject));
     }
 
     if (dbObject.get(ServiceEntityKeys.name) != null) {
@@ -73,6 +74,17 @@ public class ServicesChangeDataHandler extends AbstractChangeDataHandler {
     }
 
     return columnValueMapping;
+  }
+
+  private String getFullyQualifiedIdentifier(DBObject dbObject) {
+    if (dbObject.get(ServiceEntityKeys.orgIdentifier) == null
+        && dbObject.get(ServiceEntityKeys.projectIdentifier) == null) {
+      return "account." + dbObject.get(ServiceEntityKeys.identifier).toString();
+    } else if (dbObject.get(ServiceEntityKeys.projectIdentifier) == null) {
+      return "org." + dbObject.get(ServiceEntityKeys.identifier).toString();
+    } else {
+      return dbObject.get(ServiceEntityKeys.identifier).toString();
+    }
   }
 
   public boolean shouldDelete() {
