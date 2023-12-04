@@ -7,8 +7,8 @@
 
 package io.harness.idp.envvariable.resources;
 
-import static io.harness.idp.common.RbacConstants.IDP_PLUGIN;
-import static io.harness.idp.common.RbacConstants.IDP_PLUGIN_EDIT;
+import static io.harness.idp.common.Constants.IDP_PERMISSION;
+import static io.harness.idp.common.Constants.IDP_RESOURCE_TYPE;
 
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
@@ -42,8 +42,8 @@ public class BackstageEnvVariableApiImpl implements BackstageEnvVariableApi {
   private IdpCommonService idpCommonService;
   private BackstageEnvVariableService backstageEnvVariableService;
 
-  @Override
   @Deprecated(forRemoval = true)
+  @Override
   public Response createBackstageEnvVariable(@Valid BackstageEnvVariableRequest body, String harnessAccount) {
     idpCommonService.checkUserAuthorization();
     try {
@@ -60,7 +60,7 @@ public class BackstageEnvVariableApiImpl implements BackstageEnvVariableApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_PLUGIN, permission = IDP_PLUGIN_EDIT)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response createBackstageEnvVariables(
       @Valid BackstageEnvVariableBatchRequest body, @AccountIdentifier String harnessAccount) {
     List<BackstageEnvVariable> responseSecrets;
@@ -77,8 +77,8 @@ public class BackstageEnvVariableApiImpl implements BackstageEnvVariableApi {
         .build();
   }
 
-  @Override
   @Deprecated(forRemoval = true)
+  @Override
   public Response deleteBackstageEnvVariable(String backstageEnvVariable, String harnessAccount) {
     idpCommonService.checkUserAuthorization();
     try {
@@ -154,8 +154,8 @@ public class BackstageEnvVariableApiImpl implements BackstageEnvVariableApi {
     return Response.status(Response.Status.NO_CONTENT).build();
   }
 
-  @Override
   @Deprecated(forRemoval = true)
+  @Override
   public Response updateBackstageEnvVariable(
       String backstageEnvVariableId, @Valid BackstageEnvVariableRequest request, String harnessAccount) {
     idpCommonService.checkUserAuthorization();

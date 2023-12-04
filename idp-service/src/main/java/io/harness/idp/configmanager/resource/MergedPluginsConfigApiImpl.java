@@ -8,11 +8,7 @@
 package io.harness.idp.configmanager.resource;
 
 import static io.harness.idp.common.CommonUtils.readFileFromClassPath;
-import static io.harness.idp.common.RbacConstants.IDP_PLUGIN;
-import static io.harness.idp.common.RbacConstants.IDP_PLUGIN_EDIT;
 
-import io.harness.accesscontrol.AccountIdentifier;
-import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ResponseMessage;
@@ -25,11 +21,7 @@ import io.harness.idp.namespace.service.NamespaceService;
 import io.harness.remote.client.ServiceHttpClientConfig;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.idp.v1.MergedPluginsConfigApi;
-import io.harness.spec.server.idp.v1.model.BackstageEnvVariable;
-import io.harness.spec.server.idp.v1.model.ConfigurationEntities;
-import io.harness.spec.server.idp.v1.model.MergedPluginConfigResponse;
-import io.harness.spec.server.idp.v1.model.MergedPluginConfigs;
-import io.harness.spec.server.idp.v1.model.ProxyHostDetail;
+import io.harness.spec.server.idp.v1.model.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
@@ -117,8 +109,7 @@ public class MergedPluginsConfigApiImpl implements MergedPluginsConfigApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_PLUGIN, permission = IDP_PLUGIN_EDIT)
-  public Response updateConfigurationEntities(ConfigurationEntities body, @AccountIdentifier String accountIdentifier) {
+  public Response updateConfigurationEntities(ConfigurationEntities body, String accountIdentifier) {
     try {
       List<BackstageEnvVariable> resposneBackstageEnvVariablesList =
           backstageEnvVariableService.createOrUpdate(body.getEnvVariables(), accountIdentifier);

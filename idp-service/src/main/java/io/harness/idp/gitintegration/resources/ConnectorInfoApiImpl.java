@@ -7,8 +7,8 @@
 
 package io.harness.idp.gitintegration.resources;
 
-import static io.harness.idp.common.RbacConstants.IDP_INTEGRATION;
-import static io.harness.idp.common.RbacConstants.IDP_INTEGRATION_EDIT;
+import static io.harness.idp.common.Constants.IDP_PERMISSION;
+import static io.harness.idp.common.Constants.IDP_RESOURCE_TYPE;
 
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
@@ -64,6 +64,7 @@ public class ConnectorInfoApiImpl implements ConnectorInfoApi {
   }
 
   @Override
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response getConnectorsInfo(@AccountIdentifier String harnessAccount) {
     List<CatalogConnectorEntity> catalogConnectorEntities =
         gitIntegrationService.getAllConnectorDetails(harnessAccount);
@@ -73,7 +74,7 @@ public class ConnectorInfoApiImpl implements ConnectorInfoApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_INTEGRATION, permission = IDP_INTEGRATION_EDIT)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response saveConnectorInfo(@Valid ConnectorInfoRequest body, @AccountIdentifier String harnessAccount) {
     try {
       CatalogConnectorEntity catalogConnectorEntity =

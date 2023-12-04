@@ -7,9 +7,8 @@
 
 package io.harness.idp.configmanager.resource;
 
-import static io.harness.idp.common.RbacConstants.IDP_PLUGIN;
-import static io.harness.idp.common.RbacConstants.IDP_PLUGIN_EDIT;
-import static io.harness.idp.common.RbacConstants.IDP_PLUGIN_TOGGLE;
+import static io.harness.idp.common.Constants.IDP_PERMISSION;
+import static io.harness.idp.common.Constants.IDP_RESOURCE_TYPE;
 
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
@@ -39,7 +38,7 @@ public class AppConfigApiImpl implements AppConfigApi {
   private ConfigEnvVariablesService configEnvVariablesService;
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_PLUGIN, permission = IDP_PLUGIN_EDIT)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response saveOrUpdatePluginAppConfig(@Valid AppConfigRequest body, @AccountIdentifier String harnessAccount) {
     try {
       AppConfig appConfig = body.getAppConfig();
@@ -60,7 +59,7 @@ public class AppConfigApiImpl implements AppConfigApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_PLUGIN, permission = IDP_PLUGIN_TOGGLE)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response togglePluginForAccount(String pluginId, Boolean isEnabled, @AccountIdentifier String harnessAccount) {
     try {
       AppConfig disabledPluginAppConfig =

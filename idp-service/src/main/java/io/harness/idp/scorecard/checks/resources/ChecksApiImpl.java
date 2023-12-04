@@ -9,10 +9,9 @@ package io.harness.idp.scorecard.checks.resources;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.idp.common.Constants.DOT_SEPARATOR;
+import static io.harness.idp.common.Constants.IDP_PERMISSION;
+import static io.harness.idp.common.Constants.IDP_RESOURCE_TYPE;
 import static io.harness.idp.common.Constants.SUCCESS_RESPONSE;
-import static io.harness.idp.common.RbacConstants.IDP_SCORECARD;
-import static io.harness.idp.common.RbacConstants.IDP_SCORECARD_DELETE;
-import static io.harness.idp.common.RbacConstants.IDP_SCORECARD_EDIT;
 
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
@@ -133,7 +132,7 @@ public class ChecksApiImpl implements ChecksApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_SCORECARD, permission = IDP_SCORECARD_EDIT)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response createCheck(@Valid CheckDetailsRequest body, @AccountIdentifier String harnessAccount) {
     try {
       checkService.createCheck(body.getCheckDetails(), harnessAccount);
@@ -156,7 +155,7 @@ public class ChecksApiImpl implements ChecksApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_SCORECARD, permission = IDP_SCORECARD_DELETE)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response deleteCheck(String checkId, @AccountIdentifier String harnessAccount, Boolean forceDelete) {
     try {
       checkService.deleteCustomCheck(harnessAccount, checkId, forceDelete);
@@ -173,7 +172,7 @@ public class ChecksApiImpl implements ChecksApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_SCORECARD, permission = IDP_SCORECARD_EDIT)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response updateCheck(
       String checkId, @Valid CheckDetailsRequest body, @AccountIdentifier String harnessAccount) {
     try {

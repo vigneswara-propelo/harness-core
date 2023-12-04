@@ -7,10 +7,9 @@
 
 package io.harness.idp.scorecard.scorecards.resources;
 
+import static io.harness.idp.common.Constants.IDP_PERMISSION;
+import static io.harness.idp.common.Constants.IDP_RESOURCE_TYPE;
 import static io.harness.idp.common.Constants.SUCCESS_RESPONSE;
-import static io.harness.idp.common.RbacConstants.IDP_SCORECARD;
-import static io.harness.idp.common.RbacConstants.IDP_SCORECARD_DELETE;
-import static io.harness.idp.common.RbacConstants.IDP_SCORECARD_EDIT;
 
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
@@ -86,7 +85,7 @@ public class ScorecardsApiImpl implements ScorecardsApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_SCORECARD, permission = IDP_SCORECARD_EDIT)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response createScorecard(@Valid ScorecardDetailsRequest body, @AccountIdentifier String harnessAccount) {
     try {
       scorecardService.saveScorecard(body, harnessAccount);
@@ -109,7 +108,7 @@ public class ScorecardsApiImpl implements ScorecardsApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_SCORECARD, permission = IDP_SCORECARD_DELETE)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response deleteScorecard(String scorecardId, @AccountIdentifier String harnessAccount) {
     try {
       scorecardService.deleteScorecard(harnessAccount, scorecardId);
@@ -139,7 +138,7 @@ public class ScorecardsApiImpl implements ScorecardsApi {
   }
 
   @Override
-  @NGAccessControlCheck(resourceType = IDP_SCORECARD, permission = IDP_SCORECARD_EDIT)
+  @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response updateScorecard(
       String scorecardId, @Valid ScorecardDetailsRequest body, @AccountIdentifier String harnessAccount) {
     try {
