@@ -173,11 +173,13 @@ public class HarnessApprovalStepTest {
   @Category(UnitTests.class)
   public void testExecuteAsyncAfterRbacWithNoUserGroup() {
     Ambiance ambiance = buildAmbiance();
-    StepElementParameters parameters = getStepElementParametersWithNoUserGroup();
+    StepElementParameters parameters = getStepElementParametersWithIncorrectUserGroup();
     try {
       harnessApprovalStep.executeAsyncAfterRbac(ambiance, parameters, null);
     } catch (InvalidRequestException e) {
-      assertThat(e.getMessage()).isEqualTo("At least 1 user group is required");
+      assertThat(e.getMessage())
+          .isEqualTo(
+              "At least 1 valid user group is required in [incorrectUserGroup], Please check scope of the user group's provided");
     }
   }
 
@@ -419,6 +421,24 @@ public class HarnessApprovalStepTest {
                           .minimumCount(ParameterField.<Integer>builder().value(1).build())
                           .disallowPipelineExecutor(ParameterField.<Boolean>builder().value(false).build())
                           .build())
+                  .isAutoRejectEnabled(ParameterField.<Boolean>builder().value(false).build())
+                  .build())
+        .build();
+  }
+  private StepElementParameters getStepElementParametersWithIncorrectUserGroup() {
+    return StepElementParameters.builder()
+        .identifier("_id")
+        .type("HARNESS_APPROVAL")
+        .spec(HarnessApprovalSpecParameters.builder()
+                  .approvalMessage(ParameterField.<String>builder().value(APPROVAL_MESSAGE).build())
+                  .includePipelineExecutionHistory(ParameterField.<Boolean>builder().value(false).build())
+                  .approvers(Approvers.builder()
+                                 .userGroups(ParameterField.<List<String>>builder()
+                                                 .value(Collections.singletonList("incorrectUserGroup"))
+                                                 .build())
+                                 .minimumCount(ParameterField.<Integer>builder().value(1).build())
+                                 .disallowPipelineExecutor(ParameterField.<Boolean>builder().value(false).build())
+                                 .build())
                   .isAutoRejectEnabled(ParameterField.<Boolean>builder().value(false).build())
                   .build())
         .build();
