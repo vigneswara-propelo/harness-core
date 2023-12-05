@@ -10,9 +10,6 @@ package io.harness.ssca.services;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardRequestBody;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardResponseBody;
 
-import com.google.inject.ImplementedBy;
-
-@ImplementedBy(ScorecardServiceImpl.class)
 public interface ScorecardService {
   void save(SbomScorecardRequestBody body);
 

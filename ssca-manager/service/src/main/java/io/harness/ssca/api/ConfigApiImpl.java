@@ -7,6 +7,9 @@
 
 package io.harness.ssca.api;
 
+import io.harness.annotations.SSCAServiceAuth;
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SortOrder;
 import io.harness.ng.beans.PageRequest;
 import io.harness.spec.server.ssca.v1.ConfigApi;
@@ -23,11 +26,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.core.Response;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-@Slf4j
+@OwnedBy(HarnessTeam.SSCA)
+@AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
+@SSCAServiceAuth
 public class ConfigApiImpl implements ConfigApi {
   @Inject ConfigService configService;
   @Override

@@ -7,16 +7,22 @@
 
 package io.harness.repositories;
 
+import static io.harness.annotations.dev.HarnessTeam.SSCA;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.ssca.entities.ScorecardEntity;
 import io.harness.ssca.entities.ScorecardEntity.ScorecardEntityKeys;
 
 import com.google.inject.Inject;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+@OwnedBy(SSCA)
+@AllArgsConstructor(access = AccessLevel.PROTECTED, onConstructor = @__({ @Inject }))
 public class ScorecardRepoImpl implements ScorecardRepo {
   @Inject MongoTemplate mongoTemplate;
 

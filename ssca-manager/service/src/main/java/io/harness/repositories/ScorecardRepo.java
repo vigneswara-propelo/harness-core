@@ -7,10 +7,16 @@
 
 package io.harness.repositories;
 
+import static io.harness.annotations.dev.HarnessTeam.SSCA;
+
+import io.harness.annotation.HarnessRepo;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.ssca.entities.ScorecardEntity;
 
 import com.google.inject.ImplementedBy;
 
+@HarnessRepo
+@OwnedBy(SSCA)
 @ImplementedBy(ScorecardRepoImpl.class)
 public interface ScorecardRepo {
   void save(ScorecardEntity scorecardEntity);

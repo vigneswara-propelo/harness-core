@@ -10,12 +10,10 @@ package io.harness.ssca.services;
 import io.harness.spec.server.ssca.v1.model.ConfigRequestBody;
 import io.harness.spec.server.ssca.v1.model.ConfigResponseBody;
 
-import com.google.inject.ImplementedBy;
 import javax.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-@ImplementedBy(ConfigServiceImpl.class)
 public interface ConfigService {
   void deleteConfigById(String orgId, String projectId, String configId, String accountId);
 

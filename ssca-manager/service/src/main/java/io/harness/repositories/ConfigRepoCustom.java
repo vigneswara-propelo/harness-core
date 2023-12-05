@@ -9,12 +9,10 @@ package io.harness.repositories;
 
 import io.harness.ssca.entities.ConfigEntity;
 
-import com.google.inject.ImplementedBy;
 import com.mongodb.client.result.DeleteResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-@ImplementedBy(ConfigRepoCustomImpl.class)
 public interface ConfigRepoCustom {
   ConfigEntity saveOrUpdate(ConfigEntity configEntity);
   ConfigEntity update(ConfigEntity configEntity, String configId);
