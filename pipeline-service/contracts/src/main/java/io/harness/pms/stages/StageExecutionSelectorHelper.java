@@ -105,6 +105,7 @@ public class StageExecutionSelectorHelper {
     }
   }
 
+  @VisibleForTesting
   public List<BasicStageInfo> getStageInfoListV1(String pipelineYaml) {
     List<BasicStageInfo> stageInfoList = new ArrayList<>();
     try {

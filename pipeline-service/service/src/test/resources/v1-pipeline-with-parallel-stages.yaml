@@ -1,0 +1,54 @@
+version: 1
+kind: pipeline
+spec:
+  stages:
+    - name: parallelStages
+      type: parallel
+      spec:
+        stages:
+          - name: custom
+            id: st1
+            type: custom
+            spec:
+              steps:
+                - name: http
+                  type: http
+                  desc: my http step
+                  id: http1
+                  spec:
+                    url: https://www.google.com
+                    method: GET
+                    input_vars: []
+                    headers: []
+                    output_vars: []
+                    body: []
+                  timeout: 10m
+          - name: custom2
+            spec:
+              steps:
+                - name: http
+                  type: http
+                  desc: my http step
+                  id: http2
+                  spec:
+                    url: https://www.google.com
+                    method: GET
+                    input_vars: []
+                    headers: []
+                    output_vars: []
+                    body: []
+                  timeout: 10m
+    - type: custom
+      name: stage1
+      spec:
+        steps:
+          - type: shell-script
+            spec:
+              on_delegate: true
+              shell: bash
+              source:
+                type: inline
+                spec:
+                  script: echo 12345
+            id: shellscript_1
+      id: stage1_1

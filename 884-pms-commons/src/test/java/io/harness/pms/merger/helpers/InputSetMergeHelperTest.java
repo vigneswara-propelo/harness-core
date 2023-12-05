@@ -15,6 +15,7 @@ import static io.harness.pms.merger.helpers.InputSetTemplateHelper.createTemplat
 import static io.harness.rule.OwnerRule.BRIJESH;
 import static io.harness.rule.OwnerRule.GARVIT;
 import static io.harness.rule.OwnerRule.NAMAN;
+import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,6 +28,7 @@ import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -293,6 +295,28 @@ public class InputSetMergeHelperTest extends CategoryTest {
     String fullYamlFile = "helm-command-flags-merged-pipeline.yaml";
     String fullYaml = readFile(fullYamlFile);
     assertThat(mergedYaml).isEqualTo(fullYaml);
+  }
+
+  @Test
+  @Owner(developers = UTKARSH_CHOUBEY)
+  @Category(UnitTests.class)
+  public void testRemoveNonRequiredStagesV1() {
+    String yamlFile = "v1-pipeline-with-parallel-stages.yaml";
+    String yaml = readFile(yamlFile);
+    JsonNode pipelineJsonNode =
+        InputSetMergeHelper.removeNonRequiredStagesV1(YamlUtils.readAsJsonNode(yaml), List.of("stage1_1"));
+    ArrayNode arrayNode =
+        (ArrayNode) pipelineJsonNode.get(YAMLFieldNameConstants.SPEC).get(YAMLFieldNameConstants.STAGES);
+    assertThat(arrayNode.size()).isEqualTo(1);
+
+    pipelineJsonNode =
+        InputSetMergeHelper.removeNonRequiredStagesV1(YamlUtils.readAsJsonNode(yaml), List.of("stage1_1", "st1"));
+    arrayNode = (ArrayNode) pipelineJsonNode.get(YAMLFieldNameConstants.SPEC).get(YAMLFieldNameConstants.STAGES);
+    assertThat(arrayNode.size()).isEqualTo(2);
+
+    pipelineJsonNode = InputSetMergeHelper.removeNonRequiredStagesV1(YamlUtils.readAsJsonNode(yaml), List.of("st1"));
+    arrayNode = (ArrayNode) pipelineJsonNode.get(YAMLFieldNameConstants.SPEC).get(YAMLFieldNameConstants.STAGES);
+    assertThat(arrayNode.size()).isEqualTo(1);
   }
 
   @Test

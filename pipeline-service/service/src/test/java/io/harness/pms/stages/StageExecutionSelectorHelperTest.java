@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.pms.yaml.YAMLFieldNameConstants.STAGES;
 import static io.harness.rule.OwnerRule.NAMAN;
 import static io.harness.rule.OwnerRule.SHALINI;
+import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 import static io.harness.rule.OwnerRule.VIVEK_DIXIT;
 
 import static junit.framework.TestCase.assertEquals;
@@ -19,21 +20,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.exception.InvalidRequestException;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 
+import com.google.common.io.Resources;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @OwnedBy(PIPELINE)
 public class StageExecutionSelectorHelperTest extends CategoryTest {
+  private String readFile(String filename) {
+    ClassLoader classLoader = getClass().getClassLoader();
+    try {
+      return Resources.toString(Objects.requireNonNull(classLoader.getResource(filename)), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new InvalidRequestException("Could not read resource file: " + filename);
+    }
+  }
   @Test
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
@@ -70,6 +83,55 @@ public class StageExecutionSelectorHelperTest extends CategoryTest {
     assertThat(s4.getStagesRequired()).isEmpty();
     assertThat(s4.getMessage()).isNull();
     assertThat(s4.isToBeBlocked()).isFalse();
+  }
+
+  @Test
+  @Owner(developers = UTKARSH_CHOUBEY)
+  @Category(UnitTests.class)
+  public void testGetStageExecutionResponseV1() {
+    String yamlFile = "v1-pipeline-with-parallel-stages-all-with-ids.yaml";
+    String pipelineYaml = readFile(yamlFile);
+    List<StageExecutionResponse> stageExecutionResponse =
+        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml, true);
+    assertThat(stageExecutionResponse).hasSize(3);
+
+    StageExecutionResponse s1 = stageExecutionResponse.get(0);
+    assertThat(s1.getStageIdentifier()).isEqualTo("st1");
+    assertThat(s1.getStageName()).isEqualTo("custom");
+
+    StageExecutionResponse s2 = stageExecutionResponse.get(1);
+    assertThat(s2.getStageIdentifier()).isEqualTo("st2");
+    assertThat(s2.getStageName()).isEqualTo("custom2");
+    assertThat(s2.isToBeBlocked()).isFalse();
+
+    StageExecutionResponse s3 = stageExecutionResponse.get(2);
+    assertThat(s3.getStageIdentifier()).isEqualTo("stage1_1");
+    assertThat(s3.getStageName()).isEqualTo("stage1");
+    assertThat(s3.isToBeBlocked()).isFalse();
+  }
+
+  @Test
+  @Owner(developers = UTKARSH_CHOUBEY)
+  @Category(UnitTests.class)
+  public void testGetStageExecutionResponseWithStagesReferredV1() {
+    String yamlFile = "v1-pipeline-with-use-from-stage.yaml";
+    String pipelineYaml = readFile(yamlFile);
+    List<StageExecutionResponse> stageExecutionResponse =
+        StageExecutionSelectorHelper.getStageExecutionResponse(pipelineYaml, true);
+    assertThat(stageExecutionResponse).hasSize(2);
+
+    StageExecutionResponse s1 = stageExecutionResponse.get(0);
+    assertThat(s1.getStageIdentifier()).isEqualTo("st1");
+    assertThat(s1.getStageName()).isEqualTo("stage1");
+    assertThat(s1.getMessage()).isNotEmpty();
+    assertThat(s1.isToBeBlocked()).isTrue();
+    assertThat(s1.getStagesRequired()).containsExactlyInAnyOrder("stage1_1");
+
+    StageExecutionResponse s2 = stageExecutionResponse.get(1);
+    assertThat(s2.getStageIdentifier()).isEqualTo("stage1_1");
+    assertThat(s2.getStageName()).isEqualTo("stage1");
+    assertThat(s2.isToBeBlocked()).isFalse();
+    assertThat(s2.getStagesRequired()).isEmpty();
   }
 
   @Test
@@ -207,6 +269,28 @@ public class StageExecutionSelectorHelperTest extends CategoryTest {
     assertThat(stageInfosWithRequiredStages.get(3).getStagesRequired().toString()).isEqualTo("[a0, a1]");
     assertThat(stageInfosWithRequiredStages.get(4).getStagesRequired().toString()).isEqualTo("[]");
     assertThat(stageInfosWithRequiredStages.get(5).getStagesRequired().toString()).isEqualTo("[a2]");
+  }
+
+  @Test
+  @Owner(developers = UTKARSH_CHOUBEY)
+  @Category(UnitTests.class)
+  public void testGetStageInfoListV1ForParallelStages() {
+    String yamlFile = "v1-pipeline-with-parallel-stages.yaml";
+    String pipelineYaml = readFile(yamlFile);
+    List<BasicStageInfo> basicStageInfoList = StageExecutionSelectorHelper.getStageInfoListV1(pipelineYaml);
+    assertThat(basicStageInfoList).hasSize(2);
+
+    BasicStageInfo s1 = basicStageInfoList.get(0);
+    assertThat(s1.getIdentifier()).isEqualTo("st1");
+    assertThat(s1.getName()).isEqualTo("custom");
+    assertThat(s1.getType()).isEqualTo("custom");
+    assertThat(s1.isToBeBlocked()).isFalse();
+
+    BasicStageInfo s2 = basicStageInfoList.get(1);
+    assertThat(s2.getIdentifier()).isEqualTo("stage1_1");
+    assertThat(s2.getName()).isEqualTo("stage1");
+    assertThat(s1.getType()).isEqualTo("custom");
+    assertThat(s2.isToBeBlocked()).isFalse();
   }
 
   @Test

@@ -1,0 +1,25 @@
+version: 1
+kind: pipeline
+spec:
+  stages:
+    - type: Deployment
+      name: stage1
+      id: st1
+      spec:
+        serviceConfig:
+          useFromStage:
+            stage: stage1_1
+    - type: custom
+      name: stage1
+      spec:
+        steps:
+          - type: shell-script
+            spec:
+              on_delegate: true
+              shell: bash
+              source:
+                type: inline
+                spec:
+                  script: echo 12345
+            id: shellscript_1
+      id: stage1_1

@@ -22,17 +22,20 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.data.structure.UUIDGenerator;
+import io.harness.engine.executions.retry.RetryInfo;
 import io.harness.execution.PlanExecution;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.plan.execution.beans.dto.RunStageRequestDTO;
 import io.harness.rule.Owner;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteBody;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteResponseBody;
+import io.harness.spec.server.pipeline.v1.model.RerunPipelineRequestBody;
 import io.harness.spec.server.pipeline.v1.model.RunStageRequestBody;
 import io.harness.utils.PmsFeatureFlagService;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import javax.ws.rs.core.Response;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +50,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 public class PipelineExecutionApiImplTest extends CategoryTest {
   @Mock PipelineExecutor pipelineExecutor;
   @Mock PmsFeatureFlagService pmsFeatureFlagService;
+  @Mock RetryExecutionHelper retryExecutionHelper;
   @InjectMocks PipelineExecutionApiImpl pipelineExecutionApi;
 
   @Before
@@ -152,6 +156,72 @@ public class PipelineExecutionApiImplTest extends CategoryTest {
 
     Response response = pipelineExecutionApi.rerunStagesExecutionOfPipeline(orgId, projectId, pipelineId,
         planExecutionId, runStageRequestBody, accountId, module, "false", "", null, module, "");
+
+    PipelineExecuteResponseBody responseBody = (PipelineExecuteResponseBody) response.getEntity();
+
+    assertThat(responseBody.getExecutionDetails().getExecutionId()).isEqualTo(planExecutionId);
+    assertThat(responseBody.getExecutionDetails().getStatus()).isEqualTo(status.toString());
+  }
+
+  @Test
+  @Owner(developers = UTKARSH_CHOUBEY)
+  @Category(UnitTests.class)
+  public void testRetryPipelineWithInputsetPipelineYaml() {
+    String accountId = generateUuid();
+    String orgId = generateUuid();
+    String projectId = generateUuid();
+    String pipelineId = generateUuid();
+
+    String planExecutionId = generateUuid();
+    when(pmsFeatureFlagService.isEnabled(eq(accountId), eq(FeatureName.PIE_GET_FILE_CONTENT_ONLY))).thenReturn(false);
+    when(retryExecutionHelper.validateRetry(accountId, orgId, projectId, pipelineId, planExecutionId, null))
+        .thenReturn(RetryInfo.builder().isResumable(true).build());
+    RerunPipelineRequestBody rerunPipelineRequestBody = new RerunPipelineRequestBody();
+    rerunPipelineRequestBody.setInputsYaml("input");
+    Status status = Status.RUNNING;
+    String module = "CD";
+
+    doReturn(PlanExecutionResponseDto.builder()
+                 .planExecution(PlanExecution.builder().uuid(planExecutionId).status(status).build())
+                 .build())
+        .when(pipelineExecutor)
+        .retryPipelineWithInputSetPipelineYaml(accountId, orgId, projectId, pipelineId, module,
+            rerunPipelineRequestBody.getInputsYaml(), planExecutionId, List.of("stage1"), false, false, false, "");
+
+    Response response = pipelineExecutionApi.retryPipelineWithInputsetPipelineYaml(orgId, projectId, pipelineId,
+        planExecutionId, rerunPipelineRequestBody, accountId, module, List.of("stage1"), false, "");
+
+    PipelineExecuteResponseBody responseBody = (PipelineExecuteResponseBody) response.getEntity();
+
+    assertThat(responseBody.getExecutionDetails().getExecutionId()).isEqualTo(planExecutionId);
+    assertThat(responseBody.getExecutionDetails().getStatus()).isEqualTo(status.toString());
+  }
+
+  @Test
+  @Owner(developers = UTKARSH_CHOUBEY)
+  @Category(UnitTests.class)
+  public void testRerunPipeline() {
+    String accountId = generateUuid();
+    String orgId = generateUuid();
+    String projectId = generateUuid();
+    String pipelineId = generateUuid();
+
+    String planExecutionId = generateUuid();
+    when(pmsFeatureFlagService.isEnabled(eq(accountId), eq(FeatureName.PIE_GET_FILE_CONTENT_ONLY))).thenReturn(false);
+    RerunPipelineRequestBody rerunPipelineRequestBody = new RerunPipelineRequestBody();
+    rerunPipelineRequestBody.setInputsYaml("input");
+    Status status = Status.RUNNING;
+    String module = "CD";
+
+    doReturn(PlanExecutionResponseDto.builder()
+                 .planExecution(PlanExecution.builder().uuid(planExecutionId).status(status).build())
+                 .build())
+        .when(pipelineExecutor)
+        .runPipelineWithInputSetPipelineYaml(accountId, orgId, projectId, pipelineId, module,
+            rerunPipelineRequestBody.getInputsYaml(), false, false, "");
+
+    Response response = pipelineExecutionApi.rerunPipeline(orgId, projectId, pipelineId, planExecutionId,
+        rerunPipelineRequestBody, accountId, module, false, "", null, null, null);
 
     PipelineExecuteResponseBody responseBody = (PipelineExecuteResponseBody) response.getEntity();
 
