@@ -126,33 +126,38 @@ func AuthMiddleware(config config.Config, ngClient, aclClient *client.HTTPClient
 			}
 
 			inputApiKey := r.Header.Get(authAPIKeyHeader)
-			inputAuthToken := r.Header.Get(authTokenHeader)
+			// inputAuthToken := r.Header.Get(authTokenHeader)
 
 			//Check if Auth token is present in Header and if method is allowed,
 			//then check acl with call to access control, else check for old approach (x-api-key or X-harness-Token)
-			if inputAuthToken != "" && r.Method == http.MethodGet {
-				if r.FormValue(pipelineIdentifier) == "" || r.FormValue(projectIdentifier) == "" || r.FormValue(orgIdentifier) == "" {
-					WriteBadRequest(w, errors.New("scope pipelineID, projectID and orgID are required for validating access"))
-					return
-				}
+			// if inputAuthToken != "" && r.Method == http.MethodGet {
+			// 	if r.FormValue(pipelineIdentifier) == "" || r.FormValue(projectIdentifier) == "" || r.FormValue(orgIdentifier) == "" {
+			// 		WriteBadRequest(w, errors.New("scope pipelineID, projectID and orgID are required for validating access"))
+			// 		return
+			// 	}
 
-				allowed, err := aclClient.ValidateAccessforPipeline(r.Context(), inputAuthToken, accountID, r.FormValue(pipelineIdentifier), r.FormValue(projectIdentifier), r.FormValue(orgIdentifier), resource_pipeline, pipeline_view_permission)
-				if err != nil {
-					logger.FromRequest(r).
-						WithError(err).
-						WithField("pipelineIdentifier", pipelineIdentifier).
-						Errorln("middleware: failed to validate access control")
-					WriteInternalError(w, errors.New("error validating access for resource, unauthorized or expired token"))
-					return
-				}
-				if !allowed {
-					writeError(w, errors.New("user not authorized"), 403)
-					return
-				}
-			} else if inputApiKey != "" {
+			// 	allowed, err := aclClient.ValidateAccessforPipeline(r.Context(), inputAuthToken, accountID, r.FormValue(pipelineIdentifier), r.FormValue(projectIdentifier), r.FormValue(orgIdentifier), resource_pipeline, pipeline_view_permission)
+			// 	if err != nil {
+			// 		logger.FromRequest(r).
+			// 			WithError(err).
+			// 			WithField("pipelineIdentifier", pipelineIdentifier).
+			// 			Errorln("middleware: failed to validate access control")
+			// 		WriteInternalError(w, errors.New("error validating access for resource, unauthorized or expired token"))
+			// 		return
+			// 	}
+			// 	if !allowed {
+			// 		writeError(w, errors.New("user not authorized"), 403)
+			// 		return
+			// 	}
+			// }
+			if inputApiKey != "" {
 				// Try to check token from the header or the URL param
 				err := doApiKeyAuthentication(inputApiKey, r.FormValue(accountIDParam), r.FormValue(routingIDparam), ngClient)
 				if err != nil {
+					logger.FromRequest(r).
+						WithError(err).
+						WithField("accountIDParam", r.FormValue(accountIDParam)).
+						Errorln("middleware: apikey in request not authorized for receiving tokens")
 					writeError(w, errors.New("apikey in request not authorized for receiving tokens"), 403)
 					return
 				}
