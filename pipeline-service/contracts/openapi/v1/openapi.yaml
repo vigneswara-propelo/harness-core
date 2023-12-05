@@ -1078,6 +1078,8 @@ paths:
           description: Module type for the entity. If its from deployments,type will be CD , if its from build type will be CI.
         - schema:
             type: array
+            items:
+              type: string
           in: query
           name: retry_stages
           allowEmptyValue: false

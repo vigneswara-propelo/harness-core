@@ -210,7 +210,7 @@ public class PipelineExecutionApiImpl implements PipelineExecutionApi {
 
   @Override
   public Response retryPipelineWithInputsetPipelineYaml(String org, String project, String pipeline, String executionId,
-      @Valid RerunPipelineRequestBody body, String harnessAccount, String module, List retryStages,
+      @Valid RerunPipelineRequestBody body, String harnessAccount, String module, List<String> retryStages,
       Boolean runAllStages, String notes) {
     if (pmsFeatureFlagService.isEnabled(harnessAccount, PIE_GET_FILE_CONTENT_ONLY)) {
       ThreadOperationContextHelper.setUserFlow(USER_FLOW.EXECUTION);
