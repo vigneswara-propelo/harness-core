@@ -262,7 +262,9 @@ public class WorkflowImportService implements ImportService {
     JsonNode templateInputs =
         migrationHelperService.getTemplateInputs(inputDTO, ngEntityDetail, inputDTO.getDestinationAccountIdentifier());
 
-    if (templateInputs != null && "Deployment".equals(templateInputs.get("type").asText())) {
+    if (templateInputs != null
+        && ("Deployment".equals(templateInputs.get("type").asText())
+            || "Custom".equals(templateInputs.get("type").asText()))) {
       PipelineMigrationUtils.fixBarrierInputs(templateInputs);
       fixServiceDetails(templateInputs, workflow, inputDTO, summaryDTO);
       fixEnvAndInfraDetails(templateInputs, workflow, inputDTO, summaryDTO);

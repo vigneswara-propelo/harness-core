@@ -822,7 +822,9 @@ public class PipelineMigrationService extends NgMigrationService {
     }
 
     // Set Deployment specific runtime inputs
-    if (templateInputs != null && "Deployment".equals(templateInputs.get("type").asText())) {
+    if (templateInputs != null
+        && ("Deployment".equals(templateInputs.get("type").asText())
+            || "Custom".equals(templateInputs.get("type").asText()))) {
       String serviceRef = templateInputs.at("/spec/service/serviceRef").asText();
       if (RUNTIME_INPUT.equals(serviceRef)
           && (!RUNTIME_INPUT.equals(stageServiceRef) || serviceToStageMap.containsKey(serviceId))) {
