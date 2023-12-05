@@ -13,8 +13,8 @@ import io.harness.annotation.HarnessRepo;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ssca.entities.drift.DriftEntity;
 
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 @HarnessRepo
 @OwnedBy(SSCA)
-public interface SbomDriftRepository extends Repository<DriftEntity, String> {}
+public interface SbomDriftRepository extends CrudRepository<DriftEntity, String> {}

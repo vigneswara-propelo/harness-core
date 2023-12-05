@@ -15,6 +15,7 @@ import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -23,4 +24,5 @@ public interface SBOMComponentRepoCustom {
   Page<NormalizedSBOMComponentEntity> findAll(Criteria criteria, Pageable pageable);
   List<NormalizedSBOMComponentEntity> findAllByQuery(Query query);
   List<String> findDistinctOrchestrationIds(Criteria criteria);
+  <T> List<T> aggregate(Aggregation aggregation, Class<T> resultClass);
 }

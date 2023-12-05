@@ -41,7 +41,7 @@ public class SbomDriftApiImpl implements SbomDriftApi {
     if (EmptyPredicate.isEmpty(artifactName)) {
       throw new InvalidRequestException("Could not find artifact with artifact ID: " + artifact);
     }
-    sbomDriftService.calculateDrift(harnessAccount, org, project, artifact, baseTag, tag);
+    sbomDriftService.calculateAndStoreComponentDrift(harnessAccount, org, project, artifact, baseTag, tag);
     List<ComponentDrift> componentDrifts = sbomDriftService.getComponentDriftsByArtifactId(
         harnessAccount, org, project, artifact, baseTag, tag, componentDriftStatus, pageable);
     ComponentDriftResponse componentDriftResponse =

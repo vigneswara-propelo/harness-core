@@ -17,7 +17,8 @@ import org.springframework.data.domain.Pageable;
 
 @OwnedBy(HarnessTeam.SSCA)
 public interface SbomDriftService {
-  void calculateDrift(String accountId, String orgId, String projectId, String artifactId, String baseTag, String tag);
+  void calculateAndStoreComponentDrift(
+      String accountId, String orgId, String projectId, String artifactId, String baseTag, String tag);
 
   List<ComponentDrift> getComponentDriftsByArtifactId(String accountId, String orgId, String projectId,
       String artifactId, String baseTag, String tag, ComponentDriftStatus status, Pageable pageable);

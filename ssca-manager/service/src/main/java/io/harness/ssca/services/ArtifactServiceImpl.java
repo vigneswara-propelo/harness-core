@@ -155,8 +155,9 @@ public class ArtifactServiceImpl implements ArtifactService {
                             .is(artifactId)
                             .and(ArtifactEntityKeys.invalid)
                             .is(false);
-    ArtifactEntity artifactEntity = artifactRepository.findOne(criteria,
-        Sort.by(Direction.DESC, ArtifactEntityKeys.createdOn.toLowerCase()), List.of(ArtifactEntityKeys.name));
+    ArtifactEntity artifactEntity =
+        artifactRepository.findOne(criteria, Sort.by(Direction.DESC, ArtifactEntityKeys.createdOn.toLowerCase()),
+            List.of(ArtifactEntityKeys.name, ArtifactEntityKeys.isAttested.toLowerCase()));
     if (artifactEntity == null) {
       return null;
     }

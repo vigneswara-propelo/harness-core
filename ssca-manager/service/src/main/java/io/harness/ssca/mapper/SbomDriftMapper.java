@@ -64,7 +64,7 @@ public class SbomDriftMapper {
     return new ComponentSummary()
         .packageName(componentSummary.getPackageName())
         .packageVersion(componentSummary.getPackageVersion())
-        .packageLicense(componentSummary.getPackageLicense())
+        .packageLicense(componentSummary.getPackageLicense().toString())
         .purl(componentSummary.getPurl())
         .packageSupplier(componentSummary.getPackageSupplierName())
         .packageManager(componentSummary.getPackageManager());

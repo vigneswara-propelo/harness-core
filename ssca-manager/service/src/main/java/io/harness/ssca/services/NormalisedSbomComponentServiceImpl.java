@@ -41,6 +41,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 public class NormalisedSbomComponentServiceImpl implements NormalisedSbomComponentService {
@@ -230,5 +231,10 @@ public class NormalisedSbomComponentServiceImpl implements NormalisedSbomCompone
 
     criteria.andOperator(getLicenseCriteria(licenseFilter), getComponentCriteria(componentFilter));
     return sbomComponentRepo.findDistinctOrchestrationIds(criteria);
+  }
+
+  @Override
+  public <T> List<T> getComponentsByAggregation(Aggregation aggregation, Class<T> resultClass) {
+    return sbomComponentRepo.aggregate(aggregation, resultClass);
   }
 }

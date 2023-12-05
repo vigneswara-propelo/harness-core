@@ -23,14 +23,15 @@ import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Setter;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
+@Value
 @Builder
 @StoreIn(DbAliases.SSCA)
 @Entity(value = "drifts", noClassnameStored = true)
@@ -39,7 +40,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @HarnessEntity(exportable = true)
 @OwnedBy(HarnessTeam.SSCA)
 public class DriftEntity implements UuidAware {
-  @Setter @Id String uuid; // uuid of the drift entity.
+  @NonFinal @Setter @Id String uuid; // uuid of the drift entity.
   String accountIdentifier;
   String orgIdentifier;
   String projectIdentifier;
@@ -51,5 +52,5 @@ public class DriftEntity implements UuidAware {
   DriftBase base; // mode showing what was the base sbom
   List<ComponentDrift> componentDrifts; // will be in sorted order.
   @FdIndex @CreatedDate long createdAt;
-  @FdTtlIndex Date validUntil = Date.from(OffsetDateTime.now().plusMonths(6).toInstant());
+  @Builder.Default @NonFinal @FdTtlIndex Date validUntil = Date.from(OffsetDateTime.now().plusMonths(6).toInstant());
 }

@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.repository.support.PageableExecutionUtils;
@@ -46,5 +47,10 @@ public class SBOMComponentRepoCustomImpl implements SBOMComponentRepoCustom {
     Query query = new Query(criteria);
     return mongoTemplate.findDistinct(
         query, NormalizedSBOMEntityKeys.orchestrationId, NormalizedSBOMComponentEntity.class, String.class);
+  }
+
+  @Override
+  public <T> List<T> aggregate(Aggregation aggregation, Class<T> resultClass) {
+    return mongoTemplate.aggregate(aggregation, NormalizedSBOMComponentEntity.class, resultClass).getMappedResults();
   }
 }

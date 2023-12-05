@@ -7,4 +7,13 @@
 
 package io.harness.ssca.beans.drift;
 
-public enum DriftBase { BASELINE, LAST_GENERATED_SBOM, MANUAL }
+import java.util.Set;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class ComponentDriftResult {
+  Set<ComponentSummary> addedOrModifiedSet;
+  Set<ComponentSummary> deletedOrModifiedSet;
+}

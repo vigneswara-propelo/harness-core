@@ -10,17 +10,21 @@ package io.harness.ssca.beans.drift;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import java.util.List;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Value
 @Builder
+@EqualsAndHashCode
 @OwnedBy(HarnessTeam.SSCA)
 public class ComponentSummary {
-  String packageName;
-  String packageVersion;
-  String packageSupplierName;
-  String packageManager;
+  @Field("packagename") String packageName;
+  @Field("packageversion") String packageVersion;
+  @Field("packagesuppliername") String packageSupplierName;
+  @Field("packagemanager") String packageManager;
   String purl;
-  String packageLicense;
+  @Field("packagelicense") List<String> packageLicense;
 }
