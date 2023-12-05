@@ -7,8 +7,8 @@
 
 package io.harness.idp.plugin.repositories;
 
-import io.harness.idp.plugin.beans.PluginInfoEntity;
-import io.harness.idp.plugin.beans.PluginInfoEntity.PluginInfoEntityKeys;
+import io.harness.idp.plugin.entities.PluginInfoEntity;
+import io.harness.idp.plugin.entities.PluginInfoEntity.PluginInfoEntityKeys;
 
 import com.google.inject.Inject;
 import lombok.AccessLevel;
@@ -25,11 +25,28 @@ public class PluginInfoRepositoryCustomImpl implements PluginInfoRepositoryCusto
 
   @Override
   public PluginInfoEntity saveOrUpdate(PluginInfoEntity pluginInfoEntity) {
-    Criteria criteria = Criteria.where(PluginInfoEntityKeys.identifier).is(pluginInfoEntity.getIdentifier());
+    Criteria criteria = getCriteria(pluginInfoEntity.getIdentifier(), pluginInfoEntity.getAccountIdentifier());
     PluginInfoEntity entity = findByIdentifier(criteria);
     if (entity == null) {
       return mongoTemplate.save(pluginInfoEntity);
     }
+    return update(criteria, pluginInfoEntity);
+  }
+
+  @Override
+  public PluginInfoEntity update(String pluginIdentifier, String accountIdentifier, PluginInfoEntity pluginInfoEntity) {
+    Criteria criteria = getCriteria(pluginIdentifier, accountIdentifier);
+    return update(criteria, pluginInfoEntity);
+  }
+
+  private Criteria getCriteria(String pluginIdentifier, String accountIdentifier) {
+    return Criteria.where(PluginInfoEntityKeys.identifier)
+        .is(pluginIdentifier)
+        .and(PluginInfoEntityKeys.accountIdentifier)
+        .is(accountIdentifier);
+  }
+
+  private PluginInfoEntity update(Criteria criteria, PluginInfoEntity pluginInfoEntity) {
     Query query = new Query(criteria);
     Update update = buildUpdateQuery(pluginInfoEntity);
     FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true);
@@ -44,7 +61,6 @@ public class PluginInfoRepositoryCustomImpl implements PluginInfoRepositoryCusto
     Update update = new Update();
     update.set(PluginInfoEntityKeys.name, pluginInfoEntity.getName());
     update.set(PluginInfoEntityKeys.description, pluginInfoEntity.getDescription());
-    update.set(PluginInfoEntityKeys.accountIdentifier, pluginInfoEntity.getAccountIdentifier());
     update.set(PluginInfoEntityKeys.creator, pluginInfoEntity.getCreator());
     update.set(PluginInfoEntityKeys.category, pluginInfoEntity.getCategory());
     update.set(PluginInfoEntityKeys.source, pluginInfoEntity.getSource());

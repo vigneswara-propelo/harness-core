@@ -539,6 +539,22 @@ paths:
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
       x-internal: false
+    post:
+      summary: Save custom plugin info
+      operationId: save-custom-plugins-info
+      responses:
+        '200':
+          $ref: '#/components/responses/CustomPluginInfoResponse'
+      x-stoplight:
+        id: t4vsvfeuf169r
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/CustomPluginInfoRequest'
+      tags:
+        - PluginInfo
   '/v1/plugins-info/{plugin-id}':
     get:
       summary: Get Plugin
@@ -554,7 +570,26 @@ paths:
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
         - $ref: '#/components/parameters/PluginId'
+        - $ref: '#/components/parameters/Meta'
       x-internal: false
+    put:
+      summary: Update custom plugin info
+      operationId: update-custom-plugins-info
+      responses:
+        '200':
+          $ref: '#/components/responses/CustomPluginInfoResponse'
+      x-stoplight:
+        id: jt3xnyhpgnfe9
+      security:
+        - x-api-key: []
+      requestBody:
+        $ref: '#/components/requestBodies/CustomPluginInfoRequest'
+      tags:
+        - PluginInfo
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+    parameters:
+      - $ref: '#/components/parameters/PluginId'
   /v1/app-config:
     post:
       summary: Save Or Update Plugin Config
@@ -1778,6 +1813,13 @@ components:
           type: boolean
           x-stoplight:
             id: dye1mgrxvvkhj
+        plugin_type:
+          type: string
+          x-stoplight:
+            id: 3afv43ng1qibj
+          enum:
+            - DEFAULT
+            - CUSTOM
       required:
         - id
         - name
@@ -1789,6 +1831,7 @@ components:
         - image_url
         - core
         - enabled
+        - plugin_type
     PluginInfoResponse:
       title: PluginInfoResponse
       x-stoplight:
@@ -3658,6 +3701,65 @@ components:
           x-stoplight:
             id: zrikcrbyjl7pk
       description: ''
+    DefaultPluginDetailedInfo:
+      title: DefaultPluginDetailedInfo
+      x-stoplight:
+        id: om79yzqsehzdj
+      allOf:
+        - $ref: '#/components/schemas/PluginDetailedInfo'
+      description: Metadata for default plugin
+    CustomPluginDetailedInfo:
+      title: CustomPluginDetailedInfo
+      x-stoplight:
+        id: 7d5vhhxgcinuj
+      description: Metadata for custom plugin
+      allOf:
+        - $ref: '#/components/schemas/PluginDetailedInfo'
+        - type: object
+          x-stoplight:
+            id: a3azbqof3qaa4
+          properties:
+            artifact:
+              $ref: '#/components/schemas/Artifact'
+          required:
+            - artifact
+    Artifact:
+      title: Artifact
+      x-stoplight:
+        id: 647wjmduc547h
+      type: object
+      description: Artifact details for custom plugin
+      properties:
+        type:
+          type: string
+          x-stoplight:
+            id: jkdjdyi0psnta
+          enum:
+            - NPM
+            - ZIP
+        url:
+          type: string
+          x-stoplight:
+            id: kmk65kswz6xuz
+      required:
+        - type
+        - url
+    CustomPluginInfoRequest:
+      title: CustomPluginInfoRequest
+      x-stoplight:
+        id: szco1w9ni5gg2
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/CustomPluginDetailedInfo'
+    CustomPluginInfoResponse:
+      title: CustomPluginInfoResponse
+      x-stoplight:
+        id: r9u1gb8tlw8jm
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/CustomPluginDetailedInfo'
   parameters:
     AccountHeader:
       name: Harness-Account
@@ -3827,6 +3929,13 @@ components:
       schema:
         type: string
       description: Namespace from where the request is being made
+    Meta:
+      name: meta
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: Custom plugin metadata
   requestBodies:
     BackstageEnvVariableRequest:
       content:
@@ -3989,6 +4098,14 @@ components:
           schema:
             $ref: '#/components/schemas/LicenseUsageSaveRequest'
       description: User details and accessedAt to capture license usage
+    CustomPluginInfoRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomPluginInfoRequest'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/CustomPluginInfoRequest'
   responses:
     BackstageEnvVariableResponse:
       description: Example response
@@ -4421,6 +4538,15 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/ScorecardRecalibrateResponseV2'
+    CustomPluginInfoResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomPluginInfoResponse'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/CustomPluginInfoResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key
@@ -4441,6 +4567,8 @@ tags:
     description: Backstage Permissions
   - name: ConnectorInfo
     description: Connector Information
+  - name: CustomPlugin
+    description: Custom Plugin Information
   - name: DataPointsData
     description: DataPointData Information
   - name: DataSource

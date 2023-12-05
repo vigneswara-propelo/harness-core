@@ -135,6 +135,9 @@ import io.harness.idp.onboarding.resources.OnboardingResourceApiImpl;
 import io.harness.idp.onboarding.service.OnboardingService;
 import io.harness.idp.onboarding.service.impl.OnboardingServiceImpl;
 import io.harness.idp.pipeline.IDPBuildEnforcerImpl;
+import io.harness.idp.plugin.mappers.CustomPluginDetailedInfoMapper;
+import io.harness.idp.plugin.mappers.DefaultPluginDetailedInfoMapper;
+import io.harness.idp.plugin.mappers.PluginDetailedInfoMapper;
 import io.harness.idp.plugin.resources.AuthInfoApiImpl;
 import io.harness.idp.plugin.resources.PluginInfoApiImpl;
 import io.harness.idp.plugin.services.AuthInfoService;
@@ -251,6 +254,7 @@ import io.harness.spec.server.idp.v1.ScoresApi;
 import io.harness.spec.server.idp.v1.ScoresV2Api;
 import io.harness.spec.server.idp.v1.StatusInfoApi;
 import io.harness.spec.server.idp.v1.StatusInfoV2Api;
+import io.harness.spec.server.idp.v1.model.PluginInfo;
 import io.harness.ssca.beans.entities.SSCAServiceConfig;
 import io.harness.ssca.client.SSCAServiceClientModuleV2;
 import io.harness.sto.beans.entities.STOServiceConfig;
@@ -607,6 +611,11 @@ public class IdpModule extends AbstractModule {
     } catch (NoSuchMethodException e) {
       log.error("TimeScaleDbServiceImpl Initialization Failed in due to missing constructor", e);
     }
+
+    MapBinder<PluginInfo.PluginTypeEnum, PluginDetailedInfoMapper> pluginInfoMapBinder =
+        MapBinder.newMapBinder(binder(), PluginInfo.PluginTypeEnum.class, PluginDetailedInfoMapper.class);
+    pluginInfoMapBinder.addBinding(PluginInfo.PluginTypeEnum.DEFAULT).to(DefaultPluginDetailedInfoMapper.class);
+    pluginInfoMapBinder.addBinding(PluginInfo.PluginTypeEnum.CUSTOM).to(CustomPluginDetailedInfoMapper.class);
   }
 
   private void registerOutboxEventHandlers() {

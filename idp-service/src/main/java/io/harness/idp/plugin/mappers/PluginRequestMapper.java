@@ -9,7 +9,7 @@ package io.harness.idp.plugin.mappers;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.plugin.beans.PluginRequestEntity;
+import io.harness.idp.plugin.entities.PluginRequestEntity;
 import io.harness.spec.server.idp.v1.model.RequestPlugin;
 
 import lombok.experimental.UtilityClass;

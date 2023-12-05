@@ -10,15 +10,19 @@ package io.harness.idp.plugin.repositories;
 import io.harness.annotation.HarnessRepo;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.plugin.beans.PluginInfoEntity;
+import io.harness.idp.plugin.entities.PluginInfoEntity;
+import io.harness.spec.server.idp.v1.model.PluginInfo;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.repository.CrudRepository;
 
 @HarnessRepo
 @OwnedBy(HarnessTeam.IDP)
 public interface PluginInfoRepository extends CrudRepository<PluginInfoEntity, String>, PluginInfoRepositoryCustom {
   Optional<PluginInfoEntity> findByIdentifier(String identifier);
-  List<PluginInfoEntity> findByIdentifierIn(List<String> identifiers);
+  Optional<PluginInfoEntity> findByIdentifierAndAccountIdentifierIn(String identifier, Set<String> accountIdentifiers);
+  List<PluginInfoEntity> findByIdentifierInAndAccountIdentifierOrTypeAndAccountIdentifier(List<String> identifiers,
+      String globalAccountIdentifier, PluginInfo.PluginTypeEnum type, String accountIdentifier);
 }

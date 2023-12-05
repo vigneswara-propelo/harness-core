@@ -9,7 +9,7 @@ package io.harness.idp.plugin.repositories;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.plugin.beans.PluginRequestEntity;
+import io.harness.idp.plugin.entities.PluginRequestEntity;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

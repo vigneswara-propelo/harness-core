@@ -44,6 +44,7 @@ public class Constants {
   public static final String TODO_PLUGIN = "todo";
   public static final String OPSGENIE_PLUGIN = "opsgenie";
   public static final String HARNESS_SRM_PLUGIN = "harness-srm";
+  public static final String CUSTOM_PLUGIN = "custom-plugin";
 
   public static final List<String> pluginIds =
       List.of(CIRCLE_CI_PLUGIN, CONFLUENCE_PLUGIN, DATADOG_PLUGIN, FIRE_HYDRANT_PLUGIN, GITHUB_ACTIONS_PLUGIN,

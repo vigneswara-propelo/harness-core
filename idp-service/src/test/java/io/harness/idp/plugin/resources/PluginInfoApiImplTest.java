@@ -20,7 +20,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.idp.common.IdpCommonService;
-import io.harness.idp.plugin.beans.PluginRequestEntity;
+import io.harness.idp.plugin.entities.PluginRequestEntity;
 import io.harness.idp.plugin.services.PluginInfoService;
 import io.harness.rule.Owner;
 import io.harness.spec.server.idp.v1.model.Exports;
@@ -30,6 +30,7 @@ import io.harness.spec.server.idp.v1.model.PluginInfoResponse;
 import io.harness.spec.server.idp.v1.model.PluginRequestResponseList;
 import io.harness.spec.server.idp.v1.model.RequestPlugin;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,9 +80,10 @@ public class PluginInfoApiImplTest {
   @Test
   @Owner(developers = VIGNESWARA)
   @Category(UnitTests.class)
-  public void testPluginsInfoPluginId() {
-    when(pluginInfoService.getPluginDetailedInfo(PAGER_DUTY_ID, ACCOUNT_ID)).thenReturn(getPagerDutyDetailedInfo());
-    Response response = pluginInfoApiImpl.getPluginsInfoPluginId(PAGER_DUTY_ID, ACCOUNT_ID);
+  public void testPluginsInfoPluginId() throws JsonProcessingException {
+    when(pluginInfoService.getPluginDetailedInfo(PAGER_DUTY_ID, ACCOUNT_ID, false))
+        .thenReturn(getPagerDutyDetailedInfo());
+    Response response = pluginInfoApiImpl.getPluginsInfoPluginId(PAGER_DUTY_ID, ACCOUNT_ID, false);
     assertThat(response.getStatus()).isEqualTo(Response.Status.OK.getStatusCode());
     assertNotNull(response.getEntity());
   }
@@ -89,10 +91,10 @@ public class PluginInfoApiImplTest {
   @Test
   @Owner(developers = VIGNESWARA)
   @Category(UnitTests.class)
-  public void testPluginsInfoPluginIdThrowsException() {
-    when(pluginInfoService.getPluginDetailedInfo(GITHUB_INSIGHTS_ID, ACCOUNT_ID))
+  public void testPluginsInfoPluginIdThrowsException() throws JsonProcessingException {
+    when(pluginInfoService.getPluginDetailedInfo(GITHUB_INSIGHTS_ID, ACCOUNT_ID, false))
         .thenThrow(InvalidRequestException.class);
-    Response response = pluginInfoApiImpl.getPluginsInfoPluginId(GITHUB_INSIGHTS_ID, ACCOUNT_ID);
+    Response response = pluginInfoApiImpl.getPluginsInfoPluginId(GITHUB_INSIGHTS_ID, ACCOUNT_ID, false);
     assertThat(response.getStatus()).isEqualTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
   }
 

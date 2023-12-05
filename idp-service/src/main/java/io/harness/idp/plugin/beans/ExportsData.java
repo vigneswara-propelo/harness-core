@@ -14,13 +14,17 @@ import io.harness.idp.plugin.enums.ExportType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.IDP)
@@ -29,7 +33,9 @@ public class ExportsData {
   private List<ExportDetails> exportDetails;
 
   @Data
+  @Builder
   @NoArgsConstructor
+  @AllArgsConstructor
   @JsonIgnoreProperties(ignoreUnknown = true)
   @FieldDefaults(level = AccessLevel.PRIVATE)
   public static class ExportDetails {

@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.idp.plugin.beans.PluginRequestEntity;
+import io.harness.idp.plugin.entities.PluginRequestEntity;
 import io.harness.rule.Owner;
 
 import java.util.ArrayList;

@@ -10,7 +10,7 @@ package io.harness.idp.plugin.repositories;
 import io.harness.annotation.HarnessRepo;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.plugin.beans.PluginRequestEntity;
+import io.harness.idp.plugin.entities.PluginRequestEntity;
 
 import com.google.inject.Inject;
 import java.util.List;

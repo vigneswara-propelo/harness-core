@@ -17,12 +17,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ResponseMessage;
 import io.harness.idp.annotations.IdpServiceAuthIfHasApiKey;
 import io.harness.idp.common.IdpCommonService;
-import io.harness.idp.plugin.beans.PluginRequestEntity;
+import io.harness.idp.plugin.entities.PluginRequestEntity;
 import io.harness.idp.plugin.mappers.PluginInfoMapper;
 import io.harness.idp.plugin.mappers.PluginRequestMapper;
 import io.harness.idp.plugin.services.PluginInfoService;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.idp.v1.PluginInfoApi;
+import io.harness.spec.server.idp.v1.model.CustomPluginInfoRequest;
 import io.harness.spec.server.idp.v1.model.PluginDetailedInfo;
 import io.harness.spec.server.idp.v1.model.PluginDetailedInfoResponse;
 import io.harness.spec.server.idp.v1.model.PluginInfo;
@@ -53,9 +54,11 @@ public class PluginInfoApiImpl implements PluginInfoApi {
   }
 
   @Override
-  public Response getPluginsInfoPluginId(String pluginId, String harnessAccount) {
+  public Response getPluginsInfoPluginId(String pluginId, String harnessAccount, Boolean meta) {
     try {
-      PluginDetailedInfo pluginDetailedInfo = pluginInfoService.getPluginDetailedInfo(pluginId, harnessAccount);
+      // set default to false
+      meta = meta != null && meta;
+      PluginDetailedInfo pluginDetailedInfo = pluginInfoService.getPluginDetailedInfo(pluginId, harnessAccount, meta);
       PluginDetailedInfoResponse response = new PluginDetailedInfoResponse();
       response.setPlugin(pluginDetailedInfo);
       return Response.status(Response.Status.OK).entity(response).build();
@@ -79,6 +82,19 @@ public class PluginInfoApiImpl implements PluginInfoApi {
   public Response postPluginRequest(@Valid RequestPlugin pluginRequest, @AccountIdentifier String harnessAccount) {
     pluginInfoService.savePluginRequest(harnessAccount, pluginRequest);
     return Response.status(Response.Status.CREATED).build();
+  }
+
+  @Override
+  public Response saveCustomPluginsInfo(@Valid CustomPluginInfoRequest body, @AccountIdentifier String harnessAccount) {
+    pluginInfoService.savePluginInfo(body.getInfo(), harnessAccount);
+    return Response.status(Response.Status.CREATED).build();
+  }
+
+  @Override
+  public Response updateCustomPluginsInfo(
+      String pluginId, @Valid CustomPluginInfoRequest body, @AccountIdentifier String harnessAccount) {
+    pluginInfoService.updatePluginInfo(pluginId, body.getInfo(), harnessAccount);
+    return Response.status(Response.Status.OK).build();
   }
 
   @Override

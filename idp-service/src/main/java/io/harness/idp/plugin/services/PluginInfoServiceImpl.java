@@ -7,6 +7,9 @@
 
 package io.harness.idp.plugin.services;
 
+import static io.harness.idp.common.CommonUtils.addGlobalAccountIdentifierAlong;
+import static io.harness.idp.common.Constants.CUSTOM_PLUGIN;
+import static io.harness.idp.common.Constants.GLOBAL_ACCOUNT_ID;
 import static io.harness.idp.common.Constants.PLUGIN_REQUEST_NOTIFICATION_SLACK_WEBHOOK;
 import static io.harness.notification.templates.PredefinedTemplate.IDP_PLUGIN_REQUESTS_NOTIFICATION_SLACK;
 
@@ -22,8 +25,10 @@ import io.harness.idp.configmanager.service.PluginsProxyInfoService;
 import io.harness.idp.configmanager.utils.ConfigManagerUtils;
 import io.harness.idp.configmanager.utils.ConfigType;
 import io.harness.idp.envvariable.service.BackstageEnvVariableService;
-import io.harness.idp.plugin.beans.PluginInfoEntity;
-import io.harness.idp.plugin.beans.PluginRequestEntity;
+import io.harness.idp.plugin.entities.CustomPluginInfoEntity;
+import io.harness.idp.plugin.entities.DefaultPluginInfoEntity;
+import io.harness.idp.plugin.entities.PluginInfoEntity;
+import io.harness.idp.plugin.entities.PluginRequestEntity;
 import io.harness.idp.plugin.mappers.PluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.PluginInfoMapper;
 import io.harness.idp.plugin.mappers.PluginRequestMapper;
@@ -33,11 +38,13 @@ import io.harness.notification.Team;
 import io.harness.notification.channeldetails.SlackChannel;
 import io.harness.spec.server.idp.v1.model.AppConfig;
 import io.harness.spec.server.idp.v1.model.BackstageEnvSecretVariable;
+import io.harness.spec.server.idp.v1.model.CustomPluginDetailedInfo;
 import io.harness.spec.server.idp.v1.model.PluginDetailedInfo;
 import io.harness.spec.server.idp.v1.model.PluginInfo;
 import io.harness.spec.server.idp.v1.model.ProxyHostDetail;
 import io.harness.spec.server.idp.v1.model.RequestPlugin;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.inject.Inject;
@@ -71,10 +78,13 @@ public class PluginInfoServiceImpl implements PluginInfoService {
   private IdpCommonService idpCommonService;
   @Inject @Named("env") private String env;
   @Inject @Named("notificationConfigs") HashMap<String, String> notificationConfigs;
+  Map<PluginInfo.PluginTypeEnum, PluginDetailedInfoMapper> pluginDetailedInfoMapperMap;
 
   @Override
   public List<PluginInfo> getAllPluginsInfo(String accountId) {
-    List<PluginInfoEntity> plugins = pluginInfoRepository.findByIdentifierIn(Constants.pluginIds);
+    List<PluginInfoEntity> plugins =
+        pluginInfoRepository.findByIdentifierInAndAccountIdentifierOrTypeAndAccountIdentifier(
+            Constants.pluginIds, GLOBAL_ACCOUNT_ID, PluginInfo.PluginTypeEnum.CUSTOM, accountId);
     List<PluginInfo> pluginDTOs = new ArrayList<>();
 
     Map<String, Boolean> map = configManagerService.getAllPluginIdsMap(accountId);
@@ -87,36 +97,38 @@ public class PluginInfoServiceImpl implements PluginInfoService {
   }
 
   @Override
-  public PluginDetailedInfo getPluginDetailedInfo(String identifier, String harnessAccount) {
-    Optional<PluginInfoEntity> pluginInfoEntity = pluginInfoRepository.findByIdentifier(identifier);
-    if (pluginInfoEntity.isEmpty()) {
-      throw new InvalidRequestException(String.format("Plugin Info not found for pluginId [%s]", identifier));
-    }
-    PluginInfoEntity pluginEntity = pluginInfoEntity.get();
-    AppConfig appConfig = configManagerService.getAppConfig(harnessAccount, identifier, ConfigType.PLUGIN);
-    List<BackstageEnvSecretVariable> backstageEnvSecretVariables = new ArrayList<>();
-    if (appConfig != null) {
-      List<String> envNames =
-          configEnvVariablesService.getAllEnvVariablesForAccountIdentifierAndPluginId(harnessAccount, identifier);
-      if (CollectionUtils.isNotEmpty(envNames)) {
-        backstageEnvSecretVariables =
-            backstageEnvVariableService.getAllSecretIdentifierForMultipleEnvVariablesInAccount(
-                harnessAccount, envNames);
+  public PluginDetailedInfo getPluginDetailedInfo(String identifier, String harnessAccount, boolean meta) {
+    PluginInfoEntity pluginEntity;
+    AppConfig appConfig = null;
+
+    if (meta) {
+      String schema = FileUtils.readFile(METADATA_FOLDER, CUSTOM_PLUGIN, YAML_EXT);
+      ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+      try {
+        pluginEntity = objectMapper.readValue(schema, CustomPluginInfoEntity.class);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException("Could not read default custom plugin metadata", e);
       }
-    } else if (pluginEntity.getEnvVariables() != null) {
-      for (String envVariable : pluginEntity.getEnvVariables()) {
-        BackstageEnvSecretVariable backstageEnvSecretVariable = new BackstageEnvSecretVariable();
-        backstageEnvSecretVariable.setEnvName(envVariable);
-        backstageEnvSecretVariable.setHarnessSecretIdentifier(null);
-        backstageEnvSecretVariables.add(backstageEnvSecretVariable);
+    } else {
+      Optional<PluginInfoEntity> pluginInfoEntity = pluginInfoRepository.findByIdentifierAndAccountIdentifierIn(
+          identifier, addGlobalAccountIdentifierAlong(harnessAccount));
+      if (pluginInfoEntity.isEmpty()) {
+        throw new InvalidRequestException(String.format(
+            "Plugin Info not found for plugin identifier [%s] for account [%s]", identifier, harnessAccount));
+      }
+      pluginEntity = pluginInfoEntity.get();
+      appConfig = configManagerService.getAppConfig(harnessAccount, identifier, ConfigType.PLUGIN);
+      if (pluginEntity.getIdentifier().equals("harness-ci-cd") && appConfig == null) {
+        pluginEntity.setConfig(ConfigManagerUtils.getHarnessCiCdAppConfig(env));
       }
     }
-    if (pluginEntity.getIdentifier().equals("harness-ci-cd") && appConfig == null) {
-      pluginEntity.setConfig(ConfigManagerUtils.getHarnessCiCdAppConfig(env));
-    }
+
+    List<BackstageEnvSecretVariable> backstageEnvSecretVariables =
+        getPluginSecrets(appConfig, pluginEntity, harnessAccount, identifier);
     List<ProxyHostDetail> proxyHostDetails =
         pluginsProxyInfoService.getProxyHostDetailsForPluginId(harnessAccount, identifier);
-    return PluginDetailedInfoMapper.toDTO(pluginEntity, appConfig, backstageEnvSecretVariables, proxyHostDetails);
+    return getMapper(pluginEntity.getType())
+        .toDto(pluginEntity, appConfig, backstageEnvSecretVariables, proxyHostDetails);
   }
 
   @Override
@@ -151,11 +163,47 @@ public class PluginInfoServiceImpl implements PluginInfoService {
     return pluginRequestRepository.findAll(criteria, pageable);
   }
 
+  @Override
+  public void savePluginInfo(CustomPluginDetailedInfo info, String accountIdentifier) {
+    PluginDetailedInfoMapper mapper = getMapper(PluginInfo.PluginTypeEnum.CUSTOM);
+    PluginInfoEntity entity = mapper.fromDto(info, accountIdentifier);
+    pluginInfoRepository.save(entity);
+  }
+
+  @Override
+  public void updatePluginInfo(String pluginId, CustomPluginDetailedInfo info, String accountIdentifier) {
+    PluginDetailedInfoMapper mapper = getMapper(PluginInfo.PluginTypeEnum.CUSTOM);
+    PluginInfoEntity entity = mapper.fromDto(info, accountIdentifier);
+    pluginInfoRepository.update(pluginId, accountIdentifier, entity);
+  }
+
   public void savePluginInfo(String identifier) throws Exception {
     String schema = FileUtils.readFile(METADATA_FOLDER, identifier, YAML_EXT);
     ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-    PluginInfoEntity pluginInfoEntity = objectMapper.readValue(schema, PluginInfoEntity.class);
+    PluginInfoEntity pluginInfoEntity = objectMapper.readValue(schema, DefaultPluginInfoEntity.class);
     pluginInfoRepository.saveOrUpdate(pluginInfoEntity);
+  }
+
+  private List<BackstageEnvSecretVariable> getPluginSecrets(
+      AppConfig appConfig, PluginInfoEntity pluginEntity, String harnessAccount, String identifier) {
+    List<BackstageEnvSecretVariable> backstageEnvSecretVariables = new ArrayList<>();
+    if (appConfig != null) {
+      List<String> envNames =
+          configEnvVariablesService.getAllEnvVariablesForAccountIdentifierAndPluginId(harnessAccount, identifier);
+      if (CollectionUtils.isNotEmpty(envNames)) {
+        backstageEnvSecretVariables =
+            backstageEnvVariableService.getAllSecretIdentifierForMultipleEnvVariablesInAccount(
+                harnessAccount, envNames);
+      }
+    } else if (pluginEntity.getEnvVariables() != null) {
+      for (String envVariable : pluginEntity.getEnvVariables()) {
+        BackstageEnvSecretVariable backstageEnvSecretVariable = new BackstageEnvSecretVariable();
+        backstageEnvSecretVariable.setEnvName(envVariable);
+        backstageEnvSecretVariable.setHarnessSecretIdentifier(null);
+        backstageEnvSecretVariables.add(backstageEnvSecretVariable);
+      }
+    }
+    return backstageEnvSecretVariables;
   }
 
   private Criteria createCriteriaForGetPluginRequests(String harnessAccount) {
@@ -175,5 +223,13 @@ public class PluginInfoServiceImpl implements PluginInfoService {
             .webhookUrls(Collections.singletonList(notificationConfigs.get(PLUGIN_REQUEST_NOTIFICATION_SLACK_WEBHOOK)))
             .build();
     idpCommonService.sendSlackNotification(slackChannel);
+  }
+
+  private PluginDetailedInfoMapper getMapper(PluginInfo.PluginTypeEnum pluginType) {
+    PluginDetailedInfoMapper mapper = pluginDetailedInfoMapperMap.get(pluginType);
+    if (mapper == null) {
+      throw new InvalidRequestException("Plugin type not set");
+    }
+    return mapper;
   }
 }

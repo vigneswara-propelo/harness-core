@@ -9,7 +9,7 @@ package io.harness.idp.migration;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.plugin.beans.PluginInfoEntity;
+import io.harness.idp.plugin.entities.PluginInfoEntity;
 import io.harness.migration.NGMigration;
 import io.harness.mongo.MongoPersistence;
 
