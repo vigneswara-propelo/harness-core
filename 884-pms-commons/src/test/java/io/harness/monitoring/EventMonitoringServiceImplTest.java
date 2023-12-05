@@ -11,7 +11,7 @@ import static io.harness.rule.OwnerRule.GARVIT;
 
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.harness.PmsCommonsTestBase;
@@ -21,8 +21,6 @@ import io.harness.category.element.UnitTests;
 import io.harness.metrics.service.api.MetricService;
 import io.harness.rule.Owner;
 
-import java.util.Collections;
-import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,8 +41,8 @@ public class EventMonitoringServiceImplTest extends PmsCommonsTestBase {
   @Category(UnitTests.class)
   public void testSendMetric() {
     String metricName = "m";
-    eventMonitoringService.sendMetric(metricName, new HashMap<>());
-    verify(metricService, never()).recordMetric(anyString(), anyDouble());
-    eventMonitoringService.sendMetric(metricName, Collections.emptyMap());
+    eventMonitoringService.sendMetric(metricName, 10L);
+    verify(metricService, times(1)).recordMetric(anyString(), anyDouble());
+    eventMonitoringService.sendMetric(metricName, 100L);
   }
 }

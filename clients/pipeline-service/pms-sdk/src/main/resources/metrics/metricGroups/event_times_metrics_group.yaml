@@ -1,0 +1,6 @@
+name: Event Times in Metrics Group
+identifier: event_times_group
+labels:
+  - module
+  - eventType
+  - streamName

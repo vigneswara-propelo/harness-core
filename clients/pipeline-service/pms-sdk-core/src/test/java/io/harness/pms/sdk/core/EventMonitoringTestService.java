@@ -11,10 +11,8 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.monitoring.EventMonitoringService;
 
-import java.util.Map;
-
 @OwnedBy(HarnessTeam.PIPELINE)
 public class EventMonitoringTestService implements EventMonitoringService {
   @Override
-  public void sendMetric(String metricName, Map<String, String> metadataMap) {}
+  public void sendMetric(String metricName, Long metricValue) {}
 }

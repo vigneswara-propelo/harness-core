@@ -15,7 +15,6 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.metrics.service.api.MetricService;
 
 import com.google.inject.Inject;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_PIPELINE})
@@ -24,7 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 public class EventMonitoringServiceImpl implements EventMonitoringService {
   @Inject MetricService metricService;
 
-  public void sendMetric(String metricName, Map<String, String> metadataMap) {
-    // add new metric in next pr. We are removing the current metric
+  public void sendMetric(String metricName, Long metricValue) {
+    try {
+      metricService.recordMetric(metricName, metricValue);
+    } catch (Exception ex) {
+      log.error(String.format("Exception Occurred while recording metrics: [%s]", ex.getMessage()), ex);
+    }
   }
 }

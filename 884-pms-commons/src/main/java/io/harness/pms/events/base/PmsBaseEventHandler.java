@@ -36,7 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @OwnedBy(HarnessTeam.PIPELINE)
 public abstract class PmsBaseEventHandler<T extends Message> implements PmsCommonsBaseEventHandler<T> {
-  public static String QUEUE_EVENT_TIME = "%s_queue_time";
+  public static String EVENT_PROCESS_TIME = "event_process_time";
+  public static String EVENT_QUEUED_TIME = "event_queued_time";
 
   @Inject private PmsGitSyncHelper pmsGitSyncHelper;
   @Inject private EventMonitoringService eventMonitoringService;
@@ -64,8 +65,12 @@ public abstract class PmsBaseEventHandler<T extends Message> implements PmsCommo
          PmsMetricContextGuard metricContext = new PmsMetricContextGuard(extractMetricContext(
              metadataMap, event, (String) metricInfo.get(PmsEventMonitoringConstants.STREAM_NAME)))) {
       log.debug("[PMS_MESSAGE_LISTENER] Starting to process {} event ", event.getClass().getSimpleName());
-      eventMonitoringService.sendMetric(QUEUE_EVENT_TIME, metadataMap);
+      eventMonitoringService.sendMetric(EVENT_QUEUED_TIME,
+          (Long) metricInfo.get(PmsEventMonitoringConstants.EVENT_RECEIVE_TS)
+              - (Long) metricInfo.get(PmsEventMonitoringConstants.EVENT_SEND_TS));
       handleEventWithContext(event);
+      eventMonitoringService.sendMetric(EVENT_PROCESS_TIME,
+          System.currentTimeMillis() - (Long) metricInfo.get(PmsEventMonitoringConstants.EVENT_SEND_TS));
     } catch (Exception ex) {
       try (AutoLogContext autoLogContext = autoLogContext(event)) {
         log.error("Exception occurred while handling {}", event.getClass().getSimpleName(), ex);

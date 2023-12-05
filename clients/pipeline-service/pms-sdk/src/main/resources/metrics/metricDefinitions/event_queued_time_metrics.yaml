@@ -1,0 +1,8 @@
+name: Redis Event Queued Time Metrics
+identifier: EventQueuedTime
+metricGroup: event_times_group
+metrics:
+  - metricName: event_queued_time
+    metricDefinition: Time for which Redis Event was in the queue.
+    type: LastValue
+    unit: count

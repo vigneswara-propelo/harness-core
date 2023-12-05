@@ -1,0 +1,8 @@
+name: Redis Event Start Time Metrics
+identifier: EventProcessTime
+metricGroup: event_times_group
+metrics:
+  - metricName: event_process_time
+    metricDefinition: Time taken for by redis event for processing
+    type: LastValue
+    unit: count

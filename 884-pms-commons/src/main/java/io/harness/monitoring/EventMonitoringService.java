@@ -7,8 +7,6 @@
 
 package io.harness.monitoring;
 
-import java.util.Map;
-
 public interface EventMonitoringService {
-  void sendMetric(String metricName, Map<String, String> metadataMap);
+  void sendMetric(String metricName, Long metricValue);
 }
