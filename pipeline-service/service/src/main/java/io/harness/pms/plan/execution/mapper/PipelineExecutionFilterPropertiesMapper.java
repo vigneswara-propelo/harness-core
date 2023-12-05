@@ -31,6 +31,7 @@ public class PipelineExecutionFilterPropertiesMapper
             .status(executionFilterProperties.getStatus())
             .timeRange(executionFilterProperties.getTimeRange())
             .tags(TagMapper.convertToMap(pipelineExecutionFilterProperties.getTags()))
+            .executionModeFilter(executionFilterProperties.getExecutionModeFilter())
             .build();
     return pipelineExecutionFilterPropertiesDTO;
   }
@@ -48,6 +49,7 @@ public class PipelineExecutionFilterPropertiesMapper
             .timeRange(executionFilterPropertiesDTO.getTimeRange())
             .tags(TagMapper.convertToList(pipelineExecutionFilterPropertiesDTO.getTags()))
             .type(pipelineExecutionFilterPropertiesDTO.getFilterType())
+            .executionModeFilter(executionFilterPropertiesDTO.getExecutionModeFilter())
             .build();
     return pipelineExecutionFilterProperties;
   }
