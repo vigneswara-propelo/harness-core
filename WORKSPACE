@@ -6308,6 +6308,7 @@ plain_artifacts = [
     "io.sundr:sundr-core:0.21.0",
     "io.vavr:vavr-match:0.9.1",
     "io.vavr:vavr:0.9.1",
+    "co.elastic.clients:elasticsearch-java:8.11.1",
     "jakarta.activation:jakarta.activation-api:1.2.2",
     "jakarta.annotation:jakarta.annotation-api:jar:1.3.5",
     "jakarta.servlet:jakarta.servlet-api:4.0.3",

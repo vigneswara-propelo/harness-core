@@ -22,6 +22,7 @@ import io.harness.redis.RedisConfig;
 import io.harness.reflection.HarnessReflections;
 import io.harness.remote.client.ServiceHttpClientConfig;
 import io.harness.ssca.S3Config;
+import io.harness.ssca.beans.ElasticSearchConfig;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -81,6 +82,7 @@ public class SSCAManagerConfiguration extends Configuration {
   @JsonProperty("pipelineServiceSecret") private String pipelineServiceSecret;
   @JsonProperty("exportMetricsToStackDriver") boolean exportMetricsToStackDriver;
   @JsonProperty("enableElasticsearch") boolean enableElasticsearch;
+  @JsonProperty("elasticsearch") ElasticSearchConfig elasticSearchConfig;
   @JsonProperty("s3Config") S3Config s3Config;
   @JsonProperty("policyMgmtServiceClientConfig") private ServiceHttpClientConfig policyMgmtServiceConfiguration;
   @JsonProperty("policyMgmtServiceSecret") private String policyMgmtServiceSecret;

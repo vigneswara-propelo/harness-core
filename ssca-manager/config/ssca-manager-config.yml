@@ -54,6 +54,9 @@ enableAuth: true
 exportMetricsToStackDriver: false
 enableElasticsearch: false
 
+elasticsearch:
+  url: "https://localhost:9200"
+
 s3Config:
   accessKeyId: "access-key-id"
   accessSecretKey: "access-secret-key"

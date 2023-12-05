@@ -85,6 +85,10 @@ import io.harness.ssca.services.drift.SbomDriftServiceImpl;
 import io.harness.time.TimeModule;
 import io.harness.token.TokenClientModule;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -103,6 +107,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
 import org.springframework.core.convert.converter.Converter;
 
 @Slf4j
@@ -234,6 +240,19 @@ public class SSCAManagerModule extends AbstractModule {
          */
         .withPathStyleAccessEnabled(Boolean.TRUE)
         .build();
+  }
+
+  @Provides
+  @Singleton
+  public ElasticsearchClient elasticsearchClient() {
+    RestClient restClient =
+        RestClient.builder(HttpHost.create(configuration.getElasticSearchConfig().getUrl())).build();
+
+    // Create the transport with a Jackson mapper
+    ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+
+    // And create the API client
+    return new ElasticsearchClient(transport);
   }
 
   @Provides
