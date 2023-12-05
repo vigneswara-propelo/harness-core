@@ -11,7 +11,10 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import static java.util.Objects.isNull;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.steps.approval.step.beans.ApprovalStatus;
 
@@ -26,6 +29,7 @@ import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.NonFinal;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_APPROVALS})
 @OwnedBy(CDC)
 @Value
 @Builder
@@ -54,6 +58,7 @@ public class ApprovalSummary {
 
   String pipelineExecutionLink;
   String timeRemainingForApproval;
+  String currentStageName;
 
   public Map<String, String> toParams(@NotNull String stageDelimiter) {
     Map<String, String> params = new HashMap<>();
@@ -71,6 +76,8 @@ public class ApprovalSummary {
     params.put(ApprovalSummaryKeys.pipelineExecutionLink, pipelineExecutionLink);
     params.put(ApprovalSummaryKeys.timeRemainingForApproval, timeRemainingForApproval);
     params.put(ApprovalSummaryKeys.action, action);
+    params.put(ApprovalSummaryKeys.currentStageName, currentStageName);
+
     if (isNull(status)) {
       params.put(ApprovalSummaryKeys.status, "");
     } else {

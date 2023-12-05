@@ -30,8 +30,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 
-@CodePulse(
-    module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_APPROVALS})
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_APPROVALS})
 @OwnedBy(CDC)
 public interface StageMetadataNotificationHelper {
   String STAGE_NODE_TYPE = "STAGE";

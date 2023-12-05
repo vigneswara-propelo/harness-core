@@ -55,9 +55,10 @@ public class ApprovalSummaryTest extends CategoryTest {
                                           .pipelineExecutionLink("this.link.executes.io")
                                           .timeRemainingForApproval("6d")
                                           .status(ApprovalStatus.WAITING)
+                                          .currentStageName("currentStageName")
                                           .build();
     Map<String, String> params = approvalSummary.toParams(ApprovalSummary.DEFAULT_STAGE_DELIMITER);
-    assertThat(params).hasSize(14);
+    assertThat(params).hasSize(15);
     assertThat(params.get("pipelineName")).isEqualTo("p1");
     assertThat(params.get("orgName")).isEqualTo("default");
     assertThat(params.get("projectName")).isEqualTo("dev");
@@ -71,6 +72,8 @@ public class ApprovalSummaryTest extends CategoryTest {
     assertThat(params.get("pipelineExecutionLink")).isEqualTo("this.link.executes.io");
     assertThat(params.get("status")).isEqualTo("waiting");
     assertThat(params.get("timeRemainingForApproval")).isEqualTo("6d");
+    assertThat(params.get("upcomingStages")).isEqualTo("N/A");
+    assertThat(params.get("currentStageName")).isEqualTo("currentStageName");
 
     params = approvalSummary.toParams(ApprovalSummary.NEWLINE_STAGE_DELIMITER);
     assertThat(params.get("finishedStages")).isEqualTo("a1\n a2\n a3");
