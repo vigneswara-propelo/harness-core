@@ -255,5 +255,29 @@ segmentEnabled: "false"
 segmentUrl: "segment_url_place_holder"
 segmentApikey: "segment_api_key"
 segmentVerifyCert: "false"
+
+secrets:
+  default:
+    BACKSTAGE_CA_CERT_SECRET: ""
+    BACKSTAGE_SA_TOKEN_SECRET: ""
+  kubernetesSecrets:
+    - secretName: ""
+      keys:
+        BACKSTAGE_CA_CERT: ""
+        BACKSTAGE_SA_TOKEN: ""
+  secretManagement:
+    externalSecretsOperator:
+      - secretStore:
+          name: ""
+          kind: ""
+        remoteKeys:
+          BACKSTAGE_CA_CERT_SECRET:
+            name: ""
+            property: ""
+          BACKSTAGE_SA_TOKEN_SECRET:
+            name: ""
+            property: ""
+
 devSpaceDefaultBackstageNamespace: "laxmiharness"
 devSpaceDefaultAccountId: "VVfCEh_ZRTm7pJWtAH-PrA"
+

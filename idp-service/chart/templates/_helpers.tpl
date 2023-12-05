@@ -68,3 +68,27 @@ Create the name of the security image to use
 {{- define "idp-service.securityImage" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.securityImage.image "global" .Values.global) }}
 {{- end }}
+
+
+{{/*
+IDP Service Secrets
+
+USAGE:
+{{- "idp-service.generateSecrets" (dict "ctx" $)}}
+*/}}
+{{- define "idp-service.generateSecrets" }}
+    {{- $ := .ctx }}
+    {{- $hasAtleastOneSecret := false }}
+    {{- $localESOSecretCtxIdentifier := (include "harnesscommon.secrets.localESOSecretCtxIdentifier" (dict "ctx" $ )) }}
+    {{- if eq (include "harnesscommon.secrets.isDefaultAppSecret" (dict "ctx" $ "variableName" "BACKSTAGE_CA_CERT")) "true" }}
+    {{- $hasAtleastOneSecret = true }}
+BACKSTAGE_CA_CERT: {{ .ctx.Values.secrets.default.BACKSTAGE_CA_CERT_SECRET | b64enc }}
+    {{- end }}
+    {{- if eq (include "harnesscommon.secrets.isDefaultAppSecret" (dict "ctx" $ "variableName" "BACKSTAGE_SA_TOKEN")) "true" }}
+    {{- $hasAtleastOneSecret = true }}
+BACKSTAGE_SA_TOKEN: {{ .ctx.Values.secrets.default.BACKSTAGE_SA_TOKEN_SECRET | b64enc }}
+    {{- end }}
+    {{- if not $hasAtleastOneSecret }}
+{}
+    {{- end }}
+{{- end }}

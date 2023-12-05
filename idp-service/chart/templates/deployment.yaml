@@ -72,6 +72,8 @@ spec:
           env:
             {{- include "harnesscommon.dbconnection.redisEnv" (dict "context" .Values.global.database.redis "userVariableName" "EVENTS_FRAMEWORK_REDIS_USERNAME" "passwordVariableName" "EVENTS_FRAMEWORK_REDIS_PASSWORD") | indent 12 }}
             {{- include "harnesscommon.dbconnection.mongoEnv" . | indent 12 }}
+            {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "BACKSTAGE_CA_CERT" "defaultKubernetesSecretName" "idp-service" "defaultKubernetesSecretKey" "BACKSTAGE_CA_CERT") | indent 12 }}
+            {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "BACKSTAGE_SA_TOKEN" "defaultKubernetesSecretName" "idp-service" "defaultKubernetesSecretKey" "BACKSTAGE_SA_TOKEN") | indent 12 }}
             - name: MONGO_URI
               value: {{ include "harnesscommon.dbconnection.mongoConnection" (dict "database" "idp-harness" "context" $) }}
             - name: NOTIFICATION_MONGO_URI
