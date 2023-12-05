@@ -1,0 +1,81 @@
+version: 1
+kind: pipeline
+spec:
+  stages:
+    - id: parallelStage1
+      name: parallelStage1
+      type: parallel
+      spec:
+        stages:
+          - name: s2
+            id: s2
+            desc: ""
+            type: deployment
+            spec:
+              service:
+                serviceRef: k8svc
+              environment:
+                environmentRef: env
+                deployToAll: false
+                infrastructureDefinitions:
+                  - identifier: infra3
+              steps:
+                - name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  timeout: 10m
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: false
+                - type: K8sDryRun
+                  name: K8sDryRun_1
+                  identifier: K8sDryRun_1
+                  spec: {}
+                  timeout: 10m
+              rollback_steps:
+                - name: Rollback Rollout Deployment
+                  identifier: rollbackRolloutDeployment
+                  type: K8sRollingRollback
+                  timeout: 10m
+                  spec:
+                    pruningEnabled: false
+            labels: {}
+            failure:
+              - errors:
+                  - all
+                action:
+                  type: stage-rollback
+          - name: s3
+            id: s3
+            desc: ""
+            type: deployment
+            spec:
+              service:
+                useFromStage:
+                  stage: s1
+              environment:
+                environmentRef: env
+                deployToAll: false
+                infrastructureDefinitions:
+                  - identifier: infra3
+              steps:
+                - name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  timeout: 10m
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: false
+              rollback_steps:
+                - name: Rollback Rollout Deployment
+                  identifier: rollbackRolloutDeployment
+                  type: K8sRollingRollback
+                  timeout: 10m
+                  spec:
+                    pruningEnabled: false
+            labels: {}
+            failure:
+              - errors:
+                  - all
+                action:
+                  type: stage-rollback

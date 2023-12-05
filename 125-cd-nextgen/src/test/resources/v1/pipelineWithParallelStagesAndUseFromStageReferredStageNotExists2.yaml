@@ -1,0 +1,78 @@
+version: 1
+kind: pipeline
+spec:
+  stages:
+    - name: parallelStage4
+      id: parallelStage4
+      type: parallel
+      spec:
+        stages:
+          - name: s2
+            id: s2
+            desc: ""
+            type: deployment
+            spec:
+              service:
+                serviceRef: k8svc
+              environment:
+                environmentRef: env
+              steps:
+                - name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  timeout: 10m
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: false
+              rollback_steps:
+                - name: Rollback Rollout Deployment
+                  identifier: rollbackRolloutDeployment
+                  type: K8sRollingRollback
+                  timeout: 10m
+                  spec:
+                    pruningEnabled: false
+            labels: {}
+            failure:
+              - errors:
+                  - all
+                action:
+                  type: stage-rollback
+    - name: s3
+      id: s3
+      desc: ""
+      type: deployment
+      spec:
+        service:
+          useFromStage:
+            stage: s1
+        steps:
+          - name: Rollout Deployment
+            identifier: rolloutDeployment
+            type: K8sRollingDeploy
+            timeout: 10m
+            spec:
+              skipDryRun: false
+              pruningEnabled: false
+        rollback_steps:
+          - name: Rollback Rollout Deployment
+            identifier: rollbackRolloutDeployment
+            type: K8sRollingRollback
+            timeout: 10m
+            spec:
+              pruningEnabled: false
+        environment:
+          environmentRef: env
+          deployToAll: false
+          infrastructureDefinitions:
+            - identifier: infra2
+              inputs:
+                identifier: infra2
+                type: KubernetesDirect
+                spec:
+                  provisioner: <+input>
+      labels: {}
+      failure:
+        - errors:
+            - all
+          action:
+            type: stage-rollback

@@ -492,35 +492,86 @@ public class PlanCreatorUtilsV1 {
     if (EmptyPredicate.isEmpty(stageIdentifier)) {
       return null;
     }
+
     if (yamlField.getName().equals(YAMLFieldNameConstants.PIPELINE)
         || yamlField.getName().equals(YAMLFieldNameConstants.STAGES)) {
       return null;
     }
+
+    // recursively traversing up the pipeline yaml tree (starting from given yamlField) until we find 'stages' element
+    // or pipeline root element
     YamlNode stages = YamlUtils.getGivenYamlNodeFromParentPath(yamlField.getNode(), YAMLFieldNameConstants.STAGES);
+    // we get all 'stage' elements from 'stages' previously found
     List<YamlField> stageYamlFields = getStageYamlFields(stages);
     for (YamlField stageYamlField : stageYamlFields) {
       if (stageIdentifier.equals(stageYamlField.getNode().getField(YAMLFieldNameConstants.ID).getNode().asText())) {
         return stageYamlField;
       }
     }
+
+    // in case of nested parallel stage we need to traverse other siblings of parallel stage
+    // max number of nested parallel stages is 1 level
+    // example:
+    //
+    // spec:
+    //  stages:
+    //    - stage1 (deployment type)
+    //    - stage2 (parallel type)
+    //        spec:
+    //          stages:
+    //            - substage1
+    //            - substage2 (svc useFromStage stage1)
+    //
+    // with this logic we are moving up the pipeline hierarchy
+    // so in worst case there will be one level of parallel stages which utilizes useFromStage from a stage at root
+    if (stages != null && stages.getParentNode() != null && stages.getParentNode().getParentNode() != null) {
+      return getStageConfig(new YamlField(stages.getParentNode()), stageIdentifier);
+    }
+
     return null;
   }
 
   private List<YamlField> getStageYamlFields(YamlNode stagesYamlNode) {
-    List<YamlNode> yamlNodes = Optional.of(stagesYamlNode.asArray()).orElse(Collections.emptyList());
     List<YamlField> stageFields = new LinkedList<>();
 
-    yamlNodes.forEach(yamlNode -> {
-      String stageFieldType = yamlNode.getStringValue(YAMLFieldNameConstants.TYPE);
-      if (YAMLFieldNameConstants.PARALLEL.equalsIgnoreCase(stageFieldType)) {
-        stageFields.addAll(getStageYamlFields(yamlNode.getField(YAMLFieldNameConstants.SPEC)
-                                                  .getNode()
-                                                  .getField(YAMLFieldNameConstants.STAGES)
-                                                  .getNode()));
-      } else {
-        stageFields.add(new YamlField(yamlNode));
+    if (stagesYamlNode != null) {
+      List<YamlNode> yamlNodes = Optional.of(stagesYamlNode.asArray()).orElse(Collections.emptyList());
+
+      yamlNodes.forEach(yamlNode -> {
+        String stageFieldType = yamlNode.getStringValue(YAMLFieldNameConstants.TYPE);
+        if (YAMLFieldNameConstants.PARALLEL.equalsIgnoreCase(stageFieldType)) {
+          // max number of allowed nested parallel stages is 1 level hence the for loop instead of recursion
+          YamlNode childStages = yamlNode.getField(YAMLFieldNameConstants.SPEC)
+                                     .getNode()
+                                     .getField(YAMLFieldNameConstants.STAGES)
+                                     .getNode();
+          if (childStages.isArray()) {
+            childStages.asArray().forEach(childStage -> { stageFields.add(new YamlField(childStage)); });
+          }
+        } else {
+          stageFields.add(new YamlField(yamlNode));
+        }
+      });
+    }
+
+    return stageFields;
+  }
+
+  public List<YamlField> getStepYamlFields(List<YamlNode> stepYamlNodes) {
+    List<YamlField> stepFields = new LinkedList<>();
+
+    stepYamlNodes.forEach(yamlNode -> {
+      YamlField stepField = yamlNode.getField(YAMLFieldNameConstants.STEP);
+      YamlField stepGroupField = yamlNode.getField(YAMLFieldNameConstants.STEP_GROUP);
+      YamlField parallelStepField = yamlNode.getField(YAMLFieldNameConstants.PARALLEL);
+      if (stepField != null) {
+        stepFields.add(stepField);
+      } else if (stepGroupField != null) {
+        stepFields.add(stepGroupField);
+      } else if (parallelStepField != null) {
+        stepFields.add(parallelStepField);
       }
     });
-    return stageFields;
+    return stepFields;
   }
 }

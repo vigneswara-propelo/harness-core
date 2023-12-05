@@ -1,0 +1,29 @@
+spec:
+  services:
+    useFromStage:
+      stage: S1
+  environment:
+    environmentRef: EnvFromStage2
+    deployToAll: false
+    infrastructureDefinitions:
+      - identifier: Infra
+  steps:
+    - name: Rollout Deployment
+      identifier: rolloutDeployment
+      type: K8sRollingDeploy
+      timeout: 10m
+      spec:
+        skipDryRun: false
+        pruningEnabled: false
+  rollback_steps:
+    - name: Rollback Rollout Deployment
+      identifier: rollbackRolloutDeployment
+      type: K8sRollingRollback
+      timeout: 10m
+      spec:
+        pruningEnabled: false
+  failure:
+    - errors:
+        - all
+      action:
+        type: stage-rollback

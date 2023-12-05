@@ -497,7 +497,7 @@ public class DeploymentStagePlanCreatorTest extends CDNGTestBase {
   @Owner(developers = {TATHAGAT, MLUKIC})
   @Category(UnitTests.class)
   public void addServiceNodeUseFromStageFromServicesError_0() throws IOException {
-    String pipelineYaml = readFileIntoUTF8String("cdng/creator/servicePlanCreator/v1/pipeline.yaml");
+    String pipelineYaml = readFileIntoUTF8String("v1/cdng/creator/servicePlanCreator/pipeline.yaml");
     YamlField pipeline = new YamlField(YAMLFieldNameConstants.PIPELINE, YamlNode.fromYamlPath(pipelineYaml, ""));
     YamlField specField = new YamlField(YAMLFieldNameConstants.SPEC, getStageNodeAtIndex(pipeline, 5));
     assertThatExceptionOfType(InvalidArgumentsException.class)
@@ -515,7 +515,7 @@ public class DeploymentStagePlanCreatorTest extends CDNGTestBase {
   @Owner(developers = {TATHAGAT, MLUKIC})
   @Category(UnitTests.class)
   public void addServiceNodeUseFromStageFromServicesError_1() throws IOException {
-    String pipelineYaml = readFileIntoUTF8String("cdng/creator/servicePlanCreator/v1/pipeline.yaml");
+    String pipelineYaml = readFileIntoUTF8String("v1/cdng/creator/servicePlanCreator/pipeline.yaml");
     YamlField pipeline = new YamlField(YAMLFieldNameConstants.PIPELINE, YamlNode.fromYamlPath(pipelineYaml, ""));
     YamlField specField = new YamlField(YAMLFieldNameConstants.SPEC, getStageNodeAtIndex(pipeline, 5));
     assertThatExceptionOfType(InvalidRequestException.class)
@@ -535,7 +535,7 @@ public class DeploymentStagePlanCreatorTest extends CDNGTestBase {
   @Owner(developers = {TATHAGAT, MLUKIC})
   @Category(UnitTests.class)
   public void addServiceNodeUseFromStageFromServicesError_2() throws IOException {
-    String pipelineYaml = readFileIntoUTF8String("cdng/creator/servicePlanCreator/v1/pipeline.yaml");
+    String pipelineYaml = readFileIntoUTF8String("v1/cdng/creator/servicePlanCreator/pipeline.yaml");
     YamlField pipeline = new YamlField(YAMLFieldNameConstants.PIPELINE, YamlNode.fromYamlPath(pipelineYaml, ""));
     YamlField specField = new YamlField(YAMLFieldNameConstants.SPEC, getStageNodeAtIndex(pipeline, 6));
     assertThatExceptionOfType(InvalidArgumentsException.class)
@@ -554,7 +554,7 @@ public class DeploymentStagePlanCreatorTest extends CDNGTestBase {
   @Owner(developers = {TATHAGAT, MLUKIC})
   @Category(UnitTests.class)
   public void addServiceNodeUseFromStageFromServicesError_3() throws IOException {
-    String pipelineYaml = readFileIntoUTF8String("cdng/creator/servicePlanCreator/v1/pipeline.yaml");
+    String pipelineYaml = readFileIntoUTF8String("v1/cdng/creator/servicePlanCreator/pipeline.yaml");
     YamlField pipeline = new YamlField(YAMLFieldNameConstants.PIPELINE, YamlNode.fromYamlPath(pipelineYaml, ""));
     YamlField specField = new YamlField(YAMLFieldNameConstants.SPEC, getStageNodeAtIndex(pipeline, 7));
     assertThatExceptionOfType(InvalidArgumentsException.class)
@@ -574,7 +574,7 @@ public class DeploymentStagePlanCreatorTest extends CDNGTestBase {
   @Owner(developers = {TATHAGAT, MLUKIC})
   @Category(UnitTests.class)
   public void addServiceNodeUseFromStageFromServicesWithMetadata() throws IOException {
-    String pipelineYaml = readFileIntoUTF8String("cdng/creator/servicePlanCreator/v1/pipeline.yaml");
+    String pipelineYaml = readFileIntoUTF8String("v1/cdng/creator/servicePlanCreator/pipeline.yaml");
     YamlField pipeline = new YamlField(YamlNode.fromYamlPath(pipelineYaml, ""));
     YamlField specField = new YamlField(YAMLFieldNameConstants.SPEC, getStageNodeAtIndex(pipeline, 9));
     ServicesYaml services = deploymentStagePlanCreator.useServicesYamlFromStage(

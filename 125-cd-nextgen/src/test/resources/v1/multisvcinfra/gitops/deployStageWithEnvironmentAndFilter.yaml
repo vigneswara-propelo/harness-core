@@ -1,0 +1,51 @@
+name: deployStage
+id: deployStage
+desc: ""
+type: deployment
+spec:
+  gitops_enabled: true
+  services:
+    values:
+      - serviceRef: service-id
+  environment:
+    environmentRef: env-id
+    filters:
+      - type: tags
+        entities:
+          - gitOpsClusters
+        spec:
+          matchType: all
+          tags:
+            foo: bar
+            top: down
+      - type: all
+        entities:
+          - infrastructures
+        spec: { }
+  steps:
+    - type: ShellScript
+      name: testnames
+      identifier: testnames
+      spec:
+        shell: Bash
+        onDelegate: true
+        source:
+          type: Inline
+          spec:
+            script: echo 1
+        environmentVariables: []
+        outputVariables: []
+        executionTarget: {}
+      timeout: 10m
+  rollback_steps:
+    - name: Rollback Rollout Deployment
+      identifier: rollbackRolloutDeployment
+      type: K8sRollingRollback
+      timeout: 10m
+      spec: {}
+labels: {}
+failure:
+  - errors:
+      - all
+  - action:
+      type: stage-rollback

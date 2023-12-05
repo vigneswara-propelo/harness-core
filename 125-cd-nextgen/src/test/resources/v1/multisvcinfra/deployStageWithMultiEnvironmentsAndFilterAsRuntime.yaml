@@ -1,0 +1,35 @@
+name: deployStage
+id: deployStage
+desc: ""
+type: deployment
+spec:
+  services:
+    values:
+      - serviceRef: variableTestSvc
+      - serviceRef: variableTestSvc
+  environments:
+    filters:
+      - type: tags
+        entities:
+          - gitOpsClusters
+        spec:
+          matchType: all
+          tags: <+input>
+      - type: all
+        entities:
+          - infrastructures
+        spec: { }
+    metadata:
+      parallel: true
+    rollback_steps:
+      - name: Rollback Rollout Deployment
+        identifier: rollbackRolloutDeployment
+        type: K8sRollingRollback
+        timeout: 10m
+        spec: {}
+labels: {}
+failure:
+  - errors:
+      - all
+    action:
+      type: stage-rollback
