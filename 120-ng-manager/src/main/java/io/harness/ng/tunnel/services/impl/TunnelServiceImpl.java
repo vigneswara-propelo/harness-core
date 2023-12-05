@@ -53,7 +53,13 @@ public class TunnelServiceImpl implements TunnelService {
     persistence.upsert(upsertQuery, updateOperations);
     return Boolean.TRUE;
   }
+  @Override
+  public Boolean deleteTunnel(String accountId) {
+    Query<Tunnel> deleteQuery =
+        persistence.createQuery(Tunnel.class, excludeAuthority).filter(TunnelKeys.accountIdentifier, accountId);
 
+    return persistence.delete(deleteQuery);
+  }
   @Override
   public TunnelResponseDTO getTunnel(String accountId) {
     Optional<Tunnel> optionalTunnel = tunnelRepository.findByAccountIdentifier(accountId);

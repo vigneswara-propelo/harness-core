@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -90,6 +91,21 @@ public class TunnelResource {
                      NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier,
       @RequestBody @NotNull TunnelRegisterRequestDTO tunnelRegisterRequestDTO) {
     return ResponseDTO.newResponse(tunnelService.registerTunnel(accountIdentifier, tunnelRegisterRequestDTO));
+  }
+
+  @DELETE
+  @ApiOperation(value = "Delete the tunnel", nickname = "deleteTunnel")
+  @Operation(operationId = "deleteTunnel", summary = "Delete the tunnel with given account",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.
+        ApiResponse(description = "Returns true if tunnel deletion was successful")
+      })
+  @Hidden
+  public ResponseDTO<Boolean>
+  deleteTunnel(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
+      NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier) {
+    return ResponseDTO.newResponse(tunnelService.deleteTunnel(accountIdentifier));
   }
 
   @GET

@@ -16,5 +16,6 @@ import io.harness.ng.core.dto.TunnelResponseDTO;
 @OwnedBy(CI)
 public interface TunnelService {
   Boolean registerTunnel(String accountId, TunnelRegisterRequestDTO tunnelRegisterRequestDTO);
+  Boolean deleteTunnel(String accountId);
   TunnelResponseDTO getTunnel(String accountId);
 }
