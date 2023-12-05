@@ -31,7 +31,6 @@ import (
 	redisDb "github.com/harness/harness-core/product/log-service/db/redis"
 	"github.com/harness/harness-core/product/log-service/handler"
 	"github.com/harness/harness-core/product/log-service/logger"
-	"github.com/harness/harness-core/product/log-service/metric"
 	memoryQueue "github.com/harness/harness-core/product/log-service/queue/memory"
 	"github.com/harness/harness-core/product/log-service/server"
 	"github.com/harness/harness-core/product/log-service/stackdriver"
@@ -187,14 +186,11 @@ func (c *serverCommand) run(*kingpin.ParseContext) error {
 			return err
 		}
 	}
-	// register metrics
-	metrics := metric.RegisterMetrics()
-
 	// create the http server.
 	server := server.Server{
 		Acme:    config.Server.Acme,
 		Addr:    config.Server.Bind,
-		Handler: handler.Handler(queue, cache, stream, store, stackdriver, config, ngClient, ngPlatformClient, aclClient, gcsClient, metrics),
+		Handler: handler.Handler(queue, cache, stream, store, stackdriver, config, ngClient, ngPlatformClient, aclClient, gcsClient),
 	}
 
 	// trap the os signal to gracefully shutdown the

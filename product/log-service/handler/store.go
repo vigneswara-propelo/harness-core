@@ -21,7 +21,6 @@ import (
 	"github.com/harness/harness-core/product/log-service/config"
 	"github.com/harness/harness-core/product/log-service/entity"
 	"github.com/harness/harness-core/product/log-service/logger"
-	"github.com/harness/harness-core/product/log-service/metric"
 	"github.com/harness/harness-core/product/log-service/queue"
 	"github.com/harness/harness-core/product/log-service/store"
 	"github.com/harness/harness-core/product/platform/client"
@@ -39,15 +38,14 @@ const (
 
 // HandleUpload returns an http.HandlerFunc that uploads
 // a blob to the datastore.
-func HandleUpload(store store.Store, metrics *metric.Metrics) http.HandlerFunc {
-	// Increment blob upload request by 1
-	metrics.BlobUploadCount.Inc()
+func HandleUpload(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		st := time.Now()
 
 		accountID := r.FormValue(accountIDParam)
 		key := CreateAccountSeparatedKey(accountID, r.FormValue(keyParam))
+
 		if err := store.Upload(ctx, key, r.Body); err != nil {
 			WriteInternalError(w, err)
 			logger.FromRequest(r).
@@ -63,7 +61,6 @@ func HandleUpload(store store.Store, metrics *metric.Metrics) http.HandlerFunc {
 			WithField("time", time.Now().Format(time.RFC3339)).
 			Infoln("api: successfully uploaded object")
 		w.WriteHeader(http.StatusNoContent)
-		metrics.BlobUploadLatency.Set(time.Since(st).Seconds())
 	}
 }
 
@@ -102,9 +99,7 @@ func HandleUploadLink(store store.Store) http.HandlerFunc {
 
 // HandleDownload returns an http.HandlerFunc that downloads
 // a blob from the datastore and copies to the http.Response.
-func HandleDownload(store store.Store, metrics *metric.Metrics) http.HandlerFunc {
-	// increment blob download request by 1
-	metrics.BlobDownloadCount.Inc()
+func HandleDownload(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		st := time.Now()
 		h := w.Header()
@@ -113,6 +108,7 @@ func HandleDownload(store store.Store, metrics *metric.Metrics) http.HandlerFunc
 
 		accountID := r.FormValue(accountIDParam)
 		key := CreateAccountSeparatedKey(accountID, r.FormValue(keyParam))
+
 		out, err := store.Download(ctx, key)
 		if out != nil {
 			defer out.Close()
@@ -130,16 +126,13 @@ func HandleDownload(store store.Store, metrics *metric.Metrics) http.HandlerFunc
 				WithField("latency", time.Since(st)).
 				WithField("time", time.Now().Format(time.RFC3339)).
 				Infoln("api: successfully downloaded object")
-			metrics.BlobDownloadLatency.Set(time.Since(st).Seconds())
 		}
 	}
 }
 
 // HandleDownloadLink returns an http.HandlerFunc that generates
 // a signed link to download a blob to the datastore.
-func HandleDownloadLink(store store.Store, metrics *metric.Metrics) http.HandlerFunc {
-	// Increment counter by 1 for blob downloads request
-	metrics.BlobZipDownloadCount.Inc()
+func HandleDownloadLink(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
 		st := time.Now()
@@ -149,6 +142,7 @@ func HandleDownloadLink(store store.Store, metrics *metric.Metrics) http.Handler
 		accountID := r.FormValue(accountIDParam)
 		key := CreateAccountSeparatedKey(accountID, r.FormValue(keyParam))
 		expires := time.Hour
+
 		link, err := store.DownloadLink(ctx, key, expires)
 		if err != nil {
 			WriteInternalError(w, err)
@@ -168,7 +162,6 @@ func HandleDownloadLink(store store.Store, metrics *metric.Metrics) http.Handler
 			Link    string        `json:"link"`
 			Expires time.Duration `json:"expires"`
 		}{link, expires}, 200)
-		metrics.BlobZipDownloadLatency.Set(time.Since(st).Seconds())
 	}
 }
 
