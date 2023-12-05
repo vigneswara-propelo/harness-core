@@ -171,8 +171,7 @@ public class NativeHelmStepHelper extends K8sHelmCommonStepHelper {
       return TaskType.HELM_COMMAND_TASK_NG_RANCHER;
     }
 
-    if (cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_K8S_SERVICE_HOOKS_NG)
-        && isNotEmpty(helmCommandRequest.getServiceHooks())) {
+    if (isNotEmpty(helmCommandRequest.getServiceHooks())) {
       return TaskType.HELM_COMMAND_TASK_NG_V2;
     }
     return TaskType.HELM_COMMAND_TASK_NG;

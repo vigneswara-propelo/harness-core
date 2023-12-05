@@ -14,7 +14,6 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.beans.FeatureName;
 import io.harness.cdng.CDStepHelper;
 import io.harness.cdng.ReleaseMetadataFactory;
 import io.harness.cdng.executables.CdTaskChainExecutable;
@@ -155,9 +154,7 @@ public class K8sRollingStep extends CdTaskChainExecutable implements K8sStepExec
             .useDeclarativeRollback(k8sStepHelper.isDeclarativeRollbackEnabled(k8sManifestOutcome))
             .disableFabric8(cdStepHelper.shouldDisableFabric8(accountId));
 
-    if (cdFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_K8S_SERVICE_HOOKS_NG)) {
-      rollingRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
-    }
+    rollingRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
     if (cdStepHelper.shouldPassReleaseMetadata(accountId)) {
       rollingRequestBuilder.releaseMetadata(releaseMetadataFactory.createReleaseMetadata(infrastructure, ambiance));
     }

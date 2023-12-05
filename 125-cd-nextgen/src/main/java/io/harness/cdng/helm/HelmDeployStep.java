@@ -290,9 +290,7 @@ public class HelmDeployStep extends CdTaskChainExecutable implements NativeHelmS
                 AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_IMPROVED_HELM_DEPLOYMENT_TRACKING))
             .useSteadyStateCheckForJobs(nativeHelmStepHelper.isSteadyStateForJobsEnabled(ambiance));
 
-    if (cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_K8S_SERVICE_HOOKS_NG)) {
-      helmCommandRequestBuilder.serviceHooks(nativeHelmStepHelper.getServiceHooks(ambiance));
-    }
+    helmCommandRequestBuilder.serviceHooks(nativeHelmStepHelper.getServiceHooks(ambiance));
     HelmInstallCommandRequestNG helmCommandRequest = helmCommandRequestBuilder.build();
 
     helmCommandRequest.setTimeoutInMillis(CDStepHelper.getTimeoutInMillis(stepParameters));

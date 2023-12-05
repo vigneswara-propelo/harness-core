@@ -196,8 +196,7 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
       return TaskType.K8S_COMMAND_TASK_NG_RANCHER;
     }
 
-    if (cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_K8S_SERVICE_HOOKS_NG)
-        && isNotEmpty(k8sDeployRequest.getServiceHooks())) {
+    if (isNotEmpty(k8sDeployRequest.getServiceHooks())) {
       return TaskType.K8S_COMMAND_TASK_NG_V2;
     }
 

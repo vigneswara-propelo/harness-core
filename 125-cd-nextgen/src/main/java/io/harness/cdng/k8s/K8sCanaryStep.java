@@ -154,9 +154,8 @@ public class K8sCanaryStep extends CdTaskChainExecutable implements K8sStepExecu
             .enabledSupportHPAAndPDB(cdStepHelper.isEnabledSupportHPAAndPDB(accountId))
             .disableFabric8(cdStepHelper.shouldDisableFabric8(accountId));
 
-    if (cdFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_K8S_SERVICE_HOOKS_NG)) {
-      canaryRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
-    }
+    canaryRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
+
     if (cdStepHelper.shouldPassReleaseMetadata(accountId)) {
       canaryRequestBuilder.releaseMetadata(releaseMetadataFactory.createReleaseMetadata(infrastructure, ambiance));
     }

@@ -158,9 +158,7 @@ public class K8sBlueGreenStep extends CdTaskChainExecutable implements K8sStepEx
             .skipUnchangedManifest(cdStepHelper.isSkipUnchangedManifest(accountId, skipUnchangedManifest))
             .storeReleaseHash(cdStepHelper.isStoreReleaseHash(accountId));
 
-    if (cdFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_K8S_SERVICE_HOOKS_NG)) {
-      bgRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
-    }
+    bgRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
     if (cdStepHelper.shouldPassReleaseMetadata(accountId)) {
       bgRequestBuilder.releaseMetadata(releaseMetadataFactory.createReleaseMetadata(infrastructure, ambiance));
     }

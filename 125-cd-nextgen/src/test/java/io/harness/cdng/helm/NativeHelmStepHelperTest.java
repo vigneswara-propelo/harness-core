@@ -2948,7 +2948,7 @@ public class NativeHelmStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testTaskType() {
     K8sInfraDelegateConfig k8sInfraDelegateConfig = DirectK8sInfraDelegateConfig.builder().build();
-    TaskType expectedTaskType = TaskType.HELM_COMMAND_TASK_NG;
+    TaskType expectedTaskType = TaskType.HELM_COMMAND_TASK_NG_V2;
     checkTaskType(k8sInfraDelegateConfig, expectedTaskType, null, false);
   }
 

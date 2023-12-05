@@ -4882,7 +4882,7 @@ public class K8sStepHelperTest extends CDNGTestBase {
   @Category(UnitTests.class)
   public void testK8sTaskType() {
     K8sInfraDelegateConfig k8sInfraDelegateConfig = DirectK8sInfraDelegateConfig.builder().build();
-    checkTaskType(k8sInfraDelegateConfig, TaskType.K8S_COMMAND_TASK_NG, null);
+    checkTaskType(k8sInfraDelegateConfig, TaskType.K8S_COMMAND_TASK_NG_V2, null);
   }
 
   private void checkTaskType(K8sInfraDelegateConfig k8sInfraDelegateConfig, TaskType expectedTaskType,

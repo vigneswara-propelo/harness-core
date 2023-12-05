@@ -12,7 +12,6 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.delegate.task.k8s.K8sDryRunManifestRequest.K8sDryRunManifestRequestBuilder;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.FeatureName;
 import io.harness.cdng.CDStepHelper;
 import io.harness.cdng.executables.CdTaskChainExecutable;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
@@ -123,9 +122,7 @@ public class K8sDryRunManifestStep extends CdTaskChainExecutable implements K8sS
             .useDeclarativeRollback(k8sStepHelper.isDeclarativeRollbackEnabled(k8sManifestOutcome))
             .disableFabric8(cdStepHelper.shouldDisableFabric8(accountId));
 
-    if (cdFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_K8S_SERVICE_HOOKS_NG)) {
-      k8sDryRunManifestRequestbuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
-    }
+    k8sDryRunManifestRequestbuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
 
     K8sDryRunManifestRequest k8sDryRunManifestRequest = k8sDryRunManifestRequestbuilder.build();
     k8sStepHelper.publishReleaseNameStepDetails(ambiance, releaseName);

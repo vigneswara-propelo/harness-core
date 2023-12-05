@@ -200,9 +200,7 @@ public class K8sApplyStep extends CdTaskChainExecutable implements K8sStepExecut
             .useK8sApiForSteadyStateCheck(cdStepHelper.shouldUseK8sApiForSteadyStateCheck(accountId))
             .skipRendering(skipRendering);
 
-    if (cdFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_K8S_SERVICE_HOOKS_NG)) {
-      applyRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
-    }
+    applyRequestBuilder.serviceHooks(k8sStepHelper.getServiceHooks(ambiance));
 
     if (k8sManifestOutcome != null && k8sManifestOutcome.getStore() != null
         && HARNESS_STORE_TYPE.equals(k8sManifestOutcome.getStore().getKind())
