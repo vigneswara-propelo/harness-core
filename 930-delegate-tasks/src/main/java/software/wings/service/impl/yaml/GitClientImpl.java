@@ -401,7 +401,7 @@ public class GitClientImpl implements GitClient {
   private GitCheckoutResult checkout(GitOperationContext gitOperationContext, Git git)
       throws GitAPIException, IOException {
     GitConfig gitConfig = gitOperationContext.getGitConfig();
-    return checkout(gitOperationContext, git, gitConfig.getBranch(), gitConfig.getBranch(), true);
+    return checkout(gitOperationContext, git, gitConfig.getBranch(), gitConfig.getReference(), true);
   }
 
   private GitCheckoutResult checkout(GitOperationContext gitOperationContext, Git git, String branch, String reference,
