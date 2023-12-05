@@ -74,7 +74,7 @@ public class NamespaceServiceImpl implements NamespaceService {
   }
 
   @Override
-  public NamespaceEntity createPREnvDefaultMappingEntry(String accountIdentifier, String namespace) {
+  public NamespaceEntity createDevSpaceEnvDefaultMappingEntry(String accountIdentifier, String namespace) {
     NamespaceEntity existingMappingEntry =
         namespaceRepository.findByAccountIdentifierAndId(accountIdentifier, namespace);
     if (existingMappingEntry == null) {

@@ -76,7 +76,8 @@ data:
   SEGMENT_URL: {{.Values.segmentUrl | quote}}
   SEGMENT_APIKEY: {{.Values.segmentApikey | quote}}
   SEGMENT_VERIFY_CERT: {{.Values.segmentVerifyCert | quote}}
-  DEFAULT_BACKSTAGE_NAMESPACE: {{.Values.prEnvDefaultBackstageNamespace | quote}}
+  DEVSPACE_DEFAULT_BACKSTAGE_NAMESPACE: {{.Values.devSpaceDefaultBackstageNamespace | quote}}
+  DEVSPACE_DEFAULT_ACCOUNT_ID: {{.Values.devSpaceDefaultAccountId | quote}}
   PROXY_ALLOW_LIST_CONFIG_SERVICES: |-
 {{ toYaml .Values.proxyAllowListConfigServices | indent 4 }}
 

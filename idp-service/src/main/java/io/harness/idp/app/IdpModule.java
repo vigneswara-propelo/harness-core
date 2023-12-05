@@ -534,7 +534,7 @@ public class IdpModule extends AbstractModule {
         .annotatedWith(Names.named("AppConfigPurger"))
         .toInstance(new ManagedScheduledExecutorService("AppConfigPurger"));
     bind(ExecutorService.class)
-        .annotatedWith(Names.named("DefaultPREnvAccountIdToNamespaceMappingCreator"))
+        .annotatedWith(Names.named("DefaultDevSpaceEnvProvisioner"))
         .toInstance(new ManagedExecutorService(Executors.newSingleThreadExecutor()));
     bind(ExecutorService.class)
         .annotatedWith(Names.named("ScoreComputer"))
@@ -737,9 +737,16 @@ public class IdpModule extends AbstractModule {
 
   @Provides
   @Singleton
-  @Named("prEnvDefaultBackstageNamespace")
-  public String prEnvDefaultBackstageNamespace() {
-    return this.appConfig.getPrEnvDefaultBackstageNamespace();
+  @Named("devSpaceDefaultBackstageNamespace")
+  public String devSpaceDefaultBackstageNamespace() {
+    return this.appConfig.getDevSpaceDefaultBackstageNamespace();
+  }
+
+  @Provides
+  @Singleton
+  @Named("devSpaceDefaultAccountId")
+  public String devSpaceDefaultAccountId() {
+    return this.appConfig.getDevSpaceDefaultAccountId();
   }
 
   @Provides

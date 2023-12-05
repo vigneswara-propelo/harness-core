@@ -109,7 +109,8 @@ public class IdpConfiguration extends Configuration {
   @JsonProperty("backstagePodLabel") private String backstagePodLabel;
   @JsonProperty("backstageEntitiesFetchLimit") private String backstageEntitiesFetchLimit;
   @JsonProperty("env") private String env;
-  @JsonProperty("prEnvDefaultBackstageNamespace") private String prEnvDefaultBackstageNamespace;
+  @JsonProperty("devSpaceDefaultBackstageNamespace") private String devSpaceDefaultBackstageNamespace;
+  @JsonProperty("devSpaceDefaultAccountId") private String devSpaceDefaultAccountId;
   @JsonProperty(PROVISION_MODULE_CONFIG) private ProvisionModuleConfig provisionModuleConfig;
   @JsonProperty("backstageAppBaseUrl") private String backstageAppBaseUrl;
   @JsonProperty("backstagePostgresHost") private String backstagePostgresHost;

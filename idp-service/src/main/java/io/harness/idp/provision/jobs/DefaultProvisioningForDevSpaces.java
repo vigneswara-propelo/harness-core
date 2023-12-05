@@ -5,11 +5,12 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.namespace.jobs;
+package io.harness.idp.provision.jobs;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.namespace.service.NamespaceService;
+import io.harness.idp.provision.service.ProvisionService;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
@@ -24,28 +25,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 @OwnedBy(HarnessTeam.IDP)
-public class DefaultAccountIdToNamespaceMappingForPrEnv implements Managed {
+public class DefaultProvisioningForDevSpaces implements Managed {
   @Inject @Named("env") private String env;
-  @Inject @Named("prEnvDefaultBackstageNamespace") private String prEnvDefaultBackstageNamespace;
+  @Inject @Named("devSpaceDefaultBackstageNamespace") private String devSpaceDefaultBackstageNamespace;
+
+  @Inject @Named("devSpaceDefaultAccountId") private String devSpaceDefaultAccountId;
+
   private ExecutorService executorService;
   private final NamespaceService namespaceService;
+  private final ProvisionService provisionService;
 
-  private static final String DEFAULT_PR_ENV_ACCOUNT_ID = "VVfCEh_ZRTm7pJWtAH-PrA";
-
-  private static final String PR_ENV_TYPE = "dev-spaces";
+  private static final String DEV_SPACE_ENV_TYPE = "dev-spaces";
 
   @Inject
-  public DefaultAccountIdToNamespaceMappingForPrEnv(
-      @Named("DefaultPREnvAccountIdToNamespaceMappingCreator") ExecutorService executorService,
-      NamespaceService namespaceService) {
+  public DefaultProvisioningForDevSpaces(@Named("DefaultDevSpaceEnvProvisioner") ExecutorService executorService,
+      NamespaceService namespaceService, ProvisionService provisionService) {
     this.executorService = executorService;
     this.namespaceService = namespaceService;
+    this.provisionService = provisionService;
   }
 
   @Override
   public void start() throws Exception {
     executorService = Executors.newSingleThreadExecutor(
-        new ThreadFactoryBuilder().setNameFormat("default-entry-creator-for-pr-env").build());
+        new ThreadFactoryBuilder().setNameFormat("default-entry-creator-for-dev-space-env").build());
     executorService.submit(this::run);
   }
 
@@ -56,15 +59,18 @@ public class DefaultAccountIdToNamespaceMappingForPrEnv implements Managed {
   }
 
   public void run() {
-    log.info("Creating default account id to namespace mapping for PR env.....");
+    log.info("Creating default provisioning for dev spaces.....");
     try {
-      if (env.equals(PR_ENV_TYPE) && !prEnvDefaultBackstageNamespace.isEmpty()) {
-        namespaceService.createPREnvDefaultMappingEntry(DEFAULT_PR_ENV_ACCOUNT_ID, prEnvDefaultBackstageNamespace);
-        log.info("Default account id ( {} ) to namespace ( {} ) mapping created in PR env", DEFAULT_PR_ENV_ACCOUNT_ID,
-            prEnvDefaultBackstageNamespace);
+      if (env.equals(DEV_SPACE_ENV_TYPE) && !devSpaceDefaultBackstageNamespace.isEmpty()
+          && !devSpaceDefaultAccountId.isEmpty()) {
+        namespaceService.createDevSpaceEnvDefaultMappingEntry(
+            devSpaceDefaultAccountId, devSpaceDefaultBackstageNamespace);
+        provisionService.createBackstageBackendSecret(devSpaceDefaultAccountId);
+        provisionService.createDefaultPermissions(devSpaceDefaultAccountId);
+        provisionService.createBackstageOverrideConfig(devSpaceDefaultAccountId);
       }
     } catch (Exception e) {
-      log.error("Default entry creation for account id to namespace mapping is unsuccessful in PR env", e);
+      log.error("Default provisioning  is unsuccessful in DevSpace env", e);
     }
   }
 }
