@@ -33,6 +33,12 @@ public enum SupportedPossibleFieldTypes {
   runtimeEmptyStringAllowed,
   // allow only <+input>
   onlyRuntimeInputAllowed,
+  /*
+ Supports expressions along with empty strings
+ To avoid schema issues when runtime object inputs are provided as empty string("")
+ As which is behaviour of UI when user switch from visual to yaml without giving inputs
+ */
+  expressionEmptyStringAllowed,
 
   /**
    * Only used for setting default.

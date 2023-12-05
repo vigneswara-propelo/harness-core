@@ -7,6 +7,7 @@
 
 package io.harness.cdng.pipeline.steps;
 
+import static io.harness.rule.OwnerRule.LOVISH_BANSAL;
 import static io.harness.rule.OwnerRule.SAHIL;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 import static io.harness.rule.OwnerRule.vivekveman;
@@ -532,6 +533,90 @@ public class MultiDeploymentSpawnerStepTest extends CategoryTest {
                                prepareAmbience(), multiDeploymentStepParameters, null))
         .isInstanceOf(InvalidYamlException.class)
         .hasMessageContaining("No infrastructure definition provided. Please provide at least one value");
+  }
+
+  @Test
+  @Owner(developers = LOVISH_BANSAL)
+  @Category(UnitTests.class)
+  public void testObtainChildrenAfterRbacWithMultiInfrastructuresAsYamlStringsList() {
+    String infraYaml = "identifier: identifier\n"
+        + "inputs: null";
+    List<String> infraYamlsList = new ArrayList<>();
+    infraYamlsList.add(infraYaml);
+    ParameterField<List<String>> list = ParameterField.createValueField(infraYamlsList);
+    ParameterField<?> list2 = list;
+    ParameterField<List<InfraStructureDefinitionYaml>> list3 =
+        (ParameterField<List<InfraStructureDefinitionYaml>>) list2;
+
+    EnvironmentYamlV2 environmentYamlV2 = EnvironmentYamlV2.builder()
+                                              .environmentRef(ParameterField.createValueField("env1"))
+                                              .infrastructureDefinitions(list3)
+                                              .build();
+    List<EnvironmentYamlV2> environmentYamlV2s = new ArrayList<>();
+    environmentYamlV2s.add(environmentYamlV2);
+    MultiDeploymentStepParameters multiDeploymentStepParameters =
+        MultiDeploymentStepParameters.builder()
+            .childNodeId("test")
+            .environments(
+                EnvironmentsYaml.builder().values(ParameterField.createValueField(environmentYamlV2s)).build())
+            .build();
+
+    Map<String, String> map = new HashMap<>();
+    map.put("environmentRef", "env1");
+    map.put("identifier", "identifier");
+    assertThat(
+        multiDeploymentSpawnerStep.obtainChildrenAfterRbac(prepareAmbience(), multiDeploymentStepParameters, null))
+        .isEqualTo(ChildrenExecutableResponse.newBuilder()
+                       .addChildren(ChildrenExecutableResponse.Child.newBuilder()
+                                        .setChildNodeId("test")
+                                        .setStrategyMetadata(
+                                            StrategyMetadata.newBuilder()
+                                                .setTotalIterations(1)
+                                                .setIdentifierPostFix("_0")
+                                                .setMatrixMetadata(
+                                                    MatrixMetadata.newBuilder()
+                                                        .addMatrixCombination(0)
+                                                        .addAllMatrixKeysToSkipInName(
+                                                            MultiDeploymentSpawnerStep.SKIP_KEYS_LIST_FROM_STAGE_NAME)
+                                                        .setSubType(MultiDeploymentSpawnerUtils.MULTI_ENV_DEPLOYMENT)
+                                                        .putAllMatrixValues(map))
+                                                .build())
+                                        .build())
+                       .build());
+    MultiDeploymentSpawnerStepDetailsInfo multiDeploymentSpawnerStepDetailsInfo =
+        MultiDeploymentSpawnerStepDetailsInfo.builder().svcCount(1).envCount(1).build();
+    verify(sdkGraphVisualizationDataService, times(1))
+        .publishStepDetailInformation(
+            prepareAmbience(), multiDeploymentSpawnerStepDetailsInfo, "svcEnvCount", StepCategory.STRATEGY);
+  }
+
+  @Test
+  @Owner(developers = LOVISH_BANSAL)
+  @Category(UnitTests.class)
+  public void testObtainChildrenAfterRbacWithMultiInfrastructuresAsString() {
+    ParameterField<?> list1 = ParameterField.createValueField("abcd");
+    ParameterField<List<InfraStructureDefinitionYaml>> list2 =
+        (ParameterField<List<InfraStructureDefinitionYaml>>) list1;
+
+    EnvironmentYamlV2 environmentYamlV2 = EnvironmentYamlV2.builder()
+                                              .environmentRef(ParameterField.createValueField("env1"))
+                                              .infrastructureDefinitions(list2)
+                                              .build();
+    List<EnvironmentYamlV2> environmentYamlV2s = new ArrayList<>();
+    environmentYamlV2s.add(environmentYamlV2);
+    MultiDeploymentStepParameters multiDeploymentStepParameters =
+        MultiDeploymentStepParameters.builder()
+            .childNodeId("test")
+            .environments(
+                EnvironmentsYaml.builder().values(ParameterField.createValueField(environmentYamlV2s)).build())
+            .build();
+
+    assertThatThrownBy(()
+                           -> multiDeploymentSpawnerStep.obtainChildrenAfterRbac(
+                               prepareAmbience(), multiDeploymentStepParameters, null))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining(
+            "The provided value [abcd] for infrastructure definitions is not correct. If infrastructure definitions value is provided as an expression, then that expression should resolve to a list of string values.");
   }
 
   private Ambiance prepareAmbience() {

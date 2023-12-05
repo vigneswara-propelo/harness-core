@@ -6,6 +6,7 @@
  */
 
 package io.harness.cdng.pipeline.steps;
+
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.steps.SdkCoreStepUtils.createStepResponseFromChildResponse;
@@ -63,6 +64,7 @@ import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.StepResponseNotifyData;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.pms.yaml.utils.ParameterFieldUtils;
 import io.harness.rbac.CDNGRbacPermissions;
 import io.harness.steps.executable.ChildrenExecutableWithRollbackAndRbac;
@@ -70,6 +72,7 @@ import io.harness.tasks.ResponseData;
 import io.harness.utils.IdentifierRefHelper;
 
 import com.google.inject.Inject;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -559,6 +562,7 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
     }
     List<EnvironmentMapResponse> environmentMapResponses = new ArrayList<>();
     for (EnvironmentYamlV2 environmentYamlV2 : environments) {
+      handleExpressionValueForInfrastructureDefinitions(environmentYamlV2);
       if (ParameterField.isNull(environmentYamlV2.getInfrastructureDefinitions())) {
         environmentMapResponses.add(getEnvironmentsMapResponse(
             environmentYamlV2, environmentYamlV2.getInfrastructureDefinition().getValue(), envGroupScope));
@@ -617,5 +621,32 @@ public class MultiDeploymentSpawnerStep extends ChildrenExecutableWithRollbackAn
         MultiDeploymentSpawnerStepDetailsInfo.builder().svcCount(svcCount).envCount(envCount).build();
     sdkGraphVisualizationDataService.publishStepDetailInformation(
         ambiance, multiDeploymentSpawnerStepDetailsInfo, SVC_ENV_COUNT, StepCategory.STRATEGY);
+  }
+
+  private void handleExpressionValueForInfrastructureDefinitions(EnvironmentYamlV2 environmentYamlV2) {
+    if (environmentYamlV2 == null || environmentYamlV2.getInfrastructureDefinitions() == null
+        || environmentYamlV2.getInfrastructureDefinitions().fetchFinalValue() == null) {
+      return;
+    }
+    if (environmentYamlV2.getInfrastructureDefinitions().isExpression()
+        || !(environmentYamlV2.getInfrastructureDefinitions().getValue() instanceof List)) {
+      throw new InvalidRequestException(format(
+          "The provided value [%s] for infrastructure definitions is not correct. If infrastructure definitions value is provided as an expression, then that expression should resolve to a list of string values.",
+          environmentYamlV2.getInfrastructureDefinitions().fetchFinalValue()));
+    }
+    List<InfraStructureDefinitionYaml> newInfrasList = new ArrayList<>();
+    ParameterField<List<InfraStructureDefinitionYaml>> infrasList = environmentYamlV2.getInfrastructureDefinitions();
+    List<?> list = infrasList.getValue();
+    if (isNotEmpty(list) && list.get(0) instanceof String) {
+      list.forEach(l -> {
+        try {
+          newInfrasList.add(YamlUtils.read((String) l, InfraStructureDefinitionYaml.class));
+        } catch (IOException e) {
+          throw new InvalidYamlException(
+              format("Exception occurred while reading an Infrastructure Definition Yaml [%s]", l), e);
+        }
+      });
+      environmentYamlV2.setInfrastructureDefinitions(ParameterField.createValueField(newInfrasList));
+    }
   }
 }

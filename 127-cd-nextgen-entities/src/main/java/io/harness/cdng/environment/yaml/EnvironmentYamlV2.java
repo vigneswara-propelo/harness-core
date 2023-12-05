@@ -6,8 +6,10 @@
  */
 
 package io.harness.cdng.environment.yaml;
+
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.expression;
+import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.expressionEmptyStringAllowed;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtimeEmptyStringAllowed;
 
@@ -75,7 +77,7 @@ public class EnvironmentYamlV2 implements Visitable {
   ParameterField<List<FilterYaml>> filters;
 
   @ApiModelProperty(dataType = SwaggerConstants.INFRASTRUCTURE_DEFINITION_YAML_NODE_LIST_CLASSPATH)
-  @YamlSchemaTypes({runtimeEmptyStringAllowed})
+  @YamlSchemaTypes({expressionEmptyStringAllowed})
   ParameterField<List<InfraStructureDefinitionYaml>> infrastructureDefinitions;
 
   @ApiModelProperty(dataType = "io.harness.cdng.infra.yaml.InfraStructureDefinitionYaml")

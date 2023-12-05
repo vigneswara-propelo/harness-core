@@ -64,6 +64,9 @@ public class SchemaConstants {
   public static final String INPUT_SET_PATTERN = "^" + EXPR_START_ESC + "input" + EXPR_END_ESC + "$";
   // Simplifying the regex for expression. Anything between <+ and > will be considered as expression.
   public static final String EXPRESSION_PATTERN = "(" + EXPR_START_ESC + ".+" + EXPR_END_ESC + ".*)";
+  public static final String EXPRESSION_PATTERN_EMPTY_STRING_ALLOWED = "(" + EXPR_START_ESC + ".+" + EXPR_END_ESC + ".*"
+      + "|^$"
+      + ")";
   // This should validate string patterns starting with optional + or - ([+-]?). Then at least one digit ([0-9]+). Then
   // optional `.` amd optional digits.
   public static final String NUMBER_STRING_WITH_EXPRESSION_PATTERN = "("
