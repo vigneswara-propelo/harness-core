@@ -28,4 +28,6 @@ public interface ILogStreamingStepClient {
   void writeLogLine(LogLine logLine, String logKeySuffix);
 
   void closeAllOpenStreamsWithPrefix(String prefix);
+
+  void closeLogStreamsWithPrefix(String logKey, boolean prefix);
 }

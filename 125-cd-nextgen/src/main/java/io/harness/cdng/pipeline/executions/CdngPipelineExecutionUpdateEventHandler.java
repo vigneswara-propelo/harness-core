@@ -7,6 +7,7 @@
 
 package io.harness.cdng.pipeline.executions;
 
+import static io.harness.executions.steps.StepSpecTypeConstants.CLOUDFORMATION_DELETE_STACK;
 import static io.harness.executions.steps.StepSpecTypeConstants.K8S_ROLLING_ROLLBACK;
 import static io.harness.executions.steps.StepSpecTypeConstants.TERRAFORM_APPLY;
 import static io.harness.executions.steps.StepSpecTypeConstants.TERRAFORM_DESTROY;
@@ -90,10 +91,11 @@ public class CdngPipelineExecutionUpdateEventHandler implements OrchestrationEve
       if (updateLogStreams(event)) {
         List<String> logKeys = StepUtils.generateLogKeys(event.getAmbiance(), Collections.emptyList());
         if (EmptyPredicate.isNotEmpty(logKeys)) {
-          String prefix = logKeys.get(0);
+          String logKey = logKeys.get(0);
           ILogStreamingStepClient logStreamingStepClient =
               logStreamingStepClientFactory.getLogStreamingStepClient(event.getAmbiance());
-          logStreamingStepClient.closeAllOpenStreamsWithPrefix(prefix);
+          logStreamingStepClient.closeLogStreamsWithPrefix(
+              logKey, treatLogKeyAsPrefixForClosingStreams(event.getAmbiance()));
         }
       }
     } catch (Exception ex) {
@@ -187,6 +189,10 @@ public class CdngPipelineExecutionUpdateEventHandler implements OrchestrationEve
             ex);
       }
     }
+  }
+
+  private boolean treatLogKeyAsPrefixForClosingStreams(Ambiance ambiance) {
+    return !isStepType(ambiance, CLOUDFORMATION_DELETE_STACK);
   }
 
   private boolean isDeploymentOrCustomStageStep(Ambiance ambiance) {
