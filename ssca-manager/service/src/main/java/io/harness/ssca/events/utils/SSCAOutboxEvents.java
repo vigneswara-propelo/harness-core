@@ -14,4 +14,5 @@ import io.harness.annotations.dev.OwnedBy;
 @OwnedBy(SSCA)
 public class SSCAOutboxEvents {
   public static final String SSCA_ARTIFACT_CREATED_EVENT = "SSCAArtifactCreatedEvent";
+  public static final String SSCA_ARTIFACT_UPDATED_EVENT = "SSCAArtifactUpdatedEvent";
 }

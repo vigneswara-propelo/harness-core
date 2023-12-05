@@ -28,7 +28,7 @@ import lombok.Getter;
 @OwnedBy(SSCA)
 @Getter
 @AllArgsConstructor
-public class SSCAArtifactCreatedEvent implements Event {
+public class SSCAArtifactUpdatedEvent implements Event {
   private String accountIdentifier;
   private String orgIdentifier;
   private String projectIdentifier;
@@ -50,6 +50,6 @@ public class SSCAArtifactCreatedEvent implements Event {
   @JsonIgnore
   @Override
   public String getEventType() {
-    return SSCAOutboxEvents.SSCA_ARTIFACT_CREATED_EVENT;
+    return SSCAOutboxEvents.SSCA_ARTIFACT_UPDATED_EVENT;
   }
 }

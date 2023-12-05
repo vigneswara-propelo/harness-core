@@ -37,6 +37,7 @@ import io.harness.ng.core.exceptionmappers.NotAllowedExceptionMapper;
 import io.harness.ng.core.exceptionmappers.NotFoundExceptionMapper;
 import io.harness.ng.core.exceptionmappers.WingsExceptionMapperV2;
 import io.harness.ng.core.filter.ApiResponseFilter;
+import io.harness.outbox.OutboxEventPollService;
 import io.harness.persistence.HPersistence;
 import io.harness.request.RequestContextFilter;
 import io.harness.security.InternalApiAuthFilter;
@@ -262,6 +263,7 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
 
   private void registerManagedBeans(Environment environment, Injector injector) {
     createConsumerThreadsToListenToEvents(environment, injector);
+    environment.lifecycle().manage(injector.getInstance(OutboxEventPollService.class));
   }
 
   private void registerMigrations(Injector injector) {
