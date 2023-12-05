@@ -35,6 +35,7 @@ import io.harness.spec.server.ssca.v1.EnforcementApi;
 import io.harness.spec.server.ssca.v1.OrchestrationApi;
 import io.harness.spec.server.ssca.v1.SbomProcessorApi;
 import io.harness.spec.server.ssca.v1.TokenApi;
+import io.harness.springdata.HTransactionTemplate;
 import io.harness.ssca.S3Config;
 import io.harness.ssca.api.EnforcementApiImpl;
 import io.harness.ssca.api.OrchestrationApiImpl;
@@ -91,7 +92,9 @@ import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Slf4j
 public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, MongoRuleMixin {
@@ -162,6 +165,12 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
         return ImmutableList.<Class<? extends Converter<?, ?>>>builder()
             .addAll(SSCAManagerModuleRegistrars.springConverters)
             .build();
+      }
+
+      @Provides
+      @Singleton
+      TransactionTemplate getTransactionTemplate(MongoTransactionManager mongoTransactionManager) {
+        return new HTransactionTemplate(mongoTransactionManager, false);
       }
 
       @Provides

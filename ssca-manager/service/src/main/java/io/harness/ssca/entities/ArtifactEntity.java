@@ -67,6 +67,9 @@ public class ArtifactEntity implements PersistentEntity {
   @Setter @NonFinal Long prodEnvCount;
   @Setter @NonFinal Long nonProdEnvCount;
 
+  @Setter @NonFinal String avgScore;
+  @Setter @NonFinal String maxScore;
+
   @Value
   @Builder
   public static class Sbom {

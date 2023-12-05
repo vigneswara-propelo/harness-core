@@ -12,7 +12,9 @@ import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Builder;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 @Value
 @Builder
@@ -31,4 +33,12 @@ public class SscaArtifactMetadata implements ArtifactMetadataSpec {
   boolean isSbomAttested;
   int allowListViolationCount;
   int denyListViolationCount;
+  @NonFinal @Setter Scorecard scorecard;
+
+  @Value
+  @Builder
+  public static class Scorecard {
+    String avgScore;
+    String maxScore;
+  }
 }

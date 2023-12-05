@@ -8,8 +8,10 @@
 package io.harness.ssca.services;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.springdata.PersistenceUtils.DEFAULT_RETRY_POLICY;
 
 import io.harness.exception.InvalidRequestException;
+import io.harness.repositories.ArtifactRepository;
 import io.harness.repositories.ScorecardRepo;
 import io.harness.spec.server.ssca.v1.model.CategoryScorecard;
 import io.harness.spec.server.ssca.v1.model.CategoryScorecardChecks;
@@ -17,23 +19,52 @@ import io.harness.spec.server.ssca.v1.model.SbomDetailsForScorecard;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardRequestBody;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardResponseBody;
 import io.harness.spec.server.ssca.v1.model.ScorecardInfo;
+import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ScorecardEntity;
 import io.harness.ssca.entities.ScorecardEntity.Checks;
 
 import com.google.inject.Inject;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class ScorecardServiceImpl implements ScorecardService {
   @Inject ScorecardRepo scorecardRepo;
+
+  @Inject ArtifactRepository artifactRepository;
+
+  @Inject ArtifactService artifactService;
+
+  @Inject TransactionTemplate transactionTemplate;
+
+  private static final RetryPolicy<Object> transactionRetryPolicy = DEFAULT_RETRY_POLICY;
 
   @Override
   public void save(SbomScorecardRequestBody body) {
     validateRequest(body);
 
     ScorecardEntity scorecardEntity = scorecardRequestToEntity(body);
-    scorecardRepo.save(scorecardEntity);
+    Optional<ArtifactEntity> artifact = artifactService.getArtifact(scorecardEntity.getAccountId(),
+        scorecardEntity.getOrgId(), scorecardEntity.getProjectId(), scorecardEntity.getOrchestrationId());
+    if (artifact.isPresent()) {
+      ArtifactEntity artifactEntity = artifact.get();
+      artifactEntity.setAvgScore(scorecardEntity.getAvgScore());
+      artifactEntity.setMaxScore(scorecardEntity.getMaxScore());
+      artifactEntity.setLastUpdatedAt(Instant.now().toEpochMilli());
+      Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
+        artifactRepository.save(artifactEntity);
+        scorecardRepo.save(scorecardEntity);
+        return scorecardEntity.getOrchestrationId();
+      }));
+    } else {
+      throw new NotFoundException(String.format(
+          "Could not find an associated artifact for orchestrationId [%s]", scorecardEntity.getOrchestrationId()));
+    }
   }
 
   @Override

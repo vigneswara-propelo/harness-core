@@ -42,19 +42,31 @@ public class SscaOrchestrationStep extends AbstractStepExecutable {
       OrchestrationSummaryResponse stepExecutionResponse =
           sscaServiceUtils.getOrchestrationSummaryResponse(stepExecutionId, AmbianceUtils.getAccountId(ambiance),
               AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance));
+
+      SscaArtifactMetadata sscaArtifactMetadata = SscaArtifactMetadata.builder()
+                                                      .id(stepExecutionResponse.getArtifact().getId())
+                                                      .imageName(stepExecutionResponse.getArtifact().getName())
+                                                      .registryUrl(stepExecutionResponse.getArtifact().getRegistryUrl())
+                                                      .registryType(stepExecutionResponse.getArtifact().getType())
+                                                      .isSbomAttested(stepExecutionResponse.isIsAttested())
+                                                      .sbomName(stepExecutionResponse.getSbom().getName())
+                                                      .stepExecutionId(stepExecutionId)
+                                                      .imageTag(stepExecutionResponse.getArtifact().getTag())
+                                                      .build();
+
+      if (stepExecutionResponse.getArtifact().getScorecard() != null) {
+        sscaArtifactMetadata.setScorecard(
+            SscaArtifactMetadata.Scorecard.builder()
+                .avgScore(stepExecutionResponse.getArtifact().getScorecard().getAvgScore())
+                .maxScore(stepExecutionResponse.getArtifact().getScorecard().getMaxScore())
+                .build());
+      }
+
       stepStatus.setArtifactMetadata(ArtifactMetadata.builder()
                                          .type(ArtifactMetadataType.SSCA_ARTIFACT_METADATA)
-                                         .spec(SscaArtifactMetadata.builder()
-                                                   .id(stepExecutionResponse.getArtifact().getId())
-                                                   .imageName(stepExecutionResponse.getArtifact().getName())
-                                                   .registryUrl(stepExecutionResponse.getArtifact().getRegistryUrl())
-                                                   .registryType(stepExecutionResponse.getArtifact().getType())
-                                                   .isSbomAttested(stepExecutionResponse.isIsAttested())
-                                                   .sbomName(stepExecutionResponse.getSbom().getName())
-                                                   .stepExecutionId(stepExecutionId)
-                                                   .imageTag(stepExecutionResponse.getArtifact().getTag())
-                                                   .build())
+                                         .spec(sscaArtifactMetadata)
                                          .build());
+
     } else {
       SBOMArtifactResponse sbomArtifactResponse =
           sscaServiceUtils.getSbomArtifact(stepExecutionId, AmbianceUtils.getAccountId(ambiance),
@@ -85,17 +97,26 @@ public class SscaOrchestrationStep extends AbstractStepExecutable {
       OrchestrationSummaryResponse stepExecutionResponse =
           sscaServiceUtils.getOrchestrationSummaryResponse(stepExecutionId, AmbianceUtils.getAccountId(ambiance),
               AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance));
-      return StepArtifacts.builder()
-          .publishedSbomArtifact(PublishedSbomArtifact.builder()
-                                     .id(stepExecutionResponse.getArtifact().getId())
-                                     .url(stepExecutionResponse.getArtifact().getRegistryUrl())
-                                     .imageName(stepExecutionResponse.getArtifact().getName())
-                                     .isSbomAttested(stepExecutionResponse.isIsAttested())
-                                     .sbomName(stepExecutionResponse.getSbom().getName())
-                                     .stepExecutionId(stepExecutionId)
-                                     .tag(stepExecutionResponse.getArtifact().getTag())
-                                     .build())
-          .build();
+
+      PublishedSbomArtifact publishedSbomArtifact = PublishedSbomArtifact.builder()
+                                                        .id(stepExecutionResponse.getArtifact().getId())
+                                                        .url(stepExecutionResponse.getArtifact().getRegistryUrl())
+                                                        .imageName(stepExecutionResponse.getArtifact().getName())
+                                                        .isSbomAttested(stepExecutionResponse.isIsAttested())
+                                                        .sbomName(stepExecutionResponse.getSbom().getName())
+                                                        .stepExecutionId(stepExecutionId)
+                                                        .tag(stepExecutionResponse.getArtifact().getTag())
+                                                        .build();
+
+      if (stepExecutionResponse.getArtifact().getScorecard() != null) {
+        publishedSbomArtifact.setScorecard(
+            PublishedSbomArtifact.Scorecard.builder()
+                .avgScore(stepExecutionResponse.getArtifact().getScorecard().getAvgScore())
+                .maxScore(stepExecutionResponse.getArtifact().getScorecard().getMaxScore())
+                .build());
+      }
+
+      return StepArtifacts.builder().publishedSbomArtifact(publishedSbomArtifact).build();
     } else {
       SBOMArtifactResponse sbomArtifactResponse =
           sscaServiceUtils.getSbomArtifact(stepExecutionId, AmbianceUtils.getAccountId(ambiance),
@@ -124,18 +145,28 @@ public class SscaOrchestrationStep extends AbstractStepExecutable {
     }
     if (artifactMetadata.getType() == ArtifactMetadataType.SSCA_ARTIFACT_METADATA) {
       SscaArtifactMetadata sscaArtifactMetadata = (SscaArtifactMetadata) artifactMetadata.getSpec();
+
       if (sscaArtifactMetadata != null) {
-        stepArtifactsBuilder.publishedSbomArtifact(PublishedSbomArtifact.builder()
-                                                       .id(sscaArtifactMetadata.getId())
-                                                       .url(sscaArtifactMetadata.getRegistryUrl())
-                                                       .digest(sscaArtifactMetadata.getDigest())
-                                                       .imageName(sscaArtifactMetadata.getImageName())
-                                                       .isSbomAttested(sscaArtifactMetadata.isSbomAttested())
-                                                       .sbomName(sscaArtifactMetadata.getSbomName())
-                                                       .sbomUrl(sscaArtifactMetadata.getSbomUrl())
-                                                       .stepExecutionId(sscaArtifactMetadata.getStepExecutionId())
-                                                       .tag(sscaArtifactMetadata.getImageTag())
-                                                       .build());
+        PublishedSbomArtifact publishedSbomArtifact = PublishedSbomArtifact.builder()
+                                                          .id(sscaArtifactMetadata.getId())
+                                                          .url(sscaArtifactMetadata.getRegistryUrl())
+                                                          .digest(sscaArtifactMetadata.getDigest())
+                                                          .imageName(sscaArtifactMetadata.getImageName())
+                                                          .isSbomAttested(sscaArtifactMetadata.isSbomAttested())
+                                                          .sbomName(sscaArtifactMetadata.getSbomName())
+                                                          .sbomUrl(sscaArtifactMetadata.getSbomUrl())
+                                                          .stepExecutionId(sscaArtifactMetadata.getStepExecutionId())
+                                                          .tag(sscaArtifactMetadata.getImageTag())
+                                                          .build();
+
+        if (sscaArtifactMetadata.getScorecard() != null) {
+          publishedSbomArtifact.setScorecard(PublishedSbomArtifact.Scorecard.builder()
+                                                 .avgScore(sscaArtifactMetadata.getScorecard().getAvgScore())
+                                                 .maxScore(sscaArtifactMetadata.getScorecard().getMaxScore())
+                                                 .build());
+        }
+
+        stepArtifactsBuilder.publishedSbomArtifact(publishedSbomArtifact);
       }
     }
     return stepArtifactsBuilder.build();

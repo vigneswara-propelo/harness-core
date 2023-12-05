@@ -12,7 +12,9 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
 import lombok.Builder;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 import org.springframework.data.annotation.TypeAlias;
 
 @Value
@@ -32,4 +34,12 @@ public class PublishedSbomArtifact {
   boolean isSbomAttested;
   int allowListViolationCount;
   int denyListViolationCount;
+  @NonFinal @Setter Scorecard scorecard;
+
+  @Value
+  @Builder
+  public static class Scorecard {
+    String avgScore;
+    String maxScore;
+  }
 }
