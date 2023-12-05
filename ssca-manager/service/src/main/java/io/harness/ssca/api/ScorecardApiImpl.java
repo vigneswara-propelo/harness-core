@@ -19,11 +19,8 @@ import io.harness.ssca.services.ScorecardService;
 import com.google.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 
 @OwnedBy(HarnessTeam.SSCA)
-@AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @SSCAServiceAuth
 public class ScorecardApiImpl implements ScorecardApi {
   @Inject ScorecardService scorecardService;

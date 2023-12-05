@@ -53,8 +53,10 @@ public class ScorecardServiceImpl implements ScorecardService {
         scorecardEntity.getOrgId(), scorecardEntity.getProjectId(), scorecardEntity.getOrchestrationId());
     if (artifact.isPresent()) {
       ArtifactEntity artifactEntity = artifact.get();
-      artifactEntity.setAvgScore(scorecardEntity.getAvgScore());
-      artifactEntity.setMaxScore(scorecardEntity.getMaxScore());
+      artifactEntity.setScorecard(ArtifactEntity.Scorecard.builder()
+                                      .avgScore(scorecardEntity.getAvgScore())
+                                      .maxScore(scorecardEntity.getMaxScore())
+                                      .build());
       artifactEntity.setLastUpdatedAt(Instant.now().toEpochMilli());
       Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
         artifactRepository.save(artifactEntity);
@@ -70,7 +72,8 @@ public class ScorecardServiceImpl implements ScorecardService {
   @Override
   public SbomScorecardResponseBody getByOrchestrationId(
       String accountId, String orgId, String projectId, String orchestrateId) {
-    ScorecardEntity scorecardEntity = scorecardRepo.getByOrchestrationId(accountId, orgId, projectId, orchestrateId);
+    ScorecardEntity scorecardEntity =
+        scorecardRepo.findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(accountId, orgId, projectId, orchestrateId);
     SbomScorecardResponseBody sbomScorecardResponseBody = null;
     if (scorecardEntity != null) {
       sbomScorecardResponseBody = scorecardEntityToResponse(scorecardEntity);

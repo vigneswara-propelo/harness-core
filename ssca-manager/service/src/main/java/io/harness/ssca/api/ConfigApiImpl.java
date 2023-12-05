@@ -26,13 +26,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.core.Response;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 @OwnedBy(HarnessTeam.SSCA)
-@AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @__({ @Inject }))
 @SSCAServiceAuth
 public class ConfigApiImpl implements ConfigApi {
   @Inject ConfigService configService;

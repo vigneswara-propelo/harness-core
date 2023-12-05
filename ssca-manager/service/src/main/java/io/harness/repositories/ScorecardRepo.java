@@ -13,12 +13,11 @@ import io.harness.annotation.HarnessRepo;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ssca.entities.ScorecardEntity;
 
-import com.google.inject.ImplementedBy;
+import org.springframework.data.repository.CrudRepository;
 
 @HarnessRepo
 @OwnedBy(SSCA)
-@ImplementedBy(ScorecardRepoImpl.class)
-public interface ScorecardRepo {
-  void save(ScorecardEntity scorecardEntity);
-  ScorecardEntity getByOrchestrationId(String accountId, String orgId, String projectId, String orchestrationId);
+public interface ScorecardRepo extends CrudRepository<ScorecardEntity, String>, ScorecardRepoCustom {
+  ScorecardEntity findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(
+      String accountId, String orgId, String projectId, String orchestrationId);
 }

@@ -26,7 +26,6 @@ import io.harness.repositories.EnforcementResultRepo;
 import io.harness.repositories.EnforcementSummaryRepo;
 import io.harness.repositories.SBOMComponentRepo;
 import io.harness.repositories.ScorecardRepo;
-import io.harness.repositories.ScorecardRepoImpl;
 import io.harness.rule.InjectorRuleMixin;
 import io.harness.serializer.KryoModule;
 import io.harness.serializer.KryoRegistrar;
@@ -213,7 +212,7 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
         bind(EnforcementSummaryRepo.class).toInstance(mock(EnforcementSummaryRepo.class));
         bind(CdInstanceSummaryRepo.class).toInstance(mock(CdInstanceSummaryRepo.class));
         bind(CdInstanceSummaryService.class).to(CdInstanceSummaryServiceImpl.class);
-        bind(ScorecardRepo.class).toInstance(mock(ScorecardRepoImpl.class));
+        bind(ScorecardRepo.class).toInstance(mock(ScorecardRepo.class));
         bind(ScorecardService.class).to(ScorecardServiceImpl.class);
         bind(S3StoreService.class).to(S3StoreServiceImpl.class);
         bind(TokenApi.class).to(TokenApiImpl.class);

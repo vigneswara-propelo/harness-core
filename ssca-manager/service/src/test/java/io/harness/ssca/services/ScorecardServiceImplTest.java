@@ -146,7 +146,8 @@ public class ScorecardServiceImplTest extends SSCAManagerTestBase {
   public void testGetScorecard() {
     SbomScorecardRequestBody sbomScorecardRequestBody = builderFactory.getSbomScorecardRequestBody();
     ScorecardEntity scorecardEntity = scorecardRequestToEntity(sbomScorecardRequestBody);
-    Mockito.when(scorecardRepository.getByOrchestrationId(any(), any(), any(), any())).thenReturn(scorecardEntity);
+    Mockito.when(scorecardRepository.findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(any(), any(), any(), any()))
+        .thenReturn(scorecardEntity);
     SbomScorecardResponseBody scorecardResponseBody =
         scorecardService.getByOrchestrationId(scorecardEntity.getAccountId(), scorecardEntity.getOrgId(),
             scorecardEntity.getProjectId(), scorecardEntity.getOrchestrationId());
@@ -163,7 +164,8 @@ public class ScorecardServiceImplTest extends SSCAManagerTestBase {
   @Owner(developers = SHASHWAT_SACHAN)
   @Category(UnitTests.class)
   public void testGetScorecardNotFound() {
-    Mockito.when(scorecardRepository.getByOrchestrationId(any(), any(), any(), any())).thenReturn(null);
+    Mockito.when(scorecardRepository.findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(any(), any(), any(), any()))
+        .thenReturn(null);
 
     assertThatExceptionOfType(NotFoundException.class)
         .isThrownBy(()

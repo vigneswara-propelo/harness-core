@@ -113,15 +113,21 @@ public class OrchestrationStepServiceImpl implements OrchestrationStepService {
                              -> new NotFoundException(String.format(
                                  "Artifact with orchestrationIdentifier [%s] is not found", orchestrationId)));
 
+    Artifact artifactResponse = new Artifact()
+                                    .name(artifact.getName())
+                                    .type(artifact.getName())
+                                    .registryUrl(artifact.getUrl())
+                                    .id(artifact.getId())
+                                    .tag(artifact.getTag());
+
+    if (artifact.getScorecard() != null) {
+      artifactResponse.setScorecard(new ArtifactScorecard()
+                                        .avgScore(artifact.getScorecard().getAvgScore())
+                                        .maxScore(artifact.getScorecard().getMaxScore()));
+    }
+
     return new OrchestrationSummaryResponse()
-        .artifact(
-            new Artifact()
-                .name(artifact.getName())
-                .type(artifact.getName())
-                .registryUrl(artifact.getUrl())
-                .id(artifact.getId())
-                .tag(artifact.getTag())
-                .scorecard(new ArtifactScorecard().avgScore(artifact.getAvgScore()).maxScore(artifact.getMaxScore())))
+        .artifact(artifactResponse)
         .stepExecutionId(artifact.getOrchestrationId())
         .isAttested(artifact.isAttested())
         .sbom(new SbomDetails().name(artifact.getSbomName()));
