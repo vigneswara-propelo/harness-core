@@ -42,12 +42,14 @@ public class TasDTOToEntity implements ConnectorDTOToEntityMapper<TasConnectorDT
     final String endpointUrl = config.getEndpointUrl();
     final String passwordRef = SecretRefHelper.getSecretConfigString(config.getPasswordRef());
     final String usernameRef = SecretRefHelper.getSecretConfigString(config.getUsernameRef());
+    final String refreshTokenRef = SecretRefHelper.getSecretConfigString(config.getRefreshTokenRef());
     final String username = config.getUsername();
     TasManualCredential credential = TasManualCredential.builder()
                                          .endpointUrl(endpointUrl)
                                          .userName(username)
                                          .userNameRef(usernameRef)
                                          .passwordRef(passwordRef)
+                                         .refreshTokenRef(refreshTokenRef)
                                          .build();
     return TasConfig.builder().credentialType(TasCredentialType.MANUAL_CREDENTIALS).credential(credential).build();
   }

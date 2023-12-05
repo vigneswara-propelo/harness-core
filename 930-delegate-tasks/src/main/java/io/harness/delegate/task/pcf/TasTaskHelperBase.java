@@ -70,15 +70,17 @@ public class TasTaskHelperBase {
     CloudFoundryConfig cfConfig = ngConfigMapper.mapTasConfigWithDecryption(
         tasInfraConfig.getTasConnectorDTO(), tasInfraConfig.getEncryptionDataDetails());
     try {
-      CfRequestConfig cfRequestConfig = CfRequestConfig.builder()
-                                            .timeOutIntervalInMins(5)
-                                            .applicationName(deploymentReleaseData.getApplicationName())
-                                            .userName(String.valueOf(cfConfig.getUserName()))
-                                            .password(String.valueOf(cfConfig.getPassword()))
-                                            .endpointUrl(cfConfig.getEndpointUrl())
-                                            .orgName(tasInfraConfig.getOrganization())
-                                            .spaceName(tasInfraConfig.getSpace())
-                                            .build();
+      CfRequestConfig cfRequestConfig =
+          CfRequestConfig.builder()
+              .timeOutIntervalInMins(5)
+              .applicationName(deploymentReleaseData.getApplicationName())
+              .userName(String.valueOf(cfConfig.getUserName()))
+              .password(String.valueOf(cfConfig.getPassword()))
+              .refreshToken(cfConfig.getRefreshToken() != null ? String.valueOf(cfConfig.getRefreshToken()) : null)
+              .endpointUrl(cfConfig.getEndpointUrl())
+              .orgName(tasInfraConfig.getOrganization())
+              .spaceName(tasInfraConfig.getSpace())
+              .build();
 
       ApplicationDetail applicationDetail = pcfDeploymentManager.getApplicationByName(cfRequestConfig);
       List<String> instanceIndices =

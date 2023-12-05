@@ -195,6 +195,7 @@ public class CfRollbackCommandTaskHandlerNG extends CfCommandTaskNGHandler {
     return CfRequestConfig.builder()
         .userName(String.valueOf(cfConfig.getUserName()))
         .password(String.valueOf(cfConfig.getPassword()))
+        .refreshToken(cfConfig.getRefreshToken() != null ? String.valueOf(cfConfig.getRefreshToken()) : null)
         .endpointUrl(cfConfig.getEndpointUrl())
         .orgName(cfRollbackCommandRequestNG.getTasInfraConfig().getOrganization())
         .spaceName(cfRollbackCommandRequestNG.getTasInfraConfig().getSpace())

@@ -164,6 +164,7 @@ public enum FeatureName {
       HarnessTeam.CDC),
 
   CDS_SERVICE_OVERRIDES_2_0("Revamped experience service and environment overrides in NG", HarnessTeam.CDC),
+  CDS_CF_TOKEN_AUTH("Support refresh token in Tanzu Connector", HarnessTeam.CDP),
   CDS_SSH_CLIENT("Enable SSH new implementation via SSH Client", HarnessTeam.CDP),
   CDS_SSH_SSHJ("Enable SSH for Vault flow via SSHJ", HarnessTeam.CDP),
   CDS_SUPPORT_HPA_AND_PDB_NG(

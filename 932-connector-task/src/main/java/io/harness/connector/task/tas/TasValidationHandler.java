@@ -74,12 +74,14 @@ public class TasValidationHandler implements ConnectorValidationHandler {
       if (!valid) {
         throw new IllegalArgumentException("EndPoint is not valid");
       }
-      cfDeploymentManager.getOrganizations(CfRequestConfig.builder()
-                                               .userName(String.valueOf(cfConfig.getUserName()))
-                                               .password(String.valueOf(cfConfig.getPassword()))
-                                               .endpointUrl(cfConfig.getEndpointUrl())
-                                               .timeOutIntervalInMins(2)
-                                               .build());
+      cfDeploymentManager.getOrganizations(
+          CfRequestConfig.builder()
+              .userName(String.valueOf(cfConfig.getUserName()))
+              .password(String.valueOf(cfConfig.getPassword()))
+              .refreshToken(cfConfig.getRefreshToken() != null ? String.valueOf(cfConfig.getRefreshToken()) : null)
+              .endpointUrl(cfConfig.getEndpointUrl())
+              .timeOutIntervalInMins(2)
+              .build());
       return ConnectorValidationResult.builder()
           .status(ConnectivityStatus.SUCCESS)
           .testedAt(System.currentTimeMillis())

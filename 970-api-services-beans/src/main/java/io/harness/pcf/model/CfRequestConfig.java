@@ -24,6 +24,7 @@ public class CfRequestConfig {
   private String spaceName;
   private String userName;
   private String password;
+  private String refreshToken;
   private String endpointUrl;
   private String applicationName;
   private String manifestYaml;

@@ -25,4 +25,5 @@ public class CloudFoundryConfig {
   String endpointUrl;
   char[] userName;
   char[] password;
+  char[] refreshToken;
 }

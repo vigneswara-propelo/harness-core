@@ -109,6 +109,7 @@ public class CfSwapRouteCommandTaskHandlerNG extends CfCommandTaskNGHandler {
               .userName(String.valueOf(cfConfig.getUserName()))
               .endpointUrl(cfConfig.getEndpointUrl())
               .password(String.valueOf(cfConfig.getPassword()))
+              .refreshToken(cfConfig.getRefreshToken() != null ? String.valueOf(cfConfig.getRefreshToken()) : null)
               .orgName(tasInfraConfig.getOrganization())
               .spaceName(tasInfraConfig.getSpace())
               .timeOutIntervalInMins(cfSwapRoutesRequestNG.getTimeoutIntervalInMin())

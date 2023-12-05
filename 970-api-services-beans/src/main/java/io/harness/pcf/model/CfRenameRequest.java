@@ -21,12 +21,13 @@ public class CfRenameRequest extends CfRequestConfig {
 
   public CfRenameRequest(CfRequestConfig requestConfig, String guid, String name, String newName) {
     super(requestConfig.getOrgName(), requestConfig.getSpaceName(), requestConfig.getUserName(),
-        requestConfig.getPassword(), requestConfig.getEndpointUrl(), requestConfig.getApplicationName(),
-        requestConfig.getManifestYaml(), requestConfig.getDesiredCount(), requestConfig.getRouteMaps(),
-        requestConfig.getServiceVariables(), requestConfig.getSafeDisplayServiceVariables(),
-        requestConfig.getTimeOutIntervalInMins(), requestConfig.isUseCFCLI(), requestConfig.getCfCliPath(),
-        requestConfig.getCfCliVersion(), requestConfig.getCfHomeDirPath(), requestConfig.getTrailingLogsDirPath(),
-        requestConfig.isLoggedin(), requestConfig.isLimitPcfThreads(), requestConfig.isUseNumbering());
+        requestConfig.getPassword(), requestConfig.getRefreshToken(), requestConfig.getEndpointUrl(),
+        requestConfig.getApplicationName(), requestConfig.getManifestYaml(), requestConfig.getDesiredCount(),
+        requestConfig.getRouteMaps(), requestConfig.getServiceVariables(),
+        requestConfig.getSafeDisplayServiceVariables(), requestConfig.getTimeOutIntervalInMins(),
+        requestConfig.isUseCFCLI(), requestConfig.getCfCliPath(), requestConfig.getCfCliVersion(),
+        requestConfig.getCfHomeDirPath(), requestConfig.getTrailingLogsDirPath(), requestConfig.isLoggedin(),
+        requestConfig.isLimitPcfThreads(), requestConfig.isUseNumbering());
     this.guid = guid;
     this.name = name;
     this.newName = newName;

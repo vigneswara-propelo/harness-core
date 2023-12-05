@@ -42,6 +42,7 @@ public class TasEntityToDTO implements ConnectorEntityToDTOMapper<TasConnectorDT
                       .username(tasCredential.getUserName())
                       .usernameRef(SecretRefHelper.createSecretRef(tasCredential.getUserNameRef()))
                       .passwordRef(SecretRefHelper.createSecretRef(tasCredential.getPasswordRef()))
+                      .refreshTokenRef(SecretRefHelper.createSecretRef(tasCredential.getRefreshTokenRef()))
                       .build())
             .build();
     return TasConnectorDTO.builder().credential(tasCredentialDTO).build();

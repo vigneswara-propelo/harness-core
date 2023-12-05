@@ -31,4 +31,5 @@ public class TasManualDetailsDTO implements TasCredentialSpecDTO {
   @Schema(description = "Endpoint URL of the TAS Cluster.") @JsonProperty("endpointUrl") @NotNull String endpointUrl;
   @ApiModelProperty(dataType = "string") @SecretReference SecretRefData usernameRef;
   @ApiModelProperty(dataType = "string") @NotNull @SecretReference SecretRefData passwordRef;
+  @ApiModelProperty(dataType = "string") @SecretReference SecretRefData refreshTokenRef;
 }

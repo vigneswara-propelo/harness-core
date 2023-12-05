@@ -119,19 +119,21 @@ public class CfSwapRollbackCommandTaskHandlerNG extends CfCommandTaskNGHandler {
       ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
           tasInfraConfig.getTasConnectorDTO(), tasInfraConfig.getEncryptionDataDetails());
 
-      CfRequestConfig cfRequestConfig = CfRequestConfig.builder()
-                                            .userName(String.valueOf(cfConfig.getUserName()))
-                                            .endpointUrl(cfConfig.getEndpointUrl())
-                                            .password(String.valueOf(cfConfig.getPassword()))
-                                            .orgName(tasInfraConfig.getOrganization())
-                                            .spaceName(tasInfraConfig.getSpace())
-                                            .timeOutIntervalInMins(cfRollbackCommandRequestNG.getTimeoutIntervalInMin())
-                                            .cfHomeDirPath(workingDirectory.getAbsolutePath())
-                                            .cfCliPath(cfCommandTaskHelperNG.getCfCliPathOnDelegate(
-                                                true, cfRollbackCommandRequestNG.getCfCliVersion()))
-                                            .cfCliVersion(cfRollbackCommandRequestNG.getCfCliVersion())
-                                            .useCFCLI(true)
-                                            .build();
+      CfRequestConfig cfRequestConfig =
+          CfRequestConfig.builder()
+              .userName(String.valueOf(cfConfig.getUserName()))
+              .endpointUrl(cfConfig.getEndpointUrl())
+              .password(String.valueOf(cfConfig.getPassword()))
+              .refreshToken(cfConfig.getRefreshToken() != null ? String.valueOf(cfConfig.getRefreshToken()) : null)
+              .orgName(tasInfraConfig.getOrganization())
+              .spaceName(tasInfraConfig.getSpace())
+              .timeOutIntervalInMins(cfRollbackCommandRequestNG.getTimeoutIntervalInMin())
+              .cfHomeDirPath(workingDirectory.getAbsolutePath())
+              .cfCliPath(
+                  cfCommandTaskHelperNG.getCfCliPathOnDelegate(true, cfRollbackCommandRequestNG.getCfCliVersion()))
+              .cfCliVersion(cfRollbackCommandRequestNG.getCfCliVersion())
+              .useCFCLI(true)
+              .build();
 
       boolean isBGWithOnly2Apps = isBGWithOnly2Apps(cfRollbackCommandRequestNG);
 

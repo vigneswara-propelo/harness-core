@@ -171,6 +171,7 @@ public class CfDataFetchCommandTaskHandlerNG extends CfCommandTaskNGHandler {
         .orgName(cfInfraMappingDataRequest.getTasInfraConfig().getOrganization())
         .spaceName(cfInfraMappingDataRequest.getTasInfraConfig().getSpace())
         .userName(String.valueOf(cfConfig.getUserName()))
+        .refreshToken(cfConfig.getRefreshToken() != null ? String.valueOf(cfConfig.getRefreshToken()) : null)
         .password(String.valueOf(cfConfig.getPassword()))
         .timeOutIntervalInMins(cfInfraMappingDataRequest.getTimeoutIntervalInMin())
         .build();
