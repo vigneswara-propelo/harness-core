@@ -97,11 +97,14 @@ public class DelegateSetupResource {
   list(@Parameter(description = "Account id") @QueryParam("accountId") @NotEmpty String accountId,
       @Parameter(description = "Organization Id") @QueryParam("orgId") String orgId,
       @Parameter(description = "Project Id") @QueryParam("projectId") String projectId) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountId, orgId, projectId),
-        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION);
-
+    if (accessControlClient.hasAccess(ResourceScope.of(accountId, orgId, projectId),
+            Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION)) {
+      try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+        return new RestResponse<>(delegateSetupService.listDelegateGroupDetails(accountId, orgId, projectId, false));
+      }
+    }
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
-      return new RestResponse<>(delegateSetupService.listDelegateGroupDetails(accountId, orgId, projectId));
+      return new RestResponse<>(delegateSetupService.listDelegateGroupDetails(accountId, orgId, projectId, true));
     }
   }
 
@@ -123,12 +126,16 @@ public class DelegateSetupResource {
   listUpTheHierarchy(@Parameter(description = "Account id") @QueryParam("accountId") @NotEmpty String accountId,
       @Parameter(description = "Organization Id") @QueryParam("orgId") String orgId,
       @Parameter(description = "Project Id") @QueryParam("projectId") String projectId) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountId, orgId, projectId),
-        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION);
-
+    if (accessControlClient.hasAccess(ResourceScope.of(accountId, orgId, projectId),
+            Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION)) {
+      try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+        return new RestResponse<>(
+            delegateSetupService.listDelegateGroupDetailsUpTheHierarchy(accountId, orgId, projectId, false));
+      }
+    }
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
       return new RestResponse<>(
-          delegateSetupService.listDelegateGroupDetailsUpTheHierarchy(accountId, orgId, projectId));
+          delegateSetupService.listDelegateGroupDetailsUpTheHierarchy(accountId, orgId, projectId, true));
     }
   }
 

@@ -178,6 +178,7 @@ import io.harness.persistence.HPersistence;
 import io.harness.persistence.UuidAware;
 import io.harness.reflection.ReflectionUtils;
 import io.harness.serializer.JsonUtils;
+import io.harness.service.impl.DelegateRbacHelper;
 import io.harness.service.intfc.AgentMtlsEndpointService;
 import io.harness.service.intfc.DelegateCache;
 import io.harness.service.intfc.DelegateCallbackRegistry;
@@ -416,6 +417,7 @@ public class DelegateServiceImpl implements DelegateService {
   @Inject private AgentMtlsEndpointService agentMtlsEndpointService;
   @Inject private DelegateJreVersionHelper jreVersionHelper;
   @Inject private DelegateHeartBeatMetricsHelper delegateHeartBeatMetricsHelper;
+  @Inject private DelegateRbacHelper delegateRbacHelper;
 
   @Inject private DelegateTaskMigrationHelper delegateTaskMigrationHelper;
 
@@ -544,7 +546,7 @@ public class DelegateServiceImpl implements DelegateService {
 
   @Override
   public Set<String> getAllDelegateSelectorsUpTheHierarchy(
-      final String accountId, final String orgId, final String projectId) {
+      final String accountId, final String orgId, final String projectId, boolean applyRbacFilter) {
     final Query<DelegateGroup> delegateGroupQuery = persistence.createQuery(DelegateGroup.class)
                                                         .filter(DelegateGroupKeys.accountId, accountId)
                                                         .filter(DelegateGroupKeys.ng, true);
@@ -554,8 +556,16 @@ public class DelegateServiceImpl implements DelegateService {
     delegateGroupQuery.field(DelegateKeys.owner_identifier)
         .in(Arrays.asList(null, orgId, owner != null ? owner.getIdentifier() : null));
 
-    final List<DelegateGroup> delegateGroups =
+    List<DelegateGroup> delegateGroups =
         delegateGroupQuery.field(DelegateGroupKeys.status).notEqual(DelegateGroupStatus.DELETED).asList();
+
+    if (applyRbacFilter) {
+      delegateGroups = delegateRbacHelper.getViewPermittedDelegateGroups(delegateGroups, accountId, orgId, projectId);
+    }
+
+    if (null == delegateGroups) {
+      return null;
+    }
 
     return delegateGroups.stream()
         .map(group -> {

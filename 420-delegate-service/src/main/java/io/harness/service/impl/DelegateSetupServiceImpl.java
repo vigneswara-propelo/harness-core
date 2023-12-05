@@ -102,6 +102,7 @@ public class DelegateSetupServiceImpl implements DelegateSetupService, OwnedByAc
   @Inject private DelegateDao delegateDao;
   @Inject private FilterService filterService;
   @Inject private OutboxService outboxService;
+  @Inject private DelegateRbacHelper delegateRbacHelper;
 
   @Inject private VersionInfoManager versionInfoManager;
 
@@ -121,17 +122,19 @@ public class DelegateSetupServiceImpl implements DelegateSetupService, OwnedByAc
   }
 
   @Override
-  public DelegateGroupListing listDelegateGroupDetails(String accountId, String orgId, String projectId) {
+  public DelegateGroupListing listDelegateGroupDetails(
+      String accountId, String orgId, String projectId, boolean applyRbacFilter) {
     final List<DelegateGroupDetails> delegateGroupDetails =
-        getDelegateGroupDetails(accountId, orgId, projectId, false, null);
+        getDelegateGroupDetails(accountId, orgId, projectId, false, null, applyRbacFilter);
 
     return DelegateGroupListing.builder().delegateGroupDetails(delegateGroupDetails).build();
   }
 
   @Override
-  public DelegateGroupListing listDelegateGroupDetailsUpTheHierarchy(String accountId, String orgId, String projectId) {
+  public DelegateGroupListing listDelegateGroupDetailsUpTheHierarchy(
+      String accountId, String orgId, String projectId, boolean applyRbacFilter) {
     final List<DelegateGroupDetails> delegateGroupDetails =
-        getDelegateGroupDetails(accountId, orgId, projectId, true, null);
+        getDelegateGroupDetails(accountId, orgId, projectId, true, null, applyRbacFilter);
 
     return DelegateGroupListing.builder().delegateGroupDetails(delegateGroupDetails).build();
   }
@@ -383,10 +386,19 @@ public class DelegateSetupServiceImpl implements DelegateSetupService, OwnedByAc
   }
 
   private List<DelegateGroupDetails> getDelegateGroupDetails(final String accountId, final String orgId,
-      final String projectId, final boolean upTheHierarchy, String delegateTokenName) {
+      final String projectId, final boolean upTheHierarchy, String delegateTokenName, boolean applyRbacFilter) {
     final Query<DelegateGroup> query = createDelegateGroupsQuery(accountId, orgId, projectId, upTheHierarchy);
 
-    final List<String> delegateGroupIds = query.asKeyList().stream().map(key -> (String) key.getId()).collect(toList());
+    List<String> delegateGroupIds = query.asKeyList().stream().map(key -> (String) key.getId()).collect(toList());
+
+    if (applyRbacFilter) {
+      delegateGroupIds =
+          delegateRbacHelper.getViewPermittedDelegateGroupIds(delegateGroupIds, accountId, orgId, projectId);
+    }
+
+    if (null == delegateGroupIds) {
+      return null;
+    }
 
     Query<Delegate> delegateQuery = persistence.createQuery(Delegate.class)
                                         .filter(DelegateKeys.accountId, accountId)
@@ -536,8 +548,8 @@ public class DelegateSetupServiceImpl implements DelegateSetupService, OwnedByAc
 
   @Override
   public DelegateGroupListing listDelegateGroupDetailsV2(String accountId, String orgId, String projectId,
-      String filterIdentifier, String searchTerm, DelegateFilterPropertiesDTO filterProperties,
-      PageRequest pageRequest) {
+      String filterIdentifier, String searchTerm, DelegateFilterPropertiesDTO filterProperties, PageRequest pageRequest,
+      boolean applyRbacFilter) {
     if (isNotEmpty(filterIdentifier) && filterProperties != null) {
       throw new InvalidRequestException("Can not apply both filter properties and saved filter together");
     }
@@ -548,6 +560,14 @@ public class DelegateSetupServiceImpl implements DelegateSetupService, OwnedByAc
     }
 
     List<String> delegateGroupIds = getDelegateGroupIds(accountId, orgId, projectId, filterProperties, searchTerm);
+    if (applyRbacFilter) {
+      delegateGroupIds =
+          delegateRbacHelper.getViewPermittedDelegateGroupIds(delegateGroupIds, accountId, orgId, projectId);
+    }
+
+    if (null == delegateGroupIds) {
+      return null;
+    }
 
     List<Delegate> delegateList = getFilteredDelegateList(accountId, filterProperties, delegateGroupIds);
 
@@ -752,9 +772,10 @@ public class DelegateSetupServiceImpl implements DelegateSetupService, OwnedByAc
 
   @Override
   public DelegateGroupListing listDelegateGroupDetails(
-      String accountId, String orgId, String projectId, String delegateTokenName) {
+      String accountId, String orgId, String projectId, String delegateTokenName, boolean applyRbacFilter) {
     return DelegateGroupListing.builder()
-        .delegateGroupDetails(getDelegateGroupDetails(accountId, orgId, projectId, false, delegateTokenName))
+        .delegateGroupDetails(
+            getDelegateGroupDetails(accountId, orgId, projectId, false, delegateTokenName, applyRbacFilter))
         .build();
   }
 

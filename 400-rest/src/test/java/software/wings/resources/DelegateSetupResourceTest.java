@@ -17,6 +17,7 @@ import static io.harness.rule.OwnerRule.PRAVEEN;
 import static io.harness.rule.OwnerRule.ROHITKARELIA;
 import static io.harness.rule.OwnerRule.SANJA;
 import static io.harness.rule.OwnerRule.UTSAV;
+import static io.harness.rule.OwnerRule.VIKAS_M;
 
 import static software.wings.resources.DelegateSetupResource.YAML;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
@@ -172,11 +173,12 @@ public class DelegateSetupResourceTest extends CategoryTest {
   @Test
   @Owner(developers = BOJAN)
   @Category(UnitTests.class)
-  public void listV2ShouldReturnDelegates() {
+  public void listV2ShouldReturnDelegates_shouldNotCallRbacFilter() {
     DelegateGroupDetails delegateGroupDetails = DelegateGroupDetails.builder().groupName("group name").build();
     when(delegateSetupService.listDelegateGroupDetailsV2(eq(ACCOUNT_ID), eq("orgId"), eq("projectId"), any(), any(),
-             any(DelegateFilterPropertiesDTO.class), any(io.harness.ng.beans.PageRequest.class)))
+             any(DelegateFilterPropertiesDTO.class), any(io.harness.ng.beans.PageRequest.class), eq(false)))
         .thenReturn(DelegateGroupListing.builder().delegateGroupDetails(Lists.list(delegateGroupDetails)).build());
+    when(accessControlClient.hasAccess(any(), any(), any())).thenReturn(true);
     RestResponse<DelegateGroupListing> restResponse =
         RESOURCES.client()
             .target("/setup/delegates/ng/v2?accountId=" + ACCOUNT_ID + "&orgId=orgId&projectId=projectId")
@@ -187,7 +189,31 @@ public class DelegateSetupResourceTest extends CategoryTest {
     verify(delegateSetupService, atLeastOnce())
         .listDelegateGroupDetailsV2(ACCOUNT_ID, "orgId", "projectId", null, null,
             DelegateFilterPropertiesDTO.builder().build(),
-            io.harness.ng.beans.PageRequest.builder().pageSize(50).sortOrders(Collections.emptyList()).build());
+            io.harness.ng.beans.PageRequest.builder().pageSize(50).sortOrders(Collections.emptyList()).build(), false);
+    assertThat(restResponse.getResource().getDelegateGroupDetails()).isNotEmpty();
+    assertThat(restResponse.getResource().getDelegateGroupDetails().get(0).getGroupName()).isEqualTo("group name");
+  }
+
+  @Test
+  @Owner(developers = VIKAS_M)
+  @Category(UnitTests.class)
+  public void listV2ShouldReturnDelegates_shouldCallRbacFilter() {
+    DelegateGroupDetails delegateGroupDetails = DelegateGroupDetails.builder().groupName("group name").build();
+    when(delegateSetupService.listDelegateGroupDetailsV2(eq(ACCOUNT_ID), eq("orgId"), eq("projectId"), any(), any(),
+             any(DelegateFilterPropertiesDTO.class), any(io.harness.ng.beans.PageRequest.class), eq(true)))
+        .thenReturn(DelegateGroupListing.builder().delegateGroupDetails(Lists.list(delegateGroupDetails)).build());
+    when(accessControlClient.hasAccess(any(), any(), any())).thenReturn(false);
+    RestResponse<DelegateGroupListing> restResponse =
+        RESOURCES.client()
+            .target("/setup/delegates/ng/v2?accountId=" + ACCOUNT_ID + "&orgId=orgId&projectId=projectId")
+            .request()
+            .post(entity(DelegateFilterPropertiesDTO.builder().build(), MediaType.APPLICATION_JSON),
+                new GenericType<RestResponse<DelegateGroupListing>>() {});
+
+    verify(delegateSetupService, atLeastOnce())
+        .listDelegateGroupDetailsV2(ACCOUNT_ID, "orgId", "projectId", null, null,
+            DelegateFilterPropertiesDTO.builder().build(),
+            io.harness.ng.beans.PageRequest.builder().pageSize(50).sortOrders(Collections.emptyList()).build(), true);
     assertThat(restResponse.getResource().getDelegateGroupDetails()).isNotEmpty();
     assertThat(restResponse.getResource().getDelegateGroupDetails().get(0).getGroupName()).isEqualTo("group name");
   }

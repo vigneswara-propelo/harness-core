@@ -145,6 +145,7 @@ import io.harness.outbox.api.OutboxService;
 import io.harness.persistence.HPersistence;
 import io.harness.rule.Owner;
 import io.harness.security.encryption.EncryptedDataDetail;
+import io.harness.service.impl.DelegateRbacHelper;
 import io.harness.service.intfc.DelegateCache;
 import io.harness.service.intfc.DelegateProfileObserver;
 import io.harness.service.intfc.DelegateTaskRetryObserver;
@@ -305,6 +306,7 @@ public class DelegateServiceTest extends WingsBaseTest {
   @Mock private Subject<DelegateProfileObserver> delegateProfileSubject;
   @Mock private Subject<DelegateTaskRetryObserver> retryObserverSubject;
   @Mock private Subject<DelegateObserver> subject;
+  @Mock private DelegateRbacHelper delegateRbacHelper;
 
   public static final Duration TEST_EXPIRY_TIME = ofMinutes(6);
 
@@ -2776,7 +2778,7 @@ public class DelegateServiceTest extends WingsBaseTest {
 
     persistence.saveBatch(Arrays.asList(acctGroup, orgGroup, projectGroup));
 
-    final Set<String> actual = delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, null, null);
+    final Set<String> actual = delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, null, null, false);
     assertThat(actual).containsExactlyInAnyOrder("acctgrp");
   }
 
@@ -2804,7 +2806,7 @@ public class DelegateServiceTest extends WingsBaseTest {
 
     persistence.saveBatch(Arrays.asList(acctGroup, orgGroup, projectGroup));
 
-    final Set<String> actual = delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, orgId, null);
+    final Set<String> actual = delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, orgId, null, false);
     assertThat(actual).containsExactlyInAnyOrder("acctgrp", "orggrp");
   }
 
@@ -2839,7 +2841,8 @@ public class DelegateServiceTest extends WingsBaseTest {
 
     persistence.saveBatch(Arrays.asList(acctGroup, orgGroup, projectGroup));
 
-    final Set<String> actual = delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, orgId, projectId);
+    final Set<String> actual =
+        delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, orgId, projectId, false);
     assertThat(actual).containsExactlyInAnyOrder(
         "acctgrp", "orggrp", "projectgrp", "custom-acct", "custom-org", "custom-proj");
   }

@@ -471,11 +471,16 @@ public class DelegateSetupResourceV3 {
       @Parameter(description = "Account UUID") @QueryParam("accountId") @NotEmpty String accountId,
       @Parameter(description = "Organization ID") @QueryParam("orgId") String orgId,
       @Parameter(description = "Project ID") @QueryParam("projectId") String projectId) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountId, orgId, projectId),
-        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION);
-
+    if (accessControlClient.hasAccess(ResourceScope.of(accountId, orgId, projectId),
+            Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION)) {
+      try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+        return new RestResponse<>(
+            delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, orgId, projectId, false));
+      }
+    }
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
-      return new RestResponse<>(delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, orgId, projectId));
+      return new RestResponse<>(
+          delegateService.getAllDelegateSelectorsUpTheHierarchy(accountId, orgId, projectId, true));
     }
   }
 
@@ -1019,12 +1024,16 @@ public class DelegateSetupResourceV3 {
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
       @Parameter(description = "Delegate Token name") @QueryParam("delegateTokenName") String delegateTokenName) {
-    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
-        Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION);
-
+    if (accessControlClient.hasAccess(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
+            Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION)) {
+      try (AutoLogContext ignore1 = new AccountLogContext(accountIdentifier, OVERRIDE_ERROR)) {
+        return new RestResponse<>(delegateSetupService.listDelegateGroupDetails(
+            accountIdentifier, orgIdentifier, projectIdentifier, delegateTokenName, false));
+      }
+    }
     try (AutoLogContext ignore1 = new AccountLogContext(accountIdentifier, OVERRIDE_ERROR)) {
       return new RestResponse<>(delegateSetupService.listDelegateGroupDetails(
-          accountIdentifier, orgIdentifier, projectIdentifier, delegateTokenName));
+          accountIdentifier, orgIdentifier, projectIdentifier, delegateTokenName, true));
     }
   }
 

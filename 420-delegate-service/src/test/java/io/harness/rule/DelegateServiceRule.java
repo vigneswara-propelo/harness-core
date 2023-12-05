@@ -11,6 +11,7 @@ import static io.harness.lock.DistributedLockImplementation.NOOP;
 
 import static org.mockito.Mockito.mock;
 
+import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.cf.AbstractCfModule;
 import io.harness.cf.CfClientConfig;
 import io.harness.cf.CfMigrationConfig;
@@ -186,6 +187,12 @@ public class DelegateServiceRule implements MethodRule, InjectorRuleMixin, Mongo
       @Named("redissonClient")
       RedissonClient redissonClient() {
         return mock(RedissonClient.class);
+      }
+
+      @Provides
+      @Singleton
+      AccessControlClient getAccessControlClient() {
+        return mock(AccessControlClient.class);
       }
     });
 

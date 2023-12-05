@@ -159,6 +159,6 @@ public class DelegateNgTokenInternalResource {
       throw new InvalidRequestException("No such delegate token exists.");
     }
     return new RestResponse<>(delegateSetupService.listDelegateGroupDetails(
-        accountIdentifier, orgIdentifier, projectIdentifier, delegateTokenName));
+        accountIdentifier, orgIdentifier, projectIdentifier, delegateTokenName, false));
   }
 }
