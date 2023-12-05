@@ -11,6 +11,7 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.ng.DbAliases;
 import io.harness.persistence.UuidAware;
@@ -24,6 +25,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -48,5 +50,6 @@ public class DriftEntity implements UuidAware {
   String baseTag;
   DriftBase base; // mode showing what was the base sbom
   List<ComponentDrift> componentDrifts; // will be in sorted order.
+  @FdIndex @CreatedDate long createdAt;
   @FdTtlIndex Date validUntil = Date.from(OffsetDateTime.now().plusMonths(6).toInstant());
 }

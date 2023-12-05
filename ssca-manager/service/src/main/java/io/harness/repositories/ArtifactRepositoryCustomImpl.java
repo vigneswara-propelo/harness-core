@@ -16,6 +16,7 @@ import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityKeys;
 
 import com.google.inject.Inject;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
@@ -59,15 +61,14 @@ public class ArtifactRepositoryCustomImpl implements ArtifactRepositoryCustom {
 
   @Override
   public ArtifactEntity findOne(Criteria criteria) {
-    Query query = new Query(criteria);
-    return mongoTemplate.findOne(query, ArtifactEntity.class);
+    return findOne(criteria, null, Collections.emptyList());
   }
 
   @Override
-  public ArtifactEntity findOne(Criteria criteria, Pageable pageable, List<String> projectionFields) {
+  public ArtifactEntity findOne(Criteria criteria, Sort sort, List<String> projectionFields) {
     Query query = new Query(criteria);
-    if (pageable != null) {
-      query.with(pageable);
+    if (sort != null) {
+      query.with(sort);
     }
     if (EmptyPredicate.isNotEmpty(projectionFields)) {
       for (String projection : projectionFields) {

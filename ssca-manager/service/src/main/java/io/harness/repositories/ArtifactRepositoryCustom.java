@@ -15,6 +15,7 @@ import io.harness.ssca.entities.ArtifactEntity;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 
@@ -22,7 +23,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 public interface ArtifactRepositoryCustom {
   void invalidateOldArtifact(ArtifactEntity artifact);
   ArtifactEntity findOne(Criteria criteria);
-  ArtifactEntity findOne(Criteria criteria, Pageable pageable, List<String> projectionFields);
+  ArtifactEntity findOne(Criteria criteria, Sort sort, List<String> projectionFields);
   Page<ArtifactEntity> findAll(Criteria criteria, Pageable pageable);
   List<ArtifactEntity> findAll(Aggregation aggregation);
   long getCount(Aggregation aggregation);

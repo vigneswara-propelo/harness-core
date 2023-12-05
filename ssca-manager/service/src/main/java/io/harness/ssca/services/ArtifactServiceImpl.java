@@ -65,7 +65,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -156,8 +155,8 @@ public class ArtifactServiceImpl implements ArtifactService {
                             .is(artifactId)
                             .and(ArtifactEntityKeys.invalid)
                             .is(false);
-    Pageable pageable = PageRequest.of(1, 1, Sort.by(Direction.DESC, ArtifactEntityKeys.createdOn.toLowerCase()));
-    ArtifactEntity artifactEntity = artifactRepository.findOne(criteria, pageable, List.of(ArtifactEntityKeys.name));
+    ArtifactEntity artifactEntity = artifactRepository.findOne(criteria,
+        Sort.by(Direction.DESC, ArtifactEntityKeys.createdOn.toLowerCase()), List.of(ArtifactEntityKeys.name));
     if (artifactEntity == null) {
       return null;
     }
