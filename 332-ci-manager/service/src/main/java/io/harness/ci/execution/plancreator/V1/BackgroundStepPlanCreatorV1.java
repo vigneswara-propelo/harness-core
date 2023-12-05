@@ -15,12 +15,16 @@ import io.harness.beans.steps.stepinfo.BackgroundStepInfo;
 import io.harness.beans.steps.stepinfo.V1.BackgroundStepInfoV1;
 import io.harness.ci.execution.integrationstage.V1.CIPlanCreatorUtils;
 import io.harness.ci.plan.creator.step.CIPMSStepPlanCreatorV2;
+import io.harness.exception.InvalidYamlException;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.utils.IdentifierGeneratorUtils;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 
 import com.google.common.collect.Sets;
+import java.io.IOException;
 import java.util.Set;
 
 public class BackgroundStepPlanCreatorV1 extends CIPMSStepPlanCreatorV2<BackgroundStepNodeV1> {
@@ -30,8 +34,13 @@ public class BackgroundStepPlanCreatorV1 extends CIPMSStepPlanCreatorV2<Backgrou
   }
 
   @Override
-  public Class<BackgroundStepNodeV1> getFieldClass() {
-    return BackgroundStepNodeV1.class;
+  public BackgroundStepNodeV1 getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), BackgroundStepNodeV1.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException(
+          "Unable to parse background step yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   @Override

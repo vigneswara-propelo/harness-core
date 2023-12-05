@@ -14,6 +14,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.InvalidYamlException;
 import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.plancreator.steps.internal.PmsStepPlanCreatorUtils;
 import io.harness.plancreator.strategy.StrategyUtils;
@@ -57,7 +58,6 @@ import io.harness.steps.pipelinestage.PipelineStageConfig;
 import io.harness.steps.pipelinestage.PipelineStageNode;
 import io.harness.steps.pipelinestage.PipelineStageOutputs;
 import io.harness.utils.PmsFeatureFlagService;
-import io.harness.when.utils.v1.RunInfoUtilsV1;
 
 import com.google.inject.Inject;
 import java.io.IOException;
@@ -73,14 +73,19 @@ import lombok.extern.slf4j.Slf4j;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_PIPELINE})
 @OwnedBy(HarnessTeam.PIPELINE)
 @Slf4j
-public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<YamlField> {
+public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<PipelineStageNode> {
   @Inject private PipelineStageHelper pipelineStageHelper;
   @Inject private PMSPipelineService pmsPipelineService;
   @Inject KryoSerializer kryoSerializer;
   @Inject private PmsFeatureFlagService pmsFeatureFlagService;
   @Override
-  public Class<YamlField> getFieldClass() {
-    return YamlField.class;
+  public PipelineStageNode getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), PipelineStageNode.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException(
+          "Unable to parse pipeline stage yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   @Override
@@ -110,15 +115,8 @@ public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<YamlField>
   }
 
   @Override
-  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, YamlField stageNode) {
-    PipelineStageConfig configNode = null;
-    try {
-      configNode = YamlUtils.readWithDefaultObjectMapper(stageNode.getNode().toString(), PipelineStageNode.class)
-                       .getPipelineStageConfig();
-    } catch (IOException e) {
-      log.error("Invalid yaml found for Pipeline Stage.", e);
-      throw new InvalidRequestException("Invalid yaml found for Pipeline Stage.");
-    }
+  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, PipelineStageNode stageNode) {
+    PipelineStageConfig configNode = stageNode.getPipelineStageConfig();
     if (configNode == null) {
       throw new InvalidRequestException("Pipeline Stage Yaml does not contain spec");
     }
@@ -141,7 +139,7 @@ public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<YamlField>
     // TODO: remove this to enable Strategy support for Pipeline Stage
     if (ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.STRATEGY) != null) {
       throw new InvalidRequestException(
-          String.format("Strategy is not supported for Pipeline stage %s", stageNode.getId()));
+          String.format("Strategy is not supported for Pipeline stage %s", stageNode.getIdentifier()));
     }
 
     Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
@@ -153,8 +151,8 @@ public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<YamlField>
     PlanNodeBuilder builder =
         PlanNode.builder()
             .uuid(planNodeId)
-            .name(stageNode.getNodeName())
-            .identifier(stageNode.getId())
+            .name(stageNode.getName())
+            .identifier(stageNode.getIdentifier())
             .group(StepCategory.STAGE.name())
             .stepType(PipelineStageStep.STEP_TYPE)
             .stepParameters(getStepParameter(configNode,
@@ -164,7 +162,8 @@ public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<YamlField>
                     .getNode()
                     .getField(YAMLFieldNameConstants.INPUTS),
                 planNodeId, childPipelineEntity.get().getHarnessVersion(), ctx.getAccountIdentifier()))
-            .whenCondition(RunInfoUtilsV1.getStageWhenCondition(stageNode))
+            // TODO: Add when condition once v1 stage node is created
+            //            .whenCondition(RunInfoUtilsV1.getStageWhenCondition(stageNode.getWhen()))
             .facilitatorObtainment(
                 FacilitatorObtainment.newBuilder()
                     .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.ASYNC).build())
@@ -175,8 +174,7 @@ public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<YamlField>
       builder.executionInputTemplate(ctx.getExecutionInputTemplate());
     }
     // If strategy present then don't add advisers. Strategy node will take care of running the stage nodes.
-    if (stageNode.getNode().getField(YAMLFieldNameConstants.SPEC).getNode().getField(YAMLFieldNameConstants.STRATEGY)
-        == null) {
+    if (stageNode.getStrategy() == null) {
       builder.adviserObtainments(getAdviserObtainments(ctx.getDependency()));
     }
 
@@ -198,7 +196,7 @@ public class PipelineStagePlanCreatorV1 implements PartialPlanCreator<YamlField>
   }
 
   private Map<String, HarnessValue> getDependencyMetadataForStrategy(
-      PlanCreationContext ctx, YamlField stageNode, Map<String, YamlField> dependenciesNodeMap) {
+      PlanCreationContext ctx, PipelineStageNode stageNode, Map<String, YamlField> dependenciesNodeMap) {
     return StrategyUtilsV1.getStrategyFieldDependencyMetadataIfPresent(
         kryoSerializer, ctx, stageNode.getUuid(), dependenciesNodeMap, getAdviserObtainments(ctx.getDependency()));
   }

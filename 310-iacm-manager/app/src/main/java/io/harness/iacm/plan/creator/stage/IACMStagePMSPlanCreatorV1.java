@@ -32,6 +32,7 @@ import io.harness.beans.yaml.extended.runtime.V1.RuntimeV1;
 import io.harness.beans.yaml.extended.runtime.V1.VMRuntimeV1;
 import io.harness.ci.execution.plan.creator.codebase.CodebasePlanCreator;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.InvalidYamlException;
 import io.harness.exception.ngexception.IACMStageExecutionException;
 import io.harness.iacm.execution.IACMIntegrationStageStepPMS;
 import io.harness.iacm.execution.IACMIntegrationStageStepParametersPMS;
@@ -59,6 +60,7 @@ import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.when.utils.RunInfoUtils;
 import io.harness.yaml.clone.Clone;
@@ -74,6 +76,7 @@ import io.harness.yaml.registry.Registry;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -97,8 +100,12 @@ public class IACMStagePMSPlanCreatorV1 extends ChildrenPlanCreator<IACMStageNode
   @Inject private IACMServiceUtils serviceUtils;
 
   @Override
-  public Class<IACMStageNodeV1> getFieldClass() {
-    return IACMStageNodeV1.class;
+  public IACMStageNodeV1 getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), IACMStageNodeV1.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException("Unable to parse iacm stage yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   // TODO: We may not need this as our infra is going to be always cloud

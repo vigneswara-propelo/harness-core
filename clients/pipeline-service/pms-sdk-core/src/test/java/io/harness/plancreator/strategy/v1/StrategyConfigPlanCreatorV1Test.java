@@ -128,13 +128,6 @@ public class StrategyConfigPlanCreatorV1Test extends PmsSdkCoreTestBase {
   @Test
   @Owner(developers = BRIJESH)
   @Category(UnitTests.class)
-  public void testGetFieldClass() {
-    assertThat(strategyConfigPlanCreator.getFieldClass()).isEqualTo(StrategyConfigV1.class);
-  }
-
-  @Test
-  @Owner(developers = BRIJESH)
-  @Category(UnitTests.class)
   public void testGetSupportedTypes() {
     assertThat(strategyConfigPlanCreator.getSupportedTypes())
         .isEqualTo(Collections.singletonMap(

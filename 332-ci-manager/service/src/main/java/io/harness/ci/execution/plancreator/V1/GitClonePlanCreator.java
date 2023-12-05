@@ -17,15 +17,19 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.nodes.GitCloneStepNode;
 import io.harness.beans.steps.stepinfo.GitCloneStepInfo;
 import io.harness.ci.plan.creator.step.CIPMSStepPlanCreatorV2;
+import io.harness.exception.InvalidYamlException;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.yaml.core.timeout.Timeout;
 import io.harness.yaml.extended.ci.codebase.CodeBase;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.io.IOException;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -75,8 +79,13 @@ public class GitClonePlanCreator extends CIPMSStepPlanCreatorV2<GitCloneStepNode
   }
 
   @Override
-  public Class<GitCloneStepNode> getFieldClass() {
-    return GitCloneStepNode.class;
+  public GitCloneStepNode getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), GitCloneStepNode.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException(
+          "Unable to parse git clone step yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   @Override

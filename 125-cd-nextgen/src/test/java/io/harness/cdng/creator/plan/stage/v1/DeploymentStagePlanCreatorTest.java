@@ -187,7 +187,8 @@ public class DeploymentStagePlanCreatorTest extends CDNGTestBase {
           .thenReturn(new YamlNode(YAMLFieldNameConstants.SPEC, jsonNode));
       when(NGRestUtils.getResponse(any())).thenReturn(settingValueResponseDTO);
       LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap =
-          deploymentStagePlanCreator.createPlanForChildrenNodes(ctx, new YamlField(new YamlNode(jsonNode)));
+          deploymentStagePlanCreator.createPlanForChildrenNodes(
+              ctx, YamlUtils.read(new YamlNode(jsonNode).toString(), DeploymentStageNodeV1.class));
 
       assertThat(planCreationResponseMap).hasSize(10);
       assertThat(planCreationResponseMap.values()

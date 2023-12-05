@@ -104,8 +104,6 @@ import java.util.stream.Collectors;
 public abstract class CIPMSStepPlanCreatorV2<T extends CIAbstractStepNode> extends AbstractStepPlanCreator<T> {
   public abstract Set<String> getSupportedStepTypes();
 
-  @Override public abstract Class<T> getFieldClass();
-
   @Override
   public PlanCreationResponse createPlanForField(PlanCreationContext ctx, T stepElement) {
     boolean isStepInsideRollback = false;

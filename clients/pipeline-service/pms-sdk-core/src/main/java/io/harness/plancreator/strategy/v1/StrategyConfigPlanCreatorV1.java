@@ -9,6 +9,7 @@ package io.harness.plancreator.strategy.v1;
 
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.InvalidYamlException;
 import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
@@ -23,6 +24,8 @@ import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.matrix.StrategyConstants;
 import io.harness.steps.matrix.StrategyMetadata;
@@ -30,6 +33,7 @@ import io.harness.steps.matrix.v1.StrategyStepParametersV1;
 import io.harness.steps.matrix.v1.StrategyStepV1;
 
 import com.google.inject.Inject;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -89,8 +93,13 @@ public class StrategyConfigPlanCreatorV1 extends ChildrenPlanCreator<StrategyCon
   }
 
   @Override
-  public Class<StrategyConfigV1> getFieldClass() {
-    return StrategyConfigV1.class;
+  public StrategyConfigV1 getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), StrategyConfigV1.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException(
+          "Unable to parse strategy config yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   @Override

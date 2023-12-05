@@ -36,6 +36,7 @@ import io.harness.security.SecurityContextBuilder;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepSpecTypeConstants;
 import io.harness.steps.pipelinestage.PipelineStageConfig;
+import io.harness.steps.pipelinestage.PipelineStageNode;
 import io.harness.utils.PmsFeatureFlagService;
 
 import java.io.IOException;
@@ -62,13 +63,6 @@ public class PipelineStagePlanCreatorV1Test {
   private String PROJ = "proj";
   private String PIPELINE = "pipeline";
   private String ACC = "acc";
-
-  @Test
-  @Owner(developers = BRIJESH)
-  @Category(UnitTests.class)
-  public void testGetFieldClass() {
-    assertThat(pipelineStagePlanCreator.getFieldClass()).isEqualTo(YamlField.class);
-  }
 
   @Test
   @Owner(developers = BRIJESH)
@@ -116,6 +110,8 @@ public class PipelineStagePlanCreatorV1Test {
   @Category(UnitTests.class)
   public void testCreatePlanForField() throws IOException {
     String yamlField = "type: Pipeline\n"
+        + "name: ParentPipeline\n"
+        + "identifier: ParentPipeline\n"
         + "__uuid: uuid\n"
         + "spec:\n"
         + "  org: org\n"
@@ -135,8 +131,10 @@ public class PipelineStagePlanCreatorV1Test {
 
     assertThat(SecurityContextBuilder.getPrincipal()).isNull();
 
-    assertThatThrownBy(
-        () -> pipelineStagePlanCreator.createPlanForField(ctx, YamlUtils.readTreeWithDefaultObjectMapper(yamlField)))
+    assertThatThrownBy(()
+                           -> pipelineStagePlanCreator.createPlanForField(ctx,
+                               YamlUtils.read(YamlUtils.readTreeWithDefaultObjectMapper(yamlField).getNode().toString(),
+                                   PipelineStageNode.class)))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Child pipeline does not exists childPipeline ");
 
@@ -144,13 +142,14 @@ public class PipelineStagePlanCreatorV1Test {
         .when(pmsPipelineService)
         .getPipeline("acc", "org", "project", "childPipeline", false, false, false, true);
 
-    PlanCreationResponse response =
-        pipelineStagePlanCreator.createPlanForField(ctx, YamlUtils.readTreeWithDefaultObjectMapper(yamlField));
+    PlanCreationResponse response = pipelineStagePlanCreator.createPlanForField(ctx,
+        YamlUtils.read(
+            YamlUtils.readTreeWithDefaultObjectMapper(yamlField).getNode().toString(), PipelineStageNode.class));
     assertThat(SecurityContextBuilder.getPrincipal()).isNotNull();
     assertThat(response.getPlanNode()).isNotNull();
     PlanNode planNode = response.getPlanNode();
     assertThat(planNode.getName()).isEqualTo(pipelineStageYamlField.getNodeName());
-    assertThat(planNode.getIdentifier()).isEqualTo(pipelineStageYamlField.getId());
+    assertThat(planNode.getIdentifier()).isEqualTo("ParentPipeline");
     assertThat(planNode.getGroup()).isEqualTo(StepCategory.STAGE.name());
     assertThat(planNode.getFacilitatorObtainments().get(0).getType().getType())
         .isEqualTo(OrchestrationFacilitatorType.ASYNC);

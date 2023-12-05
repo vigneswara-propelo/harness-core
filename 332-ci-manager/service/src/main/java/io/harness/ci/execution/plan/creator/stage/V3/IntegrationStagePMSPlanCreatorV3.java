@@ -21,6 +21,7 @@ import io.harness.ci.execution.plan.creator.codebase.CodebasePlanCreator;
 import io.harness.ci.execution.states.IntegrationStageStepPMS;
 import io.harness.cimanager.stages.V1.IntegrationStageConfigImplV1;
 import io.harness.cimanager.stages.V1.IntegrationStageNodeV1;
+import io.harness.exception.InvalidYamlException;
 import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
 import io.harness.plancreator.steps.common.StageElementParameters;
@@ -45,6 +46,7 @@ import io.harness.pms.yaml.DependenciesUtils;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.when.utils.RunInfoUtils;
 import io.harness.yaml.clone.Clone;
@@ -55,6 +57,7 @@ import io.harness.yaml.registry.Registry;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,8 +79,13 @@ public class IntegrationStagePMSPlanCreatorV3 extends ChildrenPlanCreator<Integr
   public static final String CODEBASE = "codebase";
 
   @Override
-  public Class<IntegrationStageNodeV1> getFieldClass() {
-    return IntegrationStageNodeV1.class;
+  public IntegrationStageNodeV1 getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), IntegrationStageNodeV1.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException(
+          "Unable to parse integration stage yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   public PlanNode createPlanForParentNode(

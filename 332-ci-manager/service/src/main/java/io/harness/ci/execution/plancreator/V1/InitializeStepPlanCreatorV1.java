@@ -24,6 +24,7 @@ import io.harness.ci.execution.integrationstage.VmInitializeTaskParamsBuilder;
 import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.ci.plan.creator.step.CIPMSStepPlanCreatorV2;
 import io.harness.cimanager.stages.IntegrationStageConfigImpl;
+import io.harness.exception.InvalidYamlException;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.plancreator.execution.ExecutionElementConfig;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
@@ -33,10 +34,13 @@ import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.utils.IdentifierGeneratorUtils;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.yaml.core.timeout.Timeout;
 import io.harness.yaml.extended.ci.codebase.CodeBase;
 
 import com.google.inject.Inject;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -125,8 +129,13 @@ public class InitializeStepPlanCreatorV1 extends CIPMSStepPlanCreatorV2<Initiali
   }
 
   @Override
-  public Class<InitializeStepNode> getFieldClass() {
-    return InitializeStepNode.class;
+  public InitializeStepNode getFieldObject(YamlField field) {
+    try {
+      return YamlUtils.read(field.getNode().toString(), InitializeStepNode.class);
+    } catch (IOException e) {
+      throw new InvalidYamlException(
+          "Unable to parse initialize step yaml. Please ensure that it is in correct format", e);
+    }
   }
 
   @Override
