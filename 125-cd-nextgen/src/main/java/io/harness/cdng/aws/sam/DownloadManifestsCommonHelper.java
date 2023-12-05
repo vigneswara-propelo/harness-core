@@ -47,7 +47,7 @@ import com.google.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_ECS})
 public class DownloadManifestsCommonHelper {

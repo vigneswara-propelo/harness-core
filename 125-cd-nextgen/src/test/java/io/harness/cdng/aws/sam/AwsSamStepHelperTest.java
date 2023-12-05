@@ -30,6 +30,7 @@ import io.harness.cdng.infra.beans.AwsSamInfrastructureOutcome;
 import io.harness.cdng.manifest.yaml.AwsSamDirectoryManifestOutcome;
 import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
+import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.delegate.beans.instancesync.info.AwsSamServerInstanceInfo;
 import io.harness.exception.InvalidArgumentsException;
@@ -304,5 +305,36 @@ public class AwsSamStepHelperTest extends CategoryTest {
     assertThatThrownBy(() -> awsSamStepHelper.validateEnvVariables(environmentVariables))
         .hasMessage("Not found value for environment variables: PLUGIN_SAM_DIR,PLUGIN_STACK_NAME")
         .isInstanceOf(InvalidArgumentsException.class);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetValuesPathFromValuesManifestOutcomeForAwsS3() {
+    String identifier = "identifier";
+    String path = "values.yaml";
+    ValuesManifestOutcome valuesManifestOutcome =
+        ValuesManifestOutcome.builder()
+            .store(S3StoreConfig.builder().paths(ParameterField.createValueField(Arrays.asList(path))).build())
+            .identifier(identifier)
+            .build();
+    String finalPath = awsSamStepHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome);
+    assertThat(finalPath).isEqualTo("/harness/" + identifier + "/" + path);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetSamDirectoryPathFromAwsSamDirectoryManifestOutcomeWhenS3() {
+    String identifier = "identifier";
+    String path = "values.yaml";
+    AwsSamDirectoryManifestOutcome awsSamDirectoryManifestOutcome =
+        AwsSamDirectoryManifestOutcome.builder()
+            .store(S3StoreConfig.builder().paths(ParameterField.createValueField(Arrays.asList(path))).build())
+            .identifier(identifier)
+            .build();
+    String finalPath =
+        awsSamStepHelper.getSamDirectoryPathFromAwsSamDirectoryManifestOutcome(awsSamDirectoryManifestOutcome);
+    assertThat(finalPath).isEqualTo(identifier);
   }
 }

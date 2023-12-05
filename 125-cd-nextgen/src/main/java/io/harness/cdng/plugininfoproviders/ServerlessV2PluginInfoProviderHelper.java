@@ -144,7 +144,6 @@ public class ServerlessV2PluginInfoProviderHelper {
           removeExtraSlashesInString(gitStoreConfig.getPaths().getValue().get(0)));
       return removeTrailingSlashesInString(path);
     } else if (serverlessAwsLambdaManifestOutcome.getStore() instanceof S3StoreConfig) {
-      S3StoreConfig valuesManifestOutcomeStore = (S3StoreConfig) serverlessAwsLambdaManifestOutcome.getStore();
       String path = String.format(
           "/%s/%s", PLUGIN_PATH_PREFIX, removeExtraSlashesInString(serverlessAwsLambdaManifestOutcome.getIdentifier()));
       return removeTrailingSlashesInString(path);

@@ -31,6 +31,7 @@ import io.harness.cdng.manifest.ManifestType;
 import io.harness.cdng.manifest.yaml.AwsSamDirectoryManifestOutcome;
 import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
+import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.data.structure.EmptyPredicate;
@@ -54,6 +55,7 @@ import io.harness.tasks.ResponseData;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -77,6 +79,8 @@ public class AwsSamStepHelper {
 
   private static String NG_SECRET_MANAGER = "ngSecretManager";
   private static String SAM_DEPLOY_DEFAULT_IMAGE = "harnessdev/sam-deploy:1.82.0-latest";
+
+  private static final String PLUGIN_PATH_PREFIX = "harness";
 
   ObjectMapper objectMapper = NG_DEFAULT_OBJECT_MAPPER;
 
@@ -219,15 +223,37 @@ public class AwsSamStepHelper {
   }
 
   public String getValuesPathFromValuesManifestOutcome(ValuesManifestOutcome valuesManifestOutcome) {
-    GitStoreConfig gitStoreConfig = (GitStoreConfig) valuesManifestOutcome.getStore();
-    return "/harness/" + valuesManifestOutcome.getIdentifier() + "/" + gitStoreConfig.getPaths().getValue().get(0);
+    if (valuesManifestOutcome.getStore() instanceof GitStoreConfig) {
+      GitStoreConfig gitStoreConfig = (GitStoreConfig) valuesManifestOutcome.getStore();
+      return "/harness/" + valuesManifestOutcome.getIdentifier() + "/" + gitStoreConfig.getPaths().getValue().get(0);
+    } else if (valuesManifestOutcome.getStore() instanceof S3StoreConfig) {
+      S3StoreConfig valuesManifestOutcomeStore = (S3StoreConfig) valuesManifestOutcome.getStore();
+      String path = String.format("/%s/%s/%s", PLUGIN_PATH_PREFIX,
+          removeExtraSlashesInString(valuesManifestOutcome.getIdentifier()),
+          removeExtraSlashesInString(
+              Paths.get(valuesManifestOutcomeStore.getPaths().getValue().get(0)).getFileName().toString()));
+      return removeTrailingSlashesInString(path);
+    }
+    return null;
+  }
+
+  public String removeExtraSlashesInString(String path) {
+    return path.replaceAll("^/|/$", "");
   }
 
   public String getSamDirectoryPathFromAwsSamDirectoryManifestOutcome(
       AwsSamDirectoryManifestOutcome awsSamDirectoryManifestOutcome) {
-    GitStoreConfig gitStoreConfig = (GitStoreConfig) awsSamDirectoryManifestOutcome.getStore();
+    if (awsSamDirectoryManifestOutcome.getStore() instanceof GitStoreConfig) {
+      GitStoreConfig gitStoreConfig = (GitStoreConfig) awsSamDirectoryManifestOutcome.getStore();
 
-    return awsSamDirectoryManifestOutcome.getIdentifier() + "/" + gitStoreConfig.getPaths().getValue().get(0);
+      return awsSamDirectoryManifestOutcome.getIdentifier() + "/" + gitStoreConfig.getPaths().getValue().get(0);
+    } else if (awsSamDirectoryManifestOutcome.getStore() instanceof S3StoreConfig) {
+      return removeTrailingSlashesInString(awsSamDirectoryManifestOutcome.getIdentifier());
+    }
+    return null;
+  }
+  public String removeTrailingSlashesInString(String path) {
+    return path.replaceAll("/$", "");
   }
 
   public String getSamTemplateFilePath(ManifestOutcome manifestOutcome) {

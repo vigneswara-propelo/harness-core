@@ -24,11 +24,17 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.nodes.GitCloneStepNode;
 import io.harness.beans.steps.stepinfo.GitCloneStepInfo;
 import io.harness.category.element.UnitTests;
+import io.harness.cdng.containerStepGroup.DownloadAwsS3Step;
+import io.harness.cdng.containerStepGroup.DownloadAwsS3StepInfo;
+import io.harness.cdng.containerStepGroup.DownloadAwsS3StepNode;
+import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
 import io.harness.cdng.manifest.yaml.AwsSamDirectoryManifestOutcome;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
+import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
+import io.harness.cdng.plugininfoproviders.DownloadAwsS3PluginInfoProvider;
 import io.harness.cdng.plugininfoproviders.GitClonePluginInfoProvider;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
 import io.harness.delegate.task.stepstatus.StepMapOutput;
@@ -57,9 +63,14 @@ import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 import io.harness.tasks.ResponseData;
 
+import com.google.protobuf.LazyStringArrayList;
+import com.google.protobuf.ProtocolStringList;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +102,14 @@ public class AwsSamDownloadManifestsStepHelperTest extends CategoryTest {
   @Mock private DownloadManifestsCommonHelper downloadManifestsCommonHelper;
   @Mock private AwsSamStepHelper awsSamStepHelper;
   @Mock private ContainerStepExecutionResponseHelper containerStepExecutionResponseHelper;
+
+  @Mock private DownloadAwsS3PluginInfoProvider downloadAwsS3PluginInfoProvider;
+
+  @Mock private DownloadAwsS3Step downloadAwsS3Step;
+
+  @Mock private GitCloneStep gitCloneStep;
+
+  @Mock private CDFeatureFlagHelper cdFeatureFlagHelper;
   @InjectMocks @Spy private AwsSamDownloadManifestsStepHelper awsSamDownloadManifestsStepHelper;
 
   @Before
@@ -230,6 +249,186 @@ public class AwsSamDownloadManifestsStepHelperTest extends CategoryTest {
     assertThat(asyncExecutableResponse1.getCallbackIdsList().size()).isEqualTo(2);
     assertThat(asyncExecutableResponse1.getLogKeysList().size()).isEqualTo(2);
     assertThat(asyncExecutableResponse1.getStatus()).isEqualTo(Status.RUNNING);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetPluginInfoTestWhenValuesYamlAbsentWhenSamManifestInS3() throws IOException {
+    String accountId = "accountId";
+    Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
+
+    String jsonNode = "jsonNdod";
+    PluginCreationRequest pluginCreationRequest = PluginCreationRequest.newBuilder().setStepJsonNode(jsonNode).build();
+    CdAbstractStepNode cdAbstractStepNode = mock(CdAbstractStepNode.class);
+    doReturn("identifier").when(cdAbstractStepNode).getIdentifier();
+    doReturn("name").when(cdAbstractStepNode).getName();
+    doReturn("uuid").when(cdAbstractStepNode).getUuid();
+
+    Mockito.mockStatic(YamlUtils.class);
+    when(YamlUtils.read(jsonNode, CdAbstractStepNode.class)).thenReturn(cdAbstractStepNode);
+    when(YamlUtils.writeYamlString(any(Object.class))).thenReturn("yaml1");
+
+    ManifestsOutcome manifestsOutcome = new ManifestsOutcome();
+    OptionalOutcome optionalManifestsOutcome = OptionalOutcome.builder().found(true).outcome(manifestsOutcome).build();
+    doReturn(optionalManifestsOutcome).when(outcomeService).resolveOptional(any(), any());
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), any());
+
+    AwsSamDirectoryManifestOutcome awsSamDirectoryManifestOutcome = mock(AwsSamDirectoryManifestOutcome.class);
+    doReturn(S3StoreConfig.builder().build()).when(awsSamDirectoryManifestOutcome).getStore();
+    doReturn(awsSamDirectoryManifestOutcome).when(awsSamStepHelper).getAwsSamDirectoryManifestOutcome(any());
+
+    DownloadAwsS3StepInfo downloadAwsS3StepInfo = mock(DownloadAwsS3StepInfo.class);
+    doReturn(downloadAwsS3StepInfo).when(downloadManifestsCommonHelper).getAwsS3StepInfo(any(), any());
+
+    DownloadAwsS3StepNode downloadAwsS3StepNode = mock(DownloadAwsS3StepNode.class);
+    doReturn(downloadAwsS3StepNode).when(downloadManifestsCommonHelper).getAwsS3StepNode(any(), any(), any());
+
+    List<Integer> portList = new ArrayList<>(Arrays.asList(1));
+    PluginDetails pluginDetails = mock(PluginDetails.class);
+    doReturn(portList).when(pluginDetails).getPortUsedList();
+    PluginCreationResponse pluginCreationResponse =
+        PluginCreationResponse.newBuilder().setPluginDetails(pluginDetails).build();
+    PluginCreationResponseWrapper pluginCreationResponseWrapper =
+        PluginCreationResponseWrapper.newBuilder().setResponse(pluginCreationResponse).build();
+    doReturn(pluginCreationResponseWrapper).when(downloadAwsS3PluginInfoProvider).getPluginInfo(any(), any(), any());
+
+    doReturn(null).when(awsSamStepHelper).getAwsSamValuesManifestOutcome(any());
+    doReturn(manifestsOutcome).when(downloadManifestsCommonHelper).fetchManifestsOutcome(any());
+
+    PluginCreationResponseList pluginCreationResponseList =
+        awsSamDownloadManifestsStepHelper.getPluginInfoList(pluginCreationRequest, new HashSet<Integer>(), ambiance);
+    assertThat(pluginCreationResponseList.getResponseList().size()).isEqualTo(1);
+    assertThat(
+        pluginCreationResponseList.getResponseList().get(0).getResponse().getPluginDetails().getPortUsedList().size())
+        .isEqualTo(1);
+    assertThat(
+        pluginCreationResponseList.getResponseList().get(0).getResponse().getPluginDetails().getPortUsedList().get(0))
+        .isEqualTo(1);
+  }
+
+  @SneakyThrows
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void executeAsyncAfterRbacWhenValuesYamlPresentInAwsS3Test() {
+    String accountId = "accountId";
+    Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
+    StepElementParameters stepElementParameters = StepElementParameters.builder().build();
+
+    ManifestsOutcome manifestsOutcome = mock(ManifestsOutcome.class);
+    doReturn(manifestsOutcome).when(downloadManifestsCommonHelper).fetchManifestsOutcome(any());
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), any());
+
+    AwsSamDirectoryManifestOutcome awsSamDirectoryManifestOutcome = mock(AwsSamDirectoryManifestOutcome.class);
+    doReturn(awsSamDirectoryManifestOutcome).when(awsSamStepHelper).getAwsSamDirectoryManifestOutcome(any());
+
+    doReturn("path").when(awsSamStepHelper).getValuesPathFromValuesManifestOutcome(any());
+
+    DownloadAwsS3StepInfo downloadAwsS3StepInfo = mock(DownloadAwsS3StepInfo.class);
+    doReturn(downloadAwsS3StepInfo).when(downloadManifestsCommonHelper).getAwsS3StepInfo(any(), any());
+
+    doReturn(downloadAwsS3StepInfo)
+        .when(downloadManifestsCommonHelper)
+        .getAwsS3StepInfoWithOutputFilePathContents(any(), any(), any());
+
+    StepElementParameters stepElementParameters1 = mock(StepElementParameters.class);
+    doReturn(stepElementParameters1)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadS3StepElementParameters(any(), any());
+
+    String identifier = "identifier";
+    doReturn(identifier).when(downloadManifestsCommonHelper).getDownloadS3StepIdentifier(any());
+
+    Ambiance ambiance1 = mock(Ambiance.class);
+    doReturn(ambiance1).when(downloadManifestsCommonHelper).buildAmbiance(any(), any());
+
+    doReturn(S3StoreConfig.builder().build()).when(awsSamDirectoryManifestOutcome).getStore();
+
+    AsyncExecutableResponse asyncExecutableResponse = mock(AsyncExecutableResponse.class);
+    doReturn(Status.SUCCEEDED).when(asyncExecutableResponse).getStatus();
+    doReturn(asyncExecutableResponse).when(downloadAwsS3Step).executeAsyncAfterRbac(any(), any(), any());
+
+    ProtocolStringList callbackIdList = new LazyStringArrayList();
+    callbackIdList.add("1");
+
+    ProtocolStringList logKeysList = new LazyStringArrayList();
+    logKeysList.add("2");
+
+    doReturn(callbackIdList).when(asyncExecutableResponse).getCallbackIdsList();
+    doReturn(logKeysList).when(asyncExecutableResponse).getLogKeysList();
+
+    ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
+    doReturn(valuesManifestOutcome).when(awsSamStepHelper).getAwsSamValuesManifestOutcome(any());
+    doReturn(S3StoreConfig.builder().build()).when(valuesManifestOutcome).getStore();
+
+    doReturn("path").when(awsSamStepHelper).getValuesPathFromValuesManifestOutcome(any());
+
+    AsyncExecutableResponse asyncExecutableResponse1 = awsSamDownloadManifestsStepHelper.executeAsyncAfterRbac(
+        ambiance, StepInputPackage.builder().build(), gitCloneStep);
+    assertThat(asyncExecutableResponse1.getCallbackIdsList().size()).isEqualTo(2);
+    assertThat(asyncExecutableResponse1.getLogKeysList().size()).isEqualTo(2);
+    assertThat(asyncExecutableResponse1.getStatus()).isEqualTo(Status.SUCCEEDED);
+  }
+
+  @SneakyThrows
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void executeAsyncAfterRbacWhenValuesYamlAbsentAndSamManifestPresentInAwsS3Test() {
+    String accountId = "accountId";
+    Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
+    StepElementParameters stepElementParameters = StepElementParameters.builder().build();
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), any());
+
+    ManifestsOutcome manifestsOutcome = mock(ManifestsOutcome.class);
+    doReturn(manifestsOutcome).when(downloadManifestsCommonHelper).fetchManifestsOutcome(any());
+
+    AwsSamDirectoryManifestOutcome awsSamDirectoryManifestOutcome = mock(AwsSamDirectoryManifestOutcome.class);
+    doReturn(awsSamDirectoryManifestOutcome).when(awsSamStepHelper).getAwsSamDirectoryManifestOutcome(any());
+
+    DownloadAwsS3StepInfo downloadAwsS3StepInfo = mock(DownloadAwsS3StepInfo.class);
+    doReturn(downloadAwsS3StepInfo).when(downloadManifestsCommonHelper).getAwsS3StepInfo(any(), any());
+
+    StepElementParameters stepElementParameters1 = mock(StepElementParameters.class);
+    doReturn(stepElementParameters1).when(downloadManifestsCommonHelper).getGitStepElementParameters(any(), any());
+
+    String identifier = "identifier";
+    doReturn(identifier).when(downloadManifestsCommonHelper).getDownloadS3StepIdentifier(any());
+
+    Ambiance ambiance1 = mock(Ambiance.class);
+    doReturn(ambiance1).when(downloadManifestsCommonHelper).buildAmbiance(any(), any());
+
+    AsyncExecutableResponse asyncExecutableResponse = mock(AsyncExecutableResponse.class);
+    doReturn(Status.SUCCEEDED).when(asyncExecutableResponse).getStatus();
+    doReturn(asyncExecutableResponse).when(downloadAwsS3Step).executeAsyncAfterRbac(any(), any(), any());
+
+    doReturn(S3StoreConfig.builder().build()).when(awsSamDirectoryManifestOutcome).getStore();
+
+    ProtocolStringList callbackIdList = new LazyStringArrayList();
+    callbackIdList.add("1");
+
+    ProtocolStringList logKeysList = new LazyStringArrayList();
+    logKeysList.add("2");
+
+    doReturn(callbackIdList).when(asyncExecutableResponse).getCallbackIdsList();
+    doReturn(logKeysList).when(asyncExecutableResponse).getLogKeysList();
+
+    ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
+    doReturn(null).when(awsSamStepHelper).getAwsSamValuesManifestOutcome(any());
+
+    doReturn(S3StoreConfig.builder().build()).when(valuesManifestOutcome).getStore();
+
+    doReturn("path").when(awsSamStepHelper).getValuesPathFromValuesManifestOutcome(any());
+
+    AsyncExecutableResponse asyncExecutableResponse1 = awsSamDownloadManifestsStepHelper.executeAsyncAfterRbac(
+        ambiance, StepInputPackage.builder().build(), gitCloneStep);
+    assertThat(asyncExecutableResponse1.getCallbackIdsList().size()).isEqualTo(1);
+    assertThat(asyncExecutableResponse1.getLogKeysList().size()).isEqualTo(1);
+    assertThat(asyncExecutableResponse1.getStatus()).isEqualTo(Status.SUCCEEDED);
   }
 
   @Test
