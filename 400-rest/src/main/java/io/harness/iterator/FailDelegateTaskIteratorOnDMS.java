@@ -88,7 +88,7 @@ public class FailDelegateTaskIteratorOnDMS
       failDelegateTaskIteratorHelper.markTimedOutTasksAsFailed(delegateTask, true);
       failDelegateTaskIteratorHelper.markNotAcquiredAfterMultipleBroadcastAsFailed(delegateTask, true);
       failDelegateTaskIteratorHelper.markLongQueuedTasksAsFailed(delegateTask, true);
-      failDelegateTaskIteratorHelper.failValidationCompletedQueuedTask(delegateTask, true);
+      failDelegateTaskIteratorHelper.failValidationCompletedQueuedTask(delegateTask);
     }
   }
 }

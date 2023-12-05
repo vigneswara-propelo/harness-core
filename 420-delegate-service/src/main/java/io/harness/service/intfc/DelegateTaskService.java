@@ -11,7 +11,6 @@ import io.harness.beans.DelegateTask;
 import io.harness.delegate.beans.DelegateProgressData;
 import io.harness.delegate.beans.DelegateTaskResponse;
 
-import dev.morphia.query.Query;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -23,9 +22,7 @@ public interface DelegateTaskService {
   void processDelegateResponse(
       String accountId, String delegateId, String taskId, @Valid DelegateTaskResponse response);
 
-  void handleResponse(DelegateTask delegateTask, Query<DelegateTask> taskQuery, DelegateTaskResponse response);
-
-  void handleResponseV2(DelegateTask delegateTask, Query<DelegateTask> taskQuery, DelegateTaskResponse response);
+  void handleResponseV2(DelegateTask delegateTask, DelegateTaskResponse response);
 
   void publishTaskProgressResponse(
       String accountId, String driverId, String delegateTaskId, DelegateProgressData responseData);

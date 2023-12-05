@@ -1657,8 +1657,9 @@
 25002:io.harness.delegate.beans.ci.DockerInfraInfo
 25003:io.harness.delegate.beans.ci.VmInfraInfo
 25004:io.harness.delegate.beans.ci.DliteVmInfraInfo
-25005:io.harness.delegate.beans.scheduler.InitializeExecutionInfraResponse
-25006:io.harness.delegate.beans.scheduler.CleanupInfraResponse
+25005:io.harness.delegate.beans.scheduler.ExecutionStatus
+25006:io.harness.delegate.beans.scheduler.InitializeExecutionInfraResponse
+25007:io.harness.delegate.beans.scheduler.CleanupInfraResponse
 26001:io.harness.connector.ConnectorDTO
 26002:io.harness.connector.ConnectorInfoDTO
 29112:io.harness.delegate.beans.connector.jenkins.JenkinsAuthCredentialsDTO

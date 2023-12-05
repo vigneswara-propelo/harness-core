@@ -9,11 +9,19 @@ package io.harness.delegate.beans.scheduler;
 
 import io.harness.delegate.beans.DelegateResponseData;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
-@RequiredArgsConstructor
+@Data
+@Builder
 public class CleanupInfraResponse implements DelegateResponseData {
   private final String taskId;
   private final String infraRefId;
-  private final boolean success;
+  private final ExecutionStatus status;
+  private final String errorMessage;
+
+  public static CleanupInfraResponseBuilder builder(
+      final String taskId, final String infraRefId, final ExecutionStatus status) {
+    return new CleanupInfraResponseBuilder().taskId(taskId).infraRefId(infraRefId).status(status);
+  }
 }

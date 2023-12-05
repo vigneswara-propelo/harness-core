@@ -95,7 +95,7 @@ public class FailDelegateTaskIterator
       failDelegateTaskIteratorHelper.markTimedOutTasksAsFailed(delegateTask, false);
       failDelegateTaskIteratorHelper.markNotAcquiredAfterMultipleBroadcastAsFailed(delegateTask, false);
       failDelegateTaskIteratorHelper.markLongQueuedTasksAsFailed(delegateTask, false);
-      failDelegateTaskIteratorHelper.failValidationCompletedQueuedTask(delegateTask, false);
+      failDelegateTaskIteratorHelper.failValidationCompletedQueuedTask(delegateTask);
     }
   }
 }

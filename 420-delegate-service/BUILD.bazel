@@ -39,6 +39,7 @@ java_library(
     deps = [
         ":module",
         "//:lombok",
+        "//420-delegate-service/src/main/java/io/harness/delegate/resources/core:module",
         "//420-delegate-service/src/test/java/resources",
         "//441-cg-instance-sync:module",
         "//470-alert:module",
@@ -95,6 +96,7 @@ java_library(
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_assertj_assertj_core",
         "@maven//:org_codehaus_groovy_groovy",
+        "@maven//:org_glassfish_jersey_bundles_repackaged_jersey_guava",
         "@maven//:org_glassfish_jersey_core_jersey_server",
         "@maven//:org_glassfish_jersey_test_framework_jersey_test_framework_core",
         "@maven//:org_glassfish_jersey_test_framework_providers_jersey_test_framework_provider_inmemory",

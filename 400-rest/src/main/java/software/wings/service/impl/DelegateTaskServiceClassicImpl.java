@@ -738,27 +738,22 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
     return delegateIds;
   }
 
-  private void handleTaskFailureResponseV2(DelegateTask task, Exception exception) {
-    Query<DelegateTask> taskQuery =
-        persistence
-            .createQuery(DelegateTask.class, delegateTaskMigrationHelper.isMigrationEnabledForTask(task.getUuid()))
-            .filter(DelegateTaskKeys.accountId, task.getAccountId())
-            .filter(DelegateTaskKeys.uuid, task.getUuid());
+  private void handleTaskFailureResponseV2(final DelegateTask task, final Exception exception) {
     WingsException ex = null;
     if (exception instanceof WingsException) {
       ex = (WingsException) exception;
     } else {
       log.error("Encountered unknown exception and failing task", exception);
     }
-    DelegateTaskResponse response = DelegateTaskResponse.builder()
-                                        .response(ErrorNotifyResponseData.builder()
-                                                      .errorMessage(ExceptionUtils.getMessage(exception))
-                                                      .exception(ex)
-                                                      .build())
-                                        .responseCode(ResponseCode.FAILED)
-                                        .accountId(task.getAccountId())
-                                        .build();
-    delegateTaskService.handleResponseV2(task, taskQuery, response);
+    final var response = DelegateTaskResponse.builder()
+                             .response(ErrorNotifyResponseData.builder()
+                                           .errorMessage(ExceptionUtils.getMessage(exception))
+                                           .exception(ex)
+                                           .build())
+                             .responseCode(ResponseCode.FAILED)
+                             .accountId(task.getAccountId())
+                             .build();
+    delegateTaskService.handleResponseV2(task, response);
   }
 
   private void verifyTaskSetupAbstractions(DelegateTask task) {
@@ -1236,19 +1231,13 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       return delegateTaskPackageBuilder.build();
     } catch (CriticalExpressionEvaluationException exception) {
       log.error("Exception in ManagerPreExecutionExpressionEvaluator ", exception);
-      Query<DelegateTask> taskQuery =
-          persistence
-              .createQuery(
-                  DelegateTask.class, delegateTaskMigrationHelper.isMigrationEnabledForTask(delegateTask.getUuid()))
-              .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
-              .filter(DelegateTaskKeys.uuid, delegateTask.getUuid());
       DelegateTaskResponse response =
           DelegateTaskResponse.builder()
               .response(ErrorNotifyResponseData.builder().errorMessage(ExceptionUtils.getMessage(exception)).build())
               .responseCode(ResponseCode.FAILED)
               .accountId(delegateTask.getAccountId())
               .build();
-      delegateTaskService.handleResponse(delegateTask, taskQuery, response);
+      delegateTaskService.handleResponseV2(delegateTask, response);
       if (featureFlagService.isEnabled(
               FeatureName.FAIL_WORKFLOW_IF_SECRET_DECRYPTION_FAILS, delegateTask.getAccountId())) {
         throw exception;
@@ -1257,7 +1246,8 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
     }
   }
 
-  private DelegateTaskPackage resolvePreAssignmentExpressionsV2(DelegateTask delegateTask, SecretManagerMode mode) {
+  private DelegateTaskPackage resolvePreAssignmentExpressionsV2(
+      final DelegateTask delegateTask, final SecretManagerMode mode) {
     try {
       ManagerPreExecutionExpressionEvaluator managerPreExecutionExpressionEvaluator =
           new ManagerPreExecutionExpressionEvaluator(mode, serviceTemplateService, configService,
@@ -1351,19 +1341,13 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       return delegateTaskPackageBuilder.build();
     } catch (CriticalExpressionEvaluationException exception) {
       log.error("Exception in ManagerPreExecutionExpressionEvaluator ", exception);
-      Query<DelegateTask> taskQuery =
-          persistence
-              .createQuery(
-                  DelegateTask.class, delegateTaskMigrationHelper.isMigrationEnabledForTask(delegateTask.getUuid()))
-              .filter(DelegateTaskKeys.accountId, delegateTask.getAccountId())
-              .filter(DelegateTaskKeys.uuid, delegateTask.getUuid());
-      DelegateTaskResponse response =
+      final var response =
           DelegateTaskResponse.builder()
               .response(ErrorNotifyResponseData.builder().errorMessage(ExceptionUtils.getMessage(exception)).build())
               .responseCode(ResponseCode.FAILED)
               .accountId(delegateTask.getAccountId())
               .build();
-      delegateTaskService.handleResponseV2(delegateTask, taskQuery, response);
+      delegateTaskService.handleResponseV2(delegateTask, response);
       if (featureFlagService.isEnabled(
               FeatureName.FAIL_WORKFLOW_IF_SECRET_DECRYPTION_FAILS, delegateTask.getAccountId())) {
         throw exception;

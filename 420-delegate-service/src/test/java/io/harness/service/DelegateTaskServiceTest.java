@@ -135,7 +135,7 @@ public class DelegateTaskServiceTest extends DelegateServiceTestBase {
                                                     .accountId(TEST_ACCOUNT_ID)
                                                     .build();
 
-    delegateTaskService.handleResponseV2(delegateTask, null, delegateTaskResponse);
+    delegateTaskService.handleResponseV2(delegateTask, delegateTaskResponse);
     DelegateSyncTaskResponse delegateSyncTaskResponse =
         persistence.get(DelegateSyncTaskResponse.class, delegateTask.getUuid());
     Object responseData = referenceFalseKryoSerializer.asInflatedObject(delegateSyncTaskResponse.getResponseData());
