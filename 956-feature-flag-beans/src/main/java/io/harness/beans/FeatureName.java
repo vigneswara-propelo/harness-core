@@ -734,23 +734,13 @@ public enum FeatureName {
   STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_PCF_DEPLOYMENTS,
   STOP_INSTANCE_SYNC_VIA_ITERATOR_FOR_PDC_DEPLOYMENTS,
   STOP_SHOWING_RUNNING_EXECUTIONS,
-  STO_AI_ENHANCED_REMEDIATIONS(
-      "Enable STO to enhance security issues with remediation information using generative AI", HarnessTeam.STO),
   STO_ALL_ISSUES_PAGE("Enable all issues page for STO", HarnessTeam.STO),
-  STO_DROPDOWN_FILTERS("Enable dropdown filters for STO", HarnessTeam.STO),
-  STO_EXEMPTION_DETAILS("Enable exemption details for STO", HarnessTeam.STO),
   STO_JIRA_INTEGRATION("Enable Jira integration for STO", HarnessTeam.STO),
   STO_STEPS_TEST_MODE(
       "Enable the rest of STO Steps Q3 2023 and beyond, NOT READY for use in PRODUCTION", HarnessTeam.STO),
   STO_STEP_PALETTE_ANCHORE_ENTERPRISE("Enable Anchor Enterprise step for STO", HarnessTeam.STO),
   STO_STEP_PALETTE_AQUASEC("Enable Aquasec step for STO", HarnessTeam.STO),
-  STO_STEP_PALETTE_BURP_ENTERPRISE("Enable Burp Enterprise step for STO", HarnessTeam.STO),
-  STO_STEP_PALETTE_CODEQL("Enable CodeQL step for STO", HarnessTeam.STO),
   STO_STEP_PALETTE_COVERITY("Enable Coverity step for STO", HarnessTeam.STO),
-  STO_STEP_PALETTE_FOSSA("Enable Fossa step for STO", HarnessTeam.STO),
-  STO_STEP_PALETTE_GIT_LEAKS("Enable Gitleaks step for STO", HarnessTeam.STO),
-  STO_STEP_PALETTE_SEMGREP("Enable Semgrep step for STO", HarnessTeam.STO),
-  STO_STEP_PALETTE_SYSDIG("Enable Sysdig step for STO", HarnessTeam.STO),
   STO_TIMEBOUND_EXEMPTIONS("Enable timebound exemptions for STO", HarnessTeam.STO),
   SUPERVISED_TS_THRESHOLD,
   SYNC_GIT_CLONE_AND_COPY_TO_DEST_DIR(
