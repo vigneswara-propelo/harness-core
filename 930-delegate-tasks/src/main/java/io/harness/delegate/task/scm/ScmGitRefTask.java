@@ -85,6 +85,16 @@ public class ScmGitRefTask extends AbstractDelegateRunnableTask {
             .listCommitsResponse(listCommitsResponse.toByteArray())
             .build();
       }
+      case PULL_REQUEST: {
+        FindPRResponse findPRResponse = scmDelegateClient.processScmRequest(c
+            -> scmServiceClient.findPR(
+                scmGitRefTaskParams.getScmConnector(), scmGitRefTaskParams.getPrNumber(), SCMGrpc.newBlockingStub(c)));
+        return ScmGitRefTaskResponseData.builder()
+            .gitRefType(scmGitRefTaskParams.getGitRefType())
+            .repoUrl(scmGitRefTaskParams.getScmConnector().getUrl())
+            .findPRResponse(findPRResponse.toByteArray())
+            .build();
+      }
       case PULL_REQUEST_COMMITS: {
         ListCommitsInPRResponse listCommitsInPRResponse = scmDelegateClient.processScmRequest(c
             -> scmServiceClient.listCommitsInPR(

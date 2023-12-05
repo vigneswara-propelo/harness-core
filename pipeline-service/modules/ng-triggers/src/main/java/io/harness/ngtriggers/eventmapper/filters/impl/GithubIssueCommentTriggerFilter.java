@@ -12,6 +12,8 @@ import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.ngtriggers.beans.response.TriggerEventResponse.FinalStatus.EXCEPTION_WHILE_PROCESSING;
 import static io.harness.ngtriggers.beans.response.TriggerEventResponse.FinalStatus.FAILED_TO_FETCH_PR_DETAILS;
 
+import static software.wings.beans.TaskType.SCM_GIT_REF_TASK;
+
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -21,6 +23,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.DecryptableEntity;
 import io.harness.beans.DelegateTaskRequest;
+import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
 import io.harness.beans.IssueCommentWebhookEvent;
 import io.harness.beans.Repository;
@@ -34,6 +37,9 @@ import io.harness.delegate.beans.gitapi.GitApiRequestType;
 import io.harness.delegate.beans.gitapi.GitApiTaskParams;
 import io.harness.delegate.beans.gitapi.GitApiTaskResponse;
 import io.harness.delegate.beans.gitapi.GitRepoType;
+import io.harness.delegate.task.scm.GitRefType;
+import io.harness.delegate.task.scm.ScmGitRefTaskParams;
+import io.harness.delegate.task.scm.ScmGitRefTaskResponseData;
 import io.harness.exception.ConnectorNotFoundException;
 import io.harness.exception.TriggerException;
 import io.harness.exception.WingsException;
@@ -44,8 +50,8 @@ import io.harness.ngtriggers.beans.scm.WebhookPayloadData;
 import io.harness.ngtriggers.eventmapper.filters.TriggerFilter;
 import io.harness.ngtriggers.eventmapper.filters.dto.FilterRequestData;
 import io.harness.ngtriggers.helpers.TriggerEventResponseHelper;
+import io.harness.ngtriggers.utils.SCMDataObtainer;
 import io.harness.ngtriggers.utils.TaskExecutionUtils;
-import io.harness.ngtriggers.utils.WebhookEventPayloadParser;
 import io.harness.product.ci.scm.proto.FindPRResponse;
 import io.harness.product.ci.scm.proto.ParseWebhookResponse;
 import io.harness.product.ci.scm.proto.PullRequest;
@@ -62,12 +68,14 @@ import io.harness.tasks.BinaryResponseData;
 import io.harness.tasks.ErrorResponseData;
 import io.harness.tasks.ResponseData;
 import io.harness.utils.ConnectorUtils;
+import io.harness.utils.PmsFeatureFlagService;
 import io.harness.yaml.utils.JsonPipelineUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -82,16 +90,17 @@ import org.apache.commons.lang3.StringUtils;
 @Singleton
 @OwnedBy(PIPELINE)
 public class GithubIssueCommentTriggerFilter implements TriggerFilter {
-  private TaskExecutionUtils taskExecutionUtils;
   private ConnectorUtils connectorUtils;
   private KryoSerializer kryoSerializer;
   @Inject @Named("referenceFalseKryoSerializer") private KryoSerializer referenceFalseKryoSerializer;
-  private WebhookEventPayloadParser webhookEventPayloadParser;
   private PayloadConditionsTriggerFilter payloadConditionsTriggerFilter;
-  private WebhookParserSCMService webhookParserSCMService;
-  private SecretDecryptor secretDecryptor;
+  private PmsFeatureFlagService pmsFeatureFlagService;
   private SCMBlockingStub scmBlockingStub;
+  private SCMDataObtainer scmDataObtainer;
   private ScmServiceClient scmServiceClient;
+  private SecretDecryptor secretDecryptor;
+  private TaskExecutionUtils taskExecutionUtils;
+  private WebhookParserSCMService webhookParserSCMService;
   public static final String PATH_SEPARATOR = "/";
   private static final Duration RETRY_SLEEP_DURATION = Duration.ofSeconds(2);
   private static final int MAX_ATTEMPTS = 3;
@@ -219,10 +228,15 @@ public class GithubIssueCommentTriggerFilter implements TriggerFilter {
         boolean executeOnDelegate =
             connectorDetails.getExecuteOnDelegate() == null || connectorDetails.getExecuteOnDelegate();
         if (executeOnDelegate) {
-          GitApiTaskResponse taskResponse = buildAndFireDelegateTask(webhookPayloadData, details, connectorDetails);
-          if (taskResponse.getCommandExecutionStatus() == SUCCESS) {
-            GitApiFindPRTaskResponse gitApiResult = (GitApiFindPRTaskResponse) taskResponse.getGitApiResult();
-            return Optional.of(generateProtoFromJson(gitApiResult.getPrJson()));
+          if (pmsFeatureFlagService.isEnabled(filterRequestData.getAccountId(),
+                  FeatureName.CDS_NG_USE_SCM_FOR_PR_DETAILS_ON_ISSUE_COMMENT_TRIGGER)) {
+            return Optional.of(getPullRequestDetailsWithDelegateScm(webhookPayloadData, details, connectorDetails));
+          } else {
+            GitApiTaskResponse taskResponse = buildAndFireDelegateTask(webhookPayloadData, details, connectorDetails);
+            if (taskResponse.getCommandExecutionStatus() == SUCCESS) {
+              GitApiFindPRTaskResponse gitApiResult = (GitApiFindPRTaskResponse) taskResponse.getGitApiResult();
+              return Optional.of(generateProtoFromJson(gitApiResult.getPrJson()));
+            }
           }
         } else {
           return Optional.of(getPrJsonDetailsViaManager(connectorDetails, webhookPayloadData));
@@ -281,6 +295,47 @@ public class GithubIssueCommentTriggerFilter implements TriggerFilter {
         throw new TriggerException(
             String.format("Failed to fetch PR Details. Reason: {}", errorResponseData.getErrorMessage()),
             WingsException.SRE);
+      }
+    }
+    throw new TriggerException("Failed to fetch PR Details", WingsException.SRE);
+  }
+
+  private PullRequest getPullRequestDetailsWithDelegateScm(
+      WebhookPayloadData webhookPayloadData, TriggerDetails details, ConnectorDetails connectorDetails) {
+    ScmConnector scmConnector = (ScmConnector) connectorDetails.getConnectorConfig();
+    scmConnector.setUrl(scmDataObtainer.getGitURL(connectorDetails, details));
+    ScmGitRefTaskParams scmGitRefTaskParams =
+        ScmGitRefTaskParams.builder()
+            .prNumber(
+                Long.parseLong(((IssueCommentWebhookEvent) webhookPayloadData.getWebhookEvent()).getPullRequestNum()))
+            .gitRefType(GitRefType.PULL_REQUEST)
+            .encryptedDataDetails(connectorDetails.getEncryptedDataDetails())
+            .scmConnector(scmConnector)
+            .build();
+    ResponseData responseData =
+        taskExecutionUtils.executeSyncTask(DelegateTaskRequest.builder()
+                                               .accountId(details.getNgTriggerEntity().getAccountId())
+                                               .executionTimeout(Duration.ofSeconds(30))
+                                               .taskType(SCM_GIT_REF_TASK.name())
+                                               .taskParameters(scmGitRefTaskParams)
+                                               .build());
+
+    if (BinaryResponseData.class.isAssignableFrom(responseData.getClass())) {
+      BinaryResponseData binaryResponseData = (BinaryResponseData) responseData;
+      Object object = binaryResponseData.isUsingKryoWithoutReference()
+          ? referenceFalseKryoSerializer.asInflatedObject(binaryResponseData.getData())
+          : kryoSerializer.asInflatedObject(binaryResponseData.getData());
+      if (ScmGitRefTaskResponseData.class.isAssignableFrom(object.getClass())) {
+        ScmGitRefTaskResponseData scmGitRefTaskResponseData = (ScmGitRefTaskResponseData) object;
+        try {
+          return FindPRResponse.parseFrom(scmGitRefTaskResponseData.getFindPRResponse()).getPr();
+        } catch (InvalidProtocolBufferException e) {
+          throw new TriggerException("Failed to fetch PR Details. Reason: " + e.getMessage(), WingsException.SRE);
+        }
+      } else if (object instanceof ErrorResponseData) {
+        ErrorResponseData errorResponseData = (ErrorResponseData) object;
+        throw new TriggerException(
+            "Failed to fetch PR Details. Reason: " + errorResponseData.getErrorMessage(), WingsException.SRE);
       }
     }
     throw new TriggerException("Failed to fetch PR Details", WingsException.SRE);

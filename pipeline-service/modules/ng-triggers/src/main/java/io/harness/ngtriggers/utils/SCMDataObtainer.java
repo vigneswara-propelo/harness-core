@@ -123,6 +123,15 @@ public class SCMDataObtainer implements GitProviderBaseDataObtainer {
     return gitUrl;
   }
 
+  public String getGitURL(ConnectorDetails connectorDetails, TriggerDetails triggerDetails) {
+    ScmConnector scmConnector = (ScmConnector) connectorDetails.getConnectorConfig();
+    WebhookTriggerConfigV2 webhookTriggerConfigV2 =
+        (WebhookTriggerConfigV2) triggerDetails.getNgTriggerConfigV2().getSource().getSpec();
+    GitAware gitAware = WebhookConfigHelper.retrieveGitAware(webhookTriggerConfigV2);
+    String repoName = gitAware.fetchRepoName();
+    return getGitURL(retrieveGitConnectionType(connectorDetails), scmConnector.getUrl(), repoName);
+  }
+
   public String retrieveGenericGitConnectorURL(String repoName, GitConnectionType connectionType, String url) {
     String gitUrl = "";
     if (connectionType == GitConnectionType.REPO) {
@@ -210,12 +219,7 @@ public class SCMDataObtainer implements GitProviderBaseDataObtainer {
     ScmConnector scmConnector = (ScmConnector) connectorDetails.getConnectorConfig();
 
     try {
-      WebhookTriggerConfigV2 webhookTriggerConfigV2 =
-          (WebhookTriggerConfigV2) triggerDetails.getNgTriggerConfigV2().getSource().getSpec();
-      GitAware gitAware = WebhookConfigHelper.retrieveGitAware(webhookTriggerConfigV2);
-      String repoName = gitAware.fetchRepoName();
-
-      scmConnector.setUrl(getGitURL(retrieveGitConnectionType(connectorDetails), scmConnector.getUrl(), repoName));
+      scmConnector.setUrl(getGitURL(connectorDetails, triggerDetails));
     } catch (Exception ex) {
       log.error("Failed to update url");
     }

@@ -11,17 +11,22 @@ import static io.harness.ngtriggers.beans.response.TriggerEventResponse.FinalSta
 import static io.harness.rule.OwnerRule.MEET;
 import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
 import static io.harness.rule.OwnerRule.SHIVAM;
+import static io.harness.rule.OwnerRule.VINICIUS;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.harness.CategoryTest;
+import io.harness.beans.FeatureName;
 import io.harness.beans.IssueCommentWebhookEvent;
 import io.harness.beans.Repository;
 import io.harness.category.element.UnitTests;
@@ -34,6 +39,8 @@ import io.harness.delegate.beans.connector.scm.github.GithubConnectorDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubTokenSpecDTO;
 import io.harness.delegate.beans.gitapi.GitApiFindPRTaskResponse;
 import io.harness.delegate.beans.gitapi.GitApiTaskResponse;
+import io.harness.delegate.task.scm.GitRefType;
+import io.harness.delegate.task.scm.ScmGitRefTaskResponseData;
 import io.harness.encryption.SecretRefData;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.ngtriggers.beans.config.NGTriggerConfigV2;
@@ -48,6 +55,7 @@ import io.harness.ngtriggers.beans.response.TriggerEventResponse;
 import io.harness.ngtriggers.beans.scm.WebhookPayloadData;
 import io.harness.ngtriggers.eventmapper.filters.dto.FilterRequestData;
 import io.harness.ngtriggers.mapper.NGTriggerElementMapper;
+import io.harness.ngtriggers.utils.SCMDataObtainer;
 import io.harness.ngtriggers.utils.TaskExecutionUtils;
 import io.harness.polling.contracts.BuildInfo;
 import io.harness.polling.contracts.Metadata;
@@ -69,6 +77,7 @@ import io.harness.service.ScmServiceClient;
 import io.harness.service.WebhookParserSCMService;
 import io.harness.tasks.BinaryResponseData;
 import io.harness.utils.ConnectorUtils;
+import io.harness.utils.PmsFeatureFlagService;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -76,6 +85,7 @@ import ch.qos.logback.core.read.ListAppender;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.inject.Inject;
+import com.google.protobuf.util.JsonFormat;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -103,6 +113,8 @@ public class GithubIssueCommentTriggerFilterTest extends CategoryTest {
   @Mock PayloadConditionsTriggerFilter payloadConditionsTriggerFilter;
   @Mock ScmServiceClient scmServiceClient;
   @Mock SecretDecryptor secretDecryptor;
+  @Mock PmsFeatureFlagService pmsFeatureFlagService;
+  @Mock SCMDataObtainer scmDataObtainer;
   private static Repository repository1 = Repository.builder()
                                               .httpURL("https://github.com/owner1/repo1.git")
                                               .sshURL("git@github.com:owner1/repo1.git")
@@ -174,6 +186,8 @@ public class GithubIssueCommentTriggerFilterTest extends CategoryTest {
     listAppender = new ListAppender<>();
     listAppender.start();
     logger.addAppender(listAppender);
+    when(pmsFeatureFlagService.isEnabled(any(), eq(FeatureName.CDS_NG_USE_SCM_FOR_PR_DETAILS_ON_ISSUE_COMMENT_TRIGGER)))
+        .thenReturn(false);
   }
 
   @Test
@@ -259,6 +273,99 @@ public class GithubIssueCommentTriggerFilterTest extends CategoryTest {
         githubIssueCommentTriggerFilter.applyFilter(filterRequestData);
     assertThat(webhookEventMappingResponse).isNotNull();
     assertThat(webhookEventMappingResponse.isFailedToFindTrigger()).isFalse();
+  }
+
+  @Test
+  @Owner(developers = VINICIUS)
+  @Category(UnitTests.class)
+  public void applyFilterTestWithDelegateUsingSCM() throws IOException {
+    when(pmsFeatureFlagService.isEnabled(any(), eq(FeatureName.CDS_NG_USE_SCM_FOR_PR_DETAILS_ON_ISSUE_COMMENT_TRIGGER)))
+        .thenReturn(true);
+    Map<String, String> metadata = new HashMap<>();
+    metadata.put("key1", "value1");
+    metadata.put("key2", "value1value2");
+    Long creatAt = 12L;
+    ClassLoader classLoader = getClass().getClassLoader();
+    String ngTriggerYaml_github_pr =
+        Resources.toString(Objects.requireNonNull(classLoader.getResource("ng-trigger-github-filePath-pr-v2.yaml")),
+            StandardCharsets.UTF_8);
+    NGTriggerConfigV2 ngTriggerConfigV2 = ngTriggerElementMapper.toTriggerConfigV2(ngTriggerYaml_github_pr);
+    ParseWebhookResponse parseWebhookResponse =
+        ParseWebhookResponse.newBuilder()
+            .setPr(PullRequestHook.newBuilder().setPr(PullRequest.newBuilder().setNumber(2).build()).build())
+            .setComment(IssueCommentHook.newBuilder()
+                            .setIssue(Issue.newBuilder().setPr(PullRequest.newBuilder().build()).build())
+                            .build())
+            .setPush(PushHook.newBuilder().addCommits(Commit.newBuilder().build()).build())
+            .build();
+    TriggerDetails details1 =
+        TriggerDetails.builder()
+            .ngTriggerEntity(
+                NGTriggerEntity.builder()
+                    .accountId("acc")
+                    .orgIdentifier("org")
+                    .projectIdentifier("proj")
+                    .metadata(NGTriggerMetadata.builder()
+                                  .webhook(WebhookMetadata.builder()
+                                               .type("GITHUB")
+                                               .git(GitMetadata.builder().connectorIdentifier("account.con1").build())
+                                               .build())
+                                  .build())
+                    .build())
+            .ngTriggerConfigV2(ngTriggerConfigV2)
+            .build();
+
+    TriggerWebhookEvent triggerWebhookEvent =
+        TriggerWebhookEvent.builder().payload(pushPayload).sourceRepoType("Github").createdAt(creatAt).build();
+
+    FilterRequestData filterRequestData =
+        FilterRequestData.builder()
+            .accountId("p")
+            .webhookPayloadData(
+                WebhookPayloadData.builder()
+                    .originalEvent(TriggerWebhookEvent.builder().accountId("acc").sourceRepoType("GITHUB").build())
+                    .webhookEvent(IssueCommentWebhookEvent.builder().pullRequestNum("20").build())
+                    .originalEvent(triggerWebhookEvent)
+                    .parseWebhookResponse(parseWebhookResponse)
+                    .repository(repository1)
+                    .build())
+            .pollingResponse(PollingResponse.newBuilder()
+                                 .setBuildInfo(BuildInfo.newBuilder()
+                                                   .addAllVersions(Collections.singletonList("release.1234"))
+                                                   .addAllMetadata(Collections.singletonList(
+                                                       Metadata.newBuilder().putAllMetadata(metadata).build()))
+                                                   .build())
+                                 .build())
+            .details(asList(details1))
+            .build();
+    byte[] data = new byte[0];
+
+    doReturn(BinaryResponseData.builder().data(data).build()).when(taskExecutionUtils).executeSyncTask(any());
+    final URL testFile = classLoader.getResource("github_PR.json");
+    String prJson = Resources.toString(testFile, Charsets.UTF_8);
+    PullRequest.Builder prBuilder = PullRequest.newBuilder();
+    JsonFormat.parser().ignoringUnknownFields().merge(prJson, prBuilder);
+    doReturn(ScmGitRefTaskResponseData.builder()
+                 .gitRefType(GitRefType.PULL_REQUEST)
+                 .findPRResponse(FindPRResponse.newBuilder().setPr(prBuilder.build()).build().toByteArray())
+                 .build())
+        .when(kryoSerializer)
+        .asInflatedObject(any());
+    doReturn(WebhookEventMappingResponse.builder()
+                 .webhookEventResponse(TriggerEventResponse.builder().payload(pushPayload).build())
+                 .failedToFindTrigger(false)
+                 .build())
+        .when(payloadConditionsTriggerFilter)
+        .applyFilter(filterRequestData);
+    ConnectorDetails connectorDetails =
+        ConnectorDetails.builder().connectorConfig(GithubConnectorDTO.builder().build()).build();
+    when(connectorUtils.getConnectorDetails(any(), any())).thenReturn(connectorDetails);
+    when(scmDataObtainer.getGitURL(connectorDetails, details1)).thenReturn("gitUrl");
+    WebhookEventMappingResponse webhookEventMappingResponse =
+        githubIssueCommentTriggerFilter.applyFilter(filterRequestData);
+    assertThat(webhookEventMappingResponse).isNotNull();
+    assertThat(webhookEventMappingResponse.isFailedToFindTrigger()).isFalse();
+    verify(scmDataObtainer, times(1)).getGitURL(connectorDetails, details1);
   }
 
   @Test

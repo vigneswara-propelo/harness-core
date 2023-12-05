@@ -47,6 +47,8 @@ import io.harness.ngtriggers.beans.source.NGTriggerSourceV2;
 import io.harness.ngtriggers.beans.source.WebhookTriggerType;
 import io.harness.ngtriggers.beans.source.webhook.WebhookSourceRepo;
 import io.harness.ngtriggers.beans.source.webhook.v2.WebhookTriggerConfigV2;
+import io.harness.ngtriggers.beans.source.webhook.v2.github.GithubSpec;
+import io.harness.ngtriggers.beans.source.webhook.v2.github.event.GithubIssueCommentSpec;
 import io.harness.ngtriggers.eventmapper.filters.dto.FilterRequestData;
 import io.harness.product.ci.scm.proto.Commit;
 import io.harness.product.ci.scm.proto.ListCommitsInPRResponse;
@@ -112,6 +114,35 @@ public class SCMDataObtainerTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGetGitURL() {
     String gitURL = scmDataObtainer.getGitURL(GitConnectionType.ACCOUNT, "url", "repo_name");
+    assertThat(gitURL).isEqualTo("url/repo_name.git");
+  }
+
+  @Test
+  @Owner(developers = VINICIUS)
+  @Category(UnitTests.class)
+  public void testGetGitURLWithConnectorAndTriggerDetails() {
+    ConnectorDetails connectorDetails =
+        ConnectorDetails.builder()
+            .connectorType(ConnectorType.GITHUB)
+            .connectorConfig(GithubConnectorDTO.builder().connectionType(GitConnectionType.ACCOUNT).url("url").build())
+            .executeOnDelegate(true)
+            .build();
+    TriggerDetails triggerDetails =
+        TriggerDetails.builder()
+            .ngTriggerConfigV2(
+                NGTriggerConfigV2.builder()
+                    .source(
+                        NGTriggerSourceV2.builder()
+                            .spec(WebhookTriggerConfigV2.builder()
+                                      .type(WebhookTriggerType.GITHUB)
+                                      .spec(GithubSpec.builder()
+                                                .spec(GithubIssueCommentSpec.builder().repoName("repo_name").build())
+                                                .build())
+                                      .build())
+                            .build())
+                    .build())
+            .build();
+    String gitURL = scmDataObtainer.getGitURL(connectorDetails, triggerDetails);
     assertThat(gitURL).isEqualTo("url/repo_name.git");
   }
 
