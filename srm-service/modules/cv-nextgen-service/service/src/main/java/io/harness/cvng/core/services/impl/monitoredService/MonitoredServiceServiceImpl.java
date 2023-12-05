@@ -251,6 +251,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
   private static final String SERVICE_ACCOUNT_CHECK = "account";
   private static final String SERVICE_ORG_CHECK = "org";
+  private static final String INPUT_REGEX = "^[a-zA-Z0-9._-]+$";
 
   @Override
   public MonitoredServiceResponse create(String accountId, MonitoredServiceDTO monitoredServiceDTO) {
@@ -1448,6 +1449,15 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     if (monitoredServiceDTO.getType().equals(MonitoredServiceType.APPLICATION)) {
       Preconditions.checkState(monitoredServiceDTO.getEnvironmentRefList().size() == 1,
           "Application monitored service cannot be attached to more than one environment");
+    }
+    if (!monitoredServiceDTO.getServiceRef().matches(INPUT_REGEX)) {
+      throw new InvalidRequestException("Only alphanumerics, . - and _ "
+          + "are allowed in service identifier");
+    }
+
+    if (!monitoredServiceDTO.getEnvironmentRef().matches(INPUT_REGEX)) {
+      throw new InvalidRequestException("Only alphanumerics, . - and _ are "
+          + "allowed in environment identifier");
     }
 
     if (featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SRM_MONITORED_SERVICE_VALIDATION.name())) {

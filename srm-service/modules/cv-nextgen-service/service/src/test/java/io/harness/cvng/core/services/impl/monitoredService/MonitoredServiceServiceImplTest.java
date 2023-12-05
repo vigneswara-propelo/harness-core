@@ -425,6 +425,30 @@ public class MonitoredServiceServiceImplTest extends CvNextGenTestBase {
   }
 
   @Test
+  @Owner(developers = NAVEEN)
+  @Category(UnitTests.class)
+  public void testCreate_withInvalidServiceIdentifier() {
+    MonitoredServiceDTO monitoredServiceDTO = createMonitoredServiceDTO();
+    monitoredServiceDTO.setServiceRef("$serviceIdentifier");
+    assertThatThrownBy(
+        () -> monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Only alphanumerics, . - and _ are allowed in service identifier");
+  }
+
+  @Test
+  @Owner(developers = NAVEEN)
+  @Category(UnitTests.class)
+  public void testCreate_withInvalidEnvironmentIdentifier() {
+    MonitoredServiceDTO monitoredServiceDTO = createMonitoredServiceDTO();
+    monitoredServiceDTO.setEnvironmentRef("$environmentIdentifier");
+    assertThatThrownBy(
+        () -> monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Only alphanumerics, . - and _ are allowed in environment identifier");
+  }
+
+  @Test
   @Owner(developers = ABHIJITH)
   @Category(UnitTests.class)
   public void testCreateFromYaml() {
