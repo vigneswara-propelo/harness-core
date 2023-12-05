@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	apiKeyEndpoint    = "/ng/api/token/validate?accountIdentifier=%s"
+	apiKeyEndpoint    = "/token/validate?accountIdentifier=%s"
 	accountEndpoint   = "/gateway/api/account/%s"
 	aclEndpoint       = "/acl"
 	authAPIKeyHeader  = "x-api-key"
