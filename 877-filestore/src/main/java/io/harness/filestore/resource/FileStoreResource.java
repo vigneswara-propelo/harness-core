@@ -6,6 +6,7 @@
  */
 
 package io.harness.filestore.resource;
+
 import static io.harness.NGCommonEntityConstants.ACCOUNT_KEY;
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_YAML_MEDIA_TYPE;
@@ -79,6 +80,8 @@ import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.serializer.JsonUtils;
 import io.harness.utils.PageUtils;
 
+import com.codahale.metrics.annotation.ResponseMetered;
+import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
@@ -154,6 +157,8 @@ public class FileStoreResource {
   @ApiOperation(value = "Create Folder or File including content", nickname = "create")
   @Operation(operationId = "create", summary = "Create Folder or File including content",
       responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns create response") })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<FileDTO>
   create(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
@@ -180,6 +185,8 @@ public class FileStoreResource {
   @ApiOperation(value = "Update Folder or File including content", nickname = "update")
   @Operation(operationId = "update", summary = "Update Folder or File including content",
       responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns update response") })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<FileDTO>
   update(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
@@ -211,6 +218,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Get the Folder or File metadata")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<FileDTO>
   getFile(@Parameter(description = FILE_PARAM_MESSAGE) @PathParam(
               IDENTIFIER_KEY) @NotBlank @EntityIdentifier String identifier,
@@ -241,6 +250,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Download File content")
       })
+  @Timed
+  @ResponseMetered
   public Response
   downloadFile(@Parameter(description = FILE_PARAM_MESSAGE) @PathParam(
                    IDENTIFIER_KEY) @NotBlank @EntityIdentifier String fileIdentifier,
@@ -264,6 +275,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "List Files and Folders metadata")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<Page<FileDTO>>
   list(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
@@ -289,6 +302,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns true if deletion was successful.")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<Boolean>
   delete(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
@@ -314,6 +329,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "default", description = "Returns the folder populated with file store nodes as children")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<FolderNodeDTO>
   listFolderNodes(
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
@@ -340,6 +357,8 @@ public class FileStoreResource {
         ApiResponse(description = "Returns the folder populated with file store nodes as children")
       })
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<FolderNodeDTO>
   listFileStoreNodesOnPath(
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
@@ -360,6 +379,8 @@ public class FileStoreResource {
   @ApiOperation(value = "Create File or Folder metadata via YAML", nickname = "createViaYAML")
   @Operation(operationId = "createViaYAML", summary = "Creates File or Folder metadata via YAML",
       responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns create response") })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<FileDTO>
   createViaYaml(
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
@@ -385,6 +406,8 @@ public class FileStoreResource {
   @ApiOperation(value = "Update File or Folder metadata via YAML", nickname = "updateViaYAML")
   @Operation(operationId = "updateViaYAML", summary = "Update File or Folder metadata via YAML",
       responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns update response") })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<FileDTO>
   updateViaYaml(
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier,
@@ -418,6 +441,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns the list of entities where file is referenced by")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<PageResponse<EntitySetupUsageDTO>>
   getReferencedBy(@Parameter(description = "Page number of navigation. The default value is 0") @QueryParam(
                       PAGE_KEY) @DefaultValue("0") int page,
@@ -447,6 +472,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(description = "Returns the list of supported entity types for file")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<List<EntityType>>
   getSupportedEntityTypes(
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotBlank String accountIdentifier) {
@@ -464,6 +491,8 @@ public class FileStoreResource {
       {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns filtered list of Files or Folder")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<Page<FileDTO>>
   listFilesWithFilter(
       @RequestBody(description = "Details of Page including: size, index, sort") @BeanParam PageRequest pageRequest,
@@ -491,6 +520,8 @@ public class FileStoreResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(description = "Returns the list of created by user details")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<Set<EmbeddedUserDetailsDTO>>
   getCreatedByList(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) String accountIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(ORG_KEY) String orgIdentifier,
@@ -512,6 +543,8 @@ public class FileStoreResource {
       {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns the file content of scopedFilePath")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<String>
   getFileContentUsingScopedFilePath(@Parameter(description = SCOPED_FILE_PATH_PARAM_MESSAGE) @PathParam(
                                         "scopedFilePath") @NotBlank String scopedFilePath,

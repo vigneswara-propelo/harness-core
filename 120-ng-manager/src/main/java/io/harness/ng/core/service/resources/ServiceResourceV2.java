@@ -755,6 +755,8 @@ public class ServiceResourceV2 {
   @Path("/runtimeInputs/{serviceIdentifier}")
   @ApiOperation(value = "This api returns runtime input YAML", nickname = "getRuntimeInputsServiceEntity")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<NGEntityTemplateResponseDTO> getServiceRuntimeInputs(
       @Parameter(description = SERVICE_PARAM_MESSAGE) @PathParam(
           "serviceIdentifier") @ResourceIdentifier String serviceIdentifier,
@@ -786,6 +788,8 @@ public class ServiceResourceV2 {
   @ApiOperation(
       value = "This api returns service YAML and runtime input YAML", nickname = "getServicesYamlAndRuntimeInputs")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<ServicesV2YamlMetadataDTO>
   getServicesYamlAndRuntimeInputs(@Parameter(description = SERVICE_YAML_METADATA_INPUT_PARAM_MESSAGE) @Valid
                                   @NotNull ServicesYamlMetadataApiInput servicesYamlMetadataApiInput,
@@ -807,6 +811,8 @@ public class ServiceResourceV2 {
   @ApiOperation(
       value = "This api returns service YAML and runtime input YAML", nickname = "getServicesYamlAndRuntimeInputsV2")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<ServicesV2YamlMetadataDTO>
   getServicesYamlAndRuntimeInputsV2(@Parameter(description = SERVICE_YAML_METADATA_INPUT_PARAM_MESSAGE) @Valid
                                     @NotNull ServicesYamlMetadataApiInputV2 servicesYamlMetadataApiInput,
@@ -857,6 +863,8 @@ public class ServiceResourceV2 {
   @ApiOperation(value = "This api returns artifact source identifiers and their runtime inputs YAML",
       nickname = "getArtifactSourceInputs")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<ArtifactSourcesResponseDTO>
   getArtifactSourceInputs(@Parameter(description = SERVICE_PARAM_MESSAGE) @PathParam(
                               "serviceIdentifier") @ResourceIdentifier String serviceIdentifier,
@@ -907,6 +915,8 @@ public class ServiceResourceV2 {
             responseCode = "default", description = "Returns all entity references in the artifact source template.")
       })
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<List<EntityDetailProtoDTO>>
   getEntityReferences(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
                           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
@@ -925,6 +935,8 @@ public class ServiceResourceV2 {
   @Path("/mergeServiceInputs/{serviceIdentifier}")
   @ApiOperation(value = "This api merges old and new service inputs YAML", nickname = "mergeServiceInputs")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<ServiceInputsMergedResponseDto> mergeServiceInputs(
       @Parameter(description = SERVICE_PARAM_MESSAGE) @PathParam(
           "serviceIdentifier") @ResourceIdentifier String serviceIdentifier,
@@ -948,6 +960,8 @@ public class ServiceResourceV2 {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(description = "Returns the list of Kubernetes Command Options")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<Set<K8sCommandFlagType>>
   getK8sCommandFlags(@QueryParam("serviceSpecType") @NotNull String serviceSpecType) {
     Set<K8sCommandFlagType> k8sCmdFlags = new HashSet<>();
@@ -984,6 +998,8 @@ public class ServiceResourceV2 {
   @ApiOperation(value = "This validates inputs for templates like artifact sources for service yaml",
       nickname = "validateTemplateInputs")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<ValidateTemplateInputsResponseDTO>
   validateTemplateInputs(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
                              NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
@@ -1052,6 +1068,8 @@ public class ServiceResourceV2 {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(description = "Returns the list of Kustomize Command Flags")
       })
+  @Timed
+  @ResponseMetered
   public ResponseDTO<Set<KustomizeCommandFlagType>>
   getKustomizeCommandFlags() {
     return ResponseDTO.newResponse(new HashSet<>(Arrays.asList(KustomizeCommandFlagType.values())));
@@ -1096,7 +1114,8 @@ public class ServiceResourceV2 {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns a list of all the repositories of all Services")
       })
-
+  @Timed
+  @ResponseMetered
   public ResponseDTO<RepoListResponseDTO>
   listRepos(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
                 NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
@@ -1121,6 +1140,8 @@ public class ServiceResourceV2 {
             responseCode = "default", description = "Fetches Service YAML from Harness DB and creates a remote entity")
       })
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<ServiceMoveConfigResponse>
   moveConfig(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
                  NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,

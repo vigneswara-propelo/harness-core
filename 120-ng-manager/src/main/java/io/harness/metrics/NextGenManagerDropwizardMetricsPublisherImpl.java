@@ -36,7 +36,6 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
   private static final Double SNAPSHOT_FACTOR = 1.0D / (double) TimeUnit.SECONDS.toNanos(1L);
   private static final Pattern METRIC_NAME_RE = Pattern.compile("[^a-zA-Z0-9:_]");
   private static final String NAMESPACE = System.getenv("NAMESPACE");
-  private static final String CONTAINER_NAME = System.getenv("CONTAINER_NAME");
   private static final String SERVICE_NAME = "ng-manager";
   private static final MetricFilter MUTABLE_SERVLET_CONTEXT_HANDLER_FILTER =
       MetricFilter.startsWith("io.dropwizard.jetty.MutableServletContextHandler");
@@ -45,7 +44,8 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
       List.of("io_harness_ng_core_service_resources_ServiceResourceV2_",
           "io_harness_ng_core_environment_resources_EnvironmentResourceV2_",
           "io_harness_ng_core_infrastructure_resource_InfrastructureResource_",
-          "io_harness_ng_core_artifacts_resources_docker_DockerArtifactResource_");
+          "io_harness_ng_core_artifacts_resources_docker_DockerArtifactResource_",
+          "io_harness_filestore_resource_FileStoreResource_");
   private static final MetricFilter SERVICE_RESOURCE_V2_FILTER =
       MetricFilter.startsWith("io.harness.ng.core.service.resources.ServiceResourceV2");
   private static final MetricFilter ENVIRONMENT_RESOURCE_V2_FILTER =
@@ -54,6 +54,10 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
       MetricFilter.startsWith("io.harness.ng.core.infrastructure.resource.InfrastructureResource");
   private static final MetricFilter DOCKER_ARTIFACT_RESOURCE_FILTER =
       MetricFilter.startsWith("io.harness.ng.core.artifacts.resources.docker.DockerArtifactResource");
+  private static final MetricFilter FILESTORE_RESOURCE_FILTER =
+      MetricFilter.startsWith("io.harness.filestore.resource.FileStoreResource");
+  private static final String NG_MANAGER_RESOURCE_RESPONSE_COUNT_METRIC_NAME =
+      "io_harness_ng_manager_resources_responses_count";
 
   @Override
   public void recordMetrics() {
@@ -66,6 +70,8 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
     metricRegistry.getMeters(INFRASTRUCTURE_RESOURCE_FILTER)
         .forEach((key, value) -> recordResourceMeter(sanitizeMetricName(key), value));
     metricRegistry.getMeters(DOCKER_ARTIFACT_RESOURCE_FILTER)
+        .forEach((key, value) -> recordResourceMeter(sanitizeMetricName(key), value));
+    metricRegistry.getMeters(FILESTORE_RESOURCE_FILTER)
         .forEach((key, value) -> recordResourceMeter(sanitizeMetricName(key), value));
 
     Set<Map.Entry<String, Gauge>> gaugeSet = metricRegistry.getGauges().entrySet();
@@ -82,15 +88,15 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
     }
   }
 
-  private void recordResourceMeter(String metricName, Meter meter) {
-    String[] s = metricName.split("_");
+  private void recordResourceMeter(String originalMetricName, Meter meter) {
+    String[] s = originalMetricName.split("_");
     if (s.length >= 4) {
       String statusCode = s[s.length - 2];
       String method = s[s.length - 3];
       String resource = s[s.length - 4];
       try (NextGenMetricsContext ignore =
                new NextGenMetricsContext(NAMESPACE, SERVICE_NAME, resource, method, statusCode)) {
-        recordMetric("io_harness_ng_manager_resources_responses_count", meter.getCount());
+        recordMetric(NG_MANAGER_RESOURCE_RESPONSE_COUNT_METRIC_NAME, meter.getCount());
       }
     }
   }
@@ -120,32 +126,32 @@ public class NextGenManagerDropwizardMetricsPublisherImpl implements MetricsPubl
   }
 
   private void recordTimer(String metricName, Timer timer) {
-    if (checkIfResourceMetrics(metricName)) {
-      addTimerMetricsForResources(metricName, timer);
-    }
-    try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME)) {
-      recordMetric(metricName + "_count", timer.getCount());
-      recordSnapshot(metricName + "_snapshot", timer.getSnapshot());
+    if (isNgManagerResourceMetric(metricName)) {
+      addTimerMetricsForResources(metricName, "io_harness_ng_manager_resources_total", timer);
+    } else {
+      try (NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME)) {
+        recordMetric(metricName + "_count", timer.getCount());
+        recordSnapshot(metricName + "_snapshot", timer.getSnapshot());
+      }
     }
   }
 
-  private void addTimerMetricsForResources(String metricName, Timer timer) {
-    String[] s = metricName.split("_");
+  private void addTimerMetricsForResources(String originalMetricName, String metricName, Timer timer) {
+    String[] s = originalMetricName.split("_");
     if (s.length >= 3) {
       String methodName = s[s.length - 2];
       String resourceName = s[s.length - 3];
       try (
           NextGenMetricsContext ignore = new NextGenMetricsContext(NAMESPACE, SERVICE_NAME, resourceName, methodName)) {
-        String modifiedMetricName = "io_harness_ng_manager_resources_total";
-        recordMetric(modifiedMetricName + "_count", timer.getCount());
+        recordMetric(metricName + "_count", timer.getCount());
         Snapshot snapshot = timer.getSnapshot();
-        recordMetric(modifiedMetricName + "_snapshot_95thPercentile", snapshot.get95thPercentile() * SNAPSHOT_FACTOR);
-        recordMetric(modifiedMetricName + "_snapshot_99thPercentile", snapshot.get99thPercentile() * SNAPSHOT_FACTOR);
+        recordMetric(metricName + "_snapshot_95thPercentile", snapshot.get95thPercentile() * SNAPSHOT_FACTOR);
+        recordMetric(metricName + "_snapshot_99thPercentile", snapshot.get99thPercentile() * SNAPSHOT_FACTOR);
       }
     }
   }
 
-  private boolean checkIfResourceMetrics(String metricName) {
+  private boolean isNgManagerResourceMetric(String metricName) {
     for (String resourceName : RESOURCE_METRIC_NAMES_PREFIXES) {
       // Logging only total metrics as we want to find total time spent for each api
       if (metricName.startsWith(resourceName) && metricName.contains("_total")) {

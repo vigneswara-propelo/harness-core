@@ -484,6 +484,8 @@ public class InfrastructureResource {
   @Path("/runtimeInputs")
   @ApiOperation(value = "This api returns Infrastructure Definition inputs YAML", nickname = "getInfrastructureInputs")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<NGEntityTemplateResponseDTO> getInfrastructureInputs(
       @Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
@@ -551,6 +553,8 @@ public class InfrastructureResource {
   @ApiOperation(value = "This api returns infrastructure YAML and runtime input YAML",
       nickname = "getInfrastructureYamlAndRuntimeInputs")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<InfrastructureYamlMetadataDTO>
   getInfrastructureYamlAndRuntimeInputs(@Parameter(description = INFRASTRUCTURE_YAML_METADATA_INPUT_PARAM_MESSAGE)
                                         @Valid @NotNull InfrastructureYamlMetadataApiInput infrastructureYamlMetadata,
@@ -574,6 +578,8 @@ public class InfrastructureResource {
   @ApiOperation(value = "This api returns infrastructure YAML and runtime input YAML",
       nickname = "getInfrastructureYamlAndRuntimeInputsV2")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<InfrastructureYamlMetadataDTO>
   getInfrastructureYamlAndRuntimeInputsV2(
       @Parameter(description = INFRASTRUCTURE_YAML_METADATA_INPUT_PARAM_MESSAGE) @Valid
@@ -603,6 +609,8 @@ public class InfrastructureResource {
   @Path("/mergeInfrastructureInputs/{infraIdentifier}")
   @ApiOperation(value = "This api merges old and new infrastructure inputs YAML", nickname = "mergeInfraInputs")
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<InfrastructureInputsMergedResponseDto> mergeInfrastructureInputs(
       @Parameter(description = INFRA_PARAM_MESSAGE) @PathParam(
           "infraIdentifier") @ResourceIdentifier String infraIdentifier,
@@ -629,6 +637,8 @@ public class InfrastructureResource {
         ApiResponse(description = "Returns the list of Infrastructure accessible at the current scope")
       })
   @Hidden
+  @Timed
+  @ResponseMetered
   public ResponseDTO<List<InfrastructureResponse>>
   listAccessInfrastructures(@Parameter(description = NGCommonEntityConstants.PAGE_PARAM_MESSAGE) @QueryParam(
                                 NGCommonEntityConstants.PAGE) @DefaultValue("0") int page,
