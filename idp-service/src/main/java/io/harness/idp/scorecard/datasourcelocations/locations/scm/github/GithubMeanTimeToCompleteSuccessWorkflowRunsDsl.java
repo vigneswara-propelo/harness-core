@@ -30,8 +30,8 @@ public class GithubMeanTimeToCompleteSuccessWorkflowRunsDsl extends ScmBaseDslNo
         inputValues.stream().filter(inputValue -> inputValue.getKey().equals(FILE_PATH)).findFirst();
     if (inputValueOpt.isPresent()) {
       String inputValue = inputValueOpt.get().getValue();
+      inputValue = inputValue.replace("\"", "");
       if (!inputValue.isEmpty()) {
-        inputValue = inputValue.replace("\"", "");
         url = url.replace(WORKFLOW_ID, inputValue);
       }
     }

@@ -26,8 +26,8 @@ public interface ScmContentsDsl {
         inputValues.stream().filter(inputValue -> inputValue.getKey().equals(FILE_PATH)).findFirst();
     if (inputValueOpt.isPresent()) {
       String inputValue = inputValueOpt.get().getValue();
+      inputValue = inputValue.replace("\"", "");
       if (!inputValue.isEmpty()) {
-        inputValue = inputValue.replace("\"", "");
         requestBody = requestBody.replace(FILE_PATH_REPLACER, inputValue);
       }
     }
@@ -35,8 +35,8 @@ public interface ScmContentsDsl {
     inputValueOpt = inputValues.stream().filter(inputValue -> inputValue.getKey().equals(BRANCH_NAME)).findFirst();
     if (inputValueOpt.isPresent()) {
       String inputValue = inputValueOpt.get().getValue();
+      inputValue = inputValue.replace("\"", "");
       if (!inputValue.isEmpty()) {
-        inputValue = inputValue.replace("\"", "");
         requestBody = requestBody.replace(REPOSITORY_BRANCH, inputValue);
       }
     }

@@ -36,8 +36,8 @@ public class GithubOpenPullRequestsByAccountDsl extends ScmBaseDslNoLoop {
         inputValues.stream().filter(inputValue -> inputValue.getKey().equals(ACCOUNT_NAME)).findFirst();
     if (inputValueOpt.isPresent()) {
       String inputValue = inputValueOpt.get().getValue();
+      inputValue = inputValue.replace("\"", "");
       if (!inputValue.isEmpty()) {
-        inputValue = inputValue.replace("\"", "");
         requestBody = requestBody.replace(AUTHOR_NAME, inputValue);
       }
     }

@@ -63,9 +63,9 @@ public abstract class JiraBaseDsl extends DataSourceLocationNoLoop {
         inputValues.stream().filter(inputValue -> inputValue.getKey().equals(JQL)).findFirst();
     if (inputValueOpt.isPresent()) {
       String inputValue = inputValueOpt.get().getValue();
+      inputValue = inputValue.replaceFirst("\"", "");
+      inputValue = inputValue.substring(0, inputValue.length() - 1);
       if (!inputValue.isEmpty()) {
-        inputValue = inputValue.replaceFirst("\"", "");
-        inputValue = inputValue.substring(0, inputValue.length() - 1);
         requestBody = requestBody.replace("{JQL_EXPRESSION}", inputValue);
       }
     }

@@ -29,8 +29,8 @@ public class GitlabFileExistsDsl extends GitlabBaseDsl {
         inputValues.stream().filter(inputValue -> inputValue.getKey().equals(FILE_PATH)).findFirst();
     if (inputValueOpt.isPresent()) {
       String inputValue = inputValueOpt.get().getValue();
+      inputValue = inputValue.replace("\"", "");
       if (!inputValue.isEmpty()) {
-        inputValue = inputValue.replace("\"", "");
         int lastSlash = inputValue.lastIndexOf("/");
         if (lastSlash != -1) {
           String path = inputValue.substring(0, lastSlash);
