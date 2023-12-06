@@ -404,7 +404,7 @@ public class HelmTaskHelperBase {
           exitCode, repoAddCommandForLogging, processOutput);
       throw new HelmClientException(exceptionMessage, USER, HelmCliCommandType.REPO_ADD);
     }
-    checkIndexFile(repoName, tempDir, chartDirectory);
+    checkIndexFile(repoName, tempDir, chartDirectory, repoDisplayName);
   }
 
   public void addRepo(String repoName, String repoDisplayName, String chartRepoUrl, String username, char[] password,
@@ -1011,7 +1011,7 @@ public class HelmTaskHelperBase {
           exitCode, repoAddCommand, processOutput);
       throw new HelmClientException(exceptionMessage, USER, HelmCliCommandType.REPO_ADD);
     }
-    checkIndexFile(repoName, cacheDir, chartDirectory);
+    checkIndexFile(repoName, cacheDir, chartDirectory, repoDisplayName);
 
     if (isEmpty(cacheDir)) {
       return;
@@ -1820,9 +1820,9 @@ public class HelmTaskHelperBase {
   }
 
   @VisibleForTesting
-  void checkIndexFile(String repoName, String cacheDir, String chartDirectory) {
+  void checkIndexFile(String repoName, String cacheDir, String chartDirectory, String repoDisplayName) {
     File indexFile;
-    if (repoName.isEmpty()) {
+    if (repoName.isEmpty() && repoDisplayName.isEmpty()) {
       return;
     }
     if (!isEmpty(cacheDir)) {
@@ -1836,7 +1836,7 @@ public class HelmTaskHelperBase {
     }
     if (indexFile.exists() && (indexFile.length() > SAFE_LIMIT_OF_INDEX_FILE)) {
       double megabytes = (double) indexFile.length() / (1024 * 1024);
-      log.warn(String.format(INDEX_FILE_WARN_LOG, repoName, megabytes));
+      log.warn(String.format(INDEX_FILE_WARN_LOG, repoDisplayName, megabytes));
     }
   }
 }

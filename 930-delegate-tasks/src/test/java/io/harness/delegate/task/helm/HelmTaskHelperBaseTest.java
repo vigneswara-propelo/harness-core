@@ -1510,7 +1510,8 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
   public void testIndexLogicWhenFilesAreLarge() throws IOException {
     String cacheDir = "sample/cache/dir";
     String chartDirectory = "sample/chart/dir";
-    String repoName = "classicRepo";
+    String repoDisplayName = "classicRepo";
+    String repoName = "1234-5678";
     String helmRepoWithCache =
         HELM_CACHE_INDEX_FILE.replace(HelmConstants.REPO_NAME, repoName).replace(HELM_CACHE_HOME_PLACEHOLDER, cacheDir);
     String helmRepoWithChartDirectory =
@@ -1519,14 +1520,14 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
 
     createFileAndDirectories(helmRepoWithCache, 25);
     createFileAndDirectories(helmRepoWithChartDirectory, 25);
-    helmTaskHelperBase.checkIndexFile(repoName, cacheDir, null);
+    helmTaskHelperBase.checkIndexFile(repoName, cacheDir, null, repoDisplayName);
 
     FileIo.deleteDirectoryAndItsContentIfExists(cacheDir);
-    helmTaskHelperBase.checkIndexFile(repoName, "", chartDirectory);
+    helmTaskHelperBase.checkIndexFile(repoName, "", chartDirectory, repoDisplayName);
 
     long numberOfInvocations = loggerRule.getFormattedMessages()
                                    .stream()
-                                   .filter(log -> log.contains("This can lead to slowness of delegate"))
+                                   .filter(log -> log.contains("Index.yaml for helm repo: [classicRepo]"))
                                    .count();
     assertThat(numberOfInvocations).isEqualTo(2);
     FileIo.deleteDirectoryAndItsContentIfExists("sample");
@@ -1538,7 +1539,8 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
   public void testIndexLogicWhenFilesAreSmall() throws IOException {
     String cacheDir = "sample2/cache/dir";
     String chartDirectory = "sample2/chart/dir";
-    String repoName = "classicRepo";
+    String repoDisplayName = "classicRepo";
+    String repoName = "1234-5678";
     String helmRepoWithCache =
         HELM_CACHE_INDEX_FILE.replace(HelmConstants.REPO_NAME, repoName).replace(HELM_CACHE_HOME_PLACEHOLDER, cacheDir);
     String helmRepoWithChartDirectory =
@@ -1547,14 +1549,14 @@ public class HelmTaskHelperBaseTest extends CategoryTest {
 
     createFileAndDirectories(helmRepoWithCache, 15);
     createFileAndDirectories(helmRepoWithChartDirectory, 15);
-    helmTaskHelperBase.checkIndexFile(repoName, cacheDir, null);
+    helmTaskHelperBase.checkIndexFile(repoName, cacheDir, null, repoDisplayName);
 
     FileIo.deleteDirectoryAndItsContentIfExists(cacheDir);
-    helmTaskHelperBase.checkIndexFile(repoName, "", chartDirectory);
+    helmTaskHelperBase.checkIndexFile(repoName, "", chartDirectory, repoDisplayName);
 
     long numberOfInvocations = loggerRule.getFormattedMessages()
                                    .stream()
-                                   .filter(log -> log.contains("This can lead to slowness of delegate"))
+                                   .filter(log -> log.contains("Index.yaml for helm repo: [classicRepo]"))
                                    .count();
     assertThat(numberOfInvocations).isEqualTo(0);
     FileIo.deleteDirectoryAndItsContentIfExists("sample2");
