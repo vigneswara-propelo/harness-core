@@ -146,13 +146,13 @@ public class ACLGeneratorServiceImpl implements ACLGeneratorService {
       Set<ResourceSelector> resourceSelectors) {
     long numberOfACLsCreated = 0;
     List<ACL> acls = new ArrayList<>();
-    for (String principalIdentifier : principals) {
-      for (String permission : permissions) {
-        for (ResourceSelector resourceSelector : resourceSelectors) {
-          if (!inMemoryPermissionRepository.isPermissionCompatibleWithResourceSelector(
-                  permission, resourceSelector.getSelector())) {
-            continue;
-          }
+    for (String permission : permissions) {
+      for (ResourceSelector resourceSelector : resourceSelectors) {
+        if (!inMemoryPermissionRepository.isPermissionCompatibleWithResourceSelector(
+                permission, resourceSelector.getSelector())) {
+          continue;
+        }
+        for (String principalIdentifier : principals) {
           if (SERVICE_ACCOUNT.equals(roleAssignmentDBO.getPrincipalType())) {
             acls.add(buildACL(permission, Principal.of(SERVICE_ACCOUNT, principalIdentifier), roleAssignmentDBO,
                 resourceSelector, false, isEnabled(roleAssignmentDBO)));
@@ -206,12 +206,12 @@ public class ACLGeneratorServiceImpl implements ACLGeneratorService {
         ResourceSelector resourceSelector =
             ResourceSelector.builder().selector(buildResourceSelector(currentScope)).build();
         Set<String> filteredPermissions = getPermissions(currentScope, givePermissionOnChildScopes, permissions);
-        for (String principalIdentifier : principals) {
-          for (String permission : filteredPermissions) {
-            if (!inMemoryPermissionRepository.isPermissionCompatibleWithResourceSelector(
-                    permission, resourceSelector.getSelector())) {
-              continue;
-            }
+        for (String permission : filteredPermissions) {
+          if (!inMemoryPermissionRepository.isPermissionCompatibleWithResourceSelector(
+                  permission, resourceSelector.getSelector())) {
+            continue;
+          }
+          for (String principalIdentifier : principals) {
             if (SERVICE_ACCOUNT.equals(roleAssignment.getPrincipalType())) {
               acls.add(buildACL(permission, Principal.of(SERVICE_ACCOUNT, principalIdentifier), roleAssignment,
                   resourceSelector, true, isEnabled(roleAssignment)));
