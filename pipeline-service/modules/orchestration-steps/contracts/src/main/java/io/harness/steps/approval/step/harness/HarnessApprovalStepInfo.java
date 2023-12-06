@@ -52,6 +52,8 @@ public class HarnessApprovalStepInfo implements PMSStepInfo {
 
   @NotEmpty @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> approvalMessage;
 
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> callbackId;
+
   @NotNull
   @YamlSchemaTypes(value = {string})
   @ApiModelProperty(dataType = SwaggerConstants.BOOLEAN_CLASSPATH)
@@ -79,6 +81,7 @@ public class HarnessApprovalStepInfo implements PMSStepInfo {
   @Override
   public SpecParameters getSpecParameters() {
     return HarnessApprovalSpecParameters.builder()
+        .callbackId(callbackId)
         .autoApproval(autoApproval)
         .approvalMessage(approvalMessage)
         .includePipelineExecutionHistory(includePipelineExecutionHistory)

@@ -33,6 +33,7 @@ import org.springframework.data.annotation.TypeAlias;
 @RecasterAlias("io.harness.steps.approval.step.harness.HarnessApprovalSpecParameters")
 public class HarnessApprovalSpecParameters implements SpecParameters {
   @NotNull ParameterField<String> approvalMessage;
+  ParameterField<String> callbackId;
   @NotNull ParameterField<Boolean> includePipelineExecutionHistory;
   AutoApprovalParams autoApproval;
   @NotNull Approvers approvers;
