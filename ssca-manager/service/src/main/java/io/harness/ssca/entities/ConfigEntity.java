@@ -51,7 +51,6 @@ public class ConfigEntity implements PersistentEntity {
   @Value
   @Builder
   public static class ConfigInfo {
-    String id;
     String categoryName;
     Map<String, String> config;
   }

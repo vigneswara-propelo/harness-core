@@ -3,7 +3,6 @@
   "type": "scorecard",
   "config_info": [
     {
-      "id": "8bf62e5d-24da-4dab-84e8-7f192c7642f3",
       "name": "Structural",
       "config": [
         {
@@ -33,7 +32,6 @@
       ]
     },
     {
-      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
       "name": "NTIA-minimum-elements",
       "config": [
         {
@@ -75,7 +73,6 @@
       ]
     },
     {
-      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
       "name": "Semantic",
       "config": [
         {
@@ -101,7 +98,6 @@
       ]
     },
     {
-      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
       "name": "Quality",
       "config": [
         {
@@ -143,7 +139,6 @@
       ]
     },
     {
-      "id": "b0710ea1-9a97-41ea-aece-855c2d64bd8d",
       "name": "Sharing",
       "config": [
         {

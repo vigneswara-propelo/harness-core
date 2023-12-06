@@ -139,7 +139,6 @@ public class ConfigServiceImpl implements ConfigService {
                          .stream()
                          .map(configInfo
                              -> ConfigEntity.ConfigInfo.builder()
-                                    .id(configInfo.getId())
                                     .categoryName(configInfo.getName())
                                     .config(configInfo.getConfig().stream().collect(
                                         Collectors.toMap(ConfigInfoConfig::getKey, ConfigInfoConfig::getValue)))
@@ -163,7 +162,6 @@ public class ConfigServiceImpl implements ConfigService {
                 .stream()
                 .map(configInfo
                     -> new ConfigInfo()
-                           .id(configInfo.getId())
                            .name(configInfo.getCategoryName())
                            .config(configInfo.getConfig()
                                        .entrySet()

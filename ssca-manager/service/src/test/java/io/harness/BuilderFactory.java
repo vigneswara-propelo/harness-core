@@ -428,11 +428,7 @@ public class BuilderFactory {
     Map<String, String> config = new HashMap<>();
     config.put("key1", "value1");
     config.put("key2", "value2");
-    configInfoList.add(ConfigEntity.ConfigInfo.builder()
-                           .id("example id")
-                           .categoryName("example category name")
-                           .config(config)
-                           .build());
+    configInfoList.add(ConfigEntity.ConfigInfo.builder().categoryName("example category name").config(config).build());
 
     return configInfoList;
   }
