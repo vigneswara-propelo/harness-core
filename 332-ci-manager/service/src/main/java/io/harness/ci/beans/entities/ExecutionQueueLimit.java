@@ -11,14 +11,11 @@ import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.StoreIn;
 import io.harness.mongo.index.FdIndex;
 import io.harness.ng.DbAliases;
-import io.harness.persistence.CreatedAtAware;
 import io.harness.persistence.PersistentEntity;
-import io.harness.persistence.UpdatedAtAware;
 import io.harness.persistence.UuidAware;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.morphia.annotations.Entity;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
@@ -37,11 +34,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @HarnessEntity(exportable = true)
 @TypeAlias("executionqueuelimit")
 @RecasterAlias("io.harness.app.beans.entities.ExecutionQueueLimit")
-public class ExecutionQueueLimit implements UuidAware, PersistentEntity, CreatedAtAware, UpdatedAtAware {
+public class ExecutionQueueLimit implements UuidAware, PersistentEntity {
   @Id @dev.morphia.annotations.Id String uuid;
   @NotBlank @FdIndex String accountIdentifier;
-  @NotNull long createdAt;
-  @NotNull long lastUpdatedAt;
   String macExecLimit;
   String totalExecLimit;
 }
