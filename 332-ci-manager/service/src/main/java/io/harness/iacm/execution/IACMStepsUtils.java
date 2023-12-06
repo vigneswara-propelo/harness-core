@@ -19,7 +19,6 @@ import static io.harness.ci.commonconstants.CIExecutionConstants.TENANT_ID;
 import static io.harness.ci.commonconstants.CIExecutionConstants.WORKSPACE_ID;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import io.harness.beans.entities.VariablesRepo;
 import io.harness.beans.entities.Workspace;
 import io.harness.beans.entities.WorkspaceVariables;
 import io.harness.beans.steps.CIStepInfoType;
@@ -28,6 +27,7 @@ import io.harness.beans.steps.stepinfo.IACMTerraformPluginInfo;
 import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.ci.execution.buildstate.ConnectorUtils;
 import io.harness.ci.execution.buildstate.PluginSettingUtils;
+import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorEnvVariablesHelper;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
@@ -43,6 +43,11 @@ import io.harness.delegate.beans.connector.azureconnector.AzureManualDetailsDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorCredentialDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpManualDetailsDTO;
+import io.harness.delegate.beans.connector.scm.GitConnectionType;
+import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketConnectorDTO;
+import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
+import io.harness.delegate.beans.connector.scm.github.GithubConnectorDTO;
+import io.harness.delegate.beans.connector.scm.gitlab.GitlabConnectorDTO;
 import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.ngexception.IACMStageExecutionException;
 import io.harness.iacmserviceclient.IACMServiceUtils;
@@ -149,26 +154,6 @@ public class IACMStepsUtils {
     pluginEnvs.put("PLUGIN_HARNESS_INFRACOST_KEY", getHarnessInfracostKey());
     pluginEnvs.put("PLUGIN_PRICING_API_ENDPOINT", getInfracostAPIEndpoint());
 
-    if (workspaceInfo.getTerraform_variable_files() != null) {
-      for (VariablesRepo variablesRepo : workspaceInfo.getTerraform_variable_files()) {
-        String hashedGitInfo = this.generateHashedGitRepoInfo(variablesRepo.getRepository(),
-            variablesRepo.getRepository_connector(), variablesRepo.getRepository_branch(),
-            variablesRepo.getRepository_commit(), variablesRepo.getRepository_path());
-
-        if (Objects.equals(variablesRepo.getRepository_connector(), workspaceInfo.getRepository_connector())
-            && Objects.equals(variablesRepo.getRepository(), workspaceInfo.getRepository())
-            && Objects.equals(
-                variablesRepo.getRepository_branch(), Objects.toString(workspaceInfo.getRepository_branch(), ""))
-            && Objects.equals(
-                variablesRepo.getRepository_commit(), Objects.toString(workspaceInfo.getRepository_commit(), ""))) {
-          pluginEnvs.put(String.format("PLUGIN_VARIABLE_CONNECTOR_%s", hashedGitInfo),
-              "/harness/" + variablesRepo.getRepository_path());
-          continue;
-        }
-        pluginEnvs.put(String.format("PLUGIN_VARIABLE_CONNECTOR_%s", hashedGitInfo),
-            this.generateVariableFileBasePath(hashedGitInfo) + variablesRepo.getRepository_path());
-      }
-    }
     for (WorkspaceVariables variable : variables) {
       switch (variable.getKind()) {
         case ENV_VARIABLE:
@@ -448,5 +433,78 @@ public class IACMStepsUtils {
     }
 
     return secrets;
+  }
+
+  public String getCloneUrlFromRepo(ConnectorDTO connectorDTO, Workspace workspace) {
+    if (connectorDTO == null) {
+      return "";
+    }
+    switch (connectorDTO.getConnectorInfo().getConnectorType()) {
+      case GIT:
+        GitConfigDTO gitConfigDTO = (GitConfigDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (gitConfigDTO.getGitConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", gitConfigDTO.getUrl(), workspace.getRepository());
+        }
+        return gitConfigDTO.getUrl();
+      case GITHUB:
+        GithubConnectorDTO githubConnectorDTO =
+            (GithubConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (githubConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", githubConnectorDTO.getUrl(), workspace.getRepository());
+        }
+        return githubConnectorDTO.getUrl();
+      case GITLAB:
+        GitlabConnectorDTO gitlabConnectorDTO =
+            (GitlabConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (gitlabConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", gitlabConnectorDTO.getUrl(), workspace.getRepository());
+        }
+        return gitlabConnectorDTO.getUrl();
+      case BITBUCKET:
+        BitbucketConnectorDTO bitbucketConnectorDTO =
+            (BitbucketConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (bitbucketConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", bitbucketConnectorDTO.getUrl(), workspace.getRepository());
+        }
+        return bitbucketConnectorDTO.getUrl();
+      default:
+        return "";
+    }
+  }
+  public String getCloneUrlFromRepo(ConnectorDTO connectorDTO, String branch) {
+    if (connectorDTO == null) {
+      return "";
+    }
+    switch (connectorDTO.getConnectorInfo().getConnectorType()) {
+      case GIT:
+        GitConfigDTO gitConfigDTO = (GitConfigDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (gitConfigDTO.getGitConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", gitConfigDTO.getUrl(), branch);
+        }
+        return gitConfigDTO.getUrl();
+      case GITHUB:
+        GithubConnectorDTO githubConnectorDTO =
+            (GithubConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (githubConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", githubConnectorDTO.getUrl(), branch);
+        }
+        return githubConnectorDTO.getUrl();
+      case GITLAB:
+        GitlabConnectorDTO gitlabConnectorDTO =
+            (GitlabConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (gitlabConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", gitlabConnectorDTO.getUrl(), branch);
+        }
+        return gitlabConnectorDTO.getUrl();
+      case BITBUCKET:
+        BitbucketConnectorDTO bitbucketConnectorDTO =
+            (BitbucketConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
+        if (bitbucketConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
+          return String.format("%s/%s", bitbucketConnectorDTO.getUrl(), branch);
+        }
+        return bitbucketConnectorDTO.getUrl();
+      default:
+        return "";
+    }
   }
 }
