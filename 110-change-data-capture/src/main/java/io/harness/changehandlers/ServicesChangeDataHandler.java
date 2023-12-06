@@ -18,6 +18,7 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.changestreamsframework.ChangeEvent;
 import io.harness.ng.core.service.entity.ServiceEntity.ServiceEntityKeys;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.DBObject;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +77,8 @@ public class ServicesChangeDataHandler extends AbstractChangeDataHandler {
     return columnValueMapping;
   }
 
-  private String getFullyQualifiedIdentifier(DBObject dbObject) {
+  @VisibleForTesting
+  static String getFullyQualifiedIdentifier(DBObject dbObject) {
     if (dbObject.get(ServiceEntityKeys.orgIdentifier) == null
         && dbObject.get(ServiceEntityKeys.projectIdentifier) == null) {
       return "account." + dbObject.get(ServiceEntityKeys.identifier).toString();
