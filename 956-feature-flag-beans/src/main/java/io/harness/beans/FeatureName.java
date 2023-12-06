@@ -930,7 +930,8 @@ public enum FeatureName {
           + " We will fail the execution if we found some invalid configurations.",
       HarnessTeam.CDP),
   CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD(
-      "Enable to dowmload Aws S3 buckets, folder or object inside container step group", HarnessTeam.CDP);
+      "Enable to dowmload Aws S3 buckets, folder or object inside container step group", HarnessTeam.CDP),
+  CDS_USER_CD_LICENSE_VIEW("Enable to show Users CD License usage on UI", HarnessTeam.CDP);
   // keep-sorted end
 
   @Deprecated
