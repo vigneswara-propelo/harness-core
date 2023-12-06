@@ -69,19 +69,4 @@ public class EnableAidaValidatorTest extends CategoryTest {
         .thenReturn(SettingValueResponseDTO.builder().value(Boolean.toString(false)).build());
     enableAidaValidator.validate(ACCOUNT_ID, settingDTO, settingDTO);
   }
-
-  @Test(expected = InvalidRequestException.class)
-  @Owner(developers = BHAVYA)
-  @Category(UnitTests.class)
-  public void testAidaEnablementOnAccountScope_whenEulaIsNotSigned_throwsError() throws InvalidRequestException {
-    SettingDTO settingDTO = SettingDTO.builder()
-                                .category(SettingCategory.EULA)
-                                .defaultValue(Boolean.toString(false))
-                                .name("AIDA")
-                                .identifier(SETTING_ID)
-                                .value(Boolean.toString(true))
-                                .build();
-    when(eulaService.isSigned(any(), anyString())).thenReturn(false);
-    enableAidaValidator.validate(ACCOUNT_ID, settingDTO, settingDTO);
-  }
 }

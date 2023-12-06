@@ -32,8 +32,6 @@ public class EnableAidaValidator implements SettingValidator {
     }
     if (isNotEmpty(newSetting.getProjectIdentifier())) {
       validateIfSettingIsEnabledOnAccountScope(accountIdentifier, newSetting.getIdentifier());
-    } else {
-      validateIfEulaIsSigned(accountIdentifier, newSetting.getIdentifier());
     }
   }
 
@@ -43,14 +41,6 @@ public class EnableAidaValidator implements SettingValidator {
       throw new InvalidRequestException(
           String.format("Setting [%s] cannot be enabled on current scope. Please first enable it on Account scope.",
               settingIdentifier));
-    }
-  }
-
-  private void validateIfEulaIsSigned(String accountIdentifier, String settingIdentifier) {
-    if (!eulaService.isSigned(AgreementType.AIDA, accountIdentifier)) {
-      throw new InvalidRequestException(String.format(
-          "Setting [%s] cannot be enabled on current scope. Please sign End User License Agreement to enable it.",
-          settingIdentifier));
     }
   }
 }
