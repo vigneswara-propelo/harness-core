@@ -1315,7 +1315,7 @@
                   }
                 }, {
                   "type" : "string",
-                  "pattern" : "(^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$|^$)"
+                  "pattern" : "(<\\+.+>.*|^$)"
                 } ]
               },
               "provisioner" : {
@@ -1748,6 +1748,8 @@
                   "$ref" : "#/definitions/pipeline/steps/cd/UpdateGitOpsAppStepNode"
                 }, {
                   "$ref" : "#/definitions/pipeline/steps/cd/K8sTrafficRoutingStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/cd/DownloadAwsS3StepNode"
                 } ]
               },
               "stepGroup" : {
@@ -9084,6 +9086,8 @@
                   "$ref" : "#/definitions/pipeline/steps/common/AwsCdkDestroyStepNode"
                 }, {
                   "$ref" : "#/definitions/pipeline/steps/common/AwsCdkRollbackStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/cd/DownloadAwsS3StepNode"
                 } ]
               },
               "stepGroup" : {
@@ -9498,6 +9502,8 @@
                   "$ref" : "#/definitions/pipeline/steps/common/AwsCdkDestroyStepNode"
                 }, {
                   "$ref" : "#/definitions/pipeline/steps/common/AwsCdkRollbackStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/cd/DownloadAwsS3StepNode"
                 } ]
               },
               "stepGroup" : {
@@ -9865,6 +9871,10 @@
                   "$ref" : "#/definitions/pipeline/steps/ci/GitCloneStepNode"
                 }, {
                   "$ref" : "#/definitions/pipeline/steps/common/PluginStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/idp/IDPCookieCutterStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/idp/IDPCreateRepoStepNode"
                 } ]
               },
               "description" : {
@@ -11413,7 +11423,8 @@
                 "desc" : "This is the description for EnforcementPolicy"
               }
             },
-            "$schema" : "http://json-schema.org/draft-07/schema#"
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "required" : [ "store" ]
           },
           "PolicyStore" : {
             "title" : "PolicyStore",
@@ -11504,6 +11515,20 @@
                 "desc" : "This is the description for VerifyAttestationSpec"
               }
             }
+          },
+          "SscaOpaPolicyConfig" : {
+            "title" : "SscaOpaPolicyConfig",
+            "type" : "object",
+            "required" : [ "policySet" ],
+            "properties" : {
+              "policySet" : {
+                "type" : "string"
+              },
+              "description" : {
+                "desc" : "The reference of the SBOM OPA policy set."
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#"
           },
           "HttpStepNode" : {
             "title" : "HttpStepNode",
@@ -12038,7 +12063,7 @@
               "$ref" : "#/definitions/pipeline/common/StepSpecType"
             }, {
               "type" : "object",
-              "required" : [ "onDelegate", "shell", "source" ],
+              "required" : [ "shell", "source" ],
               "properties" : {
                 "delegateSelectors" : {
                   "oneOf" : [ {
@@ -12065,7 +12090,11 @@
                   }
                 },
                 "executionTarget" : {
-                  "$ref" : "#/definitions/pipeline/steps/custom/ExecutionTarget"
+                  "oneOf" : [ {
+                    "$ref" : "#/definitions/pipeline/steps/custom/ExecutionTarget"
+                  }, {
+                    "type" : "string"
+                  } ]
                 },
                 "includeInfraSelectors" : {
                   "oneOf" : [ {
@@ -12110,7 +12139,7 @@
             } ],
             "$schema" : "http://json-schema.org/draft-07/schema#",
             "type" : "object",
-            "required" : [ "onDelegate", "shell", "source" ],
+            "required" : [ "shell", "source" ],
             "properties" : {
               "delegateSelectors" : {
                 "oneOf" : [ {
@@ -12137,7 +12166,11 @@
                 }
               },
               "executionTarget" : {
-                "$ref" : "#/definitions/pipeline/steps/custom/ExecutionTarget"
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/steps/custom/ExecutionTarget"
+                }, {
+                  "type" : "string"
+                } ]
               },
               "metadata" : {
                 "type" : "string"
@@ -16632,10 +16665,16 @@
               "$ref" : "#/definitions/pipeline/common/StepSpecType"
             }, {
               "type" : "object",
-              "required" : [ "policy", "source" ],
               "properties" : {
+                "description" : {
+                  "desc" : "This is the description for SscaEnforcementStepInfo"
+                },
                 "policy" : {
-                  "$ref" : "#/definitions/pipeline/steps/custom/EnforcementPolicy"
+                  "oneOf" : [ {
+                    "$ref" : "#/definitions/pipeline/steps/custom/EnforcementPolicy"
+                  }, {
+                    "$ref" : "#/definitions/pipeline/steps/custom/SscaOpaPolicyConfig"
+                  } ]
                 },
                 "source" : {
                   "$ref" : "#/definitions/pipeline/steps/custom/SbomSource"
@@ -16650,24 +16689,7 @@
             } ],
             "$schema" : "http://json-schema.org/draft-07/schema#",
             "type" : "object",
-            "required" : [ "policy", "source" ],
-            "properties" : {
-              "policy" : {
-                "$ref" : "#/definitions/pipeline/steps/custom/EnforcementPolicy"
-              },
-              "source" : {
-                "$ref" : "#/definitions/pipeline/steps/custom/SbomSource"
-              },
-              "verifyAttestation" : {
-                "$ref" : "#/definitions/pipeline/steps/custom/VerifyAttestation"
-              },
-              "description" : {
-                "desc" : "This is the description for SscaEnforcementStepInfo"
-              },
-              "resources" : {
-                "$ref" : "#/definitions/pipeline/common/ContainerResource"
-              }
-            }
+            "required" : [ "policy", "source" ]
           },
           "SscaOrchestrationStepNode" : {
             "title" : "SscaOrchestrationStepNode",
@@ -34879,7 +34901,7 @@
                   "oneOf" : [ {
                     "type" : "integer",
                     "format" : "int32",
-                    "minimum" : 1
+                    "minimum" : 0
                   }, {
                     "type" : "string",
                     "pattern" : "(<\\+.+>.*)",
@@ -34936,7 +34958,7 @@
                 "oneOf" : [ {
                   "type" : "integer",
                   "format" : "int32",
-                  "minimum" : 1
+                  "minimum" : 0
                 }, {
                   "type" : "string",
                   "pattern" : "(<\\+.+>.*)",
@@ -47925,6 +47947,12 @@
             "allOf" : [ {
               "$ref" : "#/definitions/pipeline/common/StepSpecType"
             }, {
+              "oneOf" : [ {
+                "required" : [ "filePaths" ]
+              }, {
+                "required" : [ "manifestSource" ]
+              } ]
+            }, {
               "type" : "object",
               "properties" : {
                 "commandFlags" : {
@@ -55872,6 +55900,206 @@
                 "desc" : "This is the description for K8sTrafficRoutingStepInfo"
               }
             }
+          },
+          "DownloadAwsS3StepNode" : {
+            "title" : "DownloadAwsS3StepNode",
+            "type" : "object",
+            "required" : [ "identifier", "name", "type" ],
+            "properties" : {
+              "description" : {
+                "type" : "string",
+                "desc" : "This is the description for DownloadAwsS3StepNode"
+              },
+              "enforce" : {
+                "$ref" : "#/definitions/pipeline/common/PolicyConfig"
+              },
+              "failureStrategies" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/pipeline/common/FailureStrategyConfig"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "identifier" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+              },
+              "name" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+              },
+              "strategy" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StrategyConfig"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "timeout" : {
+                "type" : "string",
+                "pattern" : "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(.*<\\+.*>(?!.*\\.executionInput\\(\\)).*)|(^$))$"
+              },
+              "type" : {
+                "type" : "string",
+                "enum" : [ "DownloadAwsS3" ]
+              },
+              "when" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StepWhenCondition"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "allOf" : [ {
+              "if" : {
+                "properties" : {
+                  "type" : {
+                    "const" : "DownloadAwsS3"
+                  }
+                }
+              },
+              "then" : {
+                "properties" : {
+                  "spec" : {
+                    "$ref" : "#/definitions/pipeline/steps/cd/DownloadAwsS3StepInfo"
+                  }
+                }
+              }
+            } ]
+          },
+          "DownloadAwsS3StepInfo" : {
+            "title" : "DownloadAwsS3StepInfo",
+            "allOf" : [ {
+              "$ref" : "#/definitions/pipeline/common/StepSpecType"
+            }, {
+              "type" : "object",
+              "properties" : {
+                "connectorRef" : {
+                  "type" : "string"
+                },
+                "delegateSelectors" : {
+                  "oneOf" : [ {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }, {
+                    "type" : "string",
+                    "pattern" : "(<\\+.+>.*)",
+                    "minLength" : 1
+                  } ]
+                },
+                "resources" : {
+                  "$ref" : "#/definitions/pipeline/common/ContainerResource"
+                },
+                "runAsUser" : {
+                  "oneOf" : [ {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }, {
+                    "type" : "string"
+                  } ]
+                },
+                "downloadPath" : {
+                  "type" : "string"
+                },
+                "bucketName" : {
+                  "type" : "string"
+                },
+                "region" : {
+                  "type" : "string"
+                },
+                "paths" : {
+                  "oneOf" : [ {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }, {
+                    "type" : "string",
+                    "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                    "minLength" : 1
+                  } ]
+                },
+                "outputFilePathsContent" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            } ],
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "type" : "object",
+            "properties" : {
+              "connectorRef" : {
+                "type" : "string"
+              },
+              "delegateSelectors" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "(<\\+.+>.*)",
+                  "minLength" : 1
+                } ]
+              },
+              "resources" : {
+                "$ref" : "#/definitions/pipeline/common/ContainerResource"
+              },
+              "runAsUser" : {
+                "oneOf" : [ {
+                  "type" : "integer",
+                  "format" : "int32"
+                }, {
+                  "type" : "string"
+                } ]
+              },
+              "downloadPath" : {
+                "type" : "string"
+              },
+              "bucketName" : {
+                "type" : "string"
+              },
+              "region" : {
+                "type" : "string"
+              },
+              "paths" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                  "minLength" : 1
+                } ]
+              },
+              "outputFilePathsContent" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "description" : {
+                "desc" : "This is the description for DownloadAwsS3StepInfo"
+              }
+            }
           }
         },
         "cvng" : {
@@ -56479,6 +56707,292 @@
             "properties" : {
               "description" : {
                 "desc" : "This is the description for ConfiguredMonitoredServiceSpec"
+              }
+            }
+          }
+        },
+        "idp" : {
+          "IDPCookieCutterStepNode" : {
+            "title" : "IDPCookieCutterStepNode",
+            "type" : "object",
+            "required" : [ "identifier", "name", "spec", "type" ],
+            "properties" : {
+              "description" : {
+                "type" : "string",
+                "desc" : "This is the description for IDPCookieCutterStepNode"
+              },
+              "enforce" : {
+                "$ref" : "#/definitions/pipeline/common/PolicyConfig"
+              },
+              "failureStrategies" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/pipeline/common/FailureStrategyConfig"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "identifier" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+              },
+              "name" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+              },
+              "strategy" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StrategyConfig"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "timeout" : {
+                "type" : "string",
+                "pattern" : "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(.*<\\+.*>(?!.*\\.executionInput\\(\\)).*)|(^$))$"
+              },
+              "type" : {
+                "type" : "string",
+                "enum" : [ "IdpCookieCutter" ]
+              },
+              "when" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StepWhenCondition"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "allOf" : [ {
+              "if" : {
+                "properties" : {
+                  "type" : {
+                    "const" : "IdpCookieCutter"
+                  }
+                }
+              },
+              "then" : {
+                "properties" : {
+                  "spec" : {
+                    "$ref" : "#/definitions/pipeline/steps/idp/IDPCookieCutterPlanInfo"
+                  }
+                }
+              }
+            } ]
+          },
+          "IDPCookieCutterPlanInfo" : {
+            "title" : "IDPCookieCutterPlanInfo",
+            "allOf" : [ {
+              "$ref" : "#/definitions/pipeline/common/StepSpecType"
+            }, {
+              "type" : "object",
+              "required" : [ "isPublicTemplate", "cookieCutterVariables" ],
+              "properties" : {
+                "isPublicTemplate" : {
+                  "type" : "boolean"
+                },
+                "publicTemplateUrl" : {
+                  "type" : "string"
+                },
+                "pathForTemplate" : {
+                  "type" : "string"
+                },
+                "outputDirectory" : {
+                  "type" : "string"
+                },
+                "resources" : {
+                  "$ref" : "#/definitions/pipeline/common/ContainerResource"
+                },
+                "cookieCutterVariables" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/definitions/pipeline/common/ParameterFieldMapStringJsonNode"
+                  }, {
+                    "type" : "string"
+                  } ]
+                }
+              }
+            } ],
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "type" : "object",
+            "required" : [ "isPublicTemplate", "cookieCutterVariables" ],
+            "properties" : {
+              "isPublicTemplate" : {
+                "type" : "boolean"
+              },
+              "publicTemplateUrl" : {
+                "type" : "string"
+              },
+              "pathForTemplate" : {
+                "type" : "string"
+              },
+              "outputDirectory" : {
+                "type" : "string"
+              },
+              "resources" : {
+                "$ref" : "#/definitions/pipeline/common/ContainerResource"
+              },
+              "cookieCutterVariables" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/ParameterFieldMapStringJsonNode"
+                }, {
+                  "type" : "string"
+                } ]
+              }
+            }
+          },
+          "IDPCreateRepoStepNode" : {
+            "title" : "IDPCreateRepoStepNode",
+            "type" : "object",
+            "required" : [ "identifier", "name", "spec", "type" ],
+            "properties" : {
+              "description" : {
+                "type" : "string",
+                "desc" : "This is the description for IDPCreateRepoStepNode"
+              },
+              "enforce" : {
+                "$ref" : "#/definitions/pipeline/common/PolicyConfig"
+              },
+              "failureStrategies" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/pipeline/common/FailureStrategyConfig"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "identifier" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+              },
+              "name" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+              },
+              "strategy" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StrategyConfig"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "timeout" : {
+                "type" : "string",
+                "pattern" : "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(.*<\\+.*>(?!.*\\.executionInput\\(\\)).*)|(^$))$"
+              },
+              "type" : {
+                "type" : "string",
+                "enum" : [ "IdpCreateRepo" ]
+              },
+              "when" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StepWhenCondition"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "allOf" : [ {
+              "if" : {
+                "properties" : {
+                  "type" : {
+                    "const" : "IdpCreateRepo"
+                  }
+                }
+              },
+              "then" : {
+                "properties" : {
+                  "spec" : {
+                    "$ref" : "#/definitions/pipeline/steps/idp/IDPCreateRepoPlanInfo"
+                  }
+                }
+              }
+            } ]
+          },
+          "IDPCreateRepoPlanInfo" : {
+            "title" : "IDPCreateRepoPlanInfo",
+            "allOf" : [ {
+              "$ref" : "#/definitions/pipeline/common/StepSpecType"
+            }, {
+              "type" : "object",
+              "required" : [ "connectorRef", "isPrivateRepo" ],
+              "properties" : {
+                "isPrivateRepo" : {
+                  "type" : "boolean"
+                },
+                "repoName" : {
+                  "type" : "string"
+                },
+                "orgName" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "connectorRef" : {
+                  "type" : "string"
+                },
+                "defaultBranch" : {
+                  "type" : "string"
+                },
+                "workspace" : {
+                  "type" : "string"
+                },
+                "project" : {
+                  "type" : "string"
+                },
+                "resources" : {
+                  "$ref" : "#/definitions/pipeline/common/ContainerResource"
+                }
+              }
+            } ],
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "type" : "object",
+            "required" : [ "connectorRef", "isPrivateRepo" ],
+            "properties" : {
+              "isPrivateRepo" : {
+                "type" : "boolean"
+              },
+              "repoName" : {
+                "type" : "string"
+              },
+              "orgName" : {
+                "type" : "string"
+              },
+              "description" : {
+                "type" : "string"
+              },
+              "connectorRef" : {
+                "type" : "string"
+              },
+              "defaultBranch" : {
+                "type" : "string"
+              },
+              "workspace" : {
+                "type" : "string"
+              },
+              "project" : {
+                "type" : "string"
+              },
+              "resources" : {
+                "$ref" : "#/definitions/pipeline/common/ContainerResource"
               }
             }
           }
