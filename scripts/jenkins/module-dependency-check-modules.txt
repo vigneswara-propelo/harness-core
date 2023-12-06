@@ -1,1 +1,8 @@
 260-delegate Affects-delegate
+120-ng-manager Affects-ng-manager
+315-sto-manager Affects-sto-manager
+332-ci-manager Affects-ci-manager
+360-cg-manager Affects-harness-manager
+400-rest Affects-harness-manager
+access-control Affects-access-control
+platform-service Affects-platform-service
