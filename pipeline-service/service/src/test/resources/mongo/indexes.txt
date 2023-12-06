@@ -24,6 +24,9 @@ cacheEntities {"name": "createdAt_1", "background": true} {"createdAt": 1}
 cacheEntities {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 delayQueue {"name": "earliestGet_1", "background": true, "expireAfterSeconds": 86400} {"earliestGet": 1}
 delayQueue {"name": "next4", "background": true} {"topic": 1, "earliestGet": 1}
+executionExpressionUsage {"name": "accountId_orgId_projectId_pipelineId_nodeFQN_expressionHash_createdAt", "background": true} {"metadata.accountIdentifier": 1, "metadata.orgIdentifier": 1, "metadata.projectIdentifier": 1, "metadata.pipelineIdentifier": 1, "metadata.nodeFQNHash": 1, "metadata.expressionHash": 1, "isError": 1, "createdAt": -1}
+executionExpressionUsage {"name": "nodeExecutionId_expressionHash", "background": true} {"nodeExecutionId": 1, "metadata.expressionHash": 1}
+executionExpressionUsage {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 executionInputInstance {"name": "expireAt_1", "background": true, "expireAfterSeconds": 0} {"expireAt": 1}
 executionInputInstance {"name": "nodeExecutionId_1", "unique": true} {"nodeExecutionId": 1}
 executionSweepingOutput {"name": "planExecutionId_fully_qualified_name_createdAt_Idx", "background": true} {"planExecutionId": 1, "fullyQualifiedName": 1, "createdAt": -1}

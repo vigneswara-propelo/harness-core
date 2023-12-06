@@ -13,6 +13,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.OrchestrationEventLog;
+import io.harness.engine.expressions.usages.beans.ExecutionExpressionUsagesEntity;
 import io.harness.engine.expressions.usages.beans.ExpressionUsagesEntity;
 import io.harness.engine.interrupts.AbortInterruptCallback;
 import io.harness.engine.pms.resume.EngineResumeAllCallback;
@@ -32,6 +33,7 @@ public class OrchestrationMorphiaRegistrar implements MorphiaRegistrar {
   public void registerClasses(Set<Class> set) {
     set.add(OrchestrationEventLog.class);
     set.add(ExpressionUsagesEntity.class);
+    set.add(ExecutionExpressionUsagesEntity.class);
   }
 
   @Override
