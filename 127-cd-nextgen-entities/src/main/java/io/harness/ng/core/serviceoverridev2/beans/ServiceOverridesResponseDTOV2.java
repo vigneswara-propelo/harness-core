@@ -45,4 +45,6 @@ public class ServiceOverridesResponseDTOV2 {
   @NonNull ServiceOverridesSpec spec;
   boolean isNewlyCreated;
   String yamlInternal;
+  // this is for onboarding override v2 yaml version
+  String yaml;
 }

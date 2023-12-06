@@ -53,4 +53,6 @@ public class ServiceOverrideRequestDTOV2 {
   ServiceOverridesSpec spec;
   String yamlInternal;
   boolean v1Api;
+  // this is for onboarding override v2 yaml version
+  String yaml;
 }

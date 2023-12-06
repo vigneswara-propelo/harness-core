@@ -82,10 +82,16 @@ public class NGServiceOverridesEntity implements PersistentEntity, ScopeAware {
   ServiceOverridesSpec spec;
   ServiceOverridesType type;
   /*
-  yamlInternal - This field is only used for create and update API calls via terraform provider.
-  We take overrides spec yaml from user and then convert it to the spec object for further processing.
+  yamlInternal - This field is only used for create and update API calls via terraform provider (as well as to handle
+  override v1 automation). We take overrides spec yaml from user and then convert it to the spec object for further
+  processing.
    */
   String yamlInternal;
+
+  /*
+  yamlV2 - new field introduced to onboard yaml version of override v2
+   */
+  String yamlV2;
 
   @Builder.Default Boolean isV2 = Boolean.FALSE;
 

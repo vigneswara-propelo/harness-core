@@ -15,6 +15,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.environment.beans.NGEnvironmentGlobalOverride;
 import io.harness.ng.core.environment.yaml.NGEnvironmentConfig;
 import io.harness.ng.core.environment.yaml.NGEnvironmentInfoConfig;
@@ -29,7 +30,9 @@ import io.harness.ng.core.serviceoverridev2.beans.ServiceOverridesSpec;
 import io.harness.ng.core.serviceoverridev2.beans.ServiceOverridesSpec.ServiceOverridesSpecBuilder;
 import io.harness.ng.core.serviceoverridev2.beans.ServiceOverridesType;
 import io.harness.utils.IdentifierRefHelper;
+import io.harness.utils.YamlPipelineUtils;
 
+import java.io.IOException;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import lombok.NonNull;
@@ -149,5 +152,36 @@ public class ServiceOverridesMapperV2 {
             .type(ServiceOverridesType.ENV_GLOBAL_OVERRIDE)
             .spec(serviceOverridesSpecBuilder.build())
             .build());
+  }
+
+  public ServiceOverridesSpec toServiceOverrideSpec(@NonNull NGServiceOverrideConfig configV1) {
+    NGServiceOverrideInfoConfig infoConfigV1 = configV1.getServiceOverrideInfoConfig();
+    return ServiceOverridesSpec.builder()
+        .manifests(infoConfigV1.getManifests())
+        .configFiles(infoConfigV1.getConfigFiles())
+        .variables(infoConfigV1.getVariables())
+        .connectionStrings(infoConfigV1.getConnectionStrings())
+        .applicationSettings(infoConfigV1.getApplicationSettings())
+        .build();
+  }
+
+  public ServiceOverridesSpec toServiceOverrideSpec(@NonNull NGEnvironmentInfoConfig infoConfigV1) {
+    ServiceOverridesSpecBuilder builder = ServiceOverridesSpec.builder().variables(infoConfigV1.getVariables());
+    if (infoConfigV1.getNgEnvironmentGlobalOverride() != null) {
+      NGEnvironmentGlobalOverride ngEnvironmentGlobalOverride = infoConfigV1.getNgEnvironmentGlobalOverride();
+      builder.manifests(ngEnvironmentGlobalOverride.getManifests())
+          .configFiles(ngEnvironmentGlobalOverride.getConfigFiles())
+          .connectionStrings(ngEnvironmentGlobalOverride.getConnectionStrings())
+          .applicationSettings(ngEnvironmentGlobalOverride.getApplicationSettings());
+    }
+    return builder.build();
+  }
+
+  public ServiceOverridesSpec toServiceOverrideSpec(String entityYaml) {
+    try {
+      return YamlPipelineUtils.read(entityYaml, ServiceOverridesSpec.class);
+    } catch (IOException e) {
+      throw new InvalidRequestException(String.format("Cannot read serviceOverride yaml %s ", entityYaml));
+    }
   }
 }

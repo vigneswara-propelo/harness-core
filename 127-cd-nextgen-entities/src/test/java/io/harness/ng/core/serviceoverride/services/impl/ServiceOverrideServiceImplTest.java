@@ -122,7 +122,7 @@ public class ServiceOverrideServiceImplTest extends NGCoreTestBase {
             .environmentRef(ENV_REF)
             .serviceRef(SERVICE_REF)
             .yaml(
-                "serviceOverrides:\n  orgIdentifier: orgIdentifier\\\n  projectIdentifier: projectIdentifier\n  environmentRef: envIdentifier\n  serviceRef: serviceIdentifier\n  variableOverrides: \n    - name: memory\n      value: var1\n      type: String\n    - name: cpu\n      value: var1\n      type: String")
+                "serviceOverrides:\n  orgIdentifier: orgIdentifier\\\n  projectIdentifier: projectIdentifier\n  environmentRef: envIdentifier\n  serviceRef: serviceIdentifier\n  variables: \n    - name: memory\n      value: var1\n      type: String\n    - name: cpu\n      value: var1\n      type: String")
             .build();
     NGServiceOverridesEntity upsertedServiceOverridesEntity = serviceOverrideService.upsert(serviceOverridesEntity);
     assertThat(upsertedServiceOverridesEntity).isNotNull();
@@ -134,6 +134,10 @@ public class ServiceOverrideServiceImplTest extends NGCoreTestBase {
     assertThat(upsertedServiceOverridesEntity.getEnvironmentRef())
         .isEqualTo(serviceOverridesEntity.getEnvironmentRef());
     assertThat(upsertedServiceOverridesEntity.getYaml()).isNotNull();
+    assertThat(upsertedServiceOverridesEntity.getYamlV2()).isNotNull();
+    String overrideV2CompatibleYaml =
+        "overrides:\n  variables:\n    - name: memory\n      type: String\n      value: var1\n      required: false\n    - name: cpu\n      type: String\n      value: var1\n      required: false\n";
+    assertThat(upsertedServiceOverridesEntity.getYamlV2()).isEqualTo(overrideV2CompatibleYaml);
 
     // list
     Criteria criteriaFromFilter =

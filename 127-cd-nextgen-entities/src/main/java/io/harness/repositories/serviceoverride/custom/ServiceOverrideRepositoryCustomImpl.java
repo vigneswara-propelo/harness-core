@@ -6,15 +6,22 @@
  */
 
 package io.harness.repositories.serviceoverride.custom;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.ng.core.environment.mappers.EnvironmentFilterHelper;
 import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
+import io.harness.ng.core.serviceoverride.yaml.NGServiceOverrideConfig;
+import io.harness.ng.core.serviceoverridev2.beans.ServiceOverrideSpecConfig;
+import io.harness.ng.core.serviceoverridev2.beans.ServiceOverridesSpec;
+import io.harness.ng.core.serviceoverridev2.mappers.ServiceOverridesMapperV2;
+import io.harness.pms.yaml.YamlUtils;
 import io.harness.springdata.PersistenceUtils;
 
 import com.google.inject.Inject;
 import com.mongodb.client.result.DeleteResult;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import lombok.AccessLevel;
@@ -51,7 +58,9 @@ public class ServiceOverrideRepositoryCustomImpl implements ServiceOverrideRepos
   @Override
   public NGServiceOverridesEntity upsert(Criteria criteria, NGServiceOverridesEntity serviceOverridesEntity) {
     Query query = new Query(criteria);
+    setYamlV2InRequestedEntity(serviceOverridesEntity);
     Update updateOperations = EnvironmentFilterHelper.getUpdateOperationsForServiceOverride(serviceOverridesEntity);
+
     RetryPolicy<Object> retryPolicy =
         getRetryPolicy("[Retrying]: Failed upserting Service Override Entity; attempt: {}",
             "[Failed]: Failed upserting Service Override Entity; attempt: {}");
@@ -59,6 +68,20 @@ public class ServiceOverrideRepositoryCustomImpl implements ServiceOverrideRepos
         .get(()
                  -> mongoTemplate.findAndModify(query, updateOperations,
                      new FindAndModifyOptions().returnNew(true).upsert(true), NGServiceOverridesEntity.class));
+  }
+
+  private void setYamlV2InRequestedEntity(NGServiceOverridesEntity serviceOverridesEntity) {
+    try {
+      NGServiceOverrideConfig config = YamlUtils.read(serviceOverridesEntity.getYaml(), NGServiceOverrideConfig.class);
+      ServiceOverridesSpec serviceOverrideSpec = ServiceOverridesMapperV2.toServiceOverrideSpec(config);
+      ServiceOverrideSpecConfig specConfig = ServiceOverrideSpecConfig.builder().spec(serviceOverrideSpec).build();
+      String yamlV2 = YamlUtils.writeYamlString(specConfig);
+      serviceOverridesEntity.setYamlV2(yamlV2);
+    } catch (IOException ex) {
+      log.error(String.format("Could not save yamlV2 for override : [%s] of type [%s]",
+                    serviceOverridesEntity.getIdentifier(), serviceOverridesEntity.getType()),
+          ex);
+    }
   }
 
   @Override
