@@ -3,11 +3,11 @@ DockerFile* marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness
 .bazel* marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
 bazel* marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
 project/bazelproject-config marc.batchelor@harness.io ivan.leon@harness.io vishal.bhatia@harness.io christopher.ham@harness.io anshu.singla@harness.io krishika.singh@harness.io
-/access-control/ ankit.singhal@harness.io mallavarapu.reetika@harness.io manish.manchanda@harness.io jimit.gandhi@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
+/access-control/ ankit.singhal@harness.io mallavarapu.reetika@harness.io jimit.gandhi@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
 /batch-processing/ hitesh.aringa@harness.io nikunj.badjatya@harness.io shubhanshu.verma@harness.io trunapushpa.surkar@harness.io anmol.maheshwari@harness.io abhinav.singh3@harness.io sahildeep.singh@harness.io abhijeet.sharma@harness.io
-/clients/access-control/ ankit.singhal@harness.io mallavarapu.reetika@harness.io manish.manchanda@harness.io jimit.gandhi@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
-/platform-service/modules/resource-group-service/ ankit.singhal@harness.io jimit.gandhi@harness.io mallavarapu.reetika@harness.io manish.manchanda@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
-/clients/resource-group/ ankit.singhal@harness.io jimit.gandhi@harness.io mallavarapu.reetika@harness.io manish.manchanda@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
+/clients/access-control/ ankit.singhal@harness.io mallavarapu.reetika@harness.io jimit.gandhi@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
+/platform-service/modules/resource-group-service/ ankit.singhal@harness.io jimit.gandhi@harness.io mallavarapu.reetika@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
+/clients/resource-group/ ankit.singhal@harness.io jimit.gandhi@harness.io mallavarapu.reetika@harness.io ashish.sanodia@harness.io meenakshi.raikwar@harness.io
 WORKSPACE pranay.shah@harness.io jyoti.raval@harness.io
 # CDNG
 /125-cd-nextgen/src/test/resources/recaster/alias/alias.txt deepak.puthraya@harness.io yogesh.chauhan@harness.io
@@ -92,8 +92,8 @@ WORKSPACE pranay.shah@harness.io jyoti.raval@harness.io
 
 /100-migrator/ deepak.puthraya@harness.io brett@harness.io arvind.choudhary@harness.io pragyesh.mishra@harness.io anil.chowdhury@harness.io rajendra.baviskar@harness.io lucas.sales@harness.io
 /dockerization/migrator/ deepak.puthraya@harness.io brett@harness.io arvind.choudhary@harness.io anil.chowdhury@harness.io rajendra.baviskar@harness.io lucas.sales@harness.io
-/120-ng-manager/modules/ng-settings/ nishant.saini@harness.io piyush.patel@harness.io manish.manchanda@harness.io
-/970-ng-commons/src/main/java/io/harness/ModuleType.java piyush.patel@harness.io manish.manchanda@harness.io shashank.singh@harness.io meenakshi.raikwar@harness.io
+/120-ng-manager/modules/ng-settings/ nishant.saini@harness.io piyush.patel@harness.io
+/970-ng-commons/src/main/java/io/harness/ModuleType.java piyush.patel@harness.io shashank.singh@harness.io meenakshi.raikwar@harness.io
 /900-git-sync-sdk/src/main/ mohit.garg@harness.io adithya.viswanathan@harness.io archit.singla@harness.io
 /952-scm-java-client/src/main/ mohit.garg@harness.io adithya.viswanathan@harness.io archit.singla@harness.io
 /953-git-sync-commons/src/main/ mohit.garg@harness.io adithya.viswanathan@harness.io archit.singla@harness.io
