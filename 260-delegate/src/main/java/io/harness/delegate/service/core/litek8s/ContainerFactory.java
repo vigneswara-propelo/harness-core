@@ -102,7 +102,7 @@ public class ContainerFactory {
     envVars.put(HARNESS_ACCOUNT_ID_VARIABLE, config.getAccountId());
     return new V1ContainerBuilder()
         .withName(SETUP_ADDON_CONTAINER_NAME)
-        .withImage("raghavendramurali/ci-addon:tag1.6")
+        .withImage("harnessdev/bijou-ci-addon:v0.1")
         .withEnv(K8SEnvVar.fromMap(envVars.build()))
         .withCommand(getAddonCmd())
         .withArgs(getAddonArgs())
@@ -114,7 +114,7 @@ public class ContainerFactory {
   public V1ContainerBuilder createLEContainer(final ResourceRequirements resourceRequirements) {
     return new V1ContainerBuilder()
         .withName(LE_CONTAINER_NAME)
-        .withImage("raghavendramurali/ci-lite-engine:tag1.6")
+        .withImage("harnessdev/bijou-lite-engine:v0.1")
         .withEnv(K8SEnvVar.fromMap(getLeEnvVars()))
         .withImagePullPolicy("Always")
         .withPorts(getPort(RESERVED_LE_PORT))
