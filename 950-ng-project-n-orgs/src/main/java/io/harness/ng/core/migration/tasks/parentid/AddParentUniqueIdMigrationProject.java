@@ -8,6 +8,7 @@
 package io.harness.ng.core.migration.tasks.parentid;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.mongo.MongoConfig.NO_LIMIT;
 
@@ -60,7 +61,7 @@ public class AddParentUniqueIdMigrationProject implements NGMigration {
       while (iterator.hasNext()) {
         totalCounter++;
         Project nextProject = iterator.next();
-        if (nextProject != null && isNotEmpty(nextProject.getParentId())) {
+        if (nextProject != null && isNotEmpty(nextProject.getParentId()) && isEmpty(nextProject.getParentUniqueId())) {
           updateCounter++;
           batchSizeCounter++;
 
