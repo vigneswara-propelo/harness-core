@@ -34,6 +34,8 @@ public enum ResourceType {
   API_KEY(ResourceTypeConstants.API_KEY),
   TOKEN(ResourceTypeConstants.TOKEN),
   DELEGATE_TOKEN(ResourceTypeConstants.DELEGATE_TOKEN),
+  DASHBOARD(ResourceTypeConstants.DASHBOARD),
+  DASHBOARD_FOLDER(ResourceTypeConstants.DASHBOARD_FOLDER),
   GOVERNANCE_POLICY(ResourceTypeConstants.GOVERNANCE_POLICY),
   GOVERNANCE_POLICY_SET(ResourceTypeConstants.GOVERNANCE_POLICY_SET),
   VARIABLE(ResourceTypeConstants.VARIABLE),
