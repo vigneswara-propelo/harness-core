@@ -175,7 +175,7 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
     NewRelicCVConfig newRelicCVConfig = createNewRelicCVConfig();
     save(newRelicCVConfig);
     NewRelicCVConfig updated = (NewRelicCVConfig) cvConfigService.get(newRelicCVConfig.getUuid());
-    updated.setApplicationId(54321);
+    updated.setApplicationId(54321L);
     updated.setApplicationName("updated-application-name");
     NewRelicMetricInfo metricInfo = NewRelicMetricInfo.builder()
                                         .nrql("nrql")
@@ -412,7 +412,7 @@ public class CVConfigServiceImplTest extends CvNextGenTestBase {
     NewRelicCVConfig newRelicCVConfig = builderFactory.newRelicCVConfigBuilder().build();
     fillCommon(newRelicCVConfig);
     newRelicCVConfig.setApplicationName("application-name");
-    newRelicCVConfig.setApplicationId(12345);
+    newRelicCVConfig.setApplicationId(12345L);
     newRelicCVConfig.setMetricPack(MetricPack.builder().build());
     newRelicCVConfig.setMetricInfos(Arrays.asList(NewRelicMetricInfo.builder().build()));
     return newRelicCVConfig;

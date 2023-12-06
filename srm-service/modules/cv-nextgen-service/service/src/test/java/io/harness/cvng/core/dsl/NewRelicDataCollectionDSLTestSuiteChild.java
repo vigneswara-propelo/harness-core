@@ -82,7 +82,7 @@ public class NewRelicDataCollectionDSLTestSuiteChild extends DSLHoverflyCVNextGe
     NewRelicDataCollectionInfo newRelicDataCollectionInfo =
         NewRelicDataCollectionInfo.builder()
             .applicationName("My Application")
-            .applicationId(107019083)
+            .applicationId(107019083L)
             .groupName("G1")
             .metricInfoList(Arrays.asList(
                 NewRelicMetricInfoDTO.builder()
@@ -137,7 +137,7 @@ public class NewRelicDataCollectionDSLTestSuiteChild extends DSLHoverflyCVNextGe
     NewRelicDataCollectionInfo newRelicDataCollectionInfo =
         NewRelicDataCollectionInfo.builder()
             .applicationName("My Application")
-            .applicationId(107019083)
+            .applicationId(107019083L)
             .groupName("G1")
             .metricInfoList(Arrays.asList(
                 NewRelicMetricInfoDTO.builder()
@@ -197,7 +197,7 @@ public class NewRelicDataCollectionDSLTestSuiteChild extends DSLHoverflyCVNextGe
     NewRelicDataCollectionInfo newRelicDataCollectionInfo =
         NewRelicDataCollectionInfo.builder()
             .applicationName("My Application")
-            .applicationId(107019083)
+            .applicationId(107019083L)
             .metricPack(metricPacks.stream()
                             .filter(metricPack -> metricPack.getIdentifier().equals("Performance"))
                             .findFirst()
@@ -240,7 +240,7 @@ public class NewRelicDataCollectionDSLTestSuiteChild extends DSLHoverflyCVNextGe
     NewRelicDataCollectionInfo newRelicDataCollectionInfo =
         NewRelicDataCollectionInfo.builder()
             .applicationName("My Application")
-            .applicationId(107019083)
+            .applicationId(107019083L)
             .metricPack(metricPacks.stream()
                             .filter(metricPack -> metricPack.getIdentifier().equals("Performance"))
                             .findFirst()

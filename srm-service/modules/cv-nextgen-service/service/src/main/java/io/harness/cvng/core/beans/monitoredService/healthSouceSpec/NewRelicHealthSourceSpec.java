@@ -192,7 +192,7 @@ public class NewRelicHealthSourceSpec extends MetricHealthSourceSpec {
   @Builder
   private static class Key {
     private String applicationName;
-    private long applicationId;
+    private Long applicationId;
     private String monitoredServiceIdentifier;
     MetricPack metricPack;
   }

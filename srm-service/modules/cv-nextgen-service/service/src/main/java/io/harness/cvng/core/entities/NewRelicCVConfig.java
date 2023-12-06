@@ -51,7 +51,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class NewRelicCVConfig extends MetricCVConfig<NewRelicMetricInfo> {
   private String applicationName;
-  private long applicationId;
+  private Long applicationId;
   private String groupName;
   private List<NewRelicMetricInfo> metricInfos;
   private HealthSourceQueryType queryType;
