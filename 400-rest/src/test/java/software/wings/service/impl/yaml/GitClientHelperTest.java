@@ -7,10 +7,12 @@
 
 package software.wings.service.impl.yaml;
 
+import static io.harness.rule.OwnerRule.ABHINAV2;
 import static io.harness.rule.OwnerRule.DEEPAK;
 import static io.harness.rule.OwnerRule.JELENA;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -22,6 +24,7 @@ import io.harness.exception.WingsException;
 import io.harness.git.model.GitRepositoryType;
 import io.harness.rule.Owner;
 import io.harness.rule.OwnerRule;
+import io.harness.secret.SecretSanitizerThreadLocal;
 
 import software.wings.beans.GitConfig;
 import software.wings.beans.GitOperationContext;
@@ -29,6 +32,7 @@ import software.wings.beans.GitOperationContext;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import java.io.File;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import org.assertj.core.api.Assertions;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -39,6 +43,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -62,6 +67,20 @@ public class GitClientHelperTest {
   @Category(UnitTests.class)
   public void test_checkIfGitConnectivityIssueIsNotTrownInCaseOfOtherExceptions() {
     gitClientHelper.checkIfGitConnectivityIssue(new GitAPIException("newTransportException") {});
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void test_checkGitConnectivityIssueEmptyMessageException() {
+    try (MockedStatic<SecretSanitizerThreadLocal> threadLocalSecrets =
+             Mockito.mockStatic(SecretSanitizerThreadLocal.class)) {
+      threadLocalSecrets.when(SecretSanitizerThreadLocal::get).thenReturn(Set.of("secret1", "secret2"));
+      GitAPIException exception =
+          new org.eclipse.jgit.api.errors.TransportException(null, new TransportException(null));
+      assertThatThrownBy(() -> gitClientHelper.checkIfGitConnectivityIssue(exception))
+          .isInstanceOf(GitConnectionDelegateException.class);
+    }
   }
 
   @Test(expected = GitConnectionDelegateException.class)

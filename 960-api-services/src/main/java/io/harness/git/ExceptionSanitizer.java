@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 
 /***
  * This code doesn't sanitizes any generic exception or error messages
@@ -38,6 +39,9 @@ public class ExceptionSanitizer {
   }
 
   public String sanitizeTheMessage(String message) {
+    if (isEmpty(message)) {
+      return StringUtils.EMPTY;
+    }
     Set<String> secrets = SecretSanitizerThreadLocal.get();
     if (isEmpty(secrets)) {
       return message;

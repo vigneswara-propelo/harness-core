@@ -8,6 +8,7 @@
 package io.harness.git;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.rule.OwnerRule.ABHINAV2;
 import static io.harness.rule.OwnerRule.DEEPAK;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,6 +73,14 @@ public class ExceptionSanitizerTest extends CategoryTest {
     final String singlePasswordMasked =
         ExceptionSanitizer.sanitizeForLogging(new Exception("This exception contains password: password123"));
     assertThat(singlePasswordMasked.contains("password123")).isFalse();
+  }
+
+  @Test
+  @Owner(developers = ABHINAV2)
+  @Category(UnitTests.class)
+  public void testSanitizationOfNullMessage() {
+    assertThat(ExceptionSanitizer.sanitizeTheMessage(null)).isEmpty();
+    assertThat(ExceptionSanitizer.sanitizeTheMessage("")).isEmpty();
   }
 
   @Test
