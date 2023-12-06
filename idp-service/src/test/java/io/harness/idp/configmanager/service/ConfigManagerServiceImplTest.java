@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.*;
@@ -463,6 +464,7 @@ public class ConfigManagerServiceImplTest extends CategoryTest {
   @Test
   @Owner(developers = DEVESH)
   @Category(UnitTests.class)
+  @Ignore("We have disabled validation for custom plugin")
   public void testValidateSchemaForPlugin() {
     Exception exception = null;
     try {
