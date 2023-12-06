@@ -25,10 +25,10 @@ type Config struct {
 
 	Platform struct {
 		BaseURL          string        `envconfig:"LOG_SERVICE_PLATFORM_BASE_URL"`
-		VanityBaseURL    string        `envconfig:"LOG_SERVICE_PLATFORM_VANITY_BASE_URL"`
 		ACLBaseURL       string        `envconfig:"LOG_SERVICE_PLATFORM_ACCESS_CONTROL_BASE_URL" default:"http://localhost:9006/api"`
 		VanityURLEnabled bool          `envconfig:"LOG_SERVICE_VANITY_URL_ENABLED"`
 		VanityURLTTL     time.Duration `envconfig:"LOG_SERVICE_VANITY_URL_TTL" default:"1h"`
+		ManagerSecret    string        `envconfig:"LOG_SERVICE_JWT_AUTH_SECRET" default:"dOkdsVqdRPPRJG31XU0qY4MPqmBBMk0PTAGIKM6O7TGqhjyxScIdJe80mwh5Yb5zF3KxYBHw6B3Lfzlq"`
 	}
 
 	Server struct {

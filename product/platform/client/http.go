@@ -27,7 +27,7 @@ import (
 
 const (
 	apiKeyEndpoint    = "/token/validate?accountIdentifier=%s"
-	accountEndpoint   = "/gateway/api/account/%s"
+	accountEndpoint   = "/accounts/%s"
 	aclEndpoint       = "/acl"
 	authAPIKeyHeader  = "x-api-key"
 	bearerTokenHeader = "Authorization"
@@ -143,12 +143,12 @@ func (c *HTTPClient) ValidateApiKey(ctx context.Context, accountID, routingId, a
 
 func (c *HTTPClient) GetVanityURL(ctx context.Context, accountID, token string) (string, error) {
 	path := fmt.Sprintf(accountEndpoint, accountID)
-	account := new(Account)
+	account := new(AccountNG)
 	_, err := c.do(ctx, c.Endpoint+path, "GET", "", token, nil, account)
 	if err != nil {
 		return "", err
 	}
-	return account.Resource.SubdomainURL, nil
+	return account.Data.SubdomainURL, nil
 }
 
 func (c *HTTPClient) ValidateAccessforPipeline(ctx context.Context, token, accountID, pipelineID, projectID, orgID, resource, permission string) (bool, error) {

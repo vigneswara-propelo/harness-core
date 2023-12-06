@@ -93,6 +93,31 @@ type Account struct {
 	ResponseMessages []interface{} `json:"responseMessages"`
 }
 
+type AccountNG struct {
+	Status string `json:"status"`
+	Data   struct {
+		Identifier                       string `json:"identifier"`
+		Name                             string `json:"name"`
+		CompanyName                      string `json:"companyName"`
+		Cluster                          string `json:"cluster"`
+		DefaultExperience                string `json:"defaultExperience"`
+		AuthenticationMechanism          string `json:"authenticationMechanism"`
+		CreatedAt                        int64  `json:"createdAt"`
+		RingName                         string `json:"ringName"`
+		SubdomainURL                     string `json:"subdomainURL"`
+		SessionTimeoutInMinutes          int    `json:"sessionTimeoutInMinutes"`
+		PublicAccessEnabled              bool   `json:"publicAccessEnabled"`
+		TwoFactorAdminEnforced           bool   `json:"twoFactorAdminEnforced"`
+		NextGenEnabled                   bool   `json:"nextGenEnabled"`
+		ProductLed                       bool   `json:"productLed"`
+		HarnessSupportAccessAllowed      bool   `json:"harnessSupportAccessAllowed"`
+		CrossGenerationAccessEnabled     bool   `json:"crossGenerationAccessEnabled"`
+		CannyUsernameAbbreviationEnabled bool   `json:"cannyUsernameAbbreviationEnabled"`
+	} `json:"data"`
+	MetaData      any    `json:"metaData"`
+	CorrelationID string `json:"correlationId"`
+}
+
 type ACLRequest struct {
 	Permissions []Permission `json:"permissions"`
 }
