@@ -198,6 +198,7 @@ Resources:
               - "ce:GetReservationCoverage"
               - "ce:GetSavingsPlansCoverage"
               - "savingsplans:DescribeSavingsPlans"
+              - 'ce:GetCostAndUsage'
             Resource: "*"
       Roles:
         - !Ref HarnessCloudFormationRole
@@ -349,6 +350,9 @@ Resources:
               - 'ce:GetDimensionValues'
               - 'ce:GetReservationUtilization'
               - 'ce:GetSavingsPlansUtilizationDetails'
+              - 'ce:GetCostAndUsage'
+              - 'savingsplans:DescribeSavingsPlansOfferings'
+              - 'savingsplans:CreateSavingsPlan'
             Resource: '*'
       Roles:
         - !Ref HarnessCloudFormationRole
