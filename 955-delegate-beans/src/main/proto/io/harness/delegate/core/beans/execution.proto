@@ -1,0 +1,31 @@
+// Copyright 2022 Harness Inc. All rights reserved.
+// Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+// that can be found in the licenses directory at the root of this repository, also available at
+// https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+
+syntax = "proto3";
+
+package io.harness.delegate.core.beans;
+
+option java_multiple_files = true;
+
+message K8sExecution {
+  string log_key = 1;
+  Entrypoint entry_point = 2;
+  string call_back_token = 3;
+  repeated string env_var_outputs = 4;
+}
+
+message Entrypoint {
+  string command = 1;
+  ShellType shell_type = 2;
+}
+
+enum ShellType {
+  SHELL_TYPE_UNSPECIFIED = 0;
+  SH = 1;
+  BASH = 2;
+  POWERSHELL = 3;
+  PWSH = 4;
+  PYTHON = 5;
+}

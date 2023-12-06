@@ -33,9 +33,12 @@ import io.harness.delegate.beans.NoDelegatesException;
 import io.harness.delegate.beans.RunnerType;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.beans.executioncapability.SelectorCapability;
+import io.harness.delegate.core.beans.K8sExecution;
 import io.harness.delegate.utils.DelegateTaskMigrationHelper;
 import io.harness.exception.ExceptionUtils;
+import io.harness.executionInfra.ExecutionInfraNotAvailableException;
 import io.harness.executionInfra.ExecutionInfrastructureService;
+import io.harness.grpc.scheduler.mapper.EntryPointMapper;
 import io.harness.grpc.scheduler.mapper.K8sInfraMapper;
 import io.harness.logstreaming.LogStreamingServiceRestClient;
 import io.harness.network.SafeHttpCall;
@@ -51,6 +54,7 @@ import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -160,6 +164,8 @@ public class ScheduleTaskServiceGrpcImpl extends ScheduleTaskServiceImplBase {
       log.error("No delegate exception found while processing submit task request for account {}. reason {}",
           request.getAccountId(), ExceptionUtils.getMessage(e));
       responseObserver.onError(Status.FAILED_PRECONDITION.withDescription(e.getMessage()).asRuntimeException());
+    } catch (ExecutionInfraNotAvailableException ex) {
+      responseObserver.onError(Status.UNAVAILABLE.withDescription(ex.getMessage()).asRuntimeException());
     } catch (Exception ex) {
       log.error("Unexpected error occurred while processing submit task request.", ex);
       responseObserver.onError(io.grpc.Status.INTERNAL.withDescription(ex.getMessage()).asRuntimeException());
@@ -210,13 +216,24 @@ public class ScheduleTaskServiceGrpcImpl extends ScheduleTaskServiceImplBase {
   private ScheduleTaskResponse sendExecuteTask(
       final String accountId, final Execution execution, final SchedulingConfig config) {
     final var taskId = delegateTaskMigrationHelper.generateDelegateTaskUUID();
-    final var taskData = execution.getInput().getData().toByteArray();
+    final var taskData = execution.getK8S().getInput();
+
+    var k8sExecutionBuilder = K8sExecution.newBuilder().setCallBackToken(taskId).setLogKey(execution.getStepLogKey());
+    if (execution.getK8S().getEnvVarOutputsCount() > 0) {
+      k8sExecutionBuilder.addAllEnvVarOutputs(
+          execution.getK8S().getEnvVarOutputsList().stream().collect(Collectors.toList()));
+    }
+    if (execution.getK8S().hasEntryPoint()) {
+      k8sExecutionBuilder.setEntryPoint(EntryPointMapper.INSTANCE.map(execution.getK8S().getEntryPoint()));
+    }
+
     final var capabilities = mapSelectorCapability(config);
     capabilities.add(mapInfraCapability(accountId, execution.getInfraRefId()));
 
     final var task = buildDelegateTask(accountId, config, EventType.EXECUTE, execution.getInfraRefId(), taskId)
                          .executionCapabilities(capabilities)
-                         .taskData(taskData)
+                         .runnerData(k8sExecutionBuilder.build().toByteArray())
+                         .taskData(Objects.nonNull(taskData) ? taskData.getData().toByteArray() : null)
                          .build();
 
     taskClient.sendTask(task);
@@ -282,6 +299,11 @@ public class ScheduleTaskServiceGrpcImpl extends ScheduleTaskServiceImplBase {
 
   private ExecutionCapability mapInfraCapability(final String accountId, final String infraRefId) {
     final var locationInfo = infraService.getExecutionInfra(accountId, infraRefId);
+    if (Objects.isNull(locationInfo.getDelegateGroupName())) {
+      final var errMsg = String.format("Execution infra %s is not ready", infraRefId);
+      log.error(errMsg);
+      throw new ExecutionInfraNotAvailableException(errMsg);
+    }
     return SelectorCapability.builder().selectors(Set.of(locationInfo.getDelegateGroupName())).build();
   }
 

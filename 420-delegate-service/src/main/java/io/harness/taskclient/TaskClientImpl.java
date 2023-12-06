@@ -35,7 +35,7 @@ public class TaskClientImpl implements TaskClient {
     if (task.getUuid() == null) {
       task.setUuid(delegateTaskMigrationHelper.generateDelegateTaskUUID());
     }
-    try (AutoLogContext ignore1 = new ExecutionLogContext(task.getUuid(), task.getEventType(), OVERRIDE_ERROR)) {
+    try (AutoLogContext ignore1 = new ExecutionLogContext(task.getUuid(), task.getRunnerType(), OVERRIDE_ERROR)) {
       log.info("Going to broadcast task");
       // Handles routing the request to the right delegate instance
       delegateTaskServiceClassic.processScheduleTaskRequest(task, QUEUED);

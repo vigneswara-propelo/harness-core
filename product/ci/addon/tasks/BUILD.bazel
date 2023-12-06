@@ -13,6 +13,7 @@ go_library(
         "plugin.go",
         "run.go",
         "runtests.go",
+        "shell_common.go",
         "ti_helper.go",
     ],
     importpath = "github.com/harness/harness-core/product/ci/addon/tasks",

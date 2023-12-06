@@ -27,6 +27,7 @@ import io.harness.category.element.IntegrationTests;
 import io.harness.delegate.CleanupInfraRequest;
 import io.harness.delegate.Execution;
 import io.harness.delegate.ExecutionInput;
+import io.harness.delegate.K8sExecutionSpec;
 import io.harness.delegate.NoEligibleDelegatesInAccountException;
 import io.harness.delegate.ScheduleTaskRequest;
 import io.harness.delegate.ScheduleTaskServiceGrpc;
@@ -207,12 +208,14 @@ public class ScheduleTaskServiceGrpcImplTest {
     final var taskId = "taskId";
     final var infraRefId = "infraRefId";
     final var executionInput = ExecutionInput.newBuilder().setData(ByteString.EMPTY).build();
-    final var request =
-        ScheduleTaskRequest.newBuilder()
-            .setAccountId(ACCOUNT_ID)
-            .setExecution(Execution.newBuilder().setInfraRefId(infraRefId).setInput(executionInput).build())
-            .setConfig(SchedulingConfig.newBuilder().setRunnerType(RUNNER_TYPE_K8S).build())
-            .build();
+    final var request = ScheduleTaskRequest.newBuilder()
+                            .setAccountId(ACCOUNT_ID)
+                            .setExecution(Execution.newBuilder()
+                                              .setInfraRefId(infraRefId)
+                                              .setK8S(K8sExecutionSpec.newBuilder().setInput(executionInput).build())
+                                              .build())
+                            .setConfig(SchedulingConfig.newBuilder().setRunnerType(RUNNER_TYPE_K8S).build())
+                            .build();
 
     when(logServiceClient.retrieveAccountToken(LOG_SERVICE_SECRET, ACCOUNT_ID).execute())
         .thenReturn(Response.success("token"));

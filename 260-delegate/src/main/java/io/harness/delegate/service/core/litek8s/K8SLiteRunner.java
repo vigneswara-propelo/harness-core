@@ -23,9 +23,11 @@ import io.harness.delegate.configuration.DelegateConfiguration;
 import io.harness.delegate.core.beans.InputData;
 import io.harness.delegate.core.beans.K8SInfra;
 import io.harness.delegate.core.beans.K8SStep;
+import io.harness.delegate.core.beans.K8sExecution;
 import io.harness.delegate.service.core.k8s.K8SEnvVar;
 import io.harness.delegate.service.core.k8s.K8SSecret;
 import io.harness.delegate.service.core.k8s.K8SService;
+import io.harness.delegate.service.core.litek8s.mappers.LEShellTypeMapper;
 import io.harness.delegate.service.core.util.ApiExceptionLogger;
 import io.harness.delegate.service.core.util.K8SResourceHelper;
 import io.harness.delegate.service.handlermapping.context.Context;
@@ -60,6 +62,7 @@ import io.kubernetes.client.util.Yaml;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -180,49 +183,55 @@ public class K8SLiteRunner implements Runner {
   }
 
   @Override
-  public void execute(final String taskGroupId, final String logKey, final InputData tasks,
+  public void execute(final String infraId, final String logKey, final InputData taskData, final InputData runnerData,
       Map<String, char[]> decrypted, final Context context) {
-    ExecuteStep executeStep = ExecuteStep.newBuilder()
-                                  .setTaskParameters(tasks.getBinaryData())
-                                  .addAllExecuteCommand(List.of("./start.sh"))
-                                  .build();
-
-    UnitStep unitStep = UnitStep.newBuilder()
-                            .setId(taskGroupId)
-                            .setExecuteTask(executeStep)
-                            .setLogKey(logKey)
-                            .setCallbackToken(config.getDelegateToken())
-                            .setTaskId(context.get(Context.TASK_ID))
-                            .setAccountId(config.getAccountId())
-                            .setContainerPort(RESERVED_ADDON_PORT)
-                            .build();
-
-    ExecuteStepRequest executeStepRequest = ExecuteStepRequest.newBuilder().setStep(unitStep).build();
-
-    String accountKey = delegateConfiguration.getDelegateToken();
-    String managerUrl = delegateConfiguration.getManagerUrl();
-    String delegateID = context.get(Context.DELEGATE_ID);
-    if (isNotEmpty(managerUrl)) {
-      managerUrl = managerUrl.replace("/api/", "");
-      executeStepRequest = executeStepRequest.toBuilder().setManagerSvcEndpoint(managerUrl).build();
-    }
-    if (isNotEmpty(accountKey)) {
-      executeStepRequest =
-          executeStepRequest.toBuilder().setAccountKey(TokenUtils.getDecodedTokenString(accountKey)).build();
-    }
-    if (isNotEmpty(delegateID)) {
-      executeStepRequest = executeStepRequest.toBuilder().setDelegateId(delegateID).build();
-    }
-
-    final var namespace = config.getNamespace();
-
-    String target = K8SService.buildK8sServiceUrl(taskGroupId, namespace, Integer.toString(RESERVED_LE_PORT));
-    // String target = format("%s:%d", "127.0.0.1", RESERVED_LE_PORT);
-    ManagedChannelBuilder managedChannelBuilder = ManagedChannelBuilder.forTarget(target).usePlaintext();
-    ManagedChannel channel = managedChannelBuilder.build();
-
-    final ExecuteStepRequest finalExecuteStepRequest = executeStepRequest;
+    String target = K8SService.buildK8sServiceUrl(infraId, config.getNamespace(), Integer.toString(RESERVED_LE_PORT));
     try {
+      K8sExecution k8sExecution = K8sExecution.parseFrom(runnerData.getBinaryData());
+      var executeStepBuilder = ExecuteStep.newBuilder();
+      if (Objects.nonNull(taskData)) {
+        executeStepBuilder.setTaskParameters(taskData.getBinaryData());
+      }
+      if (k8sExecution.hasEntryPoint()) {
+        executeStepBuilder.setExecuteCommand(k8sExecution.getEntryPoint().getCommand())
+            .setShellType(LEShellTypeMapper.INSTANCE.map(k8sExecution.getEntryPoint().getShellType()));
+      }
+      if (k8sExecution.getEnvVarOutputsCount() > 0) {
+        executeStepBuilder.addAllEnvVarOutputs(
+            k8sExecution.getEnvVarOutputsList().stream().collect(Collectors.toList()));
+      }
+
+      UnitStep unitStep = UnitStep.newBuilder()
+                              .setId(infraId)
+                              // set addon port from agent side, so that it's controlled by agent config.
+                              .setContainerPort(RESERVED_ADDON_PORT)
+                              .setAccountId(context.get(Context.ACCOUNT_ID))
+                              .setTaskId(context.get(Context.TASK_ID))
+                              .setCallbackToken(k8sExecution.getCallBackToken())
+                              .setLogKey(k8sExecution.getLogKey())
+                              .setExecuteTask(executeStepBuilder.build())
+                              .build();
+      ExecuteStepRequest executeStepRequest = ExecuteStepRequest.newBuilder().setStep(unitStep).build();
+
+      String accountKey = delegateConfiguration.getDelegateToken();
+      String managerUrl = delegateConfiguration.getManagerUrl();
+      String delegateID = context.get(Context.DELEGATE_ID);
+      if (isNotEmpty(managerUrl)) {
+        managerUrl = managerUrl.replace("/api/", "");
+        executeStepRequest = executeStepRequest.toBuilder().setManagerSvcEndpoint(managerUrl).build();
+      }
+      if (isNotEmpty(accountKey)) {
+        executeStepRequest =
+            executeStepRequest.toBuilder().setAccountKey(TokenUtils.getDecodedTokenString(accountKey)).build();
+      }
+      if (isNotEmpty(delegateID)) {
+        executeStepRequest = executeStepRequest.toBuilder().setDelegateId(delegateID).build();
+      }
+
+      ManagedChannelBuilder managedChannelBuilder = ManagedChannelBuilder.forTarget(target).usePlaintext();
+      ManagedChannel channel = managedChannelBuilder.build();
+
+      final ExecuteStepRequest finalExecuteStepRequest = executeStepRequest;
       try {
         RetryPolicy<Object> retryPolicy =
             getRetryPolicy(format("[Retrying failed call to send execution call to pod %s: {}", target),
@@ -240,8 +249,11 @@ public class K8SLiteRunner implements Runner {
         // again leave it running.
         channel.shutdownNow();
       }
+    } catch (InvalidProtocolBufferException e) {
+      log.error("Failed to parse protobuf data for task {}", context.get(Context.TASK_ID), e);
     } catch (Exception e) {
-      log.error("Failed to execute step on lite engine target {} with err: {}", target, e);
+      log.error(
+          "Failed to execute task {} on lite engine target {} with err: {}", context.get(Context.TASK_ID), target, e);
     }
   }
 

@@ -29,6 +29,6 @@ public class ExecutionHandler implements Handler {
       final Context context) {
     final Runner runner = runnersFactory.get(runnerType);
     runner.execute(taskPayload.getExecutionInfraId(), taskPayload.getLogKey(), taskPayload.getTaskData(),
-        decryptedSecrets, context);
+        taskPayload.getInfraData(), decryptedSecrets, context);
   }
 }

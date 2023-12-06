@@ -18,6 +18,7 @@ enum ShellType {
   POWERSHELL = 2;
   PWSH = 3;
   PYTHON = 4;
+  SHELL_TYPE_UNSPECIFIED = 5;
 }
 
 message StepContext {
@@ -104,7 +105,9 @@ message RestoreCacheStep {
 
 message ExecuteStep {
   bytes task_parameters = 1;
-  repeated string execute_command = 2;
+  string execute_command = 2;
+  ShellType shell_type = 3;
+  repeated string env_var_outputs = 4;  // output variables to export as step outcome
 }
 
 message UnitStep {

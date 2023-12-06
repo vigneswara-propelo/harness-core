@@ -11,10 +11,33 @@ option java_multiple_files = true;
 option go_package = "920_delegate_service_beans";
 
 message Execution {
-  ExecutionInput input = 1;  // Input data to tasks
-  string infra_ref_id = 2;   // execution infra reference id created by calling SetupExecutionInfrastructureRequest
+  oneof spec {
+    K8sExecutionSpec k8s = 1;
+  }
+  string infra_ref_id = 2;  // execution infra reference id created by calling SetupExecutionInfrastructureRequest
   string step_log_key = 3;
 }
+
+message K8sExecutionSpec {
+  ExecutionInput input = 1;
+  Entrypoint entry_point = 2;
+  repeated string env_var_outputs = 3;
+}
+
 message ExecutionInput {
   bytes data = 1;  // binary task data input. The same data will be directly passed to task container
+}
+
+message Entrypoint {
+  string command = 1;
+  ShellType shell_type = 2;
+}
+
+enum ShellType {
+  SHELL_TYPE_UNSPECIFIED = 0;
+  SH = 1;
+  BASH = 2;
+  POWERSHELL = 3;
+  PWSH = 4;
+  PYTHON = 5;
 }
