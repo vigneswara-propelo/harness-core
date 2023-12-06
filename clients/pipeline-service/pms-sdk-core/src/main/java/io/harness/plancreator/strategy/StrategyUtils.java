@@ -183,6 +183,9 @@ public class StrategyUtils {
                            .addNextIds(siblingField.getNode().getUuid())
                            .addCurrentNodeChildren(planNodeId)
                            .build();
+    } else {
+      // when sibling field in pipeline rollback node
+      edgeLayoutList = EdgeLayoutList.newBuilder().addCurrentNodeChildren(planNodeId).build();
     }
 
     StrategyType strategyType = StrategyType.LOOP;
