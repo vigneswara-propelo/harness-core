@@ -31,9 +31,11 @@ import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.idp.common.FileUtils;
 import io.harness.idp.common.IdpCommonService;
+import io.harness.idp.configmanager.service.ConfigEnvVariablesService;
 import io.harness.idp.configmanager.service.ConfigManagerService;
 import io.harness.idp.configmanager.service.PluginsProxyInfoService;
 import io.harness.idp.configmanager.utils.ConfigType;
+import io.harness.idp.envvariable.service.BackstageEnvVariableService;
 import io.harness.idp.plugin.beans.ExportsData;
 import io.harness.idp.plugin.entities.DefaultPluginInfoEntity;
 import io.harness.idp.plugin.entities.PluginInfoEntity;
@@ -58,7 +60,6 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
@@ -66,15 +67,16 @@ import org.springframework.data.domain.PageImpl;
 
 @OwnedBy(HarnessTeam.IDP)
 public class PluginInfoServiceImplTest {
-  @InjectMocks private PluginInfoServiceImpl pluginInfoServiceImpl;
+  private PluginInfoServiceImpl pluginInfoServiceImpl;
   @Mock private PluginInfoRepository pluginInfoRepository;
   @Mock private PluginRequestRepository pluginRequestRepository;
   @Mock private ConfigManagerService configManagerService;
+  @Mock private ConfigEnvVariablesService configEnvVariablesService;
+  @Mock private BackstageEnvVariableService backstageEnvVariableService;
   @Mock private PluginsProxyInfoService pluginsProxyInfoService;
   @Mock private IdpCommonService idpCommonService;
   @Mock private HashMap<String, String> notificationConfigs = new HashMap<>();
-  @Mock private Map<PluginInfo.PluginTypeEnum, PluginDetailedInfoMapper> mapBinder;
-  PluginDetailedInfoMapper pluginInfoMapper = new DefaultPluginDetailedInfoMapper();
+  private Map<PluginInfo.PluginTypeEnum, PluginDetailedInfoMapper> mapBinder;
   private final ObjectMapper objectMapper = mock(ObjectMapper.class);
 
   private static final String ACCOUNT_ID = "__GLOBAL_ACCOUNT_ID__";
@@ -92,6 +94,11 @@ public class PluginInfoServiceImplTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    PluginDetailedInfoMapper<?, ?> pluginDetailedInfoMapper = new DefaultPluginDetailedInfoMapper();
+    mapBinder = Map.of(PluginInfo.PluginTypeEnum.DEFAULT, pluginDetailedInfoMapper);
+    pluginInfoServiceImpl = new PluginInfoServiceImpl(pluginInfoRepository, pluginRequestRepository,
+        configManagerService, configEnvVariablesService, backstageEnvVariableService, pluginsProxyInfoService,
+        idpCommonService, "", notificationConfigs, mapBinder);
   }
 
   @Test
@@ -118,7 +125,6 @@ public class PluginInfoServiceImplTest {
   @Owner(developers = VIGNESWARA)
   @Category(UnitTests.class)
   public void testGetPluginDetailedInfo() {
-    when(mapBinder.get(any())).thenReturn(pluginInfoMapper);
     when(pluginInfoRepository.findByIdentifierAndAccountIdentifierIn(PAGER_DUTY_ID, Collections.singleton(ACCOUNT_ID)))
         .thenReturn(Optional.ofNullable(getPagerDutyInfoEntity()));
     when(configManagerService.getAppConfig(ACCOUNT_ID, PAGER_DUTY_ID, ConfigType.PLUGIN)).thenReturn(null);
