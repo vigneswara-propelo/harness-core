@@ -73,6 +73,9 @@ public class LiteEngineConnectionCapabilityCheck implements CapabilityCheck, Pro
         } else {
           valid = true;
         }
+      } else {
+        valid = isConnectibleLiteEngine(liteEngineConnectionCapability.getIp(),
+            liteEngineConnectionCapability.getPort(), liteEngineConnectionCapability.isLocal());
       }
     } catch (Exception ex) {
       log.error("Failed to validate deletion dry run", ex);
