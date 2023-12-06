@@ -597,6 +597,7 @@ public class PipelinesApiUtils {
     pipelineYamlInputDTO.setAllowedValues(inputDetails.getAllowedValues());
     pipelineYamlInputDTO.setRegex(inputDetails.getRegex());
     pipelineYamlInputDTO.execution(inputDetails.getExecution());
+    pipelineYamlInputDTO.setDefault(inputDetails.getDefaultValue());
     return pipelineYamlInputDTO;
   }
 

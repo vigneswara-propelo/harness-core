@@ -6,6 +6,7 @@
  */
 
 package io.harness.template.resources;
+
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -187,6 +188,10 @@ public class TemplateResourceApiHelper {
     templateYamlInputDTO.setDescription(inputDetails.getDescription());
     templateYamlInputDTO.setType(getYamlInputType(inputDetails.getType()));
     templateYamlInputDTO.setRequired(inputDetails.isRequired());
+    templateYamlInputDTO.setDefault(inputDetails.getDefaultValue());
+    templateYamlInputDTO.setAllowedValues(inputDetails.getAllowedValues());
+    templateYamlInputDTO.setRegex(inputDetails.getRegex());
+    templateYamlInputDTO.execution(inputDetails.getExecution());
     return templateYamlInputDTO;
   }
 

@@ -105,8 +105,8 @@ public class YamlInputUtils {
     if (inputNode.get(YAMLFieldNameConstants.REQUIRED) != null) {
       builder.required(inputNode.get(YAMLFieldNameConstants.REQUIRED).asBoolean());
     }
-    if (!JsonFieldUtils.isPresent(inputNode, YAMLFieldNameConstants.DEFAULT)) {
-      builder.defaultValue(inputNode.get(YAMLFieldNameConstants.DEFAULT));
+    if (inputNode.has(YAMLFieldNameConstants.DEFAULT)) {
+      builder.defaultValue(JsonNodeUtils.getValueFromJsonNode(inputNode.get(YAMLFieldNameConstants.DEFAULT)));
     }
     if (inputNode.has(YAMLFieldNameConstants.EXECUTION)) {
       builder.execution(inputNode.get(YAMLFieldNameConstants.EXECUTION).asBoolean());
