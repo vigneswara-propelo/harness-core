@@ -29,6 +29,7 @@ import static io.harness.rule.OwnerRule.PRASHANT;
 import static io.harness.rule.OwnerRule.RIHAZ;
 import static io.harness.rule.OwnerRule.TMACARI;
 import static io.harness.rule.OwnerRule.VAIBHAV_KUMAR;
+import static io.harness.rule.OwnerRule.VLICA;
 
 import static software.wings.beans.Application.Builder.anApplication;
 import static software.wings.beans.Environment.Builder.anEnvironment;
@@ -1581,7 +1582,7 @@ public class PcfStateHelperTest extends WingsBaseTest {
         SetupSweepingOutputPcf.builder()
             .pcfCommandRequest(CfCommandSetupRequest.builder().organization("org").space("space").build())
             .build(),
-        null, false, renderedTags);
+        null, false, renderedTags, context);
     assertThat(response).isNotNull();
     assertThat(response.isAsync()).isTrue();
     assertThat(response.getCorrelationIds()).containsExactly(ACTIVITY_ID);
@@ -1825,6 +1826,54 @@ public class PcfStateHelperTest extends WingsBaseTest {
     assertThat(pcfManifestsPackage.getVariableYmls().size()).isEqualTo(2);
     assertThat(pcfManifestsPackage.getVariableYmls().get(0)).isEqualTo(v1);
     assertThat(pcfManifestsPackage.getVariableYmls().get(1)).isEqualTo(v2);
+  }
+
+  @Test
+  @Owner(developers = VLICA)
+  @Category(UnitTests.class)
+  public void testRenderExpressionsInPcfManifest() {
+    String MANIFEST_YAML_CONTENT = "  applications:\n"
+        + "  - name : appName\n"
+        + "    memory: 850M\n"
+        + "    instances : 3\n"
+        + "    buildpack: https://github.com/cloudfoundry/java-buildpack.git\n"
+        + "    path: /manifest-path-test\n"
+        + "    env:\n"
+        + "       TEST_VAR2: ${serviceVariable.test_var_2}\n"
+        + "    routes:\n"
+        + "      - route:test-route\n";
+
+    String MANIFEST_YAML_RENDERED_CONTENT = "  applications:\n"
+        + "  - name : appName\n"
+        + "    memory: 850M\n"
+        + "    instances : 3000\n"
+        + "    buildpack: https://github.com/cloudfoundry/java-buildpack.git\n"
+        + "    env:\n"
+        + "       TEST_VAR2: ${secretManager.obtain(\"var-2-secret\", 1590195498)}\n"
+        + "    path: /manifest-path-test\n"
+        + "    routes:\n"
+        + "      - route: test-route\n";
+
+    PcfSetupStateExecutionData stateExecutionData = PcfSetupStateExecutionData.builder().build();
+
+    CfCommandSetupRequest cfCommandSetupRequest =
+        CfCommandSetupRequest.builder()
+            .manifestYaml(MANIFEST_YAML_CONTENT)
+            .pcfManifestsPackage(PcfManifestsPackage.builder().manifestYml(MANIFEST_YAML_CONTENT).build())
+            .build();
+
+    DelegateTask delegateTask = DelegateTask.builder()
+                                    .data(TaskData.builder().parameters(new Object[] {cfCommandSetupRequest}).build())
+                                    .build();
+
+    doReturn(MANIFEST_YAML_RENDERED_CONTENT).when(context).renderExpression(anyString(), any());
+
+    pcfStateHelper.renderDelegateTask(context, delegateTask, stateExecutionData, 123);
+
+    assertThat(delegateTask).isNotNull();
+    assertThat(delegateTask.getData().getParameters()).isNotNull();
+    String renderedManifest = ((CfCommandSetupRequest) delegateTask.getData().getParameters()[0]).getManifestYaml();
+    assertThat(renderedManifest).isSameAs(MANIFEST_YAML_RENDERED_CONTENT);
   }
 
   @Test

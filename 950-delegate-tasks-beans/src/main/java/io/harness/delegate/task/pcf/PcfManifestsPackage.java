@@ -7,14 +7,19 @@
 
 package io.harness.delegate.task.pcf;
 
+import static io.harness.expression.Expression.ALLOW_SECRETS;
+
+import io.harness.expression.Expression;
+import io.harness.reflection.ExpressionReflectionUtils;
+
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class PcfManifestsPackage {
-  private String manifestYml;
-  private String autoscalarManifestYml;
-  private List<String> variableYmls;
+public class PcfManifestsPackage implements ExpressionReflectionUtils.NestedAnnotationResolver {
+  @Expression(ALLOW_SECRETS) private String manifestYml;
+  @Expression(ALLOW_SECRETS) private String autoscalarManifestYml;
+  @Expression(ALLOW_SECRETS) private List<String> variableYmls;
 }

@@ -31,6 +31,7 @@ import io.harness.beans.ExecutionStatus;
 import io.harness.beans.FeatureName;
 import io.harness.beans.SweepingOutputInstance.Scope;
 import io.harness.context.ContextElementType;
+import io.harness.data.algorithm.HashGenerator;
 import io.harness.delegate.beans.pcf.CfAppSetupTimeDetails;
 import io.harness.delegate.beans.pcf.CfInternalConfig;
 import io.harness.delegate.task.pcf.CfCommandRequest;
@@ -232,6 +233,9 @@ public class PcfDeployState extends State {
       tags = pcfStateHelper.getRenderedTags(context, stateExecutionData.getSetupSweepingOutputPcf().getTags());
     }
     List<String> renderedTags = pcfStateHelper.getRenderedTags(context, tags);
+
+    int expressionFunctorToken = HashGenerator.generateIntegerHash();
+
     DelegateTask task =
         pcfStateHelper.getDelegateTask(PcfDelegateTaskCreationData.builder()
                                            .appId(app.getUuid())
@@ -248,6 +252,9 @@ public class PcfDeployState extends State {
                                            .taskDescription("PCF Deploy task execution")
                                            .tagList(renderedTags)
                                            .build());
+
+    task.getData().setExpressionFunctorToken(expressionFunctorToken);
+    pcfStateHelper.renderDelegateTask(context, task, stateExecutionData, expressionFunctorToken);
 
     delegateService.queueTaskV2(task);
     appendDelegateTaskDetails(context, task);

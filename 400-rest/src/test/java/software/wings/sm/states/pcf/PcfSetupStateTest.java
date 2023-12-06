@@ -525,6 +525,7 @@ public class PcfSetupStateTest extends WingsBaseTest {
     assertThat(cfCommandSetupRequest.getSpace()).isEqualTo(SPACE);
     assertThat(cfCommandSetupRequest.getMaxCount()).isEqualTo(3);
     assertThat(stateExecutionData.getTags()).isEqualTo(singletonList("tag1"));
+    verify(pcfStateHelper, times(1)).renderDelegateTask(any(), any(), any(), anyInt());
   }
 
   @Test

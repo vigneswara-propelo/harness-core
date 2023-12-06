@@ -202,7 +202,7 @@ public class PcfSwitchBlueGreenRoutes extends State {
             .useCfCli(true)
             .build(),
         setupSweepingOutputPcf, context.getStateExecutionInstanceId(), isSelectionLogsTrackingForTasksEnabled(),
-        renderedTags);
+        renderedTags, context);
   }
 
   private CfRouteUpdateRequestConfigData getPcfRouteUpdateRequestConfigData(

@@ -8,6 +8,7 @@
 package software.wings.helpers.ext.pcf.request;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.expression.Expression.ALLOW_SECRETS;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -15,6 +16,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.delegate.beans.pcf.CfInternalConfig;
 import io.harness.delegate.task.pcf.CfCommandRequest;
 import io.harness.delegate.task.pcf.PcfManifestsPackage;
+import io.harness.expression.Expression;
 import io.harness.pcf.model.CfCliVersion;
 
 import software.wings.beans.artifact.ArtifactFile;
@@ -40,7 +42,7 @@ public class CfCommandSetupRequest extends CfCommandRequest {
    * so actual app name will be appId_serviceId_envId__version
    */
   private String releaseNamePrefix;
-  private String manifestYaml;
+  @Expression(ALLOW_SECRETS) private String manifestYaml;
   private List<ArtifactFile> artifactFiles;
   private ArtifactStreamAttributes artifactStreamAttributes;
   private List<String> tempRouteMap;

@@ -398,6 +398,7 @@ public class PcfSetupState extends State {
     String waitId = generateUuid();
 
     List<String> renderedTags = pcfStateHelper.getRenderedTags(context, tags);
+    int expressionFunctorToken = HashGenerator.generateIntegerHash();
 
     DelegateTask delegateTask = pcfStateHelper.getDelegateTask(
         PcfDelegateTaskCreationData.builder()
@@ -415,6 +416,9 @@ public class PcfSetupState extends State {
             .timeout(timeoutIntervalInMinutes == null ? DEFAULT_PCF_TASK_TIMEOUT_MIN : timeoutIntervalInMinutes)
             .tagList(renderedTags)
             .build());
+
+    delegateTask.getData().setExpressionFunctorToken(expressionFunctorToken);
+    pcfStateHelper.renderDelegateTask(context, delegateTask, pcfSetupStateExecutionData, expressionFunctorToken);
 
     delegateService.queueTaskV2(delegateTask);
     appendDelegateTaskDetails(context, delegateTask);

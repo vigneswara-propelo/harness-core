@@ -192,7 +192,7 @@ public class MapRouteState extends State {
             .encryptedDataDetails(encryptedDetails)
             .build(),
         setupSweepingOutputPcf, context.getStateExecutionInstanceId(), isSelectionLogsTrackingForTasksEnabled(),
-        renderedTags);
+        renderedTags, context);
   }
 
   private CfRouteUpdateRequestConfigData getPcfRouteUpdateRequestConfigData(

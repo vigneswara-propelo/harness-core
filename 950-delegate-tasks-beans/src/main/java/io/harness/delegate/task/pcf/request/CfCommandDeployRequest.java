@@ -8,6 +8,7 @@
 package io.harness.delegate.task.pcf.request;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.expression.Expression.ALLOW_SECRETS;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.pcf.CfAppSetupTimeDetails;
@@ -16,6 +17,7 @@ import io.harness.delegate.beans.pcf.CfServiceData;
 import io.harness.delegate.beans.pcf.ResizeStrategy;
 import io.harness.delegate.task.pcf.CfCommandRequest;
 import io.harness.delegate.task.pcf.PcfManifestsPackage;
+import io.harness.expression.Expression;
 import io.harness.pcf.model.CfCliVersion;
 
 import java.util.List;
@@ -44,7 +46,7 @@ public class CfCommandDeployRequest extends CfCommandRequest {
   private Integer totalPreviousInstanceCount;
   private CfAppSetupTimeDetails downsizeAppDetail;
   private Integer maxCount;
-  private PcfManifestsPackage pcfManifestsPackage;
+  @Expression(ALLOW_SECRETS) private PcfManifestsPackage pcfManifestsPackage;
   /**
    * This will be empty for deploy_state, so deploy will figureOut old versions and scale them down by 5
    * This will be set by Rollback, Rollback will use same request and PCFCommand.DEPLOY,
