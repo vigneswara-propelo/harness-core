@@ -39,6 +39,7 @@ public class AccountMapper {
         .createdAt(account.getCreatedAt())
         .sessionTimeoutInMinutes(account.getSessionTimeOutInMinutes())
         .publicAccessEnabled(account.isPublicAccessEnabled())
+        .subdomainURL(account.getSubdomainUrl())
         .build();
   }
 

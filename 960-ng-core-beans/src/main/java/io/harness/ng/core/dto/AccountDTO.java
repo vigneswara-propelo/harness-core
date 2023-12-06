@@ -79,6 +79,10 @@ public class AccountDTO {
   @VariableExpression(skipVariableExpression = true)
   private String ringName;
 
+  @Schema(description = "Specifies subdomain url for account")
+  @VariableExpression(skipVariableExpression = true)
+  private String subdomainURL;
+
   @Schema(description = "SessionTimeout in minutes")
   @VariableExpression(skipVariableExpression = true)
   private Integer sessionTimeoutInMinutes;
@@ -97,7 +101,7 @@ public class AccountDTO {
       boolean isCannyUsernameAbbreviationEnabled, AuthenticationMechanism authenticationMechanism,
       ServiceAccountConfig serviceAccountConfig, boolean isNextGenEnabled, boolean isProductLed,
       boolean isTwoFactorAdminEnforced, long createdAt, String ringName, Integer sessionTimeoutInMinutes,
-      boolean publicAccessEnabled) {
+      boolean publicAccessEnabled, String subdomainURL) {
     this.identifier = identifier;
     this.name = name;
     this.companyName = companyName;
@@ -114,5 +118,6 @@ public class AccountDTO {
     this.createdAt = createdAt;
     this.sessionTimeoutInMinutes = sessionTimeoutInMinutes;
     this.publicAccessEnabled = publicAccessEnabled;
+    this.subdomainURL = subdomainURL;
   }
 }
