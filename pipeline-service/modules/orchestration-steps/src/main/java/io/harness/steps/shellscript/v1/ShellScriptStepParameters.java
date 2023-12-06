@@ -64,8 +64,26 @@ public class ShellScriptStepParameters extends ShellScriptBaseStepInfoV1 impleme
     return new LinkedList<>(Arrays.asList("spec.secretOutputVariables"));
   }
 
-  public io.harness.steps.shellscript.ShellScriptStepParameters toShellScriptParametersV0() {
+  public io.harness.steps.shellscript.ShellScriptStepParameters toShellScriptParametersV0Old() {
     return io.harness.steps.shellscript.ShellScriptStepParameters.infoBuilder()
+        .executionTarget(toExecutionTargetOld(getExecution_target()))
+        .onDelegate(getOn_delegate())
+        .outputVariables(getOutput_vars())
+        .environmentVariables(getEnv_vars())
+        .secretOutputVariables(getSecret_output_vars())
+        .shellType(toShellType(getShell()))
+        .source(toShellScriptSourceWrapper(getSource()))
+        .delegateSelectors(getDelegate())
+        .includeInfraSelectors(getInclude_infra_selectors())
+        .outputAlias(toOutputAlias(getOutput_alias()))
+        .delegateSelectors(getDelegate())
+        .includeInfraSelectors(getInclude_infra_selectors())
+        .outputAlias(toOutputAlias(getOutput_alias()))
+        .build();
+  }
+
+  public io.harness.steps.shellscript.ShellScriptStepParametersV0 toShellScriptParametersV0() {
+    return io.harness.steps.shellscript.ShellScriptStepParametersV0.infoBuilder()
         .executionTarget(toExecutionTarget(getExecution_target()))
         .onDelegate(getOn_delegate())
         .outputVariables(getOutput_vars())
@@ -82,7 +100,7 @@ public class ShellScriptStepParameters extends ShellScriptBaseStepInfoV1 impleme
         .build();
   }
 
-  private ExecutionTarget toExecutionTarget(ExecutionTargetV1 executionTargetV1) {
+  private ExecutionTarget toExecutionTargetOld(ExecutionTargetV1 executionTargetV1) {
     if (executionTargetV1 == null) {
       return null;
     }
@@ -91,6 +109,17 @@ public class ShellScriptStepParameters extends ShellScriptBaseStepInfoV1 impleme
         .connectorRef(executionTargetV1.getConnector())
         .workingDirectory(executionTargetV1.getDir())
         .build();
+  }
+
+  private ParameterField<ExecutionTarget> toExecutionTarget(ExecutionTargetV1 executionTargetV1) {
+    if (executionTargetV1 == null) {
+      return null;
+    }
+    return ParameterField.createValueField(ExecutionTarget.builder()
+                                               .host(executionTargetV1.getHost())
+                                               .connectorRef(executionTargetV1.getConnector())
+                                               .workingDirectory(executionTargetV1.getDir())
+                                               .build());
   }
 
   private ShellType toShellType(ShellTypeV1 shellTypeV1) {

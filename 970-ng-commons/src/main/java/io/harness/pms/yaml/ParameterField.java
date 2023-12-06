@@ -168,6 +168,10 @@ public class ParameterField<T> {
     return !isNull(actualField);
   }
 
+  public static boolean isNotBlank(ParameterField<?> actualField) {
+    return !isBlank(actualField);
+  }
+
   public static boolean isNull(ParameterField<?> actualField) {
     if (actualField == null) {
       return true;

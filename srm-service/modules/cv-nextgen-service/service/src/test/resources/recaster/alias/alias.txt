@@ -31,6 +31,7 @@ io.harness.steps.approval.step.harness.HarnessApprovalSpecParameters
 io.harness.steps.jira.create.JiraCreateStepInfo
 io.harness.steps.shellscript.ExecutionTarget
 io.harness.steps.shellscript.ShellScriptStepParameters
+io.harness.steps.shellscript.ShellScriptStepParametersV0
 io.harness.when.beans.StepWhenCondition
 io.harness.steps.shellscript.ShellScriptOutcome
 io.harness.pms.sdk.core.plan.MapStepParameters

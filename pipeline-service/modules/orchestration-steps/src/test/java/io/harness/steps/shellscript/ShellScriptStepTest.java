@@ -71,7 +71,7 @@ public class ShellScriptStepTest extends CategoryTest {
 
   @Mock private KryoSerializer kryoSerializer;
   @Mock private StepHelper stepHelper;
-  @Mock private ShellScriptHelperService shellScriptHelperService;
+  @Mock private ShellScriptHelperServiceOld shellScriptHelperServiceOld;
   @Mock private LogStreamingStepClientFactory logStreamingStepClientFactory;
   @Mock private PmsFeatureFlagHelper pmsFeatureFlagHelper;
   @Mock LogStreamingStepClientImpl logClient;
@@ -114,7 +114,7 @@ public class ShellScriptStepTest extends CategoryTest {
         StepElementParameters.builder().spec(stepParameters).timeout(ParameterField.createValueField("45m")).build();
     ShellScriptTaskParametersNG taskParametersNG = ShellScriptTaskParametersNG.builder().script("echo hello").build();
     doReturn(taskParametersNG)
-        .when(shellScriptHelperService)
+        .when(shellScriptHelperServiceOld)
         .buildShellScriptTaskParametersNG(ambiance, stepParameters, null, null);
 
     TaskRequest taskRequest = shellScriptStep.obtainTask(ambiance, stepElementParameters, null);
@@ -137,7 +137,7 @@ public class ShellScriptStepTest extends CategoryTest {
     ShellScriptTaskParametersNG taskParametersNG =
         ShellScriptTaskParametersNG.builder().script("Write-Host hello").build();
     doReturn(taskParametersNG)
-        .when(shellScriptHelperService)
+        .when(shellScriptHelperServiceOld)
         .buildShellScriptTaskParametersNG(ambiance, stepParameters, null, null);
     TaskRequest taskRequest = shellScriptStep.obtainTask(ambiance, stepElementParameters, null);
     assertThat(new HashSet<>(taskRequest.getDelegateTaskRequest().getLogKeysList()))
@@ -198,14 +198,14 @@ public class ShellScriptStepTest extends CategoryTest {
 
     ShellScriptOutcome shellScriptOutcome = ShellScriptOutcome.builder().outputVariables(new HashMap<>()).build();
     doReturn(shellScriptOutcome)
-        .when(shellScriptHelperService)
+        .when(shellScriptHelperServiceOld)
         .prepareShellScriptOutcome(envVariables, outputVariables);
     when(pmsFeatureFlagHelper.isEnabled(any(), (FeatureName) any())).thenReturn(true);
     stepResponse = shellScriptStep.handleTaskResult(ambiance, stepElementParameters, () -> successResponse);
     assertThat(stepResponse.getStepOutcomes()).hasSize(1);
     assertThat(((List<StepOutcome>) stepResponse.getStepOutcomes()).get(0).getOutcome()).isEqualTo(shellScriptOutcome);
     verify(logClient, times(2)).closeStream("Execute");
-    verify(shellScriptHelperService, times(1))
+    verify(shellScriptHelperServiceOld, times(1))
         .exportOutputVariablesUsingAlias(ambiance, stepParameters, shellScriptOutcome);
   }
 

@@ -131,7 +131,7 @@ public class ParameterFieldDeserializer extends StdDeserializer<ParameterField<?
           : valueDeserializer.deserializeWithType(p, ctxt, valueTypeDeserializer);
       return ParameterField.createValueField(refd);
     } catch (Exception ex) {
-      if (NGExpressionUtils.NULL.equals(text)) {
+      if (NGExpressionUtils.NULL.equals(text) || NGExpressionUtils.EMPTY.equals(text)) {
         return getNullValue(ctxt);
       }
       if (referenceType.getRawClass() == List.class) {

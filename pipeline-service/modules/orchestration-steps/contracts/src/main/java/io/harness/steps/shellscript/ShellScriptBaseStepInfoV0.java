@@ -9,6 +9,7 @@ package io.harness.steps.shellscript;
 
 import static io.harness.beans.SwaggerConstants.BOOLEAN_CLASSPATH;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.expression;
+import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtimeEmptyStringAllowed;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
 import io.harness.annotations.dev.CodePulse;
@@ -38,16 +39,15 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("ShellScriptBaseStepInfo")
-@Deprecated
-public class ShellScriptBaseStepInfo {
+@TypeAlias("ShellScriptBaseStepInfoV0")
+public class ShellScriptBaseStepInfoV0 {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
   @ApiModelProperty(hidden = true)
   String uuid;
   @NotNull ShellType shell;
   @NotNull ShellScriptSourceWrapper source;
-  ExecutionTarget executionTarget;
+  @YamlSchemaTypes({runtimeEmptyStringAllowed}) ParameterField<ExecutionTarget> executionTarget;
   @NotNull
   @ApiModelProperty(dataType = BOOLEAN_CLASSPATH)
   @YamlSchemaTypes({string})

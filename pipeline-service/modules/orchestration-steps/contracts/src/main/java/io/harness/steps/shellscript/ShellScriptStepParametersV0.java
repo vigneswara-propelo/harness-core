@@ -38,20 +38,20 @@ import org.springframework.data.annotation.TypeAlias;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@TypeAlias("shellScriptStepParameters")
+@TypeAlias("shellScriptStepParametersV0")
 @OwnedBy(HarnessTeam.CDC)
-@RecasterAlias("io.harness.steps.shellscript.ShellScriptStepParameters")
-@Deprecated
-public class ShellScriptStepParameters extends ShellScriptBaseStepInfo implements SpecParameters {
+@RecasterAlias("io.harness.steps.shellscript.ShellScriptStepParametersV0")
+public class ShellScriptStepParametersV0 extends ShellScriptBaseStepInfoV0 implements SpecParameters {
   Map<String, Object> outputVariables;
   Map<String, Object> environmentVariables;
   Set<String> secretOutputVariables;
 
   @Builder(builderMethodName = "infoBuilder")
-  public ShellScriptStepParameters(ShellType shellType, ShellScriptSourceWrapper source,
-      ExecutionTarget executionTarget, ParameterField<Boolean> onDelegate, Map<String, Object> outputVariables,
-      Map<String, Object> environmentVariables, ParameterField<List<TaskSelectorYaml>> delegateSelectors, String uuid,
-      Set<String> secretOutputVariables, ParameterField<Boolean> includeInfraSelectors, OutputAlias outputAlias) {
+  public ShellScriptStepParametersV0(ShellType shellType, ShellScriptSourceWrapper source,
+      ParameterField<ExecutionTarget> executionTarget, ParameterField<Boolean> onDelegate,
+      Map<String, Object> outputVariables, Map<String, Object> environmentVariables,
+      ParameterField<List<TaskSelectorYaml>> delegateSelectors, String uuid, Set<String> secretOutputVariables,
+      ParameterField<Boolean> includeInfraSelectors, OutputAlias outputAlias) {
     super(uuid, shellType, source, executionTarget, onDelegate, delegateSelectors, includeInfraSelectors, outputAlias);
     this.outputVariables = outputVariables;
     this.environmentVariables = environmentVariables;

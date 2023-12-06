@@ -219,6 +219,8 @@ import io.harness.steps.jira.JiraStepHelperService;
 import io.harness.steps.servicenow.ServiceNowStepHelperService;
 import io.harness.steps.shellscript.ShellScriptHelperService;
 import io.harness.steps.shellscript.ShellScriptHelperServiceImpl;
+import io.harness.steps.shellscript.ShellScriptHelperServiceImplOld;
+import io.harness.steps.shellscript.ShellScriptHelperServiceOld;
 import io.harness.steps.wait.WaitStepService;
 import io.harness.steps.wait.WaitStepServiceImpl;
 import io.harness.telemetry.AbstractTelemetryModule;
@@ -450,6 +452,7 @@ public class PipelineServiceModule extends AbstractModule {
     bind(PMSYamlSchemaService.class).to(PMSYamlSchemaServiceImpl.class);
     bind(ApprovalNotificationHandler.class).to(ApprovalNotificationHandlerImpl.class);
     bind(PMSOpaService.class).to(PMSOpaServiceImpl.class);
+    bind(ShellScriptHelperServiceOld.class).to(ShellScriptHelperServiceImplOld.class);
     bind(ShellScriptHelperService.class).to(ShellScriptHelperServiceImpl.class);
     bind(ApprovalYamlSchemaService.class).to(ApprovalYamlSchemaServiceImpl.class).in(Singleton.class);
     bind(CustomStageYamlSchemaService.class).to(CustomStageYamlSchemaServiceImpl.class).in(Singleton.class);

@@ -37,7 +37,8 @@ import javax.annotation.Nonnull;
 @CodePulse(
     module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_COMMON_STEPS})
 @OwnedBy(CDC)
-public interface ShellScriptHelperService {
+@Deprecated
+public interface ShellScriptHelperServiceOld {
   // Handles ParameterField and String type Objects, else throws Exception
   Map<String, String> getEnvironmentVariables(Map<String, Object> inputVariables, Ambiance ambiance);
 
@@ -48,27 +49,24 @@ public interface ShellScriptHelperService {
       @Nonnull Ambiance ambiance, @Nonnull String shellScript, Boolean includeInfraSelectors);
 
   void prepareTaskParametersForExecutionTarget(@Nonnull Ambiance ambiance,
-      @Nonnull ShellScriptStepParametersV0 shellScriptStepParameters,
-      @Nonnull ShellScriptTaskParametersNGBuilder taskParametersNGBuilder, boolean executeOnDelegate);
+      @Nonnull ShellScriptStepParameters shellScriptStepParameters,
+      @Nonnull ShellScriptTaskParametersNGBuilder taskParametersNGBuilder);
 
-  boolean toExecuteOnDelegate(ParameterField<ExecutionTarget> executionTargetParameterField);
-
-  String getShellScript(@Nonnull ShellScriptStepParametersV0 stepParameters, Ambiance ambiance);
+  String getShellScript(@Nonnull ShellScriptStepParameters stepParameters, Ambiance ambiance);
 
   String getWorkingDirectory(
-      ParameterField<ExecutionTarget> executionTarget, @Nonnull ScriptType scriptType, boolean executeOnDelegate);
+      ParameterField<String> workingDirectory, @Nonnull ScriptType scriptType, boolean onDelegate);
 
   TaskParameters buildShellScriptTaskParametersNG(@Nonnull Ambiance ambiance,
-      @Nonnull ShellScriptStepParametersV0 shellScriptStepParameters, String sessionTimeout, String commandUnit);
+      @Nonnull ShellScriptStepParameters shellScriptStepParameters, String sessionTimeout, String commandUnit);
   TaskParameters buildShellScriptTaskParametersNG(
-      @Nonnull Ambiance ambiance, @Nonnull ShellScriptStepParametersV0 shellScriptStepParameters);
+      @Nonnull Ambiance ambiance, @Nonnull ShellScriptStepParameters shellScriptStepParameters);
 
   ShellScriptBaseOutcome prepareShellScriptOutcome(
       Map<String, String> sweepingOutputEnvVariables, Map<String, Object> outputVariables);
 
   void exportOutputVariablesUsingAlias(@Nonnull Ambiance ambiance,
-      @Nonnull ShellScriptStepParametersV0 shellScriptStepParametersV0,
-      @Nonnull ShellScriptBaseOutcome shellScriptOutcome);
+      @Nonnull ShellScriptStepParameters shellScriptStepParameters, @Nonnull ShellScriptBaseOutcome shellScriptOutcome);
 
   static ShellScriptBaseOutcome prepareShellScriptOutcome(Map<String, String> sweepingOutputEnvVariables,
       Map<String, Object> outputVariables, Set<String> secretOutputVariables) {
@@ -116,15 +114,15 @@ public interface ShellScriptHelperService {
 
   // Convert v1 step parameters to v0, we could not do this during plan creation because we also need to support
   // expressions following v1 rfc
-  static io.harness.steps.shellscript.ShellScriptStepParametersV0 getShellScriptStepParameters(
+  static io.harness.steps.shellscript.ShellScriptStepParameters getShellScriptStepParameters(
       StepBaseParameters stepParameters) {
     String version = stepParameters.getSpec().getVersion();
     switch (version) {
       case HarnessYamlVersion.V0:
-        return (io.harness.steps.shellscript.ShellScriptStepParametersV0) stepParameters.getSpec();
+        return (io.harness.steps.shellscript.ShellScriptStepParameters) stepParameters.getSpec();
       case HarnessYamlVersion.V1:
         return ((io.harness.steps.shellscript.v1.ShellScriptStepParameters) stepParameters.getSpec())
-            .toShellScriptParametersV0();
+            .toShellScriptParametersV0Old();
       default:
         throw new InvalidRequestException(String.format("Version %s not supported", version));
     }

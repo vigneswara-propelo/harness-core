@@ -18,7 +18,6 @@ import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -103,13 +102,13 @@ import retrofit2.Response;
 @Slf4j
 @OwnedBy(CDC)
 @RunWith(MockitoJUnitRunner.class)
-public class ShellScriptHelperServiceImplTest extends CategoryTest {
+public class ShellScriptHelperServiceImplOldTest extends CategoryTest {
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
   @Mock private SecretNGManagerClient secretManagerClient;
   @Mock private SshKeySpecDTOHelper sshKeySpecDTOHelper;
-  @Mock private ShellScriptHelperService shellScriptHelperService;
+  @Mock private ShellScriptHelperServiceOld shellScriptHelperServiceOld;
   @Mock private NGSettingsClient settingsClient;
   @Mock private Call<ResponseDTO<SettingValueResponseDTO>> response;
   @Mock private EngineExpressionService engineExpressionService;
@@ -117,7 +116,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Mock private InputSetValidatorFactory inputSetValidatorFactory;
   @Mock private PmsFeatureFlagHelper pmsFeatureFlagHelper;
   @Mock Ambiance ambiance;
-  @InjectMocks private ShellScriptHelperServiceImpl shellScriptHelperServiceImpl;
+  @InjectMocks private ShellScriptHelperServiceImplOld shellScriptHelperServiceImplOld;
 
   @Before
   public void beforeRun() {
@@ -133,8 +132,8 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     PowerMockito.when(response.execute())
         .thenReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTO)));
 
-    assertThat(shellScriptHelperServiceImpl.getEnvironmentVariables(null, Ambiance.newBuilder().build())).isEmpty();
-    assertThat(shellScriptHelperServiceImpl.getEnvironmentVariables(new HashMap<>(), Ambiance.newBuilder().build()))
+    assertThat(shellScriptHelperServiceImplOld.getEnvironmentVariables(null, Ambiance.newBuilder().build())).isEmpty();
+    assertThat(shellScriptHelperServiceImplOld.getEnvironmentVariables(new HashMap<>(), Ambiance.newBuilder().build()))
         .isEmpty();
 
     Map<String, Object> envVariables = new HashMap<>();
@@ -144,13 +143,13 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     envVariables.put("var4", ParameterField.createExpressionField(true, "<+unresolved>", null, true));
 
     assertThatThrownBy(
-        () -> shellScriptHelperServiceImpl.getEnvironmentVariables(envVariables, Ambiance.newBuilder().build()))
+        () -> shellScriptHelperServiceImplOld.getEnvironmentVariables(envVariables, Ambiance.newBuilder().build()))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessageContaining("Env. variables: [var4] found to be unresolved");
 
     envVariables.remove("var4");
     Map<String, String> environmentVariables =
-        shellScriptHelperServiceImpl.getEnvironmentVariables(envVariables, Ambiance.newBuilder().build());
+        shellScriptHelperServiceImplOld.getEnvironmentVariables(envVariables, Ambiance.newBuilder().build());
     assertThat(environmentVariables).hasSize(2);
     assertThat(environmentVariables.get("var2")).isEqualTo("val2");
     assertThat(environmentVariables.get("var3")).isEqualTo("val3");
@@ -173,8 +172,8 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
         .thenReturn(OptionalSweepingOutput.builder().found(true).output(serviceVariableOutput).build());
 
     // without any input variables. only service vars should be present
-    assertThat(shellScriptHelperServiceImpl.getEnvironmentVariables(null, Ambiance.newBuilder().build())).hasSize(1);
-    assertThat(shellScriptHelperServiceImpl.getEnvironmentVariables(new HashMap<>(), Ambiance.newBuilder().build()))
+    assertThat(shellScriptHelperServiceImplOld.getEnvironmentVariables(null, Ambiance.newBuilder().build())).hasSize(1);
+    assertThat(shellScriptHelperServiceImplOld.getEnvironmentVariables(new HashMap<>(), Ambiance.newBuilder().build()))
         .hasSize(1);
 
     Map<String, Object> envVariables = new HashMap<>();
@@ -183,7 +182,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     envVariables.put("var3", ParameterField.createValueField("val3"));
 
     Map<String, String> environmentVariables =
-        shellScriptHelperServiceImpl.getEnvironmentVariables(envVariables, Ambiance.newBuilder().build());
+        shellScriptHelperServiceImplOld.getEnvironmentVariables(envVariables, Ambiance.newBuilder().build());
     assertThat(environmentVariables).hasSize(3);
     assertThat(environmentVariables.get("svar1")).isEqualTo("sval1");
     assertThat(environmentVariables.get("var2")).isEqualTo("val2");
@@ -194,8 +193,8 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Owner(developers = VAIBHAV_SI)
   @Category(UnitTests.class)
   public void testGetOutputVars() {
-    assertThat(shellScriptHelperServiceImpl.getOutputVars(null, new HashSet<>())).isEmpty();
-    assertThat(shellScriptHelperServiceImpl.getOutputVars(new HashMap<>(), new HashSet<>())).isEmpty();
+    assertThat(shellScriptHelperServiceImplOld.getOutputVars(null, new HashSet<>())).isEmpty();
+    assertThat(shellScriptHelperServiceImplOld.getOutputVars(new HashMap<>(), new HashSet<>())).isEmpty();
 
     Map<String, Object> outputVariables = new LinkedHashMap<>();
     outputVariables.put("var1", Arrays.asList(1));
@@ -203,19 +202,20 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     outputVariables.put("var3", ParameterField.createValueField("val3"));
     outputVariables.put("var4", ParameterField.createExpressionField(true, "<+unresolved>", null, true));
 
-    assertThatThrownBy(() -> shellScriptHelperServiceImpl.getOutputVars(outputVariables, new HashSet<>()))
+    assertThatThrownBy(() -> shellScriptHelperServiceImplOld.getOutputVars(outputVariables, new HashSet<>()))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessageContaining("Output variable [var4] value found to be empty");
 
     outputVariables.remove("var4");
-    List<String> outputVariablesValues = shellScriptHelperServiceImpl.getOutputVars(outputVariables, new HashSet<>());
+    List<String> outputVariablesValues =
+        shellScriptHelperServiceImplOld.getOutputVars(outputVariables, new HashSet<>());
     assertThat(outputVariablesValues).hasSize(2);
     assertThat(outputVariablesValues.get(0)).isEqualTo("val2");
     assertThat(outputVariablesValues.get(1)).isEqualTo("val3");
 
     Set<String> secretOutputVars = new HashSet<>();
     secretOutputVars.add("var2");
-    outputVariablesValues = shellScriptHelperServiceImpl.getOutputVars(outputVariables, secretOutputVars);
+    outputVariablesValues = shellScriptHelperServiceImplOld.getOutputVars(outputVariables, secretOutputVars);
     assertThat(outputVariablesValues).hasSize(1);
     assertThat(outputVariablesValues.get(0)).isEqualTo("val3");
   }
@@ -224,8 +224,8 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Owner(developers = HINGER)
   @Category(UnitTests.class)
   public void testGetSecretOutputVars() {
-    assertThat(shellScriptHelperServiceImpl.getSecretOutputVars(null, new HashSet<>())).isEmpty();
-    assertThat(shellScriptHelperServiceImpl.getSecretOutputVars(new HashMap<>(), new HashSet<>())).isEmpty();
+    assertThat(shellScriptHelperServiceImplOld.getSecretOutputVars(null, new HashSet<>())).isEmpty();
+    assertThat(shellScriptHelperServiceImplOld.getSecretOutputVars(new HashMap<>(), new HashSet<>())).isEmpty();
 
     Map<String, Object> outputVariables = new LinkedHashMap<>();
     outputVariables.put("var1", Arrays.asList(1));
@@ -236,14 +236,14 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     Set<String> secretOutputVars = new HashSet<>();
     secretOutputVars.add("var4");
 
-    assertThatThrownBy(() -> shellScriptHelperServiceImpl.getSecretOutputVars(outputVariables, secretOutputVars))
+    assertThatThrownBy(() -> shellScriptHelperServiceImplOld.getSecretOutputVars(outputVariables, secretOutputVars))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessageContaining("Output variable [var4] value found to be empty");
 
     secretOutputVars.remove("var4");
     secretOutputVars.add("var2");
     List<String> outputVariablesValues =
-        shellScriptHelperServiceImpl.getSecretOutputVars(outputVariables, secretOutputVars);
+        shellScriptHelperServiceImplOld.getSecretOutputVars(outputVariables, secretOutputVars);
     assertThat(outputVariablesValues).hasSize(1);
     assertThat(outputVariablesValues.get(0)).isEqualTo("val2");
   }
@@ -256,7 +256,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     String script = "echo hey";
     ShellScriptTaskParametersNGBuilder taskParamsBuilder = ShellScriptTaskParametersNG.builder();
 
-    assertThat(shellScriptHelperServiceImpl.getK8sInfraDelegateConfig(ambiance, script, false)).isNull();
+    assertThat(shellScriptHelperServiceImplOld.getK8sInfraDelegateConfig(ambiance, script, false)).isNull();
 
     script = "export KUBE_CONFIG=${HARNESS_KUBE_CONFIG_PATH}";
     OptionalSweepingOutput optionalSweepingOutput = OptionalSweepingOutput.builder().found(false).build();
@@ -264,7 +264,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
         .when(executionSweepingOutputService)
         .resolveOptional(ambiance,
             RefObjectUtils.getSweepingOutputRefObject(OutputExpressionConstants.K8S_INFRA_DELEGATE_CONFIG_OUTPUT_NAME));
-    assertThat(shellScriptHelperServiceImpl.getK8sInfraDelegateConfig(ambiance, script, false)).isNull();
+    assertThat(shellScriptHelperServiceImplOld.getK8sInfraDelegateConfig(ambiance, script, false)).isNull();
 
     K8sInfraDelegateConfigOutput k8sInfraDelegateConfigOutput = K8sInfraDelegateConfigOutput.builder().build();
     optionalSweepingOutput = OptionalSweepingOutput.builder().found(true).output(k8sInfraDelegateConfigOutput).build();
@@ -272,7 +272,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
         .when(executionSweepingOutputService)
         .resolveOptional(ambiance,
             RefObjectUtils.getSweepingOutputRefObject(OutputExpressionConstants.K8S_INFRA_DELEGATE_CONFIG_OUTPUT_NAME));
-    assertThat(shellScriptHelperServiceImpl.getK8sInfraDelegateConfig(ambiance, script, false)).isNull();
+    assertThat(shellScriptHelperServiceImplOld.getK8sInfraDelegateConfig(ambiance, script, false)).isNull();
 
     DirectK8sInfraDelegateConfig k8sInfraDelegateConfig = DirectK8sInfraDelegateConfig.builder().build();
     k8sInfraDelegateConfigOutput =
@@ -282,11 +282,11 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
         .when(executionSweepingOutputService)
         .resolveOptional(ambiance,
             RefObjectUtils.getSweepingOutputRefObject(OutputExpressionConstants.K8S_INFRA_DELEGATE_CONFIG_OUTPUT_NAME));
-    assertThat(shellScriptHelperServiceImpl.getK8sInfraDelegateConfig(ambiance, script, false))
+    assertThat(shellScriptHelperServiceImplOld.getK8sInfraDelegateConfig(ambiance, script, false))
         .isEqualTo(k8sInfraDelegateConfig);
 
     script = "echo hey";
-    assertThat(shellScriptHelperServiceImpl.getK8sInfraDelegateConfig(ambiance, script, true))
+    assertThat(shellScriptHelperServiceImplOld.getK8sInfraDelegateConfig(ambiance, script, true))
         .isEqualTo(k8sInfraDelegateConfig);
   }
 
@@ -295,29 +295,31 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testPrepareTaskParametersForIncorrectExecutionTarget() {
     Ambiance ambiance = Ambiance.newBuilder().build();
-    ShellScriptStepParametersV0 stepParameters =
-        ShellScriptStepParametersV0.infoBuilder().onDelegate(ParameterField.createValueField(true)).build();
+    ShellScriptStepParameters stepParameters =
+        ShellScriptStepParameters.infoBuilder().onDelegate(ParameterField.createValueField(true)).build();
     ShellScriptTaskParametersNGBuilder taskParamsBuilder = ShellScriptTaskParametersNG.builder();
 
-    ParameterField<ExecutionTarget> executionTarget =
-        ParameterField.createValueField(ExecutionTarget.builder().build());
-    stepParameters.setExecutionTarget(executionTarget);
-
-    shellScriptHelperServiceImpl.prepareTaskParametersForExecutionTarget(
-        ambiance, stepParameters, taskParamsBuilder, true);
+    shellScriptHelperServiceImplOld.prepareTaskParametersForExecutionTarget(
+        ambiance, stepParameters, taskParamsBuilder);
     assertThat(taskParamsBuilder.build().getHost()).isNull();
 
     stepParameters.setOnDelegate(ParameterField.createValueField(false));
-
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.prepareTaskParametersForExecutionTarget(
-                               ambiance, stepParameters, taskParamsBuilder, false))
+                           -> shellScriptHelperServiceImplOld.prepareTaskParametersForExecutionTarget(
+                               ambiance, stepParameters, taskParamsBuilder))
+        .hasMessageContaining("Execution Target can't be empty with on delegate set to false");
+
+    ExecutionTarget executionTarget = ExecutionTarget.builder().build();
+    stepParameters.setExecutionTarget(executionTarget);
+    assertThatThrownBy(()
+                           -> shellScriptHelperServiceImplOld.prepareTaskParametersForExecutionTarget(
+                               ambiance, stepParameters, taskParamsBuilder))
         .hasMessageContaining("Connector Ref in Execution Target can't be empty");
 
-    executionTarget.getValue().setConnectorRef(ParameterField.createValueField("cRef"));
+    executionTarget.setConnectorRef(ParameterField.createValueField("cRef"));
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.prepareTaskParametersForExecutionTarget(
-                               ambiance, stepParameters, taskParamsBuilder, false))
+                           -> shellScriptHelperServiceImplOld.prepareTaskParametersForExecutionTarget(
+                               ambiance, stepParameters, taskParamsBuilder))
         .hasMessageContaining("Host in Execution Target can't be empty");
   }
 
@@ -330,22 +332,21 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
                             .putSetupAbstractions(SetupAbstractionKeys.orgIdentifier, "orgId")
                             .putSetupAbstractions(SetupAbstractionKeys.projectIdentifier, "projId")
                             .build();
-    ParameterField<ExecutionTarget> executionTarget =
-        ParameterField.createValueField(ExecutionTarget.builder()
-                                            .connectorRef(ParameterField.createValueField("cref"))
-                                            .host(ParameterField.createValueField("host"))
-                                            .build());
-    ShellScriptStepParametersV0 stepParameters = ShellScriptStepParametersV0.infoBuilder()
-                                                     .onDelegate(ParameterField.createValueField(false))
-                                                     .executionTarget(executionTarget)
-                                                     .build();
+    ExecutionTarget executionTarget = ExecutionTarget.builder()
+                                          .connectorRef(ParameterField.createValueField("cref"))
+                                          .host(ParameterField.createValueField("host"))
+                                          .build();
+    ShellScriptStepParameters stepParameters = ShellScriptStepParameters.infoBuilder()
+                                                   .onDelegate(ParameterField.createValueField(false))
+                                                   .executionTarget(executionTarget)
+                                                   .build();
     ShellScriptTaskParametersNGBuilder taskParamsBuilder = ShellScriptTaskParametersNG.builder();
 
     try (MockedStatic<NGRestUtils> aStatic = Mockito.mockStatic(NGRestUtils.class)) {
       aStatic.when(() -> NGRestUtils.getResponse(any(), any())).thenReturn(null);
       assertThatThrownBy(()
-                             -> shellScriptHelperServiceImpl.prepareTaskParametersForExecutionTarget(
-                                 ambiance, stepParameters, taskParamsBuilder, false))
+                             -> shellScriptHelperServiceImplOld.prepareTaskParametersForExecutionTarget(
+                                 ambiance, stepParameters, taskParamsBuilder))
           .hasMessageContaining("No secret configured with identifier: cref");
 
       SSHKeySpecDTO sshKeySpecDTO = SSHKeySpecDTO.builder().build();
@@ -357,8 +358,8 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
       doReturn(encryptedDataDetails)
           .when(sshKeySpecDTOHelper)
           .getSSHKeyEncryptionDetails(sshKeySpecDTO, AmbianceUtils.getNgAccess(ambiance));
-      shellScriptHelperServiceImpl.prepareTaskParametersForExecutionTarget(
-          ambiance, stepParameters, taskParamsBuilder, false);
+      shellScriptHelperServiceImplOld.prepareTaskParametersForExecutionTarget(
+          ambiance, stepParameters, taskParamsBuilder);
       assertThat(taskParamsBuilder.build().getHost()).isEqualTo("host");
       assertThat(taskParamsBuilder.build().getEncryptionDetails()).hasSize(1);
       assertThat(taskParamsBuilder.build().getSshKeySpecDTO()).isEqualTo(sshKeySpecDTO);
@@ -374,14 +375,14 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
 
     ParameterField<String> parameterFieldScript = ParameterField.createExpressionField(true, script, null, true);
     ShellScriptInlineSource source = ShellScriptInlineSource.builder().script(parameterFieldScript).build();
-    ShellScriptStepParametersV0 stepParameters =
-        ShellScriptStepParametersV0.infoBuilder()
+    ShellScriptStepParameters stepParameters =
+        ShellScriptStepParameters.infoBuilder()
             .source(ShellScriptSourceWrapper.builder().spec(source).type("Inline").build())
             .build();
-    assertThat(shellScriptHelperServiceImpl.getShellScript(stepParameters, ambiance))
+    assertThat(shellScriptHelperServiceImplOld.getShellScript(stepParameters, ambiance))
         .isEqualTo("echo <+unresolved1>\necho <+unresolved2>");
     source.setScript(ParameterField.createValueField("echo hi"));
-    assertThat(shellScriptHelperServiceImpl.getShellScript(stepParameters, ambiance)).isEqualTo("echo hi");
+    assertThat(shellScriptHelperServiceImplOld.getShellScript(stepParameters, ambiance)).isEqualTo("echo hi");
   }
 
   @Test
@@ -393,8 +394,8 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
 
     ParameterField<String> parameterFieldFile = ParameterField.createValueField("account:/test");
     HarnessFileStoreSource source = HarnessFileStoreSource.builder().file(parameterFieldFile).build();
-    ShellScriptStepParametersV0 stepParameters =
-        ShellScriptStepParametersV0.infoBuilder()
+    ShellScriptStepParameters stepParameters =
+        ShellScriptStepParameters.infoBuilder()
             .source(ShellScriptSourceWrapper.builder().spec(source).type("Harness").build())
             .build();
 
@@ -407,7 +408,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
 
       safeHttpCallMockedStatic.when(() -> SafeHttpCall.executeWithExceptions(any()))
           .thenReturn(ResponseDTO.newResponse(fileContent));
-      String ret = shellScriptHelperServiceImpl.getShellScript(stepParameters, ambiance);
+      String ret = shellScriptHelperServiceImplOld.getShellScript(stepParameters, ambiance);
       assertThat(ret).isEqualTo(fileContent);
     }
   }
@@ -420,12 +421,12 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
 
     ParameterField<String> parameterFieldFile = ParameterField.createValueField("account:/test");
     HarnessFileStoreSource source = HarnessFileStoreSource.builder().file(parameterFieldFile).build();
-    ShellScriptStepParametersV0 stepParameters =
-        ShellScriptStepParametersV0.infoBuilder()
+    ShellScriptStepParameters stepParameters =
+        ShellScriptStepParameters.infoBuilder()
             .source(ShellScriptSourceWrapper.builder().spec(source).type("Harness").build())
             .build();
 
-    assertThatThrownBy(() -> shellScriptHelperServiceImpl.getShellScript(stepParameters, ambiance))
+    assertThatThrownBy(() -> shellScriptHelperServiceImplOld.getShellScript(stepParameters, ambiance))
         .isInstanceOf(InvalidRequestException.class);
   }
 
@@ -437,12 +438,12 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
 
     ParameterField<String> parameterFieldFile = ParameterField.createValueField("account:/test");
     HarnessFileStoreSource source = HarnessFileStoreSource.builder().file(parameterFieldFile).build();
-    ShellScriptStepParametersV0 stepParameters =
-        ShellScriptStepParametersV0.infoBuilder()
+    ShellScriptStepParameters stepParameters =
+        ShellScriptStepParameters.infoBuilder()
             .source(ShellScriptSourceWrapper.builder().spec(source).type("Unknown").build())
             .build();
 
-    assertThatThrownBy(() -> shellScriptHelperServiceImpl.getShellScript(stepParameters, ambiance))
+    assertThatThrownBy(() -> shellScriptHelperServiceImplOld.getShellScript(stepParameters, ambiance))
         .isInstanceOf(InvalidRequestException.class);
   }
 
@@ -450,20 +451,24 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Owner(developers = VAIBHAV_SI)
   @Category(UnitTests.class)
   public void testGetWorkingDirectory() {
-    ShellScriptStepParametersV0 stepParameters =
-        ShellScriptStepParametersV0.infoBuilder().onDelegate(ParameterField.createValueField(true)).build();
-    assertThat(shellScriptHelperServiceImpl.getWorkingDirectory(ParameterField.ofNull(), ScriptType.BASH, true))
+    ShellScriptStepParameters stepParameters =
+        ShellScriptStepParameters.infoBuilder().onDelegate(ParameterField.createValueField(true)).build();
+    assertThat(shellScriptHelperServiceImplOld.getWorkingDirectory(
+                   ParameterField.ofNull(), ScriptType.BASH, stepParameters.onDelegate.getValue()))
         .isEqualTo("/tmp");
-    assertThat(shellScriptHelperServiceImpl.getWorkingDirectory(ParameterField.ofNull(), ScriptType.POWERSHELL, true))
+    assertThat(shellScriptHelperServiceImplOld.getWorkingDirectory(
+                   ParameterField.ofNull(), ScriptType.POWERSHELL, stepParameters.onDelegate.getValue()))
         .isEqualTo("/tmp");
-    assertThat(shellScriptHelperServiceImpl.getWorkingDirectory(
-                   ParameterField.createValueField(ExecutionTarget.builder().build()), ScriptType.POWERSHELL, false))
+    stepParameters.setOnDelegate(ParameterField.createValueField(false));
+    assertThat(shellScriptHelperServiceImplOld.getWorkingDirectory(
+                   ParameterField.ofNull(), ScriptType.POWERSHELL, stepParameters.onDelegate.getValue()))
         .isEqualTo("%TEMP%");
 
-    stepParameters.setExecutionTarget(ParameterField.createValueField(
-        ExecutionTarget.builder().workingDirectory(ParameterField.createValueField("dir")).build()));
+    stepParameters.setExecutionTarget(
+        ExecutionTarget.builder().workingDirectory(ParameterField.createValueField("dir")).build());
     assertThat(
-        shellScriptHelperServiceImpl.getWorkingDirectory(stepParameters.getExecutionTarget(), ScriptType.BASH, true))
+        shellScriptHelperServiceImplOld.getWorkingDirectory(stepParameters.getExecutionTarget().getWorkingDirectory(),
+            ScriptType.BASH, stepParameters.onDelegate.getValue()))
         .isEqualTo("dir");
   }
 
@@ -478,8 +483,8 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     outputVars.put("key1", "val1");
     outputVars.put("key2", "val2");
 
-    ShellScriptStepParametersV0 stepParameters =
-        ShellScriptStepParametersV0.infoBuilder()
+    ShellScriptStepParameters stepParameters =
+        ShellScriptStepParameters.infoBuilder()
             .shellType(ShellType.Bash)
             .onDelegate(ParameterField.createValueField(true))
             .environmentVariables(inputVars)
@@ -494,19 +499,23 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     inputVars.put("key1", "val1");
     List<String> taskOutputVars = Arrays.asList("key1", "key2");
 
-    doReturn(script).when(shellScriptHelperService).getShellScript(stepParameters, ambiance);
+    doReturn(script).when(shellScriptHelperServiceOld).getShellScript(stepParameters, ambiance);
     doNothing()
-        .when(shellScriptHelperService)
-        .prepareTaskParametersForExecutionTarget(eq(ambiance), eq(stepParameters), any(), anyBoolean());
-    doReturn(k8sInfraDelegateConfig).when(shellScriptHelperService).getK8sInfraDelegateConfig(ambiance, script, false);
+        .when(shellScriptHelperServiceOld)
+        .prepareTaskParametersForExecutionTarget(eq(ambiance), eq(stepParameters), any());
+    doReturn(k8sInfraDelegateConfig)
+        .when(shellScriptHelperServiceOld)
+        .getK8sInfraDelegateConfig(ambiance, script, false);
     doReturn(taskEnvVariables)
-        .when(shellScriptHelperService)
+        .when(shellScriptHelperServiceOld)
         .getEnvironmentVariables(inputVars, Ambiance.newBuilder().build());
-    doReturn(taskOutputVars).when(shellScriptHelperService).getOutputVars(outputVars, new HashSet<>());
-    doReturn("/tmp").when(shellScriptHelperService).getWorkingDirectory(null, ScriptType.BASH, true);
+    doReturn(taskOutputVars).when(shellScriptHelperServiceOld).getOutputVars(outputVars, new HashSet<>());
+    doReturn("/tmp")
+        .when(shellScriptHelperServiceOld)
+        .getWorkingDirectory(ParameterField.ofNull(), ScriptType.BASH, stepParameters.onDelegate.getValue());
 
     ShellScriptTaskParametersNG taskParams =
-        (ShellScriptTaskParametersNG) shellScriptHelperServiceImpl.buildShellScriptTaskParametersNG(
+        (ShellScriptTaskParametersNG) shellScriptHelperServiceImplOld.buildShellScriptTaskParametersNG(
             ambiance, stepParameters, null, ShellScriptTaskNG.COMMAND_UNIT);
     assertThat(taskParams.getScript()).isEqualTo(script);
     assertThat(taskParams.getK8sInfraDelegateConfig()).isEqualTo(k8sInfraDelegateConfig);
@@ -517,47 +526,42 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     // onDelegate parameter field null/empty cases
     stepParameters.setOnDelegate(ParameterField.createValueField(null));
     stepParameters.setExecutionTarget(null);
-    taskParams = (ShellScriptTaskParametersNG) shellScriptHelperServiceImpl.buildShellScriptTaskParametersNG(
+    shellScriptHelperServiceImplOld.buildShellScriptTaskParametersNG(
         ambiance, stepParameters, null, ShellScriptTaskNG.COMMAND_UNIT);
-    assertThat(taskParams.isExecuteOnDelegate()).isTrue();
+    assertThat(stepParameters.onDelegate.getValue()).isTrue();
 
     stepParameters.setOnDelegate(ParameterField.createValueField(null));
-    stepParameters.setExecutionTarget(
-        ParameterField.createValueField(ExecutionTarget.builder()
-                                            .workingDirectory(ParameterField.createValueField("dir"))
-                                            .host(ParameterField.createValueField("host"))
-                                            .connectorRef(ParameterField.createValueField("connectorRef"))
-                                            .build()));
-    taskParams = (ShellScriptTaskParametersNG) shellScriptHelperServiceImpl.buildShellScriptTaskParametersNG(
+    stepParameters.setExecutionTarget(ExecutionTarget.builder().build());
+    shellScriptHelperServiceImplOld.buildShellScriptTaskParametersNG(
         ambiance, stepParameters, null, ShellScriptTaskNG.COMMAND_UNIT);
-    assertThat(taskParams.isExecuteOnDelegate()).isFalse();
+    assertThat(stepParameters.onDelegate.getValue()).isFalse();
     stepParameters.setOnDelegate(ParameterField.createValueField(true));
 
     // negative cases for output alias configuration
     stepParameters.setOutputAlias(OutputAlias.builder().build());
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.buildShellScriptTaskParametersNG(
+                           -> shellScriptHelperServiceImplOld.buildShellScriptTaskParametersNG(
                                ambiance, stepParameters, null, ShellScriptTaskNG.COMMAND_UNIT))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Empty value for key is not allowed in output alias configuration");
     stepParameters.setOutputAlias(
         OutputAlias.builder().key(ParameterField.createValueField("")).scope(ExportScope.PIPELINE).build());
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.buildShellScriptTaskParametersNG(
+                           -> shellScriptHelperServiceImplOld.buildShellScriptTaskParametersNG(
                                ambiance, stepParameters, null, ShellScriptTaskNG.COMMAND_UNIT))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Empty value for key is not allowed in output alias configuration");
     stepParameters.setOutputAlias(
         OutputAlias.builder().key(ParameterField.createValueField("   ")).scope(ExportScope.PIPELINE).build());
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.buildShellScriptTaskParametersNG(
+                           -> shellScriptHelperServiceImplOld.buildShellScriptTaskParametersNG(
                                ambiance, stepParameters, null, ShellScriptTaskNG.COMMAND_UNIT))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Empty value for key is not allowed in output alias configuration");
     stepParameters.setOutputAlias(
         OutputAlias.builder().key(ParameterField.createValueField("null")).scope(ExportScope.PIPELINE).build());
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.buildShellScriptTaskParametersNG(
+                           -> shellScriptHelperServiceImplOld.buildShellScriptTaskParametersNG(
                                ambiance, stepParameters, null, ShellScriptTaskNG.COMMAND_UNIT))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Expression provided for key in output alias configuration was not resolved");
@@ -576,17 +580,17 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testPrepareShellScriptOutcome() {
     ShellScriptBaseOutcome shellScriptOutcome =
-        shellScriptHelperServiceImpl.prepareShellScriptOutcome(null, new HashMap<>());
+        shellScriptHelperServiceImplOld.prepareShellScriptOutcome(null, new HashMap<>());
     assertThat(shellScriptOutcome).isNull();
 
-    shellScriptOutcome = shellScriptHelperServiceImpl.prepareShellScriptOutcome(new HashMap<>(), null);
+    shellScriptOutcome = shellScriptHelperServiceImplOld.prepareShellScriptOutcome(new HashMap<>(), null);
     assertThat(shellScriptOutcome).isNull();
 
     Map<String, Object> outputVariables = new HashMap<>();
     outputVariables.put("output1", ParameterField.createValueField("var1"));
     outputVariables.put("output2", ParameterField.createValueField("var2"));
 
-    shellScriptOutcome = shellScriptHelperServiceImpl.prepareShellScriptOutcome(new HashMap<>(), outputVariables);
+    shellScriptOutcome = shellScriptHelperServiceImplOld.prepareShellScriptOutcome(new HashMap<>(), outputVariables);
     assertThat(shellScriptOutcome.getOutputVariables()).hasSize(2);
     assertThat(shellScriptOutcome.getOutputVariables().get("output1")).isNull();
 
@@ -594,7 +598,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     envVariables.put("var1", "val1");
     envVariables.put("var2", "val2");
 
-    shellScriptOutcome = shellScriptHelperServiceImpl.prepareShellScriptOutcome(envVariables, outputVariables);
+    shellScriptOutcome = shellScriptHelperServiceImplOld.prepareShellScriptOutcome(envVariables, outputVariables);
     assertThat(shellScriptOutcome.getOutputVariables()).hasSize(2);
     assertThat(shellScriptOutcome.getOutputVariables().get("output1")).isEqualTo("val1");
     assertThat(shellScriptOutcome.getOutputVariables().get("output2")).isEqualTo("val2");
@@ -605,17 +609,17 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testPrepareShellScriptOutcomeWithSecretVars() {
     ShellScriptBaseOutcome shellScriptOutcome =
-        ShellScriptHelperService.prepareShellScriptOutcome(null, new HashMap<>(), new HashSet<>());
+        ShellScriptHelperServiceOld.prepareShellScriptOutcome(null, new HashMap<>(), new HashSet<>());
     assertThat(shellScriptOutcome).isNull();
 
-    shellScriptOutcome = ShellScriptHelperService.prepareShellScriptOutcome(new HashMap<>(), null, null);
+    shellScriptOutcome = ShellScriptHelperServiceOld.prepareShellScriptOutcome(new HashMap<>(), null, null);
     assertThat(shellScriptOutcome).isNull();
 
     Map<String, Object> outputVariables = new HashMap<>();
     outputVariables.put("output1", ParameterField.createValueField("var1"));
     outputVariables.put("output2", ParameterField.createValueField("var2"));
 
-    shellScriptOutcome = ShellScriptHelperService.prepareShellScriptOutcome(new HashMap<>(), outputVariables, null);
+    shellScriptOutcome = ShellScriptHelperServiceOld.prepareShellScriptOutcome(new HashMap<>(), outputVariables, null);
     assertThat(shellScriptOutcome).isNotNull();
     assertThat(shellScriptOutcome.getOutputVariables()).hasSize(2);
     assertThat(shellScriptOutcome.getOutputVariables().get("output1")).isNull();
@@ -624,7 +628,7 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     envVariables.put("var1", "val1");
     envVariables.put("var2", "val2");
 
-    shellScriptOutcome = ShellScriptHelperService.prepareShellScriptOutcome(envVariables, outputVariables, null);
+    shellScriptOutcome = ShellScriptHelperServiceOld.prepareShellScriptOutcome(envVariables, outputVariables, null);
     assertThat(shellScriptOutcome).isNotNull();
     assertThat(shellScriptOutcome.getOutputVariables()).hasSize(2);
     assertThat(shellScriptOutcome.getOutputVariables().get("output1")).isEqualTo("val1");
@@ -637,14 +641,14 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     String SECRET_REGEX = "\\$\\{sweepingOutputSecrets\\.obtain\\(\"[\\S|.]+\",\"[\\S|.]+\"\\)}";
 
     shellScriptOutcome =
-        ShellScriptHelperService.prepareShellScriptOutcome(envVariables, outputVariables, secretOutputVars);
+        ShellScriptHelperServiceOld.prepareShellScriptOutcome(envVariables, outputVariables, secretOutputVars);
     assertThat(shellScriptOutcome).isNotNull();
     assertThat(shellScriptOutcome.getOutputVariables()).hasSize(2);
     assertThat(shellScriptOutcome.getOutputVariables().get("output1")).containsPattern(Pattern.compile(SECRET_REGEX));
     assertThat(shellScriptOutcome.getOutputVariables().get("output2")).isEqualTo("val2");
 
     shellScriptOutcome =
-        ShellScriptHelperService.prepareShellScriptOutcome(new HashMap<>(), outputVariables, secretOutputVars);
+        ShellScriptHelperServiceOld.prepareShellScriptOutcome(new HashMap<>(), outputVariables, secretOutputVars);
     assertThat(shellScriptOutcome).isNotNull();
     assertThat(shellScriptOutcome.getOutputVariables().get("output1")).isNull();
   }
@@ -656,22 +660,22 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
     Map<String, String> outputVars = new LinkedHashMap<>();
     outputVars.put("key1", "val1");
     outputVars.put("key2", "val2");
-    ShellScriptStepParametersV0 stepParameters = ShellScriptStepParametersV0.infoBuilder()
-                                                     .shellType(ShellType.Bash)
-                                                     .onDelegate(ParameterField.createValueField(true))
-                                                     .secretOutputVariables(new HashSet<>())
-                                                     .build();
+    ShellScriptStepParameters stepParameters = ShellScriptStepParameters.infoBuilder()
+                                                   .shellType(ShellType.Bash)
+                                                   .onDelegate(ParameterField.createValueField(true))
+                                                   .secretOutputVariables(new HashSet<>())
+                                                   .build();
     when(executionSweepingOutputService.consume(any(), any(), any(), any())).thenReturn("");
     when(ambiance.getExpressionFunctorToken()).thenReturn(1234L);
     // invalid cases
-    shellScriptHelperServiceImpl.exportOutputVariablesUsingAlias(
+    shellScriptHelperServiceImplOld.exportOutputVariablesUsingAlias(
         ambiance, stepParameters, ShellScriptOutcome.builder().outputVariables(outputVars).build());
     stepParameters.setOutputAlias(
         OutputAlias.builder().key(ParameterField.createValueField("abc")).scope(ExportScope.PIPELINE).build());
-    shellScriptHelperServiceImpl.exportOutputVariablesUsingAlias(
+    shellScriptHelperServiceImplOld.exportOutputVariablesUsingAlias(
         ambiance, stepParameters, ShellScriptOutcome.builder().outputVariables(new HashMap<>()).build());
     // normal case
-    shellScriptHelperServiceImpl.exportOutputVariablesUsingAlias(
+    shellScriptHelperServiceImplOld.exportOutputVariablesUsingAlias(
         ambiance, stepParameters, ShellScriptOutcome.builder().outputVariables(outputVars).build());
     verify(executionSweepingOutputService, times(1))
         .consume(ambiance, OutputAliasUtils.generateSweepingOutputKeyUsingUserAlias("abc", ambiance),
@@ -681,14 +685,14 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
         .thenThrow(new GeneralException("Sweeping output with name 2507ee91 is already saved"))
         .thenThrow(new GeneralException("random"));
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.exportOutputVariablesUsingAlias(ambiance, stepParameters,
+                           -> shellScriptHelperServiceImplOld.exportOutputVariablesUsingAlias(ambiance, stepParameters,
                                ShellScriptOutcome.builder().outputVariables(outputVars).build()))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(
             "Output alias with key abc, already saved in Pipeline scope. Please ensure that there are no duplicate output alias keys within the same scope");
 
     assertThatThrownBy(()
-                           -> shellScriptHelperServiceImpl.exportOutputVariablesUsingAlias(ambiance, stepParameters,
+                           -> shellScriptHelperServiceImplOld.exportOutputVariablesUsingAlias(ambiance, stepParameters,
                                ShellScriptOutcome.builder().outputVariables(outputVars).build()))
         .isInstanceOf(InternalServerErrorException.class)
         .hasMessage("Error while publishing outputAlias for the key abc for scope Pipeline: GENERAL_ERROR");
@@ -698,29 +702,29 @@ public class ShellScriptHelperServiceImplTest extends CategoryTest {
   @Owner(developers = SHALINI)
   @Category(UnitTests.class)
   public void testGetShellScriptStepParameters() {
-    assertEquals(ShellScriptHelperService.getShellScriptStepParameters(
+    assertEquals(ShellScriptHelperServiceOld.getShellScriptStepParameters(
                      StepElementParameters.builder()
-                         .spec(ShellScriptStepParametersV0.infoBuilder().shellType(ShellType.PowerShell).build())
+                         .spec(ShellScriptStepParameters.infoBuilder().shellType(ShellType.PowerShell).build())
                          .build()),
-        ShellScriptStepParametersV0.infoBuilder().shellType(ShellType.PowerShell).build());
-    assertEquals(ShellScriptHelperService.getShellScriptStepParameters(
+        ShellScriptStepParameters.infoBuilder().shellType(ShellType.PowerShell).build());
+    assertEquals(ShellScriptHelperServiceOld.getShellScriptStepParameters(
                      StepElementParameters.builder()
                          .spec(io.harness.steps.shellscript.v1.ShellScriptStepParameters.infoBuilder()
                                    .shell(ShellTypeV1.PowerShell)
                                    .build())
                          .build()),
-        ShellScriptStepParametersV0.infoBuilder().shellType(ShellType.PowerShell).build());
+        ShellScriptStepParameters.infoBuilder().shellType(ShellType.PowerShell).build());
   }
 
   @Test
   @Owner(developers = SHALINI)
   @Category(UnitTests.class)
   public void testGetShellScriptOutcome() {
-    assertEquals(ShellScriptHelperService.getShellScriptOutcome(new HashMap<>(), HarnessYamlVersion.V0),
+    assertEquals(ShellScriptHelperServiceOld.getShellScriptOutcome(new HashMap<>(), HarnessYamlVersion.V0),
         io.harness.steps.shellscript.ShellScriptOutcome.builder().outputVariables(new HashMap<>()).build());
-    assertEquals(ShellScriptHelperService.getShellScriptOutcome(new HashMap<>(), HarnessYamlVersion.V1),
+    assertEquals(ShellScriptHelperServiceOld.getShellScriptOutcome(new HashMap<>(), HarnessYamlVersion.V1),
         io.harness.steps.shellscript.v1.ShellScriptOutcome.builder().output_vars(new HashMap<>()).build());
-    assertThatThrownBy(() -> ShellScriptHelperService.getShellScriptOutcome(new HashMap<>(), "v1"))
+    assertThatThrownBy(() -> ShellScriptHelperServiceOld.getShellScriptOutcome(new HashMap<>(), "v1"))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Version v1 not supported");
   }

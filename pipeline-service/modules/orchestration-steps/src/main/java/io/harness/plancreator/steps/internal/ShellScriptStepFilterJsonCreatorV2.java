@@ -8,22 +8,15 @@
 package io.harness.plancreator.steps.internal;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
-import static java.lang.String.format;
-
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.filters.GenericStepPMSFilterJsonCreatorV2;
 import io.harness.plancreator.steps.AbstractStepNode;
-import io.harness.pms.exception.runtime.InvalidYamlRuntimeException;
 import io.harness.pms.filter.creation.FilterCreationResponse;
 import io.harness.pms.sdk.core.filter.creation.beans.FilterCreationContext;
-import io.harness.pms.yaml.ParameterField;
-import io.harness.pms.yaml.YamlUtils;
 import io.harness.steps.StepSpecTypeConstants;
-import io.harness.steps.shellscript.ShellScriptStepInfo;
-import io.harness.steps.shellscript.ShellScriptStepNode;
 
 import com.google.common.collect.Sets;
 import java.util.Set;
@@ -39,27 +32,6 @@ public class ShellScriptStepFilterJsonCreatorV2 extends GenericStepPMSFilterJson
 
   @Override
   public FilterCreationResponse handleNode(FilterCreationContext filterCreationContext, AbstractStepNode yamlField) {
-    ShellScriptStepNode scriptStepNode = (ShellScriptStepNode) yamlField;
-    ShellScriptStepInfo scriptStepInfo = scriptStepNode.getShellScriptStepInfo();
-    if (Boolean.FALSE.equals(scriptStepInfo.getOnDelegate().getValue())) {
-      if (scriptStepInfo.getExecutionTarget() == null) {
-        throw new InvalidYamlRuntimeException(
-            format("Execution target details cannot be null for step %s. Please add it & try again.",
-                YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
-      }
-      if (ParameterField.isBlank(scriptStepInfo.getExecutionTarget().getHost())) {
-        throw new InvalidYamlRuntimeException(
-            format("Execution target host details cannot be null for step %s. Please add it & try again.",
-                YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
-      }
-
-      if (ParameterField.isBlank(scriptStepInfo.getExecutionTarget().getConnectorRef())) {
-        throw new InvalidYamlRuntimeException(format(
-            "Execution target ssh connection attribute details cannot be null for step %s. Please add it & try again.",
-            YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
-      }
-    }
-
     return super.handleNode(filterCreationContext, yamlField);
   }
 }
