@@ -19,6 +19,7 @@ import io.harness.beans.FeatureName;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
 import io.harness.beans.steps.CIRegistry;
 import io.harness.beans.steps.CIStepInfoType;
+import io.harness.beans.steps.stepinfo.GitCloneStepInfo;
 import io.harness.beans.steps.stepinfo.IACMApprovalInfo;
 import io.harness.beans.steps.stepinfo.IACMTerraformPluginInfo;
 import io.harness.beans.steps.stepinfo.SecurityStepInfo;
@@ -32,6 +33,7 @@ import io.harness.ci.config.StepImageConfig;
 import io.harness.ci.execution.execution.CIExecutionConfigService;
 import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.common.NGExpressionUtils;
+import io.harness.common.ParameterFieldHelper;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -77,6 +79,9 @@ public class CIStepInfoUtils {
     switch (step.getNonYamlInfo().getStepInfoType()) {
       case SECURITY:
         return ((SecurityStepInfo) step).getPrivileged();
+      case GIT_CLONE:
+        return ParameterField.createValueField(
+            ParameterFieldHelper.getBooleanParameterFieldValue(((GitCloneStepInfo) step).getPrivileged()));
       default:
         return null;
     }

@@ -93,6 +93,10 @@ public class GitCloneStepInfo implements PluginCompatibleStep, WithConnectorRef 
   @VariableExpression(skipVariableExpression = true)
   ParameterField<Build> build;
 
+  @YamlSchemaTypes({runtime})
+  @ApiModelProperty(dataType = BOOLEAN_CLASSPATH)
+  private ParameterField<Boolean> privileged;
+
   @YamlSchemaTypes({runtime}) @ApiModelProperty(dataType = INTEGER_CLASSPATH) ParameterField<Integer> depth;
 
   @YamlSchemaTypes({runtime}) @ApiModelProperty(dataType = BOOLEAN_CLASSPATH) ParameterField<Boolean> sslVerify;
@@ -103,11 +107,11 @@ public class GitCloneStepInfo implements PluginCompatibleStep, WithConnectorRef 
 
   @Builder
   @ConstructorProperties({"identifier", "name", "retry", "connectorRef", "resources", "runAsUser", "repoName", "build",
-      "projectName", "depth", "sslVerify", "cloneDirectory", "outputFilePathsContent"})
+      "projectName", "privileged", "depth", "sslVerify", "cloneDirectory", "outputFilePathsContent"})
   public GitCloneStepInfo(String identifier, String name, int retry, ParameterField<String> connectorRef,
       ContainerResource resources, ParameterField<Integer> runAsUser, ParameterField<String> repoName,
-      ParameterField<Build> build, ParameterField<String> projectName, ParameterField<Integer> depth,
-      ParameterField<Boolean> sslVerify, ParameterField<String> cloneDirectory,
+      ParameterField<Build> build, ParameterField<String> projectName, ParameterField<Boolean> privileged,
+      ParameterField<Integer> depth, ParameterField<Boolean> sslVerify, ParameterField<String> cloneDirectory,
       ParameterField<List<String>> outputFilePathsContent) {
     this.identifier = identifier;
     this.name = name;
@@ -119,6 +123,7 @@ public class GitCloneStepInfo implements PluginCompatibleStep, WithConnectorRef 
     this.repoName = repoName;
     this.build = build;
     this.projectName = projectName;
+    this.privileged = privileged;
     this.depth = depth;
     this.sslVerify = sslVerify;
     this.cloneDirectory = cloneDirectory;
