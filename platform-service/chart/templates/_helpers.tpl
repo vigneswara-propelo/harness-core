@@ -64,3 +64,19 @@ Create the name of the service account to use
 {{- define "platform-service.pullSecrets" -}}
 {{ include "common.images.pullSecrets" (dict "images" (list .Values.image .Values.waitForInitContainer.image) "global" .Values.global ) }}
 {{- end -}}
+
+{{/*
+Manage platofrm-service Secrets
+*/}}
+{{- define "platform-service.generateSecrets" }}
+    {{- $ := .ctx }}
+    {{- $hasAtleastOneSecret := false }}
+    {{- $localESOSecretCtxIdentifier := (include "harnesscommon.secrets.localESOSecretCtxIdentifier" (dict "ctx" $ )) }}
+    {{- if eq (include "harnesscommon.secrets.isDefaultAppSecret" (dict "ctx" $ "variableName" "ET_AGENT_TOKEN")) "true" }}
+    {{- $hasAtleastOneSecret = true }}
+ET_AGENT_TOKEN: {{ .ctx.Values.secrets.default.ET_AGENT_TOKEN | b64enc }}
+    {{- end }}
+    {{- if not $hasAtleastOneSecret }}
+{}
+    {{- end }}
+{{- end }}

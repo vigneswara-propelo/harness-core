@@ -24,7 +24,7 @@ global:
             SMTP_HOST: ""
             SMTP_PORT: ""
             SMTP_USE_SSL: ""
-      secretManagement: 
+      secretManagement:
         externalSecretsOperator:
           - secretStore:
               name: ""
@@ -78,7 +78,7 @@ global:
             keys:
               MONGO_USER: ""
               MONGO_PASSWORD: ""
-        secretManagement: 
+        secretManagement:
           externalSecretsOperator:
             - secretStore:
                 name: ""
@@ -116,7 +116,7 @@ global:
             keys:
               REDIS_USERNAME: ""
               REDIS_PASSWORD: ""
-        secretManagement: 
+        secretManagement:
           externalSecretsOperator:
             - secretStore:
                 name: ""
@@ -165,7 +165,7 @@ redis:
         keys:
           REDIS_USERNAME: ""
           REDIS_PASSWORD: ""
-    secretManagement: 
+    secretManagement:
       externalSecretsOperator:
         - secretStore:
             name: ""
@@ -191,7 +191,7 @@ database:
             keys:
               MONGO_USER: ""
               MONGO_PASSWORD: ""
-        secretManagement: 
+        secretManagement:
           externalSecretsOperator:
             - secretStore:
                 name: ""
@@ -214,7 +214,7 @@ database:
             keys:
               MONGO_USER: ""
               MONGO_PASSWORD: ""
-        secretManagement: 
+        secretManagement:
           externalSecretsOperator:
             - secretStore:
                 name: ""
@@ -237,7 +237,7 @@ database:
             keys:
               MONGO_USER: ""
               MONGO_PASSWORD: ""
-        secretManagement: 
+        secretManagement:
           externalSecretsOperator:
             - secretStore:
                 name: ""
@@ -336,6 +336,10 @@ imagePullSecrets: {}
 additionalConfigs: {}
 java17flags: ""
 
+errorTracking:
+  enabled: false
+  collectorURL: ''
+
 # extraVolumes:
 # - name: volume-test
 #   configMap:
@@ -367,3 +371,20 @@ virtualService:
   annotations: {}
 ingress:
   annotations: {}
+
+secrets:
+  default:
+    ET_AGENT_TOKEN: "DUMMY"
+  kubernetesSecrets:
+    - secretName: ""
+      keys:
+        ET_AGENT_TOKEN: ""
+  secretManagement:
+    externalSecretsOperator:
+      - secretStore:
+          name: ""
+          kind: ""
+        remoteKeys:
+          ET_AGENT_TOKEN:
+            name: ""
+            property: ""

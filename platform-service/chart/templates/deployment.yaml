@@ -70,6 +70,9 @@ spec:
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         env:
+          {{- if .Values.errorTracking.enabled }}
+          {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "ET_AGENT_TOKEN" "overrideEnvName" "ET_TOKEN" "defaultKubernetesSecretName" "platform-service-secret" "defaultKubernetesSecretKey" "ET_AGENT_TOKEN") | indent 10 }}
+          {{- end }}
           {{- include "harnesscommon.secrets.manageSMTPEnv" (dict "ctx" $) | indent 10 }}
           {{- include "harnesscommon.dbconnectionv2.redisEnv" (dict "ctx" $ "userVariableName" "EVENTS_FRAMEWORK_REDIS_USERNAME" "passwordVariableName" "EVENTS_FRAMEWORK_REDIS_PASSWORD") | indent 10 }}
           {{- include "harnesscommon.dbconnectionv2.redisEnv" (dict "ctx" $ "userVariableName" "LOCK_CONFIG_REDIS_USERNAME" "passwordVariableName" "LOCK_CONFIG_REDIS_PASSWORD") | indent 10 }}
