@@ -1439,6 +1439,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ASG Shift Traffic")
             .setType(StepSpecTypeConstants.ASG_SHIFT_TRAFFIC)
             .setStepMetaData(StepMetaData.newBuilder().addAllCategory(ASG_CATEGORY).setFolderPath(ASG).build())
+            .setFeatureFlag(FeatureName.CDS_ASG_SHIFT_TRAFFIC_STEP_NG.name())
             .build();
 
     StepInfo tasRouteMapping =
