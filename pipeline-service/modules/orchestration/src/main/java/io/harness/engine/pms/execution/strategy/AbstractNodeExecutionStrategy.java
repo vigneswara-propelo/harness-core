@@ -97,6 +97,7 @@ public abstract class AbstractNodeExecutionStrategy<P extends Node, M extends Pm
       handler.handleEvent(event);
       log.info("Event for SdkResponseEvent for event type {} completed successfully", event.getSdkResponseEventType());
     } catch (Exception ex) {
+      log.error("Exception happened during Sdk Response Event handling", ex);
       handleError(event.getAmbiance(), ex);
     }
   }
