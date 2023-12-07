@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -77,7 +78,7 @@ public class EnvironmentYamlV2VisitorHelperTest extends CategoryTest {
   @Owner(developers = LOVISH_BANSAL)
   @Category(UnitTests.class)
   public void testaddReferenceMultiEnvCase() throws IOException {
-    Map<String, Object> contextMap = new HashMap<>();
+    ConcurrentHashMap<String, Object> contextMap = new ConcurrentHashMap<>();
     LinkedList<String> linkedList = new LinkedList<>();
     linkedList.add("pipeline");
     linkedList.add("stages");

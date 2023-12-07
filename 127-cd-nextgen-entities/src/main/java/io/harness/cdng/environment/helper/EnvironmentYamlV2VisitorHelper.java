@@ -134,7 +134,9 @@ public class EnvironmentYamlV2VisitorHelper implements ConfigValidator, EntityRe
       contextMap.put(ENV_REF, environmentYamlV2.getEnvironmentRef().getExpressionValue());
       result.add(entityDetail);
     }
-    contextMap.put(ENV_GIT_BRANCH, environmentYamlV2.getGitBranch());
+    if (isNotEmpty(environmentYamlV2.getGitBranch())) {
+      contextMap.put(ENV_GIT_BRANCH, environmentYamlV2.getGitBranch());
+    }
     return result;
   }
 
