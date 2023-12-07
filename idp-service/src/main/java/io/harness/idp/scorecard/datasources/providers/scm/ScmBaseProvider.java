@@ -24,6 +24,8 @@ import io.harness.idp.scorecard.datasources.providers.HttpDataSourceProvider;
 import io.harness.idp.scorecard.datasources.repositories.DataSourceRepository;
 import io.harness.idp.scorecard.scores.beans.DataFetchDTO;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.Map;
 @OwnedBy(HarnessTeam.IDP)
 public abstract class ScmBaseProvider extends HttpDataSourceProvider {
   public static final String SOURCE_LOCATION_ANNOTATION = "backstage.io/source-location";
+  public static final String GITLAB_REF = "?ref_type=heads";
 
   protected ScmBaseProvider(String identifier, DataPointService dataPointService,
       DataSourceLocationFactory dataSourceLocationFactory, DataSourceLocationRepository dataSourceLocationRepository,
@@ -61,21 +64,31 @@ public abstract class ScmBaseProvider extends HttpDataSourceProvider {
   protected Map<String, String> prepareRequestBodyReplaceablePairs(String catalogLocation) {
     Map<String, String> possibleReplaceableRequestBodyPairs = new HashMap<>();
 
-    String[] catalogLocationParts = catalogLocation.split("/");
+    // Gitlab only
+    if (catalogLocation.endsWith(GITLAB_REF)) {
+      catalogLocation = catalogLocation.substring(0, catalogLocation.length() - GITLAB_REF.length());
+    }
 
-    if (catalogLocationParts.length >= 5) {
-      possibleReplaceableRequestBodyPairs.put(REPO_SCM, catalogLocationParts[2]);
-      possibleReplaceableRequestBodyPairs.put(REPOSITORY_OWNER, catalogLocationParts[3]);
-      possibleReplaceableRequestBodyPairs.put(REPOSITORY_NAME, catalogLocationParts[4]);
+    List<String> catalogLocationParts = new ArrayList<>(Arrays.asList(catalogLocation.split("/")));
 
-      if (catalogLocationParts.length > 6) {
-        possibleReplaceableRequestBodyPairs.put(REPOSITORY_BRANCH, catalogLocationParts[6]);
+    if (catalogLocationParts.size() >= 5) {
+      possibleReplaceableRequestBodyPairs.put(REPO_SCM, catalogLocationParts.get(2));
+      possibleReplaceableRequestBodyPairs.put(REPOSITORY_OWNER, catalogLocationParts.get(3));
+      possibleReplaceableRequestBodyPairs.put(REPOSITORY_NAME, catalogLocationParts.get(4));
+
+      if (catalogLocationParts.get(5).equals("-")) {
+        // Gitlab only
+        catalogLocationParts.remove(5);
+      }
+
+      if (catalogLocationParts.size() > 6) {
+        possibleReplaceableRequestBodyPairs.put(REPOSITORY_BRANCH, catalogLocationParts.get(6));
       }
 
       StringBuilder subFolder = new StringBuilder();
-      if (catalogLocationParts.length > 7) {
-        for (int i = 7; i < catalogLocationParts.length; i++) {
-          subFolder.append(catalogLocationParts[i]).append("/");
+      if (catalogLocationParts.size() > 7) {
+        for (int i = 7; i < catalogLocationParts.size(); i++) {
+          subFolder.append(catalogLocationParts.get(i)).append("/");
         }
       }
       possibleReplaceableRequestBodyPairs.put(REPOSITORY_SUB_FOLDER, subFolder.toString());
