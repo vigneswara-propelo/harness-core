@@ -34,6 +34,7 @@ import io.harness.CategoryTest;
 import io.harness.account.AccountClient;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnauthorizedException;
 import io.harness.manage.GlobalContextManager;
 import io.harness.remote.client.CGRestUtils;
@@ -45,7 +46,6 @@ import io.harness.subscription.helpers.impl.StripeHelperImpl;
 import io.harness.subscription.responses.CreditCardResponse;
 import io.harness.subscription.services.impl.CreditCardServiceImpl;
 
-import javax.ws.rs.BadRequestException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -95,7 +95,7 @@ public class CreditCardServiceImplTest extends CategoryTest {
     assertThat(response).isNotNull();
   }
 
-  @Test(expected = BadRequestException.class)
+  @Test(expected = InvalidRequestException.class)
   @Owner(developers = TOMMY)
   @Category(UnitTests.class)
   public void testSaveCreditCardBadRequest() {
@@ -164,6 +164,8 @@ public class CreditCardServiceImplTest extends CategoryTest {
   public void testHasAtleastOneValidCreditCard() {
     when(stripeCustomerRepository.findByAccountIdentifier(DEFAULT_ACCOUNT_ID)).thenReturn(DEFAULT_CUSTOMER);
     when(stripeHelper.listPaymentMethods(DEFAULT_CUSTOMER_ID)).thenReturn(DEFAULT_PAYMENT_METHODS);
+    when(creditCardRepository.findByCreditCardIdentifier(DEFAULT_CREDIT_CARD_IDENTIFIER))
+        .thenReturn(DEFAULT_CREDIT_CARD);
 
     assertThat(creditCardService.hasAtleastOneValidCreditCard(DEFAULT_ACCOUNT_ID)).isTrue();
   }
@@ -184,6 +186,8 @@ public class CreditCardServiceImplTest extends CategoryTest {
   public void testIsValid() {
     when(stripeCustomerRepository.findByAccountIdentifier(DEFAULT_ACCOUNT_ID)).thenReturn(DEFAULT_CUSTOMER);
     when(stripeHelper.listPaymentMethods(DEFAULT_CUSTOMER_ID)).thenReturn(DEFAULT_PAYMENT_METHODS);
+    when(creditCardRepository.findByCreditCardIdentifier(DEFAULT_CREDIT_CARD_IDENTIFIER))
+        .thenReturn(DEFAULT_CREDIT_CARD);
 
     assertThat(creditCardService.isValid(DEFAULT_ACCOUNT_ID, DEFAULT_CREDIT_CARD_IDENTIFIER)).isTrue();
   }

@@ -12,12 +12,16 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
 import io.harness.data.validator.Trimmed;
+import io.harness.mongo.index.CompoundMongoIndex;
+import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.ng.core.NGAccountAccess;
 import io.harness.persistence.PersistentEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
@@ -47,4 +51,14 @@ public class CreditCard implements PersistentEntity, NGAccountAccess {
   @LastModifiedBy protected EmbeddedUser lastUpdatedBy;
   @CreatedDate protected Long createdAt;
   @LastModifiedDate protected Long lastUpdatedAt;
+
+  public static List<MongoIndex> mongoIndexes() {
+    return ImmutableList.<MongoIndex>builder()
+        .add(CompoundMongoIndex.builder()
+                 .name("uniqueCreditCardFingerprint")
+                 .field(CreditCardKeys.fingerprint)
+                 .unique(true)
+                 .build())
+        .build();
+  }
 }

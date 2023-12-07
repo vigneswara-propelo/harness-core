@@ -18,4 +18,5 @@ import org.springframework.transaction.annotation.Transactional;
 public interface CreditCardRepository extends CrudRepository<CreditCard, String> {
   CreditCard findByFingerprint(String fingerprint);
   CreditCard findByCreditCardIdentifier(String creditCardIdentifier);
+  void deleteByCreditCardIdentifier(String creditCardIdentifier);
 }
