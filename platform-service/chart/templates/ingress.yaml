@@ -217,6 +217,90 @@ spec:
                   number: 9005
             path: /(v1/streaming-destinations/.+)
             pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/projects/.+/notification-channels/.+)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/projects/.+/notification-channels)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/notification-channels/.+)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/notification-channels)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/notification-channels/.+)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/notification-channels)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/projects/.+/notification-rules/.+)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/projects/.+/notification-rules)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/notification-rules/.+)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/orgs/.+/notification-rules)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/notification-rules/.+)
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: platform-service
+                port:
+                  number: 9005
+            path: /(v1/notification-rules)
+            pathType: ImplementationSpecific
     {{- end }}
   {{- if .Values.global.ingress.tls.enabled }}
   tls:
