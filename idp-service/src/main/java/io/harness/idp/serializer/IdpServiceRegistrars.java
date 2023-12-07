@@ -22,6 +22,7 @@ import io.harness.idp.serializer.morphia.IdpServiceMorphiaRegistrar;
 import io.harness.idp.steps.beans.stepnode.IdpCodePushStepNode;
 import io.harness.idp.steps.beans.stepnode.IdpCookieCutterStepNode;
 import io.harness.idp.steps.beans.stepnode.IdpCreateRepoStepNode;
+import io.harness.idp.steps.beans.stepnode.IdpRegisterCatalogStepNode;
 import io.harness.morphia.MorphiaRegistrar;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.serializer.*;
@@ -162,6 +163,17 @@ public class IdpServiceRegistrars {
                                            .build())
                    .availableAtAccountLevel(false)
                    .clazz(IdpCodePushStepNode.class)
+                   .build())
+          .add(YamlSchemaRootClass.builder()
+                   .entityType(EntityType.REGISTER_CATALOG)
+                   .availableAtProjectLevel(true)
+                   .availableAtOrgLevel(false)
+                   .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .modulesSupported(Collections.singletonList(ModuleType.IDP))
+                                           .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
+                                           .build())
+                   .availableAtAccountLevel(false)
+                   .clazz(IdpRegisterCatalogStepNode.class)
                    .build())
           .build();
 }

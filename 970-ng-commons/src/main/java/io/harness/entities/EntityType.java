@@ -695,7 +695,11 @@ public enum EntityType {
       ModuleType.CD, EntityTypeConstants.DOWNLOAD_AWS_S3, IdentifierRef.class, EntityYamlRootNames.DOWNLOAD_AWS_S3),
   @JsonProperty(EntityTypeConstants.IDP_CODE_PUSH)
   IDP_CODE_PUSH(
-      ModuleType.IDP, EntityTypeConstants.IDP_CODE_PUSH, IdentifierRef.class, EntityYamlRootNames.IDP_CODE_PUSH);
+      ModuleType.IDP, EntityTypeConstants.IDP_CODE_PUSH, IdentifierRef.class, EntityYamlRootNames.IDP_CODE_PUSH),
+
+  @JsonProperty(EntityTypeConstants.REGISTER_CATALOG)
+  REGISTER_CATALOG(
+      ModuleType.IDP, EntityTypeConstants.REGISTER_CATALOG, IdentifierRef.class, EntityYamlRootNames.REGISTER_CATALOG);
 
   private final ModuleType moduleType;
   String yamlName;

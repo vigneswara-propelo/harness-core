@@ -64,6 +64,7 @@ public class CIExecutionConfig implements PersistentEntity, UuidAware, CreatedAt
   @NotBlank String idpCookieCutter;
   @NotBlank String idpCreateRepo;
   @NotBlank String idpCodePush;
+  @NotBlank String registerCatalog;
   VmImageConfig vmImageConfig;
   VmContainerlessStepConfig vmContainerlessStepConfig;
   @SchemaIgnore private long createdAt;

@@ -13,8 +13,8 @@ public class Constants {
   public static final String PREFIX_FOR_COOKIECUTTER_ENV_VARIABLES = "IDP_COOKIECUTTER_";
   public static final String OUTPUT_DIRECTORY_COOKIE_CUTTER = "OUTPUT_DIRECTORY";
 
-  public static final String ORG_NAME_FOR_CREATING_REPO = "IDP_ORG_NAME";
-  public static final String REPO_NAME_FOR_CREATING_REPO = "IDP_REPO_NAME";
+  public static final String ORG_NAME = "IDP_ORG_NAME";
+  public static final String REPO_NAME = "IDP_REPO_NAME";
 
   public static final String IS_PRIVATE_REPO = "IS_PRIVATE_REPO";
 
@@ -28,5 +28,7 @@ public class Constants {
   public static final String REPO_WORKSPACE = "REPO_WORKSPACE";
   public static final String CODE_DIRECTORY = "CODE_DIRECTORY";
   public static final String CODE_OUTPUT_DIRECTORY = "CODE_OUTPUT_DIRECTORY";
-  public static final String CODE_PUSH_BRANCH = "CODE_PUSH_BRANCH";
+  public static final String BRANCH = "BRANCH";
+
+  public static final String FILE_PATH = "FILE_PATH";
 }

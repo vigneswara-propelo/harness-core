@@ -558,3 +558,5 @@ io.harness.idp.pipeline.steps.beans.stepinfo.IdpCreateRepoStepInfo
 io.harness.idp.pipeline.steps.beans.stepNode.IdpCreateRepoStepNode
 io.harness.idp.pipeline.steps.beans.stepinfo.IdpCodePushStepInfo
 io.harness.idp.pipeline.steps.beans.stepNode.IdpCodePushStepNode
+io.harness.idp.pipeline.steps.beans.stepNode.IdpRegisterCatalogStepNode
+io.harness.idp.pipeline.steps.beans.stepinfo.IdpRegisterCatalogStepInfo

@@ -17,6 +17,8 @@ import io.harness.spec.server.idp.v1.model.HarnessEntitiesCountResponse;
 import io.harness.spec.server.idp.v1.model.ImportEntitiesBase;
 import io.harness.spec.server.idp.v1.model.ImportEntitiesResponse;
 
+import java.util.List;
+
 @OwnedBy(HarnessTeam.IDP)
 public interface OnboardingService {
   HarnessEntitiesCountResponse getHarnessEntitiesCount(String accountIdentifier);
@@ -28,4 +30,6 @@ public interface OnboardingService {
 
   ImportEntitiesResponse importHarnessEntities(
       String accountIdentifier, ImportEntitiesBase importHarnessEntitiesRequest);
+
+  void registerLocationInBackstage(String accountIdentifier, String type, List<String> targets);
 }

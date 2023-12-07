@@ -784,7 +784,8 @@ public class OnboardingServiceImpl implements OnboardingService {
     return targets;
   }
 
-  private void registerLocationInBackstage(String accountIdentifier, String type, List<String> targets) {
+  @Override
+  public void registerLocationInBackstage(String accountIdentifier, String type, List<String> targets) {
     for (String target : targets) {
       try {
         getGeneralResponse(backstageResourceClient.createCatalogLocation(

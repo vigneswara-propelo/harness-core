@@ -313,7 +313,7 @@ ciExecutionServiceConfig:
       readTimeOutSeconds: 15
     queueServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
     envNamespace: ${EVENTS_FRAMEWORK_ENV_NAMESPACE:-localhost}
-  addonImageTag: v1.4-alpha
+  addonImageTag: releaseBuild-30
   liteEngineImageTag: v1.4-alpha
   defaultMemoryLimit: 200
   defaultCPULimit: 200
@@ -332,7 +332,7 @@ ciExecutionServiceConfig:
       - "kmpySmUISimoRrJL6NL73w:1:1"
   pvcDefaultStorageSize: 25600
   delegateServiceEndpointVariableValue: "delegate-service:8080"
-  addonImage: harness/ci-addon:1.16.3
+  addonImage: harness/ci-addon:1.16.31
   liteEngineImage: harness/ci-lite-engine:1.16.3
   isLocal: false
   hostedVmConfig:
@@ -413,6 +413,8 @@ ciExecutionServiceConfig:
       image: deveshharness2306/createrepo:latest
     idpCodePush:
       image: deveshharness2306/codepush:latest
+    registerCatalog:
+      image: deveshharness2306/register:latest
     vmImageConfig:
       # Use root image for VM git clone
       gitClone: harness/drone-git:1.2.7
@@ -430,6 +432,7 @@ ciExecutionServiceConfig:
       idpCookieCutter: deveshharness2306/cookiecutter:latest
       idpCreateRepo: deveshharness2306/createrepo:latest
       idpCodePush: deveshharness2306/codepush:latest
+      registerCatalog: deveshharness2306/register:latest
 
 
 iacmServiceConfig:

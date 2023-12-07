@@ -284,6 +284,7 @@ public interface EntityTypeConstants {
   String IDP_COOKIECUTTER = "IdpCookieCutter";
   String IDP_CREATE_REPO = "IdpCreateRepo";
   String IDP_CODE_PUSH = "IdpCodePush";
+  String REGISTER_CATALOG = "RegisterCatalog";
 
   // CD Container Step Group Common Steps
   String DOWNLOAD_AWS_S3 = "DownloadAwsS3";

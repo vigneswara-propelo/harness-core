@@ -21,6 +21,7 @@ import io.harness.idp.steps.execution.filter.IDPStepFilterJsonCreator;
 import io.harness.idp.steps.execution.plan.IdpCodePushStepPlanCreator;
 import io.harness.idp.steps.execution.plan.IdpCookieCutterStepPlanCreator;
 import io.harness.idp.steps.execution.plan.IdpCreateRepoStepPlanCreator;
+import io.harness.idp.steps.execution.plan.IdpRegisterCatalogPlanCreator;
 import io.harness.idp.steps.execution.variable.IDPStepVariableCreator;
 import io.harness.pms.contracts.steps.StepInfo;
 import io.harness.pms.contracts.steps.StepMetaData;
@@ -51,6 +52,7 @@ public class IdpPipelineServiceInfoProvider implements PipelineServiceInfoProvid
     planCreators.add(new IdpCreateRepoStepPlanCreator());
     planCreators.add(new IdpCodePushStepPlanCreator());
     planCreators.add(new InitializeStepPlanCreator());
+    planCreators.add(new IdpRegisterCatalogPlanCreator());
     injectorUtils.injectMembers(planCreators);
     return planCreators;
   }
@@ -120,6 +122,13 @@ public class IdpPipelineServiceInfoProvider implements PipelineServiceInfoProvid
                 StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Git Repository Setup").build())
             .build();
 
+    StepInfo registerCatalogStepInfo =
+        StepInfo.newBuilder()
+            .setName("Register Catalog")
+            .setType(Constants.REGISTER_CATALOG)
+            .setStepMetaData(StepMetaData.newBuilder().addCategory(PLUGIN).addFolderPaths("Close the loop").build())
+            .build();
+
     ArrayList<StepInfo> stepInfos = new ArrayList<>();
     stepInfos.add(runStepInfo);
     stepInfos.add(pluginStepInfo);
@@ -127,6 +136,7 @@ public class IdpPipelineServiceInfoProvider implements PipelineServiceInfoProvid
     stepInfos.add(cookicutterStepInfo);
     stepInfos.add(createRepoStepInfo);
     stepInfos.add(codePushStepInfo);
+    stepInfos.add(registerCatalogStepInfo);
     return stepInfos;
   }
 }

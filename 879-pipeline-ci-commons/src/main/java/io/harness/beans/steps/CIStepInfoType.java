@@ -98,7 +98,8 @@ public enum CIStepInfoType {
   SLSA_VERIFICATION_GCR(CI_LITE_ENGINE, "SlsaVerificationGcr"),
   IDP_COOKIECUTTER(CI_LITE_ENGINE, "IdpCookieCutter"),
   IDP_CREATE_REPO(CI_LITE_ENGINE, "IdpCreateRepo"),
-  IDP_CODE_PUSH(CI_LITE_ENGINE, "IdpCodePush");
+  IDP_CODE_PUSH(CI_LITE_ENGINE, "IdpCodePush"),
+  REGISTER_CATALOG(CI_LITE_ENGINE, "RegisterCatalog");
 
   @Getter private final CIStepExecEnvironment ciStepExecEnvironment;
   private final String displayName;

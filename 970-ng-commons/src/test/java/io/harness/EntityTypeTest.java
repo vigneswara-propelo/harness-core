@@ -279,6 +279,7 @@ public class EntityTypeTest extends CategoryTest {
     entityTypeOrdinalMapping.put(245, "IDP_CREATE_REPO");
     entityTypeOrdinalMapping.put(246, "DOWNLOAD_AWS_S3");
     entityTypeOrdinalMapping.put(247, "IDP_CODE_PUSH");
+    entityTypeOrdinalMapping.put(248, "REGISTER_CATALOG");
 
     entityTypeConstantMapping =
         entityTypeOrdinalMapping.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));

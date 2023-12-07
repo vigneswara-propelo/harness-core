@@ -40,6 +40,7 @@ public class CIStepConfig {
   StepImageConfig idpCookieCutter;
   StepImageConfig idpCreateRepo;
   StepImageConfig idpCodePush;
+  StepImageConfig registerCatalog;
   VmImageConfig vmImageConfig;
   VmContainerlessStepConfig vmContainerlessStepConfig;
 }

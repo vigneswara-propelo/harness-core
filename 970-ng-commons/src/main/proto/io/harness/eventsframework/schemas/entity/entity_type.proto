@@ -258,4 +258,5 @@ enum EntityTypeProtoEnum {
   IDP_CREATE_REPO = 245;
   DOWNLOAD_AWS_S3 = 246;
   IDP_CODE_PUSH = 247;
+  REGISTER_CATALOG = 248;
 }

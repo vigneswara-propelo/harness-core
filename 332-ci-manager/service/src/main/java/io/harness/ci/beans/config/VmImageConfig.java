@@ -37,4 +37,5 @@ public class VmImageConfig {
   String idpCookieCutter;
   String idpCreateRepo;
   String idpCodePush;
+  String registerCatalog;
 }

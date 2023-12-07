@@ -21,6 +21,7 @@ import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.idp.steps.beans.stepinfo.IdpCodePushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpRegisterCatalogStepInfo;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
 import io.harness.utils.CiCodebaseUtils;
@@ -140,7 +141,7 @@ public class IDPStepUtilsTest extends CategoryTest {
     expected.put("IDP_REPO_NAME", repoName);
     expected.put("REPO_WORKSPACE", workspace);
     expected.put("CODE_DIRECTORY", codeDirectory);
-    expected.put("CODE_PUSH_BRANCH", branch);
+    expected.put("BRANCH", branch);
     expected.put("CONNECTOR_TYPE", ConnectorType.GITHUB.getDisplayName());
 
     ConnectorDetails connectorDetails = ConnectorDetails.builder().connectorType(ConnectorType.GITHUB).build();
@@ -149,6 +150,46 @@ public class IDPStepUtilsTest extends CategoryTest {
 
     Map<String, String> actual =
         idpStepUtils.getIDPCodePushStepInfoEnvVariables(idpCodePushStepInfo, connectorDetails, "test-id");
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  @Owner(developers = DEVESH)
+  @Category(UnitTests.class)
+  public void testRegisterCatalogStepInfoEnvVariables() {
+    String testName = "test-name";
+    String repoName = "test-repo-name";
+    String orgName = "test-org-name";
+    String workspace = "test-workspace-name";
+    String filePath = "test-file-path";
+    String branch = "test-branch-name";
+
+    IdpRegisterCatalogStepInfo idpRegisterCatalogStepInfo =
+        IdpRegisterCatalogStepInfo.builder()
+            .repository(ParameterField.createValueField(repoName))
+            .branch(ParameterField.createValueField(branch))
+            .filePath(ParameterField.createValueField(filePath))
+            .name(testName)
+            .organization(ParameterField.createValueField(orgName))
+            .workspace(ParameterField.createValueField(workspace))
+            .connectorRef(ParameterField.createValueField("myConnectorRef"))
+            .build();
+
+    Map<String, String> expected = new HashMap<>();
+    expected.put("IDP_ORG_NAME", orgName);
+    expected.put("IDP_REPO_NAME", repoName);
+    expected.put("REPO_WORKSPACE", workspace);
+    expected.put("FILE_PATH", filePath);
+    expected.put("BRANCH", branch);
+    expected.put("CONNECTOR_TYPE", ConnectorType.GITHUB.getDisplayName());
+
+    ConnectorDetails connectorDetails = ConnectorDetails.builder().connectorType(ConnectorType.GITHUB).build();
+
+    when(ciCodebaseUtils.getGitEnvVariables(any(), any())).thenReturn(new HashMap<>());
+
+    Map<String, String> actual =
+        idpStepUtils.getRegisterCatalogStepInfoEnvVariables(idpRegisterCatalogStepInfo, connectorDetails, "test-id");
 
     assertThat(actual).isEqualTo(expected);
   }

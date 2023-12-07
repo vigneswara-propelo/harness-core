@@ -23,6 +23,7 @@ import io.harness.idp.pipeline.stages.step.IDPStageStepPMS;
 import io.harness.idp.pipeline.steps.IdpCodePushStep;
 import io.harness.idp.pipeline.steps.IdpCookieCutterStep;
 import io.harness.idp.pipeline.steps.IdpCreateRepoStep;
+import io.harness.idp.pipeline.steps.IdpRegisterCatalogStep;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.core.steps.Step;
 import io.harness.registrar.NGCommonUtilStepsRegistrar;
@@ -50,6 +51,7 @@ public class IdpStepRegistrar {
     engineSteps.put(IdpCookieCutterStep.STEP_TYPE, IdpCookieCutterStep.class);
     engineSteps.put(IdpCreateRepoStep.STEP_TYPE, IdpCreateRepoStep.class);
     engineSteps.put(IdpCodePushStep.STEP_TYPE, IdpCodePushStep.class);
+    engineSteps.put(IdpRegisterCatalogStep.STEP_TYPE, IdpRegisterCatalogStep.class);
 
     engineSteps.putAll(NGCommonUtilStepsRegistrar.getEngineSteps());
     return engineSteps;

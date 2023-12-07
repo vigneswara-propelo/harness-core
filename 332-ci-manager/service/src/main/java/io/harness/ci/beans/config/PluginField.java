@@ -33,6 +33,7 @@ public enum PluginField {
   IDP_COOKIECUTTER("IdpCookieCutter"),
   IDP_CREATE_REPO("IdpCreateRepo"),
   IDP_CODE_PUSH("IdpCodePush"),
+  REGISTER_CATALOG("RegisterCatalog"),
   UNKNOWN("unknown");
 
   public final String label;

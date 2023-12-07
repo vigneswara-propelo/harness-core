@@ -76,6 +76,7 @@ import io.harness.iacm.execution.IACMStepsUtils;
 import io.harness.idp.steps.beans.stepinfo.IdpCodePushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpRegisterCatalogStepInfo;
 import io.harness.idp.utils.IDPStepUtils;
 import io.harness.ng.core.NGAccess;
 import io.harness.plugin.service.PluginServiceImpl;
@@ -239,6 +240,13 @@ public class PluginSettingUtils extends PluginServiceImpl {
             idpCodePushConnectorRef, ambiance, ((IdpCodePushStepInfo) stepInfo).getRepoName().getValue());
         return idpStepUtils.getIDPCodePushStepInfoEnvVariables(
             (IdpCodePushStepInfo) stepInfo, idpCodePushGitConnector, identifier);
+      case REGISTER_CATALOG:
+        final String registerCatalogConnectorRef = stepInfo.getConnectorRef().getValue();
+        final NGAccess registerCatalogNgAccess = AmbianceUtils.getNgAccess(ambiance);
+        final ConnectorDetails registerCatalogGitConnector = codebaseUtils.getGitConnector(registerCatalogNgAccess,
+            registerCatalogConnectorRef, ambiance, ((IdpRegisterCatalogStepInfo) stepInfo).getRepository().getValue());
+        return idpStepUtils.getRegisterCatalogStepInfoEnvVariables(
+            (IdpRegisterCatalogStepInfo) stepInfo, registerCatalogGitConnector, identifier);
       default:
         throw new IllegalStateException(
             "Unexpected value in getPluginCompatibleEnvVariables: " + stepInfo.getNonYamlInfo().getStepInfoType());
@@ -326,6 +334,7 @@ public class PluginSettingUtils extends PluginServiceImpl {
       case GIT_CLONE:
       case IDP_CREATE_REPO:
       case IDP_CODE_PUSH:
+      case REGISTER_CATALOG:
         return map;
       case IACM_TERRAFORM_PLUGIN:
         map.put(EnvVariableEnum.AWS_ACCESS_KEY, PLUGIN_ACCESS_KEY);
