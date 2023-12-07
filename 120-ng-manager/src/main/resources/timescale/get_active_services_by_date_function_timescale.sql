@@ -25,6 +25,7 @@ DECLARE v_rows_affected INT default 0;
         v_interim_begin_date DATE;
         v_interim_end_date DATE;
         v_loop_count INT;
+        v_lambda_instance_type TEXT[];
 BEGIN
     DROP TABLE IF EXISTS _tmp_tbl_active_services_by_date_range;
     CREATE TEMPORARY TABLE _tmp_tbl_active_services_by_date_range (
@@ -33,6 +34,7 @@ BEGIN
     );
 
     v_interim_begin_date := '1900-01-01';
+    v_lambda_instance_type := ARRAY['AWS_LAMBDA_INSTANCE', 'AWS_SAM_INSTANCE', 'SERVERLESS_AWS_LAMBDA_INSTANCE', 'GOOGLE_CLOUD_FUNCTIONS_INSTANCE'];
     v_loop_count := -1;  -- so the first increment will be 0
     -- function generates reports, including reports for p_begin_date and p_end_date days
     WHILE v_interim_begin_date < p_end_date LOOP
@@ -60,11 +62,21 @@ BEGIN
                 (
                     SELECT
                         CASE
-                            WHEN instancesPerServices.instanceCount IS NULL OR instancesPerServices.instanceCount <= 20
-                                THEN 1
-                            WHEN instancesPerServices.instanceCount > 20
-                                THEN CEILING(instancesPerServices.instanceCount / 20.0)
-                            END AS licensesConsumedPerService
+                            WHEN instancesPerServices.instanceType = ANY(v_lambda_instance_type) THEN
+                                CASE
+                                    WHEN instancesPerServices.instanceCount IS NULL OR instancesPerServices.instanceCount <= 5
+                                        THEN 1
+                                    WHEN instancesPerServices.instanceCount > 5
+                                        THEN CEILING(instancesPerServices.instanceCount / 5.0)
+                                    END
+                            ELSE
+                                CASE
+                                    WHEN instancesPerServices.instanceCount IS NULL OR instancesPerServices.instanceCount <= 20
+                                        THEN 1
+                                    WHEN instancesPerServices.instanceCount > 20
+                                        THEN CEILING(instancesPerServices.instanceCount / 20.0)
+                                    END
+                        END AS licensesConsumedPerService
                     FROM
                         -- List all deployed services during specific day or month from service_infra_info table
                         (
@@ -104,6 +116,7 @@ BEGIN
                         (
                             SELECT
                                 PERCENTILE_DISC(.95) WITHIN GROUP (ORDER BY instancesPerServicesReportedAt.instanceCount) AS instanceCount,
+                                instancetype AS instanceType,
                                 orgid,
                                 projectid,
                                 serviceid
@@ -120,7 +133,8 @@ BEGIN
                                             ELSE projectid
                                         END AS projectid,
                                         serviceid,
-                                        SUM(instancecount) AS instanceCount
+                                        SUM(instancecount) AS instanceCount,
+                                        instancetype
                                     FROM
                                         ng_instance_stats
                                     WHERE
@@ -141,12 +155,14 @@ BEGIN
                                             ELSE projectid
                                         END,
                                         serviceid,
+                                        instancetype,
                                         DATE_TRUNC('minute', reportedat)
                                 ) instancesPerServicesReportedAt
                             GROUP BY
                                 orgid,
                                 projectid,
-                                serviceid
+                                serviceid,
+                                instancetype
                         ) instancesPerServices
                         ON (activeServices.orgIdentifier = instancesPerServices.orgid
                                 OR (activeServices.orgIdentifier IS NULL AND instancesPerServices.orgid IS NULL))
