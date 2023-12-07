@@ -695,6 +695,10 @@ public class PMSPipelineServiceHelper {
             .build());
   }
 
+  public void deletePipelineReferences(PipelineEntity pipelineEntity) {
+    filterCreatorMergeService.deleteSetupReferences(pipelineEntity);
+  }
+
   public void setPermittedPipelines(
       String accountId, String orgId, String projectId, Criteria criteria, String pipelineIdentifierKey) {
     /*

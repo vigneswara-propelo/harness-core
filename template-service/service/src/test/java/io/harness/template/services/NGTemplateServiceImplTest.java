@@ -1707,6 +1707,10 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     doReturn(templateEntity)
         .when(ngTemplateService)
         .moveTemplateEntity(any(), any(), any(), any(), any(), any(TemplateMoveConfigOperationDTO.class), any());
+    doReturn(Optional.of(templateEntity))
+        .when(templateServiceHelper)
+        .getTemplate(anyString(), anyString(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(),
+            anyBoolean(), anyBoolean());
     TemplateMoveConfigRequestDTO moveConfigOperationDTO =
         TemplateMoveConfigRequestDTO.builder()
             .isNewBranch(false)

@@ -307,7 +307,7 @@ public class PipelineSetupUsageHelper implements PipelineActionObserver {
     }
   }
 
-  private void deleteSetupUsagesForGivenPipeline(PipelineEntity pipelineEntity) {
+  public void deleteSetupUsagesForGivenPipeline(PipelineEntity pipelineEntity) {
     EntityDetailProtoDTO pipelineDetails =
         EntityDetailProtoDTO.newBuilder()
             .setIdentifierRef(IdentifierRefProtoDTOHelper.createIdentifierRefProtoDTO(pipelineEntity.getAccountId(),

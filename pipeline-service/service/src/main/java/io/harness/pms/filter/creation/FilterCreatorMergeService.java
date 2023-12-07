@@ -322,4 +322,8 @@ public class FilterCreatorMergeService {
         && gitSyncSdkService.isGitSimplificationEnabled(pipelineEntity.getAccountIdentifier(),
             pipelineEntity.getOrgIdentifier(), pipelineEntity.getProjectIdentifier());
   }
+
+  public void deleteSetupReferences(PipelineEntity pipelineEntity) {
+    pipelineSetupUsageHelper.deleteSetupUsagesForGivenPipeline(pipelineEntity);
+  }
 }

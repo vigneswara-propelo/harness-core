@@ -1602,8 +1602,30 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       throw new InvalidRequestException(String.format(
           "Invalid move config operation specified [%s].", moveConfigOperationDTO.getMoveConfigOperationType().name()));
     }
-    return updateMoveConfigForTemplateEntity(
+    TemplateEntity movedTemplateEntity = updateMoveConfigForTemplateEntity(
         templateEntity, templateUpdate, templateCriteria, moveConfigOperationDTO.getMoveConfigOperationType());
+    computeSetupReferences(movedTemplateEntity, moveConfigOperationDTO);
+    return movedTemplateEntity;
+  }
+
+  private void computeSetupReferences(TemplateEntity templateEntity, TemplateMoveConfigOperationDTO moveConfigDTO) {
+    try {
+      if (INLINE_TO_REMOTE.equals(moveConfigDTO.getMoveConfigOperationType())) {
+        Optional<TemplateEntity> optionalTemplateEntity = templateServiceHelper.getTemplate(
+            templateEntity.getAccountId(), templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier(),
+            templateEntity.getIdentifier(), templateEntity.getVersionLabel(), false, false, false, false);
+        if (optionalTemplateEntity.isPresent()) {
+          templateReferenceHelper.deleteTemplateReferences(optionalTemplateEntity.get());
+          if (GitAwareContextHelper.isGitDefaultBranch()) {
+            templateReferenceHelper.populateTemplateReferences(
+                SetupUsageParams.builder().templateEntity(templateEntity).build());
+          }
+        }
+      }
+    } catch (Exception exception) {
+      log.error(String.format("Error occurred while trying to update references for template %s and version %s : %s",
+          templateEntity.getIdentifier(), templateEntity.getVersionLabel(), exception));
+    }
   }
 
   TemplateEntity updateMoveConfigForTemplateEntity(TemplateEntity templateEntity, Update templateUpdate,

@@ -1033,6 +1033,10 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
         .when(pmsPipelineRepositoryMock)
         .updatePipelineEntity(any(), any(), any(), any(), any(), any());
 
+    doReturn(Optional.of(pipelineEntity))
+        .when(pmsPipelineRepositoryMock)
+        .find(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean());
+
     PipelineEntity movePipelineEntity = pmsPipelineService.movePipelineEntity(
         accountId, ORG_IDENTIFIER, PROJ_IDENTIFIER, PIPELINE_IDENTIFIER, moveConfigOperation, pipelineEntity);
 

@@ -90,7 +90,8 @@ public class PipelineGitXHelper {
 
   public boolean shouldPublishSetupUsages(boolean loadFromCache, StoreType storeType) {
     return StoreType.REMOTE.equals(storeType) && isFetchedFromGit(loadFromCache)
-        && GitAwareContextHelper.isGitDefaultBranch();
+        && GitAwareContextHelper.isGitDefaultBranch()
+        && (!GitAwareContextHelper.isNullOrDefault(GitAwareContextHelper.getBranchFromGitContext()));
   }
 
   public boolean shouldPublishSetupUsages(StoreType storeType) {

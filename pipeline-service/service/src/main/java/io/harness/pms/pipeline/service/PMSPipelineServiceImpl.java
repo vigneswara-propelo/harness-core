@@ -1133,8 +1133,29 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       throw new InvalidRequestException(String.format(
           "Invalid move config operation specified [%s].", moveConfigDTO.getMoveConfigOperationType().name()));
     }
-    return pmsPipelineRepository.updatePipelineEntity(pipeline, pipelineUpdate, pipelineCriteria, metadataUpdate,
-        metadataCriteria, moveConfigDTO.getMoveConfigOperationType());
+    PipelineEntity pipelineEntity = pmsPipelineRepository.updatePipelineEntity(pipeline, pipelineUpdate,
+        pipelineCriteria, metadataUpdate, metadataCriteria, moveConfigDTO.getMoveConfigOperationType());
+    computeSetupReferences(pipelineEntity, moveConfigDTO);
+    return pipelineEntity;
+  }
+
+  private void computeSetupReferences(PipelineEntity pipelineEntity, MoveConfigOperationDTO moveConfigDTO) {
+    try {
+      if (INLINE_TO_REMOTE.equals(moveConfigDTO.getMoveConfigOperationType())) {
+        Optional<PipelineEntity> optionalPipelineEntity =
+            getAndValidatePipeline(pipelineEntity.getAccountId(), pipelineEntity.getOrgIdentifier(),
+                pipelineEntity.getProjectIdentifier(), pipelineEntity.getIdentifier(), false);
+        if (optionalPipelineEntity.isPresent()) {
+          pmsPipelineServiceHelper.deletePipelineReferences(optionalPipelineEntity.get());
+          if (GitAwareContextHelper.isGitDefaultBranch()) {
+            pmsPipelineServiceHelper.computePipelineReferences(optionalPipelineEntity.get());
+          }
+        }
+      }
+    } catch (Exception exception) {
+      log.error(String.format("Error occurred while trying to update references for pipeline %s: %s",
+          pipelineEntity.getIdentifier(), exception));
+    }
   }
 
   private void setupGitContext(MoveConfigOperationDTO moveConfigDTO) {
