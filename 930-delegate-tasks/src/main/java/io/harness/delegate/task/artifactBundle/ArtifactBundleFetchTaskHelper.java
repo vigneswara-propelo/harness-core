@@ -400,13 +400,23 @@ public class ArtifactBundleFetchTaskHelper {
     }
     File artifactBundleFile = extractArtifactBundle(artifactBundleDetails.getArtifactBundleType(), artifactFile,
         workingDirectory, artifactBundleDetails.getActivityId());
-    String artifactPath = Paths.get(artifactBundleFile.getAbsolutePath(), artifactBundleDetails.getDeployableUnitPath())
-                              .normalize()
-                              .toString();
+
+    File updatedArtifactFile =
+        new File(Paths.get(artifactBundleFile.getAbsolutePath(), artifactBundleDetails.getDeployableUnitPath())
+                     .normalize()
+                     .toString());
+
+    if (!updatedArtifactFile.exists()) {
+      throw new IOException(format(
+          "Failed to get Artifact from the Artifact Bundle '%s' . Please check if Deployable Unit Path '%s' is correct.",
+          artifactFile.getName(), artifactBundleDetails.getDeployableUnitPath()));
+    }
+
     logCallback.saveExecutionLog(
         color(format("Using Artifact '%s' from the Artifact Bundle '%s' ",
                   artifactBundleDetails.getDeployableUnitPath(), artifactBundleFile.toPath().getFileName()),
             LogColor.White, LogWeight.Bold));
-    return artifactPath;
+
+    return updatedArtifactFile.toString();
   }
 }

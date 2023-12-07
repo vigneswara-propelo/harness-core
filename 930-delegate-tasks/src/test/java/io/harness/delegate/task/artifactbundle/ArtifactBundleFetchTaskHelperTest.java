@@ -13,6 +13,7 @@ import static io.harness.filesystem.FileIo.deleteDirectoryAndItsContentIfExists;
 import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -231,5 +232,31 @@ public class ArtifactBundleFetchTaskHelperTest extends CategoryTest {
                 .normalize()
                 .toString());
     deleteDirectoryAndItsContentIfExists(temporaryDir.toString());
+  }
+
+  @Test
+  @Owner(developers = NAMAN_TALAYCHA)
+  @Category(UnitTests.class)
+  public void getArtifactPathOfArtifactBundleIncorrectArtifactPath() throws Exception {
+    ClassLoader classLoader = ArtifactBundleFetchTaskHelperTest.class.getClassLoader();
+    LogCallback logCallback = mock(LogCallback.class);
+    Path temporaryDir = Files.createTempDirectory("testDir");
+    Path destinationPath = Paths.get(temporaryDir.toString(), "artifactBundleCorrect.tar").normalize();
+    Files.copy(classLoader.getResourceAsStream("task/artifactbundle/artifactBundleCorrect.tar"), destinationPath,
+        StandardCopyOption.REPLACE_EXISTING);
+
+    File workingDir = new File(temporaryDir.toString());
+    ArtifactBundleDetails artifactBundleDetails = ArtifactBundleDetails.builder()
+                                                      .deployableUnitPath("artifactBundle/Incorrect-4.0.war")
+                                                      .artifactBundleType(ArtifactBundledArtifactType.TAR.toString())
+                                                      .activityId("activityId")
+                                                      .build();
+    File artifactBundleFile = new File(destinationPath.toString());
+
+    assertThatThrownBy(()
+                           -> artifactBundleFetchTaskHelper.getArtifactPathOfArtifactBundle(
+                               artifactBundleDetails, artifactBundleFile, workingDir, logCallback))
+        .hasMessage(
+            "Failed to get Artifact from the Artifact Bundle 'artifactBundleCorrect.tar' . Please check if Deployable Unit Path 'artifactBundle/Incorrect-4.0.war' is correct.");
   }
 }
