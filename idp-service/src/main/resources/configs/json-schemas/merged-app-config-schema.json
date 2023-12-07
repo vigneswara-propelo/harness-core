@@ -19,7 +19,8 @@
     "catalog",
     "grafana",
     "sonarqube",
-    "opsgenie"
+    "opsgenie",
+    "dynatrace"
   ],
   "properties": {
     "app": {
@@ -77,6 +78,10 @@
     "opsgenie": {
       "$id": "#root/opsgenie",
       "title": "OpsGenie"
+    },
+    "dynatrace": {
+      "$id": "#root/dynatrace",
+      "title": "Dynatrace"
     }
   }
 }

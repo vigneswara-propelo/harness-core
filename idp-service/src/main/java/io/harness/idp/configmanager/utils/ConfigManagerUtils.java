@@ -75,6 +75,7 @@ public class ConfigManagerUtils {
   private static final String GRAFANA_JSON_SCHEMA_PATH = "configs/json-schemas/grafana-schema.json";
   private static final String OPSGENIE_JSON_SCHEMA_PATH = "configs/json-schemas/opsgenie-schema.json";
   private static final String HARNESS_SRM_JSON_SCHEMA_PATH = "configs/json-schemas/harness-srm-schema.json";
+  private static final String DYNATRACE_JSON_SCHEMA_PATH = "configs/json-schemas/dynatrace-schema.json";
   private static final String SONARQUBE_JSON_SCHEMA_PATH = "configs/json-schemas/sonarqube-schema.json";
   private static final String HARNESS_CI_CD_CONFIG_PATH = "configs/plugins/harness-ci-cd.yaml";
   private static final String HARNESS_CI_CD_CONFIG_PATH_COMPLIANCE = "configs/plugins/harness-ci-cd-compliance.yaml";
@@ -219,6 +220,8 @@ public class ConfigManagerUtils {
         return readFileFromClassPath(OPSGENIE_JSON_SCHEMA_PATH);
       case Constants.HARNESS_SRM_PLUGIN:
         return readFileFromClassPath(HARNESS_SRM_JSON_SCHEMA_PATH);
+      case Constants.DYNATRACE_PLUGIN:
+        return readFileFromClassPath(DYNATRACE_JSON_SCHEMA_PATH);
       default:
         return null;
     }

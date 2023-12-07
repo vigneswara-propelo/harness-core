@@ -1,0 +1,116 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1701592832.json",
+  "title": "Root",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "proxy",
+    "dynatrace"
+  ],
+  "properties": {
+    "proxy": {
+      "$id": "#root/proxy",
+      "title": "Proxy",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "/dynatrace"
+      ],
+      "properties": {
+        "/dynatrace": {
+          "$id": "#root/proxy//dynatrace",
+          "title": "/dynatrace",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "target",
+            "pathRewrite",
+            "headers"
+          ],
+          "properties": {
+            "target": {
+              "$id": "#root/proxy//dynatrace/target",
+              "title": "Target",
+              "type": "string",
+              "default": "",
+              "examples": [
+                "https://example.live.dynatrace.com/api/v2"
+              ],
+              "pattern": "^.*$"
+            },
+            "pathRewrite": {
+              "$id": "#root/proxy//dynatrace/pathRewrite",
+              "title": "Pathrewrite",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "/api/proxy/dynatrace/?"
+              ],
+              "properties": {
+                "/api/proxy/dynatrace/?": {
+                  "$id": "#root/proxy//dynatrace/pathRewrite//api/proxy/dynatrace/?",
+                  "title": "/api/proxy/dynatrace/?",
+                  "type": "string",
+                  "default": "",
+                  "examples": [
+                    "/"
+                  ],
+                  "pattern": "^.*$"
+                }
+              }
+            }
+          ,
+            "headers": {
+              "$id": "#root/proxy//dynatrace/headers",
+              "title": "Headers",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Authorization"
+              ],
+              "properties": {
+                "Authorization": {
+                  "$id": "#root/proxy//dynatrace/headers/Authorization",
+                  "title": "Authorization",
+                  "type": "string",
+                  "default": "",
+                  "examples": [
+                    "Api-Token ${DYNATRACE_TOKEN}"
+                  ],
+                  "pattern": "^.*$"
+                }
+              }
+            }
+
+          }
+        }
+
+      }
+    }
+  ,
+    "dynatrace": {
+      "$id": "#root/dynatrace",
+      "title": "Dynatrace",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseUrl"
+      ],
+      "properties": {
+        "baseUrl": {
+          "$id": "#root/dynatrace/baseUrl",
+          "title": "Baseurl",
+          "type": "string",
+          "default": "",
+          "examples": [
+            "https://example.apps.dynatrace.com"
+          ],
+          "pattern": "^.*$"
+        }
+      }
+    }
+
+  }
+}
