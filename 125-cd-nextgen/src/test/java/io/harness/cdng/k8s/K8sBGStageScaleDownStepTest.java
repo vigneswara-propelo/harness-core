@@ -47,6 +47,7 @@ import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -68,6 +69,7 @@ public class K8sBGStageScaleDownStepTest extends CategoryTest {
   @Mock private InfrastructureOutcome infrastructureOutcome;
   @Mock private K8sInfraDelegateConfig infraDelegateConfig;
   @Mock ServiceOutcome serviceOutcome;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   private final Ambiance ambiance = Ambiance.newBuilder().build();
   private final StepInputPackage stepInputPackage = StepInputPackage.builder().build();
 

@@ -109,6 +109,8 @@ import io.harness.service.DelegateGrpcClientWrapper;
 import io.harness.steps.EntityReferenceExtractorUtils;
 import io.harness.steps.TaskRequestsUtils;
 import io.harness.tasks.ResponseData;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 import io.harness.utils.IdentifierRefHelper;
 import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.walktree.visitor.entityreference.beans.VisitedSecretReference;
@@ -165,6 +167,7 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
   @Inject private StrategyHelper strategyHelper;
   @Inject private ServiceEnvironmentsLogCallbackUtility serviceEnvironmentsLogUtility;
   @Inject private SecretRuntimeUsageService secretRuntimeUsageService;
+  @Inject private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   private static final String OVERRIDE_PROJECT_SETTING_IDENTIFIER = "service_override_v2";
 
@@ -182,11 +185,39 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
     List<String> callbackIds = new ArrayList<>();
     if (manifestSpec.isPresent()) {
       Optional<ManifestsOutcome> manifestsOutcome = manifestSpec.get().getOptionalManifestsOutcome();
+      deploymentsInstrumentationHelper.publishStepEvent(ambiance, getStepExecutionTelemetryEventDTO(manifestsOutcome));
       manifestsOutcome.ifPresent(manifests -> handleManifests(ambiance, manifests, callbackIds, logCallback));
       saveManifestConfigurationOutcome(ambiance, manifestSpec.get().getPrimaryManifestId());
     }
 
     return AsyncExecutableResponse.newBuilder().addAllCallbackIds(callbackIds).build();
+  }
+
+  @VisibleForTesting
+  StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Optional<ManifestsOutcome> manifestsOutcomeOptional) {
+    HashMap<String, Object> telemetryProperties = new HashMap<>();
+    try {
+      manifestsOutcomeOptional.ifPresent(manifestsOutcome -> {
+        List<String> manifestTypes = new ArrayList<>();
+        manifestsOutcome.values().forEach(manifestOutcome -> {
+          if (manifestOutcome != null) {
+            manifestTypes.add(manifestOutcome.getType());
+            telemetryProperties.putAll(manifestOutcome.createTelemetryProperties());
+          }
+        });
+        if (isNotEmpty(manifestTypes)) {
+          telemetryProperties.put(DeploymentsInstrumentationHelper.MANIFEST_TYPES, new HashSet<>(manifestTypes));
+        }
+      });
+
+    } catch (Exception e) {
+      log.error("Failed to obtain manifests step telemetry properties", e);
+    }
+    return StepExecutionTelemetryEventDTO.builder()
+        .stepType(STEP_TYPE.getType())
+        .properties(telemetryProperties)
+        .build();
   }
 
   @Override

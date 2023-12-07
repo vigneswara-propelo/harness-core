@@ -56,6 +56,7 @@ import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -79,6 +80,7 @@ public class K8sScaleStepTest extends CategoryTest {
   @Mock StoreConfig storeConfig;
   @Mock ServiceOutcome serviceOutcome;
   @Mock private InstanceInfoService instanceInfoService;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   private final ManifestOutcome manifestOutcome = K8sManifestOutcome.builder().store(storeConfig).build();
   private final Ambiance ambiance = Ambiance.newBuilder().build();
   private final StepInputPackage stepInputPackage = StepInputPackage.builder().build();

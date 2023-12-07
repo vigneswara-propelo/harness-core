@@ -18,6 +18,8 @@ import io.harness.pms.sdk.core.data.Outcome;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 @OwnedBy(CDP)
@@ -64,5 +66,8 @@ public interface ManifestOutcome extends Outcome, WithIdentifier {
   }
   default Optional<ManifestStoreInfo> toManifestStoreInfo() {
     return Optional.empty();
+  }
+  default Map<String, Object> createTelemetryProperties() {
+    return Collections.emptyMap();
   }
 }

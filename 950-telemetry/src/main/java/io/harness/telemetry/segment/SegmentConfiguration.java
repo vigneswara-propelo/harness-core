@@ -28,4 +28,11 @@ public class SegmentConfiguration implements TelemetryConfiguration {
   private String url;
   @ConfigSecret private String apiKey;
   private boolean certValidationRequired;
+
+  /**
+   * To be configured based on restrictions from
+   * https://segment.com/docs/connections/sources/catalog/libraries/server/java/#batching
+   */
+  private int flushQueueSize;
+  private long flushInterval;
 }

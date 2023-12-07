@@ -42,6 +42,7 @@ import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
@@ -54,6 +55,7 @@ import org.mockito.Mock;
 @OwnedBy(HarnessTeam.CDP)
 public class K8sDryRunManifestStepTest extends AbstractK8sStepExecutorTestBase {
   @Mock ExecutionSweepingOutputService executionSweepingOutputService;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @InjectMocks private K8sDryRunManifestStep k8sDryRunManifestStep;
   @Mock private CDFeatureFlagHelper cdFeatureFlagHelper;
 
@@ -95,7 +97,7 @@ public class K8sDryRunManifestStepTest extends AbstractK8sStepExecutorTestBase {
             .commandExecutionStatus(SUCCESS)
             .build();
 
-    StepResponse response = k8sDryRunManifestStep.finalizeExecutionWithSecurityContext(
+    StepResponse response = k8sDryRunManifestStep.finalizeExecutionWithSecurityContextAndNodeInfo(
         ambiance, stepElementParameters, K8sExecutionPassThroughData.builder().build(), () -> k8sDeployResponse);
     assertThat(response.getStatus()).isEqualTo(Status.SUCCEEDED);
     assertThat(response.getStepOutcomes()).hasSize(1);
@@ -123,7 +125,7 @@ public class K8sDryRunManifestStepTest extends AbstractK8sStepExecutorTestBase {
 
     doReturn(stepResponse).when(k8sStepHelper).handleTaskException(ambiance, executionPassThroughData, thrownException);
 
-    StepResponse response = k8sDryRunManifestStep.finalizeExecutionWithSecurityContext(
+    StepResponse response = k8sDryRunManifestStep.finalizeExecutionWithSecurityContextAndNodeInfo(
         ambiance, stepElementParameters, executionPassThroughData, () -> { throw thrownException; });
 
     assertThat(response).isEqualTo(stepResponse);
@@ -145,7 +147,7 @@ public class K8sDryRunManifestStepTest extends AbstractK8sStepExecutorTestBase {
             .build();
 
     assertThatThrownBy(()
-                           -> k8sDryRunManifestStep.finalizeExecutionWithSecurityContext(
+                           -> k8sDryRunManifestStep.finalizeExecutionWithSecurityContextAndNodeInfo(
                                ambiance, stepElementParameters, executionPassThroughData, () -> k8sDeployResponse))
         .isInstanceOf(HintException.class)
         .hasMessage("The dry run manifest yaml file might be too large to process.");
@@ -165,14 +167,14 @@ public class K8sDryRunManifestStepTest extends AbstractK8sStepExecutorTestBase {
             .commandExecutionStatus(SUCCESS)
             .build();
     when(cdStepHelper.handleGitTaskFailure(any())).thenReturn(StepResponse.builder().status(Status.SUCCEEDED).build());
-    StepResponse response = k8sDryRunManifestStep.finalizeExecutionWithSecurityContext(
+    StepResponse response = k8sDryRunManifestStep.finalizeExecutionWithSecurityContextAndNodeInfo(
         ambiance, stepElementParameters, GitFetchResponsePassThroughData.builder().build(), () -> k8sDeployResponse);
     assertThat(response.getStatus()).isEqualTo(Status.SUCCEEDED);
 
     when(k8sStepHelper.handleHelmValuesFetchFailure(any()))
         .thenReturn(StepResponse.builder().status(Status.SUCCEEDED).build());
     assertThat(k8sDryRunManifestStep
-                   .finalizeExecutionWithSecurityContext(ambiance, stepElementParameters,
+                   .finalizeExecutionWithSecurityContextAndNodeInfo(ambiance, stepElementParameters,
                        HelmValuesFetchResponsePassThroughData.builder().build(), () -> k8sDeployResponse)
                    .getStatus())
         .isEqualTo(Status.SUCCEEDED);
@@ -180,7 +182,7 @@ public class K8sDryRunManifestStepTest extends AbstractK8sStepExecutorTestBase {
     when(cdStepHelper.handleStepExceptionFailure(any()))
         .thenReturn(StepResponse.builder().status(Status.SUCCEEDED).build());
     assertThat(k8sDryRunManifestStep
-                   .finalizeExecutionWithSecurityContext(ambiance, stepElementParameters,
+                   .finalizeExecutionWithSecurityContextAndNodeInfo(ambiance, stepElementParameters,
                        StepExceptionPassThroughData.builder().build(), () -> k8sDeployResponse)
                    .getStatus())
         .isEqualTo(Status.SUCCEEDED);
@@ -192,7 +194,7 @@ public class K8sDryRunManifestStepTest extends AbstractK8sStepExecutorTestBase {
             .commandExecutionStatus(FAILURE)
             .build();
     assertThat(k8sDryRunManifestStep
-                   .finalizeExecutionWithSecurityContext(ambiance, stepElementParameters,
+                   .finalizeExecutionWithSecurityContextAndNodeInfo(ambiance, stepElementParameters,
                        K8sExecutionPassThroughData.builder().build(), () -> k8sDeployResponseFail)
                    .getStatus())
         .isEqualTo(Status.FAILED);

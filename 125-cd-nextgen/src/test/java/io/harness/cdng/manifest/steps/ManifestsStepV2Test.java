@@ -16,6 +16,7 @@ import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.PRATYUSH;
 import static io.harness.rule.OwnerRule.RISHABH;
+import static io.harness.telemetry.helpers.DeploymentsInstrumentationHelper.MANIFEST_TYPES;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,6 +50,9 @@ import io.harness.cdng.manifest.steps.output.UnresolvedManifestsOutput;
 import io.harness.cdng.manifest.steps.task.FetchManifestTaskContext;
 import io.harness.cdng.manifest.steps.task.ManifestTaskService;
 import io.harness.cdng.manifest.yaml.GitStore;
+import io.harness.cdng.manifest.yaml.HelmChartManifestOutcome;
+import io.harness.cdng.manifest.yaml.HelmCommandFlagType;
+import io.harness.cdng.manifest.yaml.HelmManifestCommandFlag;
 import io.harness.cdng.manifest.yaml.HttpStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestAttributes;
 import io.harness.cdng.manifest.yaml.ManifestConfig;
@@ -105,6 +109,8 @@ import io.harness.serializer.KryoSerializer;
 import io.harness.service.DelegateGrpcClientWrapper;
 import io.harness.steps.EntityReferenceExtractorUtils;
 import io.harness.tasks.ResponseData;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.walktree.visitor.entityreference.beans.VisitedSecretReference;
 
@@ -155,6 +161,8 @@ public class ManifestsStepV2Test extends CategoryTest {
   @Mock private DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   @Mock private ServiceEnvironmentsLogCallbackUtility serviceEnvironmentsLogUtility;
   @Mock private SecretRuntimeUsageService secretRuntimeUsageService;
+
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   @InjectMocks private ManifestsStepV2 step = new ManifestsStepV2();
 
@@ -496,6 +504,26 @@ public class ManifestsStepV2Test extends CategoryTest {
         .isEnabled(anyString(), eq(FeatureName.CDS_HELM_MULTIPLE_MANIFEST_SUPPORT_NG));
     executeSyncFailWithInvalidManifestList_0(
         () -> step.executeSync(buildAmbiance(), new EmptyStepParameters(), null, null));
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.TMACARI)
+  @Category(UnitTests.class)
+  public void testGetStepExecutionTelemetryEventDTO() {
+    ManifestsOutcome manifestsOutcome = new ManifestsOutcome();
+    HelmChartManifestOutcome helmChartManifestOutcome =
+        HelmChartManifestOutcome.builder()
+            .commandFlags(Collections.singletonList(
+                HelmManifestCommandFlag.builder().commandType(HelmCommandFlagType.Fetch).build()))
+            .build();
+    manifestsOutcome.put("manifest1", helmChartManifestOutcome);
+    StepExecutionTelemetryEventDTO stepExecutionTelemetryEventDTO =
+        step.getStepExecutionTelemetryEventDTO(Optional.of(manifestsOutcome));
+
+    assertThat(stepExecutionTelemetryEventDTO.getStepType()).isEqualTo(ManifestsStepV2.STEP_TYPE.getType());
+    assertThat(stepExecutionTelemetryEventDTO.getProperties().get("helm_command_flags")).isEqualTo(true);
+    assertThat((HashSet) stepExecutionTelemetryEventDTO.getProperties().get(MANIFEST_TYPES))
+        .contains(helmChartManifestOutcome.getType());
   }
 
   private <T> void executeSyncFailWithInvalidManifestList_0(Supplier<T> executeMethod) {
@@ -913,6 +941,7 @@ public class ManifestsStepV2Test extends CategoryTest {
   public void svcAndEnvLevelOverridesV2HelmRepoOverride() throws IOException {
     svcAndEnvLevelOverridesV2HelmRepoOverride(
         () -> step.executeAsync(buildAmbiance(), new EmptyStepParameters(), null, null));
+    verify(deploymentsInstrumentationHelper).publishStepEvent(any(), any());
   }
 
   private <T> void svcAndEnvLevelOverridesV2HelmRepoOverride(Supplier<T> executeMethod) throws IOException {

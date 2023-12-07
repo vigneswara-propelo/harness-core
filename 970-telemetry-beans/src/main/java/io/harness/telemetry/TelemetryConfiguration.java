@@ -19,4 +19,6 @@ public interface TelemetryConfiguration {
   String getUrl();
   String getApiKey();
   boolean isCertValidationRequired();
+  int getFlushQueueSize();
+  long getFlushInterval();
 }

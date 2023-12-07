@@ -46,6 +46,8 @@ import io.harness.pms.sdk.core.steps.io.StepResponse.StepResponseBuilder;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
 import io.harness.steps.StepUtils;
 import io.harness.supplier.ThrowingSupplier;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 
 import com.google.inject.Inject;
 
@@ -67,6 +69,7 @@ public class K8sBGSwapServicesStep extends CdTaskExecutable<K8sDeployResponse> {
   @Inject private CDStepHelper cdStepHelper;
   @Inject private OutcomeService outcomeService;
   @Inject ExecutionSweepingOutputService executionSweepingOutputService;
+  @Inject private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   @Override
   public void validateResources(Ambiance ambiance, StepBaseParameters stepParameters) {
@@ -165,5 +168,11 @@ public class K8sBGSwapServicesStep extends CdTaskExecutable<K8sDeployResponse> {
   @Override
   public Class<StepBaseParameters> getStepParametersClass() {
     return StepBaseParameters.class;
+  }
+
+  @Override
+  protected StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Ambiance ambiance, StepBaseParameters stepParameters) {
+    return StepExecutionTelemetryEventDTO.builder().stepType(STEP_TYPE.getType()).build();
   }
 }

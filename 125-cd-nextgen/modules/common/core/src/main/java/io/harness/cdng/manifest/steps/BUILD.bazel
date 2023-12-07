@@ -26,6 +26,7 @@ java_library(
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/service/steps/constants:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/service/steps/helpers:module",
         "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/cdng/steps:module",
+        "//125-cd-nextgen/modules/common/core/src/main/java/io/harness/telemetry/helpers:module",
         "//127-cd-nextgen-entities:module",
         "//440-connector-nextgen:module",
         "//878-ng-common-utilities:module",

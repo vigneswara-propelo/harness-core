@@ -32,6 +32,7 @@ import io.harness.cdng.k8s.beans.StepExceptionPassThroughData;
 import io.harness.cdng.manifest.ManifestType;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
+import io.harness.common.ParameterFieldHelper;
 import io.harness.delegate.beans.instancesync.mapper.K8sPodToServiceInstanceInfoMapper;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.beans.logstreaming.UnitProgressDataMapper;
@@ -61,9 +62,12 @@ import io.harness.pms.sdk.core.steps.io.StepResponse.StepResponseBuilder;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
 import io.harness.supplier.ThrowingSupplier;
 import io.harness.tasks.ResponseData;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 
 import com.google.inject.Inject;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -84,8 +88,9 @@ public class K8sRollingStep extends CdTaskChainExecutable implements K8sStepExec
   @Inject ExecutionSweepingOutputService executionSweepingOutputService;
   @Inject private InstanceInfoService instanceInfoService;
   @Inject private CDFeatureFlagHelper cdFeatureFlagHelper;
-
   @Inject private ReleaseMetadataFactory releaseMetadataFactory;
+  @Inject private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
+
   @Override
   public void validateResources(Ambiance ambiance, StepBaseParameters stepParameters) {
     // Noop
@@ -178,6 +183,19 @@ public class K8sRollingStep extends CdTaskChainExecutable implements K8sStepExec
       ThrowingSupplier<ResponseData> responseSupplier) throws Exception {
     log.info("Calling executeNextLink");
     return k8sStepHelper.executeNextLink(this, ambiance, stepElementParameters, passThroughData, responseSupplier);
+  }
+
+  @Override
+  protected StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Ambiance ambiance, StepBaseParameters stepParameters, PassThroughData passThroughData) {
+    K8sRollingStepParameters k8sRollingStepParameters = (K8sRollingStepParameters) stepParameters.getSpec();
+    HashMap<String, Object> telemetryProperties = new HashMap<>();
+    telemetryProperties.put(DeploymentsInstrumentationHelper.K8S_SKIP_DRY_RUN,
+        ParameterFieldHelper.getBooleanParameterFieldValue(k8sRollingStepParameters.skipDryRun));
+    return StepExecutionTelemetryEventDTO.builder()
+        .stepType(STEP_TYPE.getType())
+        .properties(telemetryProperties)
+        .build();
   }
 
   @Override

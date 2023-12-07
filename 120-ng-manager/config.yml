@@ -352,6 +352,8 @@ segmentConfiguration:
   url: "segment_url_place_holder"
   apiKey: "segment_api_key"
   certValidationRequired: false
+  flushQueueSize: 250
+  flushInterval: 1
 
 subscriptionConfig:
   stripeApiKey: dummy

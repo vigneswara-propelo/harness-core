@@ -8,6 +8,7 @@
 package io.harness.cdng.manifest.yaml;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.CodePulse;
@@ -24,7 +25,9 @@ import io.harness.pms.yaml.ParameterField;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Value;
@@ -40,6 +43,8 @@ import org.springframework.data.annotation.TypeAlias;
 @FieldNameConstants(innerTypeName = "HelmChartManifestOutcomeKeys")
 @RecasterAlias("io.harness.cdng.manifest.yaml.HelmChartManifestOutcome")
 public class HelmChartManifestOutcome implements ManifestOutcome {
+  private static String HELM_COMMAND_FLAGS_PROPERTY = "helm_command_flags";
+
   String identifier;
   String type = ManifestType.HelmChart;
   StoreConfig store;
@@ -74,5 +79,12 @@ public class HelmChartManifestOutcome implements ManifestOutcome {
     manifestInfoBuilder.subChartPath(getParameterFieldValue(this.getSubChartPath()));
     store.populateManifestStoreInfo(manifestInfoBuilder);
     return Optional.of(manifestInfoBuilder.build());
+  }
+
+  @Override
+  public Map<String, Object> createTelemetryProperties() {
+    Map<String, Object> telemetryProperties = new HashMap<>();
+    telemetryProperties.put(HELM_COMMAND_FLAGS_PROPERTY, isNotEmpty(getCommandFlags()));
+    return telemetryProperties;
   }
 }

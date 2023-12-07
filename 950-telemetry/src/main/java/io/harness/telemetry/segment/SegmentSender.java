@@ -19,6 +19,7 @@ import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.GroupMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.GTM)
@@ -34,7 +35,14 @@ public class SegmentSender {
       return;
     }
     try {
-      analytics = Analytics.builder(telemetryConfiguration.getApiKey()).build();
+      Analytics.Builder analyticsBuilder = Analytics.builder(telemetryConfiguration.getApiKey());
+      if (telemetryConfiguration.getFlushQueueSize() != 0) {
+        analyticsBuilder.flushQueueSize(telemetryConfiguration.getFlushQueueSize());
+      }
+      if (telemetryConfiguration.getFlushInterval() >= 1L) {
+        analyticsBuilder.flushInterval(telemetryConfiguration.getFlushInterval(), TimeUnit.SECONDS);
+      }
+      analytics = analyticsBuilder.build();
     } catch (Exception ex) {
       log.error("Error while initializing Segment configuration", ex);
     }

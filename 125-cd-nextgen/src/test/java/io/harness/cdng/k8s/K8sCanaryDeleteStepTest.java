@@ -51,6 +51,7 @@ import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import lombok.SneakyThrows;
 import org.junit.Before;
@@ -69,6 +70,7 @@ public class K8sCanaryDeleteStepTest extends CategoryTest {
 
   @Mock private InfrastructureOutcome infrastructureOutcome;
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   private final Ambiance ambiance = Ambiance.newBuilder().build();
   private final StepInputPackage stepInputPackage = StepInputPackage.builder().build();
