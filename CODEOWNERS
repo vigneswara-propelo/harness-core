@@ -99,8 +99,13 @@ dockerization/migrator/ deepak.puthraya@harness.io brett@harness.io arvind.choud
 953-git-sync-commons/src/main/ mohit.garg@harness.io adithya.viswanathan@harness.io archit.singla@harness.io
 idp-service/ sandeepa.kv@harness.io vikyath.harekal@harness.io sathish.soundarapandian@harness.io
 
-**/contracts/openapi/v1/ mankrit.singh@harness.io ashish.sanodia@harness.io deepak.bolangady@harness.io
+**/contracts/openapi/v1/ mankrit.singh@harness.io ashish.sanodia@harness.io
 /scripts/api mankrit.singh@harness.io ashish.sanodia@harness.io
+
+pipeline-service/contracts/openapi/v1/ utkarsh.choubey@harness.io shalini.agrawal@harness.io brijesh.dhakar@harness.io
+template-service/contracts/openapi/v1/ utkarsh.choubey@harness.io shalini.agrawal@harness.io brijesh.dhakar@harness.io
+idp-service/contracts/openapi/v1/ sandeepa.kv@harness.io vikyath.harekal@harness.io sathish.soundarapandian@harness.io
+ssca-manager/contracts/openapi/v1/ mallavarapu.reetika@harness.io arpit.jain@harness.io
 
 953-yaml-commons/src/main/java/io/harness/pms/yaml/YamlUtils.java archit.singla@harness.io sahil.hindwani@harness.io ankit.tiwari@harness.io mohit.garg@harness.io
 970-ng-commons/src/main/java/io/harness/utils/yaml/YamlPipelineUtils.java archit.singla@harness.io sahil.hindwani@harness.io ankit.tiwari@harness.io mohit.garg@harness.io
