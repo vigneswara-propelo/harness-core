@@ -250,7 +250,7 @@ ciExecutionServiceConfig:
       cacheS3: plugins/cache:1.5.9
       sscaOrchestration: harness/ssca-plugin:0.3.0
       sscaEnforcement: harness/ssca-plugin:0.3.0
-      iacmTerraform: plugins/harness_terraform:dev
+      iacmTerraform: plugins/harness_terraform_vm:dev
     vmContainerlessStepConfig:
       s3UploadConfig:
         name: github.com/drone-plugins/drone-s3@refs/tags/v1.2.2

@@ -225,8 +225,8 @@ if [[ "" != "$IACM_INFRACOST_API_ENDPOINT" ]]; then
   export IACM_INFRACOST_API_ENDPOINT; yq -i '.iacmServiceConfig.costEstimationAPIIUrl=env(IACM_INFRACOST_API_ENDPOINT)' $CONFIG_FILE
 fi
 
-if [[ "" != "$IACM_TERRAFORM_IMAGE" ]]; then
-  export IACM_TERRAFORM_IMAGE; yq -i '.ciExecutionServiceConfig.stepConfig.vmImageConfig.iacmTerraform=env(IACM_TERRAFORM_IMAGE)' $CONFIG_FILE
+if [[ "" != "$IACM_TERRAFORM_VM_IMAGE" ]]; then
+  export IACM_TERRAFORM_VM_IMAGE; yq -i '.ciExecutionServiceConfig.stepConfig.vmImageConfig.iacmTerraform=env(IACM_TERRAFORM_VM_IMAGE)' $CONFIG_FILE
 fi
 
 if [[ "" != "$IACM_TERRAFORM_IMAGE" ]]; then
