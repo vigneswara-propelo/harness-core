@@ -15,6 +15,7 @@ import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPlugi
 import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils.PLUGIN_MODE;
 import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils.PLUGIN_SBOMDESTINATION;
 import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils.PLUGIN_SBOMSOURCE;
+import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils.PLUGIN_SBOM_DRIFT;
 import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils.PLUGIN_TOOL;
 import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils.PLUGIN_TYPE;
 import static io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils.SKIP_NORMALISATION;
@@ -37,6 +38,8 @@ import io.harness.ssca.beans.attestation.AttestationType;
 import io.harness.ssca.beans.attestation.CosignAttestation;
 import io.harness.ssca.beans.ingestion.SbomFile;
 import io.harness.ssca.beans.mode.SbomModeType;
+import io.harness.ssca.beans.sbomDrift.SbomDrift;
+import io.harness.ssca.beans.sbomDrift.SbomDriftBase;
 import io.harness.ssca.beans.source.ImageSbomSource;
 import io.harness.ssca.beans.source.SbomSource;
 import io.harness.ssca.beans.source.SbomSourceType;
@@ -79,6 +82,7 @@ public class SscaOrchestrationPluginUtilsTest extends CIExecutionTestBase {
                                             .connector(ParameterField.createValueField("conn1"))
                                             .build())
                         .build())
+            .sbomDrift(SbomDrift.builder().base(SbomDriftBase.BASELINE).build())
             .build();
     Ambiance ambiance = Ambiance.newBuilder()
                             .putSetupAbstractions("accountId", "accountId")
@@ -88,7 +92,7 @@ public class SscaOrchestrationPluginUtilsTest extends CIExecutionTestBase {
     Map<String, String> sscaEnvVarMap =
         sscaOrchestrationPluginUtils.getSscaOrchestrationStepEnvVariables(stepInfo, "id1", ambiance, Type.K8);
     assertThat(sscaEnvVarMap).isNotNull().isNotEmpty();
-    assertThat(sscaEnvVarMap).hasSize(10);
+    assertThat(sscaEnvVarMap).hasSize(11);
     assertThat(sscaEnvVarMap.get(PLUGIN_MODE)).isEqualTo(SbomModeType.GENERATION.toString());
     assertThat(sscaEnvVarMap.get(PLUGIN_TOOL)).isEqualTo(SbomOrchestrationToolType.SYFT.toString());
     assertThat(sscaEnvVarMap.get(PLUGIN_FORMAT)).isEqualTo(SyftOrchestrationFormat.SPDX_JSON.toString());
@@ -96,6 +100,7 @@ public class SscaOrchestrationPluginUtilsTest extends CIExecutionTestBase {
     assertThat(sscaEnvVarMap.get(PLUGIN_TYPE)).isEqualTo("Orchestrate");
     assertThat(sscaEnvVarMap.get(PLUGIN_SBOMDESTINATION)).isEqualTo("harness/sbom");
     assertThat(sscaEnvVarMap.get(SKIP_NORMALISATION)).isEqualTo("true");
+    assertThat(sscaEnvVarMap.get(PLUGIN_SBOM_DRIFT)).isEqualTo(SbomDriftBase.BASELINE.toString());
   }
 
   @Test

@@ -22,6 +22,7 @@ import io.harness.ssca.beans.Attestation;
 import io.harness.ssca.beans.SscaConstants;
 import io.harness.ssca.beans.ingestion.SbomFile;
 import io.harness.ssca.beans.mode.SbomModeType;
+import io.harness.ssca.beans.sbomDrift.SbomDrift;
 import io.harness.ssca.beans.source.ImageSbomSource;
 import io.harness.ssca.beans.source.SbomSource;
 import io.harness.ssca.beans.source.SbomSourceType;
@@ -71,6 +72,7 @@ public class SscaOrchestrationStepInfo implements PluginCompatibleStep, WithConn
   SbomFile ingestion;
   Attestation attestation;
   ContainerResource resources;
+  @JsonProperty("sbom_drift") SbomDrift sbomDrift;
 
   @Override
   public TypeInfo getNonYamlInfo() {

@@ -69,6 +69,11 @@ public class SscaOrchestrationPluginUtils {
           ((ImageSbomSource) stepInfo.getSource().getSbomSourceSpec()).getImage(), true);
     }
 
+    String sbomDrift = null;
+    if (stepInfo.getSbomDrift() != null && stepInfo.getSbomDrift().getBase() != null) {
+      sbomDrift = stepInfo.getSbomDrift().getBase().toString();
+    }
+
     String runtimeId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
     OrchestrationStepEnvVariables envVariables =
         OrchestrationStepEnvVariables.builder()
@@ -81,6 +86,7 @@ public class SscaOrchestrationPluginUtils {
             .stepExecutionId(runtimeId)
             .stepIdentifier(identifier)
             .sscaManagerEnabled(sscaServiceUtils.getSscaServiceConfig().isSscaManagerEnabled())
+            .sbomDrift(sbomDrift)
             .build();
     Map<String, String> envMap = SscaOrchestrationStepPluginUtils.getSScaOrchestrationStepEnvVariables(envVariables);
     if (type == Type.VM) {
