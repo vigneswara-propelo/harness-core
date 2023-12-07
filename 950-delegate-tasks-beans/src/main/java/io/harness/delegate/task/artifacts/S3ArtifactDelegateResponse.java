@@ -16,6 +16,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 
 @CodePulse(
     module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_ARTIFACTS})
@@ -42,5 +43,12 @@ public class S3ArtifactDelegateResponse extends ArtifactDelegateResponse {
     this.filePath = filePath;
     this.filePathRegex = filePathRegex;
     this.metadata = metadata;
+  }
+
+  @Override
+  public String describe() {
+    String type = getSourceType() != null ? getSourceType().getDisplayName() : null;
+    return String.format("type: %s \nbucketName: %s \nfilePath: %s \nfilePathRegex: %s", type, getBucketName(),
+        StringUtils.defaultIfBlank(getFilePath(), null), StringUtils.defaultIfBlank(getFilePathRegex(), null));
   }
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -75,5 +76,12 @@ public class GithubPackagesArtifactDelegateResponse extends ArtifactDelegateResp
     this.packageUrl = packageUrl;
     this.versionUrl = versionUrl;
     this.label = label;
+  }
+
+  @Override
+  public String describe() {
+    String type = getSourceType() != null ? getSourceType().getDisplayName() : null;
+    return String.format("type: %s \nPackageName: %s \nversion: %s \nversionRegex: %s", type, getPackageName(),
+        StringUtils.defaultIfBlank(getVersion(), null), StringUtils.defaultIfBlank(getVersionRegex(), null));
   }
 }

@@ -14,6 +14,7 @@ import io.harness.delegate.task.artifacts.response.ArtifactDelegateResponse;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -72,5 +73,13 @@ public class AzureArtifactsDelegateResponse extends ArtifactDelegateResponse {
     this.version = version;
     this.versionRegex = versionRegex;
     this.feed = feed;
+  }
+
+  @Override
+  public String describe() {
+    String type = getSourceType() != null ? getSourceType().getDisplayName() : null;
+    return String.format("type: %s \nPackageName: %s  \nPackageType: %s \nversion: %s \nversionRegex: %s \nfeed: %s ",
+        type, getPackageName(), getPackageType(), StringUtils.defaultIfBlank(getVersion(), null),
+        StringUtils.defaultIfBlank(getVersionRegex(), null), getFeed());
   }
 }
