@@ -45,7 +45,8 @@ public class SupportServiceImpl implements SupportService {
       Optional<SupportPreference> supportPreferenceOpt = supportPreferenceDao.get(accountIdentifier);
       return supportPreferenceOpt.orElseGet(() -> syncSupportPreferenceFromRemote(accountIdentifier));
     } catch (Exception e) {
-      log.error("Support Preference couldn't be synced due to error, returning support as false", e);
+      log.error("Support Preference couldn't be synced for account {} due to error, returning support as false ",
+          accountIdentifier, e);
       return SupportPreference.builder().accountIdentifier(accountIdentifier).isSupportEnabled(false).build();
     }
   }
