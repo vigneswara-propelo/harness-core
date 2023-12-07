@@ -17,6 +17,7 @@ import static io.harness.rule.OwnerRule.VLICA;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -29,6 +30,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.connector.task.tas.TasNgConfigMapper;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
+import io.harness.delegate.beans.pcf.CfAppSetupTimeDetails;
 import io.harness.delegate.beans.pcf.CfInBuiltVariablesUpdateValues;
 import io.harness.delegate.beans.pcf.CfRouteUpdateRequestConfigData;
 import io.harness.delegate.beans.pcf.CfServiceData;
@@ -3768,6 +3770,49 @@ public class CfSwapRollbackCommandTaskHandlerTest extends CategoryTest {
         cfRollbackCommandRequestNG, logStreamingTaskClient, commandUnitsProgress);
 
     assertThat(cfCommandExecutionResponse.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.FAILURE);
+  }
+
+  @Test
+  @Owner(developers = VLICA)
+  @Category(UnitTests.class)
+  public void testUpdateRoutesForApplicationWhenBGWith2Apps() throws PivotalClientApiException, IOException {
+    CfRequestConfig cfRequestConfig = CfRequestConfig.builder().build();
+    List<String> InactiveAppPreviousRouteFor = List.of("inactive-1-previous-route.app.cf.com");
+    List<String> finalRoutes = List.of("active-1-previous-route.app.cf.com");
+
+    CfRouteUpdateRequestConfigData data =
+        CfRouteUpdateRequestConfigData.builder()
+            .existingInActiveApplicationDetails(
+                CfAppSetupTimeDetails.builder().urls(InactiveAppPreviousRouteFor).build())
+            .tempRoutes(List.of("temp-route-test-1.app.cf.com"))
+            .finalRoutes(finalRoutes)
+            .build();
+
+    pcfRollbackCommandTaskHandler.updateRoutesForNewApplication(cfRequestConfig, executionLogCallback, data);
+    verify(pcfCommandTaskHelper, times(1)).mapRouteMaps(any(), eq(InactiveAppPreviousRouteFor), any(), any());
+    verify(pcfCommandTaskHelper, times(1)).unmapRouteMaps(any(), eq(finalRoutes), any(), any());
+  }
+
+  @Test
+  @Owner(developers = VLICA)
+  @Category(UnitTests.class)
+  public void testUpdateRoutesForApplicationWhenBGWith2AppsAndEmptyUrls()
+      throws PivotalClientApiException, IOException {
+    CfRequestConfig cfRequestConfig = CfRequestConfig.builder().build();
+    List<String> InactiveAppPreviousRouteFor = Collections.emptyList();
+    List<String> finalRoutes = List.of("active-1-previous-route.app.cf.com");
+
+    CfRouteUpdateRequestConfigData data =
+        CfRouteUpdateRequestConfigData.builder()
+            .existingInActiveApplicationDetails(
+                CfAppSetupTimeDetails.builder().urls(InactiveAppPreviousRouteFor).build())
+            .tempRoutes(List.of("temp-route-test-1.app.cf.com"))
+            .finalRoutes(finalRoutes)
+            .build();
+
+    pcfRollbackCommandTaskHandler.updateRoutesForNewApplication(cfRequestConfig, executionLogCallback, data);
+    verify(pcfCommandTaskHelper, times(0)).mapRouteMaps(any(), any(), any(), any());
+    verify(pcfCommandTaskHelper, times(1)).unmapRouteMaps(any(), eq(finalRoutes), any(), any());
   }
 
   @Test

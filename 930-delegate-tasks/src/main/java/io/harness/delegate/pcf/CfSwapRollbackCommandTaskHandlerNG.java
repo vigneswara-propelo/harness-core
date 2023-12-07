@@ -641,12 +641,23 @@ public class CfSwapRollbackCommandTaskHandlerNG extends CfCommandTaskNGHandler {
         transition, cfRouteUpdateConfigData, cfRequestConfig, executionLogCallback);
   }
 
-  private void updateRoutesForNewApplication(CfRequestConfig cfRequestConfig, LogCallback executionLogCallback,
+  @VisibleForTesting
+  void updateRoutesForNewApplication(CfRequestConfig cfRequestConfig, LogCallback executionLogCallback,
       CfRouteUpdateRequestConfigData data) throws PivotalClientApiException {
-    List<String> mapRouteForNewApp = data.getTempRoutes();
+    List<String> mapRouteForNewApp = data.getExistingInActiveApplicationDetails() != null
+        ? data.getExistingInActiveApplicationDetails().getUrls()
+        : data.getTempRoutes();
+
     List<String> unmapRouteForNewApp = data.getFinalRoutes();
-    cfCommandTaskHelperNG.mapRouteMaps(
-        data.getNewApplicationName(), mapRouteForNewApp, cfRequestConfig, executionLogCallback);
+
+    if (isNotEmpty(mapRouteForNewApp)) {
+      cfCommandTaskHelperNG.mapRouteMaps(
+          data.getNewApplicationName(), mapRouteForNewApp, cfRequestConfig, executionLogCallback);
+    } else {
+      executionLogCallback.saveExecutionLog(
+          color("\nNo previous route defined for inActive application. Hence skipping", White, Bold));
+    }
+
     cfCommandTaskHelperNG.unmapRouteMaps(
         data.getNewApplicationName(), unmapRouteForNewApp, cfRequestConfig, executionLogCallback);
     // In swap rollback for BG with only 2 Apps, New App = Inactive app we need to set it to ENV VAR to INACTIVE
