@@ -65,8 +65,12 @@ public class ApprovalInstrumentationHelper extends InstrumentationHelper {
   private CompletableFuture<Void> publishCustomApprovalInfo(
       CustomApprovalInstance approvalInstance, String eventName, HashMap<String, Object> eventPropertiesMap) {
     String accountId = approvalInstance.getAccountId();
-    eventPropertiesMap.put(RETRY_INTERNAL, approvalInstance.getRetryInterval().fetchFinalValue());
-    eventPropertiesMap.put(REJECTION_CRITERIA_SPEC_TYPE, approvalInstance.getRejectionCriteria().getType());
+    if (approvalInstance.getRetryInterval() != null) {
+      eventPropertiesMap.put(RETRY_INTERNAL, approvalInstance.getRetryInterval().fetchFinalValue());
+    }
+    if (approvalInstance.getRejectionCriteria() != null) {
+      eventPropertiesMap.put(REJECTION_CRITERIA_SPEC_TYPE, approvalInstance.getRejectionCriteria().getType());
+    }
     eventPropertiesMap.put(APPROVAL_CRITERIA_SPEC_TYPE, approvalInstance.getApprovalCriteria().getType());
     return sendEvent(eventName, accountId, eventPropertiesMap);
   }
@@ -74,8 +78,12 @@ public class ApprovalInstrumentationHelper extends InstrumentationHelper {
   private CompletableFuture<Void> publishServiceNowApprovalInfo(
       ServiceNowApprovalInstance approvalInstance, String eventName, HashMap<String, Object> eventPropertiesMap) {
     String accountId = approvalInstance.getAccountId();
-    eventPropertiesMap.put(RETRY_INTERNAL, approvalInstance.getRetryInterval().fetchFinalValue());
-    eventPropertiesMap.put(REJECTION_CRITERIA_SPEC_TYPE, approvalInstance.getRejectionCriteria().getType());
+    if (approvalInstance.getRetryInterval() != null) {
+      eventPropertiesMap.put(RETRY_INTERNAL, approvalInstance.getRetryInterval().fetchFinalValue());
+    }
+    if (approvalInstance.getRejectionCriteria() != null) {
+      eventPropertiesMap.put(REJECTION_CRITERIA_SPEC_TYPE, approvalInstance.getRejectionCriteria().getType());
+    }
     eventPropertiesMap.put(APPROVAL_CRITERIA_SPEC_TYPE, approvalInstance.getApprovalCriteria().getType());
     return sendEvent(eventName, accountId, eventPropertiesMap);
   }
@@ -90,8 +98,12 @@ public class ApprovalInstrumentationHelper extends InstrumentationHelper {
   private CompletableFuture<Void> publishJiraApprovalInfo(
       JiraApprovalInstance approvalInstance, String eventName, HashMap<String, Object> eventPropertiesMap) {
     String accountId = approvalInstance.getAccountId();
-    eventPropertiesMap.put(RETRY_INTERNAL, approvalInstance.getRetryInterval().fetchFinalValue());
-    eventPropertiesMap.put(REJECTION_CRITERIA_SPEC_TYPE, approvalInstance.getRejectionCriteria().getType());
+    if (approvalInstance.getRetryInterval() != null) {
+      eventPropertiesMap.put(RETRY_INTERNAL, approvalInstance.getRetryInterval().fetchFinalValue());
+    }
+    if (approvalInstance.getRejectionCriteria() != null) {
+      eventPropertiesMap.put(REJECTION_CRITERIA_SPEC_TYPE, approvalInstance.getRejectionCriteria().getType());
+    }
     eventPropertiesMap.put(APPROVAL_CRITERIA_SPEC_TYPE, approvalInstance.getApprovalCriteria().getType());
     return sendEvent(eventName, accountId, eventPropertiesMap);
   }
