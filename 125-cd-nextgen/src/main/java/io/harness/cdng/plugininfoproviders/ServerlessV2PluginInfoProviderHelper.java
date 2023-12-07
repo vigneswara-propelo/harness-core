@@ -139,6 +139,10 @@ public class ServerlessV2PluginInfoProviderHelper {
       ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome) {
     if (serverlessAwsLambdaManifestOutcome.getStore() instanceof GitStoreConfig) {
       GitStoreConfig gitStoreConfig = (GitStoreConfig) serverlessAwsLambdaManifestOutcome.getStore();
+      if (isEmpty(gitStoreConfig.getPaths().getValue())) {
+        throw new InvalidRequestException(
+            "Paths cannot be empty in Serverless Aws Lambda Manifest Git Store Configuration");
+      }
       String path = String.format("/%s/%s/%s", PLUGIN_PATH_PREFIX,
           removeExtraSlashesInString(serverlessAwsLambdaManifestOutcome.getIdentifier()),
           removeExtraSlashesInString(gitStoreConfig.getPaths().getValue().get(0)));
@@ -147,8 +151,11 @@ public class ServerlessV2PluginInfoProviderHelper {
       String path = String.format(
           "/%s/%s", PLUGIN_PATH_PREFIX, removeExtraSlashesInString(serverlessAwsLambdaManifestOutcome.getIdentifier()));
       return removeTrailingSlashesInString(path);
+    } else {
+      throw new InvalidRequestException(format("%s store type not supported for Serverless Aws Lambda Manifest",
+                                            serverlessAwsLambdaManifestOutcome.getStore().getKind()),
+          USER);
     }
-    return null;
   }
 
   public String removeExtraSlashesInString(String path) {
@@ -338,6 +345,9 @@ public class ServerlessV2PluginInfoProviderHelper {
   public String getValuesPathFromValuesManifestOutcome(ValuesManifestOutcome valuesManifestOutcome) {
     if (valuesManifestOutcome.getStore() instanceof GitStoreConfig) {
       GitStoreConfig gitStoreConfig = (GitStoreConfig) valuesManifestOutcome.getStore();
+      if (isEmpty(gitStoreConfig.getPaths().getValue())) {
+        throw new InvalidRequestException("Paths cannot be empty in Values Manifest Git Store Configuration");
+      }
       String path = String.format("/%s/%s/%s", PLUGIN_PATH_PREFIX,
           removeExtraSlashesInString(valuesManifestOutcome.getIdentifier()),
           removeExtraSlashesInString(gitStoreConfig.getPaths().getValue().get(0)));
@@ -349,8 +359,10 @@ public class ServerlessV2PluginInfoProviderHelper {
           removeExtraSlashesInString(
               Paths.get(valuesManifestOutcomeStore.getPaths().getValue().get(0)).getFileName().toString()));
       return removeTrailingSlashesInString(path);
+    } else {
+      throw new InvalidRequestException(
+          format("%s store type not supported for Values Manifest", valuesManifestOutcome.getStore().getKind()), USER);
     }
-    return null;
   }
 
   public void populateCommandOptions(Ambiance ambiance, SpecParameters serverlessSpecParameters,

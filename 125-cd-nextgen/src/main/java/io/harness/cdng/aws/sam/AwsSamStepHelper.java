@@ -11,6 +11,7 @@ import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DET
 import static io.harness.common.ParameterFieldHelper.getParameterFieldValue;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.exception.WingsException.USER;
 
 import static io.serializer.HObjectMapper.NG_DEFAULT_OBJECT_MAPPER;
 import static java.lang.String.format;
@@ -225,6 +226,9 @@ public class AwsSamStepHelper {
   public String getValuesPathFromValuesManifestOutcome(ValuesManifestOutcome valuesManifestOutcome) {
     if (valuesManifestOutcome.getStore() instanceof GitStoreConfig) {
       GitStoreConfig gitStoreConfig = (GitStoreConfig) valuesManifestOutcome.getStore();
+      if (isEmpty(gitStoreConfig.getPaths().getValue())) {
+        throw new InvalidRequestException("Paths cannot be empty in Values Manifest Git Store Configuration");
+      }
       return "/harness/" + valuesManifestOutcome.getIdentifier() + "/" + gitStoreConfig.getPaths().getValue().get(0);
     } else if (valuesManifestOutcome.getStore() instanceof S3StoreConfig) {
       S3StoreConfig valuesManifestOutcomeStore = (S3StoreConfig) valuesManifestOutcome.getStore();
@@ -233,8 +237,10 @@ public class AwsSamStepHelper {
           removeExtraSlashesInString(
               Paths.get(valuesManifestOutcomeStore.getPaths().getValue().get(0)).getFileName().toString()));
       return removeTrailingSlashesInString(path);
+    } else {
+      throw new InvalidRequestException(
+          format("%s store type not supported for Values Manifest", valuesManifestOutcome.getStore().getKind()), USER);
     }
-    return null;
   }
 
   public String removeExtraSlashesInString(String path) {
@@ -245,12 +251,18 @@ public class AwsSamStepHelper {
       AwsSamDirectoryManifestOutcome awsSamDirectoryManifestOutcome) {
     if (awsSamDirectoryManifestOutcome.getStore() instanceof GitStoreConfig) {
       GitStoreConfig gitStoreConfig = (GitStoreConfig) awsSamDirectoryManifestOutcome.getStore();
+      if (isEmpty(gitStoreConfig.getPaths().getValue())) {
+        throw new InvalidRequestException("Paths cannot be empty in Values Manifest Git Store Configuration");
+      }
 
       return awsSamDirectoryManifestOutcome.getIdentifier() + "/" + gitStoreConfig.getPaths().getValue().get(0);
     } else if (awsSamDirectoryManifestOutcome.getStore() instanceof S3StoreConfig) {
       return removeTrailingSlashesInString(awsSamDirectoryManifestOutcome.getIdentifier());
+    } else {
+      throw new InvalidRequestException(format("%s store type not supported for Aws SAM Manifest",
+                                            awsSamDirectoryManifestOutcome.getStore().getKind()),
+          USER);
     }
-    return null;
   }
   public String removeTrailingSlashesInString(String path) {
     return path.replaceAll("/$", "");
