@@ -107,6 +107,7 @@ public class MigratorExpressionUtils {
     }
 
     context.put("infra.helm.releaseName", "<+infra.releaseName>");
+    context.put("infra.helm.shortId", "<+INFRA_KEY_SHORT_ID>");
     context.put("infra.name", "<+infra.name>");
     context.put("infra.cloudProvider.name", "<+infra.connectorRef>");
 
@@ -138,6 +139,7 @@ public class MigratorExpressionUtils {
     artifactExpressions.put("ARTIFACT_PLACEHOLDER.metadata.groupId", "<+ARTIFACT_PLACEHOLDER.groupId>");
     artifactExpressions.put("ARTIFACT_PLACEHOLDER.metadata.package", "<+ARTIFACT_PLACEHOLDER.metadata.package>");
     artifactExpressions.put("ARTIFACT_PLACEHOLDER.metadata.region", "<+ARTIFACT_PLACEHOLDER.metadata.region>");
+    artifactExpressions.put("ARTIFACT_PLACEHOLDER.metadata.chartName", "<+ARTIFACT_PLACEHOLDER.metadata.chartName>");
     artifactExpressions.put("ARTIFACT_PLACEHOLDER.metadata.repository", "<+ARTIFACT_PLACEHOLDER.repository>");
     artifactExpressions.put("ARTIFACT_PLACEHOLDER.metadata.repositoryName", "<+ARTIFACT_PLACEHOLDER.repositoryName>");
     artifactExpressions.put("ARTIFACT_PLACEHOLDER.metadata.url", "<+ARTIFACT_PLACEHOLDER.url>");
