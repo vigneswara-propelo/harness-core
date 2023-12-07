@@ -7,6 +7,7 @@
 
 package io.harness.ccm.ngperpetualtask.service;
 
+import static io.harness.beans.FeatureName.CDS_K8S_SOCKET_CAPABILITY_CHECK_NG;
 import static io.harness.utils.DelegateOwner.getNGTaskSetupAbstractionsWithOwner;
 
 import io.harness.annotations.dev.HarnessTeam;
@@ -41,6 +42,8 @@ import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.serializer.KryoSerializer;
 import io.harness.utils.IdentifierRefHelper;
 
+import software.wings.service.intfc.AccountService;
+
 import com.google.api.client.util.Preconditions;
 import com.google.inject.Inject;
 import com.google.protobuf.Any;
@@ -63,6 +66,7 @@ public class K8sWatchTaskServiceImpl implements K8sWatchTaskService {
   @Inject private PerpetualTaskService perpetualTaskService;
   @Inject private SecretManagerClientService ngSecretService;
   @Inject private ConnectorResourceClient connectorResourceClient;
+  @Inject private AccountService accountService;
 
   @Override
   public String create(String accountId, K8sEventCollectionBundle bundle) {
@@ -101,7 +105,7 @@ public class K8sWatchTaskServiceImpl implements K8sWatchTaskService {
         bundle.getProjectIdentifier(), (KubernetesClusterConfigDTO) k8sConnectorConfigDTO);
 
     List<ExecutionCapability> executionCapabilities =
-        getExecutionCapabilityList(k8sConnectorConfigDTO, encryptedDataDetailList);
+        getExecutionCapabilityList(k8sConnectorConfigDTO, encryptedDataDetailList, accountId);
 
     Any perpetualTaskPack =
         getTaskParams((KubernetesClusterConfigDTO) k8sConnectorConfigDTO, encryptedDataDetailList, bundle);
@@ -148,15 +152,22 @@ public class K8sWatchTaskServiceImpl implements K8sWatchTaskService {
   }
 
   private List<ExecutionCapability> getExecutionCapabilityList(
-      ConnectorConfigDTO k8sConnectorConfigDTO, List<EncryptedDataDetail> encryptedDataDetailList) {
+      ConnectorConfigDTO k8sConnectorConfigDTO, List<EncryptedDataDetail> encryptedDataDetailList, String accountId) {
     List<ExecutionCapability> executionCapabilities =
         EncryptedDataDetailsCapabilityHelper.fetchExecutionCapabilitiesForEncryptedDataDetails(
             encryptedDataDetailList, null);
 
-    executionCapabilities.addAll(
-        K8sTaskCapabilityHelper.fetchRequiredExecutionCapabilities(k8sConnectorConfigDTO, null));
+    boolean isSocketCapabilityEnabled = useSocketCapabilityCheck(accountId);
+    log.info("Socket Capability is enabled for account {} : {}", accountId, isSocketCapabilityEnabled);
+
+    executionCapabilities.addAll(K8sTaskCapabilityHelper.fetchRequiredExecutionCapabilities(
+        k8sConnectorConfigDTO, null, isSocketCapabilityEnabled));
 
     return executionCapabilities;
+  }
+
+  private boolean useSocketCapabilityCheck(String accountIdentifier) {
+    return accountService.isFeatureFlagEnabled(CDS_K8S_SOCKET_CAPABILITY_CHECK_NG.name(), accountIdentifier);
   }
 
   @NotNull

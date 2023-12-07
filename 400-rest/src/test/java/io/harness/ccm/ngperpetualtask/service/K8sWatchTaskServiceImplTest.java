@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.ccm.K8sEventCollectionBundle;
 import io.harness.connector.ConnectorDTO;
@@ -46,6 +47,8 @@ import io.harness.rule.OwnerRule;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.serializer.KryoSerializer;
 
+import software.wings.service.intfc.AccountService;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
@@ -69,6 +72,7 @@ public class K8sWatchTaskServiceImplTest extends CategoryTest {
   @Mock private SecretManagerClientService ngSecretService;
   @Mock(answer = RETURNS_DEEP_STUBS) private ConnectorResourceClient connectorResourceClient;
   @Mock private Call call;
+  @Mock private AccountService accountService;
 
   @InjectMocks private K8sWatchTaskServiceImpl k8sWatchTaskService;
 
@@ -90,6 +94,8 @@ public class K8sWatchTaskServiceImplTest extends CategoryTest {
         .thenReturn(TASK_ID);
 
     mockCreateExecutionBundle();
+    when(accountService.isFeatureFlagEnabled(FeatureName.CDS_K8S_SOCKET_CAPABILITY_CHECK_NG.toString(), ACCOUNT_ID))
+        .thenReturn(false);
 
     assertThat(k8sWatchTaskService.create(ACCOUNT_ID, k8sEventCollectionBundle)).isEqualTo(TASK_ID);
 
@@ -102,6 +108,8 @@ public class K8sWatchTaskServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void resetTask() throws Exception {
     when(perpetualTaskService.resetTask(eq(ACCOUNT_ID), eq(TASK_ID), any())).thenReturn(true);
+    when(accountService.isFeatureFlagEnabled(FeatureName.CDS_K8S_SOCKET_CAPABILITY_CHECK_NG.toString(), ACCOUNT_ID))
+        .thenReturn(false);
 
     mockCreateExecutionBundle();
 

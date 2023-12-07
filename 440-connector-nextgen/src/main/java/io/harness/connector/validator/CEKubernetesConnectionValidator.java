@@ -7,8 +7,11 @@
 
 package io.harness.connector.validator;
 
+import static io.harness.beans.FeatureName.CDS_K8S_SOCKET_CAPABILITY_CHECK_NG;
+
 import static software.wings.beans.TaskType.CE_VALIDATE_KUBERNETES_CONFIG;
 
+import io.harness.account.AccountClient;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
@@ -23,6 +26,7 @@ import io.harness.delegate.beans.connector.cek8s.CEKubernetesClusterConfigDTO;
 import io.harness.delegate.beans.connector.k8Connector.CEKubernetesConnectionTaskParams;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesClusterConfigDTO;
 import io.harness.delegate.task.TaskParameters;
+import io.harness.remote.client.CGRestUtils;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import com.google.inject.Inject;
@@ -37,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.CE)
 public class CEKubernetesConnectionValidator extends AbstractKubernetesConnectorValidator {
   @Inject @Named("defaultConnectorService") ConnectorService connectorService;
+  @Inject private AccountClient accountClient;
 
   public static final String CONNECTOR_REF_NOT_EXIST =
       "There does not exist a K8sCluster Cloud Provider connector with connectorRef='%s' ";
@@ -81,6 +86,7 @@ public class CEKubernetesConnectionValidator extends AbstractKubernetesConnector
 
     final List<CEFeatures> featuresEnabled = ceKubernetesClusterConfigDTO.getFeaturesEnabled();
     return CEKubernetesConnectionTaskParams.builder()
+        .useSocketCapability(useSocketCapabilityCheck(accountIdentifier))
         .kubernetesClusterConfig(kubernetesClusterConfig)
         .encryptionDetails(encryptedDataDetailList)
         .featuresEnabled(featuresEnabled)
@@ -91,5 +97,17 @@ public class CEKubernetesConnectionValidator extends AbstractKubernetesConnector
     Optional<ConnectorResponseDTO> connectorResponseDTO = connectorService.get(connectorRef.getAccountIdentifier(),
         connectorRef.getOrgIdentifier(), connectorRef.getProjectIdentifier(), connectorRef.getIdentifier());
     return connectorResponseDTO.map(responseDTO -> responseDTO.getConnector().getConnectorConfig());
+  }
+
+  private boolean useSocketCapabilityCheck(String accountIdentifier) {
+    try {
+      return CGRestUtils.getResponse(
+          accountClient.isFeatureFlagEnabled(CDS_K8S_SOCKET_CAPABILITY_CHECK_NG.name(), accountIdentifier));
+    } catch (Exception e) {
+      log.warn("Unable to retrieve status of FF {} for account {}", CDS_K8S_SOCKET_CAPABILITY_CHECK_NG.name(),
+          accountIdentifier, e);
+    }
+
+    return false;
   }
 }
