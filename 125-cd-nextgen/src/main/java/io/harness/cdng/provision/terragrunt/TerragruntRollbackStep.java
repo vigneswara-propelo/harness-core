@@ -6,7 +6,6 @@
  */
 
 package io.harness.cdng.provision.terragrunt;
-import static io.harness.beans.FeatureName.CDS_TERRAGRUNT_CLI_OPTIONS_NG;
 import static io.harness.beans.FeatureName.CDS_TERRAGRUNT_USE_UNIQUE_DIRECTORY_BASE_DIR_NG;
 import static io.harness.beans.FeatureName.CDS_TF_TG_SKIP_ERROR_LOGS_COLORING;
 import static io.harness.cdng.provision.terragrunt.TerragruntStepHelper.DEFAULT_TIMEOUT;
@@ -238,9 +237,7 @@ public class TerragruntRollbackStep extends CdTaskExecutable<AbstractTerragruntT
     String entityId = terragruntStepHelper.generateFullIdentifier(provisionerIdentifier, ambiance);
 
     TerragruntRollbackStepParameters stepParametersSpec = (TerragruntRollbackStepParameters) stepParameters.getSpec();
-    if (cdFeatureFlagHelper.isEnabled(accountId, CDS_TERRAGRUNT_CLI_OPTIONS_NG)) {
-      builder.terragruntCommandFlags(terragruntStepHelper.getTerragruntCliFlags(stepParametersSpec.getCommandFlags()));
-    }
+    builder.terragruntCommandFlags(terragruntStepHelper.getTerragruntCliFlags(stepParametersSpec.getCommandFlags()));
 
     builder.accountId(accountId)
         .entityId(entityId)
@@ -276,9 +273,7 @@ public class TerragruntRollbackStep extends CdTaskExecutable<AbstractTerragruntT
     String entityId = terragruntStepHelper.generateFullIdentifier(provisionerIdentifier, ambiance);
 
     TerragruntRollbackStepParameters stepParametersSpec = (TerragruntRollbackStepParameters) stepParameters.getSpec();
-    if (cdFeatureFlagHelper.isEnabled(accountId, CDS_TERRAGRUNT_CLI_OPTIONS_NG)) {
-      builder.terragruntCommandFlags(terragruntStepHelper.getTerragruntCliFlags(stepParametersSpec.getCommandFlags()));
-    }
+    builder.terragruntCommandFlags(terragruntStepHelper.getTerragruntCliFlags(stepParametersSpec.getCommandFlags()));
 
     builder.accountId(accountId)
         .entityId(entityId)

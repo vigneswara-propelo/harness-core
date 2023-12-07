@@ -180,7 +180,6 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_TERRAFORM_SUPPORT_OPTIONAL_VAR_FILE_PATHS_NG(
       "Feature flag to support remote optional var file paths", HarnessTeam.CDP),
-  CDS_TERRAGRUNT_CLI_OPTIONS_NG("Enable terragrunt CLI Options", HarnessTeam.CDP),
   CDS_TERRAGRUNT_USE_UNIQUE_DIRECTORY_BASE_DIR_NG(
       "Enable unique directory to support terragrunt run in parallel", HarnessTeam.CDP),
   CDS_USE_HTTP_CHECK_IGNORE_RESPONSE_INSTEAD_OF_SOCKET_NG(

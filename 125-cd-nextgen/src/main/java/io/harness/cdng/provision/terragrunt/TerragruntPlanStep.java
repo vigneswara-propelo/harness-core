@@ -15,7 +15,6 @@
  */
 
 package io.harness.cdng.provision.terragrunt;
-import static io.harness.beans.FeatureName.CDS_TERRAGRUNT_CLI_OPTIONS_NG;
 import static io.harness.beans.FeatureName.CDS_TERRAGRUNT_USE_UNIQUE_DIRECTORY_BASE_DIR_NG;
 import static io.harness.beans.FeatureName.CDS_TF_TG_SKIP_ERROR_LOGS_COLORING;
 import static io.harness.provision.TerragruntConstants.FETCH_CONFIG_FILES;
@@ -151,10 +150,8 @@ public class TerragruntPlanStep extends CdTaskExecutable<TerragruntPlanTaskRespo
         helper.isExportCredentialForSourceModule(configuration.getConfigFiles(), stepParameters.getType()));
     ParameterField<Boolean> exportTgPlanJsonField = planStepParameters.getConfiguration().getExportTerragruntPlanJson();
 
-    if (cdFeatureFlagHelper.isEnabled(accountId, CDS_TERRAGRUNT_CLI_OPTIONS_NG)) {
-      builder.terragruntCommandFlags(
-          helper.getTerragruntCliFlags(planStepParameters.getConfiguration().getCliOptionFlags()));
-    }
+    builder.terragruntCommandFlags(
+        helper.getTerragruntCliFlags(planStepParameters.getConfiguration().getCliOptionFlags()));
 
     EncryptionConfig planSecretManagerConfig = helper.getEncryptionConfig(ambiance, planStepParameters);
     builder.entityId(entityId)
