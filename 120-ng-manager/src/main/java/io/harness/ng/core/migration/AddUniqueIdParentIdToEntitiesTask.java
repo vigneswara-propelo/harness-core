@@ -195,7 +195,7 @@ public class AddUniqueIdParentIdToEntitiesTask implements Runnable {
             UniqueIdAware nextEntity = iterator.next();
             if (nextEntity instanceof Project) {
               Project nextProject = (Project) nextEntity;
-              if (isEmpty(nextProject.getParentId())) {
+              if (isEmpty(nextProject.getParentUniqueId())) {
                 updateCounter++;
                 final String mapKey =
                     nextProject.getAccountIdentifier() + LOCAL_MAP_DELIMITER + nextProject.getOrgIdentifier();
@@ -223,7 +223,7 @@ public class AddUniqueIdParentIdToEntitiesTask implements Runnable {
 
                 if (isNotEmpty(uniqueIdOfOrg)) {
                   batchSizeCounter++;
-                  Update update = new Update().set(ProjectKeys.parentId, uniqueIdOfOrg);
+                  Update update = new Update().set(ProjectKeys.parentUniqueId, uniqueIdOfOrg);
                   bulkOperations.updateOne(new Query(Criteria.where("_id").is(nextProject.getId())), update);
 
                   if (batchSizeCounter == BATCH_SIZE) {
@@ -280,11 +280,11 @@ public class AddUniqueIdParentIdToEntitiesTask implements Runnable {
                  mongoTemplate.stream(documentQuery.limit(NO_LIMIT).maxTimeMsec(MAX_VALUE), Organization.class)) {
           while (iterator.hasNext()) {
             Organization nextOrg = iterator.next();
-            if (null != nextOrg && isEmpty(nextOrg.getParentId())) {
+            if (null != nextOrg && isEmpty(nextOrg.getParentUniqueId())) {
               idValue = nextOrg.getId();
               updateCounter++;
               batchSizeCounter++;
-              Update update = new Update().set(OrganizationKeys.parentId, nextOrg.getAccountIdentifier());
+              Update update = new Update().set(OrganizationKeys.parentUniqueId, nextOrg.getAccountIdentifier());
               bulkOperations.updateOne(new Query(Criteria.where("_id").is(idValue)), update);
               if (batchSizeCounter == BATCH_SIZE) {
                 migratedCounter += bulkOperations.execute().getModifiedCount();
