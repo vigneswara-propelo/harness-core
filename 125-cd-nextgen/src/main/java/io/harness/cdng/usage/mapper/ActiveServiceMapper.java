@@ -18,7 +18,10 @@ import io.harness.beans.Scope;
 import io.harness.cdng.usage.pojos.ActiveService;
 import io.harness.cdng.usage.pojos.ActiveServiceFetchData;
 import io.harness.cdng.usage.utils.LicenseUsageUtils;
+import io.harness.entities.InstanceType;
 import io.harness.licensing.usage.beans.cd.ActiveServiceDTO;
+
+import software.wings.utils.Utils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +46,8 @@ public class ActiveServiceMapper {
                    .projectName(activeServiceInfo.getProjectName())
                    .instanceCount(activeServiceInfo.getInstanceCount())
                    .lastDeployed(activeServiceInfo.getLastDeployed())
-                   .licensesConsumed(LicenseUsageUtils.computeLicenseConsumed(activeServiceInfo.getInstanceCount()))
+                   .licensesConsumed(LicenseUsageUtils.computeLicenseConsumed(activeServiceInfo.getInstanceCount(),
+                       Utils.getEnumFromString(InstanceType.class, activeServiceInfo.getInstanceType())))
                    .module(ModuleType.CD.getDisplayName())
                    .timestamp(currentTS)
                    .build())

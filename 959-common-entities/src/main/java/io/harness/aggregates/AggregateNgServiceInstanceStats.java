@@ -19,8 +19,9 @@ import lombok.experimental.FieldNameConstants;
 public class AggregateNgServiceInstanceStats extends NgInstanceStats {
   private long aggregateServiceInstanceCount;
 
-  public AggregateNgServiceInstanceStats(String orgIdentifier, String projectId, String serviceId, long count) {
-    super(null, null, orgIdentifier, projectId, serviceId, null, null, null, 0);
+  public AggregateNgServiceInstanceStats(
+      String orgIdentifier, String projectId, String serviceId, long count, String instancetype) {
+    super(null, null, orgIdentifier, projectId, serviceId, null, null, instancetype, 0);
     this.aggregateServiceInstanceCount = count;
   }
 }

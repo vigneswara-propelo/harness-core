@@ -47,6 +47,7 @@ import io.harness.cdng.usage.pojos.ActiveServiceFetchData;
 import io.harness.cdng.usage.pojos.ActiveServiceResponse;
 import io.harness.cdng.usage.pojos.LicenseDailyUsage;
 import io.harness.data.structure.UUIDGenerator;
+import io.harness.entities.InstanceType;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
@@ -65,6 +66,8 @@ import io.harness.licensing.usage.params.filter.ActiveServicesFilterParams;
 import io.harness.licensing.usage.utils.PageableUtils;
 import io.harness.timescaledb.tables.pojos.ServiceInfraInfo;
 import io.harness.timescaledb.tables.pojos.Services;
+
+import software.wings.utils.Utils;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -413,20 +416,19 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
                         && StringUtils.equals(
                             activeService.getProjectidentifier(), serviceInstanceCounts.getProjectidentifier())
                         && StringUtils.equals(activeService.getServiceId(), serviceInstanceCounts.getServiceId())))
-            .map(serviceInstanceCounts
-                -> new AggregateNgServiceInstanceStats(serviceInstanceCounts.getOrgidentifier(),
-                    serviceInstanceCounts.getProjectidentifier(), serviceInstanceCounts.getServiceId(),
-                    serviceInstanceCounts.getServiceInstanceCount()))
+            .map(serviceInstanceInfo
+                -> new AggregateNgServiceInstanceStats(serviceInstanceInfo.getOrgidentifier(),
+                    serviceInstanceInfo.getProjectidentifier(), serviceInstanceInfo.getServiceId(),
+                    serviceInstanceInfo.getServiceInstanceCount(), serviceInstanceInfo.getInstanceType()))
             .collect(Collectors.toList());
 
-    Map<String, Map<String, Map<String, Pair<String, Long>>>> activeServicesNameAndInstanceCount =
+    Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> activeServicesNameAndInstanceInfo =
         getServiceNamesMap(serviceNames, instancesForActiveService);
 
     return ServiceUsageDTO.builder()
-        .activeServices(getServicesUsage(activeServiceList, activeServicesNameAndInstanceCount))
-        .serviceLicenses(getServicesUsageWithLicense(activeServiceList, activeServicesNameAndInstanceCount))
-        .activeServiceInstances(
-            getServicesUsageWithInstanceCount(activeServiceList, activeServicesNameAndInstanceCount))
+        .activeServices(getServicesUsage(activeServiceList, activeServicesNameAndInstanceInfo))
+        .serviceLicenses(getServicesUsageWithLicense(activeServiceList, activeServicesNameAndInstanceInfo))
+        .activeServiceInstances(getServicesUsageWithInstanceCount(activeServiceList, activeServicesNameAndInstanceInfo))
         .cdLicenseType(SERVICES)
         .accountIdentifier(accountIdentifier)
         .module(module.getDisplayName())
@@ -490,7 +492,7 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
   }
 
   private UsageDataDTO getServicesUsageWithInstanceCount(List<ServiceInfraInfo> activeServices,
-      Map<String, Map<String, Map<String, Pair<String, Long>>>> activeServicesNameAndInstanceCount) {
+      Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> activeServicesNameAndInstanceInfo) {
     UsageDataDTO usageData =
         UsageDataDTO.builder()
             .displayName(DISPLAY_NAME)
@@ -502,8 +504,8 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
                                .orgIdentifier(activeService.getOrgidentifier())
                                .projectIdentifier(activeService.getProjectidentifier())
                                .identifier(activeService.getServiceId())
-                               .name(fetchServiceName(activeServicesNameAndInstanceCount, activeService))
-                               .count(fetchServiceInstanceCount(activeServicesNameAndInstanceCount, activeService))
+                               .name(fetchServiceName(activeServicesNameAndInstanceInfo, activeService))
+                               .count(fetchServiceInstanceCount(activeServicesNameAndInstanceInfo, activeService))
                                .build())
                     .collect(Collectors.toList()))
             .build();
@@ -513,22 +515,25 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
   }
 
   private UsageDataDTO getServicesUsageWithLicense(List<ServiceInfraInfo> activeServices,
-      Map<String, Map<String, Map<String, Pair<String, Long>>>> activeServicesNameAndInstanceCount) {
+      Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> activeServicesNameAndInstanceInfo) {
     UsageDataDTO usageData =
         UsageDataDTO.builder()
             .displayName(DISPLAY_NAME)
-            .references(activeServices.parallelStream()
-                            .map(activeService
-                                -> ReferenceDTO.builder()
-                                       .accountIdentifier(activeService.getAccountid())
-                                       .orgIdentifier(activeService.getOrgidentifier())
-                                       .projectIdentifier(activeService.getProjectidentifier())
-                                       .identifier(activeService.getServiceId())
-                                       .name(fetchServiceName(activeServicesNameAndInstanceCount, activeService))
-                                       .count(computeLicenseConsumed(fetchServiceInstanceCount(
-                                           activeServicesNameAndInstanceCount, activeService)))
-                                       .build())
-                            .collect(Collectors.toList()))
+            .references(
+                activeServices.parallelStream()
+                    .map(activeService
+                        -> ReferenceDTO.builder()
+                               .accountIdentifier(activeService.getAccountid())
+                               .orgIdentifier(activeService.getOrgidentifier())
+                               .projectIdentifier(activeService.getProjectidentifier())
+                               .identifier(activeService.getServiceId())
+                               .name(fetchServiceName(activeServicesNameAndInstanceInfo, activeService))
+                               .count(computeLicenseConsumed(
+                                   fetchServiceInstanceCount(activeServicesNameAndInstanceInfo, activeService),
+                                   Utils.getEnumFromString(InstanceType.class,
+                                       fetchServiceInstanceType(activeServicesNameAndInstanceInfo, activeService))))
+                               .build())
+                    .collect(Collectors.toList()))
             .build();
 
     usageData.setCount(usageData.getReferences().stream().mapToLong(ReferenceDTO::getCount).sum());
@@ -536,7 +541,7 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
   }
 
   private UsageDataDTO getServicesUsage(List<ServiceInfraInfo> activeServices,
-      Map<String, Map<String, Map<String, Pair<String, Long>>>> activeServicesNameAndInstanceCount) {
+      Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> activeServicesNameAndInstanceInfo) {
     return UsageDataDTO.builder()
         .count(activeServices.size())
         .displayName(DISPLAY_NAME)
@@ -547,51 +552,71 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
                                    .orgIdentifier(activeService.getOrgidentifier())
                                    .projectIdentifier(activeService.getProjectidentifier())
                                    .identifier(activeService.getServiceId())
-                                   .name(fetchServiceName(activeServicesNameAndInstanceCount, activeService))
+                                   .name(fetchServiceName(activeServicesNameAndInstanceInfo, activeService))
                                    .build())
                         .collect(Collectors.toList()))
         .build();
   }
 
   private String fetchServiceName(
-      Map<String, Map<String, Map<String, Pair<String, Long>>>> activeServicesNameAndInstanceCount,
+      Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> activeServicesNameAndInstanceInfo,
       ServiceInfraInfo service) {
-    if (!activeServicesNameAndInstanceCount.containsKey(service.getOrgidentifier())
-        || !activeServicesNameAndInstanceCount.get(service.getOrgidentifier())
+    if (!activeServicesNameAndInstanceInfo.containsKey(service.getOrgidentifier())
+        || !activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
                 .containsKey(service.getProjectidentifier())
-        || !activeServicesNameAndInstanceCount.get(service.getOrgidentifier())
+        || !activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
                 .get(service.getProjectidentifier())
                 .containsKey(service.getServiceId())) {
       return StringUtils.EMPTY;
     }
 
-    return activeServicesNameAndInstanceCount.get(service.getOrgidentifier())
+    return activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
         .get(service.getProjectidentifier())
         .get(service.getServiceId())
         .getLeft();
   }
 
   private Long fetchServiceInstanceCount(
-      Map<String, Map<String, Map<String, Pair<String, Long>>>> activeServicesNameAndInstanceCount,
+      Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> activeServicesNameAndInstanceInfo,
       ServiceInfraInfo service) {
-    if (!activeServicesNameAndInstanceCount.containsKey(service.getOrgidentifier())
-        || !activeServicesNameAndInstanceCount.get(service.getOrgidentifier())
+    if (!activeServicesNameAndInstanceInfo.containsKey(service.getOrgidentifier())
+        || !activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
                 .containsKey(service.getProjectidentifier())
-        || !activeServicesNameAndInstanceCount.get(service.getOrgidentifier())
+        || !activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
                 .get(service.getProjectidentifier())
                 .containsKey(service.getServiceId())) {
       return 0L;
     }
 
-    return activeServicesNameAndInstanceCount.get(service.getOrgidentifier())
+    return activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
         .get(service.getProjectidentifier())
         .get(service.getServiceId())
+        .getRight()
+        .getLeft();
+  }
+
+  private String fetchServiceInstanceType(
+      Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> activeServicesNameAndInstanceInfo,
+      ServiceInfraInfo service) {
+    if (!activeServicesNameAndInstanceInfo.containsKey(service.getOrgidentifier())
+        || !activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
+                .containsKey(service.getProjectidentifier())
+        || !activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
+                .get(service.getProjectidentifier())
+                .containsKey(service.getServiceId())) {
+      return null;
+    }
+
+    return activeServicesNameAndInstanceInfo.get(service.getOrgidentifier())
+        .get(service.getProjectidentifier())
+        .get(service.getServiceId())
+        .getRight()
         .getRight();
   }
 
-  private Map<String, Map<String, Map<String, Pair<String, Long>>>> getServiceNamesMap(
+  private Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> getServiceNamesMap(
       List<Services> serviceList, List<AggregateNgServiceInstanceStats> activeServiceWithInstanceCountList) {
-    Map<String, Map<String, Map<String, Pair<String, Long>>>> serviceNamesMap = new HashMap<>();
+    Map<String, Map<String, Map<String, Pair<String, Pair<Long, String>>>>> serviceNamesMap = new HashMap<>();
     if (CollectionUtils.isEmpty(serviceList)) {
       return serviceNamesMap;
     }
@@ -599,12 +624,13 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
     serviceList.forEach(service
         -> serviceNamesMap.computeIfAbsent(service.getOrgIdentifier(), key -> new HashMap<>())
                .computeIfAbsent(service.getProjectIdentifier(), key -> new HashMap<>())
-               .computeIfAbsent(service.getIdentifier(), name -> Pair.of(service.getName(), 0L)));
+               .computeIfAbsent(service.getIdentifier(), name -> Pair.of(service.getName(), Pair.of(0L, null))));
 
     activeServiceWithInstanceCountList.forEach(serviceWithInstanceCount
         -> serviceNamesMap.computeIfAbsent(serviceWithInstanceCount.getOrgid(), key -> new HashMap<>())
                .computeIfAbsent(serviceWithInstanceCount.getProjectid(), key -> new HashMap<>())
-               .computeIfAbsent(serviceWithInstanceCount.getServiceid(), key -> Pair.of(StringUtils.EMPTY, 0L)));
+               .computeIfAbsent(
+                   serviceWithInstanceCount.getServiceid(), key -> Pair.of(StringUtils.EMPTY, Pair.of(0L, null))));
 
     activeServiceWithInstanceCountList.forEach(serviceWithInstanceCount
         -> serviceNamesMap.get(serviceWithInstanceCount.getOrgid())
@@ -614,7 +640,8 @@ public class CDLicenseUsageImpl implements LicenseUsageInterface<CDLicenseUsageD
                                .get(serviceWithInstanceCount.getProjectid())
                                .get(serviceWithInstanceCount.getServiceid())
                                .getLeft(),
-                       serviceWithInstanceCount.getAggregateServiceInstanceCount())));
+                       Pair.of(serviceWithInstanceCount.getAggregateServiceInstanceCount(),
+                           serviceWithInstanceCount.getInstancetype()))));
 
     return serviceNamesMap;
   }

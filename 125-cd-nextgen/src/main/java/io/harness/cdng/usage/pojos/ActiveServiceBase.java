@@ -29,6 +29,7 @@ public class ActiveServiceBase {
   String identifier;
   @Nullable String orgIdentifier;
   @Nullable String projectIdentifier;
+  @Nullable String instanceType;
   long instanceCount;
   long lastDeployed;
 
@@ -41,6 +42,7 @@ public class ActiveServiceBase {
         .add("'" + this.identifier + "'")
         .add(Long.toString(this.lastDeployed))
         .add(Long.toString(this.instanceCount))
+        .add(this.instanceType == null ? null : "'" + this.instanceType + "'")
         .toString();
   }
 }

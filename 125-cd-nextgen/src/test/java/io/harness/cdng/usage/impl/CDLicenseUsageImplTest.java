@@ -37,6 +37,7 @@ import io.harness.cdng.usage.dto.LicenseDateUsageParams;
 import io.harness.cdng.usage.pojos.ActiveService;
 import io.harness.cdng.usage.pojos.ActiveServiceBase;
 import io.harness.cdng.usage.pojos.ActiveServiceResponse;
+import io.harness.entities.InstanceType;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.licensing.usage.beans.ReferenceDTO;
 import io.harness.licensing.usage.beans.cd.ActiveServiceDTO;
@@ -115,8 +116,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
     long timeInMillis = 1234123412345L;
     when(utils.fetchServiceInstancesOver30Days(accountIdentifier)).thenReturn(10L);
     List<AggregateServiceUsageInfo> activeServiceWithInstanceCountList = new ArrayList<>();
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 10));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier, 10, InstanceType.K8S_INSTANCE.toString()));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
     List<Services> servicesList = new ArrayList<>();
     servicesList.add(new Services(null, accountIdentifier, orgIdentifier, projectIdentifier, serviceIdentifier,
@@ -160,8 +161,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         .thenReturn(activeServiceList);
 
     List<AggregateServiceUsageInfo> activeServiceWithInstanceCountList = new ArrayList<>();
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 0));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier, 0, InstanceType.K8S_INSTANCE.toString()));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
@@ -228,8 +229,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         .thenReturn(activeServiceList);
 
     List<AggregateServiceUsageInfo> activeServiceWithInstanceCountList = new ArrayList<>();
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 18));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier, 18, InstanceType.K8S_INSTANCE.toString()));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
@@ -296,8 +297,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         .thenReturn(activeServiceList);
 
     List<AggregateServiceUsageInfo> activeServiceWithInstanceCountList = new ArrayList<>();
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 41));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier, 41, InstanceType.K8S_INSTANCE.toString()));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
@@ -364,8 +365,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         .thenReturn(activeServiceList);
 
     List<AggregateServiceUsageInfo> activeServiceWithInstanceCountList = new ArrayList<>();
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 20));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier, 20, InstanceType.K8S_INSTANCE.toString()));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
@@ -434,8 +435,8 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         .thenReturn(activeServiceList);
 
     List<AggregateServiceUsageInfo> activeServiceWithInstanceCountList = new ArrayList<>();
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 9));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier, 9, InstanceType.K8S_INSTANCE.toString()));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
@@ -531,10 +532,10 @@ public class CDLicenseUsageImplTest extends CategoryTest {
         .thenReturn(activeServiceList);
 
     List<AggregateServiceUsageInfo> activeServiceWithInstanceCountList = new ArrayList<>();
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier, 9));
-    activeServiceWithInstanceCountList.add(
-        new AggregateServiceUsageInfo(orgIdentifier, projectIdentifier, serviceIdentifier2, 11));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier, 9, InstanceType.K8S_INSTANCE.toString()));
+    activeServiceWithInstanceCountList.add(new AggregateServiceUsageInfo(
+        orgIdentifier, projectIdentifier, serviceIdentifier2, 11, InstanceType.K8S_INSTANCE.toString()));
     when(utils.fetchInstancesPerServiceOver30Days(accountIdentifier)).thenReturn(activeServiceWithInstanceCountList);
 
     List<Services> servicesList = new ArrayList<>();
@@ -594,16 +595,18 @@ public class CDLicenseUsageImplTest extends CategoryTest {
             .build();
     long currentTimeMillis = System.currentTimeMillis();
     when(utils.fetchActiveServices(any()))
-        .thenReturn(ActiveServiceResponse.<List<ActiveServiceBase>>builder()
-                        .activeServiceItems(Collections.singletonList(ActiveServiceBase.builder()
-                                                                          .identifier(serviceIdentifier)
-                                                                          .orgIdentifier(orgIdentifier)
-                                                                          .projectIdentifier(projectIdentifier)
-                                                                          .instanceCount(2)
-                                                                          .lastDeployed(currentTimeMillis)
-                                                                          .build()))
-                        .totalCountOfItems(1)
-                        .build());
+        .thenReturn(
+            ActiveServiceResponse.<List<ActiveServiceBase>>builder()
+                .activeServiceItems(Collections.singletonList(ActiveServiceBase.builder()
+                                                                  .identifier(serviceIdentifier)
+                                                                  .orgIdentifier(orgIdentifier)
+                                                                  .projectIdentifier(projectIdentifier)
+                                                                  .instanceCount(2)
+                                                                  .instanceType(InstanceType.K8S_INSTANCE.toString())
+                                                                  .lastDeployed(currentTimeMillis)
+                                                                  .build()))
+                .totalCountOfItems(1)
+                .build());
     when(utils.fetchActiveServicesNameOrgAndProjectName(eq(accountIdentifier), any(), any()))
         .thenReturn(Collections.singletonList(ActiveService.builder()
                                                   .identifier(serviceIdentifier)
@@ -614,6 +617,7 @@ public class CDLicenseUsageImplTest extends CategoryTest {
                                                   .projectIdentifier(projectIdentifier)
                                                   .lastDeployed(currentTimeMillis)
                                                   .instanceCount(1)
+                                                  .instanceType(InstanceType.K8S_INSTANCE.toString())
                                                   .build()));
     Page<ActiveServiceDTO> activeServiceDTOS = cdLicenseUsage.listLicenseUsage(
         accountIdentifier, ModuleType.CD, System.currentTimeMillis(), usageRequestParam);
@@ -725,16 +729,18 @@ public class CDLicenseUsageImplTest extends CategoryTest {
   public void testGetLicenseUsageCSVReport() throws IOException {
     long currentTimeMillis = System.currentTimeMillis();
     when(utils.fetchActiveServices(any()))
-        .thenReturn(ActiveServiceResponse.<List<ActiveServiceBase>>builder()
-                        .activeServiceItems(Collections.singletonList(ActiveServiceBase.builder()
-                                                                          .identifier(serviceIdentifier)
-                                                                          .orgIdentifier(orgIdentifier)
-                                                                          .projectIdentifier(projectIdentifier)
-                                                                          .instanceCount(2)
-                                                                          .lastDeployed(currentTimeMillis)
-                                                                          .build()))
-                        .totalCountOfItems(1)
-                        .build());
+        .thenReturn(
+            ActiveServiceResponse.<List<ActiveServiceBase>>builder()
+                .activeServiceItems(Collections.singletonList(ActiveServiceBase.builder()
+                                                                  .identifier(serviceIdentifier)
+                                                                  .orgIdentifier(orgIdentifier)
+                                                                  .projectIdentifier(projectIdentifier)
+                                                                  .instanceCount(2)
+                                                                  .instanceType(InstanceType.K8S_INSTANCE.toString())
+                                                                  .lastDeployed(currentTimeMillis)
+                                                                  .build()))
+                .totalCountOfItems(1)
+                .build());
     when(utils.fetchActiveServicesNameOrgAndProjectName(eq(accountIdentifier), any(), any()))
         .thenReturn(Collections.singletonList(ActiveService.builder()
                                                   .identifier(serviceIdentifier)
@@ -745,6 +751,7 @@ public class CDLicenseUsageImplTest extends CategoryTest {
                                                   .projectIdentifier(projectIdentifier)
                                                   .lastDeployed(currentTimeMillis)
                                                   .instanceCount(1)
+                                                  .instanceType(InstanceType.K8S_INSTANCE.toString())
                                                   .build()));
 
     File licenseUsageCSVReport = new File("path");

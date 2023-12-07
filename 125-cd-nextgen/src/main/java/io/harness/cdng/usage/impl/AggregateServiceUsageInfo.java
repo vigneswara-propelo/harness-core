@@ -9,6 +9,7 @@ package io.harness.cdng.usage.impl;
 
 import io.harness.timescaledb.tables.pojos.ServiceInfraInfo;
 
+import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
@@ -18,11 +19,13 @@ import lombok.experimental.FieldNameConstants;
 @FieldNameConstants(innerTypeName = "AggregateServiceUsageInfoKeys")
 public class AggregateServiceUsageInfo extends ServiceInfraInfo {
   private long serviceInstanceCount;
+  @Nullable private String instanceType;
 
   public AggregateServiceUsageInfo(
-      String orgIdentifier, String projectId, String serviceId, long serviceInstanceCount) {
+      String orgIdentifier, String projectId, String serviceId, long serviceInstanceCount, String instanceType) {
     super(null, null, serviceId, null, null, null, null, null, null, null, null, null, null, orgIdentifier, projectId,
         null);
     this.serviceInstanceCount = serviceInstanceCount;
+    this.instanceType = instanceType;
   }
 }
