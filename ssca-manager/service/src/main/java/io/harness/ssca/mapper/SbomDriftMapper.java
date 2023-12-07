@@ -11,12 +11,9 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.spec.server.ssca.v1.model.ComponentDrift;
-import io.harness.spec.server.ssca.v1.model.ComponentDriftResponse;
 import io.harness.spec.server.ssca.v1.model.ComponentSummary;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.SSCA)
@@ -35,19 +32,6 @@ public class SbomDriftMapper {
       default:
         throw new InvalidRequestException("status could only be one of added / modified / deleted");
     }
-  }
-
-  public ComponentDriftResponse toComponentDriftResponse(String artifactName, String baseTag, String tag,
-      List<io.harness.ssca.beans.drift.ComponentDrift> componentDrifts) {
-    List<ComponentDrift> componentDriftsResponseList = new ArrayList<>();
-    for (io.harness.ssca.beans.drift.ComponentDrift componentDrift : componentDrifts) {
-      componentDriftsResponseList.add(toComponentDriftResponse(componentDrift));
-    }
-    return new ComponentDriftResponse()
-        .componentDrifts(componentDriftsResponseList)
-        .tag(tag)
-        .baseTag(baseTag)
-        .artifactName(artifactName);
   }
 
   private ComponentDrift toComponentDriftResponse(io.harness.ssca.beans.drift.ComponentDrift componentDrift) {

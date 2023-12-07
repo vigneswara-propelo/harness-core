@@ -9,42 +9,35 @@ package io.harness.ssca.api;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.data.structure.EmptyPredicate;
-import io.harness.exception.InvalidRequestException;
 import io.harness.spec.server.ssca.v1.SbomDriftApi;
-import io.harness.spec.server.ssca.v1.model.ComponentDriftResponse;
-import io.harness.ssca.beans.drift.ComponentDriftResults;
-import io.harness.ssca.beans.drift.ComponentDriftStatus;
-import io.harness.ssca.mapper.SbomDriftMapper;
-import io.harness.ssca.services.ArtifactService;
+import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftRequestBody;
 import io.harness.ssca.services.drift.SbomDriftService;
 
 import com.google.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.core.Response;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 @OwnedBy(HarnessTeam.SSCA)
 public class SbomDriftApiImpl implements SbomDriftApi {
   @Inject SbomDriftService sbomDriftService;
-  @Inject ArtifactService artifactService;
 
   @Override
-  public Response getComponentDrift(String org, String project, String artifact, String harnessAccount, String baseTag,
-      String tag, String status, @Min(0L) Integer page, @Min(1L) @Max(1000L) Integer limit) {
-    Pageable pageable = PageRequest.of(page, limit);
-    ComponentDriftStatus componentDriftStatus = SbomDriftMapper.mapStatusToComponentDriftStatus(status);
-    String artifactName = artifactService.getArtifactName(harnessAccount, org, project, artifact);
-    if (EmptyPredicate.isEmpty(artifactName)) {
-      throw new InvalidRequestException("Could not find artifact with artifact ID: " + artifact);
-    }
-    sbomDriftService.calculateAndStoreComponentDrift(harnessAccount, org, project, artifact, baseTag, tag);
-    ComponentDriftResults componentDrifts = sbomDriftService.getComponentDriftsByArtifactId(
-        harnessAccount, org, project, artifact, baseTag, tag, componentDriftStatus, pageable);
-    ComponentDriftResponse componentDriftResponse =
-        SbomDriftMapper.toComponentDriftResponse(artifactName, baseTag, tag, componentDrifts.getComponentDrifts());
-    return Response.ok().entity(componentDriftResponse).build();
+  public Response calculateDriftForArtifact(
+      String org, String project, String artifact, @Valid ArtifactSbomDriftRequestBody body, String harnessAccount) {
+    return null;
+  }
+
+  @Override
+  public Response getComponentDrift(String org, String project, String drift, String harnessAccount, String status,
+      @Min(0L) Integer page, @Min(1L) @Max(1000L) Integer limit) {
+    return null;
+  }
+
+  @Override
+  public Response getLicenseDrift(String org, String project, String drift, String harnessAccount, String status,
+      @Min(0L) Integer page, @Min(1L) @Max(1000L) Integer limit) {
+    return null;
   }
 }
