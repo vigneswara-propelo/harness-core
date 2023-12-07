@@ -1585,11 +1585,11 @@ components:
       x-internal: true
       description: ''
       enum:
-        - String
-        - Integer
-        - Boolean
-        - Object
-        - Array
+        - string
+        - integer
+        - boolean
+        - object
+        - array
   securitySchemes:
     x-api-key:
       name: x-api-key

@@ -4526,11 +4526,11 @@ components:
       x-stoplight:
         id: r1emlzkpy1jub
       enum:
-        - String
-        - Integer
-        - Boolean
-        - Object
-        - Array
+        - string
+        - integer
+        - boolean
+        - object
+        - array
       x-internal: true
       description: ''
     PipelineYamlInputMetadataDTO:
