@@ -7,6 +7,7 @@
 
 package io.harness.ssca.execution;
 
+import static io.harness.beans.serializer.RunTimeInputHandler.resolveListParameter;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameter;
 
 import io.harness.annotations.dev.HarnessTeam;
@@ -31,7 +32,9 @@ import io.harness.yaml.utils.NGVariablesUtils;
 
 import com.google.inject.Inject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.apache.commons.collections4.CollectionUtils;
 
 @OwnedBy(HarnessTeam.SSCA)
 public class SscaEnforcementPluginHelper {
@@ -49,9 +52,17 @@ public class SscaEnforcementPluginHelper {
     if (stepInfo.getPolicy().getStore() != null
         && StoreType.HARNESS.equals(stepInfo.getPolicy().getStore().getType())) {
       policyFile = resolveStringParameter("file", SscaConstants.SSCA_ENFORCEMENT, identifier,
-          ((HarnessStore) stepInfo.getPolicy().getStore().getStoreSpec()).getFile(), true);
+          ((HarnessStore) stepInfo.getPolicy().getStore().getStoreSpec()).getFile(), false);
     }
 
+    String policySetRef = null;
+    if (stepInfo.getPolicy().getPolicySets() != null) {
+      List<String> policySetRefs = resolveListParameter(
+          "policySets", SscaConstants.SSCA_ENFORCEMENT, identifier, stepInfo.getPolicy().getPolicySets(), false);
+      if (CollectionUtils.isNotEmpty(policySetRefs)) {
+        policySetRef = policySetRefs.toString().replace("[", "").replace("]", "").replace(" ", "");
+      }
+    }
     String runtimeId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
 
     Map<String, String> envMap = SscaEnforcementStepPluginUtils.getSscaEnforcementStepEnvVariables(
@@ -60,6 +71,7 @@ public class SscaEnforcementPluginHelper {
             .sbomSource(sbomSource)
             .harnessPolicyFileId(policyFile)
             .sscaManagerEnabled(sscaServiceUtils.isSSCAManagerEnabled())
+            .policySetRef(policySetRef)
             .build());
     if (infraType == Type.VM) {
       envMap.putAll(getSscaEnforcementSecretEnvMap(stepInfo, identifier, ambiance.getExpressionFunctorToken()));

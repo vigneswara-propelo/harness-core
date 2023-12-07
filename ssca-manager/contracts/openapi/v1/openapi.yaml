@@ -946,7 +946,9 @@ components:
         pipeline_execution_id:
           type: string
         policy_set_ref:
-          type: string
+          type: array
+          items:
+            type: string
       required:
         - enforcement_id
         - artifact

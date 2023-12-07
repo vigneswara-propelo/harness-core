@@ -9,13 +9,8 @@ package io.harness.ssca.services;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.ssca.beans.OpaPolicyEvaluationResult;
-import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
-
-import java.util.List;
 
 @OwnedBy(HarnessTeam.SSCA)
-public interface PolicyMgmtService {
-  OpaPolicyEvaluationResult evaluate(String accountId, String orgIdentifier, String projectIdentifier,
-      List<String> policySetRef, List<NormalizedSBOMComponentEntity> normalizedSBOMComponentEntities);
+public interface FeatureFlagService {
+  boolean isFeatureFlagEnabled(String accountId, String name);
 }

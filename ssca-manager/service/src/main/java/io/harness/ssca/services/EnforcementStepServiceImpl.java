@@ -7,33 +7,36 @@
 
 package io.harness.ssca.services;
 
+import io.harness.beans.FeatureName;
 import io.harness.spec.server.ssca.v1.model.Artifact;
 import io.harness.spec.server.ssca.v1.model.EnforceSbomRequestBody;
 import io.harness.spec.server.ssca.v1.model.EnforceSbomResponseBody;
 import io.harness.spec.server.ssca.v1.model.EnforcementSummaryResponse;
 import io.harness.spec.server.ssca.v1.model.PolicyViolation;
-import io.harness.ssca.beans.RuleDTO;
-import io.harness.ssca.enforcement.ExecutorRegistry;
-import io.harness.ssca.enforcement.constants.RuleExecutorType;
-import io.harness.ssca.enforcement.rule.Engine;
+import io.harness.ssca.beans.PolicyEvaluationResult;
+import io.harness.ssca.beans.PolicyType;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityKeys;
-import io.harness.ssca.entities.EnforcementResultEntity;
 import io.harness.ssca.entities.EnforcementSummaryEntity;
 
 import com.google.inject.Inject;
-import java.util.List;
+import java.util.Map;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+@Slf4j
 public class EnforcementStepServiceImpl implements EnforcementStepService {
   @Inject ArtifactService artifactService;
-  @Inject ExecutorRegistry executorRegistry;
-  @Inject RuleEngineService ruleEngineService;
   @Inject EnforcementSummaryService enforcementSummaryService;
   @Inject EnforcementResultService enforcementResultService;
+  @Inject FeatureFlagService featureFlagService;
+  @Inject Map<PolicyType, PolicyEvaluationService> policyEvaluationServiceMapBinder;
 
   @Override
   public EnforceSbomResponseBody enforceSbom(
@@ -48,24 +51,22 @@ public class EnforcementStepServiceImpl implements EnforcementStepService {
                              -> new NotFoundException(
                                  String.format("Artifact with image name [%s] and registry Url [%s] is not found",
                                      body.getArtifact().getName(), body.getArtifact().getRegistryUrl())));
+    PolicyEvaluationResult policyEvaluationResult;
+    if (!featureFlagService.isFeatureFlagEnabled(
+            accountId, FeatureName.SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED.name())
+        || CollectionUtils.isNotEmpty(body.getPolicySetRef())) {
+      policyEvaluationResult = policyEvaluationServiceMapBinder.get(PolicyType.OPA)
+                                   .evaluatePolicy(accountId, orgIdentifier, projectIdentifier, body, artifactEntity);
+    } else if (StringUtils.isNotBlank(body.getPolicyFileId())) {
+      policyEvaluationResult = policyEvaluationServiceMapBinder.get(PolicyType.SSCA)
+                                   .evaluatePolicy(accountId, orgIdentifier, projectIdentifier, body, artifactEntity);
+    } else {
+      throw new BadRequestException("policy_set_ref and policy_file_id both must not be null");
+    }
 
-    RuleDTO ruleDTO = ruleEngineService.getRules(accountId, orgIdentifier, projectIdentifier, body.getPolicyFileId());
-
-    Engine engine = Engine.builder()
-                        .artifact(artifactEntity)
-                        .enforcementId(body.getEnforcementId())
-                        .executorRegistry(executorRegistry)
-                        .executorType(RuleExecutorType.MONGO_EXECUTOR)
-                        .rules(ruleDTO.getDenyList())
-                        .build();
-
-    List<EnforcementResultEntity> denyListResult = engine.executeRules();
-
-    engine.setRules(ruleDTO.getAllowList());
-    List<EnforcementResultEntity> allowListResult = engine.executeRules();
-
-    String status = enforcementSummaryService.persistEnforcementSummary(
-        body.getEnforcementId(), denyListResult, allowListResult, artifactEntity, body.getPipelineExecutionId());
+    String status = enforcementSummaryService.persistEnforcementSummary(body.getEnforcementId(),
+        policyEvaluationResult.getDenyListViolations(), policyEvaluationResult.getAllowListViolations(), artifactEntity,
+        body.getPipelineExecutionId());
 
     EnforceSbomResponseBody responseBody = new EnforceSbomResponseBody();
     responseBody.setEnforcementId(body.getEnforcementId());

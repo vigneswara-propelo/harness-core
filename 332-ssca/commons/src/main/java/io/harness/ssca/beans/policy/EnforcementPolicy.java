@@ -9,9 +9,13 @@ package io.harness.ssca.beans.policy;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.SwaggerConstants;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.ssca.beans.store.PolicyStore;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,4 +25,7 @@ import lombok.Data;
 
 public class EnforcementPolicy {
   @JsonProperty("store") private PolicyStore store;
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
+  @JsonProperty("policySets")
+  private ParameterField<List<String>> policySets;
 }

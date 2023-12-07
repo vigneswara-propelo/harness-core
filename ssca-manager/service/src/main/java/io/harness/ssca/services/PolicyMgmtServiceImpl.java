@@ -14,17 +14,23 @@ import io.harness.network.SafeHttpCall;
 import io.harness.opaclient.OpaServiceClient;
 import io.harness.opaclient.model.OpaEvaluationResponseHolder;
 import io.harness.opaclient.model.OpaPolicyEvaluationResponse;
+import io.harness.opaclient.model.OpaPolicySetEvaluationResponse;
 import io.harness.serializer.JsonUtils;
 import io.harness.ssca.beans.OpaPolicyEvaluationResult;
 import io.harness.ssca.beans.Violation;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
+import io.harness.utils.PolicyEvalUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.inject.Inject;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 @OwnedBy(HarnessTeam.SSCA)
 @Slf4j
@@ -34,28 +40,39 @@ public class PolicyMgmtServiceImpl implements PolicyMgmtService {
   private static final String OPA_OUTPUT_JSON_KEY_2 = "sbom";
   private static final String OPA_OUTPUT_JSON_KEY_3 = "allow_list_violations";
   private static final String OPA_OUTPUT_JSON_KEY_4 = "deny_list_violations";
-  private static final int POLICY_SET_INDEX = 0;
   @Inject OpaServiceClient opaServiceClient;
 
   @Override
   public OpaPolicyEvaluationResult evaluate(String accountId, String orgIdentifier, String projectIdentifier,
-      String policySetRef, List<NormalizedSBOMComponentEntity> normalizedSBOMComponentEntities) {
+      List<String> policySetRef, List<NormalizedSBOMComponentEntity> normalizedSBOMComponentEntities) {
     OpaEvaluationResponseHolder opaEvaluationResponseHolder;
     try {
+      Instant start = Instant.now();
       log.info("Starting evaluation of policy set {} against {} sbom components", policySetRef,
           normalizedSBOMComponentEntities.size());
-      opaEvaluationResponseHolder =
-          SafeHttpCall.executeWithExceptions(opaServiceClient.evaluateWithCredentialsByID(accountId, orgIdentifier,
-              projectIdentifier, policySetRef, null, JsonUtils.asTree(normalizedSBOMComponentEntities)));
+      opaEvaluationResponseHolder = SafeHttpCall.executeWithExceptions(opaServiceClient.evaluateWithCredentialsByID(
+          accountId, orgIdentifier, projectIdentifier, PolicyEvalUtils.getPolicySetsStringForQueryParam(policySetRef),
+          PolicyEvalUtils.getEntityMetadataString("ssca_enforcement"),
+          JsonUtils.asTree(normalizedSBOMComponentEntities)));
       log.info("Completed evaluation of policy set {} against {} sbom components", policySetRef,
           normalizedSBOMComponentEntities.size());
-      List<OpaPolicyEvaluationResponse> opaPolicyEvaluationResponses =
-          opaEvaluationResponseHolder.getDetails().get(POLICY_SET_INDEX).getDetails();
+      Instant end = Instant.now();
+      log.info("Time taken to evaluate {} sbom entities for policySets {} is {} ms",
+          normalizedSBOMComponentEntities.size(), policySetRef, Duration.between(start, end).toMillis());
       List<Violation> allowListViolations = new ArrayList<>();
       List<Violation> denyListViolations = new ArrayList<>();
-      for (OpaPolicyEvaluationResponse singlePolicyEvaluationResponse : opaPolicyEvaluationResponses) {
-        populateViolationDetailsFromSinglePolicyEvaluationResponse(
-            allowListViolations, denyListViolations, singlePolicyEvaluationResponse);
+
+      List<OpaPolicySetEvaluationResponse> opaPolicySetEvaluationResponses = opaEvaluationResponseHolder.getDetails();
+      if (CollectionUtils.isNotEmpty(opaPolicySetEvaluationResponses)) {
+        for (OpaPolicySetEvaluationResponse opaPolicySetEvaluationResponse : opaPolicySetEvaluationResponses) {
+          List<OpaPolicyEvaluationResponse> opaPolicyEvaluationResponses = opaPolicySetEvaluationResponse.getDetails();
+          if (CollectionUtils.isNotEmpty(opaPolicyEvaluationResponses)) {
+            for (OpaPolicyEvaluationResponse opaPolicyEvaluationResponse : opaPolicyEvaluationResponses) {
+              populateViolationDetailsFromSinglePolicyEvaluationResponse(
+                  allowListViolations, denyListViolations, opaPolicyEvaluationResponse);
+            }
+          }
+        }
       }
       return OpaPolicyEvaluationResult.builder()
           .allowListViolations(allowListViolations)
@@ -111,7 +128,15 @@ public class PolicyMgmtServiceImpl implements PolicyMgmtService {
   }
 
   private static JsonNode getSanitisedRule(JsonNode rule) {
-    // TODO: Remove null parameters from the rule
+    Iterator<JsonNode> it = rule.iterator();
+    while (it.hasNext()) {
+      JsonNode next = it.next();
+      if (next.isObject() && next.isEmpty()) {
+        it.remove();
+      } else {
+        getSanitisedRule(next);
+      }
+    }
     return rule;
   }
 }

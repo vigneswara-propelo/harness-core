@@ -1127,6 +1127,7 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
     expected.put("PLUGIN_TYPE", "Enforce");
     expected.put("POLICY_FILE_IDENTIFIER", "file");
     expected.put("SSCA_MANAGER_ENABLED", "false");
+    expected.put("POLICY_SET_REF", "policySet1,policySet2");
     Ambiance ambiance = Ambiance.newBuilder().build();
     Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
         sscaEnforcementStepInfo, "identifier", 100, ambiance, Type.K8, false, true);
@@ -1147,6 +1148,7 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
     expected.put("POLICY_FILE_IDENTIFIER", "file");
     expected.put("SSCA_MANAGER_ENABLED", "false");
     expected.put("COSIGN_PUBLIC_KEY", "${ngSecretManager.obtain(\"publicKey\", 12345)}");
+    expected.put("POLICY_SET_REF", "policySet1,policySet2");
     Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
         sscaEnforcementStepInfo, "identifier", 100, ambiance, Type.VM, false, true);
     assertThat(actual).isEqualTo(expected);
@@ -1182,6 +1184,7 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
                                         .build())
                     .build())
         .policy(EnforcementPolicy.builder()
+                    .policySets(ParameterField.createValueField(List.of("policySet1", "policySet2")))
                     .store(PolicyStore.builder()
                                .type(StoreType.HARNESS)
                                .storeSpec(HarnessStore.builder().file(ParameterField.createValueField("file")).build())

@@ -5,21 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ssca.beans.enforcement;
+package io.harness.ssca.beans;
 
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
+import io.harness.ssca.entities.EnforcementResultEntity;
 
+import java.util.List;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
-@OwnedBy(HarnessTeam.SSCA)
-public class EnforcementStepEnvVariables {
-  String sbomSource;
-  String harnessPolicyFileId;
-  String stepExecutionId;
-  boolean sscaManagerEnabled;
-  String policySetRef;
+public class PolicyEvaluationResult {
+  List<EnforcementResultEntity> denyListViolations;
+  List<EnforcementResultEntity> allowListViolations;
 }

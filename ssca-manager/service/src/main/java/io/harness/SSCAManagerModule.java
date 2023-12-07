@@ -13,6 +13,7 @@ import static io.harness.authorization.AuthorizationServiceHeader.SSCA_SERVICE;
 import static io.harness.lock.DistributedLockImplementation.REDIS;
 import static io.harness.outbox.OutboxSDKConstants.DEFAULT_OUTBOX_POLL_CONFIGURATION;
 
+import io.harness.account.AccountClientModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.app.PrimaryVersionManagerModule;
 import io.harness.lock.DistributedLockImplementation;
@@ -49,6 +50,7 @@ import io.harness.ssca.api.OrchestrationApiImpl;
 import io.harness.ssca.api.SbomProcessorApiImpl;
 import io.harness.ssca.api.ScorecardApiImpl;
 import io.harness.ssca.api.TokenApiImpl;
+import io.harness.ssca.beans.PolicyType;
 import io.harness.ssca.events.handler.SSCAArtifactEventHandler;
 import io.harness.ssca.events.handler.SSCAOutboxEventHandler;
 import io.harness.ssca.eventsframework.SSCAEventsFrameworkModule;
@@ -66,12 +68,16 @@ import io.harness.ssca.services.EnforcementStepService;
 import io.harness.ssca.services.EnforcementStepServiceImpl;
 import io.harness.ssca.services.EnforcementSummaryService;
 import io.harness.ssca.services.EnforcementSummaryServiceImpl;
+import io.harness.ssca.services.FeatureFlagService;
+import io.harness.ssca.services.FeatureFlagServiceImpl;
 import io.harness.ssca.services.NextGenService;
 import io.harness.ssca.services.NextGenServiceImpl;
 import io.harness.ssca.services.NormalisedSbomComponentService;
 import io.harness.ssca.services.NormalisedSbomComponentServiceImpl;
+import io.harness.ssca.services.OpaPolicyEvaluationService;
 import io.harness.ssca.services.OrchestrationStepService;
 import io.harness.ssca.services.OrchestrationStepServiceImpl;
+import io.harness.ssca.services.PolicyEvaluationService;
 import io.harness.ssca.services.PolicyMgmtService;
 import io.harness.ssca.services.PolicyMgmtServiceImpl;
 import io.harness.ssca.services.RuleEngineService;
@@ -80,6 +86,7 @@ import io.harness.ssca.services.S3StoreService;
 import io.harness.ssca.services.S3StoreServiceImpl;
 import io.harness.ssca.services.ScorecardService;
 import io.harness.ssca.services.ScorecardServiceImpl;
+import io.harness.ssca.services.SscaPolicyEvaluationService;
 import io.harness.ssca.services.drift.SbomDriftService;
 import io.harness.ssca.services.drift.SbomDriftServiceImpl;
 import io.harness.time.TimeModule;
@@ -98,6 +105,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
@@ -155,7 +163,16 @@ public class SSCAManagerModule extends AbstractModule {
     bind(ArtifactApi.class).to(ArtifactApiImpl.class);
     bind(CdInstanceSummaryService.class).to(CdInstanceSummaryServiceImpl.class);
     bind(PolicyMgmtService.class).to(PolicyMgmtServiceImpl.class);
+    bind(FeatureFlagService.class).to(FeatureFlagServiceImpl.class);
     bind(SbomDriftService.class).to(SbomDriftServiceImpl.class);
+    MapBinder<PolicyType, PolicyEvaluationService> policyEvaluationServiceMapBinder =
+        MapBinder.newMapBinder(binder(), PolicyType.class, PolicyEvaluationService.class);
+    policyEvaluationServiceMapBinder.addBinding(PolicyType.OPA)
+        .to(OpaPolicyEvaluationService.class)
+        .in(Scopes.SINGLETON);
+    policyEvaluationServiceMapBinder.addBinding(PolicyType.SSCA)
+        .to(SscaPolicyEvaluationService.class)
+        .in(Scopes.SINGLETON);
     install(new TokenClientModule(this.configuration.getNgManagerServiceHttpClientConfig(),
         this.configuration.getNgManagerServiceSecret(), SSCA_SERVICE.getServiceId()));
     install(new SSCAEventsFrameworkModule(
@@ -169,6 +186,8 @@ public class SSCAManagerModule extends AbstractModule {
         configuration.getPolicyMgmtServiceSecret(), SSCA_SERVICE.getServiceId()));
     install(new TransactionOutboxModule(
         DEFAULT_OUTBOX_POLL_CONFIGURATION, SSCA_SERVICE.getServiceId(), configuration.isExportMetricsToStackDriver()));
+    install(new AccountClientModule(configuration.getManagerClientConfig(), configuration.getSscaManagerServiceSecret(),
+        SSCA_SERVICE.getServiceId()));
   }
 
   @Provides

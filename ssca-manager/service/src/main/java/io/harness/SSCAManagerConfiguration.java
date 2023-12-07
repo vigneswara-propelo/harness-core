@@ -14,8 +14,10 @@ import static java.util.stream.Collectors.toSet;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cache.CacheConfig;
+import io.harness.cf.CfClientConfig;
 import io.harness.changestreams.DebeziumConsumerConfig;
 import io.harness.eventsframework.EventsFrameworkConfiguration;
+import io.harness.ff.FeatureFlagConfig;
 import io.harness.lock.DistributedLockImplementation;
 import io.harness.mongo.MongoConfig;
 import io.harness.redis.RedisConfig;
@@ -86,6 +88,9 @@ public class SSCAManagerConfiguration extends Configuration {
   @JsonProperty("s3Config") S3Config s3Config;
   @JsonProperty("policyMgmtServiceClientConfig") private ServiceHttpClientConfig policyMgmtServiceConfiguration;
   @JsonProperty("policyMgmtServiceSecret") private String policyMgmtServiceSecret;
+  @JsonProperty("cfClientConfig") private CfClientConfig cfClientConfig;
+  @JsonProperty("featureFlagConfig") private FeatureFlagConfig featureFlagConfig;
+  @JsonProperty("managerClientConfig") private ServiceHttpClientConfig managerClientConfig;
 
   public SwaggerBundleConfiguration getSwaggerBundleConfiguration() {
     SwaggerBundleConfiguration defaultSwaggerBundleConfiguration = new SwaggerBundleConfiguration();

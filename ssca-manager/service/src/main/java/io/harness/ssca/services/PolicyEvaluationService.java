@@ -9,13 +9,12 @@ package io.harness.ssca.services;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.ssca.beans.OpaPolicyEvaluationResult;
-import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
-
-import java.util.List;
+import io.harness.spec.server.ssca.v1.model.EnforceSbomRequestBody;
+import io.harness.ssca.beans.PolicyEvaluationResult;
+import io.harness.ssca.entities.ArtifactEntity;
 
 @OwnedBy(HarnessTeam.SSCA)
-public interface PolicyMgmtService {
-  OpaPolicyEvaluationResult evaluate(String accountId, String orgIdentifier, String projectIdentifier,
-      List<String> policySetRef, List<NormalizedSBOMComponentEntity> normalizedSBOMComponentEntities);
+public interface PolicyEvaluationService {
+  PolicyEvaluationResult evaluatePolicy(String accountId, String orgIdentifier, String projectIdentifier,
+      EnforceSbomRequestBody body, ArtifactEntity artifactEntity);
 }

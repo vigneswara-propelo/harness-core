@@ -19,8 +19,12 @@ import io.harness.annotations.SSCAServiceAuth;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.authorization.AuthorizationServiceHeader;
 import io.harness.cache.CacheModule;
+import io.harness.cf.AbstractCfModule;
+import io.harness.cf.CfClientConfig;
+import io.harness.cf.CfMigrationConfig;
 import io.harness.changestreams.redisconsumers.InstanceNGRedisEventConsumer;
 import io.harness.controller.PrimaryVersionChangeScheduler;
+import io.harness.ff.FeatureFlagConfig;
 import io.harness.govern.ProviderModule;
 import io.harness.maintenance.MaintenanceController;
 import io.harness.metrics.HarnessMetricRegistry;
@@ -158,6 +162,22 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
     CacheModule cacheModule = new CacheModule(sscaManagerConfiguration.getCacheConfig());
     modules.add(cacheModule);
     modules.add(io.harness.SSCAManagerModule.getInstance(sscaManagerConfiguration));
+    modules.add(new AbstractCfModule() {
+      @Override
+      public CfClientConfig cfClientConfig() {
+        return sscaManagerConfiguration.getCfClientConfig();
+      }
+
+      @Override
+      public CfMigrationConfig cfMigrationConfig() {
+        return CfMigrationConfig.builder().build();
+      }
+
+      @Override
+      public FeatureFlagConfig featureFlagConfig() {
+        return sscaManagerConfiguration.getFeatureFlagConfig();
+      }
+    });
     MaintenanceController.forceMaintenance(true);
     Injector injector = Guice.createInjector(modules);
     injector.getInstance(HPersistence.class);

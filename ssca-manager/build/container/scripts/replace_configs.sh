@@ -230,6 +230,14 @@ if [[ "" != "$POLICY_MGMT_SERVICE_SECRET" ]]; then
   export POLICY_MGMT_SERVICE_SECRET; yq -i '.policyMgmtServiceSecret=env(POLICY_MGMT_SERVICE_SECRET)' $CONFIG_FILE
 fi
 
+if [[ "" != "$POLICY_MGMT_SERVICE_BASEURL" ]]; then
+  export POLICY_MGMT_SERVICE_BASEURL; yq -i '.policyMgmtServiceClientConfig.baseUrl=env(POLICY_MGMT_SERVICE_BASEURL)' $CONFIG_FILE
+fi
+
+if [[ "" != "$MANAGER_CLIENT_BASEURL" ]]; then
+  export MANAGER_CLIENT_BASEURL; yq -i '.managerClientConfig.baseUrl=env(MANAGER_CLIENT_BASEURL)' $CONFIG_FILE
+fi
+
 replace_key_value eventsFramework.redis.sentinel $EVENTS_FRAMEWORK_USE_SENTINEL
 replace_key_value eventsFramework.redis.envNamespace $EVENTS_FRAMEWORK_ENV_NAMESPACE
 replace_key_value eventsFramework.redis.redisUrl $EVENTS_FRAMEWORK_REDIS_URL
@@ -252,3 +260,12 @@ replace_key_value redisLockConfig.nettyThreads "$REDIS_NETTY_THREADS"
 replace_key_value cacheConfig.cacheNamespace $CACHE_NAMESPACE
 replace_key_value cacheConfig.cacheBackend $CACHE_BACKEND
 replace_key_value cacheConfig.enterpriseCacheEnabled $ENTERPRISE_CACHE_ENABLED
+
+replace_key_value cfClientConfig.apiKey "$CF_CLIENT_API_KEY"
+replace_key_value cfClientConfig.configUrl "$CF_CLIENT_CONFIG_URL"
+replace_key_value cfClientConfig.eventUrl "$CF_CLIENT_EVENT_URL"
+replace_key_value cfClientConfig.analyticsEnabled "$CF_CLIENT_ANALYTICS_ENABLED"
+replace_key_value cfClientConfig.connectionTimeout "$CF_CLIENT_CONNECTION_TIMEOUT"
+replace_key_value cfClientConfig.readTimeout "$CF_CLIENT_READ_TIMEOUT"
+replace_key_value featureFlagConfig.featureFlagSystem "$FEATURE_FLAG_SYSTEM"
+replace_key_value featureFlagConfig.syncFeaturesToCF "$SYNC_FEATURES_TO_CF"
