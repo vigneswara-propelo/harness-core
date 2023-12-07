@@ -10,6 +10,7 @@ package io.harness.cdlicense.bean;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import java.util.List;
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.CDP)
@@ -19,6 +20,9 @@ public class CgCdLicenseUsageConstants {
   public static final double INSTANCE_COUNT_PERCENTILE_DISC = 0.95;
   public static final int CG_LICENSE_INSTANCE_LIMIT = 20;
   public static final int MAX_RETRY = 3;
+  public static final List<String> LAMBDA_INSTANCE_TYPE = List.of(
+      "AWS_LAMBDA_INSTANCE", "SERVERLESS_AWS_LAMBDA_INSTANCE", "AWS_SAM_INSTANCE", "GOOGLE_CLOUD_FUNCTIONS_INSTANCE");
+
   public static final String QUERY_FECTH_SERVICES_IN_LAST_N_DAYS_DEPLOYMENT =
       "SELECT DISTINCT UNNEST(SERVICES) FROM DEPLOYMENT WHERE ACCOUNTID = ? AND STARTTIME > NOW() - ? * INTERVAL '1' DAY";
   public static final String FETCH_DEPLOYED_SERVICES_IN_LAST_N_DAYS = ""
@@ -52,10 +56,20 @@ public class CgCdLicenseUsageConstants {
       + "   percentileInstanceCount.serviceId AS serviceId,\n"
       + "   percentileInstanceCount.percentileInstanceCount AS instanceCount,\n"
       + "   CASE\n"
-      + "      WHEN percentileInstanceCount.percentileInstanceCount = 0 THEN 1\n"
-      + "      ELSE CEILING(\n"
-      + "         percentileInstanceCount.percentileInstanceCount / 20.0\n"
-      + "      )\n"
+      + "      WHEN percentileInstanceCount.instancetype = ANY (?) THEN\n"
+      + "          CASE\n"
+      + "               WHEN percentileInstanceCount.percentileInstanceCount = 0 THEN 1\n"
+      + "               ELSE CEILING(\n"
+      + "                   percentileInstanceCount.percentileInstanceCount / 5.0\n"
+      + "               )\n"
+      + "          END\n"
+      + "     ELSE\n"
+      + "          CASE\n"
+      + "               WHEN percentileInstanceCount.percentileInstanceCount = 0 THEN 1\n"
+      + "               ELSE CEILING(\n"
+      + "                   percentileInstanceCount.percentileInstanceCount / 20.0\n"
+      + "               )\n"
+      + "          END\n"
       + "   END AS serviceLicenses\n"
       + "FROM\n"
       + "   (\n"
@@ -65,13 +79,15 @@ public class CgCdLicenseUsageConstants {
       + "               instanceCountsPerReportedAt.instancecount\n"
       + "         ) AS percentileInstanceCount,\n"
       + "         appid,\n"
-      + "         serviceid\n"
+      + "         serviceid,\n"
+      + "         instancetype\n"
       + "      FROM\n"
       + "         (\n"
       + "            SELECT\n"
       + "               appid,\n"
       + "               serviceid,\n"
       + "               SUM(instancecount) AS instancecount,\n"
+      + "               instancetype,\n"
       + "               DATE_TRUNC('minute', reportedat) AS reportedat\n"
       + "            FROM\n"
       + "               instance_stats\n"
@@ -82,11 +98,13 @@ public class CgCdLicenseUsageConstants {
       + "            GROUP BY\n"
       + "               appid,\n"
       + "               serviceid,\n"
+      + "               instancetype,\n"
       + "               DATE_TRUNC('minute', reportedat)\n"
       + "         ) AS instanceCountsPerReportedAt\n"
       + "      GROUP BY\n"
       + "         appid,\n"
-      + "         serviceid\n"
+      + "         serviceid,\n"
+      + "         instancetype\n"
       + "   ) AS percentileInstanceCount";
   public static final String QUERY_FETCH_SERVICE_INSTANCE_USAGE = ""
       + "select percentile_disc(?) within group (order by instanceCountsPerReportedAt.instancecount) as percentileInstanceCount\n"

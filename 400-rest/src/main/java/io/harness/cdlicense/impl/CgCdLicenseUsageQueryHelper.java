@@ -10,6 +10,7 @@ package io.harness.cdlicense.impl;
 import static io.harness.cdlicense.bean.CgCdLicenseUsageConstants.FETCH_DEPLOYED_SERVICES_IN_LAST_N_DAYS;
 import static io.harness.cdlicense.bean.CgCdLicenseUsageConstants.FETCH_PERCENTILE_INSTANCE_AND_LICENSE_USAGE_FOR_SERVICES;
 import static io.harness.cdlicense.bean.CgCdLicenseUsageConstants.INSTANCE_COUNT_PERCENTILE_DISC;
+import static io.harness.cdlicense.bean.CgCdLicenseUsageConstants.LAMBDA_INSTANCE_TYPE;
 import static io.harness.cdlicense.bean.CgCdLicenseUsageConstants.MAX_RETRY;
 import static io.harness.cdlicense.bean.CgCdLicenseUsageConstants.QUERY_FECTH_SERVICES_IN_LAST_N_DAYS_DEPLOYMENT;
 import static io.harness.cdlicense.bean.CgCdLicenseUsageConstants.QUERY_FETCH_SERVICE_INSTANCE_USAGE;
@@ -177,10 +178,11 @@ public class CgCdLicenseUsageQueryHelper {
       try (Connection dbConnection = timeScaleDBService.getDBConnection();
            PreparedStatement fetchStatement =
                dbConnection.prepareStatement(FETCH_PERCENTILE_INSTANCE_AND_LICENSE_USAGE_FOR_SERVICES)) {
-        fetchStatement.setDouble(1, percentile);
-        fetchStatement.setString(2, accountId);
-        fetchStatement.setInt(3, timePeriod);
-        fetchStatement.setArray(4, dbConnection.createArrayOf("text", svcIds.toArray()));
+        fetchStatement.setArray(1, dbConnection.createArrayOf("text", LAMBDA_INSTANCE_TYPE.toArray()));
+        fetchStatement.setDouble(2, percentile);
+        fetchStatement.setString(3, accountId);
+        fetchStatement.setInt(4, timePeriod);
+        fetchStatement.setArray(5, dbConnection.createArrayOf("text", svcIds.toArray()));
 
         ResultSet resultSet = fetchStatement.executeQuery();
         percentileInstances = populatePercentileServiceInstance(resultSet);
