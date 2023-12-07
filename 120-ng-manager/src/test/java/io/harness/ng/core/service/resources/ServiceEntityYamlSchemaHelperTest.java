@@ -10,8 +10,6 @@ package io.harness.ng.core.service.resources;
 import static io.harness.rule.OwnerRule.PRATYUSH;
 import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 
-import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -23,7 +21,6 @@ import io.harness.EntityType;
 import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
-import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.service.services.impl.ServiceEntityYamlSchemaHelper;
 import io.harness.rule.Owner;
 import io.harness.yaml.validator.YamlSchemaValidator;
@@ -71,32 +68,7 @@ public class ServiceEntityYamlSchemaHelperTest extends CategoryTest {
   @Test
   @Owner(developers = PRATYUSH)
   @Category(UnitTests.class)
-  public void testThrowExceptionForInvalidServiceEntity() {
-    when(featureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.NG_SVC_ENV_REDESIGN)).thenReturn(true);
-    when(featureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.CDS_HELM_MULTIPLE_MANIFEST_SUPPORT_NG))
-        .thenReturn(false);
-    String yaml = "service:\n"
-        + "  name: er\n"
-        + "  identifier: er\n"
-        + "  tags: {}\n"
-        + "  serviceDefinition:\n"
-        + "    spec:\n"
-        + "      manifestConfigurations:\n"
-        + "        primaryManifestRef: manifest\n"
-        + "    type: Kubernetes\n";
-    assertThatThrownBy(() -> serviceEntityYamlSchemaHelper.validateSchema(ACCOUNT_ID, yaml))
-        .hasMessage(
-            format("Cannot use primaryManifestRef field. Please contact Harness Support to enable the feature flag: %s",
-                FeatureName.CDS_HELM_MULTIPLE_MANIFEST_SUPPORT_NG))
-        .isInstanceOf(InvalidRequestException.class);
-  }
-
-  @Test
-  @Owner(developers = PRATYUSH)
-  @Category(UnitTests.class)
   public void testServiceEntityWithFFEnabled() {
-    when(featureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.CDS_HELM_MULTIPLE_MANIFEST_SUPPORT_NG))
-        .thenReturn(true);
     when(featureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.NG_SVC_ENV_REDESIGN)).thenReturn(true);
     when(featureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.DISABLE_CDS_SERVICE_ENV_SCHEMA_VALIDATION))
         .thenReturn(false);

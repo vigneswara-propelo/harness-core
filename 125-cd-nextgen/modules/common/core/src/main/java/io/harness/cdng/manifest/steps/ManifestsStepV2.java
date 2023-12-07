@@ -746,8 +746,7 @@ public class ManifestsStepV2 implements SyncExecutable<EmptyStepParameters>, Asy
   }
 
   private boolean isMultipleManifestEnabled(String accountId, ManifestConfigurations manifestConfigurations) {
-    return ManifestFilterHelper.hasPrimaryManifestRef(manifestConfigurations)
-        && featureFlagHelperService.isEnabled(accountId, FeatureName.CDS_HELM_MULTIPLE_MANIFEST_SUPPORT_NG);
+    return ManifestFilterHelper.hasPrimaryManifestRef(manifestConfigurations);
   }
 
   private void resolve(Ambiance ambiance, Object... objects) {
