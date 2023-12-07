@@ -886,16 +886,6 @@ public abstract class WorkflowHandler {
     // Build Stage
     CustomStageConfig customStageConfig =
         CustomStageConfig.builder()
-            .environment(
-                EnvironmentYamlV2.builder()
-                    .deployToAll(ParameterField.createValueField(false))
-                    .environmentRef(ParameterField.createValueField(
-                        MigratorUtility.getIdentifierWithScope(context.getMigratedEntities(),
-                            context.getWorkflow().getEnvId(), NGMigrationEntityType.ENVIRONMENT)))
-                    .environmentInputs(getRuntimeInput())
-                    .serviceOverrideInputs(getRuntimeInput())
-                    .infrastructureDefinitions(ParameterField.createExpressionField(true, "<+input>", null, false))
-                    .build())
             .execution(ExecutionElementConfig.builder().steps(steps).rollbackSteps(rollbackSteps).build())
             .build();
 
@@ -1120,16 +1110,6 @@ public abstract class WorkflowHandler {
           ExecutionWrapperConfig.builder().step(JsonPipelineUtils.asTree(waitStepNode)).build();
       CustomStageConfig customStageConfig =
           CustomStageConfig.builder()
-              .environment(
-                  EnvironmentYamlV2.builder()
-                      .deployToAll(ParameterField.createValueField(false))
-                      .environmentRef(ParameterField.createValueField(
-                          MigratorUtility.getIdentifierWithScope(context.getMigratedEntities(),
-                              context.getWorkflow().getEnvId(), NGMigrationEntityType.ENVIRONMENT)))
-                      .environmentInputs(getRuntimeInput())
-                      .serviceOverrideInputs(getRuntimeInput())
-                      .infrastructureDefinitions(ParameterField.createExpressionField(true, "<+input>", null, false))
-                      .build())
               .execution(ExecutionElementConfig.builder().steps(Collections.singletonList(waitStep)).build())
               .build();
       CustomStageNode customStageNode = new CustomStageNode();
