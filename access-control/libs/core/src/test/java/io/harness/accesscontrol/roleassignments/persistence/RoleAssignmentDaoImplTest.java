@@ -323,9 +323,16 @@ public class RoleAssignmentDaoImplTest extends AccessControlCoreTestBase {
     assertEquals(2, document.size());
     if (roleAssignmentFilter.isIncludeChildScopes()) {
       BasicDBList orList = (BasicDBList) document.get("$or");
+
       Document scopeCriteria = (Document) orList.get(0);
-      Pattern pattern = (Pattern) scopeCriteria.get(RoleAssignmentDBOKeys.scopeIdentifier);
-      assertEquals("^" + roleAssignmentFilter.getScopeFilter(), pattern.toString());
+      BasicDBList orScopeIdentifierList = (BasicDBList) scopeCriteria.get("$or");
+
+      Document scopeCriteria1 = (Document) orScopeIdentifierList.get(0);
+      assertEquals(roleAssignmentFilter.getScopeFilter(), scopeCriteria1.get(RoleAssignmentDBOKeys.scopeIdentifier));
+
+      Document scopeCriteria2 = (Document) orScopeIdentifierList.get(1);
+      Pattern pattern = (Pattern) scopeCriteria2.get(RoleAssignmentDBOKeys.scopeIdentifier);
+      assertEquals("^" + roleAssignmentFilter.getScopeFilter() + "/", pattern.toString());
     } else {
       BasicDBList orList = (BasicDBList) document.get("$or");
       Document scopeCriteria = (Document) orList.get(0);

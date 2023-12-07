@@ -220,7 +220,7 @@ public class ResourceGroupServiceImplTest extends AccessControlCoreTestBase {
         Sets.difference(currentResourceGroup.getAllowedScopeLevels(), updatedResourceGroup.getAllowedScopeLevels());
     when(roleAssignmentService.deleteMulti(RoleAssignmentFilter.builder()
                                                .resourceGroupFilter(singleton(currentResourceGroup.getIdentifier()))
-                                               .scopeFilter("/")
+                                               .scopeFilter("")
                                                .includeChildScopes(true)
                                                .scopeLevelFilter(removedScopeLevels)
                                                .build()))
@@ -235,7 +235,7 @@ public class ResourceGroupServiceImplTest extends AccessControlCoreTestBase {
     verify(roleAssignmentService, times(1))
         .deleteMulti(RoleAssignmentFilter.builder()
                          .resourceGroupFilter(singleton(currentResourceGroup.getIdentifier()))
-                         .scopeFilter("/")
+                         .scopeFilter("")
                          .includeChildScopes(true)
                          .scopeLevelFilter(removedScopeLevels)
                          .build());

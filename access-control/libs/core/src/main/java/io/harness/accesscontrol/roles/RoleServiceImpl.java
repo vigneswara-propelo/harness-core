@@ -196,7 +196,7 @@ public class RoleServiceImpl implements RoleService {
             Sets.difference(currentRole.getAllowedScopeLevels(), roleUpdate.getAllowedScopeLevels());
         roleAssignmentService.deleteMulti(RoleAssignmentFilter.builder()
                                               .roleFilter(Collections.singleton(roleUpdate.getIdentifier()))
-                                              .scopeFilter("/")
+                                              .scopeFilter("")
                                               .includeChildScopes(true)
                                               .scopeLevelFilter(removedScopeLevels)
                                               .build());
@@ -257,7 +257,7 @@ public class RoleServiceImpl implements RoleService {
   private Role deleteManagedRole(String roleIdentifier) {
     return Failsafe.with(removeRoleTransactionPolicy).get(() -> transactionTemplate.execute(status -> {
       roleAssignmentService.deleteMulti(RoleAssignmentFilter.builder()
-                                            .scopeFilter("/")
+                                            .scopeFilter("")
                                             .includeChildScopes(true)
                                             .roleFilter(Sets.newHashSet(roleIdentifier))
                                             .build());

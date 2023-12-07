@@ -15,6 +15,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,6 +55,7 @@ import io.serializer.HObjectMapper;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -330,11 +332,11 @@ public class RolesManagementJobTest extends AccessControlTestBase {
                                      .build());
 
     PageRequest pageRequest = PageRequest.builder().pageSize(100).pageIndex(0).build();
-    assertEquals(3,
+    List<RoleAssignment> roleAssignmentList =
         roleAssignmentService
-            .list(pageRequest, RoleAssignmentFilter.builder().includeChildScopes(true).scopeFilter("/").build())
-            .getContent()
-            .size());
+            .list(pageRequest, RoleAssignmentFilter.builder().includeChildScopes(true).scopeFilter("").build())
+            .getContent();
+    assertThat(roleAssignmentList).hasSize(3);
 
     Set<String> permissions = new HashSet<>();
     permissions.add(NEW_PERMISSION);
@@ -356,11 +358,11 @@ public class RolesManagementJobTest extends AccessControlTestBase {
     RolesConfig rolesConfigClone = (RolesConfig) HObjectMapper.clone(rolesConfig);
     rolesManagementJob.run();
     validate(rolesConfigClone);
-    assertEquals(2,
+    roleAssignmentList =
         roleAssignmentService
-            .list(pageRequest, RoleAssignmentFilter.builder().includeChildScopes(true).scopeFilter("/").build())
-            .getContent()
-            .size());
+            .list(pageRequest, RoleAssignmentFilter.builder().includeChildScopes(true).scopeFilter("").build())
+            .getContent();
+    assertThat(roleAssignmentList).hasSize(2);
   }
 
   private RolesConfig addNewRole() {

@@ -137,8 +137,10 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDao {
               if (!scopeFilter.isIncludeChildScopes()) {
                 return Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).is(scopeFilter.getScope());
               } else {
-                Pattern startsWithScope = Pattern.compile("^".concat(scopeFilter.getScope()));
-                return Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).regex(startsWithScope);
+                Pattern startsWithScope = Pattern.compile("^".concat(scopeFilter.getScope()).concat("/"));
+                return new Criteria().orOperator(
+                    Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).is(scopeFilter.getScope()),
+                    Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).regex(startsWithScope));
               }
             })
             .collect(Collectors.toList());
@@ -148,8 +150,10 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDao {
         scopeCriteria.add(
             Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).is(roleAssignmentFilter.getScopeFilter()));
       } else {
-        Pattern startsWithScope = Pattern.compile("^".concat(roleAssignmentFilter.getScopeFilter()));
-        scopeCriteria.add(Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).regex(startsWithScope));
+        Pattern startsWithScope = Pattern.compile("^".concat(roleAssignmentFilter.getScopeFilter()).concat("/"));
+        scopeCriteria.add(new Criteria().orOperator(
+            Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).is(roleAssignmentFilter.getScopeFilter()),
+            Criteria.where(RoleAssignmentDBOKeys.scopeIdentifier).regex(startsWithScope)));
       }
     }
 
