@@ -318,6 +318,8 @@ ceGCPHomeProjectCreds: ""
 
 storageObjectAdmin: ""
 
+gcpSyncPythonImagePath: "placeholder"
+
 awsSecret:
   S3_SYNC_CONFIG_ACCESSKEY: ""
   S3_SYNC_CONFIG_SECRETKEY: ""
@@ -326,9 +328,9 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  create: false
+  create: true
   annotations: {}
-  name: "harness-default"
+  name: "batch-processing-default"
 
 podAnnotations: {}
 

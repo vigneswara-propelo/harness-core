@@ -344,6 +344,9 @@ if [[ "" != "$BATCH_JOB_METADATA_RETENTION_PERIOD" ]]; then
   export BATCH_JOB_METADATA_RETENTION_PERIOD; yq -i '.batchJobRepository.dataRetentionPeriodInDays=env(BATCH_JOB_METADATA_RETENTION_PERIOD)' $CONFIG_FILE
 fi
 
+if [[ "" != "$GCP_SYNC_PYTHON_IMAGE_PATH" ]]; then
+  export GCP_SYNC_PYTHON_IMAGE_PATH; yq -i '.gcpSyncSmpConfig.k8sJobPythonImage=env(GCP_SYNC_PYTHON_IMAGE_PATH)' $CONFIG_FILE
+fi
 
 replace_key_value cfClientConfig.apiKey "$CF_CLIENT_API_KEY"
 replace_key_value cfClientConfig.configUrl "$CF_CLIENT_CONFIG_URL"

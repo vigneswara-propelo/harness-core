@@ -216,6 +216,8 @@ clickHouseConfig:
   username: "default"
   password: ""
   socketTimeout: 86400000
+  sendReceiveTimeout: "86400"
+  queryRetries: "3"
 
 deployMode: KUBERNETES
 
@@ -283,3 +285,17 @@ awsServiceEndpointUrls:
   stsEndPointUrl: https://sts.us-east-1.amazonaws.com
   ecsEndPointUrl: https://ecs.us-east-1.amazonaws.com
   cloudwatchEndPointUrl: https://monitoring.us-east-1.amazonaws.com
+
+gcpSyncSmpConfig:
+  nextgenCeSecretName: "nextgen-ce"
+  batchProcessingSecretName: "batch-processing"
+  k8sJobContainerName: "python-gcp-sync-container"
+  k8sJobName: "python-gcp-sync-k8s-job"
+  k8sJobPythonImage: "placeholder"
+  batchProcessingConfigMapName: "batch-processing"
+  hmacSecretKey : "HMAC_SECRET_KEY"
+  hmacAccessKey : "HMAC_ACCESS_KEY"
+  batchProcessingMountSecretName: "batch-processing-secret-mount"
+  serviceAccountCredentialKey: "ce-batch-gcp-credentials"
+  clickHouseSecretName: "clickhouse"
+  clickHousePasswordKey: "admin-password"

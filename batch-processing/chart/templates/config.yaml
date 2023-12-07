@@ -12,6 +12,7 @@ metadata:
   {{- end }}
 data:
   DEPLOY_MODE: {{ .Values.global.deployMode | quote }}
+  NAMESPACE: {{ .Release.Namespace | quote }}
   MEMORY: {{ .Values.java.memory | quote }}
   REPLICA: {{ .Values.replicaCount | quote }}
   ISOLATED_REPLICA: {{ .Values.isolatedReplica | quote }}
@@ -59,6 +60,7 @@ data:
   AWS_ACCOUNT_TAGS_COLLECTION_JOB_ENABLED: {{ .Values.awsAccountTagsCollectionJobConfig.enabled | quote }}
   GCP_BQ_UPDATE_BATCH_ENABLED: "false"
   CF_CLIENT_API_KEY: {{ .Values.CF_CLIENT_API_KEY | quote }}
+  GCP_SYNC_PYTHON_IMAGE_PATH: {{ .Values.gcpSyncPythonImagePath | quote }}
   {{- if .Values.global.proxy.enabled }}
   PROXY_ENABLED: '{{ .Values.global.proxy.enabled }}'
   PROXY_HOST: {{ .Values.global.proxy.host }}

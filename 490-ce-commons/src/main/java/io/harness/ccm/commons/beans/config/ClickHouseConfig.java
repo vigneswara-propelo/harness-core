@@ -22,4 +22,6 @@ public class ClickHouseConfig {
   @JsonProperty Long socketTimeout;
   @ConfigSecret String username;
   @ConfigSecret String password;
+  @JsonProperty String sendReceiveTimeout;
+  @JsonProperty String queryRetries;
 }

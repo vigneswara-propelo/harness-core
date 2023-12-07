@@ -81,6 +81,7 @@ public class BatchMainConfig {
   @JsonProperty("proxy") private CEProxyConfig ceProxyConfig;
   @JsonProperty("cliProxy") private CEProxyConfig ceCliProxyConfig;
   @JsonProperty("awsServiceEndpointUrls") private CEAwsServiceEndpointConfig ceAwsServiceEndpointConfig;
+  @JsonProperty("gcpSyncSmpConfig") private GcpSyncSmpConfig gcpSyncSmpConfig;
 
   public List<String> getDbAliases() {
     List<String> dbAliases = new ArrayList<>();
