@@ -10,22 +10,14 @@ package io.harness.ssca.beans.drift;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import lombok.Builder;
+import lombok.Value;
 
 @OwnedBy(HarnessTeam.SSCA)
-public enum ComponentDriftStatus {
-  @JsonProperty("added") ADDED("added"),
-  @JsonProperty("modified") MODIFIED("modified"),
-  @JsonProperty("deleted") DELETED("deleted");
-
-  private String status;
-
-  ComponentDriftStatus(String status) {
-    this.status = status;
-  }
-
-  @Override
-  public String toString() {
-    return this.status;
-  }
+@Value
+@Builder
+public class ComponentDriftResults {
+  int totalComponentDrifts;
+  List<ComponentDrift> componentDrifts;
 }

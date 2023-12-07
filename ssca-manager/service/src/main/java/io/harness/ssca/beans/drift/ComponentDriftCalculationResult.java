@@ -13,7 +13,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ComponentDriftResult {
+public class ComponentDriftCalculationResult {
   Set<ComponentSummary> addedOrModifiedSet;
   Set<ComponentSummary> deletedOrModifiedSet;
 }

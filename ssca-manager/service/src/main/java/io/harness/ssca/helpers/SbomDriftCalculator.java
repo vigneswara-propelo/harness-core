@@ -11,8 +11,8 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.ssca.beans.drift.ComponentDrift;
+import io.harness.ssca.beans.drift.ComponentDriftCalculationResult;
 import io.harness.ssca.beans.drift.ComponentDriftComparator;
-import io.harness.ssca.beans.drift.ComponentDriftResult;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 import io.harness.ssca.beans.drift.ComponentSummary;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
@@ -33,22 +33,26 @@ public class SbomDriftCalculator {
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
 
   public List<ComponentDrift> findComponentDrifts(String baseOrchestrationId, String driftArtifactOrchestrationId) {
-    List<ComponentDriftResult> componentDriftResults = normalisedSbomComponentService.getComponentsByAggregation(
-        getComponentDriftAggregation(baseOrchestrationId, driftArtifactOrchestrationId), ComponentDriftResult.class);
+    List<ComponentDriftCalculationResult> componentDriftCalculationResults =
+        normalisedSbomComponentService.getComponentsByAggregation(
+            getComponentDriftAggregation(baseOrchestrationId, driftArtifactOrchestrationId),
+            ComponentDriftCalculationResult.class);
     List<ComponentDrift> componentDrifts = new ArrayList<>();
-    if (EmptyPredicate.isNotEmpty(componentDriftResults)) {
+    if (EmptyPredicate.isNotEmpty(componentDriftCalculationResults)) {
       // Our aggregation query ensures there is only one element returned in the list.
-      ComponentDriftResult componentDriftResult = componentDriftResults.get(0);
-      componentDrifts = mapComponentDriftResultsToComponentDrift(componentDriftResult);
+      ComponentDriftCalculationResult componentDriftCalculationResult = componentDriftCalculationResults.get(0);
+      componentDrifts = mapComponentDriftResultsToComponentDrift(componentDriftCalculationResult);
     }
     return componentDrifts;
   }
 
-  private List<ComponentDrift> mapComponentDriftResultsToComponentDrift(ComponentDriftResult componentDriftResult) {
+  private List<ComponentDrift> mapComponentDriftResultsToComponentDrift(
+      ComponentDriftCalculationResult componentDriftCalculationResult) {
     Map<String, ComponentSummary> addedOrModifiedMap = new HashMap<>();
     Map<String, ComponentSummary> deletedOrModifiedMap = new HashMap<>();
-    componentDriftResult.getAddedOrModifiedSet().forEach(e -> addedOrModifiedMap.put(e.getPackageName(), e));
-    componentDriftResult.getDeletedOrModifiedSet().forEach(e -> deletedOrModifiedMap.put(e.getPackageName(), e));
+    componentDriftCalculationResult.getAddedOrModifiedSet().forEach(e -> addedOrModifiedMap.put(e.getPackageName(), e));
+    componentDriftCalculationResult.getDeletedOrModifiedSet().forEach(
+        e -> deletedOrModifiedMap.put(e.getPackageName(), e));
 
     List<ComponentDrift> componentDrifts = new ArrayList<>();
     addedOrModifiedMap.forEach((k, v) -> {

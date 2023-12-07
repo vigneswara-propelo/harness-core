@@ -61,6 +61,9 @@ public class SbomDriftMapper {
   }
 
   private ComponentSummary toComponentSummaryResponse(io.harness.ssca.beans.drift.ComponentSummary componentSummary) {
+    if (componentSummary == null) {
+      return null;
+    }
     return new ComponentSummary()
         .packageName(componentSummary.getPackageName())
         .packageVersion(componentSummary.getPackageVersion())

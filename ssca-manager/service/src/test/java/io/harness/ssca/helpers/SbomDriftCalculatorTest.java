@@ -21,7 +21,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 import io.harness.ssca.beans.drift.ComponentDrift;
-import io.harness.ssca.beans.drift.ComponentDriftResult;
+import io.harness.ssca.beans.drift.ComponentDriftCalculationResult;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 import io.harness.ssca.beans.drift.ComponentSummary;
 import io.harness.ssca.services.NormalisedSbomComponentService;
@@ -46,7 +46,7 @@ public class SbomDriftCalculatorTest extends SSCAManagerTestBase {
   public void testFindComponentDrifts() {
     when(normalisedSbomComponentService.getComponentsByAggregation(any(), any()))
         .thenReturn(List.of(
-            ComponentDriftResult.builder()
+            ComponentDriftCalculationResult.builder()
                 .addedOrModifiedSet(Set.of(
                     ComponentSummary.builder().packageName("name").purl("purl").packageVersion("version").build(),
                     ComponentSummary.builder().packageName("name1").purl("purl").packageVersion("version1").build()))
@@ -59,7 +59,7 @@ public class SbomDriftCalculatorTest extends SSCAManagerTestBase {
 
     List<ComponentDrift> componentDrifts = sbomDriftCalculator.findComponentDrifts("base", "tag");
     verify(normalisedSbomComponentService)
-        .getComponentsByAggregation(argumentCaptor.capture(), eq(ComponentDriftResult.class));
+        .getComponentsByAggregation(argumentCaptor.capture(), eq(ComponentDriftCalculationResult.class));
     Aggregation aggregation = argumentCaptor.getValue();
     assertThat(aggregation.toString())
         .isEqualTo(
