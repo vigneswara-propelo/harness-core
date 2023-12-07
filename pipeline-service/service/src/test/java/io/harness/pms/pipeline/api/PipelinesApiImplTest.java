@@ -354,6 +354,21 @@ public class PipelinesApiImplTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = SHIVAM)
+  @Category(UnitTests.class)
+  public void testPipelineListForPatternException() {
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.DESC, PipelineEntityKeys.lastUpdatedAt));
+    Page<PipelineEntity> pipelineEntities = new PageImpl<>(Collections.singletonList(entityModified), pageable, 1);
+    doReturn(pipelineEntities).when(pmsPipelineService).list(any(), any(), any(), any(), any(), any());
+    doReturn(Collections.emptyMap())
+        .when(pipelineMetadataService)
+        .getMetadataForGivenPipelineIds(account, org, project, Collections.singletonList(identifier));
+    Response response = pipelinesApiImpl.listPipelines(
+        org, project, account, 0, 25, "{", null, null, null, null, null, null, null, null, null, null, null, null);
+    assertThat(response.getDate()).isNull();
+  }
+
+  @Test
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
   public void testStartPipelineValidationEvent() {

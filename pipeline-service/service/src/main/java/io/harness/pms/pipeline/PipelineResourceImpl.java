@@ -86,6 +86,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -392,9 +393,14 @@ public class PipelineResourceImpl implements YamlSchemaResource, PipelineResourc
       String searchTerm, String module, String filterIdentifier, GitEntityFindInfoDTO gitEntityBasicInfo,
       PipelineFilterPropertiesDto filterProperties, Boolean getDistinctFromBranches) {
     log.info(String.format("Get List of pipelines in project %s, org %s, account %s", projectId, orgId, accountId));
+    Criteria criteria;
+    try {
+      criteria = pipelineServiceHelper.formCriteria(
+          accountId, orgId, projectId, filterIdentifier, filterProperties, false, module, searchTerm);
+    } catch (PatternSyntaxException exception) {
+      return ResponseDTO.newResponse(Page.empty());
+    }
 
-    Criteria criteria = pipelineServiceHelper.formCriteria(
-        accountId, orgId, projectId, filterIdentifier, filterProperties, false, module, searchTerm);
     Pageable pageRequest =
         PageUtils.getPageRequest(page, size, sort, Sort.by(Sort.Direction.DESC, PipelineEntityKeys.lastUpdatedAt));
 

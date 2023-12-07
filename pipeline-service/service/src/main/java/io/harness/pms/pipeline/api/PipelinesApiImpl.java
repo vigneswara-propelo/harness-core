@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
@@ -286,10 +287,15 @@ public class PipelinesApiImpl implements PipelinesApi {
       String module, String filterId, List<String> pipelineIds, String name, String description, List<String> tags,
       List<String> services, List<String> envs, String deploymentType, String repoName) {
     log.info(String.format("Get List of Pipelines in project %s, org %s, account %s", project, org, account));
-    Criteria criteria = pipelineServiceHelper.formCriteria(account, org, project, filterId,
-        PipelinesApiUtils.getFilterProperties(
-            pipelineIds, name, description, tags, services, envs, deploymentType, repoName),
-        false, module, searchTerm);
+    Criteria criteria;
+    try {
+      criteria = pipelineServiceHelper.formCriteria(account, org, project, filterId,
+          PipelinesApiUtils.getFilterProperties(
+              pipelineIds, name, description, tags, services, envs, deploymentType, repoName),
+          false, module, searchTerm);
+    } catch (PatternSyntaxException exception) {
+      return Response.ok().build();
+    }
     List<String> sortingList = PipelinesApiUtils.getSorting(sort, order);
     Pageable pageRequest = PageUtils.getPageRequest(
         page, limit, sortingList, Sort.by(Sort.Direction.DESC, PipelineEntityKeys.lastUpdatedAt));

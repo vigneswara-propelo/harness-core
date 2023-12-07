@@ -677,6 +677,26 @@ public class PipelineResourceTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = SHIVAM)
+  @Category(UnitTests.class)
+  public void testGetListOfPipelinesPatternSyntax() {
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, PipelineEntityKeys.createdAt));
+    Page<PipelineEntity> pipelineEntities = new PageImpl<>(Collections.singletonList(entityWithVersion), pageable, 1);
+    doReturn(pipelineEntities).when(pmsPipelineService).list(any(), any(), any(), any(), any(), any());
+    doReturn(Collections.emptyMap())
+        .when(pipelineMetadataService)
+        .getMetadataForGivenPipelineIds(
+            ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, Collections.singletonList(PIPELINE_IDENTIFIER));
+    doReturn(true).when(accessControlClient).hasAccess(any(), any(), any());
+    List<PMSPipelineSummaryResponseDTO> content = pipelineResource
+                                                      .getListOfPipelines(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+                                                          0, 25, null, "{[]", null, null, null, null, null)
+                                                      .getData()
+                                                      .getContent();
+    assertThat(content.size()).isEqualTo(1);
+  }
+
+  @Test
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
   public void testGetExpandedPipelineJson() {

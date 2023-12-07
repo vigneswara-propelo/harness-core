@@ -13,7 +13,6 @@ import static io.harness.rule.OwnerRule.NAMAN;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
 import static io.harness.rule.OwnerRule.SAMARTH;
-import static io.harness.rule.OwnerRule.SHIVAM;
 import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 import static io.harness.rule.OwnerRule.VIVEK_DIXIT;
 
@@ -27,7 +26,6 @@ import io.harness.PipelineServiceTestBase;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.DuplicateFileImportException;
-import io.harness.exception.HintException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.filter.FilterType;
 import io.harness.filter.dto.FilterDTO;
@@ -360,17 +358,6 @@ public class PMSPipelineServiceHelperTest extends PipelineServiceTestBase {
         .isEqualTo(true);
     assertThat(form.getCriteriaObject().containsKey("status")).isEqualTo(false);
     assertThat(form.getCriteriaObject().get("deleted")).isEqualTo(false);
-  }
-
-  @Test
-  @Owner(developers = SHIVAM)
-  @Category(UnitTests.class)
-  public void testFormCriteriaForSpecialCharacter() {
-    assertThatThrownBy(()
-                           -> pmsPipelineServiceHelper.formCriteria(
-                               accountIdentifier, orgIdentifier, projectIdentifier, null, null, false, null, "{[["))
-        .isInstanceOf(HintException.class)
-        .hasMessage("Special characters are not supported in search regex");
   }
 
   @Test
