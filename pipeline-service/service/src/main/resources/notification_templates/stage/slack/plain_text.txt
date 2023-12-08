@@ -1,5 +1,5 @@
 {
-    "text" : "*Stage ${PIPELINE_STEP_NAME} ${NODE_STATUS} for pipeline <${PIPELINE_URL}|${PIPELINE}>*\n",
+    "text" : "*Stage ${PIPELINE_STEP_NAME} <${URL}|${NODE_STATUS}> for pipeline <${PIPELINE_URL}|${PIPELINE}>*\n",
     "attachments" : [
         {
           "color" : "${COLOR}",

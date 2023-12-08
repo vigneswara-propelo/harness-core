@@ -1,5 +1,5 @@
 {
-    "text" : "*Pipeline <${PIPELINE_URL}|${PIPELINE}> ${NODE_STATUS}*\n",
+    "text" : "*Pipeline <${PIPELINE_URL}|${PIPELINE}> <${URL}|${NODE_STATUS}>*\n",
     "attachments" : [
         {
           "color" : "${COLOR}",

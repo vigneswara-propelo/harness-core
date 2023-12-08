@@ -1,5 +1,5 @@
 {
-    "text" : "*Step ${PIPELINE_STEP_NAME} failed for pipeline <${PIPELINE_URL}|${PIPELINE}>*\n",
+    "text" : "*Step ${PIPELINE_STEP_NAME} <${URL}|failed> for pipeline <${PIPELINE_URL}|${PIPELINE}>*\n",
     "attachments" : [
         {
           "color" : "${COLOR}",
