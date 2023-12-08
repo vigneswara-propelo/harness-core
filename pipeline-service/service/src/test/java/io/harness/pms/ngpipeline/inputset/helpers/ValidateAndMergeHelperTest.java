@@ -476,7 +476,12 @@ public class ValidateAndMergeHelperTest extends PipelineServiceTestBase {
 
     InputSetEntity overlay = InputSetEntity.builder()
                                  .identifier(overlayId)
-                                 .inputSetReferences(Arrays.asList(inputSetId3, inputSetId4))
+                                 .yaml("version: 1\n"
+                                     + "kind: input-set\n"
+                                     + "spec:\n"
+                                     + "  input_sets:\n"
+                                     + "    - inputSet3\n"
+                                     + "    - inputSet4")
                                  .harnessVersion(HarnessYamlVersion.V1)
                                  .inputSetEntityType(InputSetEntityType.OVERLAY_INPUT_SET)
                                  .storeType(StoreType.INLINE)

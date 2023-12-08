@@ -131,7 +131,9 @@ public class InputSetEntity implements GitAware, GitSyncableEntity, PersistentEn
   @Wither @Size(max = 1024) String description;
   @Wither @Singular @Size(max = 128) List<NGTag> tags;
 
+  // For V1 InputSets we use type as INPUT_SET for both InputSet and Overlay InputSet
   @NotEmpty InputSetEntityType inputSetEntityType;
+  // Used By V0 Only, for V1 we calculate references from YAML
   @Wither List<String> inputSetReferences;
 
   @Setter @NonFinal @SchemaIgnore @FdIndex @CreatedDate @Builder.Default Long createdAt = 0L;

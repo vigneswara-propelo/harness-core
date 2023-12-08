@@ -47,21 +47,26 @@ import io.harness.pms.pipeline.service.PipelineCRUDErrorResponse;
 import io.harness.pms.plan.execution.StagesExecutionHelper;
 import io.harness.pms.stages.StagesExpressionExtractor;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.utils.PipelineGitXHelper;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_PIPELINE})
 @OwnedBy(PIPELINE)
@@ -327,18 +332,36 @@ public class ValidateAndMergeHelper {
         InputSetEntity inputSet = entity.get();
         inputSetVersions.add(inputSet.getHarnessVersion());
         checkAndThrowExceptionWhenPipelineAndInputSetStoreTypesAreDifferent(pipelineEntity, inputSet);
-        if (inputSet.getInputSetEntityType() == InputSetEntityType.INPUT_SET) {
-          inputSetJsonNodeList.add(YamlUtils.readAsJsonNode(inputSet.getYaml()));
-        } else {
-          List<String> overlayReferences = inputSet.getInputSetReferences();
-          overlayReferences.forEach(id -> {
-            Optional<InputSetEntity> entity2 = pmsInputSetService.getWithoutValidations(
-                accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, id, false, false, loadFromCache);
-            entity2.ifPresent(inputSetEntity -> {
-              checkAndThrowExceptionWhenPipelineAndInputSetStoreTypesAreDifferent(pipelineEntity, entity2.get());
-              inputSetJsonNodeList.add(YamlUtils.readAsJsonNode(inputSetEntity.getYaml()));
+        if (HarnessYamlVersion.V0.equals(inputSet.getHarnessVersion())) {
+          if (inputSet.getInputSetEntityType() == InputSetEntityType.INPUT_SET) {
+            inputSetJsonNodeList.add(YamlUtils.readAsJsonNode(inputSet.getYaml()));
+          } else {
+            List<String> overlayReferences = inputSet.getInputSetReferences();
+            overlayReferences.forEach(id -> {
+              Optional<InputSetEntity> entity2 = pmsInputSetService.getWithoutValidations(
+                  accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, id, false, false, loadFromCache);
+              entity2.ifPresent(inputSetEntity -> {
+                checkAndThrowExceptionWhenPipelineAndInputSetStoreTypesAreDifferent(pipelineEntity, entity2.get());
+                inputSetJsonNodeList.add(YamlUtils.readAsJsonNode(inputSetEntity.getYaml()));
+              });
             });
-          });
+          }
+        } else if (HarnessYamlVersion.V1.equals(inputSet.getHarnessVersion())) {
+          JsonNode inputSetNode = YamlUtils.readAsJsonNode(inputSet.getYaml());
+          if (isOverlayInputSetV1(inputSetNode)) {
+            Pair<List<JsonNode>, Set<String>> overlayReferencesAndVersions = getOverlayInputSetReferences(inputSetNode,
+                accountId, orgIdentifier, projectIdentifier, pipelineIdentifier, loadFromCache, pipelineEntity);
+            List<JsonNode> overlayReferences = overlayReferencesAndVersions.getLeft();
+            Set<String> overlayReferenceVersions = overlayReferencesAndVersions.getRight();
+            inputSetVersions.addAll(overlayReferenceVersions);
+            inputSetJsonNodeList.addAll(overlayReferences);
+            JsonNode overlayInputSetInputs = getOverlayInputSetInputs(inputSetNode);
+            if (null != overlayInputSetInputs) {
+              inputSetJsonNodeList.add(overlayInputSetInputs);
+            }
+          } else {
+            inputSetJsonNodeList.add(inputSetNode);
+          }
         }
       });
     }
@@ -348,6 +371,55 @@ public class ValidateAndMergeHelper {
         .pipelineTemplate(pipelineTemplate)
         .pipelineVersion(pipelineVersion)
         .build();
+  }
+
+  private JsonNode getOverlayInputSetInputs(JsonNode inputSetNode) {
+    if (inputSetNode.has(YAMLFieldNameConstants.SPEC)) {
+      JsonNode spec = inputSetNode.get(YAMLFieldNameConstants.SPEC);
+      ObjectNode specNode = (ObjectNode) spec;
+      specNode.remove(YAMLFieldNameConstants.INPUT_SETS);
+      if (!specNode.isEmpty()) {
+        return inputSetNode;
+      }
+    }
+    return null;
+  }
+
+  Pair<List<JsonNode>, Set<String>> getOverlayInputSetReferences(JsonNode inputSetNode, String accountId,
+      String orgIdentifier, String projectIdentifier, String pipelineIdentifier, boolean loadFromCache,
+      PipelineEntity pipelineEntity) {
+    List<JsonNode> overlayReferences = new LinkedList<>();
+    Set<String> inputSetVersions = new HashSet<>();
+    if (inputSetNode.has(YAMLFieldNameConstants.SPEC)) {
+      JsonNode spec = inputSetNode.get(YAMLFieldNameConstants.SPEC);
+      if (spec.has(YAMLFieldNameConstants.INPUT_SETS)) {
+        // Overlay InputSets contains input_sets key
+        JsonNode inputSetsList = spec.get(YAMLFieldNameConstants.INPUT_SETS);
+        if (inputSetsList instanceof ArrayNode) {
+          ArrayNode overlayInputSetReferences = (ArrayNode) inputSetsList;
+          for (JsonNode inputSetItem : overlayInputSetReferences) {
+            Optional<InputSetEntity> inputSetEntity = pmsInputSetService.getWithoutValidations(accountId, orgIdentifier,
+                projectIdentifier, pipelineIdentifier, inputSetItem.asText(), false, false, loadFromCache);
+            inputSetEntity.ifPresent(inputSetElement -> {
+              checkAndThrowExceptionWhenPipelineAndInputSetStoreTypesAreDifferent(pipelineEntity, inputSetEntity.get());
+              inputSetVersions.add(inputSetElement.getHarnessVersion());
+              overlayReferences.add(YamlUtils.readAsJsonNode(inputSetElement.getYaml()));
+            });
+          }
+        }
+      }
+    }
+    return Pair.of(overlayReferences, inputSetVersions);
+  }
+
+  private boolean isOverlayInputSetV1(JsonNode inputSetNode) {
+    if (inputSetNode.has(YAMLFieldNameConstants.SPEC)) {
+      JsonNode spec = inputSetNode.get(YAMLFieldNameConstants.SPEC);
+      if (spec.has(YAMLFieldNameConstants.INPUT_SETS)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public String mergeInputSetIntoPipeline(String accountId, String orgIdentifier, String projectIdentifier,

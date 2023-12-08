@@ -102,6 +102,7 @@ public class YAMLFieldNameConstants {
   public final String SERVICE = "service";
 
   public final String INPUT_SET_REFERENCES = "inputSetReferences";
+  public final String INPUT_SETS = "input_sets";
   public final String REPEAT = "repeat";
   public final String SERVICE_REF = "serviceRef";
   public final String ENVIRONMENT_REF = "environmentRef";
