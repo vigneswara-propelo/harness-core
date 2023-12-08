@@ -9,8 +9,6 @@ package io.harness.ngsettings.services.impl.validators;
 
 import static io.harness.rule.OwnerRule.BHAVYA;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;

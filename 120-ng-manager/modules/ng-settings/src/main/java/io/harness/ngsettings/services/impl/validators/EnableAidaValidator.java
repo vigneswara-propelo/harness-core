@@ -11,7 +11,6 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static java.lang.Boolean.parseBoolean;
 
-import io.harness.eula.AgreementType;
 import io.harness.eula.service.EulaService;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ngsettings.dto.SettingDTO;
