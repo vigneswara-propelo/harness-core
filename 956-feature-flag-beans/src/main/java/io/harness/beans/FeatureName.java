@@ -926,7 +926,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD(
       "Enable to dowmload Aws S3 buckets, folder or object inside container step group", HarnessTeam.CDP),
-  CDS_USER_CD_LICENSE_VIEW("Enable to show Users CD License usage on UI", HarnessTeam.CDP);
+  CDS_USER_CD_LICENSE_VIEW("Enable to show Users CD License usage on UI", HarnessTeam.CDP),
+  SSCA_USE_ELK("Enables ELK search for Artifact listing instead of Mongo", HarnessTeam.SSCA);
   // keep-sorted end
 
   @Deprecated
