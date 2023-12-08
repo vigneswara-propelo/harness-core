@@ -972,6 +972,11 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
                      .name(GitProviderUtils.buildRepoForGitlab(repository.getNamespace(), repository.getName()))
                      .build())
           .collect(Collectors.toList());
+    } else if (ConnectorType.HARNESS.equals(scmConnector.getConnectorType())) {
+      return emptyIfNull(response.getReposList())
+          .stream()
+          .map(repository -> GitRepositoryResponseDTO.builder().name(repository.getName()).build())
+          .collect(Collectors.toList());
     } else {
       return emptyIfNull(response.getReposList())
           .stream()

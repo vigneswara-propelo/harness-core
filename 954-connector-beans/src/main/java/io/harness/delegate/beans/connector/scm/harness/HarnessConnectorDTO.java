@@ -64,11 +64,14 @@ public class HarnessConnectorDTO extends ConnectorConfigDTO implements ScmConnec
   String gitConnectionUrl;
   @ApiModelProperty(hidden = true) @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) String apiUrl;
   @ApiModelProperty(hidden = true) @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) String slug;
+  @ApiModelProperty(hidden = true) @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) String accountId;
+  @ApiModelProperty(hidden = true) @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) String projectId;
+  @ApiModelProperty(hidden = true) @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) String orgId;
 
   @Builder
   public HarnessConnectorDTO(GitConnectionType connectionType, String url, String validationRepo,
       HarnessAuthenticationDTO authentication, HarnessApiAccessDTO apiAccess, boolean executeOnDelegate, String apiUrl,
-      String slug) {
+      String slug, String accountId, String orgId, String projectId) {
     this.connectionType = connectionType;
     this.url = url;
     this.validationRepo = validationRepo;
@@ -77,6 +80,9 @@ public class HarnessConnectorDTO extends ConnectorConfigDTO implements ScmConnec
     this.executeOnDelegate = executeOnDelegate;
     this.apiUrl = apiUrl;
     this.slug = slug;
+    this.accountId = accountId;
+    this.orgId = orgId;
+    this.projectId = projectId;
   }
 
   @Override
@@ -113,6 +119,9 @@ public class HarnessConnectorDTO extends ConnectorConfigDTO implements ScmConnec
 
   @Override
   public GitRepositoryDTO getGitRepositoryDetails() {
+    if (isNotEmpty(orgId)) {
+      return GitRepositoryDTO.builder().org(orgId).build();
+    }
     return GitRepositoryDTO.builder().org(GitClientHelper.getGitOwner(url, true)).build();
   }
 

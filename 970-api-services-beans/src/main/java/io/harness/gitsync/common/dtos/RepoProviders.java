@@ -21,6 +21,7 @@ public enum RepoProviders {
   @JsonProperty("bitbucket") BITBUCKET,
   @JsonProperty("azure") AZURE,
   @JsonProperty("bitbucketserver") BITBUCKET_SERVER,
+  @JsonProperty("harness") HARNESS,
   @JsonProperty("unknown") UNKNOWN;
 
   @JsonCreator(mode = JsonCreator.Mode.DELEGATING)

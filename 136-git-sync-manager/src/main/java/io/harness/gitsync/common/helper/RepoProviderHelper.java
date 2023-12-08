@@ -52,6 +52,8 @@ public class RepoProviderHelper {
         return RepoProviders.GITLAB;
       case AZURE_REPO:
         return RepoProviders.AZURE;
+      case HARNESS:
+        return RepoProviders.HARNESS;
       default:
         throw new InvalidRequestException("Unknown connector type " + connectorType);
     }
@@ -70,6 +72,8 @@ public class RepoProviderHelper {
         return RepoProviders.GITLAB;
       case AZURE_REPO:
         return RepoProviders.AZURE;
+      case HARNESS:
+        return RepoProviders.HARNESS;
       default:
         throw new InvalidRequestException("Unknown connector type " + connectorType);
     }
