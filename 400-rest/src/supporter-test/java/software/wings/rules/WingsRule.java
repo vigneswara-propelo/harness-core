@@ -12,6 +12,7 @@ import static io.harness.cache.CacheBackend.NOOP;
 import static io.harness.logging.LoggingInitializer.initializeLogging;
 import static io.harness.maintenance.MaintenanceController.forceMaintenance;
 import static io.harness.manage.GlobalContextManager.upsertGlobalContextRecord;
+import static io.harness.microservice.NotifyEngineTarget.ARTIFACT_COLLECTION;
 import static io.harness.microservice.NotifyEngineTarget.GENERAL;
 import static io.harness.waiter.OrchestrationNotifyEventListener.ORCHESTRATION;
 
@@ -102,6 +103,7 @@ import io.harness.waiter.OrchestrationNotifyEventListener;
 
 import software.wings.DataStorageMode;
 import software.wings.WingsTestModule;
+import software.wings.app.ArtifactCollectionNotifyEventListener;
 import software.wings.app.AuthModule;
 import software.wings.app.ExecutorConfig;
 import software.wings.app.ExecutorsConfig;
@@ -623,6 +625,13 @@ public class WingsRule implements MethodRule, InjectorRuleMixin, MongoRuleMixin 
               injector.getInstance(NotifyQueuePublisherRegister.class);
           notifyQueuePublisherRegister.register(
               ORCHESTRATION, payload -> publisher.send(asList(ORCHESTRATION), payload));
+        } else if (queueListenerClass.equals(ArtifactCollectionNotifyEventListener.class)) {
+          final QueuePublisher<NotifyEvent> publisher =
+              injector.getInstance(Key.get(new TypeLiteral<QueuePublisher<NotifyEvent>>() {}));
+          final NotifyQueuePublisherRegister notifyQueuePublisherRegister =
+              injector.getInstance(NotifyQueuePublisherRegister.class);
+          notifyQueuePublisherRegister.register(
+              ARTIFACT_COLLECTION, payload -> publisher.send(asList(ARTIFACT_COLLECTION), payload));
         }
         injector.getInstance(QueueListenerController.class).register(injector.getInstance(queueListenerClass), 2);
       }

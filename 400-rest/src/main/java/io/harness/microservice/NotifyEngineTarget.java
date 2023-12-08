@@ -19,4 +19,5 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class NotifyEngineTarget {
   public static final String GENERAL = "general";
+  public static final String ARTIFACT_COLLECTION = "artifact_collection";
 }

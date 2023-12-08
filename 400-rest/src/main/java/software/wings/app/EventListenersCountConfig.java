@@ -26,6 +26,7 @@ public class EventListenersCountConfig {
   int executionEventListenerCount;
   int generalNotifyEventListenerCount;
   int orchestrationNotifyEventListenerCount;
+  int artifactCollectionNotifyEventListenerCount;
   int notifyConsumerCount;
   int generalConsumerCount;
 }
