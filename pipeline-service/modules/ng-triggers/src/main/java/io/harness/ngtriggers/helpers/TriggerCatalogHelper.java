@@ -31,7 +31,6 @@ public class TriggerCatalogHelper {
   public List<TriggerCatalogItem> getTriggerTypeToCategoryMapping(String accountIdentifier) {
     final Map<NGTriggerType, List<TriggerCatalogType>> triggerCategoryListMap =
         Arrays.stream(TriggerCatalogType.values())
-            .filter(enumFilter.filter(accountIdentifier, FeatureName.CD_TRIGGER_V2))
             .filter(enumFilter.filter(accountIdentifier, FeatureName.NG_SVC_ENV_REDESIGN))
             .collect(Collectors.groupingBy(catalogType -> TriggerCatalogType.getTriggerCategory(catalogType)));
     return triggerCategoryListMap.entrySet()

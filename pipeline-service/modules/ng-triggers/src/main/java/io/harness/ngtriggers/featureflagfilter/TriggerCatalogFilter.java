@@ -7,7 +7,6 @@
 
 package io.harness.ngtriggers.featureflagfilter;
 
-import static io.harness.beans.FeatureName.CD_TRIGGER_V2;
 import static io.harness.beans.FeatureName.NG_SVC_ENV_REDESIGN;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
@@ -33,8 +32,6 @@ public class TriggerCatalogFilter {
   private final EnumMap<FeatureName, Set<Enum<?>>> enumTypeFeatureFlagMap = new EnumMap<>(FeatureName.class);
 
   public TriggerCatalogFilter() {
-    enumTypeFeatureFlagMap.put(
-        CD_TRIGGER_V2, Sets.newHashSet(TriggerCatalogType.AZURE_ARTIFACTS, TriggerCatalogType.AMI));
     enumTypeFeatureFlagMap.put(NG_SVC_ENV_REDESIGN, Sets.newHashSet(TriggerCatalogType.GOOGLE_CLOUD_STORAGE));
   }
 
