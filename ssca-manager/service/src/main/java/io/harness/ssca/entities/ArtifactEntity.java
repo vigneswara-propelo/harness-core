@@ -43,11 +43,11 @@ public class ArtifactEntity implements PersistentEntity {
   @Id String id;
   @Field("artifactid") String artifactId;
   @Field("orchestrationid") String orchestrationId;
-  String artifactCorrelationId;
+  @Setter @NonFinal String artifactCorrelationId;
   @NotEmpty String url;
   String name;
   String type;
-  String tag;
+  @Setter @NonFinal String tag;
   @Field("accountid") String accountId;
   @Field("orgid") String orgId;
   @Field("projectid") String projectId;
