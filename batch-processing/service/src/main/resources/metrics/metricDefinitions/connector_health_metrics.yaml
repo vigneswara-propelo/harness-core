@@ -1,0 +1,8 @@
+name: CCM Connector Health Metrics
+identifier: ccmConnectorHealthMetrics
+metricGroup: ccmConnectorHealthMetricsGroup
+metrics:
+  - metricName: batchproc_connectorHealthMetrics
+    metricDefinition: Connector Health Metrics
+    type: LastValue
+    unit: count

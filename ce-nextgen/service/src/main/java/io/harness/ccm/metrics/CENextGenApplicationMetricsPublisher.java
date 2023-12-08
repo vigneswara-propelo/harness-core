@@ -20,8 +20,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import com.google.inject.Inject;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
@@ -40,17 +38,17 @@ public class CENextGenApplicationMetricsPublisher implements MetricsPublisher {
   private static final String SERVICE_NAME = "ce-nextgen-application";
   private static final MetricFilter meterMetricFilter =
       MetricFilter.startsWith("io.dropwizard.jetty.MutableServletContextHandler");
+  private static final MetricFilter perspectiveMetricFilter = MetricFilter.contains("graphql");
 
   @Override
   public void recordMetrics() {
-    Set<Map.Entry<String, Meter>> meterSet = metricRegistry.getMeters(meterMetricFilter).entrySet();
-    meterSet.forEach(entry -> recordMeter(sanitizeMetricName(entry.getKey()), entry.getValue()));
-    Set<Map.Entry<String, Gauge>> gaugeSet = metricRegistry.getGauges().entrySet();
-    gaugeSet.forEach(entry -> recordGauge(sanitizeMetricName(entry.getKey()), entry.getValue()));
-    Set<Map.Entry<String, Timer>> timerSet = metricRegistry.getTimers().entrySet();
-    timerSet.forEach(entry -> recordTimer(sanitizeMetricName(entry.getKey()), entry.getValue()));
-    Set<Map.Entry<String, Counter>> counterSet = metricRegistry.getCounters().entrySet();
-    counterSet.forEach(entry -> recordCounter(sanitizeMetricName(entry.getKey()), entry.getValue()));
+    metricRegistry.getMeters(meterMetricFilter)
+        .forEach((key1, value1) -> recordMeter(sanitizeMetricName(key1), value1));
+    metricRegistry.getMeters(perspectiveMetricFilter)
+        .forEach((key, value) -> recordMeter(sanitizeMetricName(key), value));
+    metricRegistry.getGauges().forEach((key, value) -> recordGauge(sanitizeMetricName(key), value));
+    metricRegistry.getTimers().forEach((key, value) -> recordTimer(sanitizeMetricName(key), value));
+    metricRegistry.getCounters().forEach((key, value) -> recordCounter(sanitizeMetricName(key), value));
   }
 
   private void recordMeter(String metricName, Meter meter) {
@@ -106,6 +104,7 @@ public class CENextGenApplicationMetricsPublisher implements MetricsPublisher {
     try (CENextGenApplicationMetricsContext ignore =
              new CENextGenApplicationMetricsContext(NAMESPACE, CONTAINER_NAME, SERVICE_NAME)) {
       recordMetric(metricName + "_mean", snapshot.getMean() * SNAPSHOT_FACTOR);
+      recordMetric(metricName + "_max", snapshot.getMax() * SNAPSHOT_FACTOR);
       recordMetric(metricName + "_95thPercentile", snapshot.get95thPercentile() * SNAPSHOT_FACTOR);
       recordMetric(metricName + "_99thPercentile", snapshot.get99thPercentile() * SNAPSHOT_FACTOR);
       recordMetric(metricName + "_999thPercentile", snapshot.get999thPercentile() * SNAPSHOT_FACTOR);

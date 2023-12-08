@@ -5,15 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.batch.processing.tasklet;
+package io.harness.batch.processing.k8s;
+
+import static io.harness.batch.processing.svcmetrics.BatchProcessingMetricName.CLUSTER_HEALTH;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.batch.processing.ccm.CCMJobConstants;
-import io.harness.ccm.commons.beans.JobConstants;
+import io.harness.batch.processing.svcmetrics.ConnectorHealthContext;
 import io.harness.ccm.health.LastReceivedPublishedMessageDao;
 import io.harness.delegate.beans.Delegate;
 import io.harness.delegate.beans.DelegateInstanceStatus;
+import io.harness.metrics.service.api.MetricService;
 import io.harness.perpetualtask.internal.PerpetualTaskRecord;
 import io.harness.perpetualtask.internal.PerpetualTaskRecordDao;
 
@@ -30,29 +32,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @OwnedBy(HarnessTeam.CE)
 @Slf4j
 @Singleton
-public class DelegateHealthCheckTasklet implements Tasklet {
+@Service
+public class DelegateHealthCheckService {
   @Autowired private PerpetualTaskRecordDao perpetualTaskRecordDao;
   @Autowired private LastReceivedPublishedMessageDao lastReceivedPublishedMessageDao;
   @Autowired private CloudToHarnessMappingService cloudToHarnessMappingService;
+  @Autowired private MetricService metricService;
 
   private static final int BATCH_SIZE = 20;
   private static final long DELAY_IN_MINUTES_FOR_LAST_RECEIVED_MSG = 90;
   private static final long MINUTES_FOR_HEALTHY_DELEGATE_HEARTBEAT = 5;
+  private static final String HEALTHY_STATUS = "HEALTHY";
+  private static final String UNHEALTHY_STATUS = "UNHEALTHY";
 
-  @Override
-  public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) {
-    final JobConstants jobConstants = CCMJobConstants.fromContext(chunkContext);
-    String accountId = jobConstants.getAccountId();
-    Instant endTime = Instant.ofEpochMilli(jobConstants.getJobEndTime());
+  public void run(String accountId) {
+    Instant startTime = Instant.now();
     List<PerpetualTaskRecord> perpetualTasks =
         perpetualTaskRecordDao.listValidK8sWatchPerpetualTasksForAccount(accountId);
     List<String> clusterIds = new ArrayList<>();
@@ -68,13 +68,13 @@ public class DelegateHealthCheckTasklet implements Tasklet {
       clusterIds.add(clusterId);
       clusterIdToDelegateIdMap.put(clusterId, perpetualTask.getDelegateId());
     }
-    Instant allowedTime = endTime.minus(Duration.ofMinutes(DELAY_IN_MINUTES_FOR_LAST_RECEIVED_MSG));
+    Instant allowedTime = startTime.minus(Duration.ofMinutes(DELAY_IN_MINUTES_FOR_LAST_RECEIVED_MSG));
     for (List<String> clusterIdsBatch : Lists.partition(clusterIds, BATCH_SIZE)) {
       List<String> delegateIds =
           clusterIdsBatch.stream().map(clusterIdToDelegateIdMap::get).collect(Collectors.toList());
       List<Delegate> delegates = cloudToHarnessMappingService.obtainDelegateDetails(accountId, delegateIds);
       Set<String> healthyDelegates = delegates.stream()
-                                         .filter(delegate -> isDelegateHealthy(delegate, endTime))
+                                         .filter(delegate -> isDelegateHealthy(delegate, startTime))
                                          .map(Delegate::getUuid)
                                          .collect(Collectors.toSet());
       List<String> healthyClusters =
@@ -84,19 +84,23 @@ public class DelegateHealthCheckTasklet implements Tasklet {
       Map<String, Long> lastReceivedTimeForClusters =
           lastReceivedPublishedMessageDao.getLastReceivedTimeForClusters(accountId, healthyClusters);
       for (String clusterId : healthyClusters) {
+        String healthStatus = HEALTHY_STATUS;
         if (!lastReceivedTimeForClusters.containsKey(clusterId)
             || Instant.ofEpochMilli(lastReceivedTimeForClusters.get(clusterId)).isBefore(allowedTime)) {
           log.info("Delegate health check failed for clusterId: {}, delegateId: {}", clusterId,
               clusterIdToDelegateIdMap.get(clusterId));
+          healthStatus = UNHEALTHY_STATUS;
+        }
+        try (ConnectorHealthContext x = new ConnectorHealthContext(accountId, clusterId, healthStatus)) {
+          metricService.incCounter(CLUSTER_HEALTH);
         }
       }
     }
-    return null;
   }
 
-  private boolean isDelegateHealthy(Delegate delegate, Instant endTime) {
+  private boolean isDelegateHealthy(Delegate delegate, Instant now) {
     return delegate.getStatus().equals(DelegateInstanceStatus.ENABLED)
         && Instant.ofEpochMilli(delegate.getLastHeartBeat())
-               .isAfter(endTime.minus(Duration.ofMinutes(MINUTES_FOR_HEALTHY_DELEGATE_HEARTBEAT)));
+               .isAfter(now.minus(Duration.ofMinutes(MINUTES_FOR_HEALTHY_DELEGATE_HEARTBEAT)));
   }
 }

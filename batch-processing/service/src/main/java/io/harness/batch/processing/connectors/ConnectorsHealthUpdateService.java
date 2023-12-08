@@ -11,6 +11,8 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.batch.processing.config.BatchMainConfig;
 import io.harness.batch.processing.shard.AccountShardService;
+import io.harness.batch.processing.svcmetrics.BatchProcessingMetricName;
+import io.harness.batch.processing.svcmetrics.ConnectorHealthContext;
 import io.harness.connector.ConnectorFilterPropertiesDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResourceClient;
@@ -20,6 +22,7 @@ import io.harness.delegate.beans.connector.CEFeatures;
 import io.harness.delegate.beans.connector.CcmConnectorFilter;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.filter.FilterType;
+import io.harness.metrics.service.api.MetricService;
 import io.harness.ng.beans.PageResponse;
 import io.harness.remote.client.NGRestUtils;
 
@@ -38,6 +41,7 @@ public class ConnectorsHealthUpdateService {
   @Autowired private ConnectorResourceClient connectorResourceClient;
   @Autowired private BatchMainConfig mainConfig;
   @Autowired private AccountShardService accountShardService;
+  @Autowired private MetricService metricService;
 
   public void update() {
     List<String> accountIds = accountShardService.getCeEnabledAccountIds();
@@ -70,6 +74,11 @@ public class ConnectorsHealthUpdateService {
         NGRestUtils.getResponse(connectorResourceClient.testConnectionInternal(
             connector.getConnector().getIdentifier(), accountId, null, null));
     log.info("connectorValidationResult {}", connectorValidationResult);
+    // record metric for connector health
+    try (ConnectorHealthContext x = new ConnectorHealthContext(
+             accountId, connector.getConnector().getIdentifier(), connectorValidationResult.getStatus().name())) {
+      metricService.incCounter(BatchProcessingMetricName.CONNECTOR_HEALTH);
+    }
   }
 
   public List<ConnectorResponseDTO> getNextGenConnectorResponses(String accountId) {

@@ -1,0 +1,8 @@
+name: CCM Cluster Health Metrics
+identifier: ccmClusterHealthMetrics
+metricGroup: ccmClusterHealthMetricsGroup
+metrics:
+  - metricName: batchproc_clusterHealthMetrics
+    metricDefinition: Cluster Health Metrics
+    type: LastValue
+    unit: count

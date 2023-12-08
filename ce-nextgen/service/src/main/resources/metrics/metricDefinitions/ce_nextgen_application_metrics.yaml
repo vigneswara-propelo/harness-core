@@ -118,3 +118,23 @@ metrics:
     metricDefinition: Jetty - Connection Count
     type: LastValue
     unit: count
+  - metricName: io_harness_ccm_remote_resources_GraphQLController_graphql_meter_count
+    metricDefinition: GraphQL - Requests per second
+    type: LastValue
+    unit: count
+  - metricName: io_harness_ccm_remote_resources_GraphQLController_graphql_meter_fiveMinuteRate
+    metricDefinition: GraphQL - Average no. of requests per second over 5 minutes
+    type: LastValue
+    unit: count
+  - metricName: io_harness_ccm_remote_resources_GraphQLController_graphql_timer_snapshot_999thPercentile
+    metricDefinition: GraphQL - P999 Response Time
+    type: LastValue
+    unit: count
+  - metricName: io_harness_ccm_remote_resources_GraphQLController_graphql_timer_snapshot_99thPercentile
+    metricDefinition: GraphQL - P99 Response Time
+    type: LastValue
+    unit: count
+  - metricName: io_harness_ccm_remote_resources_GraphQLController_graphql_timer_snapshot_95thPercentile
+    metricDefinition: GraphQL - P95 Response Time
+    type: LastValue
+    unit: count

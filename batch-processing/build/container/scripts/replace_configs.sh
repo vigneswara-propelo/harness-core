@@ -232,6 +232,10 @@ if [[ "" != "$CONNECTOR_HEALTH_UPDATE_CRON" ]]; then
   export CONNECTOR_HEALTH_UPDATE_CRON; yq -i '.scheduler-jobs-config.connectorHealthUpdateJobCron=env(CONNECTOR_HEALTH_UPDATE_CRON)' $CONFIG_FILE
 fi
 
+if [[ "" != "$DELEGATE_HEALTH_UPDATE_CRON" ]]; then
+  export DELEGATE_HEALTH_UPDATE_CRON; yq -i '.scheduler-jobs-config.delegateHealthUpdateJobCron=env(DELEGATE_HEALTH_UPDATE_CRON)' $CONFIG_FILE
+fi
+
 if [[ "" != "$AWS_ACCOUNT_TAGS_COLLECTION_CRON" ]]; then
   export AWS_ACCOUNT_TAGS_COLLECTION_CRON; yq -i '.scheduler-jobs-config.awsAccountTagsCollectionJobCron=env(AWS_ACCOUNT_TAGS_COLLECTION_CRON)' $CONFIG_FILE
 fi
@@ -322,6 +326,10 @@ fi
 
 if [[ "" != "$CONNECTOR_HEALTH_UPDATE_JOB_ENABLED" ]]; then
   export CONNECTOR_HEALTH_UPDATE_JOB_ENABLED; yq -i '.connectorHealthUpdateJobConfig.enabled=env(CONNECTOR_HEALTH_UPDATE_JOB_ENABLED)' $CONFIG_FILE
+fi
+
+if [[ "" != "$DELEGATE_HEALTH_UPDATE_JOB_ENABLED" ]]; then
+  export DELEGATE_HEALTH_UPDATE_JOB_ENABLED; yq -i '.delegateHealthUpdateJobConfig.enabled=env(DELEGATE_HEALTH_UPDATE_JOB_ENABLED)' $CONFIG_FILE
 fi
 
 if [[ "" != "$AWS_ACCOUNT_TAGS_COLLECTION_JOB_ENABLED" ]]; then

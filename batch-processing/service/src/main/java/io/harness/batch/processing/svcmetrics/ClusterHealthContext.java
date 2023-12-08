@@ -9,17 +9,15 @@ package io.harness.batch.processing.svcmetrics;
 
 import io.harness.metrics.AutoMetricContext;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @NoArgsConstructor
-public class BatchJobContext extends AutoMetricContext {
-  public BatchJobContext(String accountId, String batchJobType, String batchJobStatus) {
+public class ClusterHealthContext extends AutoMetricContext {
+  public ClusterHealthContext(String accountId, String clusterId, String healthStatus) {
     put("accountId", accountId);
-    put("batchJobType", batchJobType);
-    put("batchJobStatus", batchJobStatus);
+    put("clusterId", clusterId);
+    put("healthStatus", healthStatus);
   }
 }

@@ -67,6 +67,7 @@ public class BatchMainConfig {
   @JsonProperty("managerServiceHttpClientConfig") private ServiceHttpClientConfig managerServiceHttpClientConfig;
   @JsonProperty("banzaiRecommenderConfig") private ServiceHttpClientConfig banzaiRecommenderConfig;
   @JsonProperty("connectorHealthUpdateJobConfig") private ConnectorHealthUpdateJobConfig connectorHealthUpdateJobConfig;
+  @JsonProperty("delegateHealthUpdateJobConfig") private DelegateHealthUpdateJobConfig delegateHealthUpdateJobConfig;
   @JsonProperty("awsAccountTagsCollectionJobConfig")
   private AwsAccountTagsCollectionJobConfig awsAccountTagsCollectionJobConfig;
   @JsonProperty("gcpConfig") private GcpConfig gcpConfig;

@@ -34,6 +34,7 @@ import io.harness.batch.processing.connectors.ConnectorsHealthUpdateService;
 import io.harness.batch.processing.datadeletion.CCMDataDeletionService;
 import io.harness.batch.processing.events.timeseries.service.intfc.CostEventService;
 import io.harness.batch.processing.governance.GovernanceRecommendationService;
+import io.harness.batch.processing.k8s.DelegateHealthCheckService;
 import io.harness.batch.processing.metrics.ProductMetricsService;
 import io.harness.batch.processing.reports.ScheduledReportServiceImpl;
 import io.harness.batch.processing.service.AccountExpiryCleanupService;
@@ -108,6 +109,7 @@ public class EventJobScheduler {
   @Autowired private CfClient cfClient;
   @Autowired private FeatureFlagService featureFlagService;
   @Autowired private ConnectorsHealthUpdateService connectorsHealthUpdateService;
+  @Autowired private DelegateHealthCheckService delegateHealthCheckService;
   @Autowired private K8SWorkloadService k8SWorkloadService;
   @Autowired private AwsAccountTagsCollectionService awsAccountTagsCollectionService;
   @Autowired private UtilizationDataServiceImpl utilizationDataService;
@@ -416,6 +418,20 @@ public class EventJobScheduler {
       log.info("Updated health of the connectors in NG");
     } catch (Exception ex) {
       log.error("Exception while running runNGConnectorsHealthUpdateJob", ex);
+    }
+  }
+
+  @Scheduled(cron = "${scheduler-jobs-config.delegateHealthUpdateJobCron}")
+  public void runDelegateHealthCheckJob() {
+    try {
+      if (!batchMainConfig.getDelegateHealthUpdateJobConfig().isEnabled()) {
+        log.info("delegateHealthCheckJob is disabled in config");
+        return;
+      }
+      accountShardService.getCeEnabledAccountIds().forEach(accountId -> delegateHealthCheckService.run(accountId));
+      log.info("Delegate Health Check completed");
+    } catch (Exception ex) {
+      log.error("Exception while running delegateHealthCheckJob", ex);
     }
   }
 

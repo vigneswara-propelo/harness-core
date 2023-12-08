@@ -18,6 +18,8 @@ import io.harness.ccm.graphql.utils.annotations.GraphQLApi;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.security.annotations.PublicApi;
 
+import com.codahale.metrics.annotation.Metered;
+import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -65,6 +67,8 @@ public class GraphQLController {
   private static final DataLoaderRegistry registry = new DataLoaderRegistry();
   private static String schemaAsString;
   private static final String BASE_PACKAGE = "io.harness.ccm.graphql";
+  private static final String GRAPHQL_TIMER = "graphql_timer";
+  private static final String GRAPHQL_METER = "graphql_meter";
 
   @Inject
   public GraphQLController(final Injector injector) {
@@ -106,6 +110,8 @@ public class GraphQLController {
 
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
+  @Timed(name = GRAPHQL_TIMER)
+  @Metered(name = GRAPHQL_METER)
   public Map<String, Object> execute(
       @NotBlank @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -119,6 +125,8 @@ public class GraphQLController {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
+  @Timed(name = GRAPHQL_TIMER)
+  @Metered(name = GRAPHQL_METER)
   public Map<String, Object> execute(
       @NotBlank @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,

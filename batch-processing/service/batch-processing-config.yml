@@ -133,7 +133,8 @@ scheduler-jobs-config:
   budgetAlertsJobCron: "0 30 14 * * ?"
   weeklyReportsJobCron: "0 0 14 * * MON"
   budgetCostUpdateJobCron: "0 0 14 * * ?"
-  connectorHealthUpdateJobCron: "0 0 14 * * ?"
+  connectorHealthUpdateJobCron: "0 0 10,22 * * ?"
+  delegateHealthUpdateJobCron: "0 0 10,22 * * ?"
   awsAccountTagsCollectionJobCron : "0 0 9 * * ?"
   governanceRecommendationJobCronAws : "0 0 0 * * *"
   governanceRecommendationJobCronAzure : "0 0 8 * * *"
@@ -169,6 +170,9 @@ ceNgServiceSecret: UeWgUReGXlbrB0zkDCBFz1EDfU1zrXbhAbGfQ8jsSCaA881SYFMlHqnn3OQnA
 awsCurBilling: true
 
 connectorHealthUpdateJobConfig:
+  enabled: true
+
+delegateHealthUpdateJobConfig:
   enabled: true
 
 awsAccountTagsCollectionJobConfig:

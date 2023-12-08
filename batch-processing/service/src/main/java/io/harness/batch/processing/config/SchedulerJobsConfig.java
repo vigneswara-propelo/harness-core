@@ -19,6 +19,7 @@ public class SchedulerJobsConfig {
   private String weeklyReportsJobCron;
   private String budgetCostUpdateJobCron;
   private String connectorHealthUpdateJobCron;
+  private String delegateHealthUpdateJobCron;
   private String awsAccountTagsCollectionJobCron;
   private String governanceRecommendationJobCronAws;
   private String governanceRecommendationJobCronAzure;
