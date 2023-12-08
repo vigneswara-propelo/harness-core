@@ -1,7 +1,9 @@
 identifier: dynatrace
 name: Dynatrace
 description: View monitoring info from Dynatrace for services in your software catalog.
-createdBy: Dynatrace
+accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
+creator: Dynatrace
 category: Monitoring
 source: https://github.com/backstage/backstage/tree/master/plugins/dynatrace
 iconUrl: https://backstage.io/img/dynatrace.svg

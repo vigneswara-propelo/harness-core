@@ -2,6 +2,7 @@ identifier: github-insights
 name: GitHub Insights
 description: View GitHub Insights for your components in Backstage.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: roadie.io
 category: Source Control Mgmt
 source: https://roadie.io/backstage/plugins/github-insights/?utm_source=backstage.io&utm_medium=marketplace&utm_campaign=github-insights

@@ -2,6 +2,7 @@ identifier: circleci
 name: CircleCI
 description: Automate your development process with CI hosted in the cloud or on a private server.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: Spotify
 category: CI/CD
 source: https://github.com/backstage/backstage/tree/master/plugins/circleci

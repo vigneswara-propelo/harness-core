@@ -2,6 +2,7 @@ identifier: jira
 name: Jira
 description: View Jira summary for your projects in Backstage.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: roadie.io
 category: Agile Planning
 source: https://roadie.io/backstage/plugins/jira/?utm_source=backstage.io&utm_medium=marketplace&utm_campaign=jira

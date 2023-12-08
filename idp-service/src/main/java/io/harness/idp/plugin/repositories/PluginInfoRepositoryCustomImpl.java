@@ -60,6 +60,7 @@ public class PluginInfoRepositoryCustomImpl implements PluginInfoRepositoryCusto
   private Update buildUpdateQuery(PluginInfoEntity pluginInfoEntity) {
     Update update = new Update();
     update.set(PluginInfoEntityKeys.name, pluginInfoEntity.getName());
+    update.set(PluginInfoEntityKeys.type, pluginInfoEntity.getType());
     update.set(PluginInfoEntityKeys.description, pluginInfoEntity.getDescription());
     update.set(PluginInfoEntityKeys.creator, pluginInfoEntity.getCreator());
     update.set(PluginInfoEntityKeys.category, pluginInfoEntity.getCategory());

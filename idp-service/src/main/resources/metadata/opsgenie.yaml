@@ -2,6 +2,7 @@ identifier: opsgenie
 name: OpsGenie
 description: Opsgenie offers a simple way to associate alerts to components and visualize incidents.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: K-Phoen
 category: Monitoring
 source: https://github.com/K-Phoen/backstage-plugin-opsgenie/

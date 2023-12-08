@@ -2,6 +2,7 @@ identifier: github-catalog-discovery
 name: Github Catalog Discovery
 description: The plugin searches your GitHub orgs and registers any `catalog-info.yaml` files present in any repository.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: Spotify
 category: Discovery
 source: https://backstage.io/docs/integrations/github/discovery

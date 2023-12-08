@@ -2,6 +2,7 @@ identifier: confluence
 name: Confluence Search
 description: Index Confluence pages into IDP to allow you to search them with the IDP Search feature.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: K-Phoen
 category: Search
 source: https://github.com/K-Phoen/backstage-plugin-confluence/tree/main/plugins/search-confluence-backend

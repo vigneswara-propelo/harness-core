@@ -2,6 +2,7 @@ identifier: lighthouse
 name: Lighthouse
 description: Google's Lighthouse tool is a great resource for benchmarking and improving the accessibility, performance, SEO, and best practices of your website.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: Spotify
 category: Quality
 source: https://github.com/backstage/backstage/tree/master/plugins/lighthouse

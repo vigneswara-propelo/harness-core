@@ -2,6 +2,7 @@ identifier: harness-ci-cd
 name: Harness CI/CD
 description: This plugin lets you view Harness pipeline execution details inside Backstage.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: harness.io
 category: CI/CD
 core: true

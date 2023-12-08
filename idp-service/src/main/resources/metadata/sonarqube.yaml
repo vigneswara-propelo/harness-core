@@ -2,6 +2,7 @@ identifier: sonarqube
 name: SonarQube
 description: Displays code statistics from SonarCloud or SonarQube.
 accountIdentifier: __GLOBAL_ACCOUNT_ID__
+type: DEFAULT
 creator: SDA-SE
 category: Quality
 source: https://github.com/backstage/backstage/tree/master/plugins/sonarqube
