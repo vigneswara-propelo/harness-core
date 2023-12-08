@@ -377,6 +377,7 @@ public interface NGTriggerResource {
 
   @PATCH
   @Path("/bulk-toggle")
+  @InternalApi
   ResponseDTO<BulkTriggersResponseDTO> bulkToggleTriggers(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @NotNull @Body BulkTriggersRequestDTO bulkTriggersRequestDTO);
