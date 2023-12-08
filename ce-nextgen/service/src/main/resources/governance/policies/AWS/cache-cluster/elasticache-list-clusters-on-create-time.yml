@@ -1,5 +1,5 @@
 policies:
-  - name: elasticache-delete-stale-clusters
+  - name: elasticache-list-clusters-on-create-time
     resource: cache-cluster
     filters:
       - type: value
@@ -7,6 +7,3 @@ policies:
         key: CacheClusterCreateTime
         op: ge
         value: 90
-    actions:
-      - type: delete
-        skip-snapshot: false

@@ -50,7 +50,7 @@ public final class GovernancePoliciesPromptConstants {
     AWS_SAMPLE_POLICIES_FOR_RESOURCE.put("asg", List.of("asg-unused-list", "asg-suspend-processes"));
     AWS_SAMPLE_POLICIES_FOR_RESOURCE.put("app-elb", List.of("alb-http2-enabled", "turn-on-elb-deletion-protection"));
     AWS_SAMPLE_POLICIES_FOR_RESOURCE.put(
-        "cache-cluster", List.of("elasticache-cluster-list", "elasticache-delete-stale-clusters"));
+        "cache-cluster", List.of("elasticache-cluster-list", "elasticache-list-clusters-on-create-time"));
     AWS_SAMPLE_POLICIES_FOR_RESOURCE.put("ebs", List.of("ebs-unencrypted-ebs-list", "delete-unattached-volumes"));
     AWS_SAMPLE_POLICIES_FOR_RESOURCE.put(
         "ebs-snapshot", List.of("ebs-old-ebs-snapshots-list", "delete-snapshot-with-no-volume"));

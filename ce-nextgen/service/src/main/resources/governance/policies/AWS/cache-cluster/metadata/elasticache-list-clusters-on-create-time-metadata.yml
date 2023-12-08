@@ -1,0 +1,8 @@
+isOOTB: true
+forRecommendation: true
+deleted: false
+name: elasticache-list-clusters-on-create-time
+cloudProvider: AWS
+resourceType: cache-cluster
+description: List cache cluster and their snapshot which are older than 90 days
+rulesYamlPath: ../elasticache-list-clusters-on-create-time.yml
