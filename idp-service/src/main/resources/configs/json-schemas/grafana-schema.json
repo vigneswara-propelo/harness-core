@@ -35,7 +35,7 @@
               "title": "Target",
               "type": "string",
               "default": "",
-              "pattern": "^.*$"
+              "pattern": "((http|https)://)(www.)?[a-zA-Z0-9-@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)"
             },
             "pathRewrite": {
               "$id": "#root/proxy//grafana/api/pathRewrite",
@@ -92,7 +92,7 @@
           "title": "Domain",
           "type": "string",
           "default": "",
-          "pattern": "^.*$"
+          "pattern": "((http|https)://)(www.)?[a-zA-Z0-9-@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)"
         },
         "unifiedAlerting": {
           "$id": "#root/grafana/unifiedAlerting",

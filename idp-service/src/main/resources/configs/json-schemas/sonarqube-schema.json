@@ -47,7 +47,7 @@
                 "title": "Baseurl",
                 "type": "string",
                 "default": "",
-                "pattern": "^.*$"
+                "pattern": "((http|https)://)(www.)?[a-zA-Z0-9-@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)"
               },
               "apiKey": {
                 "$id": "#root/sonarqube/instances/items/apiKey",
@@ -61,7 +61,7 @@
                 "title": "Externalbaseurl",
                 "type": "string",
                 "default": "",
-                "pattern": "^.*$"
+                "pattern": "((http|https)://)(www.)?[a-zA-Z0-9-@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)"
               }
             }
           }
