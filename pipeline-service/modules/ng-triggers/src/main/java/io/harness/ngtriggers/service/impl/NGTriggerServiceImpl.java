@@ -618,9 +618,11 @@ public class NGTriggerServiceImpl implements NGTriggerService {
       failedToUpdate = failedToUpdate + triggerUpdateCount.getFailureCount();
     }
 
-    log.info(
-        "Successfully disabled {} and failed to disable {} triggers in account {}, org {}, project {}, pipeline {}",
-        successfullyUpdated, failedToUpdate, accountIdentifier, orgIdentifier, projectIdentifier, pipelineIdentifier);
+    String toggledAction = enable ? "enabled" : "disabled";
+
+    log.info("Successfully {} {} and failed to {} {} triggers in account {}, org {}, project {}, pipeline {}",
+        toggledAction, successfullyUpdated, toggledAction, failedToUpdate, accountIdentifier, orgIdentifier,
+        projectIdentifier, pipelineIdentifier);
 
     // mapping the response
     List<BulkTriggerDetailDTO> bulkTriggerDetails = toBulkTriggerDetails(triggersToggled);
