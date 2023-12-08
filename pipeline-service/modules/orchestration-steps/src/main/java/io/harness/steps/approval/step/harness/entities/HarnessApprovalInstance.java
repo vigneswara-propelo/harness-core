@@ -68,6 +68,7 @@ import org.springframework.data.annotation.TypeAlias;
 public class HarnessApprovalInstance extends ApprovalInstance {
   @NotNull String approvalMessage;
   boolean includePipelineExecutionHistory;
+  String callbackId;
 
   @NotNull List<HarnessApprovalActivity> approvalActivities;
   @NotNull ApproversDTO approvers;
@@ -174,6 +175,9 @@ public class HarnessApprovalInstance extends ApprovalInstance {
             .approvalKey(stageIdentifier + "#" + stepParameters.getIdentifier())
             .autoApproval(fromAutoApprovalParams(specParameters.getAutoApproval()))
             .build();
+    if (specParameters.getCallbackId() != null) {
+      instance.setCallbackId((String) specParameters.getCallbackId().fetchFinalValue());
+    }
     instance.updateFromStepParameters(ambiance, stepParameters);
     return instance;
   }

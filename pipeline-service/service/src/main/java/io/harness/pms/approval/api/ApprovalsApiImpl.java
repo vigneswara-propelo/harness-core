@@ -57,7 +57,7 @@ public class ApprovalsApiImpl implements ApprovalsApi {
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
   public Response addHarnessApprovalActivityByPipelineExecutionId(@OrgIdentifier String org,
       @ProjectIdentifier String project, String executionId, @Valid HarnessApprovalActivityRequestBody body,
-      @AccountIdentifier String harnessAccount) {
+      @AccountIdentifier String harnessAccount, String callbackId) {
     if (isNull(harnessAccount)) {
       // harnessAccount is required to passed when using bearer token for rbac check
       throw new InvalidRequestException("harnessAccount param value is required");
@@ -77,8 +77,8 @@ public class ApprovalsApiImpl implements ApprovalsApi {
     }
 
     ApprovalInstanceResponseDTO approvalInstanceResponseDTO =
-        approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
-            harnessAccount, org, project, executionId, ApprovalsAPIUtils.toHarnessApprovalActivityRequestDTO(body));
+        approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(harnessAccount, org, project, executionId,
+            ApprovalsAPIUtils.toHarnessApprovalActivityRequestDTO(body), callbackId);
 
     instrumentationHelper.sendApprovalApiEvent(
         harnessAccount, org, project, executionId, ApprovalApiInstrumentationHelper.SUCCESS, null);
@@ -129,7 +129,7 @@ public class ApprovalsApiImpl implements ApprovalsApi {
     }
 
     List<ApprovalInstanceResponseDTO> approvalInstances = approvalResourceService.getApprovalInstancesByExecutionId(
-        executionId, approvalStatusEnum, approvalTypeEnum, nodeExecutionId);
+        executionId, approvalStatusEnum, approvalTypeEnum, nodeExecutionId, null);
 
     List<ApprovalInstanceResponseBody> approvalInstanceResponseBodyList =
         approvalInstances.stream().map(ApprovalsAPIUtils::toApprovalInstanceResponseBody).collect(Collectors.toList());

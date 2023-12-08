@@ -63,6 +63,7 @@ import io.harness.steps.approval.step.harness.beans.HarnessApprovalAction;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivity;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivityRequestDTO;
 import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance;
+import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance.HarnessApprovalInstanceKeys;
 import io.harness.steps.approval.step.jira.entities.JiraApprovalInstance;
 import io.harness.steps.approval.step.jira.entities.JiraApprovalInstance.JiraApprovalInstanceKeys;
 import io.harness.steps.approval.step.servicenow.entities.ServiceNowApprovalInstance;
@@ -111,6 +112,7 @@ public class ApprovalInstanceServiceTest extends CategoryTest {
   private static final ApprovalStatus approvalStatus = ApprovalStatus.WAITING;
   private static final ApprovalType approvalType = ApprovalType.HARNESS_APPROVAL;
   private static final String nodeExecutionId = "nodeExecutionId";
+  private static final String callbackId = "callbackId";
   private static final String ACCOUNT_ID = "account";
   private static final String ORG_ID = "account";
   private static final String PROJECT_ID = "PROJECT_ID";
@@ -758,11 +760,11 @@ public class ApprovalInstanceServiceTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGetApprovalInstancesByExecutionId() {
     assertThatThrownBy(() -> {
-      approvalInstanceServiceImpl.getApprovalInstancesByExecutionId("", null, null, null);
+      approvalInstanceServiceImpl.getApprovalInstancesByExecutionId("", null, null, null, null);
     }).isInstanceOf(InvalidRequestException.class);
 
     approvalInstanceServiceImpl.getApprovalInstancesByExecutionId(
-        planExecutionId, approvalStatus, approvalType, nodeExecutionId);
+        planExecutionId, approvalStatus, approvalType, nodeExecutionId, null);
     verify(approvalInstanceRepository, times(1))
         .findAll(Criteria.where(ApprovalInstanceKeys.planExecutionId)
                      .is(planExecutionId)
@@ -773,7 +775,8 @@ public class ApprovalInstanceServiceTest extends CategoryTest {
                      .and(ApprovalInstanceKeys.nodeExecutionId)
                      .is(nodeExecutionId));
 
-    approvalInstanceServiceImpl.getApprovalInstancesByExecutionId(planExecutionId, approvalStatus, approvalType, null);
+    approvalInstanceServiceImpl.getApprovalInstancesByExecutionId(
+        planExecutionId, approvalStatus, approvalType, null, null);
     verify(approvalInstanceRepository, times(1))
         .findAll(Criteria.where(ApprovalInstanceKeys.planExecutionId)
                      .is(planExecutionId)
@@ -782,7 +785,8 @@ public class ApprovalInstanceServiceTest extends CategoryTest {
                      .and(ApprovalInstanceKeys.type)
                      .is(approvalType));
 
-    approvalInstanceServiceImpl.getApprovalInstancesByExecutionId(planExecutionId, null, approvalType, nodeExecutionId);
+    approvalInstanceServiceImpl.getApprovalInstancesByExecutionId(
+        planExecutionId, null, approvalType, nodeExecutionId, null);
     verify(approvalInstanceRepository, times(1))
         .findAll(Criteria.where(ApprovalInstanceKeys.planExecutionId)
                      .is(planExecutionId)
@@ -794,7 +798,7 @@ public class ApprovalInstanceServiceTest extends CategoryTest {
                      .is(nodeExecutionId));
 
     approvalInstanceServiceImpl.getApprovalInstancesByExecutionId(
-        planExecutionId, approvalStatus, null, nodeExecutionId);
+        planExecutionId, approvalStatus, null, nodeExecutionId, null);
     verify(approvalInstanceRepository, times(1))
         .findAll(Criteria.where(ApprovalInstanceKeys.planExecutionId)
                      .is(planExecutionId)
@@ -804,6 +808,20 @@ public class ApprovalInstanceServiceTest extends CategoryTest {
                      .in(Arrays.asList(ApprovalType.values()))
                      .and(ApprovalInstanceKeys.nodeExecutionId)
                      .is(nodeExecutionId));
+
+    approvalInstanceServiceImpl.getApprovalInstancesByExecutionId(
+        planExecutionId, approvalStatus, null, nodeExecutionId, callbackId);
+    verify(approvalInstanceRepository, times(1))
+        .findAll(Criteria.where(ApprovalInstanceKeys.planExecutionId)
+                     .is(planExecutionId)
+                     .and(ApprovalInstanceKeys.status)
+                     .is(approvalStatus)
+                     .and(ApprovalInstanceKeys.type)
+                     .in(Arrays.asList(ApprovalType.values()))
+                     .and(ApprovalInstanceKeys.nodeExecutionId)
+                     .is(nodeExecutionId)
+                     .and(HarnessApprovalInstanceKeys.callbackId)
+                     .is(callbackId));
   }
 
   @Test

@@ -42,7 +42,8 @@ public interface ApprovalInstanceService {
   ApprovalInstance get(@NotNull String approvalInstanceId);
 
   List<ApprovalInstance> getApprovalInstancesByExecutionId(@NotEmpty String planExecutionId,
-      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId);
+      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId,
+      String callbackId);
 
   HarnessApprovalInstance getHarnessApprovalInstance(@NotNull String approvalInstanceId);
 

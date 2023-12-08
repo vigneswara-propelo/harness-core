@@ -47,6 +47,7 @@ import io.harness.steps.approval.step.harness.HarnessApprovalResponseData;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalAction;
 import io.harness.steps.approval.step.harness.beans.HarnessApprovalActivityRequestDTO;
 import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance;
+import io.harness.steps.approval.step.harness.entities.HarnessApprovalInstance.HarnessApprovalInstanceKeys;
 import io.harness.steps.approval.step.jira.beans.JiraApprovalResponseData;
 import io.harness.steps.approval.step.jira.entities.JiraApprovalInstance;
 import io.harness.steps.approval.step.jira.entities.JiraApprovalInstance.JiraApprovalInstanceKeys;
@@ -130,7 +131,8 @@ public class ApprovalInstanceServiceImpl implements ApprovalInstanceService {
 
   @Override
   public List<ApprovalInstance> getApprovalInstancesByExecutionId(@NotEmpty String planExecutionId,
-      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId) {
+      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId,
+      String callbackId) {
     if (isEmpty(planExecutionId)) {
       throw new InvalidRequestException("PlanExecutionId cannot be empty");
     }
@@ -151,6 +153,9 @@ public class ApprovalInstanceServiceImpl implements ApprovalInstanceService {
 
     if (EmptyPredicate.isNotEmpty(nodeExecutionId)) {
       criteria.and(ApprovalInstanceKeys.nodeExecutionId).is(nodeExecutionId);
+    }
+    if (EmptyPredicate.isNotEmpty(callbackId)) {
+      criteria.and(HarnessApprovalInstanceKeys.callbackId).is(callbackId);
     }
     // uses planExecutionId_status_type_nodeExecutionId if nodeExecutionId is absent
     // uses nodeExecutionId if nodeExecutionId is present

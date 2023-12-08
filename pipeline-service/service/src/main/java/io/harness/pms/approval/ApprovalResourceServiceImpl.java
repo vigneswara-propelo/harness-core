@@ -134,21 +134,23 @@ public class ApprovalResourceServiceImpl implements ApprovalResourceService {
   public ApprovalInstanceResponseDTO addHarnessApprovalActivityByPlanExecutionId(
       @NotNull @AccountIdentifier String accountId, @NotNull @OrgIdentifier String orgIdentifier,
       @NotNull @ProjectIdentifier String projectIdentifier, @NotNull String planExecutionId,
-      @NotNull @Valid HarnessApprovalActivityRequestDTO request) {
-    List<ApprovalInstanceResponseDTO> approvalInstances =
-        getApprovalInstancesByExecutionId(planExecutionId, ApprovalStatus.WAITING, ApprovalType.HARNESS_APPROVAL, null);
+      @NotNull @Valid HarnessApprovalActivityRequestDTO request, String callbackId) {
+    List<ApprovalInstanceResponseDTO> approvalInstances = getApprovalInstancesByExecutionId(
+        planExecutionId, ApprovalStatus.WAITING, ApprovalType.HARNESS_APPROVAL, null, callbackId);
     if (EmptyPredicate.isEmpty(approvalInstances)) {
       instrumentationHelper.sendApprovalApiEvent(accountId, orgIdentifier, projectIdentifier, planExecutionId,
           ApprovalApiInstrumentationHelper.FAILURE, ApprovalApiInstrumentationHelper.NO_APPROVALS_FOUND);
       throw new InvalidRequestException(
-          "Found no Harness Approval Instance waiting for the given pipeline execution id");
+          String.format("Found no Harness Approval Instance waiting for pipeline execution id: %s and callback id: %s",
+              planExecutionId, callbackId));
     }
 
     if (approvalInstances.size() > 1) {
       instrumentationHelper.sendApprovalApiEvent(accountId, orgIdentifier, projectIdentifier, planExecutionId,
           ApprovalApiInstrumentationHelper.FAILURE, ApprovalApiInstrumentationHelper.MULTIPLE_APPROVALS_FOUND);
-      throw new InvalidRequestException(
-          "Found more than 1 Harness Approval Instance waiting for the given pipeline execution id");
+      throw new InvalidRequestException(String.format(
+          "Found more than 1 Harness Approval Instance waiting for pipeline execution id: %s and callback id: %s",
+          planExecutionId, callbackId));
     }
 
     return addHarnessApprovalActivity(approvalInstances.get(0).getId(), request);
@@ -199,9 +201,10 @@ public class ApprovalResourceServiceImpl implements ApprovalResourceService {
 
   @Override
   public List<ApprovalInstanceResponseDTO> getApprovalInstancesByExecutionId(@NotEmpty String planExecutionId,
-      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId) {
+      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId,
+      String callbackId) {
     List<ApprovalInstance> approvalInstances = approvalInstanceService.getApprovalInstancesByExecutionId(
-        planExecutionId, approvalStatus, approvalType, nodeExecutionId);
+        planExecutionId, approvalStatus, approvalType, nodeExecutionId, callbackId);
     return approvalInstances.stream()
         .map(approvalInstanceResponseMapper::toApprovalInstanceResponseDTO)
         .collect(Collectors.toList());

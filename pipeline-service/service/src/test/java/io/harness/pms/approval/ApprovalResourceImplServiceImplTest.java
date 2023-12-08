@@ -209,7 +209,7 @@ public class ApprovalResourceImplServiceImplTest extends CategoryTest {
     instance.setAmbiance(ambiance);
     List<ApprovalInstance> approvalInstances = Collections.singletonList(instance);
     when(approvalInstanceResponseMapper.toApprovalInstanceResponseDTO(any())).thenCallRealMethod();
-    when(approvalInstanceService.getApprovalInstancesByExecutionId(any(), any(), any(), any()))
+    when(approvalInstanceService.getApprovalInstancesByExecutionId(any(), any(), any(), any(), any()))
         .thenReturn(approvalInstances);
     HarnessApprovalActivityRequestDTO harnessApprovalActivityRequestDTO =
         HarnessApprovalActivityRequestDTO.builder().build();
@@ -224,13 +224,13 @@ public class ApprovalResourceImplServiceImplTest extends CategoryTest {
     when(userCall.execute()).thenReturn(Response.success(new RestResponse(Optional.of(UserInfo.builder().build()))));
     // Should approve successfully
     approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
-        ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO);
+        ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, null);
 
     instance.getApprovers().setUserGroups(Collections.emptyList());
     when(approvalInstanceService.getHarnessApprovalInstance(id)).thenReturn(instance);
     assertThatCode(()
                        -> approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
-                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO))
+                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, null))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("User not authorized to approve/reject");
 
@@ -244,7 +244,7 @@ public class ApprovalResourceImplServiceImplTest extends CategoryTest {
     when(planExecutionService.getExecutionMetadataFromPlanExecution(any())).thenReturn(metadata);
     assertThatCode(()
                        -> approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
-                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO))
+                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, null))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("User not authorized to approve/reject");
 
@@ -254,7 +254,85 @@ public class ApprovalResourceImplServiceImplTest extends CategoryTest {
     when(approvalInstanceService.getHarnessApprovalInstance(id)).thenReturn(instance);
     assertThatCode(()
                        -> approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
-                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO))
+                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, null))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("User not authorized to approve/reject");
+  }
+
+  @Test
+  @Owner(developers = RISHABH)
+  @Category(UnitTests.class)
+  public void testAddHarnessApprovalActivityByPlanExecutionIdAndCallbackId() throws IOException {
+    MockedStatic<NGRestUtils> aStatic = Mockito.mockStatic(NGRestUtils.class);
+    String uuid = "uuid";
+    String id = "dummy";
+    Ambiance ambiance = Ambiance.newBuilder()
+                            .putSetupAbstractions("accountId", "accountId")
+                            .putSetupAbstractions("orgIdentifier", "orgIdentifier")
+                            .putSetupAbstractions("projectIdentifier", "projectIdentifier")
+                            .build();
+    List<String> userGroups = new ArrayList<>();
+    userGroups.add("approver");
+    HarnessApprovalInstance instance = HarnessApprovalInstance.builder()
+                                           .callbackId("callbackId")
+                                           .approvalKey("approvalKey")
+                                           .approvalMessage("message")
+                                           .includePipelineExecutionHistory(false)
+                                           .approvalActivities(Collections.emptyList())
+                                           .isAutoRejectEnabled(false)
+                                           .approvers(ApproversDTO.builder().userGroups(userGroups).build())
+                                           .build();
+    instance.setId(id);
+    instance.setType(ApprovalType.HARNESS_APPROVAL);
+    instance.setAmbiance(ambiance);
+    List<ApprovalInstance> approvalInstances = Collections.singletonList(instance);
+    when(approvalInstanceResponseMapper.toApprovalInstanceResponseDTO(any())).thenCallRealMethod();
+    when(approvalInstanceService.getApprovalInstancesByExecutionId(any(), any(), any(), any(), any()))
+        .thenReturn(approvalInstances);
+    HarnessApprovalActivityRequestDTO harnessApprovalActivityRequestDTO =
+        HarnessApprovalActivityRequestDTO.builder().build();
+    when(approvalInstanceService.getHarnessApprovalInstance(id)).thenReturn(instance);
+    List<UserGroupDTO> userGroupDTOS = Collections.singletonList(UserGroupDTO.builder().build());
+    when(userGroupClient.getFilteredUserGroups(any())).thenReturn(null);
+    aStatic.when(() -> NGRestUtils.getResponse(any())).thenReturn(userGroupDTOS);
+    when(currentUserHelper.getPrincipalFromSecurityContext())
+        .thenReturn(new UserPrincipal("email@harness.io", "name", "user", "ACCOUNTID"));
+    Call userCall = mock(Call.class);
+    when(userClient.getUserById("email@harness.io")).thenReturn(userCall);
+    when(userCall.execute()).thenReturn(Response.success(new RestResponse(Optional.of(UserInfo.builder().build()))));
+    // Should approve successfully
+    approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
+        ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, "callbackId");
+
+    instance.getApprovers().setUserGroups(Collections.emptyList());
+    when(approvalInstanceService.getHarnessApprovalInstance(id)).thenReturn(instance);
+    assertThatCode(()
+                       -> approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
+                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, "callbackId"))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("User not authorized to approve/reject");
+
+    instance.getApprovers().setDisallowPipelineExecutor(true);
+    when(approvalInstanceService.getHarnessApprovalInstance(id)).thenReturn(instance);
+    ExecutionMetadata metadata = ExecutionMetadata.newBuilder()
+                                     .setTriggerInfo(ExecutionTriggerInfo.newBuilder()
+                                                         .setTriggeredBy(TriggeredBy.newBuilder().setUuid(uuid).build())
+                                                         .build())
+                                     .build();
+    when(planExecutionService.getExecutionMetadataFromPlanExecution(any())).thenReturn(metadata);
+    assertThatCode(()
+                       -> approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
+                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, "callbackId"))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("User not authorized to approve/reject");
+
+    EmbeddedUser embeddedUser = EmbeddedUser.builder().email("email").name("name").uuid(uuid).build();
+    instance.setApprovalActivities(
+        Collections.singletonList(HarnessApprovalActivity.builder().user(embeddedUser).build()));
+    when(approvalInstanceService.getHarnessApprovalInstance(id)).thenReturn(instance);
+    assertThatCode(()
+                       -> approvalResourceService.addHarnessApprovalActivityByPlanExecutionId(
+                           ACCOUNT_ID, "ORG_ID", "PROJECT_ID", id, harnessApprovalActivityRequestDTO, "callbackId"))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("User not authorized to approve/reject");
   }
@@ -376,10 +454,10 @@ public class ApprovalResourceImplServiceImplTest extends CategoryTest {
     instance.setId("uuid1");
     instance.setType(ApprovalType.HARNESS_APPROVAL);
     List<ApprovalInstance> approvalInstances = Collections.singletonList(instance);
-    when(approvalInstanceService.getApprovalInstancesByExecutionId(any(), any(), any(), any()))
+    when(approvalInstanceService.getApprovalInstancesByExecutionId(any(), any(), any(), any(), any()))
         .thenReturn(approvalInstances);
     assertThat(approvalResourceService.getApprovalInstancesByExecutionId(
-                   "planExecutionId", ApprovalStatus.APPROVED, ApprovalType.HARNESS_APPROVAL, "nodeExecutionId"))
+                   "planExecutionId", ApprovalStatus.APPROVED, ApprovalType.HARNESS_APPROVAL, "nodeExecutionId", null))
         .isEqualTo(Collections.singletonList(approvalInstanceResponseMapper.toApprovalInstanceResponseDTO(instance)));
   }
 }

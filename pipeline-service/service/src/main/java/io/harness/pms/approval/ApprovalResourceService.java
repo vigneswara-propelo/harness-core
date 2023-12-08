@@ -33,9 +33,11 @@ public interface ApprovalResourceService {
       @NotNull String approvalInstanceId, @NotNull @Valid HarnessApprovalActivityRequestDTO request);
   ApprovalInstanceResponseDTO addHarnessApprovalActivityByPlanExecutionId(@NotNull @AccountIdentifier String accountId,
       @NotNull @OrgIdentifier String orgIdentifier, @NotNull @ProjectIdentifier String projectIdentifier,
-      @NotNull String planExecutionId, @NotNull @Valid HarnessApprovalActivityRequestDTO request);
+      @NotNull String planExecutionId, @NotNull @Valid HarnessApprovalActivityRequestDTO request, String callbackId);
   List<ApprovalInstanceResponseDTO> getApprovalInstancesByExecutionId(@NotEmpty String planExecutionId,
-      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId);
+      @Valid ApprovalStatus approvalStatus, @Valid ApprovalType approvalType, String nodeExecutionId,
+      String callbackId);
+
   HarnessApprovalInstanceAuthorizationDTO getHarnessApprovalInstanceAuthorization(
       @NotNull String approvalInstanceId, boolean skipHasAlreadyApprovedValidation);
   String getYamlSnippet(ApprovalType approvalType, String accountId) throws IOException;
