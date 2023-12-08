@@ -5,7 +5,7 @@ metadata:
   name: ccm-azure-smp-{{ lower ( randAlphaNum 6 ) }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "batch-processing.labels" . | nindent 4 }}
+    {{- include "ccm-azure-smp.labels" . | nindent 4 }}
     {{- if .Values.global.commonLabels }}
     {{- include "harnesscommon.tplvalues.render" ( dict "value" .Values.global.commonLabels "context" $ ) | nindent 4 }}
     {{- end }}

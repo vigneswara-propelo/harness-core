@@ -51,6 +51,26 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Common labels for CCM Azure SMP K8s Cron Job
+*/}}
+{{- define "ccm-azure-smp.labels" -}}
+helm.sh/chart: {{ include "batch-processing.chart" . }}
+{{ include "ccm-azure-smp.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels for CCM Azure SMP K8s Cron Job
+*/}}
+{{- define "ccm-azure-smp.selectorLabels" -}}
+app.kubernetes.io/name: ccm-smp-azure
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "batch-processing.serviceAccountName" -}}

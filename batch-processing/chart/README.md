@@ -1,6 +1,6 @@
 # batch-processing
 
-![Version: 0.12.4](https://img.shields.io/badge/Version-0.12.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81103](https://img.shields.io/badge/AppVersion-0.0.81103-informational?style=flat-square)
+![Version: 0.13.2](https://img.shields.io/badge/Version-0.13.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81103](https://img.shields.io/badge/AppVersion-0.0.81103-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -53,9 +53,36 @@ A Helm chart for Kubernetes
 | cloudProviderConfig.DATA_PIPELINE_CONFIG_GCS_BASE_PATH | string | `"gs://awscustomerbillingdata-onprem"` |  |
 | cloudProviderConfig.S3_SYNC_CONFIG_BUCKET_NAME | string | `"ccm-service-data-bucket"` |  |
 | cloudProviderConfig.S3_SYNC_CONFIG_REGION | string | `"us-east-1"` |  |
+| database.mongo.events.enabled | bool | `false` |  |
+| database.mongo.events.extraArgs | string | `""` |  |
+| database.mongo.events.hosts | list | `[]` |  |
+| database.mongo.events.protocol | string | `""` |  |
+| database.mongo.events.secrets.kubernetesSecrets[0].keys.MONGO_PASSWORD | string | `""` |  |
+| database.mongo.events.secrets.kubernetesSecrets[0].keys.MONGO_USER | string | `""` |  |
+| database.mongo.events.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.name | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.property | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.name | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.property | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
+| database.mongo.harness.enabled | bool | `false` |  |
+| database.mongo.harness.extraArgs | string | `""` |  |
+| database.mongo.harness.hosts | list | `[]` |  |
+| database.mongo.harness.protocol | string | `""` |  |
+| database.mongo.harness.secrets.kubernetesSecrets[0].keys.MONGO_PASSWORD | string | `""` |  |
+| database.mongo.harness.secrets.kubernetesSecrets[0].keys.MONGO_USER | string | `""` |  |
+| database.mongo.harness.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| database.mongo.harness.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.name | string | `""` |  |
+| database.mongo.harness.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.property | string | `""` |  |
+| database.mongo.harness.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.name | string | `""` |  |
+| database.mongo.harness.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.property | string | `""` |  |
+| database.mongo.harness.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| database.mongo.harness.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
+| gcpSyncPythonImagePath | string | `"placeholder"` |  |
 | global.awsServiceEndpointUrls.cloudwatchEndPointUrl | string | `"https://monitoring.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.ecsEndPointUrl | string | `"https://ecs.us-east-2.amazonaws.com"` |  |
 | global.awsServiceEndpointUrls.enabled | bool | `false` |  |
@@ -169,21 +196,6 @@ A Helm chart for Kubernetes
 | java.memory | string | `"7168"` |  |
 | java17flags | string | `""` |  |
 | lifecycleHooks | object | `{}` |  |
-| mongo.extraArgs | string | `""` |  |
-| mongo.hosts | list | `[]` |  |
-| mongo.passwordKey | string | `""` |  |
-| mongo.protocol | string | `""` |  |
-| mongo.secretName | string | `""` |  |
-| mongo.secrets.kubernetesSecrets[0].keys.MONGO_PASSWORD | string | `""` |  |
-| mongo.secrets.kubernetesSecrets[0].keys.MONGO_USER | string | `""` |  |
-| mongo.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.name | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.property | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.name | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.property | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
-| mongo.userKey | string | `""` |  |
 | mongoSecrets.password.key | string | `"mongodb-root-password"` |  |
 | mongoSecrets.password.name | string | `"mongodb-replicaset-chart"` |  |
 | mongoSecrets.userName.key | string | `"mongodbUsername"` |  |
@@ -242,8 +254,8 @@ A Helm chart for Kubernetes
 | service.port | int | `6340` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.create | bool | `false` |  |
-| serviceAccount.name | string | `"harness-default"` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.name | string | `"batch-processing-default"` |  |
 | smtp.host | string | `""` |  |
 | smtp.password | string | `""` |  |
 | smtp.user | string | `""` |  |
@@ -261,4 +273,4 @@ A Helm chart for Kubernetes
 | workloadIdentity.enabled | bool | `false` |  |
 
 ----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.11.3](https://github.com/norwoodj/helm-docs/releases/v1.11.3)
+Autogenerated from chart metadata using [helm-docs v1.11.0](https://github.com/norwoodj/helm-docs/releases/v1.11.0)
