@@ -7,32 +7,29 @@
 
 package io.harness.delegate.service.secret;
 
-import static io.harness.annotations.dev.HarnessTeam.PL;
-
-import io.harness.annotations.dev.OwnedBy;
+import io.harness.delegate.core.beans.EncryptionConfig;
 import io.harness.delegate.core.beans.EncryptionType;
-import io.harness.security.encryption.EncryptionConfig;
+import io.harness.exception.InvalidRequestException;
 
-import software.wings.beans.LocalEncryptionConfig;
+import org.mapstruct.CollectionMappingStrategy;
+import org.mapstruct.Mapper;
+import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.factory.Mappers;
 
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+@Mapper(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedSourcePolicy = ReportingPolicy.ERROR,
+    collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+public interface EncryptionConfigProtoPojoMapper {
+  EncryptionConfigProtoPojoMapper INSTANCE = Mappers.getMapper(EncryptionConfigProtoPojoMapper.class);
 
-@UtilityClass
-@OwnedBy(PL)
-@Slf4j
-public class EncryptionConfigProtoPojoMapper {
-  public static EncryptionConfig map(final io.harness.delegate.core.beans.EncryptionConfig config) {
-    // TODO: After implementing all encryption types, remove this check
-    if (!config.getEncryptionType().equals(EncryptionType.LOCAL)) {
-      log.warn("Encryption type {} not implemented", config.getEncryptionType().name());
-      return null;
+  default io.harness.security.encryption.EncryptionConfig map(EncryptionConfig config) {
+    if (config.getEncryptionType().equals(EncryptionType.GCP_KMS)) {
+      return GcpKmsConfigProtoPojoMapper.INSTANCE.map(config);
+    } else if (config.getEncryptionType().equals(EncryptionType.AWS_KMS)) {
+      return AwsKmsConfigProtoPojoMapper.INSTANCE.map(config);
+    } else if (config.getEncryptionType().equals(EncryptionType.LOCAL)) {
+      return LocalEncryptionConfigProtoPojoMapper.INSTANCE.map(config);
     }
-    return LocalEncryptionConfig.builder()
-        .uuid(config.getUuid())
-        .accountId(config.getAccountId())
-        .name(config.getName())
-        .encryptionType(EncryptionTypeProtoPojoMapper.map(config.getEncryptionType()))
-        .build();
+    throw new InvalidRequestException("Secret Manager not implemented!");
   }
 }

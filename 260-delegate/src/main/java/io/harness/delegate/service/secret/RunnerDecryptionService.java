@@ -44,7 +44,7 @@ public class RunnerDecryptionService {
     EncryptedRecordData mappedRecordData = EncryptedDataRecordProtoPojoMapper.map(encryptedDataRecord);
     final io.harness.delegate.core.beans.EncryptionConfig encryptionConfig =
         io.harness.delegate.core.beans.EncryptionConfig.parseFrom(secret.getConfig().getBinaryData().toByteArray());
-    EncryptionConfig mappedEncryptionConfig = EncryptionConfigProtoPojoMapper.map(encryptionConfig);
+    EncryptionConfig mappedEncryptionConfig = EncryptionConfigProtoPojoMapper.INSTANCE.map(encryptionConfig);
     List<EncryptedRecord> encryptedRecordList = new ArrayList<>();
     encryptedRecordList.add(mappedRecordData);
     // DelegateDecryptionService doesn't use cache

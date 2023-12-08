@@ -7,7 +7,7 @@
 
 package io.harness.delegate.service.secret;
 
-import io.harness.delegate.core.beans.SecretManagerType;
+import io.harness.delegate.core.beans.EncryptionType;
 
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
@@ -21,13 +21,15 @@ import org.mapstruct.factory.Mappers;
 @Mapper(collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
     nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedSourcePolicy = ReportingPolicy.ERROR,
     unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface SecretManagerTypeProtoPojoMapper {
-  SecretManagerTypeProtoPojoMapper INSTANCE = Mappers.getMapper(SecretManagerTypeProtoPojoMapper.class);
-
+public interface EncryptionTypeProtoPojoMapperUsingMapStruct {
+  EncryptionTypeProtoPojoMapperUsingMapStruct INSTANCE =
+      Mappers.getMapper(EncryptionTypeProtoPojoMapperUsingMapStruct.class);
   @ValueMappings({
-    @ValueMapping(source = "SM_NOT_SET", target = MappingConstants.NULL)
-    , @ValueMapping(source = "UNKNOWN_SM", target = MappingConstants.THROW_EXCEPTION)
+    @ValueMapping(source = "NOT_SET", target = MappingConstants.NULL)
+    , @ValueMapping(source = "AWS_KMS", target = "KMS"), @ValueMapping(source = "HASHICORP_VAULT", target = "VAULT"),
+        @ValueMapping(source = "UNKNOWN", target = MappingConstants.THROW_EXCEPTION)
   })
-  io.harness.security.encryption.SecretManagerType
-  map(SecretManagerType type);
+
+  io.harness.security.encryption.EncryptionType
+  map(EncryptionType type);
 }
