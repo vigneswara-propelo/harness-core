@@ -55,15 +55,15 @@ public class SLIMetricLessAnalysisStateExecutor extends AnalysisStateExecutor<SL
                                       .orgIdentifier(serviceLevelIndicator.getOrgIdentifier())
                                       .projectIdentifier(serviceLevelIndicator.getProjectIdentifier())
                                       .build();
+    SimpleServiceLevelObjective serviceLevelObjective =
+        serviceLevelObjectiveV2Service.getFromSLIIdentifier(projectParams, serviceLevelIndicator.getIdentifier());
     List<ErrorBudgetBurnDown> errorBudgetBurnDowns = errorBudgetBurnDownService.getByStartTimeAndEndTime(
-        projectParams, serviceLevelIndicator.getIdentifier(), startTime.toEpochMilli(), endTime.toEpochMilli());
+        projectParams, serviceLevelObjective.getIdentifier(), startTime.toEpochMilli(), endTime.toEpochMilli());
     List<SLIAnalyseResponse> sliAnalyseResponseList =
         sliDataProcessorService.process(errorBudgetBurnDowns, serviceLevelIndicator, startTime, endTime);
     List<SLIRecordParam> sliRecordList = sliMetricAnalysisTransformer.getSLIAnalyseResponse(sliAnalyseResponseList);
     sliRecordService.create(
         sliRecordList, serviceLevelIndicator.getUuid(), verificationTaskId, serviceLevelIndicator.getVersion());
-    SimpleServiceLevelObjective serviceLevelObjective =
-        serviceLevelObjectiveV2Service.getFromSLIIdentifier(projectParams, serviceLevelIndicator.getIdentifier());
     sloHealthIndicatorService.upsert(serviceLevelObjective);
     analysisState.setStatus(AnalysisStatus.SUCCESS);
     return analysisState;

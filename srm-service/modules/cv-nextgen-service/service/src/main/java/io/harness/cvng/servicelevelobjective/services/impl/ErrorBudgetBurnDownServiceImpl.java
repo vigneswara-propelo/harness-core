@@ -60,10 +60,10 @@ public class ErrorBudgetBurnDownServiceImpl implements ErrorBudgetBurnDownServic
         .filter(ErrorBudgetBurnDownKeys.projectIdentifier, projectParams.getProjectIdentifier())
         .filter(ErrorBudgetBurnDownKeys.sloIdentifier, sloIdentifier)
         .field(ErrorBudgetBurnDownKeys.startTime)
-        .greaterThanOrEq(startTime)
-        .field(ErrorBudgetBurnDownKeys.endTime)
         .lessThanOrEq(endTime)
-        .order(Sort.ascending(ErrorBudgetBurnDownKeys.createdAt))
+        .field(ErrorBudgetBurnDownKeys.endTime)
+        .greaterThanOrEq(startTime)
+        .order(Sort.ascending(ErrorBudgetBurnDownKeys.startTime))
         .asList();
   }
 

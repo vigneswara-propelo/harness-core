@@ -38,11 +38,19 @@ public class MetricLessSLIStateMachineCreationHandler
         && SLIEvaluationType.METRIC_LESS.equals(serviceLevelIndicator.getSLIEvaluationType())) {
       SLIRecord latestSLIRecord = sliRecordService.getLatestSLIRecord(sliVerificationTaskId.get());
       Instant currentTime = DateTimeUtils.roundDownTo5MinBoundary(clock.instant());
-      if (latestSLIRecord.getTimestamp().plus(5, ChronoUnit.MINUTES).isBefore(currentTime)) {
+      if (latestSLIRecord == null || latestSLIRecord.getTimestamp().plus(5, ChronoUnit.MINUTES).isBefore(currentTime)) {
+        Instant endTime;
+        if (latestSLIRecord != null) {
+          currentTime = latestSLIRecord.getTimestamp().plus(1, ChronoUnit.MINUTES);
+          endTime = currentTime.plus(5, ChronoUnit.MINUTES);
+        } else {
+          endTime = currentTime;
+          currentTime = currentTime.minus(24, ChronoUnit.HOURS);
+        }
         AnalysisInput analysisInput = AnalysisInput.builder()
                                           .verificationTaskId(sliVerificationTaskId.get())
-                                          .startTime(latestSLIRecord.getTimestamp().plus(1, ChronoUnit.MINUTES))
-                                          .endTime(latestSLIRecord.getTimestamp().plus(6, ChronoUnit.MINUTES))
+                                          .startTime(currentTime)
+                                          .endTime(endTime)
                                           .build();
         orchestrationService.queueAnalysis(analysisInput);
       }
