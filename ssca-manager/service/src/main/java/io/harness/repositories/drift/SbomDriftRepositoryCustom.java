@@ -7,12 +7,17 @@
 
 package io.harness.repositories.drift;
 
+import io.harness.ssca.entities.drift.DriftEntity;
+
 import java.util.List;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 public interface SbomDriftRepositoryCustom {
   boolean exists(Criteria criteria);
+  DriftEntity update(Query query, Update update);
 
   <T> List<T> aggregate(Aggregation aggregation, Class<T> resultClass);
 }

@@ -15,6 +15,7 @@ import io.harness.ssca.beans.drift.ComponentDriftCalculationResult;
 import io.harness.ssca.beans.drift.ComponentDriftComparator;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 import io.harness.ssca.beans.drift.ComponentSummary;
+import io.harness.ssca.beans.drift.LicenseDrift;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.services.NormalisedSbomComponentService;
 
@@ -44,6 +45,11 @@ public class SbomDriftCalculator {
       componentDrifts = mapComponentDriftResultsToComponentDrift(componentDriftCalculationResult);
     }
     return componentDrifts;
+  }
+
+  public List<LicenseDrift> findLicenseDrift(String baseOrchestrationId, String driftArtifactOrchestrationId) {
+    // TODO: add logic to calculate license Drift
+    return new ArrayList<>();
   }
 
   private List<ComponentDrift> mapComponentDriftResultsToComponentDrift(

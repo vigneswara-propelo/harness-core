@@ -9,8 +9,10 @@ package io.harness.ssca.api;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.exception.InvalidRequestException;
 import io.harness.spec.server.ssca.v1.SbomDriftApi;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftRequestBody;
+import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftResponse;
 import io.harness.ssca.services.drift.SbomDriftService;
 
 import com.google.inject.Inject;
@@ -26,7 +28,12 @@ public class SbomDriftApiImpl implements SbomDriftApi {
   @Override
   public Response calculateDriftForArtifact(
       String org, String project, String artifact, @Valid ArtifactSbomDriftRequestBody body, String harnessAccount) {
-    return null;
+    if (body == null) {
+      throw new InvalidRequestException("Request body cannot be null");
+    }
+    ArtifactSbomDriftResponse responseBody =
+        sbomDriftService.calculateSbomDrift(harnessAccount, org, project, artifact, body);
+    return Response.ok().entity(responseBody).build();
   }
 
   @Override

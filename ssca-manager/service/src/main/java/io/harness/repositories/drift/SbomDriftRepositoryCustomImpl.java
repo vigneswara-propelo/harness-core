@@ -16,10 +16,12 @@ import com.google.inject.Inject;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(HarnessTeam.SSCA)
 @AllArgsConstructor(access = AccessLevel.PROTECTED, onConstructor = @__({ @Inject }))
@@ -30,6 +32,11 @@ public class SbomDriftRepositoryCustomImpl implements SbomDriftRepositoryCustom 
   public boolean exists(Criteria criteria) {
     Query query = new Query(criteria);
     return mongoTemplate.exists(query, DriftEntity.class);
+  }
+
+  @Override
+  public DriftEntity update(Query query, Update update) {
+    return mongoTemplate.findAndModify(query, update, new FindAndModifyOptions().returnNew(true), DriftEntity.class);
   }
 
   @Override

@@ -11,10 +11,13 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.repositories.drift.SbomDriftRepository;
+import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftRequestBody;
+import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftResponse;
 import io.harness.ssca.beans.drift.ComponentDrift;
 import io.harness.ssca.beans.drift.ComponentDriftResults;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 import io.harness.ssca.beans.drift.DriftBase;
+import io.harness.ssca.beans.drift.LicenseDrift;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.drift.DriftEntity;
 import io.harness.ssca.entities.drift.DriftEntity.DriftEntityKeys;
@@ -25,9 +28,12 @@ import com.google.inject.Inject;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(HarnessTeam.SSCA)
 public class SbomDriftServiceImpl implements SbomDriftService {
@@ -36,8 +42,10 @@ public class SbomDriftServiceImpl implements SbomDriftService {
   @Inject SbomDriftCalculator sbomDriftCalculator;
 
   @Override
-  public void calculateAndStoreComponentDrift(
-      String accountId, String orgId, String projectId, String artifactId, String baseTag, String tag) {
+  public ArtifactSbomDriftResponse calculateSbomDrift(
+      String accountId, String orgId, String projectId, String artifactId, ArtifactSbomDriftRequestBody requestBody) {
+    String tag = requestBody.getTag();
+    String baseTag = requestBody.getBaseTag();
     ArtifactEntity baseArtifact = artifactService.getLatestArtifact(accountId, orgId, projectId, artifactId, baseTag);
     if (baseArtifact == null) {
       throw new InvalidRequestException("Could not find artifact with tag: " + baseTag);
@@ -48,25 +56,43 @@ public class SbomDriftServiceImpl implements SbomDriftService {
       throw new InvalidRequestException("Could not find artifact with tag: " + tag);
     }
 
-    // TODO: Check if component drift is already calculated.
-
-    List<ComponentDrift> componentDrifts =
-        sbomDriftCalculator.findComponentDrifts(baseArtifact.getOrchestrationId(), driftArtifact.getOrchestrationId());
-    DriftEntity driftEntity = DriftEntity.builder()
-                                  .accountIdentifier(accountId)
-                                  .orgIdentifier(orgId)
-                                  .projectIdentifier(projectId)
-                                  .artifactId(artifactId)
-                                  .tag(tag)
-                                  .baseTag(baseTag)
-                                  .base(DriftBase.MANUAL)
-                                  .orchestrationId(driftArtifact.getOrchestrationId())
-                                  .baseOrchestrationId(baseArtifact.getOrchestrationId())
-                                  .componentDrifts(componentDrifts)
-                                  .validUntil(Date.from(OffsetDateTime.now().plusHours(1).toInstant()))
-                                  .build();
-
-    sbomDriftRepository.save(driftEntity);
+    Optional<DriftEntity> optionalDriftEntity =
+        sbomDriftRepository
+            .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndOrchestrationIdAndBaseOrchestrationId(
+                accountId, orgId, projectId, driftArtifact.getOrchestrationId(), baseArtifact.getOrchestrationId());
+    DriftEntity driftEntity;
+    if (optionalDriftEntity.isPresent()) {
+      driftEntity = optionalDriftEntity.get();
+      // update validUntil if same request has been found.
+      Criteria criteria = Criteria.where(DriftEntityKeys.uuid).is(driftEntity.getUuid());
+      Update update = new Update();
+      update.set(DriftEntityKeys.validUntil, Date.from(OffsetDateTime.now().plusHours(1).toInstant()));
+      sbomDriftRepository.update(new Query(criteria), update);
+    } else {
+      List<ComponentDrift> componentDrifts = sbomDriftCalculator.findComponentDrifts(
+          baseArtifact.getOrchestrationId(), driftArtifact.getOrchestrationId());
+      List<LicenseDrift> licenseDrifts =
+          sbomDriftCalculator.findLicenseDrift(baseArtifact.getOrchestrationId(), driftArtifact.getOrchestrationId());
+      driftEntity = sbomDriftRepository.save(DriftEntity.builder()
+                                                 .accountIdentifier(accountId)
+                                                 .orgIdentifier(orgId)
+                                                 .projectIdentifier(projectId)
+                                                 .artifactId(artifactId)
+                                                 .tag(tag)
+                                                 .baseTag(baseTag)
+                                                 .base(DriftBase.MANUAL)
+                                                 .orchestrationId(driftArtifact.getOrchestrationId())
+                                                 .baseOrchestrationId(baseArtifact.getOrchestrationId())
+                                                 .componentDrifts(componentDrifts)
+                                                 .licenseDrifts(licenseDrifts)
+                                                 .validUntil(Date.from(OffsetDateTime.now().plusHours(1).toInstant()))
+                                                 .build());
+    }
+    return new ArtifactSbomDriftResponse()
+        .driftId(driftEntity.getUuid())
+        .tag(tag)
+        .baseTag(baseTag)
+        .artifactName(driftArtifact.getName());
   }
 
   @Override
