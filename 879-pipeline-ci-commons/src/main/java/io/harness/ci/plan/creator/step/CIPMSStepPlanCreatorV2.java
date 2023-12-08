@@ -32,6 +32,7 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.govern.Switch;
+import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.plancreator.steps.AbstractStepPlanCreator;
 import io.harness.plancreator.steps.FailureStrategiesUtils;
 import io.harness.plancreator.steps.GenericPlanCreatorUtils;
@@ -47,7 +48,6 @@ import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.contracts.plan.HarnessStruct;
 import io.harness.pms.contracts.plan.HarnessValue;
 import io.harness.pms.execution.utils.SkipInfoUtils;
-import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.sdk.core.adviser.OrchestrationAdviserTypes;
 import io.harness.pms.sdk.core.adviser.abort.OnAbortAdviser;
 import io.harness.pms.sdk.core.adviser.abort.OnAbortAdviserParameters;
@@ -498,19 +498,10 @@ public abstract class CIPMSStepPlanCreatorV2<T extends CIAbstractStepNode> exten
 
   private List<AdviserObtainment> buildAdviserV1(Dependency dependency) {
     List<AdviserObtainment> adviserObtainments = new ArrayList<>();
-    if (dependency == null || EmptyPredicate.isEmpty(dependency.getMetadataMap())
-        || !dependency.getMetadataMap().containsKey(PlanCreatorConstants.NEXT_ID)) {
-      return adviserObtainments;
+    AdviserObtainment adviserObtainment = PlanCreatorUtilsV1.getNextStepAdviser(kryoSerializer, dependency);
+    if (adviserObtainment != null) {
+      adviserObtainments.add(adviserObtainment);
     }
-
-    String nextId =
-        (String) kryoSerializer.asObject(dependency.getMetadataMap().get(PlanCreatorConstants.NEXT_ID).toByteArray());
-    adviserObtainments.add(
-        AdviserObtainment.newBuilder()
-            .setType(AdviserType.newBuilder().setType(OrchestrationAdviserTypes.NEXT_STAGE.name()).build())
-            .setParameters(ByteString.copyFrom(
-                kryoSerializer.asBytes(NextStepAdviserParameters.builder().nextNodeId(nextId).build())))
-            .build());
     return adviserObtainments;
   }
 
