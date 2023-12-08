@@ -17,6 +17,8 @@ import io.harness.beans.HeaderConfig;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.ng.core.dto.PollingTriggerStatusUpdateDTO;
 import io.harness.ngtriggers.beans.config.NGTriggerConfigV2;
+import io.harness.ngtriggers.beans.dto.BulkTriggersRequestDTO;
+import io.harness.ngtriggers.beans.dto.BulkTriggersResponseDTO;
 import io.harness.ngtriggers.beans.dto.TriggerDetails;
 import io.harness.ngtriggers.beans.dto.TriggerYamlDiffDTO;
 import io.harness.ngtriggers.beans.dto.WebhookEventProcessingDetails;
@@ -42,7 +44,10 @@ public interface NGTriggerService {
       String targetIdentifier, String identifier, boolean deleted);
 
   NGTriggerEntity update(NGTriggerEntity ngTriggerEntity, NGTriggerEntity oldNgTriggerEntity);
-  TriggerUpdateCount disableTriggers(String accountIdentifier, String orgIdentifier, String projectIdentifier);
+
+  BulkTriggersResponseDTO toggleTriggers(boolean enable, String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String pipelineIdentifier, String type);
+
   boolean updateTriggerStatus(NGTriggerEntity ngTriggerEntity, boolean status);
 
   boolean updateTriggerPollingStatus(String accountId, PollingTriggerStatusUpdateDTO statusUpdate);
@@ -95,4 +100,6 @@ public interface NGTriggerService {
 
   TriggerUpdateCount updateBranchName(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String pipelineIdentifier, GitMoveOperationType operationType, String pipelineBranchName);
+
+  BulkTriggersResponseDTO toggleTriggersInBulk(String accountIdentifier, BulkTriggersRequestDTO bulkTriggersRequestDTO);
 }

@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
 
@@ -258,6 +259,43 @@ public class TriggerFilterHelper {
     criteria.and(TriggerEventHistoryKeys.targetIdentifier).is(targetIdentifier);
     criteria.and(TriggerEventHistoryKeys.executionNotAttempted).ne(true);
     criteria.and(TriggerEventHistoryKeys.createdAt).gte(startTime);
+
+    return criteria;
+  }
+
+  public Criteria getCriteriaForTogglingTriggersInBulk(boolean enable, String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String pipelineIdentifier, String type) {
+    if (StringUtils.isBlank(accountIdentifier)) {
+      throw new InvalidRequestException(
+          "accountIdentifier parameter cannot be null. Please input a valid accountIdentifier.");
+    }
+    if (StringUtils.isBlank(orgIdentifier) && StringUtils.isNotBlank(projectIdentifier)) {
+      throw new InvalidRequestException(
+          "Please input a valid orgIdentifier for the given projectIdentifier [" + projectIdentifier + "]");
+    }
+    if (StringUtils.isAnyBlank(projectIdentifier, orgIdentifier) && StringUtils.isNotBlank(pipelineIdentifier)) {
+      throw new InvalidRequestException(
+          "Please input a valid orgIdentifier and projectIdentifier for the given pipelineIdentifier ["
+          + pipelineIdentifier + "]");
+    }
+
+    Criteria criteria = new Criteria();
+    criteria.and(NGTriggerEntityKeys.accountId).is(accountIdentifier);
+    criteria.and(NGTriggerEntityKeys.deleted).is(false);
+    criteria.and(NGTriggerEntityKeys.enabled).is(!enable);
+
+    if (StringUtils.isNotBlank(orgIdentifier)) {
+      criteria.and(NGTriggerEntityKeys.orgIdentifier).is(orgIdentifier);
+    }
+    if (StringUtils.isNotBlank(projectIdentifier)) {
+      criteria.and(NGTriggerEntityKeys.projectIdentifier).is(projectIdentifier);
+    }
+    if (StringUtils.isNotBlank(pipelineIdentifier)) {
+      criteria.and(NGTriggerEntityKeys.targetIdentifier).is(pipelineIdentifier);
+    }
+    if (isNotEmpty(type)) {
+      criteria.and(NGTriggerEntityKeys.type).is(type);
+    }
 
     return criteria;
   }

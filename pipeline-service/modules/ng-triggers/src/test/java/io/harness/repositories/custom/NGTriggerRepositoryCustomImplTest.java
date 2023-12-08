@@ -218,7 +218,7 @@ public class NGTriggerRepositoryCustomImplTest extends CategoryTest {
     when(bulkOperations.execute()).thenReturn(bulkWriteResult);
     when(bulkWriteResult.getModifiedCount()).thenReturn(2);
 
-    TriggerUpdateCount result = ngTriggerRepositoryCustom.updateTriggerEnabled(ngTriggerEntityList);
+    TriggerUpdateCount result = ngTriggerRepositoryCustom.toggleTriggerInBulk(ngTriggerEntityList, false);
 
     assertEquals(2, result.getSuccessCount());
     assertEquals(0, result.getFailureCount());

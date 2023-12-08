@@ -172,12 +172,12 @@ public class NGTriggerRepositoryCustomImpl implements NGTriggerRepositoryCustom 
     return Failsafe.with(retryPolicy).get(() -> mongoTemplate.remove(query, NGTriggerEntity.class));
   }
 
-  public TriggerUpdateCount updateTriggerEnabled(List<NGTriggerEntity> ngTriggerEntityList) {
+  public TriggerUpdateCount toggleTriggerInBulk(List<NGTriggerEntity> ngTriggerEntityList, boolean enable) {
     BulkOperations bulkOperations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, NGTriggerEntity.class);
     for (NGTriggerEntity triggerEntity : ngTriggerEntityList) {
       Update update = new Update();
       update.set(NGTriggerEntityKeys.yaml, triggerEntity.getYaml());
-      update.set(NGTriggerEntityKeys.enabled, false);
+      update.set(NGTriggerEntityKeys.enabled, enable);
       Criteria criteria = Criteria.where(NGTriggerEntityKeys.accountId)
                               .is(triggerEntity.getAccountId())
                               .and(NGTriggerEntityKeys.orgIdentifier)

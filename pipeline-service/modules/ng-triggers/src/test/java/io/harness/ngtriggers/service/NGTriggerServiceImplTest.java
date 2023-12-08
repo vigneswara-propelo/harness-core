@@ -16,6 +16,7 @@ import static io.harness.rule.OwnerRule.ADWAIT;
 import static io.harness.rule.OwnerRule.MATT;
 import static io.harness.rule.OwnerRule.MEET;
 import static io.harness.rule.OwnerRule.SRIDHAR;
+import static io.harness.rule.OwnerRule.VED;
 import static io.harness.rule.OwnerRule.VINICIUS;
 import static io.harness.rule.OwnerRule.YUVRAJ;
 
@@ -62,6 +63,7 @@ import io.harness.ngsettings.SettingValueType;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.ngsettings.dto.SettingValueResponseDTO;
 import io.harness.ngtriggers.beans.config.NGTriggerConfigV2;
+import io.harness.ngtriggers.beans.dto.BulkTriggersResponseDTO;
 import io.harness.ngtriggers.beans.dto.PollingConfig;
 import io.harness.ngtriggers.beans.dto.TriggerDetails;
 import io.harness.ngtriggers.beans.dto.TriggerYamlDiffDTO;
@@ -1930,42 +1932,445 @@ public class NGTriggerServiceImplTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = MEET)
+  @Owner(developers = VED)
   @Category(UnitTests.class)
-  public void testUpdateEnabledField() {
-    // Prepare test data
-    String accountIdentifier = "accountId";
-    String orgIdentifier = "orgIdentifier";
-    String projectIdentifier = "projectIdentifier";
+  public void testToggleTriggersForAccountScope() {
+    String ACCOUNT_ID = "accountId";
 
-    Criteria criteria = new Criteria();
-    // Set up your criteria mock here
-    List<NGTriggerEntity> listOfTriggers = Collections.singletonList(NGTriggerEntity.builder().build());
-    // Add some NGTriggerEntity instances to listOfTriggers
-    CloseableIterator<NGTriggerEntity> iterator = createCloseableIterator(listOfTriggers.iterator());
+    boolean enable = true;
 
-    TriggerUpdateCount triggerUpdateCount = TriggerUpdateCount.builder().successCount(1L).failureCount(1L).build();
-    // Set up your triggerUpdateCount mock here
+    NGTriggerEntity t1 = NGTriggerEntity.builder()
+                             .name("t1")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t1")
+                             .projectIdentifier("project1")
+                             .orgIdentifier("org1")
+                             .targetIdentifier("pipeline1")
+                             .build();
 
-    // Mock the behavior of ngTriggerRepository.findAll
-    when(ngTriggerRepository.findAll(any(Criteria.class))).thenReturn(iterator);
+    NGTriggerEntity t2 = NGTriggerEntity.builder()
+                             .name("t2")
+                             .enabled(false)
+                             .type(NGTriggerType.WEBHOOK)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t2")
+                             .projectIdentifier("project2")
+                             .orgIdentifier("org2")
+                             .targetIdentifier("pipeline2")
+                             .build();
+
+    NGTriggerEntity t3 = NGTriggerEntity.builder()
+                             .name("t3")
+                             .enabled(false)
+                             .type(NGTriggerType.MANIFEST)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t3")
+                             .projectIdentifier("project3")
+                             .orgIdentifier("org3")
+                             .targetIdentifier("pipeline3")
+                             .build();
+
+    NGTriggerEntity t4 = NGTriggerEntity.builder()
+                             .name("t4")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t4")
+                             .projectIdentifier("project4")
+                             .orgIdentifier("org4")
+                             .targetIdentifier("pipeline4")
+                             .build();
+
+    NGTriggerEntity t5 = NGTriggerEntity.builder()
+                             .name("t5")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t5")
+                             .projectIdentifier("project5")
+                             .orgIdentifier("org5")
+                             .targetIdentifier("pipeline5")
+                             .build();
+
+    List<NGTriggerEntity> ngTriggerEntityList = Arrays.asList(t1, t2, t3, t4, t5);
+
+    TriggerUpdateCount triggerUpdateCount = TriggerUpdateCount.builder().successCount(5l).failureCount(0l).build();
+
+    CloseableIterator<NGTriggerEntity> iterator = createCloseableIterator(ngTriggerEntityList.iterator());
 
     // Mock the behavior of ngTriggerElementMapper.updateEntityYmlWithEnabledValue
     doNothing().when(ngTriggerElementMapper).updateEntityYmlWithEnabledValue(any(NGTriggerEntity.class));
 
     // Mock the behavior of ngTriggerRepository.updateTriggerEnabled
-    when(ngTriggerRepository.updateTriggerEnabled(anyList())).thenReturn(triggerUpdateCount);
+    when(ngTriggerRepository.toggleTriggerInBulk(anyList(), anyBoolean())).thenReturn(triggerUpdateCount);
 
-    // Perform the test
-    TriggerUpdateCount result =
-        ngTriggerServiceImpl.disableTriggers(accountIdentifier, orgIdentifier, projectIdentifier);
+    // Mock the behavior of ngTriggerRepository.findAll
+    when(ngTriggerRepository.findAll(any(Criteria.class))).thenReturn(iterator);
 
-    // Verify the mock interactions and assertions
-    verify(ngTriggerRepository).findAll(any(Criteria.class));
-    verify(ngTriggerElementMapper, times(listOfTriggers.size())).updateEntityYmlWithEnabledValue(any());
-    verify(ngTriggerRepository).updateTriggerEnabled(anyList());
+    BulkTriggersResponseDTO result = ngTriggerServiceImpl.toggleTriggers(enable, ACCOUNT_ID, null, null, null, null);
 
-    assertEquals(triggerUpdateCount, result);
+    verify(ngTriggerElementMapper, times(ngTriggerEntityList.size())).updateEntityYmlWithEnabledValue(any());
+    verify(ngTriggerRepository).toggleTriggerInBulk(anyList(), anyBoolean());
+
+    assertEquals(result.getBulkTriggerDetailDTOList().size(), ngTriggerEntityList.size());
+  }
+
+  @Test
+  @Owner(developers = VED)
+  @Category(UnitTests.class)
+  public void testToggleTriggersForOrganizationScope() {
+    String ACCOUNT_ID = "accountId";
+    String ORG_ID = "orgId";
+
+    boolean enable = true;
+
+    NGTriggerEntity t1 = NGTriggerEntity.builder()
+                             .name("t1")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t1")
+                             .projectIdentifier("project1")
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline1")
+                             .build();
+
+    NGTriggerEntity t2 = NGTriggerEntity.builder()
+                             .name("t2")
+                             .enabled(false)
+                             .type(NGTriggerType.WEBHOOK)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t2")
+                             .projectIdentifier("project2")
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline2")
+                             .build();
+
+    NGTriggerEntity t3 = NGTriggerEntity.builder()
+                             .name("t3")
+                             .enabled(false)
+                             .type(NGTriggerType.MANIFEST)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t3")
+                             .projectIdentifier("project3")
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline3")
+                             .build();
+
+    NGTriggerEntity t4 = NGTriggerEntity.builder()
+                             .name("t4")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t4")
+                             .projectIdentifier("project4")
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline4")
+                             .build();
+
+    NGTriggerEntity t5 = NGTriggerEntity.builder()
+                             .name("t5")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t5")
+                             .projectIdentifier("project5")
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline5")
+                             .build();
+
+    List<NGTriggerEntity> ngTriggerEntityList = Arrays.asList(t1, t2, t3, t4, t5);
+
+    TriggerUpdateCount triggerUpdateCount = TriggerUpdateCount.builder().successCount(5l).failureCount(0l).build();
+
+    CloseableIterator<NGTriggerEntity> iterator = createCloseableIterator(ngTriggerEntityList.iterator());
+
+    // Mock the behavior of ngTriggerElementMapper.updateEntityYmlWithEnabledValue
+    doNothing().when(ngTriggerElementMapper).updateEntityYmlWithEnabledValue(any(NGTriggerEntity.class));
+
+    // Mock the behavior of ngTriggerRepository.updateTriggerEnabled
+    when(ngTriggerRepository.toggleTriggerInBulk(anyList(), anyBoolean())).thenReturn(triggerUpdateCount);
+
+    // Mock the behavior of ngTriggerRepository.findAll
+    when(ngTriggerRepository.findAll(any(Criteria.class))).thenReturn(iterator);
+
+    BulkTriggersResponseDTO result = ngTriggerServiceImpl.toggleTriggers(enable, ACCOUNT_ID, ORG_ID, null, null, null);
+
+    verify(ngTriggerElementMapper, times(ngTriggerEntityList.size())).updateEntityYmlWithEnabledValue(any());
+    verify(ngTriggerRepository).toggleTriggerInBulk(anyList(), anyBoolean());
+
+    assertEquals(ngTriggerEntityList.size(), result.getBulkTriggerDetailDTOList().size());
+  }
+
+  @Test
+  @Owner(developers = VED)
+  @Category(UnitTests.class)
+  public void testToggleTriggersForProjectScope() {
+    String ACCOUNT_ID = "accountId";
+    String ORG_ID = "orgId";
+    String PROJECT_ID = "projectId";
+
+    boolean enable = true;
+
+    NGTriggerEntity t1 = NGTriggerEntity.builder()
+                             .name("t1")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t1")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline1")
+                             .build();
+
+    NGTriggerEntity t2 = NGTriggerEntity.builder()
+                             .name("t2")
+                             .enabled(false)
+                             .type(NGTriggerType.WEBHOOK)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t2")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline2")
+                             .build();
+
+    NGTriggerEntity t3 = NGTriggerEntity.builder()
+                             .name("t3")
+                             .enabled(false)
+                             .type(NGTriggerType.MANIFEST)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t3")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline3")
+                             .build();
+
+    NGTriggerEntity t4 = NGTriggerEntity.builder()
+                             .name("t4")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t4")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline4")
+                             .build();
+
+    NGTriggerEntity t5 = NGTriggerEntity.builder()
+                             .name("t5")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t5")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier("pipeline5")
+                             .build();
+
+    List<NGTriggerEntity> ngTriggerEntityList = Arrays.asList(t1, t2, t3, t4, t5);
+
+    TriggerUpdateCount triggerUpdateCount = TriggerUpdateCount.builder().successCount(5l).failureCount(0l).build();
+
+    CloseableIterator<NGTriggerEntity> iterator = createCloseableIterator(ngTriggerEntityList.iterator());
+
+    // Mock the behavior of ngTriggerElementMapper.updateEntityYmlWithEnabledValue
+    doNothing().when(ngTriggerElementMapper).updateEntityYmlWithEnabledValue(any(NGTriggerEntity.class));
+
+    // Mock the behavior of ngTriggerRepository.updateTriggerEnabled
+    when(ngTriggerRepository.toggleTriggerInBulk(anyList(), anyBoolean())).thenReturn(triggerUpdateCount);
+
+    // Mock the behavior of ngTriggerRepository.findAll
+    when(ngTriggerRepository.findAll(any(Criteria.class))).thenReturn(iterator);
+
+    BulkTriggersResponseDTO result =
+        ngTriggerServiceImpl.toggleTriggers(enable, ACCOUNT_ID, ORG_ID, PROJECT_ID, null, null);
+
+    verify(ngTriggerElementMapper, times(ngTriggerEntityList.size())).updateEntityYmlWithEnabledValue(any());
+    verify(ngTriggerRepository).toggleTriggerInBulk(anyList(), anyBoolean());
+
+    assertEquals(ngTriggerEntityList.size(), result.getBulkTriggerDetailDTOList().size());
+  }
+
+  @Test
+  @Owner(developers = VED)
+  @Category(UnitTests.class)
+  public void testToggleTriggersForPipelineScope() {
+    String ACCOUNT_ID = "accountId";
+    String ORG_ID = "orgId";
+    String PROJECT_ID = "projectId";
+    String PIPELINE_ID = "pipelineId";
+
+    boolean enable = true;
+
+    NGTriggerEntity t1 = NGTriggerEntity.builder()
+                             .name("t1")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t1")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t2 = NGTriggerEntity.builder()
+                             .name("t2")
+                             .enabled(false)
+                             .type(NGTriggerType.WEBHOOK)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t2")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t3 = NGTriggerEntity.builder()
+                             .name("t3")
+                             .enabled(false)
+                             .type(NGTriggerType.MANIFEST)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t3")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t4 = NGTriggerEntity.builder()
+                             .name("t4")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t4")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t5 = NGTriggerEntity.builder()
+                             .name("t5")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t5")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    List<NGTriggerEntity> ngTriggerEntityList = Arrays.asList(t1, t2, t3, t4, t5);
+
+    TriggerUpdateCount triggerUpdateCount = TriggerUpdateCount.builder().successCount(5l).failureCount(0l).build();
+
+    CloseableIterator<NGTriggerEntity> iterator = createCloseableIterator(ngTriggerEntityList.iterator());
+
+    // Mock the behavior of ngTriggerElementMapper.updateEntityYmlWithEnabledValue
+    doNothing().when(ngTriggerElementMapper).updateEntityYmlWithEnabledValue(any(NGTriggerEntity.class));
+
+    // Mock the behavior of ngTriggerRepository.updateTriggerEnabled
+    when(ngTriggerRepository.toggleTriggerInBulk(anyList(), anyBoolean())).thenReturn(triggerUpdateCount);
+
+    // Mock the behavior of ngTriggerRepository.findAll
+    when(ngTriggerRepository.findAll(any(Criteria.class))).thenReturn(iterator);
+
+    BulkTriggersResponseDTO result =
+        ngTriggerServiceImpl.toggleTriggers(enable, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, null);
+
+    verify(ngTriggerElementMapper, times(ngTriggerEntityList.size())).updateEntityYmlWithEnabledValue(any());
+    verify(ngTriggerRepository).toggleTriggerInBulk(anyList(), anyBoolean());
+
+    assertEquals(ngTriggerEntityList.size(), result.getBulkTriggerDetailDTOList().size());
+  }
+
+  @Test
+  @Owner(developers = VED)
+  @Category(UnitTests.class)
+  public void testToggleTriggersForSpecificType() {
+    String ACCOUNT_ID = "accountId";
+    String ORG_ID = "orgId";
+    String PROJECT_ID = "projectId";
+    String PIPELINE_ID = "pipelineId";
+
+    boolean enable = true;
+
+    NGTriggerEntity t1 = NGTriggerEntity.builder()
+                             .name("t1")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t1")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t2 = NGTriggerEntity.builder()
+                             .name("t2")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t2")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t3 = NGTriggerEntity.builder()
+                             .name("t3")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t3")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t4 = NGTriggerEntity.builder()
+                             .name("t4")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t4")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    NGTriggerEntity t5 = NGTriggerEntity.builder()
+                             .name("t5")
+                             .enabled(false)
+                             .type(NGTriggerType.ARTIFACT)
+                             .accountId(ACCOUNT_ID)
+                             .identifier("t5")
+                             .projectIdentifier(PROJECT_ID)
+                             .orgIdentifier(ORG_ID)
+                             .targetIdentifier(PIPELINE_ID)
+                             .build();
+
+    List<NGTriggerEntity> ngTriggerEntityList = Arrays.asList(t1, t2, t3, t4, t5);
+
+    TriggerUpdateCount triggerUpdateCount = TriggerUpdateCount.builder().successCount(5l).failureCount(0l).build();
+
+    CloseableIterator<NGTriggerEntity> iterator = createCloseableIterator(ngTriggerEntityList.iterator());
+
+    // Mock the behavior of ngTriggerElementMapper.updateEntityYmlWithEnabledValue
+    doNothing().when(ngTriggerElementMapper).updateEntityYmlWithEnabledValue(any(NGTriggerEntity.class));
+
+    // Mock the behavior of ngTriggerRepository.updateTriggerEnabled
+    when(ngTriggerRepository.toggleTriggerInBulk(anyList(), anyBoolean())).thenReturn(triggerUpdateCount);
+
+    // Mock the behavior of ngTriggerRepository.findAll
+    when(ngTriggerRepository.findAll(any(Criteria.class))).thenReturn(iterator);
+
+    BulkTriggersResponseDTO result =
+        ngTriggerServiceImpl.toggleTriggers(enable, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, null);
+
+    verify(ngTriggerElementMapper, times(ngTriggerEntityList.size())).updateEntityYmlWithEnabledValue(any());
+    verify(ngTriggerRepository).toggleTriggerInBulk(anyList(), anyBoolean());
+
+    assertEquals(ngTriggerEntityList.size(), result.getBulkTriggerDetailDTOList().size());
   }
 
   @Test
