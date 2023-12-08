@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @OwnedBy(PIPELINE)
 public class GitXWebhookUtils {
+  private final String NULL_COMMIT_ID = "0000000000000000000000000000000000000000";
+
   public List<String> compareFolderPaths(List<String> webhookFolderPaths, List<String> modifiedFilePaths) {
     ArrayList<String> matchingFolderPaths = new ArrayList<>();
     if (isEmpty(modifiedFilePaths)) {
@@ -60,6 +62,13 @@ public class GitXWebhookUtils {
     }
     GitXWebhook gitXWebhook = getClosetGitXWebhookForGivenScope(fileScope, webhooksWithMatchingFolderPaths);
     return gitXWebhook != null;
+  }
+
+  public boolean isNullCommitId(String commitId) {
+    if (NULL_COMMIT_ID.equals(commitId)) {
+      return true;
+    }
+    return false;
   }
 
   private List<GitXWebhook> getEnabledWebhooks(List<GitXWebhook> gitXWebhookList) {

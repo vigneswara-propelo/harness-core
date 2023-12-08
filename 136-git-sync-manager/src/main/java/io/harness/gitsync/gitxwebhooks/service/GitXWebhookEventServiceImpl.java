@@ -84,6 +84,13 @@ public class GitXWebhookEventServiceImpl implements GitXWebhookEventService {
           return;
         }
         GitXWebhookEvent gitXWebhookEvent = buildGitXWebhookEvent(webhookDTO, gitXWebhookList);
+        if (GitXWebhookUtils.isNullCommitId(gitXWebhookEvent.getAfterCommitId())
+            || GitXWebhookUtils.isNullCommitId(gitXWebhookEvent.getBeforeCommitId())) {
+          log.info(String.format(
+              "Skipping processing of event [%s] as it as NULL commit id for either before or after commit id",
+              webhookDTO.getEventId()));
+          return;
+        }
         GitXWebhookEvent createdGitXWebhookEvent = gitXWebhookEventsRepository.create(gitXWebhookEvent);
         updateGitXWebhook(gitXWebhookList, webhookDTO.getTime());
         enqueueWebhookEvents(webhookDTO);
