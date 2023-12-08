@@ -6,16 +6,14 @@
  */
 package io.harness.licensing.beans.modules;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-
 import io.harness.ModuleType;
 import io.harness.SecondaryEntitlement;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -26,14 +24,13 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(NON_NULL)
 @Schema(name = "DeveloperMapping",
     description = "This contains primary entitlement which is developer to secondary entitlement mappings")
 public class DeveloperMappingDTO {
   String id;
-  String accountIdentifier;
-  ModuleType moduleType;
-  int developerCount;
-  SecondaryEntitlement secondaryEntitlement;
-  int secondaryEntitlementCount;
+  @NotNull String accountIdentifier;
+  @NotNull ModuleType moduleType;
+  @NotNull int developerCount;
+  @NotNull SecondaryEntitlement secondaryEntitlement;
+  @NotNull int secondaryEntitlementCount;
 }

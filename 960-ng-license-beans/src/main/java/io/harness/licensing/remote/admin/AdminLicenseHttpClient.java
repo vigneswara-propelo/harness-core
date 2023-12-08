@@ -54,10 +54,16 @@ public interface AdminLicenseHttpClient {
   Call<ResponseDTO<SMPValidationResultDTO>> validateSMPLicense(@Body SMPEncLicenseDTO licenseDTO);
 
   @POST(ADMIN_DEVELOPER_MAPPING + "/{accountIdentifier}")
-  Call<ResponseDTO<DeveloperMappingDTO>> createAccountLevelDeveloperMapping(
+  Call<ResponseDTO<DeveloperMappingDTO>> createDeveloperMapping(
       @Path("accountIdentifier") String accountIdentifier, @Body DeveloperMappingDTO developerMappingDTO);
 
   @GET(ADMIN_DEVELOPER_MAPPING + "/{accountIdentifier}")
-  Call<ResponseDTO<List<DeveloperMappingDTO>>> getAccountLevelDeveloperMapping(
-      @Path("accountIdentifier") String accountIdentifier);
+  Call<ResponseDTO<List<DeveloperMappingDTO>>> getDeveloperMapping(@Path("accountIdentifier") String accountIdentifier);
+
+  @PUT(ADMIN_DEVELOPER_MAPPING + "/{accountIdentifier}")
+  Call<ResponseDTO<DeveloperMappingDTO>> updateDeveloperMapping(
+      @Path("accountIdentifier") String accountIdentifier, @Body DeveloperMappingDTO developerMappingDTO);
+
+  @DELETE(ADMIN_DEVELOPER_MAPPING + "/{developerMappingIdentifier}")
+  Call<ResponseDTO<Void>> deleteDeveloperMapping(@Path("developerMappingIdentifier") String developerMappingIdentifier);
 }

@@ -17,11 +17,14 @@ import java.util.List;
 
 @OwnedBy(HarnessTeam.GTM)
 public interface DeveloperMappingService {
-  List<DeveloperMappingDTO> getAccountLevelDeveloperMapping(String accountIdentifier);
+  List<DeveloperMappingDTO> getDeveloperMapping(String accountIdentifier);
 
-  DeveloperMappingDTO createAccountLevelDeveloperMapping(
-      String accountIdentifier, DeveloperMappingDTO developerMappingDTO);
+  DeveloperMappingDTO createDeveloperMapping(String accountIdentifier, DeveloperMappingDTO developerMappingDTO);
+
+  DeveloperMappingDTO updateDeveloperMapping(String accountIdentifier, DeveloperMappingDTO developerMappingDTO);
 
   DeveloperMapping getModuleDefaultDeveloperToSecondaryEntitlementMapping(
       ModuleType moduleType, SecondaryEntitlement secondaryEntitlement);
+
+  void deleteDeveloperMapping(String developerMappingId);
 }

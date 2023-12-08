@@ -746,7 +746,7 @@ public class AccountResource {
     }
     if (harnessUserGroupService.isHarnessSupportUser(existingUser.getUuid())) {
       return new RestResponse<>(
-          getResponse(adminLicenseHttpClient.createAccountLevelDeveloperMapping(clientAccountId, developerMappingDTO)));
+          getResponse(adminLicenseHttpClient.createDeveloperMapping(clientAccountId, developerMappingDTO)));
     } else {
       return RestResponse.Builder.aRestResponse()
           .withResponseMessages(Lists.newArrayList(
@@ -765,11 +765,51 @@ public class AccountResource {
       throw new InvalidRequestException("Invalid User");
     }
     if (harnessUserGroupService.isHarnessSupportUser(existingUser.getUuid())) {
-      return new RestResponse<>(getResponse(adminLicenseHttpClient.getAccountLevelDeveloperMapping(clientAccountId)));
+      return new RestResponse<>(getResponse(adminLicenseHttpClient.getDeveloperMapping(clientAccountId)));
     } else {
       return RestResponse.Builder.aRestResponse()
           .withResponseMessages(Lists.newArrayList(
               ResponseMessage.builder().message("User not allowed to get developer mapping").build()))
+          .build();
+    }
+  }
+
+  @PUT
+  @Path("{accountId}/ng/developer-license-mapping")
+  public RestResponse<DeveloperMappingDTO> updateDeveloperMapping(@PathParam("accountId") String accountId,
+      @QueryParam("clientAccountId") @NotNull String clientAccountId, @Body DeveloperMappingDTO developerMappingDTO) {
+    validateAccountExistence(clientAccountId);
+    User existingUser = UserThreadLocal.get();
+    if (existingUser == null) {
+      throw new InvalidRequestException("Invalid User");
+    }
+
+    if (harnessUserGroupService.isHarnessSupportUser(existingUser.getUuid())) {
+      return new RestResponse<>(
+          getResponse(adminLicenseHttpClient.updateDeveloperMapping(clientAccountId, developerMappingDTO)));
+    } else {
+      return RestResponse.Builder.aRestResponse()
+          .withResponseMessages(Lists.newArrayList(
+              ResponseMessage.builder().message("User not allowed to update developer mapping").build()))
+          .build();
+    }
+  }
+
+  @DELETE
+  @Path("{accountId}/ng/developer-license-mapping")
+  public RestResponse<Void> deleteDeveloperMapping(
+      @PathParam("accountId") String accountId, @QueryParam("developerMappingId") String developerMappingId) {
+    User existingUser = UserThreadLocal.get();
+    if (existingUser == null) {
+      throw new InvalidRequestException("Invalid User");
+    }
+
+    if (harnessUserGroupService.isHarnessSupportUser(existingUser.getUuid())) {
+      return new RestResponse<>(getResponse(adminLicenseHttpClient.deleteDeveloperMapping(developerMappingId)));
+    } else {
+      return RestResponse.Builder.aRestResponse()
+          .withResponseMessages(Lists.newArrayList(
+              ResponseMessage.builder().message("User not allowed to delete developer mapping").build()))
           .build();
     }
   }
