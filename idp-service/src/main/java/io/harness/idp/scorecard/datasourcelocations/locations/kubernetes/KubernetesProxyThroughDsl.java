@@ -10,6 +10,7 @@ package io.harness.idp.scorecard.datasourcelocations.locations.kubernetes;
 import static io.harness.idp.common.Constants.DSL_RESPONSE;
 import static io.harness.idp.common.Constants.ERROR_MESSAGE_KEY;
 import static io.harness.idp.common.Constants.MESSAGE_KEY;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.HTTPS_PREFIX;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -48,7 +49,7 @@ public class KubernetesProxyThroughDsl extends DataSourceLocationLoop {
 
   @Override
   protected String getHost(Map<String, String> data) {
-    return data.get("{HOST}");
+    return null;
   }
 
   @Override

@@ -43,6 +43,7 @@ import lombok.experimental.FieldDefaults;
 @OwnedBy(HarnessTeam.IDP)
 public class KubernetesProvider extends HttpDataSourceProvider {
   private static final String KUBERNETES_LABEL_SELECTOR_ANNOTATION = "backstage.io/kubernetes-label-selector";
+  private static final String KUBERNETES_NAMESPACE_ANNOTATION = "backstage.io/kubernetes-namespace";
   final ConfigReader configReader;
   final IdpAuthInterceptor idpAuthInterceptor;
   final String env;
@@ -67,8 +68,9 @@ public class KubernetesProvider extends HttpDataSourceProvider {
     replaceableHeaders.put(HARNESS_ACCOUNT, accountIdentifier);
     List<ClusterConfig> clustersConfigList = getClustersConfig(accountIdentifier, configs);
     String labelSelector = entity.getMetadata().getAnnotations().get(KUBERNETES_LABEL_SELECTOR_ANNOTATION);
+    String namespace = entity.getMetadata().getAnnotations().get(KUBERNETES_NAMESPACE_ANNOTATION);
     Map<String, String> possibleReplaceableRequestBodyPairs =
-        prepareRequestBodyReplaceablePairs(clustersConfigList, labelSelector, dataFetchDTOS);
+        prepareRequestBodyReplaceablePairs(clustersConfigList, labelSelector, namespace, dataFetchDTOS);
     return processOut(accountIdentifier, KUBERNETES_IDENTIFIER, entity, replaceableHeaders,
         possibleReplaceableRequestBodyPairs, prepareUrlReplaceablePairs(), dataFetchDTOS);
   }
@@ -85,7 +87,7 @@ public class KubernetesProvider extends HttpDataSourceProvider {
   }
 
   private Map<String, String> prepareRequestBodyReplaceablePairs(
-      List<ClusterConfig> clustersConfig, String labelSelector, List<DataFetchDTO> dataFetchDTOS) {
+      List<ClusterConfig> clustersConfig, String labelSelector, String namespace, List<DataFetchDTO> dataFetchDTOS) {
     List<DataPointInputValues> dataPoints = new ArrayList<>();
     for (DataFetchDTO dataFetchDTO : dataFetchDTOS) {
       DataPointInputValues dataPointInputValues = new DataPointInputValues();
@@ -98,6 +100,7 @@ public class KubernetesProvider extends HttpDataSourceProvider {
     kubernetesConfig.clusters(clustersConfig);
     kubernetesConfig.dataSourceLocation(dataSourceLocationInfo);
     kubernetesConfig.labelSelector(URLEncoder.encode(labelSelector, StandardCharsets.UTF_8));
+    kubernetesConfig.namespace(namespace);
     KubernetesRequest kubernetesRequest = new KubernetesRequest();
     kubernetesRequest.setRequest(kubernetesConfig);
 

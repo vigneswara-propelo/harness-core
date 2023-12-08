@@ -3421,6 +3421,10 @@ components:
           type: string
           x-stoplight:
             id: au25s8h8q4qzc
+        namespace:
+          type: string
+          x-stoplight:
+            id: fl26s8h9q4qzc
         data_source_location:
           $ref: '#/components/schemas/DataSourceLocationInfo'
     KubernetesRequest:

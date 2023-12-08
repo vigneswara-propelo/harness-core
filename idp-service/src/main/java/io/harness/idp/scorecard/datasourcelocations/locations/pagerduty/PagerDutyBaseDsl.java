@@ -11,6 +11,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.idp.common.Constants.DSL_RESPONSE;
 import static io.harness.idp.common.Constants.ERROR_MESSAGE_KEY;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.AUTHORIZATION_HEADER;
+import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.HTTPS_PREFIX;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.PAGERDUTY_ANNOTATION_MISSING_ERROR;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.PAGERDUTY_PLUGIN_INVALID_TOKEN_ERROR_MESSAGE;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.PAGERDUTY_PLUGIN_INVALID_URL_ERROR_MESSAGE;
@@ -67,7 +68,7 @@ public abstract class PagerDutyBaseDsl extends DataSourceLocationLoop {
 
   @Override
   protected String getHost(Map<String, String> data) {
-    return null;
+    return data.get(PAGERDUTY_TARGET_URL).replace(HTTPS_PREFIX, "");
   }
 
   @Override

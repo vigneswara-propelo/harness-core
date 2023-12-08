@@ -41,6 +41,11 @@ public class KubernetesDsl implements DslDataProvider {
       Map.of("daemonset", "apis/apps/v1/daemonsets", "deployment", "apis/apps/v1/deployments", "statefulset",
           "apis/apps/v1/statefulsets", "job", "apis/batch/v1/jobs", "cronjob", "apis/batch/v1/cronjobs");
 
+  public static final Map<String, String> WORKLOAD_WITH_NAMESPACE_API_PATHS =
+      Map.of("daemonset", "apis/apps/v1/namespaces/%s/daemonsets", "deployment",
+          "apis/apps/v1/namespaces/%s/deployments", "statefulset", "apis/apps/v1/namespaces/%s/statefulsets", "job",
+          "apis/batch/v1/namespaces/%s/jobs", "cronjob", "apis/batch/v1/namespaces/%s/cronjobs");
+
   @Override
   public Map<String, Object> getDslData(String accountIdentifier, Object config) {
     Map<String, Object> returnData = new HashMap<>();
@@ -49,6 +54,7 @@ public class KubernetesDsl implements DslDataProvider {
     }
     KubernetesConfig kubernetesConfig = (KubernetesConfig) config;
     String labelSelector = kubernetesConfig.getLabelSelector();
+    String namespace = kubernetesConfig.getNamespace();
     List<ClusterConfig> clusters = kubernetesConfig.getClusters();
 
     for (ClusterConfig cluster : clusters) {
@@ -62,10 +68,14 @@ public class KubernetesDsl implements DslDataProvider {
       }
       List<Object> items = new ArrayList<>();
       DslClient client = dslClientFactory.getClient(accountIdentifier, uri.getHost());
-      for (Map.Entry<String, String> entry : WORKLOAD_API_PATHS.entrySet()) {
+      Map<String, String> paths = WORKLOAD_API_PATHS;
+      if (namespace != null) {
+        paths = WORKLOAD_WITH_NAMESPACE_API_PATHS;
+      }
+      for (Map.Entry<String, String> entry : paths.entrySet()) {
         try {
           ApiRequestDetails requestDetails = getApiRequestDetails(
-              cluster.getUrl(), entry.getValue(), labelSelector, getAuthHeaders(cluster), entry.getKey());
+              cluster.getUrl(), entry.getValue(), labelSelector, namespace, getAuthHeaders(cluster), entry.getKey());
           Response response = client.call(accountIdentifier, requestDetails);
           if (response.getStatus() == 500) {
             returnData.put(ERROR_MESSAGE_KEY, ((ResponseMessage) response.getEntity()).getMessage());
@@ -93,9 +103,12 @@ public class KubernetesDsl implements DslDataProvider {
     return Map.of("Authorization", "Bearer " + cluster.getToken());
   }
 
-  private ApiRequestDetails getApiRequestDetails(
-      String baseUrl, String path, String labelSelector, Map<String, String> authHeaders, String workloadType) {
+  private ApiRequestDetails getApiRequestDetails(String baseUrl, String path, String labelSelector, String namespace,
+      Map<String, String> authHeaders, String workloadType) {
     log.info("Preparing request for {}", workloadType);
+    if (namespace != null) {
+      path = String.format(path, namespace);
+    }
     String url = String.format("%s/%s?labelSelector=%s", baseUrl, path, labelSelector);
     return ApiRequestDetails.builder().method("GET").headers(authHeaders).url(url).build();
   }

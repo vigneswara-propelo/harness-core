@@ -62,6 +62,7 @@ public class DataSourceLocations {
   public static final String REPOSITORY_SUB_FOLDER = "{REPOSITORY_SUB_FOLDER}";
   public static final String AUTHORIZATION_HEADER = "Authorization";
   public static final String BODY = "{BODY}";
+  public static final String HTTPS_PREFIX = "https://";
 
   // Catalog
   public static final String CATALOG = "catalog";
