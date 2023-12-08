@@ -2572,6 +2572,7 @@
 543320:io.harness.delegate.task.scm.ScmGitWebhookTaskParams
 543321:io.harness.delegate.task.scm.ScmGitWebhookTaskResponseData
 543322:io.harness.delegate.beans.connector.cvconnector.CVConnectorValidationParams
+543323:io.harness.delegate.task.stepstatus.StepOutputV2
 543325:io.harness.delegate.beans.ci.pod.SecretParams
 543326:io.harness.delegate.beans.ci.pod.SecretParams.Type
 543327:software.wings.service.impl.appdynamics.AppdynamicsBusinessTransaction

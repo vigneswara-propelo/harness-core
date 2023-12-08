@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CI;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.task.stepstatus.artifact.ArtifactMetadata;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,4 +26,5 @@ public class StepStatus {
   private ArtifactMetadata artifactMetadata;
   @Builder.Default private StepOutput output = StepMapOutput.builder().build();
   @Builder.Default private String error = "";
+  private List<StepOutputV2> outputV2;
 }

@@ -25,6 +25,7 @@ message ExecuteStepResponse {
   map<string, string> output = 1;  // Step output
   int32 num_retries = 2;
   io.harness.product.ci.engine.proto.Artifact artifact = 3;  // Artifact metadata
+  repeated io.harness.product.ci.engine.proto.OutputVariable outputs = 4;
 }
 
 message SignalStopRequest {}

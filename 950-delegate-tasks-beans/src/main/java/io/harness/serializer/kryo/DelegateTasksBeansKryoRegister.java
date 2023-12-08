@@ -1044,6 +1044,7 @@ import io.harness.delegate.task.ssh.config.FileDelegateConfig;
 import io.harness.delegate.task.ssh.config.SecretConfigFile;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
 import io.harness.delegate.task.stepstatus.StepMapOutput;
+import io.harness.delegate.task.stepstatus.StepOutputV2;
 import io.harness.delegate.task.stepstatus.StepStatus;
 import io.harness.delegate.task.stepstatus.StepStatusTaskParameters;
 import io.harness.delegate.task.stepstatus.StepStatusTaskResponseData;
@@ -1840,6 +1841,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(ScmGitWebhookTaskParams.class, 543320);
     kryo.register(ScmGitWebhookTaskResponseData.class, 543321);
     kryo.register(CVConnectorValidationParams.class, 543322);
+    kryo.register(StepOutputV2.class, 543323);
 
     kryo.register(SecretParams.class, 543325);
     kryo.register(SecretParams.Type.class, 543326);

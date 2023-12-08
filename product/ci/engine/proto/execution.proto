@@ -65,6 +65,7 @@ message RunTestsStep {
   string test_globs = 20;  // Comma separated strings which are test globs
   string pythonVersion = 21;
   string testRoot = 22;
+  repeated OutputVariable outputs = 23;
 }
 
 message RunStep {
@@ -78,6 +79,17 @@ message RunStep {
   bool detach = 8;
   repeated string entrypoint = 9;
   string image = 10;
+  repeated OutputVariable outputs = 11;
+}
+
+message OutputVariable {
+  enum OutputType {
+    STRING = 0;
+    SECRET = 1;
+  }
+  OutputType type = 2;
+  string key = 3;
+  string value = 4;
 }
 
 message PluginStep {
