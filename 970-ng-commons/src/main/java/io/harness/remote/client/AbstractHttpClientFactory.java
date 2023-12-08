@@ -8,6 +8,7 @@
 package io.harness.remote.client;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.beans.ScopeInfoContext.getScopeInfoInterceptor;
 import static io.harness.network.Http.DEFAULT_OKHTTP_CLIENT;
 import static io.harness.network.Http.checkAndGetNonProxyIfApplicable;
 import static io.harness.network.Http.getSslContext;
@@ -175,6 +176,7 @@ public abstract class AbstractHttpClientFactory {
 
       return DEFAULT_OKHTTP_CLIENT.newBuilder()
           .addInterceptor(new PmsAuthInterceptor(serviceSecret))
+          .addInterceptor(getScopeInfoInterceptor())
           .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0])
           .build();
     } catch (Exception e) {
@@ -218,6 +220,7 @@ public abstract class AbstractHttpClientFactory {
               .readTimeout(serviceHttpClientConfig.getReadTimeOutSeconds(), TimeUnit.SECONDS)
               .addInterceptor(getAuthorizationInterceptor(clientMode))
               .addInterceptor(getCorrelationIdInterceptor())
+              .addInterceptor(getScopeInfoInterceptor())
               .addInterceptor(getGitContextInterceptor())
               .addInterceptor(getRequestContextInterceptor());
       if (addHttpLogging) {

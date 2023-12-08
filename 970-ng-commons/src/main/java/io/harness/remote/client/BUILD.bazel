@@ -18,6 +18,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
+        "//970-ng-commons/src/main/java/io/harness/beans/scope:module",
         "//970-ng-commons/src/main/java/io/harness/gitsync/interceptor:module",
         "//970-ng-commons/src/main/java/io/harness/ng/core:module",
         "//970-ng-commons/src/main/java/io/harness/ng/core/dto:module",
