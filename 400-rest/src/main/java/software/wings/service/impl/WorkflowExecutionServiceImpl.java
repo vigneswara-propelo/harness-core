@@ -961,210 +961,216 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
 
   @Override
   public void refreshPipelineExecution(WorkflowExecution workflowExecution) {
-    if (workflowExecution == null || workflowExecution.getPipelineExecution() == null) {
-      return;
-    }
+    try {
+      if (workflowExecution == null || workflowExecution.getPipelineExecution() == null) {
+        return;
+      }
 
-    if (workflowExecution.getPipelineExecution().getPipelineStageExecutions() == null) {
-      workflowExecution.getPipelineExecution().setPipelineStageExecutions(new ArrayList<>());
-    }
+      if (workflowExecution.getPipelineExecution().getPipelineStageExecutions() == null) {
+        workflowExecution.getPipelineExecution().setPipelineStageExecutions(new ArrayList<>());
+      }
 
-    if (ExecutionStatus.isFinalStatus(workflowExecution.getPipelineExecution().getStatus())
-        && workflowExecution.getPipelineExecution()
-               .getPipelineStageExecutions()
-               .stream()
-               .flatMap(pipelineStageExecution -> pipelineStageExecution.getWorkflowExecutions().stream())
-               .allMatch(workflowExecution1 -> ExecutionStatus.isFinalStatus(workflowExecution1.getStatus()))) {
-      return;
-    }
+      if (ExecutionStatus.isFinalStatus(workflowExecution.getPipelineExecution().getStatus())
+          && workflowExecution.getPipelineExecution()
+                 .getPipelineStageExecutions()
+                 .stream()
+                 .flatMap(pipelineStageExecution -> pipelineStageExecution.getWorkflowExecutions().stream())
+                 .allMatch(workflowExecution1 -> ExecutionStatus.isFinalStatus(workflowExecution1.getStatus()))) {
+        return;
+      }
 
-    PipelineExecution pipelineExecution = workflowExecution.getPipelineExecution();
-    Pipeline pipeline = pipelineExecution.getPipeline();
-    ImmutableMap<String, StateExecutionInstance> stateExecutionInstanceMap =
-        getStateExecutionInstanceMap(workflowExecution);
-    List<PipelineStageExecution> stageExecutionDataList = new ArrayList<>();
+      PipelineExecution pipelineExecution = workflowExecution.getPipelineExecution();
+      Pipeline pipeline = pipelineExecution.getPipeline();
+      ImmutableMap<String, StateExecutionInstance> stateExecutionInstanceMap =
+          getStateExecutionInstanceMap(workflowExecution);
+      List<PipelineStageExecution> stageExecutionDataList = new ArrayList<>();
 
-    pipeline.getPipelineStages()
-        .stream()
-        .flatMap(pipelineStage -> pipelineStage.getPipelineStageElements().stream())
-        .forEach(pipelineStageElement -> {
-          StateExecutionInstance stateExecutionInstance = stateExecutionInstanceMap.get(pipelineStageElement.getName());
+      pipeline.getPipelineStages()
+          .stream()
+          .flatMap(pipelineStage -> pipelineStage.getPipelineStageElements().stream())
+          .forEach(pipelineStageElement -> {
+            StateExecutionInstance stateExecutionInstance =
+                stateExecutionInstanceMap.get(pipelineStageElement.getName());
 
-          if (stateExecutionInstance == null) {
-            Long estimatedTime = pipeline.getStateEtaMap().get(pipelineStageElement.getUuid());
-            // required for backward compatibility, Can be removed later
-            if (estimatedTime == null) {
-              estimatedTime = pipeline.getStateEtaMap().get(pipelineStageElement.getName());
-            }
-            stageExecutionDataList.add(
-                PipelineStageExecution.builder()
-                    .parallelInfo(ParallelInfo.builder().groupIndex(pipelineStageElement.getParallelIndex()).build())
-                    .pipelineStageElementId(pipelineStageElement.getUuid())
-                    .stateUuid(pipelineStageElement.getUuid())
-                    .stateType(pipelineStageElement.getType())
-                    .stateName(pipelineStageElement.getName())
-                    .status(QUEUED)
-                    .estimatedTime(estimatedTime)
-                    .build());
-
-          } else {
-            PipelineStageExecution stageExecution =
-                PipelineStageExecution.builder()
-                    .parallelInfo(ParallelInfo.builder().groupIndex(pipelineStageElement.getParallelIndex()).build())
-                    .pipelineStageElementId(pipelineStageElement.getUuid())
-                    .stateUuid(pipelineStageElement.getUuid())
-                    .stateType(stateExecutionInstance.getStateType())
-                    .status(stateExecutionInstance.getStatus())
-                    .stateName(stateExecutionInstance.getDisplayName())
-                    .startTs(stateExecutionInstance.getStartTs())
-                    .triggeredBy(workflowExecution.getTriggeredBy())
-                    .expiryTs(stateExecutionInstance.getExpiryTs())
-                    .endTs(stateExecutionInstance.getEndTs())
-                    .build();
-
-            appendSkipCondition(pipelineStageElement, stageExecution, stateExecutionInstance.getUuid());
-
-            StateExecutionData stateExecutionData = stateExecutionInstance.fetchStateExecutionData();
-
-            if (stateExecutionData instanceof SkipStateExecutionData) {
-              stageExecution.setStateExecutionData(stateExecutionData);
-              stageExecution.setMessage(stateExecutionData.getErrorMsg());
-              stageExecutionDataList.add(stageExecution);
-            } else if (APPROVAL.name().equals(stateExecutionInstance.getStateType())
-                || APPROVAL_RESUME.name().equals(stateExecutionInstance.getStateType())) {
-              if (stateExecutionData instanceof ApprovalStateExecutionData) {
-                stageExecution.setStateExecutionData(stateExecutionData);
-
-                ApprovalStateExecutionData approvalStateExecutionData = (ApprovalStateExecutionData) stateExecutionData;
-                approvalStateExecutionData.setUserGroupList(
-                    userGroupService.fetchUserGroupNamesFromIds(approvalStateExecutionData.getUserGroups()));
-                approvalStateExecutionData.setAuthorized(
-                    verifyAuthorizedToAcceptOrReject(approvalStateExecutionData.getUserGroups(), pipeline.getAppId(),
-                        pipelineExecution.getPipelineId()));
-                approvalStateExecutionData.setAppId(pipeline.getAppId());
-                approvalStateExecutionData.setWorkflowId(pipelineExecution.getPipelineId());
+            if (stateExecutionInstance == null) {
+              Long estimatedTime = pipeline.getStateEtaMap().get(pipelineStageElement.getUuid());
+              // required for backward compatibility, Can be removed later
+              if (estimatedTime == null) {
+                estimatedTime = pipeline.getStateEtaMap().get(pipelineStageElement.getName());
               }
-              stageExecution.setMessage(stateExecutionData != null ? stateExecutionData.getErrorMsg() : "");
-              stageExecutionDataList.add(stageExecution);
-
-            } else if (ENV_STATE.name().equals(stateExecutionInstance.getStateType())
-                || ENV_RESUME_STATE.name().equals(stateExecutionInstance.getStateType())) {
-              if (stateExecutionData instanceof EnvStateExecutionData) {
-                EnvStateExecutionData envStateExecutionData = (EnvStateExecutionData) stateExecutionData;
-                setWaitingForInputFlag(stateExecutionInstance, stageExecution);
-                if (envStateExecutionData.getWorkflowExecutionId() != null) {
-                  WorkflowExecution workflowExecution2 = getExecutionDetailsWithoutGraph(
-                      workflowExecution.getAppId(), envStateExecutionData.getWorkflowExecutionId());
-                  workflowExecution2.setStateMachine(null);
-
-                  stageExecution.setWorkflowExecutions(asList(workflowExecution2));
-                  stageExecution.setStatus(workflowExecution2.getStatus());
-                }
-                stageExecution.setMessage(envStateExecutionData.getErrorMsg());
-              }
-              stageExecutionDataList.add(stageExecution);
-            } else if (ENV_LOOP_STATE.name().equals(stateExecutionInstance.getStateType())
-                || ENV_LOOP_RESUME_STATE.name().equals(stateExecutionInstance.getStateType())) {
-              setWaitingForInputFlag(stateExecutionInstance, stageExecution);
-              if (stateExecutionData instanceof ForkStateExecutionData) {
-                handleEnvLoopStateExecutionData(workflowExecution.getAppId(), stateExecutionInstanceMap,
-                    stageExecutionDataList, (ForkStateExecutionData) stateExecutionData, pipelineStageElement,
-                    stateExecutionInstance.getUuid());
-              } else if (stateExecutionData instanceof EnvStateExecutionData) {
-                EnvStateExecutionData envStateExecutionData = (EnvStateExecutionData) stateExecutionData;
-                stageExecution.setMessage(envStateExecutionData.getErrorMsg());
-                stageExecutionDataList.add(stageExecution);
-              }
+              stageExecutionDataList.add(
+                  PipelineStageExecution.builder()
+                      .parallelInfo(ParallelInfo.builder().groupIndex(pipelineStageElement.getParallelIndex()).build())
+                      .pipelineStageElementId(pipelineStageElement.getUuid())
+                      .stateUuid(pipelineStageElement.getUuid())
+                      .stateType(pipelineStageElement.getType())
+                      .stateName(pipelineStageElement.getName())
+                      .status(QUEUED)
+                      .estimatedTime(estimatedTime)
+                      .build());
 
             } else {
-              throw new InvalidRequestException("Unknown stateType " + stateExecutionInstance.getStateType());
+              PipelineStageExecution stageExecution =
+                  PipelineStageExecution.builder()
+                      .parallelInfo(ParallelInfo.builder().groupIndex(pipelineStageElement.getParallelIndex()).build())
+                      .pipelineStageElementId(pipelineStageElement.getUuid())
+                      .stateUuid(pipelineStageElement.getUuid())
+                      .stateType(stateExecutionInstance.getStateType())
+                      .status(stateExecutionInstance.getStatus())
+                      .stateName(stateExecutionInstance.getDisplayName())
+                      .startTs(stateExecutionInstance.getStartTs())
+                      .triggeredBy(workflowExecution.getTriggeredBy())
+                      .expiryTs(stateExecutionInstance.getExpiryTs())
+                      .endTs(stateExecutionInstance.getEndTs())
+                      .build();
+
+              appendSkipCondition(pipelineStageElement, stageExecution, stateExecutionInstance.getUuid());
+
+              StateExecutionData stateExecutionData = stateExecutionInstance.fetchStateExecutionData();
+
+              if (stateExecutionData instanceof SkipStateExecutionData) {
+                stageExecution.setStateExecutionData(stateExecutionData);
+                stageExecution.setMessage(stateExecutionData.getErrorMsg());
+                stageExecutionDataList.add(stageExecution);
+              } else if (APPROVAL.name().equals(stateExecutionInstance.getStateType())
+                  || APPROVAL_RESUME.name().equals(stateExecutionInstance.getStateType())) {
+                if (stateExecutionData instanceof ApprovalStateExecutionData) {
+                  stageExecution.setStateExecutionData(stateExecutionData);
+
+                  ApprovalStateExecutionData approvalStateExecutionData =
+                      (ApprovalStateExecutionData) stateExecutionData;
+                  approvalStateExecutionData.setUserGroupList(
+                      userGroupService.fetchUserGroupNamesFromIds(approvalStateExecutionData.getUserGroups()));
+                  approvalStateExecutionData.setAuthorized(
+                      verifyAuthorizedToAcceptOrReject(approvalStateExecutionData.getUserGroups(), pipeline.getAppId(),
+                          pipelineExecution.getPipelineId()));
+                  approvalStateExecutionData.setAppId(pipeline.getAppId());
+                  approvalStateExecutionData.setWorkflowId(pipelineExecution.getPipelineId());
+                }
+                stageExecution.setMessage(stateExecutionData != null ? stateExecutionData.getErrorMsg() : "");
+                stageExecutionDataList.add(stageExecution);
+
+              } else if (ENV_STATE.name().equals(stateExecutionInstance.getStateType())
+                  || ENV_RESUME_STATE.name().equals(stateExecutionInstance.getStateType())) {
+                if (stateExecutionData instanceof EnvStateExecutionData) {
+                  EnvStateExecutionData envStateExecutionData = (EnvStateExecutionData) stateExecutionData;
+                  setWaitingForInputFlag(stateExecutionInstance, stageExecution);
+                  if (envStateExecutionData.getWorkflowExecutionId() != null) {
+                    WorkflowExecution workflowExecution2 = getExecutionDetailsWithoutGraph(
+                        workflowExecution.getAppId(), envStateExecutionData.getWorkflowExecutionId());
+                    workflowExecution2.setStateMachine(null);
+
+                    stageExecution.setWorkflowExecutions(asList(workflowExecution2));
+                    stageExecution.setStatus(workflowExecution2.getStatus());
+                  }
+                  stageExecution.setMessage(envStateExecutionData.getErrorMsg());
+                }
+                stageExecutionDataList.add(stageExecution);
+              } else if (ENV_LOOP_STATE.name().equals(stateExecutionInstance.getStateType())
+                  || ENV_LOOP_RESUME_STATE.name().equals(stateExecutionInstance.getStateType())) {
+                setWaitingForInputFlag(stateExecutionInstance, stageExecution);
+                if (stateExecutionData instanceof ForkStateExecutionData) {
+                  handleEnvLoopStateExecutionData(workflowExecution.getAppId(), stateExecutionInstanceMap,
+                      stageExecutionDataList, (ForkStateExecutionData) stateExecutionData, pipelineStageElement,
+                      stateExecutionInstance.getUuid());
+                } else if (stateExecutionData instanceof EnvStateExecutionData) {
+                  EnvStateExecutionData envStateExecutionData = (EnvStateExecutionData) stateExecutionData;
+                  stageExecution.setMessage(envStateExecutionData.getErrorMsg());
+                  stageExecutionDataList.add(stageExecution);
+                }
+
+              } else {
+                throw new InvalidRequestException("Unknown stateType " + stateExecutionInstance.getStateType());
+              }
             }
-          }
-        });
+          });
 
-    stateExecutionInstanceMap.entrySet()
-        .stream()
-        .filter(entry -> entry.getValue().getStateType().equals(ENV_ROLLBACK_STATE.getType()))
-        .map(entry -> entry.getValue())
-        .sorted(Comparator.comparingInt(instance -> {
-          StateExecutionData stateExecutionData = instance.fetchStateExecutionData();
-          if (stateExecutionData instanceof SkipStateExecutionData) {
-            return ((SkipStateExecutionData) stateExecutionData).getPipelineStageParallelIndex();
-          }
-          return ((EnvStateExecutionData) stateExecutionData).getPipelineStageParallelIndex();
-        }))
-        .forEach(stateExecutionInstance -> {
-          StateExecutionData stateExecutionData = stateExecutionInstance.fetchStateExecutionData();
-          PipelineStageExecution stageExecution = PipelineStageExecution.builder()
-                                                      .parallelInfo(ParallelInfo.builder().build())
-                                                      .stateType(stateExecutionInstance.getStateType())
-                                                      .status(stateExecutionInstance.getStatus())
-                                                      .stateName(stateExecutionInstance.getDisplayName())
-                                                      .startTs(stateExecutionInstance.getStartTs())
-                                                      .triggeredBy(workflowExecution.getTriggeredBy())
-                                                      .expiryTs(stateExecutionInstance.getExpiryTs())
-                                                      .endTs(stateExecutionInstance.getEndTs())
-                                                      .build();
-          if (stateExecutionData instanceof EnvStateExecutionData) {
-            EnvStateExecutionData envStateExecutionData = (EnvStateExecutionData) stateExecutionData;
-            stageExecution.getParallelInfo().setGroupIndex(envStateExecutionData.getPipelineStageParallelIndex());
-            stageExecution.setPipelineStageElementId(envStateExecutionData.getPipelineStageElementId());
-
-            if (envStateExecutionData.getWorkflowExecutionId() != null) {
-              WorkflowExecution workflowExecution2 = getExecutionDetailsWithoutGraph(
-                  workflowExecution.getAppId(), envStateExecutionData.getWorkflowExecutionId());
-              workflowExecution2.setStateMachine(null);
-
-              stageExecution.setWorkflowExecutions(asList(workflowExecution2));
-              stageExecution.setStatus(workflowExecution2.getStatus());
+      stateExecutionInstanceMap.entrySet()
+          .stream()
+          .filter(entry -> entry.getValue().getStateType().equals(ENV_ROLLBACK_STATE.getType()))
+          .map(entry -> entry.getValue())
+          .sorted(Comparator.comparingInt(instance -> {
+            StateExecutionData stateExecutionData = instance.fetchStateExecutionData();
+            if (stateExecutionData instanceof SkipStateExecutionData) {
+              return ((SkipStateExecutionData) stateExecutionData).getPipelineStageParallelIndex();
             }
-            stageExecution.setMessage(stateExecutionData.getErrorMsg());
-            stageExecutionDataList.add(stageExecution);
-          }
-          if (stateExecutionData instanceof SkipStateExecutionData) {
-            SkipStateExecutionData skipStateExecutionData = (SkipStateExecutionData) stateExecutionData;
-            stageExecution.setStateExecutionData(skipStateExecutionData);
-            stageExecution.setStatus(SKIPPED);
-            stageExecution.setSkipCondition("true");
-            stageExecution.setNeedsInputButNotReceivedYet(false);
-            stageExecution.setDisableAssertionInspection(null);
-            stageExecution.setStateExecutionData(stateExecutionData);
-            stageExecution.setStateUuid(stateExecutionInstance.getUuid());
-            stageExecution.setPipelineStageElementId(skipStateExecutionData.getPipelineStageElementId());
-            stageExecution.setWaitingForInputs(false);
-            stageExecution.setMessage(stateExecutionData.getErrorMsg());
-            stageExecutionDataList.add(stageExecution);
-          }
-        });
+            return ((EnvStateExecutionData) stateExecutionData).getPipelineStageParallelIndex();
+          }))
+          .forEach(stateExecutionInstance -> {
+            StateExecutionData stateExecutionData = stateExecutionInstance.fetchStateExecutionData();
+            PipelineStageExecution stageExecution = PipelineStageExecution.builder()
+                                                        .parallelInfo(ParallelInfo.builder().build())
+                                                        .stateType(stateExecutionInstance.getStateType())
+                                                        .status(stateExecutionInstance.getStatus())
+                                                        .stateName(stateExecutionInstance.getDisplayName())
+                                                        .startTs(stateExecutionInstance.getStartTs())
+                                                        .triggeredBy(workflowExecution.getTriggeredBy())
+                                                        .expiryTs(stateExecutionInstance.getExpiryTs())
+                                                        .endTs(stateExecutionInstance.getEndTs())
+                                                        .build();
+            if (stateExecutionData instanceof EnvStateExecutionData) {
+              EnvStateExecutionData envStateExecutionData = (EnvStateExecutionData) stateExecutionData;
+              stageExecution.getParallelInfo().setGroupIndex(envStateExecutionData.getPipelineStageParallelIndex());
+              stageExecution.setPipelineStageElementId(envStateExecutionData.getPipelineStageElementId());
 
-    pipelineExecution.setPipelineStageExecutions(stageExecutionDataList);
+              if (envStateExecutionData.getWorkflowExecutionId() != null) {
+                WorkflowExecution workflowExecution2 = getExecutionDetailsWithoutGraph(
+                    workflowExecution.getAppId(), envStateExecutionData.getWorkflowExecutionId());
+                workflowExecution2.setStateMachine(null);
 
-    if (ExecutionStatus.isFinalStatus(workflowExecution.getStatus())) {
-      pipelineExecution.setStatus(workflowExecution.getStatus());
-    } else if (stageExecutionDataList.stream().anyMatch(
-                   pipelineStageExecution -> pipelineStageExecution.getStatus() == WAITING)) {
-      pipelineExecution.setStatus(WAITING);
-    } else if (stageExecutionDataList.stream().anyMatch(pipelineStageExecution
-                   -> pipelineStageExecution.getStatus() == PAUSED || pipelineStageExecution.getStatus() == PAUSING)
-        && stageExecutionDataList.stream().noneMatch(se -> RUNNING == se.getStatus())) {
-      pipelineExecution.setStatus(PAUSED);
-    } else {
-      pipelineExecution.setStatus(workflowExecution.getStatus());
-    }
+                stageExecution.setWorkflowExecutions(asList(workflowExecution2));
+                stageExecution.setStatus(workflowExecution2.getStatus());
+              }
+              stageExecution.setMessage(stateExecutionData.getErrorMsg());
+              stageExecutionDataList.add(stageExecution);
+            }
+            if (stateExecutionData instanceof SkipStateExecutionData) {
+              SkipStateExecutionData skipStateExecutionData = (SkipStateExecutionData) stateExecutionData;
+              stageExecution.setStateExecutionData(skipStateExecutionData);
+              stageExecution.setStatus(SKIPPED);
+              stageExecution.setSkipCondition("true");
+              stageExecution.setNeedsInputButNotReceivedYet(false);
+              stageExecution.setDisableAssertionInspection(null);
+              stageExecution.setStateExecutionData(stateExecutionData);
+              stageExecution.setStateUuid(stateExecutionInstance.getUuid());
+              stageExecution.setPipelineStageElementId(skipStateExecutionData.getPipelineStageElementId());
+              stageExecution.setWaitingForInputs(false);
+              stageExecution.setMessage(stateExecutionData.getErrorMsg());
+              stageExecutionDataList.add(stageExecution);
+            }
+          });
 
-    workflowExecution.setStatus(pipelineExecution.getStatus());
+      pipelineExecution.setPipelineStageExecutions(stageExecutionDataList);
 
-    try {
-      Query<WorkflowExecution> query = wingsPersistence.createQuery(WorkflowExecution.class)
-                                           .filter(WorkflowExecutionKeys.appId, workflowExecution.getAppId())
-                                           .filter(ID_KEY, workflowExecution.getUuid());
-      UpdateOperations<WorkflowExecution> updateOps =
-          wingsPersistence.createUpdateOperations(WorkflowExecution.class).set("pipelineExecution", pipelineExecution);
-      wingsPersistence.update(query, updateOps);
-      executorService.submit(() -> updatePipelineEstimates(workflowExecution));
-    } catch (ConcurrentModificationException cex) {
-      // do nothing as it gets refreshed in next fetch
-      log.warn("Pipeline execution update failed ", cex); // TODO: add retry
+      if (ExecutionStatus.isFinalStatus(workflowExecution.getStatus())) {
+        pipelineExecution.setStatus(workflowExecution.getStatus());
+      } else if (stageExecutionDataList.stream().anyMatch(
+                     pipelineStageExecution -> pipelineStageExecution.getStatus() == WAITING)) {
+        pipelineExecution.setStatus(WAITING);
+      } else if (stageExecutionDataList.stream().anyMatch(pipelineStageExecution
+                     -> pipelineStageExecution.getStatus() == PAUSED || pipelineStageExecution.getStatus() == PAUSING)
+          && stageExecutionDataList.stream().noneMatch(se -> RUNNING == se.getStatus())) {
+        pipelineExecution.setStatus(PAUSED);
+      } else {
+        pipelineExecution.setStatus(workflowExecution.getStatus());
+      }
+
+      workflowExecution.setStatus(pipelineExecution.getStatus());
+
+      try {
+        Query<WorkflowExecution> query = wingsPersistence.createQuery(WorkflowExecution.class)
+                                             .filter(WorkflowExecutionKeys.appId, workflowExecution.getAppId())
+                                             .filter(ID_KEY, workflowExecution.getUuid());
+        UpdateOperations<WorkflowExecution> updateOps = wingsPersistence.createUpdateOperations(WorkflowExecution.class)
+                                                            .set("pipelineExecution", pipelineExecution);
+        wingsPersistence.update(query, updateOps);
+        executorService.submit(() -> updatePipelineEstimates(workflowExecution));
+      } catch (ConcurrentModificationException cex) {
+        // do nothing as it gets refreshed in next fetch
+        log.warn("Pipeline execution update failed ", cex); // TODO: add retry
+      }
+    } catch (Exception e) {
+      log.debug("Exception while refreshing execution", e);
     }
   }
 
@@ -1334,6 +1340,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
       // CDS-36623
       refreshStatus(workflowExecution);
     }
+
     return workflowExecution;
   }
 
