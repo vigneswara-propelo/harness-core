@@ -91,6 +91,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -102,7 +103,10 @@ import org.apache.commons.lang3.StringUtils;
 public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHandler {
   public static final DateTimeFormatter DISPLAY_TIME_FORMAT = DateTimeFormatter.ofPattern("MMM dd, hh:mm a z");
   public static final String STAGE_IDENTIFIER = "STAGE";
+  public static final String PARALLEL_NODE_TYPE = "parallel";
 
+  public static final Set<ExecutionStatus> FINAL_EXECUTION_STATUSES =
+      StatusUtils.finalStatuses().stream().map(ExecutionStatus::getExecutionStatus).collect(Collectors.toSet());
   private final UserGroupClient userGroupClient;
   private final NotificationClient notificationClient;
   private final NotificationHelper notificationHelper;
@@ -310,20 +314,21 @@ public class ApprovalNotificationHandlerImpl implements ApprovalNotificationHand
   private void traverseGraph(
       StagesSummary stagesSummary, Map<String, GraphLayoutNodeDTO> layoutNodeMap, String currentNodeId) {
     GraphLayoutNodeDTO node = layoutNodeMap.get(currentNodeId);
-    if (node.getNodeGroup().matches(STAGE_IDENTIFIER)) {
+    if (node.getNodeGroup().matches(STAGE_IDENTIFIER) && !PARALLEL_NODE_TYPE.equals(node.getNodeType())) {
       if (node.getStatus() == ExecutionStatus.NOTSTARTED) {
         if (!isEmpty(node.getName())) {
           StageMetadataNotificationHelper.addStageNodeToStagesSummary(stagesSummary.getUpcomingStages(), node);
         }
-      } else if (StatusUtils.finalStatuses().stream().anyMatch(
-                     status -> ExecutionStatus.getExecutionStatus(status) == node.getStatus())) {
+      } else if (FINAL_EXECUTION_STATUSES.contains(node.getStatus())) {
         StageMetadataNotificationHelper.addStageNodeToStagesSummary(stagesSummary.getFinishedStages(), node);
       } else {
         StageMetadataNotificationHelper.addStageNodeToStagesSummary(stagesSummary.getRunningStages(), node);
       }
     }
 
-    if (!isNull(node.getEdgeLayoutList()) && !isEmpty(node.getEdgeLayoutList().getNextIds())) {
+    if (!isNull(node.getEdgeLayoutList())
+        && (!isEmpty(node.getEdgeLayoutList().getNextIds())
+            || !isEmpty(node.getEdgeLayoutList().getCurrentNodeChildren()))) {
       if (!isEmpty(node.getEdgeLayoutList().getCurrentNodeChildren())) {
         for (String nextNodeChildrenId : node.getEdgeLayoutList().getCurrentNodeChildren()) {
           // iterating through stages which are set to run in parallel

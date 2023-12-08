@@ -60,6 +60,7 @@ import io.harness.notification.templates.PredefinedTemplate;
 import io.harness.organization.remote.OrganizationClient;
 import io.harness.pms.approval.notification.ApprovalSummary.ApprovalSummaryKeys;
 import io.harness.pms.approval.notification.stagemetadata.StageMetadataNotificationHelper;
+import io.harness.pms.approval.notification.stagemetadata.StageSummary;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.contracts.plan.EdgeLayoutList;
@@ -169,6 +170,8 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
           .layoutNodeMap(new HashMap<>())
           .build();
 
+  private static List<ArgumentCaptor<Set<StageSummary>>> stageSummaryArgumentCaptors = new ArrayList<>();
+
   @Before
   public void setup() throws Exception {
     Call<ResponseDTO<Optional<OrganizationResponse>>> orgDTOCall = mock(Call.class);
@@ -202,6 +205,9 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
     basicApprovalInstance.setType(ApprovalType.HARNESS_APPROVAL);
     basicApprovalInstance.setIncludePipelineExecutionHistory(true);
     basicApprovalInstance.setValidatedUserGroups(basicUserGroupDTOS);
+    for (int i = 0; i < 3; i++) {
+      stageSummaryArgumentCaptors.add(ArgumentCaptor.forClass(Set.class));
+    }
   }
 
   @Test
@@ -522,7 +528,7 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfFinishedStages(anySet(), anySet(), any());
+          .setFormattedSummaryOfFinishedStages(stageSummaryArgumentCaptors.get(0).capture(), anySet(), any());
 
       doAnswer(invocationOnMock -> {
         Set<String> formattedStages = invocationOnMock.getArgument(1);
@@ -530,14 +536,14 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfRunningStages(anySet(), anySet(), any(), any());
+          .setFormattedSummaryOfRunningStages(stageSummaryArgumentCaptors.get(1).capture(), anySet(), any(), any());
 
       doAnswer(invocationOnMock -> {
         Set<String> formattedStages = invocationOnMock.getArgument(1);
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfUpcomingStages(anySet(), anySet(), any(), any());
+          .setFormattedSummaryOfUpcomingStages(stageSummaryArgumentCaptors.get(2).capture(), anySet(), any(), any());
 
       approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
 
@@ -555,6 +561,25 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
           .isEqualTo("N/A");
       assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.currentStageName))
           .isEqualTo("Third Name");
+
+      assertThat(stageSummaryArgumentCaptors.get(0)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("First Name", "Second Name");
+      assertThat(stageSummaryArgumentCaptors.get(1)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("Third Name");
+      assertThat(stageSummaryArgumentCaptors.get(2)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .isEmpty();
 
       verify(ngLogCallback.constructed().get(0), times(2)).saveExecutionLog(anyString());
       verify(ngLogCallback.constructed().get(0), times(1)).saveExecutionLog(anyString(), eq(LogLevel.WARN));
@@ -675,7 +700,7 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfFinishedStages(anySet(), anySet(), any());
+          .setFormattedSummaryOfFinishedStages(stageSummaryArgumentCaptors.get(0).capture(), anySet(), any());
 
       doAnswer(invocationOnMock -> {
         Set<String> formattedStages = invocationOnMock.getArgument(1);
@@ -686,7 +711,7 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfRunningStages(anySet(), anySet(), any(), any());
+          .setFormattedSummaryOfRunningStages(stageSummaryArgumentCaptors.get(1).capture(), anySet(), any(), any());
 
       doAnswer(invocationOnMock -> {
         Set<String> formattedStages = invocationOnMock.getArgument(1);
@@ -694,7 +719,7 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfUpcomingStages(anySet(), anySet(), any(), any());
+          .setFormattedSummaryOfUpcomingStages(stageSummaryArgumentCaptors.get(2).capture(), anySet(), any(), any());
 
       approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
 
@@ -721,6 +746,25 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
           .isEqualTo("custom stage");
       assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.currentStageName))
           .isEqualTo("cd stage");
+
+      assertThat(stageSummaryArgumentCaptors.get(0)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .isEmpty();
+      assertThat(stageSummaryArgumentCaptors.get(1)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("cd stage");
+      assertThat(stageSummaryArgumentCaptors.get(2)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("custom stage");
     }
   }
 
@@ -1169,14 +1213,14 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfFinishedStages(anySet(), anySet(), any());
+          .setFormattedSummaryOfFinishedStages(stageSummaryArgumentCaptors.get(0).capture(), anySet(), any());
 
       doAnswer(invocationOnMock -> {
         Set<String> formattedStages = invocationOnMock.getArgument(1);
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfRunningStages(anySet(), anySet(), any(), any());
+          .setFormattedSummaryOfRunningStages(stageSummaryArgumentCaptors.get(1).capture(), anySet(), any(), any());
 
       doAnswer(invocationOnMock -> {
         Set<String> formattedStages = invocationOnMock.getArgument(1);
@@ -1184,7 +1228,7 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
         return null;
       })
           .when(stageMetadataNotificationHelper)
-          .setFormattedSummaryOfUpcomingStages(anySet(), anySet(), any(), any());
+          .setFormattedSummaryOfUpcomingStages(stageSummaryArgumentCaptors.get(2).capture(), anySet(), any(), any());
 
       basicApprovalInstance.setStatus(ApprovalStatus.APPROVED);
       basicApprovalInstance.setApprovalActivities(Arrays.asList(HarnessApprovalActivity.builder()
@@ -1247,6 +1291,25 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
       assertThat(notificationChannels.get(0).getTeam()).isEqualTo(Team.PIPELINE);
       verify(pmsExecutionService, times(1))
           .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
+
+      assertThat(stageSummaryArgumentCaptors.get(0)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("cd stage");
+      assertThat(stageSummaryArgumentCaptors.get(1)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .isEmpty();
+      assertThat(stageSummaryArgumentCaptors.get(2)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("custom stage upcoming 1", "custom stage upcoming 2");
     }
   }
 
@@ -1432,6 +1495,145 @@ public class ApprovalNotificationHandlerImplTest extends CategoryTest {
       verify(pmsExecutionService, times(1))
           .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
     }
+  }
+
+  @Test
+  @Owner(developers = NAMANG)
+  @Category(UnitTests.class)
+  public void testSendNotificationForTerminalParallelStages() throws IOException {
+    // isIncludePipelineExecutionHistory true with 1 approval stages; 2 parallel custom stages; FF on
+    try (MockedConstruction<NGLogCallback> ngLogCallback = mockConstruction(NGLogCallback.class)) {
+      when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CDS_APPROVAL_AND_STAGE_NOTIFICATIONS_WITH_CD_METADATA))
+          .thenReturn(true);
+      String url =
+          "https://qa.harness.io/ng/#/account/zEaak-FLS425IEO7OLzMUg/cd/orgs/CV/projects/Brijesh_Dhakar/pipelines/DockerTest/executions/szmvyw4wQR2W4_iKkq9bfQ/pipeline";
+
+      GraphLayoutNode parallelLayoutNode =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("parallelIdentifier")
+              .setNodeType("parallel")
+              .setNodeUUID("parallelIdentifier")
+              .setName("parallelNodeWithName")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder()
+                                     .addAllCurrentNodeChildren(List.of("stageBuild-1", "stageBuild-2"))
+                                     .build())
+              .build();
+      GraphLayoutNodeDTO parallelLayoutNodeDTO = GraphLayoutDtoMapper.toDto(parallelLayoutNode);
+
+      GraphLayoutNode build1LayoutNode = GraphLayoutNode.newBuilder()
+                                             .setNodeIdentifier("stageBuild-1")
+                                             .setNodeType("Custom")
+                                             .setNodeUUID("stageBuild-1")
+                                             .setName("stageBuild-1")
+                                             .setNodeGroup("STAGE")
+                                             .build();
+      GraphLayoutNodeDTO build1LayoutNodeDTO = GraphLayoutDtoMapper.toDto(build1LayoutNode);
+
+      GraphLayoutNode build2LayoutNode = GraphLayoutNode.newBuilder()
+                                             .setNodeIdentifier("stageBuild-2")
+                                             .setNodeType("Custom")
+                                             .setNodeUUID("stageBuild-2")
+                                             .setName("stageBuild-2")
+                                             .setNodeGroup("STAGE")
+                                             .build();
+      GraphLayoutNodeDTO build2LayoutNodeDTO = GraphLayoutDtoMapper.toDto(build2LayoutNode);
+
+      GraphLayoutNode approvalLayoutNode =
+          GraphLayoutNode.newBuilder()
+              .setNodeIdentifier("stage_approval1")
+              .setNodeType("Approval")
+              .setNodeUUID("stage_approval1")
+              .setName("stage_approval 1")
+              .setNodeGroup("STAGE")
+              .setEdgeLayoutList(EdgeLayoutList.newBuilder().addNextIds("parallelIdentifier").build())
+              .build();
+
+      GraphLayoutNodeDTO approvalLayoutNodeDTO = GraphLayoutDtoMapper.toDto(approvalLayoutNode);
+      approvalLayoutNodeDTO.setStatus(ExecutionStatus.APPROVAL_WAITING);
+
+      HashMap<String, GraphLayoutNodeDTO> layoutNodeDTOMap = new HashMap<>();
+      layoutNodeDTOMap.put(startingNodeId, approvalLayoutNodeDTO);
+      layoutNodeDTOMap.put("parallelIdentifier", parallelLayoutNodeDTO);
+      layoutNodeDTOMap.put("stageBuild-1", build1LayoutNodeDTO);
+      layoutNodeDTOMap.put("stageBuild-2", build2LayoutNodeDTO);
+
+      pipelineExecutionSummaryEntity.setLayoutNodeMap(layoutNodeDTOMap);
+      doReturn(pipelineExecutionSummaryEntity)
+          .when(pmsExecutionService)
+          .getPipelineExecutionSummaryEntity(anyString(), anyString(), anyString(), anyString(), anyBoolean());
+      mockUserGroupResponse(basicUserGroupDTOS);
+      Ambiance ambiance = buildAmbianceWithStageId("stage_approval1");
+      doReturn(url).when(notificationHelper).generateUrl(ambiance);
+
+      ArgumentCaptor<Set<StageSummary>> stageSummaryArgumentCaptor = ArgumentCaptor.forClass(Set.class);
+
+      doAnswer(invocationOnMock -> { return null; })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfFinishedStages(stageSummaryArgumentCaptors.get(0).capture(), anySet(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.add("stage_approval1");
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfRunningStages(stageSummaryArgumentCaptors.get(1).capture(), anySet(), any(), any());
+
+      doAnswer(invocationOnMock -> {
+        Set<String> formattedStages = invocationOnMock.getArgument(1);
+        formattedStages.addAll(Arrays.asList("stageBuild-1", "stageBuild-2"));
+        return null;
+      })
+          .when(stageMetadataNotificationHelper)
+          .setFormattedSummaryOfUpcomingStages(stageSummaryArgumentCaptors.get(2).capture(), anySet(), any(), any());
+
+      approvalNotificationHandler.sendNotification(basicApprovalInstance, ambiance);
+
+      ArgumentCaptor<NotificationChannel> notificationChannelArgumentCaptor =
+          ArgumentCaptor.forClass(NotificationChannel.class);
+      verify(notificationClient, times(2)).sendNotificationAsync(notificationChannelArgumentCaptor.capture());
+      List<NotificationChannel> notificationChannels = notificationChannelArgumentCaptor.getAllValues();
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.finishedStages))
+          .isEqualTo("N/A");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.runningStages))
+          .isEqualTo("stage_approval1");
+      assertThat(notificationChannels.get(0).getTemplateData().get(ApprovalSummaryKeys.upcomingStages))
+          .isEqualTo("stageBuild-1\n stageBuild-2");
+      assertThat(notificationChannels.get(1).getTemplateData().get(ApprovalSummaryKeys.upcomingStages))
+          .isEqualTo("stageBuild-1<br> stageBuild-2");
+      assertThat(notificationChannels.get(1).getTemplateData().get(ApprovalSummaryKeys.currentStageName))
+          .isEqualTo("stage_approval 1");
+
+      assertThat(stageSummaryArgumentCaptors.get(0)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .isEmpty();
+      assertThat(stageSummaryArgumentCaptors.get(1)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("stage_approval 1");
+      assertThat(stageSummaryArgumentCaptors.get(2)
+                     .getValue()
+                     .stream()
+                     .map(StageSummary::getFormattedEntityName)
+                     .collect(Collectors.toSet()))
+          .contains("stageBuild-1", "stageBuild-2");
+    }
+  }
+
+  @Test
+  @Owner(developers = NAMANG)
+  @Category(UnitTests.class)
+  public void testFinalExecutionStatuses() {
+    assertThat(ApprovalNotificationHandlerImpl.FINAL_EXECUTION_STATUSES)
+        .contains(ExecutionStatus.ABORTED, ExecutionStatus.ABORTEDBYFREEZE, ExecutionStatus.FAILED,
+            ExecutionStatus.EXPIRED, ExecutionStatus.APPROVALREJECTED, ExecutionStatus.SUSPENDED,
+            ExecutionStatus.ERRORED, ExecutionStatus.IGNOREFAILED, ExecutionStatus.SKIPPED, ExecutionStatus.SUCCESS);
   }
 
   @Test
