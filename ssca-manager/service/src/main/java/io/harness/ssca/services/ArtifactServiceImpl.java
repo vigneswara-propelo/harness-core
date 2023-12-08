@@ -89,7 +89,7 @@ public class ArtifactServiceImpl implements ArtifactService {
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
   @Inject PipelineUtils pipelineUtils;
 
-  private final String GCP_REGISTRY_HOST = "grc.io";
+  private final String GCP_REGISTRY_HOST = "gcr.io";
 
   @Override
   public ArtifactEntity getArtifactFromSbomPayload(
@@ -465,7 +465,8 @@ public class ArtifactServiceImpl implements ArtifactService {
     return responses;
   }
 
-  private String getCDImagePath(String url, String image, String tag) {
+  @VisibleForTesting
+  String getCDImagePath(String url, String image, String tag) {
     URI uri = UriBuilder.fromUri(url).build();
     String registryUrl = UriBuilder.fromUri(url).path(uri.getPath().endsWith("/") ? "" : "/").build().toString();
     String domainName = Http.getDomainWithPort(registryUrl);

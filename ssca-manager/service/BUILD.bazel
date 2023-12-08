@@ -13,7 +13,6 @@ shared_dependencies = [
 ] + [
     "//:lombok",
     "//ssca-manager/modules/contracts:module",
-    "//126-instance:module",
     "//878-ng-common-utilities/src/main/java/io/harness/beans/common:module",
     "//940-primary-version-manager:module",
     "//945-account-mgmt:module",

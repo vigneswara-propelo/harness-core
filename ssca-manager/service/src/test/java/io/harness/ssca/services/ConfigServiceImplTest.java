@@ -29,10 +29,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
@@ -42,7 +44,7 @@ import org.springframework.data.domain.Pageable;
 public class ConfigServiceImplTest extends SSCAManagerTestBase {
   @Inject ConfigService configService;
 
-  @Inject ConfigRepo configRepo;
+  @Mock ConfigRepo configRepo;
 
   private BuilderFactory builderFactory;
 
@@ -55,6 +57,7 @@ public class ConfigServiceImplTest extends SSCAManagerTestBase {
   @Before
   public void setup() throws IllegalAccessException {
     MockitoAnnotations.initMocks(this);
+    FieldUtils.writeField(configService, "configRepo", configRepo, true);
     builderFactory = BuilderFactory.getDefault();
   }
 

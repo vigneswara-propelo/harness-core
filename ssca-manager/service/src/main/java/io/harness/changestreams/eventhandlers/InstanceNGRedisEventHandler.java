@@ -7,10 +7,11 @@
 
 package io.harness.changestreams.eventhandlers;
 
-import io.harness.entities.Instance;
 import io.harness.eventHandler.DebeziumAbstractRedisEventHandler;
+import io.harness.ssca.beans.instance.InstanceDTO;
 import io.harness.ssca.services.CdInstanceSummaryService;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -21,15 +22,16 @@ public class InstanceNGRedisEventHandler extends DebeziumAbstractRedisEventHandl
   @Inject MongoTemplate mongoTemplate;
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
 
-  private Instance createEntity(String value) {
+  @VisibleForTesting
+  public InstanceDTO createEntity(String value) {
     Document document = Document.parse(value);
     document.remove("instanceInfo");
-    return mongoTemplate.getConverter().read(Instance.class, document);
+    return mongoTemplate.getConverter().read(InstanceDTO.class, document);
   }
 
   @Override
   public boolean handleCreateEvent(String id, String value) {
-    Instance instance = createEntity(value);
+    InstanceDTO instance = createEntity(value);
     return cdInstanceSummaryService.upsertInstance(instance);
   }
 
@@ -40,7 +42,7 @@ public class InstanceNGRedisEventHandler extends DebeziumAbstractRedisEventHandl
 
   @Override
   public boolean handleUpdateEvent(String id, String value) {
-    Instance instance = createEntity(value);
+    InstanceDTO instance = createEntity(value);
     if (instance.isDeleted()) {
       return cdInstanceSummaryService.removeInstance(instance);
     }

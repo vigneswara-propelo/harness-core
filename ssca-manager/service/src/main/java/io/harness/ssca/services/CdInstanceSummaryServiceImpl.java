@@ -7,7 +7,6 @@
 
 package io.harness.ssca.services;
 
-import io.harness.entities.Instance;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.repositories.CdInstanceSummaryRepo;
@@ -15,6 +14,7 @@ import io.harness.repositories.EnforcementSummaryRepo;
 import io.harness.spec.server.ssca.v1.model.ArtifactDeploymentViewRequestBody;
 import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.SLSAVerificationSummary;
+import io.harness.ssca.beans.instance.InstanceDTO;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.CdInstanceSummary.CdInstanceSummaryKeys;
@@ -67,7 +67,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
   private static String TAG = "tag";
 
   @Override
-  public boolean upsertInstance(Instance instance) {
+  public boolean upsertInstance(InstanceDTO instance) {
     if (Objects.isNull(instance.getPrimaryArtifact())
         || Objects.isNull(instance.getPrimaryArtifact().getArtifactIdentity())
         || Objects.isNull(instance.getPrimaryArtifact().getArtifactIdentity().getImage())) {
@@ -107,7 +107,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
   }
 
   @Override
-  public boolean removeInstance(Instance instance) {
+  public boolean removeInstance(InstanceDTO instance) {
     if (Objects.isNull(instance.getPrimaryArtifact())
         || Objects.isNull(instance.getPrimaryArtifact().getArtifactIdentity())
         || Objects.isNull(instance.getPrimaryArtifact().getArtifactIdentity().getImage())) {
@@ -241,7 +241,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
   }
 
   @VisibleForTesting
-  public CdInstanceSummary createInstanceSummary(Instance instance, ArtifactEntity artifact) {
+  public CdInstanceSummary createInstanceSummary(InstanceDTO instance, ArtifactEntity artifact) {
     JsonNode rootNode = pipelineUtils.getPipelineExecutionSummaryResponse(instance.getLastPipelineExecutionId(),
         instance.getAccountIdentifier(), instance.getOrgIdentifier(), instance.getProjectIdentifier(),
         instance.getStageSetupId());
@@ -255,7 +255,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
             .slsaVerificationSummary(getSlsaVerificationSummary(rootNode, instance, artifact))
             .envIdentifier(instance.getEnvIdentifier())
             .envName(instance.getEnvName())
-            .envType(EnvType.valueOf(instance.getEnvType().name()))
+            .envType(EnvType.valueOf(instance.getEnvType()))
             .createdAt(Instant.now().toEpochMilli())
             .instanceIds(Collections.singleton(instance.getId()))
             .build();
@@ -264,7 +264,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
   }
 
   private CdInstanceSummary setPipelineDetails(
-      CdInstanceSummary cdInstanceSummary, JsonNode rootNode, Instance instance) {
+      CdInstanceSummary cdInstanceSummary, JsonNode rootNode, InstanceDTO instance) {
     cdInstanceSummary.setLastPipelineName(pipelineUtils.parsePipelineName(rootNode));
     cdInstanceSummary.setLastPipelineExecutionName(instance.getLastPipelineExecutionName());
     cdInstanceSummary.setLastPipelineExecutionId(instance.getLastPipelineExecutionId());
@@ -278,7 +278,7 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
   }
 
   private SLSAVerificationSummary getSlsaVerificationSummary(
-      JsonNode rootNode, Instance instance, ArtifactEntity artifact) {
+      JsonNode rootNode, InstanceDTO instance, ArtifactEntity artifact) {
     if (rootNode == null) {
       return null;
     }

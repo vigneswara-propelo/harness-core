@@ -27,27 +27,27 @@ import io.harness.ssca.entities.ScorecardEntity;
 import com.google.inject.Inject;
 import java.util.Optional;
 import javax.ws.rs.NotFoundException;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 public class ScorecardServiceImplTest extends SSCAManagerTestBase {
   @Inject ScorecardService scorecardService;
-
-  @Inject ScorecardRepo scorecardRepository;
-
-  @Inject ArtifactService artifactService;
-
+  @Mock ScorecardRepo scorecardRepo;
+  @Mock ArtifactService artifactService;
   private BuilderFactory builderFactory;
-
   private final String ORCHESTRATION_ID = "orchestrationId";
 
   @Before
   public void setup() throws IllegalAccessException {
     MockitoAnnotations.initMocks(this);
+    FieldUtils.writeField(scorecardService, "scorecardRepo", scorecardRepo, true);
+    FieldUtils.writeField(scorecardService, "artifactService", artifactService, true);
     builderFactory = BuilderFactory.getDefault();
   }
 
@@ -57,16 +57,14 @@ public class ScorecardServiceImplTest extends SSCAManagerTestBase {
   public void testSave() {
     SbomScorecardRequestBody sbomScorecardRequestBody = builderFactory.getSbomScorecardRequestBody();
 
-    Mockito
-        .when(artifactService.getArtifact(sbomScorecardRequestBody.getAccountId(), sbomScorecardRequestBody.getOrgId(),
-            sbomScorecardRequestBody.getProjectId(), sbomScorecardRequestBody.getOrchestrationId()))
+    Mockito.when(artifactService.getArtifact(any(), any(), any(), any()))
         .thenReturn(Optional.ofNullable(builderFactory.getArtifactEntityBuilder().build()));
 
     scorecardService.save(sbomScorecardRequestBody);
 
     ArgumentCaptor<ScorecardEntity> argument = ArgumentCaptor.forClass(ScorecardEntity.class);
 
-    Mockito.verify(scorecardRepository, Mockito.times(1)).save(argument.capture());
+    Mockito.verify(scorecardRepo, Mockito.times(1)).save(argument.capture());
 
     ScorecardEntity capturedScorecardEntity = argument.getValue();
 
@@ -146,7 +144,7 @@ public class ScorecardServiceImplTest extends SSCAManagerTestBase {
   public void testGetScorecard() {
     SbomScorecardRequestBody sbomScorecardRequestBody = builderFactory.getSbomScorecardRequestBody();
     ScorecardEntity scorecardEntity = scorecardRequestToEntity(sbomScorecardRequestBody);
-    Mockito.when(scorecardRepository.findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(any(), any(), any(), any()))
+    Mockito.when(scorecardRepo.findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(any(), any(), any(), any()))
         .thenReturn(scorecardEntity);
     SbomScorecardResponseBody scorecardResponseBody =
         scorecardService.getByOrchestrationId(scorecardEntity.getAccountId(), scorecardEntity.getOrgId(),
@@ -164,7 +162,7 @@ public class ScorecardServiceImplTest extends SSCAManagerTestBase {
   @Owner(developers = SHASHWAT_SACHAN)
   @Category(UnitTests.class)
   public void testGetScorecardNotFound() {
-    Mockito.when(scorecardRepository.findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(any(), any(), any(), any()))
+    Mockito.when(scorecardRepo.findByAccountIdAndOrgIdAndProjectIdAndOrchestrationId(any(), any(), any(), any()))
         .thenReturn(null);
 
     assertThatExceptionOfType(NotFoundException.class)

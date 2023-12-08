@@ -559,4 +559,19 @@ public class ArtifactServiceImplTest extends SSCAManagerTestBase {
     assertThat(argument.getValue().getNonProdEnvCount()).isEqualTo(0);
     assertThat(argument.getValue().getProdEnvCount()).isEqualTo(2);
   }
+
+  @Test
+  @Owner(developers = ARPITJ)
+  @Category(UnitTests.class)
+  public void testGetCDImagePath() {
+    ArtifactServiceImpl artifactServiceImpl = new ArtifactServiceImpl();
+    List<List<String>> inputs = List.of(
+        List.of("https://index.docker.com/v2/", "arpit/image-new", "tag-1", "index.docker.com/arpit/image-new:tag-1"),
+        List.of("https://registry.hub.docker.com/v2/", "arpit/image-new", "tag-1",
+            "registry.hub.docker.com/arpit/image-new:tag-1"),
+        List.of("https://gcr.io/v1/", "gcr.io/arpit/image-new", "tag-1", "gcr.io/arpit/image-new:tag-1"));
+    for (List<String> input : inputs) {
+      assertThat(artifactServiceImpl.getCDImagePath(input.get(0), input.get(1), input.get(2))).isEqualTo(input.get(3));
+    }
+  }
 }

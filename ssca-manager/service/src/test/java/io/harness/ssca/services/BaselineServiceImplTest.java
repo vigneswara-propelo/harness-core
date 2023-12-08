@@ -23,20 +23,23 @@ import io.harness.ssca.entities.BaselineEntity;
 
 import com.google.inject.Inject;
 import javax.ws.rs.NotFoundException;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 public class BaselineServiceImplTest extends SSCAManagerTestBase {
   @Inject BaselineService baselineService;
-  @Inject BaselineRepository baselineRepository;
+  @Mock BaselineRepository baselineRepository;
   private BuilderFactory builderFactory;
   @Before
   public void setup() throws IllegalAccessException {
     MockitoAnnotations.initMocks(this);
+    FieldUtils.writeField(baselineService, "baselineRepository", baselineRepository, true);
     builderFactory = BuilderFactory.getDefault();
   }
 

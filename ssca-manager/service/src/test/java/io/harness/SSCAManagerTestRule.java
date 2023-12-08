@@ -20,14 +20,6 @@ import io.harness.outbox.api.OutboxService;
 import io.harness.outbox.api.impl.OutboxServiceImpl;
 import io.harness.persistence.HPersistence;
 import io.harness.pipeline.remote.PipelineServiceClient;
-import io.harness.repositories.ArtifactRepository;
-import io.harness.repositories.BaselineRepository;
-import io.harness.repositories.CdInstanceSummaryRepo;
-import io.harness.repositories.ConfigRepo;
-import io.harness.repositories.EnforcementResultRepo;
-import io.harness.repositories.EnforcementSummaryRepo;
-import io.harness.repositories.SBOMComponentRepo;
-import io.harness.repositories.ScorecardRepo;
 import io.harness.rule.InjectorRuleMixin;
 import io.harness.serializer.KryoModule;
 import io.harness.serializer.KryoRegistrar;
@@ -104,7 +96,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.MongoTransactionManager;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Slf4j
@@ -216,19 +207,10 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
         bind(EnforcementSummaryService.class).to(EnforcementSummaryServiceImpl.class);
         bind(ConfigService.class).to(ConfigServiceImpl.class);
         bind(NextGenService.class).toInstance(mock(NextGenServiceImpl.class));
-        bind(SBOMComponentRepo.class).toInstance(mock(SBOMComponentRepo.class));
-        bind(ArtifactRepository.class).toInstance(mock(ArtifactRepository.class));
-        bind(EnforcementResultRepo.class).toInstance(mock(EnforcementResultRepo.class));
-        bind(ConfigRepo.class).toInstance(mock(ConfigRepo.class));
-        bind(BaselineRepository.class).toInstance(mock(BaselineRepository.class));
-        bind(EnforcementSummaryRepo.class).toInstance(mock(EnforcementSummaryRepo.class));
-        bind(CdInstanceSummaryRepo.class).toInstance(mock(CdInstanceSummaryRepo.class));
         bind(CdInstanceSummaryService.class).to(CdInstanceSummaryServiceImpl.class);
-        bind(ScorecardRepo.class).toInstance(mock(ScorecardRepo.class));
         bind(ScorecardService.class).to(ScorecardServiceImpl.class);
         bind(S3StoreService.class).to(S3StoreServiceImpl.class);
         bind(TokenApi.class).to(TokenApiImpl.class);
-        bind(MongoTemplate.class).toInstance(mock(MongoTemplate.class));
         bind(PipelineServiceClient.class).toInstance(mock(PipelineServiceClient.class));
         bind(OutboxService.class).toInstance(mock(OutboxServiceImpl.class));
         bind(OpaServiceClient.class).toInstance(mock(OpaServiceClient.class));
@@ -248,6 +230,7 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
     modules.add(TimeModule.getInstance());
     modules.add(TestMongoModule.getInstance());
     modules.add(mongoTypeModule(annotations));
+    modules.add(new SSCAPersistenceTestModule());
     return modules;
   }
 

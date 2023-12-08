@@ -9,10 +9,6 @@ package io.harness;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
-import io.harness.cdng.artifact.bean.ArtifactCorrelationDetails;
-import io.harness.entities.ArtifactDetails;
-import io.harness.entities.Instance;
-import io.harness.entities.Instance.InstanceBuilder;
 import io.harness.ng.core.environment.beans.EnvironmentType;
 import io.harness.spec.server.ssca.v1.model.Artifact;
 import io.harness.spec.server.ssca.v1.model.Attestation;
@@ -32,6 +28,10 @@ import io.harness.ssca.beans.CyclonedxDTO.CyclonedxDTOBuilder;
 import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.SpdxDTO;
 import io.harness.ssca.beans.SpdxDTO.SpdxDTOBuilder;
+import io.harness.ssca.beans.instance.ArtifactCorrelationDetailsDTO;
+import io.harness.ssca.beans.instance.ArtifactDetailsDTO;
+import io.harness.ssca.beans.instance.InstanceDTO;
+import io.harness.ssca.beans.instance.InstanceDTO.InstanceDTOBuilder;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityBuilder;
 import io.harness.ssca.entities.BaselineEntity;
@@ -334,26 +334,26 @@ public class BuilderFactory {
         .toolVersion("2.0");
   }
 
-  public InstanceBuilder getInstanceNGEntityBuilder() {
-    return Instance.builder()
+  public InstanceDTOBuilder getInstanceNGEntityBuilder() {
+    return InstanceDTO.builder()
         .id("instanceId")
         .accountIdentifier(context.accountId)
         .orgIdentifier(context.orgIdentifier)
         .projectIdentifier(context.projectIdentifier)
         .envIdentifier("envId")
         .envName("envName")
-        .envType(EnvironmentType.Production)
+        .envType(EnvironmentType.Production.toString())
         .lastDeployedAt(clock.millis())
         .lastDeployedById("userId")
         .lastDeployedByName("username")
         .lastPipelineExecutionId("executionId")
         .lastPipelineExecutionName("K8sDeploy")
         .primaryArtifact(
-            ArtifactDetails.builder()
+            ArtifactDetailsDTO.builder()
                 .artifactId("artifactId")
                 .displayName("autosscauser/autosscauser-auto:5")
                 .tag("5")
-                .artifactIdentity(ArtifactCorrelationDetails.builder().image("artifactCorrelationId").build())
+                .artifactIdentity(ArtifactCorrelationDetailsDTO.builder().image("artifactCorrelationId").build())
                 .build())
         .isDeleted(false);
   }
