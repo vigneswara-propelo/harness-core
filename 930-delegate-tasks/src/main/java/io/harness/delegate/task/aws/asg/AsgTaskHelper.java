@@ -40,6 +40,7 @@ import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.beans.logstreaming.NGDelegateLogCallback;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.NestedExceptionUtils;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.logging.LogCallback;
 
@@ -81,6 +82,10 @@ public class AsgTaskHelper {
   private static final String EXEC_STRATEGY_BLUEGREEN = "blue-green";
   private static final String BG_GREEN = "GREEN";
   private static final String BG_BLUE = "BLUE";
+
+  public static final String LAUNCH_TEMPLATE_MISSING_HINT = "Please provide LaunchTemplate for baseAsg `%s`";
+  public static final String LAUNCH_TEMPLATE_MISSING_EXPLANATION = "LaunchTemplate missing for baseAsg";
+  public static final String LAUNCH_TEMPLATE_MISSING_ERROR = "Missing LaunchTemplate for base ASG with name `%s`";
 
   public LogCallback getLogCallback(ILogStreamingTaskClient logStreamingTaskClient, String commandUnitName,
       boolean shouldOpenStream, CommandUnitsProgress commandUnitsProgress) {
@@ -354,6 +359,12 @@ public class AsgTaskHelper {
       AsgSdkManager asgSdkManager, String baseAsgName) {
     AutoScalingGroup baseAsg = asgSdkManager.getASG(baseAsgName);
     LaunchTemplateSpecification launchTemplateSpecification = baseAsg.getLaunchTemplate();
+
+    if (launchTemplateSpecification == null) {
+      throw NestedExceptionUtils.hintWithExplanationException(format(LAUNCH_TEMPLATE_MISSING_HINT, baseAsgName),
+          LAUNCH_TEMPLATE_MISSING_EXPLANATION,
+          new InvalidRequestException(format(LAUNCH_TEMPLATE_MISSING_ERROR, baseAsgName)));
+    }
 
     ResponseLaunchTemplateData responseLaunchTemplateData = asgSdkManager.getLaunchTemplateData(
         launchTemplateSpecification.getLaunchTemplateName(), launchTemplateSpecification.getVersion());

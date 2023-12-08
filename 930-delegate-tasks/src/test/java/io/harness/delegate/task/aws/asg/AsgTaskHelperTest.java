@@ -23,6 +23,7 @@ import static io.harness.rule.OwnerRule.VITALIE;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -39,6 +40,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
+import io.harness.exception.HintException;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
 
@@ -203,6 +205,34 @@ public class AsgTaskHelperTest extends CategoryTest {
     assertThat(ret.get(AsgScheduledUpdateGroupAction).get(0)).contains(asgName);
     assertThat(ret.get(AsgLaunchTemplate).get(0)).contains(imageId);
     assertThat(ret.get(AsgUserData)).isEqualTo(asgStoreManifestsContent.get(AsgUserData));
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void getAsgStoreManifestsContentWithoutLaunchTemplate() {
+    final String asgName = "testAsg";
+
+    Map<String, List<String>> asgStoreManifestsContent = Map.of(AsgConfiguration, List.of("AsgConfiguration"),
+        AsgLaunchTemplate, List.of("AsgLaunchTemplate"), AsgScalingPolicy, List.of("AsgScalingPolicy"),
+        AsgScheduledUpdateGroupAction, List.of("AsgScheduledUpdateGroupAction"), AsgUserData, List.of("AsgUserData"));
+
+    // base Asg
+    AsgInfraConfig asgInfraConfig = AsgInfraConfig.builder().baseAsgName(asgName).build();
+    AsgSdkManager asgSdkManager = mock(AsgSdkManager.class);
+
+    when(asgSdkManager.getASG(anyString())).thenReturn(new AutoScalingGroup().withAutoScalingGroupName(asgName));
+    when(asgSdkManager.getLifeCycleHookSpecificationList(anyString())).thenReturn(null);
+
+    when(asgSdkManager.listAllScalingPoliciesOfAsg(anyString()))
+        .thenReturn(List.of(new ScalingPolicy().withAutoScalingGroupName(asgName)));
+    when(asgSdkManager.listAllScheduledActionsOfAsg(anyString()))
+        .thenReturn(List.of(new ScheduledUpdateGroupAction().withAutoScalingGroupName(asgName)));
+
+    assertThatThrownBy(
+        () -> asgTaskHelper.getAsgStoreManifestsContent(asgInfraConfig, asgStoreManifestsContent, asgSdkManager))
+        .isInstanceOf(HintException.class)
+        .hasMessageContaining("Please provide LaunchTemplate for baseAsg `testAsg`");
   }
 
   @Test
