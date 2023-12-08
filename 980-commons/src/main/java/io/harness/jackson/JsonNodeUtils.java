@@ -340,4 +340,22 @@ public class JsonNodeUtils {
       return objectNode.toString().replace("\\\"", "").replace("\"", "");
     }
   }
+
+  public JsonNode goToPath(JsonNode node, String path) {
+    // Split the path using '/' as the delimiter - accept $ref as -> "#/definitions/pipeline/common/Strategy"
+    String[] pathElements = path.split("/");
+
+    for (String fieldName : pathElements) {
+      // Skip the '#' symbol (indicating the root)
+      if ("#".equals(fieldName)) {
+        continue;
+      }
+      node = node.path(fieldName);
+      // Check if the node exists and is not missing/null
+      if (node.isMissingNode() || node.isNull()) {
+        return null;
+      }
+    }
+    return node;
+  }
 }

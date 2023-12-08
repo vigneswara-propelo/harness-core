@@ -14,4 +14,6 @@ public interface SchemaParserInterface {
   ObjectNode getIndividualSchema(IndividualSchemaRequest schemaRequest);
 
   JsonNode getFieldNode(InputFieldMetadata inputFieldMetadata);
+
+  JsonNode getRootSchemaJsonNode();
 }

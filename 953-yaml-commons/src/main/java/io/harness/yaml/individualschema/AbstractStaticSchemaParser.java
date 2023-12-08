@@ -63,6 +63,11 @@ public abstract class AbstractStaticSchemaParser implements SchemaParserInterfac
     }
   }
 
+  @Override
+  public JsonNode getRootSchemaJsonNode() {
+    return rootSchemaJsonNode;
+  }
+
   abstract IndividualSchemaGenContext getIndividualSchemaGenContext();
 
   boolean shouldInitParser() {
