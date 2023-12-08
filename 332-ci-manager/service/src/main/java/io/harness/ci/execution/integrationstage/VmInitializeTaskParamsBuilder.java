@@ -143,12 +143,28 @@ public class VmInitializeTaskParamsBuilder {
     vmInitializeUtils.validateDebug(hostedVmInfraYaml, ambiance);
     if (isBareMetalEnabled(accountId, hostedVmInfraYaml.getSpec().getPlatform(), initializeStepInfo)) {
       poolId = getHostedBareMetalPoolId(hostedVmInfraYaml.getSpec().getPlatform());
-      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, false));
+      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "west4"));
+      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "fallback"));
+      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "east5"));
+      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, ""));
+
     } else {
-      poolId = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, false);
-      String fallbackPoolId = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true);
-      if (!isEmpty(fallbackPoolId)) {
-        fallbackPoolIds.add(fallbackPoolId);
+      poolId = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, false, "west-1");
+
+      String fallbackPoolIdWest4 = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "west4");
+      String fallbackPoolIdEast1 =
+          getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "fallback");
+      String fallbackPoolIdEast5 = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "east5");
+      if (!isEmpty(fallbackPoolIdWest4)) {
+        fallbackPoolIds.add(fallbackPoolIdWest4);
+      }
+
+      if (!isEmpty(fallbackPoolIdEast1)) {
+        fallbackPoolIds.add(fallbackPoolIdEast1);
+      }
+
+      if (!isEmpty(fallbackPoolIdEast5)) {
+        fallbackPoolIds.add(fallbackPoolIdEast5);
       }
     }
     boolean distributed =
@@ -559,7 +575,7 @@ public class VmInitializeTaskParamsBuilder {
   // getHostedPoolId returns a pool ID that can be used for GCP hosted builds. If fallback is set to true,
   // it will try to find a fallback pool value instead. Fallback pools are currently only present for linux
   // amd64 architecture.
-  public String getHostedPoolId(ParameterField<Platform> platform, String accountId, boolean fallback) {
+  public String getHostedPoolId(ParameterField<Platform> platform, String accountId, boolean fallback, String region) {
     OSType os = OSType.Linux;
     ArchType arch = ArchType.Amd64;
     String fallbackSuffix = "-fallback";
@@ -605,7 +621,11 @@ public class VmInitializeTaskParamsBuilder {
 
     if (fallback) {
       if (fallbackEligible) {
-        return pool + fallbackSuffix;
+        if (isNotEmpty(region)) {
+          return format("%s-%s", pool, region);
+        } else {
+          return pool;
+        }
       }
       return "";
     }

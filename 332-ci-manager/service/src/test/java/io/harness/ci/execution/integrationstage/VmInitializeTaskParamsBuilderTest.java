@@ -316,7 +316,68 @@ public class VmInitializeTaskParamsBuilderTest extends CIExecutionTestBase {
         vmInitializeTaskParamsBuilder.getHostedVmInitializeTaskParams(initializeStepInfo, ambiance);
     assertThat(response.getSetupVmRequest().getId()).isEqualTo(stageRuntimeId);
     assertThat(response.getSetupVmRequest().getPoolID()).isEqualTo("linux-amd64-bare-metal");
-    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64"));
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64")).isTrue();
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64-west4")).isTrue();
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64-east5")).isTrue();
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64-fallback")).isTrue();
+    assertThat(response.isDistributed()).isTrue();
+  }
+
+  @Test
+  @Owner(developers = VISTAAR)
+  @Category(UnitTests.class)
+  public void getHostedVmInitializeTaskParamsWithBareMetalDisabled() {
+    InitializeStepInfo initializeStepInfo = VmInitializeTaskParamsHelper.getHostedVmInitializeStep();
+    Map<String, String> volToMountPath = new HashMap<>();
+    List<String> internalAccounts = new ArrayList<>();
+    internalAccounts.add("random-account");
+    volToMountPath.put("shared-0", "/tmp");
+    volToMountPath.put("harness", "/harness");
+
+    String stageRuntimeId = "test";
+    when(ciLicenseService.getLicenseSummary(any(String.class)))
+        .thenReturn(CILicenseSummaryDTO.builder().licenseType(LicenseType.PAID).edition(Edition.FREE).build());
+    doNothing().when(vmInitializeUtils).validateStageConfig(any(), any());
+    when(vmInitializeUtils.getVolumeToMountPath(any(), any())).thenReturn(volToMountPath);
+    when(executionSweepingOutputService.resolveOptional(any(), any()))
+        .thenReturn(OptionalSweepingOutput.builder().found(false).build());
+    when(executionSweepingOutputResolver.consume(any(), any(), any(), any())).thenReturn("");
+    when(executionSweepingOutputResolver.resolveOptional(
+             ambiance, RefObjectUtils.getSweepingOutputRefObject(ContextElement.stageDetails)))
+        .thenReturn(OptionalSweepingOutput.builder()
+                        .found(true)
+                        .output(StageDetails.builder().stageRuntimeID(stageRuntimeId).build())
+                        .build());
+
+    Map<String, String> m = new HashMap<>();
+    when(codebaseUtils.getGitConnector(AmbianceUtils.getNgAccess(ambiance), initializeStepInfo.getCiCodebase(),
+             initializeStepInfo.isSkipGitClone(), null))
+        .thenReturn(null);
+    when(codebaseUtils.getCodebaseVars(any(), any(), any())).thenReturn(m);
+    when(
+        codebaseUtils.getGitEnvVariables(null, initializeStepInfo.getCiCodebase(), initializeStepInfo.isSkipGitClone()))
+        .thenReturn(m);
+
+    when(logServiceUtils.getLogServiceConfig()).thenReturn(LogServiceConfig.builder().baseUrl("1.1.1.1").build());
+    when(logServiceUtils.getLogServiceToken(any())).thenReturn("test");
+    when(tiServiceUtils.getTiServiceConfig()).thenReturn(TIServiceConfig.builder().baseUrl("1.1.1.2").build());
+    when(tiServiceUtils.getTIServiceToken(any())).thenReturn("test");
+    when(stoServiceUtils.getStoServiceConfig()).thenReturn(STOServiceConfig.builder().baseUrl("1.1.1.3").build());
+    when(stoServiceUtils.getSTOServiceToken(any())).thenReturn("test");
+    when(featureFlagService.isEnabled(any(), any())).thenReturn(false);
+    when(ciExecutionServiceConfig.getHostedVmConfig())
+        .thenReturn(HostedVmConfig.builder().splitLinuxAmd64Pool(false).internalAccounts(internalAccounts).build());
+    doNothing().when(hostedVmSecretResolver).resolve(any(), any());
+    when(featureFlagService.isEnabled(FeatureName.CI_DLITE_DISTRIBUTED, accountId)).thenReturn(true);
+
+    DliteVmInitializeTaskParams response =
+        vmInitializeTaskParamsBuilder.getHostedVmInitializeTaskParams(initializeStepInfo, ambiance);
+    assertThat(response.getSetupVmRequest().getId()).isEqualTo(stageRuntimeId);
+    assertThat(response.getSetupVmRequest().getPoolID().contains("linux-amd64"));
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64-west4")).isTrue();
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64-east5")).isTrue();
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64-fallback")).isTrue();
+    assertThat(response.getSetupVmRequest().getFallbackPoolIDs().contains("linux-amd64-bare-metal")).isFalse();
     assertThat(response.isDistributed()).isTrue();
   }
 }
