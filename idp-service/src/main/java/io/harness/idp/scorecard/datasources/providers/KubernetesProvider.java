@@ -46,16 +46,18 @@ public class KubernetesProvider extends HttpDataSourceProvider {
   final ConfigReader configReader;
   final IdpAuthInterceptor idpAuthInterceptor;
   final String env;
+  final String base;
 
   protected KubernetesProvider(DataPointService dataPointService, DataSourceLocationFactory dataSourceLocationFactory,
       DataSourceLocationRepository dataSourceLocationRepository, DataPointParserFactory dataPointParserFactory,
-      ConfigReader configReader, IdpAuthInterceptor idpAuthInterceptor, String env,
+      ConfigReader configReader, IdpAuthInterceptor idpAuthInterceptor, String env, String base,
       DataSourceRepository dataSourceRepository) {
     super(KUBERNETES_IDENTIFIER, dataPointService, dataSourceLocationFactory, dataSourceLocationRepository,
         dataPointParserFactory, dataSourceRepository);
     this.configReader = configReader;
     this.idpAuthInterceptor = idpAuthInterceptor;
     this.env = env;
+    this.base = base;
   }
 
   @Override
@@ -73,7 +75,7 @@ public class KubernetesProvider extends HttpDataSourceProvider {
 
   @Override
   protected Map<String, String> prepareUrlReplaceablePairs(String... keysValues) {
-    String harnessHost = getHarnessHostForEnv(env);
+    String harnessHost = getHarnessHostForEnv(env, base);
     return Map.of(HOST, harnessHost);
   }
 

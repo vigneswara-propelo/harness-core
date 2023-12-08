@@ -28,16 +28,18 @@ import java.util.Map;
 
 @OwnedBy(HarnessTeam.IDP)
 public class HarnessProvider extends HttpDataSourceProvider {
-  String env;
+  final String env;
+  final String base;
   final IdpAuthInterceptor idpAuthInterceptor;
 
   protected HarnessProvider(DataPointService dataPointService, DataSourceLocationFactory dataSourceLocationFactory,
       DataSourceLocationRepository dataSourceLocationRepository, DataPointParserFactory dataPointParserFactory,
-      IdpAuthInterceptor idpAuthInterceptor, String env, DataSourceRepository dataSourceRepository) {
+      IdpAuthInterceptor idpAuthInterceptor, String env, String base, DataSourceRepository dataSourceRepository) {
     super(HARNESS_IDENTIFIER, dataPointService, dataSourceLocationFactory, dataSourceLocationRepository,
         dataPointParserFactory, dataSourceRepository);
     this.idpAuthInterceptor = idpAuthInterceptor;
     this.env = env;
+    this.base = base;
   }
 
   @Override
@@ -54,7 +56,7 @@ public class HarnessProvider extends HttpDataSourceProvider {
 
   @Override
   protected Map<String, String> prepareUrlReplaceablePairs(String... keysValues) {
-    String harnessHost = getHarnessHostForEnv(env);
+    String harnessHost = getHarnessHostForEnv(env, base);
     return Map.of(HOST, harnessHost);
   }
 

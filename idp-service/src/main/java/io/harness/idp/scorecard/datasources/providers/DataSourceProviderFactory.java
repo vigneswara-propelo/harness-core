@@ -42,6 +42,7 @@ public class DataSourceProviderFactory {
 
   @Inject IdpAuthInterceptor idpAuthInterceptor;
   @Inject @Named("env") private String env;
+  @Inject @Named("base") private String base;
 
   @Inject ConfigReader configReader;
   @Inject DataSourceRepository dataSourceRepository;
@@ -66,7 +67,7 @@ public class DataSourceProviderFactory {
       case HARNESS_IDENTIFIER:
         return new HarnessProvider(dataPointService, dataSourceLocationFactory, dataSourceLocationRepository,
             dataSourceDataPointParserFactory.getDataPointParserFactory(HARNESS_IDENTIFIER), idpAuthInterceptor, env,
-            dataSourceRepository);
+            base, dataSourceRepository);
       case CUSTOM_IDENTIFIER:
         return new CustomProvider(dataPointService, dataSourceLocationFactory, dataSourceLocationRepository,
             dataSourceDataPointParserFactory.getDataPointParserFactory(CUSTOM_IDENTIFIER), dataSourceRepository);
@@ -81,7 +82,7 @@ public class DataSourceProviderFactory {
       case KUBERNETES_IDENTIFIER:
         return new KubernetesProvider(dataPointService, dataSourceLocationFactory, dataSourceLocationRepository,
             dataSourceDataPointParserFactory.getDataPointParserFactory(KUBERNETES_IDENTIFIER), configReader,
-            idpAuthInterceptor, env, dataSourceRepository);
+            idpAuthInterceptor, env, base, dataSourceRepository);
       default:
         throw new IllegalArgumentException("DataSource provider " + dataSource + " is not supported yet");
     }

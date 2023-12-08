@@ -160,6 +160,7 @@ provisionModuleConfig:
   triggerPipelineUrl: ""
 
 env: "local"
+base: "app"
 devSpaceDefaultBackstageNamespace: "laxmiharness"
 devSpaceDefaultAccountId: "VVfCEh_ZRTm7pJWtAH-PrA"
 
