@@ -59,6 +59,7 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
 import io.harness.supplier.ThrowingSupplier;
 import io.harness.tasks.ResponseData;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -95,6 +96,7 @@ public class EcsServiceSetupStepTest extends CategoryTest {
   @Spy @InjectMocks private EcsServiceSetupStep ecsServiceSetupStep;
   @Spy private EcsStepCommonHelper ecsStepCommonHelper;
   @Mock private InstanceInfoService instanceInfoService;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   @Test
   @Owner(developers = PRAGYESH)

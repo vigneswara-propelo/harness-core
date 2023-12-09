@@ -55,6 +55,7 @@ import io.harness.security.encryption.EncryptedRecordData;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepHelper;
 import io.harness.steps.TaskRequestsUtils;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.VaultConfig;
 
@@ -91,6 +92,8 @@ public class TerragruntPlanStepTest extends CategoryTest {
   @Mock private PipelineRbacHelper pipelineRbacHelper;
   @Mock private StepHelper stepHelper;
   @Mock private TerraformStepHelper terraformStepHelper;
+
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @InjectMocks private TerragruntPlanStep terragruntPlanStep = new TerragruntPlanStep();
   @Captor ArgumentCaptor<List<EntityDetail>> captor;
 

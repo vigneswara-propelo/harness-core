@@ -53,6 +53,7 @@ import io.harness.steps.StepHelper;
 import io.harness.steps.StepUtils;
 import io.harness.steps.TaskRequestsUtils;
 import io.harness.supplier.ThrowingSupplier;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 
 import software.wings.beans.TaskType;
 
@@ -160,6 +161,12 @@ public class AzureARMRollbackStep extends CdTaskExecutable<AzureARMTaskNGRespons
           "The only scope allowed to do rollback is ResourceGroup. %s is not supported", azureARMConfig.getScopeType());
     }
     return null;
+  }
+
+  @Override
+  protected StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Ambiance ambiance, StepBaseParameters stepParameters) {
+    return StepExecutionTelemetryEventDTO.builder().stepType(STEP_TYPE.getType()).build();
   }
 
   private TaskRequest obtainAzureRollbackTask(

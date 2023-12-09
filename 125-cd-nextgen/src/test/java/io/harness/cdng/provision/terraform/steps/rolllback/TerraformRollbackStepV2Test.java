@@ -73,6 +73,7 @@ import io.harness.rule.Owner;
 import io.harness.steps.StepHelper;
 import io.harness.steps.StepUtils;
 import io.harness.telemetry.TelemetryReporter;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,6 +107,8 @@ public class TerraformRollbackStepV2Test extends CategoryTest {
   @Mock private AccountService accountService;
   @Mock private TelemetryReporter telemetryReporter;
   @Mock private CDFeatureFlagHelper cdFeatureFlagHelper;
+
+  @Mock DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   @InjectMocks private TerraformRollbackStepV2 terraformRollbackStepV2;
 

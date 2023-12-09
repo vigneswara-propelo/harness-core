@@ -58,6 +58,7 @@ import io.harness.steps.StepHelper;
 import io.harness.steps.StepUtils;
 import io.harness.supplier.ThrowingSupplier;
 import io.harness.tasks.ResponseData;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 import io.harness.utils.IdentifierRefHelper;
 
 import com.google.inject.Inject;
@@ -180,6 +181,12 @@ public class TerraformApplyStepV2 extends CdTaskChainExecutable {
 
     return helper.executeNextLink(ambiance, responseSupplier, passThroughData, stepParameters.getDelegateSelectors(),
         stepElementParameters, TerraformCommandUnit.Apply.name());
+  }
+
+  @Override
+  protected StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Ambiance ambiance, StepBaseParameters stepParameters, PassThroughData passThroughData) {
+    return StepExecutionTelemetryEventDTO.builder().stepType(STEP_TYPE.getType()).build();
   }
 
   @Override

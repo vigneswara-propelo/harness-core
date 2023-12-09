@@ -6,6 +6,7 @@
  */
 
 package io.harness.cdng.azure.webapp;
+
 import static io.harness.azure.model.AzureConstants.DEPLOY_TO_SLOT;
 import static io.harness.azure.model.AzureConstants.FETCH_ARTIFACT_FILE;
 import static io.harness.azure.model.AzureConstants.SLOT_SWAP;
@@ -55,6 +56,7 @@ import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.StepResponse.StepResponseBuilder;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
 import io.harness.supplier.ThrowingSupplier;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 
 import software.wings.beans.TaskType;
 
@@ -224,5 +226,11 @@ public class AzureWebAppRollbackStep extends CdTaskExecutable<AzureWebAppTaskRes
   @Override
   public Class<StepBaseParameters> getStepParametersClass() {
     return StepBaseParameters.class;
+  }
+
+  @Override
+  protected StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Ambiance ambiance, StepBaseParameters stepParameters) {
+    return StepExecutionTelemetryEventDTO.builder().stepType(STEP_TYPE.getType()).build();
   }
 }

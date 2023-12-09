@@ -63,6 +63,7 @@ import io.harness.steps.StepHelper;
 import io.harness.steps.StepUtils;
 import io.harness.supplier.ThrowingSupplier;
 import io.harness.tasks.ResponseData;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -238,6 +239,12 @@ public class TerraformRollbackStepV2 extends CdTaskChainExecutable {
 
     return terraformStepHelper.executeNextLink(ambiance, responseSupplier, passThroughData,
         stepParameters.getDelegateSelectors(), stepElementParameters, TerraformCommandUnit.Rollback.name());
+  }
+
+  @Override
+  protected StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Ambiance ambiance, StepBaseParameters stepParameters, PassThroughData passThroughData) {
+    return StepExecutionTelemetryEventDTO.builder().stepType(STEP_TYPE.getType()).build();
   }
 
   @Override

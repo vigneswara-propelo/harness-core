@@ -57,6 +57,7 @@ import io.harness.steps.StepHelper;
 import io.harness.steps.StepUtils;
 import io.harness.steps.TaskRequestsUtils;
 import io.harness.supplier.ThrowingSupplier;
+import io.harness.telemetry.helpers.StepExecutionTelemetryEventDTO;
 
 import software.wings.beans.TaskType;
 
@@ -90,6 +91,12 @@ public class TerraformCloudRollbackStep extends CdTaskExecutable<TerraformCloudR
 
   @Override
   public void validateResources(Ambiance ambiance, StepBaseParameters stepParameters) {}
+
+  @Override
+  protected StepExecutionTelemetryEventDTO getStepExecutionTelemetryEventDTO(
+      Ambiance ambiance, StepBaseParameters stepParameters) {
+    return StepExecutionTelemetryEventDTO.builder().stepType(STEP_TYPE.getType()).build();
+  }
 
   @Override
   public TaskRequest obtainTaskAfterRbac(

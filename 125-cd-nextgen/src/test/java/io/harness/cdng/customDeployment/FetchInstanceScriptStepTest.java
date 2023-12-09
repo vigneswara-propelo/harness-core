@@ -71,6 +71,7 @@ import io.harness.rule.Owner;
 import io.harness.steps.StepHelper;
 import io.harness.steps.TaskRequestsUtils;
 import io.harness.steps.environment.EnvironmentOutcome;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -95,6 +96,8 @@ public class FetchInstanceScriptStepTest extends CDNGTestBase {
   @Captor private ArgumentCaptor<DeploymentInfoOutcome> deploymentInfoOutcomeArgumentCaptor;
   @Mock private InstanceInfoService instanceInfoService;
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
+
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @InjectMocks private FetchInstanceScriptStep fetchInstanceScriptStep;
 
   private FetchInstanceScriptStepParameters parameters =

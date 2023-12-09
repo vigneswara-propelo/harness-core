@@ -45,6 +45,7 @@ import io.harness.rule.Owner;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.steps.StepHelper;
 import io.harness.steps.TaskRequestsUtils;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,7 @@ public class AzureARMRollbackStepTest extends CategoryTest {
   @Mock private CDStepHelper cdStepHelper;
   @Mock private StepHelper stepHelper;
   @InjectMocks private AzureARMRollbackStep azureARMRollbackStep;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   @Before
   public void setUpMocks() {

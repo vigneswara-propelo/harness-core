@@ -47,6 +47,7 @@ import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -66,6 +67,7 @@ public class AzureWebAppSwapSlotStepTest extends CDNGTestBase {
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
   @Mock private StageExecutionInfoService stageExecutionInfoService;
 
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @InjectMocks private AzureWebAppSwapSlotStep azureWebAppSwapSlotStep;
 
   private AzureWebAppSwapSlotStepParameters parameters =

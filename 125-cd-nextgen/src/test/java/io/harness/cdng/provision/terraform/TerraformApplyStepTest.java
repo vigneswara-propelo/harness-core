@@ -64,6 +64,7 @@ import io.harness.rule.Owner;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepHelper;
 import io.harness.steps.TaskRequestsUtils;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,6 +101,7 @@ public class TerraformApplyStepTest extends CategoryTest {
   @Mock private StepHelper stepHelper;
   @Mock private CDFeatureFlagHelper cdFeatureFlagHelper;
   @Mock private ProvisionerOutputHelper provisionerOutputHelper;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   private Ambiance getAmbiance() {
     return Ambiance.newBuilder()

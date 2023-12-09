@@ -73,6 +73,7 @@ import io.harness.rule.Owner;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepHelper;
 import io.harness.steps.TaskRequestsUtils;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.GcpKmsConfig;
 
@@ -109,6 +110,7 @@ public class TerraformPlanStepTest extends CategoryTest {
   @Mock private PipelineRbacHelper pipelineRbacHelper;
   @Mock private StepHelper stepHelper;
   @InjectMocks private TerraformPlanStep terraformPlanStep;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
 
   private Ambiance getAmbiance() {
     return Ambiance.newBuilder()

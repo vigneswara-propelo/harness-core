@@ -69,6 +69,7 @@ import io.harness.serializer.kryo.ApiServiceBeansKryoRegister;
 import io.harness.serializer.kryo.DelegateTasksBeansKryoRegister;
 import io.harness.steps.StepHelper;
 import io.harness.supplier.ThrowingSupplier;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -97,6 +98,7 @@ public class CommandStepTest extends CategoryTest {
   @Mock private CDStepHelper cdStepHelper;
   @Mock private InstanceInfoService instanceInfoService;
   @Mock private ThrowingSupplier exceptionThrowingSupplier;
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @Captor private ArgumentCaptor<List<ServerInstanceInfo>> serverInstanceInfoListCaptor;
 
   @InjectMocks private CommandStep commandStep;

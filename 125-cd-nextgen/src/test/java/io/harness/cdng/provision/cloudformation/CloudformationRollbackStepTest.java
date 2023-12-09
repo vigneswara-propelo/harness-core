@@ -53,6 +53,7 @@ import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepHelper;
 import io.harness.steps.StepUtils;
 import io.harness.steps.TaskRequestsUtils;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -90,6 +91,8 @@ public class CloudformationRollbackStepTest extends CategoryTest {
 
   @Mock CloudformationStepHelper cloudformationStepHelper;
   @Mock CloudformationConfigDAL cloudformationConfigDAL;
+
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @Mock private KryoSerializer kryoSerializer;
   @Mock private StepHelper stepHelper;
   @Mock private CDExpressionResolver cdExpressionResolver;

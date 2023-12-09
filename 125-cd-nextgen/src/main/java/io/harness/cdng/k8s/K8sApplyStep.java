@@ -155,6 +155,7 @@ public class K8sApplyStep extends CdTaskChainExecutable implements K8sStepExecut
     }
     k8sStepHelper.resolveManifestsSourceExpressions(ambiance, k8sApplyStepParameters.getManifestSource());
   }
+
   @Override
   public TaskChainResponse executeNextLinkWithSecurityContextAndNodeInfo(Ambiance ambiance,
       StepBaseParameters stepElementParameters, StepInputPackage inputPackage, PassThroughData passThroughData,

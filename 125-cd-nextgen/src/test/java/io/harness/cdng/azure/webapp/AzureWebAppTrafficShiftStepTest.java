@@ -45,6 +45,7 @@ import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -63,6 +64,7 @@ public class AzureWebAppTrafficShiftStepTest extends CDNGTestBase {
   @Mock private AzureWebAppStepHelper stepHelper;
   @Mock ExecutionSweepingOutputService executionSweepingOutputService;
 
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @InjectMocks private AzureWebAppTrafficShiftStep azureWebAppTrafficShiftStep;
 
   private AzureWebAppTrafficShiftStepParameters parameters =

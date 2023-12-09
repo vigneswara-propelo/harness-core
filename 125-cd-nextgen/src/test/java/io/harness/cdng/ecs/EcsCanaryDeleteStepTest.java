@@ -54,6 +54,7 @@ import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
 import io.harness.steps.StepHelper;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -80,6 +81,8 @@ public class EcsCanaryDeleteStepTest extends CategoryTest {
   @Mock private EcsStepHelperImpl ecsStepHelper;
   @Mock private InstanceInfoService instanceInfoService;
   @Mock private ExecutionSweepingOutputService executionSweepingOutputService;
+
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @Mock private AccountService accountService;
   @Mock private AccountClient accountClient;
   @Mock private StepHelper stepHelper;

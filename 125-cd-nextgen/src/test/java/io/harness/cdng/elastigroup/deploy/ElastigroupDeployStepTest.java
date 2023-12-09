@@ -35,6 +35,7 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
+import io.harness.telemetry.helpers.DeploymentsInstrumentationHelper;
 
 import software.wings.beans.TaskType;
 
@@ -57,7 +58,7 @@ public class ElastigroupDeployStepTest extends CategoryTest {
 
   @Mock ElastigroupDeployStepHelper stepHelper;
   @Mock ElastigroupStepCommonHelper elastigroupStepCommonHelper;
-
+  @Mock private DeploymentsInstrumentationHelper deploymentsInstrumentationHelper;
   @InjectMocks ElastigroupDeployStep step;
 
   @Before
