@@ -143,10 +143,10 @@ public class VmInitializeTaskParamsBuilder {
     vmInitializeUtils.validateDebug(hostedVmInfraYaml, ambiance);
     if (isBareMetalEnabled(accountId, hostedVmInfraYaml.getSpec().getPlatform(), initializeStepInfo)) {
       poolId = getHostedBareMetalPoolId(hostedVmInfraYaml.getSpec().getPlatform());
-      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "west4"));
       fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "fallback"));
-      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "east5"));
       fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, ""));
+      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "east5"));
+      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "west4"));
 
     } else {
       poolId = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, false, "west-1");
@@ -155,9 +155,6 @@ public class VmInitializeTaskParamsBuilder {
       String fallbackPoolIdEast1 =
           getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "fallback");
       String fallbackPoolIdEast5 = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "east5");
-      if (!isEmpty(fallbackPoolIdWest4)) {
-        fallbackPoolIds.add(fallbackPoolIdWest4);
-      }
 
       if (!isEmpty(fallbackPoolIdEast1)) {
         fallbackPoolIds.add(fallbackPoolIdEast1);
@@ -165,6 +162,10 @@ public class VmInitializeTaskParamsBuilder {
 
       if (!isEmpty(fallbackPoolIdEast5)) {
         fallbackPoolIds.add(fallbackPoolIdEast5);
+      }
+
+      if (!isEmpty(fallbackPoolIdWest4)) {
+        fallbackPoolIds.add(fallbackPoolIdWest4);
       }
     }
     boolean distributed =
