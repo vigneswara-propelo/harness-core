@@ -10,6 +10,7 @@ package io.harness.ng.core.api;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
 import io.harness.ng.core.dto.OrganizationAggregateDTO;
 import io.harness.ng.core.dto.OrganizationFilterDTO;
 
@@ -18,8 +19,9 @@ import org.springframework.data.domain.Pageable;
 
 @OwnedBy(PL)
 public interface AggregateOrganizationService {
-  OrganizationAggregateDTO getOrganizationAggregateDTO(String accountIdentifier, String identifier);
+  OrganizationAggregateDTO getOrganizationAggregateDTO(
+      String accountIdentifier, ScopeInfo scopeInfo, String identifier);
 
   Page<OrganizationAggregateDTO> listOrganizationAggregateDTO(
-      String accountIdentifier, Pageable pageable, OrganizationFilterDTO organizationFilterDTO);
+      String accountIdentifier, ScopeInfo scopeInfo, Pageable pageable, OrganizationFilterDTO organizationFilterDTO);
 }

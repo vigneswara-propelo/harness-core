@@ -29,13 +29,12 @@ public interface OrganizationRepositoryCustom {
 
   Organization update(Query query, Update update);
 
-  @Deprecated Organization delete(String accountIdentifier, String identifier, Long version);
-
-  Organization hardDelete(String accountIdentifier, String identifier, Long version);
+  Organization hardDelete(String accountIdentifier, String parentId, String identifier, Long version);
 
   List<Organization> findAll(Criteria criteria);
 
-  Organization restore(String accountIdentifier, String identifier);
+  Organization restoreFromAccountIdentifierParentUniqueIdAndIdentifier(
+      String accountIdentifier, String parentUniqueId, String identifier);
 
   List<Scope> findAllOrgs(Criteria criteria);
 

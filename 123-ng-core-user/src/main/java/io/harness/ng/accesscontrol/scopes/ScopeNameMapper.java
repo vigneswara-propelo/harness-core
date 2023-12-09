@@ -13,6 +13,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.accesscontrol.scopes.ScopeDTO;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
@@ -37,7 +39,14 @@ public class ScopeNameMapper {
     String orgName = null;
     String projectName = null;
     if (!isBlank(scopeDTO.getOrgIdentifier())) {
-      orgName = organizationService.get(scopeDTO.getAccountIdentifier(), scopeDTO.getOrgIdentifier())
+      orgName = organizationService
+                    .get(scopeDTO.getAccountIdentifier(),
+                        ScopeInfo.builder()
+                            .accountIdentifier(scopeDTO.getAccountIdentifier())
+                            .scopeType(ScopeLevel.ACCOUNT)
+                            .uniqueId(scopeDTO.getAccountIdentifier())
+                            .build(),
+                        scopeDTO.getOrgIdentifier())
                     .<InvalidRequestException>orElseThrow(() -> {
                       throw new InvalidRequestException(String.format(
                           "Organization details not found for org Identifier: [%s]", scopeDTO.getOrgIdentifier()));

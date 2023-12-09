@@ -47,6 +47,7 @@ import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.context.GlobalContext;
 import io.harness.exception.DuplicateFieldException;
@@ -177,7 +178,14 @@ public class ProjectServiceImplTest extends CategoryTest {
     when(projectRepository.save(project)).thenReturn(project);
     Optional<Organization> organizationOptional = Optional.of(random(Organization.class));
     organizationOptional.get().setIdentifier(orgIdentifier);
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(organizationOptional);
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(organizationOptional);
 
     projectService.create(accountIdentifier, orgIdentifier, projectDTO);
     try {
@@ -231,7 +239,14 @@ public class ProjectServiceImplTest extends CategoryTest {
             project.getIdentifier(), orgIdentifier));
     Optional<Organization> organizationOptional = Optional.of(random(Organization.class));
     organizationOptional.get().setIdentifier(orgIdentifier);
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(organizationOptional);
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(organizationOptional);
     when(transactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock
             -> invocationOnMock.getArgument(0, TransactionCallback.class)
@@ -256,7 +271,14 @@ public class ProjectServiceImplTest extends CategoryTest {
     project.setIdentifier(identifier);
     project.setId(id);
     when(projectRepository.save(any())).thenReturn(project);
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(Optional.of(random(Organization.class)));
     when(projectService.get(accountIdentifier, orgIdentifier, identifier)).thenReturn(Optional.of(project));
     projectService.update(accountIdentifier, orgIdentifier, identifier, projectDTO);
 
@@ -289,7 +311,14 @@ public class ProjectServiceImplTest extends CategoryTest {
     setContextData(accountIdentifier);
 
     when(projectRepository.save(any())).thenReturn(newProject);
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(Optional.of(random(Organization.class)));
     when(projectService.get(accountIdentifier, orgIdentifier, identifier)).thenReturn(Optional.of(exitingProject));
     when(transactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock
@@ -329,7 +358,14 @@ public class ProjectServiceImplTest extends CategoryTest {
     setContextData(accountIdentifier);
 
     when(projectRepository.save(any())).thenReturn(newProject);
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(Optional.of(random(Organization.class)));
     when(projectService.get(accountIdentifier, orgIdentifier, identifier)).thenReturn(Optional.of(exitingProject));
     when(transactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock
@@ -359,7 +395,14 @@ public class ProjectServiceImplTest extends CategoryTest {
     project.setOrgIdentifier(orgIdentifier);
     project.setName(randomAlphabetic(10));
     project.setId(randomAlphabetic(10));
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(Optional.of(random(Organization.class)));
     when(projectService.get(accountIdentifier, orgIdentifier, identifier)).thenReturn(Optional.of(project));
     projectService.update(accountIdentifier, orgIdentifier, identifier, projectDTO);
   }
@@ -377,7 +420,14 @@ public class ProjectServiceImplTest extends CategoryTest {
     project.setOrgIdentifier(orgIdentifier);
     project.setIdentifier(identifier);
 
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(Optional.of(random(Organization.class)));
     when(projectService.get(accountIdentifier, orgIdentifier, identifier)).thenReturn(Optional.empty());
 
     Project updatedProject = projectService.update(accountIdentifier, orgIdentifier, identifier, projectDTO);
@@ -398,7 +448,14 @@ public class ProjectServiceImplTest extends CategoryTest {
     project.setOrgIdentifier(orgIdentifier);
     project.setIdentifier(identifier);
 
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(Optional.of(random(Organization.class)));
     when(projectService.get(accountIdentifier, orgIdentifier, identifier.toUpperCase()))
         .thenReturn(Optional.of(project));
     when(transactionTemplate.execute(any())).thenReturn(project);
@@ -426,7 +483,14 @@ public class ProjectServiceImplTest extends CategoryTest {
                                   .description("desc")
                                   .build();
 
-    when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(random(Organization.class)));
+    when(organizationService.get(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             orgIdentifier))
+        .thenReturn(Optional.of(random(Organization.class)));
     when(projectService.get(accountIdentifier, orgIdentifier, identifier.toUpperCase()))
         .thenReturn(Optional.of(existingProject));
 
@@ -743,7 +807,13 @@ public class ProjectServiceImplTest extends CategoryTest {
     project.setOrgIdentifier(orgIdentifier);
     Set<String> permittedOrgs = new HashSet<>();
     permittedOrgs.add(project.getIdentifier());
-    when(organizationService.getPermittedOrganizations(accountIdentifier, null))
+    when(organizationService.getPermittedOrganizations(accountIdentifier,
+             ScopeInfo.builder()
+                 .accountIdentifier(accountIdentifier)
+                 .scopeType(ScopeLevel.ACCOUNT)
+                 .uniqueId(accountIdentifier)
+                 .build(),
+             null))
         .thenReturn(Collections.singleton(orgIdentifier));
     projectService.getProjectFavorites(accountIdentifier, null, userid);
     verify(favoritesService, times(1))
@@ -777,10 +847,15 @@ public class ProjectServiceImplTest extends CategoryTest {
     String orgIdentifier = randomAlphabetic(10);
     String userid = randomAlphabetic(10);
     ProjectFilterDTO projectFilterDTO = ProjectFilterDTO.builder().orgIdentifiers(null).build();
-    when(organizationService.getPermittedOrganizations(accountIdentifier, null))
+    ScopeInfo builtScope = ScopeInfo.builder()
+                               .accountIdentifier(accountIdentifier)
+                               .scopeType(ScopeLevel.ACCOUNT)
+                               .uniqueId(accountIdentifier)
+                               .build();
+    when(organizationService.getPermittedOrganizations(accountIdentifier, builtScope, null))
         .thenReturn(Collections.singleton(orgIdentifier));
     projectService.getProjectFavorites(accountIdentifier, projectFilterDTO, userid);
-    verify(organizationService, times(1)).getPermittedOrganizations(accountIdentifier, null);
+    verify(organizationService, times(1)).getPermittedOrganizations(accountIdentifier, builtScope, null);
     verify(favoritesService, times(1))
         .getFavorites(accountIdentifier, orgIdentifier, null, userid, ResourceType.PROJECT.toString());
   }

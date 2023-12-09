@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngtriggers.resource;
+
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
@@ -376,6 +377,7 @@ public interface NGTriggerResource {
       @QueryParam("pipelineBranchName") String pipelineBranchName);
 
   @PATCH
+  @Hidden
   @Path("/bulk-toggle")
   @InternalApi
   ResponseDTO<BulkTriggersResponseDTO> bulkToggleTriggers(

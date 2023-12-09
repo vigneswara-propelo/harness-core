@@ -90,7 +90,7 @@ public class NGAccountSetupServiceTest extends CategoryTest {
     when(accessControlAdminClientConfiguration.getMockAccessControlService()).thenReturn(true);
 
     when(accountOrgProjectValidator.isPresent(any(), any(), any())).thenReturn(true);
-    when(organizationService.get(any(), any()))
+    when(organizationService.get(any(), any(), any()))
         .thenReturn(of(Organization.builder()
                            .accountIdentifier(ACCOUNT_ID)
                            .identifier(DEFAULT_ORG_IDENTIFIER)

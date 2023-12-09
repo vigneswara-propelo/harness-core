@@ -11,6 +11,8 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.favorites.entities.Favorite;
 import io.harness.favorites.services.FavoritesService;
 import io.harness.ng.core.api.AggregateProjectService;
@@ -130,8 +132,13 @@ public class AggregateProjectServiceImpl implements AggregateProjectService {
   }
 
   private ProjectAggregateDTO buildAggregateDTO(Project project) {
-    Optional<Organization> organizationOptional =
-        organizationService.get(project.getAccountIdentifier(), project.getOrgIdentifier());
+    Optional<Organization> organizationOptional = organizationService.get(project.getAccountIdentifier(),
+        ScopeInfo.builder()
+            .accountIdentifier(project.getAccountIdentifier())
+            .scopeType(ScopeLevel.ACCOUNT)
+            .uniqueId(project.getAccountIdentifier())
+            .build(),
+        project.getOrgIdentifier());
     Scope projectScope = Scope.builder()
                              .accountIdentifier(project.getAccountIdentifier())
                              .orgIdentifier(project.getOrgIdentifier())

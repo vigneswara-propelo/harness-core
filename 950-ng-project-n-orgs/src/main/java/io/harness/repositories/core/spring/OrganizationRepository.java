@@ -24,6 +24,9 @@ public interface OrganizationRepository
   Optional<Organization> findByAccountIdentifierAndIdentifierIgnoreCaseAndDeletedNot(
       String accountIdentifier, String identifier, boolean notDeleted);
 
+  Optional<Organization> findByAccountIdentifierAndParentUniqueIdAndIdentifierIgnoreCaseAndDeletedNot(
+      String accountIdentifier, String parentUniqueId, String identifier, boolean notDeleted);
+
   Optional<Organization> findByAccountIdentifierAndIdentifierAndDeletedNot(
       String accountIdentifier, String identifier, boolean notDeleted);
 

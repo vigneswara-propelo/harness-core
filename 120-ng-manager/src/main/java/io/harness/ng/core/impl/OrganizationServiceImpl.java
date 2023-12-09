@@ -128,18 +128,19 @@ public class OrganizationServiceImpl implements OrganizationService {
 
   @Override
   @FeatureRestrictionCheck(MULTIPLE_ORGANIZATIONS)
-  public Organization create(@AccountIdentifier String accountIdentifier, OrganizationDTO organizationDTO) {
+  public Organization create(
+      @AccountIdentifier String accountIdentifier, ScopeInfo scopeInfo, OrganizationDTO organizationDTO) {
     Organization organization = toOrganization(organizationDTO);
     organization.setAccountIdentifier(accountIdentifier);
     organization.setParentId(accountIdentifier);
-    organization.setParentUniqueId(accountIdentifier);
+    organization.setParentUniqueId(scopeInfo.getUniqueId());
     try {
       validate(organization);
       Organization savedOrganization = saveOrganization(organization);
       addToScopeInfoCache(savedOrganization);
-      setupOrganization(Scope.of(accountIdentifier, organizationDTO.getIdentifier(), null));
-      log.info(
-          String.format("Organization with identifier [%s] was successfully created", organization.getIdentifier()));
+      setupOrganization(Scope.of(accountIdentifier, savedOrganization.getIdentifier(), null));
+      log.info(String.format("Organization with identifier [%s] and uniqueId [%s] successfully created",
+          accountIdentifier, savedOrganization.getIdentifier(), savedOrganization.getUniqueId()));
       instrumentationHelper.sendOrganizationCreateEvent(organization, accountIdentifier);
       return savedOrganization;
     } catch (DuplicateKeyException ex) {
@@ -277,15 +278,22 @@ public class OrganizationServiceImpl implements OrganizationService {
   }
 
   @Override
+  public Optional<Organization> get(String accountIdentifier, ScopeInfo scopeInfo, String organizationIdentifier) {
+    return organizationRepository.findByAccountIdentifierAndParentUniqueIdAndIdentifierIgnoreCaseAndDeletedNot(
+        accountIdentifier, scopeInfo.getUniqueId(), organizationIdentifier, true);
+  }
+
+  @Override
   public Optional<Organization> getConsideringCase(String accountIdentifier, String organizationIdentifier) {
     return organizationRepository.findByAccountIdentifierAndIdentifierAndDeletedNot(
         accountIdentifier, organizationIdentifier, true);
   }
 
   @Override
-  public Organization update(String accountIdentifier, String identifier, OrganizationDTO organizationDTO) {
+  public Organization update(
+      String accountIdentifier, ScopeInfo scopeInfo, String identifier, OrganizationDTO organizationDTO) {
     validateUpdateOrganizationRequest(identifier, organizationDTO);
-    Optional<Organization> optionalOrganization = get(accountIdentifier, identifier);
+    Optional<Organization> optionalOrganization = get(accountIdentifier, scopeInfo, identifier);
 
     if (optionalOrganization.isPresent()) {
       Organization existingOrganization = optionalOrganization.get();
@@ -320,9 +328,11 @@ public class OrganizationServiceImpl implements OrganizationService {
 
   @Override
   public Page<Organization> listPermittedOrgs(
-      String accountIdentifier, Pageable pageable, OrganizationFilterDTO organizationFilterDTO) {
+      String accountIdentifier, ScopeInfo scopeInfo, Pageable pageable, OrganizationFilterDTO organizationFilterDTO) {
     Criteria criteria = createOrganizationFilterCriteria(Criteria.where(OrganizationKeys.accountIdentifier)
                                                              .is(accountIdentifier)
+                                                             .and(OrganizationKeys.parentUniqueId)
+                                                             .is(scopeInfo.getUniqueId())
                                                              .and(OrganizationKeys.deleted)
                                                              .is(FALSE),
         organizationFilterDTO);
@@ -343,6 +353,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     Criteria criteriaForPermittedOrgs =
         createOrganizationFilterCriteria(Criteria.where(OrganizationKeys.accountIdentifier)
                                              .is(accountIdentifier)
+                                             .and(OrganizationKeys.parentUniqueId)
+                                             .is(scopeInfo.getUniqueId())
                                              .and(OrganizationKeys.deleted)
                                              .is(FALSE),
             organizationFilterDTO);
@@ -384,21 +396,21 @@ public class OrganizationServiceImpl implements OrganizationService {
   }
 
   @Override
-  public boolean delete(String accountIdentifier, String organizationIdentifier, Long version) {
+  public boolean delete(String accountIdentifier, ScopeInfo scopeInfo, String identifier, Long version) {
     try (AutoLogContext ignore0 = new AccountLogContext(accountIdentifier, OVERRIDE_ERROR)) {
+      scopeInfoCache.remove(scopeInfoHelper.getScopeInfoCacheKey(accountIdentifier, identifier, null));
       return Failsafe.with(DEFAULT_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
         Organization organization =
-            organizationRepository.hardDelete(accountIdentifier, organizationIdentifier, version);
-        scopeInfoCache.remove(scopeInfoHelper.getScopeInfoCacheKey(accountIdentifier, organizationIdentifier, null));
-
+            organizationRepository.hardDelete(accountIdentifier, scopeInfo.getUniqueId(), identifier, version);
         if (isNull(organization)) {
           log.error(String.format(
-              "Organization with identifier [%s] could not be deleted as it does not exist", organizationIdentifier));
-          throw new EntityNotFoundException(String.format(
-              "Organization with identifier [%s] does not exist in the specified scope", organizationIdentifier));
+              "Organization with identifier [%s] in account [%s] could not be deleted as it does not exist", identifier,
+              accountIdentifier));
+          throw new EntityNotFoundException(
+              String.format("Organization with identifier [%s] does not exist in the specified scope", identifier));
         }
-
-        log.info(String.format("Organization with identifier [%s] was successfully deleted", organizationIdentifier));
+        log.info(String.format(
+            "Organization with identifier [%s] in account [%s] successfully deleted", identifier, accountIdentifier));
         outboxService.save(new OrganizationDeleteEvent(accountIdentifier, OrganizationMapper.writeDto(organization)));
         instrumentationHelper.sendOrganizationDeleteEvent(organization, accountIdentifier);
         return true;
@@ -407,23 +419,28 @@ public class OrganizationServiceImpl implements OrganizationService {
   }
 
   @Override
-  public boolean restore(String accountIdentifier, String identifier) {
+  public boolean restore(String accountIdentifier, ScopeInfo scopeInfo, String identifier) {
     return Failsafe.with(DEFAULT_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
-      Organization organization = organizationRepository.restore(accountIdentifier, identifier);
+      Organization organization = organizationRepository.restoreFromAccountIdentifierParentUniqueIdAndIdentifier(
+          accountIdentifier, scopeInfo.getUniqueId(), identifier);
       boolean success = organization != null;
       if (success) {
-        outboxService.save(new OrganizationRestoreEvent(accountIdentifier, OrganizationMapper.writeDto(organization)));
+        outboxService.save(
+            new OrganizationRestoreEvent(scopeInfo.getAccountIdentifier(), OrganizationMapper.writeDto(organization)));
       }
       return success;
     }));
   }
 
   @Override
-  public Set<String> getPermittedOrganizations(@NotNull String accountIdentifier, String orgIdentifier) {
+  public Set<String> getPermittedOrganizations(
+      @NotNull String accountIdentifier, ScopeInfo scopeInfo, String orgIdentifier) {
     List<Scope> organizations;
     if (isEmpty(orgIdentifier)) {
       Criteria orgCriteria = Criteria.where(OrganizationKeys.accountIdentifier)
                                  .is(accountIdentifier)
+                                 .and(OrganizationKeys.parentUniqueId)
+                                 .is(scopeInfo.getUniqueId())
                                  .and(OrganizationKeys.deleted)
                                  .ne(Boolean.TRUE);
       organizations = organizationRepository.findAllOrgs(orgCriteria);
@@ -446,7 +463,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     if (scopeInfoCache.containsKey(cacheKey)) {
       return Optional.of(scopeInfoCache.get(cacheKey));
     }
-    Optional<Organization> org = get(accountIdentifier, orgIdentifier);
+    Optional<Organization> org = getConsideringCase(accountIdentifier, orgIdentifier);
     if (org.isPresent()) {
       ScopeInfo orgScopeInfo = scopeInfoHelper.populateScopeInfo(
           ScopeLevel.ORGANIZATION, org.get().getUniqueId(), accountIdentifier, orgIdentifier, null);

@@ -21,6 +21,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import io.harness.CategoryTest;
 import io.harness.accesscontrol.scopes.ScopeDTO;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.entities.Organization;
@@ -64,10 +66,15 @@ public class ScopeNameMapperTest extends CategoryTest {
   @Owner(developers = NAMANG)
   @Category(UnitTests.class)
   public void testToScopeNameDTOWhenOrgWhenExists() throws IOException {
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(ACCOUNT_IDENTIFIER)
+                              .scopeType(ScopeLevel.ACCOUNT)
+                              .uniqueId(ACCOUNT_IDENTIFIER)
+                              .build();
     ScopeDTO scopeDTO = ScopeDTO.builder().accountIdentifier(ACCOUNT_IDENTIFIER).orgIdentifier(ORG_IDENTIFIER).build();
-    doReturn(organizationResponse).when(organizationService).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER);
+    doReturn(organizationResponse).when(organizationService).get(ACCOUNT_IDENTIFIER, scopeInfo, ORG_IDENTIFIER);
     ScopeNameDTO result = scopeNameMapper.toScopeNameDTO(scopeDTO);
-    verify(organizationService, times(1)).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER);
+    verify(organizationService, times(1)).get(ACCOUNT_IDENTIFIER, scopeInfo, ORG_IDENTIFIER);
     verifyNoMoreInteractions(organizationService);
     verifyNoMoreInteractions(projectService);
     assertThat(result.getAccountIdentifier()).isEqualTo(ACCOUNT_IDENTIFIER);
@@ -120,7 +127,15 @@ public class ScopeNameMapperTest extends CategoryTest {
                             .orgIdentifier(ORG_IDENTIFIER)
                             .projectIdentifier(PROJECT_IDENTIFIER)
                             .build();
-    doReturn(organizationResponse).when(organizationService).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER);
+    doReturn(organizationResponse)
+        .when(organizationService)
+        .get(ACCOUNT_IDENTIFIER,
+            ScopeInfo.builder()
+                .accountIdentifier(ACCOUNT_IDENTIFIER)
+                .scopeType(ScopeLevel.ACCOUNT)
+                .uniqueId(ACCOUNT_IDENTIFIER)
+                .build(),
+            ORG_IDENTIFIER);
 
     doReturn(Optional.empty()).when(projectService).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
     try {
@@ -141,11 +156,16 @@ public class ScopeNameMapperTest extends CategoryTest {
                             .orgIdentifier(ORG_IDENTIFIER)
                             .projectIdentifier(PROJECT_IDENTIFIER)
                             .build();
-    doReturn(organizationResponse).when(organizationService).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(ACCOUNT_IDENTIFIER)
+                              .scopeType(ScopeLevel.ACCOUNT)
+                              .uniqueId(ACCOUNT_IDENTIFIER)
+                              .build();
+    doReturn(organizationResponse).when(organizationService).get(ACCOUNT_IDENTIFIER, scopeInfo, ORG_IDENTIFIER);
     doReturn(projectResponse).when(projectService).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
 
     ScopeNameDTO result = scopeNameMapper.toScopeNameDTO(scopeDTO);
-    verify(organizationService, times(1)).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER);
+    verify(organizationService, times(1)).get(ACCOUNT_IDENTIFIER, scopeInfo, ORG_IDENTIFIER);
     verify(projectService, times(1)).get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
     verifyNoMoreInteractions(organizationService);
     verifyNoMoreInteractions(projectService);

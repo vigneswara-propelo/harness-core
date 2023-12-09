@@ -13,6 +13,8 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import io.harness.account.AccountClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.ng.core.dto.AccountDTO;
 import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Project;
@@ -70,7 +72,13 @@ public class AccountOrgProjectHelperImpl implements AccountOrgProjectHelper {
   }
 
   public String getOrgName(String accountIdentifier, String orgIdentifier) {
-    Optional<Organization> organizationOpt = organizationService.get(accountIdentifier, orgIdentifier);
+    Optional<Organization> organizationOpt = organizationService.get(accountIdentifier,
+        ScopeInfo.builder()
+            .accountIdentifier(accountIdentifier)
+            .scopeType(ScopeLevel.ACCOUNT)
+            .uniqueId(accountIdentifier)
+            .build(),
+        orgIdentifier);
     if (!organizationOpt.isPresent()) {
       throw new NotFoundException(String.format("Organization with identifier [%s] doesn't exist", orgIdentifier));
     }

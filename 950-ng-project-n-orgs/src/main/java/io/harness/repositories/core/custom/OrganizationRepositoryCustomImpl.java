@@ -59,9 +59,12 @@ public class OrganizationRepositoryCustomImpl implements OrganizationRepositoryC
   }
 
   @Override
-  public Organization restore(String accountIdentifier, String identifier) {
+  public Organization restoreFromAccountIdentifierParentUniqueIdAndIdentifier(
+      String accountIdentifier, String parentUniqueId, String identifier) {
     Criteria criteria = Criteria.where(OrganizationKeys.accountIdentifier)
                             .is(accountIdentifier)
+                            .and(OrganizationKeys.parentUniqueId)
+                            .is(parentUniqueId)
                             .and(OrganizationKeys.identifier)
                             .is(identifier)
                             .and(OrganizationKeys.deleted)
@@ -76,6 +79,7 @@ public class OrganizationRepositoryCustomImpl implements OrganizationRepositoryC
     Query query = new Query(criteria);
     query.fields().include(OrganizationKeys.identifier);
     query.fields().include(OrganizationKeys.accountIdentifier);
+    query.fields().include(OrganizationKeys.uniqueId);
     return mongoTemplate.find(query, Organization.class)
         .stream()
         .map(org
@@ -89,25 +93,11 @@ public class OrganizationRepositoryCustomImpl implements OrganizationRepositoryC
   }
 
   @Override
-  public Organization delete(String accountIdentifier, String identifier, Long version) {
+  public Organization hardDelete(String accountIdentifier, String parentId, String identifier, Long version) {
     Criteria criteria = Criteria.where(OrganizationKeys.accountIdentifier)
                             .is(accountIdentifier)
-                            .and(OrganizationKeys.identifier)
-                            .is(identifier)
-                            .and(OrganizationKeys.deleted)
-                            .ne(Boolean.TRUE);
-    if (version != null) {
-      criteria.and(OrganizationKeys.version).is(version);
-    }
-    Query query = new Query(criteria);
-    Update update = new Update().set(OrganizationKeys.deleted, Boolean.TRUE);
-    return mongoTemplate.findAndModify(query, update, Organization.class);
-  }
-
-  @Override
-  public Organization hardDelete(String accountIdentifier, String identifier, Long version) {
-    Criteria criteria = Criteria.where(OrganizationKeys.accountIdentifier)
-                            .is(accountIdentifier)
+                            .and(OrganizationKeys.parentId)
+                            .is(parentId)
                             .and(OrganizationKeys.identifier)
                             .is(identifier);
     if (version != null) {

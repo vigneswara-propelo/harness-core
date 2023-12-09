@@ -26,21 +26,23 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @OwnedBy(PL)
 public interface OrganizationService {
   String ORG_SCOPE_INFO_DATA_CACHE_KEY = "orgScopeInfoDataCache";
-  Organization create(String accountIdentifier, OrganizationDTO organization);
+
+  Organization create(String accountIdentifier, ScopeInfo scopeInfo, OrganizationDTO organization);
 
   List<String> getDistinctAccounts();
 
   Optional<Organization> get(String accountIdentifier, String identifier);
+  Optional<Organization> get(String accountIdentifier, ScopeInfo scopeInfo, String identifier);
 
   Optional<Organization> getConsideringCase(String accountIdentifier, String identifier);
 
-  Organization update(String accountIdentifier, String identifier, OrganizationDTO organization);
+  Organization update(String accountIdentifier, ScopeInfo scopeInfo, String identifier, OrganizationDTO organization);
 
   /**
    * Use this method with caution, verify that the pageable sort is able to make use of the indexes.
    */
   Page<Organization> listPermittedOrgs(
-      String accountIdentifier, Pageable pageable, OrganizationFilterDTO organizationFilterDTO);
+      String accountIdentifier, ScopeInfo scopeInfo, Pageable pageable, OrganizationFilterDTO organizationFilterDTO);
 
   /**
    * Use this method with caution, verify that the criteria and pageable sort is able to make use of the indexes.
@@ -52,12 +54,13 @@ public interface OrganizationService {
    */
   List<Organization> list(Criteria criteria);
 
-  boolean delete(String accountIdentifier, String identifier, Long version);
+  boolean delete(String accountIdentifier, ScopeInfo scopeInfo, String identifier, Long version);
 
-  boolean restore(String accountIdentifier, String identifier);
+  boolean restore(String accountIdentifier, ScopeInfo scopeInfo, String identifier);
 
   Long countOrgs(String accountIdentifier);
 
-  Set<String> getPermittedOrganizations(@NotNull String accountIdentifier, String orgIdentifier);
+  Set<String> getPermittedOrganizations(@NotNull String accountIdentifier, ScopeInfo scopeInfo, String orgIdentifier);
+
   Optional<ScopeInfo> getScopeInfo(String accountIdentifier, String orgIdentifier);
 }

@@ -157,6 +157,8 @@ notifyResponses {"name": "validUntil_1", "background": true, "expireAfterSeconds
 organizations {"name": "accountIdentifierDeletedHarnessManagedNameWithCollationIdx", "background": true, "collation": {"locale": "en", "strength": 1}} {"accountIdentifier": 1, "deleted": 1, "harnessManaged": -1, "name": 1}
 organizations {"name": "accountIdentifierDeletedIdentifierIdx", "background": true} {"accountIdentifier": 1, "deleted": 1, "identifier": 1}
 organizations {"name": "accountIdentifierIdentifierDeletedHarnessManagedNameWithCollationIdx", "background": true, "collation": {"locale": "en", "strength": 1}} {"accountIdentifier": 1, "identifier": 1, "deleted": 1, "harnessManaged": -1, "name": 1}
+organizations {"name": "accountIdentifierParentUniqueIdDeletedIdx", "background": true} {"accountIdentifier": 1, "parentUniqueId": 1, "deleted": 1}
+organizations {"name": "accountIdentifierParentUniqueIdIdentifierDeletedIdx", "background": true} {"accountIdentifier": 1, "parentUniqueId": 1, "identifier": 1, "deleted": 1}
 organizations {"name": "identifier_1", "background": true} {"identifier": 1}
 organizations {"name": "parentUniqueIdIdentifierIdx", "unique": true, "collation": {"locale": "en", "strength": 1}} {"parentUniqueId": 1, "identifier": 1}
 organizations {"name": "uniqueId_1", "unique": true} {"uniqueId": 1}

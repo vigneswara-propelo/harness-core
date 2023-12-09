@@ -14,6 +14,7 @@ import static java.util.Collections.singletonList;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
+import io.harness.beans.ScopeInfo;
 import io.harness.connector.services.ConnectorService;
 import io.harness.ng.core.api.AggregateOrganizationService;
 import io.harness.ng.core.api.DelegateDetailsService;
@@ -74,8 +75,9 @@ public class AggregateOrganizationServiceImpl implements AggregateOrganizationSe
   }
 
   @Override
-  public OrganizationAggregateDTO getOrganizationAggregateDTO(String accountIdentifier, String identifier) {
-    Optional<Organization> organizationOptional = organizationService.get(accountIdentifier, identifier);
+  public OrganizationAggregateDTO getOrganizationAggregateDTO(
+      String accountIdentifier, ScopeInfo scopeInfo, String identifier) {
+    Optional<Organization> organizationOptional = organizationService.get(accountIdentifier, scopeInfo, identifier);
     if (!organizationOptional.isPresent()) {
       throw new NotFoundException(String.format("Organization with identifier [%s] not found", identifier));
     }
@@ -110,9 +112,9 @@ public class AggregateOrganizationServiceImpl implements AggregateOrganizationSe
 
   @Override
   public Page<OrganizationAggregateDTO> listOrganizationAggregateDTO(
-      String accountIdentifier, Pageable pageable, OrganizationFilterDTO organizationFilterDTO) {
+      String accountIdentifier, ScopeInfo scopeInfo, Pageable pageable, OrganizationFilterDTO organizationFilterDTO) {
     Page<Organization> permittedOrgs =
-        organizationService.listPermittedOrgs(accountIdentifier, pageable, organizationFilterDTO);
+        organizationService.listPermittedOrgs(accountIdentifier, scopeInfo, pageable, organizationFilterDTO);
     List<Organization> organizationList = permittedOrgs.getContent();
 
     List<Callable<OrganizationAggregateDTO>> tasks = new ArrayList<>();

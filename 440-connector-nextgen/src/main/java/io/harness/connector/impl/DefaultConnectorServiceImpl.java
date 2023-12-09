@@ -35,6 +35,8 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.beans.EntityReference;
 import io.harness.beans.IdentifierRef;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.beans.SortOrder;
 import io.harness.beans.SortOrder.OrderType;
 import io.harness.connector.CombineCcmK8sConnectorResponseDTO;
@@ -506,7 +508,13 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
 
   private void checkThatTheOrganizationExists(String orgIdentifier, String accountIdentifier) {
     if (isNotEmpty(orgIdentifier)) {
-      final Optional<Organization> organization = organizationService.get(accountIdentifier, orgIdentifier);
+      final Optional<Organization> organization = organizationService.get(accountIdentifier,
+          ScopeInfo.builder()
+              .accountIdentifier(accountIdentifier)
+              .scopeType(ScopeLevel.ACCOUNT)
+              .uniqueId(accountIdentifier)
+              .build(),
+          orgIdentifier);
       if (!organization.isPresent()) {
         throw new NotFoundException(String.format("org [%s] not found.", orgIdentifier));
       }

@@ -39,6 +39,7 @@ import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.context.GlobalContext;
 import io.harness.exception.EntityNotFoundException;
@@ -127,9 +128,13 @@ public class OrganizationServiceImplTest extends CategoryTest {
     when(organizationRepository.save(organization)).thenReturn(organization);
     when(outboxService.save(any())).thenReturn(OutboxEvent.builder().build());
     when(transactionTemplate.execute(any())).thenReturn(organization);
-
-    Organization createdOrganization = organizationService.create(accountIdentifier, organizationDTO);
-
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ACCOUNT)
+                              .uniqueId(accountIdentifier)
+                              .build();
+    Organization createdOrganization = organizationService.create(accountIdentifier, scopeInfo, organizationDTO);
+    scopeInfo.setOrgIdentifier(organizationDTO.getIdentifier());
     verify(transactionTemplate, times(1)).execute(any());
     Scope scope = Scope.of(accountIdentifier, organizationDTO.getIdentifier(), null);
     verify(defaultUserGroupService, times(1)).create(scope, emptyList());
@@ -146,11 +151,16 @@ public class OrganizationServiceImplTest extends CategoryTest {
     Organization organization = toOrganization(organizationDTO);
     organization.setAccountIdentifier(accountIdentifier);
     organization.setIdentifier(identifier);
+    ScopeInfo builtScope = ScopeInfo.builder()
+                               .accountIdentifier(accountIdentifier)
+                               .scopeType(ScopeLevel.ACCOUNT)
+                               .uniqueId(accountIdentifier)
+                               .build();
 
     when(organizationRepository.save(any())).thenReturn(organization);
-    when(organizationService.get(accountIdentifier, identifier)).thenReturn(Optional.of(organization));
+    when(organizationService.get(accountIdentifier, builtScope, identifier)).thenReturn(Optional.of(organization));
 
-    organizationService.update(accountIdentifier, identifier, organizationDTO);
+    organizationService.update(accountIdentifier, builtScope, identifier, organizationDTO);
     verify(transactionTemplate, times(1)).execute(any());
   }
 
@@ -160,15 +170,20 @@ public class OrganizationServiceImplTest extends CategoryTest {
   public void testUpdateOrganization_IncorrectPayload() {
     String accountIdentifier = randomAlphabetic(10);
     String identifier = randomAlphabetic(10);
+    ScopeInfo builtScope = ScopeInfo.builder()
+                               .accountIdentifier(accountIdentifier)
+                               .scopeType(ScopeLevel.ACCOUNT)
+                               .uniqueId(accountIdentifier)
+                               .build();
     OrganizationDTO organizationDTO = createOrganizationDTO(identifier);
     organizationDTO.setName("");
     Organization organization = toOrganization(organizationDTO);
     organization.setAccountIdentifier(accountIdentifier);
     organization.setIdentifier(identifier);
     organization.setName(randomAlphabetic(10));
-    when(organizationService.get(accountIdentifier, identifier)).thenReturn(Optional.of(organization));
+    when(organizationService.get(accountIdentifier, builtScope, identifier)).thenReturn(Optional.of(organization));
 
-    organizationService.update(accountIdentifier, identifier, organizationDTO);
+    organizationService.update(accountIdentifier, builtScope, identifier, organizationDTO);
   }
 
   @Test(expected = InvalidRequestException.class)
@@ -184,7 +199,13 @@ public class OrganizationServiceImplTest extends CategoryTest {
 
     when(organizationService.get(accountIdentifier, identifier)).thenReturn(Optional.empty());
 
-    Organization updatedOrganization = organizationService.update(accountIdentifier, identifier, organizationDTO);
+    Organization updatedOrganization = organizationService.update(accountIdentifier,
+        ScopeInfo.builder()
+            .accountIdentifier(accountIdentifier)
+            .scopeType(ScopeLevel.ACCOUNT)
+            .uniqueId(accountIdentifier)
+            .build(),
+        identifier, organizationDTO);
 
     assertNull(updatedOrganization);
   }
@@ -195,17 +216,23 @@ public class OrganizationServiceImplTest extends CategoryTest {
   public void update_onlyIdentifierChanged_noop() {
     String accountIdentifier = randomAlphabetic(10);
     String identifier = "identifier";
+    ScopeInfo builtScope = ScopeInfo.builder()
+                               .accountIdentifier(accountIdentifier)
+                               .scopeType(ScopeLevel.ACCOUNT)
+                               .uniqueId(accountIdentifier)
+                               .build();
     OrganizationDTO organizationDTO = createOrganizationDTO(identifier);
     Organization organization = toOrganization(organizationDTO);
     organization.setAccountIdentifier(accountIdentifier);
     organization.setIdentifier(identifier);
 
-    when(organizationService.get(accountIdentifier, identifier.toUpperCase())).thenReturn(Optional.of(organization));
+    when(organizationService.get(accountIdentifier, builtScope, identifier.toUpperCase()))
+        .thenReturn(Optional.of(organization));
     when(transactionTemplate.execute(any())).thenReturn(organization);
 
     organizationDTO.setIdentifier(identifier.toUpperCase());
     Organization updatedOrganization =
-        organizationService.update(accountIdentifier, identifier.toUpperCase(), organizationDTO);
+        organizationService.update(accountIdentifier, builtScope, identifier.toUpperCase(), organizationDTO);
 
     assertNotNull(updatedOrganization);
     assertThat(updatedOrganization.getIdentifier()).isEqualTo(identifier);
@@ -217,6 +244,11 @@ public class OrganizationServiceImplTest extends CategoryTest {
   public void update_identifierAndSomeOtherFieldChanged_onlyOtherFieldIsUpdated() {
     String accountIdentifier = randomAlphabetic(10);
     String identifier = "identifier";
+    ScopeInfo builtScope = ScopeInfo.builder()
+                               .accountIdentifier(accountIdentifier)
+                               .scopeType(ScopeLevel.ACCOUNT)
+                               .uniqueId(accountIdentifier)
+                               .build();
     Organization existingOrganization = Organization.builder()
                                             .accountIdentifier(accountIdentifier)
                                             .identifier(identifier)
@@ -224,7 +256,7 @@ public class OrganizationServiceImplTest extends CategoryTest {
                                             .description("desc")
                                             .build();
 
-    when(organizationService.get(accountIdentifier, identifier.toUpperCase()))
+    when(organizationService.get(accountIdentifier, builtScope, identifier.toUpperCase()))
         .thenReturn(Optional.of(existingOrganization));
 
     OrganizationDTO updateDTO = OrganizationDTO.builder()
@@ -237,7 +269,7 @@ public class OrganizationServiceImplTest extends CategoryTest {
     expectedUpdatedOrg.setName("updatedTest");
     when(transactionTemplate.execute(any())).thenReturn(expectedUpdatedOrg);
     Organization updatedOrganization =
-        organizationService.update(accountIdentifier, identifier.toUpperCase(), updateDTO);
+        organizationService.update(accountIdentifier, builtScope, identifier.toUpperCase(), updateDTO);
 
     assertNotNull(updatedOrganization);
     assertThat(updatedOrganization.getIdentifier()).isEqualTo(identifier);
@@ -256,15 +288,20 @@ public class OrganizationServiceImplTest extends CategoryTest {
     when(organizationRepository.findAll(any(Criteria.class), any(Pageable.class), anyBoolean()))
         .thenReturn(getPage(emptyList(), 0));
 
-    Page<Organization> organizationPage = organizationService.listPermittedOrgs(
-        accountIdentifier, unpaged(), OrganizationFilterDTO.builder().searchTerm(searchTerm).build());
+    Page<Organization> organizationPage = organizationService.listPermittedOrgs(accountIdentifier,
+        ScopeInfo.builder()
+            .accountIdentifier(accountIdentifier)
+            .scopeType(ScopeLevel.ACCOUNT)
+            .uniqueId(accountIdentifier)
+            .build(),
+        unpaged(), OrganizationFilterDTO.builder().searchTerm(searchTerm).build());
 
     verify(organizationRepository, times(1)).findAllOrgs(criteriaArgumentCaptor.capture());
 
     Criteria criteria = criteriaArgumentCaptor.getValue();
     Document criteriaObject = criteria.getCriteriaObject();
 
-    assertEquals(3, criteriaObject.size());
+    assertEquals(4, criteriaObject.size());
     assertEquals(accountIdentifier, criteriaObject.get(OrganizationKeys.accountIdentifier));
     assertTrue(criteriaObject.containsKey(OrganizationKeys.deleted));
 
@@ -288,10 +325,16 @@ public class OrganizationServiceImplTest extends CategoryTest {
         .thenAnswer(invocationOnMock
             -> invocationOnMock.getArgument(0, TransactionCallback.class)
                    .doInTransaction(new SimpleTransactionStatus()));
-    when(organizationRepository.hardDelete(any(), any(), any())).thenReturn(organization);
+    when(organizationRepository.hardDelete(any(), any(), any(), any())).thenReturn(organization);
 
-    organizationService.delete(accountIdentifier, identifier, version);
-    verify(organizationRepository, times(1)).hardDelete(any(), argumentCaptor.capture(), any());
+    organizationService.delete(accountIdentifier,
+        ScopeInfo.builder()
+            .accountIdentifier(accountIdentifier)
+            .scopeType(ScopeLevel.ACCOUNT)
+            .uniqueId(accountIdentifier)
+            .build(),
+        identifier, version);
+    verify(organizationRepository, times(1)).hardDelete(any(), any(), argumentCaptor.capture(), any());
     assertEquals(identifier, argumentCaptor.getValue());
     verify(transactionTemplate, times(1)).execute(any());
     verify(outboxService, times(1)).save(any());
@@ -309,9 +352,15 @@ public class OrganizationServiceImplTest extends CategoryTest {
         .thenAnswer(invocationOnMock
             -> invocationOnMock.getArgument(0, TransactionCallback.class)
                    .doInTransaction(new SimpleTransactionStatus()));
-    when(organizationRepository.hardDelete(any(), any(), any())).thenReturn(null);
+    when(organizationRepository.hardDelete(any(), any(), any(), any())).thenReturn(null);
 
-    organizationService.delete(accountIdentifier, identifier, version);
+    organizationService.delete(accountIdentifier,
+        ScopeInfo.builder()
+            .accountIdentifier(accountIdentifier)
+            .scopeType(ScopeLevel.ACCOUNT)
+            .uniqueId(accountIdentifier)
+            .build(),
+        identifier, version);
   }
 
   @Test
@@ -323,8 +372,13 @@ public class OrganizationServiceImplTest extends CategoryTest {
     Scope o1 = Scope.builder().accountIdentifier(accountIdentifier).orgIdentifier(orgIdentifier).build();
     List<Scope> organizations = Collections.singletonList(o1);
 
-    Set<String> permittedOrganizations =
-        organizationService.getPermittedOrganizations(accountIdentifier, orgIdentifier);
+    Set<String> permittedOrganizations = organizationService.getPermittedOrganizations(accountIdentifier,
+        ScopeInfo.builder()
+            .accountIdentifier(accountIdentifier)
+            .scopeType(ScopeLevel.ACCOUNT)
+            .uniqueId(accountIdentifier)
+            .build(),
+        orgIdentifier);
     assertEquals(permittedOrganizations.size(), 1);
     assertTrue(permittedOrganizations.contains(orgIdentifier));
     verify(scopeAccessHelper, times(1)).getPermittedScopes(organizations);
@@ -336,16 +390,24 @@ public class OrganizationServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGetPermittedOrganizationsWhenNoOrgIdentifier() {
     String accountIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ACCOUNT)
+                              .uniqueId(accountIdentifier)
+                              .build();
     Scope o1 = Scope.builder().accountIdentifier(accountIdentifier).orgIdentifier("O1").build();
     Scope o2 = Scope.builder().accountIdentifier(accountIdentifier).orgIdentifier("O2").build();
     List<Scope> organizations = new ArrayList<>(Arrays.asList(o1, o2));
     Criteria orgCriteria = Criteria.where(OrganizationKeys.accountIdentifier)
                                .is(accountIdentifier)
+                               .and(OrganizationKeys.parentUniqueId)
+                               .is(scopeInfo.getUniqueId())
                                .and(OrganizationKeys.deleted)
                                .ne(Boolean.TRUE);
     when(scopeAccessHelper.getPermittedScopes(organizations)).thenReturn(Collections.singletonList(o1));
     when(organizationRepository.findAllOrgs(orgCriteria)).thenReturn(organizations);
-    Set<String> permittedOrganizations = organizationService.getPermittedOrganizations(accountIdentifier, null);
+    Set<String> permittedOrganizations =
+        organizationService.getPermittedOrganizations(accountIdentifier, scopeInfo, null);
     assertEquals(permittedOrganizations.size(), 1);
     assertTrue(permittedOrganizations.contains("O1"));
     verify(organizationRepository, times(1)).findAllOrgs(orgCriteria);

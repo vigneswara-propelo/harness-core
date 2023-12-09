@@ -15,6 +15,8 @@ import static java.lang.String.format;
 
 import io.harness.account.services.AccountService;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.filestore.entities.NGFile;
 import io.harness.filestore.service.FileValidationService;
@@ -77,7 +79,14 @@ public class FileValidationServiceImpl implements FileValidationService {
                                projectIdentifier, orgIdentifier, accountIdentifier)));
 
     } else if (isNotEmpty(orgIdentifier)) {
-      organizationService.get(accountIdentifier, orgIdentifier)
+      organizationService
+          .get(accountIdentifier,
+              ScopeInfo.builder()
+                  .accountIdentifier(accountIdentifier)
+                  .scopeType(ScopeLevel.ACCOUNT)
+                  .uniqueId(accountIdentifier)
+                  .build(),
+              orgIdentifier)
           .orElseThrow(()
                            -> new InvalidArgumentsException(
                                format("Org with identifier [%s] does not exist, accountIdentifier: %s", orgIdentifier,

@@ -21,6 +21,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -29,6 +30,8 @@ import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.dto.OrganizationDTO;
@@ -57,6 +60,7 @@ public class OrganizationApiImplTest extends CategoryTest {
   private OrganizationService organizationService;
   private OrganizationApiImpl organizationApi;
   private OrganizationApiUtils organizationApiUtils;
+  private ScopeInfo scopeInfo;
 
   private Validator validator;
 
@@ -67,6 +71,7 @@ public class OrganizationApiImplTest extends CategoryTest {
   @Before
   public void setup() {
     organizationService = mock(OrganizationService.class);
+    scopeInfo = mock(ScopeInfo.class);
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     validator = factory.getValidator();
@@ -93,7 +98,10 @@ public class OrganizationApiImplTest extends CategoryTest {
     Organization organization = toOrganization(organizationDTO);
     organization.setVersion(0L);
 
-    when(organizationService.create(account, organizationDTO)).thenReturn(organization);
+    when(organizationService.create(account,
+             ScopeInfo.builder().accountIdentifier(account).scopeType(ScopeLevel.ACCOUNT).uniqueId(account).build(),
+             organizationDTO))
+        .thenReturn(organization);
 
     Response response = organizationApi.createOrganization(organizationRequest, account);
     assertEquals(201, response.getStatus());
@@ -131,7 +139,7 @@ public class OrganizationApiImplTest extends CategoryTest {
     Organization organization = toOrganization(organizationDTO);
     organization.setVersion(0L);
 
-    when(organizationService.get(account, identifier)).thenReturn(Optional.of(organization));
+    when(organizationService.get(anyString(), any(ScopeInfo.class), anyString())).thenReturn(Optional.of(organization));
 
     Response response = organizationApi.getOrganization(identifier, account);
 
@@ -168,12 +176,12 @@ public class OrganizationApiImplTest extends CategoryTest {
 
     ArgumentCaptor<OrganizationFilterDTO> argumentCaptor = ArgumentCaptor.forClass(OrganizationFilterDTO.class);
 
-    when(organizationService.listPermittedOrgs(eq(account), any(), any()))
+    when(organizationService.listPermittedOrgs(eq(account), any(ScopeInfo.class), any(), any()))
         .thenReturn(getPage(singletonList(organization), 1));
 
     Response response = organizationApi.getOrganizations(EMPTY_LIST, searchTerm, 0, 10, account, null, null);
 
-    verify(organizationService, times(1)).listPermittedOrgs(eq(account), any(), argumentCaptor.capture());
+    verify(organizationService, times(1)).listPermittedOrgs(eq(account), any(), any(), argumentCaptor.capture());
     OrganizationFilterDTO organizationFilterDTO = argumentCaptor.getValue();
 
     assertEquals(searchTerm, organizationFilterDTO.getSearchTerm());
@@ -196,7 +204,8 @@ public class OrganizationApiImplTest extends CategoryTest {
     Organization organization = toOrganization(organizationDTO);
     organization.setVersion(0L);
 
-    when(organizationService.update(account, identifier, organizationDTO)).thenReturn(organization);
+    when(organizationService.update(anyString(), any(ScopeInfo.class), anyString(), any(OrganizationDTO.class)))
+        .thenReturn(organization);
 
     Response response = organizationApi.updateOrganization(request, identifier, account);
 
@@ -249,8 +258,11 @@ public class OrganizationApiImplTest extends CategoryTest {
     Organization organization = toOrganization(organizationDTO);
     organization.setVersion(0L);
 
-    when(organizationService.get(account, identifier)).thenReturn(Optional.of(organization));
-    when(organizationService.delete(account, identifier, null)).thenReturn(true);
+    when(organizationService.get(anyString(), any(ScopeInfo.class), anyString())).thenReturn(Optional.of(organization));
+    when(organizationService.delete(account,
+             ScopeInfo.builder().accountIdentifier(account).scopeType(ScopeLevel.ACCOUNT).uniqueId(account).build(),
+             identifier, null))
+        .thenReturn(true);
 
     Response response = organizationApi.deleteOrganization(identifier, account);
 

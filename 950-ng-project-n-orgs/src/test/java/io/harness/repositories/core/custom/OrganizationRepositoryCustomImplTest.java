@@ -72,36 +72,6 @@ public class OrganizationRepositoryCustomImplTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = KARAN)
-  @Category(UnitTests.class)
-  public void testDelete() {
-    String accountIdentifier = randomAlphabetic(10);
-    String identifier = randomAlphabetic(10);
-    Long version = 0L;
-    ArgumentCaptor<Update> updateArgumentCaptor = ArgumentCaptor.forClass(Update.class);
-    ArgumentCaptor<Query> queryArgumentCaptor = ArgumentCaptor.forClass(Query.class);
-
-    when(mongoTemplate.findAndModify(any(), any(), eq(Organization.class))).thenReturn(null);
-
-    Boolean deleted = organizationRepository.delete(accountIdentifier, identifier, version) != null;
-
-    verify(mongoTemplate, times(1))
-        .findAndModify(queryArgumentCaptor.capture(), updateArgumentCaptor.capture(), eq(Organization.class));
-    Query query = queryArgumentCaptor.getValue();
-    Update update = updateArgumentCaptor.getValue();
-    assertFalse(deleted);
-    assertEquals(1, update.getUpdateObject().size());
-    assertEquals(4, query.getQueryObject().size());
-    assertTrue(query.getQueryObject().containsKey(OrganizationKeys.accountIdentifier));
-    assertEquals(accountIdentifier, query.getQueryObject().get(OrganizationKeys.accountIdentifier));
-    assertTrue(query.getQueryObject().containsKey(OrganizationKeys.identifier));
-    assertEquals(identifier, query.getQueryObject().get(OrganizationKeys.identifier));
-    assertTrue(query.getQueryObject().containsKey(OrganizationKeys.deleted));
-    assertTrue(query.getQueryObject().containsKey(OrganizationKeys.version));
-    assertEquals(version, query.getQueryObject().get(OrganizationKeys.version));
-  }
-
-  @Test
   @Owner(developers = VIKAS_M)
   @Category(UnitTests.class)
   public void testHardDelete() {
@@ -111,13 +81,16 @@ public class OrganizationRepositoryCustomImplTest extends CategoryTest {
     ArgumentCaptor<Query> queryArgumentCaptor = ArgumentCaptor.forClass(Query.class);
 
     when(mongoTemplate.findAndRemove(any(), eq(Organization.class))).thenReturn(Organization.builder().build());
-    Organization organization = organizationRepository.hardDelete(accountIdentifier, identifier, version);
+    Organization organization =
+        organizationRepository.hardDelete(accountIdentifier, accountIdentifier, identifier, version);
     verify(mongoTemplate, times(1)).findAndRemove(queryArgumentCaptor.capture(), eq(Organization.class));
     Query query = queryArgumentCaptor.getValue();
     assertNotNull(organization);
-    assertEquals(3, query.getQueryObject().size());
+    assertEquals(4, query.getQueryObject().size());
     assertTrue(query.getQueryObject().containsKey(OrganizationKeys.accountIdentifier));
     assertEquals(accountIdentifier, query.getQueryObject().get(OrganizationKeys.accountIdentifier));
+    assertTrue(query.getQueryObject().containsKey(OrganizationKeys.parentId));
+    assertEquals(accountIdentifier, query.getQueryObject().get(OrganizationKeys.parentId));
     assertTrue(query.getQueryObject().containsKey(OrganizationKeys.identifier));
     assertEquals(identifier, query.getQueryObject().get(OrganizationKeys.identifier));
     assertTrue(query.getQueryObject().containsKey(OrganizationKeys.version));
@@ -134,8 +107,8 @@ public class OrganizationRepositoryCustomImplTest extends CategoryTest {
     ArgumentCaptor<Query> queryArgumentCaptor = ArgumentCaptor.forClass(Query.class);
 
     when(mongoTemplate.findAndModify(any(), any(), eq(Organization.class))).thenReturn(null);
-
-    Organization restoredOrganization = organizationRepository.restore(accountIdentifier, identifier);
+    Organization restoredOrganization = organizationRepository.restoreFromAccountIdentifierParentUniqueIdAndIdentifier(
+        accountIdentifier, accountIdentifier, identifier);
     boolean deleted = restoredOrganization != null;
     verify(mongoTemplate, times(1))
         .findAndModify(queryArgumentCaptor.capture(), updateArgumentCaptor.capture(), eq(Organization.class));
@@ -143,9 +116,11 @@ public class OrganizationRepositoryCustomImplTest extends CategoryTest {
     Update update = updateArgumentCaptor.getValue();
     assertFalse(deleted);
     assertEquals(1, update.getUpdateObject().size());
-    assertEquals(3, query.getQueryObject().size());
+    assertEquals(4, query.getQueryObject().size());
     assertTrue(query.getQueryObject().containsKey(OrganizationKeys.accountIdentifier));
     assertEquals(accountIdentifier, query.getQueryObject().get(OrganizationKeys.accountIdentifier));
+    assertTrue(query.getQueryObject().containsKey(OrganizationKeys.parentUniqueId));
+    assertEquals(accountIdentifier, query.getQueryObject().get(OrganizationKeys.parentUniqueId));
     assertTrue(query.getQueryObject().containsKey(OrganizationKeys.identifier));
     assertEquals(identifier, query.getQueryObject().get(OrganizationKeys.identifier));
     assertTrue(query.getQueryObject().containsKey(OrganizationKeys.deleted));

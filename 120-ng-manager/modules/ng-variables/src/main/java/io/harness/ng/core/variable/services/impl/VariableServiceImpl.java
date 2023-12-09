@@ -20,6 +20,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import io.harness.NGResourceFilterConstants;
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
@@ -282,7 +284,13 @@ public class VariableServiceImpl implements VariableService {
 
   private void checkThatTheOrganizationExists(String orgIdentifier, String accountIdentifier) {
     if (isNotEmpty(orgIdentifier)) {
-      final Optional<Organization> organization = organizationService.get(accountIdentifier, orgIdentifier);
+      final Optional<Organization> organization = organizationService.get(accountIdentifier,
+          ScopeInfo.builder()
+              .accountIdentifier(accountIdentifier)
+              .scopeType(ScopeLevel.ACCOUNT)
+              .uniqueId(accountIdentifier)
+              .build(),
+          orgIdentifier);
       if (!organization.isPresent()) {
         throw new NotFoundException(String.format("org [%s] not found.", orgIdentifier));
       }

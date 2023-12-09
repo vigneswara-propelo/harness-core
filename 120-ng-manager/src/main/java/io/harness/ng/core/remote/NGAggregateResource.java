@@ -37,6 +37,7 @@ import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.accesscontrol.scopes.ScopeDTO;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
 import io.harness.beans.SortOrder;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
@@ -81,6 +82,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -129,13 +131,15 @@ public class NGAggregateResource {
       @QueryParam("hasModule") @DefaultValue("true") boolean hasModule,
       @QueryParam(NGResourceFilterConstants.MODULE_TYPE_KEY) ModuleType moduleType,
       @QueryParam(NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm,
-      @QueryParam("onlyFavorites") @DefaultValue("false") Boolean onlyFavorites, @BeanParam PageRequest pageRequest) {
+      @QueryParam("onlyFavorites") @DefaultValue("false") Boolean onlyFavorites, @BeanParam PageRequest pageRequest,
+      @Context ScopeInfo scopeInfo) {
     if (isEmpty(pageRequest.getSortOrders())) {
       SortOrder order =
           SortOrder.Builder.aSortOrder().withField(ProjectKeys.lastModifiedAt, SortOrder.OrderType.DESC).build();
       pageRequest.setSortOrders(ImmutableList.of(order));
     }
-    Set<String> permittedOrgIds = organizationService.getPermittedOrganizations(accountIdentifier, orgIdentifier);
+    Set<String> permittedOrgIds =
+        organizationService.getPermittedOrganizations(accountIdentifier, scopeInfo, orgIdentifier);
     ProjectFilterDTO projectFilterDTO = getProjectFilterDTO(searchTerm, permittedOrgIds, hasModule, moduleType);
     return ResponseDTO.newResponse(getNGPageResponse(aggregateProjectService.listProjectAggregateDTO(
         accountIdentifier, getPageRequest(pageRequest), projectFilterDTO, onlyFavorites)));
@@ -157,9 +161,10 @@ public class NGAggregateResource {
   @ApiOperation(value = "Gets an OrganizationAggregateDTO by identifier", nickname = "getOrganizationAggregateDTO")
   public ResponseDTO<OrganizationAggregateDTO> get(
       @NotNull @PathParam(NGCommonEntityConstants.IDENTIFIER_KEY) @ResourceIdentifier String identifier,
-      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier) {
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
+      @Context ScopeInfo scopeInfo) {
     return ResponseDTO.newResponse(
-        aggregateOrganizationService.getOrganizationAggregateDTO(accountIdentifier, identifier));
+        aggregateOrganizationService.getOrganizationAggregateDTO(accountIdentifier, scopeInfo, identifier));
   }
 
   @GET
@@ -167,7 +172,8 @@ public class NGAggregateResource {
   @ApiOperation(value = "Get OrganizationAggregateDTO list", nickname = "getOrganizationAggregateDTOList")
   public ResponseDTO<PageResponse<OrganizationAggregateDTO>> list(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
-      @QueryParam(NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm, @BeanParam PageRequest pageRequest) {
+      @QueryParam(NGResourceFilterConstants.SEARCH_TERM_KEY) String searchTerm, @BeanParam PageRequest pageRequest,
+      @Context ScopeInfo scopeInfo) {
     OrganizationFilterDTO organizationFilterDTO = OrganizationFilterDTO.builder().searchTerm(searchTerm).build();
     if (isEmpty(pageRequest.getSortOrders())) {
       SortOrder harnessManagedOrder =
@@ -178,7 +184,7 @@ public class NGAggregateResource {
       pageRequest.setSortOrders(ImmutableList.of(harnessManagedOrder, nameOrder));
     }
     return ResponseDTO.newResponse(getNGPageResponse(aggregateOrganizationService.listOrganizationAggregateDTO(
-        accountIdentifier, getPageRequest(pageRequest), organizationFilterDTO)));
+        accountIdentifier, scopeInfo, getPageRequest(pageRequest), organizationFilterDTO)));
   }
 
   @GET
