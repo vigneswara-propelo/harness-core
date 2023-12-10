@@ -22,6 +22,7 @@ import io.harness.ng.core.template.TemplateEntityConstants;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
 
+import java.util.HashSet;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -75,7 +76,7 @@ public class ShellScriptYamlExpressionEvaluatorTest extends CategoryTest {
   public void testResolveSingleValue() throws Exception {
     String yaml = getYaml("AnyScript");
     ShellScriptYamlExpressionEvaluator shellScriptYamlExpressionEvaluator =
-        new ShellScriptYamlExpressionEvaluator(yaml, 7, null);
+        new ShellScriptYamlExpressionEvaluator(yaml, 7, null, new HashSet<>());
     ShellScriptBaseDTO shellScriptBaseDTO = YamlUtils.read(yaml, ShellScriptYamlDTO.class).getShellScriptBaseDTO();
     shellScriptBaseDTO = (ShellScriptBaseDTO) shellScriptYamlExpressionEvaluator.resolve(shellScriptBaseDTO, false);
     // Tests for single value resolution
@@ -92,7 +93,7 @@ public class ShellScriptYamlExpressionEvaluatorTest extends CategoryTest {
         "echo 1 echo <+spec.source.spec.type> and <+spec.environmentVariables.e1> and <+secretManager.source.spec.type>";
     String yaml = getYaml(script);
     ShellScriptYamlExpressionEvaluator shellScriptYamlExpressionEvaluator =
-        new ShellScriptYamlExpressionEvaluator(yaml, 7, null);
+        new ShellScriptYamlExpressionEvaluator(yaml, 7, null, new HashSet<>());
     ShellScriptBaseDTO shellScriptBaseDTO = YamlUtils.read(yaml, ShellScriptYamlDTO.class).getShellScriptBaseDTO();
     shellScriptBaseDTO = (ShellScriptBaseDTO) shellScriptYamlExpressionEvaluator.resolve(shellScriptBaseDTO, false);
     assertThat(shellScriptBaseDTO.getShellScriptSpec().getSource().getSpec().getScript().getValue())
@@ -107,7 +108,7 @@ public class ShellScriptYamlExpressionEvaluatorTest extends CategoryTest {
     String script = "echo <+secrets.getValue(\"Token\")>";
     String yaml = getYaml(script);
     ShellScriptYamlExpressionEvaluator shellScriptYamlExpressionEvaluator =
-        new ShellScriptYamlExpressionEvaluator(yaml, 7, null);
+        new ShellScriptYamlExpressionEvaluator(yaml, 7, null, new HashSet<>());
     ShellScriptBaseDTO shellScriptBaseDTO = YamlUtils.read(yaml, ShellScriptYamlDTO.class).getShellScriptBaseDTO();
     shellScriptBaseDTO = (ShellScriptBaseDTO) shellScriptYamlExpressionEvaluator.resolve(shellScriptBaseDTO, false);
 

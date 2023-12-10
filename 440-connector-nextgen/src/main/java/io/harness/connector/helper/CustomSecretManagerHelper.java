@@ -6,6 +6,7 @@
  */
 
 package io.harness.connector.helper;
+
 import static io.harness.eraro.ErrorCode.SECRET_MANAGEMENT_ERROR;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.gitcaching.GitCachingConstants.BOOLEAN_FALSE_VALUE;
@@ -16,12 +17,14 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.services.NGConnectorSecretManagerService;
 import io.harness.data.algorithm.HashGenerator;
+import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.customsecretmanager.CustomSecretManagerConnectorDTO;
 import io.harness.engine.expressions.ShellScriptBaseDTO;
 import io.harness.engine.expressions.ShellScriptYamlDTO;
 import io.harness.engine.expressions.ShellScriptYamlExpressionEvaluator;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.SecretManagementException;
+import io.harness.ng.SecretManagerConfigDTOMapper;
 import io.harness.ng.core.template.TemplateApplyRequestDTO;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.pms.yaml.validation.InputSetValidatorFactory;
@@ -53,7 +56,7 @@ import org.apache.commons.lang3.StringUtils;
 public class CustomSecretManagerHelper {
   private static final String EXPRESSION_FUNCTOR_TOKEN = "expressionFunctorToken";
   private static final String ENVIRONMENT_VARIABLES = "environmentVariables";
-  private static final String INPUT_VARIABLES = "inputVariables";
+  public static final String INPUT_VARIABLES = "inputVariables";
   private static final String SCRIPT = "Script";
   @Inject private TemplateResourceClient templateResourceClient;
   @Inject private NGConnectorSecretManagerService ngConnectorSecretManagerService;
@@ -74,7 +77,7 @@ public class CustomSecretManagerHelper {
     log.info("Yaml received from template service is \n" + mergedYaml);
     int functorToken = HashGenerator.generateIntegerHash();
     ShellScriptYamlExpressionEvaluator shellScriptYamlExpressionEvaluator =
-        new ShellScriptYamlExpressionEvaluator(mergedYaml, functorToken, inputSetValidatorFactory);
+        new ShellScriptYamlExpressionEvaluator(mergedYaml, functorToken, inputSetValidatorFactory, new HashSet<>());
     ShellScriptBaseDTO shellScriptBaseDTO;
     try {
       shellScriptBaseDTO = YamlUtils.read(mergedYaml, ShellScriptYamlDTO.class).getShellScriptBaseDTO();
@@ -97,6 +100,11 @@ public class CustomSecretManagerHelper {
     ConnectorDTO connectorDTO = ngConnectorSecretManagerService.getConnectorDTO(
         customNGSecretManagerConfigDTO.getAccountIdentifier(), customNGSecretManagerConfigDTO.getOrgIdentifier(),
         customNGSecretManagerConfigDTO.getProjectIdentifier(), customNGSecretManagerConfigDTO.getIdentifier());
+    String yaml = getYaml(customNGSecretManagerConfigDTO, connectorDTO);
+    return prepareEncryptedDataParamsSet(customNGSecretManagerConfigDTO, yaml);
+  }
+
+  private String getYaml(CustomSecretManagerConfigDTO customNGSecretManagerConfigDTO, ConnectorDTO connectorDTO) {
     List<String> inputValueKeys = new LinkedList<>();
     inputValueKeys.add(ENVIRONMENT_VARIABLES);
     inputValueKeys.add(INPUT_VARIABLES);
@@ -105,8 +113,40 @@ public class CustomSecretManagerHelper {
     ((CustomSecretManagerConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig())
         .getTemplate()
         .setTemplateInputs(customNGSecretManagerConfigDTO.getTemplate().getTemplateInputs());
-    String yaml = YamlUtils.writeYamlString(connectorDTO);
-    return prepareEncryptedDataParamsSet(customNGSecretManagerConfigDTO, yaml);
+    return YamlUtils.writeYamlString(connectorDTO);
+  }
+
+  public Set<String> extractSecretsUsed(String accountIdentifier, ConnectorDTO connectorDTO) {
+    Set<String> secretIdentifiers = new HashSet<>();
+    if (connectorDTO.getConnectorInfo().getConnectorType() == ConnectorType.CUSTOM_SECRET_MANAGER) {
+      CustomSecretManagerConfigDTO customNGSecretManagerConfigDTO =
+          (CustomSecretManagerConfigDTO) SecretManagerConfigDTOMapper.fromConnectorDTO(
+              accountIdentifier, connectorDTO, connectorDTO.getConnectorInfo().getConnectorConfig());
+
+      String yaml = getYaml(customNGSecretManagerConfigDTO, connectorDTO);
+      String mergedYaml =
+          NGRestUtils
+              .getResponse(templateResourceClient.applyTemplatesOnGivenYaml(
+                  customNGSecretManagerConfigDTO.getAccountIdentifier(),
+                  customNGSecretManagerConfigDTO.getOrgIdentifier(),
+                  customNGSecretManagerConfigDTO.getProjectIdentifier(), null, null, null, BOOLEAN_FALSE_VALUE,
+                  TemplateApplyRequestDTO.builder().originalEntityYaml(yaml).build(), false))
+              .getMergedPipelineYaml();
+
+      log.info("Yaml received from template service is \n" + mergedYaml);
+      int functorToken = HashGenerator.generateIntegerHash();
+      ShellScriptYamlExpressionEvaluator shellScriptYamlExpressionEvaluator =
+          new ShellScriptYamlExpressionEvaluator(mergedYaml, functorToken, inputSetValidatorFactory, secretIdentifiers);
+      ShellScriptBaseDTO shellScriptBaseDTO;
+      try {
+        shellScriptBaseDTO = YamlUtils.read(mergedYaml, ShellScriptYamlDTO.class).getShellScriptBaseDTO();
+      } catch (IOException e) {
+        throw new InvalidRequestException("Can not convert input to shell script base dto " + e.getMessage());
+      }
+      shellScriptYamlExpressionEvaluator.resolve(shellScriptBaseDTO, false);
+      return shellScriptYamlExpressionEvaluator.getSecretIdentifiers();
+    }
+    return secretIdentifiers;
   }
 
   private void removeDefaultFromConfigDTO(

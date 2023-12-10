@@ -26,6 +26,7 @@ import io.harness.pms.yaml.validation.InputSetValidatorFactory;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,8 @@ public class ShellScriptYamlExpressionEvaluator extends EngineExpressionEvaluato
 
   private int functorToken;
   private InputSetValidatorFactory inputSetValidatorFactory;
+
+  private Set<String> secretIdentifiers;
   private static final String YAML_EXPRESSION_PREFIX = "__yamlExpression";
   private static final String SECRETS_PREFIX = "secrets";
   private static final String YAML_EXPRESSION_CONNECTOR_PREFIX = "__yamlExpression.connector";
@@ -47,11 +50,12 @@ public class ShellScriptYamlExpressionEvaluator extends EngineExpressionEvaluato
   private static final String SPEC_FIELD = "spec";
 
   public ShellScriptYamlExpressionEvaluator(
-      String yaml, int functorToken, InputSetValidatorFactory inputSetValidatorFactory) {
+      String yaml, int functorToken, InputSetValidatorFactory inputSetValidatorFactory, Set<String> secretIdentifiers) {
     super(null);
     this.yaml = yaml;
     this.functorToken = functorToken;
     this.inputSetValidatorFactory = inputSetValidatorFactory;
+    this.secretIdentifiers = secretIdentifiers;
   }
 
   @Override
@@ -62,7 +66,7 @@ public class ShellScriptYamlExpressionEvaluator extends EngineExpressionEvaluato
     addToContext(YAML_EXPRESSION_PREFIX,
         ShellScriptYamlExpressionFunctor.builder().rootYamlField(getShellScriptYamlField()).build());
     // Add secret functor
-    addToContext(SECRETS_PREFIX, new SecretFunctor(functorToken));
+    addToContext(SECRETS_PREFIX, new SecretFunctor(functorToken, secretIdentifiers));
   }
 
   @Override

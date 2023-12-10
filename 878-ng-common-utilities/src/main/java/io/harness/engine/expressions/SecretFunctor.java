@@ -12,18 +12,22 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.expression.functors.ExpressionFunctor;
 
+import java.util.Set;
 import lombok.Value;
 
 @OwnedBy(PL)
 @Value
 public class SecretFunctor implements ExpressionFunctor {
   long expressionFunctorToken;
+  Set<String> secretIdentifiers;
 
-  public SecretFunctor(long expressionFunctorToken) {
+  public SecretFunctor(long expressionFunctorToken, Set<String> secretIdentifiers) {
     this.expressionFunctorToken = expressionFunctorToken;
+    this.secretIdentifiers = secretIdentifiers;
   }
 
   public Object getValue(String secretIdentifier) {
+    this.secretIdentifiers.add(secretIdentifier);
     return "${ngSecretManager.obtain(\"" + secretIdentifier + "\", " + expressionFunctorToken + ")}";
   }
 }
