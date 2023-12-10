@@ -556,7 +556,7 @@ io.harness.idp.pipeline.steps.beans.stepinfo.IdpCookieCutterStepInfo
 io.harness.idp.pipeline.steps.beans.stepNode.IdpCookieCutterStepNode
 io.harness.idp.pipeline.steps.beans.stepinfo.IdpCreateRepoStepInfo
 io.harness.idp.pipeline.steps.beans.stepNode.IdpCreateRepoStepNode
-io.harness.idp.pipeline.steps.beans.stepinfo.IdpCodePushStepInfo
-io.harness.idp.pipeline.steps.beans.stepNode.IdpCodePushStepNode
+io.harness.idp.pipeline.steps.beans.stepinfo.IdpDirectPushStepInfo
+io.harness.idp.pipeline.steps.beans.stepNode.IdpDirectPushStepNode
 io.harness.idp.pipeline.steps.beans.stepNode.IdpRegisterCatalogStepNode
 io.harness.idp.pipeline.steps.beans.stepinfo.IdpRegisterCatalogStepInfo

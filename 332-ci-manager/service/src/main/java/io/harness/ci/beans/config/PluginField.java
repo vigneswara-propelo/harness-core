@@ -30,9 +30,9 @@ public enum PluginField {
   PROVENANCE_GCR("provenanceGcrTag"),
   SLSA_VERIFICATION("slsaVerificationTag"),
   SLSA_VERIFICATION_GCR("slsaVerificationGcrTag"),
-  IDP_COOKIECUTTER("IdpCookieCutter"),
-  IDP_CREATE_REPO("IdpCreateRepo"),
-  IDP_CODE_PUSH("IdpCodePush"),
+  COOKIECUTTER("CookieCutter"),
+  CREATE_REPO("CreateRepo"),
+  DIRECT_PUSH("DirectPush"),
   REGISTER_CATALOG("RegisterCatalog"),
   UNKNOWN("unknown");
 

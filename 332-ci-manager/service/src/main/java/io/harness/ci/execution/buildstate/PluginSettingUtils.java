@@ -73,9 +73,9 @@ import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.docker.DockerConnectorDTO;
 import io.harness.iacm.execution.IACMStepsUtils;
-import io.harness.idp.steps.beans.stepinfo.IdpCodePushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpDirectPushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpRegisterCatalogStepInfo;
 import io.harness.idp.utils.IDPStepUtils;
 import io.harness.ng.core.NGAccess;
@@ -224,22 +224,22 @@ public class PluginSettingUtils extends PluginServiceImpl {
       case PROVENANCE:
         return provenancePluginHelper.getProvenanceStepEnvVariables(
             (ProvenanceStepInfo) stepInfo, identifier, ambiance);
-      case IDP_COOKIECUTTER:
-        return idpStepUtils.getIDPCookieCutterStepInfoEnvVariables((IdpCookieCutterStepInfo) stepInfo, identifier);
-      case IDP_CREATE_REPO:
+      case COOKIECUTTER:
+        return idpStepUtils.getCookieCutterStepInfoEnvVariables((IdpCookieCutterStepInfo) stepInfo, identifier);
+      case CREATE_REPO:
         final String idpConnectorRef = stepInfo.getConnectorRef().getValue();
         final NGAccess idpNgAccess = AmbianceUtils.getNgAccess(ambiance);
         final ConnectorDetails idpGitConnector = codebaseUtils.getGitConnector(
-            idpNgAccess, idpConnectorRef, ambiance, ((IdpCreateRepoStepInfo) stepInfo).getRepoName().getValue());
-        return idpStepUtils.getIDPCreateRepoStepInfoEnvVariables(
+            idpNgAccess, idpConnectorRef, ambiance, ((IdpCreateRepoStepInfo) stepInfo).getRepository().getValue());
+        return idpStepUtils.getCreateRepoStepInfoEnvVariables(
             (IdpCreateRepoStepInfo) stepInfo, idpGitConnector, identifier);
-      case IDP_CODE_PUSH:
+      case DIRECT_PUSH:
         final String idpCodePushConnectorRef = stepInfo.getConnectorRef().getValue();
         final NGAccess idpCodePushNgAccess = AmbianceUtils.getNgAccess(ambiance);
         final ConnectorDetails idpCodePushGitConnector = codebaseUtils.getGitConnector(idpCodePushNgAccess,
-            idpCodePushConnectorRef, ambiance, ((IdpCodePushStepInfo) stepInfo).getRepoName().getValue());
-        return idpStepUtils.getIDPCodePushStepInfoEnvVariables(
-            (IdpCodePushStepInfo) stepInfo, idpCodePushGitConnector, identifier);
+            idpCodePushConnectorRef, ambiance, ((IdpDirectPushStepInfo) stepInfo).getRepository().getValue());
+        return idpStepUtils.getDirectPushStepInfoEnvVariables(
+            (IdpDirectPushStepInfo) stepInfo, idpCodePushGitConnector, identifier);
       case REGISTER_CATALOG:
         final String registerCatalogConnectorRef = stepInfo.getConnectorRef().getValue();
         final NGAccess registerCatalogNgAccess = AmbianceUtils.getNgAccess(ambiance);
@@ -332,8 +332,8 @@ public class PluginSettingUtils extends PluginServiceImpl {
         map.put(EnvVariableEnum.ARTIFACTORY_PASSWORD, PLUGIN_PASSW);
         return map;
       case GIT_CLONE:
-      case IDP_CREATE_REPO:
-      case IDP_CODE_PUSH:
+      case CREATE_REPO:
+      case DIRECT_PUSH:
       case REGISTER_CATALOG:
         return map;
       case IACM_TERRAFORM_PLUGIN:

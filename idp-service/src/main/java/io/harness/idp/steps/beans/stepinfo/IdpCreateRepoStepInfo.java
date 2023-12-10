@@ -42,7 +42,7 @@ import org.springframework.data.annotation.TypeAlias;
 
 @Data
 @NoArgsConstructor
-@JsonTypeName(Constants.IDP_CREATE_REPO)
+@JsonTypeName(Constants.CREATE_REPO)
 @TypeAlias("IdpCreateRepoStepInfo")
 @OwnedBy(HarnessTeam.IDP)
 @Builder
@@ -61,10 +61,10 @@ public class IdpCreateRepoStepInfo implements PluginCompatibleStep, WithConnecto
 
   @VariableExpression(skipVariableExpression = true) @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
 
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> orgName;
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> repoName;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> organization;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> repository;
   @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> description;
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> isPrivateRepo;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> repoType;
   @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> defaultBranch;
   @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> workspace; // needed in case of bitbucket
   @ApiModelProperty(dataType = STRING_CLASSPATH)
@@ -76,12 +76,12 @@ public class IdpCreateRepoStepInfo implements PluginCompatibleStep, WithConnecto
 
   @Override
   public TypeInfo getNonYamlInfo() {
-    return TypeInfo.builder().stepInfoType(CIStepInfoType.IDP_CREATE_REPO).build();
+    return TypeInfo.builder().stepInfoType(CIStepInfoType.CREATE_REPO).build();
   }
 
   @Override
   public StepType getStepType() {
-    return Constants.IDP_CREATE_REPO_STEP_TYPE;
+    return Constants.CREATE_REPO_STEP_TYPE;
   }
 
   @Override

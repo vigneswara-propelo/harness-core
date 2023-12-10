@@ -10,21 +10,21 @@ import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 
 public interface Constants {
-  String IDP_COOKIECUTTER = "IdpCookieCutter";
-  String IDP_CREATE_REPO = "IdpCreateRepo";
-  String IDP_CODE_PUSH = "IdpCodePush";
-  String IDP_COOKIECUTTER_STEP_NODE = "IdpCookieCutterStepNode";
-  String IDP_CREATE_REPO_STEP_NODE = "IdpCreateRepoStepNode";
+  String COOKIECUTTER = "CookieCutter";
+  String CREATE_REPO = "CreateRepo";
+  String DIRECT_PUSH = "DirectPush";
+  String COOKIECUTTER_STEP_NODE = "CookieCutterStepNode";
+  String CREATE_REPO_STEP_NODE = "CreateRepoStepNode";
   String REGISTER_CATALOG_STEP_NODE = "RegisterCatalogStepNode";
-  String IDP_CODE_PUSH_STEP_NODE = "IdpCodePushStepNode";
+  String DIRECT_PUSH_STEP_NODE = "DirectPushStepNode";
 
   String REGISTER_CATALOG = "RegisterCatalog";
-  StepType IDP_COOKIECUTTER_STEP_TYPE =
-      StepType.newBuilder().setType(IDP_COOKIECUTTER).setStepCategory(StepCategory.STEP).build();
-  StepType IDP_CREATE_REPO_STEP_TYPE =
-      StepType.newBuilder().setType(IDP_CREATE_REPO).setStepCategory(StepCategory.STEP).build();
-  StepType IDP_CODE_PUSH_STEP_TYPE =
-      StepType.newBuilder().setType(IDP_CODE_PUSH).setStepCategory(StepCategory.STEP).build();
+  StepType COOKIECUTTER_STEP_TYPE =
+      StepType.newBuilder().setType(COOKIECUTTER).setStepCategory(StepCategory.STEP).build();
+  StepType CREATE_REPO_STEP_TYPE =
+      StepType.newBuilder().setType(CREATE_REPO).setStepCategory(StepCategory.STEP).build();
+  StepType DIRECT_PUSH_STEP_TYPE =
+      StepType.newBuilder().setType(DIRECT_PUSH).setStepCategory(StepCategory.STEP).build();
 
   StepType REGISTER_CATALOG_STEP_TYPE =
       StepType.newBuilder().setType(REGISTER_CATALOG).setStepCategory(StepCategory.STEP).build();

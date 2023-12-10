@@ -157,14 +157,14 @@ public class CIExecutionConfigService {
       case PROVENANCE_GCR:
         executionConfig.setProvenanceGcrTag(value);
         break;
-      case IDP_COOKIECUTTER:
-        executionConfig.setIdpCookieCutter(value);
+      case COOKIECUTTER:
+        executionConfig.setCookieCutter(value);
         break;
-      case IDP_CREATE_REPO:
-        executionConfig.setIdpCreateRepo(value);
+      case CREATE_REPO:
+        executionConfig.setCreateRepo(value);
         break;
-      case IDP_CODE_PUSH:
-        executionConfig.setIdpCodePush(value);
+      case DIRECT_PUSH:
+        executionConfig.setDirectPush(value);
         break;
       case REGISTER_CATALOG:
         executionConfig.setRegisterCatalog(value);
@@ -226,14 +226,14 @@ public class CIExecutionConfigService {
       case SSCA_ENFORCEMENT:
         vmImageConfig.setSscaEnforcement(value);
         break;
-      case IDP_COOKIECUTTER:
-        vmImageConfig.setIdpCookieCutter(value);
+      case COOKIECUTTER:
+        vmImageConfig.setCookieCutter(value);
         break;
-      case IDP_CREATE_REPO:
-        vmImageConfig.setIdpCreateRepo(value);
+      case CREATE_REPO:
+        vmImageConfig.setCreateRepo(value);
         break;
-      case IDP_CODE_PUSH:
-        vmImageConfig.setIdpCodePush(value);
+      case DIRECT_PUSH:
+        vmImageConfig.setDirectPush(value);
         break;
       case REGISTER_CATALOG:
         vmImageConfig.setRegisterCatalog(value);
@@ -597,15 +597,15 @@ public class CIExecutionConfigService {
       case SLSA_VERIFICATION_GCR:
         return getApplicableImage(stepInfoType, accountLevelExecutionConfig.getSlsaVerificationGcrTag(),
             globalExecutionConfig.getSlsaVerificationGcrTag());
-      case IDP_COOKIECUTTER:
+      case COOKIECUTTER:
         return getApplicableImage(
-            stepInfoType, accountLevelExecutionConfig.getIdpCookieCutter(), globalExecutionConfig.getIdpCookieCutter());
-      case IDP_CREATE_REPO:
+            stepInfoType, accountLevelExecutionConfig.getCookieCutter(), globalExecutionConfig.getCookieCutter());
+      case CREATE_REPO:
         return getApplicableImage(
-            stepInfoType, accountLevelExecutionConfig.getIdpCreateRepo(), globalExecutionConfig.getIdpCreateRepo());
-      case IDP_CODE_PUSH:
+            stepInfoType, accountLevelExecutionConfig.getCreateRepo(), globalExecutionConfig.getCreateRepo());
+      case DIRECT_PUSH:
         return getApplicableImage(
-            stepInfoType, accountLevelExecutionConfig.getIdpCodePush(), globalExecutionConfig.getIdpCodePush());
+            stepInfoType, accountLevelExecutionConfig.getDirectPush(), globalExecutionConfig.getDirectPush());
       case REGISTER_CATALOG:
         return getApplicableImage(
             stepInfoType, accountLevelExecutionConfig.getRegisterCatalog(), globalExecutionConfig.getRegisterCatalog());
@@ -674,12 +674,12 @@ public class CIExecutionConfigService {
       case IACM_TERRAFORM_PLUGIN:
       case IACM_APPROVAL:
         return ciExecutionServiceConfig.getStepConfig().getIacmTerraform();
-      case IDP_COOKIECUTTER:
-        return ciExecutionServiceConfig.getStepConfig().getIdpCookieCutter();
-      case IDP_CREATE_REPO:
-        return ciExecutionServiceConfig.getStepConfig().getIdpCreateRepo();
-      case IDP_CODE_PUSH:
-        return ciExecutionServiceConfig.getStepConfig().getIdpCodePush();
+      case COOKIECUTTER:
+        return ciExecutionServiceConfig.getStepConfig().getCookieCutter();
+      case CREATE_REPO:
+        return ciExecutionServiceConfig.getStepConfig().getCreateRepo();
+      case DIRECT_PUSH:
+        return ciExecutionServiceConfig.getStepConfig().getDirectPush();
       case REGISTER_CATALOG:
         return ciExecutionServiceConfig.getStepConfig().getRegisterCatalog();
       default:
@@ -751,15 +751,15 @@ public class CIExecutionConfigService {
       case SSCA_ENFORCEMENT:
         return getApplicableImage(
             stepInfoType, accountLevelImageConfig.getSscaEnforcement(), globalImageConfig.getSscaEnforcement());
-      case IDP_COOKIECUTTER:
+      case COOKIECUTTER:
         return getApplicableImage(
-            stepInfoType, accountLevelImageConfig.getIdpCookieCutter(), globalImageConfig.getIdpCookieCutter());
-      case IDP_CREATE_REPO:
+            stepInfoType, accountLevelImageConfig.getCookieCutter(), globalImageConfig.getCookieCutter());
+      case CREATE_REPO:
         return getApplicableImage(
-            stepInfoType, accountLevelImageConfig.getIdpCreateRepo(), globalImageConfig.getIdpCreateRepo());
-      case IDP_CODE_PUSH:
+            stepInfoType, accountLevelImageConfig.getCreateRepo(), globalImageConfig.getCreateRepo());
+      case DIRECT_PUSH:
         return getApplicableImage(
-            stepInfoType, accountLevelImageConfig.getIdpCodePush(), globalImageConfig.getIdpCodePush());
+            stepInfoType, accountLevelImageConfig.getDirectPush(), globalImageConfig.getDirectPush());
       case REGISTER_CATALOG:
         return getApplicableImage(
             stepInfoType, accountLevelImageConfig.getRegisterCatalog(), globalImageConfig.getRegisterCatalog());
@@ -822,9 +822,9 @@ public class CIExecutionConfigService {
       case IACM_APPROVAL:
       case SSCA_ORCHESTRATION:
       case SSCA_ENFORCEMENT:
-      case IDP_COOKIECUTTER:
-      case IDP_CREATE_REPO:
-      case IDP_CODE_PUSH:
+      case COOKIECUTTER:
+      case CREATE_REPO:
+      case DIRECT_PUSH:
       case REGISTER_CATALOG:
         break;
       default:
@@ -870,12 +870,12 @@ public class CIExecutionConfigService {
         return vmImageConfig.getSscaOrchestration();
       case SSCA_ENFORCEMENT:
         return vmImageConfig.getSscaEnforcement();
-      case IDP_COOKIECUTTER:
-        return vmImageConfig.getIdpCookieCutter();
-      case IDP_CREATE_REPO:
-        return vmImageConfig.getIdpCreateRepo();
-      case IDP_CODE_PUSH:
-        return vmImageConfig.getIdpCodePush();
+      case COOKIECUTTER:
+        return vmImageConfig.getCookieCutter();
+      case CREATE_REPO:
+        return vmImageConfig.getCreateRepo();
+      case DIRECT_PUSH:
+        return vmImageConfig.getDirectPush();
       case REGISTER_CATALOG:
         return vmImageConfig.getRegisterCatalog();
       default:

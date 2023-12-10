@@ -19,9 +19,9 @@ import io.harness.cimanager.serializer.CIContractsKryoRegistrar;
 import io.harness.idp.pipeline.stages.node.IDPStageNode;
 import io.harness.idp.serializer.kryo.IdpServiceKryoRegistrar;
 import io.harness.idp.serializer.morphia.IdpServiceMorphiaRegistrar;
-import io.harness.idp.steps.beans.stepnode.IdpCodePushStepNode;
 import io.harness.idp.steps.beans.stepnode.IdpCookieCutterStepNode;
 import io.harness.idp.steps.beans.stepnode.IdpCreateRepoStepNode;
+import io.harness.idp.steps.beans.stepnode.IdpDirectPushStepNode;
 import io.harness.idp.steps.beans.stepnode.IdpRegisterCatalogStepNode;
 import io.harness.morphia.MorphiaRegistrar;
 import io.harness.pms.contracts.steps.StepCategory;
@@ -132,7 +132,7 @@ public class IdpServiceRegistrars {
                    .clazz(RunStepNode.class)
                    .build())
           .add(YamlSchemaRootClass.builder()
-                   .entityType(EntityType.IDP_COOKIECUTTER)
+                   .entityType(EntityType.COOKIECUTTER)
                    .availableAtProjectLevel(true)
                    .availableAtOrgLevel(false)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
@@ -143,7 +143,7 @@ public class IdpServiceRegistrars {
                    .clazz(IdpCookieCutterStepNode.class)
                    .build())
           .add(YamlSchemaRootClass.builder()
-                   .entityType(EntityType.IDP_CREATE_REPO)
+                   .entityType(EntityType.CREATE_REPO)
                    .availableAtProjectLevel(true)
                    .availableAtOrgLevel(false)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
@@ -154,7 +154,7 @@ public class IdpServiceRegistrars {
                    .clazz(IdpCreateRepoStepNode.class)
                    .build())
           .add(YamlSchemaRootClass.builder()
-                   .entityType(EntityType.IDP_CODE_PUSH)
+                   .entityType(EntityType.DIRECT_PUSH)
                    .availableAtProjectLevel(true)
                    .availableAtOrgLevel(false)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
@@ -162,7 +162,7 @@ public class IdpServiceRegistrars {
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
                    .availableAtAccountLevel(false)
-                   .clazz(IdpCodePushStepNode.class)
+                   .clazz(IdpDirectPushStepNode.class)
                    .build())
           .add(YamlSchemaRootClass.builder()
                    .entityType(EntityType.REGISTER_CATALOG)

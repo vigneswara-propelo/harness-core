@@ -21,7 +21,7 @@ import java.util.Set;
 public class IdpCreateRepoStepPlanCreator extends CIPMSStepPlanCreatorV2<IdpCreateRepoStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
-    return Sets.newHashSet(Constants.IDP_CREATE_REPO);
+    return Sets.newHashSet(Constants.CREATE_REPO);
   }
 
   @Override

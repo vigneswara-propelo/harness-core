@@ -41,7 +41,7 @@ import org.springframework.data.annotation.TypeAlias;
 
 @Data
 @NoArgsConstructor
-@JsonTypeName(Constants.IDP_COOKIECUTTER)
+@JsonTypeName(Constants.COOKIECUTTER)
 @TypeAlias("IdpCookieCutterStepInfo")
 @OwnedBy(HarnessTeam.IDP)
 @Builder
@@ -60,7 +60,7 @@ public class IdpCookieCutterStepInfo implements PluginCompatibleStep {
 
   @VariableExpression(skipVariableExpression = true) @Min(MIN_RETRY) @Max(MAX_RETRY) private int retry;
 
-  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> isPublicTemplate;
+  @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> templateType;
   @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> publicTemplateUrl;
   @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> pathForTemplate;
   @ApiModelProperty(dataType = STRING_CLASSPATH) ParameterField<String> outputDirectory;
@@ -73,12 +73,12 @@ public class IdpCookieCutterStepInfo implements PluginCompatibleStep {
 
   @Override
   public TypeInfo getNonYamlInfo() {
-    return TypeInfo.builder().stepInfoType(CIStepInfoType.IDP_COOKIECUTTER).build();
+    return TypeInfo.builder().stepInfoType(CIStepInfoType.COOKIECUTTER).build();
   }
 
   @Override
   public StepType getStepType() {
-    return Constants.IDP_COOKIECUTTER_STEP_TYPE;
+    return Constants.COOKIECUTTER_STEP_TYPE;
   }
 
   @Override

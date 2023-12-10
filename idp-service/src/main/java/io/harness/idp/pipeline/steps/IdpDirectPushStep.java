@@ -13,6 +13,6 @@ import io.harness.idp.steps.Constants;
 import io.harness.pms.contracts.steps.StepType;
 
 @OwnedBy(HarnessTeam.IDP)
-public class IdpCodePushStep extends AbstractStepExecutable {
-  public static final StepType STEP_TYPE = Constants.IDP_CODE_PUSH_STEP_TYPE;
+public class IdpDirectPushStep extends AbstractStepExecutable {
+  public static final StepType STEP_TYPE = Constants.DIRECT_PUSH_STEP_TYPE;
 }

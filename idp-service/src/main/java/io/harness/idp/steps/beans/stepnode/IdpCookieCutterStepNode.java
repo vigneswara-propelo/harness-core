@@ -31,12 +31,12 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName(Constants.IDP_COOKIECUTTER)
-@TypeAlias(Constants.IDP_COOKIECUTTER_STEP_NODE)
+@JsonTypeName(Constants.COOKIECUTTER)
+@TypeAlias(Constants.COOKIECUTTER_STEP_NODE)
 @OwnedBy(HarnessTeam.IDP)
 @RecasterAlias("io.harness.idp.pipeline.steps.beans.stepNode.IdpCookieCutterStepNode")
 public class IdpCookieCutterStepNode extends CIAbstractStepNode {
-  @JsonProperty("type") private IdpCookieCutterStepNode.StepType type = StepType.IdpCookieCutter;
+  @JsonProperty("type") private IdpCookieCutterStepNode.StepType type = StepType.CookieCutter;
 
   @NotNull
   @JsonProperty("spec")
@@ -54,7 +54,7 @@ public class IdpCookieCutterStepNode extends CIAbstractStepNode {
   }
 
   enum StepType {
-    IdpCookieCutter(CIStepInfoType.IDP_COOKIECUTTER.getDisplayName());
+    CookieCutter(CIStepInfoType.COOKIECUTTER.getDisplayName());
     @Getter String name;
     StepType(String name) {
       this.name = name;

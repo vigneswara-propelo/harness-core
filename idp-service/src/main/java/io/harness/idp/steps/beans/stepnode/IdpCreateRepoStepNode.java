@@ -31,12 +31,12 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName(Constants.IDP_CREATE_REPO)
-@TypeAlias(Constants.IDP_CREATE_REPO_STEP_NODE)
+@JsonTypeName(Constants.CREATE_REPO)
+@TypeAlias(Constants.CREATE_REPO_STEP_NODE)
 @OwnedBy(HarnessTeam.IDP)
 @RecasterAlias("io.harness.idp.pipeline.steps.beans.stepNode.IdpCreateRepoStepNode")
 public class IdpCreateRepoStepNode extends CIAbstractStepNode {
-  @JsonProperty("type") private IdpCreateRepoStepNode.StepType type = StepType.IdpCreateRepo;
+  @JsonProperty("type") private IdpCreateRepoStepNode.StepType type = StepType.CreateRepo;
 
   @NotNull
   @JsonProperty("spec")
@@ -54,7 +54,7 @@ public class IdpCreateRepoStepNode extends CIAbstractStepNode {
   }
 
   enum StepType {
-    IdpCreateRepo(CIStepInfoType.IDP_CREATE_REPO.getDisplayName());
+    CreateRepo(CIStepInfoType.CREATE_REPO.getDisplayName());
     @Getter String name;
     StepType(String name) {
       this.name = name;

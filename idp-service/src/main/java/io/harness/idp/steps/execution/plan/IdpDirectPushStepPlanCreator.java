@@ -10,7 +10,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ci.plan.creator.step.CIPMSStepPlanCreatorV2;
 import io.harness.idp.steps.Constants;
-import io.harness.idp.steps.beans.stepnode.IdpCodePushStepNode;
+import io.harness.idp.steps.beans.stepnode.IdpDirectPushStepNode;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.yaml.HarnessYamlVersion;
@@ -19,19 +19,19 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 @OwnedBy(HarnessTeam.IDP)
-public class IdpCodePushStepPlanCreator extends CIPMSStepPlanCreatorV2<IdpCodePushStepNode> {
+public class IdpDirectPushStepPlanCreator extends CIPMSStepPlanCreatorV2<IdpDirectPushStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
-    return Sets.newHashSet(Constants.IDP_CODE_PUSH);
+    return Sets.newHashSet(Constants.DIRECT_PUSH);
   }
 
   @Override
-  public Class<IdpCodePushStepNode> getFieldClass() {
-    return IdpCodePushStepNode.class;
+  public Class<IdpDirectPushStepNode> getFieldClass() {
+    return IdpDirectPushStepNode.class;
   }
 
   @Override
-  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, IdpCodePushStepNode stepElement) {
+  public PlanCreationResponse createPlanForField(PlanCreationContext ctx, IdpDirectPushStepNode stepElement) {
     return super.createPlanForField(ctx, stepElement);
   }
 

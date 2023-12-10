@@ -14,5 +14,5 @@ import io.harness.pms.contracts.steps.StepType;
 
 @OwnedBy(HarnessTeam.IDP)
 public class IdpCreateRepoStep extends AbstractStepExecutable {
-  public static final StepType STEP_TYPE = Constants.IDP_CREATE_REPO_STEP_TYPE;
+  public static final StepType STEP_TYPE = Constants.CREATE_REPO_STEP_TYPE;
 }

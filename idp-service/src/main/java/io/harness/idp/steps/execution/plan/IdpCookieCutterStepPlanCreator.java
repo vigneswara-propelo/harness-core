@@ -22,7 +22,7 @@ import java.util.Set;
 public class IdpCookieCutterStepPlanCreator extends CIPMSStepPlanCreatorV2<IdpCookieCutterStepNode> {
   @Override
   public Set<String> getSupportedStepTypes() {
-    return Sets.newHashSet(Constants.IDP_COOKIECUTTER);
+    return Sets.newHashSet(Constants.COOKIECUTTER);
   }
 
   @Override

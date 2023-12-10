@@ -14,5 +14,5 @@ import io.harness.pms.contracts.steps.StepType;
 
 @OwnedBy(HarnessTeam.IDP)
 public class IdpCookieCutterStep extends AbstractStepExecutable {
-  public static final StepType STEP_TYPE = Constants.IDP_COOKIECUTTER_STEP_TYPE;
+  public static final StepType STEP_TYPE = Constants.COOKIECUTTER_STEP_TYPE;
 }

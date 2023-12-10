@@ -15,8 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.CIAbstractStepNode;
 import io.harness.beans.steps.CIStepInfoType;
 import io.harness.idp.steps.Constants;
-import io.harness.idp.steps.beans.stepinfo.IdpCodePushStepInfo;
-import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpDirectPushStepInfo;
 import io.harness.yaml.core.StepSpecType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,17 +31,17 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName(Constants.IDP_CODE_PUSH)
-@TypeAlias(Constants.IDP_CODE_PUSH_STEP_NODE)
+@JsonTypeName(Constants.DIRECT_PUSH)
+@TypeAlias(Constants.DIRECT_PUSH_STEP_NODE)
 @OwnedBy(HarnessTeam.IDP)
-@RecasterAlias("io.harness.idp.pipeline.steps.beans.stepNode.IdpCodePushStepNode")
-public class IdpCodePushStepNode extends CIAbstractStepNode {
-  @JsonProperty("type") private IdpCodePushStepNode.StepType type = StepType.IdpCodePush;
+@RecasterAlias("io.harness.idp.pipeline.steps.beans.stepNode.IdpDirectPushStepNode")
+public class IdpDirectPushStepNode extends CIAbstractStepNode {
+  @JsonProperty("type") private IdpDirectPushStepNode.StepType type = StepType.DirectPush;
 
   @NotNull
   @JsonProperty("spec")
   @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
-  private IdpCodePushStepInfo idpCodePushStepInfo;
+  private IdpDirectPushStepInfo idpDirectPushStepInfo;
 
   @Override
   public String getType() {
@@ -51,11 +50,11 @@ public class IdpCodePushStepNode extends CIAbstractStepNode {
 
   @Override
   public StepSpecType getStepSpecType() {
-    return idpCodePushStepInfo;
+    return idpDirectPushStepInfo;
   }
 
   enum StepType {
-    IdpCodePush(CIStepInfoType.IDP_CODE_PUSH.getDisplayName());
+    DirectPush(CIStepInfoType.DIRECT_PUSH.getDisplayName());
     @Getter String name;
     StepType(String name) {
       this.name = name;
