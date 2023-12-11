@@ -472,7 +472,7 @@ public class ServiceRepositoryCustomImpl implements ServiceRepositoryCustom {
     update.set(ServiceEntityKeys.repoURL,
         gitAwareEntityHelper.getRepoUrl(serviceEntity.getAccountIdentifier(), serviceEntity.getOrgIdentifier(),
             serviceEntity.getProjectIdentifier()));
-    update.set(ServiceEntityKeys.fallBackBranch, serviceEntity.getBranch());
+    update.set(ServiceEntityKeys.fallBackBranch, serviceEntity.getFallBackBranch());
     return update;
   }
 }
