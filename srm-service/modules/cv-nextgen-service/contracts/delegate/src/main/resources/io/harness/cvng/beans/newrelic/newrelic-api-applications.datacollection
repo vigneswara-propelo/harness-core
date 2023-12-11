@@ -1,0 +1,29 @@
+Var body = {}
+Var emptySpace = ""
+Var queryBegin = "{actor {account(id: "
+Var queryMid = ") {nrql(query: \""
+Var queryEnd = "\") {results}}}}"
+Var accountsQuery = "SELECT Count(*) FROM Transaction,TransactionError FACET appId,appName SINCE 100 days ago  LIMIT 1000"
+if Env:filter != Var:emptySpace {
+  accountsQuery = concat(Var:accountsQuery, " WHERE appName LIKE '%", Env:filter, "%'")
+}
+Var fullQuery = concat(Var:queryBegin, Env:accountId, Var:queryMid, Var:accountsQuery, Var:queryEnd)
+Var:body.put("query",Var:fullQuery)
+print Var:fullQuery
+Var applications = sync-call(url=Env:graphqlURL, header=Env:commonHeaders, body=Var:body)
+print Var:applications
+Var results = extract(Var:applications, $.data.actor.account.nrql.results)
+print Var:results
+Var appList = []
+foreach result in Var:results {
+    Var name = extract(Var:result, $.facet.[1])
+    Var appId = extract(Var:result, $.facet.[0])
+    print Var:name
+    print Var:appId
+    Var eachApplication = {}
+    Var:eachApplication.put("applicationName", Var:name)
+    Var:eachApplication.put("applicationId", Var:appId)
+    Var:appList.append(Var:eachApplication)
+}
+
+return Var:appList

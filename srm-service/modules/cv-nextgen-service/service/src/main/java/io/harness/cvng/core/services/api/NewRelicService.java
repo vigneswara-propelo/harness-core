@@ -16,7 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface NewRelicService {
-  List<String> getNewRelicEndpoints();
+  List<String> getNewRelicEndpoints(String accountId);
   List<NewRelicApplication> getNewRelicApplications(String accountId, String connectorIdentifier, String orgIdentifier,
       String projectIdentifier, String filter, String tracingId);
   MetricPackValidationResponse validateData(String accountId, String connectorIdentifier, String orgIdentifier,

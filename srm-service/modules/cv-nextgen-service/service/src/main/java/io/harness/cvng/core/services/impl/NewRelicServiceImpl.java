@@ -7,6 +7,7 @@
 
 package io.harness.cvng.core.services.impl;
 
+import io.harness.beans.FeatureName;
 import io.harness.cvng.beans.DataCollectionRequest;
 import io.harness.cvng.beans.DataCollectionRequestType;
 import io.harness.cvng.beans.MetricPackDTO;
@@ -20,6 +21,7 @@ import io.harness.cvng.core.beans.MetricPackValidationResponse.MetricValidationR
 import io.harness.cvng.core.beans.OnboardingRequestDTO;
 import io.harness.cvng.core.beans.OnboardingResponseDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
+import io.harness.cvng.core.services.api.FeatureFlagService;
 import io.harness.cvng.core.services.api.NewRelicService;
 import io.harness.cvng.core.services.api.OnboardingService;
 import io.harness.datacollection.exception.DataCollectionException;
@@ -40,14 +42,21 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class NewRelicServiceImpl implements NewRelicService {
-  private static final List<String> NEW_RELIC_ENDPOINTS =
+  private static final List<String> NEW_RELIC_INSIGHTS_ENDPOINTS =
       Arrays.asList("https://insights-api.newrelic.com/", "https://insights-api.eu.newrelic.com/");
 
+  private static final List<String> NEW_RELIC_ENDPOINTS = Arrays.asList("https://insights-api.newrelic.com/",
+      "https://insights-api.eu.newrelic.com/", "https://api.newrelic.com/v2/", "https://api.eu.newrelic.com/v2/");
+
   @Inject private OnboardingService onboardingService;
+  @Inject private FeatureFlagService featureFlagService;
 
   @Override
-  public List<String> getNewRelicEndpoints() {
-    return NEW_RELIC_ENDPOINTS;
+  public List<String> getNewRelicEndpoints(String accountId) {
+    if (featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.CV_NEWRELIC_NEW_API.name())) {
+      return NEW_RELIC_ENDPOINTS;
+    }
+    return NEW_RELIC_INSIGHTS_ENDPOINTS;
   }
 
   @Override

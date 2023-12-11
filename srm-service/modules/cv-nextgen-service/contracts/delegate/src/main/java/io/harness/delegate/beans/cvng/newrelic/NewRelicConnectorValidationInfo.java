@@ -19,7 +19,6 @@ import lombok.EqualsAndHashCode;
 @Builder
 @EqualsAndHashCode(callSuper = true)
 public class NewRelicConnectorValidationInfo extends ConnectorValidationInfo<NewRelicConnectorDTO> {
-  private static final String BASE_URL = "v1/accounts/";
   private static final String DSL =
       readDSL("newrelic-validation.datacollection", NewRelicConnectorValidationInfo.class);
   @Override
@@ -29,7 +28,7 @@ public class NewRelicConnectorValidationInfo extends ConnectorValidationInfo<New
 
   @Override
   public String getBaseUrl() {
-    return getConnectorConfigDTO().getUrl() + BASE_URL + getConnectorConfigDTO().getNewRelicAccountId() + "/";
+    return NewRelicUtils.getBaseUrl(getConnectorConfigDTO());
   }
 
   @Override

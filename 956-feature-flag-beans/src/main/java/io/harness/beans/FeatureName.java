@@ -291,6 +291,7 @@ public enum FeatureName {
   CVNG_TEMPLATE_MONITORED_SERVICE,
   CVNG_TEMPLATE_VERIFY_STEP,
   CVNG_VERIFY_STEP_DEMO,
+  CV_NEWRELIC_NEW_API("Enable New Relic Graphql API feature", HarnessTeam.CV),
   CV_AWS_PROMETHEUS("Enable AWS Prometheus for CV State", HarnessTeam.CV),
   CV_UI_DISPLAY_NODE_REGEX_FILTER(
       "Displays the control node and test node reg filter option in Verify step", HarnessTeam.CV),

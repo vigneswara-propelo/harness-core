@@ -9,14 +9,17 @@ package io.harness.cvng.core.services.api;
 
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.rule.OwnerRule.PRAVEEN;
+import static io.harness.rule.OwnerRule.SHUBHENDU;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import io.harness.CvNextGenTestBase;
+import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.cvng.BuilderFactory;
@@ -42,6 +45,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.joor.Reflect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,6 +58,7 @@ public class NewRelicServiceImplTest extends CvNextGenTestBase {
   @Mock NextGenService nextGenService;
   @Mock VerificationManagerService verificationManagerService;
   @Mock private RequestExecutor requestExecutor;
+  @Mock FeatureFlagService featureFlagService;
   private String accountId;
   private String connectorIdentifier;
   private BuilderFactory builderFactory;
@@ -66,20 +71,32 @@ public class NewRelicServiceImplTest extends CvNextGenTestBase {
     FieldUtils.writeField(newRelicService, "onboardingService", onboardingService, true);
     FieldUtils.writeField(onboardingService, "nextGenService", nextGenService, true);
     FieldUtils.writeField(onboardingService, "verificationManagerService", verificationManagerService, true);
-
     when(nextGenService.get(anyString(), anyString(), anyString(), anyString()))
         .then(invocation
             -> Optional.of(ConnectorInfoDTO.builder().connectorConfig(NewRelicConnectorDTO.builder().build()).build()));
+    Reflect.on(newRelicService).set("featureFlagService", featureFlagService);
   }
 
   @Test
-  @Owner(developers = PRAVEEN)
+  @Owner(developers = SHUBHENDU)
   @Category(UnitTests.class)
-  public void testGetEndpoints() {
-    List<String> endpoints = newRelicService.getNewRelicEndpoints();
+  public void testGetEndpoints_ff_disabled() {
+    doReturn(false).when(featureFlagService).isFeatureFlagEnabled(accountId, FeatureName.CV_NEWRELIC_NEW_API.name());
+    List<String> endpoints = newRelicService.getNewRelicEndpoints(accountId);
 
-    assertThat(endpoints.size()).isEqualTo(2);
-    assertThat(endpoints).contains("https://insights-api.newrelic.com/", "https://insights-api.eu.newrelic.com/");
+    assertThat(endpoints).hasSize(2).contains(
+        "https://insights-api.newrelic.com/", "https://insights-api.eu.newrelic.com/");
+  }
+
+  @Test
+  @Owner(developers = SHUBHENDU)
+  @Category(UnitTests.class)
+  public void testGetEndpoints_ff_enabled() {
+    doReturn(true).when(featureFlagService).isFeatureFlagEnabled(accountId, FeatureName.CV_NEWRELIC_NEW_API.name());
+    List<String> endpoints = newRelicService.getNewRelicEndpoints(accountId);
+
+    assertThat(endpoints).hasSize(4).contains("https://insights-api.newrelic.com/",
+        "https://insights-api.eu.newrelic.com/", "https://api.newrelic.com/v2/", "https://api.eu.newrelic.com/v2/");
   }
 
   @Test

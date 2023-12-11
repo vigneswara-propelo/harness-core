@@ -28,14 +28,13 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @OwnedBy(CV)
 public class NewRelicApplicationFetchRequest extends DataCollectionRequest<NewRelicConnectorDTO> {
-  public static final String DSL = NewRelicApplicationFetchRequest.readDSL(
-      "newrelic-applications.datacollection", NewRelicApplicationFetchRequest.class);
-
+  public static final String GRAPHQL_ENDPOINT = "https://api.newrelic.com/graphql";
   @Builder.Default private String filter = "";
 
   @Override
   public String getDSL() {
-    return DSL;
+    return NewRelicApplicationFetchRequest.readDSL(
+        NewRelicUtils.getDSLFilename(getConnectorConfigDTO()), NewRelicApplicationFetchRequest.class);
   }
 
   @Override
@@ -51,6 +50,9 @@ public class NewRelicApplicationFetchRequest extends DataCollectionRequest<NewRe
   @Override
   public Map<String, Object> fetchDslEnvVariables() {
     Map<String, Object> envVariables = new HashMap<>();
+    envVariables.put("accountId", getConnectorConfigDTO().getNewRelicAccountId());
+    envVariables.put("graphqlURL", GRAPHQL_ENDPOINT);
+    envVariables.put("commonHeaders", collectionHeaders());
     envVariables.put("filter", filter);
     return envVariables;
   }

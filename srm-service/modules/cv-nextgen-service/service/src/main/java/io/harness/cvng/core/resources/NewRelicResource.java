@@ -56,8 +56,8 @@ public class NewRelicResource {
   @Timed
   @ExceptionMetered
   @ApiOperation(value = "get all newrelic endpoints", nickname = "getNewRelicEndPoints")
-  public ResponseDTO<List<String>> getNewRelicEndPoints() {
-    return ResponseDTO.newResponse(newRelicService.getNewRelicEndpoints());
+  public ResponseDTO<List<String>> getNewRelicEndPoints(@NotNull @QueryParam("accountId") String accountId) {
+    return ResponseDTO.newResponse(newRelicService.getNewRelicEndpoints(accountId));
   }
 
   @GET
