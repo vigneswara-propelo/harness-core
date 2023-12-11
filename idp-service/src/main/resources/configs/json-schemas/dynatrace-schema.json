@@ -38,7 +38,7 @@
               "examples": [
                 "https://example.live.dynatrace.com/api/v2"
               ],
-              "pattern": "^.*$"
+              "pattern": "((http|https)://)(www.)?[a-zA-Z0-9-@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)"
             },
             "pathRewrite": {
               "$id": "#root/proxy//dynatrace/pathRewrite",
@@ -107,7 +107,7 @@
           "examples": [
             "https://example.apps.dynatrace.com"
           ],
-          "pattern": "^.*$"
+          "pattern": "((http|https)://)(www.)?[a-zA-Z0-9-@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)"
         }
       }
     }
