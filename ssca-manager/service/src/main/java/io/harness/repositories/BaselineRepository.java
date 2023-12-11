@@ -17,4 +17,7 @@ import org.springframework.data.repository.CrudRepository;
 
 @HarnessRepo
 @OwnedBy(SSCA)
-public interface BaselineRepository extends CrudRepository<BaselineEntity, String>, BaselineRepositoryCustom {}
+public interface BaselineRepository extends CrudRepository<BaselineEntity, String>, BaselineRepositoryCustom {
+  boolean existsByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndArtifactIdAndTag(
+      String accountId, String orgId, String projectId, String artifactId, String tag);
+}

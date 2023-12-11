@@ -12,9 +12,16 @@ import static io.harness.annotations.dev.HarnessTeam.SSCA;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ssca.entities.BaselineEntity;
 
+import java.util.List;
+
 @OwnedBy(SSCA)
 public interface BaselineRepositoryCustom {
   void upsert(BaselineEntity baselineEntity);
 
   BaselineEntity findOne(String accountId, String orgId, String projectId, String artifactId);
+
+  List<BaselineEntity> findAll(String accountId, String orgId, String projectId, List<String> orchestrationIds);
+
+  void updateOrchestrationId(
+      String accountId, String orgId, String projectId, String artifactId, String tag, String orchestrationId);
 }

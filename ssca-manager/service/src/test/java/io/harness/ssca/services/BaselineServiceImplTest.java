@@ -33,13 +33,19 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 public class BaselineServiceImplTest extends SSCAManagerTestBase {
+  @Mock ArtifactService artifactService;
   @Inject BaselineService baselineService;
   @Mock BaselineRepository baselineRepository;
   private BuilderFactory builderFactory;
+
+  private final String ARTIFACT_ID = "artifactId";
+
+  private final String TAG = "tag";
   @Before
   public void setup() throws IllegalAccessException {
     MockitoAnnotations.initMocks(this);
     FieldUtils.writeField(baselineService, "baselineRepository", baselineRepository, true);
+    FieldUtils.writeField(baselineService, "artifactService", artifactService, true);
     builderFactory = BuilderFactory.getDefault();
   }
 
@@ -47,9 +53,12 @@ public class BaselineServiceImplTest extends SSCAManagerTestBase {
   @Owner(developers = SHASHWAT_SACHAN)
   @Category(UnitTests.class)
   public void testSetBaselineForArtifact() {
+    Mockito.when(artifactService.getLatestArtifact(any(), any(), any(), any(), any()))
+        .thenReturn(builderFactory.getArtifactEntityBuilder().build());
+
     boolean response = baselineService.setBaselineForArtifact(builderFactory.getContext().getAccountId(),
-        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(),
-        "artifactId", "tag");
+        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(), ARTIFACT_ID,
+        TAG);
 
     ArgumentCaptor<BaselineEntity> argument = ArgumentCaptor.forClass(BaselineEntity.class);
     Mockito.verify(baselineRepository, Mockito.times(1)).upsert(argument.capture());
@@ -59,9 +68,24 @@ public class BaselineServiceImplTest extends SSCAManagerTestBase {
   @Test
   @Owner(developers = SHASHWAT_SACHAN)
   @Category(UnitTests.class)
+  public void testSetBaselineArtifactNotFound() {
+    Mockito.when(artifactService.getLatestArtifact(any(), any(), any(), any(), any())).thenReturn(null);
+
+    assertThatExceptionOfType(NotFoundException.class)
+        .isThrownBy(()
+                        -> baselineService.setBaselineForArtifact(builderFactory.getContext().getAccountId(),
+                            builderFactory.getContext().getOrgIdentifier(),
+                            builderFactory.getContext().getProjectIdentifier(), ARTIFACT_ID, TAG))
+        .withMessage(
+            String.format("Artifact does not exist with fields artifactId [%s] and tag [%s]", ARTIFACT_ID, TAG));
+  }
+
+  @Test
+  @Owner(developers = SHASHWAT_SACHAN)
+  @Category(UnitTests.class)
   public void testSetBaselineForArtifactInvalidAccount() {
     boolean response = baselineService.setBaselineForArtifact("", builderFactory.getContext().getOrgIdentifier(),
-        builderFactory.getContext().getProjectIdentifier(), "artifact", "tag");
+        builderFactory.getContext().getProjectIdentifier(), ARTIFACT_ID, TAG);
 
     assertThat(response).isFalse();
   }
@@ -71,7 +95,7 @@ public class BaselineServiceImplTest extends SSCAManagerTestBase {
   @Category(UnitTests.class)
   public void testSetBaselineForArtifactInvalidTag() {
     boolean response = baselineService.setBaselineForArtifact(builderFactory.getContext().getAccountId(),
-        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(), "artifact",
+        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(), ARTIFACT_ID,
         "");
 
     assertThat(response).isFalse();
@@ -85,10 +109,11 @@ public class BaselineServiceImplTest extends SSCAManagerTestBase {
         .thenReturn(builderFactory.getBaselineEntityBuilder().build());
 
     BaselineDTO baselineDTO = baselineService.getBaselineForArtifact(builderFactory.getContext().getAccountId(),
-        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(), "artifact");
+        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(),
+        ARTIFACT_ID);
 
-    assertThat(baselineDTO.getArtifactId()).isEqualTo("artifact");
-    assertThat(baselineDTO.getTag()).isEqualTo("tag");
+    assertThat(baselineDTO.getArtifactId()).isEqualTo(ARTIFACT_ID);
+    assertThat(baselineDTO.getTag()).isEqualTo(TAG);
   }
 
   @Test
@@ -101,7 +126,7 @@ public class BaselineServiceImplTest extends SSCAManagerTestBase {
         .isThrownBy(()
                         -> baselineService.getBaselineForArtifact(builderFactory.getContext().getAccountId(),
                             builderFactory.getContext().getOrgIdentifier(),
-                            builderFactory.getContext().getProjectIdentifier(), "artifact"))
-        .withMessage("Baseline for artifact with artifactId [artifact] not found");
+                            builderFactory.getContext().getProjectIdentifier(), ARTIFACT_ID))
+        .withMessage(String.format("Baseline for artifact with artifactId [%s] not found", ARTIFACT_ID));
   }
 }

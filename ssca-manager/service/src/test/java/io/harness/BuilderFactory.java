@@ -405,7 +405,7 @@ public class BuilderFactory {
         .accountIdentifier(context.getAccountId())
         .orgIdentifier(context.orgIdentifier)
         .projectIdentifier(context.projectIdentifier)
-        .artifactId("artifact")
+        .artifactId("artifactId")
         .tag("tag");
   }
 

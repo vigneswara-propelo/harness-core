@@ -45,5 +45,7 @@ public class BaselineEntity implements PersistentEntity {
 
   String projectIdentifier;
 
+  String orchestrationId;
+
   String tag;
 }

@@ -11,6 +11,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.repositories.BaselineRepository;
 import io.harness.ssca.beans.BaselineDTO;
+import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.BaselineEntity;
 
 import com.google.inject.Inject;
@@ -18,15 +19,26 @@ import javax.ws.rs.NotFoundException;
 
 public class BaselineServiceImpl implements BaselineService {
   @Inject BaselineRepository baselineRepository;
+
+  @Inject ArtifactService artifactService;
+
   @Override
   public boolean setBaselineForArtifact(
       String accountId, String orgId, String projectId, String artifactId, String tag) {
     if (isNotEmpty(accountId) && isNotEmpty(tag)) {
+      ArtifactEntity artifact = artifactService.getLatestArtifact(accountId, orgId, projectId, artifactId, tag);
+
+      if (artifact == null) {
+        throw new NotFoundException(
+            String.format("Artifact does not exist with fields artifactId [%s] and tag [%s]", artifactId, tag));
+      }
+
       BaselineEntity baselineEntity = BaselineEntity.builder()
                                           .accountIdentifier(accountId)
                                           .orgIdentifier(orgId)
                                           .projectIdentifier(projectId)
                                           .artifactId(artifactId)
+                                          .orchestrationId(artifact.getOrchestrationId())
                                           .tag(tag)
                                           .build();
 

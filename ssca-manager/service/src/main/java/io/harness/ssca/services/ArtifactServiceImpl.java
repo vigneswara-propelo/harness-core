@@ -20,6 +20,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.unwi
 
 import io.harness.network.Http;
 import io.harness.repositories.ArtifactRepository;
+import io.harness.repositories.BaselineRepository;
 import io.harness.repositories.EnforcementSummaryRepo;
 import io.harness.spec.server.ssca.v1.model.ArtifactComponentViewRequestBody;
 import io.harness.spec.server.ssca.v1.model.ArtifactComponentViewResponse;
@@ -39,6 +40,7 @@ import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.SbomDTO;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityKeys;
+import io.harness.ssca.entities.BaselineEntity;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.EnforcementSummaryEntity;
 import io.harness.ssca.entities.EnforcementSummaryEntity.EnforcementSummaryEntityKeys;
@@ -88,6 +90,8 @@ public class ArtifactServiceImpl implements ArtifactService {
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
   @Inject PipelineUtils pipelineUtils;
+
+  @Inject BaselineRepository baselineRepository;
 
   private final String GCP_REGISTRY_HOST = "gcr.io";
 
@@ -435,12 +439,23 @@ public class ArtifactServiceImpl implements ArtifactService {
     Map<String, EnforcementSummaryEntity> enforcementSummaryEntityMap = enforcementSummaryEntities.stream().collect(
         Collectors.toMap(entity -> entity.getOrchestrationId(), Function.identity()));
 
+    List<BaselineEntity> baselineEntities =
+        baselineRepository.findAll(accountId, orgIdentifier, projectIdentifier, orchestrationIds);
+
+    Set<String> baselineEntityOrchestrationIds =
+        baselineEntities.stream().map(entity -> entity.getOrchestrationId()).collect(Collectors.toSet());
+
     List<ArtifactListingResponse> responses = new ArrayList<>();
     for (ArtifactEntity artifact : artifactEntities) {
       EnforcementSummaryEntity enforcementSummary = EnforcementSummaryEntity.builder().build();
 
       if (enforcementSummaryEntityMap.containsKey(artifact.getOrchestrationId())) {
         enforcementSummary = enforcementSummaryEntityMap.get(artifact.getOrchestrationId());
+      }
+
+      Boolean baseline = false;
+      if (baselineEntityOrchestrationIds.contains(artifact.getOrchestrationId())) {
+        baseline = true;
       }
 
       responses.add(
@@ -460,7 +475,8 @@ public class ArtifactServiceImpl implements ArtifactService {
               .nonProdEnvCount(artifact.getNonProdEnvCount().intValue())
               .orchestrationId(artifact.getOrchestrationId())
               .buildPipelineId(artifact.getPipelineId())
-              .buildPipelineExecutionId(artifact.getPipelineExecutionId()));
+              .buildPipelineExecutionId(artifact.getPipelineExecutionId())
+              .baseline(baseline));
     }
     return responses;
   }

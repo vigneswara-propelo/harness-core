@@ -1447,6 +1447,10 @@ components:
           type: string
         build_pipeline_execution_id:
           type: string
+        baseline:
+          type: boolean
+          x-stoplight:
+            id: 74c8yo6f1t9fd
       required:
         - id
         - name

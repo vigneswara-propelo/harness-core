@@ -14,6 +14,7 @@ import io.harness.ssca.entities.BaselineEntity;
 import io.harness.ssca.entities.BaselineEntity.BaselineEntityKeys;
 
 import com.google.inject.Inject;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -29,14 +30,7 @@ public class BaselineRepositoryCustomImpl implements BaselineRepositoryCustom {
 
   @Override
   public void upsert(BaselineEntity baselineEntity) {
-    BaselineEntity entity = findOne(baselineEntity.getAccountIdentifier(), baselineEntity.getOrgIdentifier(),
-        baselineEntity.getProjectIdentifier(), baselineEntity.getArtifactId());
-
-    if (entity == null) {
-      mongoTemplate.save(baselineEntity);
-      return;
-    }
-    update(baselineEntity);
+    updateTagAndOrchestrationId(baselineEntity);
   }
 
   @Override
@@ -55,7 +49,7 @@ public class BaselineRepositoryCustomImpl implements BaselineRepositoryCustom {
     return mongoTemplate.findOne(query, BaselineEntity.class);
   }
 
-  public BaselineEntity update(BaselineEntity baselineEntity) {
+  public BaselineEntity updateTagAndOrchestrationId(BaselineEntity baselineEntity) {
     Criteria criteria = Criteria.where(BaselineEntityKeys.accountIdentifier)
                             .is(baselineEntity.getAccountIdentifier())
                             .and(BaselineEntityKeys.orgIdentifier)
@@ -68,7 +62,42 @@ public class BaselineRepositoryCustomImpl implements BaselineRepositoryCustom {
     Query query = new Query(criteria);
     Update update = new Update();
     update.set(BaselineEntityKeys.tag, baselineEntity.getTag());
-    FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true);
+    update.set(BaselineEntityKeys.orchestrationId, baselineEntity.getOrchestrationId());
+    FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true);
     return mongoTemplate.findAndModify(query, update, options, BaselineEntity.class);
+  }
+
+  public List<BaselineEntity> findAll(String accountId, String orgId, String projectId, List<String> orchestrationIds) {
+    Criteria criteria = Criteria.where(BaselineEntityKeys.accountIdentifier)
+                            .is(accountId)
+                            .and(BaselineEntityKeys.orgIdentifier)
+                            .is(orgId)
+                            .and(BaselineEntityKeys.projectIdentifier)
+                            .is(projectId)
+                            .and(BaselineEntityKeys.orchestrationId)
+                            .in(orchestrationIds);
+
+    Query query = new Query(criteria);
+    return mongoTemplate.find(query, BaselineEntity.class);
+  }
+
+  public void updateOrchestrationId(
+      String accountId, String orgId, String projectId, String artifactId, String tag, String orchestrationId) {
+    Criteria criteria = Criteria.where(BaselineEntityKeys.accountIdentifier)
+                            .is(accountId)
+                            .and(BaselineEntityKeys.orgIdentifier)
+                            .is(orgId)
+                            .and(BaselineEntityKeys.projectIdentifier)
+                            .is(projectId)
+                            .and(BaselineEntityKeys.artifactId)
+                            .is(artifactId)
+                            .and(BaselineEntityKeys.tag)
+                            .is(tag);
+
+    Query query = new Query(criteria);
+    Update update = new Update();
+    update.set(BaselineEntityKeys.orchestrationId, orchestrationId);
+    FindAndModifyOptions options = new FindAndModifyOptions();
+    mongoTemplate.findAndModify(query, update, options, BaselineEntity.class);
   }
 }

@@ -10,6 +10,7 @@ package io.harness.ssca.services;
 import static io.harness.springdata.PersistenceUtils.DEFAULT_RETRY_POLICY;
 
 import io.harness.outbox.api.OutboxService;
+import io.harness.repositories.BaselineRepository;
 import io.harness.repositories.SBOMComponentRepo;
 import io.harness.spec.server.ssca.v1.model.Artifact;
 import io.harness.spec.server.ssca.v1.model.ArtifactScorecard;
@@ -49,6 +50,7 @@ public class OrchestrationStepServiceImpl implements OrchestrationStepService {
   @Inject SBOMComponentRepo SBOMComponentRepo;
   @Inject NormalizerRegistry normalizerRegistry;
   @Inject S3StoreService s3StoreService;
+  @Inject BaselineRepository baselineRepository;
   @Inject OutboxService outboxService;
 
   @Inject @Named("isElasticSearchEnabled") boolean isElasticSearchEnabled;
@@ -85,11 +87,19 @@ public class OrchestrationStepServiceImpl implements OrchestrationStepService {
 
     artifactEntity.setComponentsCount(sbomEntityList.stream().count());
 
+    Boolean baselineExists =
+        baselineRepository.existsByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndArtifactIdAndTag(
+            accountId, orgIdentifier, projectIdentifier, artifactEntity.getArtifactId(), artifactEntity.getTag());
+
     return Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
       artifactService.saveArtifactAndInvalidateOldArtifact(artifactEntity);
       SBOMComponentRepo.saveAll(sbomEntityList);
       if (isElasticSearchEnabled) {
         outboxService.save(new SSCAArtifactCreatedEvent(accountId, orgIdentifier, projectIdentifier, artifactEntity));
+      }
+      if (baselineExists) {
+        baselineRepository.updateOrchestrationId(accountId, orgIdentifier, projectIdentifier,
+            artifactEntity.getArtifactId(), artifactEntity.getTag(), artifactEntity.getOrchestrationId());
       }
       log.info(String.format("SBOM Processed Successfully, Artifact ID: %s", artifactEntity.getArtifactId()));
       return artifactEntity.getArtifactId();
