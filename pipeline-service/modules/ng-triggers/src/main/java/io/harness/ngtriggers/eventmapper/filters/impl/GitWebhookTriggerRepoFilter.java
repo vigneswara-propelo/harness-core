@@ -263,6 +263,16 @@ public class GitWebhookTriggerRepoFilter implements TriggerFilter {
       if (webhook == null || webhook.getGit() == null) {
         continue;
       }
+
+      if (webhook.getGit().getRepoName() == null) {
+        log.error(format(
+            "Git repository is null in trigger metadata for trigger [%s] in pipeline [%s] project [%s], org[%s], account[%s]",
+            ngTriggerEntity.getIdentifier(), ngTriggerEntity.getTargetIdentifier(),
+            ngTriggerEntity.getProjectIdentifier(), ngTriggerEntity.getOrgIdentifier(),
+            ngTriggerEntity.getAccountId()));
+        continue;
+      }
+
       if (StringUtil.isBlank(webhook.getGit().getConnectorIdentifier())) {
         String completeHarnessRepoName = GitClientHelper.convertToHarnessRepoName(ngTriggerEntity.getAccountId(),
             ngTriggerEntity.getOrgIdentifier(), ngTriggerEntity.getProjectIdentifier(), webhook.getGit().getRepoName());

@@ -16,6 +16,7 @@ import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
 import static io.harness.rule.OwnerRule.RAJENDRA_BAVISKAR;
 import static io.harness.rule.OwnerRule.SHIVAM;
 import static io.harness.rule.OwnerRule.SOUMYAJIT;
+import static io.harness.rule.OwnerRule.VED;
 import static io.harness.rule.OwnerRule.YUVRAJ;
 
 import static java.util.Arrays.asList;
@@ -934,6 +935,73 @@ public class GitWebhookTriggerRepoFilterTest extends CategoryTest {
               { add(harnessTrigger); }
             })
             .build());
+    assertThat(eligibleTriggers.size()).isEqualTo(1);
+  }
+
+  @Test
+  @Owner(developers = VED)
+  @Category(UnitTests.class)
+  public void testEvaluateWrapperForSCMConnectorWithNullRepo() {
+    NGTriggerEntity trigger1 = NGTriggerEntity.builder()
+                                   .accountId("acc")
+                                   .orgIdentifier("org")
+                                   .projectIdentifier("proj")
+                                   .metadata(NGTriggerMetadata.builder()
+                                                 .webhook(WebhookMetadata.builder()
+                                                              .git(GitMetadata.builder().repoName("repo1").build())
+                                                              .type("HARNESS")
+                                                              .build())
+                                                 .build())
+                                   .build();
+
+    NGTriggerEntity trigger2 = NGTriggerEntity.builder()
+                                   .accountId("acc")
+                                   .orgIdentifier("org")
+                                   .projectIdentifier("proj")
+                                   .metadata(NGTriggerMetadata.builder()
+                                                 .webhook(WebhookMetadata.builder()
+                                                              .git(GitMetadata.builder().repoName(null).build())
+                                                              .type("HARNESS")
+                                                              .build())
+                                                 .build())
+                                   .build();
+
+    List<TriggerDetails> triggerDetails = new ArrayList<>();
+
+    triggerDetails.add(
+        TriggerDetails.builder()
+            .ngTriggerEntity(trigger1)
+            .ngTriggerConfigV2(
+                NGTriggerConfigV2.builder()
+                    .source(NGTriggerSourceV2.builder()
+                                .type(NGTriggerType.WEBHOOK)
+                                .spec(WebhookTriggerConfigV2.builder().type(WebhookTriggerType.HARNESS).build())
+                                .build())
+                    .build())
+            .build());
+
+    triggerDetails.add(
+        TriggerDetails.builder()
+            .ngTriggerEntity(trigger2)
+            .ngTriggerConfigV2(
+                NGTriggerConfigV2.builder()
+                    .source(NGTriggerSourceV2.builder()
+                                .type(NGTriggerType.WEBHOOK)
+                                .spec(WebhookTriggerConfigV2.builder().type(WebhookTriggerType.HARNESS).build())
+                                .build())
+                    .build())
+            .build());
+
+    Set<String> urls = filter.getUrls(
+        Repository.builder().httpURL("https://git.app.harness.io/acc/org/proj/repo1.git").sshURL("").link("").build(),
+        "HARNESS");
+
+    List<TriggerDetails> eligibleTriggers = new ArrayList<>();
+
+    FilterRequestData.builder().details(new ArrayList<>() {}).build();
+
+    filter.evaluateWrapperForSCMConnector(
+        urls, eligibleTriggers, FilterRequestData.builder().details(triggerDetails).build());
     assertThat(eligibleTriggers.size()).isEqualTo(1);
   }
 }
