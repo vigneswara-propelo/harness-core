@@ -7,7 +7,9 @@
 package io.harness.ssca.entities.remediation_tracker;
 
 import lombok.Builder;
+import lombok.Data;
 
+@Data
 @Builder
 public class RemediationCondition {
   String version;

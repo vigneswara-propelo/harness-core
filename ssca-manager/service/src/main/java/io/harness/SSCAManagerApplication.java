@@ -48,6 +48,7 @@ import io.harness.security.InternalApiAuthFilter;
 import io.harness.security.NextGenAuthenticationFilter;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
+import io.harness.ssca.jobs.RemediationTrackerUpdateArtifactsIteratorHandler;
 import io.harness.ssca.migration.SSCAMigrationProvider;
 import io.harness.threading.ExecutorModule;
 import io.harness.threading.ThreadPool;
@@ -189,6 +190,7 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
     registerCorrelationFilter(environment, injector);
     registerRequestContextFilter(environment);
     registerCorsFilter(sscaManagerConfiguration, environment);
+    registerIterators(injector);
     registerSscaEvents(sscaManagerConfiguration, injector);
     registerManagedBeans(environment, injector);
     registerMigrations(injector);
@@ -311,5 +313,9 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
                && resourceInfoAndRequest.getKey().getResourceMethod().getAnnotation(annotation) != null)
         || (resourceInfoAndRequest.getKey().getResourceClass() != null
             && resourceInfoAndRequest.getKey().getResourceClass().getAnnotation(annotation) != null);
+  }
+
+  public static void registerIterators(Injector injector) {
+    injector.getInstance(RemediationTrackerUpdateArtifactsIteratorHandler.class).registerIterators(5);
   }
 }

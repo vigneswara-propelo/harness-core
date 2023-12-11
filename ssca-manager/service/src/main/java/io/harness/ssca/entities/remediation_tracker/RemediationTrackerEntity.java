@@ -13,6 +13,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.iterator.PersistentRegularIterable;
 import io.harness.mongo.index.FdIndex;
 import io.harness.ng.DbAliases;
+import io.harness.persistence.AccountAccess;
 import io.harness.persistence.UuidAware;
 
 import dev.morphia.annotations.Entity;
@@ -43,7 +44,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @TypeAlias("remediationTrackers")
 @HarnessEntity(exportable = true)
 @OwnedBy(HarnessTeam.SSCA)
-public class RemediationTrackerEntity implements UuidAware, PersistentRegularIterable {
+public class RemediationTrackerEntity implements UuidAware, PersistentRegularIterable, AccountAccess {
   @NonFinal @Id String uuid; // uuid of the tracker entity.
   @NotNull String accountIdentifier;
   @NotNull String orgIdentifier;
@@ -79,5 +80,10 @@ public class RemediationTrackerEntity implements UuidAware, PersistentRegularIte
       return;
     }
     throw new IllegalArgumentException("Invalid fieldName " + fieldName);
+  }
+
+  @Override
+  public String getAccountId() {
+    return this.accountIdentifier;
   }
 }
