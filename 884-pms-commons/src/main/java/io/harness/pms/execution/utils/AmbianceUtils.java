@@ -92,8 +92,8 @@ public class AmbianceUtils {
     throw new InvalidRequestException("Stage not present");
   }
 
-  public String getStrategySetupIdAmbiance(Ambiance ambiance) {
-    Optional<Level> strategyLevel = getStrategyLevelFromAmbiance(ambiance);
+  public String getFirstLevelStrategySetupIdAmbiance(Ambiance ambiance) {
+    Optional<Level> strategyLevel = getFirstStrategyLevelFromAmbiance(ambiance);
     if (strategyLevel.isPresent()) {
       return strategyLevel.get().getSetupId();
     }
@@ -260,6 +260,15 @@ public class AmbianceUtils {
       }
     }
     return stageLevel;
+  }
+
+  public Optional<Level> getFirstStrategyLevelFromAmbiance(Ambiance ambiance) {
+    for (Level level : ambiance.getLevelsList()) {
+      if (level.getStepType().getStepCategory() == StepCategory.STRATEGY) {
+        return Optional.of(level);
+      }
+    }
+    return Optional.empty();
   }
 
   public Optional<Level> getStepGroupLevelFromAmbiance(Ambiance ambiance) {

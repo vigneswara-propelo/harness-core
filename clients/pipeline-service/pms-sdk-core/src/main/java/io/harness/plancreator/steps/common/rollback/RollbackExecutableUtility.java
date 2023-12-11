@@ -36,7 +36,7 @@ public class RollbackExecutableUtility {
        Hence, here we check whether the stage is wrapped by a strategy, and in this case, use strategy's setup ID
        to generate the `nextNodeId`. */
     String stageOrStrategySetupId = AmbianceUtils.isCurrentNodeUnderStageStrategy(ambiance)
-        ? AmbianceUtils.getStrategySetupIdAmbiance(ambiance)
+        ? AmbianceUtils.getFirstLevelStrategySetupIdAmbiance(ambiance)
         : AmbianceUtils.getStageSetupIdAmbiance(ambiance);
     String nextNodeId = stageOrStrategySetupId + NGCommonUtilPlanCreationConstants.COMBINED_ROLLBACK_ID_SUFFIX;
     executionSweepingOutputService.consume(ambiance, YAMLFieldNameConstants.USE_ROLLBACK_STRATEGY,

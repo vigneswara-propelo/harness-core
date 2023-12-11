@@ -339,7 +339,26 @@ public class AmbianceUtilsTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGetStrategySetupIdAmbiance() {
     Ambiance ambiance = buildAmbianceUsingStrategyMetadata();
-    String strategySetupId = AmbianceUtils.getStrategySetupIdAmbiance(ambiance);
+    Level sectionLevel = Level.newBuilder()
+                             .setRuntimeId(SECTION_RUNTIME_ID)
+                             .setSetupId(SECTION_SETUP_ID)
+                             .setGroup("SECTION")
+                             .setStartTs(2)
+                             .setIdentifier("i2")
+                             .setStepType(StepType.newBuilder().setType("SECTION").setStepCategory(STAGE).build())
+                             .build();
+    Level strategyLevel =
+        Level.newBuilder()
+            .setRuntimeId("STRATEGY_RUNTIME_ID_new")
+            .setSetupId("STRATEGY_SETUP_ID_new")
+            .setGroup("STRATEGY")
+            .setStartTs(2)
+            .setIdentifier("i2")
+            .setStepType(StepType.newBuilder().setType("STRATEGY").setStepCategory(StepCategory.STRATEGY).build())
+            .build();
+
+    ambiance.toBuilder().addLevels(sectionLevel).addLevels(strategyLevel).build();
+    String strategySetupId = AmbianceUtils.getFirstLevelStrategySetupIdAmbiance(ambiance);
     assertThat(strategySetupId).isEqualTo("STRATEGY_SETUP_ID");
   }
 
