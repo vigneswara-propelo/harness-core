@@ -72,6 +72,8 @@ public class InputsExpressionEvaluatorTest extends CategoryTest {
     assertEquals(specNode.get("settings").get("f1").asText(), "defaultValue");
     // Default value provided in pipeline, but input provided. So provided value will be returned.
     assertEquals(specNode.get("settings").get("f2").asText(), "defaultValue2");
+    // Value was provided in the pipeline inputs. So its value will be resolved to this fixed value.
+    assertEquals(specNode.get("settings").get("f3").asText(), "FixedValue");
 
     ObjectNode pipelineYamlNodeWithoutSpec = (ObjectNode) YamlUtils.readAsJsonNode(pipelineYaml);
     pipelineYamlNodeWithoutSpec.remove("spec");

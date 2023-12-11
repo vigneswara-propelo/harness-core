@@ -49,6 +49,9 @@ public class YamlInputUtilsTest extends CategoryTest {
       + "    jobParam:\n"
       + "      type: object\n"
       + "      execution: false\n"
+      + "    inputWithValue:\n"
+      + "      type: object\n"
+      + "      value: someFixedValue\n"
       + "  stages:\n"
       + "    - type: custom\n"
       + "      name: s1\n"
@@ -102,5 +105,8 @@ public class YamlInputUtilsTest extends CategoryTest {
     assertThat(inputDetails.getDescription()).isNull();
     assertThat(inputDetails.getRegex()).isNull();
     assertThat(inputDetails.getExecution()).isFalse();
+
+    // input with name inputWithValue has the value field. So this will not be present in the inputDetailsMap.
+    assertThat(inputDetailsMap.containsKey("inputWithValue")).isFalse();
   }
 }

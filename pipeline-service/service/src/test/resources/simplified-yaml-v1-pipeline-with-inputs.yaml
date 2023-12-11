@@ -16,6 +16,7 @@ spec:
               password: <+ inputs.password>
               f1: <+inputs.defaultInput1>
               f2: <+inputs.defaultInput2>
+              f3: <+inputs.inputWithValue>
   inputs:
     image:
       type: string
@@ -39,3 +40,6 @@ spec:
     defaultInput2:
       type: string
       default: defaultValue
+    inputWithValue:
+      type: string
+      value: FixedValue

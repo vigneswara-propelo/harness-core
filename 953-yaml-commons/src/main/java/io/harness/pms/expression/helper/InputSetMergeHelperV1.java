@@ -13,7 +13,6 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.expression.EngineExpressionEvaluator;
 import io.harness.expression.common.ExpressionMode;
 import io.harness.pms.expression.InputsExpressionEvaluator;
@@ -36,9 +35,6 @@ public class InputSetMergeHelperV1 {
    * @return returns the resolved YAML for the given entityJsonNode.
    */
   public String mergeInputSetIntoPipelineYaml(JsonNode inputSetJsonNode, JsonNode entityJsonNode) {
-    if (EmptyPredicate.isEmpty(inputSetJsonNode)) {
-      return YamlUtils.writeYamlString(entityJsonNode);
-    }
     entityJsonNode = MergeHelper.mergeOptionsRuntimeInput(entityJsonNode, inputSetJsonNode);
     EngineExpressionEvaluator evaluator = new InputsExpressionEvaluator(inputSetJsonNode, entityJsonNode);
     return YamlUtils.writeYamlString(

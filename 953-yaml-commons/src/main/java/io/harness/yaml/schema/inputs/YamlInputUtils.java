@@ -54,7 +54,11 @@ public class YamlInputUtils {
     Iterator<String> inputNames = inputsJsonNode.fieldNames();
     for (Iterator<String> it = inputNames; it.hasNext();) {
       String inputName = it.next();
-      inputDetails.add(buildInputJsonNode(JsonFieldUtils.get(inputsJsonNode, inputName), inputName));
+      InputDetails inputDetailForGivenName =
+          buildInputDetails(JsonFieldUtils.get(inputsJsonNode, inputName), inputName);
+      if (inputDetailForGivenName != null) {
+        inputDetails.add(inputDetailForGivenName);
+      }
     }
 
     return inputDetails;
@@ -96,7 +100,12 @@ public class YamlInputUtils {
     return FQNListForEachInput;
   }
 
-  private InputDetails buildInputJsonNode(JsonNode inputNode, String inputName) {
+  private InputDetails buildInputDetails(JsonNode inputNode, String inputName) {
+    // If value is present in some input then we that would be considered as variable with fixed value. So we should not
+    // return such inputs.
+    if (inputNode.has(YAMLFieldNameConstants.VALUE)) {
+      return null;
+    }
     InputDetailsBuilder builder =
         InputDetails.builder().name(inputName).type(SchemaInputType.getYamlInputType(inputNode.get("type").asText()));
     if (inputNode.get(YAMLFieldNameConstants.DESC) != null) {
