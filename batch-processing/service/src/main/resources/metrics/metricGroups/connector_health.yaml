@@ -3,4 +3,3 @@ identifier: ccmConnectorHealthMetricsGroup
 labels:
   - accountId
   - connectorId
-  - healthStatus

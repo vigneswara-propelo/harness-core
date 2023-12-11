@@ -7,11 +7,12 @@
 
 package io.harness.batch.processing.connectors;
 
+import static io.harness.batch.processing.svcmetrics.BatchProcessingMetricName.CONNECTOR_HEALTH;
+import static io.harness.connector.ConnectivityStatus.SUCCESS;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.batch.processing.config.BatchMainConfig;
 import io.harness.batch.processing.shard.AccountShardService;
-import io.harness.batch.processing.svcmetrics.BatchProcessingMetricName;
 import io.harness.batch.processing.svcmetrics.ConnectorHealthContext;
 import io.harness.connector.ConnectorFilterPropertiesDTO;
 import io.harness.connector.ConnectorInfoDTO;
@@ -75,9 +76,9 @@ public class ConnectorsHealthUpdateService {
             connector.getConnector().getIdentifier(), accountId, null, null));
     log.info("connectorValidationResult {}", connectorValidationResult);
     // record metric for connector health
-    try (ConnectorHealthContext x = new ConnectorHealthContext(
-             accountId, connector.getConnector().getIdentifier(), connectorValidationResult.getStatus().name())) {
-      metricService.incCounter(BatchProcessingMetricName.CONNECTOR_HEALTH);
+    double healthy = connectorValidationResult.getStatus().equals(SUCCESS) ? 1.0 : 0.0;
+    try (ConnectorHealthContext x = new ConnectorHealthContext(accountId, connector.getConnector().getIdentifier())) {
+      metricService.recordMetric(CONNECTOR_HEALTH, healthy);
     }
   }
 

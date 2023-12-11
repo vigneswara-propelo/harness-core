@@ -15,9 +15,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ClusterHealthContext extends AutoMetricContext {
-  public ClusterHealthContext(String accountId, String clusterId, String healthStatus) {
+  public ClusterHealthContext(String accountId, String clusterId) {
     put("accountId", accountId);
     put("clusterId", clusterId);
-    put("healthStatus", healthStatus);
   }
 }

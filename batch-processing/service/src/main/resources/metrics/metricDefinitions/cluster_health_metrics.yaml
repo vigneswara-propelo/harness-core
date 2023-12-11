@@ -5,4 +5,4 @@ metrics:
   - metricName: batchproc_clusterHealthMetrics
     metricDefinition: Cluster Health Metrics
     type: LastValue
-    unit: count
+    unit: "1"

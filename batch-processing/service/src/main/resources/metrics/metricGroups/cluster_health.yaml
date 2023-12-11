@@ -3,4 +3,3 @@ identifier: ccmClusterHealthMetricsGroup
 labels:
   - accountId
   - clusterId
-  - healthStatus
