@@ -264,8 +264,10 @@ public class GitAwareContextHelper {
 
   public void setTransientBranch(String transientBranch) {
     GitEntityInfo gitEntityInfo = GitAwareContextHelper.getGitRequestParamsInfo();
-    gitEntityInfo.setTransientBranch(transientBranch);
-    updateGitEntityContext(gitEntityInfo);
+    if (gitEntityInfo != null) {
+      gitEntityInfo.setTransientBranch(transientBranch);
+      updateGitEntityContext(gitEntityInfo);
+    }
   }
 
   public String getBranchInRequestOrFromSCMGitMetadata() {
