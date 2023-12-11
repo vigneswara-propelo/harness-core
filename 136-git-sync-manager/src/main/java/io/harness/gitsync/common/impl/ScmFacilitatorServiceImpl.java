@@ -1476,6 +1476,6 @@ public class ScmFacilitatorServiceImpl implements ScmFacilitatorService {
       return gitDefaultBranchCacheHelper.getDefaultBranchIfInputBranchEmpty(
           scope.getAccountIdentifier(), scmConnector, repo, branch);
     }
-    return null;
+    return branch;
   }
 }
