@@ -9,11 +9,14 @@ package io.harness.ssca.mapper;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.spec.server.ssca.v1.model.ComponentDrift;
 import io.harness.spec.server.ssca.v1.model.ComponentSummary;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.SSCA)
@@ -34,14 +37,22 @@ public class SbomDriftMapper {
     }
   }
 
-  private ComponentDrift toComponentDriftResponse(io.harness.ssca.beans.drift.ComponentDrift componentDrift) {
-    if (componentDrift == null || componentDrift.getStatus() == null) {
-      return null;
+  public List<ComponentDrift> toComponentDriftResponseList(
+      List<io.harness.ssca.beans.drift.ComponentDrift> componentDrifts) {
+    if (EmptyPredicate.isEmpty(componentDrifts)) {
+      return new ArrayList<>();
     }
-    return new ComponentDrift()
-        .newComponent(toComponentSummaryResponse(componentDrift.getNewComponent()))
-        .oldComponent(toComponentSummaryResponse(componentDrift.getOldComponent()))
-        .status(componentDrift.getStatus().toString());
+    List<ComponentDrift> componentDriftList = new ArrayList<>();
+    for (io.harness.ssca.beans.drift.ComponentDrift componentDrift : componentDrifts) {
+      if (componentDrift == null || componentDrift.getStatus() == null) {
+        return new ArrayList<>();
+      }
+      componentDriftList.add(new ComponentDrift()
+                                 .newComponent(toComponentSummaryResponse(componentDrift.getNewComponent()))
+                                 .oldComponent(toComponentSummaryResponse(componentDrift.getOldComponent()))
+                                 .status(componentDrift.getStatus().toString()));
+    }
+    return componentDriftList;
   }
 
   private ComponentSummary toComponentSummaryResponse(io.harness.ssca.beans.drift.ComponentSummary componentSummary) {

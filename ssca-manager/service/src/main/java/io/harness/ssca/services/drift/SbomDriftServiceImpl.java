@@ -96,25 +96,36 @@ public class SbomDriftServiceImpl implements SbomDriftService {
   }
 
   @Override
-  public ComponentDriftResults getComponentDriftsByArtifactId(String accountId, String orgId, String projectId,
-      String artifactId, String baseTag, String tag, ComponentDriftStatus status, Pageable pageable) {
-    Criteria criteria = getTagAndBaseTagDriftCriteria(accountId, orgId, projectId, artifactId, baseTag, tag);
+  public ComponentDriftResults getComponentDrifts(String accountId, String orgId, String projectId, String driftId,
+      ComponentDriftStatus status, Pageable pageable) {
+    Criteria criteria = Criteria.where("_id").is(driftId);
+    if (!sbomDriftRepository.exists(criteria)) {
+      throw new InvalidRequestException("Couldn't find the drift with drift ID " + driftId);
+    }
 
     int page = pageable.getPageNumber();
     int pageSize = pageable.getPageSize();
-    Aggregation aggregation =
-        Aggregation.newAggregation(Aggregation.match(criteria), Aggregation.project(DriftEntityKeys.componentDrifts),
-            Aggregation.unwind("$componentDrifts"), Aggregation.match(getStatusMatchCriteria(status)),
-            Aggregation.group("_id").count().as("totalComponentDrifts").push("componentDrifts").as("componentDrifts"),
-            Aggregation.project("totalComponentDrifts")
-                .and("componentDrifts")
-                .slice(page * pageSize, pageSize)
-                .as("componentDrifts"));
+    Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(criteria),
+        Aggregation.project(DriftEntityKeys.componentDrifts, "_id"), Aggregation.unwind("$componentDrifts"),
+        Aggregation.match(getStatusMatchCriteria(status)),
+        Aggregation.group("$_id").count().as("totalComponentDrifts").push("componentDrifts").as("componentDrifts"),
+        Aggregation.project("totalComponentDrifts")
+            .and("componentDrifts")
+            .slice(pageSize, page * pageSize)
+            .as("componentDrifts")
+            .andExclude("_id"));
 
     List<ComponentDriftResults> componentDriftResults =
         sbomDriftRepository.aggregate(aggregation, ComponentDriftResults.class);
+
+    // this would mean that there is something wrong with the component drift query, do recheck
     if (componentDriftResults == null) {
       throw new InvalidRequestException("Unable to find component drifts");
+    }
+
+    // If result list is empty, it means query was correct but returned empty results.
+    if (componentDriftResults.isEmpty()) {
+      return null;
     }
 
     // By nature of our query, componentDriftResults will only have one element
@@ -126,21 +137,5 @@ public class SbomDriftServiceImpl implements SbomDriftService {
       return new Criteria();
     }
     return Criteria.where(DriftEntityKeys.COMPONENT_DRIFT_STATUS).is(status.name());
-  }
-
-  private Criteria getTagAndBaseTagDriftCriteria(
-      String accountId, String orgId, String projectId, String artifactId, String baseTag, String tag) {
-    return Criteria.where(DriftEntityKeys.accountIdentifier)
-        .is(accountId)
-        .and(DriftEntityKeys.orgIdentifier)
-        .is(orgId)
-        .and(DriftEntityKeys.projectIdentifier)
-        .is(projectId)
-        .and(DriftEntityKeys.artifactId)
-        .is(artifactId)
-        .and(DriftEntityKeys.baseTag)
-        .is(baseTag)
-        .and(DriftEntityKeys.tag)
-        .is(tag);
   }
 }

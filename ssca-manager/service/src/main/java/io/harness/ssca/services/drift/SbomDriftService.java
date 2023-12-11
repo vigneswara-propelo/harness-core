@@ -21,6 +21,6 @@ public interface SbomDriftService {
   ArtifactSbomDriftResponse calculateSbomDrift(
       String accountId, String orgId, String projectId, String artifactId, ArtifactSbomDriftRequestBody requestBody);
 
-  ComponentDriftResults getComponentDriftsByArtifactId(String accountId, String orgId, String projectId,
-      String artifactId, String baseTag, String tag, ComponentDriftStatus status, Pageable pageable);
+  ComponentDriftResults getComponentDrifts(
+      String accountId, String orgId, String projectId, String driftId, ComponentDriftStatus status, Pageable pageable);
 }

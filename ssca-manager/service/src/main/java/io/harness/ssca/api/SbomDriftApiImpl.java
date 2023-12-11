@@ -13,13 +13,22 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.spec.server.ssca.v1.SbomDriftApi;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftRequestBody;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftResponse;
+import io.harness.spec.server.ssca.v1.model.ComponentDrift;
+import io.harness.ssca.beans.drift.ComponentDriftResults;
+import io.harness.ssca.beans.drift.ComponentDriftStatus;
+import io.harness.ssca.mapper.SbomDriftMapper;
 import io.harness.ssca.services.drift.SbomDriftService;
+import io.harness.utils.ApiUtils;
 
 import com.google.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.core.Response;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @OwnedBy(HarnessTeam.SSCA)
 public class SbomDriftApiImpl implements SbomDriftApi {
@@ -39,7 +48,21 @@ public class SbomDriftApiImpl implements SbomDriftApi {
   @Override
   public Response getComponentDrift(String org, String project, String drift, String harnessAccount, String status,
       @Min(0L) Integer page, @Min(1L) @Max(1000L) Integer limit) {
-    return null;
+    Pageable pageable = PageRequest.of(page, limit);
+    ComponentDriftStatus componentDriftStatus = SbomDriftMapper.mapStatusToComponentDriftStatus(status);
+    ComponentDriftResults componentDriftResults =
+        sbomDriftService.getComponentDrifts(harnessAccount, org, project, drift, componentDriftStatus, pageable);
+    Response.ResponseBuilder responseBuilder = Response.ok();
+    if (componentDriftResults != null) {
+      List<ComponentDrift> componentDrifts =
+          SbomDriftMapper.toComponentDriftResponseList(componentDriftResults.getComponentDrifts());
+      responseBuilder.entity(componentDrifts);
+      ApiUtils.addLinksHeader(responseBuilder, componentDriftResults.getTotalComponentDrifts(), page, limit);
+    } else {
+      responseBuilder.entity(new ArrayList<>());
+      ApiUtils.addLinksHeader(responseBuilder, 0, page, limit);
+    }
+    return responseBuilder.build();
   }
 
   @Override
