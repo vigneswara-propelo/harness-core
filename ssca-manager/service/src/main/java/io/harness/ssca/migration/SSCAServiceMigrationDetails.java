@@ -40,6 +40,7 @@ public class SSCAServiceMigrationDetails implements MigrationDetails {
         .add(Pair.of(7, AddInvalidFieldToArtifactEntity.class))
         .add(Pair.of(8, AddEnvCountsToArtifactEntity.class))
         .add(Pair.of(9, ArtifactEmptyTagMigration.class))
+        .add(Pair.of(10, ElkMigration.class))
         .build();
   }
 }

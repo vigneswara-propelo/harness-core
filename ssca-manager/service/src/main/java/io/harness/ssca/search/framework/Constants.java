@@ -5,19 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.ssca.beans;
+package io.harness.ssca.search.framework;
 
-import static io.harness.annotations.dev.HarnessTeam.SSCA;
-
+import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import lombok.Builder;
-import lombok.Value;
-
-@Value
-@Builder
-@OwnedBy(SSCA)
-public class ElasticSearchConfig {
-  String url;
-  String apiKey;
+@OwnedBy(HarnessTeam.SSCA)
+public class Constants {
+  public static final String ARTIFACT_ENTITY = "artifact";
+  public static final String SBOM_COMPONENT_ENTITY = "component";
 }

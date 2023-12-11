@@ -1,0 +1,83 @@
+{
+    "properties": {
+      "relation_type": {
+        "type": "join",
+        "eager_global_ordinals": true,
+        "relations": {
+          "artifact": [
+            "component",
+            "enforcement",
+            "deployment",
+            "vulnerability"
+          ]
+        }
+      },
+      "id": { "type": "keyword" },
+      "artifactId": { "type": "keyword" },
+      "orchestrationId": { "type": "keyword" },
+      "artifactCorrelationId": { "type": "keyword" },
+      "url": { "type": "text" },
+      "name": { "type": "text" },
+      "type": { "type": "keyword" },
+      "tag": { "type": "keyword" },
+      "accountId": { "type": "keyword" },
+      "orgId": { "type": "keyword" },
+      "projectId": { "type": "keyword" },
+      "pipelineExecutionId": { "type": "keyword" },
+      "pipelineId": { "type": "keyword" },
+      "stageId": { "type": "keyword" },
+      "sequenceId": { "type": "keyword" },
+      "stepId": { "type": "keyword" },
+      "sbomName": { "type": "text" },
+      "createdOn": { "type": "date" },
+      "isAttested": { "type": "boolean" },
+      "attestedFileUrl": { "type": "keyword" },
+      "sbom": {
+        "properties": {
+          "tool": { "type": "text" },
+          "toolVersion": { "type": "text" },
+          "sbomFormat": { "type": "keyword" },
+          "sbomVersion": { "type": "keyword" }
+        }
+      },
+      "invalid": { "type": "boolean" },
+      "lastUpdatedAt": { "type": "long" },
+      "componentsCount": { "type": "long" },
+      "prodEnvCount": { "type": "long" },
+      "nonProdEnvCount": { "type": "long" },
+      "scorecard": {
+        "properties": {
+          "avgScore": { "type": "long" },
+          "maxScore": { "type": "long" }
+        }
+      },
+      "uuid": { "type": "keyword" },
+      "artifactUrl": { "type": "keyword" },
+      "artifactName": { "type": "text" },
+      "tags": { "type": "keyword" },
+      "toolVersion": { "type": "keyword" },
+      "toolName": { "type": "text" },
+      "toolVendor": { "type": "text" },
+      "packageId": { "type": "keyword" },
+      "packageName": { "type": "keyword" },
+      "packageDescription": { "type": "text" },
+      "packageLicense": { "type": "keyword" },
+      "packageSourceInfo": { "type": "text" },
+      "packageVersion": { "type": "keyword" },
+      "packageSupplierName": { "type": "text" },
+      "packageOriginatorName": { "type": "text" },
+      "originatorType": { "type": "text" },
+      "packageType": { "type": "text" },
+      "packageCpe": { "type": "text" },
+      "packageProperties": { "type": "text" },
+      "purl": { "type": "text" },
+      "packageManager": { "type": "text" },
+      "packageNamespace": { "type": "text" },
+      "majorVersion": { "type": "integer" },
+      "minorVersion": { "type": "integer" },
+      "patchVersion": { "type": "integer" },
+      "pipelineIdentifier": { "type": "keyword" },
+      "projectIdentifier": { "type": "keyword" },
+      "orgIdentifier": { "type": "keyword" }
+    }
+}

@@ -56,6 +56,7 @@ enableElasticsearch: false
 
 elasticsearch:
   url: "https://localhost:9200"
+  apiKey: "apiKey"
 
 s3Config:
   accessKeyId: "access-key-id"

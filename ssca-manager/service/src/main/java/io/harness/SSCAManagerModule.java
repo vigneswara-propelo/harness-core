@@ -16,6 +16,7 @@ import static io.harness.outbox.OutboxSDKConstants.DEFAULT_OUTBOX_POLL_CONFIGURA
 import io.harness.account.AccountClientModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.app.PrimaryVersionManagerModule;
+import io.harness.exception.GeneralException;
 import io.harness.lock.DistributedLockImplementation;
 import io.harness.lock.PersistentLockModule;
 import io.harness.mongo.AbstractMongoModule;
@@ -56,6 +57,10 @@ import io.harness.ssca.beans.PolicyType;
 import io.harness.ssca.events.handler.SSCAArtifactEventHandler;
 import io.harness.ssca.events.handler.SSCAOutboxEventHandler;
 import io.harness.ssca.eventsframework.SSCAEventsFrameworkModule;
+import io.harness.ssca.search.ElasticSearchIndexManager;
+import io.harness.ssca.search.ElasticSearchIndexManagerImpl;
+import io.harness.ssca.search.SearchService;
+import io.harness.ssca.search.SearchServiceImpl;
 import io.harness.ssca.services.ArtifactService;
 import io.harness.ssca.services.ArtifactServiceImpl;
 import io.harness.ssca.services.BaselineService;
@@ -105,6 +110,8 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
@@ -119,7 +126,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.RestClient;
 import org.springframework.core.convert.converter.Converter;
 
@@ -169,6 +178,8 @@ public class SSCAManagerModule extends AbstractModule {
     bind(PolicyMgmtService.class).to(PolicyMgmtServiceImpl.class);
     bind(FeatureFlagService.class).to(FeatureFlagServiceImpl.class);
     bind(SbomDriftService.class).to(SbomDriftServiceImpl.class);
+    bind(SearchService.class).to(SearchServiceImpl.class);
+    bind(ElasticSearchIndexManager.class).to(ElasticSearchIndexManagerImpl.class);
     bind(RemediationTrackerService.class).to(RemediationTrackerServiceImpl.class);
     bind(RemediationApi.class).to(RemediationTrackerApiImpl.class);
     MapBinder<PolicyType, PolicyEvaluationService> policyEvaluationServiceMapBinder =
@@ -270,14 +281,18 @@ public class SSCAManagerModule extends AbstractModule {
   @Provides
   @Singleton
   public ElasticsearchClient elasticsearchClient() {
-    RestClient restClient =
-        RestClient.builder(HttpHost.create(configuration.getElasticSearchConfig().getUrl())).build();
+    try {
+      RestClient restClient = RestClient.builder(HttpHost.create(configuration.getElasticSearchConfig().getUrl()))
+                                  .setDefaultHeaders(new Header[] {new BasicHeader(
+                                      "Authorization", "ApiKey " + configuration.getElasticSearchConfig().getApiKey())})
+                                  .build();
+      ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    // Create the transport with a Jackson mapper
-    ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
-
-    // And create the API client
-    return new ElasticsearchClient(transport);
+      ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper(objectMapper));
+      return new ElasticsearchClient(transport);
+    } catch (Exception e) {
+      throw new GeneralException("Failed to create Elasticsearch client", e);
+    }
   }
 
   @Provides
