@@ -8,5 +8,5 @@ exports_files(
         "keystore.jks",
         "config.yml",
     ],
-    visibility = ["//template-service/build:__subpackages__"],
+    visibility = ["//template-service:__subpackages__"],
 )

@@ -14,7 +14,7 @@ java_binary(
     resources = [
         "//debezium-service/service/src/main/resources:resource",
     ],
-    visibility = ["//debezium-service/build:__subpackages__"],
+    visibility = ["//debezium-service:__subpackages__"],
     deps = [
         "//:lombok",
         "//952-debezium-engine:module",

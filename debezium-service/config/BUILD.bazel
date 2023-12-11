@@ -7,5 +7,5 @@ exports_files(
     [
         "config.yml",
     ],
-    visibility = ["//debezium-service/build:__subpackages__"],
+    visibility = ["//debezium-service:__subpackages__"],
 )

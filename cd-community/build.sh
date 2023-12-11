@@ -13,7 +13,7 @@ BAZEL_BIN=`bazel info bazel-bin`
 
 bazel build `bazel query 'attr(tags, "oss", //...:*)'`
 
-bazel run //360-cg-manager/container:manager
+# bazel run //360-cg-manager/container:manager
 
 bazel run //120-ng-manager/container:ng_manager
 

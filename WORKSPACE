@@ -6,10 +6,28 @@
 
 workspace(name = "harness_monorepo")
 
+load("//:tools/bazel/repository.bzl", "REPOSITORY")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_pkg",
+    patch_cmds = [
+        # "echo $(pwd) > /tmp/me",
+        "sed -i.a 's/PY2\\\"/PY3\\\"/g' BUILD",
+    ],
+    # sha256 = "eea0f59c28a9241156a47d7a8e32db9122f3d50b505fae0f33de6ce4d9b61834", # [CDS-85864] for version 0.8.0 (which was incorrectly defined and never used)
+    sha256 = "aeca78988341a2ee1ba097641056d168320ecc51372ef7ff8e64b139516a4937",  # [CDS-85864] for version 0.2.6 which is the one actually being used all along... [CDS-85864]
+    urls = [
+        "https://%s.harness.io/artifactory/rules-pkg-github/download/0.2.6-1/rules_pkg-0.2.6.tar.gz" % REPOSITORY,
+        # "https://%s.harness.io/artifactory/rules-pkg-github/download/0.8.0/rules_pkg-0.8.0.tar.gz" % REPOSITORY,
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.2.6-1/rules_pkg-0.2.6.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.2.6-1/rules_pkg-0.2.6.tar.gz",
+    ],
+)
+
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("//tools/bazel/pmd:dependencies.bzl", "rules_pmd_dependencies")
-load("//:tools/bazel/repository.bzl", "REPOSITORY")
 
 rules_pmd_dependencies()
 
@@ -7081,16 +7099,6 @@ load(
 container_repositories()
 
 #========== Docker Rules Configuration End=========================
-
-http_archive(
-    name = "rules_pkg",
-    sha256 = "eea0f59c28a9241156a47d7a8e32db9122f3d50b505fae0f33de6ce4d9b61834",
-    urls = [
-        "https://%s.harness.io/artifactory/rules-pkg-github/download/0.8.0/rules_pkg-0.8.0.tar.gz % (REPOSITORY)",
-        #"https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
-        #"https://github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
-    ],
-)
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 

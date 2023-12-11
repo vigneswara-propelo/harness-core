@@ -19,7 +19,7 @@ java_binary(
     ],
     visibility = [
         "//110-change-data-capture:__pkg__",
-        "//pipeline-service/build:__subpackages__",
+        "//pipeline-service:__subpackages__",
     ],
     runtime_deps = [
         "//pipeline-service/service/src/main/resources",
