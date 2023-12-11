@@ -224,6 +224,22 @@ data "archive_file" "ce-gcp-billing-bq" {
     filename = "main.py"
   }
   source {
+    content  = "${file("${path.module}/src/python/billing_helper.py")}"
+    filename = "billing_helper.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/billing_bigquery_helper.py")}"
+    filename = "billing_bigquery_helper.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/k8s_job/billing_clickhouse_helper.py")}"
+    filename = "k8s_job/billing_clickhouse_helper.py"
+  }
+  source {
+    content  = "${file("${path.module}/src/python/k8sCronJob/ch_ddl_queries.py")}"
+    filename = "k8sCronJob/ch_ddl_queries.py"
+  }
+  source {
     content  = "${file("${path.module}/src/python/bq_schema.py")}"
     filename = "bq_schema.py"
   }

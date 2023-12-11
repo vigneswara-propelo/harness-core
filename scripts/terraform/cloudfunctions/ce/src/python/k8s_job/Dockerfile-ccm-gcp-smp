@@ -1,0 +1,22 @@
+# Copyright 2023 Harness Inc. All rights reserved.
+# Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+# that can be found in the licenses directory at the root of this repository, also available at
+# https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+
+FROM us.gcr.io/platform-205701/harness/ubi8/python3:3.11
+
+ADD scripts/terraform/cloudfunctions/ce/src/python/k8s_job /data-pipeline/k8s_job
+ADD scripts/terraform/cloudfunctions/ce/src/python/k8sCronJob/ch_ddl_queries.py /data-pipeline/k8sCronJob/ch_ddl_queries.py
+ADD scripts/terraform/cloudfunctions/ce/src/python/gcp_billing_bq_main.py /data-pipeline/gcp_billing_bq_main.py
+ADD scripts/terraform/cloudfunctions/ce/src/python/billing_helper.py /data-pipeline/billing_helper.py
+ADD scripts/terraform/cloudfunctions/ce/src/python/billing_bigquery_helper.py /data-pipeline/billing_bigquery_helper.py
+# TODO: Create separate util file for ClickHouse and add it and remove bq_schema file
+ADD scripts/terraform/cloudfunctions/ce/src/python/util.py /data-pipeline/util.py
+ADD scripts/terraform/cloudfunctions/ce/src/python/bq_schema.py /data-pipeline/bq_schema.py
+
+USER root
+WORKDIR /data-pipeline
+RUN pip install --no-cache-dir -r k8s_job/requirements.txt
+
+RUN chmod +x /data-pipeline/gcp_billing_bq_main.py
+ENTRYPOINT ["python", "/data-pipeline/gcp_billing_bq_main.py"]

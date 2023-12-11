@@ -1,0 +1,18 @@
+# Function dependencies, for example:
+# package>=version
+# TODO: Can we use the existing requirements.txt file?
+google.cloud
+google.cloud.bigquery
+google.cloud.storage
+google-api-python-client
+clickhouse-driver==0.2.6
+clickhouse-connect==0.6.21
+tzlocal==5.2
+
+# Dependencies present in SAAS file
+google-cloud-bigquery-datatransfer
+google-cloud-secret-manager
+
+# TODO: Remove these dependencies once we have separate util file for ClickHouse
+google-cloud-functions
+google-cloud-pubsub

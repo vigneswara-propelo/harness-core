@@ -17,3 +17,6 @@ azure-mgmt-resource
 bigquery-schema-generator==1.5
 requests
 azure-mgmt-compute
+clickhouse-driver==0.2.6
+clickhouse-connect==0.6.21
+tzlocal==5.2

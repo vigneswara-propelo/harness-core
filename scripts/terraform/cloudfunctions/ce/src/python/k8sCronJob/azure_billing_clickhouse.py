@@ -13,8 +13,11 @@ import json
 import os
 import re
 import time
+from tzlocal import get_localzone
 from azure.storage.blob import BlobServiceClient
 
+
+LOCAL_TIMEZONE = get_localzone()
 
 # Clickhouse related configuration
 CLICKHOUSE_URL = os.environ.get('CLICKHOUSE_URL', 'localhost')
@@ -42,7 +45,12 @@ ACCOUNT_ID = ""
 
 def print_(message, severity="INFO"):
     try:
-        print(json.dumps({"severity":severity, "accountId":ACCOUNT_ID, "message": message}))
+        print(json.dumps({
+            "currentTime":str(datetime.datetime.now(LOCAL_TIMEZONE).strftime("%Y-%m-%d %H:%M:%S.%f")),
+            "accountId":ACCOUNT_ID,
+            "severity":severity,
+            "message": message
+        }))
     except:
         print(message)
 

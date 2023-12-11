@@ -25,6 +25,14 @@ CREATE TABLE IF NOT EXISTS `%s`.`unifiedTable`
     `region` String NULL,
     `zone` String NULL,
     `gcpBillingAccountId` String NULL,
+    `gcpResource` Tuple(name String, global_name String),
+    `gcpSystemLabels` Array(Tuple(key String, value String)),
+    `gcpCostAtList` Float64,
+    `gcpProjectNumber` String,
+    `gcpProjectName` String,
+    `gcpPrice` Tuple(effective_price Decimal(18, 6), tier_start_amount Decimal(18, 6), unit String, pricing_unit_quantity Decimal(18, 6)),
+    `gcpUsage` Tuple(amount Float64, unit String, amount_in_pricing_units Float64, pricing_unit String),
+    `gcpCredits` Array(Tuple(name String, amount Float64, full_name String, id String, type String)),
     `cloudProvider` String NULL,
     `awsBlendedRate` String NULL,
     `awsBlendedCost` Float NULL,
@@ -144,6 +152,74 @@ CREATE TABLE IF NOT EXISTS `%s`.`costAggregated`
 )
 ENGINE = MergeTree
 ORDER BY tuple(day)
+SETTINGS allow_nullable_key = 1
+"""
+
+create_gcp_billing_export_table = """
+CREATE TABLE IF NOT EXISTS `%s`.`%s`
+(
+    `billing_account_id` String,
+    `service` Tuple(id String, description String),
+    `sku` Tuple(id String, description String),
+    `usage_start_time` DateTime('UTC'),
+    `usage_end_time` DateTime('UTC'),
+    `project` Tuple(id String, number String, name String, labels Array(Tuple(key String, value String)), ancestry_numbers String, ancestors Array(Tuple(resource_name String, display_name String))),
+    `labels` Array(Tuple(key String, value String)),
+    `system_labels` Array(Tuple(key String, value String)),
+    `location` Tuple(location String, country String, region String, zone String),
+    `resource` Tuple(name String, global_name String),
+    `export_time` DateTime('UTC'),
+    `cost` Float64,
+    `cost_at_list` Float64,
+    `transaction_type` String,
+    `seller_name` String,
+    `currency` String,
+    `currency_conversion_rate` Float64,
+    `usage` Tuple(amount Float64, unit String, amount_in_pricing_units Float64, pricing_unit String),
+    `credits` Array(Tuple(name String, amount Float64, full_name String, id String, type String)),
+    `invoice` Tuple(month String),
+    `cost_type` String,
+    `adjustment_info` Tuple(id String, description String, mode String, type String),
+    `tags` Array(Tuple(key String, value String, inherited Int8, namespace String)),
+    `price` Tuple(effective_price Decimal(18, 6), tier_start_amount Decimal(18, 6), unit String, pricing_unit_quantity Decimal(18, 6))
+)
+ENGINE = MergeTree
+ORDER BY tuple(usage_start_time)
+SETTINGS allow_nullable_key = 1
+"""
+
+create_gcp_cost_export_table = """
+CREATE TABLE IF NOT EXISTS `%s`.`%s`
+(
+    `billing_account_id` String,
+    `service` Tuple(id String, description String),
+    `sku` Tuple(id String, description String),
+    `usage_start_time` DateTime('UTC'),
+    `usage_end_time` DateTime('UTC'),
+    `project` Tuple(id String, number String, name String, labels Array(Tuple(key String, value String)), ancestry_numbers String, ancestors Array(Tuple(resource_name String, display_name String))),
+    `labels` Array(Tuple(key String, value String)),
+    `system_labels` Array(Tuple(key String, value String)),
+    `location` Tuple(location String, country String, region String, zone String),
+    `resource` Tuple(name String, global_name String),
+    `export_time` DateTime('UTC'),
+    `cost` Float64,
+    `cost_at_list` Float64,
+    `transaction_type` String,
+    `seller_name` String,
+    `currency` String,
+    `currency_conversion_rate` Float64,
+    `usage` Tuple(amount Float64, unit String, amount_in_pricing_units Float64, pricing_unit String),
+    `credits` Array(Tuple(name String, amount Float64, full_name String, id String, type String)),
+    `invoice` Tuple(month String),
+    `cost_type` String,
+    `adjustment_info` Tuple(id String, description String, mode String, type String),
+    `tags` Array(Tuple(key String, value String, inherited Int8, namespace String)),
+    `price` Tuple(effective_price Decimal(18, 6), tier_start_amount Decimal(18, 6), unit String, pricing_unit_quantity Decimal(18, 6)),
+    `fxRateSrcToDest` Float64,
+    `ccmPreferredCurrency` String
+)
+ENGINE = MergeTree
+ORDER BY tuple(usage_start_time)
 SETTINGS allow_nullable_key = 1
 """
 
