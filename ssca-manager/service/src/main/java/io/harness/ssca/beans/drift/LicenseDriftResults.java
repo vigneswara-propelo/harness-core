@@ -12,14 +12,12 @@ import io.harness.annotations.dev.OwnedBy;
 
 import java.util.List;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
-@Builder
 @OwnedBy(HarnessTeam.SSCA)
-public class LicenseDrift {
-  LicenseDriftStatus status;
-  String name;
-  // We will not save components at the time of saving drift entity.
-  List<ComponentSummary> components;
+@Value
+@Builder
+public class LicenseDriftResults {
+  int totalLicenseDrifts;
+  List<LicenseDrift> licenseDrifts;
 }

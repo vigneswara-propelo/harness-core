@@ -143,9 +143,9 @@ public class SbomDriftCalculator {
         Aggregation.unwind("$baseSet"), Aggregation.unwind("$driftSet"),
         Aggregation.project()
             .and(SetOperators.SetDifference.arrayAsSet("baseSet.oldLicenses").differenceTo("driftSet.newLicenses"))
-            .as("licensesAdded")
+            .as("licensesDeleted")
             .and(SetOperators.SetDifference.arrayAsSet("driftSet.newLicenses").differenceTo("baseSet.oldLicenses"))
-            .as("licensesDeleted"));
+            .as("licensesAdded"));
   }
 
   private AggregationOperation getLicenseDriftProjectionsAggregation() {

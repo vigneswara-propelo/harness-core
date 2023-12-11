@@ -64,5 +64,6 @@ public class DriftEntity implements UuidAware {
 
   public static final class DriftEntityKeys {
     public static final String COMPONENT_DRIFT_STATUS = DriftEntityKeys.componentDrifts + ".status";
+    public static final String LICENSE_DRIFT_STATUS = DriftEntityKeys.licenseDrifts + ".status";
   }
 }

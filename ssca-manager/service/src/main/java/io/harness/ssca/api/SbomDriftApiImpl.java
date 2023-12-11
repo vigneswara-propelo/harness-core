@@ -14,9 +14,12 @@ import io.harness.spec.server.ssca.v1.SbomDriftApi;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftRequestBody;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftResponse;
 import io.harness.spec.server.ssca.v1.model.ComponentDrift;
+import io.harness.spec.server.ssca.v1.model.LicenseDrift;
 import io.harness.spec.server.ssca.v1.model.OrchestrationStepDriftRequestBody;
 import io.harness.ssca.beans.drift.ComponentDriftResults;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
+import io.harness.ssca.beans.drift.LicenseDriftResults;
+import io.harness.ssca.beans.drift.LicenseDriftStatus;
 import io.harness.ssca.mapper.SbomDriftMapper;
 import io.harness.ssca.services.drift.SbomDriftService;
 import io.harness.utils.ApiUtils;
@@ -69,7 +72,15 @@ public class SbomDriftApiImpl implements SbomDriftApi {
   @Override
   public Response getLicenseDrift(String org, String project, String drift, String harnessAccount, String status,
       @Min(0L) Integer page, @Min(1L) @Max(1000L) Integer limit) {
-    return null;
+    Pageable pageable = PageRequest.of(page, limit);
+    LicenseDriftStatus licenseDriftStatus = SbomDriftMapper.mapStatusToLicenseDriftStatus(status);
+    LicenseDriftResults licenseDriftResults =
+        sbomDriftService.getLicenseDrifts(harnessAccount, org, project, drift, licenseDriftStatus, pageable);
+    List<LicenseDrift> licenseDrifts =
+        SbomDriftMapper.toLicenseDriftResponseList(licenseDriftResults.getLicenseDrifts());
+    Response.ResponseBuilder responseBuilder = Response.ok().entity(licenseDrifts);
+    ApiUtils.addLinksHeader(responseBuilder, licenseDriftResults.getTotalLicenseDrifts(), page, limit);
+    return responseBuilder.build();
   }
 
   @Override

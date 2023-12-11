@@ -32,4 +32,6 @@ public interface NormalisedSbomComponentService {
       LicenseFilter licenseFilter, List<ComponentFilter> componentFilter);
 
   <T> List<T> getComponentsByAggregation(Aggregation aggregation, Class<T> resultClass);
+
+  List<NormalizedSBOMComponentEntity> getComponentsOfSbomByLicense(String orchestrationId, String license);
 }
