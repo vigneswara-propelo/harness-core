@@ -1322,7 +1322,7 @@ public class NGTriggerServiceImpl implements NGTriggerService {
 
   @Override
   public TriggerDetails fetchTriggerEntityV1(String accountId, String orgId, String projectId, String pipelineId,
-      String triggerId, NGTriggerConfigV2 config, NGTriggerEntity entity, boolean withServiceV2) {
+      String triggerId, NGTriggerConfigV2 config, NGTriggerEntity entity) {
     Optional<NGTriggerEntity> existingEntity = get(accountId, orgId, projectId, pipelineId, triggerId, false);
     if (existingEntity.isPresent()) {
       ngTriggerElementMapper.copyEntityFieldsOutsideOfYml(existingEntity.get(), entity);

@@ -5,6 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 package io.harness.ngtriggers.eventmapper.filters.impl;
+
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.exception.WingsException.USER;
@@ -64,7 +65,7 @@ public class ArtifactJexlConditionsTriggerFilter implements TriggerFilter {
       try {
         NGTriggerConfigV2 ngTriggerConfig = trigger.getNgTriggerConfigV2();
         if (ngTriggerConfig == null) {
-          ngTriggerConfig = ngTriggerElementMapper.toTriggerConfigV2(trigger.getNgTriggerEntity().getYaml());
+          ngTriggerConfig = ngTriggerElementMapper.toTriggerConfigV2WithoutYmlVersion(trigger.getNgTriggerEntity());
         }
 
         TriggerDetails triggerDetails = TriggerDetails.builder()

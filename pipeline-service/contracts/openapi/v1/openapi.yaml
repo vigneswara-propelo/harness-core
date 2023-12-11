@@ -1545,8 +1545,6 @@ components:
       type: object
       description: 'Trigger request body object '
       properties:
-        with_service_v2:
-          type: boolean
         description:
           type: string
         enabled:
@@ -1646,10 +1644,18 @@ components:
           properties:
             spec:
               $ref: '#/components/schemas/ArtifactTriggerSpec'
+    AMIFilter:
+      title: AMI Artifact Registry filter
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
     TriggerConditions:
       title: Trigger Conditions
       type: object
-      description: Payload Conditions for the Trigger
+      description: Conditions for the Trigger
       properties:
         key:
           type: string
@@ -1744,10 +1750,6 @@ components:
             - AmazonMachineImage
             - GoogleCloudStorage
             - Bamboo
-        stage_identifier:
-          type: string
-        artifact_ref:
-          type: string
       discriminator:
         propertyName: type
         mapping:
@@ -2115,12 +2117,12 @@ components:
           type: string
         metadata:
           type: object
-        additionalProperties:
-          type: string
-        inputs:
-          type: object
           additionalProperties:
-            type: object
+            type: string
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/NGVariable'
     GoogleArtifactRegistryArtifactSpec:
       title: GoogleArtifactRegistry Artifact Spec
       x-discriminator-value: GoogleArtifactRegistry
@@ -2252,9 +2254,13 @@ components:
         region:
           type: string
         tags:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/AMIFilter'
         filters:
-          type: string
+          type: array
+          items:
+            $ref:  '#/components/schemas/AMIFilter'
         version:
           type: string
         version_regex:
@@ -2898,6 +2904,50 @@ components:
           type: string
         expression:
           type: string
+    NGVariable:
+      title: NG Variable
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - String
+            - Number
+        description:
+          type: string
+        required:
+          type: boolean
+        name:
+          type: string
+        metadata:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          String: '#/components/schemas/StringNGVariable'
+          Number: '#/components/schemas/NumberNGVariable'
+    StringNGVariable:
+      title: String NG Variable
+      x-discriminator-value: String
+      allOf:
+        - $ref: '#/components/schemas/NGVariable'
+        - type: object
+          properties:
+            value:
+              type: string
+            default_value:
+              type: string
+    NumberNGVariable:
+      title: Number NG Variable
+      x-discriminator-value: String
+      allOf:
+        - $ref: '#/components/schemas/NGVariable'
+        - type: object
+          properties:
+            value:
+              type: double
+            default_value:
+              type: double
     TriggerResponseBody:
       title: Trigger Response Body
       type: object
@@ -3368,6 +3418,7 @@ components:
           connector_ref: git_connector
           store_type: REMOTE
           repo_name: example_repository
+          file_path: /folder/file.json
       properties:
         branch_name:
           type: string
@@ -3396,6 +3447,8 @@ components:
         repo_name:
           type: string
           description: Name of the repository.
+        file_path:
+          type: string
     PipelineUpdateRequestBody:
       title: Pipeline Update Request Body
       x-stoplight:

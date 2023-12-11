@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngtriggers.buildtriggers.helpers;
+
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -39,6 +40,7 @@ import io.harness.pms.merger.YamlConfig;
 import io.harness.pms.merger.fqn.FQN;
 import io.harness.pms.pipeline.PMSPipelineResponseDTO;
 import io.harness.pms.pipeline.TemplatesResolvedPipelineResponseDTO;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.polling.contracts.AMIPayload;
 import io.harness.polling.contracts.AcrPayload;
@@ -62,6 +64,7 @@ import io.harness.polling.contracts.PollingResponse;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.serializer.JsonUtils;
 import io.harness.yaml.core.variables.NGVariableTrigger;
+import io.harness.yaml.utils.JsonPipelineUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -126,8 +129,12 @@ public class BuildTriggerHelper {
   }
 
   public Map<String, JsonNode> fetchTriggerBuildSpecMap(NGTriggerEntity ngTriggerEntity) throws IOException {
-    JsonNode jsonNode = YamlUtils.readTree(ngTriggerEntity.getYaml()).getNode().getCurrJsonNode();
-    return JsonNodeUtils.getMap(jsonNode.get("trigger").get("source"), "spec");
+    if (HarnessYamlVersion.V0.equals(ngTriggerEntity.getHarnessVersion())) {
+      JsonNode jsonNode = YamlUtils.readTree(ngTriggerEntity.getYaml()).getNode().getCurrJsonNode();
+      return JsonNodeUtils.getMap(jsonNode.get("trigger").get("source"), "spec");
+    }
+    return JsonNodeUtils.getMap(
+        JsonPipelineUtils.asTree(ngTriggerEntity.getTriggerConfigWrapper().getSource()), "spec");
   }
 
   public Map<String, Object> generateFinalMapWithBuildSpecFromPipeline(

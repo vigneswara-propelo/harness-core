@@ -453,6 +453,7 @@ public class PipelinesApiUtils {
         .storeType(StoreType.getFromStringOrNull(
             (gitDetails.getStoreType() == null) ? null : gitDetails.getStoreType().value()))
         .connectorRef(gitDetails.getConnectorRef())
+        .filePath(gitDetails.getFilePath())
         .build();
   }
 

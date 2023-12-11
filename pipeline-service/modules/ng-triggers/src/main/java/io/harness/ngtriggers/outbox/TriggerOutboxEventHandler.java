@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngtriggers.outbox;
+
 import io.harness.ModuleType;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
@@ -60,16 +61,19 @@ public class TriggerOutboxEventHandler implements OutboxEventHandler {
     GlobalContext globalContext = outboxEvent.getGlobalContext();
     TriggerUpdateEvent event =
         YamlUtils.readWithDefaultObjectMapper(outboxEvent.getEventData(), TriggerUpdateEvent.class);
-    AuditEntry auditEntry = AuditEntry.builder()
-                                .action(Action.UPDATE)
-                                .module(ModuleType.CORE)
-                                .newYaml(event.getNewTriggerEntity().getYaml().replace("---\n", ""))
-                                .oldYaml(event.getOldTriggerEntity().getYaml())
-                                .timestamp(outboxEvent.getCreatedAt())
-                                .resource(ResourceDTO.fromResource(outboxEvent.getResource()))
-                                .resourceScope(ResourceScopeDTO.fromResourceScope(outboxEvent.getResourceScope()))
-                                .insertId(outboxEvent.getId())
-                                .build();
+    AuditEntry auditEntry =
+        AuditEntry.builder()
+            .action(Action.UPDATE)
+            .module(ModuleType.CORE)
+            .newYaml(event.getNewTriggerEntity().getYaml() != null
+                    ? event.getNewTriggerEntity().getYaml().replace("---\n", "")
+                    : YamlUtils.writeYamlString(event.getNewTriggerEntity().getTriggerConfigWrapper()))
+            .oldYaml(event.getOldTriggerEntity().getYaml())
+            .timestamp(outboxEvent.getCreatedAt())
+            .resource(ResourceDTO.fromResource(outboxEvent.getResource()))
+            .resourceScope(ResourceScopeDTO.fromResourceScope(outboxEvent.getResourceScope()))
+            .insertId(outboxEvent.getId())
+            .build();
     return auditClientService.publishAudit(auditEntry, globalContext);
   }
 

@@ -108,7 +108,7 @@ public class WebhookEventToTriggerMapperTest extends CategoryTest {
                                             .build();
 
     when(ngTriggerService.findTriggersForCustomWehbook(event, false, true)).thenReturn(ngTriggerEntityList);
-    doReturn(ngTriggerConfig).when(ngTriggerElementMapper).toTriggerConfigV2(ngTriggerCustomYaml);
+    doReturn(ngTriggerConfig).when(ngTriggerElementMapper).toTriggerConfigV2WithoutYmlVersion(ngTriggerEntity);
     WebhookEventMappingResponse webhookEventMappingResponse =
         customWebhookEventToTriggerMapper.mapWebhookEventToTriggers(
             TriggerMappingRequestData.builder().triggerWebhookEvent(event).build());

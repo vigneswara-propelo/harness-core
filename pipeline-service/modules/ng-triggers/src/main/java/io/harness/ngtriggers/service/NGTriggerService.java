@@ -84,7 +84,7 @@ public interface NGTriggerService {
       NGTriggerEntity ngTriggerEntity, ValidationResult validationResult, boolean whileExecution);
 
   TriggerDetails fetchTriggerEntityV1(String accountId, String orgId, String projectId, String pipelineId,
-      String triggerId, NGTriggerConfigV2 config, NGTriggerEntity entity, boolean withServiceV2);
+      String triggerId, NGTriggerConfigV2 config, NGTriggerEntity entity);
 
   TriggerDetails fetchTriggerEntity(String accountId, String orgId, String projectId, String pipelineId,
       String triggerId, String newYaml, boolean withServiceV2);

@@ -68,7 +68,8 @@ public class PMSTriggerMigration implements NGMigration {
         try {
           String triggerYaml = ngTriggerEntity.getYaml();
           if (ngTriggerEntity.getType() == NGTriggerType.WEBHOOK) {
-            NGTriggerConfigV2 ngTriggerConfig = ngTriggerElementMapper.toTriggerConfigV2(ngTriggerEntity.getYaml());
+            NGTriggerConfigV2 ngTriggerConfig =
+                ngTriggerElementMapper.toTriggerConfigV2WithoutYmlVersion(ngTriggerEntity);
             NGTriggerSourceV2 source = ngTriggerConfig.getSource();
             WebhookTriggerConfigV2 webhookTriggerConfigV2 = (WebhookTriggerConfigV2) source.getSpec();
             if (updateYAML(webhookTriggerConfigV2)) {

@@ -57,9 +57,7 @@ public class TriggersApiImpl implements TriggersApi {
         Resource.of("PIPELINE", pipeline), PipelineRbacPermissions.PIPELINE_EXECUTE);
     NGTriggerEntity createdEntity;
     try {
-      boolean withServiceV2 = body.isWithServiceV2() != null && body.isWithServiceV2();
-      TriggerDetails triggerDetails =
-          ngTriggerApiUtils.toTriggerDetails(harnessAccount, org, project, body, withServiceV2, pipeline);
+      TriggerDetails triggerDetails = ngTriggerApiUtils.toTriggerDetails(harnessAccount, org, project, body, pipeline);
       ngTriggerService.validateTriggerConfig(triggerDetails);
       if (ignoreError != null && ignoreError) {
         createdEntity = ngTriggerService.create(triggerDetails.getNgTriggerEntity());
@@ -98,12 +96,11 @@ public class TriggersApiImpl implements TriggersApi {
     if (!ngTriggerEntity.isPresent()) {
       throw new EntityNotFoundException(String.format("Trigger %s does not exist", trigger));
     }
-    boolean withServiceV2 = body.isWithServiceV2() != null && body.isWithServiceV2();
+
     try {
-      TriggerDetails triggerDetails =
-          ngTriggerApiUtils.toTriggerDetails(harnessAccount, org, project, body, withServiceV2, pipeline);
+      TriggerDetails triggerDetails = ngTriggerApiUtils.toTriggerDetails(harnessAccount, org, project, body, pipeline);
       triggerDetails = ngTriggerService.fetchTriggerEntityV1(harnessAccount, org, project, pipeline, trigger,
-          triggerDetails.getNgTriggerConfigV2(), triggerDetails.getNgTriggerEntity(), withServiceV2);
+          triggerDetails.getNgTriggerConfigV2(), triggerDetails.getNgTriggerEntity());
 
       ngTriggerService.validateTriggerConfig(triggerDetails);
       NGTriggerEntity updatedEntity;

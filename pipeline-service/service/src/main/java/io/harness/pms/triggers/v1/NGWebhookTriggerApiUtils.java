@@ -7,8 +7,11 @@
 
 package io.harness.pms.triggers.v1;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ngtriggers.beans.source.WebhookTriggerType;
 import io.harness.ngtriggers.beans.source.webhook.v2.TriggerEventDataCondition;
@@ -93,6 +96,7 @@ import io.harness.spec.server.pipeline.v1.model.WebhookTriggerSpec;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_TRIGGERS})
 @OwnedBy(HarnessTeam.PIPELINE)
 public class NGWebhookTriggerApiUtils {
   WebhookTriggerType toWebhookTriggerType(WebhookTriggerSpec.TypeEnum typeEnum) {

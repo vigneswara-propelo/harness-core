@@ -232,7 +232,10 @@ public class TriggerPayloadConditionFilterTest extends CategoryTest {
             .build();
 
     // No payload match
-    doReturn(ngTriggerConfig).doReturn(ngTriggerConfig).when(ngTriggerElementMapper).toTriggerConfigV2("yaml");
+    doReturn(ngTriggerConfig)
+        .doReturn(ngTriggerConfig)
+        .when(ngTriggerElementMapper)
+        .toTriggerConfigV2WithoutYmlVersion(triggerEntityAwsCodeCommit);
 
     // Case 1
     WebhookEventMappingResponse webhookEventMappingResponse = filter.applyFilter(

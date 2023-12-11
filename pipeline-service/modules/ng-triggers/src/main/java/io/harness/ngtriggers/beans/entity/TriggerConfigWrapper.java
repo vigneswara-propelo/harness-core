@@ -7,12 +7,16 @@
 
 package io.harness.ngtriggers.beans.entity;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.ngtriggers.beans.source.NGTriggerSourceV2;
 
 import java.util.List;
 import lombok.Builder;
 import lombok.Value;
 
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_TRIGGERS})
 @Value
 @Builder
 public class TriggerConfigWrapper {

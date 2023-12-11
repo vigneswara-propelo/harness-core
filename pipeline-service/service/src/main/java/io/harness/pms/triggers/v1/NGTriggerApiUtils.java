@@ -29,12 +29,18 @@ import io.harness.ngtriggers.beans.entity.TriggerConfigWrapper;
 import io.harness.ngtriggers.beans.source.NGTriggerSourceV2;
 import io.harness.ngtriggers.beans.source.NGTriggerSpecV2;
 import io.harness.ngtriggers.beans.source.NGTriggerType;
+import io.harness.ngtriggers.beans.source.artifact.ArtifactTriggerConfig;
+import io.harness.ngtriggers.beans.source.artifact.ManifestTriggerConfig;
 import io.harness.ngtriggers.beans.source.scheduled.CronTriggerSpec;
 import io.harness.ngtriggers.beans.source.scheduled.ScheduledTriggerConfig;
 import io.harness.ngtriggers.beans.source.webhook.v2.WebhookTriggerConfigV2;
 import io.harness.ngtriggers.beans.target.TargetType;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.spec.server.pipeline.v1.model.ArtifactTriggerSource;
+import io.harness.spec.server.pipeline.v1.model.ArtifactTriggerSpec;
 import io.harness.spec.server.pipeline.v1.model.CronScheduledTriggerSpec;
+import io.harness.spec.server.pipeline.v1.model.ManifestTriggerSource;
+import io.harness.spec.server.pipeline.v1.model.ManifestTriggerSpec;
 import io.harness.spec.server.pipeline.v1.model.ScheduledTriggerSource;
 import io.harness.spec.server.pipeline.v1.model.ScheduledTriggerSpec;
 import io.harness.spec.server.pipeline.v1.model.TriggerBody;
@@ -60,12 +66,14 @@ import lombok.extern.slf4j.Slf4j;
 public class NGTriggerApiUtils {
   io.harness.ngtriggers.mapper.NGTriggerElementMapper ngTriggerElementMapper;
   NGWebhookTriggerApiUtils ngWebhookTriggerApiUtils;
+  NGArtifactTriggerApiUtils ngArtifactTriggerApiUtils;
+  NGManifestTriggerApiUtils ngManifestTriggerApiUtils;
 
   public TriggerDetails toTriggerDetails(String accountIdentifier, String orgIdentifier, String projectIdentifier,
-      TriggerRequestBody body, boolean withServiceV2, String pipeline) {
+      TriggerRequestBody body, String pipeline) {
     TriggerConfigWrapper triggerConfigWrapper = toTriggerConfigWrapper(body);
-    NGTriggerEntity ngTriggerEntity = toTriggerEntity(
-        accountIdentifier, orgIdentifier, projectIdentifier, body, triggerConfigWrapper, withServiceV2, pipeline);
+    NGTriggerEntity ngTriggerEntity =
+        toTriggerEntity(accountIdentifier, orgIdentifier, projectIdentifier, body, triggerConfigWrapper, pipeline);
     return TriggerDetails.builder()
         .ngTriggerConfigV2(toNGTriggerConfigV2(pipeline, orgIdentifier, projectIdentifier, body))
         .ngTriggerEntity(ngTriggerEntity)
@@ -73,7 +81,7 @@ public class NGTriggerApiUtils {
   }
 
   public NGTriggerEntity toTriggerEntity(String accountIdentifier, String orgIdentifier, String projectIdentifier,
-      TriggerRequestBody body, TriggerConfigWrapper triggerConfigWrapper, boolean withServiceV2, String pipeline) {
+      TriggerRequestBody body, TriggerConfigWrapper triggerConfigWrapper, String pipeline) {
     NGTriggerEntityBuilder entityBuilder =
         NGTriggerEntity.builder()
             .name(body.getName())
@@ -91,7 +99,7 @@ public class NGTriggerApiUtils {
             .enabled(body.isEnabled())
             .pollInterval(body.getSource().getPollInterval() != null ? body.getSource().getPollInterval() : EMPTY)
             .webhookId(body.getSource().getWebhookId())
-            .withServiceV2(withServiceV2)
+            .withServiceV2(true)
             .tags(TagMapper.convertToList(body.getTags()))
             .encryptedWebhookSecretIdentifier(body.getEncryptedWebhookSecretIdentifier())
             .stagesToExecute(body.getStagesToExecute())
@@ -178,6 +186,18 @@ public class NGTriggerApiUtils {
         return WebhookTriggerConfigV2.builder()
             .type(ngWebhookTriggerApiUtils.toWebhookTriggerType(webhookSpec.getType()))
             .spec(ngWebhookTriggerApiUtils.toWebhookTriggerSpec(webhookSpec))
+            .build();
+      case ARTIFACT:
+        ArtifactTriggerSpec artifactTriggerSpec = ((ArtifactTriggerSource) source).getSpec();
+        return ArtifactTriggerConfig.builder()
+            .type(ngArtifactTriggerApiUtils.toArtifactTriggerType(artifactTriggerSpec.getType()))
+            .spec(ngArtifactTriggerApiUtils.toArtifactTypeSpec(artifactTriggerSpec))
+            .build();
+      case MANIFEST:
+        ManifestTriggerSpec manifestTriggerSpec = ((ManifestTriggerSource) source).getSpec();
+        return ManifestTriggerConfig.builder()
+            .type(ngManifestTriggerApiUtils.toManifestTriggerType(manifestTriggerSpec.getType()))
+            .spec(ngManifestTriggerApiUtils.toManifestTypeSpec(manifestTriggerSpec))
             .build();
       default:
         throw new InvalidRequestException("Type " + source.getType().toString() + " is invalid");

@@ -204,6 +204,14 @@ public class NGTriggerElementMapper {
     }
   }
 
+  public NGTriggerConfigV2 toTriggerConfigV2WithoutYmlVersion(NGTriggerEntity ngTriggerEntity) {
+    if (HarnessYamlVersion.V1.equals(ngTriggerEntity.getHarnessVersion())) {
+      return toTriggerConfigV2ForYamlSimplification(ngTriggerEntity);
+    } else {
+      return toTriggerConfigV2(ngTriggerEntity.getYaml());
+    }
+  }
+
   public NGTriggerConfigV2 toTriggerConfigV2(NGTriggerEntity ngTriggerEntity) {
     if (HarnessYamlVersion.V1.equals(ngTriggerEntity.getHarnessVersion())) {
       return toTriggerConfigV2ForYamlSimplification(ngTriggerEntity);
@@ -641,7 +649,7 @@ public class NGTriggerElementMapper {
           ngTriggerEntity.getMetadata().getWebhook().getRegistrationStatus());
     } else if (ngTriggerEntity.getType() == MANIFEST || ngTriggerEntity.getType() == ARTIFACT
         || ngTriggerEntity.getType() == MULTI_REGION_ARTIFACT) {
-      NGTriggerConfigV2 ngTriggerConfigV2 = toTriggerConfigV2(ngTriggerEntity.getYaml());
+      NGTriggerConfigV2 ngTriggerConfigV2 = toTriggerConfigV2WithoutYmlVersion(ngTriggerEntity);
       NGTriggerSpecV2 ngTriggerSpecV2 = ngTriggerConfigV2.getSource().getSpec();
       if (BuildAware.class.isAssignableFrom(ngTriggerSpecV2.getClass())) {
         BuildAware buildAware = (BuildAware) ngTriggerSpecV2;

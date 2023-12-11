@@ -48,7 +48,7 @@ public class HeaderTriggerFilter implements TriggerFilter {
       try {
         NGTriggerConfigV2 ngTriggerConfig = trigger.getNgTriggerConfigV2();
         if (ngTriggerConfig == null) {
-          ngTriggerConfig = ngTriggerElementMapper.toTriggerConfigV2(trigger.getNgTriggerEntity().getYaml());
+          ngTriggerConfig = ngTriggerElementMapper.toTriggerConfigV2WithoutYmlVersion(trigger.getNgTriggerEntity());
         }
 
         TriggerDetails triggerDetails = TriggerDetails.builder()
