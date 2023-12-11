@@ -22,6 +22,7 @@ go_library(
         "//product/log-service/download/zipwork",
         "//product/log-service/handler",
         "//product/log-service/logger",
+        "//product/log-service/metric",
         "//product/log-service/queue",
         "//product/log-service/queue/memory",
         "//product/log-service/queue/redis",

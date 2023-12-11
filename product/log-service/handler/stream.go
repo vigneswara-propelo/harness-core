@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/harness/harness-core/product/log-service/logger"
+	"github.com/harness/harness-core/product/log-service/metric"
 	"github.com/harness/harness-core/product/log-service/store"
 	"github.com/harness/harness-core/product/log-service/stream"
 
@@ -171,8 +172,10 @@ func HandleClose(logStream stream.Stream, store store.Store, scanBatch int64) ht
 
 // HandleWrite returns an http.HandlerFunc that writes
 // to the live stream.
-func HandleWrite(s stream.Stream) http.HandlerFunc {
+func HandleWrite(s stream.Stream, metrics *metric.Metrics) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Increment the Stream write count
+		metrics.StreamWriteCount.Inc()
 		ctx := r.Context()
 		st := time.Now()
 
@@ -199,6 +202,8 @@ func HandleWrite(s stream.Stream) http.HandlerFunc {
 				return
 			}
 			if err != nil {
+				// increment error metric for write stream
+				metrics.StreamWriteErrorCount.Inc()
 				WriteInternalError(w, err)
 				logger.FromRequest(r).
 					WithError(err).
@@ -214,13 +219,16 @@ func HandleWrite(s stream.Stream) http.HandlerFunc {
 			WithField("num_lines", len(in)).
 			Infoln("api: successfully wrote to stream")
 		w.WriteHeader(http.StatusNoContent)
+		metrics.StreamWriteLatency.Observe(float64(time.Since(st).Microseconds()))
 	}
 }
 
 // HandleTail returns an http.HandlerFunc that tails
 // the live stream.
-func HandleTail(s stream.Stream) http.HandlerFunc {
+func HandleTail(s stream.Stream, metrics *metric.Metrics) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Increment the Stream tail count
+		metrics.StreamTailCount.Inc()
 
 		accountID := r.FormValue(accountIDParam)
 		key := CreateAccountSeparatedKey(accountID, r.FormValue(keyParam))
@@ -251,6 +259,8 @@ func HandleTail(s stream.Stream) http.HandlerFunc {
 		enc := json.NewEncoder(w)
 		linec, errc := s.Tail(ctx, key)
 		if errc == nil {
+			// Increment error metrics for stream tail
+			metrics.StreamTailErrorCount.Inc()
 			io.WriteString(w, "event: error\ndata: eof\n")
 			return
 		}

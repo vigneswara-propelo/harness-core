@@ -20,14 +20,16 @@ import (
 	"github.com/harness/harness-core/product/log-service/cache"
 	"github.com/harness/harness-core/product/log-service/config"
 	"github.com/harness/harness-core/product/log-service/logger"
+	"github.com/harness/harness-core/product/log-service/metric"
 	"github.com/harness/harness-core/product/log-service/queue"
 	"github.com/harness/harness-core/product/log-service/store"
 	"github.com/harness/harness-core/product/log-service/stream"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Handler returns an http.Handler that exposes the
 // service resources.
-func Handler(queue queue.Queue, cache cache.Cache, stream stream.Stream, store store.Store, stackdriver *stackdriver.Stackdriver, config config.Config, ngClient, aclClient *client.HTTPClient, gcsClient gcputils.GCS) http.Handler {
+func Handler(queue queue.Queue, cache cache.Cache, stream stream.Stream, store store.Store, stackdriver *stackdriver.Stackdriver, config config.Config, ngClient, aclClient *client.HTTPClient, gcsClient gcputils.GCS, metrics *metric.Metrics) http.Handler {
 	r := chi.NewRouter()
 	r.Use(logger.Middleware)
 
@@ -74,7 +76,8 @@ func Handler(queue queue.Queue, cache cache.Cache, stream stream.Stream, store s
 		}())
 		r.Mount("/info/debug/getheap", pprof.Handler("heap"))
 	}
-
+	// mount and exposing the metrics to prometheus
+	r.Mount("/metrics", promhttp.Handler())
 	// Log stream endpoints
 	// Format: /token?accountID=&key=
 	r.Mount("/stream", func() http.Handler {
@@ -86,8 +89,8 @@ func Handler(queue queue.Queue, cache cache.Cache, stream stream.Stream, store s
 
 		sr.Post("/", HandleOpen(stream))
 		sr.Delete("/", HandleClose(stream, store, config.Redis.ScanBatch))
-		sr.Put("/", HandleWrite(stream))
-		sr.Get("/", HandleTail(stream))
+		sr.Put("/", HandleWrite(stream, metrics))
+		sr.Get("/", HandleTail(stream, metrics))
 		sr.Get("/info", HandleInfo(stream))
 
 		return sr
@@ -100,12 +103,11 @@ func Handler(queue queue.Queue, cache cache.Cache, stream stream.Stream, store s
 		if !config.Auth.DisableAuth {
 			sr.Use(AuthMiddleware(config, ngClient, aclClient, true))
 		}
-
-		sr.Post("/", HandleUpload(store))
+		sr.Post("/", HandleUpload(store, metrics))
 		sr.Delete("/", HandleDelete(store))
-		sr.Get("/", HandleDownload(store))
+		sr.Get("/", HandleDownload(store, metrics))
 		sr.Post("/link/upload", HandleUploadLink(store))
-		sr.Post("/link/download", HandleDownloadLink(store))
+		sr.Post("/link/download", HandleDownloadLink(store, metrics))
 		sr.Get("/exists", HandleExists(store))
 
 		return sr
