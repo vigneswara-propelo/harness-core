@@ -24,6 +24,7 @@ import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
 import io.harness.ci.buildstate.SecretUtils;
 import io.harness.ci.config.CIExecutionServiceConfig;
 import io.harness.ci.ff.CIFeatureFlagService;
+import io.harness.ci.metrics.ExecutionMetricsService;
 import io.harness.ci.utils.BaseConnectorUtils;
 import io.harness.connector.ConnectorResourceClient;
 import io.harness.delegate.TaskSelector;
@@ -64,6 +65,8 @@ public class ConnectorUtils extends BaseConnectorUtils {
   private final SecretManagerClientService secretManagerClientService;
   private final SecretUtils secretUtils;
   private final CIExecutionServiceConfig cIExecutionServiceConfig;
+  @Inject private ExecutionMetricsService executionMetricsService;
+  private static final String CI_Connector_Error_Count = "ci_connector_error_count";
   @Inject private CIFeatureFlagService featureFlagService;
   @Inject @Named("harnessCodeGitBaseUrl") private String harnessCodeGitBaseUrl;
   private final long TEN_HOURS_IN_MS = TimeUnit.MILLISECONDS.convert(10, TimeUnit.HOURS);
@@ -190,6 +193,7 @@ public class ConnectorUtils extends BaseConnectorUtils {
   }
 
   public ConnectorDetails getConnectorDetails(NGAccess ngAccess, String connectorIdentifier, boolean isGitConnector) {
+    ConnectorDetails connectorDetails = null;
     if (isGitConnector && isEmpty(connectorIdentifier)
         && featureFlagService.isEnabled(FeatureName.CODE_ENABLED, ngAccess.getAccountIdentifier())) {
       log.info("fetching harness scm connector");
@@ -204,8 +208,16 @@ public class ConnectorUtils extends BaseConnectorUtils {
     if (isEmpty(connectorIdentifier)) {
       throw new CIStageExecutionException("Git connector is mandatory in case git clone is enabled");
     }
+    try {
+      connectorDetails = super.getConnectorDetails(ngAccess, connectorIdentifier);
+    } catch (ConnectorNotFoundException e) {
+      throw e;
+    } catch (Exception e) {
+      executionMetricsService.recordConnectorErrorCount(ngAccess.getAccountIdentifier(), CI_Connector_Error_Count);
+      throw e;
+    }
 
-    return super.getConnectorDetails(ngAccess, connectorIdentifier);
+    return connectorDetails;
   }
 
   public ConnectorDetails getConnectorDetailsWithToken(

@@ -32,6 +32,8 @@ import io.harness.callback.DelegateCallbackToken;
 import io.harness.callback.MongoDatabase;
 import io.harness.cdstage.CDNGStageSummaryResourceClientModule;
 import io.harness.ci.CiServiceResourceClientModule;
+import io.harness.ci.metrics.ExecutionMetricsService;
+import io.harness.ci.metrics.ExecutionMetricsServiceImpl;
 import io.harness.cistatus.service.GithubService;
 import io.harness.cistatus.service.GithubServiceImpl;
 import io.harness.client.DelegateSelectionLogHttpClientModule;
@@ -435,6 +437,7 @@ public class PipelineServiceModule extends AbstractModule {
     registerOutboxEventHandlers();
     bind(OutboxEventHandler.class).to(PMSOutboxEventHandler.class);
     bind(HPersistence.class).to(MongoPersistence.class);
+    bind(ExecutionMetricsService.class).to(ExecutionMetricsServiceImpl.class);
     bind(PipelineMetadataService.class).to(PipelineMetadataServiceImpl.class);
 
     bind(PMSPipelineService.class).to(PMSPipelineServiceImpl.class);

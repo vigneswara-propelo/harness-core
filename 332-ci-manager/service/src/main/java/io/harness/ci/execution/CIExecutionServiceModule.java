@@ -46,8 +46,8 @@ import io.harness.ci.execution.serializer.PluginCompatibleStepSerializer;
 import io.harness.ci.execution.serializer.PluginStepProtobufSerializer;
 import io.harness.ci.execution.serializer.RunStepProtobufSerializer;
 import io.harness.ci.execution.serializer.RunTestsStepProtobufSerializer;
-import io.harness.ci.metrics.CIManagerMetricsService;
-import io.harness.ci.metrics.CIManagerMetricsServiceImpl;
+import io.harness.ci.metrics.ExecutionMetricsService;
+import io.harness.ci.metrics.ExecutionMetricsServiceImpl;
 import io.harness.ci.serializer.ProtobufStepSerializer;
 import io.harness.exception.exceptionmanager.exceptionhandler.CILiteEngineExceptionHandler;
 import io.harness.exception.exceptionmanager.exceptionhandler.ExceptionHandler;
@@ -117,7 +117,7 @@ public class CIExecutionServiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(CIManagerMetricsService.class).to(CIManagerMetricsServiceImpl.class);
+    bind(ExecutionMetricsService.class).to(ExecutionMetricsServiceImpl.class);
     install(CIBeansModule.getInstance());
     install(new io.harness.hsqs.client.HsqsServiceClientModule(
         ciExecutionServiceConfig.getQueueServiceClientConfig(), AuthorizationServiceHeader.BEARER.getServiceId()));

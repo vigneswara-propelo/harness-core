@@ -7,9 +7,13 @@
 
 package io.harness.ci.metrics;
 
-public interface CIManagerMetricsService {
+public interface ExecutionMetricsService {
   void recordStepExecutionCount(String status, String metricName, String accountId, String type);
   void recordStepStatusExecutionTime(String status, double time, String metricName, String accountId, String type);
   void recordStageExecutionCount(String status, String metricName, String accountId, String type);
   void recordStageStatusExecutionTime(String status, double time, String metricName, String accountId, String type);
+  void recordSecretErrorCount(String accountId, String metricName);
+  void recordSecretLatency(String accountId, String metricName, double time);
+  void recordConnectorErrorCount(String accountId, String metricName);
+  void recordConnectorLatency(String accountId, String metricName, double time);
 }

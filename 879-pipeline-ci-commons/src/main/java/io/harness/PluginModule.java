@@ -13,8 +13,8 @@ import io.harness.beans.plugin.compatible.PluginCompatibleStep;
 import io.harness.cdng.plugininfoproviders.PluginExecutionConfig;
 import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.ci.ff.impl.CIFeatureFlagServiceImpl;
-import io.harness.ci.metrics.CIManagerMetricsService;
-import io.harness.ci.metrics.CIManagerMetricsServiceImpl;
+import io.harness.ci.metrics.ExecutionMetricsService;
+import io.harness.ci.metrics.ExecutionMetricsServiceImpl;
 import io.harness.ci.serializer.ProtobufStepSerializer;
 import io.harness.plugin.CommonPluginCompatibleSerializer;
 import io.harness.plugin.service.BasePluginCompatibleSerializer;
@@ -53,7 +53,7 @@ public class PluginModule extends AbstractModule {
     bind(new TypeLiteral<ProtobufStepSerializer<PluginCompatibleStep>>() {
     }).toInstance(new CommonPluginCompatibleSerializer());
     bind(K8sInitializeService.class).to(K8InitializeServiceImpl.class);
-    bind(CIManagerMetricsService.class).to(CIManagerMetricsServiceImpl.class);
+    bind(ExecutionMetricsService.class).to(ExecutionMetricsServiceImpl.class);
     bind(PluginService.class).to(PluginServiceImpl.class);
     bind(BasePluginCompatibleSerializer.class).to(CommonPluginCompatibleSerializer.class);
     bind(CIFeatureFlagService.class).to(CIFeatureFlagServiceImpl.class);

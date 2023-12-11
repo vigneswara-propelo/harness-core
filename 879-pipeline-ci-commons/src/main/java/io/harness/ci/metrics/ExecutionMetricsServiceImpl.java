@@ -11,6 +11,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ci.metrics.beans.CIManagerStageMetricContext;
 import io.harness.ci.metrics.beans.CIManagerStepMetricContext;
+import io.harness.ci.metrics.beans.SecretAndConnectorMetricContext;
 import io.harness.metrics.service.api.MetricService;
 
 import com.google.inject.Inject;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Slf4j
 @OwnedBy(HarnessTeam.CI)
-public class CIManagerMetricsServiceImpl implements CIManagerMetricsService {
+public class ExecutionMetricsServiceImpl implements ExecutionMetricsService {
   private final MetricService metricService;
 
   public void recordStepExecutionCount(String status, String metricName, String accountId, String type) {
@@ -46,6 +47,27 @@ public class CIManagerMetricsServiceImpl implements CIManagerMetricsService {
   public void recordStageStatusExecutionTime(
       String status, double time, String metricName, String accountId, String type) {
     try (CIManagerStageMetricContext ignore = new CIManagerStageMetricContext(status, accountId, type)) {
+      metricService.recordMetric(metricName, time);
+    }
+  }
+
+  public void recordSecretErrorCount(String accountId, String metricName) {
+    try (SecretAndConnectorMetricContext ignore = new SecretAndConnectorMetricContext(accountId)) {
+      metricService.incCounter(metricName);
+    }
+  }
+  public void recordSecretLatency(String accountId, String metricName, double time) {
+    try (SecretAndConnectorMetricContext ignore = new SecretAndConnectorMetricContext(accountId)) {
+      metricService.recordMetric(metricName, time);
+    }
+  }
+  public void recordConnectorErrorCount(String accountId, String metricName) {
+    try (SecretAndConnectorMetricContext ignore = new SecretAndConnectorMetricContext(accountId)) {
+      metricService.incCounter(metricName);
+    }
+  }
+  public void recordConnectorLatency(String accountId, String metricName, double time) {
+    try (SecretAndConnectorMetricContext ignore = new SecretAndConnectorMetricContext(accountId)) {
       metricService.recordMetric(metricName, time);
     }
   }

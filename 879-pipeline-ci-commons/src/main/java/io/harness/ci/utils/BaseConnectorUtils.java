@@ -23,6 +23,7 @@ import static java.lang.String.format;
 import io.harness.beans.IdentifierRef;
 import io.harness.beans.environment.ConnectorConversionInfo;
 import io.harness.ci.buildstate.SecretUtils;
+import io.harness.ci.metrics.ExecutionMetricsService;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorResourceClient;
 import io.harness.connector.DelegateSelectable;
@@ -125,6 +126,8 @@ public class BaseConnectorUtils {
   @Named("PRIVILEGED") @Inject private SecretManagerClientService secretManagerClientService;
   @Inject private ConnectorResourceClient connectorResourceClient;
   @Inject private SecretUtils secretUtils;
+  @Inject private ExecutionMetricsService executionMetricsService;
+  private static final String CI_Connector_Latency = "ci_connector_latency";
 
   @Inject private GcpOidcAuthenticator gcpOidcAuthenticator;
 
@@ -223,6 +226,8 @@ public class BaseConnectorUtils {
         Failsafe.with(retryPolicy).get(() -> { return getConnectorDetailsInternal(ngAccess, connectorRef); });
 
     long elapsedTimeInSecs = Duration.between(startTime, Instant.now()).toMillis() / 1000;
+    executionMetricsService.recordConnectorLatency(
+        connectorRef.getAccountIdentifier(), CI_Connector_Latency, elapsedTimeInSecs);
 
     log.info(
         "Fetched connector details for connector ref successfully {} with scope {} in {} seconds accountId {}, projectId {}",

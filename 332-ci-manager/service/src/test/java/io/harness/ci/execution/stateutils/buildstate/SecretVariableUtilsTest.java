@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import io.harness.category.element.UnitTests;
 import io.harness.ci.buildstate.SecretUtils;
 import io.harness.ci.executionplan.CIExecutionTestBase;
+import io.harness.ci.metrics.ExecutionMetricsService;
 import io.harness.delegate.beans.ci.pod.SecretVariableDTO;
 import io.harness.delegate.beans.ci.pod.SecretVariableDetails;
 import io.harness.encryption.Scope;
@@ -52,6 +53,7 @@ import retrofit2.Response;
 
 public class SecretVariableUtilsTest extends CIExecutionTestBase {
   @Mock private SecretNGManagerClient secretNGManagerClient;
+  @Mock private ExecutionMetricsService executionMetricsService;
   @Mock private SecretManagerClientService secretManagerClientService;
   @InjectMocks SecretUtils secretUtils;
 

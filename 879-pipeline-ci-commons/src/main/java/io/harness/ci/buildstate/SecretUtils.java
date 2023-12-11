@@ -16,6 +16,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.beans.IdentifierRef;
+import io.harness.ci.metrics.ExecutionMetricsService;
 import io.harness.delegate.beans.ci.pod.SSHKeyDetails;
 import io.harness.delegate.beans.ci.pod.SecretVariableDTO;
 import io.harness.delegate.beans.ci.pod.SecretVariableDetails;
@@ -71,6 +72,9 @@ public class SecretUtils {
     this.secretNGManagerClient = secretNGManagerClient;
     this.secretManagerClientService = secretManagerClientService;
   }
+  @Inject private ExecutionMetricsService executionMetricsService;
+  private static final String CI_Secret_Error_Count = "ci_secret_error_count";
+  private static final String CI_Secret_Latency = "ci_secret_latency";
 
   public SecretVariableDetails getSecretVariableDetails(NGAccess ngAccess, SecretNGVariable secretVariable) {
     SecretRefData secretRefData =
@@ -226,6 +230,7 @@ public class SecretUtils {
 
   private SecretDTOV2 getSecret(IdentifierRef identifierRef) {
     SecretResponseWrapper secretResponseWrapper;
+    Instant startTime = Instant.now();
     try {
       RetryPolicy<Object> retryPolicy =
           getRetryPolicy(format("[Retrying failed call to fetch secret: [%s] with scope: [%s]; attempt: {}",
@@ -243,6 +248,7 @@ public class SecretUtils {
                               .getData());
 
     } catch (Exception e) {
+      executionMetricsService.recordSecretErrorCount(identifierRef.getAccountIdentifier(), CI_Secret_Error_Count);
       log.error(format("Unable to get secret information : [%s] with scope: [%s]", identifierRef.getIdentifier(),
                     identifierRef.getScope()),
           e);
@@ -255,6 +261,9 @@ public class SecretUtils {
       throw new CIStageExecutionUserException(format("Secret not found for identifier : [%s] with scope: [%s]",
           identifierRef.getIdentifier(), identifierRef.getScope()));
     }
+    long elapsedTimeInSecs = Duration.between(startTime, Instant.now()).toMillis() / 1000;
+    executionMetricsService.recordSecretLatency(
+        identifierRef.getAccountIdentifier(), CI_Secret_Latency, elapsedTimeInSecs);
     return secretResponseWrapper.getSecret();
   }
 

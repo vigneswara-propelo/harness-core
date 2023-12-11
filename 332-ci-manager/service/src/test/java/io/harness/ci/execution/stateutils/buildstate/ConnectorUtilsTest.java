@@ -37,6 +37,7 @@ import io.harness.ci.execution.buildstate.ConnectorUtils;
 import io.harness.ci.executionplan.CIExecutionPlanTestHelper;
 import io.harness.ci.executionplan.CIExecutionTestBase;
 import io.harness.ci.ff.CIFeatureFlagService;
+import io.harness.ci.metrics.ExecutionMetricsService;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResourceClient;
@@ -86,6 +87,7 @@ import retrofit2.Response;
 
 public class ConnectorUtilsTest extends CIExecutionTestBase {
   @Inject CIExecutionPlanTestHelper ciExecutionPlanTestHelper;
+  @Mock private ExecutionMetricsService executionMetricsService;
   @Mock CIFeatureFlagService featureFlagService;
   @Mock private ConnectorResourceClient connectorResourceClient;
   @Mock private SecretManagerClientService secretManagerClientService;
