@@ -16,7 +16,10 @@ import io.harness.ssca.beans.drift.ComponentDriftComparator;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 import io.harness.ssca.beans.drift.ComponentSummary;
 import io.harness.ssca.beans.drift.LicenseDrift;
-import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
+import io.harness.ssca.beans.drift.LicenseDriftCalculationResult;
+import io.harness.ssca.beans.drift.LicenseDriftComparator;
+import io.harness.ssca.beans.drift.LicenseDriftStatus;
+import io.harness.ssca.entities.NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys;
 import io.harness.ssca.services.NormalisedSbomComponentService;
 
 import com.google.inject.Inject;
@@ -48,8 +51,17 @@ public class SbomDriftCalculator {
   }
 
   public List<LicenseDrift> findLicenseDrift(String baseOrchestrationId, String driftArtifactOrchestrationId) {
-    // TODO: add logic to calculate license Drift
-    return new ArrayList<>();
+    List<LicenseDriftCalculationResult> licenseDriftCalculationResults =
+        normalisedSbomComponentService.getComponentsByAggregation(
+            getLicenseDriftAggregation(baseOrchestrationId, driftArtifactOrchestrationId),
+            LicenseDriftCalculationResult.class);
+    List<LicenseDrift> licenseDrifts = new ArrayList<>();
+    if (EmptyPredicate.isNotEmpty(licenseDriftCalculationResults)) {
+      // Our aggregation query ensures there is only one element returned in the list.
+      LicenseDriftCalculationResult licenseDriftCalculationResult = licenseDriftCalculationResults.get(0);
+      licenseDrifts = mapLicenseDriftResultsToLicenseDrift(licenseDriftCalculationResult);
+    }
+    return licenseDrifts;
   }
 
   private List<ComponentDrift> mapComponentDriftResultsToComponentDrift(
@@ -106,18 +118,58 @@ public class SbomDriftCalculator {
 
   private AggregationOperation getMatchOrchestrationIdAggregation(String orchestrationId) {
     return Aggregation.match(
-        Criteria.where(NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys.orchestrationId.toLowerCase())
-            .is(orchestrationId));
+        Criteria.where(NormalizedSBOMEntityKeys.orchestrationId.toLowerCase()).is(orchestrationId));
   }
 
   private AggregationOperation getComponentSummaryProjectionsAggregation() {
     return Aggregation
-        .project(NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys.packageName.toLowerCase(),
-            NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys.packageVersion.toLowerCase(),
-            NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys.packageSupplierName.toLowerCase(),
-            NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys.packageManager.toLowerCase(),
-            NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys.packageLicense.toLowerCase(),
-            NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys.purl.toLowerCase())
+        .project(NormalizedSBOMEntityKeys.packageName.toLowerCase(),
+            NormalizedSBOMEntityKeys.packageVersion.toLowerCase(),
+            NormalizedSBOMEntityKeys.packageSupplierName.toLowerCase(),
+            NormalizedSBOMEntityKeys.packageManager.toLowerCase(),
+            NormalizedSBOMEntityKeys.packageLicense.toLowerCase(), NormalizedSBOMEntityKeys.purl.toLowerCase())
         .andExclude("_id");
+  }
+
+  private Aggregation getLicenseDriftAggregation(String baseOrchestrationId, String orchestrationId) {
+    return Aggregation.newAggregation(
+        Aggregation
+            .facet(getMatchOrchestrationIdAggregation(baseOrchestrationId), getLicenseDriftProjectionsAggregation(),
+                getLicenseUnwindAggregation(), getLicenseGroupAggregation("oldLicenses"))
+            .as("baseSet")
+            .and(getMatchOrchestrationIdAggregation(orchestrationId), getLicenseDriftProjectionsAggregation(),
+                getLicenseUnwindAggregation(), getLicenseGroupAggregation("newLicenses"))
+            .as("driftSet"),
+        Aggregation.unwind("$baseSet"), Aggregation.unwind("$driftSet"),
+        Aggregation.project()
+            .and(SetOperators.SetDifference.arrayAsSet("baseSet.oldLicenses").differenceTo("driftSet.newLicenses"))
+            .as("licensesAdded")
+            .and(SetOperators.SetDifference.arrayAsSet("driftSet.newLicenses").differenceTo("baseSet.oldLicenses"))
+            .as("licensesDeleted"));
+  }
+
+  private AggregationOperation getLicenseDriftProjectionsAggregation() {
+    return Aggregation
+        .project(NormalizedSBOMEntityKeys.orchestrationId.toLowerCase(),
+            NormalizedSBOMEntityKeys.packageLicense.toLowerCase())
+        .andExclude("_id");
+  }
+
+  private AggregationOperation getLicenseUnwindAggregation() {
+    return Aggregation.unwind("$packagelicense");
+  }
+
+  private AggregationOperation getLicenseGroupAggregation(String licenseField) {
+    return Aggregation.group("$orchestrationid").addToSet("$packagelicense").as(licenseField);
+  }
+
+  private List<LicenseDrift> mapLicenseDriftResultsToLicenseDrift(LicenseDriftCalculationResult licenseDriftResults) {
+    List<LicenseDrift> licenseDrifts = new ArrayList<>();
+    licenseDriftResults.getLicensesAdded().forEach(
+        l -> licenseDrifts.add(LicenseDrift.builder().name(l).status(LicenseDriftStatus.ADDED).build()));
+    licenseDriftResults.getLicensesDeleted().forEach(
+        l -> licenseDrifts.add(LicenseDrift.builder().name(l).status(LicenseDriftStatus.DELETED).build()));
+    licenseDrifts.sort(new LicenseDriftComparator());
+    return licenseDrifts;
   }
 }
