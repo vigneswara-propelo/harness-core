@@ -18,15 +18,11 @@ import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
 import io.harness.logging.LogCallback;
 
-import io.fabric8.istio.api.networking.v1alpha3.DestinationRule;
 import io.fabric8.istio.api.networking.v1alpha3.VirtualService;
-import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodTemplateSpec;
-import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.extensions.Ingress;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
@@ -42,7 +38,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.SneakyThrows;
 
 /**
@@ -52,8 +47,6 @@ import lombok.SneakyThrows;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
 @OwnedBy(CDP)
 public interface KubernetesContainerService {
-  HasMetadata createOrReplaceController(KubernetesConfig kubernetesConfig, HasMetadata definition);
-
   HasMetadata getControllerUsingFabric8Client(KubernetesConfig kubernetesConfig, String name);
 
   V1ObjectMeta getControllerUsingK8sClient(KubernetesConfig kubernetesConfig, String fieldSelector);
@@ -67,23 +60,10 @@ public interface KubernetesContainerService {
 
   @SuppressWarnings("squid:S1452") List<? extends HasMetadata> listControllers(KubernetesConfig kubernetesConfig);
 
-  void deleteController(KubernetesConfig kubernetesConfig, String name);
-
-  HasMetadata createOrReplaceAutoscaler(KubernetesConfig kubernetesConfig, String autoscalerYaml);
-
-  HasMetadata getAutoscaler(KubernetesConfig kubernetesConfig, String name, String apiVersion);
-
-  void deleteAutoscaler(KubernetesConfig kubernetesConfig, String name);
-
-  List<ContainerInfo> setControllerPodCount(KubernetesConfig kubernetesConfig, String clusterName,
-      String controllerName, int previousCount, int count, int serviceSteadyStateTimeout, LogCallback logCallback);
-
   @SuppressWarnings("squid:S00107")
   List<ContainerInfo> getContainerInfosWhenReady(KubernetesConfig kubernetesConfig, String controllerName,
       int previousCount, int desiredCount, int serviceSteadyStateTimeout, List<Pod> originalPods,
       boolean isNotVersioned, LogCallback logCallback, boolean wait, long startTime, String namespace);
-
-  Optional<Integer> getControllerPodCount(KubernetesConfig kubernetesConfig, String name);
 
   Integer getControllerPodCount(HasMetadata controller);
 
@@ -91,17 +71,7 @@ public interface KubernetesContainerService {
 
   LinkedHashMap<String, Integer> getActiveServiceCounts(KubernetesConfig kubernetesConfig, String containerServiceName);
 
-  LinkedHashMap<String, Integer> getActiveServiceCountsWithLabels(
-      KubernetesConfig kubernetesConfig, Map<String, String> labels);
-
-  Map<String, String> getActiveServiceImages(
-      KubernetesConfig kubernetesConfig, String containerServiceName, String imagePrefix);
-
-  Service createOrReplaceServiceFabric8(KubernetesConfig kubernetesConfig, Service definition);
-
   V1Service createOrReplaceService(KubernetesConfig kubernetesConfig, V1Service definition);
-
-  Service getServiceFabric8(KubernetesConfig kubernetesConfig, String name);
 
   V1Service getService(KubernetesConfig kubernetesConfig, String name, String namespace);
 
@@ -111,63 +81,23 @@ public interface KubernetesContainerService {
 
   List<Service> getServicesUsingFabric8Client(KubernetesConfig kubernetesConfig, Map<String, String> labels);
 
-  void deleteService(KubernetesConfig kubernetesConfig, String name);
-
-  Ingress createOrReplaceIngress(KubernetesConfig kubernetesConfig, Ingress definition);
-
-  Ingress getIngress(KubernetesConfig kubernetesConfig, String name);
-
-  void deleteIngress(KubernetesConfig kubernetesConfig, String name);
-
-  ConfigMap createOrReplaceConfigMapFabric8(KubernetesConfig kubernetesConfig, ConfigMap definition);
-
   V1ConfigMap createOrReplaceConfigMap(KubernetesConfig kubernetesConfig, V1ConfigMap definition);
-
-  ConfigMap getConfigMapFabric8(KubernetesConfig kubernetesConfig, String name);
 
   V1ConfigMap getConfigMap(KubernetesConfig kubernetesConfig, String name);
 
-  void deleteConfigMapFabric8(KubernetesConfig kubernetesConfig, String name);
-
   void deleteConfigMap(KubernetesConfig kubernetesConfig, String name);
-
-  DestinationRule getFabric8IstioDestinationRule(KubernetesConfig kubernetesConfig, String name);
 
   VirtualService createOrReplaceVirtualServiceUsingFabric8Client(
       KubernetesConfig kubernetesConfig, VirtualService definition);
 
-  DestinationRule createOrReplaceFabric8IstioDestinationRule(
-      KubernetesConfig kubernetesConfig, DestinationRule definition);
-
   KubernetesResource createOrReplaceVirtualServiceUsingK8sClient(
       KubernetesConfig kubernetesConfig, KubernetesResource virtualService);
 
-  void deleteIstioDestinationRule(KubernetesConfig kubernetesConfig, String name);
-
-  int getTrafficPercent(KubernetesConfig kubernetesConfig, String controllerName);
-
-  Map<String, Integer> getTrafficWeights(KubernetesConfig kubernetesConfig, String containerServiceName);
-
-  void createNamespaceIfNotExist(KubernetesConfig kubernetesConfig);
-
-  Secret getSecretFabric8(KubernetesConfig kubernetesConfig, String secretName);
-
   V1Secret getSecret(KubernetesConfig kubernetesConfig, String secretName);
-
-  void deleteSecretFabric8(KubernetesConfig kubernetesConfig, String name);
 
   void deleteSecret(KubernetesConfig kubernetesConfig, String name);
 
-  Secret createOrReplaceSecretFabric8(KubernetesConfig kubernetesConfig, Secret secret);
-
   V1Secret createOrReplaceSecret(KubernetesConfig kubernetesConfig, V1Secret secret);
-
-  List<Pod> getPods(KubernetesConfig kubernetesConfig, Map<String, String> labels);
-
-  List<Pod> getRunningPods(KubernetesConfig kubernetesConfig, String controllerName);
-
-  void waitForPodsToStop(KubernetesConfig kubernetesConfig, Map<String, String> labels, int serviceSteadyStateTimeout,
-      List<Pod> originalPods, long startTime, LogCallback logCallback);
 
   String fetchReleaseHistoryFromConfigMap(KubernetesConfig kubernetesConfig, String infraMappingId) throws IOException;
 
@@ -183,8 +113,6 @@ public interface KubernetesContainerService {
   List<V1Pod> getRunningPodsWithLabels(KubernetesConfig kubernetesConfig, String namespace, Map<String, String> labels);
 
   List<V1Pod> getRunningPodsWithLabels(KubernetesConfig kubernetesConfig, String namespace, List<String> labels);
-
-  void deleteIstioVirtualService(KubernetesConfig kubernetesConfig, String name);
 
   Object getVirtualServiceUsingK8sClient(KubernetesConfig kubernetesConfig, String name);
 

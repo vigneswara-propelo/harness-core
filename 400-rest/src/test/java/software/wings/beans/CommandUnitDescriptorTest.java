@@ -21,9 +21,12 @@ import software.wings.beans.command.CommandUnit;
 import software.wings.beans.command.CommandUnitDescriptor;
 import software.wings.beans.command.CommandUnitType;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
@@ -36,6 +39,8 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitParamsRunner.class)
 public class CommandUnitDescriptorTest extends CategoryTest {
   private static final Map<CommandUnitType, CommandUnitType> commandUnitCommandUnitTypeMapping;
+  private static final Set<CommandUnitType> unsupportedCommandUnitTypes =
+      new HashSet<>(Arrays.asList(CommandUnitType.KUBERNETES_SETUP, CommandUnitType.RESIZE_KUBERNETES));
   static {
     Map<CommandUnitType, CommandUnitType> map = new HashMap<>();
     map.put(CommandUnitType.ECS_SETUP_DAEMON_SCHEDULING_TYPE, CommandUnitType.ECS_SETUP);
@@ -65,6 +70,9 @@ public class CommandUnitDescriptorTest extends CategoryTest {
   public void ensureCorrectCommandUnitDescriptorExistsForType(String commandUnitTypeName) throws Exception {
     CommandUnitType commandUnitType = CommandUnitType.valueOf(UPPER_CAMEL.to(UPPER_UNDERSCORE, commandUnitTypeName));
     assertThat(commandUnitType).isNotNull();
+    if (unsupportedCommandUnitTypes.contains(commandUnitType)) {
+      return;
+    }
 
     // Ensure that the descriptor is matching the name and type of the requested CommandUnitType.
     CommandUnitDescriptor descriptor = CommandUnitDescriptor.forType(commandUnitType);

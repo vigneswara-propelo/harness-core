@@ -12,12 +12,10 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.filesystem.FileIo.getHomeDir;
 import static io.harness.govern.Switch.noop;
-import static io.harness.k8s.KubernetesConvention.DASH;
 import static io.harness.network.Http.joinHostPort;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature.WRITE_DOC_START_MARKER;
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static okhttp3.ConnectionSpec.CLEARTEXT;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -35,7 +33,6 @@ import io.harness.k8s.model.KubernetesClusterAuthType;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesConfig.KubernetesConfigBuilder;
 import io.harness.k8s.oidc.OidcTokenRetriever;
-import io.harness.logging.LogCallback;
 import io.harness.network.Http;
 import io.harness.network.NoopHostnameVerifier;
 import io.harness.yaml.YamlRepresenter;
@@ -47,14 +44,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.fabric8.istio.api.networking.v1alpha3.HTTPRouteDestination;
-import io.fabric8.istio.api.networking.v1alpha3.VirtualService;
-import io.fabric8.istio.api.networking.v1alpha3.VirtualServiceSpec;
 import io.fabric8.istio.client.DefaultIstioClient;
 import io.fabric8.istio.client.IstioClient;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
-import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscaler;
-import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscalerList;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -92,8 +84,6 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManager;
@@ -276,22 +266,6 @@ public class KubernetesHelperService {
       return config.getNamespace();
     }
     return "default";
-  }
-
-  public static void printVirtualServiceRouteWeights(
-      VirtualService virtualService, String controllerPrefix, LogCallback logCallback) {
-    VirtualServiceSpec virtualServiceSpec = virtualService.getSpec();
-    if (isNotEmpty(virtualServiceSpec.getHttp().get(0).getRoute())) {
-      List<HTTPRouteDestination> sorted = virtualServiceSpec.getHttp().get(0).getRoute();
-      sorted.sort(Comparator.comparing(a -> Integer.valueOf(a.getDestination().getSubset())));
-      for (HTTPRouteDestination destinationWeight : sorted) {
-        int weight = destinationWeight.getWeight();
-        String rev = destinationWeight.getDestination().getSubset();
-        logCallback.saveExecutionLog(format("   %s%s%s: %d%%", controllerPrefix, DASH, rev, weight));
-      }
-    } else {
-      logCallback.saveExecutionLog("   None specified");
-    }
   }
 
   private boolean shouldDisableHttp2() {
@@ -480,15 +454,6 @@ public class KubernetesHelperService {
         Resource<io.fabric8.kubernetes.api.model.autoscaling.v2beta1.HorizontalPodAutoscaler>> mixedOperation =
         kubernetesClient.autoscaling().v2beta1().horizontalPodAutoscalers();
     return mixedOperation.inNamespace(kubernetesConfig.getNamespace());
-  }
-
-  public NonNamespaceOperation<HorizontalPodAutoscaler, HorizontalPodAutoscalerList, Resource<HorizontalPodAutoscaler>>
-  hpaOperations(KubernetesConfig kubernetesConfig) {
-    return getKubernetesClient(kubernetesConfig)
-        .autoscaling()
-        .v1()
-        .horizontalPodAutoscalers()
-        .inNamespace(kubernetesConfig.getNamespace());
   }
 
   /**

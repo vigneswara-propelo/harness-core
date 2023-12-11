@@ -141,7 +141,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -998,8 +997,6 @@ public class HelmDeployServiceImplTest extends WingsBaseTest {
     when(containerDeploymentDelegateBaseHelper.getContainerInfosWhenReadyByLabels(
              any(), any(), any(), eq(Collections.emptyList())))
         .thenReturn(asList(new ContainerInfo()));
-    when(containerDeploymentDelegateBaseHelper.getExistingPodsByLabels(any(KubernetesConfig.class), any(Map.class)))
-        .thenReturn(Collections.emptyList());
 
     HelmInstallCommandResponse response = (HelmInstallCommandResponse) helmDeployService.rollback(request);
     assertThat(response.getContainerInfoList()).isNotEmpty();

@@ -295,25 +295,9 @@ public class ContainerDeploymentDelegateBaseHelperTest extends CategoryTest {
   @Test
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
-  public void getExistingPodsByLabels() {
-    KubernetesConfig kubernetesConfig = KubernetesConfig.builder().namespace("default").build();
-    Map<String, String> labels = new HashMap<>();
-
-    when(kubernetesContainerService.getPods(kubernetesConfig, labels)).thenReturn(asList(new Pod()));
-
-    final List<Pod> pods = containerDeploymentDelegateBaseHelper.getExistingPodsByLabels(kubernetesConfig, labels);
-    assertThat(pods).hasSize(1);
-    verify(kubernetesContainerService, times(1)).getPods(kubernetesConfig, labels);
-  }
-
-  @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
   public void testGetContainerInfosWhenReadyByLabel() {
     KubernetesConfig kubernetesConfig = mock(KubernetesConfig.class);
     List<Pod> existingPods = asList(new Pod());
-
-    when(kubernetesContainerService.getPods(eq(kubernetesConfig), anyMap())).thenReturn(existingPods);
     doReturn(null)
         .when(containerDeploymentDelegateBaseHelper)
         .getContainerInfosWhenReadyByLabels(any(KubernetesConfig.class), any(LogCallback.class), anyMap(), anyList());

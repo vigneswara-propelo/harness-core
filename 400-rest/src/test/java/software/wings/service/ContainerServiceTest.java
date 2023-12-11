@@ -58,7 +58,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -155,8 +154,6 @@ public class ContainerServiceTest extends WingsBaseTest {
         .thenReturn(kubernetesConfig);
     when(kubernetesContainerService.getRunningPodsWithLabels(eq(kubernetesConfig), anyString(), anyMap()))
         .thenReturn(singletonList(pod));
-    when(kubernetesContainerService.getControllerPodCount(eq(kubernetesConfig), anyString()))
-        .thenReturn(Optional.of(2));
     when(kubernetesContainerService.getControllerPodCount(any(ReplicationController.class))).thenReturn(2);
     doReturn(null).when(encryptionService).decrypt(eq(kubernetesClusterConfig), any(), eq(false));
 

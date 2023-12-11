@@ -11,9 +11,7 @@ import static software.wings.beans.Graph.Builder.aGraph;
 import static software.wings.beans.Graph.graphIdGenerator;
 import static software.wings.beans.command.Command.Builder.aCommand;
 import static software.wings.beans.command.CommandUnitType.ECS_SETUP;
-import static software.wings.beans.command.CommandUnitType.KUBERNETES_SETUP;
 import static software.wings.beans.command.CommandUnitType.RESIZE;
-import static software.wings.beans.command.CommandUnitType.RESIZE_KUBERNETES;
 
 import static java.util.Arrays.asList;
 
@@ -44,18 +42,6 @@ public class DockerArtifactCommands implements ArtifactCommands {
                                      .buildPipeline())
                       .build(),
         aCommand()
-            .withCommandType(CommandType.SETUP)
-            .withGraph(aGraph()
-                           .withGraphName("Setup Replication Controller")
-                           .addNodes(GraphNode.builder()
-                                         .origin(true)
-                                         .id(graphIdGenerator("node"))
-                                         .name("Setup Kubernetes Replication Controller")
-                                         .type(KUBERNETES_SETUP.name())
-                                         .build())
-                           .buildPipeline())
-            .build(),
-        aCommand()
             .withCommandType(CommandType.RESIZE)
             .withGraph(aGraph()
                            .withGraphName("Resize Service Cluster")
@@ -64,18 +50,6 @@ public class DockerArtifactCommands implements ArtifactCommands {
                                          .id(graphIdGenerator("node"))
                                          .name("Resize ECS Service")
                                          .type(RESIZE.name())
-                                         .build())
-                           .buildPipeline())
-            .build(),
-        aCommand()
-            .withCommandType(CommandType.RESIZE)
-            .withGraph(aGraph()
-                           .withGraphName("Resize Replication Controller")
-                           .addNodes(GraphNode.builder()
-                                         .origin(true)
-                                         .id(graphIdGenerator("node"))
-                                         .name("Resize Kubernetes Replication Controller")
-                                         .type(RESIZE_KUBERNETES.name())
                                          .build())
                            .buildPipeline())
             .build());

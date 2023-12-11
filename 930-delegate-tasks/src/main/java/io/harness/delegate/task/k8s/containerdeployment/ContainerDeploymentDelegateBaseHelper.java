@@ -9,7 +9,6 @@ package io.harness.delegate.task.k8s;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.azure.model.AzureConstants.AZURE_AUTH_CERT_DIR_PATH;
 import static io.harness.azure.model.AzureConstants.REPOSITORY_DIR_PATH;
-import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.beans.connector.gcpconnector.GcpCredentialType.INHERIT_FROM_DELEGATE;
 import static io.harness.delegate.beans.connector.gcpconnector.GcpCredentialType.MANUAL_CREDENTIALS;
@@ -36,7 +35,6 @@ import io.harness.delegate.beans.connector.k8Connector.KubernetesClusterConfigDT
 import io.harness.delegate.beans.connector.k8Connector.KubernetesClusterDetailsDTO;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesCredentialType;
 import io.harness.delegate.beans.connector.rancher.RancherConfigType;
-import io.harness.delegate.beans.connector.rancher.RancherConnectorBearerTokenAuthenticationDTO;
 import io.harness.delegate.beans.connector.rancher.RancherConnectorConfigAuthDTO;
 import io.harness.delegate.beans.connector.rancher.RancherConnectorConfigAuthenticationSpecDTO;
 import io.harness.delegate.beans.connector.rancher.RancherConnectorDTO;
@@ -73,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -95,11 +92,6 @@ public class ContainerDeploymentDelegateBaseHelper {
   public static final LoadingCache<String, Object> lockObjects =
       CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES).build(CacheLoader.from(Object::new));
   private static final String KUBE_CONFIG_DIR = "./repository/helm/.kube/";
-
-  @NotNull
-  public List<Pod> getExistingPodsByLabels(KubernetesConfig kubernetesConfig, Map<String, String> labels) {
-    return emptyIfNull(kubernetesContainerService.getPods(kubernetesConfig, labels));
-  }
 
   private List<ContainerInfo> fetchContainersUsingControllersWhenReady(KubernetesConfig kubernetesConfig,
       LogCallback executionLogCallback, List<? extends HasMetadata> controllers, List<Pod> existingPods) {

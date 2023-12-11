@@ -54,7 +54,6 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.concurent.HTimeLimiterMocker;
-import io.harness.container.ContainerInfo;
 import io.harness.exception.InvalidRequestException;
 import io.harness.filesystem.FileIo;
 import io.harness.k8s.config.K8sGlobalConfigService;
@@ -78,7 +77,6 @@ import com.google.gson.reflect.TypeToken;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.ConfigMapList;
-import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -173,7 +171,6 @@ import okhttp3.internal.http2.ConnectionShutdownException;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -380,8 +377,6 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
     when(kubernetesClient.configMaps()).thenReturn(configMapOperations);
     when(configMapOperations.inNamespace(anyString())).thenReturn(namespacedConfigMaps);
     when(namespacedConfigMaps.withName(anyString())).thenReturn(configMapResource);
-
-    when(kubernetesHelperService.hpaOperations(KUBERNETES_CONFIG)).thenReturn(namespacedHpa);
     when(namespacedHpa.withName(anyString())).thenReturn(horizontalPodAutoscalerResource);
     when(v2Beta1NamespacedHpa.withName(anyString())).thenReturn(v2Beta1HorizontalPodAutoscalerResource);
 
@@ -422,67 +417,6 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
   @After
   public void tearDown() throws Exception {
     FileIo.deleteDirectoryAndItsContentIfExists(workingDir.toString());
-  }
-
-  @Test
-  @Owner(developers = BRETT)
-  @Category(UnitTests.class)
-  public void shouldDeleteController() throws Exception {
-    kubernetesContainerService.deleteController(KUBERNETES_CONFIG, "ctrl");
-
-    ArgumentCaptor<String> args = ArgumentCaptor.forClass(String.class);
-    verify(namespacedReplicationControllers).withName(args.capture());
-    assertThat(args.getValue()).isEqualTo("ctrl");
-    verify(scalableReplicationController).delete();
-
-    HTimeLimiterMocker.mockCallInterruptible(timeLimiter).thenReturn(deployment);
-    kubernetesContainerService.deleteController(KUBERNETES_CONFIG, "ctrl");
-    verify(scalableDeployment).delete();
-
-    HTimeLimiterMocker.mockCallInterruptible(timeLimiter).thenReturn(statefulSet);
-    kubernetesContainerService.deleteController(KUBERNETES_CONFIG, "ctrl");
-    verify(statefulSetResource).delete();
-
-    HTimeLimiterMocker.mockCallInterruptible(timeLimiter).thenReturn(daemonSet);
-    kubernetesContainerService.deleteController(KUBERNETES_CONFIG, "ctrl");
-    verify(daemonSetResource).delete();
-  }
-
-  @Test
-  @Owner(developers = BRETT)
-  @Category(UnitTests.class)
-  public void shouldDeleteService() {
-    kubernetesContainerService.deleteService(KUBERNETES_CONFIG, "service");
-
-    ArgumentCaptor<String> args = ArgumentCaptor.forClass(String.class);
-    verify(namespacedServices).withName(args.capture());
-    assertThat(args.getValue()).isEqualTo("service");
-    verify(serviceResource).delete();
-  }
-
-  @Test
-  @Owner(developers = BRETT)
-  @Category(UnitTests.class)
-  @Ignore("TODO: please provide clear motivation why this test is ignored")
-  public void shouldSetControllerPodCount() {
-    List<ContainerInfo> containerInfos =
-        kubernetesContainerService.setControllerPodCount(KUBERNETES_CONFIG, "foo", "bar", 0, 3, 10, null);
-
-    ArgumentCaptor<Integer> args = ArgumentCaptor.forClass(Integer.class);
-    verify(scalableReplicationController).scale(args.capture());
-    assertThat(args.getValue()).isEqualTo(3);
-
-    assertThat(containerInfos.size()).isEqualTo(3);
-  }
-
-  @Test
-  @Owner(developers = BRETT)
-  @Category(UnitTests.class)
-  public void shouldGetControllerPodCount() throws Exception {
-    Optional<Integer> count = kubernetesContainerService.getControllerPodCount(KUBERNETES_CONFIG, "foo");
-
-    assertThat(count.isPresent()).isTrue();
-    assertThat(count.get()).isEqualTo(8);
   }
 
   @Test
@@ -537,104 +471,6 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
-  public void testGetControllers() {
-    testGetDeploymentConfig();
-  }
-
-  private void testGetDeploymentConfig() {
-    Map<String, String> labels = new HashMap<>();
-    when(openShiftClient.deploymentConfigs()).thenReturn(deploymentConfigsOperation);
-    when(deploymentConfigsOperation.inNamespace("default")).thenReturn(deploymentConfigs);
-
-    kubernetesContainerService.getControllers(KUBERNETES_CONFIG, labels);
-
-    verify(deploymentConfigs, times(1)).withLabels(labels);
-  }
-
-  @Test
-  @Owner(developers = ANSHUL)
-  @Category(UnitTests.class)
-  public void testCreateOrReplaceController() throws Exception {
-    ObjectMeta objectMeta = new ObjectMeta();
-    objectMeta.setName("controller");
-    replicationController.setMetadata(objectMeta);
-    kubernetesContainerService.createOrReplaceController(KUBERNETES_CONFIG, replicationController);
-    verify(namespacedReplicationControllers).createOrReplace(replicationController);
-
-    deployment.setMetadata(objectMeta);
-    kubernetesContainerService.createOrReplaceController(KUBERNETES_CONFIG, deployment);
-    verify(namespacedDeployments).createOrReplace(deployment);
-
-    statefulSet.setMetadata(objectMeta);
-    HTimeLimiterMocker.mockCallInterruptible(timeLimiter).thenReturn(statefulSet);
-    kubernetesContainerService.createOrReplaceController(KUBERNETES_CONFIG, statefulSet);
-    verify(namespacedStatefulsets.withName(anyString())).patch(statefulSet);
-
-    HTimeLimiterMocker.mockCallInterruptible(timeLimiter).thenReturn(null);
-    kubernetesContainerService.createOrReplaceController(KUBERNETES_CONFIG, statefulSet);
-    verify(namespacedStatefulsets).create(statefulSet);
-
-    daemonSet.setMetadata(objectMeta);
-    kubernetesContainerService.createOrReplaceController(KUBERNETES_CONFIG, daemonSet);
-    verify(namespacedDaemonSet).createOrReplace(daemonSet);
-  }
-
-  @Test
-  @Owner(developers = ANSHUL)
-  @Category(UnitTests.class)
-  public void testCreateNamespaceIfNotExist() {
-    when(namespaceResource.get()).thenReturn(null);
-    kubernetesContainerService.createNamespaceIfNotExist(KUBERNETES_CONFIG);
-    verify(namespacedNamespaces).create(any(Namespace.class));
-  }
-
-  @Test
-  @Owner(developers = ANSHUL)
-  @Category(UnitTests.class)
-  public void testSecrets() {
-    Secret returnedSecret = kubernetesContainerService.getSecretFabric8(KUBERNETES_CONFIG, "");
-    assertThat(returnedSecret).isNull();
-
-    when(secretResource.get()).thenReturn(secret);
-    kubernetesContainerService.getSecretFabric8(KUBERNETES_CONFIG, "secret");
-    verify(secretResource).get();
-
-    kubernetesContainerService.deleteSecretFabric8(KUBERNETES_CONFIG, "secret");
-    verify(secretResource).delete();
-
-    kubernetesContainerService.createOrReplaceSecretFabric8(KUBERNETES_CONFIG, secret);
-    verify(namespacedSecrets).createOrReplace(secret);
-  }
-
-  @Test
-  @Owner(developers = ANSHUL)
-  @Category(UnitTests.class)
-  public void testConfigMap() {
-    when(configMapResource.get()).thenReturn(configMap);
-    kubernetesContainerService.getConfigMapFabric8(KUBERNETES_CONFIG, "cm");
-    verify(configMapResource).get();
-
-    kubernetesContainerService.deleteConfigMapFabric8(KUBERNETES_CONFIG, "cm-delete");
-    ArgumentCaptor<String> args = ArgumentCaptor.forClass(String.class);
-    verify(namespacedConfigMaps, times(2)).withName(args.capture());
-    assertThat(args.getValue()).isEqualTo("cm-delete");
-    verify(configMapResource).delete();
-
-    ObjectMeta objectMeta = new ObjectMeta();
-    objectMeta.setName("cm");
-    replicationController.setMetadata(objectMeta);
-    configMap.setMetadata(objectMeta);
-    kubernetesContainerService.createOrReplaceConfigMapFabric8(KUBERNETES_CONFIG, configMap);
-    verify(namespacedConfigMaps).createOrReplace(configMap);
-
-    when(kubernetesClient.configMaps()).thenThrow(new InvalidRequestException("test"));
-    ConfigMap returnedConfigMap = kubernetesContainerService.getConfigMapFabric8(KUBERNETES_CONFIG, "");
-    assertThat(returnedConfigMap).isNull();
-  }
-
-  @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testGetService() throws Exception {
@@ -672,37 +508,6 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
   @Test
   @Owner(developers = ANSHUL)
   @Category(UnitTests.class)
-  public void testGetAutoscaler() {
-    when(horizontalPodAutoscalerResource.get()).thenReturn(horizontalPodAutoscaler);
-    when(v2Beta1HorizontalPodAutoscalerResource.get()).thenReturn(v2Beta1HorizontalPodAutoscaler);
-    HasMetadata autoscaler = kubernetesContainerService.getAutoscaler(KUBERNETES_CONFIG, "autoscalar", "v1");
-    assertThat(autoscaler).isEqualTo(horizontalPodAutoscaler);
-    verify(horizontalPodAutoscalerResource).get();
-    verify(kubernetesHelperService).hpaOperations(KUBERNETES_CONFIG);
-    verify(kubernetesHelperService, never()).hpaOperationsForCustomMetricHPA(KUBERNETES_CONFIG, "v1alpha1");
-
-    when(kubernetesHelperService.hpaOperationsForCustomMetricHPA(KUBERNETES_CONFIG, "v1alpha1"))
-        .thenReturn(v2Beta1NamespacedHpa);
-    autoscaler = kubernetesContainerService.getAutoscaler(KUBERNETES_CONFIG, "autoscalar", "v1alpha1");
-    assertThat(autoscaler).isEqualTo(v2Beta1HorizontalPodAutoscaler);
-    verify(kubernetesHelperService).hpaOperations(KUBERNETES_CONFIG);
-    verify(kubernetesHelperService).hpaOperationsForCustomMetricHPA(KUBERNETES_CONFIG, "v1alpha1");
-    verify(v2Beta1HorizontalPodAutoscalerResource, times(1)).get();
-  }
-  @Test
-  @Owner(developers = ANSHUL)
-  @Category(UnitTests.class)
-  public void testDeleteAutoscaler() {
-    kubernetesContainerService.deleteAutoscaler(KUBERNETES_CONFIG, "hpa");
-    ArgumentCaptor<String> args = ArgumentCaptor.forClass(String.class);
-    verify(namespacedHpa).withName(args.capture());
-    assertThat(args.getValue()).isEqualTo("hpa");
-    verify(horizontalPodAutoscalerResource).delete();
-  }
-
-  @Test
-  @Owner(developers = ANSHUL)
-  @Category(UnitTests.class)
   public void testGetActiveServiceCounts() {
     ObjectMeta objectMeta = new ObjectMeta();
     objectMeta.setName("controller");
@@ -717,26 +522,6 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
     assertThat(activeServiceCounts.get("controller")).isEqualTo(2);
 
     activeServiceCounts = kubernetesContainerService.getActiveServiceCounts(KUBERNETES_CONFIG, "ctlr-2");
-    assertThat(activeServiceCounts).isEmpty();
-  }
-
-  @Test
-  @Owner(developers = ANSHUL)
-  @Category(UnitTests.class)
-  public void testGetActiveServiceCountsWithLabels() {
-    ObjectMeta objectMeta = new ObjectMeta();
-    objectMeta.setName("controller");
-    deployment.setMetadata(objectMeta);
-    DeploymentList deploymentList = new DeploymentList();
-    deploymentList.setItems(asList(deployment));
-
-    when(deploymentFilteredList.list()).thenReturn(deploymentList);
-    LinkedHashMap<String, Integer> activeServiceCounts =
-        kubernetesContainerService.getActiveServiceCountsWithLabels(KUBERNETES_CONFIG, emptyMap());
-    assertThat(activeServiceCounts.get("controller")).isEqualTo(2);
-
-    when(deploymentFilteredList.list()).thenReturn(new DeploymentList());
-    activeServiceCounts = kubernetesContainerService.getActiveServiceCountsWithLabels(KUBERNETES_CONFIG, emptyMap());
     assertThat(activeServiceCounts).isEmpty();
   }
 
