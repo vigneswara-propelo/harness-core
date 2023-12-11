@@ -1,0 +1,10 @@
+{
+  "@type": "MessageCard",
+  "themeColor": "#FFFFFF",
+  "summary": " Harness Chaos Experiment ${EXPERIMENT_ID} has stopped",
+  "sections": [
+    {
+      "activityTitle": "Harness Chaos Experiment ${EXPERIMENT_ID} has been stopped for the project - ${PROJECT_ID} under the organization - ${ORG_ID}."
+    }
+  ]
+}

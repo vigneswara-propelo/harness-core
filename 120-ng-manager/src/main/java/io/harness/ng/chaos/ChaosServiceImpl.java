@@ -8,6 +8,8 @@
 package io.harness.ng.chaos;
 
 import static io.harness.NGConstants.ENTITY_REFERENCE_LOG_PREFIX;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
 
 import static software.wings.utils.Utils.emptyIfNull;
 
@@ -22,6 +24,10 @@ import io.harness.eventsframework.schemas.entity.EntityTypeProtoEnum;
 import io.harness.eventsframework.schemas.entity.IdentifierRefProtoDTO;
 import io.harness.eventsframework.schemas.entitysetupusage.DeleteSetupUsageDTO;
 import io.harness.eventsframework.schemas.entitysetupusage.EntitySetupUsageCreateV2DTO;
+import io.harness.notification.NotificationTriggerRequest;
+import io.harness.notification.entities.NotificationEntity;
+import io.harness.notification.entities.NotificationEvent;
+import io.harness.notification.notificationclient.NotificationClient;
 import io.harness.utils.FullyQualifiedIdentifierHelper;
 import io.harness.waiter.WaitNotifyEngine;
 
@@ -29,6 +35,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -37,6 +45,8 @@ public class ChaosServiceImpl implements ChaosService {
   @Inject private WaitNotifyEngine waitNotifyEngine;
   @Inject @Named(EventsFrameworkConstants.SETUP_USAGE) private Producer eventProducer;
   @Inject private IdentifierRefProtoDTOHelper identifierRefProtoDTOHelper;
+
+  @Inject NotificationClient notificationClient;
 
   @Override
   public void notifyStep(String notifyId, ChaosStepNotifyData data) {
@@ -228,5 +238,53 @@ public class ChaosServiceImpl implements ChaosService {
       return false;
     }
     return true;
+  }
+
+  @Override
+  public void experimentNotificationTrigger(ExperimentNotificationRequest experimentNotificationRequest) {
+    String notificationTriggerRequestId = generateUuid();
+    String accountIdentifier = experimentNotificationRequest.getAccountId();
+    String orgIdentifier = experimentNotificationRequest.getOrgId();
+    String projectIdentifier = experimentNotificationRequest.getProjectId();
+    String experimentName = experimentNotificationRequest.getExperimentName();
+    String eventIdentifier = experimentNotificationRequest.getEventTemplateIdentifier();
+    String eventName = getEventName(eventIdentifier);
+
+    if (!isNotEmpty(eventName)) {
+      log.error("Unknown event identifier {} received for chaos experiment notification, correlationId: {}",
+          eventIdentifier, experimentNotificationRequest.getCorrelationId());
+      return;
+    }
+
+    Map<String, String> templateData = new HashMap<>();
+    templateData.put("EXPERIMENT_ID", experimentName);
+    templateData.put("PROJECT_ID", projectIdentifier);
+    templateData.put("ORG_ID", orgIdentifier);
+    templateData.put("TEMPLATE_IDENTIFIER", eventIdentifier);
+    NotificationTriggerRequest.Builder notificationTriggerRequestBuilder =
+        NotificationTriggerRequest.newBuilder()
+            .setId(notificationTriggerRequestId)
+            .setAccountId(accountIdentifier)
+            .setOrgId(orgIdentifier)
+            .setProjectId(projectIdentifier)
+            .setEventEntity(NotificationEntity.CHAOS_EXPERIMENT.name())
+            .setEvent(eventName)
+            .putAllTemplateData(templateData);
+    log.info("Sending {} notification for {}, correlationId: {}", eventIdentifier, experimentName,
+        experimentNotificationRequest.getCorrelationId());
+    notificationClient.sendNotificationTrigger(notificationTriggerRequestBuilder.build());
+  }
+
+  private static String getEventName(String eventTemplateIdentifier) {
+    switch (eventTemplateIdentifier) {
+      case "chaos_experiment_started":
+        return NotificationEvent.CHAOS_EXPERIMENT_STARTED.name();
+      case "chaos_experiment_completed":
+        return NotificationEvent.CHAOS_EXPERIMENT_COMPLETED.name();
+      case "chaos_experiment_stopped":
+        return NotificationEvent.CHAOS_EXPERIMENT_STOPPED.name();
+      default:
+        return null;
+    }
   }
 }

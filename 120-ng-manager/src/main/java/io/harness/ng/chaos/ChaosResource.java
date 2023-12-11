@@ -113,4 +113,15 @@ public class ChaosResource {
     boolean result = chaosService.deleteChaosHub(chaosHubRequest);
     return ResponseDTO.newResponse(result);
   }
+
+  @POST
+  @Path("chaosExperimentNotification")
+  @InternalApi
+  @ApiOperation(
+      value = "Trigger notification for chaos experiment", nickname = "chaosExperimentNotification", hidden = true)
+  public ResponseDTO<Void>
+  experimentStartedNotificationTrigger(@Body ExperimentNotificationRequest experimentNotificationRequest) {
+    chaosService.experimentNotificationTrigger(experimentNotificationRequest);
+    return ResponseDTO.newResponse();
+  }
 }

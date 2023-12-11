@@ -126,6 +126,7 @@ import io.harness.migration.NGMigrationSdkInitHelper;
 import io.harness.migration.NGMigrationSdkModule;
 import io.harness.migration.beans.NGMigrationConfiguration;
 import io.harness.migrations.InstanceMigrationProvider;
+import io.harness.ng.chaos.ChaosNotificationTemplateRegistrar;
 import io.harness.ng.core.CorrelationFilter;
 import io.harness.ng.core.DefaultUserGroupsCreationJob;
 import io.harness.ng.core.EtagFilter;
@@ -494,6 +495,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
     if (!appConfig.isDisableFreezeNotificationTemplate()) {
       registerNotificationTemplates(injector);
     }
+    registerChaosNotificationTemplates(injector);
     registerPmsSdkEvents(appConfig, injector);
     registerDebeziumEvents(appConfig, injector);
     initializeMonitoring(appConfig, injector);
@@ -550,6 +552,12 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
     ExecutorService executorService =
         injector.getInstance(Key.get(ExecutorService.class, Names.named("freezeTemplateRegistrationExecutorService")));
     executorService.submit(injector.getInstance(FreezeNotificationTemplateRegistrar.class));
+  }
+
+  private void registerChaosNotificationTemplates(Injector injector) {
+    ExecutorService executorService =
+        injector.getInstance(Key.get(ExecutorService.class, Names.named("chaosTemplateRegistrationExecutorService")));
+    executorService.submit(injector.getInstance(ChaosNotificationTemplateRegistrar.class));
   }
 
   private void initializeNGMonitoring(NextGenConfiguration appConfig, Injector injector) {

@@ -1,0 +1,3 @@
+{
+    "text": "Harness Chaos Experiment ${EXPERIMENT_ID} has been stopped for the project - ${PROJECT_ID} under the organization - ${ORG_ID}."
+}

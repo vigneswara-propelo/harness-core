@@ -172,7 +172,42 @@ public enum PredefinedTemplate {
   DELEGATE_DOWN_WEBHOOK("notificationtemplates/webhook/delegate_disconnected.txt", "delegate_disconnected_webhook"),
   DELEGATE_EXPIRED_WEBHOOK("notificationtemplates/webhook/delegate_expired.txt", "delegate_expired_webhook"),
   DELEGATE_ABOUT_EXPIRE_WEBHOOK(
-      "notificationtemplates/webhook/delegate_about_to_expire.txt", "delegate_about_to_expire_webhook");
+      "notificationtemplates/webhook/delegate_about_to_expire.txt", "delegate_about_to_expire_webhook"),
+  //  Chaos experiment mail templates
+  CHAOS_EXPERIMENT_STARTED_EMAIL(
+      "notification_templates/chaos/email/chaos_experiment_started.txt", "chaos_experiment_started_email"),
+  CHAOS_EXPERIMENT_COMPLETED_EMAIL(
+      "notification_templates/chaos/email/chaos_experiment_completed.txt", "chaos_experiment_completed_email"),
+  CHAOS_EXPERIMENT_STOPPED_EMAIL(
+      "notification_templates/chaos/email/chaos_experiment_stopped.txt", "chaos_experiment_stopped_email"),
+  //  Chaos experiment msteams templates
+  CHAOS_EXPERIMENT_STARTED_MSTEAMS(
+      "notification_templates/chaos/msteams/chaos_experiment_started.txt", "chaos_experiment_started_msteams"),
+  CHAOS_EXPERIMENT_COMPLETED_MSTEAMS(
+      "notification_templates/chaos/msteams/chaos_experiment_completed.txt", "chaos_experiment_completed_msteams"),
+  CHAOS_EXPERIMENT_STOPPED_MSTEAMS(
+      "notification_templates/chaos/msteams/chaos_experiment_stopped.txt", "chaos_experiment_stopped_msteams"),
+  //  Chaos experiment pagerduty templates
+  CHAOS_EXPERIMENT_STARTED_PAGERDUTY(
+      "notification_templates/chaos/pagerduty/chaos_experiment_started.txt", "chaos_experiment_started_pagerduty"),
+  CHAOS_EXPERIMENT_COMPLETED_PAGERDUTY(
+      "notification_templates/chaos/pagerduty/chaos_experiment_completed.txt", "chaos_experiment_completed_pagerduty"),
+  CHAOS_EXPERIMENT_STOPPED_PAGERDUTY(
+      "notification_templates/chaos/pagerduty/chaos_experiment_stopped.txt", "chaos_experiment_stopped_pagerduty"),
+  //  Chaos experiment slack templates
+  CHAOS_EXPERIMENT_STARTED_SLACK(
+      "notification_templates/chaos/slack/chaos_experiment_started.txt", "chaos_experiment_started_slack"),
+  CHAOS_EXPERIMENT_COMPLETED_SLACK(
+      "notification_templates/chaos/slack/chaos_experiment_completed.txt", "chaos_experiment_completed_slack"),
+  CHAOS_EXPERIMENT_STOPPED_SLACK(
+      "notification_templates/chaos/slack/chaos_experiment_stopped.txt", "chaos_experiment_stopped_slack"),
+  //  Chaos experiment webhook templates
+  CHAOS_EXPERIMENT_STARTED_WEBHOOK(
+      "notification_templates/chaos/webhook/chaos_experiment_started.txt", "chaos_experiment_started_webhook"),
+  CHAOS_EXPERIMENT_COMPLETED_WEBHOOK(
+      "notification_templates/chaos/webhook/chaos_experiment_completed.txt", "chaos_experiment_completed_webhook"),
+  CHAOS_EXPERIMENT_STOPPED_WEBHOOK(
+      "notification_templates/chaos/webhook/chaos_experiment_stopped.txt", "chaos_experiment_stopped_webhook");
 
   private String path;
   private String identifier;
