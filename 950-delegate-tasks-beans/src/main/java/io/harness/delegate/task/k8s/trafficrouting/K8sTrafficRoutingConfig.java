@@ -12,13 +12,16 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 
 import java.util.List;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
 @SuperBuilder
-public abstract class K8sTrafficRoutingConfig {
-  @Getter List<TrafficRoute> routes;
-  @Getter List<TrafficRoutingDestination> destinations;
-  public abstract ProviderType getProviderType();
+@Data
+@Builder
+public class K8sTrafficRoutingConfig {
+  List<TrafficRoute> routes;
+  List<TrafficRoutingDestination> destinations;
+  ProviderConfig providerConfig;
 }

@@ -8,6 +8,7 @@
 package io.harness.cdng.k8s.trafficrouting;
 
 import static io.harness.rule.OwnerRule.BUHA;
+import static io.harness.rule.OwnerRule.MLUKIC;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -17,6 +18,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.delegate.task.k8s.trafficrouting.HeaderConfig;
 import io.harness.delegate.task.k8s.trafficrouting.IstioProviderConfig;
 import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfig;
+import io.harness.delegate.task.k8s.trafficrouting.ProviderType;
 import io.harness.delegate.task.k8s.trafficrouting.RouteType;
 import io.harness.delegate.task.k8s.trafficrouting.RuleType;
 import io.harness.delegate.task.k8s.trafficrouting.SMIProviderConfig;
@@ -87,10 +89,12 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    SMIProviderConfig smiProviderConfig = (SMIProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.SMI);
+    SMIProviderConfig smiProviderConfig = (SMIProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(smiProviderConfig.getRootService()).isEqualTo(ROOT_SERVICE);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.URI, URI_VALUE, null, null, null);
-    assertDestinations(smiProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.URI, URI_VALUE, null, null, null);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -104,11 +108,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    SMIProviderConfig smiProviderConfig = (SMIProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.SMI);
+    SMIProviderConfig smiProviderConfig = (SMIProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(smiProviderConfig.getRootService()).isEqualTo(ROOT_SERVICE);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.METHOD, null,
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.METHOD, null,
         METHOD_VALUES.stream().map(Enum::name).collect(Collectors.toList()), null, null);
-    assertDestinations(smiProviderConfig.getDestinations());
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -122,10 +128,12 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    SMIProviderConfig smiProviderConfig = (SMIProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.SMI);
+    SMIProviderConfig smiProviderConfig = (SMIProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(smiProviderConfig.getRootService()).isEqualTo(ROOT_SERVICE);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.HEADER, null, null, null, HEADER_CONFIG);
-    assertDestinations(smiProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.HEADER, null, null, null, HEADER_CONFIG);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -139,11 +147,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.ISTIO);
+    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(istioProviderConfig.getHosts()).isEqualTo(HOSTS);
     assertThat(istioProviderConfig.getGateways()).isEqualTo(GATEWAYS);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.URI, URI_VALUE, null, MatchType.PREFIX, null);
-    assertDestinations(istioProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.URI, URI_VALUE, null, MatchType.PREFIX, null);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -157,11 +167,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.ISTIO);
+    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(istioProviderConfig.getHosts()).isEqualTo(HOSTS);
     assertThat(istioProviderConfig.getGateways()).isEqualTo(GATEWAYS);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.SCHEME, SCHEME_VALUE, null, MatchType.EXACT, null);
-    assertDestinations(istioProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.SCHEME, SCHEME_VALUE, null, MatchType.EXACT, null);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -175,11 +187,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.ISTIO);
+    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(istioProviderConfig.getHosts()).isEqualTo(HOSTS);
     assertThat(istioProviderConfig.getGateways()).isEqualTo(GATEWAYS);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.METHOD, "GET", null, MatchType.EXACT, null);
-    assertDestinations(istioProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.METHOD, "GET", null, MatchType.EXACT, null);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -193,11 +207,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.ISTIO);
+    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(istioProviderConfig.getHosts()).isEqualTo(HOSTS);
     assertThat(istioProviderConfig.getGateways()).isEqualTo(GATEWAYS);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.AUTHORITY, AUTHORITY_VALUE, null, MatchType.EXACT, null);
-    assertDestinations(istioProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.AUTHORITY, AUTHORITY_VALUE, null, MatchType.EXACT, null);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -211,11 +227,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.ISTIO);
+    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(istioProviderConfig.getHosts()).isEqualTo(HOSTS);
     assertThat(istioProviderConfig.getGateways()).isEqualTo(GATEWAYS);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.HEADER, null, null, null, HEADER_CONFIG_WITH_MATCH_TYPE);
-    assertDestinations(istioProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.HEADER, null, null, null, HEADER_CONFIG_WITH_MATCH_TYPE);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test
@@ -228,11 +246,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
-    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfig.get();
+    K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
+    assertThat(k8sTrafficRoutingConfigResponse.getProviderConfig().getProviderType()).isEqualTo(ProviderType.ISTIO);
+    IstioProviderConfig istioProviderConfig = (IstioProviderConfig) k8sTrafficRoutingConfigResponse.getProviderConfig();
     assertThat(istioProviderConfig.getHosts()).isEqualTo(HOSTS);
     assertThat(istioProviderConfig.getGateways()).isEqualTo(GATEWAYS);
-    assertRoutes(k8sTrafficRoutingConfig.get(), RuleType.PORT, String.valueOf(PORT_VALUE), null, null, null);
-    assertDestinations(istioProviderConfig.getDestinations());
+    assertRoutes(k8sTrafficRoutingConfigResponse, RuleType.PORT, String.valueOf(PORT_VALUE), null, null, null);
+    assertDestinations(k8sTrafficRoutingConfigResponse.getDestinations());
   }
 
   @Test(expected = InvalidArgumentsException.class)
@@ -291,6 +311,22 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
         getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO, getHeaderRuleSpec(null));
 
     k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+  }
+
+  @Test
+  @Owner(developers = MLUKIC)
+  @Category(UnitTests.class)
+  public void testTrafficRoutingInheritType() {
+    List<K8sTrafficRoutingDestination> destinations = getDestinationSpec();
+    K8sTrafficRoutingDestinations k8sTrafficRoutingDestinations =
+        K8sTrafficRoutingDestinations.builder().destinations(destinations).build();
+    Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
+        k8sTrafficRoutingHelper.validateAndGetInheritedTrafficRoutingConfig(k8sTrafficRoutingDestinations);
+
+    assertThat(k8sTrafficRoutingConfig).isNotEmpty();
+    assertThat(k8sTrafficRoutingConfig.get().getRoutes()).isNull();
+    assertThat(k8sTrafficRoutingConfig.get().getDestinations()).isNotNull();
+    assertThat(k8sTrafficRoutingConfig.get().getDestinations().size()).isEqualTo(destinations.size());
   }
 
   private List<K8sTrafficRoutingDestination> getDestinationSpec() {

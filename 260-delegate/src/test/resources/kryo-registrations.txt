@@ -2900,4 +2900,7 @@
 20002009:io.harness.delegate.task.k8s.trafficrouting.RuleType
 20002010:io.harness.delegate.task.k8s.trafficrouting.RouteType
 20002011:io.harness.delegate.task.artifactBundle.ArtifactBundleDetails
+20002012:io.harness.delegate.task.k8s.K8sTrafficRoutingRequest
+20002013:io.harness.delegate.task.k8s.K8sTrafficRoutingResponse
+20002014:io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfigType
 

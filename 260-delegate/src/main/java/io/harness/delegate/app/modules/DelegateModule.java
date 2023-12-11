@@ -173,6 +173,7 @@ import io.harness.delegate.k8s.K8sRollingRequestHandler;
 import io.harness.delegate.k8s.K8sRollingRollbackRequestHandler;
 import io.harness.delegate.k8s.K8sScaleRequestHandler;
 import io.harness.delegate.k8s.K8sSwapServiceSelectorsHandler;
+import io.harness.delegate.k8s.K8sTrafficRoutingRequestHandler;
 import io.harness.delegate.message.MessageService;
 import io.harness.delegate.message.MessageServiceImpl;
 import io.harness.delegate.message.MessengerType;
@@ -1465,6 +1466,8 @@ public class DelegateModule extends AbstractModule {
         .to(K8sDryRunManifestRequestHandler.class);
     k8sTaskTypeToRequestHandler.addBinding(K8sTaskType.BLUE_GREEN_STAGE_SCALE_DOWN.name())
         .to(K8sBlueGreenStageScaleDownRequestHandler.class);
+    k8sTaskTypeToRequestHandler.addBinding(K8sTaskType.TRAFFIC_ROUTING.name())
+        .to(K8sTrafficRoutingRequestHandler.class);
 
     // Terraform Task Handlers
     MapBinder<TFTaskType, TerraformAbstractTaskHandler> tfTaskTypeToHandlerMap =

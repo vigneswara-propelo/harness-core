@@ -9,9 +9,13 @@ package io.harness.delegate.task.k8s;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 
 @OwnedBy(CDP)
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
 public enum K8sTaskType {
   DEPLOYMENT_ROLLING,
   DEPLOYMENT_ROLLING_ROLLBACK,
@@ -29,5 +33,6 @@ public enum K8sTaskType {
   // RANCHER
   RANCHER_RESOLVE_CLUSTERS,
   DRY_RUN_MANIFEST,
-  BLUE_GREEN_STAGE_SCALE_DOWN
+  BLUE_GREEN_STAGE_SCALE_DOWN,
+  TRAFFIC_ROUTING
 }

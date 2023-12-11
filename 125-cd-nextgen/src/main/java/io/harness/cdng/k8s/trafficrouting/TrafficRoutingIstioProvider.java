@@ -11,6 +11,9 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.SwaggerConstants;
+import io.harness.common.ParameterFieldHelper;
+import io.harness.delegate.task.k8s.trafficrouting.IstioProviderConfig;
+import io.harness.delegate.task.k8s.trafficrouting.ProviderConfig;
 import io.harness.pms.yaml.ParameterField;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -33,4 +36,12 @@ import lombok.experimental.SuperBuilder;
 public class TrafficRoutingIstioProvider extends K8sTrafficRoutingProvider {
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH) ParameterField<List<String>> gateways;
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH) ParameterField<List<String>> hosts;
+
+  @Override
+  ProviderConfig toProviderConfig() {
+    return IstioProviderConfig.builder()
+        .hosts(ParameterFieldHelper.getParameterFieldValue(this.hosts))
+        .gateways(ParameterFieldHelper.getParameterFieldValue(this.gateways))
+        .build();
+  }
 }

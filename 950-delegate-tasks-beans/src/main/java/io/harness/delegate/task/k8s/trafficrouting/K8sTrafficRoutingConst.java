@@ -7,22 +7,21 @@
 
 package io.harness.delegate.task.k8s.trafficrouting;
 
-import static io.harness.delegate.task.k8s.trafficrouting.ProviderType.SMI;
-
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 
-import lombok.Value;
-import lombok.experimental.SuperBuilder;
-
-@Value
-@SuperBuilder
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
-public class SMIProviderConfig implements ProviderConfig {
-  String rootService;
-  @Override
-  public ProviderType getProviderType() {
-    return SMI;
-  }
+public interface K8sTrafficRoutingConst {
+  String SMI = "smi";
+  String ISTIO = "istio";
+  String HTTP = "http";
+  String URI = "uri";
+  String METHOD = "method";
+  String HEADER = "header";
+  String PORT = "port";
+  String SCHEME = "scheme";
+  String AUTHORITY = "authority";
+  String CONFIG = "config";
+  String INHERIT = "inherit";
 }

@@ -11,6 +11,9 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.SwaggerConstants;
+import io.harness.common.ParameterFieldHelper;
+import io.harness.delegate.task.k8s.trafficrouting.ProviderConfig;
+import io.harness.delegate.task.k8s.trafficrouting.SMIProviderConfig;
 import io.harness.pms.yaml.ParameterField;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -31,4 +34,11 @@ import lombok.experimental.SuperBuilder;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
 public class TrafficRoutingSMIProvider extends K8sTrafficRoutingProvider {
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> rootService;
+
+  @Override
+  ProviderConfig toProviderConfig() {
+    return SMIProviderConfig.builder()
+        .rootService(ParameterFieldHelper.getParameterFieldValue(this.rootService))
+        .build();
+  }
 }

@@ -696,7 +696,10 @@ public enum EntityType {
 
   @JsonProperty(EntityTypeConstants.REGISTER_CATALOG)
   REGISTER_CATALOG(
-      ModuleType.IDP, EntityTypeConstants.REGISTER_CATALOG, IdentifierRef.class, EntityYamlRootNames.REGISTER_CATALOG);
+      ModuleType.IDP, EntityTypeConstants.REGISTER_CATALOG, IdentifierRef.class, EntityYamlRootNames.REGISTER_CATALOG),
+  @JsonProperty(EntityTypeConstants.K8S_TRAFFIC_ROUTING)
+  K8S_TRAFFIC_ROUTING_STEP(ModuleType.CD, EntityTypeConstants.K8S_TRAFFIC_ROUTING, IdentifierRef.class,
+      EntityYamlRootNames.K8S_TRAFFIC_ROUTING);
 
   private final ModuleType moduleType;
   String yamlName;

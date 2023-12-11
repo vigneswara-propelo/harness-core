@@ -14,42 +14,27 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConst;
-import io.harness.delegate.task.k8s.trafficrouting.ProviderConfig;
 import io.harness.pms.yaml.YamlNode;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.List;
-import javax.validation.constraints.NotEmpty;
-import lombok.AccessLevel;
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.SuperBuilder;
 
-@JsonTypeInfo(use = NAME, property = "provider", include = EXTERNAL_PROPERTY, visible = true)
+@JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = TrafficRoutingSMIProvider.class, name = K8sTrafficRoutingConst.SMI)
-  , @JsonSubTypes.Type(value = TrafficRoutingIstioProvider.class, name = K8sTrafficRoutingConst.ISTIO)
+  @JsonSubTypes.Type(value = K8sTrafficRouting.class, name = K8sTrafficRoutingConst.CONFIG)
+  , @JsonSubTypes.Type(value = K8sTrafficRoutingDestinations.class, name = K8sTrafficRoutingConst.INHERIT)
 })
-@FieldDefaults(level = AccessLevel.PROTECTED)
-@SuperBuilder
-@Data
 @NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
+@AllArgsConstructor
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
-public abstract class K8sTrafficRoutingProvider {
+public abstract class AbstractK8sTrafficRouting {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
   @ApiModelProperty(hidden = true)
   String uuid;
-
-  @NotEmpty List<K8sTrafficRoutingRoute> routes;
-  @NotEmpty List<K8sTrafficRoutingDestination> destinations;
-
-  abstract ProviderConfig toProviderConfig();
 }
