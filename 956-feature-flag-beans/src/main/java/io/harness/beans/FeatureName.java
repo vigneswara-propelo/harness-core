@@ -471,7 +471,6 @@ public enum FeatureName {
   NG_EXPRESSIONS_NEW_INPUT_ELEMENT(
       "FF to enable the new input element for the Expressions on UI when UI suggests the probable expressions to the User based on text input so far",
       PIPELINE),
-  NG_GIT_EXPERIENCE,
   NG_INLINE_MANIFEST,
   NG_LICENSES_ENABLED,
   NG_SVC_ENV_REDESIGN,
