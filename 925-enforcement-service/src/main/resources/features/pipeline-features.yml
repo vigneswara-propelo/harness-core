@@ -57,7 +57,7 @@ features:
     restrictions:
       FREE:
         restrictionType: AVAILABILITY
-        enabled: false
+        enabled: true
       TEAM:
         restrictionType: AVAILABILITY
         enabled: false
