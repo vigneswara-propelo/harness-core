@@ -15,7 +15,7 @@ import lombok.experimental.UtilityClass;
 @OwnedBy(PL)
 @UtilityClass
 public class NotificationManagementServicePermission {
-  public static final String VIEW_NOTIFICATION_MANAGEMENT_PERMISSION = "core_notification_management_view";
-  public static final String EDIT_NOTIFICATION_MANAGEMENT_PERMISSION = "core_notification_management_edit";
-  public static final String DELETE_NOTIFICATION_MANAGEMENT_PERMISSION = "core_notification_management_delete";
+  public static final String VIEW_NOTIFICATION_MANAGEMENT_PERMISSION = "core_notification_view";
+  public static final String EDIT_NOTIFICATION_MANAGEMENT_PERMISSION = "core_notification_edit";
+  public static final String DELETE_NOTIFICATION_MANAGEMENT_PERMISSION = "core_notification_delete";
 }

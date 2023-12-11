@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: permissionsConfiguration
-version: 66
+version: 67
 permissions:
   - identifier: core_project_delete
     name: Delete Project
@@ -1875,6 +1875,30 @@ permissions:
   - identifier: core_inputset_view
     name: View InputSet
     status: ACTIVE
+    includeInAllRoles: false
+    allowedScopeLevels:
+      - account
+      - organization
+      - project
+  - identifier: core_notification_view
+    name: View notification rules and channels
+    status: STAGING
+    includeInAllRoles: false
+    allowedScopeLevels:
+      - account
+      - organization
+      - project
+  - identifier: core_notification_edit
+    name: Edit notification rules and channels
+    status: STAGING
+    includeInAllRoles: false
+    allowedScopeLevels:
+      - account
+      - organization
+      - project
+  - identifier: core_notification_delete
+    name: Delete notification rules and channels
+    status: STAGING
     includeInAllRoles: false
     allowedScopeLevels:
       - account
