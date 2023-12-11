@@ -846,7 +846,8 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
           setupParams, virtualServiceName, service.getMetadata().getLabels(), activeControllers, executionLogCallback);
       for (HasMetadata r : istioResourcesDefinition) {
         if (r instanceof VirtualService) {
-          kubernetesContainerService.createOrReplaceFabric8IstioVirtualService(kubernetesConfig, (VirtualService) r);
+          kubernetesContainerService.createOrReplaceVirtualServiceUsingFabric8Client(
+              kubernetesConfig, (VirtualService) r);
         } else if (r instanceof DestinationRule) {
           kubernetesContainerService.createOrReplaceFabric8IstioDestinationRule(kubernetesConfig, (DestinationRule) r);
         } else {
@@ -862,7 +863,7 @@ public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
     } else {
       try {
         VirtualService virtualService =
-            kubernetesContainerService.getFabric8IstioVirtualService(kubernetesConfig, virtualServiceName);
+            kubernetesContainerService.getVirtualServiceUsingFabric8Client(kubernetesConfig, virtualServiceName);
         if (virtualService != null
             && virtualService.getMetadata().getLabels().containsKey(HARNESS_KUBERNETES_MANAGED_LABEL_KEY)) {
           executionLogCallback.saveExecutionLog("Deleting Istio VirtualService" + virtualServiceName);

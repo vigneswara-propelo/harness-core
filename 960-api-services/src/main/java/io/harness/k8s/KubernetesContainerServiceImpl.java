@@ -93,6 +93,7 @@ import io.harness.k8s.kubectl.KubectlFactory;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesClusterAuthType;
 import io.harness.k8s.model.KubernetesConfig;
+import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
 import io.harness.k8s.oidc.OidcTokenRetriever;
 import io.harness.k8s.utils.ObjectYamlUtils;
@@ -239,7 +240,11 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   public static final String METRICS_SERVER_ABSENT = "CE.MetricsServerCheck: Please install metrics server.";
   public static final String RESOURCE_PERMISSION_REQUIRED =
       "CE: The provided serviceaccount is missing the following permissions: %n %s. Please grant these to the service account.";
-  private static final String METADATA_NAME = "metadata.name=";
+  private static final String METADATA_NAME = "metadata.name";
+  private static final String EQUALS_DELIMITER = "=";
+  private static final String VIRTUAL_SERVICE_PLURAL = "virtualservices";
+  private static final String ISTIO_GROUP = "networking.istio.io";
+  private static final String ISTIO_VERSION = "v1alpha3";
   @Inject private KubernetesHelperService kubernetesHelperService = new KubernetesHelperService();
   @Inject private TimeLimiter timeLimiter;
   @Inject private Clock clock;
@@ -1608,7 +1613,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   }
 
   @Override
-  public VirtualService createOrReplaceFabric8IstioVirtualService(
+  public VirtualService createOrReplaceVirtualServiceUsingFabric8Client(
       KubernetesConfig kubernetesConfig, VirtualService definition) {
     String name = definition.getMetadata().getName();
     String kind = definition.getKind();
@@ -1630,7 +1635,93 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   }
 
   @Override
-  public VirtualService getFabric8IstioVirtualService(KubernetesConfig kubernetesConfig, String name) {
+  public KubernetesResource createOrReplaceVirtualServiceUsingK8sClient(
+      KubernetesConfig kubernetesConfig, KubernetesResource virtualService) {
+    if (kubernetesConfig == null) {
+      return null;
+    }
+    String name = (String) virtualService.getField(METADATA_NAME);
+    String apiVersion = (String) virtualService.getField("apiVersion");
+    K8sApiVersion k8sApiVersion = K8sApiVersion.fromApiVersion(apiVersion);
+    Object virtualServiceObject = getVirtualServiceUsingK8sClient(kubernetesConfig, name, k8sApiVersion);
+    return createOrReplaceVirtualServiceUsingK8sClient(
+        kubernetesConfig, virtualService.getValue(), k8sApiVersion, name, virtualServiceObject != null);
+  }
+
+  private KubernetesResource createOrReplaceVirtualServiceUsingK8sClient(KubernetesConfig kubernetesConfig,
+      Object virtualService, K8sApiVersion k8sApiVersion, String name, boolean virtualServiceExist) {
+    Object virtualServiceObject = virtualServiceExist
+        ? replaceVirtualServiceK8sClient(kubernetesConfig, virtualService, k8sApiVersion, name)
+        : createVirtualServiceK8sClient(kubernetesConfig, virtualService, k8sApiVersion, name);
+    return KubernetesResource.builder().value(virtualServiceObject).build();
+  }
+
+  Object replaceVirtualServiceK8sClient(
+      KubernetesConfig kubernetesConfig, Object virtualService, K8sApiVersion k8sApiVersion, String name) {
+    final Supplier<Object> virtualServiceSupplier = Retry.decorateSupplier(retry, () -> {
+      try {
+        ApiClient apiClient = kubernetesHelperService.getApiClientWithReadTimeout(kubernetesConfig);
+        CustomObjectsApi customObjectsApi = new CustomObjectsApi(apiClient);
+        return customObjectsApi.replaceNamespacedCustomObject(k8sApiVersion.getGroup(), k8sApiVersion.getVersion(),
+            kubernetesConfig.getNamespace(), VIRTUAL_SERVICE_PLURAL, name, virtualService, null, null);
+      } catch (ApiException exception) {
+        String message = format("Unable to replace %s/VirtualService/%s Code: %s, message: %s",
+            kubernetesConfig.getNamespace(), name, exception.getCode(), getErrorMessage(exception));
+        log.error(message);
+        throw new InvalidRequestException(message, exception, USER);
+      }
+    });
+    return virtualServiceSupplier.get();
+  }
+
+  Object createVirtualServiceK8sClient(
+      KubernetesConfig kubernetesConfig, Object virtualService, K8sApiVersion k8sApiVersion, String name) {
+    final Supplier<Object> virtualServiceSupplier = Retry.decorateSupplier(retry, () -> {
+      try {
+        ApiClient apiClient = kubernetesHelperService.getApiClientWithReadTimeout(kubernetesConfig);
+        CustomObjectsApi customObjectsApi = new CustomObjectsApi(apiClient);
+        return customObjectsApi.createNamespacedCustomObject(k8sApiVersion.getGroup(), k8sApiVersion.getVersion(),
+            kubernetesConfig.getNamespace(), VIRTUAL_SERVICE_PLURAL, virtualService, null, null, null);
+      } catch (ApiException exception) {
+        String message = format("Unable to create %s/VirtualService/%s Code: %s, message: %s",
+            kubernetesConfig.getNamespace(), name, exception.getCode(), getErrorMessage(exception));
+        log.error(message);
+        throw new InvalidRequestException(message, exception, USER);
+      }
+    });
+    return virtualServiceSupplier.get();
+  }
+
+  @Override
+  public Object getVirtualServiceUsingK8sClient(KubernetesConfig kubernetesConfig, String name) {
+    return getVirtualServiceUsingK8sClient(
+        kubernetesConfig, name, K8sApiVersion.builder().group(ISTIO_GROUP).version(ISTIO_VERSION).build());
+  }
+
+  private Object getVirtualServiceUsingK8sClient(
+      KubernetesConfig kubernetesConfig, String name, K8sApiVersion apiVersion) {
+    if (kubernetesConfig == null) {
+      return null;
+    }
+    final Supplier<Object> virtualServiceSupplier = Retry.decorateSupplier(retry, () -> {
+      try {
+        ApiClient apiClient = kubernetesHelperService.getApiClientWithReadTimeout(kubernetesConfig);
+        CustomObjectsApi customObjectsApi = new CustomObjectsApi(apiClient);
+        return customObjectsApi.getNamespacedCustomObject(apiVersion.getGroup(), apiVersion.getVersion(),
+            kubernetesConfig.getNamespace(), VIRTUAL_SERVICE_PLURAL, name);
+      } catch (ApiException exception) {
+        String message = format("Unable to get %s/VirtualService/%s ApiVersion: %s/%s, Code: %s, message: %s",
+            apiVersion.getGroup(), apiVersion.getVersion(), kubernetesConfig.getNamespace(), name, exception.getCode(),
+            getErrorMessage(exception));
+        log.error(message);
+        return null;
+      }
+    });
+    return virtualServiceSupplier.get();
+  }
+
+  @Override
+  public VirtualService getVirtualServiceUsingFabric8Client(KubernetesConfig kubernetesConfig, String name) {
     try (KubernetesClient kubernetesClient = kubernetesHelperService.getKubernetesClient(kubernetesConfig)) {
       return kubernetesClient.resources(VirtualService.class, VirtualServiceList.class)
           .inNamespace(kubernetesConfig.getNamespace())
@@ -1676,12 +1767,12 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   @Override
   public int getTrafficPercent(KubernetesConfig kubernetesConfig, String controllerName) {
     String serviceName = getServiceNameFromControllerName(controllerName);
-    VirtualService virtualService = getFabric8IstioVirtualService(kubernetesConfig, serviceName);
+    VirtualService virtualService = getVirtualServiceUsingFabric8Client(kubernetesConfig, serviceName);
     Optional<Integer> revision = getRevisionFromControllerName(controllerName);
     if (virtualService == null || !revision.isPresent()) {
       return 0;
     }
-    VirtualServiceSpec virtualServiceSpec = ((VirtualService) virtualService).getSpec();
+    VirtualServiceSpec virtualServiceSpec = virtualService.getSpec();
     if (isEmpty(virtualServiceSpec.getHttp()) || isEmpty(virtualServiceSpec.getHttp().get(0).getRoute())) {
       return 0;
     }
@@ -1700,12 +1791,12 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   public Map<String, Integer> getTrafficWeights(KubernetesConfig kubernetesConfig, String controllerName) {
     String serviceName = getServiceNameFromControllerName(controllerName);
     String controllerNamePrefix = getPrefixFromControllerName(controllerName);
-    VirtualService virtualService = getFabric8IstioVirtualService(kubernetesConfig, serviceName);
+    VirtualService virtualService = getVirtualServiceUsingFabric8Client(kubernetesConfig, serviceName);
     if (virtualService == null) {
       return new HashMap<>();
     }
 
-    VirtualServiceSpec virtualServiceSpec = ((VirtualService) virtualService).getSpec();
+    VirtualServiceSpec virtualServiceSpec = virtualService.getSpec();
     if (isEmpty(virtualServiceSpec.getHttp()) || isEmpty(virtualServiceSpec.getHttp().get(0).getRoute())) {
       return new HashMap<>();
     }
@@ -2531,7 +2622,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
       KubernetesConfig kubernetesConfig, String containerServiceName, String accountId) {
     K8sServiceMetadataBuilder k8sServiceMetadataBuilder = K8sServiceMetadata.builder();
     try {
-      String fieldSelector = METADATA_NAME + containerServiceName;
+      String fieldSelector = METADATA_NAME + EQUALS_DELIMITER + containerServiceName;
       V1ObjectMeta controller = getControllerUsingK8sClient(kubernetesConfig, fieldSelector);
       if (controller != null) {
         String controllerName = controller.getName();

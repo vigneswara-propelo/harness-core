@@ -15,6 +15,7 @@ import static io.harness.logging.LogLevel.INFO;
 import static io.harness.rule.OwnerRule.ACASIAN;
 import static io.harness.rule.OwnerRule.ANSHUL;
 import static io.harness.rule.OwnerRule.BOJANA;
+import static io.harness.rule.OwnerRule.PRATYUSH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -45,6 +46,7 @@ import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.releasehistory.IK8sRelease;
 import io.harness.k8s.releasehistory.IK8sReleaseHistory;
+import io.harness.k8s.utils.ObjectYamlUtils;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogLevel;
 import io.harness.rule.Owner;
@@ -58,7 +60,6 @@ import software.wings.helpers.ext.k8s.request.K8sTrafficSplitTaskParameters;
 import software.wings.helpers.ext.k8s.response.K8sTaskExecutionResponse;
 import software.wings.helpers.ext.k8s.response.K8sTaskResponse;
 
-import io.fabric8.istio.api.networking.v1alpha3.VirtualService;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import java.io.IOException;
 import java.util.Arrays;
@@ -71,6 +72,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
@@ -122,7 +124,50 @@ public class K8sTrafficSplitTaskHandlerTest extends WingsBaseTest {
         .thenReturn(List.of(
             KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build()));
 
-    when(kubernetesContainerService.getFabric8IstioVirtualService(any(KubernetesConfig.class), anyString()))
+    when(kubernetesContainerService.getVirtualServiceUsingFabric8Client(any(KubernetesConfig.class), anyString()))
+        .thenReturn(null);
+
+    boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
+    ArgumentCaptor<String> msgCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<LogLevel> logLevelCaptor = ArgumentCaptor.forClass(LogLevel.class);
+    ArgumentCaptor<CommandExecutionStatus> commandExecutionStatusCaptor =
+        ArgumentCaptor.forClass(CommandExecutionStatus.class);
+    verify(executionLogCallback, times(2))
+        .saveExecutionLog(msgCaptor.capture(), logLevelCaptor.capture(), commandExecutionStatusCaptor.capture());
+    assertThat(status).isFalse();
+    assertThat(logLevelCaptor.getValue()).isEqualTo(ERROR);
+    assertThat(commandExecutionStatusCaptor.getValue()).isEqualTo(FAILURE);
+    assertThat(msgCaptor.getAllValues().get(0)).isEqualTo("Error evaluating expression ${k8s.virtualServiceName}");
+    assertThat(msgCaptor.getAllValues().get(1))
+        .isEqualTo("\n"
+            + "No managed VirtualService found. Atleast one VirtualService should be present and marked with annotation harness.io/managed: true");
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testNullGetManagedVirtualServiceResourcesK8sClient() {
+    K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParams =
+        K8sTrafficSplitTaskParameters.builder()
+            .releaseName(RELEASE_NAME)
+            .virtualServiceName(K8sExpressions.virtualServiceNameExpression)
+            .disableFabric8(true)
+            .build();
+
+    IK8sRelease latestRelease = mock(IK8sRelease.class);
+    KubernetesConfig kubernetesConfig = KubernetesConfig.builder().build();
+
+    on(k8sTrafficSplitTaskHandler).set("kubernetesConfig", kubernetesConfig);
+
+    when(containerDeploymentDelegateHelper.getKubernetesConfig(any(K8sClusterConfig.class), anyBoolean()))
+        .thenReturn(KubernetesConfig.builder().build());
+    when(releaseHistory.isEmpty()).thenReturn(false);
+    when(releaseHistory.getLatestRelease()).thenReturn(latestRelease);
+    when(latestRelease.getResourceIds())
+        .thenReturn(List.of(
+            KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build()));
+
+    when(kubernetesContainerService.getVirtualServiceUsingK8sClient(any(KubernetesConfig.class), anyString()))
         .thenReturn(null);
 
     boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
@@ -162,7 +207,24 @@ public class K8sTrafficSplitTaskHandlerTest extends WingsBaseTest {
     boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
     verify(containerDeploymentDelegateHelper, times(1)).getKubernetesConfig(any(K8sClusterConfig.class), anyBoolean());
     verify(kubernetesContainerService, times(1))
-        .getFabric8IstioVirtualService(any(KubernetesConfig.class), anyString());
+        .getVirtualServiceUsingFabric8Client(any(KubernetesConfig.class), anyString());
+    assertThat(status).isFalse();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void initBasedOnCustomVirtualServiceNameFailK8sClient() {
+    K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParams = K8sTrafficSplitTaskParameters.builder()
+                                                                  .k8sClusterConfig(K8sClusterConfig.builder().build())
+                                                                  .virtualServiceName("customVirtualServiceName")
+                                                                  .disableFabric8(true)
+                                                                  .build();
+
+    boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
+    verify(containerDeploymentDelegateHelper, times(1)).getKubernetesConfig(any(K8sClusterConfig.class), anyBoolean());
+    verify(kubernetesContainerService, times(1))
+        .getVirtualServiceUsingK8sClient(any(KubernetesConfig.class), anyString());
     assertThat(status).isFalse();
   }
 
@@ -201,6 +263,25 @@ public class K8sTrafficSplitTaskHandlerTest extends WingsBaseTest {
   }
 
   @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void printDestinationWeightsK8sClient() throws Exception {
+    K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParams =
+        K8sTrafficSplitTaskParameters.builder()
+            .k8sClusterConfig(K8sClusterConfig.builder().build())
+            .virtualServiceName(K8sExpressions.virtualServiceNameExpression)
+            .istioDestinationWeights(Arrays.asList(new IstioDestinationWeight()))
+            .disableFabric8(true)
+            .build();
+    when(releaseHandler.getReleaseHistory(any(), any())).thenReturn(null);
+    k8sTrafficSplitTaskHandler.executeTaskInternal(k8sTrafficSplitTaskParams, K8sDelegateTaskParams.builder().build());
+    verify(containerDeploymentDelegateHelper, times(2)).getKubernetesConfig(any(K8sClusterConfig.class), anyBoolean());
+    verify(releaseHandler, times(1)).getReleaseHistory(nullable(KubernetesConfig.class), nullable(String.class));
+    verify(k8sTaskHelper, times(1))
+        .getK8sTaskExecutionResponse(any(K8sTaskResponse.class), any(CommandExecutionStatus.class));
+  }
+
+  @Test
   @Owner(developers = BOJANA)
   @Category(UnitTests.class)
   public void getManagedVirtualServiceResources() throws Exception {
@@ -215,19 +296,55 @@ public class K8sTrafficSplitTaskHandlerTest extends WingsBaseTest {
     when(latestRelease.getResourceIds())
         .thenReturn(List.of(
             KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build()));
-    VirtualService istioVirtualService = mock(VirtualService.class);
+    io.fabric8.istio.api.networking.v1alpha3.VirtualService istioVirtualService =
+        mock(io.fabric8.istio.api.networking.v1alpha3.VirtualService.class);
     ObjectMeta metadata = mock(ObjectMeta.class);
     Map<String, String> annotations = new HashMap<>();
     annotations.put(HarnessAnnotations.managed, "true");
     when(istioVirtualService.getMetadata()).thenReturn(metadata);
     when(metadata.getAnnotations()).thenReturn(annotations);
-    when(kubernetesContainerService.getFabric8IstioVirtualService(any(KubernetesConfig.class), anyString()))
+    when(kubernetesContainerService.getVirtualServiceUsingFabric8Client(any(KubernetesConfig.class), anyString()))
         .thenReturn(istioVirtualService);
     boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
     verify(containerDeploymentDelegateHelper, times(1)).getKubernetesConfig(any(K8sClusterConfig.class), anyBoolean());
     verify(releaseHandler, times(1)).getReleaseHistory(nullable(KubernetesConfig.class), nullable(String.class));
     verify(kubernetesContainerService, times(2))
-        .getFabric8IstioVirtualService(any(KubernetesConfig.class), anyString());
+        .getVirtualServiceUsingFabric8Client(any(KubernetesConfig.class), anyString());
+    assertThat(status).isTrue();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void getManagedVirtualServiceResourcesK8sClient() throws Exception {
+    K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParams =
+        K8sTrafficSplitTaskParameters.builder()
+            .k8sClusterConfig(K8sClusterConfig.builder().build())
+            .virtualServiceName(K8sExpressions.virtualServiceNameExpression)
+            .disableFabric8(true)
+            .build();
+    IK8sRelease latestRelease = mock(IK8sRelease.class);
+    when(releaseHistory.isEmpty()).thenReturn(false);
+    when(releaseHistory.getLatestRelease()).thenReturn(latestRelease);
+    when(latestRelease.getResourceIds())
+        .thenReturn(List.of(
+            KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build()));
+    Object istioVirtualService = mock(Object.class);
+    MockedStatic<ObjectYamlUtils> objectYamlUtilsMockedStatic = Mockito.mockStatic(ObjectYamlUtils.class);
+    Map<String, String> annotations = new HashMap<>();
+    annotations.put(HarnessAnnotations.managed, "true");
+    objectYamlUtilsMockedStatic.when(() -> ObjectYamlUtils.getField(istioVirtualService, "metadata.annotations"))
+        .thenReturn(annotations);
+    when(kubernetesContainerService.getVirtualServiceUsingK8sClient(
+             nullable(KubernetesConfig.class), nullable(String.class)))
+        .thenReturn(istioVirtualService);
+
+    boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
+    objectYamlUtilsMockedStatic.close();
+    verify(containerDeploymentDelegateHelper, times(1)).getKubernetesConfig(any(K8sClusterConfig.class), anyBoolean());
+    verify(releaseHandler, times(1)).getReleaseHistory(nullable(KubernetesConfig.class), nullable(String.class));
+    verify(kubernetesContainerService, times(2))
+        .getVirtualServiceUsingK8sClient(any(KubernetesConfig.class), anyString());
     assertThat(status).isTrue();
   }
 
@@ -249,7 +366,46 @@ public class K8sTrafficSplitTaskHandlerTest extends WingsBaseTest {
         .thenReturn(KubernetesConfig.builder().build());
     when(releaseHistory.isEmpty()).thenReturn(false);
     when(releaseHistory.getLatestRelease()).thenReturn(null);
-    when(kubernetesContainerService.getFabric8IstioVirtualService(nullable(KubernetesConfig.class), any()))
+    when(kubernetesContainerService.getVirtualServiceUsingFabric8Client(nullable(KubernetesConfig.class), any()))
+        .thenReturn(null);
+
+    boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
+    assertThat(status).isTrue();
+
+    ArgumentCaptor<String> msgCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<LogLevel> logLevelCaptor = ArgumentCaptor.forClass(LogLevel.class);
+    ArgumentCaptor<CommandExecutionStatus> commandExecutionStatusCaptor =
+        ArgumentCaptor.forClass(CommandExecutionStatus.class);
+    verify(executionLogCallback, times(2))
+        .saveExecutionLog(msgCaptor.capture(), logLevelCaptor.capture(), commandExecutionStatusCaptor.capture());
+
+    assertThat(logLevelCaptor.getValue()).isEqualTo(INFO);
+    assertThat(commandExecutionStatusCaptor.getValue()).isEqualTo(SUCCESS);
+
+    verify(executionLogCallback, times(4)).saveExecutionLog(msgCaptor.capture());
+    assertThat(msgCaptor.getAllValues()).contains("\nNo resources found in release history");
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testInitBasedOnDefaultVirtualServiceNameK8sClient() throws IOException {
+    K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParams =
+        K8sTrafficSplitTaskParameters.builder()
+            .releaseName(RELEASE_NAME)
+            .virtualServiceName(K8sExpressions.virtualServiceNameExpression)
+            .disableFabric8(true)
+            .build();
+
+    KubernetesConfig kubernetesConfig = KubernetesConfig.builder().build();
+
+    on(k8sTrafficSplitTaskHandler).set("kubernetesConfig", kubernetesConfig);
+
+    when(containerDeploymentDelegateHelper.getKubernetesConfig(any(K8sClusterConfig.class), anyBoolean()))
+        .thenReturn(KubernetesConfig.builder().build());
+    when(releaseHistory.isEmpty()).thenReturn(false);
+    when(releaseHistory.getLatestRelease()).thenReturn(null);
+    when(kubernetesContainerService.getVirtualServiceUsingK8sClient(nullable(KubernetesConfig.class), any()))
         .thenReturn(null);
 
     boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
@@ -287,17 +443,64 @@ public class K8sTrafficSplitTaskHandlerTest extends WingsBaseTest {
             KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build(),
             KubernetesResourceId.builder().kind("VirtualService").build()));
 
-    VirtualService istioVirtualService = mock(VirtualService.class);
+    io.fabric8.istio.api.networking.v1alpha3.VirtualService istioVirtualService =
+        mock(io.fabric8.istio.api.networking.v1alpha3.VirtualService.class);
     ObjectMeta metadata = mock(ObjectMeta.class);
     Map<String, String> annotations = new HashMap<>();
     annotations.put(HarnessAnnotations.managed, "true");
     when(istioVirtualService.getMetadata()).thenReturn(metadata);
     when(metadata.getAnnotations()).thenReturn(annotations);
-    when(kubernetesContainerService.getFabric8IstioVirtualService(
+    when(kubernetesContainerService.getVirtualServiceUsingFabric8Client(
              nullable(KubernetesConfig.class), nullable(String.class)))
         .thenReturn(istioVirtualService);
 
     boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
+    assertThat(status).isFalse();
+
+    ArgumentCaptor<String> msgCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<LogLevel> logLevelCaptor = ArgumentCaptor.forClass(LogLevel.class);
+    ArgumentCaptor<CommandExecutionStatus> commandExecutionStatusCaptor =
+        ArgumentCaptor.forClass(CommandExecutionStatus.class);
+    verify(executionLogCallback, times(2))
+        .saveExecutionLog(msgCaptor.capture(), logLevelCaptor.capture(), commandExecutionStatusCaptor.capture());
+    assertThat(logLevelCaptor.getValue()).isEqualTo(ERROR);
+    assertThat(commandExecutionStatusCaptor.getValue()).isEqualTo(FAILURE);
+    assertThat(msgCaptor.getAllValues())
+        .contains("Error evaluating expression ${k8s.virtualServiceName}",
+            "\nMore than one VirtualService found.  Only one VirtualService can be marked with annotation harness.io/managed: true");
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testInitMoreThanOneVirtualServiceFoundK8sClient() {
+    K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParams =
+        K8sTrafficSplitTaskParameters.builder()
+            .releaseName(RELEASE_NAME)
+            .virtualServiceName(K8sExpressions.virtualServiceNameExpression)
+            .disableFabric8(true)
+            .build();
+
+    IK8sRelease latestRelease = mock(IK8sRelease.class);
+    when(releaseHistory.isEmpty()).thenReturn(false);
+    when(releaseHistory.getLatestRelease()).thenReturn(latestRelease);
+    when(latestRelease.getResourceIds())
+        .thenReturn(List.of(
+            KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build(),
+            KubernetesResourceId.builder().kind("VirtualService").build()));
+
+    Object istioVirtualService = mock(Object.class);
+    MockedStatic<ObjectYamlUtils> objectYamlUtilsMockedStatic = Mockito.mockStatic(ObjectYamlUtils.class);
+    Map<String, String> annotations = new HashMap<>();
+    annotations.put(HarnessAnnotations.managed, "true");
+    objectYamlUtilsMockedStatic.when(() -> ObjectYamlUtils.getField(istioVirtualService, "metadata.annotations"))
+        .thenReturn(annotations);
+    when(kubernetesContainerService.getVirtualServiceUsingK8sClient(
+             nullable(KubernetesConfig.class), nullable(String.class)))
+        .thenReturn(istioVirtualService);
+
+    boolean status = k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
+    objectYamlUtilsMockedStatic.close();
     assertThat(status).isFalse();
 
     ArgumentCaptor<String> msgCaptor = ArgumentCaptor.forClass(String.class);
@@ -328,13 +531,38 @@ public class K8sTrafficSplitTaskHandlerTest extends WingsBaseTest {
     when(latestRelease.getResourceIds())
         .thenReturn(List.of(
             KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build()));
-    VirtualService istioVirtualService = mock(VirtualService.class);
+    io.fabric8.istio.api.networking.v1alpha3.VirtualService istioVirtualService =
+        mock(io.fabric8.istio.api.networking.v1alpha3.VirtualService.class);
     ObjectMeta metadata = mock(ObjectMeta.class);
     Map<String, String> annotations = new HashMap<>();
     annotations.put(HarnessAnnotations.managed, "true");
     when(istioVirtualService.getMetadata()).thenReturn(metadata);
     when(metadata.getAnnotations()).thenReturn(annotations);
-    when(kubernetesContainerService.getFabric8IstioVirtualService(any(KubernetesConfig.class), anyString()))
+    when(kubernetesContainerService.getVirtualServiceUsingFabric8Client(any(KubernetesConfig.class), anyString()))
+        .thenReturn(istioVirtualService);
+
+    k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);
+    verify(releaseHandler, times(1)).getReleaseHistory(nullable(KubernetesConfig.class), nullable(String.class));
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void shouldGetReleaseDataUsingK8sClientTest() throws Exception {
+    K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParams =
+        K8sTrafficSplitTaskParameters.builder()
+            .k8sClusterConfig(K8sClusterConfig.builder().build())
+            .virtualServiceName(K8sExpressions.virtualServiceNameExpression)
+            .disableFabric8(true)
+            .build();
+    IK8sRelease latestRelease = mock(IK8sRelease.class);
+    when(releaseHistory.isEmpty()).thenReturn(false);
+    when(releaseHistory.getLatestRelease()).thenReturn(latestRelease);
+    when(latestRelease.getResourceIds())
+        .thenReturn(List.of(
+            KubernetesResourceId.builder().kind("VirtualService").name(VIRTUAL_SERVICE).namespace("default").build()));
+    Object istioVirtualService = mock(Object.class);
+    when(kubernetesContainerService.getVirtualServiceUsingK8sClient(any(KubernetesConfig.class), anyString()))
         .thenReturn(istioVirtualService);
 
     k8sTrafficSplitTaskHandler.init(k8sTrafficSplitTaskParams, executionLogCallback);

@@ -272,10 +272,10 @@ public class K8sCanaryDeployTaskHandler extends K8sTaskHandler {
       k8sTaskHelperBase.setNamespaceToKubernetesResourcesIfRequired(resources, kubernetesConfig.getNamespace());
 
       istioTaskHelper.updateDestinationRuleManifestFilesWithSubsets(resources,
-          asList(HarnessLabelValues.trackCanary, HarnessLabelValues.trackStable), kubernetesConfig,
-          executionLogCallback);
+          asList(HarnessLabelValues.trackCanary, HarnessLabelValues.trackStable),
+          k8sCanaryDeployTaskParameters.isDisableFabric8() ? null : kubernetesConfig, executionLogCallback);
       istioTaskHelper.updateVirtualServiceManifestFilesWithRoutesForCanary(
-          resources, kubernetesConfig, executionLogCallback);
+          resources, k8sCanaryDeployTaskParameters.isDisableFabric8() ? null : kubernetesConfig, executionLogCallback);
       canaryHandlerConfig.setResources(resources);
     } catch (Exception e) {
       log.error("Exception:", e);

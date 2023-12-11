@@ -15,6 +15,7 @@ import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ANSHUL;
 import static io.harness.rule.OwnerRule.BOJANA;
+import static io.harness.rule.OwnerRule.PRATYUSH;
 import static io.harness.rule.OwnerRule.TARUN_UBA;
 import static io.harness.rule.OwnerRule.TMACARI;
 import static io.harness.rule.OwnerRule.YOGESH;
@@ -144,10 +145,11 @@ public class K8sCanaryDeployTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = ANSHUL)
+  @Owner(developers = {ANSHUL, PRATYUSH})
   @Category(UnitTests.class)
   public void testExecute() {
     when(mockFeatureFlagService.isEnabled(eq(FeatureName.NEW_KUBECTL_VERSION), any())).thenReturn(false);
+    when(mockFeatureFlagService.isEnabled(eq(FeatureName.CDS_DISABLE_FABRIC8_CG), any())).thenReturn(true);
     when(applicationManifestUtils.getApplicationManifests(context, AppManifestKind.VALUES)).thenReturn(new HashMap<>());
     when(k8sStateHelper.fetchContainerInfrastructureMapping(context))
         .thenReturn(aGcpKubernetesInfrastructureMapping().build());
@@ -180,6 +182,7 @@ public class K8sCanaryDeployTest extends CategoryTest {
     assertThat(taskParams.getInstances()).isEqualTo(5);
     assertThat(taskParams.isSkipDryRun()).isTrue();
     assertThat(taskParams.isUseNewKubectlVersion()).isFalse();
+    assertThat(taskParams.isDisableFabric8()).isTrue();
   }
 
   @Test
@@ -223,6 +226,7 @@ public class K8sCanaryDeployTest extends CategoryTest {
     assertThat(taskParams.isSkipDryRun()).isTrue();
     assertThat(taskParams.getKubernetesResources()).isEqualTo(kubernetesResources);
     assertThat(taskParams.isInheritManifests()).isTrue();
+    assertThat(taskParams.isDisableFabric8()).isFalse();
   }
 
   @Test

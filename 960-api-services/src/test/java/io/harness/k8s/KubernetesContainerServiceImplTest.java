@@ -61,6 +61,7 @@ import io.harness.k8s.config.K8sGlobalConfigService;
 import io.harness.k8s.model.GcpAccessTokenSupplier;
 import io.harness.k8s.model.KubernetesAzureConfig;
 import io.harness.k8s.model.KubernetesConfig;
+import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.OidcGrantType;
 import io.harness.k8s.model.kubeconfig.EnvVariable;
 import io.harness.k8s.model.kubeconfig.Exec;
@@ -2110,6 +2111,211 @@ public class KubernetesContainerServiceImplTest extends CategoryTest {
     K8sServiceMetadata k8sServiceMetadata =
         kubernetesContainerService.getK8sServiceMetadataUsingFabric8(KUBERNETES_CONFIG, controllerServiceName, "accId");
     assertThat(k8sServiceMetadata).isEqualTo(K8sServiceMetadata.builder().name(serviceName).labels(map).build());
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testGetVirtualServiceUsingK8sClient() throws ApiException {
+    String controllerServiceName = "controllerServiceName";
+    String virtualServiceString = "{\n"
+        + "  \"kind\": \"VirtualService\",\n"
+        + "  \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "  \"metadata\": {},\n"
+        + "  \"items\": []\n"
+        + "}\n";
+    Gson gson = new Gson();
+    Object virtualServiceObject = gson.fromJson(virtualServiceString, Object.class);
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), virtualServiceObject));
+
+    Object virtualService =
+        kubernetesContainerService.getVirtualServiceUsingK8sClient(KUBERNETES_CONFIG, controllerServiceName);
+    assertThat(virtualService).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testFailGetVirtualServiceUsingK8sClient() throws ApiException {
+    // Null Kubeconfig
+    String controllerServiceName = "controllerServiceName";
+    Object virtualService = kubernetesContainerService.getVirtualServiceUsingK8sClient(null, controllerServiceName);
+    assertThat(virtualService).isNull();
+
+    // ApiException
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType())).thenThrow(new ApiException());
+    virtualService =
+        kubernetesContainerService.getVirtualServiceUsingK8sClient(KUBERNETES_CONFIG, controllerServiceName);
+    assertThat(virtualService).isNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testCreateVirtualServiceUsingK8sClient() throws ApiException {
+    String virtualService = "{\n"
+        + "  \"kind\": \"VirtualService\",\n"
+        + "  \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "  \"metadata\": {\n"
+        + "    \"name\": \"example-object\",\n"
+        + "    \"namespace\": \"mynamespace\"\n"
+        + "  },\n"
+        + "  \"spec\": {\n"
+        + "  }\n"
+        + "}\n";
+    Gson gson = new Gson();
+    Object virtualServiceObject = gson.fromJson(virtualService, Object.class);
+    KubernetesResource kubernetesResource = KubernetesResource.builder().value(virtualServiceObject).build();
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType()))
+        .thenThrow(new ApiException())
+        .thenReturn(new ApiResponse<>(200, emptyMap(), virtualServiceObject));
+
+    Object updatedVirtualService =
+        kubernetesContainerService.createOrReplaceVirtualServiceUsingK8sClient(KUBERNETES_CONFIG, kubernetesResource);
+    assertThat(updatedVirtualService).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testReplaceVirtualServiceUsingK8sClient() throws ApiException {
+    String virtualServiceList = "{\n"
+        + "  \"kind\": \"VirtualServiceList\",\n"
+        + "  \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "  \"metadata\": {},\n"
+        + "  \"items\": [\n"
+        + "    {\n"
+        + "      \"kind\": \"VirtualService\",\n"
+        + "      \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "      \"metadata\": {\n"
+        + "        \"name\": \"example-object\",\n"
+        + "        \"namespace\": \"mynamespace\"\n"
+        + "      },\n"
+        + "      \"spec\": {\n"
+        + "      }\n"
+        + "    }\n"
+        + "  ]\n"
+        + "}\n";
+    String virtualService = "{\n"
+        + "  \"kind\": \"VirtualService\",\n"
+        + "  \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "  \"metadata\": {\n"
+        + "    \"name\": \"example-object\",\n"
+        + "    \"namespace\": \"mynamespace\"\n"
+        + "  },\n"
+        + "  \"spec\": {\n"
+        + "  }\n"
+        + "}\n";
+    Gson gson = new Gson();
+    Object virtualServiceListObject = gson.fromJson(virtualServiceList, Object.class);
+    Object virtualServiceObject = gson.fromJson(virtualService, Object.class);
+    KubernetesResource kubernetesResource = KubernetesResource.builder().value(virtualServiceObject).build();
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), virtualServiceListObject));
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), virtualServiceObject));
+
+    Object updatedVirtualService =
+        kubernetesContainerService.createOrReplaceVirtualServiceUsingK8sClient(KUBERNETES_CONFIG, kubernetesResource);
+    assertThat(updatedVirtualService).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testFailCreateVirtualServiceUsingK8sClient() throws ApiException {
+    String virtualService = "{\n"
+        + "  \"kind\": \"VirtualService\",\n"
+        + "  \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "  \"metadata\": {\n"
+        + "    \"name\": \"example-object\",\n"
+        + "    \"namespace\": \"mynamespace\"\n"
+        + "  },\n"
+        + "  \"spec\": {\n"
+        + "  }\n"
+        + "}\n";
+    Gson gson = new Gson();
+    Object virtualServiceObject = gson.fromJson(virtualService, Object.class);
+    KubernetesResource kubernetesResource = KubernetesResource.builder().value(virtualServiceObject).build();
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType()))
+        .thenThrow(new ApiException())
+        .thenThrow(new ApiException());
+
+    assertThatThrownBy(()
+                           -> kubernetesContainerService.createOrReplaceVirtualServiceUsingK8sClient(
+                               KUBERNETES_CONFIG, kubernetesResource))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining("Unable to create default/VirtualService/example-object Code: 0, message: ");
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testFailReplaceVirtualServiceUsingK8sClient() throws ApiException {
+    String virtualServiceList = "{\n"
+        + "  \"kind\": \"VirtualServiceList\",\n"
+        + "  \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "  \"metadata\": {},\n"
+        + "  \"items\": [\n"
+        + "    {\n"
+        + "      \"kind\": \"VirtualService\",\n"
+        + "      \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "      \"metadata\": {\n"
+        + "        \"name\": \"example-object\",\n"
+        + "        \"namespace\": \"mynamespace\"\n"
+        + "      },\n"
+        + "      \"spec\": {\n"
+        + "      }\n"
+        + "    }\n"
+        + "  ]\n"
+        + "}\n";
+    String virtualService = "{\n"
+        + "  \"kind\": \"VirtualService\",\n"
+        + "  \"apiVersion\": \"networking.istio.io/v1alpha3\",\n"
+        + "  \"metadata\": {\n"
+        + "    \"name\": \"example-object\",\n"
+        + "    \"namespace\": \"mynamespace\"\n"
+        + "  },\n"
+        + "  \"spec\": {\n"
+        + "  }\n"
+        + "}\n";
+    Gson gson = new Gson();
+    Object virtualServiceListObject = gson.fromJson(virtualServiceList, Object.class);
+    Object virtualServiceObject = gson.fromJson(virtualService, Object.class);
+    KubernetesResource kubernetesResource = KubernetesResource.builder().value(virtualServiceObject).build();
+    when(k8sApiClient.execute(k8sApiCall, (new TypeToken<Object>() {}).getType()))
+        .thenReturn(new ApiResponse<>(200, emptyMap(), virtualServiceListObject))
+        .thenThrow(new ApiException());
+
+    assertThatThrownBy(()
+                           -> kubernetesContainerService.createOrReplaceVirtualServiceUsingK8sClient(
+                               KUBERNETES_CONFIG, kubernetesResource))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining("Unable to replace default/VirtualService/example-object Code: 0, message: ");
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testFailReplaceOrCreateVirtualServiceUsingK8sClient() {
+    String virtualServiceList = "{\n"
+        + "  \"kind\": \"VirtualServiceList\",\n"
+        + "  \"apiVersion\": \"networking.istio.io\",\n"
+        + "  \"metadata\": {},\n"
+        + "  \"items\": []\n"
+        + "}\n";
+    Gson gson = new Gson();
+    Object virtualServiceListObject = gson.fromJson(virtualServiceList, Object.class);
+    assertThatThrownBy(()
+                           -> kubernetesContainerService.createOrReplaceVirtualServiceUsingK8sClient(
+                               KUBERNETES_CONFIG, KubernetesResource.builder().value(virtualServiceListObject).build()))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessageContaining("Api version for virtual service is invalid. ApiVersion: networking.istio.io");
+
+    KubernetesResource kubernetesResource = kubernetesContainerService.createOrReplaceVirtualServiceUsingK8sClient(
+        null, KubernetesResource.builder().value(virtualServiceListObject).build());
+    assertThat(kubernetesResource).isNull();
   }
 
   private static final String EXPECTED_KUBECONFIG = "apiVersion: v1\n"

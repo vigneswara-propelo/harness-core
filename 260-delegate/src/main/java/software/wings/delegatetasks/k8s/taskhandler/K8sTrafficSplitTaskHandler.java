@@ -37,9 +37,11 @@ import io.harness.k8s.model.IstioDestinationWeight;
 import io.harness.k8s.model.K8sDelegateTaskParams;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
+import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.releasehistory.IK8sRelease;
 import io.harness.k8s.releasehistory.IK8sReleaseHistory;
+import io.harness.k8s.utils.ObjectYamlUtils;
 import io.harness.logging.CommandExecutionStatus;
 
 import software.wings.beans.command.ExecutionLogCallback;
@@ -57,6 +59,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -75,6 +78,8 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
   private IK8sRelease release;
   private KubernetesConfig kubernetesConfig;
   private VirtualService virtualService;
+  private KubernetesResource istioVirtualService;
+  private static final String METADATA_ANNOTATIONS = "metadata.annotations";
 
   @Override
   public K8sTaskExecutionResponse executeTaskInternal(
@@ -140,7 +145,8 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
 
   private boolean initBasedOnCustomVirtualServiceName(
       K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParameters, ExecutionLogCallback executionLogCallback) {
-    return findVirtualServiceByName(k8sTrafficSplitTaskParameters.getVirtualServiceName(), executionLogCallback);
+    return findVirtualServiceByName(k8sTrafficSplitTaskParameters.getVirtualServiceName(), executionLogCallback,
+        k8sTrafficSplitTaskParameters.isDisableFabric8());
   }
 
   private boolean initBasedOnDefaultVirtualServiceName(K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParameters,
@@ -173,7 +179,8 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
       return true;
     }
 
-    List<KubernetesResourceId> virtualServiceResourceIds = getManagedVirtualServiceResources(resources);
+    List<KubernetesResourceId> virtualServiceResourceIds =
+        getManagedVirtualServiceResources(resources, k8sTrafficSplitTaskParameters.isDisableFabric8());
 
     if (virtualServiceResourceIds.size() != 1) {
       executionLogCallback.saveExecutionLog(
@@ -194,7 +201,8 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
       return false;
     }
 
-    return findVirtualServiceByName(virtualServiceResourceIds.get(0).getName(), executionLogCallback);
+    return findVirtualServiceByName(virtualServiceResourceIds.get(0).getName(), executionLogCallback,
+        k8sTrafficSplitTaskParameters.isDisableFabric8());
   }
 
   private boolean apply(
@@ -203,15 +211,13 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
 
     kubernetesConfig = containerDeploymentDelegateHelper.getKubernetesConfig(
         k8sTrafficSplitTaskParameters.getK8sClusterConfig(), false);
-
+    List<IstioDestinationWeight> istioDestinationWeights = k8sTrafficSplitTaskParameters.getIstioDestinationWeights();
     try {
-      updateVirtualServiceWithDestinationWeights(k8sTrafficSplitTaskParameters, executionLogCallback);
-      if (virtualService != null) {
-        executionLogCallback.saveExecutionLog("\n" + toYaml(virtualService));
+      if (k8sTrafficSplitTaskParameters.isDisableFabric8()) {
+        createOrReplaceUpdatedVirtualServiceUsingK8sClient(istioDestinationWeights, executionLogCallback);
+      } else {
+        createOrReplaceUpdatedVirtualServiceUsingFabric8Client(istioDestinationWeights, executionLogCallback);
       }
-      virtualService =
-          kubernetesContainerService.createOrReplaceFabric8IstioVirtualService(kubernetesConfig, virtualService);
-
       executionLogCallback.saveExecutionLog("\nDone.", INFO, SUCCESS);
       return true;
     } catch (Exception e) {
@@ -222,9 +228,18 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
     }
   }
 
-  private boolean findVirtualServiceByName(String virtualServiceName, ExecutionLogCallback executionLogCallback) {
-    virtualService = kubernetesContainerService.getFabric8IstioVirtualService(kubernetesConfig, virtualServiceName);
-    if (virtualService == null) {
+  private boolean findVirtualServiceByName(
+      String virtualServiceName, ExecutionLogCallback executionLogCallback, boolean disableFabric8) {
+    if (disableFabric8) {
+      istioVirtualService =
+          KubernetesResource.builder()
+              .value(kubernetesContainerService.getVirtualServiceUsingK8sClient(kubernetesConfig, virtualServiceName))
+              .build();
+    } else {
+      virtualService =
+          kubernetesContainerService.getVirtualServiceUsingFabric8Client(kubernetesConfig, virtualServiceName);
+    }
+    if (virtualService == null && istioVirtualService.getValue() == null) {
       executionLogCallback.saveExecutionLog(
           "\nNo VirtualService found with name " + virtualServiceName, ERROR, FAILURE);
       return false;
@@ -233,14 +248,6 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
     executionLogCallback.saveExecutionLog("\nFound VirtualService with name " + color(virtualServiceName, White, Bold));
 
     return true;
-  }
-
-  private void updateVirtualServiceWithDestinationWeights(K8sTrafficSplitTaskParameters k8sTrafficSplitTaskParameters,
-      ExecutionLogCallback executionLogCallback) throws IOException {
-    List<IstioDestinationWeight> istioDestinationWeights = k8sTrafficSplitTaskParameters.getIstioDestinationWeights();
-
-    istioTaskHelper.updateVirtualServiceWithDestinationWeights(
-        istioDestinationWeights, virtualService, executionLogCallback);
   }
 
   private void printDestinationWeights(
@@ -256,17 +263,47 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
     }
   }
 
-  private List<KubernetesResourceId> getManagedVirtualServiceResources(List<KubernetesResourceId> resourceIds) {
-    List<KubernetesResourceId> managedVirtualServices = new ArrayList<>();
+  private List<KubernetesResourceId> getManagedVirtualServiceResources(
+      List<KubernetesResourceId> resourceIds, boolean disableFabric8) {
+    if (disableFabric8) {
+      return getManagedVirtualServiceResourcesUsingK8sClient(resourceIds);
+    }
+    return getManagedVirtualServiceResourcesUsingFabric8Client(resourceIds);
+  }
 
+  private List<KubernetesResourceId> getManagedVirtualServiceResourcesUsingK8sClient(
+      List<KubernetesResourceId> resourceIds) {
+    return resourceIds.stream()
+        .filter(resourceId
+            -> Kind.VirtualService.name().equals(resourceId.getKind()) && containsHarnessManagedAnnotation(resourceId))
+        .collect(Collectors.toList());
+  }
+
+  private boolean containsHarnessManagedAnnotation(KubernetesResourceId resourceId) {
+    Object k8sClientVirtualService =
+        kubernetesContainerService.getVirtualServiceUsingK8sClient(kubernetesConfig, resourceId.getName());
+    if (k8sClientVirtualService == null) {
+      return false;
+    }
+    Object annotationsObject = ObjectYamlUtils.getField(k8sClientVirtualService, METADATA_ANNOTATIONS);
+    if (!(annotationsObject instanceof Map)) {
+      return false;
+    }
+    Map<String, String> annotations = (Map<String, String>) annotationsObject;
+    return isNotEmpty(annotations) && annotations.containsKey(HarnessAnnotations.managed)
+        && annotations.get(HarnessAnnotations.managed).equalsIgnoreCase("true");
+  }
+
+  private List<KubernetesResourceId> getManagedVirtualServiceResourcesUsingFabric8Client(
+      List<KubernetesResourceId> resourceIds) {
+    List<KubernetesResourceId> managedVirtualServices = new ArrayList<>();
     for (KubernetesResourceId resourceId : resourceIds) {
       if (Kind.VirtualService.name().equals(resourceId.getKind())) {
-        VirtualService istioVirtualService =
-            kubernetesContainerService.getFabric8IstioVirtualService(kubernetesConfig, resourceId.getName());
-
-        if (istioVirtualService != null && istioVirtualService.getMetadata() != null
-            && isNotEmpty(istioVirtualService.getMetadata().getAnnotations())) {
-          Map<String, String> annotations = istioVirtualService.getMetadata().getAnnotations();
+        VirtualService fabric8VirtualService =
+            kubernetesContainerService.getVirtualServiceUsingFabric8Client(kubernetesConfig, resourceId.getName());
+        if (fabric8VirtualService != null && fabric8VirtualService.getMetadata() != null
+            && isNotEmpty(fabric8VirtualService.getMetadata().getAnnotations())) {
+          Map<String, String> annotations = fabric8VirtualService.getMetadata().getAnnotations();
           if (annotations.containsKey(HarnessAnnotations.managed)
               && annotations.get(HarnessAnnotations.managed).equalsIgnoreCase("true")) {
             managedVirtualServices.add(resourceId);
@@ -274,7 +311,29 @@ public class K8sTrafficSplitTaskHandler extends K8sTaskHandler {
         }
       }
     }
-
     return managedVirtualServices;
+  }
+
+  private void createOrReplaceUpdatedVirtualServiceUsingFabric8Client(
+      List<IstioDestinationWeight> istioDestinationWeights, ExecutionLogCallback executionLogCallback)
+      throws IOException {
+    istioTaskHelper.updateVirtualServiceWithDestinationWeights(
+        istioDestinationWeights, virtualService, executionLogCallback);
+    if (virtualService != null) {
+      executionLogCallback.saveExecutionLog("\n" + toYaml(virtualService));
+    }
+    virtualService =
+        kubernetesContainerService.createOrReplaceVirtualServiceUsingFabric8Client(kubernetesConfig, virtualService);
+  }
+
+  private void createOrReplaceUpdatedVirtualServiceUsingK8sClient(List<IstioDestinationWeight> istioDestinationWeights,
+      ExecutionLogCallback executionLogCallback) throws IOException {
+    istioTaskHelper.updateVirtualServiceWithDestinationWeights(
+        istioDestinationWeights, istioVirtualService, executionLogCallback);
+    if (istioVirtualService != null) {
+      executionLogCallback.saveExecutionLog("\n" + toYaml(istioVirtualService.getValue()));
+    }
+    istioVirtualService =
+        kubernetesContainerService.createOrReplaceVirtualServiceUsingK8sClient(kubernetesConfig, istioVirtualService);
   }
 }

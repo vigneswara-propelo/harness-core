@@ -52,6 +52,7 @@ public class K8sCanaryDeployTaskParameters extends K8sTaskParameters implements 
   private boolean cleanUpIncompleteCanaryDeployRelease;
   private List<KubernetesResource> kubernetesResources;
   private boolean useDeclarativeRollback;
+  private boolean disableFabric8;
 
   @Builder
   public K8sCanaryDeployTaskParameters(String accountId, String appId, String commandName, String activityId,
@@ -61,7 +62,8 @@ public class K8sCanaryDeployTaskParameters extends K8sTaskParameters implements 
       HelmVersion helmVersion, Boolean skipVersioningForAllK8sObjects, Set<String> delegateSelectors,
       boolean exportManifests, boolean inheritManifests, List<KubernetesResource> kubernetesResources,
       boolean useLatestChartMuseumVersion, boolean useLatestKustomizeVersion, boolean useNewKubectlVersion,
-      boolean cleanUpIncompleteCanaryDeployRelease, boolean useDeclarativeRollback, boolean timeoutSupported) {
+      boolean cleanUpIncompleteCanaryDeployRelease, boolean useDeclarativeRollback, boolean timeoutSupported,
+      boolean disableFabric8) {
     super(accountId, appId, commandName, activityId, k8sClusterConfig, workflowExecutionId, releaseName,
         timeoutIntervalInMin, k8sTaskType, helmVersion, delegateSelectors, useLatestChartMuseumVersion,
         useLatestKustomizeVersion, useNewKubectlVersion, timeoutSupported);
@@ -77,6 +79,7 @@ public class K8sCanaryDeployTaskParameters extends K8sTaskParameters implements 
     this.cleanUpIncompleteCanaryDeployRelease = cleanUpIncompleteCanaryDeployRelease;
     this.kubernetesResources = kubernetesResources;
     this.useDeclarativeRollback = useDeclarativeRollback;
+    this.disableFabric8 = disableFabric8;
   }
 
   @Override

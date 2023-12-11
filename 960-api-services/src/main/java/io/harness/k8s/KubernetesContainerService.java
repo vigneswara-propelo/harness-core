@@ -14,6 +14,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.container.ContainerInfo;
 import io.harness.k8s.model.KubernetesConfig;
+import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
 import io.harness.logging.LogCallback;
 
@@ -132,11 +133,14 @@ public interface KubernetesContainerService {
 
   DestinationRule getFabric8IstioDestinationRule(KubernetesConfig kubernetesConfig, String name);
 
-  VirtualService createOrReplaceFabric8IstioVirtualService(
+  VirtualService createOrReplaceVirtualServiceUsingFabric8Client(
       KubernetesConfig kubernetesConfig, VirtualService definition);
 
   DestinationRule createOrReplaceFabric8IstioDestinationRule(
       KubernetesConfig kubernetesConfig, DestinationRule definition);
+
+  KubernetesResource createOrReplaceVirtualServiceUsingK8sClient(
+      KubernetesConfig kubernetesConfig, KubernetesResource virtualService);
 
   void deleteIstioDestinationRule(KubernetesConfig kubernetesConfig, String name);
 
@@ -182,7 +186,9 @@ public interface KubernetesContainerService {
 
   void deleteIstioVirtualService(KubernetesConfig kubernetesConfig, String name);
 
-  VirtualService getFabric8IstioVirtualService(KubernetesConfig kubernetesConfig, String name);
+  Object getVirtualServiceUsingK8sClient(KubernetesConfig kubernetesConfig, String name);
+
+  VirtualService getVirtualServiceUsingFabric8Client(KubernetesConfig kubernetesConfig, String name);
 
   V1Deployment getDeployment(KubernetesConfig kubernetesConfig, String namespace, String name);
 

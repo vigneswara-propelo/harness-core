@@ -169,7 +169,7 @@ public class KubernetesResizeCommandUnit extends ContainerResizeCommandUnit {
       String kubernetesServiceName = getServiceNameFromControllerName(controllerName);
       String controllerPrefix = getPrefixFromControllerName(controllerName);
       VirtualService existingVirtualService =
-          kubernetesContainerService.getFabric8IstioVirtualService(kubernetesConfig, kubernetesServiceName);
+          kubernetesContainerService.getVirtualServiceUsingFabric8Client(kubernetesConfig, kubernetesServiceName);
 
       if (existingVirtualService == null) {
         throw new InvalidRequestException(format("Virtual Service [%s] not found", kubernetesServiceName));
@@ -181,7 +181,7 @@ public class KubernetesResizeCommandUnit extends ContainerResizeCommandUnit {
       if (!virtualServiceHttpRouteMatchesExisting(existingVirtualService, virtualServiceDefinition)) {
         executionLogCallback.saveExecutionLog("Setting Istio VirtualService Route destination weights:");
         printVirtualServiceRouteWeights(virtualServiceDefinition, controllerPrefix, executionLogCallback);
-        kubernetesContainerService.createOrReplaceFabric8IstioVirtualService(
+        kubernetesContainerService.createOrReplaceVirtualServiceUsingFabric8Client(
             kubernetesConfig, virtualServiceDefinition);
       } else {
         executionLogCallback.saveExecutionLog("No change to Istio VirtualService Route rules :");
