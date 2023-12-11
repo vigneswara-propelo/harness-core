@@ -68,8 +68,6 @@ public class FQNMapGenerator {
     }
     if (mapData.get(fqnList.get(index)) instanceof Map) {
       traverseMap((Map<String, Object>) mapData.get(fqnList.get(index)), fqnList, index + 1, value);
-    } else {
-      log.warn("Value {} not instance of map ", mapData.get(fqnList.get(index)));
     }
   }
 

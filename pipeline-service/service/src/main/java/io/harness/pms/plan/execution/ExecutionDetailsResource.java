@@ -429,6 +429,8 @@ public class ExecutionDetailsResource {
       })
   @Hidden
   @NGAccessControlCheck(resourceType = PIPELINE_RESOURCE_TYPE, permission = PipelineRbacPermissions.PIPELINE_VIEW)
+  @Timed
+  @ResponseMetered
   public ResponseDTO<ExpressionEvaluationDetailDTO>
   getExpressionEvaluated(
       @NotNull @Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE, required = true) @QueryParam(

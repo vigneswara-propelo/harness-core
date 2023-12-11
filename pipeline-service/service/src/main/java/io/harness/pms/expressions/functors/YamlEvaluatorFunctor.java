@@ -15,6 +15,7 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.expression.LateBindingValue;
 import io.harness.pms.merger.helpers.FQNMapGenerator;
 
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,14 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(PIPELINE)
 @Slf4j
 public class YamlEvaluatorFunctor implements LateBindingValue {
-  private final String yaml;
+  private final Map<String, Object> mapData;
 
   public YamlEvaluatorFunctor(String yaml) {
-    this.yaml = yaml;
+    this.mapData = FQNMapGenerator.generateYamlMapWithFqnExpression(yaml);
   }
 
   @Override
   public Object bind() {
-    return FQNMapGenerator.generateYamlMapWithFqnExpression(yaml);
+    return this.mapData;
   }
 }
