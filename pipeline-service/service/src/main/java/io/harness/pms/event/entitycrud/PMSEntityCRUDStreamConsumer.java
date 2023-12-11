@@ -15,10 +15,12 @@ import static io.harness.eventsframework.EventsFrameworkMetadataConstants.PIPELI
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.PROJECT_ENTITY;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.context.GlobalContext;
 import io.harness.eventsframework.api.Consumer;
 import io.harness.eventsframework.api.EventsFrameworkDownException;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.impl.redis.RedisTraceConsumer;
+import io.harness.manage.GlobalContextManager;
 import io.harness.ng.core.event.MessageListener;
 import io.harness.queue.QueueController;
 import io.harness.security.SecurityContextBuilder;
@@ -117,11 +119,16 @@ public class PMSEntityCRUDStreamConsumer extends RedisTraceConsumer {
   @Override
   protected boolean processMessage(Message message) {
     AtomicBoolean success = new AtomicBoolean(true);
-    pipelineExecutorService.submit(() -> messageListenersList.forEach(messageListener -> {
-      if (!messageListener.handleMessage(message)) {
-        log.error("Failed to process event with event id : {}", message.getId());
+    GlobalContext context = GlobalContextManager.obtainGlobalContextCopy();
+    pipelineExecutorService.submit(() -> {
+      try (GlobalContextManager.GlobalContextGuard guard = GlobalContextManager.initGlobalContextGuard(context)) {
+        messageListenersList.forEach(messageListener -> {
+          if (!messageListener.handleMessage(message)) {
+            log.error("Failed to process event with event id : {}", message.getId());
+          }
+        });
       }
-    }));
+    });
     return success.get();
   }
 }

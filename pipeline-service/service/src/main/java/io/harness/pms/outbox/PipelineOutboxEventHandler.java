@@ -105,7 +105,7 @@ public class PipelineOutboxEventHandler implements OutboxEventHandler {
                                 .insertId(outboxEvent.getId())
                                 .build();
     Principal principal = null;
-    if (globalContext.get(PRINCIPAL_CONTEXT) == null) {
+    if (globalContext == null || globalContext.get(PRINCIPAL_CONTEXT) == null) {
       principal = new ServicePrincipal(PIPELINE_SERVICE.getServiceId());
     } else if (globalContext.get(PRINCIPAL_CONTEXT) != null) {
       principal = ((PrincipalContextData) globalContext.get(PRINCIPAL_CONTEXT)).getPrincipal();
@@ -160,7 +160,7 @@ public class PipelineOutboxEventHandler implements OutboxEventHandler {
                                 .insertId(outboxEvent.getId())
                                 .build();
     Principal principal = null;
-    if (globalContext.get(PRINCIPAL_CONTEXT) == null) {
+    if (globalContext == null || globalContext.get(PRINCIPAL_CONTEXT) == null) {
       principal = new ServicePrincipal(PIPELINE_SERVICE.getServiceId());
     } else if (globalContext.get(PRINCIPAL_CONTEXT) != null) {
       principal = ((PrincipalContextData) globalContext.get(PRINCIPAL_CONTEXT)).getPrincipal();
@@ -178,7 +178,7 @@ public class PipelineOutboxEventHandler implements OutboxEventHandler {
     PipelineDeleteEvent event = objectMapper.readValue(outboxEvent.getEventData(), PipelineDeleteEvent.class);
 
     Principal principal = null;
-    if (globalContext.get(PRINCIPAL_CONTEXT) == null) {
+    if (globalContext == null || globalContext.get(PRINCIPAL_CONTEXT) == null) {
       principal = new ServicePrincipal(PIPELINE_SERVICE.getServiceId());
     } else if (globalContext.get(PRINCIPAL_CONTEXT) != null) {
       principal = ((PrincipalContextData) globalContext.get(PRINCIPAL_CONTEXT)).getPrincipal();
