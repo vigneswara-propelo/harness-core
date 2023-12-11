@@ -30,7 +30,7 @@ func TestPublicNameErr(t *testing.T) {
 func TestPrivateImageInvalidDockerCfg(t *testing.T) {
 	image := "harness/ci-lite-engine:v0.7-alpha"
 	cfg := "hello"
-	_, _, err := PrivateMetadata(image, cfg)
+	_, _, err := PrivateMetadata(image, cfg, nil)
 	fmt.Println(err)
 	assert.NotNil(t, err)
 }
@@ -38,7 +38,7 @@ func TestPrivateImageInvalidDockerCfg(t *testing.T) {
 func TestPrivateImageKeyChainErr(t *testing.T) {
 	image := "harness/ci-lite-engine:v0.7-alpha"
 	cfg := "Zm9vLWJhcg=="
-	_, _, err := PrivateMetadata(image, cfg)
+	_, _, err := PrivateMetadata(image, cfg, nil)
 	fmt.Println(err)
 	assert.NotNil(t, err)
 }
@@ -46,7 +46,7 @@ func TestPrivateImageKeyChainErr(t *testing.T) {
 func TestPrivateImageInvalidSecret(t *testing.T) {
 	image := "harness/ci-lite-engine:v0.7-alpha"
 	cfg := "eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJmb28iLCJwYXNzd29yZCI6ImJhciJ9fQ=="
-	_, _, err := PrivateMetadata(image, cfg)
+	_, _, err := PrivateMetadata(image, cfg, nil)
 	fmt.Println(err)
 	assert.NotNil(t, err)
 }
