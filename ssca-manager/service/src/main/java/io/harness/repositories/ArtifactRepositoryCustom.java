@@ -25,6 +25,7 @@ public interface ArtifactRepositoryCustom {
   ArtifactEntity findOne(Criteria criteria);
   ArtifactEntity findOne(Criteria criteria, Sort sort, List<String> projectionFields);
   Page<ArtifactEntity> findAll(Criteria criteria, Pageable pageable);
+
   List<ArtifactEntity> findAll(Aggregation aggregation);
   long getCount(Aggregation aggregation);
 }

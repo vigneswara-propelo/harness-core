@@ -38,6 +38,7 @@ import io.harness.spec.server.ssca.v1.BaselineApi;
 import io.harness.spec.server.ssca.v1.ConfigApi;
 import io.harness.spec.server.ssca.v1.EnforcementApi;
 import io.harness.spec.server.ssca.v1.OrchestrationApi;
+import io.harness.spec.server.ssca.v1.RemediationApi;
 import io.harness.spec.server.ssca.v1.SbomProcessorApi;
 import io.harness.spec.server.ssca.v1.ScorecardApi;
 import io.harness.spec.server.ssca.v1.TokenApi;
@@ -47,6 +48,7 @@ import io.harness.ssca.api.BaselineApiImpl;
 import io.harness.ssca.api.ConfigApiImpl;
 import io.harness.ssca.api.EnforcementApiImpl;
 import io.harness.ssca.api.OrchestrationApiImpl;
+import io.harness.ssca.api.RemediationTrackerApiImpl;
 import io.harness.ssca.api.SbomProcessorApiImpl;
 import io.harness.ssca.api.ScorecardApiImpl;
 import io.harness.ssca.api.TokenApiImpl;
@@ -89,6 +91,8 @@ import io.harness.ssca.services.ScorecardServiceImpl;
 import io.harness.ssca.services.SscaPolicyEvaluationService;
 import io.harness.ssca.services.drift.SbomDriftService;
 import io.harness.ssca.services.drift.SbomDriftServiceImpl;
+import io.harness.ssca.services.remediation_tracker.RemediationTrackerService;
+import io.harness.ssca.services.remediation_tracker.RemediationTrackerServiceImpl;
 import io.harness.time.TimeModule;
 import io.harness.token.TokenClientModule;
 
@@ -165,6 +169,8 @@ public class SSCAManagerModule extends AbstractModule {
     bind(PolicyMgmtService.class).to(PolicyMgmtServiceImpl.class);
     bind(FeatureFlagService.class).to(FeatureFlagServiceImpl.class);
     bind(SbomDriftService.class).to(SbomDriftServiceImpl.class);
+    bind(RemediationTrackerService.class).to(RemediationTrackerServiceImpl.class);
+    bind(RemediationApi.class).to(RemediationTrackerApiImpl.class);
     MapBinder<PolicyType, PolicyEvaluationService> policyEvaluationServiceMapBinder =
         MapBinder.newMapBinder(binder(), PolicyType.class, PolicyEvaluationService.class);
     policyEvaluationServiceMapBinder.addBinding(PolicyType.OPA)

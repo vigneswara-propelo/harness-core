@@ -821,6 +821,32 @@ paths:
           description: Provide status of components drift to be returned
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Limit'
+  '/v1/orgs/{org}/projects/{project}/remediation':
+    parameters:
+      - $ref: '#/components/parameters/OrgParam'
+      - $ref: '#/components/parameters/ProjectParam'
+    post:
+      summary: Create Remediation Tracker
+      tags:
+        - Remediation
+      responses:
+        '200':
+          $ref: '#/components/responses/RemediationTrackerCreateResponseBody'
+          description: ''
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      operationId: createRemediationTracker
+      x-stoplight:
+        id: 1zgodtb8sbrkg
+      description: Create Remediation Tracker.
+      security:
+        - x-api-key: [ ]
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/RemediationTrackerCreateRequestBody'
 components:
   schemas:
     Artifact:
@@ -2125,6 +2151,146 @@ components:
           items:
             $ref: '#/components/schemas/ComponentSummary'
       description: Element of license drift
+    VulnerabilitySeverity:
+      title: VulnerabilitySeverity
+      x-stoplight:
+        id: 0dnk9bq7ddwnc
+      enum:
+        - NONE
+        - LOW
+        - MEDIUM
+        - HIGH
+        - CRITICAL
+      description: Severity of the Vulnerability.
+    ContactInfo:
+      title: ContactInfo
+      x-stoplight:
+        id: woyasy75wuuf9
+      type: object
+      properties:
+        name:
+          type: string
+          x-stoplight:
+            id: dpft1fqrs5c57
+          description: Name of the contact person.
+        email:
+          type: string
+          x-stoplight:
+            id: eo1d8dwth22v4
+          description: Email of the Contact person.
+      description:
+        Contact Details.
+    RemediationCondition:
+      title: RemediationCondition
+      x-stoplight:
+        id: misbodg7d99qk
+      type: object
+      properties:
+        version:
+          type: string
+          x-stoplight:
+            id: g78dnkqn6suy7
+          description: |
+            Component Version for Remediation. For operator like less than, less than equals, range, semantic versioning is required.
+        operator:
+          type: string
+          enum:
+            - LessThan
+            - LessThanEquals
+            - Matches
+            - All
+      required:
+        - operator
+    RemediationTrackerCreateResponseBody:
+      title: RemediationTrackerCreateResponseBody
+      x-stoplight:
+        id: pc9xwekraii1i
+      type: object
+      properties:
+        id:
+          type: string
+          x-stoplight:
+            id: 5gui16l9j4lzp
+          description: Remediation Tracker Id.
+    VulnerabilityInfo:
+      title: VulnerabilityInfo
+      x-stoplight:
+        id: gxunbvs94pdyu
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          CVE: '#/components/schemas/CVEVulnerability'
+          Default: '#/components/schemas/DefaultVulnerability'
+      properties:
+        component_name:
+          type: string
+          x-stoplight:
+            id: g27xy7lhzi2oz
+          description: Name of the component where vulnerability is found.
+        component_version:
+          type: string
+          x-stoplight:
+            id: o6s2du1bw5nid
+          description: Version(s) of the component where vulnerability is found.
+        vulnerability_description:
+          type: string
+          x-stoplight:
+            id: j7x56pinvw1pb
+          description: Details of the vulnerability.
+        severity:
+          $ref: '#/components/schemas/VulnerabilitySeverity'
+        type:
+          enum:
+            - CVE
+            - Default
+      required:
+        - component_name
+        - severity
+        - type
+    CVEVulnerability:
+      title: CVEVulnerability
+      x-stoplight:
+        id: kwq3dsfsdfgqk
+      x-discriminator-value: CVE
+      allOf:
+        - $ref: '#/components/schemas/VulnerabilityInfo'
+        - type: object
+          properties:
+            cve:
+              type: string
+              x-stoplight:
+                id: atr9xl1c3e22d
+              description: CVE number of the vulnerability.
+      required:
+        - type
+    DefaultVulnerability:
+      title: DefaultVulnerability
+      x-stoplight:
+        id: pu2nax88ydzly
+      x-discriminator-value: Default
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/VulnerabilityInfo'
+    RemediationTrackerCreateRequestBody:
+      title: RemediationTrackerCreateRequestBody
+      x-stoplight:
+        id: 6e4lr697qg0gd
+      type: object
+      properties:
+        vulnerability_info:
+          $ref: '#/components/schemas/VulnerabilityInfo'
+        contact:
+          $ref: '#/components/schemas/ContactInfo'
+        comments:
+          type: string
+          x-stoplight:
+            id: 8mvhzcyqmte7k
+          description: Description/comments for the tracker.
+        remediation_condition:
+          $ref: '#/components/schemas/RemediationCondition'
+      required:
+        - remediation_condition
   parameters:
     OrgParam:
       name: org
@@ -2232,6 +2398,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ArtifactSbomDriftRequestBody'
+    RemediationTrackerCreateRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RemediationTrackerCreateRequestBody'
   securitySchemes:
     x-api-key:
       name: x-api-key
@@ -2479,3 +2650,9 @@ components:
           schema:
             type: string
           description: Maximum page size in Paginated response.
+    RemediationTrackerCreateResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RemediationTrackerCreateResponseBody'
