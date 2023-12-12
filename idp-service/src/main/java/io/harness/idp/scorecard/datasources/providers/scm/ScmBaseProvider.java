@@ -76,7 +76,7 @@ public abstract class ScmBaseProvider extends HttpDataSourceProvider {
       possibleReplaceableRequestBodyPairs.put(REPOSITORY_OWNER, catalogLocationParts.get(3));
       possibleReplaceableRequestBodyPairs.put(REPOSITORY_NAME, catalogLocationParts.get(4));
 
-      if (catalogLocationParts.get(5).equals("-")) {
+      if (catalogLocationParts.size() > 5 && catalogLocationParts.get(5).equals("-")) {
         // Gitlab only
         catalogLocationParts.remove(5);
       }
