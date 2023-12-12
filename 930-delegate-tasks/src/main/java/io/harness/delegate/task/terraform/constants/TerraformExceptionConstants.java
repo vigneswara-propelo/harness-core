@@ -65,6 +65,8 @@ public final class TerraformExceptionConstants {
         "Couldn't find any file on specified S3 path ";
     public static final String EXPLANATION_ERROR_ASKING_FOR_STATE_MIGRATION =
         "A terraform step with same provisionerIdentifier and no remote backend config configured was previously executed and a local state file maintained by Harness is present";
+    public static final String EXPLANATION_ERROR_FOLDER_PATH_DOES_NOT_EXIST =
+        "Please ensure that Folder Path: %s exist in the repo.";
   }
 
   public static final class Message {
@@ -75,6 +77,7 @@ public final class TerraformExceptionConstants {
         "Failed with unknown error. For more details please configure TF_LOG env variable and check execution logs";
     public static final String MESSAGE_ERROR_TOO_LONG =
         "Error message is too long to be fully displayed, please check execution logs for more details";
+    public static final String MESSAGE_REPO_FOLDER_PATH_DOES_NOT_EXIST = "Folder Path: %s does not exist in the repo.";
   }
 
   public static final class CliErrorMessages {

@@ -28,6 +28,7 @@ import static software.wings.beans.LogHelper.color;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -75,6 +76,7 @@ import io.harness.delegate.task.git.GitFetchFilesConfig;
 import io.harness.delegate.task.terraform.handlers.HarnessSMEncryptionDecryptionHandler;
 import io.harness.delegate.task.terraform.handlers.HarnessSMEncryptionDecryptionHandlerNG;
 import io.harness.delegate.task.terraform.provider.TerraformAwsProviderCredentialDelegateInfo;
+import io.harness.exception.HintException;
 import io.harness.filesystem.FileIo;
 import io.harness.git.GitClientHelper;
 import io.harness.git.GitClientV2;
@@ -722,9 +724,30 @@ public class TerraformBaseHelperImplTest extends CategoryTest {
     doNothing().when(terraformBaseHelper).fetchConfigFileAndCloneLocally(any(), any());
     doNothing().when(terraformBaseHelper).copyConfigFilestoWorkingDirectory(any(), any(), any(), any());
 
+    FileIo.createDirectoryIfDoesNotExist("baseDir/script-repository/"
+        + "scriptPath");
     terraformBaseHelper.fetchConfigFileAndPrepareScriptDir(
         gitBaseRequest, "accountId", "workspace", "stateFileId", logCallback, "scriptPath", "baseDir", true);
     verify(delegateFileManagerBase, times(0)).downloadByFileId(any(), any(), any());
+    FileIo.deleteDirectoryAndItsContentIfExists("baseDir/script-repository/");
+  }
+
+  @Test
+  @Owner(developers = VLICA)
+  @Category(UnitTests.class)
+  public void testFetchGitConfigFileAndExceptionThrownFolderPathDontExist() throws IOException {
+    GitBaseRequest gitBaseRequest = GitBaseRequest.builder().build();
+    doNothing().when(terraformBaseHelper).fetchConfigFileAndCloneLocally(any(), any());
+    doNothing().when(terraformBaseHelper).copyConfigFilestoWorkingDirectory(any(), any(), any(), any());
+
+    assertThatThrownBy(()
+                           -> terraformBaseHelper.fetchConfigFileAndPrepareScriptDir(gitBaseRequest, "accountId",
+                               "workspace", "stateFileId", logCallback, "scriptPath", "baseDir", true))
+        .matches(throwable -> {
+          assertThat(throwable).isInstanceOf(HintException.class);
+          assertThat(throwable.getCause().getMessage()).contains("Folder Path: scriptPath does not exist in the repo.");
+          return true;
+        });
   }
 
   @Test
