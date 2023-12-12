@@ -349,13 +349,21 @@ public class TriggerExecutionHelper {
           }
         }
         if (sender != null) {
-          builder.putExtraInfo(GIT_USER, sender.getLogin());
+          if (triggerPayload.getSourceType() == SourceType.HARNESS_REPO) {
+            builder.putExtraInfo(GIT_USER, sender.getEmail());
+            if (isNotEmpty(sender.getLogin())) {
+              builder.setIdentifier(sender.getEmail());
+            }
+          } else {
+            builder.putExtraInfo(GIT_USER, sender.getLogin());
+            if (isNotEmpty(sender.getLogin())) {
+              builder.setIdentifier(sender.getLogin());
+            }
+          }
           if (isNotEmpty(sender.getEmail())) {
             builder.putExtraInfo(EMAIL, sender.getEmail());
           }
-          if (isNotEmpty(sender.getLogin())) {
-            builder.setIdentifier(sender.getLogin());
-          }
+
           if (isNotEmpty(sender.getName())) {
             builder.setUuid(sender.getName());
           }

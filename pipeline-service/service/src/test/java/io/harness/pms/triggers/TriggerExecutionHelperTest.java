@@ -87,6 +87,7 @@ import io.harness.pms.contracts.plan.TriggerType;
 import io.harness.pms.contracts.plan.TriggeredBy;
 import io.harness.pms.contracts.triggers.ArtifactData;
 import io.harness.pms.contracts.triggers.ParsedPayload;
+import io.harness.pms.contracts.triggers.SourceType;
 import io.harness.pms.contracts.triggers.TriggerPayload;
 import io.harness.pms.contracts.triggers.Type;
 import io.harness.pms.gitsync.PmsGitSyncBranchContextGuard;
@@ -455,6 +456,21 @@ public class TriggerExecutionHelperTest extends CategoryTest {
 
     assertTriggerBy(triggeredBy, "login", "user@email.com", true);
 
+    triggeredBy = triggerExecutionHelper.generateTriggerdBy("tag", ngTriggerEntity,
+        TriggerPayload.newBuilder()
+            .setSourceType(SourceType.HARNESS_REPO)
+            .setParsedPayload(
+                ParsedPayload.newBuilder()
+                    .setPr(PullRequestHook.newBuilder()
+                               .setSender(user)
+                               .setPr(PullRequest.newBuilder().setNumber(123).setLink("sourceEventLink").build())
+                               .build())
+                    .build())
+            .build(),
+        triggerWebhookEvent);
+
+    assertTriggerBy(triggeredBy, "user@email.com", "user@email.com", true);
+
     Principal servicePrincipal = new ServicePrincipal("svc");
     triggerWebhookEvent.setPrincipal(servicePrincipal);
     triggeredBy = triggerExecutionHelper.generateTriggerdBy(
@@ -682,7 +698,7 @@ public class TriggerExecutionHelperTest extends CategoryTest {
       assertThat(extraInfoMap.containsKey(EXEC_TAG_SET_BY_TRIGGER)).isTrue();
       assertThat(extraInfoMap.containsKey(TRIGGER_REF)).isTrue();
       assertThat(extraInfoMap.get(EXEC_TAG_SET_BY_TRIGGER)).isEqualTo("tag");
-      assertThat(extraInfoMap.get(GIT_USER)).isEqualTo("login");
+      assertThat(extraInfoMap.get(GIT_USER)).isEqualTo(identifier);
       assertThat(extraInfoMap.containsKey(EVENT_CORRELATION_ID)).isTrue();
       assertThat(extraInfoMap.get(EVENT_CORRELATION_ID)).isEqualTo("eventId");
       assertThat(extraInfoMap.get(TRIGGER_REF)).isEqualTo("acc/org/proj/trigger");
