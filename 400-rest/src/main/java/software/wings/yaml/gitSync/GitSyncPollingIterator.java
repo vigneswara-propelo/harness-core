@@ -8,6 +8,7 @@
 package software.wings.yaml.gitSync;
 
 import static io.harness.annotations.dev.HarnessTeam.DX;
+import static io.harness.beans.FeatureName.CDS_DISABLE_CG_ITERATORS;
 import static io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType.REGULAR;
 
 import static java.time.Duration.ofMinutes;
@@ -89,7 +90,9 @@ public class GitSyncPollingIterator
 
   @Override
   public void handle(YamlGitConfig entity) {
-    yamlChangeSetService.pushYamlChangeSetForGitToHarness(entity.getAccountId(), entity.getBranchName(),
-        entity.getGitConnectorId(), entity.getRepositoryName(), entity.getAppId());
+    if (featureFlagService.isNotEnabled(CDS_DISABLE_CG_ITERATORS, entity.getAccountId())) {
+      yamlChangeSetService.pushYamlChangeSetForGitToHarness(entity.getAccountId(), entity.getBranchName(),
+          entity.getGitConnectorId(), entity.getRepositoryName(), entity.getAppId());
+    }
   }
 }

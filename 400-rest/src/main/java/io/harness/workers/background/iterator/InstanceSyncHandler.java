@@ -7,6 +7,7 @@
 
 package io.harness.workers.background.iterator;
 
+import static io.harness.beans.FeatureName.CDS_DISABLE_CG_ITERATORS;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType.REGULAR;
 
@@ -15,6 +16,7 @@ import static software.wings.service.impl.instance.InstanceSyncFlow.ITERATOR;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
 
+import io.harness.ff.FeatureFlagService;
 import io.harness.iterator.IteratorExecutionHandler;
 import io.harness.iterator.IteratorPumpAndRedisModeHandler;
 import io.harness.iterator.PersistenceIteratorFactory;
@@ -49,6 +51,7 @@ public class InstanceSyncHandler extends IteratorPumpAndRedisModeHandler impleme
   @Inject private PersistenceIteratorFactory persistenceIteratorFactory;
   @Inject private InstanceHelper instanceHelper;
   @Inject private MorphiaPersistenceProvider<InfrastructureMapping> persistenceProvider;
+  @Inject private FeatureFlagService featureFlagService;
 
   @Override
   protected void createAndStartIterator(
@@ -100,7 +103,8 @@ public class InstanceSyncHandler extends IteratorPumpAndRedisModeHandler impleme
   public void handle(InfrastructureMapping infrastructureMapping) {
     try (AutoLogContext ignore1 = new AccountLogContext(infrastructureMapping.getAccountId(), OVERRIDE_ERROR);
          AutoLogContext ignore2 = new InfraMappingLogContext(infrastructureMapping.getUuid(), OVERRIDE_ERROR)) {
-      if (instanceHelper.shouldSkipIteratorInstanceSync(infrastructureMapping)) {
+      if (instanceHelper.shouldSkipIteratorInstanceSync(infrastructureMapping)
+          || featureFlagService.isEnabled(CDS_DISABLE_CG_ITERATORS, infrastructureMapping.getAccountId())) {
         return;
       }
 

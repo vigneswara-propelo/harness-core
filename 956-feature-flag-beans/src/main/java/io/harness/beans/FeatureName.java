@@ -105,6 +105,7 @@ public enum FeatureName {
       "Enabling this FF switches the user to kubernetes java client instead of deprecated fabric8 client in NG.",
       HarnessTeam.CDP),
   CDS_ENABLE_TRIGGER_YAML_VALIDATION("Enables trigger yaml validation", HarnessTeam.SPG),
+  CDS_DISABLE_CG_ITERATORS("Disables CG iterators", HarnessTeam.SPG),
   CDS_ENCRYPT_TERRAFORM_APPLY_JSON_OUTPUT(
       "FF for providing the terraform apply json output as a secret", HarnessTeam.CDP),
   CDS_ENABLE_NEW_PARAMETER_FIELD_PROCESSOR(
