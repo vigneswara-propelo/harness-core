@@ -329,6 +329,7 @@ public class PipelineMigrationService extends NgMigrationService {
     List<StageElementWrapperConfig> ngStages = new ArrayList<>();
     List<StageElementWrapperConfig> parallelStages = null;
     List<NGVariable> pipelineVariables = getPipelineVariables(migrationContext, pipeline);
+    MigratorExpressionUtils.render(migrationContext, pipelineVariables, new HashMap<>());
     List<StepExpressionFunctor> allFunctors = new ArrayList<>();
     Map<String, String> serviceToStageMap = new HashMap<>();
     Map<String, String> envToStageMap = new HashMap<>();
