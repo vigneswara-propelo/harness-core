@@ -9,18 +9,11 @@ package io.harness.cdng.creator.plan.stage.v1;
 
 import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
 import io.harness.pms.yaml.ParameterField;
-import io.harness.yaml.core.failurestrategy.v1.FailureConfigV1;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public abstract class DeploymentAbstractStageNodeV1 extends AbstractStageNodeV1 {
-  @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-  @NotNull
-  ParameterField<List<FailureConfigV1>> failure;
   @JsonProperty("skip_instances") ParameterField<Boolean> skipInstances;
 }

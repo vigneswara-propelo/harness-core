@@ -65,6 +65,7 @@ import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
 import io.harness.ng.core.serviceoverride.services.ServiceOverrideService;
 import io.harness.plancreator.PlanCreatorUtilsV1;
+import io.harness.plancreator.stages.v1.AbstractStagePlanCreator;
 import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.plancreator.steps.common.v1.StageElementParametersV1.StageElementParametersV1Builder;
 import io.harness.plancreator.steps.v1.FailureStrategiesUtilsV1;
@@ -87,17 +88,14 @@ import io.harness.pms.sdk.core.plan.PlanNode.PlanNodeBuilder;
 import io.harness.pms.sdk.core.plan.creation.beans.GraphLayoutResponse;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
-import io.harness.pms.sdk.core.plan.creation.creators.ChildrenPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.yaml.DependenciesUtils;
-import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rbac.CDNGRbacUtility;
-import io.harness.serializer.KryoSerializer;
 import io.harness.strategy.StrategyValidationUtils;
 import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.utils.PlanCreatorUtilsCommon;
@@ -130,8 +128,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
     components = {HarnessModuleComponent.CDS_SERVICE_ENVIRONMENT, HarnessModuleComponent.CDS_PIPELINE})
 @Slf4j
-public class DeploymentStagePlanCreator extends ChildrenPlanCreator<DeploymentStageNodeV1> {
-  @Inject private KryoSerializer kryoSerializer;
+public class DeploymentStagePlanCreator extends AbstractStagePlanCreator<DeploymentStageNodeV1> {
   @Inject private EnvironmentService environmentService;
   @Inject private NGFeatureFlagHelperService featureFlagHelperService;
   @Inject private InfrastructureEntityService infrastructure;
@@ -216,7 +213,7 @@ public class DeploymentStagePlanCreator extends ChildrenPlanCreator<DeploymentSt
                 DependenciesUtils.toDependenciesProto(dependenciesNodeMap)
                     .toBuilder()
                     .putDependencyMetadata(deploymentStageNode.getUuid(), strategyDependency)
-                    .putDependencyMetadata(specField.getNode().getUuid(), getDependencyForSteps(deploymentStageNode))
+                    .putDependencyMetadata(specField.getNode().getUuid(), getDependencyForChildren(deploymentStageNode))
                     .build())
             .build());
 
@@ -227,31 +224,6 @@ public class DeploymentStagePlanCreator extends ChildrenPlanCreator<DeploymentSt
         StrategyUtils.getAdviserObtainments(ctx.getCurrentField(), kryoSerializer, false), false, false);
 
     return planCreationResponseMap;
-  }
-
-  Dependency getDependencyForStrategy(
-      Map<String, YamlField> dependenciesNodeMap, DeploymentStageNodeV1 field, PlanCreationContext ctx) {
-    Map<String, HarnessValue> dependencyMetadata = StrategyUtilsV1.getStrategyFieldDependencyMetadataIfPresent(
-        kryoSerializer, ctx, field.getUuid(), dependenciesNodeMap, getBuild(ctx.getDependency()));
-    return Dependency.newBuilder()
-        .setNodeMetadata(HarnessStruct.newBuilder().putAllData(dependencyMetadata).build())
-        .build();
-  }
-
-  Dependency getDependencyForSteps(DeploymentStageNodeV1 field) {
-    if (field.getFailure() == null || field.getFailure().getValue() == null) {
-      return Dependency.newBuilder().setNodeMetadata(HarnessStruct.newBuilder().build()).build();
-    }
-    List<FailureConfigV1> stageFailureStrategies = field.getFailure().getValue();
-    return Dependency.newBuilder()
-        .setParentInfo(
-            HarnessStruct.newBuilder()
-                .putData(PlanCreatorConstants.STAGE_FAILURE_STRATEGIES,
-                    HarnessValue.newBuilder()
-                        .setBytesValue(ByteString.copyFrom(kryoSerializer.asDeflatedBytes(stageFailureStrategies)))
-                        .build())
-                .build())
-        .build();
   }
 
   @Override
@@ -302,22 +274,13 @@ public class DeploymentStagePlanCreator extends ChildrenPlanCreator<DeploymentSt
 
     // If strategy present then don't add advisers. Strategy node will take care of running the stage nodes.
     if (ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC).getNode().getField("strategy") == null) {
-      planNodeBuilder.adviserObtainments(getBuild(ctx.getDependency()));
+      planNodeBuilder.adviserObtainments(getAdviserObtainments(ctx.getDependency()));
     }
 
     if (!EmptyPredicate.isEmpty(ctx.getExecutionInputTemplate())) {
       planNodeBuilder.executionInputTemplate(ctx.getExecutionInputTemplate());
     }
     return planNodeBuilder.build();
-  }
-
-  private List<AdviserObtainment> getBuild(Dependency dependency) {
-    return PlanCreatorUtilsV1.getAdviserObtainmentsForStage(kryoSerializer, dependency);
-  }
-
-  @Override
-  public Set<String> getSupportedYamlVersions() {
-    return Set.of(HarnessYamlVersion.V1);
   }
 
   public String getIdentifierWithExpression(PlanCreationContext ctx, DeploymentStageNodeV1 node, String identifier) {
@@ -348,7 +311,7 @@ public class DeploymentStagePlanCreator extends ChildrenPlanCreator<DeploymentSt
             .dependencies(DependenciesUtils.toDependenciesProto(dependenciesNodeMap)
                               .toBuilder()
                               .putDependencyMetadata(field.getUuid(), strategyDependency)
-                              .putDependencyMetadata(specField.getNode().getUuid(), getDependencyForSteps(field))
+                              .putDependencyMetadata(specField.getNode().getUuid(), getDependencyForChildren(field))
                               .build())
             .build());
 

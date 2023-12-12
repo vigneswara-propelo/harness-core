@@ -16,7 +16,7 @@ import io.harness.ci.plancreator.V1.InitializeStepPlanCreatorV1;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
-import io.harness.plancreator.stages.stage.AbstractStageNode;
+import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
 import io.harness.pms.contracts.plan.Dependencies;
@@ -150,7 +150,7 @@ public class CIStepsPlanCreator extends ChildrenPlanCreator<YamlField> {
     if (optionalStageNode.isEmpty()) {
       throw new InvalidRequestException("IntegrationStageNode cannot be empty");
     }
-    AbstractStageNode stageNode = (AbstractStageNode) optionalStageNode.get();
+    AbstractStageNodeV1 stageNode = (AbstractStageNodeV1) optionalStageNode.get();
     PlanCreationResponse planCreationResponse = initializeStepPlanCreatorV1.createPlan(
         ctx, stageNode, codeBase, infrastructure, executionWrapperConfigs, childNodeID);
     planCreationResponseMap.put(planCreationResponse.getPlanNode().getUuid(), planCreationResponse);

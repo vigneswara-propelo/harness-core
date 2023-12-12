@@ -38,31 +38,26 @@ import io.harness.iacm.execution.IACMIntegrationStageStepPMS;
 import io.harness.iacm.execution.IACMIntegrationStageStepParametersPMS;
 import io.harness.iacmserviceclient.IACMServiceUtils;
 import io.harness.plancreator.PlanCreatorUtilsV1;
+import io.harness.plancreator.stages.v1.AbstractStagePlanCreator;
 import io.harness.plancreator.steps.common.StageElementParameters;
 import io.harness.plancreator.strategy.StrategyUtilsV1;
-import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
 import io.harness.pms.contracts.plan.Dependency;
-import io.harness.pms.contracts.plan.GraphLayoutNode;
 import io.harness.pms.contracts.plan.HarnessStruct;
 import io.harness.pms.contracts.plan.HarnessValue;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
-import io.harness.pms.execution.utils.SkipInfoUtils;
 import io.harness.pms.sdk.core.plan.PlanNode;
-import io.harness.pms.sdk.core.plan.creation.beans.GraphLayoutResponse;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
-import io.harness.pms.sdk.core.plan.creation.creators.ChildrenPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.yaml.DependenciesUtils;
-import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
-import io.harness.when.utils.RunInfoUtils;
+import io.harness.when.utils.v1.RunInfoUtilsV1;
 import io.harness.yaml.clone.Clone;
 import io.harness.yaml.extended.ci.codebase.Build;
 import io.harness.yaml.extended.ci.codebase.BuildType;
@@ -77,7 +72,6 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -90,7 +84,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(HarnessTeam.IACM)
-public class IACMStagePMSPlanCreatorV1 extends ChildrenPlanCreator<IACMStageNodeV1> {
+public class IACMStagePMSPlanCreatorV1 extends AbstractStagePlanCreator<IACMStageNodeV1> {
   @Inject private KryoSerializer kryoSerializer;
   public static final String workspaceID = "workspaceId";
   public static final String STAGE_NODE = "stageNode";
@@ -240,16 +234,15 @@ public class IACMStagePMSPlanCreatorV1 extends ChildrenPlanCreator<IACMStageNode
         PlanNode.builder()
             .uuid(StrategyUtilsV1.getSwappedPlanNodeId(ctx, stageNode.getUuid()))
             .name(StrategyUtilsV1.getIdentifierWithExpression(ctx, stageNode.getName()))
-            .identifier(StrategyUtilsV1.getIdentifierWithExpression(ctx, stageNode.getIdentifier()))
+            .identifier(StrategyUtilsV1.getIdentifierWithExpression(ctx, stageNode.getId()))
             .group(StepOutcomeGroup.STAGE.name())
             .stepParameters(StageElementParameters.builder()
-                                .identifier(stageNode.getIdentifier())
+                                .identifier(stageNode.getId())
                                 .name(stageNode.getName())
                                 .specConfig(params)
                                 .build())
             .stepType(IACMIntegrationStageStepPMS.STEP_TYPE)
-            .skipCondition(SkipInfoUtils.getSkipCondition(stageNode.getSkipCondition()))
-            .whenCondition(RunInfoUtils.getRunConditionForStage(stageNode.getWhen()))
+            .whenCondition(RunInfoUtilsV1.getStageWhenCondition(stageNode.getWhen()))
             .facilitatorObtainment(
                 FacilitatorObtainment.newBuilder()
                     .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILD).build())
@@ -258,29 +251,9 @@ public class IACMStagePMSPlanCreatorV1 extends ChildrenPlanCreator<IACMStageNode
     // If strategy present then don't add advisers. Strategy node will take care of running the stage nodes.
     if (field.getNode().getField(YAMLFieldNameConstants.SPEC).getNode().getField(YAMLFieldNameConstants.STRATEGY)
         == null) {
-      builder.adviserObtainments(getAdvisorObtainments(ctx.getDependency()));
+      builder.adviserObtainments(getAdviserObtainments(ctx.getDependency()));
     }
     return builder.build();
-  }
-
-  @Override
-  public GraphLayoutResponse getLayoutNodeInfo(PlanCreationContext context, IACMStageNodeV1 stageNode) {
-    Map<String, GraphLayoutNode> stageYamlFieldMap = new LinkedHashMap<>();
-    YamlField stageYamlField = context.getCurrentField();
-    String nextNodeUuid = PlanCreatorUtilsV1.getNextNodeUuid(kryoSerializer, context.getDependency());
-    if (StrategyUtilsV1.isWrappedUnderStrategy(context.getCurrentField())) {
-      stageYamlFieldMap = StrategyUtilsV1.modifyStageLayoutNodeGraph(stageYamlField, nextNodeUuid);
-    }
-    return GraphLayoutResponse.builder().layoutNodes(stageYamlFieldMap).build();
-  }
-
-  private List<AdviserObtainment> getAdvisorObtainments(Dependency dependency) {
-    List<AdviserObtainment> adviserObtainments = new ArrayList<>();
-    AdviserObtainment nextStepAdviser = PlanCreatorUtilsV1.getNextStepAdviser(kryoSerializer, dependency);
-    if (nextStepAdviser != null) {
-      adviserObtainments.add(nextStepAdviser);
-    }
-    return adviserObtainments;
   }
 
   @Override
@@ -303,21 +276,16 @@ public class IACMStagePMSPlanCreatorV1 extends ChildrenPlanCreator<IACMStageNode
     Infrastructure infrastructure = getInfrastructure(stageConfigImpl.getRuntime(), stageConfigImpl.getPlatform());
     CodeBase codeBase = createPlanForCodebase(ctx, planCreationResponseMap, stepsField.getUuid(), workspaceId);
     dependenciesNodeMap.put(stepsField.getUuid(), stepsField);
-    Map<String, HarnessValue> dependencyMetadata = StrategyUtilsV1.getStrategyFieldDependencyMetadataIfPresent(
-        kryoSerializer, ctx, stageNode.getUuid(), dependenciesNodeMap, getAdvisorObtainments(ctx.getDependency()));
 
     planCreationResponseMap.put(stepsField.getUuid(),
         PlanCreationResponse.builder()
-            .dependencies(
-                DependenciesUtils.toDependenciesProto(dependenciesNodeMap)
-                    .toBuilder()
-                    .putDependencyMetadata(field.getUuid(),
-                        Dependency.newBuilder()
-                            .setNodeMetadata(HarnessStruct.newBuilder().putAllData(dependencyMetadata).build())
-                            .build())
-                    .putDependencyMetadata(stepsField.getUuid(),
-                        getDependencyMetadataForStepsField(infrastructure, codeBase, workspaceId, stageNode))
-                    .build())
+            .dependencies(DependenciesUtils.toDependenciesProto(dependenciesNodeMap)
+                              .toBuilder()
+                              .putDependencyMetadata(
+                                  field.getUuid(), getDependencyForStrategy(dependenciesNodeMap, stageNode, ctx))
+                              .putDependencyMetadata(stepsField.getUuid(),
+                                  getDependencyMetadataForStepsField(infrastructure, codeBase, workspaceId, stageNode))
+                              .build())
             .build());
     log.info("Successfully created plan for integration stage {}", stageNode.getName());
     return planCreationResponseMap;
@@ -351,10 +319,5 @@ public class IACMStagePMSPlanCreatorV1 extends ChildrenPlanCreator<IACMStageNode
     return Dependency.newBuilder()
         .setNodeMetadata(HarnessStruct.newBuilder().putAllData(nodeMetadataMap).build())
         .build();
-  }
-
-  @Override
-  public Set<String> getSupportedYamlVersions() {
-    return Set.of(HarnessYamlVersion.V1);
   }
 }

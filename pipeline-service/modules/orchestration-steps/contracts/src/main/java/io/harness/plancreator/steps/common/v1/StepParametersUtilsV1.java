@@ -10,7 +10,7 @@ package io.harness.plancreator.steps.common.v1;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.plancreator.stages.v1.PmsAbstractStageNodeV1;
+import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
 import io.harness.plancreator.steps.common.v1.StageElementParametersV1.StageElementParametersV1Builder;
 import io.harness.plancreator.steps.common.v1.StepElementParametersV1.StepElementParametersV1Builder;
 import io.harness.plancreator.steps.internal.v1.PmsAbstractStepNodeV1;
@@ -40,7 +40,7 @@ public class StepParametersUtilsV1 {
     return stepBuilder;
   }
 
-  public StageElementParametersV1Builder getStageParameters(PmsAbstractStageNodeV1 stageNode) {
+  public StageElementParametersV1Builder getStageParameters(AbstractStageNodeV1 stageNode) {
     TagUtils.removeUuidFromTags(stageNode.getLabels());
     StageElementParametersV1Builder stageBuilder = StageElementParametersV1.builder();
     stageBuilder.name(stageNode.getName());

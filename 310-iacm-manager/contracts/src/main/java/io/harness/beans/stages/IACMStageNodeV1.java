@@ -15,9 +15,7 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.IACMStepSpecTypeConstants;
-import io.harness.plancreator.stages.stage.AbstractStageNode;
-import io.harness.plancreator.stages.stage.StageInfoConfig;
-import io.harness.pms.utils.IdentifierGeneratorUtils;
+import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -36,7 +34,7 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("IACMStageNodeV1")
 @OwnedBy(IACM)
 @RecasterAlias("io.harness.beans.stages.IACMStageNodeV1")
-public class IACMStageNodeV1 extends AbstractStageNode {
+public class IACMStageNodeV1 extends AbstractStageNodeV1 {
   @JsonProperty("type") @NotNull IACMStageNodeV1.StepType type = IACMStageNodeV1.StepType.iacm;
 
   @JsonProperty("spec")
@@ -46,16 +44,6 @@ public class IACMStageNodeV1 extends AbstractStageNode {
   @Override
   public String getType() {
     return "iacm";
-  }
-
-  @Override
-  public StageInfoConfig getStageInfoConfig() {
-    return stageConfig;
-  }
-
-  @Override
-  public String getIdentifier() {
-    return IdentifierGeneratorUtils.getId(this.getName());
   }
 
   public enum StepType {

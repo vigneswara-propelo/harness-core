@@ -71,6 +71,7 @@ import io.harness.cimanager.stages.V1.IntegrationStageConfigImplV1;
 import io.harness.cimanager.stages.V1.IntegrationStageNodeV1;
 import io.harness.serializer.KryoRegistrar;
 import io.harness.when.beans.StageWhenCondition;
+import io.harness.yaml.core.variables.v1.NGVariableV1Wrapper;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -162,5 +163,6 @@ public class CIContractsKryoRegistrar implements KryoRegistrar {
     kryo.register(DockerInfraSpec.class, 110146);
     kryo.register(VMRuntimeV1.class, 110147);
     kryo.register(VMRuntimeSpec.class, 110148);
+    kryo.register(NGVariableV1Wrapper.class, 110155);
   }
 }
