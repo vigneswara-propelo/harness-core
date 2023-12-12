@@ -105,6 +105,7 @@ public class GcpSyncTasklet implements Tasklet {
   private static final String CLICKHOUSE_PORT = "CLICKHOUSE_PORT";
   private static final String CLICKHOUSE_PORT_PYTHON = "CLICKHOUSE_PORT_PYTHON";
   private static final String CLICKHOUSE_QUERY_RETRIES = "CLICKHOUSE_QUERY_RETRIES";
+  private static final String BUCKET_NAME_PREFIX = "BUCKET_NAME_PREFIX";
   private static final String USER_AGENT_HEADER = "user-agent";
   private static final String USER_AGENT_HEADER_ENVIRONMENT_VARIABLE = "USER_AGENT_HEADER";
   private static final String DEFAULT_USER_AGENT = "default-user-agent";
@@ -288,8 +289,11 @@ public class GcpSyncTasklet implements Tasklet {
     V1EnvVar clickhousePort = createEnvVarFromConfigMap(
         CLICKHOUSE_PORT, gcpSyncSmpConfig.getBatchProcessingConfigMapName(), CLICKHOUSE_PORT_PYTHON);
 
-    V1EnvVar clickhousePassword = createEnvVariableFromSecret(
-        CLICKHOUSE_PASSWORD, gcpSyncSmpConfig.getClickHouseSecretName(), gcpSyncSmpConfig.getClickHousePasswordKey());
+    V1EnvVar bucketNamePrefix = createEnvVarFromConfigMap(
+        BUCKET_NAME_PREFIX, gcpSyncSmpConfig.getBatchProcessingConfigMapName(), BUCKET_NAME_PREFIX);
+
+    V1EnvVar clickhousePassword = createEnvVariableFromSecret(CLICKHOUSE_PASSWORD,
+        config.getClickHouseConfig().getSecretName(), config.getClickHouseConfig().getSecretPasswordKey());
 
     V1EnvVar hmacAccessKey = createEnvVariableFromSecret(gcpSyncSmpConfig.getHmacAccessKey(),
         gcpSyncSmpConfig.getBatchProcessingSecretName(), gcpSyncSmpConfig.getHmacAccessKey());
@@ -300,7 +304,7 @@ public class GcpSyncTasklet implements Tasklet {
     V1EnvVar serviceAccountCredential = createEnvVariableFromSecret(SERVICE_ACCOUNT_CREDENTIALS,
         gcpSyncSmpConfig.getBatchProcessingMountSecretName(), gcpSyncSmpConfig.getServiceAccountCredentialKey());
 
-    return Arrays.asList(clickhouseEnabled, clickhouseUrl, clickhouseUsername, clickhousePassword,
+    return Arrays.asList(clickhouseEnabled, clickhouseUrl, clickhouseUsername, clickhousePassword, bucketNamePrefix,
         clickhouseQueryRetries, clickhouseSendReceiveTimeout, clickhousePort, hmacAccessKey, hmacSecretKey,
         serviceAccountCredential);
   }
@@ -339,6 +343,7 @@ public class GcpSyncTasklet implements Tasklet {
     DatasetId datasetIdFullyQualified = DatasetId.of(projectId, datasetId);
     Dataset dataset = bigQuery.getDataset(datasetIdFullyQualified);
     log.info("dataset.getLocation(): {}", dataset.getLocation());
+    GcpSyncSmpConfig gcpSyncSmpConfig = config.getGcpSyncSmpConfig();
     if (isEmpty(tableName)) {
       // Older way to get the tableName
       Page<Table> tableList = dataset.list(BigQuery.TableListOption.pageSize(1000));
@@ -353,7 +358,7 @@ public class GcpSyncTasklet implements Tasklet {
             CacheKey cacheKey = new CacheKey(accountId, projectId, datasetId, table.getTableId().getTable());
             if (gcpSyncInfo.getIfPresent(cacheKey) == null) {
               boolean isExecuted;
-              if (isOnPremAndClickhouseEnabled()) {
+              if (isOnPremAndClickhouseEnabled() && gcpSyncSmpConfig.isGcpSmpEnabled()) {
                 isExecuted = createK8sJob(
                     dataset.getLocation(), datasetId, projectId, accountId, connectorId, table.getTableId().getTable());
               } else {
@@ -378,7 +383,7 @@ public class GcpSyncTasklet implements Tasklet {
         CacheKey cacheKey = new CacheKey(accountId, projectId, datasetId, tableName);
         if (gcpSyncInfo.getIfPresent(cacheKey) == null) {
           boolean isExecuted;
-          if (isOnPremAndClickhouseEnabled()) {
+          if (isOnPremAndClickhouseEnabled() && gcpSyncSmpConfig.isGcpSmpEnabled()) {
             isExecuted = createK8sJob(dataset.getLocation(), datasetId, projectId, accountId, connectorId,
                 tableGranularData.getTableId().getTable());
           } else {

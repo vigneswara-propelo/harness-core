@@ -19,6 +19,7 @@ import lombok.Data;
 @Singleton
 @OwnedBy(HarnessTeam.CE)
 public class GcpSyncSmpConfig {
+  private boolean gcpSmpEnabled;
   private String nextgenCeSecretName;
   private String batchProcessingSecretName;
   private String k8sJobContainerName;
@@ -29,6 +30,5 @@ public class GcpSyncSmpConfig {
   private String hmacSecretKey;
   private String serviceAccountCredentialKey;
   private String batchProcessingMountSecretName;
-  private String clickHouseSecretName;
-  private String clickHousePasswordKey;
+  private String bucketNamePrefix;
 }

@@ -356,6 +356,14 @@ if [[ "" != "$GCP_SYNC_PYTHON_IMAGE_PATH" ]]; then
   export GCP_SYNC_PYTHON_IMAGE_PATH; yq -i '.gcpSyncSmpConfig.k8sJobPythonImage=env(GCP_SYNC_PYTHON_IMAGE_PATH)' $CONFIG_FILE
 fi
 
+if [[ "" != "$BUCKET_NAME_PREFIX" ]]; then
+  export BUCKET_NAME_PREFIX; yq -i '.gcpSyncSmpConfig.bucketNamePrefix=env(BUCKET_NAME_PREFIX)' $CONFIG_FILE
+fi
+
+if [[ "" != "$GCP_SMP_ENABLED" ]]; then
+  export GCP_SMP_ENABLED; yq -i '.gcpSyncSmpConfig.gcpSmpEnabled=env(GCP_SMP_ENABLED)' $CONFIG_FILE
+fi
+
 replace_key_value cfClientConfig.apiKey "$CF_CLIENT_API_KEY"
 replace_key_value cfClientConfig.configUrl "$CF_CLIENT_CONFIG_URL"
 replace_key_value cfClientConfig.eventUrl "$CF_CLIENT_EVENT_URL"

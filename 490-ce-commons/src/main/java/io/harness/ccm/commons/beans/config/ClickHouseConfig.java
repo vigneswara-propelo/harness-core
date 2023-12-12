@@ -24,4 +24,6 @@ public class ClickHouseConfig {
   @ConfigSecret String password;
   @JsonProperty String sendReceiveTimeout;
   @JsonProperty String queryRetries;
+  @JsonProperty String secretName;
+  @JsonProperty String secretPasswordKey;
 }

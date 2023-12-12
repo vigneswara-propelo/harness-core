@@ -12,6 +12,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ccm.CENextGenConfiguration;
+import io.harness.configuration.DeployMode;
 import io.harness.connector.ConnectivityStatus;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorValidationResult;
@@ -441,7 +442,7 @@ public class CEGcpConnectorValidator extends io.harness.ccm.connectors.AbstractC
 
   public Credentials getGcpImpersonatedCredentials(
       GoogleCredentials sourceCredentials, String impersonatedServiceAccount) {
-    if (impersonatedServiceAccount == null) {
+    if (DeployMode.isOnPrem(configuration.getDeployMode().name()) || impersonatedServiceAccount == null) {
       return sourceCredentials;
     } else {
       return ImpersonatedCredentials.create(sourceCredentials, impersonatedServiceAccount, null,

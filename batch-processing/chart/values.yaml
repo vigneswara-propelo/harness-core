@@ -282,7 +282,15 @@ imageAzureDataPipeline:
   registry: docker.io
   repository: harness/ccm-azure-smp-signed
   pullPolicy: Always
-  tag: "10010"
+  tag: "10058"
+  digest: ""
+  imagePullSecrets: []
+
+imageGCPDataPipeline:
+  registry: docker.io
+  repository: harness/ccm-gcp-smp-signed
+  pullPolicy: Always
+  tag: "10057"
   digest: ""
   imagePullSecrets: []
 
@@ -318,7 +326,9 @@ ceGCPHomeProjectCreds: ""
 
 storageObjectAdmin: ""
 
-gcpSyncPythonImagePath: "placeholder"
+gcpConfig:
+  GCP_SMP_ENABLED: false
+  bucketNamePrefix: "harness-ccm-%s-%s"
 
 awsSecret:
   S3_SYNC_CONFIG_ACCESSKEY: ""
@@ -328,9 +338,9 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  create: true
+  create: false
   annotations: {}
-  name: "batch-processing-default"
+  name: "harness-default"
 
 podAnnotations: {}
 
