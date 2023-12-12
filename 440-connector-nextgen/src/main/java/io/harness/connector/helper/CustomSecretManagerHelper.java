@@ -100,15 +100,18 @@ public class CustomSecretManagerHelper {
     ConnectorDTO connectorDTO = ngConnectorSecretManagerService.getConnectorDTO(
         customNGSecretManagerConfigDTO.getAccountIdentifier(), customNGSecretManagerConfigDTO.getOrgIdentifier(),
         customNGSecretManagerConfigDTO.getProjectIdentifier(), customNGSecretManagerConfigDTO.getIdentifier());
-    String yaml = getYaml(customNGSecretManagerConfigDTO, connectorDTO);
+    String yaml = getYaml(customNGSecretManagerConfigDTO, connectorDTO, true);
     return prepareEncryptedDataParamsSet(customNGSecretManagerConfigDTO, yaml);
   }
 
-  private String getYaml(CustomSecretManagerConfigDTO customNGSecretManagerConfigDTO, ConnectorDTO connectorDTO) {
+  private String getYaml(
+      CustomSecretManagerConfigDTO customNGSecretManagerConfigDTO, ConnectorDTO connectorDTO, boolean removeDefault) {
     List<String> inputValueKeys = new LinkedList<>();
     inputValueKeys.add(ENVIRONMENT_VARIABLES);
     inputValueKeys.add(INPUT_VARIABLES);
-    removeDefaultFromConfigDTO(customNGSecretManagerConfigDTO, inputValueKeys);
+    if (removeDefault) {
+      removeDefaultFromConfigDTO(customNGSecretManagerConfigDTO, inputValueKeys);
+    }
     // Set the template input in connector dto from the inputs received from secret.
     ((CustomSecretManagerConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig())
         .getTemplate()
@@ -123,7 +126,7 @@ public class CustomSecretManagerHelper {
           (CustomSecretManagerConfigDTO) SecretManagerConfigDTOMapper.fromConnectorDTO(
               accountIdentifier, connectorDTO, connectorDTO.getConnectorInfo().getConnectorConfig());
 
-      String yaml = getYaml(customNGSecretManagerConfigDTO, connectorDTO);
+      String yaml = getYaml(customNGSecretManagerConfigDTO, connectorDTO, false);
       String mergedYaml =
           NGRestUtils
               .getResponse(templateResourceClient.applyTemplatesOnGivenYaml(

@@ -533,7 +533,8 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
       if (secret.isEmpty()) {
         return;
       }
-      String secretManagerIdentifierFromSecret = getSecretManagerIdentifierFromSecret(secret.get().getSecret());
+      String secretManagerIdentifierFromSecret =
+          getSecretManagerIdentifierFromSecret(accountIdentifier, secret.get().getSecret());
       if (!HARNESS_SECRET_MANAGER_IDENTIFIER.equals(secretManagerIdentifierFromSecret)) {
         throw new InvalidRequestException(String.format(
             "Secret [%s] specified in template is stored in secret manager [%s]. Secrets used in the template should be stored in [%s]",
@@ -542,15 +543,24 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
     });
   }
 
-  private String getSecretManagerIdentifierFromSecret(SecretDTOV2 secretDTO) {
+  private String getSecretManagerIdentifierFromSecret(String accountIdentifier, SecretDTOV2 secretDTO) {
+    String identifier;
     switch (secretDTO.getType()) {
       case SecretText:
-        return ((SecretTextSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        identifier = ((SecretTextSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        break;
       case SecretFile:
-        return ((SecretFileSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        identifier = ((SecretFileSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        break;
       default:
         return null;
     }
+    if (identifier != null) {
+      String scopedIdentifier = IdentifierRefHelper.getRefFromIdentifierOrRef(
+          accountIdentifier, secretDTO.getOrgIdentifier(), secretDTO.getProjectIdentifier(), identifier);
+      return IdentifierRefHelper.getIdentifier(scopedIdentifier);
+    }
+    return null;
   }
 
   private void setHarnessSecretManagerAsDefault(
