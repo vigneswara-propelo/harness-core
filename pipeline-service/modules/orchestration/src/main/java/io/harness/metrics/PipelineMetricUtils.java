@@ -12,6 +12,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.metrics.service.api.MetricService;
 import io.harness.pms.contracts.execution.Status;
+import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.events.PmsEventMonitoringConstants;
 import io.harness.pms.events.base.PmsMetricContextGuard;
 
@@ -26,6 +27,17 @@ public class PipelineMetricUtils {
                                                         .put(PmsEventMonitoringConstants.ACCOUNT_ID, accountId)
                                                         .put(PmsEventMonitoringConstants.STATUS, status.toString())
                                                         .put(PmsEventMonitoringConstants.EDITION, edition)
+                                                        .build();
+
+    try (PmsMetricContextGuard pmsMetricContextGuard = new PmsMetricContextGuard(metricContextMap)) {
+      metricService.incCounter(metricName);
+    }
+  }
+
+  public void publishStepExecutionMetrics(String metricName, StepType stepType, Status status) {
+    ImmutableMap<String, String> metricContextMap = ImmutableMap.<String, String>builder()
+                                                        .put(PmsEventMonitoringConstants.STATUS, status.toString())
+                                                        .put(PmsEventMonitoringConstants.STEP_TYPE, stepType.getType())
                                                         .build();
 
     try (PmsMetricContextGuard pmsMetricContextGuard = new PmsMetricContextGuard(metricContextMap)) {

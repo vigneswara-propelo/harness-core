@@ -87,6 +87,7 @@ import io.harness.metrics.HarnessMetricRegistry;
 import io.harness.metrics.MetricRegistryModule;
 import io.harness.metrics.PipelineTelemetryRecordsJob;
 import io.harness.metrics.observers.PipelineExecutionMetricsObserver;
+import io.harness.metrics.observers.StepExecutionMetricsObserver;
 import io.harness.migration.MigrationProvider;
 import io.harness.migration.NGMigrationSdkInitHelper;
 import io.harness.migration.NGMigrationSdkModule;
@@ -563,6 +564,8 @@ public class PipelineServiceApplication extends Application<PipelineServiceConfi
         injector.getInstance(Key.get(NodeExecutionOutboxHandler.class)));
     nodeExecutionService.getNodeStatusUpdateSubject().register(
         injector.getInstance(Key.get(PodCleanupUpdateEventHandler.class)));
+    nodeExecutionService.getNodeStatusUpdateSubject().register(
+        injector.getInstance(Key.get(StepExecutionMetricsObserver.class)));
 
     // NodeExecutionDeleteObserver
     nodeExecutionService.getNodeDeleteObserverSubject().register(
