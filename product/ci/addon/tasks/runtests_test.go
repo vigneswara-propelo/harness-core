@@ -1507,7 +1507,7 @@ instrPackages: p1, p2, p3`
 	defer func() {
 		collectTestReportsFn = oldReports
 	}()
-	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time) error {
+	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time, envs map[string]string) error {
 		called += 1
 		return nil
 	}
@@ -1628,7 +1628,7 @@ instrPackages: p1, p2, p3`
 	defer func() {
 		collectTestReportsFn = oldReports
 	}()
-	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time) error {
+	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time, envs map[string]string) error {
 		called += 1
 		return nil
 	}
@@ -1747,7 +1747,7 @@ instrPackages: p1, p2, p3`
 	defer func() {
 		collectTestReportsFn = oldReports
 	}()
-	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time) error {
+	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time, envs map[string]string) error {
 		return nil
 	}
 
@@ -1862,7 +1862,7 @@ instrPackages: p1, p2, p3`
 	defer func() {
 		collectTestReportsFn = oldReports
 	}()
-	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time) error {
+	collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time, envs map[string]string) error {
 		return errReport
 	}
 
@@ -1953,7 +1953,7 @@ func Test_CollectRunTestData(t *testing.T) {
 			collectCgFn = func(ctx context.Context, stepID, cgDir string, timeMs int64, log *zap.SugaredLogger, start time.Time) error {
 				return tc.cgErr
 			}
-			collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time) error {
+			collectTestReportsFn = func(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time, envs map[string]string) error {
 				return tc.crErr
 			}
 			err := r.collectRunTestData(ctx, cgDirPath, time.Now())

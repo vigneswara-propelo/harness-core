@@ -111,7 +111,7 @@ func (t *pluginTask) Run(ctx context.Context) (map[string]string, *pb.Artifact, 
 	for i := int32(1); i <= t.numRetries; i++ {
 		if so, o, err = t.execute(ctx, i); err == nil {
 			st := time.Now()
-			err = collectTestReports(ctx, t.reports, t.id, t.log, st)
+			err = collectTestReports(ctx, t.reports, t.id, t.log, st, t.environment)
 			if err != nil {
 				// If there's an error in collecting reports, we won't retry but
 				// the step will be marked as an error
@@ -124,7 +124,7 @@ func (t *pluginTask) Run(ctx context.Context) (map[string]string, *pb.Artifact, 
 	if err != nil {
 		// Run step did not execute successfully
 		// Try and collect reports, ignore any errors during report collection itself
-		errc := collectTestReports(ctx, t.reports, t.id, t.log, time.Now())
+		errc := collectTestReports(ctx, t.reports, t.id, t.log, time.Now(), t.environment)
 		if errc != nil {
 			t.log.Errorw("error while collecting test reports", zap.Error(errc))
 		}

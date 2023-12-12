@@ -177,7 +177,7 @@ func (r *runTestsTask) collectRunTestData(ctx context.Context, cgDirPath string,
 	}
 
 	crStart := time.Now()
-	errCr := collectTestReportsFn(ctx, r.reports, r.id, r.log, crStart)
+	errCr := collectTestReportsFn(ctx, r.reports, r.id, r.log, crStart, r.environment)
 	if errCr != nil {
 		r.log.Errorw(fmt.Sprintf("Unable to collect tests reports. Time taken: %s", time.Since(crStart)), zap.Error(errCr))
 	}

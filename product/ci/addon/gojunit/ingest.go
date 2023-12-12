@@ -19,31 +19,36 @@ import (
 
 // findSuites performs a depth-first search through the XML document, and
 // attempts to ingest any "testsuite" tags that are encountered.
-func findSuites(nodes []xmlNode, suites chan Suite) {
+func findSuites(nodes []xmlNode, suites chan Suite, parentFilename, rootSuiteName string) {
 	for _, node := range nodes {
 		switch node.XMLName.Local {
 		case "testsuite":
-			suites <- ingestSuite(node)
+			suites <- ingestSuite(node, parentFilename)
+			if node.Attr("name") == rootSuiteName {
+				parentFilename = node.Attr("file")
+			}
 		default:
-			findSuites(node.Nodes, suites)
+			findSuites(node.Nodes, suites, parentFilename, rootSuiteName)
 		}
 	}
 }
 
-func ingestSuite(root xmlNode) Suite {
+func ingestSuite(root xmlNode, parentFilename string) Suite {
 	suite := Suite{
 		Name:       root.Attr("name"),
 		Package:    root.Attr("package"),
 		Properties: root.Attrs,
 	}
 
+	parentFilename = getFilename(root.Attr("file"), parentFilename)
+
 	for _, node := range root.Nodes {
 		switch node.XMLName.Local {
 		case "testsuite":
-			testsuite := ingestSuite(node)
+			testsuite := ingestSuite(node, parentFilename)
 			suite.Suites = append(suite.Suites, testsuite)
 		case "testcase":
-			testcase := ingestTestcase(node)
+			testcase := ingestTestcase(node, parentFilename)
 			suite.Tests = append(suite.Tests, testcase)
 		case "properties":
 			props := ingestProperties(node)
@@ -73,11 +78,11 @@ func ingestProperties(root xmlNode) map[string]string {
 	return props
 }
 
-func ingestTestcase(root xmlNode) Test {
+func ingestTestcase(root xmlNode, parentFilename string) Test {
 	test := Test{
 		Name:       root.Attr("name"),
 		Classname:  root.Attr("classname"),
-		Filename:   root.Attr("file"),
+		Filename:   getFilename(root.Attr("file"), parentFilename),
 		DurationMs: duration(root.Attr("time")).Milliseconds(),
 		Result:     types.Result{Status: types.StatusPassed},
 		Properties: root.Attrs,
@@ -124,4 +129,12 @@ func duration(t string) time.Duration {
 	}
 
 	return 0
+}
+
+// getFilename returns the filename, using the parent filename if the current filename is empty
+func getFilename(currentFilename, parentFilename string) string {
+	if currentFilename != "" {
+		return currentFilename
+	}
+	return parentFilename
 }

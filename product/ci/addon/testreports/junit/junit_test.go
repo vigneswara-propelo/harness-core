@@ -216,8 +216,9 @@ func TestGetTests_All(t *testing.T) {
 	var paths []string
 	paths = append(paths, getBaseDir()+"**/*.xml") // Regex to get both reports
 	log := zap.NewExample().Sugar()
+	envs := make(map[string]string)
 	j := New(paths, log)
-	testc := j.GetTests(context.Background())
+	testc := j.GetTests(context.Background(), envs)
 	var tests []*types.TestCase
 	for tc := range testc {
 		tests = append(tests, tc)
@@ -249,8 +250,9 @@ func TestGetTests_All_MultiplePaths(t *testing.T) {
 	paths = append(paths, basePath+"a/**/*.xml")
 	paths = append(paths, basePath+"a/b/c/d/*.xml")
 	log := zap.NewExample().Sugar()
+	envs := make(map[string]string)
 	j := New(paths, log)
-	testc := j.GetTests(context.Background())
+	testc := j.GetTests(context.Background(), envs)
 	var tests []*types.TestCase
 	for tc := range testc {
 		tests = append(tests, tc)
@@ -277,8 +279,9 @@ func TestGetTests_FirstRegex(t *testing.T) {
 	var paths []string
 	paths = append(paths, basePath+"a/b/*.xml") // Regex to get both reports
 	log := zap.NewExample().Sugar()
+	envs := make(map[string]string)
 	j := New(paths, log)
-	testc := j.GetTests(context.Background())
+	testc := j.GetTests(context.Background(), envs)
 	var tests []*types.TestCase
 	for tc := range testc {
 		tests = append(tests, tc)
@@ -305,8 +308,9 @@ func TestGetTests_SecondRegex(t *testing.T) {
 	var paths []string
 	paths = append(paths, basePath+"a/b/**/*2.xml") // Regex to get both reports
 	log := zap.NewExample().Sugar()
+	envs := make(map[string]string)
 	j := New(paths, log)
-	testc := j.GetTests(context.Background())
+	testc := j.GetTests(context.Background(), envs)
 	var tests []*types.TestCase
 	for tc := range testc {
 		tests = append(tests, tc)
@@ -333,12 +337,44 @@ func TestGetTests_NoMatchingRegex(t *testing.T) {
 	var paths []string
 	paths = append(paths, basePath+"a/b/**/*3.xml") // Regex to get both reports
 	log := zap.NewExample().Sugar()
+	envs := make(map[string]string)
 	j := New(paths, log)
-	testc := j.GetTests(context.Background())
+	testc := j.GetTests(context.Background(), envs)
 	var tests []*types.TestCase
 	for tc := range testc {
 		tests = append(tests, tc)
 	}
 	exp := []*types.TestCase{}
 	assert.ElementsMatch(t, exp, tests)
+}
+
+func Test_GetRootSuiteName(t *testing.T) {
+	type args struct {
+		envs map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Root suite name provided in environment variable",
+			args: args{envs: map[string]string{rootSuiteEnvVariableName: "CustomRootSuite"}},
+			want: "CustomRootSuite",
+		},
+		{
+			name: "No root suite name in environment variable, use default",
+			args: args{envs: map[string]string{}},
+			want: defaultRootSuiteName,
+		},
+		// Add more test cases as needed
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getRootSuiteName(tt.args.envs); got != tt.want {
+				t.Errorf("getRootSuiteName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

@@ -108,7 +108,7 @@ func (r *runTask) Run(ctx context.Context) (map[string]string, int32, error) {
 	for i := int32(1); i <= r.numRetries; i++ {
 		if o, err = r.execute(ctx, i); err == nil {
 			st := time.Now()
-			err = collectTestReports(ctx, r.reports, r.id, r.log, st)
+			err = collectTestReports(ctx, r.reports, r.id, r.log, st, r.environment)
 			if err != nil {
 				// If there's an error in collecting reports, we will log and ignore the error
 				r.log.Errorw("unable to collect test reports", zap.Error(err))
@@ -119,7 +119,7 @@ func (r *runTask) Run(ctx context.Context) (map[string]string, int32, error) {
 	if err != nil {
 		// Run step did not execute successfully
 		// Try and collect reports, ignore any errors during report collection itself
-		errc := collectTestReports(ctx, r.reports, r.id, r.log, time.Now())
+		errc := collectTestReports(ctx, r.reports, r.id, r.log, time.Now(), r.environment)
 		if errc != nil {
 			r.log.Errorw("error while collecting test reports", zap.Error(errc))
 		}

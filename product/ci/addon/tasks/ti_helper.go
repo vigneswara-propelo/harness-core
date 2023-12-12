@@ -84,7 +84,7 @@ func collectCg(ctx context.Context, stepID, cgDir string, timeMs int64, log *zap
 	return nil
 }
 
-func collectTestReports(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time) error {
+func collectTestReports(ctx context.Context, reports []*pb.Report, stepID string, log *zap.SugaredLogger, start time.Time, envs map[string]string) error {
 	// Test cases from reports are identified at a per-step level and won't cause overwriting/clashes
 	// at the backend.
 	if len(reports) == 0 {
@@ -112,7 +112,7 @@ func collectTestReports(ctx context.Context, reports []*pb.Report, stepID string
 		}
 
 		var tests []string
-		testc := rep.GetTests(ctx)
+		testc := rep.GetTests(ctx, envs)
 		for t := range testc {
 			jt, _ := json.Marshal(t)
 			tests = append(tests, string(jt))

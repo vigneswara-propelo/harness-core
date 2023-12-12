@@ -16,5 +16,5 @@ import (
 //go:generate mockgen -source reporter.go -package=testreports -destination mocks/reporter.go TestReporter
 type TestReporter interface {
 	// Get test case information
-	GetTests(context.Context) <-chan *types.TestCase
+	GetTests(context.Context, map[string]string) <-chan *types.TestCase
 }

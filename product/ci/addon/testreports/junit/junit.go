@@ -28,6 +28,16 @@ type Junit struct {
 	Log   *zap.SugaredLogger
 }
 
+const defaultRootSuiteName = "Root Suite"
+const rootSuiteEnvVariableName = "HARNESS_JUNIT_ROOT_SUITE_NAME"
+
+func getRootSuiteName(envs map[string]string) string {
+	if val, ok := envs[rootSuiteEnvVariableName]; ok {
+		return val
+	}
+	return defaultRootSuiteName
+}
+
 // getFiles resolves glob pattern for a given path and returns list of matching paths
 func getFiles(path string) ([]string, error) {
 	path, err := filesystem.ExpandTilde(path)
@@ -70,14 +80,14 @@ func New(paths []string, log *zap.SugaredLogger) testreports.TestReporter {
 }
 
 // GetTests parses XMLs and writes relevant data to the channel
-func (j *Junit) GetTests(ctx context.Context) <-chan *types.TestCase {
+func (j *Junit) GetTests(ctx context.Context, envs map[string]string) <-chan *types.TestCase {
 	testc := make(chan *types.TestCase, buffSize)
 	go func() {
 		defer close(testc)
 		fileMap := make(map[string]int)
 		totalTests := 0
 		for _, file := range j.Files {
-			suites, err := gojunit.IngestFile(file)
+			suites, err := gojunit.IngestFile(file, getRootSuiteName(envs))
 			if err != nil {
 				j.Log.Errorw(fmt.Sprintf("could not parse file %s. Error: %s", file, err), "file", file, zap.Error(err))
 				continue
