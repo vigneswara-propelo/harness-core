@@ -7,7 +7,6 @@
 
 package io.harness.cdng.provision.terragrunt;
 
-import static io.harness.beans.FeatureName.CDS_TF_TG_SKIP_ERROR_LOGS_COLORING;
 import static io.harness.cdng.provision.terragrunt.TerragruntStepHelper.DEFAULT_TIMEOUT;
 import static io.harness.provision.TerragruntConstants.DESTROY;
 import static io.harness.provision.TerragruntConstants.FETCH_CONFIG_FILES;
@@ -182,7 +181,7 @@ public class TerragruntDestroyStep extends CdTaskExecutable<TerragruntDestroyTas
         .encryptedDataDetailList(helper.getEncryptionDetails(
             spec.getConfigFiles().getStore().getSpec(), spec.getBackendConfig(), spec.getVarFiles(), ambiance))
         .useUniqueDirectoryForBaseDir(true)
-        .skipColorLogs(cdFeatureFlagHelper.isEnabled(accountId, CDS_TF_TG_SKIP_ERROR_LOGS_COLORING))
+        .skipColorLogs(true)
         .build();
 
     return prepareCDTaskRequest(ambiance, builder, StepBaseParameters, stepParameters);
@@ -227,7 +226,7 @@ public class TerragruntDestroyStep extends CdTaskExecutable<TerragruntDestroyTas
         .encryptDecryptPlanForHarnessSMOnManager(
             helper.tfPlanEncryptionOnManager(accountId, inheritOutput.encryptionConfig))
         .useUniqueDirectoryForBaseDir(true)
-        .skipColorLogs(cdFeatureFlagHelper.isEnabled(accountId, CDS_TF_TG_SKIP_ERROR_LOGS_COLORING))
+        .skipColorLogs(true)
         .timeoutInMillis(StepUtils.getTimeoutMillis(StepBaseParameters.getTimeout(), DEFAULT_TIMEOUT));
     builder.build();
 
@@ -265,7 +264,7 @@ public class TerragruntDestroyStep extends CdTaskExecutable<TerragruntDestroyTas
             helper.getEncryptionDetailsFromTgInheritConfig(terragruntConfig.getConfigFiles().toGitStoreConfig(),
                 terragruntConfig.getBackendConfigFile(), terragruntConfig.getVarFileConfigs(), ambiance))
         .useUniqueDirectoryForBaseDir(true)
-        .skipColorLogs(cdFeatureFlagHelper.isEnabled(accountId, CDS_TF_TG_SKIP_ERROR_LOGS_COLORING))
+        .skipColorLogs(true)
         .timeoutInMillis(StepUtils.getTimeoutMillis(StepBaseParameters.getTimeout(), DEFAULT_TIMEOUT));
     builder.build();
     return prepareCDTaskRequest(ambiance, builder, StepBaseParameters, stepParameters);

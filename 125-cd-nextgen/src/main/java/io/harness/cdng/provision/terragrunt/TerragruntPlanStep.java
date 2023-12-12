@@ -16,7 +16,6 @@
 
 package io.harness.cdng.provision.terragrunt;
 
-import static io.harness.beans.FeatureName.CDS_TF_TG_SKIP_ERROR_LOGS_COLORING;
 import static io.harness.provision.TerragruntConstants.FETCH_CONFIG_FILES;
 import static io.harness.provision.TerragruntConstants.PLAN;
 
@@ -191,7 +190,7 @@ public class TerragruntPlanStep extends CdTaskExecutable<TerragruntPlanTaskRespo
             configuration.getBackendConfig(), configuration.getVarFiles(), ambiance))
         .encryptDecryptPlanForHarnessSMOnManager(helper.tfPlanEncryptionOnManager(accountId, planSecretManagerConfig))
         .useUniqueDirectoryForBaseDir(true)
-        .skipColorLogs(cdFeatureFlagHelper.isEnabled(accountId, CDS_TF_TG_SKIP_ERROR_LOGS_COLORING))
+        .skipColorLogs(true)
         .build();
 
     TaskType terragruntTaskType = builder.build().getDelegateTaskTypeForPlanStep();

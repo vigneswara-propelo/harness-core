@@ -7,7 +7,6 @@
 
 package io.harness.cdng.provision.terraform;
 
-import static io.harness.beans.FeatureName.CDS_TF_TG_SKIP_ERROR_LOGS_COLORING;
 import static io.harness.cdng.provision.terraform.TerraformPlanCommand.APPLY;
 import static io.harness.cdng.provision.terraform.TerraformStepHelper.TF_BACKEND_CONFIG_FILE;
 import static io.harness.cdng.provision.terraform.TerraformStepHelper.TF_CONFIG_FILES;
@@ -304,7 +303,7 @@ public class TerraformApplyStepV2 extends CdTaskChainExecutable {
             StepUtils.getTimeoutMillis(stepElementParameters.getTimeout(), TerraformConstants.DEFAULT_TIMEOUT))
         .useOptimizedTfPlan(true)
         .isTerraformCloudCli(isTerraformCloudCli)
-        .skipColorLogs(cdFeatureFlagHelper.isEnabled(accountId, CDS_TF_TG_SKIP_ERROR_LOGS_COLORING))
+        .skipColorLogs(true)
         .skipStateStorage(
             ParameterFieldHelper.getBooleanParameterFieldValue(stepParameters.getConfiguration().getSkipStateStorage()))
         .skipTerraformRefresh(skipRefreshCommand)
@@ -361,7 +360,7 @@ public class TerraformApplyStepV2 extends CdTaskChainExecutable {
             StepUtils.getTimeoutMillis(stepElementParameters.getTimeout(), TerraformConstants.DEFAULT_TIMEOUT))
         .encryptDecryptPlanForHarnessSMOnManager(
             helper.tfPlanEncryptionOnManager(accountId, inheritOutput.getEncryptionConfig()))
-        .skipColorLogs(cdFeatureFlagHelper.isEnabled(accountId, CDS_TF_TG_SKIP_ERROR_LOGS_COLORING))
+        .skipColorLogs(true)
         .skipStateStorage(inheritOutput.isSkipStateStorage())
         .useOptimizedTfPlan(true);
   }

@@ -7,7 +7,6 @@
 
 package io.harness.cdng.provision.terragrunt;
 
-import static io.harness.beans.FeatureName.CDS_TF_TG_SKIP_ERROR_LOGS_COLORING;
 import static io.harness.cdng.provision.terragrunt.TerragruntStepHelper.DEFAULT_TIMEOUT;
 import static io.harness.provision.TerragruntConstants.APPLY;
 import static io.harness.provision.TerragruntConstants.DESTROY;
@@ -259,8 +258,7 @@ public class TerragruntRollbackStep extends CdTaskExecutable<AbstractTerragruntT
             terragruntConfig.getVarFileConfigs(), ambiance))
         .useUniqueDirectoryForBaseDir(true)
         .timeoutInMillis(StepUtils.getTimeoutMillis(stepParameters.getTimeout(), DEFAULT_TIMEOUT))
-        .skipColorLogs(
-            cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), CDS_TF_TG_SKIP_ERROR_LOGS_COLORING));
+        .skipColorLogs(true);
     builder.build();
 
     return builder;
@@ -294,8 +292,7 @@ public class TerragruntRollbackStep extends CdTaskExecutable<AbstractTerragruntT
             terragruntConfig.getVarFileConfigs(), ambiance))
         .useUniqueDirectoryForBaseDir(true)
         .timeoutInMillis(StepUtils.getTimeoutMillis(stepParameters.getTimeout(), DEFAULT_TIMEOUT))
-        .skipColorLogs(
-            cdFeatureFlagHelper.isEnabled(AmbianceUtils.getAccountId(ambiance), CDS_TF_TG_SKIP_ERROR_LOGS_COLORING));
+        .skipColorLogs(true);
     builder.build();
 
     return builder;
