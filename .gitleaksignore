@@ -1,6 +1,7 @@
 #For More Info: https://github.com/zricethezav/gitleaks/blob/master/.gitleaksignore
 
 #CommitID:FilePath:TypeOfSecret:LineNumber
+dec31bddf7aecd2d0deade00b289516e3f9a50f3:ssca-manager/chart/values.yaml:generic-api-key:299
 4e1823a4f83dedba2c405db4c5d621a51ed641f7:srm-service/modules/cv-nextgen-service/service/src/test/resources/test-config.yml:generic-api-key:90
 7ce9ff5b71809cc4ebad9f46efbfa0c9ec5cebd0:srm-service/modules/cv-nextgen-service/service/src/test/resources/test-config.yml:generic-api-key:90
 7ce9ff5b71809cc4ebad9f46efbfa0c9ec5cebd0:srm-service/config/cv-nextgen-config.yml:generic-api-key:100

@@ -64,3 +64,22 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Manage ssca-manager Secrets
+USAGE:
+{{- "ssca-manager.generateSecrets" (dict "ctx" $)}}
+*/}}
+{{- define "ssca-manager.generateSecrets" }}
+    {{- $ := .ctx }}
+    {{- $hasAtleastOneSecret := false }}
+    {{- $localESOSecretCtxIdentifier := (include "harnesscommon.secrets.localESOSecretCtxIdentifier" (dict "ctx" $ )) }}
+    {{- if eq (include "harnesscommon.secrets.isDefaultAppSecret" (dict "ctx" $ "variableName" "POLICY_MGMT_SERVICE_SECRET")) "true" }}
+    {{- $hasAtleastOneSecret = true }}
+POLICY_MGMT_SERVICE_SECRET: {{ .ctx.Values.secrets.default.POLICY_MGMT_SERVICE_SECRET | b64enc }}
+    {{- end }}
+    {{- if not $hasAtleastOneSecret }}
+{}
+    {{- end }}
+{{- end }}

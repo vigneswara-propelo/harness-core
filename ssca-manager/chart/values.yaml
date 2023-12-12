@@ -293,3 +293,20 @@ database:
                 MONGO_PASSWORD:
                   name: ""
                   property: ""
+
+secrets:
+  default:
+    POLICY_MGMT_SERVICE_SECRET: "dOkdsVqdRPPRJG31XU0qY4MPqmBBMk0PTAGIKM6O7TGqhjyxScIdJe80mwh5Yb5zF3KxYBHw6B3Lfzlq"
+  kubernetesSecrets:
+    - secretName: ""
+      keys:
+        POLICY_MGMT_SERVICE_SECRET: ""
+  secretManagement:
+    externalSecretsOperator:
+      - secretStore:
+          name: ""
+          kind: ""
+        remoteKeys:
+          POLICY_MGMT_SERVICE_SECRET:
+            name: ""
+            property: ""
