@@ -102,8 +102,9 @@ public class BuildEnvironmentConstants {
   public static final String DRONE_AWS_REGION = "DRONE_AWS_REGION";
   public static final String DRONE_CARD_PATH = "DRONE_CARD_PATH";
 
-  public static final String DRONE_HTTP_PROXY = "DRONE_HTTP_PROXY";
-  public static final String DRONE_NO_PROXY = "DRONE_NO_PROXY";
+  public static final String HARNESS_HTTP_PROXY = "HARNESS_HTTP_PROXY";
+  public static final String HARNESS_HTTPS_PROXY = "HARNESS_HTTPS_PROXY";
+  public static final String HARNESS_NO_PROXY = "HARNESS_NO_PROXY";
 
   public static final String CI_REPO = "CI_REPO";
   public static final String CI_REPO_NAME = "CI_REPO_NAME";
