@@ -31,4 +31,11 @@ public class Constants {
   public static final String BRANCH = "BRANCH";
 
   public static final String FILE_PATH = "FILE_PATH";
+  public static final String FILE_NAME = "FILE_NAME";
+  public static final String FILE_CONTENT = "FILE_CONTENT";
+
+  public static final String SLACK_ID = "SLACK_ID";
+  public static final String MESSAGE_CONTENT = "MESSAGE_CONTENT";
+
+  public static final String SLACK_TOKEN = "SLACK_TOKEN";
 }

@@ -475,6 +475,8 @@ public abstract class AbstractStepExecutable extends CommonAbstractStepExecutabl
       case CREATE_REPO:
       case DIRECT_PUSH:
       case REGISTER_CATALOG:
+      case CREATE_CATALOG:
+      case SLACK_NOTIFY:
       case SLSA_VERIFICATION:
         return pluginCompatibleStepSerializer.serializeStepWithStepParameters((PluginCompatibleStep) ciStepInfo, port,
             taskId, logKey, stepIdentifier, ParameterField.createValueField(Timeout.fromString(timeout)), accountId,

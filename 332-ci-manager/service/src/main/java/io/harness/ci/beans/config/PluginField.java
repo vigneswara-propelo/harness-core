@@ -34,6 +34,8 @@ public enum PluginField {
   CREATE_REPO("CreateRepo"),
   DIRECT_PUSH("DirectPush"),
   REGISTER_CATALOG("RegisterCatalog"),
+  CREATE_CATALOG("CreateCatalog"),
+  SLACK_NOTIFY("SlackNotify"),
   UNKNOWN("unknown");
 
   public final String label;

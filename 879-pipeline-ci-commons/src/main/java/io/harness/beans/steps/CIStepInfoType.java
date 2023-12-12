@@ -99,7 +99,9 @@ public enum CIStepInfoType {
   COOKIECUTTER(CI_LITE_ENGINE, "CookieCutter"),
   CREATE_REPO(CI_LITE_ENGINE, "CreateRepo"),
   DIRECT_PUSH(CI_LITE_ENGINE, "DirectPush"),
-  REGISTER_CATALOG(CI_LITE_ENGINE, "RegisterCatalog");
+  REGISTER_CATALOG(CI_LITE_ENGINE, "RegisterCatalog"),
+  CREATE_CATALOG(CI_LITE_ENGINE, "CreateCatalog"),
+  SLACK_NOTIFY(CI_LITE_ENGINE, "SlackNotify");
 
   @Getter private final CIStepExecEnvironment ciStepExecEnvironment;
   private final String displayName;

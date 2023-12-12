@@ -330,6 +330,8 @@ public class K8InitializeStepUtils {
       case CREATE_REPO:
       case DIRECT_PUSH:
       case REGISTER_CATALOG:
+      case CREATE_CATALOG:
+      case SLACK_NOTIFY:
         return createPluginCompatibleStepContainerDefinition((PluginCompatibleStep) ciStepInfo, stageNode,
             ciExecutionArgs, portFinder, stepIndex, stepElement.getIdentifier(), stepElement.getName(),
             stepElement.getType(), timeout, accountId, os, ambiance, extraMemoryPerStep, extraCPUPerStep);
@@ -1122,6 +1124,8 @@ public class K8InitializeStepUtils {
       case CREATE_REPO:
       case DIRECT_PUSH:
       case REGISTER_CATALOG:
+      case CREATE_CATALOG:
+      case SLACK_NOTIFY:
         return ((PluginCompatibleStep) ciStepInfo).getResources();
       default:
         throw new CIStageExecutionException(

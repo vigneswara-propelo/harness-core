@@ -416,6 +416,10 @@ ciExecutionServiceConfig:
       image: deveshharness2306/directpush:latest
     registerCatalog:
       image: deveshharness2306/register:latest
+    createCatalog:
+      image: deveshharness2306/createcatalog:latest
+    slackNotify:
+      image: deveshharness2306/slacknotify:latest
     vmImageConfig:
       # Use root image for VM git clone
       gitClone: harness/drone-git:1.2.7
@@ -434,6 +438,8 @@ ciExecutionServiceConfig:
       createRepo: deveshharness2306/createrepo:latest
       directPush: deveshharness2306/directpush:latest
       registerCatalog: deveshharness2306/register:latest
+      createCatalog: deveshharness2306/createcatalog:latest
+      slackNotify: deveshharness2306/slacknotify:latest
 
 
 iacmServiceConfig:

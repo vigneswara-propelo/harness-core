@@ -169,6 +169,12 @@ public class CIExecutionConfigService {
       case REGISTER_CATALOG:
         executionConfig.setRegisterCatalog(value);
         break;
+      case CREATE_CATALOG:
+        executionConfig.setCreateCatalog(value);
+        break;
+      case SLACK_NOTIFY:
+        executionConfig.setSlackNotify(value);
+        break;
       default:
         throw new BadRequestException(format("Field %s does not exist for infra type: K8", field));
     }
@@ -237,6 +243,12 @@ public class CIExecutionConfigService {
         break;
       case REGISTER_CATALOG:
         vmImageConfig.setRegisterCatalog(value);
+        break;
+      case CREATE_CATALOG:
+        vmImageConfig.setCreateCatalog(value);
+        break;
+      case SLACK_NOTIFY:
+        vmImageConfig.setSlackNotify(value);
         break;
       default:
         throw new BadRequestException(format("Field %s does not exist for infra type: VM", field));
@@ -609,6 +621,12 @@ public class CIExecutionConfigService {
       case REGISTER_CATALOG:
         return getApplicableImage(
             stepInfoType, accountLevelExecutionConfig.getRegisterCatalog(), globalExecutionConfig.getRegisterCatalog());
+      case CREATE_CATALOG:
+        return getApplicableImage(
+            stepInfoType, accountLevelExecutionConfig.getCreateCatalog(), globalExecutionConfig.getCreateCatalog());
+      case SLACK_NOTIFY:
+        return getApplicableImage(
+            stepInfoType, accountLevelExecutionConfig.getSlackNotify(), globalExecutionConfig.getSlackNotify());
       case IACM_TERRAFORM_PLUGIN:
       case IACM_APPROVAL:
         return Strings.EMPTY;
@@ -682,6 +700,10 @@ public class CIExecutionConfigService {
         return ciExecutionServiceConfig.getStepConfig().getDirectPush();
       case REGISTER_CATALOG:
         return ciExecutionServiceConfig.getStepConfig().getRegisterCatalog();
+      case CREATE_CATALOG:
+        return ciExecutionServiceConfig.getStepConfig().getCreateCatalog();
+      case SLACK_NOTIFY:
+        return ciExecutionServiceConfig.getStepConfig().getSlackNotify();
       default:
         throw new BadRequestException(format(UNEXPECTED_ERR_FORMAT, stepInfoType));
     }
@@ -763,6 +785,12 @@ public class CIExecutionConfigService {
       case REGISTER_CATALOG:
         return getApplicableImage(
             stepInfoType, accountLevelImageConfig.getRegisterCatalog(), globalImageConfig.getRegisterCatalog());
+      case CREATE_CATALOG:
+        return getApplicableImage(
+            stepInfoType, accountLevelImageConfig.getCreateCatalog(), globalImageConfig.getCreateCatalog());
+      case SLACK_NOTIFY:
+        return getApplicableImage(
+            stepInfoType, accountLevelImageConfig.getSlackNotify(), globalImageConfig.getSlackNotify());
       default:
         throw new BadRequestException(format(UNEXPECTED_ERR_FORMAT, stepInfoType));
     }
@@ -825,6 +853,8 @@ public class CIExecutionConfigService {
       case COOKIECUTTER:
       case CREATE_REPO:
       case DIRECT_PUSH:
+      case CREATE_CATALOG:
+      case SLACK_NOTIFY:
       case REGISTER_CATALOG:
         break;
       default:
@@ -878,6 +908,10 @@ public class CIExecutionConfigService {
         return vmImageConfig.getDirectPush();
       case REGISTER_CATALOG:
         return vmImageConfig.getRegisterCatalog();
+      case CREATE_CATALOG:
+        return vmImageConfig.getCreateCatalog();
+      case SLACK_NOTIFY:
+        return vmImageConfig.getSlackNotify();
       default:
         throw new BadRequestException(format(UNEXPECTED_ERR_FORMAT, stepInfoType));
     }

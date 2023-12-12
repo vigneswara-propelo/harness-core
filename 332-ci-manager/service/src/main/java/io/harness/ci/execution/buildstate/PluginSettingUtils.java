@@ -74,9 +74,11 @@ import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.docker.DockerConnectorDTO;
 import io.harness.iacm.execution.IACMStepsUtils;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpCreateCatalogStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpDirectPushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpRegisterCatalogStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpSlackNotifyStepInfo;
 import io.harness.idp.utils.IDPStepUtils;
 import io.harness.ng.core.NGAccess;
 import io.harness.plugin.service.PluginServiceImpl;
@@ -247,6 +249,10 @@ public class PluginSettingUtils extends PluginServiceImpl {
             registerCatalogConnectorRef, ambiance, ((IdpRegisterCatalogStepInfo) stepInfo).getRepository().getValue());
         return idpStepUtils.getRegisterCatalogStepInfoEnvVariables(
             (IdpRegisterCatalogStepInfo) stepInfo, registerCatalogGitConnector, identifier);
+      case CREATE_CATALOG:
+        return idpStepUtils.getCreateCatalogStepInfoEnvVariables((IdpCreateCatalogStepInfo) stepInfo, identifier);
+      case SLACK_NOTIFY:
+        return idpStepUtils.getSlackNotifyStepInfoEnvVariables((IdpSlackNotifyStepInfo) stepInfo, identifier);
       default:
         throw new IllegalStateException(
             "Unexpected value in getPluginCompatibleEnvVariables: " + stepInfo.getNonYamlInfo().getStepInfoType());
@@ -268,6 +274,8 @@ public class PluginSettingUtils extends PluginServiceImpl {
       case SLSA_VERIFICATION:
         return slsaVerificationPluginHelper.getSlsaVerificationStepSecretVariables(
             (SlsaVerificationStepInfo) step, identifier);
+      case SLACK_NOTIFY:
+        return idpStepUtils.getSlackNotifyStepInfoSecretVariables((IdpSlackNotifyStepInfo) step, identifier);
       default:
         return new HashMap<>();
     }

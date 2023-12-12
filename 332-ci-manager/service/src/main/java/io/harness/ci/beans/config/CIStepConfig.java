@@ -41,6 +41,8 @@ public class CIStepConfig {
   StepImageConfig createRepo;
   StepImageConfig directPush;
   StepImageConfig registerCatalog;
+  StepImageConfig createCatalog;
+  StepImageConfig slackNotify;
   VmImageConfig vmImageConfig;
   VmContainerlessStepConfig vmContainerlessStepConfig;
 }

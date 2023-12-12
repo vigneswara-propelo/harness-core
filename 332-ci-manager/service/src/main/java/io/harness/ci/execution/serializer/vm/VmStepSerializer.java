@@ -88,6 +88,8 @@ public class VmStepSerializer {
       case CREATE_REPO:
       case DIRECT_PUSH:
       case REGISTER_CATALOG:
+      case CREATE_CATALOG:
+      case SLACK_NOTIFY:
         return vmPluginCompatibleStepSerializer.serialize(
             ambiance, (PluginCompatibleStep) stepInfo, stageInfraDetails, identifier, parameterFieldTimeout, stepName);
       case IACM_TERRAFORM_PLUGIN:

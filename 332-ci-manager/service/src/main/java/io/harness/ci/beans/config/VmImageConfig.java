@@ -38,4 +38,6 @@ public class VmImageConfig {
   String createRepo;
   String directPush;
   String registerCatalog;
+  String createCatalog;
+  String slackNotify;
 }

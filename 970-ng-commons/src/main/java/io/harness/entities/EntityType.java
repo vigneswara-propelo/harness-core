@@ -702,7 +702,13 @@ public enum EntityType {
       EntityYamlRootNames.K8S_TRAFFIC_ROUTING),
   @JsonProperty(EntityTypeConstants.DOWNLOAD_HARNESS_STORE)
   DOWNLOAD_HARNESS_STORE(ModuleType.CD, EntityTypeConstants.DOWNLOAD_HARNESS_STORE, IdentifierRef.class,
-      EntityYamlRootNames.DOWNLOAD_HARNESS_STORE);
+      EntityYamlRootNames.DOWNLOAD_HARNESS_STORE),
+
+  @JsonProperty(EntityTypeConstants.CREATE_CATALOG)
+  CREATE_CATALOG(
+      ModuleType.IDP, EntityTypeConstants.CREATE_CATALOG, IdentifierRef.class, EntityYamlRootNames.CREATE_CATALOG),
+  @JsonProperty(EntityTypeConstants.SLACK_NOTIFY)
+  SLACK_NOTIFY(ModuleType.IDP, EntityTypeConstants.SLACK_NOTIFY, IdentifierRef.class, EntityYamlRootNames.SLACK_NOTIFY);
 
   private final ModuleType moduleType;
   String yamlName;

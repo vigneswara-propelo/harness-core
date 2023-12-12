@@ -65,6 +65,8 @@ public class CIExecutionConfig implements PersistentEntity, UuidAware, CreatedAt
   @NotBlank String createRepo;
   @NotBlank String directPush;
   @NotBlank String registerCatalog;
+  @NotBlank String createCatalog;
+  @NotBlank String slackNotify;
   VmImageConfig vmImageConfig;
   VmContainerlessStepConfig vmContainerlessStepConfig;
   @SchemaIgnore private long createdAt;

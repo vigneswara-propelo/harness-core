@@ -13,10 +13,14 @@ public interface Constants {
   String COOKIECUTTER = "CookieCutter";
   String CREATE_REPO = "CreateRepo";
   String DIRECT_PUSH = "DirectPush";
+  String CREATE_CATALOG = "CreateCatalog";
+  String SLACK_NOTIFY = "SlackNotify";
   String COOKIECUTTER_STEP_NODE = "CookieCutterStepNode";
   String CREATE_REPO_STEP_NODE = "CreateRepoStepNode";
   String REGISTER_CATALOG_STEP_NODE = "RegisterCatalogStepNode";
   String DIRECT_PUSH_STEP_NODE = "DirectPushStepNode";
+  String CREATE_CATALOG_STEP_NODE = "CreateCatalogStepNode";
+  String SLACK_NOTIFY_STEP_NODE = "SlackNotifyStepNode";
 
   String REGISTER_CATALOG = "RegisterCatalog";
   StepType COOKIECUTTER_STEP_TYPE =
@@ -28,4 +32,9 @@ public interface Constants {
 
   StepType REGISTER_CATALOG_STEP_TYPE =
       StepType.newBuilder().setType(REGISTER_CATALOG).setStepCategory(StepCategory.STEP).build();
+
+  StepType CREATE_CATALOG_STEP_TYPE =
+      StepType.newBuilder().setType(CREATE_CATALOG).setStepCategory(StepCategory.STEP).build();
+  StepType SLACK_NOTIFY_STEP_TYPE =
+      StepType.newBuilder().setType(SLACK_NOTIFY).setStepCategory(StepCategory.STEP).build();
 }

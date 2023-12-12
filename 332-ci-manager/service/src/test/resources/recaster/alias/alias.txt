@@ -560,3 +560,7 @@ io.harness.idp.pipeline.steps.beans.stepinfo.IdpDirectPushStepInfo
 io.harness.idp.pipeline.steps.beans.stepNode.IdpDirectPushStepNode
 io.harness.idp.pipeline.steps.beans.stepNode.IdpRegisterCatalogStepNode
 io.harness.idp.pipeline.steps.beans.stepinfo.IdpRegisterCatalogStepInfo
+io.harness.idp.pipeline.steps.beans.stepNode.IdpCreateCatalogStepNode
+io.harness.idp.pipeline.steps.beans.stepinfo.IdpCreateCatalogStepInfo
+io.harness.idp.pipeline.steps.beans.stepNode.IdpSlackNotifyStepNode
+io.harness.idp.pipeline.steps.beans.stepinfo.IdpSlackNotifyStepInfo

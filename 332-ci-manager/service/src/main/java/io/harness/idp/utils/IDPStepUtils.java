@@ -7,6 +7,7 @@
 package io.harness.idp.utils;
 
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveJsonNodeMapParameter;
+import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameter;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameterV2;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.idp.Constants.BRANCH;
@@ -15,7 +16,10 @@ import static io.harness.idp.Constants.CODE_OUTPUT_DIRECTORY;
 import static io.harness.idp.Constants.CONNECTOR_TYPE;
 import static io.harness.idp.Constants.DEFAULT_BRANCH_FOR_REPO;
 import static io.harness.idp.Constants.DESCRIPTION_FOR_CREATING_REPO;
+import static io.harness.idp.Constants.FILE_CONTENT;
+import static io.harness.idp.Constants.FILE_NAME;
 import static io.harness.idp.Constants.FILE_PATH;
+import static io.harness.idp.Constants.MESSAGE_CONTENT;
 import static io.harness.idp.Constants.ORG_NAME;
 import static io.harness.idp.Constants.OUTPUT_DIRECTORY_COOKIE_CUTTER;
 import static io.harness.idp.Constants.PATH_FOR_TEMPLATE;
@@ -24,6 +28,8 @@ import static io.harness.idp.Constants.PROJECT_NAME;
 import static io.harness.idp.Constants.PUBLIC_TEMPLATE_URL;
 import static io.harness.idp.Constants.REPO_NAME;
 import static io.harness.idp.Constants.REPO_TYPE;
+import static io.harness.idp.Constants.SLACK_ID;
+import static io.harness.idp.Constants.SLACK_TOKEN;
 import static io.harness.idp.Constants.TEMPLATE_TYPE;
 import static io.harness.idp.Constants.WORKSPACE_NAME;
 
@@ -31,12 +37,19 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ci.execution.serializer.SerializerUtils;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
+import io.harness.encryption.SecretRefData;
+import io.harness.encryption.SecretRefHelper;
 import io.harness.idp.steps.Constants;
 import io.harness.idp.steps.beans.stepinfo.IdpCookieCutterStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpCreateCatalogStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpCreateRepoStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpDirectPushStepInfo;
 import io.harness.idp.steps.beans.stepinfo.IdpRegisterCatalogStepInfo;
+import io.harness.idp.steps.beans.stepinfo.IdpSlackNotifyStepInfo;
 import io.harness.plugin.service.PluginServiceImpl;
+import io.harness.pms.yaml.ParameterField;
+import io.harness.yaml.core.variables.NGVariableType;
+import io.harness.yaml.core.variables.SecretNGVariable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Collections;
@@ -177,5 +190,49 @@ public class IDPStepUtils extends PluginServiceImpl {
 
     envVarMap.values().removeAll(Collections.singleton(null));
     return envVarMap;
+  }
+
+  public Map<String, String> getCreateCatalogStepInfoEnvVariables(
+      IdpCreateCatalogStepInfo stepInfo, String identifier) {
+    Map<String, String> envVarMap = new HashMap<>();
+
+    PluginServiceImpl.setMandatoryEnvironmentVariable(envVarMap, FILE_NAME,
+        resolveStringParameterV2("fileName", Constants.CREATE_CATALOG, identifier, stepInfo.getFileName(), true));
+
+    PluginServiceImpl.setOptionalEnvironmentVariable(envVarMap, FILE_PATH,
+        resolveStringParameterV2("filePath", Constants.CREATE_CATALOG, identifier, stepInfo.getFilePath(), false));
+
+    PluginServiceImpl.setMandatoryEnvironmentVariable(envVarMap, FILE_CONTENT,
+        resolveStringParameterV2("fileContent", Constants.CREATE_CATALOG, identifier, stepInfo.getFileContent(), true));
+
+    return envVarMap;
+  }
+
+  public Map<String, String> getSlackNotifyStepInfoEnvVariables(IdpSlackNotifyStepInfo stepInfo, String identifier) {
+    Map<String, String> envVarMap = new HashMap<>();
+
+    PluginServiceImpl.setMandatoryEnvironmentVariable(envVarMap, SLACK_ID,
+        resolveStringParameterV2("channelId", Constants.SLACK_NOTIFY, identifier, stepInfo.getSlackId(), true));
+
+    PluginServiceImpl.setMandatoryEnvironmentVariable(envVarMap, MESSAGE_CONTENT,
+        resolveStringParameterV2(
+            "messageContent", Constants.CREATE_CATALOG, identifier, stepInfo.getMessageContent(), true));
+
+    return envVarMap;
+  }
+
+  public Map<String, SecretNGVariable> getSlackNotifyStepInfoSecretVariables(
+      IdpSlackNotifyStepInfo stepInfo, String identifier) {
+    Map<String, SecretNGVariable> secretNGVariableMap = new HashMap<>();
+
+    String token = resolveStringParameter("token", Constants.SLACK_NOTIFY, identifier, stepInfo.getToken(), true);
+    SecretRefData secretRefData = SecretRefHelper.createSecretRef(token);
+    secretNGVariableMap.put(SLACK_TOKEN,
+        SecretNGVariable.builder()
+            .type(NGVariableType.SECRET)
+            .value(ParameterField.createValueField(secretRefData))
+            .name(SLACK_TOKEN)
+            .build());
+    return secretNGVariableMap;
   }
 }

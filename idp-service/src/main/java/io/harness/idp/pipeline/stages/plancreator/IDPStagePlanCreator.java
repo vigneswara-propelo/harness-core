@@ -325,7 +325,7 @@ public class IDPStagePlanCreator extends AbstractStagePlanCreator<IDPStageNode> 
                                                        .runtime(currentStageConfig.getRuntime())
                                                        .serviceDependencies(currentStageConfig.getServiceDependencies())
                                                        .platform(currentStageConfig.getPlatform())
-                                                       .cloneCodebase(currentStageConfig.getCloneCodebase())
+                                                       .cloneCodebase(ParameterField.createValueField(false))
                                                        .infrastructure(currentStageConfig.getInfrastructure())
                                                        .build();
 
