@@ -281,6 +281,7 @@ public class EntityTypeTest extends CategoryTest {
     entityTypeOrdinalMapping.put(247, "DIRECT_PUSH");
     entityTypeOrdinalMapping.put(248, "REGISTER_CATALOG");
     entityTypeOrdinalMapping.put(249, "K8S_TRAFFIC_ROUTING_STEP");
+    entityTypeOrdinalMapping.put(250, "DOWNLOAD_HARNESS_STORE");
 
     entityTypeConstantMapping =
         entityTypeOrdinalMapping.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));

@@ -289,4 +289,5 @@ public interface EntityTypeConstants {
 
   // CD Container Step Group Common Steps
   String DOWNLOAD_AWS_S3 = "DownloadAwsS3";
+  String DOWNLOAD_HARNESS_STORE = "DownloadHarnessStore";
 }

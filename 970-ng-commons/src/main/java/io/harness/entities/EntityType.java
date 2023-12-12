@@ -699,7 +699,10 @@ public enum EntityType {
       ModuleType.IDP, EntityTypeConstants.REGISTER_CATALOG, IdentifierRef.class, EntityYamlRootNames.REGISTER_CATALOG),
   @JsonProperty(EntityTypeConstants.K8S_TRAFFIC_ROUTING)
   K8S_TRAFFIC_ROUTING_STEP(ModuleType.CD, EntityTypeConstants.K8S_TRAFFIC_ROUTING, IdentifierRef.class,
-      EntityYamlRootNames.K8S_TRAFFIC_ROUTING);
+      EntityYamlRootNames.K8S_TRAFFIC_ROUTING),
+  @JsonProperty(EntityTypeConstants.DOWNLOAD_HARNESS_STORE)
+  DOWNLOAD_HARNESS_STORE(ModuleType.CD, EntityTypeConstants.DOWNLOAD_HARNESS_STORE, IdentifierRef.class,
+      EntityYamlRootNames.DOWNLOAD_HARNESS_STORE);
 
   private final ModuleType moduleType;
   String yamlName;

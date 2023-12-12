@@ -164,6 +164,7 @@ import io.harness.cdng.creator.plan.steps.azure.webapp.AzureWebAppSlotDeployment
 import io.harness.cdng.creator.plan.steps.azure.webapp.AzureWebAppSlotSwapSlotPlanCreator;
 import io.harness.cdng.creator.plan.steps.azure.webapp.AzureWebAppTrafficShiftStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.containerStepGroup.DownloadAwsS3StepPlanCreator;
+import io.harness.cdng.creator.plan.steps.containerStepGroup.DownloadHarnessStoreStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.ecs.EcsBasicRollbackStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.ecs.EcsBlueGreenCreateServiceStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.ecs.EcsBlueGreenRollbackStepPlanCreator;
@@ -266,6 +267,7 @@ import io.harness.cdng.creator.variables.aws.sam.AwsSamBuildStepVariableCreator;
 import io.harness.cdng.creator.variables.aws.sam.AwsSamDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.aws.sam.AwsSamRollbackStepVariableCreator;
 import io.harness.cdng.creator.variables.containerStepGroup.DownloadAwsS3StepVariableCreator;
+import io.harness.cdng.creator.variables.containerStepGroup.DownloadHarnessStoreStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsDeployWithoutTrafficStepVariableCreator;
 import io.harness.cdng.creator.variables.googlefunctions.GoogleFunctionsGenOneDeployStepVariableCreator;
@@ -573,6 +575,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     // CD Container Step Group Common Steps
     planCreators.add(new DownloadAwsS3StepPlanCreator());
+    planCreators.add(new DownloadHarnessStoreStepPlanCreator());
 
     injectorUtils.injectMembers(planCreators);
     return planCreators;
@@ -743,6 +746,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
     // CD Container Step Group Common Steps
     variableCreators.add(new DownloadAwsS3StepVariableCreator());
+    variableCreators.add(new DownloadHarnessStoreStepVariableCreator());
 
     variableCreators.add(customStageVariableCreator);
 
@@ -1618,6 +1622,16 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
                                  .setFeatureFlag(FeatureName.CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD.name())
                                  .build();
 
+    StepInfo downloadHarnessStore = StepInfo.newBuilder()
+                                        .setName("Download Harness File Store")
+                                        .setType(StepSpecTypeConstants.DOWNLOAD_HARNESS_STORE)
+                                        .setStepMetaData(StepMetaData.newBuilder()
+                                                             .addAllCategory(CD_STEP_GROUP_CONTAINER_STEPS_CATEGORY)
+                                                             .setFolderPath(CD_STEP_GROUP_CONTAINER_STEPS_METADATA)
+                                                             .build())
+                                        .setFeatureFlag(FeatureName.CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD.name())
+                                        .build();
+
     List<StepInfo> stepInfos = new ArrayList<>();
 
     stepInfos.add(gitOpsMergePR);
@@ -1725,6 +1739,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     stepInfos.add(ecsUpgradeContainer);
     stepInfos.add(ecsBasicRollback);
     stepInfos.add(downloadAwsS3);
+    stepInfos.add(downloadHarnessStore);
     return stepInfos;
   }
 }

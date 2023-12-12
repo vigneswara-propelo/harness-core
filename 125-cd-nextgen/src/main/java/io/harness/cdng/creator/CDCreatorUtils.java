@@ -82,6 +82,6 @@ public class CDCreatorUtils {
         StepSpecTypeConstants.AWS_CDK_BOOTSTRAP, StepSpecTypeConstants.AWS_CDK_SYNTH,
         StepSpecTypeConstants.AWS_CDK_DIFF, StepSpecTypeConstants.AWS_CDK_DEPLOY, StepSpecTypeConstants.AWS_CDK_DESTROY,
         StepSpecTypeConstants.AWS_CDK_ROLLBACK, StepSpecTypeConstants.UPDATE_GITOPS_APP,
-        StepSpecTypeConstants.DOWNLOAD_AWS_S3);
+        StepSpecTypeConstants.DOWNLOAD_AWS_S3, StepSpecTypeConstants.DOWNLOAD_HARNESS_STORE);
   }
 }

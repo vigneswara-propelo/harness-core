@@ -286,4 +286,5 @@ public class EntityYamlRootNames {
 
   // CD Container Step Group Common Steps
   public static final String DOWNLOAD_AWS_S3 = "DownloadAwsS3";
+  public static final String DOWNLOAD_HARNESS_STORE = "DownloadHarnessStore";
 }

@@ -248,4 +248,5 @@ public interface YamlTypes {
   String AWS_CDK_ROLLBACK = StepSpecTypeConstants.AWS_CDK_ROLLBACK;
 
   String DOWNLOAD_AWS_S3 = StepSpecTypeConstants.DOWNLOAD_AWS_S3;
+  String DOWNLOAD_HARNESS_STORE = StepSpecTypeConstants.DOWNLOAD_HARNESS_STORE;
 }
