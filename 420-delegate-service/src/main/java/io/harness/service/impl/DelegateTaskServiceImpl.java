@@ -7,12 +7,15 @@
 
 package io.harness.service.impl;
 
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.delegate.beans.DelegateTaskResponse.ResponseCode;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.DELEGATE_TASK_RESPONSE;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 import io.harness.beans.DelegateTask;
 import io.harness.beans.DelegateTask.DelegateTaskKeys;
@@ -20,8 +23,10 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.DelegateProgressData;
 import io.harness.delegate.beans.DelegateSyncTaskResponse;
 import io.harness.delegate.beans.DelegateTaskResponse;
+import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.beans.TaskDataV2;
+import io.harness.delegate.beans.executioncapability.ExecutionCapability;
 import io.harness.delegate.task.tasklogging.TaskLogContext;
 import io.harness.delegate.utils.DelegateLogContextHelper;
 import io.harness.delegate.utils.DelegateTaskMigrationHelper;
@@ -45,6 +50,8 @@ import io.harness.version.VersionInfoManager;
 import io.harness.waiter.WaitNotifyEngine;
 
 import software.wings.beans.SerializationFormat;
+import software.wings.delegatetasks.validation.core.DelegateConnectionResult;
+import software.wings.delegatetasks.validation.core.DelegateConnectionResult.DelegateConnectionResultKeys;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -242,6 +249,11 @@ public class DelegateTaskServiceImpl implements DelegateTaskService {
     persistence.deleteOnServer(
         taskQuery, delegateTaskMigrationHelper.isMigrationEnabledForTask(delegateTask.getUuid()));
 
+    if (response.getResponse() instanceof ErrorNotifyResponseData
+        || response.getResponseCode().equals(ResponseCode.FAILED)) {
+      clearDelegateConnectionResults(delegateTask);
+    }
+
     delegateMetricsService.recordDelegateTaskResponseMetrics(delegateTask, response, DELEGATE_TASK_RESPONSE);
   }
 
@@ -323,5 +335,32 @@ public class DelegateTaskServiceImpl implements DelegateTaskService {
                            .responseData(referenceFalseKryoSerializer.asDeflatedBytes(response.getResponse()))
                            .build());
     }
+  }
+
+  public void clearDelegateConnectionResults(DelegateTask delegateTask) {
+    try {
+      for (String criteria : fetchCriteria(delegateTask)) {
+        Query<DelegateConnectionResult> query =
+            persistence.createQuery(DelegateConnectionResult.class)
+                .filter(DelegateConnectionResultKeys.accountId, delegateTask.getAccountId())
+                .filter(DelegateConnectionResultKeys.delegateId, delegateTask.getDelegateId())
+                .filter(DelegateConnectionResultKeys.criteria, criteria);
+        persistence.delete(query);
+      }
+    } catch (Exception e) {
+      log.error("Error on clearing delegateConnectionResults {}", delegateTask.getUuid(), e);
+    }
+  }
+
+  private List<String> fetchCriteria(DelegateTask task) {
+    if (isEmpty(task.getExecutionCapabilities())) {
+      return emptyList();
+    }
+
+    return task.getExecutionCapabilities()
+        .stream()
+        .filter(e -> e.evaluationMode() == ExecutionCapability.EvaluationMode.AGENT)
+        .map(ExecutionCapability::fetchCapabilityBasis)
+        .collect(toList());
   }
 }

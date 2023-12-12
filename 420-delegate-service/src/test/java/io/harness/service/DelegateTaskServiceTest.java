@@ -10,9 +10,12 @@ package io.harness.service;
 import static io.harness.beans.DelegateTask.Status.QUEUED;
 import static io.harness.beans.DelegateTask.Status.STARTED;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.delegate.task.mixin.HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability;
+import static io.harness.persistence.HPersistence.upsertReturnNewOptions;
 import static io.harness.rule.OwnerRule.ARPIT;
 import static io.harness.rule.OwnerRule.ASHISHSANODIA;
 import static io.harness.rule.OwnerRule.GEORGE;
+import static io.harness.rule.OwnerRule.JENNY;
 
 import static java.lang.System.currentTimeMillis;
 import static java.time.Duration.ofMillis;
@@ -32,6 +35,7 @@ import io.harness.delegate.beans.DelegateTaskResponse;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.beans.TaskDataV2;
+import io.harness.delegate.beans.executioncapability.HttpConnectionExecutionCapability;
 import io.harness.exception.ExceptionUtils;
 import io.harness.persistence.HPersistence;
 import io.harness.rule.Owner;
@@ -40,8 +44,13 @@ import io.harness.service.intfc.DelegateCache;
 import io.harness.service.intfc.DelegateTaskService;
 import io.harness.threading.Morpheus;
 
+import software.wings.delegatetasks.validation.core.DelegateConnectionResult;
+import software.wings.delegatetasks.validation.core.DelegateConnectionResult.DelegateConnectionResultKeys;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -141,5 +150,57 @@ public class DelegateTaskServiceTest extends DelegateServiceTestBase {
     Object responseData = referenceFalseKryoSerializer.asInflatedObject(delegateSyncTaskResponse.getResponseData());
     assertThat(delegateSyncTaskResponse.isUsingKryoWithoutReference()).isTrue();
     assertThat(responseData).isInstanceOf(ErrorNotifyResponseData.class);
+  }
+
+  @Test
+  @Owner(developers = JENNY)
+  @Category(UnitTests.class)
+  public void testClearConnectionResultOnTaskResponse() {
+    String delegateId = generateUuid();
+    HttpConnectionExecutionCapability matchingExecutionCapability =
+        buildHttpConnectionExecutionCapability("criteria", null);
+    HttpConnectionExecutionCapability matchingExecutionCapability2 =
+        buildHttpConnectionExecutionCapability("criteria2", null);
+    saveConnectionResult("criteria", delegateId);
+    saveConnectionResult("criteria2", delegateId);
+    saveConnectionResult("criteria", delegateId);
+    DelegateTask delegateTask =
+        DelegateTask.builder()
+            .uuid(generateUuid())
+            .accountId(TEST_ACCOUNT_ID)
+            .delegateId(delegateId)
+            .status(STARTED)
+            .taskDataV2(TaskDataV2.builder().timeout(1000L).build())
+            .executionCapabilities(asList(matchingExecutionCapability, matchingExecutionCapability2))
+            .expiry(currentTimeMillis() + 1000L)
+            .build();
+
+    DelegateTaskResponse delegateTaskResponse =
+        DelegateTaskResponse.builder()
+            .response(ErrorNotifyResponseData.builder().errorMessage("failure").build())
+            .responseCode(DelegateTaskResponse.ResponseCode.FAILED)
+            .accountId(TEST_ACCOUNT_ID)
+            .build();
+
+    DelegateConnectionResult before = persistence.createQuery(DelegateConnectionResult.class).get();
+    assertThat(before).isNotNull();
+    delegateTaskService.handleResponseV2(delegateTask, delegateTaskResponse);
+    DelegateConnectionResult after = persistence.createQuery(DelegateConnectionResult.class).get();
+    assertThat(after).isNull();
+  }
+
+  private void saveConnectionResult(String criteria, String delegateId) {
+    Query<DelegateConnectionResult> query = persistence.createQuery(DelegateConnectionResult.class)
+                                                .filter(DelegateConnectionResultKeys.accountId, TEST_ACCOUNT_ID)
+                                                .filter(DelegateConnectionResultKeys.delegateId, delegateId)
+                                                .filter(DelegateConnectionResultKeys.criteria, criteria);
+    UpdateOperations<DelegateConnectionResult> updateOperations =
+        persistence.createUpdateOperations(DelegateConnectionResult.class)
+            .setOnInsert(DelegateConnectionResultKeys.accountId, TEST_ACCOUNT_ID)
+            .setOnInsert(DelegateConnectionResultKeys.delegateId, delegateId)
+            .setOnInsert(DelegateConnectionResultKeys.criteria, criteria)
+            .set(DelegateConnectionResultKeys.validated, true);
+
+    persistence.upsert(query, updateOperations, upsertReturnNewOptions);
   }
 }
