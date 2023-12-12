@@ -14,6 +14,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.scorecard.checks.entity.CheckEntity;
 import io.harness.idp.scorecard.scorecards.entity.ScorecardEntity;
+import io.harness.idp.scorecard.scorecards.repositories.ScorecardIdentifierAndScore;
 import io.harness.spec.server.idp.v1.model.ScorecardChecks;
 import io.harness.spec.server.idp.v1.model.ScorecardChecksDetails;
 import io.harness.spec.server.idp.v1.model.ScorecardDetails;
@@ -29,8 +30,8 @@ import lombok.experimental.UtilityClass;
 @OwnedBy(HarnessTeam.IDP)
 @UtilityClass
 public class ScorecardDetailsMapper {
-  public ScorecardDetailsResponse toDTO(
-      ScorecardEntity scorecardEntity, Map<String, CheckEntity> checkEntityMap, String harnessAccount) {
+  public ScorecardDetailsResponse toDTO(ScorecardEntity scorecardEntity, Map<String, CheckEntity> checkEntityMap,
+      ScorecardIdentifierAndScore scorecardIdentifierAndScore, String harnessAccount) {
     ScorecardDetailsResponse response = new ScorecardDetailsResponse();
 
     ScorecardDetails details = new ScorecardDetails();
@@ -40,6 +41,10 @@ public class ScorecardDetailsMapper {
     details.setFilter(scorecardEntity.getFilter());
     details.setPublished(scorecardEntity.isPublished());
     details.setWeightageStrategy(scorecardEntity.getWeightageStrategy());
+    if (scorecardIdentifierAndScore != null) {
+      details.setComponents(scorecardIdentifierAndScore.getCount());
+      details.setPercentage((double) Math.round(scorecardIdentifierAndScore.getPercentage() * 100.0));
+    }
 
     List<ScorecardChecksDetails> scorecardChecksDetails = new ArrayList<>();
     List<String> checksMissing = new ArrayList<>();

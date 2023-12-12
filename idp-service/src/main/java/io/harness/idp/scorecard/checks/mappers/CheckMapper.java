@@ -33,11 +33,7 @@ public class CheckMapper {
     checks.setCustom(checkEntity.isCustom());
     checks.setDataSource(
         checkEntity.getRules().stream().map(Rule::getDataSourceIdentifier).distinct().collect(Collectors.toList()));
-    if (checkStatusEntity != null) {
-      checks.setPercentage((double) (checkStatusEntity.getTotal() > 0
-              ? Math.round(checkStatusEntity.getPassCount() * 100.0 / checkStatusEntity.getTotal())
-              : 0));
-    }
+    checks.setPercentage(calculatePercentage(checkStatusEntity));
     return checks;
   }
 
@@ -45,5 +41,14 @@ public class CheckMapper {
     List<CheckResponse> response = new ArrayList<>();
     checkList.forEach(check -> response.add(new CheckResponse().check(check)));
     return response;
+  }
+
+  public Double calculatePercentage(CheckStatusEntity checkStatusEntity) {
+    if (checkStatusEntity != null) {
+      return (double) (checkStatusEntity.getTotal() > 0
+              ? Math.round(checkStatusEntity.getPassCount() * 100.0 / checkStatusEntity.getTotal())
+              : 0);
+    }
+    return null;
   }
 }

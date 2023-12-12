@@ -255,6 +255,12 @@ public class CheckServiceImplTest extends CategoryTest {
   public void testGetCustomCheckDetails() {
     when(checkRepository.findByAccountIdentifierAndIdentifier(ACCOUNT_ID, GITHUB_CHECK_ID))
         .thenReturn(getCheckEntities().get(0));
+    when(checkStatusRepository.findByAccountIdentifierAndIdentifierIn(any(), any()))
+        .thenReturn(List.of(CheckStatusEntityByIdentifier.builder()
+                                .identifier(GITHUB_CHECK_ID)
+                                .isCustom(true)
+                                .checkStatusEntity(getCheckStatusEntities().get(0))
+                                .build()));
     CheckDetails checkDetails = checkServiceImpl.getCheckDetails(ACCOUNT_ID, GITHUB_CHECK_ID, Boolean.TRUE);
     assertEquals(GITHUB_CHECK_ID, checkDetails.getIdentifier());
   }
@@ -265,7 +271,7 @@ public class CheckServiceImplTest extends CategoryTest {
   public void testGetDefaultCheckDetails() {
     when(checkRepository.findByAccountIdentifierAndIdentifier(GLOBAL_ACCOUNT_ID, GITHUB_CHECK_ID))
         .thenReturn(getCheckEntities().get(1));
-    CheckDetails checkDetails = checkServiceImpl.getCheckDetails(GLOBAL_ACCOUNT_ID, GITHUB_CHECK_ID, Boolean.FALSE);
+    CheckDetails checkDetails = checkServiceImpl.getCheckDetails(ACCOUNT_ID, GITHUB_CHECK_ID, Boolean.FALSE);
     assertEquals(CATALOG_CHECK_ID, checkDetails.getIdentifier());
   }
 

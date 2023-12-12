@@ -26,18 +26,22 @@ public class CheckStatsMapper {
   public CheckStatsResponse toDTO(List<CheckStatsEntity> checkStatsEntities, String name) {
     CheckStatsResponse response = new CheckStatsResponse();
     response.setName(name);
+    long lastComputedAt = 0;
     List<CheckStats> checkStats = new ArrayList<>();
     for (CheckStatsEntity checkStatsEntity : checkStatsEntities) {
       CheckStats stats = new CheckStats();
       StatsMetadata metadata = checkStatsEntity.getMetadata();
       stats.setName(metadata.getName());
+      stats.setNamespace(metadata.getNamespace());
       stats.setOwner(metadata.getOwner());
       stats.setSystem(metadata.getSystem());
       stats.setKind(metadata.getKind());
       stats.setType(metadata.getType());
+      lastComputedAt = Long.max(lastComputedAt, checkStatsEntity.getLastUpdatedAt());
       stats.setStatus(checkStatsEntity.getStatus());
       checkStats.add(stats);
     }
+    response.setTimestamp(lastComputedAt);
     response.setStats(checkStats);
     return response;
   }

@@ -216,6 +216,8 @@ public class ScorecardServiceImplTest extends CategoryTest {
     when(scorecardRepository.findByAccountIdentifierAndIdentifier(ACCOUNT_ID, SCORECARD_ID))
         .thenReturn(scorecardEntity);
     when(checkService.getChecksByAccountIdAndIdentifiers(any(), any())).thenReturn(getCheckEntities());
+    when(scorecardStatsRepository.computeScoresPercentageByScorecard(ACCOUNT_ID, List.of(SCORECARD_ID)))
+        .thenReturn(getScorecardIdentifierAndScore());
     ScorecardDetailsResponse response = scorecardServiceImpl.getScorecardDetails(ACCOUNT_ID, SCORECARD_ID);
     assertEquals(SCORECARD_ID, response.getScorecard().getIdentifier());
     assertEquals(1, response.getScorecard().getChecksMissing().size());

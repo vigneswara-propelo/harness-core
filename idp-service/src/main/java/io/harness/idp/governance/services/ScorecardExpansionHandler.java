@@ -22,6 +22,7 @@ import io.harness.idp.backstagebeans.BackstageCatalogEntityTypes;
 import io.harness.idp.governance.beans.ScorecardExpandedValue;
 import io.harness.idp.governance.beans.ServiceScorecards;
 import io.harness.idp.governance.beans.ServiceScorecardsMapper;
+import io.harness.idp.namespace.service.NamespaceService;
 import io.harness.idp.scorecard.scores.service.ScoreService;
 import io.harness.ng.core.dto.CDStageMetaDataDTO;
 import io.harness.ng.core.dto.CdDeployStageMetadataRequestDTO;
@@ -53,10 +54,17 @@ public class ScorecardExpansionHandler implements JsonExpansionHandler {
   @Inject BackstageResourceClient backstageResourceClient;
   @Inject ScoreService scoreService;
   @Inject CDStageConfigClient cdStageConfigClient;
+  @Inject NamespaceService namespaceService;
 
   @Override
   public ExpansionResponse expand(JsonNode fieldValue, ExpansionRequestMetadata metadata, String fqn) {
     String accountId = metadata.getAccountId();
+    try {
+      namespaceService.getNamespaceForAccountIdentifier(accountId);
+    } catch (Exception e) {
+      log.info(e.getMessage());
+      return ExpansionResponse.builder().success(false).errorMessage(e.getMessage()).build();
+    }
     String orgId = metadata.getOrgId();
     String projectId = metadata.getProjectId();
     String stageIdentifier = fieldValue.get("identifier").asText();

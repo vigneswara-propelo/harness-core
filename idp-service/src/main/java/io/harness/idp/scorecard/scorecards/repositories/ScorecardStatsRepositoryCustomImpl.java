@@ -8,7 +8,6 @@
 package io.harness.idp.scorecard.scorecards.repositories;
 
 import static io.harness.idp.common.Constants.DOT_SEPARATOR;
-import static io.harness.idp.common.DateUtils.yesterdayInMilliseconds;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -62,7 +61,6 @@ public class ScorecardStatsRepositoryCustomImpl implements ScorecardStatsReposit
     }
     entity.setScore(scoreEntity.getScore());
     entity.setMetadata(buildMetadata(backstageCatalog));
-    entity.setLastUpdatedAt(yesterdayInMilliseconds());
     return entity;
   }
 

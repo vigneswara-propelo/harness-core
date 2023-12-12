@@ -105,7 +105,7 @@ public class CheckServiceImpl implements CheckService {
         checkDetails.setIdentifier(checkDetails.getIdentifier() + new Random().nextInt(9999));
       }
       CheckEntity savedCheckEntity = checkRepository.save(CheckDetailsMapper.fromDTO(checkDetails, accountIdentifier));
-      outboxService.save(new CheckCreateEvent(accountIdentifier, CheckDetailsMapper.toDTO(savedCheckEntity)));
+      outboxService.save(new CheckCreateEvent(accountIdentifier, CheckDetailsMapper.toDTO(savedCheckEntity, null)));
       return true;
     }));
   }
@@ -123,8 +123,8 @@ public class CheckServiceImpl implements CheckService {
       if (updatedCheckEntity == null) {
         throw new InvalidRequestException("Default checks cannot be updated");
       }
-      outboxService.save(new CheckUpdateEvent(
-          accountIdentifier, CheckDetailsMapper.toDTO(updatedCheckEntity), CheckDetailsMapper.toDTO(oldCheckEntity)));
+      outboxService.save(new CheckUpdateEvent(accountIdentifier, CheckDetailsMapper.toDTO(updatedCheckEntity, null),
+          CheckDetailsMapper.toDTO(oldCheckEntity, null)));
       return true;
     }));
   }
@@ -153,7 +153,10 @@ public class CheckServiceImpl implements CheckService {
     if (checkEntity == null) {
       throw new InvalidRequestException(String.format("Check details not found for checkId [%s]", identifier));
     }
-    return CheckDetailsMapper.toDTO(checkEntity);
+    CheckStatusEntity checkStatusEntity =
+        getCheckStatusByAccountIdAndIdentifiers(accountIdentifier, List.of(identifier))
+            .get((custom ? accountIdentifier : GLOBAL_ACCOUNT_ID) + DOT_SEPARATOR + identifier);
+    return CheckDetailsMapper.toDTO(checkEntity, checkStatusEntity);
   }
 
   @Override
@@ -210,7 +213,7 @@ public class CheckServiceImpl implements CheckService {
       }
 
       CheckEntity oldCheckEntity = checkRepository.findByAccountIdentifierAndIdentifier(accountIdentifier, identifier);
-      outboxService.save(new CheckDeleteEvent(accountIdentifier, CheckDetailsMapper.toDTO(oldCheckEntity)));
+      outboxService.save(new CheckDeleteEvent(accountIdentifier, CheckDetailsMapper.toDTO(oldCheckEntity, null)));
 
       UpdateResult updateResult = checkRepository.updateDeleted(accountIdentifier, identifier);
       if (updateResult.getModifiedCount() == 0) {

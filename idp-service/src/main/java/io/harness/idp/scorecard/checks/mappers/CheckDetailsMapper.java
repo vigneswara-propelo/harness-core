@@ -13,6 +13,7 @@ import static io.harness.idp.common.Constants.SPACE_SEPARATOR;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.scorecard.checks.entity.CheckEntity;
+import io.harness.idp.scorecard.checks.entity.CheckStatusEntity;
 import io.harness.spec.server.idp.v1.model.CheckDetails;
 import io.harness.spec.server.idp.v1.model.Rule;
 
@@ -28,7 +29,7 @@ public class CheckDetailsMapper {
   private static final String NOT_IN_OR_NOT_MATCH_OPERATOR = "!~";
   public static final List<String> OPERATORS_WITH_ARRAYS = List.of(IN_OR_MATCH_OPERATOR, NOT_IN_OR_NOT_MATCH_OPERATOR);
 
-  public CheckDetails toDTO(CheckEntity checkEntity) {
+  public CheckDetails toDTO(CheckEntity checkEntity, CheckStatusEntity checkStatusEntity) {
     CheckDetails checkDetails = new CheckDetails();
     checkDetails.setName(checkEntity.getName());
     checkDetails.setIdentifier(checkEntity.getIdentifier());
@@ -40,6 +41,7 @@ public class CheckDetailsMapper {
     checkDetails.setRuleStrategy(checkEntity.getRuleStrategy());
     checkDetails.setRules(checkEntity.getRules());
     checkDetails.setTags(checkEntity.getTags());
+    checkDetails.setPercentage(CheckMapper.calculatePercentage(checkStatusEntity));
     return checkDetails;
   }
 

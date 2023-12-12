@@ -24,18 +24,24 @@ public class ScorecardStatsMapper {
   public ScorecardStatsResponse toDTO(List<ScorecardStatsEntity> scorecardStatsEntities, String name) {
     ScorecardStatsResponse response = new ScorecardStatsResponse();
     response.setName(name);
+    long lastComputedAt = 0;
     List<ScorecardStats> scorecardStats = new ArrayList<>();
     for (ScorecardStatsEntity scorecardStatsEntity : scorecardStatsEntities) {
       ScorecardStats stats = new ScorecardStats();
       StatsMetadata metadata = scorecardStatsEntity.getMetadata();
       stats.setName(metadata.getName());
+      stats.setNamespace(metadata.getNamespace());
       stats.setOwner(metadata.getOwner());
       stats.setSystem(metadata.getSystem());
       stats.setKind(metadata.getKind());
       stats.setType(metadata.getType());
+      if (lastComputedAt == 0) {
+        lastComputedAt = scorecardStatsEntity.getLastUpdatedAt();
+      }
       stats.setScore(scorecardStatsEntity.getScore());
       scorecardStats.add(stats);
     }
+    response.setTimestamp(lastComputedAt);
     response.setStats(scorecardStats);
     return response;
   }

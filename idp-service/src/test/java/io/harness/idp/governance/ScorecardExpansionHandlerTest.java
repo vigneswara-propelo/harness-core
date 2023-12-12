@@ -29,6 +29,7 @@ import io.harness.idp.backstagebeans.BackstageCatalogComponentEntity;
 import io.harness.idp.backstagebeans.BackstageCatalogEntity;
 import io.harness.idp.backstagebeans.BackstageCatalogEntityTypes;
 import io.harness.idp.governance.services.ScorecardExpansionHandler;
+import io.harness.idp.namespace.service.NamespaceService;
 import io.harness.idp.scorecard.scores.service.ScoreService;
 import io.harness.ng.core.dto.CDStageMetaDataDTO;
 import io.harness.pms.contracts.governance.ExpansionRequestMetadata;
@@ -37,6 +38,7 @@ import io.harness.remote.client.NGRestUtils;
 import io.harness.rule.Owner;
 import io.harness.serializer.JsonUtils;
 import io.harness.spec.server.idp.v1.model.CheckStatus;
+import io.harness.spec.server.idp.v1.model.NamespaceInfo;
 import io.harness.spec.server.idp.v1.model.ScorecardSummaryInfo;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -65,6 +67,7 @@ public class ScorecardExpansionHandlerTest extends CategoryTest {
   @Mock CDStageConfigClient cdStageConfigClient;
   @Mock BackstageResourceClient backstageResourceClient;
   @Mock ScoreService scoreService;
+  @Mock NamespaceService namespaceService;
   private static final String ACCOUNT_ID = "123";
   private static final String PROJECT_ID = "project1";
   private static final String ORG_ID = "org1";
@@ -97,6 +100,7 @@ public class ScorecardExpansionHandlerTest extends CategoryTest {
         CDStageMetaDataDTO.builder().serviceRef(IDP_SERVICE_ENTITY_NAME).environmentRef("env").build();
     JsonNode fieldValue = getJson("governance/ScorecardExpansionHandlerInput.json");
 
+    when(namespaceService.getNamespaceForAccountIdentifier(ACCOUNT_ID)).thenReturn(new NamespaceInfo());
     MockedStatic<NGRestUtils> mockRestStatic = mockStatic(NGRestUtils.class);
     mockRestStatic.when(() -> NGRestUtils.getResponse(any())).thenReturn(cdStageMetaDataDTO);
     mockRestStatic.when(() -> NGRestUtils.getGeneralResponse(any())).thenReturn(getResponse());
@@ -116,8 +120,22 @@ public class ScorecardExpansionHandlerTest extends CategoryTest {
   @Test
   @Owner(developers = VIGNESWARA)
   @Category(UnitTests.class)
+  public void testExpandIdpDisabled() throws IOException {
+    JsonNode fieldValue = getJson("governance/ScorecardExpansionHandlerInput.json");
+    when(namespaceService.getNamespaceForAccountIdentifier(ACCOUNT_ID))
+        .thenThrow(new InvalidRequestException("IDP is disabled"));
+    ExpansionResponse response = expansionHandler.expand(fieldValue, expansionRequestMetadata, null);
+    assertNotNull(response);
+    assertFalse(response.isSuccess());
+    assertNotNull(response.getErrorMessage());
+  }
+
+  @Test
+  @Owner(developers = VIGNESWARA)
+  @Category(UnitTests.class)
   public void testExpandCDStageResponseThrowsException() throws IOException {
     JsonNode fieldValue = getJson("governance/ScorecardExpansionHandlerInput.json");
+    when(namespaceService.getNamespaceForAccountIdentifier(ACCOUNT_ID)).thenReturn(new NamespaceInfo());
     MockedStatic<NGRestUtils> mockRestStatic = mockStatic(NGRestUtils.class);
     mockRestStatic.when(() -> NGRestUtils.getResponse(any())).thenThrow(InvalidRequestException.class);
     ExpansionResponse response = expansionHandler.expand(fieldValue, expansionRequestMetadata, null);
@@ -135,6 +153,7 @@ public class ScorecardExpansionHandlerTest extends CategoryTest {
         CDStageMetaDataDTO.builder().serviceRef(IDP_SERVICE_ENTITY_NAME).environmentRef("env").build();
     JsonNode fieldValue = getJson("governance/ScorecardExpansionHandlerInput.json");
 
+    when(namespaceService.getNamespaceForAccountIdentifier(ACCOUNT_ID)).thenReturn(new NamespaceInfo());
     MockedStatic<NGRestUtils> mockRestStatic = mockStatic(NGRestUtils.class);
     mockRestStatic.when(() -> NGRestUtils.getResponse(any())).thenReturn(cdStageMetaDataDTO);
     mockRestStatic.when(() -> NGRestUtils.getGeneralResponse(any())).thenThrow(InvalidRequestException.class);

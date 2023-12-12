@@ -2601,6 +2601,13 @@ components:
               type: string
               x-stoplight:
                 id: mqml3k84x10ot
+            percentage:
+              type: number
+              x-stoplight:
+                id: kp6ptdhmpvqn7
+              format: double
+              minimum: 0
+              maximum: 100
           required:
             - rule_strategy
             - rules
@@ -2789,6 +2796,17 @@ components:
             x-stoplight:
               id: 6xqs4rtf0fexq
             type: string
+        components:
+          type: integer
+          x-stoplight:
+            id: 8rc2peneqokdm
+        percentage:
+          type: number
+          x-stoplight:
+            id: lzqyp3vjd6kto
+          format: double
+          minimum: 0
+          maximum: 100
       required:
         - name
         - identifier
@@ -3551,6 +3569,10 @@ components:
           type: string
           x-stoplight:
             id: skt0gj9ivt90s
+        namespace:
+          type: string
+          x-stoplight:
+            id: oklu13i7o6ebd
         owner:
           type: string
           x-stoplight:
@@ -3573,6 +3595,7 @@ components:
             id: ehz071o8ft8bg
       required:
         - name
+        - namespace
         - owner
         - system
         - kind
@@ -3589,6 +3612,11 @@ components:
           type: string
           x-stoplight:
             id: czewiwd87fr8u
+        timestamp:
+          type: integer
+          x-stoplight:
+            id: 5p8wtkrmax6su
+          format: int64
         stats:
           type: array
           x-stoplight:
@@ -3610,6 +3638,10 @@ components:
           type: string
           x-stoplight:
             id: tkt0gj9ivt90s
+        namespace:
+          type: string
+          x-stoplight:
+            id: pklu13i8o9rdb
         owner:
           type: string
           x-stoplight:
@@ -3632,6 +3664,7 @@ components:
             id: fhz071o8ft8bg
       required:
         - name
+        - namespace
         - owner
         - system
         - kind
@@ -3649,6 +3682,11 @@ components:
           type: string
           x-stoplight:
             id: 5kkekddw3r1zh
+        timestamp:
+          type: integer
+          x-stoplight:
+            id: 5e8wpkrsax6xu
+          format: int64
         stats:
           x-stoplight:
             id: nd4na7s04suxx

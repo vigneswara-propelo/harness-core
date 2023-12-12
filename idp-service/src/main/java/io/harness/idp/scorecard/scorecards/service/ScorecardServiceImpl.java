@@ -172,7 +172,7 @@ public class ScorecardServiceImpl implements ScorecardService {
                   .stream()
                   .map(ScorecardEntity.Check::getIdentifier)
                   .collect(Collectors.toSet())),
-          accountIdentifier);
+          null, accountIdentifier);
 
       outboxService.save(new ScorecardCreateEvent(accountIdentifier, savedScorecardDetailsResponse));
       return true;
@@ -194,7 +194,7 @@ public class ScorecardServiceImpl implements ScorecardService {
                   .stream()
                   .map(ScorecardEntity.Check::getIdentifier)
                   .collect(Collectors.toSet())),
-          accountIdentifier);
+          null, accountIdentifier);
 
       ScorecardEntity updatedScorecardEntity =
           scorecardRepository.update(ScorecardDetailsMapper.fromDTO(scorecardDetailsRequest, accountIdentifier));
@@ -205,7 +205,7 @@ public class ScorecardServiceImpl implements ScorecardService {
                   .stream()
                   .map(ScorecardEntity.Check::getIdentifier)
                   .collect(Collectors.toSet())),
-          accountIdentifier);
+          null, accountIdentifier);
 
       outboxService.save(new ScorecardUpdateEvent(accountIdentifier, updatedScorecardDetails, oldScorecardDetails));
       return true;
@@ -221,8 +221,15 @@ public class ScorecardServiceImpl implements ScorecardService {
     }
     Set<String> checkIds =
         scorecardEntity.getChecks().stream().map(ScorecardEntity.Check::getIdentifier).collect(Collectors.toSet());
-    return ScorecardDetailsMapper.toDTO(
-        scorecardEntity, getIdentifierCheckEntityMapping(accountIdentifier, checkIds), accountIdentifier);
+    ScorecardIdentifierAndScore scorecardIdentifierAndScore =
+        scorecardStatsRepository.computeScoresPercentageByScorecard(accountIdentifier, List.of(identifier))
+            .stream()
+            .filter(
+                ScorecardIdentifierAndScore -> ScorecardIdentifierAndScore.getScorecardIdentifier().equals(identifier))
+            .findFirst()
+            .orElse(null);
+    return ScorecardDetailsMapper.toDTO(scorecardEntity, getIdentifierCheckEntityMapping(accountIdentifier, checkIds),
+        scorecardIdentifierAndScore, accountIdentifier);
   }
 
   @Override
@@ -280,7 +287,7 @@ public class ScorecardServiceImpl implements ScorecardService {
                   .stream()
                   .map(ScorecardEntity.Check::getIdentifier)
                   .collect(Collectors.toSet())),
-          accountIdentifier);
+          null, accountIdentifier);
 
       outboxService.save(new ScorecardDeleteEvent(accountIdentifier, toBeDeletedScorecardDetails));
       return true;
