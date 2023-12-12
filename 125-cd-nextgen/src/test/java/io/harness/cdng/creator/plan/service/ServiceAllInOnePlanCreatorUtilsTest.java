@@ -21,11 +21,14 @@ import io.harness.beans.InputSetValidatorType;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.environment.yaml.EnvironmentInfraUseFromStage;
 import io.harness.cdng.environment.yaml.EnvironmentYamlV2;
+import io.harness.cdng.infra.yaml.InfraStructureDefinitionYaml;
 import io.harness.cdng.service.beans.ServiceDefinitionType;
 import io.harness.cdng.service.beans.ServiceUseFromStageV2;
 import io.harness.cdng.service.beans.ServiceYamlV2;
+import io.harness.cdng.service.steps.helpers.beans.ServiceStepV3Parameters;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.pms.sdk.core.plan.PlanNode;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.yaml.ParameterField;
@@ -39,6 +42,8 @@ import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
@@ -288,6 +293,34 @@ public class ServiceAllInOnePlanCreatorUtilsTest extends CategoryTest {
                             "serviceNodeId", "mextNodeId", ServiceDefinitionType.ECS, null, PLAN_CREATION_CONTEXT))
         .withMessage(
             "Could not find environment in stage [adhoc], hence not possible to propagate environment from that stage");
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.LOVISH_BANSAL)
+  @Category(UnitTests.class)
+  public void addServiceNodeUseFromStageFromEnvWithDifferentInfra() throws IOException {
+    try (MockedStatic<StepUtils> stepUtilsMockedStatic = mockStatic(StepUtils.class)) {
+      stepUtilsMockedStatic.when(() -> StepUtils.appendDelegateSelectors(any(), any())).then(Answers.RETURNS_DEFAULTS);
+      String pipelineYaml = readFileIntoUTF8String("cdng/creator/servicePlanCreator/pipeline.yaml");
+      YamlField yamlField = new YamlField("", YamlNode.fromYamlPath(pipelineYaml, ""));
+      YamlField specField = new YamlField("spec", getStageNodeAtIndex(yamlField, 5));
+
+      InfraStructureDefinitionYaml infraStructureDefinitionYaml =
+          InfraStructureDefinitionYaml.builder().identifier(ParameterField.createValueField("infraId")).build();
+      List<InfraStructureDefinitionYaml> infraStructureDefinitionYamlList = new ArrayList<>();
+      infraStructureDefinitionYamlList.add(infraStructureDefinitionYaml);
+
+      Map<String, PlanCreationResponse> planCreationResponse = ServiceAllInOnePlanCreatorUtils.addServiceNode(specField,
+          kryoSerializer, ServiceYamlV2.builder().serviceRef(ParameterField.createValueField("my_service")).build(),
+          EnvironmentYamlV2.builder()
+              .useFromStage(EnvironmentInfraUseFromStage.builder().stage("prod").build())
+              .infrastructureDefinitions(ParameterField.createValueField(infraStructureDefinitionYamlList))
+              .build(),
+          "serviceNodeId", "nextNodeId", ServiceDefinitionType.ECS, null, PLAN_CREATION_CONTEXT);
+      PlanNode planNode = planCreationResponse.get("serviceNodeId").getPlanNode();
+      ServiceStepV3Parameters serviceStepV3Parameters = (ServiceStepV3Parameters) planNode.getStepParameters();
+      assertThat(serviceStepV3Parameters.getInfraId().getValue()).isEqualTo("infraId");
+    }
   }
 
   private static YamlNode getStageNodeAtIndex(YamlField pipeline, int idx) {

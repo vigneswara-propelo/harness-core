@@ -607,7 +607,7 @@ public class DeploymentStagePlanCreator extends AbstractStagePlanCreator<Deploym
     }
 
     final EnvironmentYamlV2 finalEnvironmentYamlV2 = ServiceAllInOnePlanCreatorUtils.useFromStage(environment)
-        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(environment.getUseFromStage(), specField)
+        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(environment, specField)
         : environment;
 
     ServiceDefinitionType serviceType =
@@ -991,8 +991,7 @@ public class DeploymentStagePlanCreator extends AbstractStagePlanCreator<Deploym
 
   private EnvironmentYamlV2 getEnvironmentYaml(YamlField specField, DeploymentStageConfigV1 deploymentStageConfig) {
     return ServiceAllInOnePlanCreatorUtils.useFromStage(deploymentStageConfig.getEnvironment())
-        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(
-            deploymentStageConfig.getEnvironment().getUseFromStage(), specField)
+        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(deploymentStageConfig.getEnvironment(), specField)
         : deploymentStageConfig.getEnvironment();
   }
 }

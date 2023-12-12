@@ -59,9 +59,9 @@ pipeline:
           service:
             useFromStage:
               stage: stage1
-            environment:
-              environmentRef: my_env_prod
-              infrastructureDefinitions: <+input>
+          environment:
+            environmentRef: my_env_prod
+            infrastructureDefinitions: <+input>
           execution:
             steps:
               - step:
