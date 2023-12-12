@@ -39,9 +39,9 @@ pipeline:
           service:
             useFromStage:
               stage: stage1
-            environment:
-              environmentRef: my_env_prod
-              infrastructureDefinitions: <+input>
+          environment:
+            environmentRef: my_env_prod
+            infrastructureDefinitions: <+input>
           execution:
             steps:
               - step:
@@ -285,6 +285,54 @@ pipeline:
           environment:
             useFromStage:
               stage: stage1
+          execution:
+            steps:
+              - step:
+                  name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  spec:
+                    timeout: 120000
+                    skipDryRun: false
+    - stage:
+        identifier: stage9
+        name: stage9
+        type: Deployment
+        spec:
+          services:
+            useFromStage :
+              stage: stage8
+            metadata:
+              parallel: true
+          environment:
+            useFromStage:
+              stage: stage1
+            infrastructureDefinitions:
+              - identifier: infraId
+          execution:
+            steps:
+              - step:
+                  name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  spec:
+                    timeout: 120000
+                    skipDryRun: false
+    - stage:
+        identifier: stage10
+        name: stage10
+        type: Deployment
+        spec:
+          services:
+            useFromStage :
+              stage: stage9
+            metadata:
+              parallel: true
+          environment:
+            useFromStage:
+              stage: stage1
+            infrastructureDefinitions:
+              - identifier: infraId
           execution:
             steps:
               - step:

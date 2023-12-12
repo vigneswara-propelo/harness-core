@@ -324,6 +324,42 @@ public class DeploymentStageFilterJsonCreatorV2Test extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = LOVISH_BANSAL)
+  @Category(UnitTests.class)
+  @Parameters(method = "getDeploymentStageConfigWithFiltersAndEnvUseFromStage")
+  public void getFiltersWithEnvFsilters(DeploymentStageNode node) throws IOException {
+    Environment envEntity2 = Environment.builder()
+                                 .accountId("accountId")
+                                 .identifier("my-env-prod")
+                                 .orgIdentifier("orgId")
+                                 .projectIdentifier("projectId")
+                                 .name("my-env-prod")
+                                 .build();
+    doReturn(Lists.newArrayList(infra))
+        .when(infraService)
+        .getAllInfrastructuresWithYamlFromIdentifierList(
+            "accountId", "orgId", "projectId", "my-env-prod", null, Lists.newArrayList("infraId"));
+    doReturn(Optional.of(envEntity2))
+        .when(environmentService)
+        .getMetadata("accountId", "orgId", "projectId", "my_env_prod", false);
+    String pipelineYaml = readFileIntoUTF8String("cdng/creator/servicePlanCreator/pipeline.yaml");
+    YamlField pipeline = new YamlField("pipeline", YamlNode.fromYamlPath(pipelineYaml, ""));
+    YamlField specField = new YamlField("spec", getStageNodeAtIndex(pipeline, 12));
+    FilterCreationContext ctx = FilterCreationContext.builder()
+                                    .setupMetadata(SetupMetadata.newBuilder()
+                                                       .setAccountId("accountId")
+                                                       .setOrgId("orgId")
+                                                       .setProjectId("projectId")
+                                                       .build())
+                                    .currentField(specField)
+                                    .build();
+    PipelineFilter filter = filterCreator.getFilter(ctx, node);
+    assertThat(filter.toJson())
+        .isEqualTo(
+            "{\"deploymentTypes\":[\"Kubernetes\"],\"environmentNames\":[],\"serviceNames\":[\"service-id\"],\"infrastructureTypes\":[\"KubernetesDirect\"]}");
+  }
+
+  @Test
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   @Parameters(method = "dataForUseFromStage")
@@ -792,6 +828,13 @@ public class DeploymentStageFilterJsonCreatorV2Test extends CategoryTest {
   private Object[][] getDeploymentStageConfigWithFilters() throws IOException {
     final DeploymentStageNode node1 =
         getDeploymentStageNodeFromYaml("multisvcinfra/gitops/deployStageWithEnvironmentAndFilter.yaml");
+
+    return new Object[][] {{node1}};
+  }
+
+  private Object[][] getDeploymentStageConfigWithFiltersAndEnvUseFromStage() throws IOException {
+    final DeploymentStageNode node1 =
+        getDeploymentStageNodeFromYaml("multisvcinfra/gitops/deployStageWithEnvironmentUseFromStageAndFilter.yaml");
 
     return new Object[][] {{node1}};
   }

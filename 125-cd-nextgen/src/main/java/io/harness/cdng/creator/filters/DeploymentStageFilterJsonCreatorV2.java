@@ -79,6 +79,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -333,6 +334,31 @@ public class DeploymentStageFilterJsonCreatorV2 extends GenericStageFilterJsonCr
             "stage identifier should be present in stage [%s] when propagating environment from a different stage. Please add it and try again",
             YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
       }
+      try {
+        EnvironmentYamlV2 useFromStageEnvironmentYaml = getUseFromStageEnvironmentYaml(filterCreationContext, env);
+        if (useFromStageEnvironmentYaml == null) {
+          return;
+        }
+
+        Optional<Environment> environmentEntityOptional =
+            environmentService.getMetadata(filterCreationContext.getSetupMetadata().getAccountId(),
+                filterCreationContext.getSetupMetadata().getOrgId(),
+                filterCreationContext.getSetupMetadata().getProjectId(),
+                useFromStageEnvironmentYaml.getEnvironmentRef().getValue(), false);
+        environmentEntityOptional.ifPresent(environment -> {
+          final List<InfraStructureDefinitionYaml> infraList =
+              stageFilterCreatorHelper.getInfraStructureDefinitionYamlsList(env);
+          String envEntityIdentifier = environment.getIdentifier();
+          stageFilterCreatorHelper.addFiltersForInfraYamlList(filterCreationContext, filterBuilder, envEntityIdentifier,
+              infraList, useFromStageEnvironmentYaml.getGitBranch());
+        });
+      } catch (Exception ex) {
+        log.warn(
+            format(
+                "Exception occurred while saving filters for environment propagated from stage [%s] but having a different infrastructure selected.",
+                env.getUseFromStage().getStage()),
+            ex);
+      }
       return;
     }
     final ParameterField<String> environmentRef = env.getEnvironmentRef();
@@ -383,6 +409,30 @@ public class DeploymentStageFilterJsonCreatorV2 extends GenericStageFilterJsonCr
             YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
       }
     }
+  }
+
+  @Nullable
+  private static EnvironmentYamlV2 getUseFromStageEnvironmentYaml(
+      FilterCreationContext filterCreationContext, EnvironmentYamlV2 env) throws IOException {
+    YamlField propagatedFromStageConfig =
+        PlanCreatorUtils.getStageConfig(filterCreationContext.getCurrentField(), env.getUseFromStage().getStage());
+    if (propagatedFromStageConfig == null) {
+      return null;
+    }
+    DeploymentStageNode stageElementConfig =
+        YamlUtils.read(propagatedFromStageConfig.getNode().toString(), DeploymentStageNode.class);
+    if (stageElementConfig == null) {
+      return null;
+    }
+    DeploymentStageConfig deploymentStage = stageElementConfig.getDeploymentStageConfig();
+    if (deploymentStage == null) {
+      return null;
+    }
+    EnvironmentYamlV2 useFromStageEnvironmentYaml = deploymentStage.getEnvironment();
+    if (useFromStageEnvironmentYaml == null || useFromStageEnvironmentYaml.getEnvironmentRef() == null) {
+      return null;
+    }
+    return useFromStageEnvironmentYaml;
   }
 
   private void addFiltersFromEnvironmentGroup(

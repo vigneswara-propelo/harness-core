@@ -58,11 +58,13 @@ public class StageFilterCreatorHelper {
     environmentEntityOptional.ifPresent(environment -> {
       filterBuilder.environmentName(environmentRef.getValue());
       final List<InfraStructureDefinitionYaml> infraList = getInfraStructureDefinitionYamlsList(env);
-      addFiltersForInfraYamlList(filterCreationContext, filterBuilder, environment, infraList, environmentBranch);
+      String envEntityIdentifier = environment.getIdentifier();
+      addFiltersForInfraYamlList(
+          filterCreationContext, filterBuilder, envEntityIdentifier, infraList, environmentBranch);
     });
   }
 
-  private List<InfraStructureDefinitionYaml> getInfraStructureDefinitionYamlsList(EnvironmentYamlV2 env) {
+  public List<InfraStructureDefinitionYaml> getInfraStructureDefinitionYamlsList(EnvironmentYamlV2 env) {
     List<InfraStructureDefinitionYaml> infraList = new ArrayList<>();
     if (ParameterField.isNotNull(env.getInfrastructureDefinitions())) {
       if (!env.getInfrastructureDefinitions().isExpression()) {
@@ -76,14 +78,14 @@ public class StageFilterCreatorHelper {
     return infraList;
   }
 
-  private void addFiltersForInfraYamlList(FilterCreationContext filterCreationContext, CdFilterBuilder filterBuilder,
-      Environment entity, List<InfraStructureDefinitionYaml> infraList, String environmentBranch) {
+  public void addFiltersForInfraYamlList(FilterCreationContext filterCreationContext, CdFilterBuilder filterBuilder,
+      String envEntityIdentifier, List<InfraStructureDefinitionYaml> infraList, String environmentBranch) {
     if (isEmpty(infraList)) {
       return;
     }
     List<InfrastructureEntity> infrastructureEntities = infraService.getAllInfrastructuresWithYamlFromIdentifierList(
         filterCreationContext.getSetupMetadata().getAccountId(), filterCreationContext.getSetupMetadata().getOrgId(),
-        filterCreationContext.getSetupMetadata().getProjectId(), entity.getIdentifier(), environmentBranch,
+        filterCreationContext.getSetupMetadata().getProjectId(), envEntityIdentifier, environmentBranch,
         infraList.stream()
             .map(InfraStructureDefinitionYaml::getIdentifier)
             .filter(field -> !field.isExpression())
