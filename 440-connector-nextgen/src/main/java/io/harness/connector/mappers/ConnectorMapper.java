@@ -220,9 +220,9 @@ public class ConnectorMapper {
           && (accountClient != null
               && getResponse(accountClient.isFeatureFlagEnabled(
                   FeatureName.CI_SECURE_TUNNEL.name(), connector.getAccountIdentifier())))) {
+        withProxy.setProxy(true);
         TunnelResponseDTO tunnelResponseDTO = tunnelService.getTunnel(connector.getAccountIdentifier());
         if (isNotBlank(tunnelResponseDTO.getServerUrl()) && isNotBlank(tunnelResponseDTO.getPort())) {
-          withProxy.setProxy(true);
           withProxy.setProxyUrl(tunnelResponseDTO.getServerUrl() + ":" + tunnelResponseDTO.getPort());
         }
       }
