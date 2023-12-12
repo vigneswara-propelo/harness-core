@@ -31,6 +31,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -56,7 +57,7 @@ public class SbomDriftApiImpl implements SbomDriftApi {
     ComponentDriftStatus componentDriftStatus = SbomDriftMapper.mapStatusToComponentDriftStatus(status);
     ComponentDriftResults componentDriftResults =
         sbomDriftService.getComponentDrifts(harnessAccount, org, project, drift, componentDriftStatus, pageable);
-    Response.ResponseBuilder responseBuilder = Response.ok();
+    ResponseBuilder responseBuilder = Response.ok();
     if (componentDriftResults != null) {
       List<ComponentDrift> componentDrifts =
           SbomDriftMapper.toComponentDriftResponseList(componentDriftResults.getComponentDrifts());
@@ -78,7 +79,7 @@ public class SbomDriftApiImpl implements SbomDriftApi {
         sbomDriftService.getLicenseDrifts(harnessAccount, org, project, drift, licenseDriftStatus, pageable);
     List<LicenseDrift> licenseDrifts =
         SbomDriftMapper.toLicenseDriftResponseList(licenseDriftResults.getLicenseDrifts());
-    Response.ResponseBuilder responseBuilder = Response.ok().entity(licenseDrifts);
+    ResponseBuilder responseBuilder = Response.ok().entity(licenseDrifts);
     ApiUtils.addLinksHeader(responseBuilder, licenseDriftResults.getTotalLicenseDrifts(), page, limit);
     return responseBuilder.build();
   }

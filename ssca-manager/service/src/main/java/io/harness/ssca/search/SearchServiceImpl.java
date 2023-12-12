@@ -39,9 +39,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 
-@Slf4j
-@AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.SSCA)
+@AllArgsConstructor(onConstructor = @__({ @Inject }))
+@Slf4j
 public class SearchServiceImpl implements SearchService {
   @Inject private ElasticsearchClient elasticsearchClient;
   @Inject ElasticSearchIndexManager elasticSearchIndexManager;

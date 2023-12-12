@@ -11,7 +11,7 @@ import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
 import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateResponseBody;
 import io.harness.ssca.services.remediation_tracker.RemediationTrackerService;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 
