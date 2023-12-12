@@ -11,8 +11,10 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.GeneralException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
+import io.harness.ssca.search.beans.ArtifactFilter;
 import io.harness.ssca.search.entities.Component;
 import io.harness.ssca.search.entities.SSCAArtifact;
 import io.harness.ssca.search.mapper.ComponentMapper;
@@ -27,12 +29,15 @@ import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 
 @Slf4j
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
@@ -147,5 +152,20 @@ public class SearchServiceImpl implements SearchService {
   @Override
   public boolean deleteMigrationIndex() {
     return elasticSearchIndexManager.deleteDefaultIndex();
+  }
+
+  @Override
+  public List<Hit<SSCAArtifact>> listArtifacts(
+      String accountId, String orgIdentifier, String projectIdentifier, ArtifactFilter filter, Pageable pageable) {
+    String index = elasticSearchIndexManager.getIndex(accountId);
+
+    SearchRequest searchRequest = SearchRequest.of(
+        s -> s.index(index).query(ArtifactQueryBuilder.getQuery(accountId, orgIdentifier, projectIdentifier, filter)));
+
+    try {
+      return elasticsearchClient.search(searchRequest, SSCAArtifact.class).hits().hits();
+    } catch (IOException e) {
+      throw new InvalidRequestException("Could not perform this operation", e);
+    }
   }
 }

@@ -15,10 +15,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.FieldNameConstants;
 
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
+@FieldNameConstants(innerTypeName = "ComponentKeys")
 @OwnedBy(HarnessTeam.SSCA)
 public class Component {
   String uuid;
