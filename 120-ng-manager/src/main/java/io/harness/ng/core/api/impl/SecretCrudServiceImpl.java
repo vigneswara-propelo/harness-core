@@ -397,7 +397,7 @@ public class SecretCrudServiceImpl implements SecretCrudService {
   public Page<SecretResponseWrapper> list(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       List<String> identifiers, List<SecretType> secretTypes, boolean includeSecretsFromEverySubScope,
       String searchTerm, ConnectorCategory sourceCategory, boolean includeAllSecretsAccessibleAtScope,
-      PageRequest pageRequest) {
+      PageRequest pageRequest, Set<String> secretManagerIdentifiers) {
     Criteria criteria = Criteria.where(SecretKeys.accountIdentifier).is(accountIdentifier);
     addCriteriaForRequestedScopes(criteria, orgIdentifier, projectIdentifier, includeAllSecretsAccessibleAtScope,
         includeSecretsFromEverySubScope);
@@ -420,6 +420,10 @@ public class SecretCrudServiceImpl implements SecretCrudService {
 
     if (Objects.nonNull(identifiers) && !identifiers.isEmpty()) {
       criteria.and(SecretKeys.identifier).in(identifiers);
+    }
+
+    if (isNotEmpty(secretManagerIdentifiers)) {
+      criteria.and(SecretKeys.secretManagerIdentifier).in(secretManagerIdentifiers);
     }
 
     if (accessControlClient.hasAccess(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),

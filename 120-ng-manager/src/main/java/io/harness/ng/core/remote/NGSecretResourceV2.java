@@ -304,13 +304,15 @@ public class NGSecretResourceV2 {
               + " accessible at the scope. For eg if set as true, at the Project scope we will get"
               + " org and account Secrets also in the response") @QueryParam("includeAllSecretsAccessibleAtScope")
       @DefaultValue("false") boolean includeAllSecretsAccessibleAtScope,
-      @BeanParam PageRequest pageRequest) {
+      @BeanParam PageRequest pageRequest,
+      @Parameter(description = "Specify the secret managers whose secrets should be listed") @QueryParam(
+          "secretManagerIdentifiers") Set<String> secretManagerIdentifiers) {
     if (secretType != null) {
       secretTypes.add(secretType);
     }
     return ResponseDTO.newResponse(getNGPageResponse(ngSecretService.list(accountIdentifier, orgIdentifier,
         projectIdentifier, identifiers, secretTypes, includeSecretsFromEverySubScope, searchTerm, sourceCategory,
-        includeAllSecretsAccessibleAtScope, pageRequest)));
+        includeAllSecretsAccessibleAtScope, pageRequest, secretManagerIdentifiers)));
   }
 
   @POST
@@ -329,12 +331,13 @@ public class NGSecretResourceV2 {
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-      @Body SecretResourceFilterDTO secretResourceFilterDTO, @BeanParam PageRequest pageRequest) {
+      @Body SecretResourceFilterDTO secretResourceFilterDTO, @BeanParam PageRequest pageRequest,
+      @QueryParam("secretManagerIdentifiers") Set<String> secretManagerIdentifiers) {
     return ResponseDTO.newResponse(getNGPageResponse(ngSecretService.list(accountIdentifier, orgIdentifier,
         projectIdentifier, secretResourceFilterDTO.getIdentifiers(), secretResourceFilterDTO.getSecretTypes(),
         secretResourceFilterDTO.isIncludeSecretsFromEverySubScope(), secretResourceFilterDTO.getSearchTerm(),
         secretResourceFilterDTO.getSourceCategory(), secretResourceFilterDTO.isIncludeAllSecretsAccessibleAtScope(),
-        pageRequest)));
+        pageRequest, secretManagerIdentifiers)));
   }
 
   @GET

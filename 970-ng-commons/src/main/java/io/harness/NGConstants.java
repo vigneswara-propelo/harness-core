@@ -20,6 +20,7 @@ public class NGConstants {
   public static final String FILE_KEY = "file";
   public static final String FILE_METADATA_KEY = "fileMetadata";
   public static final String HARNESS_SECRET_MANAGER_IDENTIFIER = "harnessSecretManager";
+  public static final String HARNESS_SECRET_MANAGER_NAME = "Harness Built-in Secret Manager";
   public static final String DEFAULT_ORG_IDENTIFIER = "default";
   public static final String DEFAULT_PROJECT_IDENTIFIER = "default_project";
   public static final String DEFAULT_PROJECT_NAME = "Default Project";

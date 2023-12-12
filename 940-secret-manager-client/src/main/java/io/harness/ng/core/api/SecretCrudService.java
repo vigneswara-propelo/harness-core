@@ -21,6 +21,7 @@ import io.harness.secretmanagerclient.SecretType;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 
 @OwnedBy(PL)
@@ -38,7 +39,7 @@ public interface SecretCrudService {
   Page<SecretResponseWrapper> list(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       List<String> identifiers, List<SecretType> secretTypes, boolean includeSecretsFromEverySubScope,
       String searchTerm, ConnectorCategory sourceCategory, boolean includeAllSecretsAccessibleAtScope,
-      PageRequest pageRequest);
+      PageRequest pageRequest, Set<String> secretManagerIdentifiers);
 
   boolean delete(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier, boolean forceDelete);

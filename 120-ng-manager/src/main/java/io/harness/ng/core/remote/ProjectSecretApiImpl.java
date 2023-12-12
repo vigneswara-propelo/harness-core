@@ -205,7 +205,7 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
       Boolean recursive, String searchTerm, Integer page, Integer limit, String sort, String order) {
     List<SecretType> secretTypes = secretApiUtils.toSecretTypes(type);
     Page<SecretResponseWrapper> secretPage = ngSecretService.list(account, org, project, secret, secretTypes, recursive,
-        searchTerm, null, false, ApiUtils.getPageRequest(page, limit, sort, order));
+        searchTerm, null, false, ApiUtils.getPageRequest(page, limit, sort, order), null);
     List<SecretResponseWrapper> content = getNGPageResponse(secretPage).getContent();
 
     List<SecretResponse> secretResponse =

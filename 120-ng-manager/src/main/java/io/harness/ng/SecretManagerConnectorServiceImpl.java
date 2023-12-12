@@ -8,13 +8,17 @@
 package io.harness.ng;
 
 import static io.harness.NGConstants.HARNESS_SECRET_MANAGER_IDENTIFIER;
+import static io.harness.NGConstants.HARNESS_SECRET_MANAGER_NAME;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.connector.ConnectorModule.DEFAULT_CONNECTOR_SERVICE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.git.model.ChangeType.NONE;
 
+import static java.util.Objects.isNull;
+
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.DecryptableEntity;
 import io.harness.beans.EntityReference;
 import io.harness.beans.IdentifierRef;
 import io.harness.connector.CombineCcmK8sConnectorResponseDTO;
@@ -33,6 +37,7 @@ import io.harness.connector.entities.embedded.vaultconnector.VaultConnector;
 import io.harness.connector.entities.embedded.vaultconnector.VaultConnector.VaultConnectorKeys;
 import io.harness.connector.helper.CustomSecretManagerHelper;
 import io.harness.connector.impl.ConnectorErrorMessagesHelper;
+import io.harness.connector.impl.SecretRefInputValidationHelper;
 import io.harness.connector.services.ConnectorService;
 import io.harness.connector.services.NGVaultService;
 import io.harness.connector.stats.ConnectorStatistics;
@@ -46,6 +51,8 @@ import io.harness.delegate.beans.connector.gcpkmsconnector.GcpKmsConnectorDTO;
 import io.harness.delegate.beans.connector.gcpsecretmanager.GcpSecretManagerConnectorDTO;
 import io.harness.delegate.beans.connector.localconnector.LocalConnectorDTO;
 import io.harness.delegate.beans.connector.vaultconnector.VaultConnectorDTO;
+import io.harness.encryption.Scope;
+import io.harness.encryption.SecretRefData;
 import io.harness.enforcement.client.services.EnforcementClientService;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.eraro.ErrorCode;
@@ -63,6 +70,7 @@ import io.harness.ng.core.dto.secrets.SecretTextSpecDTO;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.repositories.ConnectorRepository;
+import io.harness.secretmanagerclient.SecretType;
 import io.harness.template.remote.TemplateResourceClient;
 import io.harness.utils.FullyQualifiedIdentifierHelper;
 import io.harness.utils.IdentifierRefHelper;
@@ -75,6 +83,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +112,7 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
   private ConnectorErrorMessagesHelper connectorErrorMessagesHelper;
   private final CustomSecretManagerHelper customSecretManagerHelper;
   private final SecretCrudService ngSecretService;
+  private final SecretRefInputValidationHelper secretRefInputValidationHelper;
   private static final String ENVIRONMENT_VARIABLES = "environmentVariables";
   private static final String ACCOUNT = "account";
   private static final String EMPTY_STRING = "";
@@ -112,7 +122,7 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
       ConnectorRepository connectorRepository, NGVaultService ngVaultService,
       EnforcementClientService enforcementClientService, TemplateResourceClient templateResourceClient,
       ConnectorErrorMessagesHelper connectorErrorMessagesHelper, CustomSecretManagerHelper customSecretManagerHelper,
-      SecretCrudService ngSecretService) {
+      SecretCrudService ngSecretService, SecretRefInputValidationHelper secretRefInputValidationHelper) {
     this.defaultConnectorService = defaultConnectorService;
     this.connectorRepository = connectorRepository;
     this.ngVaultService = ngVaultService;
@@ -121,6 +131,7 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
     this.connectorErrorMessagesHelper = connectorErrorMessagesHelper;
     this.customSecretManagerHelper = customSecretManagerHelper;
     this.ngSecretService = ngSecretService;
+    this.secretRefInputValidationHelper = secretRefInputValidationHelper;
   }
 
   @Override
@@ -192,6 +203,8 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
       validateCustomSecretManagerInputs(connectorConfigDTO, accountIdentifier, connectorInfo.getOrgIdentifier(),
           connectorInfo.getProjectIdentifier(), connectorInfo.getIdentifier());
       validateCustomSmForCyclicSecretUsage(accountIdentifier, connector);
+      validateSecretReferencesAreFromHarnessSM(accountIdentifier, connector.getConnectorInfo());
+
     } catch (IOException ex) {
       log.error(
           "error reading templateInputs from template YAML which is used in this Custom Secret Manager {} in account {}",
@@ -204,6 +217,138 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
     }
 
     return defaultConnectorService.create(connector, accountIdentifier, NONE);
+  }
+
+  private boolean secretReferencesUpdated(
+      ConnectorInfoDTO existingConnectorInfo, ConnectorInfoDTO updatedConnectorInfo) {
+    List<DecryptableEntity> updatedDecryptableEntities =
+        updatedConnectorInfo.getConnectorConfig().getDecryptableEntities();
+    Map<String, SecretRefData> updatedSecrets =
+        secretRefInputValidationHelper.getDecryptableFieldsData(updatedDecryptableEntities);
+
+    List<DecryptableEntity> existingDecryptableEntities =
+        existingConnectorInfo.getConnectorConfig().getDecryptableEntities();
+    Map<String, SecretRefData> existingSecrets =
+        secretRefInputValidationHelper.getDecryptableFieldsData(existingDecryptableEntities);
+
+    for (Map.Entry<String, SecretRefData> updatedEntry : updatedSecrets.entrySet()) {
+      String updatedSecretIdentifier = updatedEntry.getKey();
+      SecretRefData updatedSecretRefData = updatedEntry.getValue();
+      SecretRefData existingSecretRefData = existingSecrets.get(updatedSecretIdentifier);
+
+      if (isNull(updatedSecretRefData)) {
+        continue;
+      }
+
+      if (!updatedSecretRefData.getIdentifier().equals(existingSecretRefData.getIdentifier())
+          || !updatedSecretRefData.getScope().equals(existingSecretRefData.getScope())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void throwIfNotHarnessSM(String secretManagerIdentifier, String secretIdentifier) {
+    Set<String> harnessSecretManagers = Set.of(
+        Scope.ACCOUNT.getYamlRepresentation() + "." + HARNESS_SECRET_MANAGER_IDENTIFIER,
+        Scope.ORG.getYamlRepresentation() + "." + HARNESS_SECRET_MANAGER_IDENTIFIER, HARNESS_SECRET_MANAGER_IDENTIFIER);
+    if (!harnessSecretManagers.contains(secretManagerIdentifier)) {
+      throw new InvalidRequestException(String.format(
+          "Secret [%s] is stored in secret manager [%s]. Secret manager credentials should be stored in [%s]",
+          secretIdentifier, secretManagerIdentifier, HARNESS_SECRET_MANAGER_NAME));
+    }
+  }
+
+  private void validateSecretReferencesAreFromHarnessSM(String accountIdentifier, ConnectorInfoDTO connectorInfoDTO) {
+    Map<String, SecretRefData> secrets =
+        getSecretsForDecryptableEntities(connectorInfoDTO.getConnectorConfig().getDecryptableEntities());
+    if (isEmpty(secrets)) {
+      return;
+    }
+
+    secrets.forEach((key, secretRefData) -> {
+      if (isNull(secretRefData) || isEmpty(secretRefData.getIdentifier())) {
+        return;
+      }
+
+      Optional<SecretResponseWrapper> secretResponseWrapperOptional = getSecretOptionalFromSecretRef(accountIdentifier,
+          connectorInfoDTO.getOrgIdentifier(), connectorInfoDTO.getProjectIdentifier(), secretRefData);
+
+      if (secretResponseWrapperOptional.isPresent()) {
+        String secretManagerIdentifier = null;
+        SecretDTOV2 secretDTO = secretResponseWrapperOptional.get().getSecret();
+        if (SecretType.SecretText.equals(secretDTO.getType())) {
+          secretManagerIdentifier = ((SecretTextSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        } else if (SecretType.SecretFile.equals(secretDTO.getType())) {
+          secretManagerIdentifier = ((SecretFileSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        } else if (SecretType.SSHKey.equals(secretDTO.getType())) {
+          Optional<List<DecryptableEntity>> sshKeyDecryptableEntitiesOptional =
+              secretDTO.getSpec().getDecryptableEntities();
+          if (sshKeyDecryptableEntitiesOptional.isPresent()) {
+            validateSSHKeySecretRefsAreFromHarnessSM(sshKeyDecryptableEntitiesOptional.get(),
+                IdentifierRef.builder()
+                    .accountIdentifier(accountIdentifier)
+                    .orgIdentifier(connectorInfoDTO.getOrgIdentifier())
+                    .projectIdentifier(connectorInfoDTO.getProjectIdentifier())
+                    .build());
+            return;
+          }
+        } // TODO- add handling for WinRM creds
+
+        throwIfNotHarnessSM(secretManagerIdentifier, secretRefData.getIdentifier());
+      }
+    });
+  }
+
+  private Optional<SecretResponseWrapper> getSecretOptionalFromSecretRef(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, SecretRefData secretRefData) {
+    if (secretRefData == null) {
+      return Optional.empty();
+    }
+    Scope scope = secretRefData.getScope();
+    IdentifierRef secretIdentifierRef = IdentifierRefHelper.getIdentifierRef(
+        scope, secretRefData.getIdentifier(), accountIdentifier, orgIdentifier, projectIdentifier, null);
+
+    return ngSecretService.get(accountIdentifier, secretIdentifierRef.getOrgIdentifier(),
+        secretIdentifierRef.getProjectIdentifier(), secretRefData.getIdentifier());
+  }
+
+  private Map<String, SecretRefData> getSecretsForDecryptableEntities(List<DecryptableEntity> decryptableEntities) {
+    if (isEmpty(decryptableEntities)) {
+      return new HashMap<>();
+    }
+
+    return secretRefInputValidationHelper.getDecryptableFieldsData(decryptableEntities);
+  }
+
+  private void validateSSHKeySecretRefsAreFromHarnessSM(
+      List<DecryptableEntity> decryptableEntities, IdentifierRef identifierRef) {
+    Map<String, SecretRefData> secrets = getSecretsForDecryptableEntities(decryptableEntities);
+    if (isEmpty(secrets)) {
+      return;
+    }
+
+    secrets.forEach((key, secretRefData) -> {
+      if (isNull(secretRefData) || isEmpty(secretRefData.getIdentifier())) {
+        return;
+      }
+
+      Optional<SecretResponseWrapper> secretResponseWrapperOptional =
+          getSecretOptionalFromSecretRef(identifierRef.getAccountIdentifier(), identifierRef.getOrgIdentifier(),
+              identifierRef.getProjectIdentifier(), secretRefData);
+
+      String secretManagerIdentifier = null;
+      if (secretResponseWrapperOptional.isPresent()) {
+        SecretDTOV2 secretDTO = secretResponseWrapperOptional.get().getSecret();
+        if (SecretType.SecretText.equals(secretDTO.getType())) {
+          secretManagerIdentifier = ((SecretTextSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        } else if (SecretType.SecretFile.equals(secretDTO.getType())) {
+          secretManagerIdentifier = ((SecretFileSpecDTO) secretDTO.getSpec()).getSecretManagerIdentifier();
+        }
+
+        throwIfNotHarnessSM(secretManagerIdentifier, secretRefData.getIdentifier());
+      }
+    });
   }
 
   private void validateCustomSecretManagerInputs(ConnectorConfigDTO connectorConfigDTO, String accountIdentifier,
@@ -346,6 +491,9 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
       ngVaultService.processTokenLookup(connector, accountIdentifier);
       alreadyDefaultSM = isDefaultSecretManager(existingConnectorDTO.get().getConnector());
       validateCustomSmForCyclicSecretUsage(accountIdentifier, connector);
+      if (secretReferencesUpdated(existingConnectorDTO.get().getConnector(), connector.getConnectorInfo())) {
+        validateSecretReferencesAreFromHarnessSM(accountIdentifier, connector.getConnectorInfo());
+      }
     } else {
       throw new InvalidRequestException(
           String.format("Secret Manager with identifier %s not found.", connectorInfo.getIdentifier()));
@@ -370,8 +518,6 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
 
   private void validateSecrets(String accountIdentifier, ConnectorDTO connectorDTO, Set<String> secretIdentifiers) {
     ConnectorInfoDTO connectorInfoDTO = connectorDTO.getConnectorInfo();
-    String scopedConnectorIdentifier = IdentifierRefHelper.getRefFromIdentifierOrRef(accountIdentifier,
-        connectorInfoDTO.getOrgIdentifier(), connectorInfoDTO.getProjectIdentifier(), connectorInfoDTO.getIdentifier());
     if (isEmpty(secretIdentifiers)) {
       return;
     }
@@ -388,10 +534,10 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
         return;
       }
       String secretManagerIdentifierFromSecret = getSecretManagerIdentifierFromSecret(secret.get().getSecret());
-      if (scopedConnectorIdentifier.equals(secretManagerIdentifierFromSecret)) {
-        throw new InvalidRequestException(
-            String.format("Can not use secret [%s] in template. Secret is stored in this secret manager.",
-                secretRef.getIdentifier()));
+      if (!HARNESS_SECRET_MANAGER_IDENTIFIER.equals(secretManagerIdentifierFromSecret)) {
+        throw new InvalidRequestException(String.format(
+            "Secret [%s] specified in template is stored in secret manager [%s]. Secrets used in the template should be stored in [%s]",
+            secretRef.getIdentifier(), secretManagerIdentifierFromSecret, HARNESS_SECRET_MANAGER_NAME));
       }
     });
   }

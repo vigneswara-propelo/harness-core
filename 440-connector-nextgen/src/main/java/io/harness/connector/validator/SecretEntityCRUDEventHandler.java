@@ -118,7 +118,8 @@ public class SecretEntityCRUDEventHandler {
           PageRequest.builder()
               .pageSize(10)
               .pageIndex(pagedSecretList == null ? 0 : pagedSecretList.getNumber() + 1)
-              .build());
+              .build(),
+          null);
       secretList.addAll(pagedSecretList.stream().collect(Collectors.toList()));
     } while (pagedSecretList.hasNext());
     return secretList;

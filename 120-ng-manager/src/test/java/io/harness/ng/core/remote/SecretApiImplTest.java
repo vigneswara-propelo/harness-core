@@ -295,7 +295,8 @@ public class SecretApiImplTest extends CategoryTest {
     List<SecretType> secretTypes = secretApiUtils.toSecretTypes(Collections.singletonList("SSHKeyPath"));
     List<String> types = Collections.singletonList("SSHKeyPath");
 
-    when(ngSecretService.list(anyString(), any(), any(), any(), any(), anyBoolean(), any(), any(), anyBoolean(), any()))
+    when(ngSecretService.list(
+             anyString(), any(), any(), any(), any(), anyBoolean(), any(), any(), anyBoolean(), any(), any()))
         .thenReturn(pages);
 
     Response response = accountSecretApi.getAccountScopedSecrets(
@@ -326,7 +327,7 @@ public class SecretApiImplTest extends CategoryTest {
     List<String> types = Collections.singletonList("SSHKeyPath");
 
     when(ngSecretService.list(
-             anyString(), anyString(), any(), any(), any(), anyBoolean(), any(), any(), anyBoolean(), any()))
+             anyString(), anyString(), any(), any(), any(), anyBoolean(), any(), any(), anyBoolean(), any(), any()))
         .thenReturn(pages);
 
     Response response = orgSecretApi.getOrgScopedSecrets(
@@ -357,7 +358,7 @@ public class SecretApiImplTest extends CategoryTest {
     List<String> types = Collections.singletonList("SSHKeyPath");
 
     when(ngSecretService.list(
-             anyString(), anyString(), any(), any(), any(), anyBoolean(), any(), any(), anyBoolean(), any()))
+             anyString(), anyString(), any(), any(), any(), anyBoolean(), any(), any(), anyBoolean(), any(), any()))
         .thenReturn(pages);
 
     Response response = projectSecretApi.getProjectScopedSecrets(org, project, identifiers, types, false, null, page,
