@@ -44,7 +44,7 @@ public class CloudFoundryClientProvider {
         log.debug("Generating API TAS Token provider using refresh token");
         return RefreshTokenGrantTokenProvider.builder().token(refreshToken).build();
       }
-      log.debug("Generating API TAS Token provider using username and pwd");
+      log.debug("Generating API TAS Token provider using username and password");
       return PasswordGrantTokenProvider.builder().username(username).password(password).build();
     } catch (Exception t) {
       throw new PivotalClientApiException(ExceptionUtils.getMessage(t));
