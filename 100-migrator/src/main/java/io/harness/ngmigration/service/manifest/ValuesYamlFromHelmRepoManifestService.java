@@ -10,9 +10,12 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.manifest.ManifestConfigType;
+import io.harness.cdng.manifest.yaml.InheritFromManifestStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestConfig;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
-import io.harness.cdng.manifest.yaml.kinds.HelmChartManifest;
+import io.harness.cdng.manifest.yaml.kinds.ValuesManifest;
+import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
+import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.ngmigration.beans.ManifestProvidedEntitySpec;
 import io.harness.ngmigration.beans.NGYamlFile;
 import io.harness.ngmigration.utils.CaseFormat;
@@ -48,20 +51,23 @@ public class ValuesYamlFromHelmRepoManifestService implements NgManifestService 
     List<String> valuesFilePathsList =
         Arrays.stream(splitHelmValuesFilePaths).map(String::trim).collect(Collectors.toList());
 
-    HelmChartManifest helmChartManifest =
-        HelmChartManifest.builder()
-            .identifier(MigratorUtility.generateIdentifier(applicationManifest.getUuid(), identifierCaseFormat)
-                + HELM_REPO_STORE)
-            .valuesPaths(ParameterField.createValueField(valuesFilePathsList))
-            .build();
+    ValuesManifest valuesManifest = ValuesManifest.builder()
+                                        .store(ParameterField.createValueField(
+                                            StoreConfigWrapper.builder()
+                                                .spec(InheritFromManifestStoreConfig.builder()
+                                                          .paths(ParameterField.createValueField(valuesFilePathsList))
+                                                          .build())
+                                                .type(StoreConfigType.InheritFromManifest)
+                                                .build()))
+                                        .build();
     return Collections.singletonList(
         ManifestConfigWrapper.builder()
             .manifest(
                 ManifestConfig.builder()
                     .identifier(MigratorUtility.generateIdentifier(applicationManifest.getUuid(), identifierCaseFormat)
                         + HELM_REPO_STORE)
-                    .type(ManifestConfigType.HELM_CHART)
-                    .spec(helmChartManifest)
+                    .type(ManifestConfigType.VALUES)
+                    .spec(valuesManifest)
                     .build())
             .build());
   }
