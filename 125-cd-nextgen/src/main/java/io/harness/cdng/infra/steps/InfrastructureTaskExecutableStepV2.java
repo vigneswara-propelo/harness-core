@@ -165,6 +165,8 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
   @Inject private InfrastructureProvisionerHelper infrastructureProvisionerHelper;
   @Inject private SecretRuntimeUsageService secretRuntimeUsageService;
   @Inject private EnvironmentService environmentService;
+  private final String RESOURCE_CONSTRAINTS_DOCS_LINK =
+      "https://developer.harness.io/docs/continuous-delivery/manage-deployments/controlling-deployments-with-barriers-resource-constraints-and-queue-steps/";
 
   @Override
   public Class<InfrastructureTaskExecutableStepV2Params> getStepParametersClass() {
@@ -347,6 +349,16 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
       infrastructureProvisionerHelper.resolveProvisionerExpressions(ambiance, spec);
     }
     validateInfrastructure(spec, ambiance, logCallback);
+    if (infrastructure.getInfrastructureDefinitionConfig().isAllowSimultaneousDeployments()) {
+      saveExecutionLog(logCallback,
+          format("Simultaneous Deployments enabled for Infrastructure : %s",
+              infrastructure.getInfrastructureDefinitionConfig().getName()));
+    } else {
+      saveExecutionLog(logCallback,
+          format(
+              "Simultaneous Deployments disabled for Infrastructure : %s. Deployments will get queued as a result. %n%s",
+              infrastructure.getInfrastructureDefinitionConfig().getName(), RESOURCE_CONSTRAINTS_DOCS_LINK));
+    }
     publishRuntimeSecretUsage(ambiance, spec);
 
     final OutcomeSet outcomeSet = fetchRequiredOutcomes(ambiance);
