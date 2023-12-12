@@ -131,7 +131,7 @@ public class ServiceCommandTemplateService implements NgTemplateService {
         return handleScp(commandUnit, context.getInputDTO().getIdentifierCaseFormat());
       case EXEC:
         ExecCommandUnit execCommandUnit = (ExecCommandUnit) commandUnit;
-        execCommandUnit.setCommandString(processScript(execCommandUnit.getCommandString()));
+        execCommandUnit.setCommandString(processCommandStrings(execCommandUnit.getCommandString()));
         return handleExec(context, commandUnit);
       case COPY_CONFIGS:
         return handleCopyConfigs(commandUnit, context.getInputDTO().getIdentifierCaseFormat());
@@ -139,31 +139,31 @@ public class ServiceCommandTemplateService implements NgTemplateService {
         return handleDownloadArtifact(commandUnit, context.getInputDTO().getIdentifierCaseFormat());
       case SETUP_ENV:
         SetupEnvCommandUnit setup = (SetupEnvCommandUnit) commandUnit;
-        setup.setCommandString(processScript(setup.getCommandString()));
+        setup.setCommandString(processCommandStrings(setup.getCommandString()));
         return getExec(context, name, setup.getScriptType(), setup.getCommandString(), setup.getCommandPath());
       case DOCKER_START:
         DockerStartCommandUnit dockerStart = (DockerStartCommandUnit) commandUnit;
-        dockerStart.setCommandString(processScript(dockerStart.getCommandString()));
+        dockerStart.setCommandString(processCommandStrings(dockerStart.getCommandString()));
         return getExec(context, name, dockerStart.getScriptType(), dockerStart.getCommandString());
       case DOCKER_STOP:
         DockerStopCommandUnit dockerStop = (DockerStopCommandUnit) commandUnit;
-        dockerStop.setCommandString(processScript(dockerStop.getCommandString()));
+        dockerStop.setCommandString(processCommandStrings(dockerStop.getCommandString()));
         return getExec(context, name, dockerStop.getScriptType(), dockerStop.getCommandString());
       case PROCESS_CHECK_RUNNING:
         ProcessCheckRunningCommandUnit processRunning = (ProcessCheckRunningCommandUnit) commandUnit;
-        processRunning.setCommandString(processScript(processRunning.getCommandString()));
+        processRunning.setCommandString(processCommandStrings(processRunning.getCommandString()));
         return getExec(context, name, processRunning.getScriptType(), processRunning.getCommandString());
       case PROCESS_CHECK_STOPPED:
         ProcessCheckStoppedCommandUnit processStopped = (ProcessCheckStoppedCommandUnit) commandUnit;
-        processStopped.setCommandString(processScript(processStopped.getCommandString()));
+        processStopped.setCommandString(processCommandStrings(processStopped.getCommandString()));
         return getExec(context, name, processStopped.getScriptType(), processStopped.getCommandString());
       case PORT_CHECK_CLEARED:
         PortCheckClearedCommandUnit portCleared = (PortCheckClearedCommandUnit) commandUnit;
-        portCleared.setCommandString(processScript(portCleared.getCommandString()));
+        portCleared.setCommandString(processCommandStrings(portCleared.getCommandString()));
         return getExec(context, name, portCleared.getScriptType(), portCleared.getCommandString());
       case PORT_CHECK_LISTENING:
         PortCheckListeningCommandUnit portListening = (PortCheckListeningCommandUnit) commandUnit;
-        portListening.setCommandString(processScript(portListening.getCommandString()));
+        portListening.setCommandString(processCommandStrings(portListening.getCommandString()));
         return getExec(context, name, portListening.getScriptType(), portListening.getCommandString());
       default:
         return null;
@@ -274,7 +274,7 @@ public class ServiceCommandTemplateService implements NgTemplateService {
         .build();
   }
 
-  private static String processScript(String script) {
+  private static String processCommandStrings(String script) {
     String runTimePath = "$RUNTIME_PATH";
     String backupPath = "$BACKUP_PATH";
     String stagingPath = "$STAGING_PATH";
@@ -294,7 +294,7 @@ public class ServiceCommandTemplateService implements NgTemplateService {
   }
 
   static ParameterField<String> valueOrDefaultEmpty(String val) {
-    return ParameterField.createValueField(StringUtils.isNotBlank(val) ? val : "");
+    return ParameterField.createValueField(StringUtils.isNotBlank(val) ? processCommandStrings(val) : "");
   }
 
   static void updateTemplateSpecWithNewExpressions(
