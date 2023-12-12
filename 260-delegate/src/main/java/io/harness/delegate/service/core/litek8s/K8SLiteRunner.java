@@ -31,6 +31,7 @@ import io.harness.delegate.service.core.k8s.K8SService;
 import io.harness.delegate.service.core.litek8s.mappers.LEShellTypeMapper;
 import io.harness.delegate.service.core.util.ApiExceptionLogger;
 import io.harness.delegate.service.core.util.K8SResourceHelper;
+import io.harness.delegate.service.core.util.PodCreationFailedException;
 import io.harness.delegate.service.handlermapping.context.Context;
 import io.harness.delegate.service.runners.itfc.Runner;
 import io.harness.logging.CommandExecutionStatus;
@@ -83,6 +84,9 @@ public class K8SLiteRunner implements Runner {
   private static final boolean IS_LOCAL_BIJOU_RUNNER =
       TRUE.toString().equals(System.getenv().get("BIJOU_LOCAL_TEST_MODE"));
   private final Duration RETRY_SLEEP_DURATION = Duration.ofSeconds(2);
+
+  private final int POD_INIT_MAX_WAIT_TIME_IN_SEC = 240;
+
   private final int MAX_ATTEMPTS = 3;
   private final DelegateConfiguration delegateConfiguration;
 
@@ -96,8 +100,8 @@ public class K8SLiteRunner implements Runner {
   private final RunnerK8EventHandler k8EventHandler;
 
   @Override
-  public void init(
-      final String infraId, final InputData infra, final Map<String, char[]> decrypted, final Context context) {
+  public void init(final String infraId, final InputData infra, final Map<String, char[]> decrypted,
+      final Context context) throws Exception {
     log.info("Setting up pod spec");
     ILogStreamingTaskClient logStreamingTaskClient = null;
     try {
@@ -158,12 +162,13 @@ public class K8SLiteRunner implements Runner {
 
       log.info("Creating Task Pod with YAML:\n{}", Yaml.dump(pod));
 
-      // Step 5 - Watch pod logs - normally stop when init finished, but if LE sends response then that's not possible
-      // (e.g. delegate replicaset), but we can stop on watch status
+      coreApi.createNamespacedPod(namespace, pod, null, null, DELEGATE_FIELD_MANAGER, "Warn");
+
       Watch<CoreV1Event> watch =
           k8EventHandler.startAsyncPodEventWatch(namespace, pod.getMetadata().getName(), logStreamingTaskClient);
 
-      coreApi.createNamespacedPod(namespace, pod, null, null, DELEGATE_FIELD_MANAGER, "Warn");
+      K8SResourceHelper.waitUntilPodIsReady(
+          coreApi, pod.getMetadata().getName(), namespace, POD_INIT_MAX_WAIT_TIME_IN_SEC);
 
       // It is important to port forward for local only after service is created
       if (IS_LOCAL_BIJOU_RUNNER) {
@@ -182,6 +187,9 @@ public class K8SLiteRunner implements Runner {
       log.error("Failed to create the task {}. {}", infraId, ApiExceptionLogger.format(e), e);
     } catch (InvalidProtocolBufferException e) {
       log.error("Failed to parse protobuf data {}", infraId, e);
+    } catch (PodCreationFailedException ex) {
+      log.error("Failed to create the pod for task {} with error {}", infraId, ex.getMessage());
+      throw ex;
     } catch (Exception e) {
       log.error("Failed to create the task {}", infraId, e);
       throw e;

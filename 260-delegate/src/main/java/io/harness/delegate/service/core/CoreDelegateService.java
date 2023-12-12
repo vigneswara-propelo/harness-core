@@ -59,16 +59,20 @@ public class CoreDelegateService extends SimpleDelegateAgent<AcquireTasksRespons
     final var groupId = task.getExecutionInfraId();
     // FixMe: Hack so we don't need to make changes to CI & NG manager for now. Normally it would just invoke a single
     // runner stage
-    if (hasTaskType(task.getTaskData(), INITIALIZATION_PHASE)) {
-      taskRunner.init(groupId, task.getInfraData(), Map.of(), new Context());
-    } else if (hasTaskType(task.getTaskData(), CI_EXECUTE_STEP)) {
-      taskRunner.execute(groupId, null, task.getTaskData(), task.getInfraData(), Map.of(), new Context());
-    } else if (hasTaskType(task.getTaskData(), CI_CLEANUP)) {
-      taskRunner.cleanup(groupId, new Context());
-    } else { // Task which doesn't have separate infra step (e.g. CD)
-      taskRunner.init(groupId, task.getInfraData(), Map.of(), new Context());
-      taskRunner.execute(groupId, null, task.getTaskData(), task.getInfraData(), Map.of(), new Context());
-      taskRunner.cleanup(groupId, new Context());
+    try {
+      if (hasTaskType(task.getTaskData(), INITIALIZATION_PHASE)) {
+        taskRunner.init(groupId, task.getInfraData(), Map.of(), new Context());
+      } else if (hasTaskType(task.getTaskData(), CI_EXECUTE_STEP)) {
+        taskRunner.execute(groupId, null, task.getTaskData(), task.getInfraData(), Map.of(), new Context());
+      } else if (hasTaskType(task.getTaskData(), CI_CLEANUP)) {
+        taskRunner.cleanup(groupId, new Context());
+      } else { // Task which doesn't have separate infra step (e.g. CD)
+        taskRunner.init(groupId, task.getInfraData(), Map.of(), new Context());
+        taskRunner.execute(groupId, null, task.getTaskData(), task.getInfraData(), Map.of(), new Context());
+        taskRunner.cleanup(groupId, new Context());
+      }
+    } catch (Exception ex) {
+      // do nothing.
     }
     return ExecutionStatusResponse.newBuilder()
         .setStatus(ExecutionStatus.newBuilder().setCode(StatusCode.CODE_SUCCESS).build())

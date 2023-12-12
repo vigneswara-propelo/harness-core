@@ -20,8 +20,8 @@ import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 @Slf4j
 public class RunnerSetupHelper {
-  private static final String MANAGER_URL = "https://host.docker.internal:9090/api/";
-  private static final String LOG_SERVICE_URL = "http://host.docker.internal:8079";
+  private static final String LOCAL_MANAGER_URL = "https://host.docker.internal:9090/api/";
+  private static final String LOCAL_LOG_SERVICE_URL = "http://host.docker.internal:8079";
   private static final String LOCAL_DEV_SKIP_SSL_VERIFY = "LE_SKIP_VERIFY_MANAGER";
 
   public static void portForward(String serviceName, String namespace) {
@@ -61,11 +61,11 @@ public class RunnerSetupHelper {
   }
 
   public static String fetchLogServiceUrl(String originalLogServiceUrl, boolean isLocalBijouRunner) {
-    return isLocalBijouRunner ? LOG_SERVICE_URL : originalLogServiceUrl;
+    return isLocalBijouRunner ? LOCAL_LOG_SERVICE_URL : originalLogServiceUrl;
   }
 
   public static String fetchManagerUrl(String originalManagerUrl, boolean isLocalBijouRunner) {
-    return isLocalBijouRunner ? MANAGER_URL : originalManagerUrl;
+    return isLocalBijouRunner ? LOCAL_MANAGER_URL : originalManagerUrl;
   }
 
   public static String fetchServiceTarget(
