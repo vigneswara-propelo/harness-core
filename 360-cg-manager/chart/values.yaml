@@ -165,6 +165,8 @@ global:
     enabled: false
   chaos:
     enabled: false
+  servicediscoverymanager:
+    enabled: false
   cet:
     enabled: false
   useImmutableDelegate: "true"
@@ -500,6 +502,8 @@ featureFlags:
   CHAOS: "CHAOS_ENABLED"
   # -- CET Feature Flags
   CET: "SRM_CODE_ERROR_NOTIFICATIONS,SRM_ET_RESOLVED_EVENTS,SRM_ET_CRITICAL_EVENTS"
+  # --- ServiceDiscoveryManager Feature Flags
+  SDM: "PL_DISCOVERY_ENABLE"
   # -- Additional Feature Flag
   ADDITIONAL: ""
 additionalConfigs: {}
