@@ -420,6 +420,22 @@ public class ArtifactServiceImpl implements ArtifactService {
     artifactRepository.save(artifact);
   }
 
+  @Override
+  public ArtifactEntity getLastGeneratedArtifactFromTime(
+      String accountId, String orgId, String projectId, String artifactId, Instant time) {
+    Criteria criteria = Criteria.where(ArtifactEntityKeys.accountId)
+                            .is(accountId)
+                            .and(ArtifactEntityKeys.orgId)
+                            .is(orgId)
+                            .and(ArtifactEntityKeys.projectId)
+                            .is(projectId)
+                            .and(ArtifactEntityKeys.artifactId)
+                            .is(artifactId)
+                            .and(ArtifactEntityKeys.createdOn)
+                            .lt(time);
+    return artifactRepository.findOne(criteria);
+  }
+
   private List<ArtifactListingResponse> getArtifactListingResponses(
       String accountId, String orgIdentifier, String projectIdentifier, List<ArtifactEntity> artifactEntities) {
     List<String> orchestrationIds =

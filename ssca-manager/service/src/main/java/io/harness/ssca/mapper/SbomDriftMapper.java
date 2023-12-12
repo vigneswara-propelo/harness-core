@@ -14,7 +14,9 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.spec.server.ssca.v1.model.ComponentDrift;
 import io.harness.spec.server.ssca.v1.model.ComponentSummary;
 import io.harness.spec.server.ssca.v1.model.LicenseDrift;
+import io.harness.spec.server.ssca.v1.model.OrchestrationStepDriftRequestBody;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
+import io.harness.ssca.beans.drift.DriftBase;
 import io.harness.ssca.beans.drift.LicenseDriftStatus;
 
 import java.util.ArrayList;
@@ -50,6 +52,17 @@ public class SbomDriftMapper {
         return null;
       default:
         throw new InvalidRequestException("status could only be one of all / added / deleted");
+    }
+  }
+
+  public DriftBase toDriftBase(OrchestrationStepDriftRequestBody body) {
+    switch (body.getBase()) {
+      case "baseline":
+        return DriftBase.BASELINE;
+      case "last_generated_sbom":
+        return DriftBase.LAST_GENERATED_SBOM;
+      default:
+        throw new InvalidRequestException("Base could only be baseline / last_generated_sbom");
     }
   }
 

@@ -14,6 +14,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.repositories.drift.SbomDriftRepository;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftRequestBody;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftResponse;
+import io.harness.ssca.beans.BaselineDTO;
 import io.harness.ssca.beans.drift.ComponentDrift;
 import io.harness.ssca.beans.drift.ComponentDriftResults;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
@@ -27,6 +28,7 @@ import io.harness.ssca.entities.drift.DriftEntity;
 import io.harness.ssca.entities.drift.DriftEntity.DriftEntityKeys;
 import io.harness.ssca.helpers.SbomDriftCalculator;
 import io.harness.ssca.services.ArtifactService;
+import io.harness.ssca.services.BaselineService;
 import io.harness.ssca.services.NormalisedSbomComponentService;
 
 import com.google.inject.Inject;
@@ -48,6 +50,7 @@ public class SbomDriftServiceImpl implements SbomDriftService {
   @Inject ArtifactService artifactService;
   @Inject SbomDriftCalculator sbomDriftCalculator;
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
+  @Inject BaselineService baselineService;
 
   @Override
   public ArtifactSbomDriftResponse calculateSbomDrift(
@@ -64,6 +67,14 @@ public class SbomDriftServiceImpl implements SbomDriftService {
       throw new InvalidRequestException("Could not find artifact with tag: " + tag);
     }
 
+    return calculateAndStoreSbomDrift(driftArtifact, baseArtifact, DriftBase.MANUAL);
+  }
+
+  private ArtifactSbomDriftResponse calculateAndStoreSbomDrift(
+      ArtifactEntity driftArtifact, ArtifactEntity baseArtifact, DriftBase base) {
+    String accountId = driftArtifact.getAccountId();
+    String orgId = driftArtifact.getOrgId();
+    String projectId = driftArtifact.getProjectId();
     Optional<DriftEntity> optionalDriftEntity =
         sbomDriftRepository
             .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndOrchestrationIdAndBaseOrchestrationId(
@@ -71,36 +82,68 @@ public class SbomDriftServiceImpl implements SbomDriftService {
     DriftEntity driftEntity;
     if (optionalDriftEntity.isPresent()) {
       driftEntity = optionalDriftEntity.get();
-      // update validUntil if same request has been found.
-      Criteria criteria = Criteria.where(DriftEntityKeys.uuid).is(driftEntity.getUuid());
-      Update update = new Update();
-      update.set(DriftEntityKeys.validUntil, Date.from(OffsetDateTime.now().plusHours(1).toInstant()));
-      sbomDriftRepository.update(new Query(criteria), update);
+      if (base == DriftBase.MANUAL) {
+        // update validUntil if same request has been found.
+        Criteria criteria = Criteria.where(DriftEntityKeys.uuid).is(driftEntity.getUuid());
+        Update update = new Update();
+        update.set(DriftEntityKeys.validUntil, Date.from(OffsetDateTime.now().plusHours(1).toInstant()));
+        sbomDriftRepository.update(new Query(criteria), update);
+      }
     } else {
       List<ComponentDrift> componentDrifts = sbomDriftCalculator.findComponentDrifts(
           baseArtifact.getOrchestrationId(), driftArtifact.getOrchestrationId());
       List<LicenseDrift> licenseDrifts =
           sbomDriftCalculator.findLicenseDrift(baseArtifact.getOrchestrationId(), driftArtifact.getOrchestrationId());
-      driftEntity = sbomDriftRepository.save(DriftEntity.builder()
-                                                 .accountIdentifier(accountId)
-                                                 .orgIdentifier(orgId)
-                                                 .projectIdentifier(projectId)
-                                                 .artifactId(artifactId)
-                                                 .tag(tag)
-                                                 .baseTag(baseTag)
-                                                 .base(DriftBase.MANUAL)
-                                                 .orchestrationId(driftArtifact.getOrchestrationId())
-                                                 .baseOrchestrationId(baseArtifact.getOrchestrationId())
-                                                 .componentDrifts(componentDrifts)
-                                                 .licenseDrifts(licenseDrifts)
-                                                 .validUntil(Date.from(OffsetDateTime.now().plusHours(1).toInstant()))
-                                                 .build());
+      driftEntity = sbomDriftRepository.save(
+          DriftEntity.builder()
+              .accountIdentifier(accountId)
+              .orgIdentifier(orgId)
+              .projectIdentifier(projectId)
+              .artifactId(driftArtifact.getArtifactId())
+              .tag(driftArtifact.getTag())
+              .baseTag(baseArtifact.getTag())
+              .base(base)
+              .orchestrationId(driftArtifact.getOrchestrationId())
+              .baseOrchestrationId(baseArtifact.getOrchestrationId())
+              .componentDrifts(componentDrifts)
+              .licenseDrifts(licenseDrifts)
+              .validUntil(base == DriftBase.MANUAL ? Date.from(OffsetDateTime.now().plusHours(1).toInstant())
+                                                   : Date.from(OffsetDateTime.now().plusMonths(6).toInstant()))
+              .build());
     }
     return new ArtifactSbomDriftResponse()
         .driftId(driftEntity.getUuid())
-        .tag(tag)
-        .baseTag(baseTag)
+        .tag(driftArtifact.getTag())
+        .baseTag(baseArtifact.getTag())
         .artifactName(driftArtifact.getName());
+  }
+
+  @Override
+  public ArtifactSbomDriftResponse calculateSbomDriftForOrchestration(
+      String accountId, String orgId, String projectId, String orchestrationId, DriftBase driftBase) {
+    Optional<ArtifactEntity> optionalArtifactEntity =
+        artifactService.getArtifact(accountId, orgId, projectId, orchestrationId);
+    if (optionalArtifactEntity.isEmpty()) {
+      throw new InvalidRequestException("Could not find artifact with orchestration id: " + orchestrationId);
+    }
+
+    ArtifactEntity driftArtifact = optionalArtifactEntity.get();
+    ArtifactEntity baseArtifact;
+    if (driftBase == DriftBase.BASELINE) {
+      BaselineDTO baselineDTO =
+          baselineService.getBaselineForArtifact(accountId, orgId, projectId, driftArtifact.getArtifactId());
+      baseArtifact = artifactService.getLatestArtifact(
+          accountId, orgId, projectId, baselineDTO.getArtifactId(), baselineDTO.getTag());
+    } else {
+      baseArtifact = artifactService.getLastGeneratedArtifactFromTime(
+          accountId, orgId, projectId, driftArtifact.getArtifactId(), driftArtifact.getCreatedOn());
+    }
+    if (baseArtifact == null) {
+      throw new InvalidRequestException(
+          String.format("Could not find %s artifact for artifact name %s", driftBase, driftArtifact.getName()));
+    }
+
+    return calculateAndStoreSbomDrift(driftArtifact, baseArtifact, driftBase);
   }
 
   @Override

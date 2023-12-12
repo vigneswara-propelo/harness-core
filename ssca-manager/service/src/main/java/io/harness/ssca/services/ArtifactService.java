@@ -19,6 +19,7 @@ import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.SbomDTO;
 import io.harness.ssca.entities.ArtifactEntity;
 
+import java.time.Instant;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,4 +66,6 @@ public interface ArtifactService {
       Pageable pageable);
 
   void updateArtifactEnvCount(ArtifactEntity artifact, EnvType envType, long count);
+  ArtifactEntity getLastGeneratedArtifactFromTime(
+      String accountId, String orgId, String projectId, String artifactId, Instant time);
 }

@@ -18,6 +18,7 @@ import io.harness.spec.server.ssca.v1.model.LicenseDrift;
 import io.harness.spec.server.ssca.v1.model.OrchestrationStepDriftRequestBody;
 import io.harness.ssca.beans.drift.ComponentDriftResults;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
+import io.harness.ssca.beans.drift.DriftBase;
 import io.harness.ssca.beans.drift.LicenseDriftResults;
 import io.harness.ssca.beans.drift.LicenseDriftStatus;
 import io.harness.ssca.mapper.SbomDriftMapper;
@@ -87,6 +88,9 @@ public class SbomDriftApiImpl implements SbomDriftApi {
   @Override
   public Response calculateDriftForOrchestrationStep(String org, String project, String orchestration,
       @Valid OrchestrationStepDriftRequestBody body, String harnessAccount) {
-    return null;
+    DriftBase driftBase = SbomDriftMapper.toDriftBase(body);
+    ArtifactSbomDriftResponse responseBody =
+        sbomDriftService.calculateSbomDriftForOrchestration(harnessAccount, org, project, orchestration, driftBase);
+    return Response.ok().entity(responseBody).build();
   }
 }
