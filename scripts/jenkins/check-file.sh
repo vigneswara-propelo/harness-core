@@ -30,7 +30,9 @@ bazelignore_array=($(cat bazelignore))
 tmp_array=($(cat sonarIgnore))
 sonarignore_array=($(printf "%s\n" "${bazelignore_array[@]}" "${tmp_array[@]}" | sort -u))
 
-BASE_SHA="$(git merge-base "$COMMIT_SHA" "$BASE_COMMIT_SHA")"
+echo "Git version: $(git --version)"
+
+BASE_SHA="$(git merge-base \"$COMMIT_SHA\" \"$BASE_COMMIT_SHA\")"
 merge_summary=( $(git diff --name-only $COMMIT_SHA..$BASE_SHA) )
 echo -e "${YELLOW}Merge Summary:\e[0m ${merge_summary[@]}"
 
