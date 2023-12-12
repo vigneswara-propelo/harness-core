@@ -17,8 +17,8 @@ import io.harness.spec.server.ssca.v1.model.ComponentFilter;
 import io.harness.spec.server.ssca.v1.model.Operator;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.search.beans.ArtifactFilter;
-import io.harness.ssca.search.entities.Component;
-import io.harness.ssca.search.entities.SSCAArtifact;
+import io.harness.ssca.search.entities.Component.ComponentKeys;
+import io.harness.ssca.search.entities.SSCAArtifact.SSCAArtifactKeys;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -57,17 +57,15 @@ public class ArtifactQueryBuilder {
 
     List<Query> filterQueries = new ArrayList<>();
 
-    matchQueries.add(ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifact.SSCAArtifactKeys.accountId, accountId));
-    matchQueries.add(
-        ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifact.SSCAArtifactKeys.orgIdentifier, orgIdentifier));
-    matchQueries.add(
-        ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifact.SSCAArtifactKeys.projectIdentifier, projectIdentifier));
-    matchQueries.add(ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifact.SSCAArtifactKeys.invalid, false));
+    matchQueries.add(ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifactKeys.accountId, accountId));
+    matchQueries.add(ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifactKeys.orgIdentifier, orgIdentifier));
+    matchQueries.add(ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifactKeys.projectIdentifier, projectIdentifier));
+    matchQueries.add(ElasticSearchQueryBuilder.matchFieldValue(SSCAArtifactKeys.invalid, false));
 
     if (artifactFilter != null) {
       if (!StringUtils.isEmpty(artifactFilter.getSearchTerm())) {
-        matchQueries.add(ElasticSearchQueryBuilder.containsFieldValue(
-            SSCAArtifact.SSCAArtifactKeys.name, artifactFilter.getSearchTerm()));
+        matchQueries.add(
+            ElasticSearchQueryBuilder.containsFieldValue(SSCAArtifactKeys.name, artifactFilter.getSearchTerm()));
       }
 
       if (isNotEmpty(artifactFilter.getComponentFilter())) {
@@ -79,7 +77,7 @@ public class ArtifactQueryBuilder {
 
       if (Objects.nonNull(artifactFilter.getLicenseFilter())) {
         filterQueries.add(ElasticSearchQueryBuilder.hasChild(SBOM_COMPONENT_ENTITY,
-            getFieldValue(artifactFilter.getLicenseFilter().getOperator(), Component.ComponentKeys.packageLicense,
+            getFieldValue(artifactFilter.getLicenseFilter().getOperator(), ComponentKeys.packageLicense,
                 artifactFilter.getLicenseFilter().getValue())));
       }
     }
