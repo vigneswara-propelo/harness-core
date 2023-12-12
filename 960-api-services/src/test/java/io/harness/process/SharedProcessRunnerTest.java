@@ -54,7 +54,7 @@ public class SharedProcessRunnerTest extends CategoryTest {
   @Before
   public void setup() {
     processExecutorService = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-    callerExecutorService = Executors.newCachedThreadPool();
+    callerExecutorService = Executors.newFixedThreadPool(11);
     completionService = new ExecutorCompletionService<>(callerExecutorService);
     sharedProcessRunner = new SharedProcessRunner(processExecutorService);
   }
@@ -65,7 +65,7 @@ public class SharedProcessRunnerTest extends CategoryTest {
   @SneakyThrows
   public void testScheduleConcurrentExecution() {
     final int runningCount = 10;
-    ProcessExecutorFactory mockFactory = createMockFactory(100);
+    ProcessExecutorFactory mockFactory = createMockFactory(300);
 
     for (int i = 0; i < runningCount; i++) {
       final int index = i % 2 == 0 ? 1 : 0;
