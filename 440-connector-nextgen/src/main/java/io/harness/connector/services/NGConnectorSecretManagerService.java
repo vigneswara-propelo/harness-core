@@ -10,10 +10,19 @@ package io.harness.connector.services;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.DecryptableEntity;
 import io.harness.connector.ConnectorDTO;
+import io.harness.connector.ConnectorInfoDTO;
+import io.harness.encryption.SecretRefData;
+import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
 import io.harness.secretmanagerclient.dto.SecretManagerConfigDTO;
 
 import software.wings.beans.CustomSecretNGManagerConfig;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @OwnedBy(PL)
 public interface NGConnectorSecretManagerService {
@@ -37,4 +46,15 @@ public interface NGConnectorSecretManagerService {
   void resetHeartBeatTask(String accountId, String taskId);
 
   SecretManagerConfigDTO getLocalConfigDTO(String accountIdentifier);
+
+  Map<String, SecretRefData> getSecretsForDecryptableEntities(List<DecryptableEntity> decryptableEntities);
+
+  Optional<SecretResponseWrapper> getSecretOptionalFromSecretRef(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, SecretRefData secretRefData);
+
+  void checkIfDecryptionIsPossible(
+      String accountIdentifier, ConnectorInfoDTO connectorInfoDTO, boolean shouldBelongToHarnessSM);
+
+  void validateSecretManagerCredentialsAreInHarnessSM(String accountIdentifier, ConnectorDTO connectorDTO,
+      Set<String> credentialSecretIdentifiers, boolean validateSMCredentialsStoredInHarnessSM);
 }

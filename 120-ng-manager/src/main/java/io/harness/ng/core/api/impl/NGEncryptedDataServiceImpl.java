@@ -72,7 +72,6 @@ import io.harness.ng.core.dto.secrets.SecretTextSpecDTO;
 import io.harness.ng.core.entities.NGEncryptedData;
 import io.harness.ng.core.entities.NGEncryptedData.NGEncryptedDataBuilder;
 import io.harness.ng.core.models.Secret;
-import io.harness.pms.yaml.YamlUtils;
 import io.harness.secretmanagerclient.dto.CustomSecretManagerConfigDTO;
 import io.harness.secretmanagerclient.dto.LocalConfigDTO;
 import io.harness.secretmanagerclient.dto.SecretManagerConfigDTO;
@@ -80,7 +79,6 @@ import io.harness.secretmanagerclient.dto.VaultConfigDTO;
 import io.harness.secretmanagerclient.remote.SecretManagerClient;
 import io.harness.secrets.SecretsFileService;
 import io.harness.security.encryption.EncryptedDataDetail;
-import io.harness.security.encryption.EncryptedDataParams;
 import io.harness.security.encryption.EncryptedRecord;
 import io.harness.security.encryption.EncryptedRecordData;
 import io.harness.security.encryption.EncryptionConfig;
@@ -206,6 +204,7 @@ public class NGEncryptedDataServiceImpl implements NGEncryptedDataService {
               dto.getOrgIdentifier(), dto.getProjectIdentifier(), dto.getIdentifier(), e);
           throw new InvalidRequestException("Secret Creation Failed", e);
         }
+        validateForCustomSecretManagerCircularReference(accountIdentifier, secretManager, encryptedData.getPath());
         break;
       default:
         throw new RuntimeException("Secret value type is unknown");
@@ -302,8 +301,8 @@ public class NGEncryptedDataServiceImpl implements NGEncryptedDataService {
     }
   }
 
-  private void validateCustomSecretManagerPathValue(
-      String accountIdentifier, NGEncryptedData encryptedData, SecretManagerConfigDTO secretManager, String value) {
+  private void validateForCustomSecretManagerCircularReference(
+      String accountIdentifier, SecretManagerConfigDTO secretManager, String value) {
     CustomSecretManagerConfigDTO customSecretManagerConfigDTO = (CustomSecretManagerConfigDTO) secretManager;
     ConnectorDTO connectorDTO = ngConnectorSecretManagerService.getConnectorDTO(
         customSecretManagerConfigDTO.getAccountIdentifier(), customSecretManagerConfigDTO.getOrgIdentifier(),
@@ -313,19 +312,9 @@ public class NGEncryptedDataServiceImpl implements NGEncryptedDataService {
     Map<String, List<NameValuePairWithDefault>> inputValues = customSecretManagerHelper.mergeStringInInputValues(
         value, customSecretManagerConnectorDTO.getTemplate().getTemplateInputs());
     customSecretManagerConnectorDTO.getTemplate().setTemplateInputs(inputValues);
-    Set<EncryptedDataParams> encryptedDataParamsSet = customSecretManagerHelper.prepareEncryptedDataParamsSet(
-        customSecretManagerConfigDTO, YamlUtils.writeYamlString(connectorDTO));
-    if (encryptedData.getParameters() == null) {
-      encryptedData.setParameters(encryptedDataParamsSet);
-    } else {
-      encryptedData.getParameters().addAll(encryptedDataParamsSet);
-    }
-    EncryptionConfig encryptionConfig = SecretManagerConfigMapper.fromDTO(secretManager);
-    boolean isReferenceValid = customEncryptorsRegistry.getCustomEncryptor(encryptedData.getEncryptionType())
-                                   .validateReference(accountIdentifier, encryptedDataParamsSet, encryptionConfig);
-    if (!isReferenceValid) {
-      throw new SecretManagementException(SECRET_MANAGEMENT_ERROR, "Failed to fetch the secret value.", USER);
-    }
+    Set<String> secretIdentifiers = customSecretManagerHelper.extractSecretsUsed(accountIdentifier, connectorDTO);
+    ngConnectorSecretManagerService.validateSecretManagerCredentialsAreInHarnessSM(
+        accountIdentifier, connectorDTO, secretIdentifiers, true);
   }
 
   private void validateSecretDoesNotExist(
@@ -579,6 +568,9 @@ public class NGEncryptedDataServiceImpl implements NGEncryptedDataService {
       existingEncryptedData.setPath(null);
     } else {
       validatePath(encryptedData.getPath(), encryptedData.getEncryptionType());
+      if (CustomSecretManagerValues.equals(secret.getValueType())) {
+        validateForCustomSecretManagerCircularReference(accountIdentifier, secretManager, encryptedData.getPath());
+      }
       if (!isReadOnlySecretManager(secretManager) && !existingEncryptedData.getName().equals(dto.getName())
           && !Optional.ofNullable(existingEncryptedData.getPath()).isPresent()
           && Optional.ofNullable(existingEncryptedData.getEncryptedValue()).isPresent()) {
