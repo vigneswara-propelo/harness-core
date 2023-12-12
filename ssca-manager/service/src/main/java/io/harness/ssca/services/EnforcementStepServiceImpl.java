@@ -8,6 +8,7 @@
 package io.harness.ssca.services;
 
 import io.harness.beans.FeatureName;
+import io.harness.exception.DuplicateEntityException;
 import io.harness.spec.server.ssca.v1.model.Artifact;
 import io.harness.spec.server.ssca.v1.model.EnforceSbomRequestBody;
 import io.harness.spec.server.ssca.v1.model.EnforceSbomResponseBody;
@@ -41,6 +42,12 @@ public class EnforcementStepServiceImpl implements EnforcementStepService {
   @Override
   public EnforceSbomResponseBody enforceSbom(
       String accountId, String orgIdentifier, String projectIdentifier, EnforceSbomRequestBody body) {
+    if (enforcementSummaryService
+            .getEnforcementSummary(accountId, orgIdentifier, projectIdentifier, body.getEnforcementId())
+            .isPresent()) {
+      throw new DuplicateEntityException(
+          String.format("Enforcement Summary already present with enforcement id [%s]", body.getEnforcementId()));
+    }
     String artifactId =
         artifactService.generateArtifactId(body.getArtifact().getRegistryUrl(), body.getArtifact().getName());
     ArtifactEntity artifactEntity =

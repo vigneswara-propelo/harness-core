@@ -9,6 +9,7 @@ package io.harness.ssca.services;
 
 import static io.harness.springdata.PersistenceUtils.DEFAULT_RETRY_POLICY;
 
+import io.harness.exception.DuplicateEntityException;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.BaselineRepository;
 import io.harness.repositories.SBOMComponentRepo;
@@ -61,6 +62,14 @@ public class OrchestrationStepServiceImpl implements OrchestrationStepService {
       SbomProcessRequestBody sbomProcessRequestBody) throws ParseException {
     // TODO: Check if we can prevent IO Operation.
     // TODO: Use Jackson instead of Gson.
+    if (artifactService
+            .getArtifact(accountId, orgIdentifier, projectIdentifier,
+                sbomProcessRequestBody.getSbomMetadata().getStepExecutionId())
+            .isPresent()) {
+      throw new DuplicateEntityException(String.format("Artifact already present with orchestration id [%s]",
+          sbomProcessRequestBody.getSbomMetadata().getStepExecutionId()));
+    }
+
     log.info("Starting SBOM Processing");
     String sbomFileName = UUID.randomUUID() + "_sbom";
     File sbomDumpFile = new File(sbomFileName);
