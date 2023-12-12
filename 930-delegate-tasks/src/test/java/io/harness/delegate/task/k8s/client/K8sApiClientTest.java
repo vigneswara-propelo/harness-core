@@ -9,6 +9,7 @@ package io.harness.delegate.task.k8s.client;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ABHINAV2;
+import static io.harness.rule.OwnerRule.BUHA;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -44,7 +45,13 @@ import io.harness.rule.Owner;
 
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.ApiResponse;
+import io.kubernetes.client.openapi.models.V1APIGroup;
+import io.kubernetes.client.openapi.models.V1APIGroupList;
+import io.kubernetes.client.openapi.models.V1GroupVersionForDiscovery;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.junit.Before;
@@ -63,6 +70,7 @@ public class K8sApiClientTest extends CategoryTest {
   @Mock private K8sWorkloadWatcherFactory workloadWatcherFactory;
   @Mock LogCallback executionLogCallback;
   @Mock WorkloadWatcher workloadWatcher;
+  @Mock ApiClient apiClient;
 
   @Before
   public void setup() {
@@ -217,5 +225,51 @@ public class K8sApiClientTest extends CategoryTest {
     boolean result = k8sApiClient.performSteadyStateCheck(k8sSteadyStateDTO);
     assertThat(result).isTrue();
     verify(k8sApiEventWatcher, times(1)).destroyRunning(anyList());
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetApiVersions() throws ApiException {
+    doReturn(apiClient).when(k8sClientHelper).createKubernetesApiClient(any(), any(), any(), any());
+    V1APIGroup v1APIGroup1 = new V1APIGroup();
+    V1APIGroup v1APIGroup2 = new V1APIGroup();
+
+    V1GroupVersionForDiscovery v1GroupVersionForDiscovery1 = new V1GroupVersionForDiscovery();
+    v1GroupVersionForDiscovery1.setGroupVersion("api1");
+    V1GroupVersionForDiscovery v1GroupVersionForDiscovery2 = new V1GroupVersionForDiscovery();
+    v1GroupVersionForDiscovery2.setGroupVersion("api2");
+    V1GroupVersionForDiscovery v1GroupVersionForDiscovery3 = new V1GroupVersionForDiscovery();
+    v1GroupVersionForDiscovery3.setGroupVersion("api3");
+
+    v1APIGroup1.setVersions(List.of(v1GroupVersionForDiscovery1, v1GroupVersionForDiscovery2));
+    v1APIGroup2.setVersions(List.of(v1GroupVersionForDiscovery3));
+    V1APIGroupList v1APIGroupList = new V1APIGroupList();
+    v1APIGroupList.setGroups(List.of(v1APIGroup1, v1APIGroup2));
+    ApiResponse<V1APIGroupList> response = new ApiResponse<>(0, new HashMap<>(), v1APIGroupList);
+
+    doReturn(response).when(apiClient).execute(any(), any());
+    DirectK8sInfraDelegateConfig directK8sInfraDelegateConfig = DirectK8sInfraDelegateConfig.builder().build();
+    KubernetesConfig kubernetesConfig = KubernetesConfig.builder().build();
+
+    Set<String> apiVersions =
+        k8sApiClient.getApiVersions(directK8sInfraDelegateConfig, ".", kubernetesConfig, executionLogCallback);
+
+    assertThat(apiVersions).hasSize(3).contains("api1", "api2", "api3");
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetApiVersionsThrowsAnException() throws ApiException {
+    doReturn(apiClient).when(k8sClientHelper).createKubernetesApiClient(any(), any(), any(), any());
+    doThrow(new ApiException()).when(apiClient).execute(any(), any());
+    DirectK8sInfraDelegateConfig directK8sInfraDelegateConfig = DirectK8sInfraDelegateConfig.builder().build();
+    KubernetesConfig kubernetesConfig = KubernetesConfig.builder().build();
+
+    Set<String> apiVersions =
+        k8sApiClient.getApiVersions(directK8sInfraDelegateConfig, ".", kubernetesConfig, executionLogCallback);
+
+    assertThat(apiVersions).isEmpty();
   }
 }

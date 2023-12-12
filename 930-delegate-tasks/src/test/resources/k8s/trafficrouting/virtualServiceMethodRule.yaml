@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  labels:
+    harness.io/release-name: release-name
+  name: stableService-virtual-service
+  namespace: namespace
+spec:
+  hosts:
+  - stableService
+  http:
+  - match:
+    - method:
+        exact: GET
+    route:
+    - destination:
+        host: stableService
+      weight: 80
+    - destination:
+        host: stageService
+      weight: 20

@@ -33,7 +33,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(HttpVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .http(List.of(VirtualServiceDetails.builder()
                                         .match(List.of(URIMatch.builder()
@@ -66,7 +66,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(HttpVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .http(List.of(VirtualServiceDetails.builder()
                                         .match(List.of(SchemeMatch.builder()
@@ -98,7 +98,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(HttpVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .gateways(List.of("istio-test-gateway"))
                       .http(List.of(VirtualServiceDetails.builder()
@@ -131,7 +131,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(HttpVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .http(List.of(
                           VirtualServiceDetails.builder()
@@ -164,7 +164,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(HttpVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .http(List.of(
                           VirtualServiceDetails.builder()
@@ -194,7 +194,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(TCPVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .tcp(List.of(
                           VirtualServiceDetails.builder()
@@ -216,30 +216,6 @@ public class VirtualServiceTest extends CategoryTest {
     assertEqualYaml(virtualService, path);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  @Owner(developers = BUHA)
-  @Category(UnitTests.class)
-  public void testTCPVirtualServiceWithURI() throws IOException {
-    VirtualService.builder()
-        .apiVersion("networking.istio.io/v1alpha3")
-        .metadata(Metadata.builder().name("test-vs").build())
-        .spec(TCPVirtualServiceSpec.builder()
-                  .hosts(List.of("host1", "host2"))
-                  .tcp(List.of(VirtualServiceDetails.builder()
-                                   .match(List.of(URIMatch.builder().build()))
-                                   .route(List.of(HttpRouteDestination.builder()
-                                                      .destination(Destination.builder().host("test-svc").build())
-                                                      .weight(80)
-                                                      .build(),
-                                       HttpRouteDestination.builder()
-                                           .destination(Destination.builder().host("test-svc-stage").build())
-                                           .weight(20)
-                                           .build()))
-                                   .build()))
-                  .build())
-        .build();
-  }
-
   @Test
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
@@ -248,7 +224,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(TlsVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .tls(List.of(
                           VirtualServiceDetails.builder()
@@ -278,7 +254,7 @@ public class VirtualServiceTest extends CategoryTest {
         VirtualService.builder()
             .apiVersion("networking.istio.io/v1alpha3")
             .metadata(Metadata.builder().name("test-vs").build())
-            .spec(TlsVirtualServiceSpec.builder()
+            .spec(VirtualServiceSpec.builder()
                       .hosts(List.of("host1", "host2"))
                       .tls(List.of(VirtualServiceDetails.builder()
                                        .match(List.of(HostMatch.builder()
@@ -300,30 +276,6 @@ public class VirtualServiceTest extends CategoryTest {
     String path = "/istio/TlsVirtualServiceWithHostTest.yaml";
 
     assertEqualYaml(virtualService, path);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  @Owner(developers = BUHA)
-  @Category(UnitTests.class)
-  public void testTlsVirtualServiceWithUri() {
-    VirtualService.builder()
-        .apiVersion("networking.istio.io/v1alpha3")
-        .metadata(Metadata.builder().name("test-vs").build())
-        .spec(TlsVirtualServiceSpec.builder()
-                  .hosts(List.of("host1", "host2"))
-                  .tls(List.of(VirtualServiceDetails.builder()
-                                   .match(List.of(URIMatch.builder().build()))
-                                   .route(List.of(HttpRouteDestination.builder()
-                                                      .destination(Destination.builder().host("test-svc").build())
-                                                      .weight(80)
-                                                      .build(),
-                                       HttpRouteDestination.builder()
-                                           .destination(Destination.builder().host("test-svc-stage").build())
-                                           .weight(20)
-                                           .build()))
-                                   .build()))
-                  .build())
-        .build();
   }
 
   private void assertEqualYaml(VirtualService vs, String path) throws IOException {

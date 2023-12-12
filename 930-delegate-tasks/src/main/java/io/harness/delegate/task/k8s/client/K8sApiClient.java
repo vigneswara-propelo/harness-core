@@ -16,7 +16,9 @@ import static java.lang.String.format;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.delegate.task.k8s.K8sInfraDelegateConfig;
 import io.harness.k8s.model.K8sSteadyStateDTO;
+import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.steadystate.model.K8sEventWatchDTO;
 import io.harness.k8s.steadystate.model.K8sStatusWatchDTO;
@@ -28,10 +30,17 @@ import io.harness.logging.LogCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.ApisApi;
+import io.kubernetes.client.openapi.models.V1APIGroup;
+import io.kubernetes.client.openapi.models.V1APIGroupList;
+import io.kubernetes.client.openapi.models.V1GroupVersionForDiscovery;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -98,6 +107,23 @@ public class K8sApiClient implements K8sClient {
             format("%nStatus check for resources in namespace [%s] failed.", steadyStateDTO.getNamespace()), INFO,
             FAILURE);
       }
+    }
+  }
+
+  public Set<String> getApiVersions(K8sInfraDelegateConfig k8sInfraDelegateConfig, String workingDir,
+      KubernetesConfig kubernetesConfig, LogCallback logCallback) {
+    ApiClient apiClient =
+        k8sClientHelper.createKubernetesApiClient(k8sInfraDelegateConfig, workingDir, logCallback, kubernetesConfig);
+    ApisApi apisApi = new ApisApi(apiClient);
+    try {
+      V1APIGroupList apiVersions = apisApi.getAPIVersions();
+      return apiVersions.getGroups()
+          .stream()
+          .flatMap(group -> group.getVersions().stream().map(V1GroupVersionForDiscovery::getGroupVersion))
+          .collect(Collectors.toSet());
+    } catch (ApiException e) {
+      log.warn("Fetching list of api versions failed", e);
+      return Collections.emptySet();
     }
   }
 }

@@ -51,6 +51,9 @@ public class K8sBlueGreenStepParameters extends K8sBlueGreenBaseStepInfo impleme
     if (isPruningEnabled) {
       commandUnits.add(K8sCommandUnitConstants.Prune);
     }
+    if (this.trafficRouting != null) {
+      commandUnits.add(3, K8sCommandUnitConstants.TrafficRouting);
+    }
     return commandUnits;
   }
 }

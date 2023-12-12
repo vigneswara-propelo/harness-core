@@ -12,6 +12,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -24,4 +25,25 @@ public class K8sTrafficRoutingConfig {
   List<TrafficRoute> routes;
   List<TrafficRoutingDestination> destinations;
   ProviderConfig providerConfig;
+
+  public List<TrafficRoutingDestination> getNormalizedDestinations() {
+    int sum = destinations.stream()
+                  .filter(destination -> destination.getWeight() != null)
+                  .mapToInt(TrafficRoutingDestination::getWeight)
+                  .sum();
+    return destinations.stream()
+        .map(dest
+            -> TrafficRoutingDestination.builder()
+                   .host(dest.getHost())
+                   .weight(normalize(sum, dest.getWeight()))
+                   .build())
+        .collect(Collectors.toList());
+  }
+
+  private int normalize(int sum, Integer weight) {
+    if (sum == 0) {
+      return 100 / destinations.size();
+    }
+    return weight == null ? 0 : weight * 100 / sum;
+  }
 }

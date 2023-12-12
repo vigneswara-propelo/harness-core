@@ -22,7 +22,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
-public abstract class VirtualServiceSpec {
+public class VirtualServiceSpec {
   List<String> hosts;
   List<String> gateways;
+  List<VirtualServiceDetails> http;
+  List<VirtualServiceDetails> tcp;
+  List<VirtualServiceDetails> tls;
 }

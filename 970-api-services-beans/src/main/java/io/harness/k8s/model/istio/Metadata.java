@@ -11,6 +11,7 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,4 +25,5 @@ import lombok.NoArgsConstructor;
 public class Metadata {
   String name;
   String namespace;
+  Map<String, String> labels;
 }

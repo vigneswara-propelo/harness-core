@@ -10,6 +10,7 @@ package io.harness.cdng.k8s;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ACASIAN;
+import static io.harness.rule.OwnerRule.BUHA;
 import static io.harness.rule.OwnerRule.PRATYUSH;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.cdng.k8s.trafficrouting.K8sTrafficRouting;
 import io.harness.delegate.task.k8s.DeleteResourcesType;
 import io.harness.k8s.K8sCommandUnitConstants;
 import io.harness.pms.yaml.ParameterField;
@@ -107,6 +109,18 @@ public class K8sStepParametersCommandUnitsTest extends CategoryTest {
   public void testK8sDryRunManifestStepParameters() {
     assertCommandUnitsName(
         new K8sDryRunManifestStepParameters(), K8sCommandUnitConstants.FetchFiles, K8sCommandUnitConstants.K8sDryRun);
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testK8sBlueGreenStepParametersWithTrafficRouting() {
+    K8sBlueGreenStepParameters.infoBuilder().trafficRouting(K8sTrafficRouting.builder().build()).build();
+    assertCommandUnitsName(
+        K8sBlueGreenStepParameters.infoBuilder().trafficRouting(K8sTrafficRouting.builder().build()).build(),
+        K8sCommandUnitConstants.FetchFiles, K8sCommandUnitConstants.Init, K8sCommandUnitConstants.Prepare,
+        K8sCommandUnitConstants.TrafficRouting, K8sCommandUnitConstants.Apply,
+        K8sCommandUnitConstants.WaitForSteadyState, K8sCommandUnitConstants.WrapUp);
   }
 
   private void assertCommandUnitsName(K8sSpecParameters stepParameters, String... expectedCommandUnits) {

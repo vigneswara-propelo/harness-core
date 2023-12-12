@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  labels:
+    harness.io/release-name: release-name
+  name: harness-traffic-routing-virtual-service
+  namespace: namespace
+spec:
+  hosts:
+  - root-host
+  http:
+  - route:
+    - destination:
+        host: firstService
+      weight: 60
+    - destination:
+        host: secondService
+      weight: 20
+    - destination:
+        host: thirdService
+      weight: 20

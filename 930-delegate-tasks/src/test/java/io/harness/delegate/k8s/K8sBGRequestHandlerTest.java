@@ -15,6 +15,7 @@ import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.logging.LogLevel.ERROR;
 import static io.harness.rule.OwnerRule.ABHINAV2;
 import static io.harness.rule.OwnerRule.ABOSII;
+import static io.harness.rule.OwnerRule.BUHA;
 import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
 import static io.harness.rule.OwnerRule.TARUN_UBA;
 
@@ -47,6 +48,7 @@ import io.harness.beans.FileData;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
+import io.harness.delegate.k8s.trafficrouting.K8sTrafficRoutingHelper;
 import io.harness.delegate.task.helm.HelmChartInfo;
 import io.harness.delegate.task.k8s.ContainerDeploymentDelegateBaseHelper;
 import io.harness.delegate.task.k8s.HelmChartManifestDelegateConfig;
@@ -59,7 +61,9 @@ import io.harness.delegate.task.k8s.K8sRollingDeployRequest;
 import io.harness.delegate.task.k8s.K8sTaskHelperBase;
 import io.harness.delegate.task.k8s.KustomizeManifestDelegateConfig;
 import io.harness.delegate.task.k8s.ManifestDelegateConfig;
+import io.harness.delegate.task.k8s.client.K8sApiClient;
 import io.harness.delegate.task.k8s.client.K8sClient;
+import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfig;
 import io.harness.delegate.utils.ServiceHookHandler;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.ExplanationException;
@@ -97,6 +101,7 @@ import io.kubernetes.client.openapi.models.V1Secret;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.Before;
@@ -122,6 +127,8 @@ public class K8sBGRequestHandlerTest extends CategoryTest {
   @Mock K8sReleaseHandler releaseHandler;
   @Mock IK8sReleaseHistory releaseHistory;
   @Mock K8sRelease release;
+  @Mock K8sTrafficRoutingHelper trafficRoutingHelper;
+  @Mock K8sApiClient kubernetesApiClient;
   @Spy @InjectMocks K8sManifestHashGenerator k8sManifestHashGenerator;
   @Spy @InjectMocks K8sBGBaseHandler k8sBGBaseHandler;
   @Spy @InjectMocks K8sBGRequestHandler k8sBGRequestHandler;
@@ -937,6 +944,65 @@ public class K8sBGRequestHandlerTest extends CategoryTest {
     doThrow(thrownException).when(kubernetesContainerService).getService(kubernetesConfig, "my-service-stage");
     assertThatThrownBy(() -> k8sBGRequestHandler.prepareForBlueGreen(k8sDelegateTaskParams, logCallback, false, false))
         .isSameAs(thrownException);
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testExecuteTaskInternalWithTrafficRouting() throws Exception {
+    K8sTrafficRoutingConfig trafficRoutingProvider = K8sTrafficRoutingConfig.builder().build();
+    Set<String> avaliableApis = Set.of("firstApi", "secondApi", "thirdApi");
+
+    final List<K8sPod> deployedPods = Collections.singletonList(K8sPod.builder().build());
+    final K8sBGDeployRequest k8sBGDeployRequest =
+        K8sBGDeployRequest.builder()
+            .skipResourceVersioning(true)
+            .k8sInfraDelegateConfig(k8sInfraDelegateConfig)
+            .manifestDelegateConfig(KustomizeManifestDelegateConfig.builder().build())
+            .releaseName("releaseName")
+            .useDeclarativeRollback(true)
+            .trafficRoutingConfig(trafficRoutingProvider)
+            .build();
+    K8sClient k8sClient = mock(K8sClient.class);
+    doReturn(k8sClient).when(k8sTaskHelperBase).getKubernetesClient(anyBoolean());
+    doReturn(true).when(k8sClient).performSteadyStateCheck(any(K8sSteadyStateDTO.class));
+    doReturn("sampleManifest")
+        .when(k8sManifestHashGenerator)
+        .manifestHash(anyList(), eq(k8sDelegateTaskParams), eq(logCallback), any(Kubectl.class));
+    doReturn(HarnessLabelValues.colorBlue)
+        .when(k8sBGBaseHandler)
+        .getPrimaryColor(any(KubernetesResource.class), eq(kubernetesConfig), eq(logCallback));
+    doReturn(new ArrayList<>(asList(deployment(), service())))
+        .when(k8sTaskHelperBase)
+        .readManifests(anyList(), eq(logCallback), eq(true));
+    doReturn(deployedPods)
+        .when(k8sBGBaseHandler)
+        .getAllPodsNG(anyLong(), eq(kubernetesConfig), any(KubernetesResource.class), eq(HarnessLabelValues.colorBlue),
+            eq(HarnessLabelValues.colorGreen), eq("releaseName"), anyList());
+    doReturn(avaliableApis).when(kubernetesApiClient).getApiVersions(any(), any(), any(), any());
+    doReturn(List.of(KubernetesResource.builder().build()))
+        .when(trafficRoutingHelper)
+        .getTrafficRoutingResources(any(), anyString(), anyString(), any(), any(), any(), any());
+
+    K8sDeployResponse response = k8sBGRequestHandler.executeTaskInternal(
+        k8sBGDeployRequest, k8sDelegateTaskParams, logStreamingTaskClient, commandUnitsProgress);
+
+    assertThat(response.getCommandExecutionStatus()).isEqualTo(SUCCESS);
+    assertThat(response.getK8sNGTaskResponse()).isNotNull();
+    K8sBGDeployResponse bgDeployResponse = (K8sBGDeployResponse) response.getK8sNGTaskResponse();
+    assertThat(bgDeployResponse.getPrimaryColor()).isEqualTo(HarnessLabelValues.colorBlue);
+    assertThat(bgDeployResponse.getStageColor()).isEqualTo(HarnessLabelValues.colorGreen);
+    assertThat(bgDeployResponse.getPrimaryServiceName()).isEqualTo("my-service");
+    assertThat(bgDeployResponse.getStageServiceName()).isEqualTo("my-service-stage");
+    assertThat(bgDeployResponse.getK8sPodList()).isEqualTo(deployedPods);
+    verify(k8sBGRequestHandler)
+        .getManifestOverrideFlies(k8sBGDeployRequest,
+            KubernetesReleaseDetails.builder()
+                .releaseNumber(10)
+                .color(k8sBGBaseHandler.getInverseColor(HarnessLabelValues.colorDefault))
+                .build()
+                .toContextMap());
+    verify(trafficRoutingHelper).getTrafficRoutingResources(any(), any(), anyString(), any(), any(), any(), any());
   }
 
   private void assertResourceColor(KubernetesResource resource, String expected) {
