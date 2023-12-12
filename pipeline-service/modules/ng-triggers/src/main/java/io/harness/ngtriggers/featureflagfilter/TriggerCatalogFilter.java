@@ -7,6 +7,7 @@
 
 package io.harness.ngtriggers.featureflagfilter;
 
+import static io.harness.beans.FeatureName.CODE_ENABLED;
 import static io.harness.beans.FeatureName.NG_SVC_ENV_REDESIGN;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
@@ -33,6 +34,7 @@ public class TriggerCatalogFilter {
 
   public TriggerCatalogFilter() {
     enumTypeFeatureFlagMap.put(NG_SVC_ENV_REDESIGN, Sets.newHashSet(TriggerCatalogType.GOOGLE_CLOUD_STORAGE));
+    enumTypeFeatureFlagMap.put(CODE_ENABLED, Sets.newHashSet(TriggerCatalogType.HARNESS));
   }
 
   public Predicate<TriggerCatalogType> filter(String accountId, FeatureName featureName) {

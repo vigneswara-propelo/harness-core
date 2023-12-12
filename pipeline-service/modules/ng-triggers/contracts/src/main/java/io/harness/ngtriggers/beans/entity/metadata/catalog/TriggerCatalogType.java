@@ -15,6 +15,7 @@ import static io.harness.ngtriggers.Constants.CUSTOM_REPO;
 import static io.harness.ngtriggers.Constants.DOCKER_REGISTRY;
 import static io.harness.ngtriggers.Constants.GITHUB_REPO;
 import static io.harness.ngtriggers.Constants.GITLAB_REPO;
+import static io.harness.ngtriggers.Constants.HARNESS_REPO;
 import static io.harness.ngtriggers.Constants.NEXUS3_REGISTRY;
 
 import io.harness.EntitySubtype;
@@ -31,6 +32,7 @@ public enum TriggerCatalogType implements EntitySubtype {
   // Webhook
   @JsonProperty(GITHUB_REPO) GITHUB(GITHUB_REPO, NGTriggerType.WEBHOOK),
   @JsonProperty(GITLAB_REPO) GITLAB(GITLAB_REPO, NGTriggerType.WEBHOOK),
+  @JsonProperty(HARNESS_REPO) HARNESS(HARNESS_REPO, NGTriggerType.WEBHOOK),
   @JsonProperty(BITBUCKET_REPO) BITBUCKET(BITBUCKET_REPO, NGTriggerType.WEBHOOK),
   @JsonProperty(AZURE_REPO) AZURE(AZURE_REPO, NGTriggerType.WEBHOOK),
   @JsonProperty(CUSTOM_REPO) CUSTOM(CUSTOM_REPO, NGTriggerType.WEBHOOK),

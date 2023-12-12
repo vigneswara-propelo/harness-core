@@ -50,6 +50,7 @@ public class TriggerCatalogFilterTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testFilterWithFFsDisabled() {
     when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.NG_SVC_ENV_REDESIGN)).thenReturn(false);
+    when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CODE_ENABLED)).thenReturn(false);
     List<TriggerCatalogType> triggerTypes =
         Collections.arrayToList(new TriggerCatalogType[] {TriggerCatalogType.GOOGLE_CLOUD_STORAGE});
     assertThat(triggerTypes.stream()
@@ -77,11 +78,13 @@ public class TriggerCatalogFilterTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testFilterWithFFsEnabled() {
     when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.NG_SVC_ENV_REDESIGN)).thenReturn(true);
+    when(pmsFeatureFlagHelper.isEnabled(accountId, FeatureName.CODE_ENABLED)).thenReturn(true);
     List<TriggerCatalogType> triggerTypes =
         Collections.arrayToList(new TriggerCatalogType[] {TriggerCatalogType.AZURE_ARTIFACTS, TriggerCatalogType.AMI,
-            TriggerCatalogType.GOOGLE_CLOUD_STORAGE, TriggerCatalogType.BAMBOO});
+            TriggerCatalogType.GOOGLE_CLOUD_STORAGE, TriggerCatalogType.BAMBOO, TriggerCatalogType.HARNESS});
     assertThat(triggerTypes.stream()
                    .filter(triggerCatalogFilter.filter(accountId, FeatureName.NG_SVC_ENV_REDESIGN))
+                   .filter(triggerCatalogFilter.filter(accountId, FeatureName.CODE_ENABLED))
                    .collect(Collectors.toList()))
         .isEqualTo(triggerTypes);
   }
