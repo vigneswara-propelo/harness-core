@@ -74,7 +74,7 @@ public class ManifestDelegateConfigHelper {
           connectorConfigDTO = ociHelmStoreConfig.getAwsConnectorDTO();
         }
 
-        if (connectorConfigDTO != null) {
+        if (connectorConfigDTO != null && connectorConfigDTO.getDecryptableEntities() != null) {
           for (DecryptableEntity entity : connectorConfigDTO.getDecryptableEntities()) {
             decryptionService.decrypt(entity, ociHelmStoreConfig.getEncryptedDataDetails());
             ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
