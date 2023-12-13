@@ -68,7 +68,7 @@ class BillingBigQueryHelper(BillingHelper):
         else:
             print_("Finished Altering %s Table" % jsonData["tableName"])
 
-    def __prepare_select_query(jsonData: Any, columns_list: List[str]) -> str:
+    def __prepare_select_query(self, jsonData: Any, columns_list: List[str]) -> str:
         if jsonData["ccmPreferredCurrency"]:
             select_query = ""
             for column in columns_list:
@@ -87,7 +87,7 @@ class BillingBigQueryHelper(BillingHelper):
         else:
             return ", ".join(f"{w}" for w in columns_list)
         
-    def __fetch_ingestion_filters(jsonData: Any) -> None:
+    def __fetch_ingestion_filters(self, jsonData: Any) -> None:
         return """ DATE(startTime) >= DATE_SUB(CURRENT_DATE() , INTERVAL %s DAY) AND cloudProvider = "GCP" 
                 AND gcpBillingAccountId IN (%s) """ % (jsonData["interval"], jsonData["billingAccountIds"])
     
