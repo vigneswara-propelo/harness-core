@@ -108,7 +108,7 @@ Generates comma separated list of Mongo Protocol
         {{- if $localEnabled }}
             {{- $protocol = $localDBCtx.protocol }}
         {{- else if $installed }}
-            {{- $protocol = "mongodb://" }}
+            {{- $protocol = "mongodb" }}
         {{- else }}
             {{- $protocol = $globalDBCtx.protocol }}
         {{- end }}
