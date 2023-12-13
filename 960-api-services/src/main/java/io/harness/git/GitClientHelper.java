@@ -18,11 +18,14 @@ import static io.harness.exception.WingsException.USER_ADMIN;
 import static io.harness.filesystem.FileIo.createDirectoryIfDoesNotExist;
 import static io.harness.git.Constants.GIT_DEFAULT_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_HELM_LOG_PREFIX;
+import static io.harness.git.Constants.GIT_OBJECTS_REPO;
 import static io.harness.git.Constants.GIT_REPO_BASE_DIR;
+import static io.harness.git.Constants.GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE;
 import static io.harness.git.Constants.GIT_TERRAFORM_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_TERRAGRUNT_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_TRIGGER_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_YAML_LOG_PREFIX;
+import static io.harness.git.Constants.NO_SUCH_FILE_ERROR_MESSAGE;
 import static io.harness.git.Constants.REPOSITORY;
 import static io.harness.git.Constants.REPOSITORY_GIT_FILE_DOWNLOADS;
 import static io.harness.git.Constants.REPOSITORY_GIT_FILE_DOWNLOADS_ACCOUNT;
@@ -515,7 +518,11 @@ public class GitClientHelper {
     // RefNotFound is a subclass of GitAPIException, thrown when there's an invalid reference.
 
     // MissingObjectException is caused when some object(commit/ref) is missing in the git history
-    if ((ex instanceof GitAPIException && ex.getCause() instanceof TransportException)
+    if ((ex instanceof GitAPIException && ex.getCause() instanceof TransportException) && ex.getMessage() != null
+        && (ex.getMessage().contains(NO_SUCH_FILE_ERROR_MESSAGE) || ex.getMessage().contains(GIT_OBJECTS_REPO))) {
+      throw new GitConnectionDelegateException(
+          GIT_CONNECTION_ERROR, ex, GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE, USER_ADMIN);
+    } else if ((ex instanceof GitAPIException && ex.getCause() instanceof TransportException)
         || ex instanceof JGitInternalException || ex instanceof MissingObjectException
         || ex instanceof RefNotFoundException) {
       throw new GitConnectionDelegateException(GIT_CONNECTION_ERROR, ex.getCause() == null ? ex : ex.getCause(),

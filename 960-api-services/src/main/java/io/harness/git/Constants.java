@@ -35,4 +35,8 @@ public interface Constants {
   String COMMIT_MESSAGE = "Harness IO Git Sync.\n";
   String EXCEPTION_STRING = "Exception: ";
   String DEFAULT_FETCH_IDENTIFIER = "__DEFAULT";
+  String GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE =
+      "The delegate is not able to connect to the git repo. Please check git repo connectivity from delegate or retry the execution.";
+  String NO_SUCH_FILE_ERROR_MESSAGE = "No such file or directory";
+  String GIT_OBJECTS_REPO = ".git/objects";
 }

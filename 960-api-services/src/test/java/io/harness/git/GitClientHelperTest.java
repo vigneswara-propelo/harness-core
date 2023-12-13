@@ -10,6 +10,7 @@ package io.harness.git;
 import static io.harness.annotations.dev.HarnessTeam.CI;
 import static io.harness.git.Constants.GIT_DEFAULT_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_HELM_LOG_PREFIX;
+import static io.harness.git.Constants.GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE;
 import static io.harness.git.Constants.GIT_TERRAFORM_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_TRIGGER_LOG_PREFIX;
 import static io.harness.git.Constants.GIT_YAML_LOG_PREFIX;
@@ -27,6 +28,7 @@ import static io.harness.rule.OwnerRule.DEV_MITTAL;
 import static io.harness.rule.OwnerRule.HARSH;
 import static io.harness.rule.OwnerRule.JAMIE;
 import static io.harness.rule.OwnerRule.JELENA;
+import static io.harness.rule.OwnerRule.PRATYUSH;
 import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
 import static io.harness.rule.OwnerRule.SOUMYAJIT;
 import static io.harness.rule.OwnerRule.YOGESH;
@@ -91,6 +93,26 @@ public class GitClientHelperTest extends CategoryTest {
   public void test_checkIfGitConnectivityIssueInCaseOfTransportException() {
     gitClientHelper.checkIfGitConnectivityIssue(
         new GitAPIException("Git Exception", new TransportException("Transport Exception")) {});
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void test_checkIfGitConnectivityIssueInCaseOfTransportExceptionWithErrorMessageCheck() {
+    assertThatThrownBy(
+        ()
+            -> gitClientHelper.checkIfGitConnectivityIssue(new GitAPIException(
+                "GIT_YAML_LOG_ENTRY: Error in cloning repo: repoUrl: ./repository/gitFileDownloads/.git/objects/incoming.idx",
+                new TransportException("Transport Exception")) {}))
+        .isInstanceOf(GitConnectionDelegateException.class)
+        .hasMessage(GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE);
+    assertThatThrownBy(
+        ()
+            -> gitClientHelper.checkIfGitConnectivityIssue(new GitAPIException(
+                "GIT_YAML_LOG_ENTRY: Error in cloning repo: repoUrl: ./repository/gitFileDownloads/incoming.idx (No such file or directory)",
+                new TransportException("Transport Exception")) {}))
+        .isInstanceOf(GitConnectionDelegateException.class)
+        .hasMessage(GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE);
   }
 
   @Test(expected = GitConnectionDelegateException.class)
