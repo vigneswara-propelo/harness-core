@@ -53,20 +53,38 @@ public class TemplateFacade {
     return yamlObject.dump(data);
   }
 
-  public Long getTemplateVersionNumber(ProjectParams templateProjectParams, String templateRef, String versionLabel) {
-    templateRef = extractTemplateRef(templateRef);
+  public Long getTemplateVersionNumber(ProjectParams projectParams, String templateRef, String versionLabel) {
+    projectParams = getTemplateProjectParams(projectParams, templateRef);
+    String templateRefExtracted = extractTemplateRef(templateRef);
     return NGRestUtils
-        .getResponse(templateResourceClient.get(templateRef, templateProjectParams.getAccountIdentifier(),
-            templateProjectParams.getOrgIdentifier(), templateProjectParams.getProjectIdentifier(), versionLabel,
-            false))
+        .getResponse(templateResourceClient.get(templateRefExtracted, projectParams.getAccountIdentifier(),
+            projectParams.getOrgIdentifier(), projectParams.getProjectIdentifier(), versionLabel, false))
         .getVersion();
   }
 
-  public String getTemplateInputs(ProjectParams templateProjectParams, String templateRef, String versionLabel) {
-    templateRef = extractTemplateRef(templateRef);
-    return NGRestUtils.getResponse(templateResourceClient.getTemplateInputsYaml(templateRef,
-        templateProjectParams.getAccountIdentifier(), templateProjectParams.getOrgIdentifier(),
-        templateProjectParams.getProjectIdentifier(), versionLabel, false));
+  public String getTemplateInputs(ProjectParams projectParams, String templateRef, String versionLabel) {
+    projectParams = getTemplateProjectParams(projectParams, templateRef);
+    String templateRefExtracted = extractTemplateRef(templateRef);
+    return NGRestUtils.getResponse(
+        templateResourceClient.getTemplateInputsYaml(templateRefExtracted, projectParams.getAccountIdentifier(),
+            projectParams.getOrgIdentifier(), projectParams.getProjectIdentifier(), versionLabel, false));
+  }
+
+  private ProjectParams getTemplateProjectParams(ProjectParams projectParams, String templateRef) {
+    String accountIdentifier = projectParams.getAccountIdentifier();
+    String orgIdentifier = projectParams.getOrgIdentifier();
+    String projectIdentifier = projectParams.getProjectIdentifier();
+    if (templateRef.contains(ACCOUNT_IDENTIFIER_PREFIX)) {
+      orgIdentifier = null;
+      projectIdentifier = null;
+    } else if (templateRef.contains(ORG_IDENTIFIER_PREFIX)) {
+      projectIdentifier = null;
+    }
+    return ProjectParams.builder()
+        .accountIdentifier(accountIdentifier)
+        .orgIdentifier(orgIdentifier)
+        .projectIdentifier(projectIdentifier)
+        .build();
   }
 
   private String extractTemplateRef(String templateRef) {
