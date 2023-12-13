@@ -16,6 +16,7 @@ import io.harness.pms.contracts.steps.StepType;
 public interface SscaConstants {
   String SSCA_ORCHESTRATION_STEP_NODE = "SscaOrchestrationStepNode";
   String SSCA_ORCHESTRATION_STEP = "SscaOrchestration";
+  String SSCA_ORCHESTRATION_STEP_NAME = "SBOM Orchestration";
 
   String CD_SSCA_ORCHESTRATION = "CdSscaOrchestration";
   String CD_SSCA_ORCHESTRATION_STEP_NODE = "CdSscaOrchestrationStepNode";
@@ -25,6 +26,7 @@ public interface SscaConstants {
 
   String SSCA_ENFORCEMENT_STEP_NODE = "SscaEnforcementStepNode";
   String SSCA_ENFORCEMENT = "SscaEnforcement";
+  String SSCA_ENFORCEMENT_NAME = "SBOM Policy Enforcement";
   String CD_SSCA_ENFORCEMENT = "CdSscaEnforcement";
   String CD_SSCA_ENFORCEMENT_STEP_NODE = "CdSscaEnforcementStepNode";
 

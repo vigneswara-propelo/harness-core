@@ -73,7 +73,7 @@ public class SscaBeansRegistrar {
   public static final ImmutableList<StepInfo> sscaStepPaletteSteps =
       ImmutableList.<StepInfo>builder()
           .add(StepInfo.newBuilder()
-                   .setName(SscaConstants.SSCA_ORCHESTRATION_STEP)
+                   .setName(SscaConstants.SSCA_ORCHESTRATION_STEP_NAME)
                    .setType(SscaConstants.SSCA_ORCHESTRATION_STEP)
                    .setStepMetaData(StepMetaData.newBuilder()
                                         .addCategory(PLUGIN)
@@ -82,7 +82,7 @@ public class SscaBeansRegistrar {
                    .setFeatureFlag(FeatureName.SSCA_ENABLED.name())
                    .build())
           .add(StepInfo.newBuilder()
-                   .setName(SscaConstants.SSCA_ENFORCEMENT)
+                   .setName(SscaConstants.SSCA_ENFORCEMENT_NAME)
                    .setType(SscaConstants.SSCA_ENFORCEMENT)
                    .setStepMetaData(StepMetaData.newBuilder()
                                         .addCategory(PLUGIN)
