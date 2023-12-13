@@ -30,6 +30,7 @@ import io.harness.dtos.ReleaseDetailsMappingDTO;
 import io.harness.dtos.deploymentinfo.DeploymentInfoDTO;
 import io.harness.dtos.releasedetailsinfo.ReleaseDetailsDTO;
 import io.harness.encryption.Scope;
+import io.harness.entities.ArtifactBundleInfo;
 import io.harness.entities.ArtifactDetails;
 import io.harness.entities.RollbackStatus;
 import io.harness.entities.releasedetailsinfo.ReleaseEnvDetails;
@@ -39,6 +40,7 @@ import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
 import io.harness.models.DeploymentEvent;
 import io.harness.models.constants.InstanceSyncFlow;
+import io.harness.ng.core.k8s.ServiceSpecType;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.contracts.execution.Status;
@@ -46,10 +48,12 @@ import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.execution.utils.StatusUtils;
 import io.harness.pms.sdk.core.data.OptionalOutcome;
+import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.events.OrchestrationEvent;
 import io.harness.pms.sdk.core.events.OrchestrationEventHandler;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outcome.OutcomeService;
+import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.service.deploymentsummary.DeploymentSummaryService;
 import io.harness.service.infrastructuremapping.InfrastructureMappingService;
 import io.harness.service.instancesync.InstanceSyncService;
@@ -77,6 +81,7 @@ import org.apache.commons.lang3.StringUtils;
 @OwnedBy(HarnessTeam.DX)
 public class DeploymentEventListener implements OrchestrationEventHandler {
   private final OutcomeService outcomeService;
+  private final ExecutionSweepingOutputService executionSweepingOutputService;
   private final InstanceSyncHandlerFactoryService instanceSyncHandlerFactoryService;
   private final InfrastructureMappingService infrastructureMappingService;
   private final ReleaseDetailsMappingService releaseDetailsMappingService;
@@ -293,13 +298,23 @@ public class DeploymentEventListener implements OrchestrationEventHandler {
       return;
     }
     ArtifactsOutcome artifactsOutcome = (ArtifactsOutcome) optionalOutcome.getOutcome();
-    deploymentSummaryDTO.setArtifactDetails(
+    ArtifactDetails artifactDetails =
         ArtifactDetails.builder()
             .tag(artifactsOutcome.getPrimary().getTag())
             .artifactId(artifactsOutcome.getPrimary().getIdentifier())
             .displayName(artifactsOutcome.getPrimary().getArtifactSummary().getDisplayName())
             .artifactIdentity(artifactsOutcome.getPrimary().getArtifactSummary().getArtifactIdentity())
-            .build());
+            .build();
+
+    if (deploymentInfoDTO.getType().equals(ServiceSpecType.TAS)) {
+      OptionalSweepingOutput optionalArtifactOutput = executionSweepingOutputService.resolveOptional(
+          ambiance, RefObjectUtils.getSweepingOutputRefObject(OutcomeExpressionConstants.TAS_ARTIFACT_BUNDLE_OUTCOME));
+      if (optionalArtifactOutput.isFound()) {
+        ArtifactBundleInfo artifactBundleInfo = (ArtifactBundleInfo) optionalArtifactOutput.getOutput();
+        artifactDetails.setDisplayName(artifactBundleInfo.getArtifactPath());
+      }
+    }
+    deploymentSummaryDTO.setArtifactDetails(artifactDetails);
   }
 
   private ServiceStepOutcome getServiceOutcomeFromAmbiance(Ambiance ambiance) {

@@ -91,6 +91,7 @@ public class OutcomeExpressionConstants {
   public final String GOOGLE_FUNCTION_DEPLOY_OUTCOME = "googleFunctionDeployOutcome";
   public final String GOOGLE_FUNCTION_DEPLOY_WITHOUT_TRAFFIC_OUTCOME = "googleFunctionDeployWithoutTrafficOutcome";
   public final String TAS_ROLLING_DEPLOY_OUTCOME = "TasRollingDeployOutcome";
+  public final String TAS_ARTIFACT_BUNDLE_OUTCOME = "TasArtifactBundleOutcome";
   public final String ASG_BLUE_GREEN_SWAP_SERVICE_OUTCOME = "asgBlueGreenSwapServiceOutcome";
   public final String ASG_BLUE_GREEN_PREPARE_ROLLBACK_DATA_OUTCOME = "asgBlueGreenPrepareRollbackDataOutcome";
   public final String ASG_BLUE_GREEN_DEPLOY_OUTCOME = "asgBlueGreenDeployOutcome";

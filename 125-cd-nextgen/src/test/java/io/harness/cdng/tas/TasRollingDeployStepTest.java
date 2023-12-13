@@ -204,7 +204,6 @@ public class TasRollingDeployStepTest extends CDNGTestBase {
         .when(tasStepHelper)
         .getRouteMaps(tasExecutionPassThroughData.getTasManifestsPackage(),
             getParameterFieldValue(tasRollingDeployStepParameters.getAdditionalRoutes()));
-
     Mockito.mockStatic(TaskRequestsUtils.class);
     PowerMockito.when(TaskRequestsUtils.prepareCDTaskRequest(any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(TaskRequest.newBuilder().build());
@@ -223,7 +222,6 @@ public class TasRollingDeployStepTest extends CDNGTestBase {
 
     PowerMockito.verifyStatic(TaskRequestsUtils.class, times(1));
     TaskRequestsUtils.prepareCDTaskRequest(any(), any(), any(), any(), any(), any(), any());
-
     assertThat(taskChainResponse.isChainEnd()).isEqualTo(true);
     assertThat(taskChainResponse.getPassThroughData()).isInstanceOf(TasExecutionPassThroughData.class);
   }

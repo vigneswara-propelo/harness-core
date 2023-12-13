@@ -171,6 +171,7 @@ import io.harness.delegate.beans.executioncapability.GitConnectionNGCapability;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.beans.pcf.artifact.TasArtifactRegistryType;
 import io.harness.delegate.task.TaskParameters;
+import io.harness.delegate.task.artifactBundle.ArtifactBundleDetails;
 import io.harness.delegate.task.artifactBundle.ArtifactBundleFetchRequest;
 import io.harness.delegate.task.artifactBundle.ArtifactBundledArtifactType;
 import io.harness.delegate.task.artifactBundle.PackageArtifactConfig;
@@ -199,6 +200,7 @@ import io.harness.delegate.task.pcf.request.TasManifestsPackage.TasManifestsPack
 import io.harness.delegate.task.pcf.response.CfBasicSetupResponseNG;
 import io.harness.delegate.task.pcf.response.TasInfraConfig;
 import io.harness.encryption.SecretRefData;
+import io.harness.entities.ArtifactBundleInfo;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.filestore.dto.node.FileNodeDTO;
 import io.harness.filestore.dto.node.FileStoreNodeDTO;
@@ -235,6 +237,7 @@ import io.harness.pms.sdk.core.data.OptionalOutcome;
 import io.harness.pms.sdk.core.execution.invokers.StrategyHelper;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outcome.OutcomeService;
+import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.executables.TaskChainResponse;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
@@ -293,6 +296,7 @@ public class TasStepHelperTest extends CategoryTest {
   @Mock private GitConfigAuthenticationInfoHelper gitConfigAuthenticationInfoHelper;
   @Mock private FileStoreService fileStoreService;
   @Mock private StageExecutionInfoService stageExecutionInfoService;
+  @Mock ExecutionSweepingOutputService executionSweepingOutputService;
   @Spy @InjectMocks private K8sEntityHelper k8sEntityHelper;
   @Spy @InjectMocks private CDStepHelper cdStepHelper;
   @Spy @InjectMocks private TasStepHelper tasStepHelper;
@@ -700,6 +704,28 @@ public class TasStepHelperTest extends CategoryTest {
     assertThat(tasStepPassThroughData.getShouldExecuteCustomFetch()).isTrue();
     assertThat(tasStepPassThroughData.getShouldExecuteGitStoreFetch()).isFalse();
     assertThat(tasStepPassThroughData.getShouldExecuteHarnessStoreFetch()).isFalse();
+  }
+
+  @Test
+  @Owner(developers = NAMAN_TALAYCHA)
+  @Category(UnitTests.class)
+  public void testSaveArtifactDetailsInSweepingOutput() {
+    StoreConfig store = ArtifactBundleStore.builder()
+                            .manifestPath(ParameterField.createValueField("/manifest.yaml"))
+                            .artifactBundleType(ArtifactBundledArtifactType.ZIP)
+                            .deployableUnitPath(ParameterField.createValueField("/artifact.zip"))
+                            .build();
+    TasManifestOutcome tasManifestOutcome = TasManifestOutcome.builder().identifier("id").store(store).build();
+    ArgumentCaptor<ArtifactBundleInfo> ArtifactDetailsArgumentCaptor =
+        ArgumentCaptor.forClass(ArtifactBundleInfo.class);
+    ArtifactBundleDetails artifactBundleDetails = tasStepHelper.getArtifactBundleDetails(ambiance, tasManifestOutcome);
+    verify(executionSweepingOutputService, times(1))
+        .consume(any(), anyString(), ArtifactDetailsArgumentCaptor.capture(), anyString());
+    assertThat(ArtifactDetailsArgumentCaptor.getValue()).isNotNull();
+    ArtifactBundleInfo artifactBundleInfo = ArtifactDetailsArgumentCaptor.getValue();
+    assertThat(artifactBundleInfo.getArtifactPath()).isEqualTo("/artifact.zip");
+    assertThat(artifactBundleDetails).isNotNull();
+    assertThat(artifactBundleDetails.getDeployableUnitPath()).isEqualTo("/artifact.zip");
   }
 
   @Test

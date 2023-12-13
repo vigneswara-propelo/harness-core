@@ -7,6 +7,7 @@
 
 package io.harness.cdng.tas;
 
+import static io.harness.cdng.manifest.ManifestStoreType.ARTIFACT_BUNDLE;
 import static io.harness.cdng.manifest.ManifestType.TAS_AUTOSCALER;
 import static io.harness.cdng.manifest.ManifestType.TAS_MANIFEST;
 import static io.harness.cdng.manifest.ManifestType.TAS_VARS;
@@ -154,6 +155,7 @@ import io.harness.delegate.task.pcf.artifact.TasPackageArtifactConfig.TasPackage
 import io.harness.delegate.task.pcf.request.TasManifestsPackage;
 import io.harness.delegate.task.pcf.response.CfCommandResponseNG;
 import io.harness.delegate.task.pcf.response.TasInfraConfig;
+import io.harness.entities.ArtifactBundleInfo;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.GeneralException;
 import io.harness.exception.InvalidArgumentsException;
@@ -185,11 +187,13 @@ import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.ambiance.Level;
 import io.harness.pms.contracts.execution.tasks.TaskRequest;
+import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.sdk.core.data.OptionalOutcome;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outcome.OutcomeService;
+import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.executables.TaskChainResponse;
 import io.harness.pms.sdk.core.steps.io.PassThroughData;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
@@ -247,6 +251,8 @@ public class TasStepHelper {
   @Inject @Named("referenceFalseKryoSerializer") private KryoSerializer referenceFalseKryoSerializer;
   @Inject private StepHelper stepHelper;
   @Inject private StageExecutionInfoService stageExecutionInfoService;
+
+  @Inject ExecutionSweepingOutputService executionSweepingOutputService;
   @Named("PRIVILEGED") @Inject private SecretManagerClientService secretManagerClientService;
 
   private static final Splitter lineSplitter = Splitter.onPattern("\\r?\\n").trimResults().omitEmptyStrings();
@@ -1896,6 +1902,32 @@ public class TasStepHelper {
       maxCount = treeMap.get(INSTANCE_MANIFEST_YML_ELEMENT);
     }
     return maxCount;
+  }
+
+  public ArtifactBundleDetails getArtifactBundleDetails(Ambiance ambiance, ManifestOutcome tasManifestOutcome) {
+    if (tasManifestOutcome != null && tasManifestOutcome.getType().equals(TAS_MANIFEST)
+        && tasManifestOutcome.getStore().getKind().equals(ARTIFACT_BUNDLE)) {
+      ArtifactBundleStore artifactBundleStore = (ArtifactBundleStore) tasManifestOutcome.getStore();
+      ArtifactBundleDetails artifactBundleDetails =
+          ArtifactBundleDetails.builder()
+              .artifactBundleType(artifactBundleStore.getArtifactBundleType().toString())
+              .deployableUnitPath(getParameterFieldValue(artifactBundleStore.getDeployableUnitPath()))
+              .activityId(ambiance.getStageExecutionId())
+              .build();
+
+      // Saving sweeping Output with Updated Artifact Name to store the Deployment Unit Path as Artifact name in
+      // Instance ng
+      saveArtifactDetailsInSweepingOutput(
+          ambiance, getParameterFieldValue(artifactBundleStore.getDeployableUnitPath()));
+
+      return artifactBundleDetails;
+    }
+    return null;
+  }
+
+  private void saveArtifactDetailsInSweepingOutput(Ambiance ambiance, String deploymentUnitPath) {
+    executionSweepingOutputService.consume(ambiance, OutcomeExpressionConstants.TAS_ARTIFACT_BUNDLE_OUTCOME,
+        ArtifactBundleInfo.builder().artifactPath(deploymentUnitPath).build(), StepCategory.STAGE.name());
   }
 
   public List<String> getRouteMaps(TasManifestsPackage tasManifestsPackage, List<String> additionalRoutesFromStep) {
