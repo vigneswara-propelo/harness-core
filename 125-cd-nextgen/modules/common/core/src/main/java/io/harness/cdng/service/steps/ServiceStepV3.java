@@ -57,6 +57,8 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnresolvedExpressionsException;
 import io.harness.exception.WingsException;
 import io.harness.freeze.beans.FreezeEntityType;
+import io.harness.gitsync.interceptor.GitEntityInfo;
+import io.harness.gitx.EntityGitDetailsGuard;
 import io.harness.gitx.GitXTransientBranchGuard;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogLevel;
@@ -486,10 +488,15 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
           serviceStepV3Helper.getNgEnvironmentConfig(ambiance, parameters, accountId, environment);
 
       if (ngFeatureFlagHelperService.isEnabled(accountId, FeatureName.CDS_SCOPE_INFRA_TO_SERVICES)) {
-        infrastructureEntityService.checkIfInfraIsScopedToService(AmbianceUtils.getAccountId(ambiance),
-            AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance),
-            parameters.getServiceRef().getValue(), parameters.getEnvRef().getValue(),
-            parameters.getInfraId().getValue());
+        GitEntityInfo gitContextForInfra = infrastructureEntityService.getGitDetailsForInfrastructure(
+            accountId, orgIdentifier, projectIdentifier, envRef.getValue(), parameters.getEnvGitBranch());
+
+        try (EntityGitDetailsGuard ignore = new EntityGitDetailsGuard(gitContextForInfra)) {
+          infrastructureEntityService.checkIfInfraIsScopedToService(AmbianceUtils.getAccountId(ambiance),
+              AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance),
+              parameters.getServiceRef().getValue(), parameters.getEnvRef().getValue(),
+              parameters.getInfraId().getValue());
+        }
       }
 
       final Optional<NGServiceOverridesEntity> ngServiceOverridesEntity =
