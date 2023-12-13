@@ -15,11 +15,9 @@ import static io.harness.idp.k8s.constants.K8sConstants.BACKSTAGE_SECRET;
 
 import static java.lang.String.format;
 
-import io.harness.account.AccountClient;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptedSecretValue;
-import io.harness.beans.FeatureName;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
@@ -35,7 +33,6 @@ import io.harness.idp.events.producers.SetupUsageProducer;
 import io.harness.idp.k8s.client.K8sClient;
 import io.harness.idp.namespace.service.NamespaceService;
 import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
-import io.harness.remote.client.CGRestUtils;
 import io.harness.secretmanagerclient.SecretType;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.spec.server.idp.v1.model.BackstageEnvConfigVariable;
@@ -79,7 +76,6 @@ public class BackstageEnvVariableServiceImpl implements BackstageEnvVariableServ
   private final NamespaceService namespaceService;
   private final Map<BackstageEnvVariableType, BackstageEnvVariableMapper> envVariableMap;
   private final SetupUsageProducer setupUsageProducer;
-  private final AccountClient accountClient;
   private final String idpEncryptionSecret;
   private static final Gson gson = new Gson();
 
@@ -87,15 +83,13 @@ public class BackstageEnvVariableServiceImpl implements BackstageEnvVariableServ
   public BackstageEnvVariableServiceImpl(BackstageEnvVariableRepository backstageEnvVariableRepository,
       K8sClient k8sClient, @Named("PRIVILEGED") SecretManagerClientService ngSecretService,
       NamespaceService namespaceService, Map<BackstageEnvVariableType, BackstageEnvVariableMapper> envVariableMap,
-      SetupUsageProducer setupUsageProducer, AccountClient accountClient,
-      @Named("idpEncryptionSecret") String idpEncryptionSecret) {
+      SetupUsageProducer setupUsageProducer, @Named("idpEncryptionSecret") String idpEncryptionSecret) {
     this.backstageEnvVariableRepository = backstageEnvVariableRepository;
     this.k8sClient = k8sClient;
     this.ngSecretService = ngSecretService;
     this.namespaceService = namespaceService;
     this.envVariableMap = envVariableMap;
     this.setupUsageProducer = setupUsageProducer;
-    this.accountClient = accountClient;
     this.idpEncryptionSecret = idpEncryptionSecret;
   }
 
@@ -318,10 +312,6 @@ public class BackstageEnvVariableServiceImpl implements BackstageEnvVariableServ
     if (envVariables.isEmpty()) {
       return;
     }
-    boolean loadSecretsDynamically = CGRestUtils.getResponse(
-        accountClient.isFeatureFlagEnabled(FeatureName.IDP_DYNAMIC_SECRET_RESOLUTION.name(), accountIdentifier));
-    log.info("IDP_DYNAMIC_SECRET_RESOLUTION FF enabled: {} for account {}", loadSecretsDynamically, accountIdentifier);
-
     envVariables = removeAccountFromIdentifierForBackstageEnvVarList(envVariables);
     Map<String, byte[]> secretData = new HashMap<>();
 
@@ -337,7 +327,7 @@ public class BackstageEnvVariableServiceImpl implements BackstageEnvVariableServ
     for (BackstageEnvVariable envVariable : envVariables) {
       BackstageEnvVariableEntity entity = entitiesMap.get(envVariable.getEnvName());
       if (envVariable.getType().name().equals(BackstageEnvVariableType.SECRET.name())) {
-        handleSecretEnv(accountIdentifier, entity, envVariable, secretData, loadSecretsDynamically);
+        handleSecretEnv(accountIdentifier, entity, envVariable, secretData);
       } else {
         handleConfigEnv(accountIdentifier, entity, envVariable, secretData);
       }
@@ -348,11 +338,10 @@ public class BackstageEnvVariableServiceImpl implements BackstageEnvVariableServ
   }
 
   private void handleSecretEnv(String accountIdentifier, BackstageEnvVariableEntity entity,
-      BackstageEnvVariable envVariable, Map<String, byte[]> secretData, boolean loadSecretsDynamically) {
+      BackstageEnvVariable envVariable, Map<String, byte[]> secretData) {
     BackstageEnvSecretVariable secretEnvVariable = (BackstageEnvSecretVariable) envVariable;
     Pair<String, Long> decryptedValueAndLastModifiedAt = getDecryptedValueAndLastModifiedTime(
         secretEnvVariable.getEnvName(), secretEnvVariable.getHarnessSecretIdentifier(), accountIdentifier);
-    String decryptedValue = decryptedValueAndLastModifiedAt.getFirst();
     Long lastModifiedAt = decryptedValueAndLastModifiedAt.getSecond();
     BackstageEnvSecretVariableEntity secretEntity = (BackstageEnvSecretVariableEntity) entity;
     if (secretEntity == null // create scenario
@@ -360,14 +349,9 @@ public class BackstageEnvVariableServiceImpl implements BackstageEnvVariableServ
             secretEnvVariable.getHarnessSecretIdentifier()) // different secret scenario
         || lastModifiedAt == 0 // old ng-manager scenario
         || secretEntity.getSecretLastModifiedAt() < lastModifiedAt) { // secret update scenario
-      if (loadSecretsDynamically) {
-        log.info("Updating LAST_UPDATED_TIMESTAMP_FOR_ENV_VARIABLES for env {} for account {}",
-            envVariable.getEnvName(), accountIdentifier);
-        secretData.put(LAST_UPDATED_TIMESTAMP_FOR_ENV_VARIABLES, String.valueOf(System.currentTimeMillis()).getBytes());
-      } else {
-        log.info("Adding/Updating secret env {} for account {}", envVariable.getEnvName(), accountIdentifier);
-        secretData.put(envVariable.getEnvName(), decryptedValue.getBytes());
-      }
+      log.info("Updating LAST_UPDATED_TIMESTAMP_FOR_ENV_VARIABLES for env {} for account {}", envVariable.getEnvName(),
+          accountIdentifier);
+      secretData.put(LAST_UPDATED_TIMESTAMP_FOR_ENV_VARIABLES, String.valueOf(System.currentTimeMillis()).getBytes());
     }
   }
 

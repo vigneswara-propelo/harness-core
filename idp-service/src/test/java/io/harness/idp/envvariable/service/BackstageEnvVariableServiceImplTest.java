@@ -17,7 +17,6 @@ import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.*;
 
 import io.harness.CategoryTest;
-import io.harness.account.AccountClient;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptedSecretValue;
@@ -96,7 +95,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
   @Inject private Map<BackstageEnvVariableType, BackstageEnvVariableMapper> mapBinder;
   @InjectMocks IdpCommonService idpCommonService;
   @Mock NgConnectorManagerClient ngConnectorManagerClient;
-  @Mock AccountClient accountClient;
   private BackstageEnvVariableServiceImpl backstageEnvVariableService;
   private static final String ADMIN_USER_ID = "lv0euRhKRCyiXWzS7pOg6g";
   private static final String ACCOUNT_ID = "123";
@@ -106,7 +104,7 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
   public void setUp() {
     openMocks = MockitoAnnotations.openMocks(this);
     backstageEnvVariableService = new BackstageEnvVariableServiceImpl(backstageEnvVariableRepository, k8sClient,
-        ngSecretService, namespaceService, mapBinder, setupUsageProducer, accountClient, SHARED_KEY);
+        ngSecretService, namespaceService, mapBinder, setupUsageProducer, SHARED_KEY);
   }
 
   @Test
@@ -168,15 +166,12 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     decryptedSecretValue.setDecryptedValue(TEST_SECRET_VALUE);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
         .thenReturn(decryptedSecretValue);
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     assertEquals(envVariable, backstageEnvVariableService.create(envVariable, TEST_ACCOUNT_IDENTIFIER));
 
     verify(k8sClient).updateSecretData(eq(TEST_NAMESPACE), eq(BACKSTAGE_SECRET), anyMap());
     verify(setupUsageProducer)
         .publishEnvVariableSetupUsage(Collections.singletonList(envVariable), TEST_ACCOUNT_IDENTIFIER);
-    mockRestUtils.close();
   }
 
   @Test
@@ -207,8 +202,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     decryptedSecretValue.setLastModifiedAt(secretLastModifiedAt);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
         .thenReturn(decryptedSecretValue);
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     List<BackstageEnvVariable> responseVariables =
         backstageEnvVariableService.createMulti(Arrays.asList(envVariable1, envVariable2), TEST_ACCOUNT_IDENTIFIER);
@@ -218,7 +211,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     verify(k8sClient).updateSecretData(eq(TEST_NAMESPACE), eq(BACKSTAGE_SECRET), anyMap());
     verify(setupUsageProducer)
         .publishEnvVariableSetupUsage(Arrays.asList(envVariable1, envVariable2), TEST_ACCOUNT_IDENTIFIER);
-    mockRestUtils.close();
   }
 
   @Test
@@ -241,8 +233,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     decryptedSecretValue.setLastModifiedAt(secretLastModifiedAt);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
         .thenReturn(decryptedSecretValue);
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     assertEquals(envVariable, backstageEnvVariableService.update(envVariable, TEST_ACCOUNT_IDENTIFIER));
 
@@ -251,7 +241,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
         .deleteEnvVariableSetupUsage(Collections.singletonList(envVariable), TEST_ACCOUNT_IDENTIFIER);
     verify(setupUsageProducer)
         .publishEnvVariableSetupUsage(Collections.singletonList(envVariable), TEST_ACCOUNT_IDENTIFIER);
-    mockRestUtils.close();
   }
 
   @Test
@@ -282,8 +271,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     decryptedSecretValue.setLastModifiedAt(secretLastModifiedAt);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
         .thenReturn(decryptedSecretValue);
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     List<BackstageEnvVariable> responseVariables =
         backstageEnvVariableService.updateMulti(Arrays.asList(envVariable1, envVariable2), TEST_ACCOUNT_IDENTIFIER);
@@ -295,7 +282,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
         .deleteEnvVariableSetupUsage(Arrays.asList(envVariable1, envVariable2), TEST_ACCOUNT_IDENTIFIER);
     verify(setupUsageProducer)
         .publishEnvVariableSetupUsage(Arrays.asList(envVariable1, envVariable2), TEST_ACCOUNT_IDENTIFIER);
-    mockRestUtils.close();
   }
 
   @Test
@@ -355,8 +341,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     decryptedSecretValue.setLastModifiedAt(secretLastModifiedAt + 1);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER1))
         .thenReturn(decryptedSecretValue);
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     List<BackstageEnvVariable> responseVariables = backstageEnvVariableService.createOrUpdate(
         Arrays.asList(envVariableToAdd1, envVariableToUpdate1, envVariableToAdd2, envVariableToUpdate2),
@@ -374,7 +358,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
         .publishEnvVariableSetupUsage(
             Arrays.asList(envVariableToAdd1, envVariableToAdd2, envVariableToUpdate1, envVariableToUpdate2),
             TEST_ACCOUNT_IDENTIFIER);
-    mockRestUtils.close();
   }
 
   @Test
@@ -458,13 +441,10 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     decryptedSecretValue.setLastModifiedAt(secretLastModifiedAt + 1);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
         .thenReturn(decryptedSecretValue);
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     backstageEnvVariableService.processSecretUpdate(entityChangeDTO);
 
     verify(k8sClient).updateSecretData(eq(TEST_NAMESPACE), eq(BACKSTAGE_SECRET), anyMap());
-    mockRestUtils.close();
   }
 
   @Test
@@ -514,13 +494,10 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     envVariable1.envName(TEST_ENV_NAME);
     envVariable1.setValue(TEST_DECRYPTED_VALUE);
     envVariable1.type(BackstageEnvVariable.TypeEnum.CONFIG);
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     backstageEnvVariableService.sync(Collections.singletonList(envVariable1), TEST_ACCOUNT_IDENTIFIER);
 
     verify(k8sClient).updateSecretData(eq(TEST_NAMESPACE), eq(BACKSTAGE_SECRET), anyMap());
-    mockRestUtils.close();
   }
 
   @Test
@@ -557,18 +534,13 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     when(backstageEnvVariableRepository.findByAccountIdentifier(TEST_ACCOUNT_IDENTIFIER))
         .thenReturn(Collections.emptyList())
         .thenReturn(Arrays.asList(configEntity, secretEntity));
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
 
     backstageEnvVariableService.findAndSync(TEST_ACCOUNT_IDENTIFIER);
     verify(k8sClient, times(0)).updateSecretData(eq(TEST_NAMESPACE), eq(BACKSTAGE_SECRET), anyMap());
 
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(false);
     backstageEnvVariableService.findAndSync(TEST_ACCOUNT_IDENTIFIER);
     verify(k8sClient).updateSecretData(eq(TEST_NAMESPACE), eq(BACKSTAGE_SECRET), secretDataCaptor.capture());
-    assertTrue(secretDataCaptor.getValue().containsKey(HARNESS_GITHUB_APP_PRIVATE_KEY_REF));
     assertTrue(secretDataCaptor.getValue().containsKey(TEST_ENV_NAME));
-    mockRestUtils.close();
   }
 
   @Test
@@ -582,8 +554,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     secret.setHarnessSecretIdentifier(TEST_SECRET_IDENTIFIER);
     secret.type(BackstageEnvVariable.TypeEnum.SECRET);
 
-    MockedStatic<CGRestUtils> mockRestUtils = mockStatic(CGRestUtils.class);
-    mockRestUtils.when(() -> CGRestUtils.getResponse(any())).thenReturn(true);
     DecryptedSecretValue decryptedSecretValue = DecryptedSecretValue.builder().build();
     decryptedSecretValue.setDecryptedValue(TEST_DECRYPTED_VALUE);
     when(ngSecretService.getDecryptedSecretValue(TEST_ACCOUNT_IDENTIFIER, null, null, TEST_SECRET_IDENTIFIER))
@@ -599,7 +569,6 @@ public class BackstageEnvVariableServiceImplTest extends CategoryTest {
     verify(k8sClient).updateSecretData(eq(TEST_NAMESPACE), eq(BACKSTAGE_SECRET), secretDataCaptor.capture());
     assertEquals(1, secretDataCaptor.getValue().size());
     assertTrue(secretDataCaptor.getValue().containsKey(LAST_UPDATED_TIMESTAMP_FOR_ENV_VARIABLES));
-    mockRestUtils.close();
   }
 
   @Test

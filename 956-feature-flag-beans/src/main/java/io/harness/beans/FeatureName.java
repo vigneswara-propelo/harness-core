@@ -428,7 +428,6 @@ public enum FeatureName {
   IACM_COST_ESTIMATION("Enable support for cost estimate in IACM", HarnessTeam.IACM),
   IACM_OPA_WORKSPACE_GOVERNANCE("Enable support for OPA in IACM", HarnessTeam.IACM),
   IDP_ASYNC_SCORE_COMPUTATION("Enable async score computation", HarnessTeam.IDP),
-  IDP_DYNAMIC_SECRET_RESOLUTION("Enable dynamic resolution of secrets", HarnessTeam.IDP),
   IDP_ENABLED("This for enabling IDP on UI", HarnessTeam.IDP),
   IDP_ENABLE_EDIT_HARNESS_CI_CD_PLUGIN(
       "This FF is for allowing user to edit config for harness-ci-cd plugin from UI", HarnessTeam.IDP),
