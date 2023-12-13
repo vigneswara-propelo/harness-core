@@ -10,6 +10,7 @@ package io.harness.ng.core.entitydetail;
 import io.harness.EntityType;
 import io.harness.beans.EntityReference;
 import io.harness.beans.IdentifierRef;
+import io.harness.beans.InfraDefReference;
 import io.harness.beans.InputSetReference;
 import io.harness.beans.NGTemplateReference;
 import io.harness.ng.core.EntityDetail;
@@ -45,6 +46,8 @@ public class EntityDetailDeserializer extends StdDeserializer<EntityDetail> {
       reference = mapper.readValue(entityRefNode.toString(), InputSetReference.class);
     } else if (type == EntityType.TEMPLATE) {
       reference = mapper.readValue(entityRefNode.toString(), NGTemplateReference.class);
+    } else if (type == EntityType.INFRASTRUCTURE) {
+      reference = mapper.readValue(entityRefNode.toString(), InfraDefReference.class);
     } else {
       reference = mapper.readValue(entityRefNode.toString(), IdentifierRef.class);
     }
