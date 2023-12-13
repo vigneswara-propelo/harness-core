@@ -164,6 +164,7 @@ import io.harness.ng.core.variable.expressions.functors.VariableFunctor;
 import io.harness.ng.migration.DelegateMigrationProvider;
 import io.harness.ng.migration.NGCoreMigrationProvider;
 import io.harness.ng.migration.SourceCodeManagerMigrationProvider;
+import io.harness.ng.migration.UniqueIdParentUniqueIdMigrationProvider;
 import io.harness.ng.migration.UserMembershipMigrationProvider;
 import io.harness.ng.migration.UserMetadataMigrationProvider;
 import io.harness.ng.moduleversioninfo.runnable.ModuleVersionsMaintenanceTask;
@@ -607,7 +608,10 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
           { add(ProjectMigrationProvider.class); }
 
           { add(UniqueIdParentIdMigrationProvider.class); }
+
           { add(ParentUniqueIdMigrationProvider.class); }
+
+          { add(UniqueIdParentUniqueIdMigrationProvider.class); }
 
           { add(NGCoreMigrationProvider.class); } // Add all migration provider classes here
 
