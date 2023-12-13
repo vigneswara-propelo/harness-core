@@ -1,6 +1,6 @@
 # ce-nextgen
 
-![Version: 0.12.1](https://img.shields.io/badge/Version-0.12.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81102](https://img.shields.io/badge/AppVersion-0.0.81102-informational?style=flat-square)
+![Version: 2.13.1](https://img.shields.io/badge/Version-2.13.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.81903](https://img.shields.io/badge/AppVersion-0.0.81903-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -37,6 +37,32 @@ A Helm chart for Kubernetes
 | cloudProviderConfig.AWS_GOV_CLOUD_TEMPLATE_LINK | string | `"https://continuous-efficiency.s3.us-east-2.amazonaws.com/setup/v1/ng/HarnessAWSTemplate.yaml"` |  |
 | cloudProviderConfig.AZURE_APP_CLIENT_ID | string | `"0211763d-24fb-4d63-865d-92f86f77e908"` |  |
 | cloudProviderConfig.GCP_SERVICE_ACCOUNT_EMAIL | string | `"placeHolder"` |  |
+| database.mongo.events.enabled | bool | `false` |  |
+| database.mongo.events.extraArgs | string | `""` |  |
+| database.mongo.events.hosts | list | `[]` |  |
+| database.mongo.events.protocol | string | `""` |  |
+| database.mongo.events.secrets.kubernetesSecrets[0].keys.MONGO_PASSWORD | string | `""` |  |
+| database.mongo.events.secrets.kubernetesSecrets[0].keys.MONGO_USER | string | `""` |  |
+| database.mongo.events.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.name | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.property | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.name | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.property | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| database.mongo.events.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
+| database.mongo.notifications.enabled | bool | `false` |  |
+| database.mongo.notifications.extraArgs | string | `""` |  |
+| database.mongo.notifications.hosts | list | `[]` |  |
+| database.mongo.notifications.protocol | string | `""` |  |
+| database.mongo.notifications.secrets.kubernetesSecrets[0].keys.MONGO_PASSWORD | string | `""` |  |
+| database.mongo.notifications.secrets.kubernetesSecrets[0].keys.MONGO_USER | string | `""` |  |
+| database.mongo.notifications.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
+| database.mongo.notifications.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.name | string | `""` |  |
+| database.mongo.notifications.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.property | string | `""` |  |
+| database.mongo.notifications.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.name | string | `""` |  |
+| database.mongo.notifications.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.property | string | `""` |  |
+| database.mongo.notifications.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
+| database.mongo.notifications.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
 | distributedLockImplementation | string | `"MONGO"` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
@@ -134,13 +160,13 @@ A Helm chart for Kubernetes
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"harness/ce-nextgen-signed"` |  |
-| image.tag | string | `"81102-000"` |  |
+| image.tag | string | `"81903-000"` |  |
 | imageClickhouseEnabled.digest | string | `""` |  |
 | imageClickhouseEnabled.imagePullSecrets | list | `[]` |  |
 | imageClickhouseEnabled.pullPolicy | string | `"Always"` |  |
 | imageClickhouseEnabled.registry | string | `"docker.io"` |  |
 | imageClickhouseEnabled.repository | string | `"harness/ce-nextgen-signed"` |  |
-| imageClickhouseEnabled.tag | string | `"81102-000"` |  |
+| imageClickhouseEnabled.tag | string | `"81903-000"` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | java.memory | string | `"4096m"` |  |
@@ -149,18 +175,6 @@ A Helm chart for Kubernetes
 | lifecycleHooks | object | `{}` |  |
 | maxSurge | string | `"100%"` |  |
 | maxUnavailable | int | `0` |  |
-| mongo.extraArgs | string | `""` |  |
-| mongo.hosts | list | `[]` |  |
-| mongo.protocol | string | `"redis"` |  |
-| mongo.secrets.kubernetesSecrets[0].keys.MONGO_PASSWORD | string | `""` |  |
-| mongo.secrets.kubernetesSecrets[0].keys.MONGO_USER | string | `""` |  |
-| mongo.secrets.kubernetesSecrets[0].secretName | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.name | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_PASSWORD.property | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.name | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].remoteKeys.MONGO_USER.property | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].secretStore.kind | string | `""` |  |
-| mongo.secrets.secretManagement.externalSecretsOperator[0].secretStore.name | string | `""` |  |
 | mongoSecrets.password.key | string | `"mongodb-root-password"` |  |
 | mongoSecrets.password.name | string | `"mongodb-replicaset-chart"` |  |
 | mongoSecrets.userName.key | string | `"mongodbUsername"` |  |
