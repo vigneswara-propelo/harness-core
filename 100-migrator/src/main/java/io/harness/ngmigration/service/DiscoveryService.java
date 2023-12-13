@@ -368,6 +368,8 @@ public class DiscoveryService {
       removeLeafNodes(leafTracker);
     }
 
+    summaryDTO.setNgYamlFiles(files);
+
     for (NGYamlFile yamlFile : files) {
       Set<String> skippedExpressions = SetUtils.emptyIfNull(MigratorExpressionUtils.getExpressions(yamlFile))
                                            .stream()
