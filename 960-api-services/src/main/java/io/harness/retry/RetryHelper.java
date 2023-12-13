@@ -69,6 +69,7 @@ public class RetryHelper {
             .maxAttempts(MAX_ATTEMPTS)
             .intervalFunction(ofExponentialRandomBackoff(Duration.ofSeconds(BACKOFF_INTERVAL_SECONDS).toMillis(), 2d))
             .retryOnResult(predicate)
+            .retryOnException(ignore -> false)
             .build();
     return globalRegistry.retry(name, config);
   }

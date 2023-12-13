@@ -21,6 +21,8 @@ import io.harness.eraro.ResponseMessage;
 import io.harness.exception.ngexception.ErrorMetadataDTO;
 import io.harness.exception.runtime.hashicorp.HashiCorpVaultRuntimeException;
 
+import io.kubernetes.client.openapi.ApiException;
+import java.io.InterruptedIOException;
 import java.util.EnumSet;
 import javax.validation.ConstraintViolationException;
 import lombok.experimental.UtilityClass;
@@ -172,5 +174,11 @@ public class ExceptionUtils {
       ex = ex.getCause();
     }
     return null;
+  }
+
+  public static boolean isK8sApiCallInterrupted(Exception e) {
+    return e instanceof InvalidRequestException && e.getCause() instanceof ApiException
+        && (e.getCause().getCause() instanceof InterruptedException
+            || e.getCause().getCause() instanceof InterruptedIOException);
   }
 }

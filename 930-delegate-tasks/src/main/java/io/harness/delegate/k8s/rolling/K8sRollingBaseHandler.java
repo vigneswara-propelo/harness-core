@@ -201,7 +201,8 @@ public class K8sRollingBaseHandler {
       logCallback.saveExecutionLog("\nFetching existing pod list.");
       existingPodList = getPods(timeoutInMillis, managedWorkloads, kubernetesConfig, releaseName);
     } catch (Exception e) {
-      logCallback.saveExecutionLog(e.getMessage(), ERROR, FAILURE);
+      String errorMessage = isEmpty(e.getMessage()) ? "Failed to get existing pods." : e.getMessage();
+      logCallback.saveExecutionLog(errorMessage, ERROR, FAILURE);
       throw e;
     }
 

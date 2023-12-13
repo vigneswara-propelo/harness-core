@@ -4115,7 +4115,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Test
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
-  public void testGetgetHelmPodListWithLabelSelectors() {
+  public void testGetgetHelmPodListWithLabelSelectors() throws Exception {
     List<String> labels1 = List.of("label1=value1", "label2=value2");
     List<String> labels2 = List.of("label3 in (value3-a, value3-b)");
     List<String> labels3 = List.of("label4=value4");

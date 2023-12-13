@@ -20,9 +20,17 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HelmClientRuntimeException extends RuntimeException {
   @Getter final HelmClientException helmClientException;
+  @Getter ExceptionType type;
 
   public HelmClientRuntimeException(@NotNull HelmClientException helmClientException) {
     super(ExceptionUtils.getMessage(helmClientException));
     this.helmClientException = helmClientException;
   }
+
+  public HelmClientRuntimeException(@NotNull HelmClientException helmClientException, ExceptionType type) {
+    super(ExceptionUtils.getMessage(helmClientException));
+    this.helmClientException = helmClientException;
+    this.type = type;
+  }
+  public enum ExceptionType { INTERRUPT }
 }

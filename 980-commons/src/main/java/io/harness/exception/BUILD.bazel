@@ -27,6 +27,7 @@ java_library(
         "//980-commons/src/main/java/io/harness/k8s:module",
         "//980-commons/src/main/java/io/harness/logging/autolog:module",
         "//999-annotations/src/main/java/io/harness/annotations/dev:module",
+        "@maven//:io_kubernetes_client_java",
         "@maven//:javax_validation_validation_api",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
         "@maven//:org_apache_commons_commons_lang3",

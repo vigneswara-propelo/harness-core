@@ -79,8 +79,8 @@ public class ServiceHookHandler {
     commandTimeout = timeout;
   }
 
-  public void execute(ServiceHookType type, ServiceHookAction action, String workingDirectory, LogCallback logCallback)
-      throws InterruptedException {
+  public void execute(
+      ServiceHookType type, ServiceHookAction action, String workingDirectory, LogCallback logCallback) {
     List<ServiceHookDelegateConfig> hooksToApply = requiredHooks(action.getActionName(), type.getName());
     if (isEmpty(hooksToApply)) {
       return;

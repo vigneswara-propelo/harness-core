@@ -46,7 +46,7 @@ public interface HelmDeployServiceNG {
    * @param helmCommandRequest the helm command request
    * @return the string
    */
-  HelmListReleaseResponseNG listReleases(HelmInstallCommandRequestNG helmCommandRequest);
+  HelmListReleaseResponseNG listReleases(HelmInstallCommandRequestNG helmCommandRequest) throws Exception;
 
   /**
    * Release history helm release history command response.

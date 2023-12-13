@@ -376,7 +376,6 @@ public class ScriptProcessExecutor extends AbstractScriptExecutor {
       }
 
     } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
       handleException(executionDataBuilder, envVariablesMap, e,
           "Script execution interrupted, possibly due to a timeout or pipeline abort.");
     } catch (TimeoutException e) {

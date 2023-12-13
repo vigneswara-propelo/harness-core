@@ -141,6 +141,12 @@ public class K8sTaskNG extends AbstractDelegateRunnableTask {
         k8sDeployResponse.setCommandUnitsProgress(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress));
         return k8sDeployResponse;
       } catch (Exception ex) {
+        if (ExceptionUtils.isK8sApiCallInterrupted(ex) && Thread.interrupted()) {
+          // K8s java client throws InterruptedException wrapped inside an ApiException and also keeps the interrupt
+          // flag of the thread SET. This is against the usual convention and also interferes with the k8s task error
+          // handling below. Hence, we are clearing the interrupt flag manually.
+          log.warn("Resetting thread's interrupt flag.");
+        }
         Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
         log.error("Exception in processing k8s task [{}]",
             k8sDeployRequest.getCommandName() + ":" + k8sDeployRequest.getTaskType(), sanitizedException);

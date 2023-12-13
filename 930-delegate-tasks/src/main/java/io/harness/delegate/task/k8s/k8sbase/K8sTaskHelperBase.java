@@ -444,7 +444,7 @@ public class K8sTaskHelperBase {
   }
 
   public List<K8sPod> getPodDetailsWithLabels(KubernetesConfig kubernetesConfig, String namespace, String releaseName,
-      List<String> labels, long timeoutinMillis) {
+      List<String> labels, long timeoutinMillis) throws Exception {
     try {
       return HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofMillis(timeoutinMillis),
           ()
@@ -453,6 +453,9 @@ public class K8sTaskHelperBase {
                   releaseName));
 
     } catch (Exception e) {
+      if (ExceptionUtils.isK8sApiCallInterrupted(e)) {
+        throw e;
+      }
       log.warn(format("Failed to get pods for namespace [%s] release [%s] ", namespace, releaseName), e);
       return Collections.emptyList();
     }
@@ -686,16 +689,18 @@ public class K8sTaskHelperBase {
   private List<K8sPod> getHelmPodDetails(KubernetesConfig kubernetesConfig, String namespace, String releaseName,
       Map<String, List<String>> workloadLabelSelectors, long timeoutInMillis) throws Exception {
     if (isNotEmpty(workloadLabelSelectors)) {
-      Set<K8sPod> pods = new HashSet<>();
-      workloadLabelSelectors.forEach(
-          (key, value)
-              -> pods.addAll(getPodDetailsWithLabels(kubernetesConfig, namespace, releaseName, value, timeoutInMillis)
-                                 .stream()
-                                 .filter(this::filterByHelmInstanceLabel)
-                                 .filter(this::filterByHelmReleaseLabel)
-                                 .filter(pod -> filterByWorkloadName(pod, key))
-                                 .collect(toList())));
-      return new ArrayList<>(pods);
+      Set<K8sPod> allPods = new HashSet<>();
+      for (Map.Entry<String, List<String>> entry : workloadLabelSelectors.entrySet()) {
+        List<K8sPod> pods =
+            getPodDetailsWithLabels(kubernetesConfig, namespace, releaseName, entry.getValue(), timeoutInMillis);
+        List<K8sPod> matchingPods = pods.stream()
+                                        .filter(this::filterByHelmInstanceLabel)
+                                        .filter(this::filterByHelmReleaseLabel)
+                                        .filter(pod -> filterByWorkloadName(pod, entry.getKey()))
+                                        .collect(toList());
+        allPods.addAll(matchingPods);
+      }
+      return new ArrayList<>(allPods);
 
     } else {
       Map<String, String> labels = ImmutableMap.of(HELM_RELEASE_LABEL, releaseName);
@@ -724,13 +729,19 @@ public class K8sTaskHelperBase {
   }
 
   public List<K8sPod> getHelmPodList(long timeoutInMillis, KubernetesConfig kubernetesConfig, String releaseName,
-      Map<String, List<String>> workloadLabelSelectors, LogCallback logCallback) {
+      Map<String, List<String>> workloadLabelSelectors, LogCallback logCallback) throws Exception {
     String namespace = kubernetesConfig.getNamespace();
     try {
       logCallback.saveExecutionLog("\nFetching existing pod list.");
       return getHelmPodDetails(kubernetesConfig, namespace, releaseName, workloadLabelSelectors, timeoutInMillis);
     } catch (Exception e) {
-      logCallback.saveExecutionLog(e.getMessage(), ERROR, FAILURE);
+      if (ExceptionUtils.isK8sApiCallInterrupted(e)) {
+        throw e;
+      }
+      String exceptionMessage = e.getMessage();
+      if (isNotEmpty(exceptionMessage)) {
+        logCallback.saveExecutionLog(exceptionMessage, ERROR, FAILURE);
+      }
     }
     return Collections.emptyList();
   }
