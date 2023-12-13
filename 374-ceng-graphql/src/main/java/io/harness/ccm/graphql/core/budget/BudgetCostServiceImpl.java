@@ -179,8 +179,13 @@ public class BudgetCostServiceImpl implements BudgetCostService {
 
     Double[] actualMonthlyCost = new Double[MONTHS];
     Arrays.fill(actualMonthlyCost, 0.0D);
-    for (int i = 0; i < result.size(); i++) {
-      actualMonthlyCost[i] = result.get(i).getValue();
+    int monthDiff = 0;
+    if (result.size() > 0) {
+      monthDiff = monthsBetween(new DateTime(startTime), new DateTime(result.get(0).getTime())).getMonths();
+    }
+    for (ValueDataPoint valueDataPoint : result) {
+      actualMonthlyCost[monthDiff] = valueDataPoint.getValue();
+      monthDiff++;
     }
     return actualMonthlyCost;
   }
