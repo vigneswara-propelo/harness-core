@@ -145,8 +145,6 @@ public class EnvironmentServiceImpl implements EnvironmentService {
   private static final String DUP_KEY_EXP_FORMAT_STRING_FOR_ORG =
       "Environment [%s] under Organization [%s] in Account [%s] already exists";
   private static final String DUP_KEY_EXP_FORMAT_STRING_FOR_ACCOUNT = "Environment [%s] in Account [%s] already exists";
-  private static final int REMOTE_ENVIRONMENTS_BATCH_SIZE = 20;
-
   private final InfrastructureEntityService infrastructureEntityService;
   private final ClusterService clusterService;
   private final ServiceOverrideService serviceOverrideService;
@@ -1057,11 +1055,6 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     }
 
     return envInputYamlAndServiceOverridesList;
-  }
-
-  private static List<Environment> getBatch(List<Environment> environmentEntities, int i) {
-    int endIndex = Math.min(i + REMOTE_ENVIRONMENTS_BATCH_SIZE, environmentEntities.size());
-    return environmentEntities.subList(i, endIndex);
   }
 
   // envIdentifierRef : should be scoped ref

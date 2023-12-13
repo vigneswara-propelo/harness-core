@@ -104,6 +104,7 @@ public class SCMGitSyncHelper {
   @Inject private EntityDetailRestToProtoMapper entityDetailRestToProtoMapper;
   @Inject GitSyncSdkService gitSyncSdkService;
   @Inject private ScmErrorHandler scmErrorHandler;
+  private static final int GET_FILE_REQUEST_BATCH_SIZE = 20;
 
   public ScmPushResponse pushToGit(
       GitEntityInfo gitBranchInfo, String yaml, ChangeType changeType, EntityDetail entityDetail) {
@@ -299,10 +300,37 @@ public class SCMGitSyncHelper {
     if (scmGetBatchFilesRequestMap.isEmpty()) {
       return ScmGetBatchFilesResponse.builder().build();
     }
-    Map<String, GetFileRequest> sdkRequestMap = new HashMap<>();
+    return processGetBatchFilesRequestInBlocks(accountIdentifier, scmGetBatchFilesRequestMap);
+  }
 
+  @VisibleForTesting
+  ScmGetBatchFilesResponse processGetBatchFilesRequestInBlocks(
+      String accountIdentifier, Map<String, ScmGetFileRequest> scmGetBatchFilesRequestMap) {
+    Map<String, ScmGetFileResponse> finalBatchFilesResponse = new HashMap<>();
+
+    Map<String, ScmGetFileRequest> batch = new HashMap<>();
     for (Map.Entry<String, ScmGetFileRequest> scmGetFileRequestEntry : scmGetBatchFilesRequestMap.entrySet()) {
-      ScmGetFileRequest scmGetFileRequest = scmGetFileRequestEntry.getValue();
+      batch.put(scmGetFileRequestEntry.getKey(), scmGetFileRequestEntry.getValue());
+      if (batch.size() == GET_FILE_REQUEST_BATCH_SIZE) {
+        // Processing Batch
+        processBatch(accountIdentifier, finalBatchFilesResponse, batch);
+        batch.clear();
+      }
+    }
+
+    // adding last batch when the last batch size is less than BATCH_SIZE.
+    if (batch.size() != 0) {
+      processBatch(accountIdentifier, finalBatchFilesResponse, batch);
+    }
+
+    return ScmGetBatchFilesResponse.builder().batchFilesResponse(finalBatchFilesResponse).build();
+  }
+
+  void processBatch(String accountIdentifier, Map<String, ScmGetFileResponse> finalBatchFilesResponse,
+      Map<String, ScmGetFileRequest> batch) {
+    Map<String, GetFileRequest> sdkRequestMap = new HashMap<>();
+    for (Map.Entry<String, ScmGetFileRequest> batchEntry : batch.entrySet()) {
+      ScmGetFileRequest scmGetFileRequest = batchEntry.getValue();
       GetFileRequest getFileRequest =
           GetFileRequest.newBuilder()
               .setRepoName(scmGetFileRequest.getRepoName())
@@ -316,7 +344,7 @@ public class SCMGitSyncHelper {
               .setPrincipal(getPrincipal())
               .setGetOnlyFileContent(scmGetFileRequest.isGetOnlyFileContent())
               .build();
-      sdkRequestMap.put(scmGetFileRequestEntry.getKey(), getFileRequest);
+      sdkRequestMap.put(batchEntry.getKey(), getFileRequest);
     }
 
     final GetBatchFilesRequest getBatchFilesRequest = GetBatchFilesRequest.newBuilder()
@@ -334,8 +362,7 @@ public class SCMGitSyncHelper {
             getScmErrorDetailsFromGitProtoResponse(getBatchFileResponse.getError()), ScmGitMetaData.builder().build());
       }
     });
-
-    return prepareScmGetBatchFilesResponse(getBatchFilesResponse);
+    addBatchFilesResponseToFinalResponse(getBatchFilesResponse, finalBatchFilesResponse);
   }
 
   public void validateRepo(
@@ -360,9 +387,9 @@ public class SCMGitSyncHelper {
     }
   }
 
-  private ScmGetBatchFilesResponse prepareScmGetBatchFilesResponse(GetBatchFilesResponse getBatchFilesResponse) {
+  private void addBatchFilesResponseToFinalResponse(
+      GetBatchFilesResponse getBatchFilesResponse, Map<String, ScmGetFileResponse> batchFilesResponse) {
     Map<String, GetFileResponse> getFileResponseMap = getBatchFilesResponse.getGetFileResponseMapMap();
-    Map<String, ScmGetFileResponse> batchFilesResponse = new HashMap<>();
 
     getFileResponseMap.forEach((identifier, getFileResponse) -> {
       batchFilesResponse.put(identifier,
@@ -371,8 +398,6 @@ public class SCMGitSyncHelper {
               .gitMetaData(getScmGitMetaData(getFileResponse))
               .build());
     });
-
-    return ScmGetBatchFilesResponse.builder().batchFilesResponse(batchFilesResponse).build();
   }
 
   @VisibleForTesting

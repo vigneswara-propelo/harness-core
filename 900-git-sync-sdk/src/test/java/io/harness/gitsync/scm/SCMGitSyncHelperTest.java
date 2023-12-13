@@ -17,6 +17,10 @@ import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.EntityType;
@@ -91,6 +95,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.slf4j.MDC;
 
 @OwnedBy(HarnessTeam.PL)
@@ -121,7 +126,7 @@ public class SCMGitSyncHelperTest extends GitSdkTestBase {
   private final String repoUrl = "repoUrl";
   private final Map<String, String> contextMap = new HashMap<>();
 
-  @InjectMocks SCMGitSyncHelper scmGitSyncHelper;
+  @Spy @InjectMocks SCMGitSyncHelper scmGitSyncHelper;
   @Mock EntityDetailRestToProtoMapper entityDetailRestToProtoMapper;
   @Mock GitSyncSdkService gitSyncSdkService;
   @Mock EntityDetailProtoDTO entityDetailProtoDTO;
@@ -506,6 +511,20 @@ public class SCMGitSyncHelperTest extends GitSdkTestBase {
     assertThatThrownBy(() -> scmGitSyncHelper.validateRepo(accountId, orgId, projectId, connectorRef, repo))
         .isInstanceOf(ScmInternalServerErrorException.class)
         .hasMessage(error);
+  }
+
+  @Test
+  @Owner(developers = VIVEK_DIXIT)
+  @Category(UnitTests.class)
+  public void testBatchCreation() {
+    Map<String, ScmGetFileRequest> scmGetBatchFilesRequestMap = new HashMap<>();
+    for (int i = 0; i <= 66; i++) {
+      scmGetBatchFilesRequestMap.put(Integer.toString(i), ScmGetFileRequest.builder().build());
+    }
+    doNothing().when(scmGitSyncHelper).processBatch(any(), anyMap(), anyMap());
+    scmGitSyncHelper.processGetBatchFilesRequestInBlocks(accountId, scmGetBatchFilesRequestMap);
+
+    verify(scmGitSyncHelper, times(4)).processBatch(any(), anyMap(), anyMap());
   }
 
   private GitEntityInfo buildGitEntityInfo(String branch, String baseBranch, String commitId, String commitMsg,
