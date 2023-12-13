@@ -17,10 +17,13 @@ import io.harness.delegate.task.stepstatus.StepStatus;
 import io.harness.delegate.task.stepstatus.artifact.ArtifactMetadata;
 import io.harness.delegate.task.stepstatus.artifact.ArtifactMetadataType;
 import io.harness.delegate.task.stepstatus.artifact.SscaArtifactMetadata;
+import io.harness.delegate.task.stepstatus.artifact.ssca.DriftSummary;
+import io.harness.delegate.task.stepstatus.artifact.ssca.Scorecard;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
+import io.harness.spec.server.ssca.v1.model.OrchestrationDriftSummary;
 import io.harness.spec.server.ssca.v1.model.OrchestrationSummaryResponse;
 import io.harness.ssca.beans.SscaConstants;
 import io.harness.ssca.client.SSCAServiceUtils;
@@ -54,12 +57,15 @@ public class SscaOrchestrationStep extends AbstractStepExecutable {
                                                       .imageTag(stepExecutionResponse.getArtifact().getTag())
                                                       .build();
 
-      if (stepExecutionResponse.getArtifact().getScorecard() != null) {
-        sscaArtifactMetadata.setScorecard(
-            SscaArtifactMetadata.Scorecard.builder()
-                .avgScore(stepExecutionResponse.getArtifact().getScorecard().getAvgScore())
-                .maxScore(stepExecutionResponse.getArtifact().getScorecard().getMaxScore())
-                .build());
+      if (stepExecutionResponse.getScorecardSummary() != null) {
+        sscaArtifactMetadata.setScorecard(Scorecard.builder()
+                                              .avgScore(stepExecutionResponse.getScorecardSummary().getAvgScore())
+                                              .maxScore(stepExecutionResponse.getScorecardSummary().getMaxScore())
+                                              .build());
+      }
+
+      if (stepExecutionResponse.getDriftSummary() != null) {
+        sscaArtifactMetadata.setDrift(getDriftSummary(stepExecutionResponse.getDriftSummary()));
       }
 
       stepStatus.setArtifactMetadata(ArtifactMetadata.builder()
@@ -108,12 +114,15 @@ public class SscaOrchestrationStep extends AbstractStepExecutable {
                                                         .tag(stepExecutionResponse.getArtifact().getTag())
                                                         .build();
 
-      if (stepExecutionResponse.getArtifact().getScorecard() != null) {
-        publishedSbomArtifact.setScorecard(
-            PublishedSbomArtifact.Scorecard.builder()
-                .avgScore(stepExecutionResponse.getArtifact().getScorecard().getAvgScore())
-                .maxScore(stepExecutionResponse.getArtifact().getScorecard().getMaxScore())
-                .build());
+      if (stepExecutionResponse.getScorecardSummary() != null) {
+        publishedSbomArtifact.setScorecard(Scorecard.builder()
+                                               .avgScore(stepExecutionResponse.getScorecardSummary().getAvgScore())
+                                               .maxScore(stepExecutionResponse.getScorecardSummary().getMaxScore())
+                                               .build());
+      }
+
+      if (stepExecutionResponse.getDriftSummary() != null) {
+        publishedSbomArtifact.setDrift(getDriftSummary(stepExecutionResponse.getDriftSummary()));
       }
 
       return StepArtifacts.builder().publishedSbomArtifact(publishedSbomArtifact).build();
@@ -160,15 +169,48 @@ public class SscaOrchestrationStep extends AbstractStepExecutable {
                                                           .build();
 
         if (sscaArtifactMetadata.getScorecard() != null) {
-          publishedSbomArtifact.setScorecard(PublishedSbomArtifact.Scorecard.builder()
+          publishedSbomArtifact.setScorecard(Scorecard.builder()
                                                  .avgScore(sscaArtifactMetadata.getScorecard().getAvgScore())
                                                  .maxScore(sscaArtifactMetadata.getScorecard().getMaxScore())
                                                  .build());
+        }
+
+        if (sscaArtifactMetadata.getDrift() != null) {
+          publishedSbomArtifact.setDrift(
+              DriftSummary.builder()
+                  .base(sscaArtifactMetadata.getDrift().getBase())
+                  .driftId(sscaArtifactMetadata.getDrift().getDriftId())
+                  .baseTag(sscaArtifactMetadata.getDrift().getBaseTag())
+                  .totalDrifts(sscaArtifactMetadata.getDrift().getTotalDrifts())
+                  .componentDrifts(sscaArtifactMetadata.getDrift().getComponentDrifts())
+                  .licenseDrifts(sscaArtifactMetadata.getDrift().getLicenseDrifts())
+                  .componentsAdded(sscaArtifactMetadata.getDrift().getComponentsAdded())
+                  .componentsModified(sscaArtifactMetadata.getDrift().getComponentsModified())
+                  .componentsDeleted(sscaArtifactMetadata.getDrift().getComponentsDeleted())
+                  .licenseAdded(sscaArtifactMetadata.getDrift().getLicenseAdded())
+                  .licenseDeleted(sscaArtifactMetadata.getDrift().getLicenseDeleted())
+                  .build());
         }
 
         stepArtifactsBuilder.publishedSbomArtifact(publishedSbomArtifact);
       }
     }
     return stepArtifactsBuilder.build();
+  }
+
+  private DriftSummary getDriftSummary(OrchestrationDriftSummary driftSummary) {
+    return DriftSummary.builder()
+        .base(driftSummary.getBase())
+        .driftId(driftSummary.getDriftId())
+        .baseTag(driftSummary.getBaseTag())
+        .totalDrifts(driftSummary.getTotalDrifts())
+        .componentDrifts(driftSummary.getComponentDrifts())
+        .licenseDrifts(driftSummary.getLicenseDrifts())
+        .componentsAdded(driftSummary.getComponentsAdded())
+        .componentsModified(driftSummary.getComponentsModified())
+        .componentsDeleted(driftSummary.getComponentsDeleted())
+        .licenseAdded(driftSummary.getLicenseAdded())
+        .licenseDeleted(driftSummary.getLicenseDeleted())
+        .build();
   }
 }

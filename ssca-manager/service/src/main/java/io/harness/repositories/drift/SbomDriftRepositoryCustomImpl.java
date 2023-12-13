@@ -47,4 +47,9 @@ public class SbomDriftRepositoryCustomImpl implements SbomDriftRepositoryCustom 
   public <T> List<T> aggregate(Aggregation aggregation, Class<T> resultClass) {
     return mongoTemplate.aggregate(aggregation, DriftEntity.class, resultClass).getMappedResults();
   }
+
+  @Override
+  public DriftEntity findOne(Query query) {
+    return mongoTemplate.findOne(query, DriftEntity.class);
+  }
 }

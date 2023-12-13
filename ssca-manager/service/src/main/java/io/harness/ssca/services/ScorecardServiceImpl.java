@@ -19,6 +19,7 @@ import io.harness.spec.server.ssca.v1.model.SbomDetailsForScorecard;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardRequestBody;
 import io.harness.spec.server.ssca.v1.model.SbomScorecardResponseBody;
 import io.harness.spec.server.ssca.v1.model.ScorecardInfo;
+import io.harness.ssca.beans.Scorecard;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ScorecardEntity;
 import io.harness.ssca.entities.ScorecardEntity.Checks;
@@ -53,10 +54,8 @@ public class ScorecardServiceImpl implements ScorecardService {
         scorecardEntity.getOrgId(), scorecardEntity.getProjectId(), scorecardEntity.getOrchestrationId());
     if (artifact.isPresent()) {
       ArtifactEntity artifactEntity = artifact.get();
-      artifactEntity.setScorecard(ArtifactEntity.Scorecard.builder()
-                                      .avgScore(scorecardEntity.getAvgScore())
-                                      .maxScore(scorecardEntity.getMaxScore())
-                                      .build());
+      artifactEntity.setScorecard(
+          Scorecard.builder().avgScore(scorecardEntity.getAvgScore()).maxScore(scorecardEntity.getMaxScore()).build());
       artifactEntity.setLastUpdatedAt(Instant.now().toEpochMilli());
       Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
         artifactRepository.save(artifactEntity);

@@ -14,7 +14,8 @@ import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.BaselineRepository;
 import io.harness.repositories.SBOMComponentRepo;
 import io.harness.spec.server.ssca.v1.model.Artifact;
-import io.harness.spec.server.ssca.v1.model.ArtifactScorecard;
+import io.harness.spec.server.ssca.v1.model.OrchestrationDriftSummary;
+import io.harness.spec.server.ssca.v1.model.OrchestrationScorecardSummary;
 import io.harness.spec.server.ssca.v1.model.OrchestrationSummaryResponse;
 import io.harness.spec.server.ssca.v1.model.SbomDetails;
 import io.harness.spec.server.ssca.v1.model.SbomProcessRequestBody;
@@ -25,6 +26,7 @@ import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.events.SSCAArtifactCreatedEvent;
 import io.harness.ssca.normalize.Normalizer;
 import io.harness.ssca.normalize.NormalizerRegistry;
+import io.harness.ssca.services.drift.SbomDriftService;
 import io.harness.ssca.utils.SBOMUtils;
 
 import com.google.inject.Inject;
@@ -53,6 +55,8 @@ public class OrchestrationStepServiceImpl implements OrchestrationStepService {
   @Inject S3StoreService s3StoreService;
   @Inject BaselineRepository baselineRepository;
   @Inject OutboxService outboxService;
+
+  @Inject SbomDriftService sbomDriftService;
 
   @Inject @Named("isElasticSearchEnabled") boolean isElasticSearchEnabled;
   private static final RetryPolicy<Object> transactionRetryPolicy = DEFAULT_RETRY_POLICY;
@@ -139,17 +143,24 @@ public class OrchestrationStepServiceImpl implements OrchestrationStepService {
                                     .id(artifact.getId())
                                     .tag(artifact.getTag());
 
+    OrchestrationScorecardSummary scorecardSummary = null;
+
     if (artifact.getScorecard() != null) {
-      artifactResponse.setScorecard(new ArtifactScorecard()
-                                        .avgScore(artifact.getScorecard().getAvgScore())
-                                        .maxScore(artifact.getScorecard().getMaxScore()));
+      scorecardSummary = new OrchestrationScorecardSummary()
+                             .avgScore(artifact.getScorecard().getAvgScore())
+                             .maxScore(artifact.getScorecard().getMaxScore());
     }
+
+    OrchestrationDriftSummary driftSummary =
+        sbomDriftService.getSbomDriftSummary(accountId, orgIdentifier, projectIdentifier, orchestrationId);
 
     return new OrchestrationSummaryResponse()
         .artifact(artifactResponse)
         .stepExecutionId(artifact.getOrchestrationId())
         .isAttested(artifact.isAttested())
-        .sbom(new SbomDetails().name(artifact.getSbomName()));
+        .sbom(new SbomDetails().name(artifact.getSbomName()))
+        .driftSummary(driftSummary)
+        .scorecardSummary(scorecardSummary);
   }
 
   @Override

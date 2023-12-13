@@ -9,6 +9,7 @@ package io.harness.ssca.search.mapper;
 
 import static io.harness.ssca.search.framework.Constants.ARTIFACT_ENTITY;
 
+import io.harness.ssca.beans.Scorecard;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.search.beans.RelationshipType;
 import io.harness.ssca.search.entities.SSCAArtifact;
@@ -55,7 +56,7 @@ public class SSCAArtifactMapper {
         .componentsCount(artifactEntity.getComponentsCount())
         .prodEnvCount(artifactEntity.getProdEnvCount())
         .nonProdEnvCount(artifactEntity.getNonProdEnvCount())
-        .scorecard(artifactEntity.getScorecard() != null ? SSCAArtifact.Scorecard.builder()
+        .scorecard(artifactEntity.getScorecard() != null ? Scorecard.builder()
                                                                .avgScore(artifactEntity.getScorecard().getAvgScore())
                                                                .maxScore(artifactEntity.getScorecard().getMaxScore())
                                                                .build()

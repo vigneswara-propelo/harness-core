@@ -9,6 +9,7 @@ package io.harness.ssca.search.entities;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ssca.beans.Scorecard;
 import io.harness.ssca.search.beans.RelationshipType;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -51,7 +52,7 @@ public class SSCAArtifact {
   Long prodEnvCount;
   Long nonProdEnvCount;
 
-  SSCAArtifact.Scorecard scorecard;
+  Scorecard scorecard;
 
   @Value
   @Builder
@@ -60,13 +61,6 @@ public class SSCAArtifact {
     String toolVersion;
     String sbomFormat;
     String sbomVersion;
-  }
-
-  @Value
-  @Builder
-  public static class Scorecard {
-    String avgScore;
-    String maxScore;
   }
 
   RelationshipType relation_type;

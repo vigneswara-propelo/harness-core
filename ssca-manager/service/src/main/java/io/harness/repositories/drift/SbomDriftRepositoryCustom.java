@@ -21,4 +21,6 @@ public interface SbomDriftRepositoryCustom {
   DriftEntity update(Query query, Update update);
 
   <T> List<T> aggregate(Aggregation aggregation, Class<T> resultClass);
+
+  DriftEntity findOne(Query query);
 }

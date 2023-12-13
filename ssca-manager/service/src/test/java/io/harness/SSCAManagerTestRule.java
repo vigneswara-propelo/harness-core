@@ -68,6 +68,8 @@ import io.harness.ssca.services.S3StoreServiceImpl;
 import io.harness.ssca.services.ScorecardService;
 import io.harness.ssca.services.ScorecardServiceImpl;
 import io.harness.ssca.services.SscaPolicyEvaluationService;
+import io.harness.ssca.services.drift.SbomDriftService;
+import io.harness.ssca.services.drift.SbomDriftServiceImpl;
 import io.harness.testlib.module.MongoRuleMixin;
 import io.harness.testlib.module.TestMongoModule;
 import io.harness.threading.CurrentThreadExecutor;
@@ -200,6 +202,7 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
         bind(ArtifactService.class).to(ArtifactServiceImpl.class);
         bind(BaselineService.class).to(BaselineServiceImpl.class);
         bind(OrchestrationStepService.class).to(OrchestrationStepServiceImpl.class);
+        bind(SbomDriftService.class).to(SbomDriftServiceImpl.class);
         bind(EnforcementStepService.class).to(EnforcementStepServiceImpl.class);
         bind(RuleEngineService.class).to(RuleEngineServiceImpl.class);
         bind(NormalisedSbomComponentService.class).to(NormalisedSbomComponentServiceImpl.class);

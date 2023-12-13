@@ -9,6 +9,7 @@ package io.harness.ci.execution.states.ssca;
 
 import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DETAILS;
 import static io.harness.rule.OwnerRule.INDER;
+import static io.harness.rule.OwnerRule.SHASHWAT_SACHAN;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +27,8 @@ import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
 import io.harness.delegate.task.stepstatus.StepStatus;
 import io.harness.delegate.task.stepstatus.StepStatusTaskResponseData;
+import io.harness.delegate.task.stepstatus.artifact.ssca.DriftSummary;
+import io.harness.delegate.task.stepstatus.artifact.ssca.Scorecard;
 import io.harness.helper.SerializedResponseDataHelper;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.plancreator.steps.common.StepElementParameters;
@@ -37,6 +40,9 @@ import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.repositories.CIStageOutputRepository;
 import io.harness.rule.Owner;
+import io.harness.spec.server.ssca.v1.model.OrchestrationDriftSummary;
+import io.harness.spec.server.ssca.v1.model.OrchestrationScorecardSummary;
+import io.harness.spec.server.ssca.v1.model.OrchestrationSummaryResponse;
 import io.harness.ssca.beans.stepinfo.SscaOrchestrationStepInfo;
 import io.harness.ssca.client.SSCAServiceUtils;
 import io.harness.ssca.client.beans.Artifact;
@@ -172,6 +178,103 @@ public class SscaOrchestrationStepTest extends CIExecutionTestBase {
     assertThat(stepResponse.getStatus()).isEqualTo(Status.SUCCEEDED);
     assertThat(stepResponse.getStepOutcomes().size()).isEqualTo(1);
     stepResponse.getStepOutcomes().forEach(stepOutcome -> {
+      assertThat(stepOutcome.getOutcome()).isInstanceOf(CIStepArtifactOutcome.class);
+      CIStepArtifactOutcome outcome = (CIStepArtifactOutcome) stepOutcome.getOutcome();
+      assertThat(outcome).isNotNull();
+      assertThat(outcome.getStepArtifacts()).isNotNull();
+      assertThat(outcome.getStepArtifacts().getPublishedSbomArtifacts()).isNotNull().hasSize(1);
+      assertThat(outcome.getStepArtifacts().getPublishedSbomArtifacts().get(0)).isEqualTo(publishedSbomArtifact);
+      assertThat(stepOutcome.getName()).isEqualTo("artifact_identifierId");
+    });
+  }
+
+  @Test
+  @Owner(developers = SHASHWAT_SACHAN)
+  @Category(UnitTests.class)
+  public void testHandleK8sAsyncResponseSSCAManagerEnabled() {
+    Ambiance ambiance = SscaTestsUtility.getAmbiance();
+    SscaOrchestrationStepInfo stepInfo =
+        SscaOrchestrationStepInfo.builder().identifier(SscaTestsUtility.STEP_IDENTIFIER).build();
+    StepElementParameters stepElementParameters = SscaTestsUtility.getStepElementParameters(stepInfo);
+
+    StepStatusTaskResponseData stepStatusTaskResponseData =
+        StepStatusTaskResponseData.builder()
+            .stepStatus(StepStatus.builder().stepExecutionStatus(StepExecutionStatus.SUCCESS).build())
+            .build();
+
+    Map<String, ResponseData> responseDataMap = new HashMap<>();
+    responseDataMap.put("response", stepStatusTaskResponseData);
+    when(sscaServiceUtils.isSSCAManagerEnabled()).thenReturn(true);
+    when(serializedResponseDataHelper.deserialize(stepStatusTaskResponseData)).thenReturn(stepStatusTaskResponseData);
+    when(executionSweepingOutputResolver.resolveOptional(any(), any()))
+        .thenReturn(OptionalSweepingOutput.builder().found(false).build());
+    when(executionSweepingOutputResolver.resolveOptional(
+             ambiance, RefObjectUtils.getSweepingOutputRefObject(STAGE_INFRA_DETAILS)))
+        .thenReturn(OptionalSweepingOutput.builder().found(true).output(K8StageInfraDetails.builder().build()).build());
+
+    when(sscaServiceUtils.getOrchestrationSummaryResponse(SscaTestsUtility.STEP_EXECUTION_ID,
+             SscaTestsUtility.ACCOUNT_ID, SscaTestsUtility.ORG_ID, SscaTestsUtility.PROJECT_ID))
+        .thenReturn(new OrchestrationSummaryResponse()
+                        .artifact(new io.harness.spec.server.ssca.v1.model.Artifact()
+                                      .type("image")
+                                      .name("library/nginx")
+                                      .tag("latest")
+                                      .id("someId")
+                                      .registryUrl("https://someurl.com"))
+                        .sbom(new io.harness.spec.server.ssca.v1.model.SbomDetails().name("blah_sbom"))
+                        .isAttested(true)
+                        .stepExecutionId(SscaTestsUtility.STEP_EXECUTION_ID)
+                        .scorecardSummary(new OrchestrationScorecardSummary().avgScore("7.0").maxScore("10.0"))
+                        .driftSummary(new OrchestrationDriftSummary()
+                                          .driftId("someDriftId")
+                                          .base("BASELINE")
+                                          .baseTag("someBaseTag")
+                                          .totalDrifts(4)
+                                          .componentDrifts(3)
+                                          .licenseDrifts(1)
+                                          .componentsAdded(1)
+                                          .componentsModified(1)
+                                          .componentsDeleted(1)
+                                          .licenseAdded(1)
+                                          .licenseDeleted(0)));
+
+    PublishedSbomArtifact publishedSbomArtifact =
+        PublishedSbomArtifact.builder()
+            .stepExecutionId(SscaTestsUtility.STEP_EXECUTION_ID)
+            .imageName("library/nginx")
+            .id("someId")
+            .isSbomAttested(true)
+            .sbomName("blah_sbom")
+            .url("https://someurl.com")
+            .tag("latest")
+            .scorecard(Scorecard.builder().avgScore("7.0").maxScore("10.0").build())
+            .drift(DriftSummary.builder()
+                       .base("BASELINE")
+                       .driftId("someDriftId")
+                       .baseTag("someBaseTag")
+                       .totalDrifts(4)
+                       .componentDrifts(3)
+                       .licenseDrifts(1)
+                       .componentsAdded(1)
+                       .componentsModified(1)
+                       .componentsDeleted(1)
+                       .licenseAdded(1)
+                       .licenseDeleted(0)
+                       .build())
+            .build();
+
+    StepResponse stepResponse =
+        sscaOrchestrationStep.handleAsyncResponseInternal(ambiance, stepElementParameters, responseDataMap);
+    assertThat(stepResponse.getStatus()).isEqualTo(Status.SUCCEEDED);
+    assertThat(stepResponse.getStepOutcomes().size()).isEqualTo(2);
+    List<StepResponse.StepOutcome> stepOutcomeList = new ArrayList<>();
+    stepResponse.getStepOutcomes().forEach(stepOutcome -> {
+      if (stepOutcome.getOutcome() instanceof CIStepArtifactOutcome) {
+        stepOutcomeList.add(stepOutcome);
+      }
+    });
+    assertThat(stepOutcomeList).hasSize(1);
+    stepOutcomeList.forEach(stepOutcome -> {
       assertThat(stepOutcome.getOutcome()).isInstanceOf(CIStepArtifactOutcome.class);
       CIStepArtifactOutcome outcome = (CIStepArtifactOutcome) stepOutcome.getOutcome();
       assertThat(outcome).isNotNull();
