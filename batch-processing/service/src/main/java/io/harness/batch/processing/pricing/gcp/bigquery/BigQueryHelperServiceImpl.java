@@ -20,7 +20,6 @@ import io.harness.batch.processing.config.BillingDataPipelineConfig;
 import io.harness.batch.processing.entities.ClusterDataDetails;
 import io.harness.batch.processing.pricing.gcp.bigquery.VMInstanceServiceBillingData.VMInstanceServiceBillingDataBuilder;
 import io.harness.batch.processing.pricing.vmpricing.VMInstanceBillingData;
-import io.harness.beans.FeatureName;
 import io.harness.ccm.commons.constants.CloudProvider;
 import io.harness.ccm.commons.entities.batch.CEMetadataRecord.CEMetadataRecordBuilder;
 import io.harness.exception.InvalidRequestException;
@@ -62,7 +61,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class BigQueryHelperServiceImpl implements BigQueryHelperService {
-  private static final String CONTENT_STACK_ACCOUNT_ID = "CYVS6BRkSPKdIE5FZThNRQ";
   private static final String USER_AGENT_HEADER = "user-agent";
   private static final String USER_AGENT_HEADER_ENVIRONMENT_VARIABLE = "USER_AGENT_HEADER";
   private static final String DEFAULT_USER_AGENT = "default-user-agent";
@@ -613,17 +611,12 @@ public class BigQueryHelperServiceImpl implements BigQueryHelperService {
           || vmInstanceServiceBillingData.getProductFamily() == null) {
         double cost = vmInstanceServiceBillingData.getCost();
 
-        boolean netAmortisedCostCalculationEnabled =
-            featureFlagService.isEnabled(FeatureName.CE_NET_AMORTISED_COST_ENABLED, accountId);
-
-        if ((netAmortisedCostCalculationEnabled || CONTENT_STACK_ACCOUNT_ID.equals(accountId))
-            && null != vmInstanceServiceBillingData.getNetAmortisedCost()) {
+        if (null != vmInstanceServiceBillingData.getNetAmortisedCost()) {
           cost = vmInstanceServiceBillingData.getNetAmortisedCost();
           log.info("accountId: {} - net amortisedCost: {}", accountId, cost);
         } else if (null != vmInstanceServiceBillingData.getEffectiveCost()) {
           cost = vmInstanceServiceBillingData.getEffectiveCost();
-          log.info("netAmortisedCostCalculationEnabled: {}, accountId: {} - effectiveCost: {}",
-              netAmortisedCostCalculationEnabled, accountId, cost);
+          log.info("accountId: {} - effectiveCost: {}", accountId, cost);
         }
         vmInstanceBillingData = vmInstanceBillingData.toBuilder().computeCost(cost).build();
       }
