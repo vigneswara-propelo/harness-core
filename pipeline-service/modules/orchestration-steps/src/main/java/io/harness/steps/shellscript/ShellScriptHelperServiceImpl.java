@@ -272,25 +272,19 @@ public class ShellScriptHelperServiceImpl implements ShellScriptHelperService {
   }
 
   private String getShellFileScript(ShellScriptSourceWrapper shellScriptSourceWrapper, Ambiance ambiance) {
-    if (pmsFeatureFlagHelper.isEnabled(
-            AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_ENABLE_SHELL_SCRITPT_FILE_REFERENCE)) {
-      HarnessFileStoreSource spec =
-          (HarnessFileStoreSource) updateExpressions(ambiance, shellScriptSourceWrapper.getSpec());
-      String scopedFilePath = spec.getFile().getValue();
-      String script =
-          getContent(FileReference.of(scopedFilePath, AmbianceUtils.getAccountId(ambiance),
-                         AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance)),
-              scopedFilePath);
+    HarnessFileStoreSource spec =
+        (HarnessFileStoreSource) updateExpressions(ambiance, shellScriptSourceWrapper.getSpec());
+    String scopedFilePath = spec.getFile().getValue();
+    String script =
+        getContent(FileReference.of(scopedFilePath, AmbianceUtils.getAccountId(ambiance),
+                       AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance)),
+            scopedFilePath);
 
-      if (isEmpty(script)) {
-        throw new InvalidRequestException(format(FILE_STORE_SCRIPT_ERROR_MSG, scopedFilePath));
-      }
-
-      return engineExpressionService.renderExpression(ambiance, script);
-    } else {
-      throw new InvalidRequestException(
-          format("FF `%s` not enabled", FeatureName.CDS_ENABLE_SHELL_SCRITPT_FILE_REFERENCE));
+    if (isEmpty(script)) {
+      throw new InvalidRequestException(format(FILE_STORE_SCRIPT_ERROR_MSG, scopedFilePath));
     }
+
+    return engineExpressionService.renderExpression(ambiance, script);
   }
 
   public String getContent(FileReference fileReference, String scopedFilePath) {
