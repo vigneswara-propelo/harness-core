@@ -31,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PipelineExecutionEndEventHandler implements OrchestrationEventHandler {
-  // Considering 32 days though max we support 30 days, added buffer of 2 days to prevent any discrepancy
-  public static final long TTL_DAYS = 32;
+  // Considering 37 days though max we support 35 days, added buffer of 2 days to prevent any discrepancy
+  public static final long TTL_DAYS = 37;
   @Inject PlanService planService;
 
   @Inject NodeExecutionService nodeExecutionService;
