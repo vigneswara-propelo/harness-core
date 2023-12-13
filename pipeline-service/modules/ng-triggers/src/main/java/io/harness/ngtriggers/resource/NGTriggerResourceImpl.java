@@ -51,6 +51,7 @@ import io.harness.ngtriggers.beans.entity.metadata.catalog.TriggerCatalogItem;
 import io.harness.ngtriggers.beans.source.GitMoveOperationType;
 import io.harness.ngtriggers.beans.source.TriggerUpdateCount;
 import io.harness.ngtriggers.exceptions.InvalidTriggerYamlException;
+import io.harness.ngtriggers.instrumentation.TriggerTelemetryHelper;
 import io.harness.ngtriggers.mapper.NGTriggerElementMapper;
 import io.harness.ngtriggers.mapper.TriggerFilterHelper;
 import io.harness.ngtriggers.service.NGTriggerEventsService;
@@ -100,6 +101,7 @@ public class NGTriggerResourceImpl implements NGTriggerResource {
   private final NGSettingsClient settingsClient;
   private final FilterService filterService;
   private final PmsFeatureFlagService pmsFeatureFlagService;
+  private final TriggerTelemetryHelper triggerTelemetryHelper;
 
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_EXECUTE)
   public ResponseDTO<NGTriggerResponseDTO> create(@NotNull @AccountIdentifier String accountIdentifier,
@@ -326,6 +328,20 @@ public class NGTriggerResourceImpl implements NGTriggerResource {
 
   public ResponseDTO<BulkTriggersResponseDTO> bulkToggleTriggers(@NotNull @AccountIdentifier String accountIdentifier,
       @NotNull @Body BulkTriggersRequestDTO bulkTriggersRequestDTO) {
-    return ResponseDTO.newResponse(ngTriggerService.toggleTriggersInBulk(accountIdentifier, bulkTriggersRequestDTO));
+    long timeStart = System.currentTimeMillis();
+
+    BulkTriggersResponseDTO bulkTriggersResponseDTO =
+        ngTriggerService.toggleTriggersInBulk(accountIdentifier, bulkTriggersRequestDTO);
+
+    long timeTaken = System.currentTimeMillis() - timeStart;
+
+    try {
+      triggerTelemetryHelper.sendBulkToggleTriggersApiEvent(
+          accountIdentifier, bulkTriggersRequestDTO, bulkTriggersResponseDTO, timeTaken);
+    } catch (Exception e) {
+      log.error("Error while publishing telemetry for the Bulk Toggle Triggers API.");
+    }
+
+    return ResponseDTO.newResponse(bulkTriggersResponseDTO);
   }
 }
