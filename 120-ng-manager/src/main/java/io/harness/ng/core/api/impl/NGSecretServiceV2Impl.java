@@ -69,6 +69,8 @@ import io.harness.ng.core.remote.SSHKeyValidationMetadata;
 import io.harness.ng.core.remote.SecretValidationMetaData;
 import io.harness.ng.core.remote.SecretValidationResultDTO;
 import io.harness.ng.core.remote.WinRmCredentialsValidationMetadata;
+import io.harness.ng.core.services.OrganizationService;
+import io.harness.ng.core.services.ProjectService;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.ng.core.spring.SecretRepository;
 import io.harness.secretmanagerclient.services.SshKeySpecDTOHelper;
@@ -127,6 +129,8 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
   private final AccessControlClient accessControlClient;
   private final NGFeatureFlagHelperService ngFeatureFlagHelperService;
   private final ExceptionManager exceptionManager;
+  private final OrganizationService organizationService;
+  private final ProjectService projectService;
 
   @Inject
   public NGSecretServiceV2Impl(SecretRepository secretRepository, DelegateGrpcClientWrapper delegateGrpcClientWrapper,
@@ -134,7 +138,8 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
       OutboxService outboxService, @Named(OUTBOX_TRANSACTION_TEMPLATE) TransactionTemplate transactionTemplate,
       TaskSetupAbstractionHelper taskSetupAbstractionHelper,
       WinRmCredentialsSpecDTOHelper winRmCredentialsSpecDTOHelper, AccessControlClient accessControlClient,
-      NGFeatureFlagHelperService ngFeatureFlagHelperService, ExceptionManager exceptionManager) {
+      NGFeatureFlagHelperService ngFeatureFlagHelperService, ExceptionManager exceptionManager,
+      OrganizationService organizationService, ProjectService projectService) {
     this.secretRepository = secretRepository;
     this.outboxService = outboxService;
     this.delegateGrpcClientWrapper = delegateGrpcClientWrapper;
@@ -146,6 +151,8 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
     this.accessControlClient = accessControlClient;
     this.ngFeatureFlagHelperService = ngFeatureFlagHelperService;
     this.exceptionManager = exceptionManager;
+    this.organizationService = organizationService;
+    this.projectService = projectService;
   }
 
   @Override
@@ -216,6 +223,22 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
     Secret secret = Secret.fromDTO(secretDTO);
     secret.setDraft(draft);
     secret.setAccountIdentifier(accountIdentifier);
+    if (isEmpty(secret.getOrgIdentifier()) && isEmpty(secret.getProjectIdentifier())) {
+      secret.setParentUniqueId(accountIdentifier);
+    } else if (isEmpty(secret.getProjectIdentifier())) {
+      organizationService.get(accountIdentifier, secret.getOrgIdentifier()).ifPresent(org -> {
+        if (isNotEmpty(org.getUniqueId())) {
+          secret.setParentUniqueId(org.getUniqueId());
+        }
+      });
+    } else {
+      projectService.get(accountIdentifier, secret.getOrgIdentifier(), secret.getProjectIdentifier())
+          .ifPresent(proj -> {
+            if (isNotEmpty(proj.getUniqueId())) {
+              secret.setParentUniqueId(proj.getUniqueId());
+            }
+          });
+    }
     try {
       return Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
         Secret savedSecret = secretRepository.save(secret);

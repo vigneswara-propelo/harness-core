@@ -35,6 +35,10 @@ import io.harness.ng.core.activityhistory.service.NGActivityService;
 import io.harness.ng.core.api.NGSecretManagerService;
 import io.harness.ng.core.api.impl.NGSecretManagerServiceImpl;
 import io.harness.ng.core.entitysetupusage.service.EntitySetupUsageService;
+import io.harness.ng.core.impl.OrganizationServiceImpl;
+import io.harness.ng.core.impl.ProjectServiceImpl;
+import io.harness.ng.core.services.OrganizationService;
+import io.harness.ng.core.services.ProjectService;
 import io.harness.ng.eventsframework.EventsFrameworkModule;
 import io.harness.ng.opa.OpaService;
 import io.harness.ng.opa.OpaServiceImpl;
@@ -290,6 +294,22 @@ public class SecretManagementModuleTest extends CategoryTest {
       @Singleton
       NGSettingsClient getNGSettingsClient() {
         return mock(NGSettingsClient.class);
+      }
+    });
+
+    modules.add(new ProviderModule() {
+      @Provides
+      @Singleton
+      OrganizationService registerConnecterService() {
+        return mock(OrganizationServiceImpl.class);
+      }
+    });
+
+    modules.add(new ProviderModule() {
+      @Provides
+      @Singleton
+      ProjectService registerConnecterService() {
+        return mock(ProjectServiceImpl.class);
       }
     });
 

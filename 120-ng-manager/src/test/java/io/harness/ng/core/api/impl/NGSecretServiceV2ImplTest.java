@@ -77,6 +77,8 @@ import io.harness.ng.core.models.WinRmCredentialsSpec;
 import io.harness.ng.core.remote.SSHKeyValidationMetadata;
 import io.harness.ng.core.remote.SecretValidationResultDTO;
 import io.harness.ng.core.remote.WinRmCredentialsValidationMetadata;
+import io.harness.ng.core.services.OrganizationService;
+import io.harness.ng.core.services.ProjectService;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.ng.core.spring.SecretRepository;
 import io.harness.rule.Owner;
@@ -116,6 +118,8 @@ public class NGSecretServiceV2ImplTest extends CategoryTest {
   private AccessControlClient accessControlClient;
   private NGFeatureFlagHelperService ngFeatureFlagHelperService;
   private ExceptionManager exceptionManager;
+  private OrganizationService organizationService;
+  private ProjectService projectService;
 
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -150,12 +154,15 @@ public class NGSecretServiceV2ImplTest extends CategoryTest {
     accessControlClient = mock(AccessControlClient.class);
     ngFeatureFlagHelperService = mock(NGFeatureFlagHelperService.class);
     exceptionManager = mock(ExceptionManager.class);
+    organizationService = mock(OrganizationService.class);
+    projectService = mock(ProjectService.class);
     SshKeySpecDTOHelper sshKeySpecDTOHelper = mock(SshKeySpecDTOHelper.class);
     WinRmCredentialsSpecDTOHelper winRmCredentialsSpecDTOHelper = mock(WinRmCredentialsSpecDTOHelper.class);
 
     secretServiceV2 = new NGSecretServiceV2Impl(secretRepository, delegateGrpcClientWrapper, sshKeySpecDTOHelper,
         ngSecretActivityService, outboxService, transactionTemplate, taskSetupAbstractionHelper,
-        winRmCredentialsSpecDTOHelper, accessControlClient, ngFeatureFlagHelperService, exceptionManager);
+        winRmCredentialsSpecDTOHelper, accessControlClient, ngFeatureFlagHelperService, exceptionManager,
+        organizationService, projectService);
     secretServiceV2Spy = spy(secretServiceV2);
     secretForceDeleteEventArgumentCaptor = ArgumentCaptor.forClass(SecretForceDeleteEvent.class);
     secretDeleteEventArgumentCaptor = ArgumentCaptor.forClass(SecretDeleteEvent.class);
@@ -246,6 +253,7 @@ public class NGSecretServiceV2ImplTest extends CategoryTest {
   public void testCreate() {
     SecretDTOV2 secretDTOV2 = getSecretDTO();
     Secret secret = Secret.fromDTO(secretDTOV2);
+    secret.setAccountIdentifier(ACC_ID);
     when(secretRepository.save(any())).thenReturn(secret);
     when(transactionTemplate.execute(any())).thenReturn(secret);
 
