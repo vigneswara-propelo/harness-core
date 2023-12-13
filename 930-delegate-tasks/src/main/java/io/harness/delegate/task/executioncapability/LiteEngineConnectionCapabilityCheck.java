@@ -51,9 +51,10 @@ public class LiteEngineConnectionCapabilityCheck implements CapabilityCheck, Pro
   @Override
   public CapabilityResponse performCapabilityCheck(ExecutionCapability delegateCapability) {
     LiteEngineConnectionCapability liteEngineConnectionCapability = (LiteEngineConnectionCapability) delegateCapability;
-    boolean valid = false;
+    boolean valid = isConnectibleLiteEngine(liteEngineConnectionCapability.getIp(),
+        liteEngineConnectionCapability.getPort(), liteEngineConnectionCapability.isLocal());
     try {
-      if (liteEngineConnectionCapability.getPodName() != null) {
+      if (liteEngineConnectionCapability.getPodName() != null && valid) {
         ConnectorDetails k8sConnectorDetails = liteEngineConnectionCapability.getK8sConnectorDetails();
         KubernetesConfig kubernetesConfig =
             getKubernetesConfig((KubernetesClusterConfigDTO) k8sConnectorDetails.getConnectorConfig(),
@@ -70,12 +71,7 @@ public class LiteEngineConnectionCapabilityCheck implements CapabilityCheck, Pro
             liteEngineConnectionCapability.getNamespace(), liteEngineConnectionCapability.getPodName(), deleteOptions);
         if (!kubernetesApiResponse.isSuccess()) {
           valid = false;
-        } else {
-          valid = true;
         }
-      } else {
-        valid = isConnectibleLiteEngine(liteEngineConnectionCapability.getIp(),
-            liteEngineConnectionCapability.getPort(), liteEngineConnectionCapability.isLocal());
       }
     } catch (Exception ex) {
       log.error("Failed to validate deletion dry run", ex);

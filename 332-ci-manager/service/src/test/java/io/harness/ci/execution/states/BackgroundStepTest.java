@@ -46,7 +46,6 @@ import io.harness.ci.execution.serializer.BackgroundStepProtobufSerializer;
 import io.harness.ci.execution.serializer.vm.VmStepSerializer;
 import io.harness.ci.executionplan.CIExecutionTestBase;
 import io.harness.ci.ff.CIFeatureFlagService;
-import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.vm.steps.VmBackgroundStep;
 import io.harness.execution.CIDelegateTaskExecutor;
 import io.harness.plancreator.steps.common.StepElementParameters;
@@ -93,8 +92,6 @@ public class BackgroundStepTest extends CIExecutionTestBase {
   @Mock private CIExecutionServiceConfig ciExecutionServiceConfig;
   @Mock private OutcomeService outcomeService;
   @Mock private ConnectorUtils connectorUtils;
-  @Mock io.harness.utils.ConnectorUtils ngConnectorUtils;
-
   @Mock private VmStepSerializer vmStepSerializer;
   @Mock private VmExecuteStepUtils vmExecuteStepUtils;
   @Mock protected CIFeatureFlagService featureFlagService;
@@ -177,7 +174,6 @@ public class BackgroundStepTest extends CIExecutionTestBase {
                                     .infrastructure(K8sDirectInfraYaml.builder()
                                                         .spec(K8sDirectInfraYamlSpec.builder()
                                                                   .connectorRef(ParameterField.createValueField("fd"))
-                                                                  .namespace(ParameterField.createValueField("test"))
                                                                   .build())
                                                         .build())
                                     .containerNames(new ArrayList<>())
@@ -207,7 +203,6 @@ public class BackgroundStepTest extends CIExecutionTestBase {
     when(backgroundStepProtobufSerializer.serializeStepWithStepParameters(
              any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(UnitStep.newBuilder().build());
-    when(ngConnectorUtils.getConnectorDetails(any(), any())).thenReturn(ConnectorDetails.builder().build());
 
     AsyncExecutableResponse asyncExecutableResponse =
         backgroundStep.executeAsync(ambiance, stepElementParameters, stepInputPackage, null);
