@@ -703,10 +703,6 @@ public class PollingResponseHandler {
   }
 
   public boolean shouldTriggerForAllArtifactsOrManifests(PollingDocument pollingDocument) {
-    if (ngFeatureFlagHelperService.isEnabled(
-            pollingDocument.getAccountId(), FeatureName.SPG_TRIGGER_FOR_ALL_ARTIFACTS_NG)) {
-      return true;
-    }
     try {
       return parseBoolean(
           NGRestUtils

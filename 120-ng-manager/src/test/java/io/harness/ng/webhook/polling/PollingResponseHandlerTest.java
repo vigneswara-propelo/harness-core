@@ -235,8 +235,6 @@ public class PollingResponseHandlerTest extends CategoryTest {
   @Owner(developers = OwnerRule.YUVRAJ)
   @Category(UnitTests.class)
   public void testSuccessS3HelmPollingResponseWithDelegateRebalanceWithEnabledForAllManifests() {
-    when(ngFeatureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.SPG_TRIGGER_FOR_ALL_ARTIFACTS_NG))
-        .thenReturn(true);
     testSuccessResponse(S3_HELM, PollingType.MANIFEST);
   }
 
@@ -268,8 +266,6 @@ public class PollingResponseHandlerTest extends CategoryTest {
   @Owner(developers = OwnerRule.YUVRAJ)
   @Category(UnitTests.class)
   public void testSuccessDockerHubPollingResponseWithDelegateRebalanceWithEnabledForAllArtifacts() {
-    when(ngFeatureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.SPG_TRIGGER_FOR_ALL_ARTIFACTS_NG))
-        .thenReturn(true);
     testSuccessResponse(DOCKER_HUB, PollingType.ARTIFACT);
   }
 
@@ -565,8 +561,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
 
     verify(pollingService, times(1))
         .updateTriggerPollingStatus(ACCOUNT_ID, pollingDocument.getSignatures(), true, null, newPolledKeys, null);
-    if (ngFeatureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.SPG_TRIGGER_FOR_ALL_ARTIFACTS_NG)
-        || pollingResponseHandler.shouldTriggerForAllArtifactsOrManifests(pollingDocument)) {
+    if (pollingResponseHandler.shouldTriggerForAllArtifactsOrManifests(pollingDocument)) {
       assertPublishedItem(type, 1, 5, pollingType);
     } else {
       assertPublishedItem(type, 5, 1, pollingType);
@@ -589,8 +584,7 @@ public class PollingResponseHandlerTest extends CategoryTest {
     verify(pollingService, times(1))
         .updateTriggerPollingStatus(ACCOUNT_ID, pollingDocument.getSignatures(), true, null,
             List.of("1006", "1007", "1008", "1009", "1010", "1011"), null);
-    if (ngFeatureFlagHelperService.isEnabled(ACCOUNT_ID, FeatureName.SPG_TRIGGER_FOR_ALL_ARTIFACTS_NG)
-        || pollingResponseHandler.shouldTriggerForAllArtifactsOrManifests(pollingDocument)) {
+    if (pollingResponseHandler.shouldTriggerForAllArtifactsOrManifests(pollingDocument)) {
       assertPublishedItem(type, 1, 11, pollingType);
     } else {
       assertPublishedItem(type, 6, 2, pollingType);
