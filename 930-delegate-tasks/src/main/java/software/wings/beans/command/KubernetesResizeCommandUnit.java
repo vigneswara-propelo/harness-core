@@ -29,9 +29,6 @@ import lombok.EqualsAndHashCode;
 public class KubernetesResizeCommandUnit extends ContainerResizeCommandUnit {
   public KubernetesResizeCommandUnit() {
     super(CommandUnitType.RESIZE_KUBERNETES);
-    throw new UnsupportedOperationException(
-        String.format("Command Unit: %s is no longer supported. Please contact harness customer care.",
-            CommandUnitType.KUBERNETES_SETUP));
   }
 
   @Override

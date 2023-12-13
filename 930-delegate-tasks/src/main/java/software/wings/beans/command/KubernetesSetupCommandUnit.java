@@ -36,9 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 public class KubernetesSetupCommandUnit extends ContainerSetupCommandUnit {
   public KubernetesSetupCommandUnit() {
     super(CommandUnitType.KUBERNETES_SETUP);
-    throw new UnsupportedOperationException(
-        String.format("Command Unit: %s is no longer supported. Please contact harness customer care.",
-            CommandUnitType.KUBERNETES_SETUP));
   }
 
   @Override
