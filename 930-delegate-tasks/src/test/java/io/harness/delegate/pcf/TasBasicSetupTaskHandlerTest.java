@@ -12,6 +12,7 @@ import static io.harness.delegate.pcf.TasTestConstants.MANIFEST_YAML;
 import static io.harness.delegate.pcf.TasTestConstants.MANIFEST_YAML_PROCESS;
 import static io.harness.delegate.pcf.TasTestConstants.VARS_YAML;
 import static io.harness.pcf.model.PcfConstants.PCF_ARTIFACT_DOWNLOAD_DIR_PATH;
+import static io.harness.rule.OwnerRule.ANIL;
 import static io.harness.rule.OwnerRule.SOURABH;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -216,7 +217,148 @@ public class TasBasicSetupTaskHandlerTest extends CategoryTest {
         cfBasicSetupResponseNG.getStepExecutionInstanceInfo().getDeployedServiceInstances().get(0).getInstanceName())
         .isEqualTo(APP_ID);
   }
+  @Test
+  @Owner(developers = ANIL)
+  @Category(UnitTests.class)
+  public void testExecuteWithUsernamePassword() throws Exception {
+    CloudFoundryConfig foundryConfig = CloudFoundryConfig.builder()
+                                           .endpointUrl(ENDPOINT_URL)
+                                           .userName(USERNAME.toCharArray())
+                                           .password(PASSWORD.toCharArray())
+                                           .build();
 
+    doReturn(foundryConfig).when(tasNgConfigMapper).mapTasConfigWithDecryption(any(), any());
+
+    CfBasicSetupRequestNG cfBasicSetupRequestNG =
+        CfBasicSetupRequestNG.builder()
+            .tasInfraConfig(tasInfraConfig)
+            .cfCommandTypeNG(CfCommandTypeNG.APP_RESIZE)
+            .cfCliVersion(CfCliVersion.V7)
+            .olderActiveVersionCountToKeep(1)
+            .releaseNamePrefix(APP_NAME)
+            .tasManifestsPackage(
+                TasManifestsPackage.builder().manifestYml(MANIFEST_YAML).variableYmls(List.of()).build())
+            .tasArtifactConfig(TasContainerArtifactConfig.builder()
+                                   .registryType(TasArtifactRegistryType.GITHUB_PACKAGE_REGISTRY)
+                                   .build())
+            .commandUnitsProgress(CommandUnitsProgress.builder().build())
+            .accountId(ACCOUNT)
+            .timeoutIntervalInMin(10)
+            .useAppAutoScalar(false)
+            .build();
+
+    ApplicationDetail applicationDetail = ApplicationDetail.builder()
+                                              .id(APP_ID)
+                                              .diskQuota(1)
+                                              .url("url")
+                                              .instances(0)
+                                              .memoryLimit(1)
+                                              .name(APP_NAME)
+                                              .requestedState(STOPPED)
+                                              .stack("")
+                                              .runningInstances(0)
+                                              .build();
+    doReturn(false).when(cfDeploymentManager).checkIfAppHasAutoscalarEnabled(any(), any());
+    doNothing().when(cfDeploymentManager).renameApplication(any(), any());
+    doNothing().when(cfDeploymentManager).deleteApplication(any());
+    doReturn(applicationDetail).when(cfDeploymentManager).createApplication(any(), any());
+    doReturn(TasArtifactDownloadResponse.builder().build())
+        .when(cfCommandTaskHelperNG)
+        .downloadPackageArtifact(any(), any());
+
+    doReturn(TasArtifactCreds.builder().username("user").password("pass").build())
+        .when(tasRegistrySettingsAdapter)
+        .getContainerSettings(any());
+
+    when(cfDeploymentManager.getPreviousReleases(any(), any()))
+        .thenReturn(List.of(getApplicationSummary(APP_NAME, APP_ID_OLD)));
+
+    ArgumentCaptor<CfRequestConfig> cfRequestConfigArgumentCaptor = ArgumentCaptor.forClass(CfRequestConfig.class);
+
+    tasBasicSetupTaskHandler.executeTaskInternal(
+        cfBasicSetupRequestNG, logStreamingTaskClient, CommandUnitsProgress.builder().build());
+
+    verify(cfDeploymentManager, times(1)).getPreviousReleases(cfRequestConfigArgumentCaptor.capture(), any());
+
+    CfRequestConfig cfRequestConfigArgumentCaptorValue = cfRequestConfigArgumentCaptor.getValue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getUserName().equals(USERNAME)).isTrue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getPassword().equals(PASSWORD)).isTrue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getEndpointUrl().equals(ENDPOINT_URL)).isTrue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getRefreshToken()).isNull();
+  }
+
+  @Test
+  @Owner(developers = ANIL)
+  @Category(UnitTests.class)
+  public void testExecuteWithRefreshToken() throws Exception {
+    String refreshToken = "dummyToken";
+
+    CloudFoundryConfig foundryConfig = CloudFoundryConfig.builder()
+                                           .endpointUrl(ENDPOINT_URL)
+                                           .userName(USERNAME.toCharArray())
+                                           .password(PASSWORD.toCharArray())
+                                           .refreshToken(refreshToken.toCharArray())
+                                           .build();
+
+    doReturn(foundryConfig).when(tasNgConfigMapper).mapTasConfigWithDecryption(any(), any());
+
+    CfBasicSetupRequestNG cfBasicSetupRequestNG =
+        CfBasicSetupRequestNG.builder()
+            .tasInfraConfig(tasInfraConfig)
+            .cfCommandTypeNG(CfCommandTypeNG.APP_RESIZE)
+            .cfCliVersion(CfCliVersion.V7)
+            .olderActiveVersionCountToKeep(1)
+            .releaseNamePrefix(APP_NAME)
+            .tasManifestsPackage(
+                TasManifestsPackage.builder().manifestYml(MANIFEST_YAML).variableYmls(List.of()).build())
+            .tasArtifactConfig(TasContainerArtifactConfig.builder()
+                                   .registryType(TasArtifactRegistryType.GITHUB_PACKAGE_REGISTRY)
+                                   .build())
+            .commandUnitsProgress(CommandUnitsProgress.builder().build())
+            .accountId(ACCOUNT)
+            .timeoutIntervalInMin(10)
+            .useAppAutoScalar(false)
+            .build();
+
+    ApplicationDetail applicationDetail = ApplicationDetail.builder()
+                                              .id(APP_ID)
+                                              .diskQuota(1)
+                                              .url("url")
+                                              .instances(0)
+                                              .memoryLimit(1)
+                                              .name(APP_NAME)
+                                              .requestedState(STOPPED)
+                                              .stack("")
+                                              .runningInstances(0)
+                                              .build();
+    doReturn(false).when(cfDeploymentManager).checkIfAppHasAutoscalarEnabled(any(), any());
+    doNothing().when(cfDeploymentManager).renameApplication(any(), any());
+    doNothing().when(cfDeploymentManager).deleteApplication(any());
+    doReturn(applicationDetail).when(cfDeploymentManager).createApplication(any(), any());
+    doReturn(TasArtifactDownloadResponse.builder().build())
+        .when(cfCommandTaskHelperNG)
+        .downloadPackageArtifact(any(), any());
+
+    doReturn(TasArtifactCreds.builder().username("user").password("pass").build())
+        .when(tasRegistrySettingsAdapter)
+        .getContainerSettings(any());
+
+    when(cfDeploymentManager.getPreviousReleases(any(), any()))
+        .thenReturn(List.of(getApplicationSummary(APP_NAME, APP_ID_OLD)));
+
+    ArgumentCaptor<CfRequestConfig> cfRequestConfigArgumentCaptor = ArgumentCaptor.forClass(CfRequestConfig.class);
+
+    tasBasicSetupTaskHandler.executeTaskInternal(
+        cfBasicSetupRequestNG, logStreamingTaskClient, CommandUnitsProgress.builder().build());
+
+    verify(cfDeploymentManager, times(1)).getPreviousReleases(cfRequestConfigArgumentCaptor.capture(), any());
+
+    CfRequestConfig cfRequestConfigArgumentCaptorValue = cfRequestConfigArgumentCaptor.getValue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getUserName().equals(USERNAME)).isTrue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getPassword().equals(PASSWORD)).isTrue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getEndpointUrl().equals(ENDPOINT_URL)).isTrue();
+    assertThat(cfRequestConfigArgumentCaptorValue.getRefreshToken().equals(refreshToken)).isTrue();
+  }
   @Test
   @Owner(developers = SOURABH)
   @Category(UnitTests.class)
