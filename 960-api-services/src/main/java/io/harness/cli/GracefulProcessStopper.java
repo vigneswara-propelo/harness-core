@@ -34,10 +34,10 @@ public class GracefulProcessStopper implements ProcessStopper {
     // child processes firstly and then destroy the parent process.
 
     List<ProcessHandle> allProcesses = process.descendants().collect(Collectors.toList());
+    ProcessHandle.of(process.pid()).ifPresent(allProcesses::add);
+
     Deque<ProcessHandle> processHandlers = new ArrayDeque<>(allProcesses);
     Set<Long> pidsOfCompletedProcesses = new HashSet<>();
-
-    ProcessHandle.of(process.pid()).ifPresent(processHandlers::add);
 
     CompletableFuture<ProcessHandle> processHandleFuture = null;
 
