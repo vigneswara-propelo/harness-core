@@ -3,12 +3,12 @@
 # that can be found in the licenses directory at the root of this repository, also available at
 # https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
 
-import base64
 import json
 import io
 import os
 import util
 import re
+import uuid
 
 from datetime import datetime, date, time, timedelta
 from google.cloud import bigquery
@@ -26,16 +26,18 @@ from azure.mgmt.compute import ComputeManagementClient
 """
 
 
-def main(event, context):
-    """Triggered from a message on a Cloud Pub/Sub topic.
-    Args:
-         event (dict): Event payload.
-         context (google.cloud.functions.Context): Metadata for the event.
+def main(request):
     """
-    print(event)
-    data = base64.b64decode(event['data']).decode('utf-8')
-    jsonData = json.loads(data)
-    print(jsonData)
+    Triggered from an HTTP Request.
+    """
+    print(request)
+    jsonData = request.get_json(force=True)
+
+    # Set the accountId and executionId for GCP logging
+    util.ACCOUNTID_LOG = jsonData.get("accountId")
+    util.CF_EXECUTION_ID = uuid.uuid4()
+    print_(request)
+    print_(jsonData)
 
     # This is available only in runtime python 3.7, go 1.11
     jsonData["projectName"] = os.environ.get('GCP_PROJECT', 'ccm-play')
@@ -58,7 +60,7 @@ def main(event, context):
         print_("%s table does not exists, creating table..." % azureVMInventoryMetricTableRef)
         if not createTable(client, azureVMInventoryMetricTableRef):
             # No need to fetch CPU data at this point
-            return
+            return "CF completed execution."
 
     vm_data_map, added_at = get_vm_cpu_and_memory_data(jsonData)
     print_("Total VMs for which CPU and Memory data was fetched: %s" % (len(vm_data_map)/2))
@@ -76,6 +78,7 @@ def main(event, context):
     job.result()
 
     print_("Completed")
+    return "CF executed successfully."
 
 
 def get_azure_tenant_ids(jsonData):

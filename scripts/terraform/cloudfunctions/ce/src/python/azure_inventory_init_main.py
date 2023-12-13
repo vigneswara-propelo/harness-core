@@ -102,18 +102,20 @@ def manage_scheduler_jobs(event_json):
 
 def manage_inventory_metric_data_scheduler_job(event, inventory_type):
     name = f"{parent}/jobs/ce-azure-%s-metric-data-%s" % (inventory_type, event["accountId"])
-    topic_path = publisher.topic_path(PROJECTID, f"ce-azure-{inventory_type}-inventory-metric-data-scheduler")
-
     schedule = "0 10 * * *"  # Run at 10 UTC daily
-
     jsonData = {
         "accountId": event["accountId"]
     }
+
     job = {
         'name': name,
-        'pubsub_target': {
-            'topic_name': topic_path,
-            'data': bytes(json.dumps(jsonData), 'utf-8')
+        "http_target": {
+            "uri": get_cf_v2_uri(f"projects/{PROJECTID}/locations/us-central1/functions/ce-azure-vm-inventory-metric-data-terraform"),
+            "http_method": "POST",
+            "body": bytes(json.dumps(jsonData), 'utf-8'),
+            "oidc_token": {
+                "service_account_email": f"{PROJECTID}@appspot.gserviceaccount.com"
+            }
         },
         'schedule': schedule,
         'time_zone': "UTC"

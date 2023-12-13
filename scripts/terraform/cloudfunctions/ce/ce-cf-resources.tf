@@ -1868,31 +1868,33 @@ resource "google_cloudfunctions_function" "ce-azure-vm-inventory-data-load-funct
   }
 }
 
-resource "google_cloudfunctions_function" "ce-azure-vm-inventory-metric-data-function" {
-  name                      = "ce-azure-vm-inventory-metric-data-terraform"
-  description               = "This cloudfunction gets triggered upon event in a pubsub topic"
-  entry_point               = "main"
-  available_memory_mb       = 1024
-  timeout                   = 540
-  runtime                   = "python38"
-  project                   = "${var.projectId}"
-  region                    = "${var.region}"
-  source_archive_bucket     = "${google_storage_bucket.bucket1.name}"
-  source_archive_object     = "${google_storage_bucket_object.ce-azure-vm-inventory-metric-data-archive.name}"
-  max_instances             = 3000
+resource "google_cloudfunctions2_function" "ce-azure-vm-inventory-metric-data-function" {
+  provider = google-beta
+  name = "ce-azure-vm-inventory-metric-data-terraform"
+  location = "${var.region}"
+  project = "${var.projectId}"
+  description = "This cloudfunction gets triggered with an http request to function URI"
 
-  environment_variables = {
-    disabled = "false"
-    enable_for_accounts = ""
-    GCP_PROJECT = "${var.projectId}"
-    GCP_PROJECT_SECONDARY = "${var.projectIdSecondary}"
-  }
-
-  event_trigger {
-    event_type = "google.pubsub.topic.publish"
-    resource   = "${google_pubsub_topic.ce-azure-vm-inventory-metric-data-topic.name}"
-    failure_policy {
-      retry = false
+  build_config {
+    runtime = "python38"
+    entry_point = "main"
+    source {
+      storage_source {
+        bucket = "${google_storage_bucket.bucket1.name}"
+        object = "${google_storage_bucket_object.ce-azure-vm-inventory-metric-data-archive.name}"
+      }
     }
+  }
+  service_config {
+    max_instance_count = 3000
+    available_memory   = "1024M"
+    timeout_seconds    = 3600
+    environment_variables = {
+      disabled = "false"
+      enable_for_accounts = ""
+      GCP_PROJECT = "${var.projectId}"
+      GCP_PROJECT_SECONDARY = "${var.projectIdSecondary}"
+    }
+    service_account_email = data.google_app_engine_default_service_account.default.email
   }
 }
