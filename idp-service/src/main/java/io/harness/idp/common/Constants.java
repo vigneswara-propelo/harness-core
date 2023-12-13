@@ -115,7 +115,7 @@ public class Constants {
   public static final String LOCAL_ENV = "local";
 
   public static final String COMPLIANCE_ENV = "compliance";
-
+  public static final String DEFAULT = "default";
   public static final String DEFAULT_BRANCH_KEY = "refs/";
   public static final String DEFAULT_BRANCH_KEY_ESCAPED = "\"refs/\"";
 

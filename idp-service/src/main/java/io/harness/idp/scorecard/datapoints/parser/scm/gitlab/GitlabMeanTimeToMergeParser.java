@@ -8,6 +8,8 @@
 package io.harness.idp.scorecard.datapoints.parser.scm.gitlab;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.idp.common.Constants.DEFAULT;
+import static io.harness.idp.common.Constants.DEFAULT_BRANCH_KEY;
 import static io.harness.idp.common.Constants.ERROR_MESSAGE_KEY;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.INVALID_BRANCH_NAME_ERROR;
 import static io.harness.idp.scorecard.datapoints.constants.DataPoints.INVALID_FILE_NAME_ERROR;
@@ -50,8 +52,9 @@ public class GitlabMeanTimeToMergeParser implements DataPointParser {
 
     List<Map<String, Object>> nodes = (List<Map<String, Object>>) CommonUtils.findObjectByName(data, "nodes");
     if (isEmpty(nodes)) {
-      dataPointData.putAll(
-          constructDataPointInfo(dataFetchDTO, null, format(NO_PULL_REQUESTS_FOUND, inputValue.replace("\"", ""))));
+      inputValue = inputValue.replace("\"", "");
+      String branchName = inputValue.equals(DEFAULT_BRANCH_KEY) ? DEFAULT : inputValue;
+      dataPointData.putAll(constructDataPointInfo(dataFetchDTO, null, format(NO_PULL_REQUESTS_FOUND, branchName)));
       return dataPointData;
     }
 

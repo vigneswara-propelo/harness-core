@@ -37,11 +37,7 @@ public abstract class BitbucketBaseDsl extends ScmBaseDslNoLoop {
   protected Map<String, Object> processResponse(Response response) {
     Map<String, Object> ruleData = new HashMap<>();
     if (response.getStatus() == 200) {
-      if (response.getEntity() instanceof String) {
-        ruleData.put(DSL_RESPONSE, response.getEntity());
-      } else {
-        ruleData.put(DSL_RESPONSE, GsonUtils.convertJsonStringToObject(response.getEntity().toString(), Map.class));
-      }
+      ruleData.put(DSL_RESPONSE, GsonUtils.convertJsonStringToObject(response.getEntity().toString(), Map.class));
     } else if (response.getStatus() == 500) {
       ruleData.put(ERROR_MESSAGE_KEY, ((ResponseMessage) response.getEntity()).getMessage());
     } else {

@@ -30,8 +30,7 @@ public class BitbucketIsBranchProtectionSetDsl extends BitbucketBaseDsl {
       String inputValue = inputValueOpt.get().getValue();
       inputValue = inputValue.replace("\"", "");
       if (!inputValue.isEmpty()) {
-        String branch = inputValueOpt.get().getValue();
-        url = url.replace(BRANCH_NAME_REPLACER, branch);
+        url = url.replace(BRANCH_NAME_REPLACER, inputValue);
       }
     }
     return url;
