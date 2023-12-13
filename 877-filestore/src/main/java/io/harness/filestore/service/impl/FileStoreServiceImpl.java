@@ -83,6 +83,7 @@ import com.google.common.io.Files;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.serializer.HObjectMapper;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -131,6 +132,11 @@ public class FileStoreServiceImpl implements FileStoreService {
 
     NGFile ngFile = FileDTOMapper.getNGFileFromDTO(fileDto);
 
+    // create empty file if content is null
+    if (content == null && ngFile.isFile()) {
+      content = generateEmptyFileInputStream();
+    }
+
     if (shouldStoreFileContent(content, ngFile)) {
       log.info("Start creating file in file system, identifier: {}", fileDto.getIdentifier());
       saveFile(fileDto, ngFile, content);
@@ -153,6 +159,12 @@ public class FileStoreServiceImpl implements FileStoreService {
     }
 
     NGFile updatedNGFile = FileDTOMapper.updateNGFile(fileDto, oldNGFile);
+
+    // update with empty file if content is null
+    if (content == null && updatedNGFile.isFile()) {
+      content = generateEmptyFileInputStream();
+    }
+
     if (shouldStoreFileContent(content, updatedNGFile)) {
       log.info("Start updating file in file system, identifier: {}", fileDto.getIdentifier());
       saveFile(fileDto, updatedNGFile, content);
@@ -719,5 +731,9 @@ public class FileStoreServiceImpl implements FileStoreService {
                             .getResponse(settingsClient.getSetting(
                                 SettingIdentifiers.ENABLE_FORCE_DELETE, accountIdentifier, null, null))
                             .getValue());
+  }
+
+  private InputStream generateEmptyFileInputStream() {
+    return new ByteArrayInputStream("".getBytes());
   }
 }

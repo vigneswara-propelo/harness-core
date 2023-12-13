@@ -1605,4 +1605,42 @@ public class FileStoreServiceImplTest extends CategoryTest {
              any(), any(), any(), eq(parentIdentifier)))
         .thenReturn(Optional.of(parentFolder));
   }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void shouldSaveFileWithNullContent() {
+    // Given
+    givenThatExistsParentFolderButNotFile(PARENT_IDENTIFIER, FILE_IDENTIFIER);
+    final FileDTO fileDto = aFileDto();
+
+    // When
+    fileStoreService.create(fileDto, null);
+
+    // Then
+    NGBaseFile baseFile = new NGBaseFile();
+    baseFile.setFileName(fileDto.getName());
+    baseFile.setAccountId(fileDto.getAccountIdentifier());
+
+    verify(fileService).saveFile(eq(baseFile), notNull(InputStream.class), eq(FileBucket.FILE_STORE));
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void testUpdateWithNullContent() {
+    NGFile ngFile = createNgFileTypeFile();
+    FileDTO fileDto = createFileDto();
+    fileDto.setParentIdentifier(ROOT_FOLDER_IDENTIFIER);
+    when(fileStoreRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
+             any(), any(), any(), any()))
+        .thenReturn(Optional.of(ngFile));
+    when(fileFailsafeService.updateAndPublish(any(), any())).thenReturn(fileDto);
+
+    FileDTO result = fileStoreService.update(fileDto, null);
+
+    assertThat(result).isNotNull();
+    assertThat(result.getName()).isEqualTo("updatedName");
+    assertThat(result.getDescription()).isEqualTo("updatedDescription");
+  }
 }
