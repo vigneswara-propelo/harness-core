@@ -81,6 +81,7 @@ import io.harness.pms.pipeline.service.PMSPipelineTemplateHelper;
 import io.harness.pms.pipeline.service.PMSYamlSchemaService;
 import io.harness.pms.pipeline.service.PipelineEnforcementService;
 import io.harness.pms.pipeline.service.PipelineMetadataService;
+import io.harness.pms.plan.creation.NodeTypeLookupService;
 import io.harness.pms.plan.creation.PlanCreatorMergeService;
 import io.harness.pms.plan.execution.beans.ExecArgs;
 import io.harness.pms.plan.execution.beans.ProcessStageExecutionInfoResult;
@@ -144,6 +145,7 @@ public class ExecutionHelperTest extends CategoryTest {
   @Mock NGSettingsClient settingsClient;
   @Mock PMSPipelineServiceHelper pmsPipelineServiceHelper;
   @Mock private Call<ResponseDTO<SettingValueResponseDTO>> request;
+  @Mock private NodeTypeLookupService nodeTypeLookupService;
 
   String accountId = "accountId";
   String orgId = "orgId";

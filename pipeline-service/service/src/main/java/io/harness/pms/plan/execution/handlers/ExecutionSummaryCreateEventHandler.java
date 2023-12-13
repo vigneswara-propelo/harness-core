@@ -195,6 +195,10 @@ public class ExecutionSummaryCreateEventHandler implements OrchestrationStartObs
       modules.add(moduleName);
     }
 
+    if (!isEmpty(plan.getStepModules())) {
+      modules.addAll(plan.getStepModules());
+    }
+
     PipelineExecutionSummaryEntity pipelineExecutionSummaryEntity =
         PipelineExecutionSummaryEntity.builder()
             .layoutNodeMap(layoutNodeDTOMap)

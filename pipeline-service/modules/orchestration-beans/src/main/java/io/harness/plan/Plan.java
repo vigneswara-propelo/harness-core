@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -70,6 +71,8 @@ public class Plan implements PersistentEntity, Node {
   @Default @Wither @Id @dev.morphia.annotations.Id String uuid = generateUuid();
   @Singular @Deprecated List<PlanNodeProto> nodes;
   @Wither @Singular List<Node> planNodes;
+  // stepModules store the modules related to a particular step that are visible in the UI.
+  @Wither Set<String> stepModules;
 
   @NotNull String startingNodeId;
 

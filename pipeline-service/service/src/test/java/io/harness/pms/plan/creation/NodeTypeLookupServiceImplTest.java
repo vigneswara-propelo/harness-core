@@ -8,6 +8,7 @@
 package io.harness.pms.plan.creation;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import static io.harness.rule.OwnerRule.AYUSHI_TIWARI;
 import static io.harness.rule.OwnerRule.NAMAN;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,11 +19,19 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
+import io.harness.plan.Node;
+import io.harness.plan.PlanNode;
+import io.harness.pms.contracts.steps.SdkStep;
+import io.harness.pms.contracts.steps.StepCategory;
+import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.PmsSdkInstanceService;
 import io.harness.rule.Owner;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Before;
@@ -91,5 +100,60 @@ public class NodeTypeLookupServiceImplTest extends CategoryTest {
     assertThatThrownBy(() -> nodeTypeLookupService.findNodeTypeServiceName("eh"))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Unknown Node type: eh");
+  }
+
+  @Test
+  @Owner(developers = AYUSHI_TIWARI)
+  @Category(UnitTests.class)
+  public void testModulesThatSupportStepTypes() {
+    Map<String, Set<SdkStep>> instances = new HashMap<>();
+    doReturn(instances).when(pmsSdkInstanceService).getSdkSteps();
+    List<Node> planNodeList = new ArrayList<>();
+    assertThatThrownBy(() -> nodeTypeLookupService.modulesThatSupportStepTypes(planNodeList))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Supported Types Map is empty");
+
+    Set<SdkStep> listOfSdkStep = new HashSet<>();
+    StepType stepType = StepType.newBuilder().setType("type").setStepCategory(StepCategory.STEP).build();
+    listOfSdkStep.add(SdkStep.newBuilder().setStepType(stepType).setIsPartOfStepPallete(true).build());
+    instances.put("cd", listOfSdkStep);
+
+    Set<SdkStep> listOfSdkStep1 = new HashSet<>();
+    listOfSdkStep1.add(SdkStep.newBuilder().setStepType(stepType).setIsPartOfStepPallete(true).build());
+    StepType stepType1 = StepType.newBuilder().setType("type1").setStepCategory(StepCategory.STEP).build();
+    listOfSdkStep1.add(SdkStep.newBuilder().setStepType(stepType1).setIsPartOfStepPallete(false).build());
+    instances.put("ci", listOfSdkStep1);
+
+    Set<SdkStep> listOfSdkStep2 = new HashSet<>();
+    listOfSdkStep2.add(SdkStep.newBuilder().setStepType(stepType).setIsPartOfStepPallete(true).build());
+    listOfSdkStep2.add(SdkStep.newBuilder().setStepType(stepType1).setIsPartOfStepPallete(false).build());
+    StepType stepType2 = StepType.newBuilder().setType("type2").setStepCategory(StepCategory.STEP).build();
+    listOfSdkStep2.add(SdkStep.newBuilder().setStepType(stepType2).setIsPartOfStepPallete(true).build());
+    instances.put("iacm", listOfSdkStep2);
+
+    Set<SdkStep> listOfSdkStep3 = new HashSet<>();
+    listOfSdkStep3.add(SdkStep.newBuilder().setStepType(stepType).setIsPartOfStepPallete(true).build());
+    listOfSdkStep3.add(SdkStep.newBuilder().setStepType(stepType1).setIsPartOfStepPallete(false).build());
+    listOfSdkStep3.add(SdkStep.newBuilder().setStepType(stepType2).setIsPartOfStepPallete(true).build());
+    StepType stepType3 = StepType.newBuilder().setType("type3").setStepCategory(StepCategory.STEP).build();
+    listOfSdkStep3.add(SdkStep.newBuilder().setStepType(stepType3).setIsPartOfStepPallete(true).build());
+    instances.put("sto", listOfSdkStep3);
+
+    doReturn(instances).when(pmsSdkInstanceService).getSdkSteps();
+    StepType stepType4 = StepType.newBuilder().setType("type2").setStepCategory(StepCategory.STEP).build();
+    PlanNode planNode = PlanNode.builder().name("planNode1").stepType(stepType4).build();
+    planNodeList.add(planNode);
+
+    Set<String> supportedModules = nodeTypeLookupService.modulesThatSupportStepTypes(planNodeList);
+    assertThat(supportedModules.size()).isEqualTo(2);
+
+    StepType stepType5 = StepType.newBuilder().setType("type3").setStepCategory(StepCategory.STEP).build();
+    PlanNode planNode1 = PlanNode.builder().name("planNode2").stepType(stepType5).build();
+
+    List<Node> planNodeList1 = new ArrayList<>();
+    planNodeList1.add(planNode1);
+
+    supportedModules = nodeTypeLookupService.modulesThatSupportStepTypes(planNodeList1);
+    assertThat(supportedModules.size()).isEqualTo(1);
   }
 }

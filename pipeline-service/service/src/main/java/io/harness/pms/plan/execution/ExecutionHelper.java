@@ -62,6 +62,7 @@ import io.harness.ngsettings.dto.SettingResponseDTO;
 import io.harness.ngsettings.dto.SettingValueResponseDTO;
 import io.harness.notification.bean.NotificationRules;
 import io.harness.opaclient.model.OpaConstants;
+import io.harness.plan.Node;
 import io.harness.plan.Plan;
 import io.harness.pms.contracts.plan.ExecutionMetadata;
 import io.harness.pms.contracts.plan.ExecutionMode;
@@ -91,6 +92,7 @@ import io.harness.pms.pipeline.service.PipelineEnforcementService;
 import io.harness.pms.pipeline.service.PipelineMetadataService;
 import io.harness.pms.pipeline.yaml.BasicPipeline;
 import io.harness.pms.pipelinestage.helper.PipelineStageHelper;
+import io.harness.pms.plan.creation.NodeTypeLookupService;
 import io.harness.pms.plan.creation.PlanCreatorMergeService;
 import io.harness.pms.plan.creation.PlanCreatorUtils;
 import io.harness.pms.plan.execution.beans.ExecArgs;
@@ -129,6 +131,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.InternalServerErrorException;
 import lombok.AccessLevel;
@@ -171,6 +174,8 @@ public class ExecutionHelper {
   RollbackModeExecutionHelper rollbackModeExecutionHelper;
   RollbackGraphGenerator rollbackGraphGenerator;
   YamlPreProcessorFactory yamlPreProcessorFactory;
+  NodeTypeLookupService nodeTypeLookupService;
+
   // Add all FFs to this list that we want to use during pipeline execution
   public final List<FeatureName> featureNames = List.of(PIE_EXPRESSION_CONCATENATION,
       PIE_EXPRESSION_DISABLE_COMPLEX_JSON_SUPPORT, PIE_SIMPLIFY_LOG_BASE_KEY,
@@ -608,6 +613,15 @@ public class ExecutionHelper {
                                                       .build();
       long endTs = System.currentTimeMillis();
       log.info("[PMS_PLAN] Time taken to complete plan: {}ms ", endTs - startTs);
+
+      List<Node> planNodesList = plan.getPlanNodes();
+      // Fetches the modules based on the steps in the pipeline using the stepType in the planeNodes
+      Set<String> modules = nodeTypeLookupService.modulesThatSupportStepTypes(planNodesList);
+      // Setting all the modules based on the steps in the pipeline
+      if (!modules.isEmpty()) {
+        plan = plan.withStepModules(modules);
+      }
+
       ExecutionMode executionMode = executionMetadata.getExecutionMode();
       List<String> rollbackStageIds = Collections.emptyList();
       if (planExecutionMetadata.getStagesExecutionMetadata() != null) {
