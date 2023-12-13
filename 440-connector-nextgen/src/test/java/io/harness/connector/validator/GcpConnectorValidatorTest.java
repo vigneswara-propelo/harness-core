@@ -31,6 +31,7 @@ import io.harness.connector.impl.DefaultConnectorServiceImpl;
 import io.harness.connector.task.ConnectorValidationHandler;
 import io.harness.connector.task.gcp.GcpValidationTaskHandler;
 import io.harness.delegate.beans.connector.ConnectorType;
+import io.harness.delegate.beans.connector.ConnectorValidationParams;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorCredentialDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpCredentialType;
@@ -145,9 +146,10 @@ public class GcpConnectorValidatorTest extends CategoryTest {
     when(decryptionHelper.decrypt(any(), any())).thenReturn(gcpManualDetailsDTO);
     when(gcpClient.getGkeContainerService(any())).thenReturn(null);
     GcpValidationTaskHandler gcpValidationTaskHandler = mock(GcpValidationTaskHandler.class);
+    ConnectorValidationParams connectorValidationParams = any();
     on(gcpValidationTaskHandler).set("gcpClient", gcpClient);
     on(gcpValidationTaskHandler).set("decryptionHelper", decryptionHelper);
-    when(gcpValidationTaskHandler.validate(any(), any())).thenCallRealMethod();
+    when(gcpValidationTaskHandler.validate(connectorValidationParams, any())).thenCallRealMethod();
     when(connectorTypeToConnectorValidationHandlerMap.get(ArgumentMatchers.eq("Gcp")))
         .thenReturn(gcpValidationTaskHandler);
 
@@ -188,7 +190,8 @@ public class GcpConnectorValidatorTest extends CategoryTest {
                 .message(
                     "Connector with credential type InheritFromDelegate does not support validation through harness")
                 .build());
-    when(gcpValidationTaskHandler.validate(any(), any())).thenCallRealMethod();
+    ConnectorValidationParams connectorValidationParams = any();
+    when(gcpValidationTaskHandler.validate(connectorValidationParams, any())).thenCallRealMethod();
     when(connectorTypeToConnectorValidationHandlerMap.get(ArgumentMatchers.eq("Gcp")))
         .thenReturn(gcpValidationTaskHandler);
 
@@ -230,7 +233,8 @@ public class GcpConnectorValidatorTest extends CategoryTest {
     GcpValidationTaskHandler gcpValidationTaskHandler = mock(GcpValidationTaskHandler.class);
     on(gcpValidationTaskHandler).set("gcpClient", gcpClient);
     on(gcpValidationTaskHandler).set("decryptionHelper", decryptionHelper);
-    when(gcpValidationTaskHandler.validate(any(), any())).thenCallRealMethod();
+    ConnectorValidationParams connectorValidationParams = any();
+    when(gcpValidationTaskHandler.validate(connectorValidationParams, any())).thenCallRealMethod();
     GcpValidationParamsProvider gcpValidationParamsProvider = new GcpValidationParamsProvider();
 
     ConnectorInfoDTO connectorInfoDTO = ConnectorInfoDTO.builder()

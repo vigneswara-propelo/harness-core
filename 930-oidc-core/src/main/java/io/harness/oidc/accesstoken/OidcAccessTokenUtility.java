@@ -9,6 +9,7 @@ package io.harness.oidc.accesstoken;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.oidc.exception.OidcException;
 
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
@@ -45,16 +46,26 @@ public class OidcAccessTokenUtility {
     OidcAccessTokenStsApi oidcAccessTokenExchangeApi = retrofit.create(OidcAccessTokenStsApi.class);
 
     // Make the POST request and handle the response
-    Call<OidcWorkloadAccessTokenResponse> call = oidcAccessTokenExchangeApi.exchangeToken(oidcAccessTokenRequest);
+    Call<OidcWorkloadAccessTokenResponse> call =
+        oidcAccessTokenExchangeApi.exchangeWorkloadAccessToken(oidcAccessTokenRequest);
 
     try {
       Response<OidcWorkloadAccessTokenResponse> response = call.execute();
+      // Ensure that the response is successful and the Access token is not null.
       if (response.isSuccessful()) {
-        OidcWorkloadAccessTokenResponse oidcAccessTokenResponse = response.body();
-        return oidcAccessTokenResponse;
+        if (response.body().getAccess_token() != null) {
+          OidcWorkloadAccessTokenResponse oidcAccessTokenResponse = response.body();
+          return oidcAccessTokenResponse;
+        } else {
+          String errorResp = String.format("Error encountered while obtaining OIDC Access Token from STS for Aud %s",
+              oidcAccessTokenRequest.getAudience());
+          throw new OidcException(errorResp);
+        }
       } else {
-        log.error("Error encountered while obtaining OIDC Access Token from STS for Aud {}",
-            oidcAccessTokenRequest.getAudience());
+        String errorResp =
+            String.format("Error encountered while obtaining OIDC Access Token from STS for Aud %s, err %s",
+                oidcAccessTokenRequest.getAudience(), response.errorBody().toString());
+        throw new OidcException(errorResp);
       }
     } catch (IOException e) {
       log.error("Exception encountered while exchanging OIDC Access Token {} ", e);

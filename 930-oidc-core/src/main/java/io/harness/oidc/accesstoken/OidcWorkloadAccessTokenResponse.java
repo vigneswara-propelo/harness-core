@@ -21,8 +21,12 @@ import lombok.Data;
 @Data
 @OwnedBy(HarnessTeam.PL)
 public class OidcWorkloadAccessTokenResponse {
-  @JsonProperty(ACCESS_TOKEN) private String accessToken;
-  @JsonProperty(ISSUED_TOKEN_TYPE) private String issuedTokenType;
-  @JsonProperty(TOKEN_TYPE) private String tokenType;
-  @JsonProperty(EXPIRES_IN) private int expiresIn;
+  // Access Token returned by STS
+  private String access_token;
+  // Type of the token type issued
+  private String issued_token_type;
+  // How to use the issued token type
+  private String token_type;
+  // Expiry duration of the issued token
+  private int expires_in;
 }

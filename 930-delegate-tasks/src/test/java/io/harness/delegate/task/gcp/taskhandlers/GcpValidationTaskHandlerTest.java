@@ -9,6 +9,7 @@ package io.harness.delegate.task.gcp.taskhandlers;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.connector.ConnectivityStatus.SUCCESS;
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,7 +64,8 @@ public class GcpValidationTaskHandlerTest extends CategoryTest {
   @Owner(developers = OwnerRule.YOGESH)
   @Category(UnitTests.class)
   public void executeRequestSuccess() {
-    final ConnectorValidationResult connectorValidationResult = taskHandler.validate(buildGcpValidationRequest());
+    final ConnectorValidationResult connectorValidationResult =
+        taskHandler.validate(buildGcpValidationRequest(), generateUuid());
     assertThat(connectorValidationResult.getStatus()).isEqualTo(SUCCESS);
   }
 
@@ -72,7 +74,7 @@ public class GcpValidationTaskHandlerTest extends CategoryTest {
   @Category(UnitTests.class)
   public void executeRequestFailure() {
     doThrow(new RuntimeException("No Default Credentials found")).when(gcpClient).validateDefaultCredentials();
-    taskHandler.validate(buildGcpValidationRequest());
+    taskHandler.validate(buildGcpValidationRequest(), generateUuid());
   }
 
   private GcpValidationRequest buildGcpValidationRequest() {
@@ -86,7 +88,7 @@ public class GcpValidationTaskHandlerTest extends CategoryTest {
     when(decryptionHelper.decrypt(any(), any()))
         .thenReturn(GcpManualDetailsDTO.builder().secretKeyRef(SecretRefData.builder().build()).build());
     final ConnectorValidationResult connectorValidationResult =
-        taskHandler.validate(buildGcpValidationRequestWithSecretKey());
+        taskHandler.validate(buildGcpValidationRequestWithSecretKey(), generateUuid());
     assertThat(connectorValidationResult.getStatus()).isEqualTo(SUCCESS);
   }
 
@@ -97,7 +99,7 @@ public class GcpValidationTaskHandlerTest extends CategoryTest {
     when(decryptionHelper.decrypt(any(), any()))
         .thenReturn(GcpManualDetailsDTO.builder().secretKeyRef(SecretRefData.builder().build()).build());
     doThrow(new RuntimeException("No Credentials found")).when(gcpClient).getGkeContainerService(any());
-    taskHandler.validate(buildGcpValidationRequestWithSecretKey());
+    taskHandler.validate(buildGcpValidationRequestWithSecretKey(), generateUuid());
   }
 
   private GcpValidationRequest buildGcpValidationRequestWithSecretKey() {

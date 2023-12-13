@@ -16,11 +16,13 @@ import com.google.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @OwnedBy(HarnessTeam.PL)
 @Data
+@NoArgsConstructor
 @Slf4j
 public class OidcConfigurationUtility {
   public static final String GENERATE_AT_RUNTIME = "GENERATE_AT_RUNTIME";

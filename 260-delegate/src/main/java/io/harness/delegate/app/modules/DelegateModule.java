@@ -538,6 +538,8 @@ import io.harness.manifest.CustomManifestService;
 import io.harness.manifest.CustomManifestServiceImpl;
 import io.harness.nexus.service.NexusRegistryService;
 import io.harness.nexus.service.NexusRegistryServiceImpl;
+import io.harness.oidc.gcp.GcpOidcConnectorValidatorUtility;
+import io.harness.oidc.gcp.GcpOidcDelegateConnectorValidatorUtility;
 import io.harness.openshift.OpenShiftClient;
 import io.harness.openshift.OpenShiftClientImpl;
 import io.harness.pcf.CfCliClient;
@@ -1334,6 +1336,9 @@ public class DelegateModule extends AbstractModule {
     bind(TerraformCloudClient.class).to(TerraformCloudClientImpl.class);
     bind(RancherConnectionHelperService.class).to(RancherConnectionHelperServiceImpl.class);
     bind(RancherClusterClient.class).to(RancherClusterClientImpl.class);
+
+    // OIDC Bindings
+    bind(GcpOidcConnectorValidatorUtility.class).toInstance(new GcpOidcDelegateConnectorValidatorUtility());
 
     MapBinder<String, CommandUnitExecutorService> serviceCommandExecutorServiceMapBinder =
         MapBinder.newMapBinder(binder(), String.class, CommandUnitExecutorService.class);

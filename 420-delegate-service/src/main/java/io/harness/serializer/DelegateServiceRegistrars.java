@@ -9,6 +9,7 @@ package io.harness.serializer;
 
 import io.harness.filter.serializer.FiltersRegistrars;
 import io.harness.morphia.MorphiaRegistrar;
+import io.harness.oidc.entities.OidcRegistrars;
 import io.harness.serializer.kryo.CgOrchestrationBeansKryoRegistrar;
 import io.harness.serializer.kryo.CommonEntitiesKryoRegistrar;
 import io.harness.serializer.kryo.DelegateAgentBeansKryoRegister;
@@ -62,6 +63,7 @@ public class DelegateServiceRegistrars {
           .addAll(SMCoreRegistrars.morphiaRegistrars)
           .addAll(SecretManagerClientRegistrars.morphiaRegistrars)
           .addAll(FiltersRegistrars.morphiaRegistrars)
+          .addAll(OidcRegistrars.morphiaRegistrars)
           .add(DelegateServiceMorphiaRegistrar.class)
           .build();
 }

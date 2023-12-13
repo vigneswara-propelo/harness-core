@@ -54,6 +54,8 @@ import io.harness.git.GitClientV2Impl;
 import io.harness.impl.scm.ScmServiceClientImpl;
 import io.harness.ng.core.accountsetting.services.NGAccountSettingService;
 import io.harness.ng.core.accountsetting.services.NGAccountSettingServiceImpl;
+import io.harness.oidc.gcp.GcpOidcConnectorValidatorUtility;
+import io.harness.oidc.gcp.GcpOidcPlatformConnectorValidatorUtility;
 import io.harness.pcf.CfCliClient;
 import io.harness.pcf.CfDeploymentManager;
 import io.harness.pcf.CfDeploymentManagerImpl;
@@ -154,6 +156,7 @@ public class ConnectorModule extends AbstractModule {
     bind(TerraformCloudClient.class).to(TerraformCloudClientImpl.class);
     bind(RancherConnectionHelperService.class).to(RancherConnectionHelperServiceImpl.class);
     bind(RancherClusterClient.class).to(RancherClusterClientImpl.class);
+    bind(GcpOidcConnectorValidatorUtility.class).to(GcpOidcPlatformConnectorValidatorUtility.class);
     MapBinder<String, FilterPropertiesMapper> filterPropertiesMapper =
         MapBinder.newMapBinder(binder(), String.class, FilterPropertiesMapper.class);
     filterPropertiesMapper.addBinding(FilterType.CONNECTOR.toString()).to(ConnectorFilterPropertiesMapper.class);

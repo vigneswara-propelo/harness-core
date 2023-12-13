@@ -20,4 +20,5 @@ public class GcpOidcIdTokenConstants {
   public static final String LIFETIME = "lifetime";
   public static final String SA_ACCESS_TOKEN = "accessToken";
   public static final String SA_ACCESS_TOKEN_EXPIRY = "expireTime";
+  public static final String BEARER_TOKEN_TYPE = "Bearer";
 }

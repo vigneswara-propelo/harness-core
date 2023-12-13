@@ -55,7 +55,8 @@ public class GcpTask extends AbstractDelegateRunnableTask {
 
     switch (gcpTaskParameters.getGcpTaskType()) {
       case VALIDATE:
-        ConnectorValidationResult connectorValidationResult = gcpValidationTaskHandler.validate(gcpRequest);
+        ConnectorValidationResult connectorValidationResult =
+            gcpValidationTaskHandler.validate(gcpRequest, gcpTaskParameters.getAccountId());
         connectorValidationResult.setDelegateId(getDelegateId());
         return GcpValidationTaskResponse.builder().connectorValidationResult(connectorValidationResult).build();
       case LIST_CLUSTERS:
