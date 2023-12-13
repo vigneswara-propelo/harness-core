@@ -6,6 +6,7 @@
  */
 
 package io.harness.pms.ngpipeline.inputset.api;
+
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.pms.pipeline.api.PipelinesApiUtils.getMoveConfigType;
 
@@ -40,6 +41,7 @@ import io.harness.spec.server.pipeline.v1.model.InputSetErrorDetails;
 import io.harness.spec.server.pipeline.v1.model.InputSetErrorWrapperDTO;
 import io.harness.spec.server.pipeline.v1.model.InputSetGitUpdateDetails;
 import io.harness.spec.server.pipeline.v1.model.InputSetResponseBody;
+import io.harness.spec.server.pipeline.v1.model.InputSetResponseBody.StoreTypeEnum;
 import io.harness.spec.server.pipeline.v1.model.InputSetUpdateRequestBody;
 import io.harness.utils.ApiUtils;
 import io.harness.utils.PmsFeatureFlagHelper;
@@ -69,11 +71,14 @@ public class InputSetsApiUtils {
     responseBody.setName(inputSetEntity.getName());
     responseBody.setOrg(inputSetEntity.getOrgIdentifier());
     responseBody.setProject(inputSetEntity.getProjectIdentifier());
+    responseBody.pipeline(inputSetEntity.getPipelineIdentifier());
     responseBody.setDescription(inputSetEntity.getDescription());
     responseBody.setTags(ApiUtils.getTags(inputSetEntity.getTags()));
     responseBody.setGitDetails(getGitDetails(inputSetEntity));
     responseBody.setCreated(inputSetEntity.getCreatedAt());
     responseBody.setUpdated(inputSetEntity.getLastUpdatedAt());
+    responseBody.storeType(getStoreType(inputSetEntity.getStoreType()));
+    responseBody.connectorRef(inputSetEntity.getConnectorRef());
     responseBody.setErrorDetails(new InputSetErrorDetails().valid(true));
     return responseBody;
   }
@@ -94,8 +99,11 @@ public class InputSetsApiUtils {
     responseBody.setName(inputSetEntity.getName());
     responseBody.setOrg(inputSetEntity.getOrgIdentifier());
     responseBody.setProject(inputSetEntity.getProjectIdentifier());
+    responseBody.setPipeline(inputSetEntity.getPipelineIdentifier());
     responseBody.setDescription(inputSetEntity.getDescription());
     responseBody.setTags(ApiUtils.getTags(inputSetEntity.getTags()));
+    responseBody.storeType(getStoreType(inputSetEntity.getStoreType()));
+    responseBody.connectorRef(inputSetEntity.getConnectorRef());
     responseBody.setGitDetails(getGitDetails(inputSetEntity));
     responseBody.setCreated(inputSetEntity.getCreatedAt());
     responseBody.setUpdated(inputSetEntity.getLastUpdatedAt());
@@ -110,6 +118,15 @@ public class InputSetsApiUtils {
     return responseBody;
   }
 
+  public static StoreTypeEnum getStoreType(StoreType storeType) {
+    if (storeType == null || storeType.equals(StoreType.INLINE)) {
+      return StoreTypeEnum.INLINE;
+    }
+    if (storeType.equals(StoreType.REMOTE)) {
+      return StoreTypeEnum.REMOTE;
+    }
+    return null;
+  }
   public GitDetails getGitDetails(InputSetEntity inputSetEntity) {
     GitDetails gitDetails = new GitDetails();
     if (inputSetEntity.getStoreType() == null) {

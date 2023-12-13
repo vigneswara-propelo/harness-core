@@ -319,6 +319,7 @@ public class InputSetsApiUtilsTest extends CategoryTest {
     inputSetResponseBody.setTags(Collections.emptyMap());
     inputSetResponseBody.setErrorDetails(errorDetails);
     inputSetResponseBody.setGitDetails(gitDetails);
+    inputSetResponseBody.setStoreType(InputSetResponseBody.StoreTypeEnum.INLINE);
     inputSetResponseBody.setCreated(0L);
     inputSetResponseBody.setUpdated(0L);
     return inputSetResponseBody;

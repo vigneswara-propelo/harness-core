@@ -3746,6 +3746,9 @@ components:
           minLength: 1
           maxLength: 128
           description: Project identifier
+        pipeline:
+          type: string
+          description: Pipeline identifier
         description:
           type: string
           maxLength: 1024
@@ -3756,6 +3759,15 @@ components:
             type: string
           maxProperties: 128
           description: Input Set tags
+        store_type:
+          type: string
+          description: Specifies whether the Entity is to be stored in Git or not (for Git Experience).
+          enum:
+            - INLINE
+            - REMOTE
+        connector_ref:
+          type: string
+          description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
         git_details:
           $ref: '#/components/schemas/GitDetails'
         created:
