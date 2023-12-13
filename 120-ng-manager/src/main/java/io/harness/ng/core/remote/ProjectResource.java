@@ -151,9 +151,9 @@ public class ProjectResource {
               "Organization identifier for the Project. If left empty, the Project is created under Default Organization")
       @QueryParam(NGCommonEntityConstants.ORG_KEY) @DefaultValue(
           DEFAULT_ORG_IDENTIFIER) @OrgIdentifier String orgIdentifier,
-      @RequestBody(required = true,
-          description = "Details of the Project to create") @NotNull @Valid ProjectRequest projectDTO) {
-    Project createdProject = projectService.create(accountIdentifier, orgIdentifier, projectDTO.getProject());
+      @RequestBody(required = true, description = "Details of the Project to create") @NotNull
+      @Valid ProjectRequest projectDTO, @Context ScopeInfo scopeInfo) {
+    Project createdProject = projectService.create(accountIdentifier, scopeInfo, projectDTO.getProject());
     return ResponseDTO.newResponse(createdProject.getVersion().toString(),
         ProjectMapper.toProjectResponseBuilder(createdProject)
             .isFavorite(projectService.isFavorite(createdProject, userHelperService.getUserId()))
@@ -179,8 +179,9 @@ public class ProjectResource {
       @Parameter(
           description = "Organization identifier for the project. If left empty, Default Organization is assumed")
       @QueryParam(NGCommonEntityConstants.ORG_KEY) @DefaultValue(
-          DEFAULT_ORG_IDENTIFIER) @OrgIdentifier String orgIdentifier) {
-    Optional<Project> projectOptional = projectService.get(accountIdentifier, orgIdentifier, identifier);
+          DEFAULT_ORG_IDENTIFIER) @OrgIdentifier String orgIdentifier,
+      @Context ScopeInfo scopeInfo) {
+    Optional<Project> projectOptional = projectService.get(accountIdentifier, scopeInfo, identifier);
     if (!projectOptional.isPresent()) {
       throw new EntityNotFoundException(
           String.format("Project with orgIdentifier [%s] and identifier [%s] not found", orgIdentifier, identifier));
@@ -306,10 +307,11 @@ public class ProjectResource {
       @RequestBody(required = true,
           description =
               "This is the updated Project. Please provide values for all fields, not just the fields you are updating")
-      @NotNull @Valid ProjectRequest projectDTO) {
+      @NotNull @Valid ProjectRequest projectDTO,
+      @Context ScopeInfo scopeInfo) {
     projectDTO.getProject().setVersion(isNumeric(ifMatch) ? parseLong(ifMatch) : null);
     Project updatedProject =
-        projectService.update(accountIdentifier, orgIdentifier, identifier, projectDTO.getProject());
+        projectService.update(accountIdentifier, scopeInfo, orgIdentifier, identifier, projectDTO.getProject());
     return ResponseDTO.newResponse(updatedProject.getVersion().toString(),
         ProjectMapper.toProjectResponseBuilder(updatedProject)
             .isFavorite(projectService.isFavorite(updatedProject, userHelperService.getUserId()))
@@ -338,9 +340,10 @@ public class ProjectResource {
           description =
               "This is the Organization Identifier for the Project. By default, the Default Organization's Identifier is considered.")
       @QueryParam(NGCommonEntityConstants.ORG_KEY) @DefaultValue(
-          DEFAULT_ORG_IDENTIFIER) @OrgIdentifier String orgIdentifier) {
+          DEFAULT_ORG_IDENTIFIER) @OrgIdentifier String orgIdentifier,
+      @Context ScopeInfo scopeInfo) {
     return ResponseDTO.newResponse(projectService.delete(
-        accountIdentifier, orgIdentifier, identifier, isNumeric(ifMatch) ? parseLong(ifMatch) : null));
+        accountIdentifier, scopeInfo, orgIdentifier, identifier, isNumeric(ifMatch) ? parseLong(ifMatch) : null));
   }
 
   @GET

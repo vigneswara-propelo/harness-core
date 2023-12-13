@@ -6,6 +6,7 @@
  */
 
 package io.harness.ng.migration;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
@@ -13,7 +14,6 @@ import io.harness.migration.MigrationDetails;
 import io.harness.migration.NGMigration;
 import io.harness.migration.beans.MigrationType;
 import io.harness.migration.utils.NoopMigration;
-import io.harness.ng.core.migration.CopyTemplatesPermissionRoleUpdate;
 import io.harness.ng.core.migration.NGWebhookMendateSettingsCategoryUpdateMigration;
 import io.harness.ng.core.migration.PopulateYamlFieldInNGEnvironmentMigration;
 import io.harness.ng.core.migration.background.AddDeploymentTypeToInfrastructureEntityMigration;
@@ -53,7 +53,7 @@ public class NGCoreBackgroundMigrationDetails implements MigrationDetails {
         .add(Pair.of(1, AddDeploymentTypeToInfrastructureEntityMigration.class))
         .add(Pair.of(2, NoopMigration.class))
         .add(Pair.of(3, NoopMigration.class))
-        .add(Pair.of(4, CopyTemplatesPermissionRoleUpdate.class))
+        .add(Pair.of(4, NoopMigration.class))
         .add(Pair.of(5, PopulateYamlAuthFieldInNGServiceNowConnectorMigration.class))
         .add(Pair.of(6, NGWebhookMendateSettingsCategoryUpdateMigration.class))
         .add(Pair.of(7, DeleteSoftDeletedConnectorsMigration.class))

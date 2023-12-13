@@ -47,6 +47,7 @@ import io.harness.ng.core.api.SecretCrudService;
 import io.harness.ng.core.entitysetupusage.service.EntitySetupUsageService;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ng.validator.service.api.NGHostValidationService;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.outbox.api.OutboxService;
@@ -123,6 +124,7 @@ public class ConnectorTestRule implements InjectorRuleMixin, MethodRule, MongoRu
         bind(HPersistence.class).to(MongoPersistence.class);
         bind(ConnectorActivityService.class).to(ConnectorActivityServiceImpl.class);
         bind(ProjectService.class).toInstance(mock(ProjectService.class));
+        bind(ScopeInfoService.class).toInstance(mock(ScopeInfoService.class));
         bind(ConnectorService.class)
             .annotatedWith(Names.named(CONNECTOR_DECORATOR_SERVICE))
             .toInstance(mock(ConnectorService.class));

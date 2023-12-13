@@ -21,9 +21,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import io.harness.CategoryTest;
 import io.harness.account.AccountClient;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.remote.client.CGRestUtils;
 import io.harness.rule.Owner;
 
@@ -39,6 +42,7 @@ public class AccountOrgProjectHelperImplTest extends CategoryTest {
   @Mock OrganizationService organizationService;
   @Mock ProjectService projectService;
   @Mock AccountClient accountclient;
+  @Mock ScopeInfoService scopeResolverService;
 
   private String accountIdentifier;
   private String orgIdentifier;
@@ -52,14 +56,23 @@ public class AccountOrgProjectHelperImplTest extends CategoryTest {
     accountIdentifier = randomAlphabetic(10);
     orgIdentifier = randomAlphabetic(10);
     projectIdentifier = randomAlphabetic(10);
-    accountOrgProjectHelper = new AccountOrgProjectHelperImpl(organizationService, projectService, accountclient);
+    accountOrgProjectHelper =
+        new AccountOrgProjectHelperImpl(organizationService, projectService, accountclient, scopeResolverService);
   }
 
   @Test
   @Owner(developers = TEJAS)
   @Category(UnitTests.class)
   public void test_getProjectName_notFound() {
-    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier)).thenReturn(Optional.empty());
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgIdentifier)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null)).thenReturn(Optional.of(scopeInfo));
+    when(projectService.get(accountIdentifier, scopeInfo, projectIdentifier)).thenReturn(Optional.empty());
     try {
       accountOrgProjectHelper.getProjectName(accountIdentifier, orgIdentifier, projectIdentifier);
       fail();

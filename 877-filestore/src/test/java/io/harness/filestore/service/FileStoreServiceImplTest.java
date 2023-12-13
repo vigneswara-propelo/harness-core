@@ -35,6 +35,7 @@ import static io.harness.rule.OwnerRule.VLAD;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,6 +60,8 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
 import io.harness.beans.Scope;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.beans.SearchPageParams;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.ChecksumType;
@@ -90,6 +93,7 @@ import io.harness.ng.core.filestore.dto.FileDTO;
 import io.harness.ng.core.filestore.dto.FileFilterDTO;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.ngsettings.dto.SettingValueResponseDTO;
 import io.harness.remote.client.NGRestUtils;
@@ -139,6 +143,7 @@ public class FileStoreServiceImplTest extends CategoryTest {
   @Mock private OrganizationService organizationService;
   @Mock private ProjectService projectService;
   @Mock private NGSettingsClient settingsClient;
+  @Mock private ScopeInfoService scopeResolverService;
 
   @Spy @InjectMocks private FileValidationService fileValidationService = new FileValidationServiceImpl();
 
@@ -421,7 +426,16 @@ public class FileStoreServiceImplTest extends CategoryTest {
     fileDto.setOrgIdentifier(ORG_IDENTIFIER);
     fileDto.setProjectIdentifier(PROJECT_IDENTIFIER);
     fileDto.setDraft(false);
-    when(projectService.get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER))
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(ACCOUNT_IDENTIFIER)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(ORG_IDENTIFIER)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, null))
+        .thenReturn(Optional.of(scopeInfo));
+    when(projectService.get(ACCOUNT_IDENTIFIER, scopeInfo, PROJECT_IDENTIFIER))
         .thenReturn(Optional.of(Project.builder()
                                     .accountIdentifier(ACCOUNT_IDENTIFIER)
                                     .identifier(ORG_IDENTIFIER)
@@ -1358,7 +1372,17 @@ public class FileStoreServiceImplTest extends CategoryTest {
     fileDTO.setOrgIdentifier(ORG_IDENTIFIER);
     fileDTO.setProjectIdentifier(PROJECT_IDENTIFIER);
     fileDTO.setParentIdentifier(ROOT_FOLDER_IDENTIFIER);
-    when(projectService.get(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER)).thenReturn(Optional.empty());
+
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(ACCOUNT_IDENTIFIER)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(ORG_IDENTIFIER)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, null))
+        .thenReturn(Optional.of(scopeInfo));
+    when(projectService.get(ACCOUNT_IDENTIFIER, scopeInfo, PROJECT_IDENTIFIER)).thenReturn(Optional.empty());
     givenThatExistsParentFolderButNotFile(PARENT_IDENTIFIER, FILE_IDENTIFIER);
 
     assertThatThrownBy(() -> fileStoreService.create(fileDTO, null))

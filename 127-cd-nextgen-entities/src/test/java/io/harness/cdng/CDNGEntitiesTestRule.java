@@ -64,6 +64,7 @@ import io.harness.ng.core.serviceoverridev2.service.DummyServiceOverridesService
 import io.harness.ng.core.serviceoverridev2.service.ServiceOverridesServiceV2;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ng.core.utils.CDGitXService;
 import io.harness.ng.core.utils.CDGitXServiceImpl;
 import io.harness.ngsettings.client.remote.NGSettingsClient;
@@ -255,6 +256,7 @@ public class CDNGEntitiesTestRule implements InjectorRuleMixin, MethodRule, Mong
         bind(AccountClient.class).annotatedWith(Names.named("PRIVILEGED")).toInstance(mock(AccountClient.class));
         bind(OrganizationService.class).toInstance(mock(OrganizationService.class));
         bind(ProjectService.class).toInstance(mock(ProjectService.class));
+        bind(ScopeInfoService.class).toInstance(mock(ScopeInfoService.class));
         bind(ExecutorService.class)
             .annotatedWith(Names.named("service-gitx-executor"))
             .toInstance(mock(ExecutorService.class));

@@ -14,7 +14,6 @@ import io.harness.migration.MigrationDetails;
 import io.harness.migration.NGMigration;
 import io.harness.migration.beans.MigrationType;
 import io.harness.migration.utils.NoopMigration;
-import io.harness.ng.core.user.service.impl.UserMembershipStaleScopeMigrationService;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -36,7 +35,7 @@ public class UserMembershipStaleScopeMigrationDetails implements MigrationDetail
   public List<Pair<Integer, Class<? extends NGMigration>>> getMigrations() {
     return new ImmutableList.Builder<Pair<Integer, Class<? extends NGMigration>>>()
         .add(Pair.of(1, NoopMigration.class))
-        .add(Pair.of(2, UserMembershipStaleScopeMigrationService.class))
+        .add(Pair.of(2, NoopMigration.class))
         .build();
   }
 }

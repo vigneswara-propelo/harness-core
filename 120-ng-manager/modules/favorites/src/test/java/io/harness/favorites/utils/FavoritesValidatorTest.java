@@ -10,6 +10,7 @@ package io.harness.favorites.utils;
 import static io.harness.rule.OwnerRule.BOOPESH;
 
 import static java.util.Optional.of;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,6 +18,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
@@ -29,6 +32,7 @@ import io.harness.ng.core.dto.secrets.SecretDTOV2;
 import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
 import io.harness.ng.core.entities.Project;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ng.core.user.UserInfo;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.pms.pipeline.PMSPipelineResponseDTO;
@@ -54,6 +58,7 @@ public class FavoritesValidatorTest extends CategoryTest {
   @Mock private PipelineServiceClient pipelineServiceClient;
   @Mock private SecretCrudService secretCrudService;
   @Mock private ProjectService projectService;
+  @Mock private ScopeInfoService scopeResolverService;
   private FavoritesValidator favoritesValidator;
   private FavoriteDTO favoriteDTO;
 
@@ -68,8 +73,8 @@ public class FavoritesValidatorTest extends CategoryTest {
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    favoritesValidator =
-        new FavoritesValidator(userClient, connectorService, pipelineServiceClient, secretCrudService, projectService);
+    favoritesValidator = new FavoritesValidator(
+        userClient, connectorService, pipelineServiceClient, secretCrudService, projectService, scopeResolverService);
     favoriteDTO = new FavoriteDTO()
                       .org(orgId)
                       .project(projectId)
@@ -127,8 +132,18 @@ public class FavoritesValidatorTest extends CategoryTest {
     Call userCall = mock(Call.class);
     when(userClient.getUserById(userId)).thenReturn(userCall);
     when(userCall.execute()).thenReturn(Response.success(new RestResponse(Optional.of(UserInfo.builder().build()))));
+
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountId)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgId)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountId, orgId, null)).thenReturn(Optional.of(scopeInfo));
     Project project = Project.builder().identifier(resourceId).name(resourceId).build();
-    when(projectService.get(accountId, orgId, resourceId)).thenReturn(of(project));
+    when(projectService.get(accountId, scopeInfo, resourceId)).thenReturn(of(project));
+
     assertDoesNotThrow(() -> favoritesValidator.validateFavoriteEntry(favoriteDTO, accountId));
   }
 
@@ -140,7 +155,15 @@ public class FavoritesValidatorTest extends CategoryTest {
     Call userCall = mock(Call.class);
     when(userClient.getUserById(userId)).thenReturn(userCall);
     when(userCall.execute()).thenReturn(Response.success(new RestResponse(Optional.of(UserInfo.builder().build()))));
-    when(projectService.get(accountId, orgId, resourceId)).thenReturn(Optional.empty());
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountId)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgId)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountId, orgId, null)).thenReturn(Optional.of(scopeInfo));
+    when(projectService.get(accountId, scopeInfo, resourceId)).thenReturn(Optional.empty());
     assertThatThrownBy(() -> favoritesValidator.validateFavoriteEntry(favoriteDTO, accountId))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage(String.format(errorMessage, favoriteDTO.getResourceId(), favoriteDTO.getResourceType(), accountId));

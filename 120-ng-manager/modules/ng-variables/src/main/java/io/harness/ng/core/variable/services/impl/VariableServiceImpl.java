@@ -33,6 +33,7 @@ import io.harness.ng.core.events.VariableDeleteEvent;
 import io.harness.ng.core.events.VariableUpdateEvent;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ng.core.variable.dto.VariableConfigDTO;
 import io.harness.ng.core.variable.dto.VariableDTO;
 import io.harness.ng.core.variable.dto.VariableResponseDTO;
@@ -69,17 +70,19 @@ public class VariableServiceImpl implements VariableService {
   private final OutboxService outboxService;
   private final ProjectService projectService;
   private final OrganizationService organizationService;
+  private final ScopeInfoService scopeResolverService;
 
   @Inject
   public VariableServiceImpl(VariableRepository variableRepository, VariableMapper variableMapper,
       @Named(OUTBOX_TRANSACTION_TEMPLATE) TransactionTemplate transactionTemplate, OutboxService outboxService,
-      ProjectService projectService, OrganizationService organizationService) {
+      ProjectService projectService, OrganizationService organizationService, ScopeInfoService scopeResolverService) {
     this.variableRepository = variableRepository;
     this.variableMapper = variableMapper;
     this.transactionTemplate = transactionTemplate;
     this.outboxService = outboxService;
     this.projectService = projectService;
     this.organizationService = organizationService;
+    this.scopeResolverService = scopeResolverService;
   }
 
   @Override
@@ -299,7 +302,9 @@ public class VariableServiceImpl implements VariableService {
 
   private void checkThatTheProjectExists(String orgIdentifier, String projectIdentifier, String accountIdentifier) {
     if (isNotEmpty(orgIdentifier) && isNotEmpty(projectIdentifier)) {
-      final Optional<Project> project = projectService.get(accountIdentifier, orgIdentifier, projectIdentifier);
+      Optional<ScopeInfo> scopeInfo = scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null);
+      final Optional<Project> project =
+          projectService.get(accountIdentifier, scopeInfo.orElseThrow(), projectIdentifier);
       if (!project.isPresent()) {
         throw new NotFoundException(String.format("project [%s] not found.", projectIdentifier));
       }

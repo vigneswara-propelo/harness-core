@@ -34,6 +34,7 @@ import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Project;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ng.core.user.remote.dto.UserMetadataDTO;
 import io.harness.ng.core.user.service.NgUserService;
 import io.harness.rule.Owner;
@@ -61,6 +62,7 @@ public class AggregateProjectServiceImplTest extends CategoryTest {
   private AggregateProjectServiceImpl aggregateProjectService;
   private FavoritesService favoritesService;
   private UserHelperService userHelperService;
+  private ScopeInfoService scopeResolverService;
 
   @Before
   public void setup() {
@@ -69,10 +71,11 @@ public class AggregateProjectServiceImplTest extends CategoryTest {
     ngUserService = mock(NgUserService.class);
     favoritesService = mock(FavoritesService.class);
     userHelperService = mock(UserHelperService.class);
+    scopeResolverService = mock(ScopeInfoService.class);
 
     ExecutorService executorService = Executors.newFixedThreadPool(1);
-    aggregateProjectService = spy(new AggregateProjectServiceImpl(
-        projectService, organizationService, ngUserService, executorService, userHelperService, favoritesService));
+    aggregateProjectService = spy(new AggregateProjectServiceImpl(projectService, organizationService, ngUserService,
+        executorService, userHelperService, favoritesService, scopeResolverService));
   }
 
   private Project getProject(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
@@ -107,9 +110,17 @@ public class AggregateProjectServiceImplTest extends CategoryTest {
     String accountIdentifier = randomAlphabetic(10);
     String orgIdentifier = randomAlphabetic(10);
     String projectIdentifier = randomAlphabetic(10);
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgIdentifier)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null)).thenReturn(Optional.of(scopeInfo));
 
     Project project = getProject(accountIdentifier, orgIdentifier, projectIdentifier);
-    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier)).thenReturn(Optional.of(project));
+    when(projectService.get(accountIdentifier, scopeInfo, projectIdentifier)).thenReturn(Optional.of(project));
 
     Optional<Organization> organizationOpt = getOrganization(accountIdentifier, orgIdentifier);
     when(organizationService.get(accountIdentifier,
@@ -149,9 +160,17 @@ public class AggregateProjectServiceImplTest extends CategoryTest {
     String accountIdentifier = randomAlphabetic(10);
     String orgIdentifier = randomAlphabetic(10);
     String projectIdentifier = randomAlphabetic(10);
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgIdentifier)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null)).thenReturn(Optional.of(scopeInfo));
 
     Project project = getProject(accountIdentifier, orgIdentifier, projectIdentifier);
-    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier)).thenReturn(Optional.of(project));
+    when(projectService.get(accountIdentifier, scopeInfo, projectIdentifier)).thenReturn(Optional.of(project));
 
     when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.empty());
 

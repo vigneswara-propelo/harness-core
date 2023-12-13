@@ -68,11 +68,11 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
   }
 
   @Override
-  public Project restore(String accountIdentifier, String orgIdentifier, String identifier) {
+  public Project restore(String accountIdentifier, String parentUniqueIdentifier, String identifier) {
     Criteria criteria = Criteria.where(ProjectKeys.accountIdentifier)
                             .is(accountIdentifier)
-                            .and(ProjectKeys.orgIdentifier)
-                            .is(orgIdentifier)
+                            .and(ProjectKeys.parentUniqueId)
+                            .is(parentUniqueIdentifier)
                             .and(ProjectKeys.identifier)
                             .is(identifier)
                             .and(ProjectKeys.deleted)
@@ -87,11 +87,11 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
     return mongoTemplate.findAndModify(query, update, new FindAndModifyOptions().returnNew(true), Project.class);
   }
 
-  public Project hardDelete(String accountIdentifier, String orgIdentifier, String identifier, Long version) {
+  public Project hardDelete(String accountIdentifier, String parentUniqueIdentifier, String identifier, Long version) {
     Criteria criteria = Criteria.where(ProjectKeys.accountIdentifier)
                             .is(accountIdentifier)
-                            .and(ProjectKeys.orgIdentifier)
-                            .is(orgIdentifier)
+                            .and(ProjectKeys.parentUniqueId)
+                            .is(parentUniqueIdentifier)
                             .and(ProjectKeys.identifier)
                             .is(identifier);
     if (version != null) {
@@ -99,24 +99,6 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
     }
     Query query = new Query(criteria);
     return mongoTemplate.findAndRemove(query, Project.class);
-  }
-
-  @Override
-  public Project delete(String accountIdentifier, String orgIdentifier, String identifier, Long version) {
-    Criteria criteria = Criteria.where(ProjectKeys.accountIdentifier)
-                            .is(accountIdentifier)
-                            .and(ProjectKeys.orgIdentifier)
-                            .is(orgIdentifier)
-                            .and(ProjectKeys.identifier)
-                            .is(identifier)
-                            .and(ProjectKeys.deleted)
-                            .ne(Boolean.TRUE);
-    if (version != null) {
-      criteria.and(ProjectKeys.version).is(version);
-    }
-    Query query = new Query(criteria);
-    Update update = new Update().set(ProjectKeys.deleted, Boolean.TRUE);
-    return mongoTemplate.findAndModify(query, update, Project.class);
   }
 
   @Override

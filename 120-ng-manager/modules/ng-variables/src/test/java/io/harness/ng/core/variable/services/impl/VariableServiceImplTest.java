@@ -27,6 +27,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
+import io.harness.beans.ScopeInfo;
+import io.harness.beans.ScopeLevel;
 import io.harness.beans.SortOrder;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.DuplicateFieldException;
@@ -40,6 +42,7 @@ import io.harness.ng.core.events.VariableCreateEvent;
 import io.harness.ng.core.events.VariableUpdateEvent;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.ng.core.variable.VariableValueType;
 import io.harness.ng.core.variable.dto.StringVariableConfigDTO;
 import io.harness.ng.core.variable.dto.StringVariableConfigDTO.StringVariableConfigDTOKeys;
@@ -81,6 +84,7 @@ public class VariableServiceImplTest extends CategoryTest {
   @Mock private ProjectService projectService;
   @Mock private Project project;
   @Mock Organization organization;
+  @Mock ScopeInfoService scopeResolverService;
   private VariableServiceImpl variableService;
 
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
@@ -99,8 +103,8 @@ public class VariableServiceImplTest extends CategoryTest {
                           SortOrder.Builder.aSortOrder().withField("lastModifiedAt", SortOrder.OrderType.DESC).build()))
                       .build();
     pageable = getPageRequest(pageRequest);
-    this.variableService = new VariableServiceImpl(
-        variableRepository, variableMapper, transactionTemplate, outboxService, projectService, organizationService);
+    this.variableService = new VariableServiceImpl(variableRepository, variableMapper, transactionTemplate,
+        outboxService, projectService, organizationService, scopeResolverService);
   }
 
   @Test
@@ -200,11 +204,18 @@ public class VariableServiceImplTest extends CategoryTest {
     String value = randomAlphabetic(10);
     VariableDTO variableDTO = getVariableDTO(identifier, orgIdentifier, projectIdentifier, value);
     Variable variable = getVariable(accountIdentifier, orgIdentifier, projectIdentifier, identifier, value);
-
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgIdentifier)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null)).thenReturn(Optional.of(scopeInfo));
     when(variableMapper.toVariable(accountIdentifier, variableDTO)).thenReturn(variable);
     when(variableMapper.writeDTO(variable)).thenReturn(variableDTO);
     when(variableRepository.save(variable)).thenReturn(variable);
-    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier)).thenReturn(Optional.of(project));
+    when(projectService.get(accountIdentifier, scopeInfo, projectIdentifier)).thenReturn(Optional.of(project));
     when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(organization));
     when(transactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock
@@ -229,11 +240,19 @@ public class VariableServiceImplTest extends CategoryTest {
     String orgIdentifier = randomAlphabetic(10);
     String projectIdentifier = randomAlphabetic(10);
     String value = randomAlphabetic(10);
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgIdentifier)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null)).thenReturn(Optional.of(scopeInfo));
     VariableDTO variableDTO = getVariableDTO(identifier, orgIdentifier, projectIdentifier, value);
     Variable variable = getVariable(accountIdentifier, orgIdentifier, projectIdentifier, identifier, value);
     when(variableMapper.toVariable(accountIdentifier, variableDTO)).thenReturn(variable);
     when(variableRepository.save(variable)).thenThrow(new DuplicateKeyException(""));
-    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier)).thenReturn(Optional.of(project));
+    when(projectService.get(accountIdentifier, scopeInfo, projectIdentifier)).thenReturn(Optional.of(project));
     when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(organization));
     when(transactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock
@@ -413,6 +432,14 @@ public class VariableServiceImplTest extends CategoryTest {
     String orgIdentifier = randomAlphabetic(10);
     String projectIdentifier = randomAlphabetic(10);
     String value = randomAlphabetic(10);
+    String orgUniqueIdentifier = randomAlphabetic(10);
+    ScopeInfo scopeInfo = ScopeInfo.builder()
+                              .accountIdentifier(accountIdentifier)
+                              .scopeType(ScopeLevel.ORGANIZATION)
+                              .orgIdentifier(orgIdentifier)
+                              .uniqueId(orgUniqueIdentifier)
+                              .build();
+    when(scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null)).thenReturn(Optional.of(scopeInfo));
     VariableDTO variableDTO = getVariableDTO(identifier, orgIdentifier, projectIdentifier, value);
     variableDTO.setType(STRING);
     Variable variable = getVariable(accountIdentifier, orgIdentifier, projectIdentifier, identifier, value);
@@ -422,7 +449,7 @@ public class VariableServiceImplTest extends CategoryTest {
     when(variableRepository.findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndIdentifier(
              accountIdentifier, orgIdentifier, projectIdentifier, identifier))
         .thenReturn(Optional.of(variable));
-    when(projectService.get(accountIdentifier, orgIdentifier, projectIdentifier)).thenReturn(Optional.of(project));
+    when(projectService.get(accountIdentifier, scopeInfo, projectIdentifier)).thenReturn(Optional.of(project));
     when(organizationService.get(accountIdentifier, orgIdentifier)).thenReturn(Optional.of(organization));
     when(transactionTemplate.execute(any()))
         .thenAnswer(invocationOnMock
@@ -430,7 +457,7 @@ public class VariableServiceImplTest extends CategoryTest {
                    .doInTransaction(new SimpleTransactionStatus()));
 
     variableService.update(accountIdentifier, variableDTO);
-    verify(projectService, times(1)).get(accountIdentifier, orgIdentifier, projectIdentifier);
+    verify(projectService, times(1)).get(accountIdentifier, scopeInfo, projectIdentifier);
     verify(variableMapper, times(1)).toVariable(accountIdentifier, variableDTO);
     verify(transactionTemplate, times(1)).execute(any());
     verify(variableRepository, times(1)).save(variable);

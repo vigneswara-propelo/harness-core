@@ -20,6 +20,7 @@ import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Project;
 import io.harness.ng.core.services.OrganizationService;
 import io.harness.ng.core.services.ProjectService;
+import io.harness.ng.core.services.ScopeInfoService;
 import io.harness.remote.client.CGRestUtils;
 
 import com.google.inject.Inject;
@@ -37,6 +38,7 @@ public class AccountOrgProjectHelperImpl implements AccountOrgProjectHelper {
   private final OrganizationService organizationService;
   private final ProjectService projectService;
   private final AccountClient accountClient;
+  private final ScopeInfoService scopeResolverService;
 
   public String getBaseUrl(String accountIdentifier) {
     return CGRestUtils.getResponse(accountClient.getBaseUrl(accountIdentifier));
@@ -64,7 +66,8 @@ public class AccountOrgProjectHelperImpl implements AccountOrgProjectHelper {
   }
 
   public String getProjectName(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
-    Optional<Project> projectOpt = projectService.get(accountIdentifier, orgIdentifier, projectIdentifier);
+    Optional<ScopeInfo> scopeInfo = scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null);
+    Optional<Project> projectOpt = projectService.get(accountIdentifier, scopeInfo.orElseThrow(), projectIdentifier);
     if (!projectOpt.isPresent()) {
       throw new NotFoundException(String.format("Project with identifier [%s] doesn't exist", projectIdentifier));
     }
