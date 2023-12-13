@@ -10,6 +10,7 @@ package io.harness.cdng.manifest.mappers;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.PRATYUSH;
+import static io.harness.rule.OwnerRule.TARUN_UBA;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -324,6 +325,22 @@ public class ManifestOutcomeValidatorTest extends CategoryTest {
         ()
             -> ManifestOutcomeValidator.validateStore(gitStore, ManifestType.HelmChart, "test", false),
         "folderPath: is required for store type 'Github' and manifest type 'HelmChart'");
+  }
+
+  @Test
+  @Owner(developers = TARUN_UBA)
+  @Category(UnitTests.class)
+  public void testClassCastExceptionWithPaths() {
+    GithubStore gitStore = GithubStore.builder()
+                               .connectorRef(ParameterField.createValueField("connector"))
+                               .repoName(ParameterField.createValueField("repo"))
+                               .gitFetchType(FetchType.COMMIT)
+                               .commitId(ParameterField.createValueField("commitId"))
+                               .paths(new ParameterField("<+input>", null, false, null, null, false))
+                               .build();
+
+    assertThatThrownBy(() -> ManifestOutcomeValidator.validateStore(gitStore, ManifestType.K8Manifest, "test", false))
+        .hasMessageContaining("Incorrect value [<+input>] for field [paths] in manifest [test]");
   }
 
   @Test

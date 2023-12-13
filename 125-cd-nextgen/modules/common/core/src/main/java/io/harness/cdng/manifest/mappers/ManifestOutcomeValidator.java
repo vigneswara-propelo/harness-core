@@ -39,6 +39,7 @@ import io.harness.cdng.manifest.yaml.oci.OciHelmChartStoreConfig;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.delegate.beans.storeconfig.FetchType;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.pms.yaml.ParameterField;
 
 import java.util.List;
@@ -49,6 +50,9 @@ import org.apache.commons.lang3.tuple.Pair;
 @OwnedBy(CDP)
 @UtilityClass
 public class ManifestOutcomeValidator {
+  private final String SERVICE_INPUTS_MANIFEST_FAILURE = "Incorrect value [%s] for field [%s] in manifest [%s] \n"
+      + "Hint: Please check provided field [%s] for manifest id [%s]."
+      + " If using runtime input make sure that valid input is provided for manifest [%s]. Service Input yaml should contain identifier [%s]";
   public void validate(ManifestOutcome manifestOutcome, boolean allowExpression) {
     if (manifestOutcome.getStore() != null) {
       validateStore(
@@ -162,7 +166,7 @@ public class ManifestOutcomeValidator {
         break;
 
       default:
-        if (!hasValue(store.getPaths())) {
+        if (!hasValue(store.getPaths(), manifestId, "paths")) {
           throw new InvalidArgumentsException(Pair.of("paths",
               format("is required for store type '%s' and manifest type '%s' in manifest with identifier: %s",
                   store.getKind(), manifestKind, manifestId)));
@@ -249,7 +253,7 @@ public class ManifestOutcomeValidator {
           format("Non empty connectorRef in Harness store spec for manifest with identifier: %s", manifestId));
     }
 
-    if (!hasValue(store.getFiles())) {
+    if (!hasValue(store.getFiles(), manifestId, "files")) {
       throw new InvalidArgumentsException(Pair.of("files", "Cannot be empty or null for Harness store"));
     }
   }
@@ -288,6 +292,15 @@ public class ManifestOutcomeValidator {
       return stringList.stream().noneMatch(StringUtils::isBlank);
     }
     return false;
+  }
+
+  private boolean hasValue(ParameterField<List<String>> parameterField, String manifestId, String fieldName) {
+    try {
+      return hasValue(parameterField);
+    } catch (Exception ex) {
+      throw new InvalidRequestException(String.format(SERVICE_INPUTS_MANIFEST_FAILURE, parameterField.getValue(),
+          fieldName, manifestId, fieldName, manifestId, manifestId, manifestId));
+    }
   }
 
   private boolean optionalFieldHasValue(ParameterField<List<String>> parameterField) {
