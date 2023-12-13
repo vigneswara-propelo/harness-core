@@ -85,111 +85,17 @@ public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
   @Test
   @Owner(developers = DHRUVX)
   @Category(UnitTests.class)
-  public void testEnforceSbom_featureFlagIsOff_opaPolicyNotConfigured() {
+  public void testEnforceSbom_featureFlagIsOff_sscaPolicyNotConfigured() {
     ArtifactEntity artifactEntity = builderFactory.getArtifactEntityBuilder().build();
     EnforceSbomRequestBody enforceSbomRequestBody = getEnforcementSbomRequestBody();
-    enforceSbomRequestBody.setPolicySetRef(null);
-    when(featureFlagService.isFeatureFlagEnabled(
-             accountId, FeatureName.SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED.name()))
-        .thenReturn(false);
+    enforceSbomRequestBody.setPolicyFileId(null);
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SSCA_ENFORCEMENT_OPA.name())).thenReturn(false);
     when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
     when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
     assertThatThrownBy(
         () -> enforcementStepService.enforceSbom(accountId, orgIdentifier, projectIdentifier, enforceSbomRequestBody))
         .isInstanceOf(BadRequestException.class)
-        .hasMessage("policy_set_ref must not be empty");
-  }
-
-  @Test
-  @Owner(developers = DHRUVX)
-  @Category(UnitTests.class)
-  public void testEnforceSbom_featureFlagIsOff_bothOpaAndSscaPolicyConfigured() {
-    ArtifactEntity artifactEntity = builderFactory.getArtifactEntityBuilder().build();
-    EnforceSbomRequestBody enforceSbomRequestBody = getEnforcementSbomRequestBody();
-    Page<NormalizedSBOMComponentEntity> page = new PageImpl<>(getNormalizedSBOMComponentEntities());
-    OpaPolicyEvaluationResult opaPolicyEvaluationResult = getOpaPolicyEvaluationResult();
-    when(featureFlagService.isFeatureFlagEnabled(
-             accountId, FeatureName.SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED.name()))
-        .thenReturn(false);
-    when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
-    when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
-    when(sbomComponentRepo.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(
-             any(), any(), any(), any(), any()))
-        .thenReturn(page);
-    when(policyMgmtService.evaluate(any(), any(), any(), any(), any())).thenReturn(opaPolicyEvaluationResult);
-    when(enforcementSummaryService.persistEnforcementSummary(any(), any(), any(), any(), any())).thenReturn("status");
-    EnforceSbomResponseBody enforceSbomResponseBody =
-        enforcementStepService.enforceSbom(accountId, orgIdentifier, projectIdentifier, enforceSbomRequestBody);
-    ArgumentCaptor<List<EnforcementResultEntity>> argument = ArgumentCaptor.forClass(List.class);
-
-    verify(sbomComponentRepo, times(1))
-        .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(any(), any(), any(), any(), any());
-    verify(policyMgmtService, times(1)).evaluate(any(), any(), any(), any(), any());
-    verify(enforcementResultRepo, times(1)).saveAll(argument.capture());
-    List<EnforcementResultEntity> capturedViolations = argument.getAllValues().get(0);
-    assertThat(capturedViolations.size()).isEqualTo(4);
-    assertThat(capturedViolations.get(0).getViolationType()).isEqualTo(ViolationType.DENYLIST_VIOLATION.getViolation());
-    assertThat(capturedViolations.get(1).getViolationType()).isEqualTo(ViolationType.DENYLIST_VIOLATION.getViolation());
-    assertThat(capturedViolations.get(2).getViolationType())
-        .isEqualTo(ViolationType.ALLOWLIST_VIOLATION.getViolation());
-    assertThat(capturedViolations.get(3).getViolationType())
-        .isEqualTo(ViolationType.ALLOWLIST_VIOLATION.getViolation());
-    assertThat(enforceSbomResponseBody.getStatus()).isEqualTo("status");
-  }
-  @Test
-  @Owner(developers = DHRUVX)
-  @Category(UnitTests.class)
-  public void testEnforceSbom_featureFlagIsOff_onlyOpaPolicyIsConfigured() {
-    ArtifactEntity artifactEntity = builderFactory.getArtifactEntityBuilder().build();
-    EnforceSbomRequestBody enforceSbomRequestBody = getEnforcementSbomRequestBody();
-    enforceSbomRequestBody.setPolicyFileId(null);
-    Page<NormalizedSBOMComponentEntity> page = new PageImpl<>(getNormalizedSBOMComponentEntities());
-    OpaPolicyEvaluationResult opaPolicyEvaluationResult = getOpaPolicyEvaluationResult();
-    when(featureFlagService.isFeatureFlagEnabled(
-             accountId, FeatureName.SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED.name()))
-        .thenReturn(false);
-    when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
-    when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
-    when(sbomComponentRepo.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(
-             any(), any(), any(), any(), any()))
-        .thenReturn(page);
-    when(policyMgmtService.evaluate(any(), any(), any(), any(), any())).thenReturn(opaPolicyEvaluationResult);
-    when(enforcementSummaryService.persistEnforcementSummary(any(), any(), any(), any(), any())).thenReturn("status");
-    EnforceSbomResponseBody enforceSbomResponseBody =
-        enforcementStepService.enforceSbom(accountId, orgIdentifier, projectIdentifier, enforceSbomRequestBody);
-    ArgumentCaptor<List<EnforcementResultEntity>> argument = ArgumentCaptor.forClass(List.class);
-
-    verify(sbomComponentRepo, times(1))
-        .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(any(), any(), any(), any(), any());
-    verify(policyMgmtService, times(1)).evaluate(any(), any(), any(), any(), any());
-    verify(enforcementResultRepo, times(1)).saveAll(argument.capture());
-    List<EnforcementResultEntity> capturedViolations = argument.getAllValues().get(0);
-    assertThat(capturedViolations.size()).isEqualTo(4);
-    assertThat(capturedViolations.get(0).getViolationType()).isEqualTo(ViolationType.DENYLIST_VIOLATION.getViolation());
-    assertThat(capturedViolations.get(1).getViolationType()).isEqualTo(ViolationType.DENYLIST_VIOLATION.getViolation());
-    assertThat(capturedViolations.get(2).getViolationType())
-        .isEqualTo(ViolationType.ALLOWLIST_VIOLATION.getViolation());
-    assertThat(capturedViolations.get(3).getViolationType())
-        .isEqualTo(ViolationType.ALLOWLIST_VIOLATION.getViolation());
-    assertThat(enforceSbomResponseBody.getStatus()).isEqualTo("status");
-  }
-  @Test
-  @Owner(developers = DHRUVX)
-  @Category(UnitTests.class)
-  public void testEnforceSbom_featureFlagIsOn_noPolicyConfigured() {
-    ArtifactEntity artifactEntity = builderFactory.getArtifactEntityBuilder().build();
-    EnforceSbomRequestBody enforceSbomRequestBody = getEnforcementSbomRequestBody();
-    enforceSbomRequestBody.setPolicySetRef(null);
-    enforceSbomRequestBody.setPolicyFileId(null);
-    when(featureFlagService.isFeatureFlagEnabled(
-             accountId, FeatureName.SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED.name()))
-        .thenReturn(true);
-    when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
-    when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
-    assertThatThrownBy(
-        () -> enforcementStepService.enforceSbom(accountId, orgIdentifier, projectIdentifier, enforceSbomRequestBody))
-        .isInstanceOf(BadRequestException.class)
-        .hasMessage("policy_set_ref and policy_file_id both must not be null");
+        .hasMessage("policy_file_id must not be blank");
   }
 
   @Test
@@ -200,9 +106,7 @@ public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
     EnforceSbomRequestBody enforceSbomRequestBody = getEnforcementSbomRequestBody();
     Page<NormalizedSBOMComponentEntity> page = new PageImpl<>(getNormalizedSBOMComponentEntities());
     OpaPolicyEvaluationResult opaPolicyEvaluationResult = getOpaPolicyEvaluationResult();
-    when(featureFlagService.isFeatureFlagEnabled(
-             accountId, FeatureName.SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED.name()))
-        .thenReturn(true);
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SSCA_ENFORCEMENT_OPA.name())).thenReturn(true);
     when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
     when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
     when(sbomComponentRepo.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(
@@ -238,9 +142,7 @@ public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
     enforceSbomRequestBody.setPolicyFileId(null);
     Page<NormalizedSBOMComponentEntity> page = new PageImpl<>(getNormalizedSBOMComponentEntities());
     OpaPolicyEvaluationResult opaPolicyEvaluationResult = getOpaPolicyEvaluationResult();
-    when(featureFlagService.isFeatureFlagEnabled(
-             accountId, FeatureName.SSCA_ENFORCEMENT_WITH_BOTH_NATIVE_AND_OPA_POLICIES_ENABLED.name()))
-        .thenReturn(true);
+    when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SSCA_ENFORCEMENT_OPA.name())).thenReturn(true);
     when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
     when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
     when(sbomComponentRepo.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(

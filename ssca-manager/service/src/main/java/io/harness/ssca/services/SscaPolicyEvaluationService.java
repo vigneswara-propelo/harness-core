@@ -20,7 +20,9 @@ import io.harness.ssca.entities.EnforcementResultEntity;
 
 import com.google.inject.Inject;
 import java.util.List;
+import javax.ws.rs.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @OwnedBy(HarnessTeam.SSCA)
 @Slf4j
@@ -30,6 +32,9 @@ public class SscaPolicyEvaluationService implements PolicyEvaluationService {
   @Override
   public PolicyEvaluationResult evaluatePolicy(String accountId, String orgIdentifier, String projectIdentifier,
       EnforceSbomRequestBody body, ArtifactEntity artifactEntity) {
+    if (StringUtils.isBlank(body.getPolicyFileId())) {
+      throw new BadRequestException("policy_file_id must not be blank");
+    }
     log.info("Evaluating policy violations using ssca policies for accountId: {} enforcementId: {}", accountId,
         body.getEnforcementId());
     RuleDTO ruleDTO = ruleEngineService.getRules(accountId, orgIdentifier, projectIdentifier, body.getPolicyFileId());
