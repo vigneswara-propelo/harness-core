@@ -28,6 +28,7 @@ public class PluginInfoMapper {
     pluginInfo.setCreatedBy(pluginInfoEntity.getCreator());
     pluginInfo.setIconUrl(pluginInfoEntity.getIconUrl());
     pluginInfo.setImageUrl(pluginInfoEntity.getImageUrl());
+    pluginInfo.setImages(pluginInfoEntity.getImages());
     pluginInfo.setDocumentation(pluginInfoEntity.getDocumentation());
     pluginInfo.setDescription(pluginInfoEntity.getDescription());
     pluginInfo.setCategory(pluginInfoEntity.getCategory());

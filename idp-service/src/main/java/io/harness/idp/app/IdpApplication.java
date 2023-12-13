@@ -157,6 +157,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ResourceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ServerProperties;
 import org.springframework.data.mongodb.core.MongoTemplate;
 /**
@@ -262,6 +263,7 @@ public class IdpApplication extends Application<IdpConfiguration> {
     environment.jersey().register(injector.getInstance(IdpServiceRequestInterceptor.class));
     environment.jersey().register(injector.getInstance(IdpServiceResponseInterceptor.class));
     injector.getInstance(IDPTelemetryRecordsJob.class).scheduleTasks();
+    environment.jersey().register(MultiPartFeature.class);
     initMetrics(injector);
 
     log.info("Starting app done");

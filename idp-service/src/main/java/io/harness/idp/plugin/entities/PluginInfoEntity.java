@@ -59,6 +59,7 @@ public abstract class PluginInfoEntity implements PersistentEntity {
   @JsonProperty("environmentVariables") private List<String> envVariables;
   private String iconUrl;
   private String imageUrl;
+  private List<String> images;
   private String documentation;
   @JsonProperty("exports") private ExportsData exports;
   private PluginInfo.PluginTypeEnum type;

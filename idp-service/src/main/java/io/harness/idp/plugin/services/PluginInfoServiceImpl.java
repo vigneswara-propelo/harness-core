@@ -29,6 +29,7 @@ import io.harness.idp.plugin.entities.CustomPluginInfoEntity;
 import io.harness.idp.plugin.entities.DefaultPluginInfoEntity;
 import io.harness.idp.plugin.entities.PluginInfoEntity;
 import io.harness.idp.plugin.entities.PluginRequestEntity;
+import io.harness.idp.plugin.mappers.CustomPluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.PluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.PluginInfoMapper;
 import io.harness.idp.plugin.mappers.PluginRequestMapper;
@@ -49,15 +50,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.ws.rs.NotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -69,6 +73,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 public class PluginInfoServiceImpl implements PluginInfoService {
   private static final String METADATA_FOLDER = "metadata/";
   private static final String YAML_EXT = ".yaml";
+  private static final int RANDOM_STRING_LENGTH = 6;
+  private static final String CUSTOM_PLUGIN_IDENTIFIER_FORMAT = "my_custom_plugin_%s";
   private PluginInfoRepository pluginInfoRepository;
   private PluginRequestRepository pluginRequestRepository;
   private ConfigManagerService configManagerService;
@@ -135,7 +141,7 @@ public class PluginInfoServiceImpl implements PluginInfoService {
   public void saveAllPluginInfo() {
     Constants.pluginIds.forEach(id -> {
       try {
-        savePluginInfo(id);
+        saveDefaultPluginInfo(id);
       } catch (Exception e) {
         String errorMessage = String.format("Error occurred while saving plugin details for pluginId: [%s]", id);
         log.error(errorMessage, e);
@@ -164,20 +170,58 @@ public class PluginInfoServiceImpl implements PluginInfoService {
   }
 
   @Override
-  public void savePluginInfo(CustomPluginDetailedInfo info, String accountIdentifier) {
-    PluginDetailedInfoMapper mapper = getMapper(PluginInfo.PluginTypeEnum.CUSTOM);
-    PluginInfoEntity entity = mapper.fromDto(info, accountIdentifier);
-    pluginInfoRepository.save(entity);
+  public CustomPluginDetailedInfo generateIdentifierAndSaveCustomPluginInfo(String accountIdentifier) {
+    CustomPluginInfoEntity entity = CustomPluginInfoEntity.builder().build();
+    entity.setType(PluginInfo.PluginTypeEnum.CUSTOM);
+    entity.setAccountIdentifier(accountIdentifier);
+    entity.setIdentifier(
+        String.format(CUSTOM_PLUGIN_IDENTIFIER_FORMAT, RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH)));
+    CustomPluginInfoEntity savedEntity = pluginInfoRepository.save(entity);
+    return buildDtoWithAdditionalDetails(savedEntity, accountIdentifier);
   }
 
   @Override
-  public void updatePluginInfo(String pluginId, CustomPluginDetailedInfo info, String accountIdentifier) {
-    PluginDetailedInfoMapper mapper = getMapper(PluginInfo.PluginTypeEnum.CUSTOM);
-    PluginInfoEntity entity = mapper.fromDto(info, accountIdentifier);
-    pluginInfoRepository.update(pluginId, accountIdentifier, entity);
+  public CustomPluginDetailedInfo updatePluginInfo(
+      String pluginId, CustomPluginDetailedInfo info, String accountIdentifier) {
+    CustomPluginDetailedInfoMapper mapper = new CustomPluginDetailedInfoMapper();
+    CustomPluginInfoEntity entity = mapper.fromDto(info, accountIdentifier);
+    CustomPluginInfoEntity updatedEntity =
+        (CustomPluginInfoEntity) pluginInfoRepository.update(pluginId, accountIdentifier, entity);
+    if (updatedEntity == null) {
+      throw new NotFoundException(
+          String.format("Could not find plugin with identifier %s in account %s", pluginId, accountIdentifier));
+    }
+    return buildDtoWithAdditionalDetails(updatedEntity, accountIdentifier);
   }
 
-  public void savePluginInfo(String identifier) throws Exception {
+  @Override
+  public CustomPluginDetailedInfo uploadFile(
+      String pluginId, String fileType, InputStream fileInputStream, String harnessAccount) {
+    CustomPluginDetailedInfoMapper mapper = new CustomPluginDetailedInfoMapper();
+
+    // TODO: Added for testing. File will be uploaded to GCS and get will be updated
+    String randomFileName = RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH);
+    String gcsBucketUrl =
+        String.format("https://storage.googleapis.com/idp-custom-plugins/static/%s.jpg", randomFileName);
+
+    Optional<PluginInfoEntity> entityOpt =
+        pluginInfoRepository.findByIdentifierAndAccountIdentifierIn(pluginId, Collections.singleton(harnessAccount));
+    if (entityOpt.isEmpty()) {
+      throw new NotFoundException(
+          String.format("Could not find plugin details for plugin id %s and account %s", pluginId, harnessAccount));
+    }
+    PluginInfoEntity entity = entityOpt.get();
+    mapper.addFileUploadDetails(entity, fileType, gcsBucketUrl);
+    CustomPluginInfoEntity updatedEntity =
+        (CustomPluginInfoEntity) pluginInfoRepository.update(pluginId, harnessAccount, entity);
+    if (updatedEntity == null) {
+      throw new NotFoundException(
+          String.format("Could not find plugin with identifier %s in account %s", pluginId, harnessAccount));
+    }
+    return buildDtoWithAdditionalDetails(updatedEntity, harnessAccount);
+  }
+
+  public void saveDefaultPluginInfo(String identifier) throws Exception {
     String schema = FileUtils.readFile(METADATA_FOLDER, identifier, YAML_EXT);
     ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
     PluginInfoEntity pluginInfoEntity = objectMapper.readValue(schema, DefaultPluginInfoEntity.class);
@@ -231,5 +275,20 @@ public class PluginInfoServiceImpl implements PluginInfoService {
       throw new InvalidRequestException("Plugin type not set");
     }
     return mapper;
+  }
+
+  private CustomPluginDetailedInfo buildDtoWithAdditionalDetails(PluginInfoEntity pluginEntity, String harnessAccount) {
+    CustomPluginDetailedInfoMapper mapper = new CustomPluginDetailedInfoMapper();
+    AppConfig appConfig =
+        configManagerService.getAppConfig(harnessAccount, pluginEntity.getIdentifier(), ConfigType.PLUGIN);
+    if (pluginEntity.getIdentifier().equals("harness-ci-cd") && appConfig == null) {
+      pluginEntity.setConfig(ConfigManagerUtils.getHarnessCiCdAppConfig(env));
+    }
+    List<BackstageEnvSecretVariable> backstageEnvSecretVariables =
+        getPluginSecrets(appConfig, pluginEntity, harnessAccount, pluginEntity.getIdentifier());
+    List<ProxyHostDetail> proxyHostDetails =
+        pluginsProxyInfoService.getProxyHostDetailsForPluginId(harnessAccount, pluginEntity.getIdentifier());
+    return mapper.toDto(
+        (CustomPluginInfoEntity) pluginEntity, appConfig, backstageEnvSecretVariables, proxyHostDetails);
   }
 }

@@ -91,7 +91,6 @@ public interface PluginDetailedInfoMapper<S extends PluginDetailedInfo, T extend
     entity.setExports(exportsData);
 
     PluginInfo pluginDetails = dto.getPluginDetails();
-    entity.setIdentifier(pluginDetails.getId());
     entity.setSource(pluginDetails.getSource());
     entity.setCategory(pluginDetails.getCategory());
     entity.setDescription(pluginDetails.getDescription());
@@ -99,6 +98,7 @@ public interface PluginDetailedInfoMapper<S extends PluginDetailedInfo, T extend
     entity.setDocumentation(pluginDetails.getDocumentation());
     entity.setIconUrl(pluginDetails.getIconUrl());
     entity.setImageUrl(pluginDetails.getImageUrl());
+    entity.setImages(pluginDetails.getImages());
     entity.setName(pluginDetails.getName());
   }
 }

@@ -14,6 +14,7 @@ import io.harness.spec.server.idp.v1.model.PluginInfo;
 import io.harness.spec.server.idp.v1.model.RequestPlugin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.InputStream;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
@@ -26,7 +27,11 @@ public interface PluginInfoService {
   RequestPlugin savePluginRequest(String harnessAccount, RequestPlugin pluginRequest);
   Page<PluginRequestEntity> getPluginRequests(String harnessAccount, int page, int limit);
 
-  void savePluginInfo(CustomPluginDetailedInfo info, String harnessAccount);
+  void saveDefaultPluginInfo(String harnessAccount) throws Exception;
 
-  void updatePluginInfo(String pluginId, CustomPluginDetailedInfo info, String harnessAccount);
+  CustomPluginDetailedInfo generateIdentifierAndSaveCustomPluginInfo(String accountIdentifier);
+
+  CustomPluginDetailedInfo updatePluginInfo(String pluginId, CustomPluginDetailedInfo info, String harnessAccount);
+
+  CustomPluginDetailedInfo uploadFile(String pluginId, String info, InputStream fileInputStream, String harnessAccount);
 }

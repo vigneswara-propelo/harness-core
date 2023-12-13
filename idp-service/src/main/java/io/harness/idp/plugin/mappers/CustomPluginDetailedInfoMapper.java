@@ -7,15 +7,21 @@
 
 package io.harness.idp.plugin.mappers;
 
+import static io.harness.spec.server.idp.v1.model.Artifact.TypeEnum.ZIP;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.plugin.beans.FileType;
 import io.harness.idp.plugin.entities.CustomPluginInfoEntity;
+import io.harness.idp.plugin.entities.PluginInfoEntity;
 import io.harness.spec.server.idp.v1.model.AppConfig;
+import io.harness.spec.server.idp.v1.model.Artifact;
 import io.harness.spec.server.idp.v1.model.BackstageEnvSecretVariable;
 import io.harness.spec.server.idp.v1.model.CustomPluginDetailedInfo;
 import io.harness.spec.server.idp.v1.model.PluginInfo;
 import io.harness.spec.server.idp.v1.model.ProxyHostDetail;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @OwnedBy(HarnessTeam.IDP)
@@ -37,5 +43,30 @@ public class CustomPluginDetailedInfoMapper
     entity.setType(PluginInfo.PluginTypeEnum.CUSTOM);
     entity.setArtifact(dto.getArtifact());
     return entity;
+  }
+
+  public void addFileUploadDetails(PluginInfoEntity entity, String fileType, String gcsBucketUrl) {
+    CustomPluginInfoEntity customPluginInfoEntity = (CustomPluginInfoEntity) entity;
+    switch (FileType.valueOf(fileType)) {
+      case ZIP:
+        Artifact artifact = new Artifact();
+        artifact.setType(ZIP);
+        artifact.setUrl(gcsBucketUrl);
+        customPluginInfoEntity.setArtifact(artifact);
+        break;
+      case ICON:
+        customPluginInfoEntity.setIconUrl(gcsBucketUrl);
+        break;
+      case SCREENSHOT:
+        List<String> images = customPluginInfoEntity.getImages();
+        if (images == null) {
+          images = new ArrayList<>();
+        }
+        images.add(gcsBucketUrl);
+        customPluginInfoEntity.setImages(images);
+        break;
+      default:
+        throw new UnsupportedOperationException(String.format("File type %s is not supported", fileType));
+    }
   }
 }
