@@ -154,6 +154,21 @@ public class CdInstanceSummaryServiceImpl implements CdInstanceSummaryService {
     return cdInstanceSummaryRepo.findAll(criteria, pageable);
   }
 
+  @Override
+  public List<CdInstanceSummary> getCdInstanceSummaries(
+      String accountId, String orgIdentifier, String projectIdentifier, List<String> artifactCorelationIds) {
+    Criteria criteria = Criteria.where(CdInstanceSummaryKeys.accountIdentifier)
+                            .is(accountId)
+                            .and(CdInstanceSummaryKeys.orgIdentifier)
+                            .is(orgIdentifier)
+                            .and(CdInstanceSummaryKeys.projectIdentifier)
+                            .is(projectIdentifier)
+                            .and(CdInstanceSummaryKeys.artifactCorrelationId)
+                            .in(artifactCorelationIds);
+
+    return cdInstanceSummaryRepo.findAll(criteria);
+  }
+
   private Criteria getEnvironmentFilterCriteria(ArtifactDeploymentViewRequestBody filterBody) {
     if (Objects.nonNull(filterBody) && Objects.nonNull(filterBody.getEnvironment())) {
       Pattern pattern = Pattern.compile("[.]*" + filterBody.getEnvironment() + "[.]*");

@@ -17,6 +17,7 @@ import io.harness.spec.server.ssca.v1.model.CategoryScorecardChecks;
 import io.harness.spec.server.ssca.v1.model.EnforcementResultDTO;
 import io.harness.spec.server.ssca.v1.model.EnforcementSummaryDTO;
 import io.harness.spec.server.ssca.v1.model.NormalizedSbomComponentDTO;
+import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
 import io.harness.spec.server.ssca.v1.model.SbomDetailsForScorecard;
 import io.harness.spec.server.ssca.v1.model.SbomMetadata;
 import io.harness.spec.server.ssca.v1.model.SbomProcess;
@@ -32,6 +33,7 @@ import io.harness.ssca.beans.instance.ArtifactCorrelationDetailsDTO;
 import io.harness.ssca.beans.instance.ArtifactDetailsDTO;
 import io.harness.ssca.beans.instance.InstanceDTO;
 import io.harness.ssca.beans.instance.InstanceDTO.InstanceDTOBuilder;
+import io.harness.ssca.beans.remediation_tracker.PatchedPendingArtifactEntitiesResult;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityBuilder;
 import io.harness.ssca.entities.BaselineEntity;
@@ -47,6 +49,10 @@ import io.harness.ssca.entities.EnforcementSummaryEntity;
 import io.harness.ssca.entities.EnforcementSummaryEntity.EnforcementSummaryEntityBuilder;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity.NormalizedSBOMComponentEntityBuilder;
+import io.harness.ssca.entities.remediation_tracker.DefaultVulnerability;
+import io.harness.ssca.entities.remediation_tracker.RemediationCondition;
+import io.harness.ssca.entities.remediation_tracker.RemediationTrackerEntity;
+import io.harness.ssca.entities.remediation_tracker.RemediationTrackerEntity.RemediationTrackerEntityBuilder;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -55,6 +61,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -199,6 +206,40 @@ public class BuilderFactory {
         .prodEnvCount(2l);
   }
 
+  public RemediationTrackerCreateRequestBody getRemediationTrackerCreateRequestBody() {
+    return new RemediationTrackerCreateRequestBody()
+        .comments("test")
+        .contact(new io.harness.spec.server.ssca.v1.model.ContactInfo().name("test").email("test@gmail.com"))
+        .vulnerabilityInfo(new io.harness.spec.server.ssca.v1.model.DefaultVulnerability()
+                               .type("Default")
+                               .severity(io.harness.spec.server.ssca.v1.model.VulnerabilitySeverity.HIGH)
+                               .componentName("log4j")
+                               .componentVersion("1.0.17-1.0.18"))
+        .remediationCondition(new io.harness.spec.server.ssca.v1.model.RemediationCondition().operator(
+            io.harness.spec.server.ssca.v1.model.RemediationCondition.OperatorEnum.ALL));
+  }
+
+  public RemediationTrackerEntityBuilder getRemediationTrackerEntityBuilder() {
+    return RemediationTrackerEntity.builder()
+        .accountIdentifier(context.accountId)
+        .orgIdentifier(context.orgIdentifier)
+        .projectIdentifier(context.projectIdentifier)
+        .contactInfo(io.harness.ssca.entities.remediation_tracker.ContactInfo.builder()
+                         .name("test")
+                         .email("test@gmail.com")
+                         .build())
+        .vulnerabilityInfo(DefaultVulnerability.builder().version("1.0.17-1.0.18").component("log4j").build())
+        .condition(RemediationCondition.builder().operator(RemediationCondition.Operator.ALL).build());
+  }
+
+  public PatchedPendingArtifactEntitiesResult getPatchedPendingArtifactEntitiesResult() {
+    return PatchedPendingArtifactEntitiesResult.builder()
+        .patchedArtifacts(
+            Collections.singletonList(getArtifactEntityBuilder().artifactCorrelationId("patched").build()))
+        .pendingArtifacts(
+            Collections.singletonList(getArtifactEntityBuilder().artifactCorrelationId("pending").build()))
+        .build();
+  }
   public EnforcementSummaryEntityBuilder getEnforcementSummaryBuilder() {
     return EnforcementSummaryEntity.builder()
         .accountId(context.accountId)

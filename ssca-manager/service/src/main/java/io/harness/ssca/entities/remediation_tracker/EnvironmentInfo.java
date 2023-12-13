@@ -6,6 +6,8 @@
  */
 package io.harness.ssca.entities.remediation_tracker;
 
+import io.harness.ssca.beans.EnvType;
+
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import lombok.Data;
 @Data
 @Builder
 public class EnvironmentInfo {
-  @NotNull String envType;
+  @NotNull EnvType envType;
   @NotNull String envIdentifier;
   @NotNull String envName; // ideally we shouldn't store this here and fetch this from Ng manager
   @NotNull String tag;

@@ -96,6 +96,12 @@ public class ArtifactRepositoryCustomImpl implements ArtifactRepositoryCustom {
   }
 
   @Override
+  public List<String> findDistinctArtifactIds(Criteria criteria) {
+    Query query = new Query(criteria);
+    return mongoTemplate.findDistinct(query, ArtifactEntityKeys.artifactId, ArtifactEntity.class, String.class);
+  }
+
+  @Override
   public long getCount(Aggregation aggregation) {
     AggregationResults<Map> aggregationResults = mongoTemplate.aggregate(aggregation, ArtifactEntity.class, Map.class);
     if (Objects.isNull(aggregationResults) || Objects.isNull(aggregationResults.getUniqueMappedResult())

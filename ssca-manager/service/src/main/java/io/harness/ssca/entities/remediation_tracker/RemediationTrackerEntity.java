@@ -17,7 +17,7 @@ import io.harness.persistence.AccountAccess;
 import io.harness.persistence.UuidAware;
 
 import dev.morphia.annotations.Entity;
-import java.util.List;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,14 +56,14 @@ public class RemediationTrackerEntity implements UuidAware, PersistentRegularIte
   @NotNull RemediationCondition condition;
   String ticketId;
   RemediationStatus status;
-  List<ArtifactInfo> artifactInfos;
+  Map<String, ArtifactInfo> artifactInfos;
   String latestTagWithFix;
   DeploymentsCount deploymentsCount;
   @FdIndex long nextIteration;
-  long lastTrackerUpdatedAt;
   long targetEndDate;
   @CreatedDate Long createdAt;
   @LastModifiedDate Long lastUpdatedAt;
+  String comments;
 
   @Override
   public Long obtainNextIteration(String fieldName) {

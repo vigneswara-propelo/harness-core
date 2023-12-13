@@ -43,13 +43,14 @@ public class RemediationTrackerUpdateArtifactsIteratorHandler
         PersistenceIteratorFactory.PumpExecutorOptions.builder()
             .name(this.getClass().getName())
             .poolSize(threadPoolSize)
-            .interval(ofMinutes(30))
+            .interval(ofMinutes(5))
             .build(),
         RemediationTrackerEntity.class,
         MongoPersistenceIterator.<RemediationTrackerEntity, SpringFilterExpander>builder()
             .clazz(RemediationTrackerEntity.class)
             .fieldName(RemediationTrackerEntityKeys.nextIteration)
             .acceptableNoAlertDelay(ofMinutes(5))
+            .targetInterval(ofMinutes(30))
             .filterExpander(filterExpander)
             .handler(this)
             .schedulingType(REGULAR)
@@ -60,13 +61,12 @@ public class RemediationTrackerUpdateArtifactsIteratorHandler
   private SpringFilterExpander getFilterQuery() {
     return query -> {
       Criteria criteria = Criteria.where(RemediationTrackerEntityKeys.status).is(RemediationStatus.ON_GOING);
-
       query.addCriteria(criteria);
     };
   }
 
   @Override
   public void handle(RemediationTrackerEntity entity) {
-    //        remediationTrackerService.updateArtifactsAndEnvironmentsInRemediationTracker(entity);
+    remediationTrackerService.updateArtifactsAndEnvironmentsInRemediationTracker(entity);
   }
 }

@@ -13,6 +13,7 @@ import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.CdInstanceSummary;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -23,6 +24,9 @@ public interface CdInstanceSummaryService {
 
   Page<CdInstanceSummary> getCdInstanceSummaries(String accountId, String orgIdentifier, String projectIdentifier,
       ArtifactEntity artifact, ArtifactDeploymentViewRequestBody filterBody, Pageable pageable);
+
+  List<CdInstanceSummary> getCdInstanceSummaries(
+      String accountId, String orgIdentifier, String projectIdentifier, List<String> artifactCorelationIds);
 
   CdInstanceSummary getCdInstanceSummary(String accountId, String orgIdentifier, String projectIdentifier,
       String artifactCorrelationId, String envIdentifier);
