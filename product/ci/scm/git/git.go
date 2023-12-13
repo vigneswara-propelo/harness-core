@@ -620,7 +620,7 @@ func CompareCommits(ctx context.Context, request *pb.CompareCommitsRequest, log 
 
 func GetAuthenticatedUser(ctx context.Context, request *pb.GetAuthenticatedUserRequest, log *zap.SugaredLogger) (out *pb.GetAuthenticatedUserResponse, err error) {
 	start := time.Now()
-	log.Infow("GetAuthenticatedUser starting", "provider", request.GetProvider())
+	log.Infow("GetAuthenticatedUser starting", "provider", gitclient.GetProvider(*request.GetProvider()))
 
 	client, err := gitclient.GetGitClient(*request.GetProvider(), log)
 	if err != nil {
@@ -653,7 +653,7 @@ func GetAuthenticatedUser(ctx context.Context, request *pb.GetAuthenticatedUserR
 
 func GetUserRepos(ctx context.Context, request *pb.GetUserReposRequest, log *zap.SugaredLogger) (out *pb.GetUserReposResponse, err error) {
 	start := time.Now()
-	log.Infow("GetUserRepos starting", "provider", request.GetProvider())
+	log.Infow("GetUserRepos starting", "provider", gitclient.GetProvider(*request.GetProvider()))
 
 	client, err := gitclient.GetGitClient(*request.GetProvider(), log)
 

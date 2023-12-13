@@ -48,7 +48,7 @@ func FindFile(ctx context.Context, fileRequest *pb.GetFileRequest, log *zap.Suga
 	content, response, err := findFileWithRetry(ctx, log, client, fileRequest, ref, git.ServerErrorRetryCount)
 	if err != nil {
 		// this is a warning due to the fact that the file, ref, branch and credentials may not be valid from the user
-		log.Warnw("Findfile failure", "provider", fileRequest.GetProvider(), "slug", fileRequest.GetSlug(), "path", fileRequest.GetPath(), "ref", ref, "elapsed_time_ms", utils.TimeSince(start), zap.Error(err))
+		log.Warnw("Findfile failure", "provider", gitclient.GetProvider(*fileRequest.GetProvider()), "slug", fileRequest.GetSlug(), "path", fileRequest.GetPath(), "ref", ref, "elapsed_time_ms", utils.TimeSince(start), zap.Error(err))
 		// this is a hard error with no response
 		if response == nil {
 			return nil, err
@@ -114,7 +114,7 @@ func findFileWithRetry(ctx context.Context, log *zap.SugaredLogger, client *scm.
 		content, response, err = client.Contents.Find(ctx, fileRequest.GetSlug(), fileRequest.GetPath(), ref)
 		if git.ShouldRetryScmApi(response) {
 			retryCount += 1
-			log.Errorw("Find file Git API failed with server side error", "provider", fileRequest.GetProvider(), "slug",
+			log.Errorw("Find file Git API failed with server side error", "provider", gitclient.GetProvider(*fileRequest.GetProvider()), "slug",
 				fileRequest.GetSlug(), "path", fileRequest.GetPath(), "ref", ref, "retry_count", retryCount, "status_code", git.GetStatusCodeFromResponse(response), zap.Error(err))
 
 			time.Sleep(git.ServerErrorRetrySleep)
