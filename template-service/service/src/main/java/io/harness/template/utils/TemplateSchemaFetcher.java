@@ -36,16 +36,16 @@ public class TemplateSchemaFetcher {
   private final String TEMPLATE_JSON_PATH_V0 = "static-schema/v0/template.json";
   private final String TEMPLATE_JSON_PATH_V1 = "static-schema/v1/template.json";
   @Inject TemplateServiceConfiguration templateServiceConfiguration;
-
-  private final String PRE_QA = "stress";
   private final String TEMPLATE_VO = "v0";
   private final String TEMPLATE_V1 = "v1";
   private final String TEMPLATE_JSON = "template.json";
 
+  public Boolean useSchemaFromHarnessSchemaRepo() {
+    return templateServiceConfiguration.getUseSchemaFromHarnessSchemaRepo();
+  }
+
   public JsonNode getStaticYamlSchema(String version) {
-    String env = System.getenv("ENV");
-    log.info(String.format("Current Environment :- %s ", env));
-    if (PRE_QA.equals(env)) {
+    if (useSchemaFromHarnessSchemaRepo()) {
       String fileUrl = calculateFileURL(version);
       try {
         // Read the JSON file as JsonNode

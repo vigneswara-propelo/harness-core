@@ -13,7 +13,6 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.jackson.JsonNodeUtils;
-import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.template.utils.TemplateSchemaFetcher;
 import io.harness.yaml.schema.beans.SchemaConstants;
 import io.harness.yaml.utils.JsonPipelineUtils;
@@ -39,17 +38,12 @@ public class TemplateSchemaParserV0 extends BaseTemplateSchemaParser {
   public static final String TEMPLATE_VO = "v0";
 
   @Override
-  void init() {
-    JsonNode rootSchemaNode = templateSchemaFetcher.getStaticYamlSchema(TEMPLATE_VO);
-    rootSchemaJsonNode = rootSchemaNode;
-    // Populating the template schema in the nodeToResolvedSchemaMap with rootSchemaNode because we already have the
-    // complete template schema so no need to calculate.
-    nodeToResolvedSchemaMap.put(YAMLFieldNameConstants.TEMPLATE, (ObjectNode) rootSchemaNode);
-    traverseNodeAndExtractAllRefsRecursively(rootSchemaJsonNode, "/#");
-    findRootNodesAndInitialiseSchema();
+  String getYamlVersion() {
+    return TEMPLATE_VO;
   }
 
-  private void findRootNodesAndInitialiseSchema() {
+  @Override
+  void findRootNodesAndInitialiseSchema() {
     JsonNode tamplatesJsonNode = JsonPipelineUtils.getJsonNodeByPath(rootSchemaJsonNode, TEMPLATE_DEFINITION_PATH);
     for (Iterator<Map.Entry<String, JsonNode>> it = tamplatesJsonNode.fields(); it.hasNext();) {
       Map.Entry<String, JsonNode> entryIterator = it.next();

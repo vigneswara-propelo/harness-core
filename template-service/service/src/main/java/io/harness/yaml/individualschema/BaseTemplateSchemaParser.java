@@ -17,9 +17,12 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.template.utils.TemplateSchemaFetcher;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.HashSet;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +32,22 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(PIPELINE)
 @Singleton
 public abstract class BaseTemplateSchemaParser extends AbstractStaticSchemaParser {
+  @Inject TemplateSchemaFetcher templateSchemaFetcher;
   @Override
   void checkIfRootNodeAndAddIntoFqnToNodeMap(String currentFqn, String childNodeRefValue, ObjectNode objectNode) {}
+
+  abstract void findRootNodesAndInitialiseSchema();
+  abstract String getYamlVersion();
+  @Override
+  void init() {
+    JsonNode rootSchemaNode = templateSchemaFetcher.getStaticYamlSchema(getYamlVersion());
+    rootSchemaJsonNode = rootSchemaNode;
+    // Populating the template schema in the nodeToResolvedSchemaMap with rootSchemaNode because we already have the
+    // complete template schema so no need to calculate.
+    nodeToResolvedSchemaMap.put(YAMLFieldNameConstants.TEMPLATE, (ObjectNode) rootSchemaNode);
+    traverseNodeAndExtractAllRefsRecursively(rootSchemaJsonNode, "/#");
+    findRootNodesAndInitialiseSchema();
+  }
 
   @Override
   IndividualSchemaGenContext getIndividualSchemaGenContext() {
@@ -61,5 +78,15 @@ public abstract class BaseTemplateSchemaParser extends AbstractStaticSchemaParse
       return STAGE;
     }
     return nodeGroup;
+  }
+
+  @Override
+  Boolean checkIfParserReinitializationNeeded() {
+    if (templateSchemaFetcher.useSchemaFromHarnessSchemaRepo()) {
+      // We will reinitialise the individual schema in 15 min for stress env or for env where
+      // useSchemaFromHarnessSchemaRepo is enabled (dev-space/local)
+      return System.currentTimeMillis() - lastInitializedTime >= MAX_TIME_TO_REINITIALIZE_PARSER;
+    }
+    return false;
   }
 }

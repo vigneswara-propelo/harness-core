@@ -132,4 +132,14 @@ public abstract class BasePipelineSchemaParser extends AbstractStaticSchemaParse
     }
     return nodeGroup;
   }
+
+  @Override
+  Boolean checkIfParserReinitializationNeeded() {
+    if (schemaFetcher.useSchemaFromHarnessSchemaRepo()) {
+      // We will reinitialise the individual schema in 15 min for stress env or for env where
+      // useSchemaFromHarnessSchemaRepo is enabled (dev-space/local)
+      return System.currentTimeMillis() - lastInitializedTime >= MAX_TIME_TO_REINITIALIZE_PARSER;
+    }
+    return false;
+  }
 }

@@ -10,8 +10,10 @@ package io.harness.template;
 import static io.harness.rule.OwnerRule.UTKARSH_CHOUBEY;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
+import io.harness.TemplateServiceConfiguration;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 import io.harness.template.utils.TemplateSchemaFetcher;
@@ -22,10 +24,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class TemplateSchemaFetcherTest extends CategoryTest {
   @InjectMocks TemplateSchemaFetcher templateSchemaFetcher;
+  @Mock TemplateServiceConfiguration templateServiceConfiguration;
   String yaml;
   @Before
   public void setUp() throws IOException {
@@ -36,6 +40,7 @@ public class TemplateSchemaFetcherTest extends CategoryTest {
   @Owner(developers = UTKARSH_CHOUBEY)
   @Category(UnitTests.class)
   public void getTemplateYamlFieldElseThrowTest() {
+    when(templateServiceConfiguration.getUseSchemaFromHarnessSchemaRepo()).thenReturn(false);
     JsonNode schema = templateSchemaFetcher.getStaticYamlSchema("v0");
     assertThat(schema).isNotNull();
   }

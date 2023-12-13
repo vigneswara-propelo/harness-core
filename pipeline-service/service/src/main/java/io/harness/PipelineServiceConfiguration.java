@@ -192,6 +192,7 @@ public class PipelineServiceConfiguration extends Configuration {
   @JsonProperty("pipelineExecutionDetailsDeleteMaxBatchSize")
   private Integer pipelineExecutionDetailsDeleteMaxBatchSize;
   private boolean useQueueServiceForWebhookTriggers;
+  @JsonProperty(value = "useSchemaFromHarnessSchemaRepo") private Boolean useSchemaFromHarnessSchemaRepo;
 
   private String managerServiceSecret;
   private String managerTarget;

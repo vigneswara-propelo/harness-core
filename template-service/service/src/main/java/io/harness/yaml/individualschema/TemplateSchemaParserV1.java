@@ -26,14 +26,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.jackson.JsonNodeUtils;
 import io.harness.ng.core.template.TemplateEntityType;
-import io.harness.pms.yaml.YAMLFieldNameConstants;
-import io.harness.template.utils.TemplateSchemaFetcher;
 import io.harness.yaml.schema.beans.SchemaConstants;
 import io.harness.yaml.utils.JsonPipelineUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.Iterator;
 import java.util.Map;
@@ -44,25 +41,18 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(PIPELINE)
 @Singleton
 public class TemplateSchemaParserV1 extends BaseTemplateSchemaParser {
-  @Inject TemplateSchemaFetcher templateSchemaFetcher;
   static final String TEMPLATE_DEFINITION_PATH = "definitions/template";
   static final String ONE_OF_REF_IN_TEMPLATE = "%s/allOf/0/then/properties/spec/oneOf";
   static final String SPEC_PATH = "%s/allOf/0/then/properties/spec";
-
   public static final String TEMPLATE_V1 = "v1";
 
   @Override
-  void init() {
-    JsonNode rootSchemaNode = templateSchemaFetcher.getStaticYamlSchema(TEMPLATE_V1);
-    rootSchemaJsonNode = rootSchemaNode;
-    // Populating the template schema in the nodeToResolvedSchemaMap with rootSchemaNode because we already have the
-    // complete template schema so no need to calculate.
-    nodeToResolvedSchemaMap.put(YAMLFieldNameConstants.TEMPLATE, (ObjectNode) rootSchemaNode);
-    traverseNodeAndExtractAllRefsRecursively(rootSchemaJsonNode, "/#");
-    findRootNodesAndInitialiseSchema();
+  String getYamlVersion() {
+    return TEMPLATE_V1;
   }
 
-  private void findRootNodesAndInitialiseSchema() {
+  @Override
+  void findRootNodesAndInitialiseSchema() {
     JsonNode tamplatesJsonNode = JsonPipelineUtils.getJsonNodeByPath(rootSchemaJsonNode, TEMPLATE_DEFINITION_PATH);
     for (Iterator<Map.Entry<String, JsonNode>> it = tamplatesJsonNode.fields(); it.hasNext();) {
       Map.Entry<String, JsonNode> entryIterator = it.next();

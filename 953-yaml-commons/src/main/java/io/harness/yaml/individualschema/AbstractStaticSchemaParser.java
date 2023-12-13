@@ -43,7 +43,7 @@ public abstract class AbstractStaticSchemaParser implements SchemaParserInterfac
 
   final long MAX_TIME_TO_REINITIALIZE_PARSER = 900000;
 
-  private long lastInitializedTime;
+  protected long lastInitializedTime;
 
   Map<String, ObjectNode> nodeToResolvedSchemaMap =
       new HashMap<>(); // It contains the complete resolved schema for a node. A node can be for any
@@ -76,6 +76,8 @@ public abstract class AbstractStaticSchemaParser implements SchemaParserInterfac
     }
     return checkIfParserReinitializationNeeded();
   }
+
+  abstract Boolean checkIfParserReinitializationNeeded();
 
   abstract void checkIfRootNodeAndAddIntoFqnToNodeMap(
       String currentFqn, String childNodeRefValue, ObjectNode objectNode);
@@ -315,14 +317,5 @@ public abstract class AbstractStaticSchemaParser implements SchemaParserInterfac
       }
     }
     return null;
-  }
-
-  Boolean checkIfParserReinitializationNeeded() {
-    String env = System.getenv("ENV");
-    if (PRE_QA.equals(env)) {
-      // We will reinitialise the individual schema in 15 min for stress env.
-      return System.currentTimeMillis() - lastInitializedTime >= MAX_TIME_TO_REINITIALIZE_PARSER;
-    }
-    return false;
   }
 }

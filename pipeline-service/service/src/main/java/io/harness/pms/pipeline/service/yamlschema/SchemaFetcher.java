@@ -37,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 public class SchemaFetcher {
-  public static final String PREQA = "stress";
   private JsonNode pipelineStaticSchemaV0 = null;
   private JsonNode pipelineStaticSchemaV1 = null;
 
@@ -74,9 +73,11 @@ public class SchemaFetcher {
     }
   }
 
+  public Boolean useSchemaFromHarnessSchemaRepo() {
+    return pipelineServiceConfiguration.getUseSchemaFromHarnessSchemaRepo();
+  }
   private JsonNode getPipelineStaticSchema(String version) throws IOException {
-    String env = System.getenv("ENV");
-    if (PREQA.equals(env)) {
+    if (useSchemaFromHarnessSchemaRepo()) {
       return fetchSchemaFromRepo(EntityType.PIPELINES, version);
     }
     if (version.equals(VERSION_V0)) {
@@ -111,8 +112,7 @@ public class SchemaFetcher {
   }
 
   private JsonNode getTriggerStaticSchema() throws IOException {
-    String env = System.getenv("ENV");
-    if (PREQA.equals(env)) {
+    if (useSchemaFromHarnessSchemaRepo()) {
       return fetchSchemaFromRepo(EntityType.TRIGGERS, "v0");
     }
     if (null == triggerStaticSchema) {

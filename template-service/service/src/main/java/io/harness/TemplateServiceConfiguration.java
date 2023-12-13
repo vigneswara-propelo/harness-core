@@ -107,6 +107,7 @@ public class TemplateServiceConfiguration extends Configuration {
   @JsonProperty(value = "enableOpentelemetry") private Boolean enableOpentelemetry;
   @JsonProperty("distributedLockImplementation") private DistributedLockImplementation distributedLockImplementation;
   @JsonProperty("staticSchemaFileURL") private String staticSchemaFileURL;
+  @JsonProperty(value = "useSchemaFromHarnessSchemaRepo") private Boolean useSchemaFromHarnessSchemaRepo;
   @JsonProperty("redisLockConfig") @ConfigSecret private RedisConfig redisLockConfig;
   @JsonProperty("segmentConfiguration") private SegmentConfiguration segmentConfiguration;
   private ServiceHttpClientConfig opaClientConfig;

@@ -185,6 +185,8 @@ staticSchemaFileURL: ${STATIC_SCHEMA_FILE_URL:-"https://raw.githubusercontent.co
 
 distributedLockImplementation: REDIS
 
+useSchemaFromHarnessSchemaRepo: ${USE_SCHEMA_FROM_HARNESS_SCHEMA_REPO:-false}
+
 segmentConfiguration:
   enabled: ${SEGMENT_ENABLED:-false}
   url: ${SEGMENT_URL:-https://api.segment.io/v1/}
