@@ -8,6 +8,7 @@
 package io.harness.impl.scm;
 
 import static io.harness.annotations.dev.HarnessTeam.DX;
+import static io.harness.constants.Constants.HTTP_SUCCESS_STATUS_CODE;
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -38,6 +39,7 @@ import io.harness.beans.response.GitFileBatchResponse;
 import io.harness.beans.response.GitFileResponse;
 import io.harness.beans.response.ListFilesInCommitResponse;
 import io.harness.constants.Constants;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.eraro.ErrorCode;
@@ -373,7 +375,7 @@ public class ScmServiceClientImpl implements ScmServiceClient {
     } while (response.getPagination().getNext() != 0 || isNotEmpty(response.getPagination().getNextUrl()));
 
     return ListFilesInCommitResponse.builder()
-        .statusCode(Constants.HTTP_SUCCESS_STATUS_CODE)
+        .statusCode(HTTP_SUCCESS_STATUS_CODE)
         .fileGitDetailsList(fileGitDetailsList)
         .build();
   }
@@ -1122,7 +1124,7 @@ public class ScmServiceClientImpl implements ScmServiceClient {
           .content(fileContent.getContent())
           .objectId(fileContent.getBlobId())
           .branch(branch)
-          .statusCode(Constants.HTTP_SUCCESS_STATUS_CODE)
+          .statusCode(HTTP_SUCCESS_STATUS_CODE)
           .build();
     } catch (Exception exception) {
       log.error("Faced exception in getFile operation: ", exception);
@@ -1261,7 +1263,11 @@ public class ScmServiceClientImpl implements ScmServiceClient {
                                .setCommitId(latestCommitResponse.getCommitId())
                                .build());
       }
+    } else {
+      // Check if current file is same as the previous file for update operation.
+      return checkForBlankUpdate(gitFileDetails, scmConnector, scmBlockingStub);
     }
+
     return Optional.empty();
   }
 
@@ -1357,5 +1363,42 @@ public class ScmServiceClientImpl implements ScmServiceClient {
               .build();
     }
     return listBranchesWithDefaultRequest;
+  }
+
+  private Optional<UpdateFileResponse> checkForBlankUpdate(
+      GitFileDetails gitFileDetails, ScmConnector scmConnector, SCMGrpc.SCMBlockingStub scmBlockingStub) {
+    try {
+      GitFileResponse gitFileResponse = getFile(scmConnector,
+          GitFileRequest.builder()
+              .filepath(gitFileDetails.getFilePath())
+              .branch(gitFileDetails.getBranch())
+              .commitId(gitFileDetails.getCommitId())
+              .getOnlyFileContent(true)
+              .build(),
+          scmBlockingStub);
+      if (gitFileResponse != null && EmptyPredicate.isNotEmpty(gitFileResponse.getContent())
+          && gitFileResponse.getContent().equals(gitFileDetails.getFileContent())) {
+        log.info("Skipping the update file operation as it file contents are same.");
+        return Optional.of(UpdateFileResponse.newBuilder()
+                               .setStatus(Constants.HTTP_SUCCESS_STATUS_CODE)
+                               .setCommitId(gitFileResponse.getCommitId())
+                               .setBlobId(gitFileResponse.getObjectId())
+                               .build());
+      }
+      // New yaml and old yaml have changes(not a blank update), and the updateFlow proceeds.
+      return Optional.empty();
+    } catch (Exception exception) {
+      log.error(
+          String.format("Error occurred while performing blank update check for file %s", gitFileDetails.getFilePath()),
+          exception);
+      return Optional.of(UpdateFileResponse.newBuilder()
+                             .setStatus(Constants.SCM_INTERNAL_SERVER_ERROR_CODE)
+                             .setError(exception.getMessage() != null
+                                     ? exception.getMessage()
+                                     : String.format("Error occurred while performing blank update check for file %s",
+                                         gitFileDetails.getFilePath()))
+                             .setCommitId(gitFileDetails.getCommitId())
+                             .build());
+    }
   }
 }
