@@ -1116,6 +1116,7 @@ public class DataCollectionTaskServiceImplTest extends CvNextGenTestBase {
         .isEqualTo("Perpetual task assigned but not in a valid state:" + TASK_UNASSIGNED
             + " and is assigned to delegate:"
             + "some-delegate-id");
+    assertThat(dataCollectionTask.getCvngPerpetualTaskState()).isEqualTo(TASK_UNASSIGNED);
   }
 
   @Test
@@ -1135,6 +1136,7 @@ public class DataCollectionTaskServiceImplTest extends CvNextGenTestBase {
     assertThat(dataCollectionTask.getException())
         .isEqualTo(
             "Perpetual task assigned but not in a valid state:TASK_UNASSIGNED and is assigned to delegate:some-delegate-id");
+    assertThat(dataCollectionTask.getCvngPerpetualTaskState()).isEqualTo(TASK_UNASSIGNED);
   }
 
   @Test

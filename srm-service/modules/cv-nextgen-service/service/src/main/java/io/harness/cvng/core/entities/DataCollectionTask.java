@@ -10,6 +10,8 @@ package io.harness.cvng.core.entities;
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.StoreIn;
 import io.harness.cvng.analysis.entities.VerificationTaskBase;
+import io.harness.cvng.beans.CVNGPerpetualTaskState;
+import io.harness.cvng.beans.CVNGPerpetualTaskUnassignedReason;
 import io.harness.cvng.beans.DataCollectionExecutionStatus;
 import io.harness.cvng.beans.DataCollectionInfo;
 import io.harness.cvng.beans.cvnglog.ExecutionLogDTO.LogLevel;
@@ -111,6 +113,8 @@ public abstract class DataCollectionTask
   private Instant startTime;
   private Instant endTime;
   private Map<String, String> dataCollectionMetadata;
+  private CVNGPerpetualTaskState cvngPerpetualTaskState;
+  private CVNGPerpetualTaskUnassignedReason cvngPerpetualTaskUnassignedReason;
   @FdIndex private Long workerStatusIteration;
 
   @Override

@@ -169,7 +169,7 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
 
   @Override
   public void updateTaskStatus(DataCollectionTaskResult result) {
-    updateTaskStatus(result, true);
+    updateTaskStatus(result, true, Optional.empty());
   }
 
   @Override
@@ -185,7 +185,8 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
     return dataCollectionTask;
   }
 
-  private void updateTaskStatus(DataCollectionTaskResult result, boolean updateIfRunning) {
+  private void updateTaskStatus(DataCollectionTaskResult result, boolean updateIfRunning,
+      Optional<CVNGPerpetualTaskDTO> cvngPerpetualTaskDTOOptional) {
     log.info("Updating status {}", result);
     UpdateOperations<DataCollectionTask> updateOperations =
         hPersistence.createUpdateOperations(DataCollectionTask.class)
@@ -195,6 +196,16 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
     }
     if (result.getException() != null) {
       updateOperations.set(DataCollectionTaskKeys.exception, result.getException());
+    }
+    if (cvngPerpetualTaskDTOOptional.isPresent()
+        && cvngPerpetualTaskDTOOptional.get().getCvngPerpetualTaskState() != null) {
+      updateOperations.set(DataCollectionTaskKeys.cvngPerpetualTaskState,
+          cvngPerpetualTaskDTOOptional.get().getCvngPerpetualTaskState());
+    }
+    if (cvngPerpetualTaskDTOOptional.isPresent()
+        && cvngPerpetualTaskDTOOptional.get().getCvngPerpetualTaskUnassignedReason() != null) {
+      updateOperations.set(DataCollectionTaskKeys.cvngPerpetualTaskUnassignedReason,
+          cvngPerpetualTaskDTOOptional.get().getCvngPerpetualTaskUnassignedReason());
     }
     Query<DataCollectionTask> query = hPersistence.createQuery(DataCollectionTask.class)
                                           .filter(DataCollectionTaskKeys.uuid, result.getDataCollectionTaskId());
@@ -211,35 +222,7 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
     DataCollectionTask dataCollectionTask = getDataCollectionTask(result.getDataCollectionTaskId());
     ExecutionLogger executionLogger = executionLogService.getLogger(dataCollectionTask);
     List<CVNGLogTag> cvngLogTags = CVNGTaskMetadataUtils.getCvngLogTagsForTask(dataCollectionTask.getUuid());
-    if (!DataCollectionExecutionStatus.getNonFinalStatuses().contains(dataCollectionTask.getStatus())) {
-      if (dataCollectionTask.getRetryCount() > 0) {
-        cvngLogTags.add(CVNGTaskMetadataUtils.getCvngLogTag(
-            CVNGTaskMetadataConstants.RETRY_COUNT, String.valueOf(dataCollectionTask.getRetryCount())));
-      }
-      cvngLogTags.add(CVNGTaskMetadataUtils.getCvngLogTag(
-          CVNGTaskMetadataConstants.TASK_TYPE, String.valueOf(dataCollectionTask.getType())));
-      if (dataCollectionTask.getFirstPickedAt() != null) {
-        cvngLogTags.addAll(CVNGTaskMetadataUtils.getTaskDurationTags(
-            CVNGTaskMetadataUtils.DurationType.WAIT_DURATION, dataCollectionTask.waitTime()));
-      }
-      if (dataCollectionTask.getLastPickedAt() != null) {
-        cvngLogTags.addAll(CVNGTaskMetadataUtils.getTaskDurationTags(
-            CVNGTaskMetadataUtils.DurationType.RUNNING_DURATION, dataCollectionTask.runningTime(clock.instant())));
-      } else {
-        cvngLogTags.addAll(CVNGTaskMetadataUtils.getTaskDurationTags(
-            CVNGTaskMetadataUtils.DurationType.TOTAL_DURATION, dataCollectionTask.totalTime(clock.instant())));
-      }
-      String perpetualTaskId = "";
-      try {
-        perpetualTaskId =
-            monitoringSourcePerpetualTaskService.getPerpetualTask(dataCollectionTask.getDataCollectionWorkerId())
-                .getPerpetualTaskId();
-      } catch (Exception exception) {
-        log.warn("Perpetual Task Id is not present for data collection task {}", dataCollectionTask);
-      }
-      cvngLogTags.add(
-          CVNGTaskMetadataUtils.getCvngLogDebugTag(CVNGTaskMetadataConstants.PERPETUAL_TASK_ID, perpetualTaskId));
-    }
+    addDurationAndRetryCountToCompletedTasks(dataCollectionTask, cvngLogTags);
     cvngLogTags.addAll(CVNGTaskMetadataUtils.getDataCollectionMetadataTags(result));
     String message = "Data collection task status: " + dataCollectionTask.getStatus();
     executionLogger.log(dataCollectionTask.getLogLevel(), cvngLogTags, message);
@@ -271,6 +254,44 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
       retry(dataCollectionTask);
     }
   }
+
+  private void addDurationAndRetryCountToCompletedTasks(
+      DataCollectionTask dataCollectionTask, List<CVNGLogTag> cvngLogTags) {
+    if (!DataCollectionExecutionStatus.getNonFinalStatuses().contains(dataCollectionTask.getStatus())) {
+      if (dataCollectionTask.getRetryCount() > 0) {
+        cvngLogTags.add(CVNGTaskMetadataUtils.getCvngLogTag(
+            CVNGTaskMetadataConstants.RETRY_COUNT, String.valueOf(dataCollectionTask.getRetryCount())));
+      }
+      cvngLogTags.add(CVNGTaskMetadataUtils.getCvngLogTag(
+          CVNGTaskMetadataConstants.TASK_TYPE, String.valueOf(dataCollectionTask.getType())));
+      if (dataCollectionTask.getFirstPickedAt() != null) {
+        cvngLogTags.addAll(CVNGTaskMetadataUtils.getTaskDurationTags(
+            CVNGTaskMetadataUtils.DurationType.WAIT_DURATION, dataCollectionTask.waitTime()));
+      }
+      if (dataCollectionTask.getLastPickedAt() != null) {
+        cvngLogTags.addAll(CVNGTaskMetadataUtils.getTaskDurationTags(
+            CVNGTaskMetadataUtils.DurationType.RUNNING_DURATION, dataCollectionTask.runningTime(clock.instant())));
+      } else {
+        cvngLogTags.addAll(CVNGTaskMetadataUtils.getTaskDurationTags(
+            CVNGTaskMetadataUtils.DurationType.TOTAL_DURATION, dataCollectionTask.totalTime(clock.instant())));
+      }
+      addPerpetualTaskIdToLogTags(dataCollectionTask, cvngLogTags);
+    }
+  }
+
+  private void addPerpetualTaskIdToLogTags(DataCollectionTask dataCollectionTask, List<CVNGLogTag> cvngLogTags) {
+    String perpetualTaskId = "";
+    try {
+      perpetualTaskId =
+          monitoringSourcePerpetualTaskService.getPerpetualTask(dataCollectionTask.getDataCollectionWorkerId())
+              .getPerpetualTaskId();
+    } catch (Exception exception) {
+      log.warn("Perpetual Task Id is not present for data collection task {}", dataCollectionTask);
+    }
+    cvngLogTags.add(
+        CVNGTaskMetadataUtils.getCvngLogDebugTag(CVNGTaskMetadataConstants.PERPETUAL_TASK_ID, perpetualTaskId));
+  }
+
   @Override
   public DataCollectionTask getLastDataCollectionTask(String accountId, String verificationTaskId) {
     return hPersistence.createQuery(DataCollectionTask.class)
@@ -388,7 +409,7 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
 
   @Override
   public void updatePerpetualTaskStatus(DataCollectionTask dataCollectionTask) {
-    Optional<CVNGPerpetualTaskDTO> cvngPerpetualTaskDTO;
+    Optional<CVNGPerpetualTaskDTO> cvngPerpetualTaskDTO = Optional.empty();
     try {
       cvngPerpetualTaskDTO =
           monitoringSourcePerpetualTaskService.getPerpetualTaskStatus(dataCollectionTask.getDataCollectionWorkerId());
@@ -400,7 +421,7 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
               .exception("Exception while getting MonitoringSourcePerpetualTask status with workerId: "
                   + dataCollectionTask.getDataCollectionWorkerId() + ". " + exception.getMessage())
               .build();
-      updateTaskStatus(dataCollectionTaskResult, false);
+      updateTaskStatus(dataCollectionTaskResult, false, cvngPerpetualTaskDTO);
       log.warn("Exception while getting MonitoringSourcePerpetualTask status with workerId: "
               + dataCollectionTask.getDataCollectionWorkerId(),
           exception);
@@ -415,7 +436,7 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
                 .exception(
                     "Perpetual task unassigned:" + cvngPerpetualTaskDTO.get().getCvngPerpetualTaskUnassignedReason())
                 .build();
-        updateTaskStatus(dataCollectionTaskResult, false);
+        updateTaskStatus(dataCollectionTaskResult, false, cvngPerpetualTaskDTO);
       } else if (cvngPerpetualTaskDTO.get().getCvngPerpetualTaskState() != null
           && !cvngPerpetualTaskDTO.get().getCvngPerpetualTaskState().equals(CVNGPerpetualTaskState.TASK_ASSIGNED)) {
         DataCollectionTaskResult dataCollectionTaskResult =
@@ -426,7 +447,7 @@ public class DataCollectionTaskServiceImpl implements DataCollectionTaskService 
                     + cvngPerpetualTaskDTO.get().getCvngPerpetualTaskState()
                     + " and is assigned to delegate:" + cvngPerpetualTaskDTO.get().getDelegateId())
                 .build();
-        updateTaskStatus(dataCollectionTaskResult, false);
+        updateTaskStatus(dataCollectionTaskResult, false, cvngPerpetualTaskDTO);
       }
     }
   }
