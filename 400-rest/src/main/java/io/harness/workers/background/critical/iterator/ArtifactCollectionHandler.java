@@ -21,7 +21,6 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.annotations.dev.TargetModule;
-import io.harness.beans.FeatureName;
 import io.harness.exception.ExceptionLogger;
 import io.harness.exception.FunctorException;
 import io.harness.exception.WingsException;
