@@ -28,6 +28,7 @@ import io.harness.cdng.artifact.outcome.ArtifactsOutcome;
 import io.harness.cdng.artifact.outcome.EcrArtifactOutcome;
 import io.harness.cdng.artifact.outcome.S3ArtifactOutcome;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepHelper;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepHelper;
 import io.harness.cdng.expressions.CDExpressionResolver;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
@@ -39,6 +40,7 @@ import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.cdng.serverless.ArtifactType;
 import io.harness.cdng.serverless.ServerlessEntityHelper;
@@ -102,6 +104,8 @@ public class ServerlessV2PluginInfoProviderHelper {
 
   @Inject private DownloadAwsS3StepHelper downloadAwsS3StepHelper;
 
+  @Inject private DownloadHarnessStoreStepHelper downloadHarnessStoreStepHelper;
+
   @Inject private ServerlessEntityHelper serverlessEntityHelper;
 
   @Inject private CDFeatureFlagHelper cdFeatureFlagHelper;
@@ -148,14 +152,21 @@ public class ServerlessV2PluginInfoProviderHelper {
           removeExtraSlashesInString(gitStoreConfig.getPaths().getValue().get(0)));
       return removeTrailingSlashesInString(path);
     } else if (serverlessAwsLambdaManifestOutcome.getStore() instanceof S3StoreConfig) {
-      String path = String.format(
-          "/%s/%s", PLUGIN_PATH_PREFIX, removeExtraSlashesInString(serverlessAwsLambdaManifestOutcome.getIdentifier()));
-      return removeTrailingSlashesInString(path);
+      return getServerlessAwsLambdaManifestPath(serverlessAwsLambdaManifestOutcome);
+    } else if (serverlessAwsLambdaManifestOutcome.getStore() instanceof HarnessStore) {
+      return getServerlessAwsLambdaManifestPath(serverlessAwsLambdaManifestOutcome);
     } else {
       throw new InvalidRequestException(format("%s store type not supported for Serverless Aws Lambda Manifest",
                                             serverlessAwsLambdaManifestOutcome.getStore().getKind()),
           USER);
     }
+  }
+
+  private String getServerlessAwsLambdaManifestPath(
+      ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome) {
+    String path = String.format(
+        "/%s/%s", PLUGIN_PATH_PREFIX, removeExtraSlashesInString(serverlessAwsLambdaManifestOutcome.getIdentifier()));
+    return removeTrailingSlashesInString(path);
   }
 
   public String removeExtraSlashesInString(String path) {
@@ -188,15 +199,16 @@ public class ServerlessV2PluginInfoProviderHelper {
         throw new InvalidRequestException("Atleast one git path need to be specified", USER);
       }
     } else if (storeConfig instanceof S3StoreConfig) {
-      if (!cdFeatureFlagHelper.isEnabled(
-              AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD)) {
-        throw new AccessDeniedException(
-            "CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD FF is not enabled for this account. Please contact harness customer care.",
-            ErrorCode.NG_ACCESS_DENIED, WingsException.USER);
-      }
+      checkForNewManifestStoreFeatureFlag(ambiance);
 
       if (isEmpty(((S3StoreConfig) storeConfig).getPaths().getValue())) {
         throw new InvalidRequestException("Atleast one s3 store path need to be specified", USER);
+      }
+    } else if (storeConfig instanceof HarnessStore) {
+      checkForNewManifestStoreFeatureFlag(ambiance);
+
+      if (isEmpty(((HarnessStore) storeConfig).getFiles().getValue())) {
+        throw new InvalidRequestException("Atleast one harness store path needs to be specified", USER);
       }
     } else {
       throw new InvalidRequestException(format("%s store type not supported", storeConfig.getKind()), USER);
@@ -358,6 +370,13 @@ public class ServerlessV2PluginInfoProviderHelper {
           removeExtraSlashesInString(valuesManifestOutcome.getIdentifier()),
           removeExtraSlashesInString(
               Paths.get(valuesManifestOutcomeStore.getPaths().getValue().get(0)).getFileName().toString()));
+      return removeTrailingSlashesInString(path);
+    } else if (valuesManifestOutcome.getStore() instanceof HarnessStore) {
+      HarnessStore valuesManifestOutcomeStore = (HarnessStore) valuesManifestOutcome.getStore();
+      String path = String.format("/%s/%s/%s", PLUGIN_PATH_PREFIX,
+          removeExtraSlashesInString(valuesManifestOutcome.getIdentifier()),
+          removeExtraSlashesInString(
+              Paths.get(valuesManifestOutcomeStore.getFiles().getValue().get(0)).getFileName().toString()));
       return removeTrailingSlashesInString(path);
     } else {
       throw new InvalidRequestException(
@@ -575,5 +594,14 @@ public class ServerlessV2PluginInfoProviderHelper {
 
   public NGAccess getNgAccess(Ambiance ambiance) {
     return AmbianceUtils.getNgAccess(ambiance);
+  }
+
+  private void checkForNewManifestStoreFeatureFlag(Ambiance ambiance) {
+    if (!cdFeatureFlagHelper.isEnabled(
+            AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD)) {
+      throw new AccessDeniedException(
+          "CDS_CONTAINER_STEP_GROUP_AWS_S3_DOWNLOAD FF is not enabled for this account. Please contact harness customer care.",
+          ErrorCode.NG_ACCESS_DENIED, WingsException.USER);
+    }
   }
 }

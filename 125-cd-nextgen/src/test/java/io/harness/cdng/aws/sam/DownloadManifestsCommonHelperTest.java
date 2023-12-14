@@ -19,9 +19,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepInfo;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepNode;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepInfo;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepNode;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -157,5 +160,95 @@ public class DownloadManifestsCommonHelperTest extends CategoryTest {
     assertThat(downloadAwsS3StepNode.getDownloadAwsS3StepInfo()).isEqualTo(downloadAwsS3StepInfo);
     assertThat(downloadAwsS3StepNode.getFailureStrategies()).isEqualTo(failureStrategies);
     assertThat(downloadAwsS3StepNode.getTimeout()).isEqualTo(timeout);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetDownloadHarnessStoreStepElementParameters() {
+    String identifier = "identifier";
+    ManifestOutcome manifestOutcome = ServerlessAwsLambdaManifestOutcome.builder().identifier(identifier).build();
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo = DownloadHarnessStoreStepInfo.infoBuilder().build();
+    StepElementParameters stepElementParameters =
+        downloadManifestsCommonHelper.getDownloadHarnessStoreStepElementParameters(
+            manifestOutcome, downloadHarnessStoreStepInfo);
+    assertThat(stepElementParameters.getIdentifier()).isEqualTo(identifier);
+    assertThat(stepElementParameters.getName()).isEqualTo(identifier);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetDownloadHarnessStoreStepIdentifier() {
+    String identifier = "identifier";
+    ManifestOutcome manifestOutcome = ServerlessAwsLambdaManifestOutcome.builder().identifier(identifier).build();
+    assertThat(downloadManifestsCommonHelper.getDownloadHarnessStoreStepIdentifier(manifestOutcome))
+        .isEqualTo(identifier);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetDownloadHarnessStoreStepInfoWithOutputFilePathContents() {
+    String identifier = "identifier";
+    ManifestOutcome manifestOutcome = ServerlessAwsLambdaManifestOutcome.builder().identifier(identifier).build();
+
+    String valuesPath = "valuesPath";
+
+    List<String> paths = Arrays.asList("path");
+    HarnessStore harnessStore = HarnessStore.builder().files(ParameterField.createValueField(paths)).build();
+
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo =
+        downloadManifestsCommonHelper.getDownloadHarnessStoreStepInfoWithOutputFilePathContents(
+            manifestOutcome, harnessStore, valuesPath);
+    assertThat(downloadHarnessStoreStepInfo.getFiles().getValue()).isEqualTo(paths);
+    assertThat(downloadHarnessStoreStepInfo.getDownloadPath().getValue())
+        .isEqualTo("/harness/" + manifestOutcome.getIdentifier());
+    assertThat(downloadHarnessStoreStepInfo.getOutputFilePathsContent().getValue())
+        .isEqualTo(Collections.singletonList(valuesPath));
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetDownloadHarnessStoreStepInfo() {
+    String identifier = "identifier";
+    ManifestOutcome manifestOutcome = ServerlessAwsLambdaManifestOutcome.builder().identifier(identifier).build();
+
+    List<String> paths = Arrays.asList("path");
+    HarnessStore harnessStore = HarnessStore.builder().files(ParameterField.createValueField(paths)).build();
+
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo =
+        downloadManifestsCommonHelper.getDownloadHarnessStoreStepInfo(manifestOutcome, harnessStore);
+    assertThat(downloadHarnessStoreStepInfo.getFiles().getValue()).isEqualTo(paths);
+    assertThat(downloadHarnessStoreStepInfo.getDownloadPath().getValue())
+        .isEqualTo("/harness/" + manifestOutcome.getIdentifier());
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetDownloadHarnessStoreStepNode() {
+    String identifier = "identifier";
+    ManifestOutcome manifestOutcome = ServerlessAwsLambdaManifestOutcome.builder().identifier(identifier).build();
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo = DownloadHarnessStoreStepInfo.infoBuilder().build();
+
+    CdAbstractStepNode cdAbstractStepNode = mock(CdAbstractStepNode.class);
+    ParameterField<List<FailureStrategyConfig>> failureStrategies =
+        ParameterField.createValueField(Arrays.asList(FailureStrategyConfig.builder().build()));
+    doReturn(failureStrategies).when(cdAbstractStepNode).getFailureStrategies();
+
+    ParameterField<Timeout> timeout = ParameterField.createValueField(Timeout.builder().build());
+    doReturn(timeout).when(cdAbstractStepNode).getTimeout();
+
+    DownloadHarnessStoreStepNode downloadHarnessStoreStepNode =
+        downloadManifestsCommonHelper.getDownloadHarnessStoreStepNode(
+            cdAbstractStepNode, manifestOutcome, downloadHarnessStoreStepInfo);
+    assertThat(downloadHarnessStoreStepNode.getIdentifier()).isEqualTo(identifier);
+    assertThat(downloadHarnessStoreStepNode.getName()).isEqualTo(identifier);
+    assertThat(downloadHarnessStoreStepNode.getUuid()).isEqualTo(identifier);
+    assertThat(downloadHarnessStoreStepNode.getDownloadHarnessStoreStepInfo()).isEqualTo(downloadHarnessStoreStepInfo);
+    assertThat(downloadHarnessStoreStepNode.getFailureStrategies()).isEqualTo(failureStrategies);
+    assertThat(downloadHarnessStoreStepNode.getTimeout()).isEqualTo(timeout);
   }
 }

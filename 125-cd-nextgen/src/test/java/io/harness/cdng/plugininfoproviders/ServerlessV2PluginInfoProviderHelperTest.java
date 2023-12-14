@@ -27,6 +27,7 @@ import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.serverless.ServerlessEntityHelper;
 import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaDeployV2StepParameters;
 import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaPackageV2StepParameters;
@@ -164,7 +165,8 @@ public class ServerlessV2PluginInfoProviderHelperTest extends CategoryTest {
   @Test(expected = InvalidRequestException.class)
   @Owner(developers = PIYUSH_BHUWALKA)
   @Category(UnitTests.class)
-  public void testGetEnvironmentVariablesWhenStoreIsNotGitAndS3InServerlessAwsLambdaPrepareRollbackV2StepParameters() {
+  public void
+  testGetEnvironmentVariablesWhenStoreIsNotGitAndS3AndHarnessStoreInServerlessAwsLambdaPrepareRollbackV2StepParameters() {
     String accountId = "accountId";
     Map<String, ManifestOutcome> map = new HashMap<>();
     ManifestOutcome manifestOutcome =
@@ -183,7 +185,8 @@ public class ServerlessV2PluginInfoProviderHelperTest extends CategoryTest {
   @Test(expected = InvalidRequestException.class)
   @Owner(developers = PIYUSH_BHUWALKA)
   @Category(UnitTests.class)
-  public void testGetEnvironmentVariablesWhenStoreIsNotGitAndS3InServerlessAwsLambdaPackageV2StepParameters() {
+  public void
+  testGetEnvironmentVariablesWhenStoreIsNotGitAndS3AndHarnessStoreInServerlessAwsLambdaPackageV2StepParameters() {
     String accountId = "accountId";
     Map<String, ManifestOutcome> map = new HashMap<>();
     ManifestOutcome manifestOutcome =
@@ -202,7 +205,8 @@ public class ServerlessV2PluginInfoProviderHelperTest extends CategoryTest {
   @Test(expected = InvalidRequestException.class)
   @Owner(developers = PIYUSH_BHUWALKA)
   @Category(UnitTests.class)
-  public void testGetEnvironmentVariablesWhenStoreIsNotGitAndS3InServerlessAwsLambdaDeployV2StepParameters() {
+  public void
+  testGetEnvironmentVariablesWhenStoreIsNotGitAndS3AndHarnessStoreInServerlessAwsLambdaDeployV2StepParameters() {
     String accountId = "accountId";
     Map<String, ManifestOutcome> map = new HashMap<>();
     ManifestOutcome manifestOutcome =
@@ -221,7 +225,8 @@ public class ServerlessV2PluginInfoProviderHelperTest extends CategoryTest {
   @Test(expected = InvalidRequestException.class)
   @Owner(developers = PIYUSH_BHUWALKA)
   @Category(UnitTests.class)
-  public void testGetEnvironmentVariablesWhenStoreIsNotGitAndS3InServerlessAwsLambdaRollbackV2StepParameters() {
+  public void
+  testGetEnvironmentVariablesWhenStoreIsNotGitAndS3AndHarnessStoreInServerlessAwsLambdaRollbackV2StepParameters() {
     String accountId = "accountId";
     Map<String, ManifestOutcome> map = new HashMap<>();
     ManifestOutcome manifestOutcome =
@@ -262,6 +267,38 @@ public class ServerlessV2PluginInfoProviderHelperTest extends CategoryTest {
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
         ServerlessAwsLambdaManifestOutcome.builder()
             .store(S3StoreConfig.builder().paths(ParameterField.createValueField(Arrays.asList(path))).build())
+            .identifier(identifier)
+            .build();
+    String finalPath = serverlessV2PluginInfoProviderHelper.getServerlessAwsLambdaDirectoryPathFromManifestOutcome(
+        serverlessAwsLambdaManifestOutcome);
+    assertThat(finalPath).isEqualTo("/harness/" + identifier);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetValuesPathFromValuesManifestOutcomeForHarnessStore() {
+    String identifier = "identifier";
+    String path = "values.yaml";
+    ValuesManifestOutcome valuesManifestOutcome =
+        ValuesManifestOutcome.builder()
+            .store(HarnessStore.builder().files(ParameterField.createValueField(Arrays.asList(path))).build())
+            .identifier(identifier)
+            .build();
+    String finalPath =
+        serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome);
+    assertThat(finalPath).isEqualTo("/harness/" + identifier + "/" + path);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetServerlessAwsLambdaDirectoryPathFromManifestOutcomeForHarnessStore() {
+    String identifier = "identifier";
+    String path = "values.yaml";
+    ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
+        ServerlessAwsLambdaManifestOutcome.builder()
+            .store(HarnessStore.builder().files(ParameterField.createValueField(Arrays.asList(path))).build())
             .identifier(identifier)
             .build();
     String finalPath = serverlessV2PluginInfoProviderHelper.getServerlessAwsLambdaDirectoryPathFromManifestOutcome(

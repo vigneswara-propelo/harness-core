@@ -19,10 +19,14 @@ import io.harness.beans.steps.stepinfo.GitCloneStepInfo;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepInfo;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepNode;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepParameters;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepInfo;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepNode;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepParameters;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
 import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.data.structure.UUIDGenerator;
@@ -52,6 +56,7 @@ import javax.validation.constraints.NotNull;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_ECS})
 public class DownloadManifestsCommonHelper {
   @Inject private OutcomeService outcomeService;
+  private static String DOWNLOAD_PATH_PREFIX = "/harness/";
 
   public ManifestsOutcome fetchManifestsOutcome(Ambiance ambiance) {
     OptionalOutcome manifestsOutcome = outcomeService.resolveOptional(
@@ -162,7 +167,7 @@ public class DownloadManifestsCommonHelper {
         .bucketName(s3StoreConfig.getBucketName())
         .region(s3StoreConfig.getRegion())
         .paths(s3StoreConfig.getPaths())
-        .downloadPath(ParameterField.createValueField("/harness/" + manifestOutcome.getIdentifier()))
+        .downloadPath(ParameterField.createValueField(DOWNLOAD_PATH_PREFIX + manifestOutcome.getIdentifier()))
         .build();
   }
 
@@ -173,7 +178,7 @@ public class DownloadManifestsCommonHelper {
         .bucketName(s3StoreConfig.getBucketName())
         .region(s3StoreConfig.getRegion())
         .paths(s3StoreConfig.getPaths())
-        .downloadPath(ParameterField.createValueField("/harness/" + manifestOutcome.getIdentifier()))
+        .downloadPath(ParameterField.createValueField(DOWNLOAD_PATH_PREFIX + manifestOutcome.getIdentifier()))
         .outputFilePathsContent(ParameterField.createValueField(Collections.singletonList(valuesPath)))
         .build();
   }
@@ -195,6 +200,53 @@ public class DownloadManifestsCommonHelper {
   }
 
   public String getDownloadS3StepIdentifier(ManifestOutcome manifestOutcome) {
+    return manifestOutcome.getIdentifier();
+  }
+
+  @NotNull
+  public DownloadHarnessStoreStepNode getDownloadHarnessStoreStepNode(CdAbstractStepNode cdAbstractStepNode,
+      ManifestOutcome manifestOutcome, DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo) {
+    DownloadHarnessStoreStepNode downloadHarnessStoreStepNode = new DownloadHarnessStoreStepNode();
+    downloadHarnessStoreStepNode.setDownloadHarnessStoreStepInfo(downloadHarnessStoreStepInfo);
+
+    downloadHarnessStoreStepNode.setFailureStrategies(cdAbstractStepNode.getFailureStrategies());
+    downloadHarnessStoreStepNode.setTimeout(cdAbstractStepNode.getTimeout());
+    downloadHarnessStoreStepNode.setIdentifier(getDownloadS3StepIdentifier(manifestOutcome));
+    downloadHarnessStoreStepNode.setName(manifestOutcome.getIdentifier());
+    downloadHarnessStoreStepNode.setUuid(manifestOutcome.getIdentifier());
+    return downloadHarnessStoreStepNode;
+  }
+
+  public DownloadHarnessStoreStepInfo getDownloadHarnessStoreStepInfo(
+      ManifestOutcome manifestOutcome, HarnessStore harnessStoreConfig) {
+    return DownloadHarnessStoreStepInfo.infoBuilder()
+        .files(harnessStoreConfig.getFiles())
+        .downloadPath(ParameterField.createValueField(DOWNLOAD_PATH_PREFIX + manifestOutcome.getIdentifier()))
+        .build();
+  }
+
+  public DownloadHarnessStoreStepInfo getDownloadHarnessStoreStepInfoWithOutputFilePathContents(
+      ManifestOutcome manifestOutcome, HarnessStore harnessStore, String valuesPath) {
+    return DownloadHarnessStoreStepInfo.infoBuilder()
+        .files(harnessStore.getFiles())
+        .downloadPath(ParameterField.createValueField(DOWNLOAD_PATH_PREFIX + manifestOutcome.getIdentifier()))
+        .outputFilePathsContent(ParameterField.createValueField(Collections.singletonList(valuesPath)))
+        .build();
+  }
+
+  public StepElementParameters getDownloadHarnessStoreStepElementParameters(
+      ManifestOutcome manifestOutcome, DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo) {
+    DownloadHarnessStoreStepParameters downloadHarnessStoreStepParameters =
+        (DownloadHarnessStoreStepParameters) downloadHarnessStoreStepInfo.getSpecParameters();
+    return StepElementParameters.builder()
+        .name(manifestOutcome.getIdentifier())
+        .identifier(manifestOutcome.getIdentifier())
+        .spec(downloadHarnessStoreStepParameters)
+        .timeout(ParameterField.createValueField("10m"))
+        .build();
+  }
+
+  public String getDownloadHarnessStoreStepIdentifier(ManifestOutcome manifestOutcome) {
     return manifestOutcome.getIdentifier();
   }
 }

@@ -26,12 +26,16 @@ import io.harness.cdng.aws.sam.DownloadManifestsCommonHelper;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3Step;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepInfo;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepNode;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStep;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepInfo;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepNode;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
 import io.harness.cdng.serverless.ServerlessEntityHelper;
 import io.harness.cdng.serverless.container.steps.ServerlessDownloadManifestsStepHelper;
@@ -99,12 +103,16 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
 
   @Mock DownloadAwsS3Step downloadAwsS3Step;
 
+  @Mock DownloadHarnessStoreStep downloadHarnessStoreStep;
+
   @Mock private EngineExpressionService engineExpressionService;
   @Mock DownloadManifestsCommonHelper downloadManifestsCommonHelper;
 
   @Mock private GitClonePluginInfoProvider gitClonePluginInfoProvider;
 
   @Mock private DownloadAwsS3PluginInfoProvider downloadAwsS3PluginInfoProvider;
+
+  @Mock private DownloadHarnessStorePluginInfoProvider downloadHarnessStorePluginInfoProvider;
   @Named(DEFAULT_CONNECTOR_SERVICE) @Mock private ConnectorService connectorService;
 
   @Mock private ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
@@ -668,6 +676,283 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(null).when(serverlessV2PluginInfoProviderHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
 
     doReturn(S3StoreConfig.builder().build()).when(valuesManifestOutcome).getStore();
+
+    doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
+
+    AsyncExecutableResponse asyncExecutableResponse1 = serverlessDownloadManifestsV2StepHelper.executeAsyncAfterRbac(
+        ambiance, StepInputPackage.builder().build(), gitCloneStep);
+    assertThat(asyncExecutableResponse1.getCallbackIdsList().size()).isEqualTo(1);
+    assertThat(asyncExecutableResponse1.getLogKeysList().size()).isEqualTo(1);
+    assertThat(asyncExecutableResponse1.getStatus()).isEqualTo(Status.SUCCEEDED);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetPluginInfoTestWhenValuesYamlAbsentWhenServerlessLambdaInHarnessStore() throws IOException {
+    String accountId = "accountId";
+    Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
+
+    String jsonNode = "jsonNdod";
+    PluginCreationRequest pluginCreationRequest = PluginCreationRequest.newBuilder().setStepJsonNode(jsonNode).build();
+    CdAbstractStepNode cdAbstractStepNode = mock(CdAbstractStepNode.class);
+    doReturn("identifier").when(cdAbstractStepNode).getIdentifier();
+    doReturn("name").when(cdAbstractStepNode).getName();
+    doReturn("uuid").when(cdAbstractStepNode).getUuid();
+
+    doReturn(cdAbstractStepNode).when(serverlessDownloadManifestsV2StepHelper).getCdAbstractStepNode(any());
+
+    ManifestsOutcome manifestsOutcome = new ManifestsOutcome();
+    OptionalOutcome optionalManifestsOutcome = OptionalOutcome.builder().found(true).outcome(manifestsOutcome).build();
+    doReturn(optionalManifestsOutcome).when(outcomeService).resolveOptional(any(), any());
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), any());
+
+    ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
+        mock(ServerlessAwsLambdaManifestOutcome.class);
+    doReturn(HarnessStore.builder().build()).when(serverlessAwsLambdaManifestOutcome).getStore();
+    doReturn(serverlessAwsLambdaManifestOutcome)
+        .when(serverlessV2PluginInfoProviderHelper)
+        .getServerlessAwsLambdaDirectoryManifestOutcome(any());
+
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo = mock(DownloadHarnessStoreStepInfo.class);
+    doReturn(downloadHarnessStoreStepInfo)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepInfo(any(), any());
+
+    DownloadHarnessStoreStepNode downloadHarnessStoreStepNode = mock(DownloadHarnessStoreStepNode.class);
+    doReturn(downloadHarnessStoreStepNode)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepNode(any(), any(), any());
+
+    doReturn("node").when(serverlessDownloadManifestsV2StepHelper).getStepJsonNode(any());
+
+    List<Integer> portList = new ArrayList<>(Arrays.asList(1));
+    PluginDetails pluginDetails = mock(PluginDetails.class);
+    doReturn(portList).when(pluginDetails).getPortUsedList();
+    PluginCreationResponse pluginCreationResponse =
+        PluginCreationResponse.newBuilder().setPluginDetails(pluginDetails).build();
+    PluginCreationResponseWrapper pluginCreationResponseWrapper =
+        PluginCreationResponseWrapper.newBuilder().setResponse(pluginCreationResponse).build();
+    doReturn(pluginCreationResponseWrapper)
+        .when(downloadHarnessStorePluginInfoProvider)
+        .getPluginInfo(any(), any(), any());
+
+    doReturn(null).when(serverlessV2PluginInfoProviderHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
+    doReturn(manifestsOutcome).when(serverlessV2PluginInfoProviderHelper).fetchManifestsOutcome(any());
+
+    PluginCreationResponseList pluginCreationResponseList = serverlessDownloadManifestsV2StepHelper.getPluginInfoList(
+        pluginCreationRequest, new HashSet<Integer>(), ambiance);
+    assertThat(pluginCreationResponseList.getResponseList().size()).isEqualTo(1);
+    assertThat(
+        pluginCreationResponseList.getResponseList().get(0).getResponse().getPluginDetails().getPortUsedList().size())
+        .isEqualTo(1);
+    assertThat(
+        pluginCreationResponseList.getResponseList().get(0).getResponse().getPluginDetails().getPortUsedList().get(0))
+        .isEqualTo(1);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetPluginInfoTestWhenValuesYamlPresentInHarnessStore() throws IOException {
+    String accountId = "accountId";
+    Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
+
+    String jsonNode = "jsonNdod";
+    PluginCreationRequest pluginCreationRequest = PluginCreationRequest.newBuilder().setStepJsonNode(jsonNode).build();
+    CdAbstractStepNode cdAbstractStepNode = mock(CdAbstractStepNode.class);
+    doReturn("identifier").when(cdAbstractStepNode).getIdentifier();
+    doReturn("name").when(cdAbstractStepNode).getName();
+    doReturn("uuid").when(cdAbstractStepNode).getUuid();
+
+    doReturn(cdAbstractStepNode).when(serverlessDownloadManifestsV2StepHelper).getCdAbstractStepNode(any());
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), any());
+
+    ManifestsOutcome manifestsOutcome = new ManifestsOutcome();
+    OptionalOutcome optionalManifestsOutcome = OptionalOutcome.builder().found(true).outcome(manifestsOutcome).build();
+    doReturn(optionalManifestsOutcome).when(outcomeService).resolveOptional(any(), any());
+
+    ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
+        mock(ServerlessAwsLambdaManifestOutcome.class);
+    doReturn(serverlessAwsLambdaManifestOutcome)
+        .when(serverlessV2PluginInfoProviderHelper)
+        .getServerlessAwsLambdaDirectoryManifestOutcome(any());
+
+    doReturn(HarnessStore.builder().build()).when(serverlessAwsLambdaManifestOutcome).getStore();
+
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo = mock(DownloadHarnessStoreStepInfo.class);
+    doReturn(downloadHarnessStoreStepInfo)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepInfo(any(), any());
+
+    DownloadHarnessStoreStepNode downloadHarnessStoreStepNode = mock(DownloadHarnessStoreStepNode.class);
+    doReturn(downloadHarnessStoreStepNode)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepNode(any(), any(), any());
+
+    doReturn(downloadHarnessStoreStepInfo)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepInfoWithOutputFilePathContents(any(), any(), any());
+
+    doReturn("node").when(serverlessDownloadManifestsV2StepHelper).getStepJsonNode(any());
+
+    List<Integer> portList = new ArrayList<>(Arrays.asList(1));
+    PluginDetails pluginDetails = mock(PluginDetails.class);
+    doReturn(portList).when(pluginDetails).getPortUsedList();
+    PluginCreationResponse pluginCreationResponse =
+        PluginCreationResponse.newBuilder().setPluginDetails(pluginDetails).build();
+    PluginCreationResponseWrapper pluginCreationResponseWrapper =
+        PluginCreationResponseWrapper.newBuilder().setResponse(pluginCreationResponse).build();
+    doReturn(pluginCreationResponseWrapper)
+        .when(downloadHarnessStorePluginInfoProvider)
+        .getPluginInfo(any(), any(), any());
+
+    ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
+    doReturn(HarnessStore.builder().build()).when(valuesManifestOutcome).getStore();
+    doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
+    doReturn(valuesManifestOutcome)
+        .when(serverlessV2PluginInfoProviderHelper)
+        .getServerlessAwsLambdaValuesManifestOutcome(any());
+    doReturn(manifestsOutcome).when(serverlessV2PluginInfoProviderHelper).fetchManifestsOutcome(any());
+
+    PluginCreationResponseList pluginCreationResponseList = serverlessDownloadManifestsV2StepHelper.getPluginInfoList(
+        pluginCreationRequest, new HashSet<Integer>(), ambiance);
+    assertThat(pluginCreationResponseList.getResponseList().size()).isEqualTo(2);
+    assertThat(
+        pluginCreationResponseList.getResponseList().get(0).getResponse().getPluginDetails().getPortUsedList().size())
+        .isEqualTo(1);
+    assertThat(
+        pluginCreationResponseList.getResponseList().get(1).getResponse().getPluginDetails().getPortUsedList().size())
+        .isEqualTo(1);
+  }
+
+  @SneakyThrows
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void executeAsyncAfterRbacWhenValuesYamlPresentInHarnessStoreTest() {
+    String accountId = "accountId";
+    Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
+    StepElementParameters stepElementParameters = StepElementParameters.builder().build();
+
+    ManifestsOutcome manifestsOutcome = mock(ManifestsOutcome.class);
+    doReturn(manifestsOutcome).when(serverlessV2PluginInfoProviderHelper).fetchManifestsOutcome(any());
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), any());
+
+    ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
+        mock(ServerlessAwsLambdaManifestOutcome.class);
+    doReturn(serverlessAwsLambdaManifestOutcome)
+        .when(serverlessV2PluginInfoProviderHelper)
+        .getServerlessAwsLambdaDirectoryManifestOutcome(any());
+
+    doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
+
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo = mock(DownloadHarnessStoreStepInfo.class);
+    doReturn(downloadHarnessStoreStepInfo)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepInfo(any(), any());
+
+    doReturn(downloadHarnessStoreStepInfo)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepInfoWithOutputFilePathContents(any(), any(), any());
+
+    StepElementParameters stepElementParameters1 = mock(StepElementParameters.class);
+    doReturn(stepElementParameters1)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepElementParameters(any(), any());
+
+    String identifier = "identifier";
+    doReturn(identifier).when(downloadManifestsCommonHelper).getDownloadHarnessStoreStepIdentifier(any());
+
+    Ambiance ambiance1 = mock(Ambiance.class);
+    doReturn(ambiance1).when(downloadManifestsCommonHelper).buildAmbiance(any(), any());
+
+    doReturn(HarnessStore.builder().build()).when(serverlessAwsLambdaManifestOutcome).getStore();
+
+    AsyncExecutableResponse asyncExecutableResponse = mock(AsyncExecutableResponse.class);
+    doReturn(Status.SUCCEEDED).when(asyncExecutableResponse).getStatus();
+    doReturn(asyncExecutableResponse).when(downloadHarnessStoreStep).executeAsyncAfterRbac(any(), any(), any());
+
+    ProtocolStringList callbackIdList = new LazyStringArrayList();
+    callbackIdList.add("1");
+
+    ProtocolStringList logKeysList = new LazyStringArrayList();
+    logKeysList.add("2");
+
+    doReturn(callbackIdList).when(asyncExecutableResponse).getCallbackIdsList();
+    doReturn(logKeysList).when(asyncExecutableResponse).getLogKeysList();
+
+    ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
+    doReturn(valuesManifestOutcome)
+        .when(serverlessV2PluginInfoProviderHelper)
+        .getServerlessAwsLambdaValuesManifestOutcome(any());
+    doReturn(HarnessStore.builder().build()).when(valuesManifestOutcome).getStore();
+
+    doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
+
+    AsyncExecutableResponse asyncExecutableResponse1 = serverlessDownloadManifestsV2StepHelper.executeAsyncAfterRbac(
+        ambiance, StepInputPackage.builder().build(), gitCloneStep);
+    assertThat(asyncExecutableResponse1.getCallbackIdsList().size()).isEqualTo(2);
+    assertThat(asyncExecutableResponse1.getLogKeysList().size()).isEqualTo(2);
+    assertThat(asyncExecutableResponse1.getStatus()).isEqualTo(Status.SUCCEEDED);
+  }
+
+  @SneakyThrows
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void executeAsyncAfterRbacWhenValuesYamlAbsentAndServerlessYamlPresentInHarnessStoreTest() {
+    String accountId = "accountId";
+    Ambiance ambiance = Ambiance.newBuilder().putSetupAbstractions("accountId", accountId).build();
+    StepElementParameters stepElementParameters = StepElementParameters.builder().build();
+
+    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), any());
+
+    ManifestsOutcome manifestsOutcome = mock(ManifestsOutcome.class);
+    doReturn(manifestsOutcome).when(serverlessV2PluginInfoProviderHelper).fetchManifestsOutcome(any());
+
+    ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
+        mock(ServerlessAwsLambdaManifestOutcome.class);
+    doReturn(serverlessAwsLambdaManifestOutcome)
+        .when(serverlessV2PluginInfoProviderHelper)
+        .getServerlessAwsLambdaDirectoryManifestOutcome(any());
+
+    DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo = mock(DownloadHarnessStoreStepInfo.class);
+    doReturn(downloadHarnessStoreStepInfo)
+        .when(downloadManifestsCommonHelper)
+        .getDownloadHarnessStoreStepInfo(any(), any());
+
+    StepElementParameters stepElementParameters1 = mock(StepElementParameters.class);
+    doReturn(stepElementParameters1).when(downloadManifestsCommonHelper).getGitStepElementParameters(any(), any());
+
+    String identifier = "identifier";
+    doReturn(identifier).when(downloadManifestsCommonHelper).getDownloadHarnessStoreStepIdentifier(any());
+
+    Ambiance ambiance1 = mock(Ambiance.class);
+    doReturn(ambiance1).when(downloadManifestsCommonHelper).buildAmbiance(any(), any());
+
+    AsyncExecutableResponse asyncExecutableResponse = mock(AsyncExecutableResponse.class);
+    doReturn(Status.SUCCEEDED).when(asyncExecutableResponse).getStatus();
+    doReturn(asyncExecutableResponse).when(downloadHarnessStoreStep).executeAsyncAfterRbac(any(), any(), any());
+
+    doReturn(HarnessStore.builder().build()).when(serverlessAwsLambdaManifestOutcome).getStore();
+
+    ProtocolStringList callbackIdList = new LazyStringArrayList();
+    callbackIdList.add("1");
+
+    ProtocolStringList logKeysList = new LazyStringArrayList();
+    logKeysList.add("2");
+
+    doReturn(callbackIdList).when(asyncExecutableResponse).getCallbackIdsList();
+    doReturn(logKeysList).when(asyncExecutableResponse).getLogKeysList();
+
+    ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
+    doReturn(null).when(serverlessV2PluginInfoProviderHelper).getServerlessAwsLambdaValuesManifestOutcome(any());
+
+    doReturn(HarnessStore.builder().build()).when(valuesManifestOutcome).getStore();
 
     doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
 

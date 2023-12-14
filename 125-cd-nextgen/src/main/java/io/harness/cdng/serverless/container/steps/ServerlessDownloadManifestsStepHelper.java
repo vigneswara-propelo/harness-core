@@ -23,13 +23,18 @@ import io.harness.cdng.aws.sam.DownloadManifestsCommonHelper;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3Step;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepInfo;
 import io.harness.cdng.containerStepGroup.DownloadAwsS3StepNode;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStep;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepInfo;
+import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepNode;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
 import io.harness.cdng.plugininfoproviders.DownloadAwsS3PluginInfoProvider;
+import io.harness.cdng.plugininfoproviders.DownloadHarnessStorePluginInfoProvider;
 import io.harness.cdng.plugininfoproviders.GitClonePluginInfoProvider;
 import io.harness.cdng.plugininfoproviders.ServerlessV2PluginInfoProviderHelper;
 import io.harness.cdng.serverless.beans.ServerlessV2ValuesYamlDataOutcome;
@@ -95,7 +100,10 @@ public class ServerlessDownloadManifestsStepHelper {
 
   @Inject private DownloadAwsS3PluginInfoProvider downloadAwsS3PluginInfoProvider;
 
+  @Inject private DownloadHarnessStorePluginInfoProvider downloadHarnessStorePluginInfoProvider;
   @Inject private DownloadAwsS3Step downloadAwsS3Step;
+
+  @Inject private DownloadHarnessStoreStep downloadHarnessStoreStep;
 
   @Inject private ServerlessV2PluginInfoProviderHelper serverlessV2PluginInfoProviderHelper;
 
@@ -153,6 +161,22 @@ public class ServerlessDownloadManifestsStepHelper {
           downloadManifestsCommonHelper.getDownloadS3StepIdentifier(serverlessAwsLambdaDirectoryManifestOutcome));
       return downloadAwsS3Step.executeAsyncAfterRbac(
           ambianceForServerlessAwsLambdaManifest, stepElementParameters, inputPackage);
+    } else if (serverlessAwsLambdaDirectoryManifestOutcome.getStore() instanceof HarnessStore) {
+      checkForS3DownloadFeatureFlag(ambiance);
+
+      HarnessStore harnessStore = (HarnessStore) serverlessAwsLambdaDirectoryManifestOutcome.getStore();
+      DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepInfo(
+              serverlessAwsLambdaDirectoryManifestOutcome, harnessStore);
+
+      StepElementParameters stepElementParameters =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepElementParameters(
+              serverlessAwsLambdaDirectoryManifestOutcome, downloadHarnessStoreStepInfo);
+      Ambiance ambianceForServerlessAwsLambdaManifest = downloadManifestsCommonHelper.buildAmbiance(ambiance,
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepIdentifier(
+              serverlessAwsLambdaDirectoryManifestOutcome));
+      return downloadHarnessStoreStep.executeAsyncAfterRbac(
+          ambianceForServerlessAwsLambdaManifest, stepElementParameters, inputPackage);
     }
 
     GitCloneStepInfo gitCloneStepInfo = downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcome(
@@ -188,10 +212,25 @@ public class ServerlessDownloadManifestsStepHelper {
 
       StepElementParameters stepElementParameters = downloadManifestsCommonHelper.getDownloadS3StepElementParameters(
           valuesManifestOutcome, downloadAwsS3StepInfo);
-      Ambiance ambianceForServerlessAwsLambdaManifest = downloadManifestsCommonHelper.buildAmbiance(
+      Ambiance ambianceForValuesManifest = downloadManifestsCommonHelper.buildAmbiance(
           ambiance, downloadManifestsCommonHelper.getDownloadS3StepIdentifier(valuesManifestOutcome));
-      return downloadAwsS3Step.executeAsyncAfterRbac(
-          ambianceForServerlessAwsLambdaManifest, stepElementParameters, inputPackage);
+      return downloadAwsS3Step.executeAsyncAfterRbac(ambianceForValuesManifest, stepElementParameters, inputPackage);
+    } else if (valuesManifestOutcome.getStore() instanceof HarnessStore) {
+      checkForS3DownloadFeatureFlag(ambiance);
+
+      HarnessStore harnessStore = (HarnessStore) valuesManifestOutcome.getStore();
+      DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepInfoWithOutputFilePathContents(valuesManifestOutcome,
+              harnessStore,
+              serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome));
+
+      StepElementParameters stepElementParameters =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepElementParameters(
+              valuesManifestOutcome, downloadHarnessStoreStepInfo);
+      Ambiance ambianceForValuesManifest = downloadManifestsCommonHelper.buildAmbiance(
+          ambiance, downloadManifestsCommonHelper.getDownloadHarnessStoreStepIdentifier(valuesManifestOutcome));
+      return downloadHarnessStoreStep.executeAsyncAfterRbac(
+          ambianceForValuesManifest, stepElementParameters, inputPackage);
     }
 
     GitCloneStepInfo valuesGitCloneStepInfo =
@@ -357,6 +396,22 @@ public class ServerlessDownloadManifestsStepHelper {
       PluginCreationRequest pluginCreationRequest =
           request.toBuilder().setStepJsonNode(getStepJsonNode(downloadAwsS3StepNode)).build();
       return downloadAwsS3PluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
+    } else if (valuesManifestOutcome.getStore() instanceof HarnessStore) {
+      checkForS3DownloadFeatureFlag(ambiance);
+
+      HarnessStore harnessStore = (HarnessStore) valuesManifestOutcome.getStore();
+      DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepInfoWithOutputFilePathContents(valuesManifestOutcome,
+              harnessStore,
+              serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome));
+
+      DownloadHarnessStoreStepNode downloadHarnessStoreStepNode =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepNode(
+              cdAbstractStepNode, valuesManifestOutcome, downloadHarnessStoreStepInfo);
+
+      PluginCreationRequest pluginCreationRequest =
+          request.toBuilder().setStepJsonNode(getStepJsonNode(downloadHarnessStoreStepNode)).build();
+      return downloadHarnessStorePluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
     }
 
     GitCloneStepInfo valuesGitCloneStepInfo =
@@ -394,6 +449,21 @@ public class ServerlessDownloadManifestsStepHelper {
       PluginCreationRequest pluginCreationRequest =
           request.toBuilder().setStepJsonNode(getStepJsonNode(downloadAwsS3StepNode)).build();
       return downloadAwsS3PluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
+    } else if (serverlessAwsLambdaManifestOutcome.getStore() instanceof HarnessStore) {
+      checkForS3DownloadFeatureFlag(ambiance);
+
+      HarnessStore harnessStore = (HarnessStore) serverlessAwsLambdaManifestOutcome.getStore();
+      DownloadHarnessStoreStepInfo downloadHarnessStoreStepInfo =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepInfo(
+              serverlessAwsLambdaManifestOutcome, harnessStore);
+
+      DownloadHarnessStoreStepNode downloadHarnessStoreStepNode =
+          downloadManifestsCommonHelper.getDownloadHarnessStoreStepNode(
+              cdAbstractStepNode, serverlessAwsLambdaManifestOutcome, downloadHarnessStoreStepInfo);
+
+      PluginCreationRequest pluginCreationRequest =
+          request.toBuilder().setStepJsonNode(getStepJsonNode(downloadHarnessStoreStepNode)).build();
+      return downloadHarnessStorePluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
     }
 
     GitCloneStepInfo gitCloneStepInfo =
