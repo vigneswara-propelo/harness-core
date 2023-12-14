@@ -205,6 +205,8 @@ public class SSCAManagerModule extends AbstractModule {
         DEFAULT_OUTBOX_POLL_CONFIGURATION, SSCA_SERVICE.getServiceId(), configuration.isExportMetricsToStackDriver()));
     install(new AccountClientModule(configuration.getManagerClientConfig(), configuration.getSscaManagerServiceSecret(),
         SSCA_SERVICE.getServiceId()));
+    install(AccessControlClientModule.getInstance(
+        this.configuration.getAccessControlClientConfiguration(), SSCA_SERVICE.getServiceId()));
   }
 
   @Provides
