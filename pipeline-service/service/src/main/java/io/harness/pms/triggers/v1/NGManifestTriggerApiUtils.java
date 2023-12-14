@@ -14,9 +14,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ngtriggers.beans.source.ManifestType;
+import io.harness.ngtriggers.beans.source.NGTriggerSpecV2;
 import io.harness.ngtriggers.beans.source.artifact.BuildStoreType;
 import io.harness.ngtriggers.beans.source.artifact.BuildStoreTypeSpec;
 import io.harness.ngtriggers.beans.source.artifact.HelmManifestSpec;
+import io.harness.ngtriggers.beans.source.artifact.ManifestTriggerConfig;
 import io.harness.ngtriggers.beans.source.artifact.ManifestTypeSpec;
 import io.harness.ngtriggers.beans.source.artifact.store.BuildStore;
 import io.harness.ngtriggers.beans.source.artifact.store.GcsBuildStoreTypeSpec;
@@ -153,5 +155,112 @@ public class NGManifestTriggerApiUtils {
       default:
         throw new InvalidRequestException("Conditional Operator " + operatorEnum + " is invalid");
     }
+  }
+
+  ManifestTriggerSpec.TypeEnum toManifestTriggerTypeEnum(ManifestType manifestType) {
+    switch (manifestType) {
+      case HELM_MANIFEST:
+        return ManifestTriggerSpec.TypeEnum.HELMCHART;
+      default:
+        throw new InvalidRequestException("Manifest Trigger Type  " + manifestType + " is invalid");
+    }
+  }
+
+  TriggerConditions toTriggerCondition(TriggerEventDataCondition triggerEventDataCondition) {
+    TriggerConditions triggerConditions = new TriggerConditions();
+    triggerConditions.setKey(triggerEventDataCondition.getKey());
+    triggerConditions.setOperator(toOperatorEnum(triggerEventDataCondition.getOperator()));
+    triggerConditions.setValue(triggerEventDataCondition.getValue());
+    return triggerConditions;
+  }
+
+  TriggerConditions.OperatorEnum toOperatorEnum(ConditionOperator conditionOperator) {
+    switch (conditionOperator) {
+      case DOES_NOT_CONTAIN:
+        return TriggerConditions.OperatorEnum.DOESNOTCONTAIN;
+      case CONTAINS:
+        return TriggerConditions.OperatorEnum.CONTAINS;
+      case REGEX:
+        return TriggerConditions.OperatorEnum.REGEX;
+      case NOT_IN:
+        return TriggerConditions.OperatorEnum.NOTIN;
+      case EQUALS:
+        return TriggerConditions.OperatorEnum.EQUALS;
+      case IN:
+        return TriggerConditions.OperatorEnum.IN;
+      case ENDS_WITH:
+        return TriggerConditions.OperatorEnum.ENDSWITH;
+      case NOT_EQUALS:
+        return TriggerConditions.OperatorEnum.NOTEQUALS;
+      case STARTS_WITH:
+        return TriggerConditions.OperatorEnum.STARTSWITH;
+      default:
+        throw new InvalidRequestException("Conditional Operator " + conditionOperator + " is invalid");
+    }
+  }
+
+  HelmChartManifestTriggerSpec.HelmVersionEnum toHelmVersionEnum(HelmVersion helmVersion) {
+    switch (helmVersion) {
+      case V380:
+        return HelmChartManifestTriggerSpec.HelmVersionEnum.V380;
+      case V3:
+        return HelmChartManifestTriggerSpec.HelmVersionEnum.V3;
+      case V2:
+        return HelmChartManifestTriggerSpec.HelmVersionEnum.V2;
+      default:
+        throw new InvalidRequestException("Helm Version " + helmVersion + " is invalid");
+    }
+  }
+
+  io.harness.spec.server.pipeline.v1.model.BuildStore toApiBuildStore(BuildStore buildStore) {
+    switch (buildStore.getType()) {
+      case S3:
+        S3BuildStoreTypeSpec s3BuildStoreTypeSpec = (S3BuildStoreTypeSpec) buildStore.getSpec();
+        S3BuildStore s3BuildStore = new S3BuildStore();
+        s3BuildStore.setType(io.harness.spec.server.pipeline.v1.model.BuildStore.TypeEnum.S3);
+        S3BuildStoreSpec s3BuildStoreSpec = new S3BuildStoreSpec();
+        s3BuildStoreSpec.setBucketName(s3BuildStoreTypeSpec.getBucketName());
+        s3BuildStoreSpec.setConnectorRef(s3BuildStoreTypeSpec.getConnectorRef());
+        s3BuildStoreSpec.setFolderPath(s3BuildStoreTypeSpec.getFolderPath());
+        s3BuildStoreSpec.setRegion(s3BuildStoreTypeSpec.getRegion());
+        s3BuildStore.setSpec(s3BuildStoreSpec);
+        return s3BuildStore;
+      case GCS:
+        GcsBuildStoreTypeSpec gcsBuildStoreTypeSpec = (GcsBuildStoreTypeSpec) buildStore.getSpec();
+        GcsBuildStore gcsBuildStore = new GcsBuildStore();
+        gcsBuildStore.setType(io.harness.spec.server.pipeline.v1.model.BuildStore.TypeEnum.GCS);
+        GcsBuildStoreSpec gcsBuildStoreSpec = new GcsBuildStoreSpec();
+        gcsBuildStoreSpec.setBucketName(gcsBuildStoreTypeSpec.getBucketName());
+        gcsBuildStoreSpec.setConnectorRef(gcsBuildStoreTypeSpec.getConnectorRef());
+        gcsBuildStoreSpec.setFolderPath(gcsBuildStoreTypeSpec.getFolderPath());
+        gcsBuildStore.setSpec(gcsBuildStoreSpec);
+        return gcsBuildStore;
+      case HTTP:
+        HttpBuildStoreTypeSpec httpBuildStoreTypeSpec = (HttpBuildStoreTypeSpec) buildStore.getSpec();
+        HttpBuildStore httpBuildStore = new HttpBuildStore();
+        httpBuildStore.setType(io.harness.spec.server.pipeline.v1.model.BuildStore.TypeEnum.HTTP);
+        HttpBuildStoreSpec httpBuildStoreSpec = new HttpBuildStoreSpec();
+        httpBuildStoreSpec.setConnectorRef(httpBuildStoreTypeSpec.fetchConnectorRef());
+        httpBuildStore.setSpec(httpBuildStoreSpec);
+        return httpBuildStore;
+      default:
+        throw new InvalidRequestException("Build store type " + buildStore.getType() + " is invalid");
+    }
+  }
+
+  ManifestTriggerSpec toManifestTriggerSpec(NGTriggerSpecV2 config) {
+    ManifestTriggerConfig manifestTriggerConfig = (ManifestTriggerConfig) config;
+    ManifestTriggerSpec manifestTriggerSpec = new ManifestTriggerSpec();
+    manifestTriggerSpec.setType(toManifestTriggerTypeEnum(manifestTriggerConfig.getType()));
+    HelmChartManifestTriggerSpec helmChartManifestTriggerSpec = new HelmChartManifestTriggerSpec();
+    HelmManifestSpec helmManifestSpec = (HelmManifestSpec) manifestTriggerConfig.getSpec();
+    helmChartManifestTriggerSpec.setChartName(helmManifestSpec.getChartName());
+    helmChartManifestTriggerSpec.setChartVersion(helmManifestSpec.getChartVersion());
+    helmChartManifestTriggerSpec.setHelmVersion(toHelmVersionEnum(helmManifestSpec.getHelmVersion()));
+    helmChartManifestTriggerSpec.setEventConditions(
+        helmManifestSpec.getEventConditions().stream().map(this::toTriggerCondition).collect(Collectors.toList()));
+    helmChartManifestTriggerSpec.setStore(toApiBuildStore(helmManifestSpec.getStore()));
+    manifestTriggerSpec.setSpec(helmChartManifestTriggerSpec);
+    return manifestTriggerSpec;
   }
 }

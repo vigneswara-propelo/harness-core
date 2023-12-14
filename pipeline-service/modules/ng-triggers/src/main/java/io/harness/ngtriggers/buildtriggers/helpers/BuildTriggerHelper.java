@@ -32,6 +32,7 @@ import io.harness.ngtriggers.beans.entity.NGTriggerEntity;
 import io.harness.ngtriggers.beans.entity.metadata.BuildMetadata;
 import io.harness.ngtriggers.beans.source.NGTriggerSpecV2;
 import io.harness.ngtriggers.beans.source.artifact.BuildAware;
+import io.harness.ngtriggers.beans.source.artifact.MultiRegionArtifactTriggerConfig;
 import io.harness.ngtriggers.buildtriggers.helpers.dtos.BuildTriggerOpsData;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.pms.inputset.InputSetErrorResponseDTOPMS;
@@ -264,8 +265,27 @@ public class BuildTriggerHelper {
   public List<BuildTriggerOpsData> generateBuildTriggerOpsDataForMultiArtifact(TriggerDetails triggerDetails)
       throws IOException {
     List<BuildTriggerOpsData> buildTriggerOpsData = new ArrayList<>();
-    JsonNode jsonNode = YamlUtils.readTree(triggerDetails.getNgTriggerEntity().getYaml()).getNode().getCurrJsonNode();
-    ArrayNode sources = (ArrayNode) jsonNode.get("trigger").get("source").get("spec").get("sources");
+    ArrayNode sources;
+    if (HarnessYamlVersion.V0.equals(triggerDetails.getNgTriggerEntity().getHarnessVersion())) {
+      JsonNode jsonNode = YamlUtils.readTree(triggerDetails.getNgTriggerEntity().getYaml()).getNode().getCurrJsonNode();
+      sources = (ArrayNode) jsonNode.get("trigger").get("source").get("spec").get("sources");
+    } else {
+      if (triggerDetails.getNgTriggerEntity().getTriggerConfigWrapper().getSource().getSpec() != null
+          && isNotEmpty(((MultiRegionArtifactTriggerConfig) triggerDetails.getNgTriggerEntity()
+                             .getTriggerConfigWrapper()
+                             .getSource()
+                             .getSpec())
+                            .getSources())) {
+        sources =
+            (ArrayNode) JsonPipelineUtils.asTree(((MultiRegionArtifactTriggerConfig) triggerDetails.getNgTriggerEntity()
+                                                      .getTriggerConfigWrapper()
+                                                      .getSource()
+                                                      .getSpec())
+                                                     .getSources());
+      } else {
+        throw new InvalidRequestException("Multi-region Artifact trigger sources list must have at least one element.");
+      }
+    }
     int buildMetadataIndex = 0;
     for (JsonNode source : sources) {
       Map<String, Object> triggerArtifactSpecMap = new HashMap<>();

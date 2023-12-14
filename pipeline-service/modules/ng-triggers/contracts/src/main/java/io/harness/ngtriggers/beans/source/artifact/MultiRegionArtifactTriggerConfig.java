@@ -32,9 +32,14 @@ public class MultiRegionArtifactTriggerConfig implements NGTriggerSpecV2, BuildA
   String jexlCondition;
 
   @Builder
-  public MultiRegionArtifactTriggerConfig(ArtifactType type, List<ArtifactTypeSpecWrapper> sources) {
+  public MultiRegionArtifactTriggerConfig(ArtifactType type, List<ArtifactTypeSpecWrapper> sources,
+      List<TriggerEventDataCondition> eventConditions, List<TriggerEventDataCondition> metaDataConditions,
+      String jexlCondition) {
     this.type = type;
     this.sources = sources;
+    this.eventConditions = eventConditions;
+    this.metaDataConditions = metaDataConditions;
+    this.jexlCondition = jexlCondition;
   }
 
   @Override
