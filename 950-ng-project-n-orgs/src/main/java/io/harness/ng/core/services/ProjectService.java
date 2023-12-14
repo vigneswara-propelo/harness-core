@@ -40,6 +40,8 @@ public interface ProjectService {
 
   Project update(
       String accountIdentifier, ScopeInfo scopeInfo, String orgIdentifier, String identifier, ProjectDTO project);
+  boolean moveProject(
+      String accountIdentifier, ScopeInfo scopeInfo, String orgIdentifier, String identifier, String destinationOrg);
 
   PageResponse<ProjectDTO> listProjectsForUser(String userId, String accountId, PageRequest pageRequest);
 

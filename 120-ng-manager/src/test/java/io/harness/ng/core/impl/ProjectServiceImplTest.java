@@ -69,6 +69,7 @@ import io.harness.ng.core.dto.ProjectFilterDTO;
 import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Project;
 import io.harness.ng.core.entities.Project.ProjectKeys;
+import io.harness.ng.core.event.HarnessSMManager;
 import io.harness.ng.core.remote.ProjectMapper;
 import io.harness.ng.core.remote.utils.ScopeAccessHelper;
 import io.harness.ng.core.services.OrganizationService;
@@ -142,7 +143,7 @@ public class ProjectServiceImplTest extends CategoryTest {
   @Mock private UserHelperService userHelperService;
   @Mock private Cache<String, ScopeInfo> scopeInfoCache;
   @Mock private ScopeInfoHelper scopeInfoHelper;
-
+  @Mock private HarnessSMManager harnessSMManager;
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
   @Before
@@ -152,7 +153,7 @@ public class ProjectServiceImplTest extends CategoryTest {
     projectService = spy(new ProjectServiceImpl(projectRepository, organizationService, transactionTemplate,
         outboxService, ngUserService, accessControlClient, scopeAccessHelper, instrumentationHelper,
         yamlGitConfigService, featureFlagService, defaultUserGroupService, favoritesService, userHelperService,
-        scopeInfoCache, scopeInfoHelper));
+        scopeInfoCache, scopeInfoHelper, harnessSMManager));
     when(scopeAccessHelper.getPermittedScopes(any())).then(returnsFirstArg());
   }
 

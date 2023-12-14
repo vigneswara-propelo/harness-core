@@ -71,10 +71,12 @@ import io.harness.ng.core.common.beans.NGTag.NGTagKeys;
 import io.harness.ng.core.dto.ActiveProjectsCountDTO;
 import io.harness.ng.core.dto.ProjectDTO;
 import io.harness.ng.core.dto.ProjectFilterDTO;
+import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Project;
 import io.harness.ng.core.entities.Project.ProjectKeys;
 import io.harness.ng.core.entities.metrics.ProjectsPerAccountCount;
 import io.harness.ng.core.entities.metrics.ProjectsPerAccountCount.ProjectsPerAccountCountKeys;
+import io.harness.ng.core.event.HarnessSMManager;
 import io.harness.ng.core.events.ProjectCreateEvent;
 import io.harness.ng.core.events.ProjectDeleteEvent;
 import io.harness.ng.core.events.ProjectRestoreEvent;
@@ -119,6 +121,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joda.time.DateTime;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -152,6 +155,7 @@ public class ProjectServiceImpl implements ProjectService {
   private final UserHelperService userHelperService;
   private final Cache<String, ScopeInfo> scopeInfoCache;
   private final ScopeInfoHelper scopeInfoHelper;
+  private final HarnessSMManager harnessSMManager;
 
   @Inject
   public ProjectServiceImpl(ProjectRepository projectRepository, OrganizationService organizationService,
@@ -161,7 +165,7 @@ public class ProjectServiceImpl implements ProjectService {
       FeatureFlagService featureFlagService, DefaultUserGroupService defaultUserGroupService,
       FavoritesService favoritesService, UserHelperService userHelperService,
       @Named(ProjectService.PROJECT_SCOPE_INFO_DATA_CACHE_KEY) Cache<String, ScopeInfo> scopeInfoCache,
-      ScopeInfoHelper scopeInfoHelper) {
+      ScopeInfoHelper scopeInfoHelper, HarnessSMManager harnessSMManager) {
     this.projectRepository = projectRepository;
     this.organizationService = organizationService;
     this.transactionTemplate = transactionTemplate;
@@ -177,6 +181,7 @@ public class ProjectServiceImpl implements ProjectService {
     this.userHelperService = userHelperService;
     this.scopeInfoCache = scopeInfoCache;
     this.scopeInfoHelper = scopeInfoHelper;
+    this.harnessSMManager = harnessSMManager;
   }
 
   @Override
@@ -481,6 +486,58 @@ public class ProjectServiceImpl implements ProjectService {
     }
     throw new InvalidRequestException(String.format("Project with identifier [%s] and orgIdentifier [%s] not found",
                                           identifier, scopeInfo.getOrgIdentifier()),
+        USER);
+  }
+
+  public boolean moveProject(String accountIdentifier, ScopeInfo scopeInfo, @OrgIdentifier String orgIdentifier,
+      @ProjectIdentifier String identifier, String destinationOrgIdentifier) {
+    Optional<Organization> destinationOrgOptional =
+        organizationService.get(accountIdentifier, destinationOrgIdentifier);
+    if (destinationOrgOptional.isEmpty()) {
+      throw new EntityNotFoundException(String.format("Organization with identifier [%s] not found", orgIdentifier));
+    }
+    Optional<Project> duplicateProjectCheck = get(accountIdentifier, destinationOrgIdentifier, identifier);
+    if (duplicateProjectCheck.isPresent()) {
+      throw new DuplicateFieldException(
+          String.format("A project with identifier [%s] and orgIdentifier [%s] is already present",
+              duplicateProjectCheck.get().getIdentifier(), destinationOrgIdentifier),
+          USER);
+    }
+    Optional<Project> optionalProject = get(accountIdentifier, scopeInfo, identifier);
+
+    if (optionalProject.isPresent()) {
+      Project project = optionalProject.get();
+      project.setAccountIdentifier(accountIdentifier);
+      project.setOrgIdentifier(destinationOrgIdentifier);
+      project.setId(project.getId());
+      project.setIdentifier(project.getIdentifier());
+      project.setCreatedAt(project.getCreatedAt() == null ? project.getLastModifiedAt() : DateTime.now().getMillis());
+      project.setUniqueId(project.getUniqueId());
+      project.setParentId(destinationOrgOptional.get().getUniqueId());
+      project.setParentUniqueId(destinationOrgOptional.get().getUniqueId());
+      if (project.getVersion() == null) {
+        project.setVersion(project.getVersion());
+      }
+
+      project.setModules(project.getModules());
+      validate(project);
+      return Failsafe.with(DEFAULT_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
+        Project updatedProject = projectRepository.save(project);
+        addToScopeInfoCache(updatedProject);
+        setupProject(Scope.of(accountIdentifier, destinationOrgIdentifier, project.getIdentifier()));
+
+        harnessSMManager.createHarnessSecretManager(accountIdentifier, destinationOrgIdentifier, identifier);
+
+        log.info(String.format(
+            "Project with identifier [%s] and source orgIdentifier [%s] was successfully moved to [%s] orgIdentifier",
+            identifier, scopeInfo.getOrgIdentifier(), destinationOrgIdentifier));
+        outboxService.save(new ProjectUpdateEvent(
+            project.getAccountIdentifier(), ProjectMapper.writeDTO(updatedProject), ProjectMapper.writeDTO(project)));
+        return updatedProject.getParentUniqueId().equals(destinationOrgOptional.get().getUniqueId());
+      }));
+    }
+    throw new InvalidRequestException(
+        String.format("Project with identifier [%s] and orgIdentifier [%s] not found", identifier, orgIdentifier),
         USER);
   }
 

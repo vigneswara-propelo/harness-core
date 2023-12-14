@@ -85,7 +85,8 @@ public class ProjectResourceTest extends CategoryTest {
     accessControlClient = mock(AccessControlClient.class);
     favoritesService = mock(FavoritesService.class);
     userHelperService = mock(UserHelperService.class);
-    projectResource = new ProjectResource(projectService, organizationService, favoritesService, userHelperService);
+    projectResource = new ProjectResource(
+        projectService, organizationService, favoritesService, userHelperService, accessControlClient);
   }
 
   private ProjectDTO getProjectDTO(String orgIdentifier, String identifier, String name) {

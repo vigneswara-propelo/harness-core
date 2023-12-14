@@ -19,6 +19,7 @@ import static io.harness.ng.accesscontrol.PlatformPermissions.CREATE_PROJECT_PER
 import static io.harness.ng.accesscontrol.PlatformPermissions.DELETE_PROJECT_PERMISSION;
 import static io.harness.ng.accesscontrol.PlatformPermissions.EDIT_PROJECT_PERMISSION;
 import static io.harness.ng.accesscontrol.PlatformPermissions.VIEW_PROJECT_PERMISSION;
+import static io.harness.ng.accesscontrol.PlatformResourceTypes.ORGANIZATION;
 import static io.harness.ng.accesscontrol.PlatformResourceTypes.PROJECT;
 import static io.harness.ng.core.remote.ProjectMapper.toResponseWithFavouritesInfo;
 import static io.harness.utils.PageUtils.getNGPageResponse;
@@ -35,6 +36,9 @@ import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ResourceIdentifier;
+import io.harness.accesscontrol.acl.api.Resource;
+import io.harness.accesscontrol.acl.api.ResourceScope;
+import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.ScopeInfo;
 import io.harness.beans.SortOrder;
@@ -47,6 +51,7 @@ import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ActiveProjectsCountDTO;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
+import io.harness.ng.core.dto.MoveProjectRequest;
 import io.harness.ng.core.dto.ProjectDTO;
 import io.harness.ng.core.dto.ProjectFilterDTO;
 import io.harness.ng.core.dto.ProjectRequest;
@@ -133,6 +138,7 @@ public class ProjectResource {
   private final OrganizationService organizationService;
   private final FavoritesService favoritesService;
   private final UserHelperService userHelperService;
+  private final AccessControlClient accessControlClient;
 
   @POST
   @ApiOperation(value = "Create a Project", nickname = "postProject")
@@ -316,6 +322,31 @@ public class ProjectResource {
         ProjectMapper.toProjectResponseBuilder(updatedProject)
             .isFavorite(projectService.isFavorite(updatedProject, userHelperService.getUserId()))
             .build());
+  }
+
+  @PUT
+  @Path("{identifier}/move")
+  @Hidden()
+  @ApiOperation(value = "Move a Project across orgs", nickname = "moveProject")
+  public ResponseDTO<Boolean> moveProject(
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @NotNull @PathParam(
+          NGCommonEntityConstants.IDENTIFIER_KEY) @ResourceIdentifier String identifier,
+      @Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotNull @QueryParam(
+          NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
+      @Parameter(
+          description = "Organization identifier for the Project. If left empty, Default Organization is assumed")
+      @QueryParam(NGCommonEntityConstants.ORG_KEY) @DefaultValue(
+          DEFAULT_ORG_IDENTIFIER) @OrgIdentifier String orgIdentifier,
+      @Context ScopeInfo scopeInfo,
+      @RequestBody(required = true,
+          description = "This is the updated org identifier") @NotNull @Valid MoveProjectRequest moveProjectRequest) {
+    accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, identifier),
+        Resource.of(ORGANIZATION, identifier), DELETE_PROJECT_PERMISSION);
+    accessControlClient.checkForAccessOrThrow(
+        ResourceScope.of(accountIdentifier, orgIdentifier, moveProjectRequest.getDestinationOrgIdentifier()),
+        Resource.of(ORGANIZATION, moveProjectRequest.getDestinationOrgIdentifier()), CREATE_PROJECT_PERMISSION);
+    return ResponseDTO.newResponse(projectService.moveProject(
+        accountIdentifier, scopeInfo, orgIdentifier, identifier, moveProjectRequest.getDestinationOrgIdentifier()));
   }
 
   @DELETE
