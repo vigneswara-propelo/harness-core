@@ -9875,6 +9875,14 @@
                   "$ref" : "#/definitions/pipeline/steps/idp/IDPCookieCutterStepNode"
                 }, {
                   "$ref" : "#/definitions/pipeline/steps/idp/IDPCreateRepoStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/idp/IDPRegisterCatalogStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/idp/IDPDirectPushStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/idp/IDPCreateCatalogStepNode"
+                }, {
+                  "$ref" : "#/definitions/pipeline/steps/idp/IDPSlackNotifyStepNode"
                 } ]
               },
               "description" : {
@@ -11515,20 +11523,6 @@
                 "desc" : "This is the description for VerifyAttestationSpec"
               }
             }
-          },
-          "SscaOpaPolicyConfig" : {
-            "title" : "SscaOpaPolicyConfig",
-            "type" : "object",
-            "required" : [ "policySet" ],
-            "properties" : {
-              "policySet" : {
-                "type" : "string"
-              },
-              "description" : {
-                "desc" : "The reference of the SBOM OPA policy set."
-              }
-            },
-            "$schema" : "http://json-schema.org/draft-07/schema#"
           },
           "HttpStepNode" : {
             "title" : "HttpStepNode",
@@ -13396,6 +13390,9 @@
               "type" : "object",
               "required" : [ "approvers", "includePipelineExecutionHistory" ],
               "properties" : {
+                "callbackId" : {
+                  "type" : "string"
+                },
                 "approvalMessage" : {
                   "type" : "string",
                   "minLength" : 1
@@ -13425,6 +13422,9 @@
             "type" : "object",
             "required" : [ "approvers", "includePipelineExecutionHistory" ],
             "properties" : {
+              "callbackId" : {
+                "type" : "string"
+              },
               "approvalMessage" : {
                 "type" : "string",
                 "minLength" : 1
@@ -16673,7 +16673,7 @@
                   "oneOf" : [ {
                     "$ref" : "#/definitions/pipeline/steps/custom/EnforcementPolicy"
                   }, {
-                    "$ref" : "#/definitions/pipeline/steps/custom/SscaOpaPolicyConfig"
+                    "$ref" : "#/definitions/pipeline/common/PolicyConfig"
                   } ]
                 },
                 "source" : {
@@ -30685,6 +30685,15 @@
                 "connectorRef" : {
                   "type" : "string"
                 },
+                "privileged" : {
+                  "oneOf" : [ {
+                    "type" : "boolean"
+                  }, {
+                    "type" : "string",
+                    "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                    "minLength" : 1
+                  } ]
+                },
                 "depth" : {
                   "oneOf" : [ {
                     "type" : "integer",
@@ -41661,7 +41670,7 @@
                     "type" : "boolean"
                   }, {
                     "type" : "string",
-                    "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                    "pattern" : "(<\\+.+>.*)",
                     "minLength" : 1
                   } ]
                 },
@@ -41679,7 +41688,7 @@
                     "type" : "boolean"
                   }, {
                     "type" : "string",
-                    "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                    "pattern" : "(<\\+.+>.*)",
                     "minLength" : 1
                   } ]
                 },
@@ -41688,6 +41697,15 @@
                 },
                 "stageListenerRuleArn" : {
                   "type" : "string"
+                },
+                "updateGreenService" : {
+                  "oneOf" : [ {
+                    "type" : "boolean"
+                  }, {
+                    "type" : "string",
+                    "pattern" : "(<\\+.+>.*)",
+                    "minLength" : 1
+                  } ]
                 }
               }
             } ],
@@ -41712,7 +41730,7 @@
                   "type" : "boolean"
                 }, {
                   "type" : "string",
-                  "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                  "pattern" : "(<\\+.+>.*)",
                   "minLength" : 1
                 } ]
               },
@@ -41730,7 +41748,7 @@
                   "type" : "boolean"
                 }, {
                   "type" : "string",
-                  "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                  "pattern" : "(<\\+.+>.*)",
                   "minLength" : 1
                 } ]
               },
@@ -41739,6 +41757,15 @@
               },
               "stageListenerRuleArn" : {
                 "type" : "string"
+              },
+              "updateGreenService" : {
+                "oneOf" : [ {
+                  "type" : "boolean"
+                }, {
+                  "type" : "string",
+                  "pattern" : "(<\\+.+>.*)",
+                  "minLength" : 1
+                } ]
               },
               "description" : {
                 "desc" : "This is the description for EcsBlueGreenCreateServiceStepInfo"
@@ -42021,7 +42048,7 @@
                     "type" : "boolean"
                   }, {
                     "type" : "string",
-                    "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                    "pattern" : "(<\\+.+>.*)",
                     "minLength" : 1
                   } ]
                 }
@@ -42050,7 +42077,7 @@
                   "type" : "boolean"
                 }, {
                   "type" : "string",
-                  "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                  "pattern" : "(<\\+.+>.*)",
                   "minLength" : 1
                 } ]
               },
@@ -53446,7 +53473,7 @@
                     "type" : "boolean"
                   }, {
                     "type" : "string",
-                    "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                    "pattern" : "(<\\+.+>.*)",
                     "minLength" : 1
                   } ]
                 },
@@ -53455,7 +53482,7 @@
                     "type" : "boolean"
                   }, {
                     "type" : "string",
-                    "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                    "pattern" : "(<\\+.+>.*)",
                     "minLength" : 1
                   } ]
                 }
@@ -53481,7 +53508,7 @@
                   "type" : "boolean"
                 }, {
                   "type" : "string",
-                  "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                  "pattern" : "(<\\+.+>.*)",
                   "minLength" : 1
                 } ]
               },
@@ -53490,7 +53517,7 @@
                   "type" : "boolean"
                 }, {
                   "type" : "string",
-                  "pattern" : "^<\\+input>((\\.)((executionInput\\(\\))|(allowedValues|default|regex)\\(.+?\\)))*$",
+                  "pattern" : "(<\\+.+>.*)",
                   "minLength" : 1
                 } ]
               },
@@ -56759,7 +56786,7 @@
               },
               "type" : {
                 "type" : "string",
-                "enum" : [ "IdpCookieCutter" ]
+                "enum" : [ "CookieCutter" ]
               },
               "when" : {
                 "oneOf" : [ {
@@ -56776,7 +56803,7 @@
               "if" : {
                 "properties" : {
                   "type" : {
-                    "const" : "IdpCookieCutter"
+                    "const" : "CookieCutter"
                   }
                 }
               },
@@ -56795,10 +56822,10 @@
               "$ref" : "#/definitions/pipeline/common/StepSpecType"
             }, {
               "type" : "object",
-              "required" : [ "isPublicTemplate", "cookieCutterVariables" ],
+              "required" : [ "templateType", "cookieCutterVariables" ],
               "properties" : {
-                "isPublicTemplate" : {
-                  "type" : "boolean"
+                "templateType" : {
+                  "type" : "string"
                 },
                 "publicTemplateUrl" : {
                   "type" : "string"
@@ -56823,10 +56850,10 @@
             } ],
             "$schema" : "http://json-schema.org/draft-07/schema#",
             "type" : "object",
-            "required" : [ "isPublicTemplate", "cookieCutterVariables" ],
+            "required" : [ "templateType", "cookieCutterVariables" ],
             "properties" : {
-              "isPublicTemplate" : {
-                "type" : "boolean"
+              "templateType" : {
+                "type" : "string"
               },
               "publicTemplateUrl" : {
                 "type" : "string"
@@ -56896,7 +56923,7 @@
               },
               "type" : {
                 "type" : "string",
-                "enum" : [ "IdpCreateRepo" ]
+                "enum" : [ "CreateRepo" ]
               },
               "when" : {
                 "oneOf" : [ {
@@ -56913,7 +56940,7 @@
               "if" : {
                 "properties" : {
                   "type" : {
-                    "const" : "IdpCreateRepo"
+                    "const" : "CreateRepo"
                   }
                 }
               },
@@ -56932,15 +56959,15 @@
               "$ref" : "#/definitions/pipeline/common/StepSpecType"
             }, {
               "type" : "object",
-              "required" : [ "connectorRef", "isPrivateRepo" ],
+              "required" : [ "connectorRef", "repoType" ],
               "properties" : {
-                "isPrivateRepo" : {
-                  "type" : "boolean"
-                },
-                "repoName" : {
+                "repoType" : {
                   "type" : "string"
                 },
-                "orgName" : {
+                "repository" : {
+                  "type" : "string"
+                },
+                "organization" : {
                   "type" : "string"
                 },
                 "description" : {
@@ -56965,15 +56992,15 @@
             } ],
             "$schema" : "http://json-schema.org/draft-07/schema#",
             "type" : "object",
-            "required" : [ "connectorRef", "isPrivateRepo" ],
+            "required" : [ "connectorRef", "repoType" ],
             "properties" : {
-              "isPrivateRepo" : {
-                "type" : "boolean"
-              },
-              "repoName" : {
+              "repoType" : {
                 "type" : "string"
               },
-              "orgName" : {
+              "repository" : {
+                "type" : "string"
+              },
+              "organization" : {
                 "type" : "string"
               },
               "description" : {
@@ -56989,6 +57016,528 @@
                 "type" : "string"
               },
               "project" : {
+                "type" : "string"
+              },
+              "resources" : {
+                "$ref" : "#/definitions/pipeline/common/ContainerResource"
+              }
+            }
+          },
+          "IDPRegisterCatalogStepNode" : {
+            "title" : "IDPRegisterCatalogStepNode",
+            "type" : "object",
+            "required" : [ "identifier", "name", "spec", "type" ],
+            "properties" : {
+              "description" : {
+                "type" : "string",
+                "desc" : "This is the description for IDPRegisterCatalogStepNode"
+              },
+              "enforce" : {
+                "$ref" : "#/definitions/pipeline/common/PolicyConfig"
+              },
+              "failureStrategies" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/pipeline/common/FailureStrategyConfig"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "identifier" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+              },
+              "name" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+              },
+              "strategy" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StrategyConfig"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "timeout" : {
+                "type" : "string",
+                "pattern" : "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(.*<\\+.*>(?!.*\\.executionInput\\(\\)).*)|(^$))$"
+              },
+              "type" : {
+                "type" : "string",
+                "enum" : [ "RegisterCatalog" ]
+              },
+              "when" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StepWhenCondition"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "allOf" : [ {
+              "if" : {
+                "properties" : {
+                  "type" : {
+                    "const" : "RegisterCatalog"
+                  }
+                }
+              },
+              "then" : {
+                "properties" : {
+                  "spec" : {
+                    "$ref" : "#/definitions/pipeline/steps/idp/IDPRegisterCatalogPlanInfo"
+                  }
+                }
+              }
+            } ]
+          },
+          "IDPRegisterCatalogPlanInfo" : {
+            "title" : "IDPRegisterCatalogPlanInfo",
+            "allOf" : [ {
+              "$ref" : "#/definitions/pipeline/common/StepSpecType"
+            }, {
+              "type" : "object",
+              "required" : [ "connectorRef", "filePath" ],
+              "properties" : {
+                "repository" : {
+                  "type" : "string"
+                },
+                "organization" : {
+                  "type" : "string"
+                },
+                "connectorRef" : {
+                  "type" : "string"
+                },
+                "branch" : {
+                  "type" : "string"
+                },
+                "workspace" : {
+                  "type" : "string"
+                },
+                "project" : {
+                  "type" : "string"
+                },
+                "filePath" : {
+                  "type" : "string"
+                },
+                "resources" : {
+                  "$ref" : "#/definitions/pipeline/common/ContainerResource"
+                }
+              }
+            } ],
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "type" : "object",
+            "required" : [ "connectorRef", "filePath" ],
+            "properties" : {
+              "repository" : {
+                "type" : "string"
+              },
+              "organization" : {
+                "type" : "string"
+              },
+              "connectorRef" : {
+                "type" : "string"
+              },
+              "branch" : {
+                "type" : "string"
+              },
+              "workspace" : {
+                "type" : "string"
+              },
+              "project" : {
+                "type" : "string"
+              },
+              "filePath" : {
+                "type" : "string"
+              },
+              "resources" : {
+                "$ref" : "#/definitions/pipeline/common/ContainerResource"
+              }
+            }
+          },
+          "IDPDirectPushStepNode" : {
+            "title" : "IDPDirectPushStepNode",
+            "type" : "object",
+            "required" : [ "identifier", "name", "spec", "type" ],
+            "properties" : {
+              "description" : {
+                "type" : "string",
+                "desc" : "This is the description for IDPDirectPushStepNode"
+              },
+              "enforce" : {
+                "$ref" : "#/definitions/pipeline/common/PolicyConfig"
+              },
+              "failureStrategies" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/pipeline/common/FailureStrategyConfig"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "identifier" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+              },
+              "name" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+              },
+              "strategy" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StrategyConfig"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "timeout" : {
+                "type" : "string",
+                "pattern" : "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(.*<\\+.*>(?!.*\\.executionInput\\(\\)).*)|(^$))$"
+              },
+              "type" : {
+                "type" : "string",
+                "enum" : [ "DirectPush" ]
+              },
+              "when" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StepWhenCondition"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "allOf" : [ {
+              "if" : {
+                "properties" : {
+                  "type" : {
+                    "const" : "DirectPush"
+                  }
+                }
+              },
+              "then" : {
+                "properties" : {
+                  "spec" : {
+                    "$ref" : "#/definitions/pipeline/steps/idp/IDPDirectPushPlanInfo"
+                  }
+                }
+              }
+            } ]
+          },
+          "IDPDirectPushPlanInfo" : {
+            "title" : "IDPDirectPushPlanInfo",
+            "allOf" : [ {
+              "$ref" : "#/definitions/pipeline/common/StepSpecType"
+            }, {
+              "type" : "object",
+              "required" : [ "codeDirectory", "branch", "connectorRef" ],
+              "properties" : {
+                "codeDirectory" : {
+                  "type" : "string"
+                },
+                "branch" : {
+                  "type" : "string"
+                },
+                "organization" : {
+                  "type" : "string"
+                },
+                "repository" : {
+                  "type" : "string"
+                },
+                "connectorRef" : {
+                  "type" : "string"
+                },
+                "workspace" : {
+                  "type" : "string"
+                },
+                "project" : {
+                  "type" : "string"
+                },
+                "codeOutputDirectory" : {
+                  "type" : "string"
+                },
+                "resources" : {
+                  "$ref" : "#/definitions/pipeline/common/ContainerResource"
+                }
+              }
+            } ],
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "type" : "object",
+            "required" : [ "codeDirectory", "branch", "connectorRef" ],
+            "properties" : {
+              "codeDirectory" : {
+                "type" : "string"
+              },
+              "branch" : {
+                "type" : "string"
+              },
+              "organization" : {
+                "type" : "string"
+              },
+              "repository" : {
+                "type" : "string"
+              },
+              "connectorRef" : {
+                "type" : "string"
+              },
+              "workspace" : {
+                "type" : "string"
+              },
+              "project" : {
+                "type" : "string"
+              },
+              "codeOutputDirectory" : {
+                "type" : "string"
+              },
+              "resources" : {
+                "$ref" : "#/definitions/pipeline/common/ContainerResource"
+              }
+            }
+          },
+          "IDPCreateCatalogStepNode" : {
+            "title" : "IDPCreateCatalogStepNode",
+            "type" : "object",
+            "required" : [ "identifier", "name", "spec", "type" ],
+            "properties" : {
+              "description" : {
+                "type" : "string",
+                "desc" : "This is the description for IDPCreateCatalogStepNode"
+              },
+              "enforce" : {
+                "$ref" : "#/definitions/pipeline/common/PolicyConfig"
+              },
+              "failureStrategies" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/pipeline/common/FailureStrategyConfig"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "identifier" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+              },
+              "name" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+              },
+              "strategy" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StrategyConfig"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "timeout" : {
+                "type" : "string",
+                "pattern" : "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(.*<\\+.*>(?!.*\\.executionInput\\(\\)).*)|(^$))$"
+              },
+              "type" : {
+                "type" : "string",
+                "enum" : [ "CreateCatalog" ]
+              },
+              "when" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StepWhenCondition"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "allOf" : [ {
+              "if" : {
+                "properties" : {
+                  "type" : {
+                    "const" : "CreateCatalog"
+                  }
+                }
+              },
+              "then" : {
+                "properties" : {
+                  "spec" : {
+                    "$ref" : "#/definitions/pipeline/steps/idp/IDPCreateCatalogPlanInfo"
+                  }
+                }
+              }
+            } ]
+          },
+          "IDPCreateCatalogPlanInfo" : {
+            "title" : "IDPCreateCatalogPlanInfo",
+            "allOf" : [ {
+              "$ref" : "#/definitions/pipeline/common/StepSpecType"
+            }, {
+              "type" : "object",
+              "required" : [ "fileName", "fileContent" ],
+              "properties" : {
+                "fileName" : {
+                  "type" : "string"
+                },
+                "filePath" : {
+                  "type" : "string"
+                },
+                "fileContent" : {
+                  "type" : "string"
+                },
+                "resources" : {
+                  "$ref" : "#/definitions/pipeline/common/ContainerResource"
+                }
+              }
+            } ],
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "type" : "object",
+            "required" : [ "fileName", "fileContent" ],
+            "properties" : {
+              "fileName" : {
+                "type" : "string"
+              },
+              "filePath" : {
+                "type" : "string"
+              },
+              "fileContent" : {
+                "type" : "string"
+              },
+              "resources" : {
+                "$ref" : "#/definitions/pipeline/common/ContainerResource"
+              }
+            }
+          },
+          "IDPSlackNotifyStepNode" : {
+            "title" : "IDPSlackNotifyStepNode",
+            "type" : "object",
+            "required" : [ "identifier", "name", "spec", "type" ],
+            "properties" : {
+              "description" : {
+                "type" : "string",
+                "desc" : "This is the description for IDPSlackNotifyStepNode"
+              },
+              "enforce" : {
+                "$ref" : "#/definitions/pipeline/common/PolicyConfig"
+              },
+              "failureStrategies" : {
+                "oneOf" : [ {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/pipeline/common/FailureStrategyConfig"
+                  }
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "identifier" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_][0-9a-zA-Z_]{0,127}$"
+              },
+              "name" : {
+                "type" : "string",
+                "pattern" : "^[a-zA-Z_0-9-.][-0-9a-zA-Z_\\s.]{0,127}$"
+              },
+              "strategy" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StrategyConfig"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              },
+              "timeout" : {
+                "type" : "string",
+                "pattern" : "^(([1-9])+\\d+[s])|(((([1-9])+\\d*[mhwd])+([\\s]?\\d+[smhwd])*)|(.*<\\+.*>(?!.*\\.executionInput\\(\\)).*)|(^$))$"
+              },
+              "type" : {
+                "type" : "string",
+                "enum" : [ "SlackNotify" ]
+              },
+              "when" : {
+                "oneOf" : [ {
+                  "$ref" : "#/definitions/pipeline/common/StepWhenCondition"
+                }, {
+                  "type" : "string",
+                  "pattern" : "^<\\+input>$",
+                  "minLength" : 1
+                } ]
+              }
+            },
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "allOf" : [ {
+              "if" : {
+                "properties" : {
+                  "type" : {
+                    "const" : "SlackNotify"
+                  }
+                }
+              },
+              "then" : {
+                "properties" : {
+                  "spec" : {
+                    "$ref" : "#/definitions/pipeline/steps/idp/IDPSlackNotifyPlanInfo"
+                  }
+                }
+              }
+            } ]
+          },
+          "IDPSlackNotifyPlanInfo" : {
+            "title" : "IDPSlackNotifyPlanInfo",
+            "allOf" : [ {
+              "$ref" : "#/definitions/pipeline/common/StepSpecType"
+            }, {
+              "type" : "object",
+              "required" : [ "slackId", "messageContent", "token" ],
+              "properties" : {
+                "slackId" : {
+                  "type" : "string"
+                },
+                "messageContent" : {
+                  "type" : "string"
+                },
+                "token" : {
+                  "type" : "string"
+                },
+                "resources" : {
+                  "$ref" : "#/definitions/pipeline/common/ContainerResource"
+                }
+              }
+            } ],
+            "$schema" : "http://json-schema.org/draft-07/schema#",
+            "type" : "object",
+            "required" : [ "slackId", "messageContent", "token" ],
+            "properties" : {
+              "slackId" : {
+                "type" : "string"
+              },
+              "messageContent" : {
+                "type" : "string"
+              },
+              "token" : {
                 "type" : "string"
               },
               "resources" : {
