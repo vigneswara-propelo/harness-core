@@ -218,6 +218,8 @@ public interface PipelineResource {
             description = "Returns all Variables used that are valid to be used as expression in pipeline.")
       })
   @ApiOperation(value = "Create variables for Pipeline", nickname = "createVariablesV2")
+  @Timed
+  @ResponseMetered
   @Hidden
   ResponseDTO<VariableMergeServiceResponse>
   createVariablesV2(@Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE,

@@ -27,8 +27,10 @@ import io.harness.pms.sdk.core.pipeline.creators.BaseCreatorService;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoDecorator;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.IOException;
@@ -113,11 +115,17 @@ public class FilterCreatorService
   }
 
   @Override
-  public void mergeResponses(
-      FilterCreationResponse finalResponse, FilterCreationResponse response, Dependencies.Builder dependencies) {
+  public void mergeResponses(FilterCreationResponse finalResponse, FilterCreationResponse response,
+      Dependencies.Builder dependencies, YamlField yamlField, Map<String, JsonNode> fqnJsonNodeMap,
+      FilterCreationBlobRequest request) {
     finalResponse.setStageCount(finalResponse.getStageCount() + response.getStageCount());
     finalResponse.addReferredEntities(response.getReferredEntities());
     finalResponse.addStageNames(response.getStageNames());
     filterCreationResponseMerger.mergeFilterCreationResponse(finalResponse, response);
+  }
+
+  @Override
+  public void updateYamlInDependencies(FilterCreationResponse finalResponse, YamlNode yamlNode) {
+    // Keeping it empty since we are using the old flow, this will be used once we move to the new flow.
   }
 }

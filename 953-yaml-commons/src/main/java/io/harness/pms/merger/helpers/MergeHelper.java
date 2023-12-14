@@ -25,6 +25,7 @@ import io.harness.pms.merger.fqn.FQNNode;
 import io.harness.pms.merger.fqn.FQNNode.NodeType;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.pms.yaml.validation.InputSetValidator;
@@ -361,8 +362,25 @@ public class MergeHelper {
     return mergeUpdatesIntoJsonParametrisedOnPathSeparator(pipelineJson, fqnToJsonMap, PATH_SEP);
   }
 
+  public void mergeUpdatesIntoJson(YamlField yamlField, Map<String, JsonNode> fqnToJsonMap) {
+    mergeUpdatesIntoJsonParametrisedOnPathSeparator(yamlField, fqnToJsonMap, PATH_SEP);
+  }
+
+  public void mergeUpdatesIntoJsonParametrisedOnPathSeparator(
+      YamlField yamlField, Map<String, JsonNode> fqnToJsonMap, String pathSeparator) {
+    if (EmptyPredicate.isEmpty(fqnToJsonMap)) {
+      return;
+    }
+    YamlNode pipelineNode = yamlField.getNode();
+
+    fqnToJsonMap.keySet().forEach(fqn -> {
+      JsonNode node = fqnToJsonMap.get(fqn);
+      pipelineNode.replacePathParametrisedOnPathSeparator(fqn, node, pathSeparator);
+    });
+  }
   public String mergeUpdatesIntoJsonParametrisedOnPathSeparator(
       String pipelineJson, Map<String, String> fqnToJsonMap, String pathSeparator) {
+    // TODO: This needs to be optimized for the ExpansionsMerger Flow.
     YamlNode pipelineNode;
     try {
       pipelineNode = YamlUtils.readTree(pipelineJson).getNode();

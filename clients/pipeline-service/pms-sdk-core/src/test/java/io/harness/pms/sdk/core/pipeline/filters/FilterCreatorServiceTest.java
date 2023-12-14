@@ -84,8 +84,10 @@ public class FilterCreatorServiceTest extends PmsSdkCoreTestBase {
         FilterCreationResponse.builder().stageCount(10).stageNames(ListUtils.newArrayList("stage1")).build();
     FilterCreationResponse filterCreationResponse =
         FilterCreationResponse.builder().stageCount(10).stageNames(ListUtils.newArrayList("stage2")).build();
+    FilterCreationBlobRequest request = FilterCreationBlobRequest.newBuilder().build();
 
-    filterCreatorService.mergeResponses(finalCreationResponse, filterCreationResponse, Dependencies.newBuilder());
+    filterCreatorService.mergeResponses(
+        finalCreationResponse, filterCreationResponse, Dependencies.newBuilder(), null, null, null);
 
     assertThat(finalCreationResponse.getStageCount()).isEqualTo(20);
     assertThat(finalCreationResponse.getStageNames()).isEqualTo(Arrays.asList("stage1", "stage2"));

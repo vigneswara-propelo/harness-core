@@ -18,8 +18,10 @@ import io.harness.pms.contracts.plan.Dependencies;
 import io.harness.pms.contracts.plan.YamlFieldBlob;
 import io.harness.pms.sdk.PmsSdkModuleUtils;
 import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -54,12 +56,21 @@ public abstract class BaseCreatorService<R extends CreatorResponse, M, N> {
     if (isEmpty(initialDependencies.getDependenciesMap())) {
       return finalResponse;
     }
+    Map<String, JsonNode> fqnJsonNodeMap = new HashMap<>();
+    YamlField fullYaml;
+    try {
+      fullYaml = YamlUtils.readTree(initialDependencies.getYaml());
+    } catch (IOException ex) {
+      String message = "Invalid yaml during plan creation";
+      log.error(message, ex);
+      throw new InvalidRequestException(message);
+    }
 
     Dependencies.Builder dependencies = Dependencies.newBuilder()
                                             .setYaml(initialDependencies.getYaml())
                                             .putAllDependencies(initialDependencies.getDependenciesMap());
     while (!dependencies.getDependenciesMap().isEmpty()) {
-      processNodes(dependencies, finalResponse, metadata, request);
+      processNodes(dependencies, finalResponse, metadata, request, fullYaml, fqnJsonNodeMap);
       for (Map.Entry<String, String> entry : initialDependencies.getDependenciesMap().entrySet()) {
         dependencies.removeDependencies(entry.getKey());
       }
@@ -71,23 +82,17 @@ public abstract class BaseCreatorService<R extends CreatorResponse, M, N> {
       }
     }
 
+    updateYamlInDependencies(finalResponse, fullYaml.getNode());
+
     return finalResponse;
   }
 
-  private void processNodes(Dependencies.Builder dependencies, R finalResponse, M metadata, N request) {
+  private void processNodes(Dependencies.Builder dependencies, R finalResponse, M metadata, N request,
+      YamlField fullYamlField, Map<String, JsonNode> fqnJsonNodeMap) {
     Map<String, String> currentDependenciesMap = new HashMap<>(dependencies.getDependenciesMap());
     String currentYaml = dependencies.getYaml();
     dependencies.clearDependencies();
     dependencies.clearDependencyMetadata();
-
-    YamlField fullYamlField;
-    try {
-      fullYamlField = YamlUtils.readTree(currentYaml);
-    } catch (IOException ex) {
-      String message = "Invalid yaml during plan creation";
-      log.error(message, ex);
-      throw new InvalidRequestException(message);
-    }
 
     for (Map.Entry<String, String> dependencyEntry : currentDependenciesMap.entrySet()) {
       String yamlPath = dependencyEntry.getValue();
@@ -97,6 +102,7 @@ public abstract class BaseCreatorService<R extends CreatorResponse, M, N> {
       } catch (IOException e) {
         log.error("Invalid yaml field", e);
       }
+
       R response = processNodeInternal(metadata, yamlField, request);
 
       if (yamlField == null) {
@@ -109,7 +115,8 @@ public abstract class BaseCreatorService<R extends CreatorResponse, M, N> {
           }
           continue;
         }
-        mergeResponses(finalResponse, response, dependencies);
+
+        mergeResponses(finalResponse, response, dependencies, yamlField, fqnJsonNodeMap, request);
         finalResponse.addResolvedDependency(currentYaml, yamlField.getNode().getUuid(), yamlPath);
       }
 
@@ -127,5 +134,8 @@ public abstract class BaseCreatorService<R extends CreatorResponse, M, N> {
 
   public abstract R processNodeInternal(M metadata, YamlField yamlField, N request);
 
-  public abstract void mergeResponses(R finalResponse, R response, Dependencies.Builder dependencies);
+  public abstract void mergeResponses(R finalResponse, R response, Dependencies.Builder dependencies,
+      YamlField yamlField, Map<String, JsonNode> fqnJsonNodeMap, N request);
+
+  public abstract void updateYamlInDependencies(R finalResponse, YamlNode yamlNode);
 }

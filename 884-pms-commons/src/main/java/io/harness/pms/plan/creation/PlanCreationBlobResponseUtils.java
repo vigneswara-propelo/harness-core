@@ -11,6 +11,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.YamlException;
 import io.harness.pms.contracts.plan.Dependencies;
 import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.contracts.plan.GraphLayoutInfo;
@@ -20,7 +21,11 @@ import io.harness.pms.contracts.plan.PlanCreationContextValue;
 import io.harness.pms.contracts.plan.PlanNodeProto;
 import io.harness.pms.contracts.plan.YamlUpdates;
 import io.harness.pms.merger.helpers.MergeHelper;
+import io.harness.pms.yaml.YamlField;
+import io.harness.pms.yaml.YamlUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -200,5 +205,25 @@ public class PlanCreationBlobResponseUtils {
    */
   public String mergeYamlUpdates(String pipelineJson, Map<String, String> fqnToJsonMap) {
     return MergeHelper.mergeUpdatesIntoJson(pipelineJson, fqnToJsonMap);
+  }
+
+  public void mergeYamlUpdates(YamlField yamlField, Map<String, JsonNode> fqnToJsonMap) {
+    MergeHelper.mergeUpdatesIntoJson(yamlField, fqnToJsonMap);
+  }
+
+  public void updateFqnYamlNodeMap(Map<String, JsonNode> fqnJsonNodeMap, Map<String, String> fqnYamlNodeContentMap) {
+    for (String fqn : fqnYamlNodeContentMap.keySet()) {
+      if (!fqnJsonNodeMap.containsKey(fqn)) {
+        String content = fqnYamlNodeContentMap.get(fqn);
+        content = MergeHelper.removeNonASCII(content);
+        try {
+          JsonNode node = YamlUtils.readTree(content).getNode().getCurrJsonNode();
+          fqnJsonNodeMap.put(fqn, node);
+        } catch (IOException e) {
+          log.error("Could not read json provided for the fqn: " + fqn + ". Json:\n" + content, e);
+          throw new YamlException("Could not read json provided for the fqn: " + fqn);
+        }
+      }
+    }
   }
 }

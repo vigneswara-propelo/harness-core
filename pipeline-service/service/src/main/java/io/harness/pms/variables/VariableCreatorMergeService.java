@@ -15,8 +15,10 @@ import static java.lang.String.format;
 import io.harness.NGCommonEntityConstants;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.FeatureName;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
+import io.harness.ff.FeatureFlagService;
 import io.harness.network.SafeHttpCall;
 import io.harness.ng.core.dto.AccountDTO;
 import io.harness.ng.core.dto.OrganizationDTO;
@@ -65,6 +67,7 @@ public class VariableCreatorMergeService {
   @Inject private OrganizationClient organizationClient;
   @Inject private ProjectClient projectClient;
   @Inject private VariableClient variableClient;
+  @Inject private FeatureFlagService featureFlagService;
 
   private static final int MAX_DEPTH = 10;
   private final Executor executor = Executors.newFixedThreadPool(5);
@@ -163,6 +166,12 @@ public class VariableCreatorMergeService {
     if (isNotEmpty(projectIdentifier)) {
       metadataBuilder.putMetadata(NGCommonEntityConstants.PROJECT_KEY, projectIdentifier);
     }
+
+    // This is the FF that will decide the flow in VariableCreatorService, this should be removed once we GA the flag.
+    boolean mergeOptimizedFlow = featureFlagService.isGlobalEnabled(FeatureName.CDS_VARIABLES_MERGE_V2_OPTIMIZED_FLOW);
+    metadataBuilder.putMetadata(
+        FeatureName.CDS_VARIABLES_MERGE_V2_OPTIMIZED_FLOW.name(), String.valueOf(mergeOptimizedFlow));
+
     VariablesCreationBlobResponse response =
         createVariablesForDependenciesRecursive(services, dependencies, metadataBuilder.build());
 
