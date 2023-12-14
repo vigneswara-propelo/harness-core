@@ -333,7 +333,8 @@ public class GcpSyncTasklet implements Tasklet {
       log.info("WI: processGCPConnector using Google ADC");
       sourceCredentials = GoogleCredentials.getApplicationDefault();
     }
-    Credentials credentials = getImpersonatedCredentials(sourceCredentials, serviceAccountEmail);
+    Credentials credentials =
+        getImpersonatedCredentials(config.getDeployMode().name(), sourceCredentials, serviceAccountEmail);
     BigQuery bigQuery = BigQueryOptions.newBuilder()
                             .setCredentials(credentials)
                             .setHeaderProvider(getHeaderProvider())
@@ -452,9 +453,9 @@ public class GcpSyncTasklet implements Tasklet {
     return credentials;
   }
 
-  public static Credentials getImpersonatedCredentials(
-      GoogleCredentials sourceCredentials, String impersonatedServiceAccount) {
-    if (impersonatedServiceAccount == null) {
+  private static Credentials getImpersonatedCredentials(
+      String deployMode, GoogleCredentials sourceCredentials, String impersonatedServiceAccount) {
+    if (DeployMode.isOnPrem(deployMode) || impersonatedServiceAccount == null) {
       return sourceCredentials;
     } else {
       return ImpersonatedCredentials.create(sourceCredentials, impersonatedServiceAccount, null,

@@ -1003,6 +1003,8 @@ public class ViewsQueryBuilder {
                     LABEL_VALUE_UN_NESTED.getAlias());
                 query.addCondition(
                     BinaryCondition.notEqualTo(new CustomSql(LABEL_VALUE_UN_NESTED.getAlias()), EMPTY_STRING));
+                query.addCondition(
+                    new CustomCondition(getSearchCondition(LABEL_VALUE_UN_NESTED.getAlias(), searchString)));
               } else {
                 query.addCustomGroupings(LABEL_VALUE_UN_NESTED.getAlias());
                 query.addCondition(getCondition(

@@ -64,7 +64,7 @@ data:
   CF_CLIENT_API_KEY: {{ .Values.CF_CLIENT_API_KEY | quote }}
   GCP_SYNC_PYTHON_IMAGE_PATH: {{ include "common.images.image" (dict "imageRoot" .Values.imageGCPDataPipeline "global" .Values.global) | quote}}
   BUCKET_NAME_PREFIX: {{ .Values.gcpConfig.bucketNamePrefix | quote }}
-  GCP_SMP_ENABLED: {{ .Values.gcpConfig.GCP_SMP_ENABLED }}
+  GCP_SMP_ENABLED: {{ .Values.gcpConfig.GCP_SMP_ENABLED | quote }}
   {{- if .Values.global.proxy.enabled }}
   PROXY_ENABLED: '{{ .Values.global.proxy.enabled }}'
   PROXY_HOST: {{ .Values.global.proxy.host }}
