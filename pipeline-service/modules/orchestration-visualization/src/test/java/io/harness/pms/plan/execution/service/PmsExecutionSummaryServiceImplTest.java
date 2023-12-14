@@ -19,6 +19,7 @@ import static io.harness.rule.OwnerRule.VINICIUS;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.joor.Reflect.on;
 import static org.mockito.ArgumentMatchers.any;
@@ -479,6 +480,33 @@ public class PmsExecutionSummaryServiceImplTest extends OrchestrationVisualizati
     // be present in update.
     assertEquals(update.toString(),
         "{ \"$set\" : { \"layoutNodeMap.setupId.status\" : { \"$java\" : SUCCESS }, \"layoutNodeMap.setupId.endTs\" : 1000, \"layoutNodeMap.stageSetupId.status\" : { \"$java\" : SUCCESS }, \"layoutNodeMap.stageSetupId.moduleInfo.stepParameters\" : null, \"layoutNodeMap.stageSetupId.startTs\" : null, \"layoutNodeMap.stageSetupId.endTs\" : 1000, \"layoutNodeMap.nodeExecutionId3.status\" : { \"$java\" : SUCCESS }, \"layoutNodeMap.nodeExecutionId3.endTs\" : 1000, \"layoutNodeMap.strategyNodeId.moduleInfo.maxConcurrency.value\" : 3, \"layoutNodeMap.strategyNodeId.status\" : { \"$java\" : SUCCESS }, \"layoutNodeMap.strategyNodeId.moduleInfo.stepParameters\" : null, \"layoutNodeMap.strategyNodeId.startTs\" : null, \"layoutNodeMap.strategyNodeId.endTs\" : 1000, \"layoutNodeMap.nodeExecutionId2.nodeType\" : \"STAGE\", \"layoutNodeMap.nodeExecutionId2.nodeGroup\" : \"stage\", \"layoutNodeMap.nodeExecutionId2.edgeLayoutList\" : { \"$java\" : EdgeLayoutListDTO(currentNodeChildren=[], nextIds=null) }, \"layoutNodeMap.nodeExecutionId2.skipInfo\" : { \"$java\" :  }, \"layoutNodeMap.nodeExecutionId2.nodeUuid\" : \"stageSetupId\", \"layoutNodeMap.nodeExecutionId2.executionInputConfigured\" : null, \"layoutNodeMap.nodeExecutionId3.nodeType\" : \"STAGE\", \"layoutNodeMap.nodeExecutionId3.nodeGroup\" : \"stage\", \"layoutNodeMap.nodeExecutionId3.edgeLayoutList\" : { \"$java\" : EdgeLayoutListDTO(currentNodeChildren=[], nextIds=null) }, \"layoutNodeMap.nodeExecutionId3.skipInfo\" : { \"$java\" :  }, \"layoutNodeMap.nodeExecutionId3.nodeUuid\" : \"stageSetupId\", \"layoutNodeMap.nodeExecutionId3.executionInputConfigured\" : null }, \"$addToSet\" : { \"layoutNodeMap.strategyNodeId.edgeLayoutList.currentNodeChildren\" : { \"$java\" : { \"$each\" : [ \"nodeExecutionId2\", \"nodeExecutionId3\" ] } } } }");
+
+    // Graph Layout Node with null nodeType
+    doReturn(Optional.of(
+                 PipelineExecutionSummaryEntity.builder()
+                     .layoutNodeMap(Map.of("strategyNodeId",
+                         GraphLayoutNodeDTO.builder()
+                             .edgeLayoutList(EdgeLayoutListDTO.builder().currentNodeChildren(new ArrayList<>()).build())
+                             .build(),
+                         stageSetupIdForStrategy,
+                         GraphLayoutNodeDTO.builder()
+                             .nodeType("STAGE")
+                             .nodeGroup("stage")
+                             .module("pms")
+                             .edgeLayoutList(EdgeLayoutListDTO.builder().build())
+                             .skipInfo(SkipInfo.newBuilder().build())
+                             .nodeRunInfo(NodeRunInfo.newBuilder().build())
+                             .edgeLayoutList(EdgeLayoutListDTO.builder().currentNodeChildren(new ArrayList<>()).build())
+                             .build()
+
+                             ))
+                     .build()))
+        .when(pmsExecutionSummaryRepositoryMock)
+        .findByPlanExecutionId(any());
+
+    Update updateNew = new Update();
+    assertThatCode(() -> pmsExecutionSummaryService.updateIdentityStageOrStrategyNodes(planExecutionId, updateNew))
+        .doesNotThrowAnyException();
   }
 
   @Test

@@ -117,7 +117,12 @@ public class PmsExecutionSummaryServiceImpl implements PmsExecutionSummaryServic
 
       // Update Max concurrency in graph (consumed by UI) if the type of strategy is not parallelism
       // For parallelism, the maxConcurrency cannot be defined via yaml, so we are ignoring its addition in graph.
-      if (!graphLayoutNode.get(nodeExecution.getNodeId()).getNodeType().equals(StrategyType.PARALLELISM.name())) {
+      String nodeType = graphLayoutNode.get(nodeExecution.getNodeId()).getNodeType();
+      if (nodeType == null) {
+        log.warn("NodeType found null for NodeExecution uuid {}", nodeExecution.getUuid());
+      }
+
+      if (!StrategyType.PARALLELISM.name().equals(nodeType)) {
         ConcurrentChildInstance concurrentChildInstance =
             nodeExecutionInfoService.fetchConcurrentChildInstance(nodeExecution.getUuid());
         if (concurrentChildInstance != null && !nodeExecution.getExecutableResponses().isEmpty()) {
