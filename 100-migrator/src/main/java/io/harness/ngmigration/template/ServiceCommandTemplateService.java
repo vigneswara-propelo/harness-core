@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
@@ -84,6 +85,7 @@ public class ServiceCommandTemplateService implements NgTemplateService {
   private static final Set<CommandUnitType> SUPPORTED_COMMAND_UNITS =
       Sets.newHashSet(SCP, COPY_CONFIGS, EXEC, DOWNLOAD_ARTIFACT, SETUP_ENV, DOCKER_START, DOCKER_STOP,
           PORT_CHECK_CLEARED, PORT_CHECK_LISTENING, PROCESS_CHECK_RUNNING, PROCESS_CHECK_STOPPED);
+  private static final Pattern EXPRESSION_PATTERN_TO_FIX = Pattern.compile("\\$(?!\\{)([a-zA-Z0-9_]+)");
 
   @Override
   public boolean isMigrationSupported() {
@@ -274,23 +276,10 @@ public class ServiceCommandTemplateService implements NgTemplateService {
         .build();
   }
 
+  // This will make sure that all variables following pattern like $variable are going to be enclosed by curly braces.
+  // $variable -> ${variable}
   private static String processCommandStrings(String script) {
-    String runTimePath = "$RUNTIME_PATH";
-    String backupPath = "$BACKUP_PATH";
-    String stagingPath = "$STAGING_PATH";
-    String wingRunTimePath = "$WINGS_RUNTIME_PATH";
-    String wingBackupPath = "$WINGS_BACKUP_PATH";
-    String wingStagingPath = "$WINGS_STAGING_PATH";
-    String finalEdit = "{$";
-
-    String modifiedContent = script.replace(runTimePath, "${" + runTimePath + "}");
-    modifiedContent = modifiedContent.replace(backupPath, "${" + backupPath + "}");
-    modifiedContent = modifiedContent.replace(stagingPath, "${" + stagingPath + "}");
-    modifiedContent = modifiedContent.replace(wingRunTimePath, "${" + runTimePath + "}");
-    modifiedContent = modifiedContent.replace(wingBackupPath, "${" + backupPath + "}");
-    modifiedContent = modifiedContent.replace(wingStagingPath, "${" + stagingPath + "}");
-    modifiedContent = modifiedContent.replace(finalEdit, "{");
-    return modifiedContent;
+    return script.replaceAll(EXPRESSION_PATTERN_TO_FIX.pattern(), "\\${$1}");
   }
 
   static ParameterField<String> valueOrDefaultEmpty(String val) {
