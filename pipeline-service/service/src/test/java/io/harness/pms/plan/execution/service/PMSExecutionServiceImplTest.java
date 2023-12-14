@@ -16,6 +16,7 @@ import static io.harness.rule.OwnerRule.MLUKIC;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 import static io.harness.rule.OwnerRule.SAMARTH;
 import static io.harness.rule.OwnerRule.SHALINI;
+import static io.harness.rule.OwnerRule.SHIVAM;
 import static io.harness.rule.OwnerRule.SOUMYAJIT;
 import static io.harness.rule.OwnerRule.SRIDHAR;
 import static io.harness.rule.OwnerRule.VINICIUS;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -455,6 +457,61 @@ public class PMSExecutionServiceImplTest extends CategoryTest {
             inputSetYamlWithTriggerExpression, PLAN_EXECUTION_ID, ResolveInputYamlType.RESOLVE_ALL_EXPRESSIONS);
     inputSet = pmsExecutionService.mergeRuntimeInputIntoPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
         PLAN_EXECUTION_ID, false, ResolveInputYamlType.RESOLVE_ALL_EXPRESSIONS);
+    assertThat(inputSet).isEqualTo(InputSetMergeHelper.mergeInputSetIntoPipeline(template, "", false));
+  }
+
+  @Test
+  @Owner(developers = SHIVAM)
+  @Category(UnitTests.class)
+  public void testInputIntoPipelineForDeleted() throws IOException {
+    ClassLoader classLoaderWithTriggerExpression = this.getClass().getClassLoader();
+    String inputSetWithTriggerExpressionFilename = "inputsetWithTriggerExpression.yaml";
+    String inputSetYamlWithTriggerExpression = Resources.toString(
+        Objects.requireNonNull(classLoaderWithTriggerExpression.getResource(inputSetWithTriggerExpressionFilename)),
+        StandardCharsets.UTF_8);
+
+    String inputSetWithResolvedTriggerExpressionFilename = "inputsetWithResolvedTriggerExpressions.yaml";
+
+    PipelineExecutionSummaryEntity executionSummaryEntity1 = PipelineExecutionSummaryEntity.builder()
+                                                                 .accountId(ACCOUNT_ID)
+                                                                 .orgIdentifier(ORG_IDENTIFIER)
+                                                                 .projectIdentifier(PROJ_IDENTIFIER)
+                                                                 .pipelineIdentifier(PIPELINE_IDENTIFIER)
+                                                                 .planExecutionId(PLAN_EXECUTION_ID)
+                                                                 .name(PLAN_EXECUTION_ID)
+                                                                 .pipelineTemplate(template)
+                                                                 .runSequence(0)
+                                                                 .inputSetYaml(inputSetYamlWithTriggerExpression)
+                                                                 .build();
+
+    PlanExecutionMetadata planExecutionMetadata1 =
+        PlanExecutionMetadata.builder().inputSetYaml(inputSetYamlWithTriggerExpression).build();
+
+    doReturn(planExecutionMetadata1)
+        .when(planExecutionMetadataService)
+        .getWithFieldsIncludedFromSecondary(PLAN_EXECUTION_ID, Set.of(PlanExecutionMetadataKeys.inputSetYaml));
+    doReturn(Optional.of(executionSummaryEntity1))
+        .when(pmsExecutionSummaryRepository)
+        .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndPlanExecutionId(
+            ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, PLAN_EXECUTION_ID);
+    doThrow(InvalidRequestException.class)
+        .when(yamlExpressionResolveHelper)
+        .resolveExpressionsInYaml(
+            inputSetYamlWithTriggerExpression, PLAN_EXECUTION_ID, ResolveInputYamlType.RESOLVE_ALL_EXPRESSIONS);
+    String inputSet = pmsExecutionService.mergeRuntimeInputIntoPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+        PLAN_EXECUTION_ID, true, ResolveInputYamlType.RESOLVE_ALL_EXPRESSIONS);
+
+    assertThat(inputSet).isEqualTo(InputSetMergeHelper.mergeInputSetIntoPipeline(template, "", false));
+    verify(yamlExpressionResolveHelper, times(1))
+        .resolveExpressionsInYaml(
+            inputSetYamlWithTriggerExpression, PLAN_EXECUTION_ID, ResolveInputYamlType.RESOLVE_ALL_EXPRESSIONS);
+
+    doReturn(null)
+        .when(yamlExpressionResolveHelper)
+        .resolveExpressionsInYaml(
+            inputSetYamlWithTriggerExpression, PLAN_EXECUTION_ID, ResolveInputYamlType.RESOLVE_ALL_EXPRESSIONS);
+    inputSet = pmsExecutionService.mergeRuntimeInputIntoPipeline(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+        PLAN_EXECUTION_ID, true, ResolveInputYamlType.RESOLVE_ALL_EXPRESSIONS);
     assertThat(inputSet).isEqualTo(InputSetMergeHelper.mergeInputSetIntoPipeline(template, "", false));
   }
 
