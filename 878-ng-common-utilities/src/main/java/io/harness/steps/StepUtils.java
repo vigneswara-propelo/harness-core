@@ -6,6 +6,7 @@
  */
 
 package io.harness.steps;
+
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -47,6 +48,7 @@ import io.harness.exception.WingsException;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logstreaming.LogStreamingHelper;
+import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.WithDelegateSelector;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -57,7 +59,9 @@ import io.harness.pms.contracts.execution.tasks.TaskCategory;
 import io.harness.pms.contracts.execution.tasks.TaskRequest;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.execution.utils.AmbianceUtils;
+import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
@@ -72,6 +76,7 @@ import software.wings.beans.SerializationFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
@@ -455,7 +460,8 @@ public class StepUtils {
     }
   }
 
-  public static ParameterField<List<TaskSelectorYaml>> delegateSelectorsFromFqn(PlanCreationContext ctx, String fqn)
+  @VisibleForTesting
+  static ParameterField<List<TaskSelectorYaml>> delegateSelectorsFromFqn(PlanCreationContext ctx, String fqn)
       throws IOException {
     ParameterField<List<TaskSelectorYaml>> delegateSelectors = null;
     YamlNode node = YamlUtils.getGivenYamlNodeFromParentPath(ctx.getCurrentField().getNode(), fqn);
@@ -478,6 +484,16 @@ public class StepUtils {
   }
 
   public static void appendDelegateSelectors(WithDelegateSelector withDelegateSelector, PlanCreationContext ctx) {
+    appendDelegateSelectors(withDelegateSelector, ctx, null, HarnessYamlVersion.V0);
+  }
+
+  public static void appendDelegateSelectorsV1(
+      WithDelegateSelector withDelegateSelector, PlanCreationContext ctx, KryoSerializer kryoSerializer) {
+    appendDelegateSelectors(withDelegateSelector, ctx, kryoSerializer, HarnessYamlVersion.V1);
+  }
+
+  private static void appendDelegateSelectors(WithDelegateSelector withDelegateSelector, PlanCreationContext ctx,
+      KryoSerializer kryoSerializer, String version) {
     try {
       // Delegate Selector Precedence: 1)Step -> 2)stepGroup -> 3)Stage ->  4)Pipeline
       ParameterField<List<TaskSelectorYaml>> delegateSelectors = withDelegateSelector.fetchDelegateSelectors();
@@ -486,25 +502,55 @@ public class StepUtils {
         return;
       }
 
-      delegateSelectors = delegateSelectorsFromFqn(ctx, STEP_GROUP);
+      delegateSelectors = getDelegateSelectors(ctx, STEP_GROUP, kryoSerializer, version);
       if (hasDelegateSelectors(delegateSelectors)) {
         setOriginAndDelegateSelectors(delegateSelectors, withDelegateSelector, STEP_GROUP);
         return;
       }
 
-      delegateSelectors = delegateSelectorsFromFqn(ctx, STAGE);
+      delegateSelectors = getDelegateSelectors(ctx, STAGE, kryoSerializer, version);
       if (hasDelegateSelectors(delegateSelectors)) {
         setOriginAndDelegateSelectors(delegateSelectors, withDelegateSelector, STAGE);
         return;
       }
 
-      delegateSelectors = delegateSelectorsFromFqn(ctx, YAMLFieldNameConstants.PIPELINE);
+      delegateSelectors = getDelegateSelectors(ctx, YAMLFieldNameConstants.PIPELINE, kryoSerializer, version);
       if (hasDelegateSelectors(delegateSelectors)) {
         setOriginAndDelegateSelectors(delegateSelectors, withDelegateSelector, YAMLFieldNameConstants.PIPELINE);
       }
     } catch (Exception e) {
       log.error("Error while appending delegate selector to spec params ", e);
     }
+  }
+
+  private static ParameterField<List<TaskSelectorYaml>> getDelegateSelectors(
+      PlanCreationContext ctx, String key, KryoSerializer kryoSerializer, String version) throws IOException {
+    if (HarnessYamlVersion.V1.equals(version)) {
+      return getDelegateSelectorsFromParentInfo(ctx, key, kryoSerializer);
+    }
+    return delegateSelectorsFromFqn(ctx, key);
+  }
+
+  private static ParameterField<List<TaskSelectorYaml>> getDelegateSelectorsFromParentInfo(
+      PlanCreationContext ctx, String key, KryoSerializer kryoSerializer) {
+    final Optional<Object> optionalDelegates;
+    switch (key) {
+      case STAGE:
+        optionalDelegates = PlanCreatorUtilsV1.getDeserializedObjectFromParentInfo(
+            kryoSerializer, ctx.getDependency(), PlanCreatorConstants.STAGE_DELEGATES, true);
+        break;
+      case STEP_GROUP:
+        optionalDelegates = PlanCreatorUtilsV1.getDeserializedObjectFromParentInfo(
+            kryoSerializer, ctx.getDependency(), PlanCreatorConstants.STEP_GROUP_DELEGATES, true);
+        break;
+      case YAMLFieldNameConstants.PIPELINE:
+        optionalDelegates = PlanCreatorUtilsV1.getDeserializedObjectFromParentInfo(
+            kryoSerializer, ctx.getDependency(), PlanCreatorConstants.PIPELINE_DELEGATES, true);
+        break;
+      default:
+        optionalDelegates = Optional.empty();
+    }
+    return (ParameterField<List<TaskSelectorYaml>>) optionalDelegates.orElse(null);
   }
 
   public static ParameterField<List<TaskSelectorYaml>> getOriginDelegateSelectors(

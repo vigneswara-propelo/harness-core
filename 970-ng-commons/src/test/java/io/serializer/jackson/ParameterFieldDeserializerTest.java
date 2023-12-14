@@ -18,6 +18,7 @@ import io.harness.rule.Owner;
 import io.harness.rule.OwnerRule;
 import io.harness.yaml.core.timeout.Timeout;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -53,6 +54,20 @@ public class ParameterFieldDeserializerTest extends CategoryTest implements Mult
     assertThat(readValue.infrastructure.isExpression()).isEqualTo(false);
     assertThat(readValue.infrastructure.getValue().inner2.isExpression()).isEqualTo(true);
     assertThat(readValue.infrastructure.getValue().inner2.getExpressionValue()).isEqualTo("<+abc> == \"def\"");
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.SHALINI)
+  @Category(UnitTests.class)
+  public void testParameterFieldDeserializationForStringifiedJsonList() throws IOException {
+    ClassLoader classLoader = this.getClass().getClassLoader();
+    final URL testFile = classLoader.getResource("pipeline.yml");
+    Pipeline readValue = objectMapper.readValue(testFile, Pipeline.class);
+    assertThat(readValue).isNotNull();
+    assertThat(readValue.infrastructure.getValue()).isNotNull();
+    assertThat(readValue.infrastructure.getValue().inner11.getValue()).isEqualTo(List.of("abc", "def"));
+    assertThat(readValue.infrastructure.isExpression()).isEqualTo(false);
+    assertThat(readValue.infrastructure.getValue().inner11.isExpression()).isEqualTo(false);
   }
 
   @Test
@@ -220,5 +235,6 @@ public class ParameterFieldDeserializerTest extends CategoryTest implements Mult
     private ParameterField<String> inner9;
     private ParameterField<String> inner10;
     private ParameterField<Timeout> timeout;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY) private ParameterField<List<String>> inner11;
   }
 }

@@ -48,11 +48,11 @@ public class ShellScriptStepInfoV1
 
   @Override
   public ParameterField<List<TaskSelectorYaml>> fetchDelegateSelectors() {
-    return getDelegate();
+    return getDelegates();
   }
 
   @Override
-  public void setDelegateSelectors(ParameterField<List<TaskSelectorYaml>> delegateSelectors) {
-    setDelegate(delegateSelectors);
+  public void setDelegateSelectors(ParameterField<List<TaskSelectorYaml>> delegates) {
+    setDelegates(delegates);
   }
 }

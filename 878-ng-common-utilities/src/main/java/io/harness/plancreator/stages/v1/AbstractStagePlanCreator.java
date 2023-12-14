@@ -7,6 +7,8 @@
 
 package io.harness.plancreator.stages.v1;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -14,6 +16,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.strategy.StrategyUtilsV1;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.plan.Dependency;
@@ -28,9 +31,11 @@ import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlField;
 import io.harness.serializer.KryoSerializer;
+import io.harness.yaml.core.failurestrategy.v1.FailureConfigV1;
 
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,18 +56,22 @@ public abstract class AbstractStagePlanCreator<T extends AbstractStageNodeV1> ex
   }
 
   public Dependency getDependencyForChildren(T stageNode) {
-    if (ParameterField.isNotNull(stageNode.getFailure())) {
-      return Dependency.newBuilder()
-          .setParentInfo(HarnessStruct.newBuilder()
-                             .putData(PlanCreatorConstants.STAGE_FAILURE_STRATEGIES,
-                                 HarnessValue.newBuilder()
-                                     .setBytesValue(ByteString.copyFrom(
-                                         kryoSerializer.asDeflatedBytes(stageNode.getFailure().getValue())))
-                                     .build())
-                             .build())
-          .build();
+    Map<String, HarnessValue> data = new HashMap<>();
+    ParameterField<List<TaskSelectorYaml>> delegates = stageNode.getDelegates();
+    if (ParameterField.isNotNull(delegates)) {
+      data.put(PlanCreatorConstants.STAGE_DELEGATES,
+          HarnessValue.newBuilder()
+              .setBytesValue(ByteString.copyFrom(kryoSerializer.asDeflatedBytes(delegates)))
+              .build());
     }
-    return Dependency.newBuilder().setNodeMetadata(HarnessStruct.newBuilder().build()).build();
+    List<FailureConfigV1> stageFailureStrategies = null;
+    if (isNotEmpty(stageFailureStrategies)) {
+      data.put(PlanCreatorConstants.STAGE_FAILURE_STRATEGIES,
+          HarnessValue.newBuilder()
+              .setBytesValue(ByteString.copyFrom(kryoSerializer.asDeflatedBytes(stageFailureStrategies)))
+              .build());
+    }
+    return Dependency.newBuilder().setParentInfo(HarnessStruct.newBuilder().putAllData(data).build()).build();
   }
 
   public List<AdviserObtainment> getAdviserObtainments(Dependency dependency) {

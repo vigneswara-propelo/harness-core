@@ -27,4 +27,7 @@ public class PlanCreatorConstants {
   public final String STRATEGY_NODE_TYPE = "strategyNodeType";
   public final String SET_STARTING_NODE_ID = "setStartingNodeId";
   public final String IS_INSIDE_PARALLEL_NODE = "isInsideParallelNode";
+  public final String PIPELINE_DELEGATES = "pipelineDelegates";
+  public final String STAGE_DELEGATES = "stageDelegates";
+  public final String STEP_GROUP_DELEGATES = "stepGroupDelegates";
 }

@@ -28,7 +28,6 @@ public class StepParametersUtilsV1 {
     StepElementParametersV1Builder stepBuilder = StepElementParametersV1.builder();
     stepBuilder.name(stepElementConfig.getName());
     stepBuilder.id(stepElementConfig.getId());
-    stepBuilder.delegateSelectors(stepElementConfig.getDelegate());
     stepBuilder.desc(stepElementConfig.getDesc());
     stepBuilder.failure(stepElementConfig.getFailure() != null ? stepElementConfig.getFailure().getValue() : null);
     stepBuilder.timeout(ParameterField.createValueField(TimeoutUtils.getTimeoutString(stepElementConfig.getTimeout())));
@@ -36,7 +35,7 @@ public class StepParametersUtilsV1 {
         stepElementConfig.getWhen() != null ? (String) stepElementConfig.getWhen().fetchFinalValue() : null);
     stepBuilder.uuid(stepElementConfig.getUuid());
     stepBuilder.enforce(stepElementConfig.getEnforce());
-
+    stepBuilder.type(stepElementConfig.getType());
     return stepBuilder;
   }
 
@@ -50,7 +49,7 @@ public class StepParametersUtilsV1 {
     stageBuilder.when(stageNode.getWhen() != null ? (String) stageNode.getWhen().fetchFinalValue() : null);
     stageBuilder.uuid(stageNode.getUuid());
     stageBuilder.variables(stageNode.getVariables());
-    stageBuilder.delegate(stageNode.getDelegate());
+    stageBuilder.delegates(stageNode.getDelegates());
     stageBuilder.labels(stageNode.getLabels());
 
     return stageBuilder;

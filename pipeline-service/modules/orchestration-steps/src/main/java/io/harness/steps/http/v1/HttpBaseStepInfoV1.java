@@ -10,8 +10,10 @@ package io.harness.steps.http.v1;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.yaml.ParameterField;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,4 +27,5 @@ public class HttpBaseStepInfoV1 {
   ParameterField<String> method;
   ParameterField<String> body;
   ParameterField<String> assertion;
+  ParameterField<List<TaskSelectorYaml>> delegates;
 }

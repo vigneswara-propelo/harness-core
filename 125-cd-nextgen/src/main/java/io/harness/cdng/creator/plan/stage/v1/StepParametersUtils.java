@@ -53,7 +53,7 @@ public class StepParametersUtils {
             : null);
     stageBuilder.uuid(stageNode.getUuid());
     stageBuilder.variables(stageNode.getVariables());
-    stageBuilder.delegate(stageNode.getDelegate());
+    stageBuilder.delegates(stageNode.getDelegates());
     stageBuilder.labels(stageNode.getLabels());
     stageBuilder.type(stageNode.getType());
     stageBuilder.timeout(ParameterField.isNotNull(stageNode.getTimeout()) ? stageNode.getTimeout() : null);

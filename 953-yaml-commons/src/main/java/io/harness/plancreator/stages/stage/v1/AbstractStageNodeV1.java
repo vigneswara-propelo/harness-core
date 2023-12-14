@@ -18,6 +18,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.plancreator.exports.ExportConfig;
 import io.harness.plancreator.exports.ExportsMap;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.strategy.v1.StrategyConfigV1;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
@@ -46,7 +47,7 @@ public abstract class AbstractStageNodeV1 {
   ParameterField<String> desc;
   ParameterField<String> when;
   NGVariableV1Wrapper variables;
-  ParameterField<List<String>> delegate;
+  @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY) ParameterField<List<TaskSelectorYaml>> delegates;
   ParameterField<StrategyConfigV1> strategy;
   ParameterField<String> timeout;
   Map<String, String> labels;

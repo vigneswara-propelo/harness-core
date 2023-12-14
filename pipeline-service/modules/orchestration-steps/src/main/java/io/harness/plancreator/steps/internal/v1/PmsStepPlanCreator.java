@@ -61,7 +61,7 @@ public abstract class PmsStepPlanCreator<T extends PmsAbstractStepNodeV1> implem
             .stepType(stepNode.getSpec().getStepType())
             .group(StepOutcomeGroup.STEP.name())
             // TODO: send rollback parameters to this method which can be extracted from dependency
-            .stepParameters(stepNode.getStepParameters(ctx))
+            .stepParameters(stepNode.getStepParameters(ctx, kryoSerializer))
             .facilitatorObtainment(
                 FacilitatorObtainment.newBuilder()
                     .setType(FacilitatorType.newBuilder().setType(stepNode.getSpec().getFacilitatorType()).build())

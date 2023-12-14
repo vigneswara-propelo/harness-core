@@ -6,6 +6,7 @@
  */
 
 package io.harness.serializer;
+
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.CodePulse;
@@ -317,6 +318,14 @@ public class JsonUtils {
       return mapper.readValue(jsonString, valueTypeRef);
     } catch (Exception exception) {
       throw new RuntimeException(exception);
+    }
+  }
+
+  public static boolean isJsonList(String jsonString) {
+    try {
+      return mapper.readTree(jsonString).isArray();
+    } catch (Exception ex) {
+      return false;
     }
   }
 

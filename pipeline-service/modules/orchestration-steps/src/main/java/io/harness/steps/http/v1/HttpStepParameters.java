@@ -32,20 +32,18 @@ public class HttpStepParameters extends HttpBaseStepInfoV1 implements SpecParame
   Map<String, String> headers;
   ParameterField<String> cert;
   ParameterField<String> cert_key;
-  ParameterField<List<TaskSelectorYaml>> delegate;
 
   @Builder(builderMethodName = "infoBuilder")
   public HttpStepParameters(ParameterField<String> url, ParameterField<String> method, ParameterField<String> body,
       ParameterField<String> assertion, Map<String, Object> output_vars, Map<String, String> headers,
-      ParameterField<String> cert, ParameterField<String> cert_key, ParameterField<List<TaskSelectorYaml>> delegate,
+      ParameterField<String> cert, ParameterField<String> cert_key, ParameterField<List<TaskSelectorYaml>> delegates,
       Map<String, Object> input_vars) {
-    super(url, method, body, assertion);
+    super(url, method, body, assertion, delegates);
     this.output_vars = ParameterField.createValueField(output_vars);
     this.input_vars = ParameterField.createValueField(input_vars);
     this.headers = headers;
     this.cert = cert;
     this.cert_key = cert_key;
-    this.delegate = delegate;
   }
 
   public io.harness.steps.http.HttpStepParameters toHttpStepParametersV0() {
@@ -54,7 +52,7 @@ public class HttpStepParameters extends HttpBaseStepInfoV1 implements SpecParame
         .assertion(assertion)
         .certificate(cert)
         .certificateKey(cert_key)
-        .delegateSelectors(delegate)
+        .delegateSelectors(delegates)
         .inputVariables(input_vars != null ? input_vars.getValue() : null)
         .headers(headers)
         .method(method)

@@ -6,6 +6,7 @@
  */
 
 package io.harness.plancreator.steps.common.v1;
+
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.advisers.rollback.OnFailRollbackParameters;
@@ -41,20 +42,20 @@ public class StepElementParametersV1 implements StepBaseParameters {
   String desc;
   ParameterField<String> timeout;
   List<FailureConfigV1> failure;
-
   String when;
-
   String type;
   SpecParameters spec;
   PolicyConfig enforce;
-
-  ParameterField<List<String>> delegateSelectors;
-
   // Only for rollback failures
   OnFailRollbackParameters rollbackParameters;
 
   @Override
   public String getIdentifier() {
     return getId();
+  }
+
+  @Override
+  public ParameterField<List<String>> getDelegateSelectors() {
+    return null;
   }
 }

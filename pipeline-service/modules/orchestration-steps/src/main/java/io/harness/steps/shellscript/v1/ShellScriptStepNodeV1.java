@@ -17,13 +17,8 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.plancreator.steps.common.SpecParameters;
-import io.harness.plancreator.steps.common.v1.StepElementParametersV1;
-import io.harness.plancreator.steps.common.v1.StepElementParametersV1.StepElementParametersV1Builder;
-import io.harness.plancreator.steps.common.v1.StepParametersUtilsV1;
 import io.harness.plancreator.steps.internal.v1.PmsAbstractStepNodeV1;
-import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.steps.StepSpecTypeConstantsV1;
-import io.harness.steps.StepUtils;
 import io.harness.yaml.utils.v1.NGVariablesUtilsV1;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -37,22 +32,13 @@ import lombok.Getter;
 @JsonTypeName(StepSpecTypeConstantsV1.SHELL_SCRIPT)
 @OwnedBy(PIPELINE)
 public class ShellScriptStepNodeV1 extends PmsAbstractStepNodeV1 {
-  String type = StepSpecTypeConstantsV1.SHELL_SCRIPT;
+  @Getter String type = StepSpecTypeConstantsV1.SHELL_SCRIPT;
 
   @Getter
   @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
   ShellScriptStepInfoV1 spec;
 
-  // TODO: set rollback parameters
   @Override
-  public StepElementParametersV1 getStepParameters(PlanCreationContext ctx) {
-    StepElementParametersV1Builder stepBuilder = StepParametersUtilsV1.getStepParameters(this);
-    stepBuilder.spec(getSpecParameters());
-    stepBuilder.type(StepSpecTypeConstantsV1.SHELL_SCRIPT);
-    StepUtils.appendDelegateSelectorsToSpecParameters(spec, ctx);
-    return stepBuilder.build();
-  }
-
   public SpecParameters getSpecParameters() {
     return ShellScriptStepParameters.infoBuilder()
         .executionTarget(spec.getExecution_target())
@@ -65,7 +51,7 @@ public class ShellScriptStepNodeV1 extends PmsAbstractStepNodeV1 {
             spec.getOutput_vars() != null ? spec.getOutput_vars().getMap() : null))
         .shell(spec.getShell())
         .source(spec.getSource())
-        .delegate(spec.getDelegate())
+        .delegate(spec.getDelegates())
         .include_infra_selectors(spec.getInclude_infra_selectors())
         .outputAlias(spec.getOutput_alias())
         .build();

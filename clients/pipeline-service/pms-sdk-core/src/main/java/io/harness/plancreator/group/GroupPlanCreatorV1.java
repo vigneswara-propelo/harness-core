@@ -14,6 +14,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.plancreator.PlanCreatorUtilsV1;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.v1.FailureStrategiesUtilsV1;
 import io.harness.plancreator.strategy.StrategyUtilsV1;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
@@ -36,6 +37,7 @@ import io.harness.pms.sdk.core.plan.creation.creators.ChildrenPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.yaml.DependenciesUtils;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
@@ -93,19 +95,22 @@ public class GroupPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
   }
 
   Dependency getDependencyForChildren(YamlField config) {
+    Map<String, HarnessValue> data = new HashMap<>();
+    ParameterField<List<TaskSelectorYaml>> delegates = PlanCreatorUtilsV1.getDelegates(config.getNode());
     List<FailureConfigV1> stepGroupFailureStrategies = PlanCreatorUtilsV1.getFailureStrategies(config.getNode());
-    if (stepGroupFailureStrategies != null) {
-      return Dependency.newBuilder()
-          .setParentInfo(HarnessStruct.newBuilder()
-                             .putData(PlanCreatorConstants.STEP_GROUP_FAILURE_STRATEGIES,
-                                 HarnessValue.newBuilder()
-                                     .setBytesValue(ByteString.copyFrom(
-                                         kryoSerializer.asDeflatedBytes(stepGroupFailureStrategies)))
-                                     .build())
-                             .build())
-          .build();
+    if (delegates != null) {
+      data.put(PlanCreatorConstants.STEP_GROUP_DELEGATES,
+          HarnessValue.newBuilder()
+              .setBytesValue(ByteString.copyFrom(kryoSerializer.asDeflatedBytes(delegates)))
+              .build());
     }
-    return Dependency.newBuilder().build();
+    if (stepGroupFailureStrategies != null) {
+      data.put(PlanCreatorConstants.STEP_GROUP_FAILURE_STRATEGIES,
+          HarnessValue.newBuilder()
+              .setBytesValue(ByteString.copyFrom(kryoSerializer.asDeflatedBytes(stepGroupFailureStrategies)))
+              .build());
+    }
+    return Dependency.newBuilder().setParentInfo(HarnessStruct.newBuilder().putAllData(data).build()).build();
   }
 
   @Override

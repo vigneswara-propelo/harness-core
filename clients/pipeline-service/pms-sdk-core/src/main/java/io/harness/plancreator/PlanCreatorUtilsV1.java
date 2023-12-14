@@ -28,6 +28,7 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.govern.Switch;
 import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.v1.FailureStrategiesUtilsV1;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdviserType;
@@ -52,6 +53,7 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.serializer.JsonUtils;
 import io.harness.serializer.KryoSerializer;
 import io.harness.timeout.trackers.absolute.AbsoluteTimeoutTrackerFactory;
 import io.harness.utils.TimeoutUtils;
@@ -270,7 +272,8 @@ public class PlanCreatorUtilsV1 {
         kryoSerializer, dependency, stepFailureStrategies, nextNodeUuid, isStepInsideRollback);
   }
 
-  protected List<AdviserObtainment> getFailureStrategiesAdvisers(KryoSerializer kryoSerializer, Dependency dependency,
+  @VisibleForTesting
+  List<AdviserObtainment> getFailureStrategiesAdvisers(KryoSerializer kryoSerializer, Dependency dependency,
       List<FailureConfigV1> stepFailureStrategies, String nextNodeUuid, boolean isStepInsideRollback) {
     List<FailureConfigV1> stageFailureStrategies = getStageFailureStrategies(kryoSerializer, dependency);
     List<FailureConfigV1> stepGroupFailureStrategies = getStepGroupFailureStrategies(kryoSerializer, dependency);
@@ -280,13 +283,35 @@ public class PlanCreatorUtilsV1 {
     return getFailureStrategiesAdvisers(
         kryoSerializer, actionMap, isStepInsideRollback, nextNodeUuid, PlanCreatorUtilsV1::getAdviserObtainmentForStep);
   }
-  Optional<Object> getDeserializedObjectFromParentInfo(
+  public Optional<Object> getDeserializedObjectFromParentInfo(
       KryoSerializer kryoSerializer, Dependency dependency, String key, boolean asInflatedObject) {
-    if (dependency != null && dependency.getParentInfo().getDataMap().containsKey(key)) {
-      ByteString bytes = dependency.getParentInfo().getDataMap().get(key).getBytesValue();
-      return getObjectFromBytes(bytes, kryoSerializer, asInflatedObject);
+    if (dependency == null) {
+      return Optional.empty();
+    }
+    HarnessValue harnessValue = getHarnessValueParentInfoFromDependency(dependency, key);
+    if (harnessValue != null) {
+      if (harnessValue.hasStringValue()) {
+        return Optional.of(harnessValue.getStringValue());
+      }
+      if (harnessValue.hasBytesValue()) {
+        ByteString bytes = harnessValue.getBytesValue();
+        Optional<Object> objectOptional = getObjectFromBytes(bytes, kryoSerializer, asInflatedObject);
+        if (objectOptional.isPresent()) {
+          return objectOptional;
+        }
+      }
+      if (harnessValue.hasBoolValue()) {
+        return Optional.of(harnessValue.getBoolValue());
+      }
     }
     return Optional.empty();
+  }
+
+  private HarnessValue getHarnessValueParentInfoFromDependency(Dependency dependency, String key) {
+    if (dependency != null && dependency.getParentInfo().getDataMap().containsKey(key)) {
+      return dependency.getParentInfo().getDataMap().get(key);
+    }
+    return null;
   }
 
   Optional<Object> getObjectFromBytes(ByteString bytes, KryoSerializer kryoSerializer, boolean asInflatedObject) {
@@ -440,6 +465,39 @@ public class PlanCreatorUtilsV1 {
     return null;
   }
 
+  public ParameterField<List<TaskSelectorYaml>> getDelegates(YamlNode node) {
+    YamlField delegatesField = node.getField(YAMLFieldNameConstants.DELEGATES);
+    try {
+      if (delegatesField != null) {
+        return getDelegatesParameterField(delegatesField.getNode());
+      }
+      return null;
+    } catch (Exception ex) {
+      throw new InvalidRequestException("Invalid Yaml for Delegates", ex);
+    }
+  }
+
+  ParameterField<List<TaskSelectorYaml>> getDelegatesParameterField(YamlNode delegateYamlNode) throws Exception {
+    ParameterField<List<TaskSelectorYaml>> delegateListV1ParameterField = null;
+    if (delegateYamlNode.isArray() || JsonUtils.isJsonList(delegateYamlNode.asText())) {
+      delegateListV1ParameterField =
+          YamlUtils.read(delegateYamlNode.toString(), new TypeReference<ParameterField<List<TaskSelectorYaml>>>() {});
+    } else {
+      ParameterField<TaskSelectorYaml> delegateV1ParameterField =
+          YamlUtils.read(delegateYamlNode.toString(), new TypeReference<ParameterField<TaskSelectorYaml>>() {});
+      if (ParameterField.isNotNull(delegateV1ParameterField)) {
+        if (delegateV1ParameterField.isExpression()) {
+          delegateListV1ParameterField =
+              ParameterField.createExpressionField(true, delegateV1ParameterField.getExpressionValue(), null, false);
+        } else {
+          delegateListV1ParameterField =
+              ParameterField.createValueField(new ArrayList<>(List.of(delegateV1ParameterField.getValue())));
+        }
+      }
+    }
+    return delegateListV1ParameterField;
+  }
+
   public List<FailureConfigV1> getFailureStrategies(YamlNode node) {
     YamlField failureConfigV1 = node.getField("failure");
     ParameterField<List<FailureConfigV1>> failureConfigListV1ParameterField = null;
@@ -449,7 +507,7 @@ public class PlanCreatorUtilsV1 {
         failureConfigListV1ParameterField = getFailureStrategiesListParameterField(failureConfigV1.getNode());
       }
     } catch (Exception e) {
-      throw new InvalidRequestException("Invalid yaml", e);
+      throw new InvalidRequestException("Invalid yaml for failure strategies", e);
     }
     // If failureStrategies configured as <+input> and no value is given, failureStrategyConfigs.getValue() will still
     // be null and handled as empty list
@@ -458,11 +516,6 @@ public class PlanCreatorUtilsV1 {
     } else {
       return null;
     }
-  }
-
-  // TODO: Get isStepInsideRollback from dependency metadata map
-  public boolean isStepInsideRollback(Dependency dependency) {
-    return false;
   }
 
   ParameterField<List<FailureConfigV1>> getFailureStrategiesListParameterField(YamlNode failureConfigNode)
@@ -480,6 +533,11 @@ public class PlanCreatorUtilsV1 {
       }
     }
     return failureConfigListV1ParameterField;
+  }
+
+  // TODO: Get isStepInsideRollback from dependency metadata map
+  public boolean isStepInsideRollback(Dependency dependency) {
+    return false;
   }
 
   @FunctionalInterface

@@ -20,6 +20,7 @@ import io.harness.serializer.JsonUtils;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -33,6 +34,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import io.serializer.utils.NGRuntimeInputUtils;
 import io.serializer.utils.ParameterFieldYamlUtils;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -126,6 +128,18 @@ public class ParameterFieldDeserializer extends StdDeserializer<ParameterField<?
     }
 
     try {
+      // Adding this handling for the case when text is a jsonList and needs to be deserialized as a list
+      // For eg: text: ["abc","def"], the deserialized object should be a list of size 2 with elements abc and def
+      // valueDeserializer.deserialize() deserializes it to a list of size 1 with element abc,def.
+      // That is why this if block is needed here before valueDeserializer.deserialize().
+      if (JsonUtils.isJsonList(text)) {
+        return ParameterField.createValueField(JsonUtils.asList(text, new TypeReference<>() {
+          @Override
+          public Type getType() {
+            return referenceType;
+          }
+        }));
+      }
       Object refd = (valueTypeDeserializer == null)
           ? valueDeserializer.deserialize(p, ctxt)
           : valueDeserializer.deserializeWithType(p, ctxt, valueTypeDeserializer);

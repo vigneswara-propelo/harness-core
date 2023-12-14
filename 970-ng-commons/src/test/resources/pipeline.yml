@@ -9,3 +9,4 @@ infrastructure:
   inner8: <+input>.allowedValues(jexl(<+env> == 'dev' ? (<+team> == 'a' ? 'dev_a, dev_b':'dev_qa, dev_qb'):'prod, stage'))
   inner9: valueFromInputSet.allowedValues(dev, nondev, prod)
   inner10: <+dollar.expr.from.inputSet>.allowedValues(dev, <+env>, <+env2>, stage)
+  inner11: "[\"abc\",\"def\"]"

@@ -33,7 +33,7 @@ public class ShellScriptBaseStepInfoV1 {
 
   @Deprecated ParameterField<Boolean> on_delegate;
 
-  ParameterField<List<TaskSelectorYaml>> delegate;
+  ParameterField<List<TaskSelectorYaml>> delegates;
 
   ParameterField<Boolean> include_infra_selectors;
   OutputAliasV1 output_alias;

@@ -12,13 +12,17 @@ import static io.harness.rule.OwnerRule.MLUKIC;
 import static io.harness.rule.OwnerRule.SHALINI;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 
 import io.harness.advisers.nextstep.NextStepAdviserParameters;
 import io.harness.category.element.UnitTests;
 import io.harness.data.structure.UUIDGenerator;
+import io.harness.exception.InvalidRequestException;
 import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
 import io.harness.pms.contracts.advisers.AdviserType;
 import io.harness.pms.contracts.plan.Dependency;
@@ -33,6 +37,7 @@ import io.harness.pms.sdk.core.adviser.marksuccess.OnMarkSuccessAdviserParameter
 import io.harness.pms.timeout.AbsoluteSdkTimeoutTrackerParameters;
 import io.harness.pms.timeout.SdkTimeoutObtainment;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.rule.Owner;
@@ -51,6 +56,9 @@ import io.harness.yaml.core.failurestrategy.v1.FailureConfigV1;
 import io.harness.yaml.core.failurestrategy.v1.NGFailureTypeV1;
 import io.harness.yaml.core.timeout.Timeout;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Resources;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
@@ -248,5 +256,29 @@ public class PlanCreatorUtilsV1Test extends PmsSdkCoreTestBase {
     assertThat(
         ((AbsoluteSdkTimeoutTrackerParameters) sdkTimeoutObtainment.getParameters()).getTimeout().fetchFinalValue())
         .isEqualTo("10m");
+  }
+
+  @Test
+  @Owner(developers = SHALINI)
+  @Category(UnitTests.class)
+  public void testGetDelegates() {
+    ObjectNode jsonNode = new ObjectNode(JsonNodeFactory.instance);
+    ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance);
+    arrayNode.add("del1");
+    arrayNode.add("<+expr>");
+    assertNull(PlanCreatorUtilsV1.getDelegates(new YamlNode(jsonNode)));
+    jsonNode.put(YAMLFieldNameConstants.DELEGATES, arrayNode);
+    assertEquals(PlanCreatorUtilsV1.getDelegates(new YamlNode(jsonNode)),
+        ParameterField.createValueField(List.of(new TaskSelectorYaml("del1"), new TaskSelectorYaml("<+expr>"))));
+    jsonNode.put(YAMLFieldNameConstants.DELEGATES, "del1");
+    assertEquals(PlanCreatorUtilsV1.getDelegates(new YamlNode(jsonNode)),
+        ParameterField.createValueField(List.of(new TaskSelectorYaml("del1"))));
+    jsonNode.put(YAMLFieldNameConstants.DELEGATES, "<+expr>");
+    assertEquals(PlanCreatorUtilsV1.getDelegates(new YamlNode(jsonNode)),
+        ParameterField.createExpressionField(true, "<+expr>", null, false));
+    jsonNode.put(YAMLFieldNameConstants.DELEGATES, 123);
+    assertThatThrownBy(() -> PlanCreatorUtilsV1.getDelegates(new YamlNode(jsonNode)))
+        .hasMessage("Invalid Yaml for Delegates")
+        .isInstanceOf(InvalidRequestException.class);
   }
 }

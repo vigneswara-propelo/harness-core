@@ -12,6 +12,8 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.plancreator.PlanCreatorUtilsV1;
+import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
 import io.harness.pms.contracts.plan.Dependency;
@@ -29,12 +31,16 @@ import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.yaml.DependenciesUtils;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
+import io.harness.serializer.KryoSerializer;
 import io.harness.steps.common.pipeline.PipelineSetupStep;
 import io.harness.steps.common.pipeline.PipelineSetupStepParameters;
 
 import com.google.common.base.Preconditions;
+import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,6 +51,7 @@ import java.util.Set;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_PIPELINE})
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PipelinePlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
+  @Inject KryoSerializer kryoSerializer;
   @Override
   public String getStartingNodeId(YamlField field) {
     return field.getUuid();
@@ -64,15 +71,41 @@ public class PipelinePlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
         PlanCreationResponse.builder()
             .dependencies(DependenciesUtils.toDependenciesProto(dependencies)
                               .toBuilder()
-                              .putDependencyMetadata(specNode.getUuid(),
-                                  Dependency.newBuilder()
-                                      .setNodeMetadata(
-                                          HarnessStruct.newBuilder().putData(PlanCreatorConstants.SET_STARTING_NODE_ID,
-                                              HarnessValue.newBuilder().setBoolValue(true).build()))
-                                      .build())
+                              .putDependencyMetadata(specNode.getUuid(), buildDependencyForSpec(config))
                               .build())
             .build());
     return responseMap;
+  }
+
+  Dependency buildDependencyForSpec(YamlField config) {
+    Dependency.Builder dependencyBuilder = Dependency.newBuilder().setNodeMetadata(HarnessStruct.newBuilder().putData(
+        PlanCreatorConstants.SET_STARTING_NODE_ID, HarnessValue.newBuilder().setBoolValue(true).build()));
+    HarnessStruct parentInfo = buildParentInfo(config);
+    if (parentInfo != null) {
+      dependencyBuilder.setParentInfo(parentInfo);
+    }
+    return dependencyBuilder.build();
+  }
+
+  HarnessStruct buildParentInfo(YamlField config) {
+    ParameterField<List<TaskSelectorYaml>> delegates = getPipelineDelegates(config);
+    if (ParameterField.isNotNull(delegates)) {
+      return HarnessStruct.newBuilder()
+          .putData(PlanCreatorConstants.PIPELINE_DELEGATES,
+              HarnessValue.newBuilder()
+                  .setBytesValue(ByteString.copyFrom(kryoSerializer.asDeflatedBytes(delegates)))
+                  .build())
+          .build();
+    }
+    return null;
+  }
+
+  ParameterField<List<TaskSelectorYaml>> getPipelineDelegates(YamlField field) {
+    YamlField optionsField = field.getNode().getField(YAMLFieldNameConstants.OPTIONS);
+    if (optionsField == null || optionsField.getNode() == null) {
+      return null;
+    }
+    return PlanCreatorUtilsV1.getDelegates(optionsField.getNode());
   }
 
   @Override
