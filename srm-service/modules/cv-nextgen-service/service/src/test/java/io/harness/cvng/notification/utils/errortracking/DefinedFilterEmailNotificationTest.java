@@ -128,7 +128,7 @@ public class DefinedFilterEmailNotificationTest {
         .equals(
             "<div style=\"margin-bottom: 16px\"><span>Events appeared on the deployment version <span style=\"font-weight: bold;\">testVersion</span></span><div style =\"margin-top: 4px;\"><span><a style=\"text-decoration: none; color: #0278D5;\" href=\"https://testurl.com/account/testAccountId/cet/orgs/testOrg/projects/testProject/eventsummary/events?env=testEnvironmentId&service=testService&dep=testVersion&fromTimestamp="
             + from.getTime() / 1000 + "&toTimestamp=" + to.getTime() / 1000
-            + "&eventStatus=NewEvents\">New Events (1)</a><div style=\"display: inline; border-right: 1px solid #b0b1c3; height: 20px; margin: 0px 16px 0px 16px\"></div>Critical Events (0)<div style=\"display: inline; border-right: 1px solid #b0b1c3; height: 20px; margin: 0px 16px 0px 16px\"></div>Resurfaced Events (0)</span></div></div>");
+            + "&eventType=CAUGHT_EXCEPTION,CUSTOM_ERROR,HTTP_ERROR,LOGGED_ERROR,LOGGED_WARNING,SWALLOWED_EXCEPTION,UNCAUGHT_EXCEPTION&eventStatus=NewEvents\">New Events (1)</a><div style=\"display: inline; border-right: 1px solid #b0b1c3; height: 20px; margin: 0px 16px 0px 16px\"></div>Critical Events (0)<div style=\"display: inline; border-right: 1px solid #b0b1c3; height: 20px; margin: 0px 16px 0px 16px\"></div>Resurfaced Events (0)</span></div></div>");
     assert notificationDataMap.get(EMAIL_SAVED_SEARCH_FILTER_SECTION).equals("");
     assert notificationDataMap.get(EMAIL_EVENT_DETAILS_BUTTON).equals("");
   }

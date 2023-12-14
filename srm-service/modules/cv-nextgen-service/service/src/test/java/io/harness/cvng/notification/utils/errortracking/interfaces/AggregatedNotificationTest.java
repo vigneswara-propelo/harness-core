@@ -38,7 +38,7 @@ public class AggregatedNotificationTest {
     final String slackFormattedVersionList = SlackNotification.getSlackFormattedVersionList(
         getTestCodeErrorCondition(), getTestNotificationData(), TEST_BASE_URL);
     assert slackFormattedVersionList.equals("Events appeared on the deployment version *testVersion*\n"
-        + "<https://testurl.com/account/testAccountId/cet/orgs/testOrg/projects/testProject/eventsummary/events?env=testEnvironmentId&service=testService&dep=testVersion&fromTimestamp=1700258695&toTimestamp=1700258701&eventStatus=NewEvents|New Events (1)>   |   Critical Events (0)   |   Resurfaced Events (0)");
+        + "<https://testurl.com/account/testAccountId/cet/orgs/testOrg/projects/testProject/eventsummary/events?env=testEnvironmentId&service=testService&dep=testVersion&fromTimestamp=1700258695&toTimestamp=1700258701&eventType=CAUGHT_EXCEPTION,CUSTOM_ERROR,HTTP_ERROR,LOGGED_ERROR,LOGGED_WARNING,SWALLOWED_EXCEPTION,UNCAUGHT_EXCEPTION&eventStatus=NewEvents|New Events (1)>   |   Critical Events (0)   |   Resurfaced Events (0)");
   }
 
   public static ErrorTrackingNotificationData getTestNotificationData() {

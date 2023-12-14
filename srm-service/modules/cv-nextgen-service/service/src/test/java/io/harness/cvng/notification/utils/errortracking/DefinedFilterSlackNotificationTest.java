@@ -133,7 +133,7 @@ public class DefinedFilterSlackNotificationTest {
         .equals("Events appeared on the deployment version *testVersion*\n"
             + "<https://testurl.com/account/testAccountId/cet/orgs/testOrg/projects/testProject/eventsummary/events?env=testEnvironmentId&service=testService&dep=testVersion&fromTimestamp="
             + from.getTime() / 1000 + "&toTimestamp=" + to.getTime() / 1000
-            + "&eventStatus=NewEvents|New Events (1)>   |   Critical Events (0)   |   Resurfaced Events (0)");
+            + "&eventType=CAUGHT_EXCEPTION,CUSTOM_ERROR,HTTP_ERROR,LOGGED_ERROR,LOGGED_WARNING,SWALLOWED_EXCEPTION,UNCAUGHT_EXCEPTION&eventStatus=NewEvents|New Events (1)>   |   Critical Events (0)   |   Resurfaced Events (0)");
     assert notificationDataMap.get(SLACK_EVENT_DETAILS_BUTTON).equals("");
   }
 }
