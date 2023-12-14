@@ -8,6 +8,7 @@
 package io.harness.delegate.aws.asg;
 
 import static io.harness.aws.asg.manifest.AsgManifestType.AsgShiftTraffic;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import static software.wings.beans.LogHelper.color;
 
@@ -84,7 +85,9 @@ public class AsgShiftTrafficCommandTaskHandler extends AsgCommandTaskNGHandler {
       AwsInternalConfig awsInternalConfig =
           awsNgConfigMapper.createAwsInternalConfig(asgInfraConfig.getAwsConnectorDTO());
 
-      AutoScalingGroup prodAutoScalingGroup = asgSdkManager.getASG(asgShiftTrafficRequest.getProdAsgName());
+      AutoScalingGroup prodAutoScalingGroup = isEmpty(asgShiftTrafficRequest.getProdAsgName())
+          ? null
+          : asgSdkManager.getASG(asgShiftTrafficRequest.getProdAsgName());
 
       AsgManifestHandlerChainFactory asgManifestHandlerChainFactory =
           (AsgManifestHandlerChainFactory) AsgManifestHandlerChainFactory.builder()
@@ -115,7 +118,8 @@ public class AsgShiftTrafficCommandTaskHandler extends AsgCommandTaskNGHandler {
       AutoScalingGroupContainer prodAutoScalingGroupContainerAfterTrafficShift =
           asgTaskHelper.mapToAutoScalingGroupContainer(prodAutoScalingGroupAfterTrafficShift);
 
-      AutoScalingGroup stageAutoScalingGroupAfterTrafficShift = asgSdkManager.getASG(chainState.getAsgName());
+      AutoScalingGroup stageAutoScalingGroupAfterTrafficShift =
+          isEmpty(chainState.getAsgName()) ? null : asgSdkManager.getASG(chainState.getAsgName());
       AutoScalingGroupContainer stageAutoScalingGroupContainerAfterTrafficShift =
           asgTaskHelper.mapToAutoScalingGroupContainer(stageAutoScalingGroupAfterTrafficShift);
 

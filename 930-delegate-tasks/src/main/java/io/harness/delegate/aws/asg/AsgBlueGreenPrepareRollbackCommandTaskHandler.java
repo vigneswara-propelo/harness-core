@@ -342,7 +342,8 @@ public class AsgBlueGreenPrepareRollbackCommandTaskHandler extends AsgCommandTas
     Optional<Rule> rule = rules.stream().filter(r -> r.ruleArn().equalsIgnoreCase(listenerRuleArn)).findFirst();
 
     if (rule.isEmpty()) {
-      throw new InvalidRequestException(format("Invalid Listener Rule %s", listenerArn));
+      throw new InvalidRequestException(
+          format("Listener Rule '%s' not found for Listener '%s'", listenerRuleArn, listenerArn));
     }
 
     return rule.get();
