@@ -27,6 +27,7 @@ java_binary(
     deps = [
         "@maven//:com_google_guava_guava",
         "@maven//:io_netty_netty_all",
+        "@maven//:io_dropwizard_dropwizard_views_freemarker",
     ] + [
         "//:lombok",
         "//953-events-api:module",

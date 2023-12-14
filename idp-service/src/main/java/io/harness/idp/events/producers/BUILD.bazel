@@ -13,6 +13,7 @@ java_library(
     deps = [
         "//:lombok",
         "//953-events-api:module",
+        "//980-commons/src/main/java/software/wings/utils:module",
         "//idp-service/contracts/openapi/v1:idp-service-server-spec-module",
         "@maven//:com_google_inject_guice",
         "@maven//:org_apache_logging_log4j_log4j_api",
