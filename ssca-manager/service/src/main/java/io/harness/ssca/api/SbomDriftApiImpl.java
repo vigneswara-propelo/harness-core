@@ -88,7 +88,7 @@ public class SbomDriftApiImpl implements SbomDriftApi {
   @Override
   public Response calculateDriftForOrchestrationStep(String org, String project, String orchestration,
       @Valid OrchestrationStepDriftRequestBody body, String harnessAccount) {
-    DriftBase driftBase = SbomDriftMapper.toDriftBase(body);
+    DriftBase driftBase = SbomDriftMapper.getDriftBase(body);
     ArtifactSbomDriftResponse responseBody =
         sbomDriftService.calculateSbomDriftForOrchestration(harnessAccount, org, project, orchestration, driftBase);
     return Response.ok().entity(responseBody).build();

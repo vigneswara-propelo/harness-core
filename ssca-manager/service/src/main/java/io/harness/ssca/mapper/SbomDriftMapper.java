@@ -55,7 +55,7 @@ public class SbomDriftMapper {
     }
   }
 
-  public DriftBase toDriftBase(OrchestrationStepDriftRequestBody body) {
+  public DriftBase getDriftBase(OrchestrationStepDriftRequestBody body) {
     switch (body.getBase()) {
       case "baseline":
         return DriftBase.BASELINE;
@@ -111,7 +111,9 @@ public class SbomDriftMapper {
     return new ComponentSummary()
         .packageName(componentSummary.getPackageName())
         .packageVersion(componentSummary.getPackageVersion())
-        .packageLicense(componentSummary.getPackageLicense().toString())
+        .packageLicense(componentSummary.getPackageLicense() != null
+                ? String.join(", ", componentSummary.getPackageLicense())
+                : null)
         .purl(componentSummary.getPurl())
         .packageSupplier(componentSummary.getPackageSupplierName())
         .packageManager(componentSummary.getPackageManager());
