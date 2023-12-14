@@ -15,6 +15,7 @@ import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_STAG
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_STAGE_OS;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_STAGE_TYPE;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_WORKSPACE;
+import static io.harness.ci.commonconstants.BuildEnvironmentConstants.HARNESS_GIT_PROXY;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.HARNESS_HTTPS_PROXY;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.HARNESS_HTTP_PROXY;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.HARNESS_NO_PROXY;
@@ -265,7 +266,7 @@ public class VmInitializeUtils {
   }
 
   public Map<String, String> getStageProxyVars(IntegrationStageConfig integrationStageConfig, OSType os,
-      NGAccess ngAccess, ConnectorUtils connectorUtils, Infrastructure infra) {
+      NGAccess ngAccess, ConnectorUtils connectorUtils, Infrastructure infra, ConnectorDetails gitConnector) {
     Map<String, String> envVars = new HashMap<>();
     Set<String> noProxyVars = new HashSet<>();
     Set<String> shouldProxyRegistries = new HashSet<>();
@@ -309,10 +310,16 @@ public class VmInitializeUtils {
       }
     }
 
-    if (!shouldProxyRegistries.isEmpty()) {
-      noProxyVars.addAll(Set.of(CIExecutionConstants.DOCKER_IO, CIExecutionConstants.DOCKER_COM));
-      envVars.put(HARNESS_NO_PROXY, String.join(",", noProxyVars));
+    noProxyVars.addAll(Set.of(CIExecutionConstants.DOCKER_IO, CIExecutionConstants.DOCKER_COM));
+    envVars.put(HARNESS_NO_PROXY, String.join(",", noProxyVars));
+
+    if (gitConnector != null && gitConnector.getConnectorConfig() instanceof WithProxy) {
+      WithProxy connectorProxy = (WithProxy) gitConnector.getConnectorConfig();
+      if (connectorProxy.getProxy()) {
+        envVars.put(HARNESS_GIT_PROXY, "true");
+      }
     }
+
     return envVars;
   }
 

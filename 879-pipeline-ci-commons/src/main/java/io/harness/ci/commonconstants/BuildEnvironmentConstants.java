@@ -105,6 +105,7 @@ public class BuildEnvironmentConstants {
   public static final String HARNESS_HTTP_PROXY = "HARNESS_HTTP_PROXY";
   public static final String HARNESS_HTTPS_PROXY = "HARNESS_HTTPS_PROXY";
   public static final String HARNESS_NO_PROXY = "HARNESS_NO_PROXY";
+  public static final String HARNESS_GIT_PROXY = "HARNESS_GIT_PROXY";
 
   public static final String CI_REPO = "CI_REPO";
   public static final String CI_REPO_NAME = "CI_REPO_NAME";
