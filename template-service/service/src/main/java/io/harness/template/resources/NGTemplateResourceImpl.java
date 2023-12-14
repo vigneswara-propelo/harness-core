@@ -43,6 +43,7 @@ import io.harness.ng.core.customDeployment.CustomDeploymentVariableResponseDTO;
 import io.harness.ng.core.customDeployment.CustomDeploymentYamlRequestDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
+import io.harness.ng.core.template.MergeTemplateRequestDTO;
 import io.harness.ng.core.template.TemplateApplyRequestDTO;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.ng.core.template.TemplateListType;
@@ -568,5 +569,31 @@ public class NGTemplateResourceImpl implements NGTemplateResource {
             .connectorRef(request.getConnectorRef())
             .build());
     return ResponseDTO.newResponse(TemplateUpdateGitMetadataResponse.builder().status(true).build());
+  }
+
+  @Override
+  public ResponseDTO<TemplateResponseDTO> getResolvedTemplate(String accountId, String orgId, String projectId,
+      String templateIdentifier, String versionLabel, boolean deleted, GitEntityFindInfoDTO gitEntityBasicInfo,
+      MergeTemplateRequestDTO mergeTemplateRequestDTO, boolean loadFromFallbackBranch, String loadFromCache) {
+    ResponseDTO<TemplateResponseDTO> templateResponseDTO = get(accountId, orgId, projectId, templateIdentifier,
+        versionLabel, deleted, gitEntityBasicInfo, loadFromCache, loadFromFallbackBranch);
+    if (mergeTemplateRequestDTO.isTemplatesResolvedYaml() && templateResponseDTO != null
+        && templateResponseDTO.getData() != null) {
+      TemplateApplyRequestDTO templateApplyRequestDTO =
+          TemplateApplyRequestDTO.builder()
+              .originalEntityYaml(templateResponseDTO.getData().getYaml())
+              .checkForAccess(mergeTemplateRequestDTO.isCheckForAccess())
+              .getMergedYamlWithTemplateField(mergeTemplateRequestDTO.isGetMergedYamlWithTemplateField())
+              .getOnlyFileContent(mergeTemplateRequestDTO.isGetOnlyFileContent())
+              .yamlVersion(mergeTemplateRequestDTO.getYamlVersion())
+              .build();
+      TemplateMergeResponseDTO templateMergeResponseDTO = applyTemplatesV2(
+          accountId, orgId, projectId, gitEntityBasicInfo, templateApplyRequestDTO, loadFromCache, false)
+                                                              .getData();
+      if (templateMergeResponseDTO != null) {
+        templateResponseDTO.getData().setMergedYaml(templateMergeResponseDTO.getMergedPipelineYaml());
+      }
+    }
+    return templateResponseDTO;
   }
 }

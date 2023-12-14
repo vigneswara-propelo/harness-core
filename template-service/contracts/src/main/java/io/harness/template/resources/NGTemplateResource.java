@@ -32,6 +32,7 @@ import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.entitysetupusage.dto.EntitySetupUsageDTO;
+import io.harness.ng.core.template.MergeTemplateRequestDTO;
 import io.harness.ng.core.template.TemplateApplyRequestDTO;
 import io.harness.ng.core.template.TemplateListType;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
@@ -42,6 +43,7 @@ import io.harness.ng.core.template.TemplateRetainVariablesRequestDTO;
 import io.harness.ng.core.template.TemplateRetainVariablesResponse;
 import io.harness.ng.core.template.TemplateSummaryResponseDTO;
 import io.harness.ng.core.template.TemplateWithInputsResponseDTO;
+import io.harness.pms.pipeline.PipelineResourceConstants;
 import io.harness.pms.variables.VariableMergeServiceResponse;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.template.resources.beans.NGTemplateConstants;
@@ -704,4 +706,27 @@ public interface NGTemplateResource {
           NGCommonEntityConstants.VERSION_LABEL_KEY) String versionLabel,
       @Parameter(description = "This contains details of Git Entity like Git Branch info to be updated")
       TemplateUpdateGitMetadataRequest request);
+
+  @POST
+  @Path("/get-resolved-template/{templateIdentifier}")
+  @ApiOperation(value = "Fetch resolved template by identifier", nickname = "Get Resolved Template")
+  @Timed
+  @ResponseMetered
+  @Hidden
+  ResponseDTO<TemplateResponseDTO> getResolvedTemplate(
+      @Parameter(description = PipelineResourceConstants.ACCOUNT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountId,
+      @Parameter(description = PipelineResourceConstants.ORG_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgId,
+      @Parameter(description = PipelineResourceConstants.PROJECT_PARAM_MESSAGE, required = true) @NotNull @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
+      @Parameter(description = TEMPLATE_PARAM_MESSAGE) @PathParam(
+          "templateIdentifier") @ResourceIdentifier String templateIdentifier,
+      @Parameter(description = "Version Label") @QueryParam(
+          NGCommonEntityConstants.VERSION_LABEL_KEY) String versionLabel,
+      @Parameter(description = "Specifies whether Template is deleted or not") @QueryParam(
+          NGCommonEntityConstants.DELETED_KEY) @DefaultValue("false") boolean deleted,
+      @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo, @NotNull MergeTemplateRequestDTO mergeTemplateRequestDTO,
+      @QueryParam("loadFromFallbackBranch") @DefaultValue("false") boolean loadFromFallbackBranch,
+      @HeaderParam("Load-From-Cache") @DefaultValue("false") String loadFromCache);
 }

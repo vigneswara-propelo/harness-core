@@ -52,6 +52,7 @@ public class TemplateResponseDTO {
   Map<String, String> tags;
 
   @NotEmpty String yaml;
+  String mergedYaml;
 
   String versionLabel;
   boolean isStableTemplate;

@@ -8,6 +8,7 @@
 package io.harness.template.resources;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.rule.OwnerRule.ABHINAV_MITTAL;
 import static io.harness.rule.OwnerRule.ADITHYA;
 import static io.harness.rule.OwnerRule.ARCHIT;
 import static io.harness.rule.OwnerRule.INDER;
@@ -47,6 +48,7 @@ import io.harness.gitx.USER_FLOW;
 import io.harness.governance.GovernanceMetadata;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.template.CacheResponseMetadataDTO;
+import io.harness.ng.core.template.MergeTemplateRequestDTO;
 import io.harness.ng.core.template.TemplateApplyRequestDTO;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.ng.core.template.TemplateListType;
@@ -790,5 +792,56 @@ public class NGTemplateResourceTest extends CategoryTest {
                 .build(),
             "true", false);
     assertEquals(USER_FLOW.EXECUTION, ThreadOperationContextHelper.getThreadOperationContextUserFlow());
+  }
+
+  @Test
+  @Owner(developers = ABHINAV_MITTAL)
+  @Category(UnitTests.class)
+  public void testInternalGetTemplate() {
+    doReturn(Optional.of(entityWithMongoVersion))
+        .when(templateService)
+        .get(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, TEMPLATE_VERSION_LABEL, false, false,
+            false);
+
+    TemplateMergeResponseDTO templateMergeResponseDTO =
+        TemplateMergeResponseDTO.builder().mergedPipelineYaml(yaml).build();
+    doReturn(templateMergeResponseDTO)
+        .when(templateMergeService)
+        .applyTemplatesToYamlV2(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, YamlUtils.readAsJsonNode(yaml), false,
+            false, false, HarnessYamlVersion.V0);
+
+    MergeTemplateRequestDTO mergeTemplateRequestDTO =
+        MergeTemplateRequestDTO.builder().templatesResolvedYaml(true).build();
+
+    ResponseDTO<TemplateResponseDTO> responseDTO =
+        templateResource.getResolvedTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER,
+            TEMPLATE_VERSION_LABEL, false, null, mergeTemplateRequestDTO, false, null);
+    assertThat(responseDTO.getData()).isNotNull();
+    assertThat(responseDTO.getData().getVersion()).isEqualTo(1L);
+    assertThat(responseDTO.getData().getIdentifier()).isEqualTo(TEMPLATE_IDENTIFIER);
+    verify(accessControlClient)
+        .checkForAccessOrThrow(ResourceScope.of(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER),
+            Resource.of(TEMPLATE, TEMPLATE_IDENTIFIER), PermissionTypes.TEMPLATE_VIEW_PERMISSION);
+    assertThat(responseDTO.getData().getMergedYaml()).isEqualTo(templateMergeResponseDTO.getMergedPipelineYaml());
+  }
+
+  @Test
+  @Owner(developers = ABHINAV_MITTAL)
+  @Category(UnitTests.class)
+  public void testInternalGetTemplateWithInvalidTemplateIdentifier() {
+    String incorrectTemplateIdentifier = "notTheIdentifierWeNeed";
+    doReturn(Optional.empty())
+        .when(templateService)
+        .get(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, incorrectTemplateIdentifier, TEMPLATE_VERSION_LABEL, false,
+            false, false);
+
+    MergeTemplateRequestDTO mergeTemplateRequestDTO =
+        MergeTemplateRequestDTO.builder().templatesResolvedYaml(true).build();
+
+    assertThatThrownBy(
+        ()
+            -> templateResource.getResolvedTemplate(ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER,
+                incorrectTemplateIdentifier, TEMPLATE_VERSION_LABEL, false, null, mergeTemplateRequestDTO, false, null))
+        .isInstanceOf(NotFoundException.class);
   }
 }
