@@ -354,7 +354,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
 
   @Override
   public boolean isReconciliationRequiredForMonitoredServices(ProjectParams templateProjectParams,
-      String templateIdentifier, String versionLabel, String monitoredServiceIdentifier, int templateVersionNumber) {
+      String templateIdentifier, String versionLabel, String monitoredServiceIdentifier) {
     Query<MonitoredService> query =
         createQueryForTemplateReferencedMSs(templateProjectParams, templateIdentifier, versionLabel);
     if (monitoredServiceIdentifier != null) {
@@ -366,6 +366,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     if (allTemplateReferencedMonitoredServices == 0) {
       return false;
     }
+    Long templateVersionNumber =
+        templateFacade.getTemplateVersionNumber(templateProjectParams, templateIdentifier, versionLabel);
 
     // get already reconciled monitored services count
     query = query.filter(MonitoredServiceKeys.templateMetadata + "." + TemplateMetadataKeys.templateVersionNumber,
