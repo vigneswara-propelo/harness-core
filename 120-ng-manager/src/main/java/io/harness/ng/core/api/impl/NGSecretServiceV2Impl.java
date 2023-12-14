@@ -117,6 +117,7 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
   private static final String CREDENTIALS_VALIDATION_FAILED_DEFAULT_ERROR_MSG = "Credentials validation failed.";
   private static final String DELEGATES_NOT_AVAILABLE_FOR_CREDENTIALS_VALIDATION =
       "Delegates are not available for performing credentials validation.";
+  private static final String REALM_NULL = "with realm \"null\"";
   private final SecretRepository secretRepository;
   private final DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   private final SshKeySpecDTOHelper sshKeySpecDTOHelper;
@@ -444,6 +445,10 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
       processSSHValidationTaskResponse(errorMessage);
     }
 
+    if (TaskType.NG_WINRM_VALIDATION.name().equals(taskType)) {
+      processWinRmValidationTaskResponse(errorMessage);
+    }
+
     throw new HintException(
         HintException.CHECK_ALL_SETTINGS_ON_CONFIGURATION_PAGE, new InvalidRequestException(errorMessage, USER));
   }
@@ -460,6 +465,19 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
     if (errorMessage.contains(ErrorCode.INVALID_KEY.name())) {
       throw NestedExceptionUtils.hintWithExplanationException(HintException.CHECK_CREDENTIALS_ON_CONFIGURATION_PAGE,
           ExplanationException.INVALID_SSH_KEY, new InvalidRequestException(errorMessage, USER));
+    }
+  }
+
+  private void processWinRmValidationTaskResponse(String errorMessage) {
+    if (errorMessage.contains(ErrorCode.INVALID_CREDENTIALS.getDescription())) {
+      if (errorMessage.contains(REALM_NULL)) {
+        throw NestedExceptionUtils.hintWithExplanationException(
+            HintException.CHECK_WIN_RM_CREDENTIALS_PROTOCOL_ON_CONFIGURATION_PAGE,
+            ExplanationException.INVALID_WIN_RM_CREDENTIALS_PROTOCOL, new InvalidRequestException(errorMessage, USER));
+      }
+
+      throw NestedExceptionUtils.hintWithExplanationException(HintException.CHECK_CREDENTIALS_ON_CONFIGURATION_PAGE,
+          ExplanationException.INVALID_WIN_RM_CREDENTIALS, new InvalidRequestException(errorMessage, USER));
     }
   }
 

@@ -161,6 +161,8 @@ public class HintException extends WingsException {
       "Please validate the settings on the configuration page and try again.";
   public static final String CREDENTIALS_VALIDATION_FAILED_NO_REASON =
       "Validation failed, reason not found, please contact Harness support for more help";
+  public static final String CHECK_WIN_RM_CREDENTIALS_PROTOCOL_ON_CONFIGURATION_PAGE =
+      "Please check HTTP/S is enabled on host machine and provide valid setup on configuration page.";
 
   public HintException(String message) {
     super(message, null, HINT, INFO, null, null);

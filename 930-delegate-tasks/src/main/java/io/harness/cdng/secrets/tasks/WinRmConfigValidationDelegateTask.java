@@ -8,6 +8,8 @@
 package io.harness.cdng.secrets.tasks;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.utils.SecretUtils.validateDecryptedValue;
 
 import io.harness.annotations.dev.OwnedBy;
@@ -23,6 +25,7 @@ import io.harness.delegate.task.winrm.AuthenticationScheme;
 import io.harness.delegate.task.winrm.WinRmSession;
 import io.harness.delegate.task.winrm.WinRmSessionConfig;
 import io.harness.delegate.task.winrm.WinRmSessionConfig.WinRmSessionConfigBuilder;
+import io.harness.exception.ExceptionUtils;
 import io.harness.logging.NoopExecutionCallback;
 import io.harness.ng.core.dto.secrets.KerberosWinRmConfigDTO;
 import io.harness.ng.core.dto.secrets.NTLMConfigDTO;
@@ -38,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import javax.xml.ws.WebServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class WinRmConfigValidationDelegateTask extends AbstractDelegateRunnableTask {
   private static final String HOME_DIR = "%USERPROFILE%";
+  private static final String WIN_RM_CREDENTIALS_VALIDATION_FAILED_DEFAULT_MSG = "WinRm credentials validation failed.";
 
   @Inject private SecretDecryptionService secretDecryptionService;
 
@@ -155,11 +160,25 @@ public class WinRmConfigValidationDelegateTask extends AbstractDelegateRunnableT
     try (WinRmSession ignore = new WinRmSession(winRmSessionConfig, new NoopExecutionCallback())) {
       return WinRmConfigValidationTaskResponse.builder().connectionSuccessful(true).build();
     } catch (Exception e) {
+      String errorMsg = processErrorMsg(e);
       log.info("Exception in WinRmSession Validation", e);
-      return WinRmConfigValidationTaskResponse.builder()
-          .connectionSuccessful(false)
-          .errorMessage(e.getMessage())
-          .build();
+      return WinRmConfigValidationTaskResponse.builder().connectionSuccessful(false).errorMessage(errorMsg).build();
     }
+  }
+
+  private String processErrorMsg(Exception e) {
+    String errMsg = isEmpty(e.getMessage()) ? WIN_RM_CREDENTIALS_VALIDATION_FAILED_DEFAULT_MSG : e.getMessage();
+    String webServiceExceptionCauseMsg = null;
+
+    WebServiceException webServiceException = ExceptionUtils.cause(WebServiceException.class, e);
+    if (webServiceException != null) {
+      Throwable webServiceExceptionCause = webServiceException.getCause();
+      if (webServiceExceptionCause != null) {
+        webServiceExceptionCauseMsg = webServiceExceptionCause.getMessage();
+      }
+    }
+
+    return isNotEmpty(webServiceExceptionCauseMsg) ? String.format("%s%n%s", errMsg, webServiceExceptionCauseMsg)
+                                                   : errMsg;
   }
 }

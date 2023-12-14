@@ -294,6 +294,10 @@ public class NGSecretServiceV2ImplTest extends CategoryTest {
     return SSHKeyValidationMetadata.builder().host("1.2.3.4").build();
   }
 
+  private WinRmCredentialsValidationMetadata getWinRmMetadata() {
+    return WinRmCredentialsValidationMetadata.builder().host("1.2.3.4").build();
+  }
+
   private Secret getSecret() {
     return Secret.builder().type(SecretType.SSHKey).build();
   }
@@ -753,6 +757,87 @@ public class NGSecretServiceV2ImplTest extends CategoryTest {
     assertThat(explanationException.getMessage()).isEqualTo("SSH Key is not valid");
     InvalidRequestException ex = (InvalidRequestException) explanationException.getCause();
     assertThat(ex.getMessage()).isEqualTo("Failed to get session due to - INVALID_KEY");
+  }
+
+  @Test
+  @Owner(developers = IVAN)
+  @Category(UnitTests.class)
+  public void testProcessValidationTaskResponseWinRmInvalidCredentials() {
+    Secret secret = getWinRmSecret();
+    secret.setSecretSpec(
+        WinRmCredentialsSpec.builder()
+            .port(5986)
+            .auth(WinRmAuth.builder()
+                      .type(WinRmAuthScheme.NTLM)
+                      .spec(NTLMConfig.builder().username("user").password(SecretRefData.builder().build()).build())
+                      .build())
+            .build());
+    doReturn(Optional.of(secret)).when(secretServiceV2Spy).get(any(), any(), any(), any());
+    when(delegateGrpcClientWrapper.executeSyncTaskV2(any()))
+        .thenReturn(
+            WinRmConfigValidationTaskResponse.builder()
+                .errorMessage(
+                    "Invalid credentials or incompatible authentication schemes\\nAuthorization loop detected on Conduit \"{http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd}WinRmPort.http-conduit\" on URL \"https://ec2-54-225-189-86.compute-1.amazonaws.com:5986/wsman\" with realm \"WSMAN\"")
+                .build());
+    doReturn(new WingsException("wings exception message"))
+        .when(exceptionManager)
+        .processException(any(), any(), any());
+
+    assertThatThrownBy(() -> secretServiceV2Spy.validateSecret("account", null, null, "identifier", getWinRmMetadata()))
+        .hasMessage("wings exception message")
+        .isInstanceOf(WingsException.class);
+
+    verify(exceptionManager, times(1)).processException(exceptionArgumentCaptor.capture(), any(), any());
+    Exception exception = exceptionArgumentCaptor.getValue();
+    assertThat(exception).isNotNull();
+    assertThat(exception.getMessage()).isEqualTo("Please provide valid credentials on configuration page.");
+    ExplanationException explanationException = (ExplanationException) exception.getCause();
+    assertThat(explanationException.getMessage()).isEqualTo("Domain or Username/Password is not valid");
+    InvalidRequestException ex = (InvalidRequestException) explanationException.getCause();
+    assertThat(ex.getMessage())
+        .isEqualTo(
+            "Invalid credentials or incompatible authentication schemes\\nAuthorization loop detected on Conduit \"{http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd}WinRmPort.http-conduit\" on URL \"https://ec2-54-225-189-86.compute-1.amazonaws.com:5986/wsman\" with realm \"WSMAN\"");
+  }
+
+  @Test
+  @Owner(developers = IVAN)
+  @Category(UnitTests.class)
+  public void testProcessValidationTaskResponseWinRmInvalidProtocol() {
+    Secret secret = getWinRmSecret();
+    secret.setSecretSpec(
+        WinRmCredentialsSpec.builder()
+            .port(5986)
+            .auth(WinRmAuth.builder()
+                      .type(WinRmAuthScheme.NTLM)
+                      .spec(NTLMConfig.builder().username("user").password(SecretRefData.builder().build()).build())
+                      .build())
+            .build());
+    doReturn(Optional.of(secret)).when(secretServiceV2Spy).get(any(), any(), any(), any());
+    when(delegateGrpcClientWrapper.executeSyncTaskV2(any()))
+        .thenReturn(
+            WinRmConfigValidationTaskResponse.builder()
+                .errorMessage(
+                    "Invalid credentials or incompatible authentication schemes\\nAuthorization loop detected on Conduit \"{http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd}WinRmPort.http-conduit\" on URL \"https://ec2-54-225-189-86.compute-1.amazonaws.com:5986/wsman\" with realm \"null\"")
+                .build());
+    doReturn(new WingsException("wings exception message"))
+        .when(exceptionManager)
+        .processException(any(), any(), any());
+
+    assertThatThrownBy(() -> secretServiceV2Spy.validateSecret("account", null, null, "identifier", getWinRmMetadata()))
+        .hasMessage("wings exception message")
+        .isInstanceOf(WingsException.class);
+
+    verify(exceptionManager, times(1)).processException(exceptionArgumentCaptor.capture(), any(), any());
+    Exception exception = exceptionArgumentCaptor.getValue();
+    assertThat(exception).isNotNull();
+    assertThat(exception.getMessage())
+        .isEqualTo("Please check HTTP/S is enabled on host machine and provide valid setup on configuration page.");
+    ExplanationException explanationException = (ExplanationException) exception.getCause();
+    assertThat(explanationException.getMessage()).isEqualTo("Cannot establish HTTP/S connection to host");
+    InvalidRequestException ex = (InvalidRequestException) explanationException.getCause();
+    assertThat(ex.getMessage())
+        .isEqualTo(
+            "Invalid credentials or incompatible authentication schemes\\nAuthorization loop detected on Conduit \"{http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd}WinRmPort.http-conduit\" on URL \"https://ec2-54-225-189-86.compute-1.amazonaws.com:5986/wsman\" with realm \"null\"");
   }
 
   @NotNull

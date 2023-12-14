@@ -699,7 +699,8 @@ public enum ErrorCode {
   ABORT_ALL_ALREADY_NG,
   WEBHOOK_EXCEPTION,
 
-  INVALID_OIDC_CONFIGURATION;
+  INVALID_OIDC_CONFIGURATION,
+  INVALID_CREDENTIALS("Invalid credentials");
 
   private Status status = BAD_REQUEST;
   private String description;
