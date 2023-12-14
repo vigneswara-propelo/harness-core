@@ -33,7 +33,6 @@ import io.harness.ci.config.StepImageConfig;
 import io.harness.ci.execution.execution.CIExecutionConfigService;
 import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.common.NGExpressionUtils;
-import io.harness.common.ParameterFieldHelper;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -80,8 +79,7 @@ public class CIStepInfoUtils {
       case SECURITY:
         return ((SecurityStepInfo) step).getPrivileged();
       case GIT_CLONE:
-        return ParameterField.createValueField(
-            ParameterFieldHelper.getBooleanParameterFieldValue(((GitCloneStepInfo) step).getPrivileged()));
+        return ((GitCloneStepInfo) step).getPrivileged();
       default:
         return null;
     }
