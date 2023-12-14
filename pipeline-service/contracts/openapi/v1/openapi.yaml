@@ -923,28 +923,21 @@ paths:
         '200':
           $ref: '#/components/responses/PipelineExecuteResponseBody'
       x-stoplight:
-        id: vghxybsnhx6ij
+        id: er16k4olvl4ep
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                yaml:
-                  type: string
-                  x-stoplight:
-                    id: j93lau3l16bsr
-        description: ''
+        $ref: '#/components/requestBodies/PipelineExecuteRequestBody'
       parameters:
         - schema:
             type: string
           in: query
           name: module
+          description: 'Module type for the entity. If its from deployments,type will be CD , if its from build type will be CI'
         - schema:
             type: boolean
             default: 'false'
           in: query
           name: use_fqn_if_error_response
+          description: Use FQN in error response.
         - schema:
             type: boolean
             default: 'false'
@@ -954,7 +947,19 @@ paths:
             type: string
           in: query
           name: notes
+          description: Notes of a pipeline execution
         - $ref: '#/components/parameters/AccountHeader'
+        - $ref: '#/components/parameters/Branch'
+        - schema:
+            type: string
+          in: query
+          name: connector_ref
+          description: Identifier of the Harness Connector used for CRUD operations on the Entity (for Git Experience).
+        - schema:
+            type: string
+          in: query
+          name: repo_name
+          description: Name of the repository (for Git Experience).
       description: Pipeline Execution API
       tags:
         - Pipeline Execution
@@ -5062,6 +5067,38 @@ components:
           x-stoplight:
             id: je0s2afm9oehe
           description: If any selected stage to execute has expressions, then this map contains expressions with its corresponding values.
+    PipelineExecuteRequestBody:
+      title: PipelineExecuteRequestBody
+      x-stoplight:
+        id: kf9cfchziw5kn
+      type: object
+      properties:
+        inputs_yaml:
+          type: string
+          x-stoplight:
+            id: gtp5owd8dxtgy
+          description: Inputs YAML if the Pipeline contains Runtime Inputs
+      x-examples:
+        Example 1:
+          inputs_yaml: |-
+            pipeline:
+              identifier: pipelineIdentifier
+              stages:
+                - stage:
+                    identifier: stage1
+                    type: Custom
+                    spec:
+                      execution:
+                        steps:
+                          - step:
+                              identifier: ShellScript_1
+                              type: ShellScript
+                              spec:
+                                source:
+                                  type: Inline
+                                  spec:
+                                    script: echo hello
+                              timeout: 10s
   securitySchemes:
     x-api-key:
       name: x-api-key
@@ -6515,3 +6552,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RunStageRequestBody'
+    PipelineExecuteRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PipelineExecuteRequestBody'

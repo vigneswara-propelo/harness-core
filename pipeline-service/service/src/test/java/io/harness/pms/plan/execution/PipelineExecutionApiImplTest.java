@@ -27,7 +27,7 @@ import io.harness.execution.PlanExecution;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.plan.execution.beans.dto.RunStageRequestDTO;
 import io.harness.rule.Owner;
-import io.harness.spec.server.pipeline.v1.model.PipelineExecuteBody;
+import io.harness.spec.server.pipeline.v1.model.PipelineExecuteRequestBody;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteResponseBody;
 import io.harness.spec.server.pipeline.v1.model.RerunPipelineRequestBody;
 import io.harness.spec.server.pipeline.v1.model.RunStageRequestBody;
@@ -69,9 +69,9 @@ public class PipelineExecutionApiImplTest extends CategoryTest {
 
     String planExecutionId = generateUuid();
 
-    PipelineExecuteBody pipelineExecuteBody = new PipelineExecuteBody();
+    PipelineExecuteRequestBody pipelineExecuteBody = new PipelineExecuteRequestBody();
     Status status = Status.RUNNING;
-    pipelineExecuteBody.setYaml("inputSetYaml");
+    pipelineExecuteBody.setInputsYaml("inputSetYaml");
     String module = "CD";
 
     doReturn(PlanExecutionResponseDto.builder()
@@ -79,10 +79,10 @@ public class PipelineExecutionApiImplTest extends CategoryTest {
                  .build())
         .when(pipelineExecutor)
         .runPipelineWithInputSetPipelineYaml(
-            accountId, orgId, projectId, pipelineId, module, pipelineExecuteBody.getYaml(), false, false, "");
+            accountId, orgId, projectId, pipelineId, module, pipelineExecuteBody.getInputsYaml(), false, false, "");
 
     Response response = pipelineExecutionApi.executePipeline(
-        orgId, projectId, pipelineId, pipelineExecuteBody, accountId, module, false, false, "");
+        orgId, projectId, pipelineId, pipelineExecuteBody, accountId, module, false, false, "", null, null, null);
 
     PipelineExecuteResponseBody responseBody = (PipelineExecuteResponseBody) response.getEntity();
 

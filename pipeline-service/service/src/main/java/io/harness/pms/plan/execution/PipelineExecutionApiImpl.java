@@ -38,7 +38,7 @@ import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.spec.server.pipeline.v1.PipelineExecutionApi;
 import io.harness.spec.server.pipeline.v1.model.ExecutionDetails;
-import io.harness.spec.server.pipeline.v1.model.PipelineExecuteBody;
+import io.harness.spec.server.pipeline.v1.model.PipelineExecuteRequestBody;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteResponseBody;
 import io.harness.spec.server.pipeline.v1.model.RerunPipelineRequestBody;
 import io.harness.spec.server.pipeline.v1.model.RunStageRequestBody;
@@ -72,13 +72,16 @@ public class PipelineExecutionApiImpl implements PipelineExecutionApi {
   private final PMSPipelineTemplateHelper pipelineTemplateHelper;
 
   @Override
-  public Response executePipeline(String org, String project, String pipeline, @Valid PipelineExecuteBody body,
-      String harnessAccount, String module, Boolean useFqnIfErrorResponse, Boolean notifyOnlyUser, String notes) {
+  public Response executePipeline(String org, String project, String pipeline, @Valid PipelineExecuteRequestBody body,
+      String harnessAccount, String module, Boolean useFqnIfErrorResponse, Boolean notifyOnlyUser, String notes,
+      String branchName, String connectorRef, String repoName) {
     try {
       String inputSetPipelineYaml = null;
       if (body != null) {
-        inputSetPipelineYaml = body.getYaml();
+        inputSetPipelineYaml = body.getInputsYaml();
       }
+      GitAwareContextHelper.populateGitDetails(
+          GitEntityInfo.builder().branch(branchName).connectorRef(connectorRef).repoName(repoName).build());
       PlanExecutionResponseDto planExecutionResponseDto = pipelineExecutor.runPipelineWithInputSetPipelineYaml(
           harnessAccount, org, project, pipeline, module, inputSetPipelineYaml, false, notifyOnlyUser, notes);
       PipelineExecuteResponseBody pipelineExecuteResponseBody =
@@ -97,6 +100,8 @@ public class PipelineExecutionApiImpl implements PipelineExecutionApi {
     if (pmsFeatureFlagService.isEnabled(harnessAccount, PIE_GET_FILE_CONTENT_ONLY)) {
       ThreadOperationContextHelper.setUserFlow(USER_FLOW.EXECUTION);
     }
+    GitAwareContextHelper.populateGitDetails(
+        GitEntityInfo.builder().branch(branchName).connectorRef(connectorRef).repoName(repoName).build());
     RunStageRequestDTO runStageRequestDTO = getRunStageRequestDTO(body);
     PlanExecutionResponseDto planExecutionResponseDto = pipelineExecutor.runStagesWithRuntimeInputYaml(
         harnessAccount, org, project, pipeline, module, runStageRequestDTO, false, notes);
@@ -119,6 +124,8 @@ public class PipelineExecutionApiImpl implements PipelineExecutionApi {
     if (pmsFeatureFlagService.isEnabled(harnessAccount, PIE_GET_FILE_CONTENT_ONLY)) {
       ThreadOperationContextHelper.setUserFlow(USER_FLOW.EXECUTION);
     }
+    GitAwareContextHelper.populateGitDetails(
+        GitEntityInfo.builder().branch(branchName).connectorRef(connectorRef).repoName(repoName).build());
     Optional<PipelineEntity> optionalPipelineEntity = pmsPipelineService.getPipeline(harnessAccount, org, project,
         pipeline, false, false, false, GitXCacheMapper.parseLoadFromCacheHeaderParam(loadFromCache));
     if (!optionalPipelineEntity.isPresent()) {
@@ -200,6 +207,8 @@ public class PipelineExecutionApiImpl implements PipelineExecutionApi {
     if (pmsFeatureFlagService.isEnabled(harnessAccount, PIE_GET_FILE_CONTENT_ONLY)) {
       ThreadOperationContextHelper.setUserFlow(USER_FLOW.EXECUTION);
     }
+    GitAwareContextHelper.populateGitDetails(
+        GitEntityInfo.builder().branch(branchName).connectorRef(connectorRef).repoName(repoName).build());
     RunStageRequestDTO runStageRequestDTO = getRunStageRequestDTO(body);
     PlanExecutionResponseDto planExecutionResponseDto = pipelineExecutor.rerunStagesWithRuntimeInputYaml(
         harnessAccount, org, project, pipeline, module, executionId, runStageRequestDTO, false, false, notes);
