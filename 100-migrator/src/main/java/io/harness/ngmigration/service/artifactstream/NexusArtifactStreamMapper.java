@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngmigration.service.artifactstream;
+
 import static software.wings.ngmigration.NGMigrationEntityType.CONNECTOR;
 
 import io.harness.annotations.dev.CodePulse;
@@ -20,6 +21,7 @@ import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryDockerConfi
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryMavenConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryNpmConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryNugetConfig;
+import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryRawConfig;
 import io.harness.connector.ConnectorDTO;
 import io.harness.delegate.beans.connector.nexusconnector.NexusConnectorDTO;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
@@ -48,6 +50,7 @@ public class NexusArtifactStreamMapper implements ArtifactStreamMapper {
   private static final String VERSION_2 = "2.x";
   public static final String DOCKER = "docker";
   public static final String MAVEN = "maven";
+  public static final String RAW = "raw";
   public static final String NPM = "npm";
 
   @Override
@@ -120,6 +123,10 @@ public class NexusArtifactStreamMapper implements ArtifactStreamMapper {
       case NPM:
         return NexusRegistryNpmConfig.builder()
             .packageName(ParameterField.createValueField(nexusArtifactStream.getPackageName()))
+            .build();
+      case RAW:
+        return NexusRegistryRawConfig.builder()
+            .group(ParameterField.createValueField(nexusArtifactStream.getPackageName()))
             .build();
       default:
         return NexusRegistryNugetConfig.builder()
