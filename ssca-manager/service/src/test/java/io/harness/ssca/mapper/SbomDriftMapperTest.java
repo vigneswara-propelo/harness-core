@@ -113,7 +113,7 @@ public class SbomDriftMapperTest extends SSCAManagerTestBase {
         .packageLicense(List.of("l1", "l2"))
         .packageVersion("version")
         .purl("purl")
-        .packageSupplierName("supplier")
+        .packageOriginatorName("supplier")
         .packageManager("packageManager")
         .build();
   }

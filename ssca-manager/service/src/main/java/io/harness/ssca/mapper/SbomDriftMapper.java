@@ -115,7 +115,7 @@ public class SbomDriftMapper {
                 ? String.join(", ", componentSummary.getPackageLicense())
                 : null)
         .purl(componentSummary.getPurl())
-        .packageSupplier(componentSummary.getPackageSupplierName())
+        .packageSupplier(componentSummary.getPackageOriginatorName())
         .packageManager(componentSummary.getPackageManager());
   }
 }

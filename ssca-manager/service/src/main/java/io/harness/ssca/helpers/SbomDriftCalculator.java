@@ -125,7 +125,7 @@ public class SbomDriftCalculator {
     return Aggregation
         .project(NormalizedSBOMEntityKeys.packageName.toLowerCase(),
             NormalizedSBOMEntityKeys.packageVersion.toLowerCase(),
-            NormalizedSBOMEntityKeys.packageSupplierName.toLowerCase(),
+            NormalizedSBOMEntityKeys.packageOriginatorName.toLowerCase(),
             NormalizedSBOMEntityKeys.packageManager.toLowerCase(),
             NormalizedSBOMEntityKeys.packageLicense.toLowerCase(), NormalizedSBOMEntityKeys.purl.toLowerCase())
         .andExclude("_id");

@@ -301,7 +301,7 @@ public class SbomDriftServiceTest extends SSCAManagerTestBase {
                                .status(LicenseDriftStatus.ADDED)
                                .components(List.of(ComponentSummary.builder()
                                                        .packageName("packageName")
-                                                       .packageSupplierName("packageSupplierName")
+                                                       .packageOriginatorName("packageOriginatorName")
                                                        .packageVersion("packageVersion")
                                                        .packageManager("packageManager")
                                                        .purl("purl")
