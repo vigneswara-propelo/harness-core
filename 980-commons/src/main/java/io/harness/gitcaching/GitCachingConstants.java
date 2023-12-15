@@ -9,4 +9,5 @@ package io.harness.gitcaching;
 
 public class GitCachingConstants {
   public static final String BOOLEAN_FALSE_VALUE = "false";
+  public static final String BOOLEAN_TRUE_VALUE = "true";
 }
