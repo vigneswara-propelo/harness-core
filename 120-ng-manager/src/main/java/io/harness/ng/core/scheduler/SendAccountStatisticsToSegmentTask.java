@@ -13,6 +13,7 @@ import io.harness.TelemetryConstants;
 import io.harness.account.AccountClient;
 import io.harness.beans.PageResponse;
 import io.harness.logging.ResponseTimeRecorder;
+import io.harness.ng.NextGenConfiguration;
 import io.harness.ng.core.dto.AccountDTO;
 import io.harness.ng.core.entities.metrics.AccountStatisticsTracker;
 import io.harness.ng.core.entities.metrics.AccountStatisticsTracker.AccountStatisticsTrackerKeys;
@@ -42,8 +43,10 @@ public class SendAccountStatisticsToSegmentTask implements Runnable {
   @Inject MongoTemplate mongoTemplate;
   @Inject private TelemetryReporter telemetryReporter;
 
+  @Inject private NextGenConfiguration nextGenConfiguration;
+
   public void run() {
-    if (shouldPublishMetrics()) {
+    if (shouldPublishMetrics() && nextGenConfiguration.isPublishAccountActivityMetrics()) {
       publishMetrics();
     }
   }

@@ -628,3 +628,5 @@ deploymentStagePlanCreationInfoThreadConfig:
 
 frpsTunnel:
   host: ${FRPS_TUNNEL_HOST:-http://localhost}
+
+publishAccountActivityMetrics: ${PUBLISH_ACCOUNT_ACTIVITY_METRICS:-false}
