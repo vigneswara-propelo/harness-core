@@ -34,6 +34,7 @@ import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.instancesync.ServerInstanceInfo;
@@ -237,6 +238,13 @@ public class AwsSamStepHelper {
           removeExtraSlashesInString(
               Paths.get(valuesManifestOutcomeStore.getPaths().getValue().get(0)).getFileName().toString()));
       return removeTrailingSlashesInString(path);
+    } else if (valuesManifestOutcome.getStore() instanceof HarnessStore) {
+      HarnessStore valuesManifestOutcomeStore = (HarnessStore) valuesManifestOutcome.getStore();
+      String path = String.format("/%s/%s/%s", PLUGIN_PATH_PREFIX,
+          removeExtraSlashesInString(valuesManifestOutcome.getIdentifier()),
+          removeExtraSlashesInString(
+              Paths.get(valuesManifestOutcomeStore.getFiles().getValue().get(0)).getFileName().toString()));
+      return removeTrailingSlashesInString(path);
     } else {
       throw new InvalidRequestException(
           format("%s store type not supported for Values Manifest", valuesManifestOutcome.getStore().getKind()), USER);
@@ -257,6 +265,8 @@ public class AwsSamStepHelper {
 
       return awsSamDirectoryManifestOutcome.getIdentifier() + "/" + gitStoreConfig.getPaths().getValue().get(0);
     } else if (awsSamDirectoryManifestOutcome.getStore() instanceof S3StoreConfig) {
+      return removeTrailingSlashesInString(awsSamDirectoryManifestOutcome.getIdentifier());
+    } else if (awsSamDirectoryManifestOutcome.getStore() instanceof HarnessStore) {
       return removeTrailingSlashesInString(awsSamDirectoryManifestOutcome.getIdentifier());
     } else {
       throw new InvalidRequestException(format("%s store type not supported for Aws SAM Manifest",

@@ -202,13 +202,14 @@ public class ServerlessV2PluginInfoProviderHelper {
       checkForNewManifestStoreFeatureFlag(ambiance);
 
       if (isEmpty(((S3StoreConfig) storeConfig).getPaths().getValue())) {
-        throw new InvalidRequestException("Atleast one s3 store path need to be specified", USER);
+        throw new InvalidRequestException("At least one s3 store path need to be specified", USER);
       }
     } else if (storeConfig instanceof HarnessStore) {
       checkForNewManifestStoreFeatureFlag(ambiance);
 
-      if (isEmpty(((HarnessStore) storeConfig).getFiles().getValue())) {
-        throw new InvalidRequestException("Atleast one harness store path needs to be specified", USER);
+      if (isNull(((HarnessStore) storeConfig).getFiles())
+          || isEmpty(((HarnessStore) storeConfig).getFiles().getValue())) {
+        throw new InvalidRequestException("At least one Harness store path needs to be specified", USER);
       }
     } else {
       throw new InvalidRequestException(format("%s store type not supported", storeConfig.getKind()), USER);

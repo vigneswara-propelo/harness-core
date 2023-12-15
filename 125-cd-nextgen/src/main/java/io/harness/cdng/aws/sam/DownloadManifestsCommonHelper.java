@@ -58,6 +58,8 @@ public class DownloadManifestsCommonHelper {
   @Inject private OutcomeService outcomeService;
   private static String DOWNLOAD_PATH_PREFIX = "/harness/";
 
+  private static final String DEFAULT_TIMEOUT = "10m";
+
   public ManifestsOutcome fetchManifestsOutcome(Ambiance ambiance) {
     OptionalOutcome manifestsOutcome = outcomeService.resolveOptional(
         ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.MANIFESTS));
@@ -195,7 +197,7 @@ public class DownloadManifestsCommonHelper {
         .name(manifestOutcome.getIdentifier())
         .identifier(manifestOutcome.getIdentifier())
         .spec(downloadAwsS3StepParameters)
-        .timeout(ParameterField.createValueField("10m"))
+        .timeout(ParameterField.createValueField(DEFAULT_TIMEOUT))
         .build();
   }
 
@@ -242,7 +244,7 @@ public class DownloadManifestsCommonHelper {
         .name(manifestOutcome.getIdentifier())
         .identifier(manifestOutcome.getIdentifier())
         .spec(downloadHarnessStoreStepParameters)
-        .timeout(ParameterField.createValueField("10m"))
+        .timeout(ParameterField.createValueField(DEFAULT_TIMEOUT))
         .build();
   }
 

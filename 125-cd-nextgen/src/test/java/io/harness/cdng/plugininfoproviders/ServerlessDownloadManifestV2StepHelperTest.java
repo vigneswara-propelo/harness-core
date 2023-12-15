@@ -32,6 +32,9 @@ import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepNode;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.instance.info.InstanceInfoService;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
+import io.harness.cdng.manifest.yaml.AzureRepoStore;
+import io.harness.cdng.manifest.yaml.GitLabStore;
+import io.harness.cdng.manifest.yaml.GithubStore;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
@@ -139,7 +142,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(optionalManifestsOutcome).when(outcomeService).resolveOptional(any(), any());
 
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
-        mock(ServerlessAwsLambdaManifestOutcome.class);
+        ServerlessAwsLambdaManifestOutcome.builder().store(GithubStore.builder().build()).build();
     doReturn(serverlessAwsLambdaManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
@@ -196,7 +199,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(optionalManifestsOutcome).when(outcomeService).resolveOptional(any(), any());
 
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
-        mock(ServerlessAwsLambdaManifestOutcome.class);
+        ServerlessAwsLambdaManifestOutcome.builder().store(GithubStore.builder().build()).build();
     doReturn(serverlessAwsLambdaManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
@@ -221,7 +224,8 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
         PluginCreationResponseWrapper.newBuilder().setResponse(pluginCreationResponse).build();
     doReturn(pluginCreationResponseWrapper).when(gitClonePluginInfoProvider).getPluginInfo(any(), any(), any());
 
-    ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
+    ValuesManifestOutcome valuesManifestOutcome =
+        ValuesManifestOutcome.builder().store(GitLabStore.builder().build()).build();
     doReturn("path").when(serverlessV2PluginInfoProviderHelper).getValuesPathFromValuesManifestOutcome(any());
     doReturn(valuesManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
@@ -252,7 +256,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(manifestsOutcome).when(serverlessV2PluginInfoProviderHelper).fetchManifestsOutcome(any());
 
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
-        mock(ServerlessAwsLambdaManifestOutcome.class);
+        ServerlessAwsLambdaManifestOutcome.builder().store(GithubStore.builder().build()).build();
     doReturn(serverlessAwsLambdaManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
@@ -288,7 +292,8 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(callbackIdList).when(asyncExecutableResponse).getCallbackIdsList();
     doReturn(logKeysList).when(asyncExecutableResponse).getLogKeysList();
 
-    ValuesManifestOutcome valuesManifestOutcome = mock(ValuesManifestOutcome.class);
+    ValuesManifestOutcome valuesManifestOutcome =
+        ValuesManifestOutcome.builder().store(AzureRepoStore.builder().build()).build();
     doReturn(valuesManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaValuesManifestOutcome(any());
@@ -313,7 +318,7 @@ public class ServerlessDownloadManifestV2StepHelperTest extends CategoryTest {
     doReturn(manifestsOutcome).when(serverlessV2PluginInfoProviderHelper).fetchManifestsOutcome(any());
 
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
-        mock(ServerlessAwsLambdaManifestOutcome.class);
+        ServerlessAwsLambdaManifestOutcome.builder().store(GithubStore.builder().build()).build();
     doReturn(serverlessAwsLambdaManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());

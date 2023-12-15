@@ -24,6 +24,10 @@ import io.harness.beans.steps.stepinfo.GitCloneStepInfo;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.aws.sam.DownloadManifestsCommonHelper;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
+import io.harness.cdng.manifest.yaml.AzureRepoStore;
+import io.harness.cdng.manifest.yaml.BitbucketStore;
+import io.harness.cdng.manifest.yaml.GitStore;
+import io.harness.cdng.manifest.yaml.GithubStore;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
@@ -118,7 +122,7 @@ public class ServerlessDownloadManifestStepHelperTest extends CategoryTest {
     doReturn(Arrays.asList(valuesManifestOutcome)).when(manifestsOutcome).values();
 
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
-        ServerlessAwsLambdaManifestOutcome.builder().build();
+        ServerlessAwsLambdaManifestOutcome.builder().store(GithubStore.builder().build()).build();
     doReturn(serverlessAwsLambdaManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
@@ -129,7 +133,8 @@ public class ServerlessDownloadManifestStepHelperTest extends CategoryTest {
     GitCloneStepNode gitCloneStepNode = mock(GitCloneStepNode.class);
     doReturn(gitCloneStepNode).when(downloadManifestsCommonHelper).getGitCloneStepNode(any(), any(), any());
 
-    ValuesManifestOutcome valuesManifestOutcome1 = ValuesManifestOutcome.builder().build();
+    ValuesManifestOutcome valuesManifestOutcome1 =
+        ValuesManifestOutcome.builder().store(BitbucketStore.builder().build()).build();
     doReturn(valuesManifestOutcome1)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaValuesManifestOutcome(any());
@@ -213,7 +218,7 @@ public class ServerlessDownloadManifestStepHelperTest extends CategoryTest {
     doReturn(manifestsOutcome).when(serverlessV2PluginInfoProviderHelper).fetchManifestsOutcome(ambiance);
 
     ServerlessAwsLambdaManifestOutcome serverlessAwsLambdaManifestOutcome =
-        ServerlessAwsLambdaManifestOutcome.builder().build();
+        ServerlessAwsLambdaManifestOutcome.builder().store(AzureRepoStore.builder().build()).build();
     doReturn(serverlessAwsLambdaManifestOutcome)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaDirectoryManifestOutcome(any());
@@ -224,11 +229,10 @@ public class ServerlessDownloadManifestStepHelperTest extends CategoryTest {
     StepElementParameters stepElementParameters = StepElementParameters.builder().build();
     doReturn(stepElementParameters).when(downloadManifestsCommonHelper).getGitStepElementParameters(any(), any());
 
+    GitCloneStep gitCloneStep = mock(GitCloneStep.class);
     doReturn("iden").when(downloadManifestsCommonHelper).getGitCloneStepIdentifier(any());
 
     doReturn(ambiance).when(downloadManifestsCommonHelper).buildAmbiance(any(), any());
-
-    GitCloneStep gitCloneStep = mock(GitCloneStep.class);
 
     AsyncExecutableResponse asyncExecutableResponse =
         AsyncExecutableResponse.newBuilder().addCallbackIds("1").addLogKeys("1").setStatus(Status.RUNNING).build();
@@ -237,7 +241,8 @@ public class ServerlessDownloadManifestStepHelperTest extends CategoryTest {
     ManifestOutcome valuesManifestOutcome = mock(ManifestOutcome.class);
     doReturn(Arrays.asList(valuesManifestOutcome)).when(manifestsOutcome).values();
 
-    ValuesManifestOutcome valuesManifestOutcome1 = ValuesManifestOutcome.builder().build();
+    ValuesManifestOutcome valuesManifestOutcome1 =
+        ValuesManifestOutcome.builder().store(GitStore.builder().build()).build();
     doReturn(valuesManifestOutcome1)
         .when(serverlessV2PluginInfoProviderHelper)
         .getServerlessAwsLambdaValuesManifestOutcome(any());

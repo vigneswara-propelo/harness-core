@@ -32,6 +32,7 @@ import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
+import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.delegate.beans.instancesync.info.AwsSamServerInstanceInfo;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
@@ -336,5 +337,36 @@ public class AwsSamStepHelperTest extends CategoryTest {
     String finalPath =
         awsSamStepHelper.getSamDirectoryPathFromAwsSamDirectoryManifestOutcome(awsSamDirectoryManifestOutcome);
     assertThat(finalPath).isEqualTo(identifier);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetSamDirectoryPathFromAwsSamDirectoryManifestOutcomeWhenHarnessStore() {
+    String identifier = "identifier";
+    String path = "values.yaml";
+    AwsSamDirectoryManifestOutcome awsSamDirectoryManifestOutcome =
+        AwsSamDirectoryManifestOutcome.builder()
+            .store(HarnessStore.builder().files(ParameterField.createValueField(Arrays.asList(path))).build())
+            .identifier(identifier)
+            .build();
+    String finalPath =
+        awsSamStepHelper.getSamDirectoryPathFromAwsSamDirectoryManifestOutcome(awsSamDirectoryManifestOutcome);
+    assertThat(finalPath).isEqualTo(identifier);
+  }
+
+  @Test
+  @Owner(developers = PIYUSH_BHUWALKA)
+  @Category(UnitTests.class)
+  public void testGetValuesPathFromValuesManifestOutcomeForHarnessStore() {
+    String identifier = "identifier";
+    String path = "values.yaml";
+    ValuesManifestOutcome valuesManifestOutcome =
+        ValuesManifestOutcome.builder()
+            .store(HarnessStore.builder().files(ParameterField.createValueField(Arrays.asList(path))).build())
+            .identifier(identifier)
+            .build();
+    String finalPath = awsSamStepHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome);
+    assertThat(finalPath).isEqualTo("/harness/" + identifier + "/" + path);
   }
 }

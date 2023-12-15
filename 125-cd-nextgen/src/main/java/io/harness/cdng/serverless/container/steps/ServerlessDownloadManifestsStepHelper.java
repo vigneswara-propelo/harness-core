@@ -8,6 +8,7 @@
 package io.harness.cdng.serverless.container.steps;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.exception.WingsException.USER;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -28,6 +29,7 @@ import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepInfo;
 import io.harness.cdng.containerStepGroup.DownloadHarnessStoreStepNode;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.manifest.steps.outcome.ManifestsOutcome;
+import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.cdng.manifest.yaml.ServerlessAwsLambdaManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
@@ -177,18 +179,23 @@ public class ServerlessDownloadManifestsStepHelper {
               serverlessAwsLambdaDirectoryManifestOutcome));
       return downloadHarnessStoreStep.executeAsyncAfterRbac(
           ambianceForServerlessAwsLambdaManifest, stepElementParameters, inputPackage);
+    } else if (serverlessAwsLambdaDirectoryManifestOutcome.getStore() instanceof GitStoreConfig) {
+      GitCloneStepInfo gitCloneStepInfo = downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcome(
+          serverlessAwsLambdaDirectoryManifestOutcome);
+
+      StepElementParameters stepElementParameters = downloadManifestsCommonHelper.getGitStepElementParameters(
+          serverlessAwsLambdaDirectoryManifestOutcome, gitCloneStepInfo);
+
+      Ambiance ambianceForServerlessAwsLambdaManifest = downloadManifestsCommonHelper.buildAmbiance(ambiance,
+          downloadManifestsCommonHelper.getGitCloneStepIdentifier(serverlessAwsLambdaDirectoryManifestOutcome));
+      return gitCloneStep.executeAsyncAfterRbac(
+          ambianceForServerlessAwsLambdaManifest, stepElementParameters, inputPackage);
+    } else {
+      throw new InvalidRequestException(
+          format("%s store type not supported for Serverless Aws Lambda Directory Manifest",
+              serverlessAwsLambdaDirectoryManifestOutcome.getStore().getKind()),
+          USER);
     }
-
-    GitCloneStepInfo gitCloneStepInfo = downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcome(
-        serverlessAwsLambdaDirectoryManifestOutcome);
-
-    StepElementParameters stepElementParameters = downloadManifestsCommonHelper.getGitStepElementParameters(
-        serverlessAwsLambdaDirectoryManifestOutcome, gitCloneStepInfo);
-
-    Ambiance ambianceForServerlessAwsLambdaManifest = downloadManifestsCommonHelper.buildAmbiance(
-        ambiance, downloadManifestsCommonHelper.getGitCloneStepIdentifier(serverlessAwsLambdaDirectoryManifestOutcome));
-    return gitCloneStep.executeAsyncAfterRbac(
-        ambianceForServerlessAwsLambdaManifest, stepElementParameters, inputPackage);
   }
 
   private void checkForS3DownloadFeatureFlag(Ambiance ambiance) {
@@ -231,21 +238,24 @@ public class ServerlessDownloadManifestsStepHelper {
           ambiance, downloadManifestsCommonHelper.getDownloadHarnessStoreStepIdentifier(valuesManifestOutcome));
       return downloadHarnessStoreStep.executeAsyncAfterRbac(
           ambianceForValuesManifest, stepElementParameters, inputPackage);
+    } else if (valuesManifestOutcome.getStore() instanceof GitStoreConfig) {
+      GitCloneStepInfo valuesGitCloneStepInfo =
+          downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcomeWithOutputFilePathContents(
+              valuesManifestOutcome,
+              Collections.singletonList(
+                  serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
+
+      StepElementParameters valuesStepElementParameters =
+          downloadManifestsCommonHelper.getGitStepElementParameters(valuesManifestOutcome, valuesGitCloneStepInfo);
+
+      Ambiance ambianceForValuesManifest = downloadManifestsCommonHelper.buildAmbiance(
+          ambiance, downloadManifestsCommonHelper.getGitCloneStepIdentifier(valuesManifestOutcome));
+
+      return gitCloneStep.executeAsyncAfterRbac(ambianceForValuesManifest, valuesStepElementParameters, inputPackage);
+    } else {
+      throw new InvalidRequestException(
+          format("%s store type not supported for Values Manifest", valuesManifestOutcome.getStore().getKind()), USER);
     }
-
-    GitCloneStepInfo valuesGitCloneStepInfo =
-        downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcomeWithOutputFilePathContents(
-            valuesManifestOutcome,
-            Collections.singletonList(
-                serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
-
-    StepElementParameters valuesStepElementParameters =
-        downloadManifestsCommonHelper.getGitStepElementParameters(valuesManifestOutcome, valuesGitCloneStepInfo);
-
-    Ambiance ambianceForValuesManifest = downloadManifestsCommonHelper.buildAmbiance(
-        ambiance, downloadManifestsCommonHelper.getGitCloneStepIdentifier(valuesManifestOutcome));
-
-    return gitCloneStep.executeAsyncAfterRbac(ambianceForValuesManifest, valuesStepElementParameters, inputPackage);
   }
 
   public StepResponse handleAsyncResponse(Ambiance ambiance, Map<String, ResponseData> responseDataMap) {
@@ -412,21 +422,24 @@ public class ServerlessDownloadManifestsStepHelper {
       PluginCreationRequest pluginCreationRequest =
           request.toBuilder().setStepJsonNode(getStepJsonNode(downloadHarnessStoreStepNode)).build();
       return downloadHarnessStorePluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
+    } else if (valuesManifestOutcome.getStore() instanceof GitStoreConfig) {
+      GitCloneStepInfo valuesGitCloneStepInfo =
+          downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcomeWithOutputFilePathContents(
+              valuesManifestOutcome,
+              Collections.singletonList(
+                  serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
+
+      GitCloneStepNode valuesGitCloneStepNode = downloadManifestsCommonHelper.getGitCloneStepNode(
+          valuesManifestOutcome, valuesGitCloneStepInfo, cdAbstractStepNode);
+
+      PluginCreationRequest valuesPluginCreationRequest =
+          request.toBuilder().setStepJsonNode(YamlUtils.writeYamlString(valuesGitCloneStepNode)).build();
+
+      return gitClonePluginInfoProvider.getPluginInfo(valuesPluginCreationRequest, usedPorts, ambiance);
+    } else {
+      throw new InvalidRequestException(
+          format("%s store type not supported for Values Manifest", valuesManifestOutcome.getStore().getKind()), USER);
     }
-
-    GitCloneStepInfo valuesGitCloneStepInfo =
-        downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcomeWithOutputFilePathContents(
-            valuesManifestOutcome,
-            Collections.singletonList(
-                serverlessV2PluginInfoProviderHelper.getValuesPathFromValuesManifestOutcome(valuesManifestOutcome)));
-
-    GitCloneStepNode valuesGitCloneStepNode = downloadManifestsCommonHelper.getGitCloneStepNode(
-        valuesManifestOutcome, valuesGitCloneStepInfo, cdAbstractStepNode);
-
-    PluginCreationRequest valuesPluginCreationRequest =
-        request.toBuilder().setStepJsonNode(YamlUtils.writeYamlString(valuesGitCloneStepNode)).build();
-
-    return gitClonePluginInfoProvider.getPluginInfo(valuesPluginCreationRequest, usedPorts, ambiance);
   }
 
   public PluginCreationResponseWrapper getPluginCreationResponseWrapperForServerlessAwsLambdaManifest(
@@ -464,18 +477,23 @@ public class ServerlessDownloadManifestsStepHelper {
       PluginCreationRequest pluginCreationRequest =
           request.toBuilder().setStepJsonNode(getStepJsonNode(downloadHarnessStoreStepNode)).build();
       return downloadHarnessStorePluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
+    } else if (serverlessAwsLambdaManifestOutcome.getStore() instanceof GitStoreConfig) {
+      GitCloneStepInfo gitCloneStepInfo =
+          downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcome(serverlessAwsLambdaManifestOutcome);
+
+      GitCloneStepNode gitCloneStepNode = downloadManifestsCommonHelper.getGitCloneStepNode(
+          serverlessAwsLambdaManifestOutcome, gitCloneStepInfo, cdAbstractStepNode);
+
+      PluginCreationRequest pluginCreationRequest =
+          request.toBuilder().setStepJsonNode(getStepJsonNode(gitCloneStepNode)).build();
+
+      return gitClonePluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
+    } else {
+      throw new InvalidRequestException(
+          format("%s store type not supported for Serverless Aws Lambda Directory Manifest",
+              serverlessAwsLambdaManifestOutcome.getStore().getKind()),
+          USER);
     }
-
-    GitCloneStepInfo gitCloneStepInfo =
-        downloadManifestsCommonHelper.getGitCloneStepInfoFromManifestOutcome(serverlessAwsLambdaManifestOutcome);
-
-    GitCloneStepNode gitCloneStepNode = downloadManifestsCommonHelper.getGitCloneStepNode(
-        serverlessAwsLambdaManifestOutcome, gitCloneStepInfo, cdAbstractStepNode);
-
-    PluginCreationRequest pluginCreationRequest =
-        request.toBuilder().setStepJsonNode(getStepJsonNode(gitCloneStepNode)).build();
-
-    return gitClonePluginInfoProvider.getPluginInfo(pluginCreationRequest, usedPorts, ambiance);
   }
 
   public RefObject getOutcomeRefObject() {
