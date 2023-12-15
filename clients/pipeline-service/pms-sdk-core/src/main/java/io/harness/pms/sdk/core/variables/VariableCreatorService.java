@@ -29,6 +29,7 @@ import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoDecorat
 import io.harness.pms.sdk.core.variables.beans.VariableCreationContext;
 import io.harness.pms.sdk.core.variables.beans.VariableCreationResponse;
 import io.harness.pms.yaml.HarnessYamlVersion;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
@@ -95,11 +96,17 @@ public class VariableCreatorService
         addAccountOrgProjectIdentifiers(request, variableCreationContext);
         response = variableCreator.createVariablesForFieldV2(variableCreationContext, obj);
       } catch (IOException ex) {
-        String message = format("Invalid yaml path [%s] during execution variable creation", yamlField.getYamlPath());
+        YamlNode pipelineNode = YamlUtils.findParentNode(yamlField.getNode(), YAMLFieldNameConstants.PIPELINE);
+        String message = format(
+            "Invalid yaml path [%s] for yaml field of type [%s] during execution variable creation for pipeline with identifier [%s]",
+            yamlField.getYamlPath(), yamlField.getType(), pipelineNode.getIdentifier());
         log.error(message, ex);
         throw new InvalidRequestException(message, ex);
       } catch (Throwable t) {
-        String message = format("Error for [%s] during execution variable creation", yamlField.getYamlPath());
+        YamlNode pipelineNode = YamlUtils.findParentNode(yamlField.getNode(), YAMLFieldNameConstants.PIPELINE);
+        String message = format(
+            "Error for yaml path [%s] for yaml field of type [%s] during execution variable creation for pipeline with identifier [%s]",
+            yamlField.getYamlPath(), yamlField.getType(), pipelineNode.getIdentifier());
         log.error(message, t);
         throw new InvalidRequestException(message);
       }

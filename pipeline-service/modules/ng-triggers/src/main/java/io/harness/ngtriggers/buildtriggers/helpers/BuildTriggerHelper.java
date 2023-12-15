@@ -270,12 +270,7 @@ public class BuildTriggerHelper {
       JsonNode jsonNode = YamlUtils.readTree(triggerDetails.getNgTriggerEntity().getYaml()).getNode().getCurrJsonNode();
       sources = (ArrayNode) jsonNode.get("trigger").get("source").get("spec").get("sources");
     } else {
-      if (triggerDetails.getNgTriggerEntity().getTriggerConfigWrapper().getSource().getSpec() != null
-          && isNotEmpty(((MultiRegionArtifactTriggerConfig) triggerDetails.getNgTriggerEntity()
-                             .getTriggerConfigWrapper()
-                             .getSource()
-                             .getSpec())
-                            .getSources())) {
+      if (isMultiRegionArtifactTriggerValid(triggerDetails)) {
         sources =
             (ArrayNode) JsonPipelineUtils.asTree(((MultiRegionArtifactTriggerConfig) triggerDetails.getNgTriggerEntity()
                                                       .getTriggerConfigWrapper()
@@ -315,6 +310,15 @@ public class BuildTriggerHelper {
       buildMetadataIndex++;
     }
     return buildTriggerOpsData;
+  }
+
+  boolean isMultiRegionArtifactTriggerValid(TriggerDetails triggerDetails) {
+    return triggerDetails.getNgTriggerEntity().getTriggerConfigWrapper().getSource().getSpec() != null
+        && isNotEmpty(((MultiRegionArtifactTriggerConfig) triggerDetails.getNgTriggerEntity()
+                           .getTriggerConfigWrapper()
+                           .getSource()
+                           .getSpec())
+                          .getSources());
   }
 
   public BuildTriggerOpsData generateBuildTriggerOpsDataForGitPolling(TriggerDetails triggerDetails) throws Exception {

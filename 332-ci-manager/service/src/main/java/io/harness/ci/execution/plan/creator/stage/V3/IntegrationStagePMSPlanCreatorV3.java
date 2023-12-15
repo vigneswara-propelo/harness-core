@@ -147,21 +147,20 @@ public class IntegrationStagePMSPlanCreatorV3 extends AbstractStagePlanCreator<I
     Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
     YamlField field = ctx.getCurrentField();
     YamlField specField = Preconditions.checkNotNull(field.getNode().getField(YAMLFieldNameConstants.SPEC));
-    YamlField stepsField = Preconditions.checkNotNull(specField.getNode().getField(YAMLFieldNameConstants.STEPS));
     IntegrationStageConfigImplV1 stageConfigImpl = stageNode.getStageConfig();
     Infrastructure infrastructure =
         ciPlanCreatorUtils.getInfrastructure(stageConfigImpl.getRuntime(), stageConfigImpl.getPlatform());
     CodeBase codeBase =
-        createPlanForCodebase(ctx, stageConfigImpl.getClone(), planCreationResponseMap, stepsField.getUuid());
-    dependenciesNodeMap.put(stepsField.getUuid(), stepsField);
+        createPlanForCodebase(ctx, stageConfigImpl.getClone(), planCreationResponseMap, specField.getUuid());
+    dependenciesNodeMap.put(specField.getUuid(), specField);
 
-    planCreationResponseMap.put(stepsField.getUuid(),
+    planCreationResponseMap.put(specField.getUuid(),
         PlanCreationResponse.builder()
             .dependencies(DependenciesUtils.toDependenciesProto(dependenciesNodeMap)
                               .toBuilder()
                               .putDependencyMetadata(
                                   field.getUuid(), getDependencyForStrategy(dependenciesNodeMap, stageNode, ctx))
-                              .putDependencyMetadata(stepsField.getUuid(),
+                              .putDependencyMetadata(specField.getUuid(),
                                   getDependencyMetadataForStepsField(infrastructure, codeBase, stageNode))
                               .build())
             .build());
