@@ -14,6 +14,7 @@ import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ProjectIdentifier;
+import io.harness.accesscontrol.ResourceIdentifier;
 import io.harness.accesscontrol.acl.api.Resource;
 import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.accesscontrol.clients.AccessControlClient;
@@ -132,7 +133,7 @@ public class PipelineRefreshResource {
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgId,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectId,
-      @QueryParam(NGCommonEntityConstants.IDENTIFIER_KEY) String pipelineIdentifier,
+      @QueryParam(NGCommonEntityConstants.IDENTIFIER_KEY) @ResourceIdentifier String pipelineIdentifier,
       @HeaderParam("Load-From-Cache") @DefaultValue("false") String loadFromCache,
       @BeanParam GitEntityFindInfoDTO gitEntityBasicInfo) {
     return ResponseDTO.newResponse(pipelineRefreshService.validateTemplateInputsInPipeline(
