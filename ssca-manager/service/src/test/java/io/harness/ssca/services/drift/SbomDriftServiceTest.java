@@ -8,6 +8,7 @@
 package io.harness.ssca.services.drift;
 
 import static io.harness.rule.OwnerRule.INDER;
+import static io.harness.rule.OwnerRule.SHASHWAT_SACHAN;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,6 +29,7 @@ import io.harness.repositories.drift.SbomDriftRepository;
 import io.harness.rule.Owner;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftRequestBody;
 import io.harness.spec.server.ssca.v1.model.ArtifactSbomDriftResponse;
+import io.harness.spec.server.ssca.v1.model.OrchestrationDriftSummary;
 import io.harness.ssca.beans.BaselineDTO;
 import io.harness.ssca.beans.drift.ComponentDrift;
 import io.harness.ssca.beans.drift.ComponentDriftResults;
@@ -306,6 +308,26 @@ public class SbomDriftServiceTest extends SSCAManagerTestBase {
                                                        .packageLicense(List.of("license1", "license2"))
                                                        .build()))
                                .build()));
+  }
+
+  @Test
+  @Owner(developers = SHASHWAT_SACHAN)
+  @Category(UnitTests.class)
+  public void testGetSbomDriftSummary() {
+    when(sbomDriftRepository.findOne(any())).thenReturn(getDriftEntityBuilder().base(DriftBase.BASELINE).build());
+
+    OrchestrationDriftSummary sbomDriftSummary =
+        sbomDriftService.getSbomDriftSummary(ACCOUNT_ID, ORG_ID, PROJECT_ID, ORCHESTRATION_ID);
+
+    assertThat(sbomDriftSummary.getBaseTag()).isEqualTo(BASE_TAG);
+    assertThat(sbomDriftSummary.getTotalDrifts()).isEqualTo(2);
+    assertThat(sbomDriftSummary.getComponentDrifts()).isEqualTo(1);
+    assertThat(sbomDriftSummary.getLicenseDrifts()).isEqualTo(1);
+    assertThat(sbomDriftSummary.getComponentsAdded()).isEqualTo(1);
+    assertThat(sbomDriftSummary.getComponentsDeleted()).isEqualTo(0);
+    assertThat(sbomDriftSummary.getComponentsModified()).isEqualTo(0);
+    assertThat(sbomDriftSummary.getLicenseAdded()).isEqualTo(1);
+    assertThat(sbomDriftSummary.getLicenseDeleted()).isEqualTo(0);
   }
 
   private List<ComponentDrift> getComponentDrifts() {
