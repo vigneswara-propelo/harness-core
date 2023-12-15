@@ -111,24 +111,28 @@ public class AwsCdkHelper {
 
   public Map<String, Object> processOutput(StepMapOutput stepOutput) {
     Map<String, Object> stepOutcome = new HashMap<>();
-    Map<String, String> processedOutput = new HashMap<>();
-    stepOutput.getMap().forEach((key, value) -> {
-      if (OUTPUT_KEYS.contains(key)) {
-        try {
-          String decodedOutput = getDecodedOutput(value);
-          if (CDK_OUTPUT.equals(key)) {
-            stepOutcome.putAll(parseOutputs(decodedOutput));
-          } else {
-            processedOutput.put(key, decodedOutput);
+    if (stepOutput != null && isNotEmpty(stepOutput.getMap())) {
+      Map<String, String> processedOutput = new HashMap<>();
+      stepOutput.getMap().forEach((key, value) -> {
+        if (OUTPUT_KEYS.contains(key)) {
+          try {
+            String decodedOutput = getDecodedOutput(value);
+            if (CDK_OUTPUT.equals(key)) {
+              stepOutcome.putAll(parseOutputs(decodedOutput));
+            } else {
+              processedOutput.put(key, decodedOutput);
+            }
+          } catch (Exception e) {
+            log.error("Failed to decode: {} :", key, e);
           }
-        } catch (Exception e) {
-          log.error("Failed to decode: {} :", key, e);
+        } else {
+          processedOutput.put(key, value);
         }
-      } else {
-        processedOutput.put(key, value);
-      }
-    });
-    stepOutput.setMap(processedOutput);
+      });
+      stepOutput.setMap(processedOutput);
+    } else {
+      log.info("Empty or null stepOutput map");
+    }
     return stepOutcome;
   }
 

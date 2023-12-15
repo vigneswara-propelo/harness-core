@@ -7,6 +7,8 @@
 
 package io.harness.cdng.provision.awscdk;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -83,19 +85,23 @@ public class AwsCdkSynthStep extends AbstractContainerStepV2<StepElementParamete
     if (stepStatusTaskResponseData != null
         && stepStatusTaskResponseData.getStepStatus().getStepExecutionStatus() == StepExecutionStatus.SUCCESS) {
       StepMapOutput stepOutput = (StepMapOutput) stepStatusTaskResponseData.getStepStatus().getOutput();
-      Map<String, String> processedOutput = new HashMap<>();
-      stepOutput.getMap().forEach((key, value) -> {
-        if (key.endsWith("template.json")) {
-          try {
-            processedOutput.put(key.split("\\.")[0], awsCdkStepHelper.getDecodedOutput(value));
-          } catch (Exception e) {
-            log.error("Failed to decode: {} :", key, e);
+      if (stepOutput != null && isNotEmpty(stepOutput.getMap())) {
+        Map<String, String> processedOutput = new HashMap<>();
+        stepOutput.getMap().forEach((key, value) -> {
+          if (key.endsWith("template.json")) {
+            try {
+              processedOutput.put(key.split("\\.")[0], awsCdkStepHelper.getDecodedOutput(value));
+            } catch (Exception e) {
+              log.error("Failed to decode: {} :", key, e);
+            }
+          } else {
+            processedOutput.put(key, value);
           }
-        } else {
-          processedOutput.put(key, value);
-        }
-      });
-      stepOutput.setMap(processedOutput);
+        });
+        stepOutput.setMap(processedOutput);
+      } else {
+        log.info("Empty or null stepOutput map");
+      }
     }
     return super.handleAsyncResponse(ambiance, stepParameters, responseDataMap);
   }

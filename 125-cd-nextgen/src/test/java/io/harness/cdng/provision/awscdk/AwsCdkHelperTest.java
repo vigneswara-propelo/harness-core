@@ -93,6 +93,18 @@ public class AwsCdkHelperTest extends CategoryTest {
   @Test
   @Owner(developers = TMACARI)
   @Category(UnitTests.class)
+  public void testProcessNullOutput() {
+    StepMapOutput stepMapOutput = StepMapOutput.builder().build();
+
+    Map<String, Object> processOutput = awsCdkHelper.processOutput(stepMapOutput);
+
+    assertThat(stepMapOutput.getMap()).isEmpty();
+    assertThat(processOutput).isEmpty();
+  }
+
+  @Test
+  @Owner(developers = TMACARI)
+  @Category(UnitTests.class)
   public void testValidateRuntimePermissions() {
     Ambiance ambiance = getAmbiance();
     ArgumentCaptor<List<EntityDetail>> captor = ArgumentCaptor.forClass(List.class);
