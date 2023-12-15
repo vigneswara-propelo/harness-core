@@ -26,6 +26,9 @@ tags:
   - name: Triggers
     description: This contains APIs for performing CRUD operations on Triggers.
     x-displayName: 'Triggers [Beta]'
+  - name: Steps
+    description: This contains APIs for Steps.
+    x-displayName: 'Steps [Beta]'
 paths:
   '/v1/orgs/{org}/projects/{project}/pipelines':
     parameters:
@@ -910,6 +913,23 @@ paths:
         - x-api-key: []
       requestBody:
         $ref: '#/components/requestBodies/PipelineInputsSchemaRequestBody'
+      x-internal: true
+  /v1/steps:
+    parameters: []
+    post:
+      summary: Get steps for the steps-pallete
+      operationId: get-steps
+      responses:
+        '200':
+          $ref: '#/components/responses/StepsDataResponseBody'
+      tags:
+        - Steps
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      security:
+        - x-api-key: []
+      requestBody:
+        $ref: '#/components/requestBodies/StepPalleteFilterRequestBody'
       x-internal: true
   '/v1/orgs/{org}/projects/{project}/pipelines/{pipeline}/execute':
     parameters:
@@ -4587,6 +4607,32 @@ components:
           type: string
           x-stoplight:
             id: 11ftonrbzx11o
+    StepsDataResponseBody:
+      title: StepCategory
+      type: object
+      properties:
+        name:
+          type: string
+        steps_data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepData'
+        step_categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepsDataResponseBody'
+    StepData:
+      title: StepData
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        disabled:
+          type: boolean
+        feature_restriction_name:
+          type: string
     PipelineInputSchemaDetailsResponseBody:
       title: PipelineInputSchemaDetailsResponseBody
       x-stoplight:
@@ -4740,6 +4786,28 @@ components:
         metadata:
           $ref: '#/components/schemas/PipelineYamlInputMetadataDTO'
       x-internal: true
+    StepPalleteFilterRequestBody:
+      title: StepPalleteFilterWrapper
+      type: object
+      properties:
+        step_pallete_module_infos:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepPalleteModuleInfo'
+        version:
+          type: string
+    StepPalleteModuleInfo:
+      title: StepPalleteModuleInfo
+      type: object
+      properties:
+        module:
+          type: string
+        category:
+          type: string
+        should_show_common_steps:
+          type: boolean
+        common_step_category:
+          type: string
     PipelineInputsSchemaRequestBody:
       title: PipelineInputsSchemaRequestBody
       x-stoplight:
@@ -5990,6 +6058,47 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/PipelineExecuteResponseBody'
+    StepsDataResponseBody:
+      description: Steps data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StepsDataResponseBody'
+          examples:
+            example-1:
+              value:
+                name: Library
+                steps_data: [ ]
+                step_categories:
+                  - name: Continuous Deployment
+                    steps_data: [ ]
+                    step_categories:
+                      - name: GitOps
+                        steps_data:
+                          - name: GitOps Merge PR
+                            type: MergePR
+                            disabled: false
+                            feature_restriction_name: null
+                          - name: Update GitOps App
+                            type: UpdateGitOpsApp
+                            disabled: false
+                            feature_restriction_name: null
+                        step_categories: [ ]
+                      - name: Kubernetes
+                        steps_data:
+                          - name: Canary Deployment
+                            type: K8sCanaryDeploy
+                            disabled: false
+                            feature_restriction_name: null
+                          - name: Canary Delete
+                            type: K8sCanaryDelete
+                            disabled: false
+                            feature_restriction_name: null
+                          - name: Apply
+                            type: K8sApply
+                            disabled: false
+                            feature_restriction_name: null
+                        step_categories: [ ]
     PipelineInputSchemaDetailsResponseBody:
       description: Example response
       content:
@@ -6549,6 +6658,30 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/GitMetadataUpdateRequestBody'
+    StepPalleteFilterRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StepPalleteFilterRequestBody'
+          examples:
+            example-1:
+              value:
+                step_pallete_module_infos:
+                  - module: cd
+                    category: Kubernetes
+                    should_show_common_steps: true
+                  - module: cd
+                    category: Builds
+                    should_show_common_steps: false
+                  - module: cv
+                    should_show_common_steps: false
+                  - module: cd
+                    category: Chaos
+                    should_show_common_steps: false
+                  - module: pms
+                    category: ssca
+                    should_show_common_steps: false
+                version: "1"
     PipelineInputsSchemaRequestBody:
       content:
         application/json:
