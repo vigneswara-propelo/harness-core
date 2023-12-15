@@ -20,9 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @Slf4j
 public class Violation {
+  String policySetName;
+  String policySetIdentifier;
+  String policyName;
+  String policyIdentifier;
   List<String> artifactUuids;
   JsonNode rule;
   @Getter(AccessLevel.NONE) String type;
@@ -40,8 +44,9 @@ public class Violation {
         }
       } catch (Exception ex) {
         log.error("Error while parsing rule {}", rule);
-        return rule.toString();
+        violationDetail = rule.toString();
       }
+      violationDetail = violationDetail.concat(getPolicyDetail());
     }
     return violationDetail;
   }
@@ -116,7 +121,7 @@ public class Violation {
         .append(" should not ")
         .append(getOperatorDescription(rule.get(key).get("operator").asText()))
         .append(" ")
-        .append(rule.get(key).get("value").asText());
+        .append(rule.get(key).get("value").asText().replace(",", " and "));
   }
 
   private static String getOperatorDescription(String operator) {
@@ -137,8 +142,30 @@ public class Violation {
         return "not be";
       case "~":
         return " match pattern";
+      case "><":
+        return "be between";
+      case ">=<":
+        return "be between (start inclusive)";
+      case "><=":
+        return "be between (end inclusive)";
+      case ">=<=":
+        return "be between (start and end inclusive)";
       default:
         return operator;
     }
+  }
+
+  private String getPolicyDetail() {
+    return new StringBuilder()
+        .append(" [Policy: ")
+        .append(policyName)
+        .append(" (Id: ")
+        .append(policyIdentifier)
+        .append("), Policy Set: ")
+        .append(policySetName)
+        .append(" (Id: ")
+        .append(policySetIdentifier)
+        .append(")]")
+        .toString();
   }
 }

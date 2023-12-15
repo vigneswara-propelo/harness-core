@@ -68,8 +68,9 @@ public class PolicyMgmtServiceImpl implements PolicyMgmtService {
           List<OpaPolicyEvaluationResponse> opaPolicyEvaluationResponses = opaPolicySetEvaluationResponse.getDetails();
           if (CollectionUtils.isNotEmpty(opaPolicyEvaluationResponses)) {
             for (OpaPolicyEvaluationResponse opaPolicyEvaluationResponse : opaPolicyEvaluationResponses) {
-              populateViolationDetailsFromSinglePolicyEvaluationResponse(
-                  allowListViolations, denyListViolations, opaPolicyEvaluationResponse);
+              populateViolationDetailsFromSinglePolicyEvaluationResponse(allowListViolations, denyListViolations,
+                  opaPolicyEvaluationResponse, opaPolicySetEvaluationResponse.getName(),
+                  opaPolicySetEvaluationResponse.getIdentifier());
             }
           }
         }
@@ -85,14 +86,19 @@ public class PolicyMgmtServiceImpl implements PolicyMgmtService {
   }
 
   private static void populateViolationDetailsFromSinglePolicyEvaluationResponse(List<Violation> allowListViolations,
-      List<Violation> denyListViolations, OpaPolicyEvaluationResponse singlePolicyEvaluationResponse) {
+      List<Violation> denyListViolations, OpaPolicyEvaluationResponse singlePolicyEvaluationResponse,
+      String policySetName, String policySetIdentifier) {
     JsonNode opaEvaluationEngineOutputNode = extractOpaEvaluationEngineOutputNode(singlePolicyEvaluationResponse);
     ArrayNode allowListViolationsNode = (ArrayNode) opaEvaluationEngineOutputNode.get(OPA_OUTPUT_JSON_KEY_3);
-    allowListViolationsNode.forEach(
-        allowListViolation -> extractAndPopulateViolation(allowListViolations, allowListViolation));
+    allowListViolationsNode.forEach(allowListViolation
+        -> extractAndPopulateViolation(allowListViolations, allowListViolation, policySetName, policySetIdentifier,
+            singlePolicyEvaluationResponse.getPolicy().getName(),
+            singlePolicyEvaluationResponse.getPolicy().getIdentifier()));
     ArrayNode denyListViolationsNode = (ArrayNode) opaEvaluationEngineOutputNode.get(OPA_OUTPUT_JSON_KEY_4);
-    denyListViolationsNode.forEach(
-        denyListViolation -> extractAndPopulateViolation(denyListViolations, denyListViolation));
+    denyListViolationsNode.forEach(denyListViolation
+        -> extractAndPopulateViolation(denyListViolations, denyListViolation, policySetName, policySetIdentifier,
+            singlePolicyEvaluationResponse.getPolicy().getName(),
+            singlePolicyEvaluationResponse.getPolicy().getIdentifier()));
   }
 
   private static JsonNode extractOpaEvaluationEngineOutputNode(
@@ -105,10 +111,16 @@ public class PolicyMgmtServiceImpl implements PolicyMgmtService {
         .get(OPA_OUTPUT_JSON_KEY_2);
   }
 
-  private static void extractAndPopulateViolation(List<Violation> violations, JsonNode violationNode) {
+  private static void extractAndPopulateViolation(List<Violation> violations, JsonNode violationNode,
+      String policySetName, String policySetIdentifier, String policyName, String policyIdentifier) {
     Violation violation = extractViolationFromJsonNode(violationNode);
     if (violation != null) {
-      violations.add(violation);
+      violations.add(violation.toBuilder()
+                         .policySetName(policySetName)
+                         .policySetIdentifier(policySetIdentifier)
+                         .policyName(policyName)
+                         .policyIdentifier(policyIdentifier)
+                         .build());
     }
   }
 
