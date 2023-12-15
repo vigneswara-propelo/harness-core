@@ -1225,9 +1225,11 @@ public class InfrastructureEntityServiceImpl implements InfrastructureEntityServ
     if (CollectionUtils.isEmpty(scopedToServices) || scopedToServices.contains(serviceRef)) {
       return;
     }
-    throw new InvalidRequestException(String.format("Infrastructure: [%s] inside Environment: [%s] doesn't scoped"
-            + "to service: [%s]",
-        infraRef, envRef, serviceRef));
+    throw new InvalidRequestException(
+        String.format("Infrastructure: [%s] inside %s level Environment: [%s] can't be scoped"
+                + " to %s level Service: [%s]",
+            infraRef, IdentifierRefHelper.getScopeFromScopedRef(envRef), envRef,
+            IdentifierRefHelper.getScopeFromScopedRef(serviceRef), serviceRef));
   }
 
   @Override
@@ -1261,9 +1263,11 @@ public class InfrastructureEntityServiceImpl implements InfrastructureEntityServ
                                           .collect(Collectors.toList());
 
       if (!CollectionUtils.isEmpty(unScopedServices)) {
-        throw new InvalidRequestException(String.format("Infrastructure: [%s] inside Environment: [%s] doesn't scoped"
-                + " to services: [%s]",
-            infrastructureEntity.getIdentifier(), envRef, unScopedServices));
+        throw new InvalidRequestException(
+            String.format("Infrastructure: [%s] inside %s level Environment: [%s] can't be scoped"
+                    + " to Service: [%s]",
+                infrastructureEntity.getIdentifier(), IdentifierRefHelper.getScopeFromScopedRef(envRef), envRef,
+                unScopedServices));
       }
     }
   }

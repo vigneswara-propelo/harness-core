@@ -769,15 +769,15 @@ public class InfrastructureEntityServiceImplTest extends CDNGEntitiesTestBase {
                            -> infrastructureEntityService.checkIfInfraIsScopedToService(
                                ACCOUNT_ID, ORG_ID, PROJECT_ID, "SERVICE_IDENTIFIER2", "ENV_IDENTIFIER", "IDENTIFIER2"))
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage("Infrastructure: [IDENTIFIER2] inside Environment: [ENV_IDENTIFIER] doesn't scoped"
-            + "to service: [SERVICE_IDENTIFIER2]");
+        .hasMessage("Infrastructure: [IDENTIFIER2] inside PROJECT level Environment: [ENV_IDENTIFIER] can't be scoped "
+            + "to PROJECT level Service: [SERVICE_IDENTIFIER2]");
 
     assertThatThrownBy(()
                            -> infrastructureEntityService.checkIfInfraIsScopedToService(ACCOUNT_ID, ORG_ID, PROJECT_ID,
                                "account.SERVICE_IDENTIFIER", "ENV_IDENTIFIER", "IDENTIFIER2"))
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage("Infrastructure: [IDENTIFIER2] inside Environment: [ENV_IDENTIFIER] doesn't scoped"
-            + "to service: [account.SERVICE_IDENTIFIER]");
+        .hasMessage("Infrastructure: [IDENTIFIER2] inside PROJECT level Environment: [ENV_IDENTIFIER] can't be scoped "
+            + "to ACCOUNT level Service: [account.SERVICE_IDENTIFIER]");
   }
 
   @Test
@@ -808,8 +808,8 @@ public class InfrastructureEntityServiceImplTest extends CDNGEntitiesTestBase {
             -> infrastructureEntityService.checkIfInfraIsScopedToService(ACCOUNT_ID, ORG_ID, PROJECT_ID,
                 List.of("SERVICE_IDENTIFIER5", "org.SERVICE_IDENTIFIER5", "account.SERVICE_IDENTIFIER5"), envInfraMap))
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage("Infrastructure: [IDENTIFIER3] inside Environment: [ENV_IDENTIFIER3] doesn't scoped "
-            + "to services: [[SERVICE_IDENTIFIER5, org.SERVICE_IDENTIFIER5, account.SERVICE_IDENTIFIER5]]");
+        .hasMessage("Infrastructure: [IDENTIFIER3] inside PROJECT level Environment: [ENV_IDENTIFIER3] can't be scoped "
+            + "to Service: [[SERVICE_IDENTIFIER5, org.SERVICE_IDENTIFIER5, account.SERVICE_IDENTIFIER5]]");
   }
 
   @Test
