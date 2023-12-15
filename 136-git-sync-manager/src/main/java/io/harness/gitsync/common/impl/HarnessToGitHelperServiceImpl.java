@@ -12,6 +12,8 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.gitsync.common.beans.BranchSyncStatus.UNSYNCED;
 import static io.harness.gitsync.common.scmerrorhandling.ScmErrorCodeToHttpStatusCodeMapping.HTTP_200;
 
+import static java.lang.String.format;
+
 import io.harness.ScopeIdentifiers;
 import io.harness.account.AccountClient;
 import io.harness.annotations.dev.CodePulse;
@@ -29,6 +31,7 @@ import io.harness.delegate.beans.git.YamlGitConfigDTO;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.eventsframework.schemas.entity.EntityScopeInfo;
 import io.harness.exception.ExceptionUtils;
+import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ScmException;
 import io.harness.exception.UnexpectedException;
@@ -126,6 +129,7 @@ import io.harness.remote.client.CGRestUtils;
 import io.harness.security.Principal;
 import io.harness.security.dto.UserPrincipal;
 import io.harness.utils.IdentifierRefHelper;
+import io.harness.validator.NGRegexValidatorConstants;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -163,6 +167,8 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   private final ScmFacilitatorService scmFacilitatorService;
   private final GitSyncSettingsService gitSyncSettingsService;
   private final AccountClient accountClient;
+  private static final String INVALID_BRANCH_NAME_FORMAT_STRING =
+      "The Branch Name [%s] is Invalid. Please check guidelines for creating branches at respective Git SCM application.";
 
   @Inject
   public HarnessToGitHelperServiceImpl(GitEntityService gitEntityService, YamlGitConfigService yamlGitConfigService,
@@ -464,7 +470,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   public io.harness.gitsync.CreateFileResponse createFile(CreateFileRequest createFileRequest) {
     try {
       Scope scope = ScopeIdentifierMapper.getScopeFromScopeIdentifiers(createFileRequest.getScopeIdentifiers());
-      gitFilePathHelper.validateFilePath(createFileRequest.getFilePath());
+      validateRemoteInputParameters(createFileRequest.getBranchName(), createFileRequest.getFilePath());
       ScmCommitFileResponseDTO scmCommitFileResponseDTO =
           scmFacilitatorService.createFile(ScmCreateFileRequestDTO.builder()
                                                .repoName(createFileRequest.getRepoName())
@@ -497,7 +503,7 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
   public io.harness.gitsync.UpdateFileResponse updateFile(UpdateFileRequest updateFileRequest) {
     try {
       Scope scope = ScopeIdentifierMapper.getScopeFromScopeIdentifiers(updateFileRequest.getScopeIdentifiers());
-      gitFilePathHelper.validateFilePath(updateFileRequest.getFilePath());
+      validateRemoteInputParameters(updateFileRequest.getBranchName(), updateFileRequest.getFilePath());
       ScmCommitFileResponseDTO scmCommitFileResponseDTO =
           scmFacilitatorService.updateFile(ScmUpdateFileRequestDTO.builder()
                                                .repoName(updateFileRequest.getRepoName())
@@ -640,6 +646,13 @@ public class HarnessToGitHelperServiceImpl implements HarnessToGitHelperService 
           .setStatusCode(ex.getCode().getStatus().getCode())
           .setError(prepareDefaultErrorDetails(ex))
           .build();
+    }
+  }
+
+  private void validateRemoteInputParameters(String branchName, String filePath) {
+    gitFilePathHelper.validateFilePath(filePath);
+    if (!branchName.matches(NGRegexValidatorConstants.BRANCH_NAME_PATTERN)) {
+      throw new InvalidArgumentsException(format(INVALID_BRANCH_NAME_FORMAT_STRING, branchName));
     }
   }
 
