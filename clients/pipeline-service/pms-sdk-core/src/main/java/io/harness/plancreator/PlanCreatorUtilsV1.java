@@ -46,6 +46,7 @@ import io.harness.pms.sdk.core.adviser.markFailure.OnMarkFailureAdviser;
 import io.harness.pms.sdk.core.adviser.markFailure.OnMarkFailureAdviserParameters;
 import io.harness.pms.sdk.core.adviser.marksuccess.OnMarkSuccessAdviser;
 import io.harness.pms.sdk.core.adviser.marksuccess.OnMarkSuccessAdviserParameters;
+import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.timeout.AbsoluteSdkTimeoutTrackerParameters;
 import io.harness.pms.timeout.SdkTimeoutObtainment;
 import io.harness.pms.yaml.ParameterField;
@@ -66,6 +67,7 @@ import io.harness.yaml.core.failurestrategy.v1.NGFailureActionTypeV1;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Duration;
 import java.util.ArrayList;
@@ -84,6 +86,7 @@ import lombok.experimental.UtilityClass;
 @OwnedBy(HarnessTeam.PIPELINE)
 @UtilityClass
 public class PlanCreatorUtilsV1 {
+  @Inject KryoSerializer kryoSerializer;
   public List<AdviserObtainment> getAdviserObtainmentsForStage(KryoSerializer kryoSerializer, Dependency dependency) {
     List<AdviserObtainment> adviserObtainments = new ArrayList<>();
     AdviserObtainment nextStepAdviser = getNextStepAdviser(kryoSerializer, dependency);
@@ -631,5 +634,11 @@ public class PlanCreatorUtilsV1 {
       }
     });
     return stepFields;
+  }
+
+  public boolean isInsideParallelNode(PlanCreationContext ctx) {
+    Optional<Object> value = getDeserializedObjectFromDependency(
+        ctx.getDependency(), kryoSerializer, PlanCreatorConstants.IS_INSIDE_PARALLEL_NODE, false);
+    return value.isPresent() && (boolean) value.get();
   }
 }

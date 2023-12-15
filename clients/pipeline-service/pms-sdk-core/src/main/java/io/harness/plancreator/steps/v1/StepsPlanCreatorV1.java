@@ -61,7 +61,7 @@ public class StepsPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
     }
     int i;
     YamlField curr;
-    boolean isInsideParallel = isInsideParallelNode(ctx);
+    boolean isInsideParallel = PlanCreatorUtilsV1.isInsideParallelNode(ctx);
     for (i = 0; i < steps.size() - 1; i++) {
       curr = getStepField(steps.get(i));
       String version = getYamlVersionFromStepField(curr);
@@ -139,7 +139,7 @@ public class StepsPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
     String facilitatorType = OrchestrationFacilitatorType.CHILD;
     StepType stepType = NGSectionStep.STEP_TYPE;
     StepParameters stepParameters = NGSectionStepParameters.builder().childNodeId(childrenNodeIds.get(0)).build();
-    if (isInsideParallelNode(ctx)) {
+    if (PlanCreatorUtilsV1.isInsideParallelNode(ctx)) {
       facilitatorType = OrchestrationFacilitatorType.CHILDREN;
       stepType = NGForkStep.STEP_TYPE;
       stepParameters = ForkStepParameters.builder().parallelNodeIds(childrenNodeIds).build();
@@ -175,11 +175,5 @@ public class StepsPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
   private List<YamlField> getStepYamlFields(YamlField yamlField) {
     List<YamlNode> yamlNodes = Optional.of(yamlField.getNode().asArray()).orElse(Collections.emptyList());
     return yamlNodes.stream().map(YamlField::new).collect(Collectors.toList());
-  }
-
-  private boolean isInsideParallelNode(PlanCreationContext ctx) {
-    Optional<Object> value = PlanCreatorUtilsV1.getDeserializedObjectFromDependency(
-        ctx.getDependency(), kryoSerializer, PlanCreatorConstants.IS_INSIDE_PARALLEL_NODE, false);
-    return value.isPresent() && (boolean) value.get();
   }
 }

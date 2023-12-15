@@ -23,6 +23,7 @@ import io.harness.pms.contracts.plan.EdgeLayoutList;
 import io.harness.pms.contracts.plan.GraphLayoutNode;
 import io.harness.pms.contracts.plan.HarnessStruct;
 import io.harness.pms.contracts.plan.HarnessValue;
+import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.plan.creation.PlanCreatorUtils;
@@ -32,6 +33,7 @@ import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.sdk.core.plan.creation.creators.ChildrenPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
+import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
@@ -39,6 +41,8 @@ import io.harness.pms.yaml.YamlNode;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StagesStep;
 import io.harness.steps.common.NGSectionStepParameters;
+import io.harness.steps.fork.ForkStepParameters;
+import io.harness.steps.fork.NGForkStep;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
@@ -66,7 +70,7 @@ public class StagesPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
     }
     int i;
     YamlField curr;
-    boolean isInsideParallel = isInsideParallelNode(ctx);
+    boolean isInsideParallel = PlanCreatorUtilsV1.isInsideParallelNode(ctx);
     for (i = 0; i < stages.size() - 1; i++) {
       curr = getStageField(stages.get(i));
       String version = getYamlVersionFromStageField(curr);
@@ -173,18 +177,25 @@ public class StagesPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
 
   @Override
   public PlanNode createPlanForParentNode(PlanCreationContext ctx, YamlField config, List<String> childrenNodeIds) {
+    String facilitatorType = OrchestrationFacilitatorType.CHILD;
+    StepType stepType = StagesStep.STEP_TYPE;
+    StepParameters stepParameters =
+        NGSectionStepParameters.builder().childNodeId(childrenNodeIds.get(0)).logMessage("Stages").build();
+    if (PlanCreatorUtilsV1.isInsideParallelNode(ctx)) {
+      facilitatorType = OrchestrationFacilitatorType.CHILDREN;
+      stepType = NGForkStep.STEP_TYPE;
+      stepParameters = ForkStepParameters.builder().parallelNodeIds(childrenNodeIds).build();
+    }
     return PlanNode.builder()
         .uuid(ctx.getCurrentField().getNode().getUuid())
         .identifier(YAMLFieldNameConstants.STAGES)
-        .stepType(StagesStep.STEP_TYPE)
+        .stepType(stepType)
         .group(StepOutcomeGroup.STAGES.name())
         .name(YAMLFieldNameConstants.STAGES)
-        .stepParameters(
-            NGSectionStepParameters.builder().childNodeId(childrenNodeIds.get(0)).logMessage("Stages").build())
-        .facilitatorObtainment(
-            FacilitatorObtainment.newBuilder()
-                .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILD).build())
-                .build())
+        .stepParameters(stepParameters)
+        .facilitatorObtainment(FacilitatorObtainment.newBuilder()
+                                   .setType(FacilitatorType.newBuilder().setType(facilitatorType).build())
+                                   .build())
         .skipExpressionChain(false)
         .build();
   }
@@ -207,12 +218,6 @@ public class StagesPlanCreatorV1 extends ChildrenPlanCreator<YamlField> {
   private boolean shouldSetStartingNodeId(PlanCreationContext ctx) {
     Optional<Object> value = PlanCreatorUtilsV1.getDeserializedObjectFromDependency(
         ctx.getDependency(), kryoSerializer, PlanCreatorConstants.SET_STARTING_NODE_ID, false);
-    return value.isPresent() && (boolean) value.get();
-  }
-
-  private boolean isInsideParallelNode(PlanCreationContext ctx) {
-    Optional<Object> value = PlanCreatorUtilsV1.getDeserializedObjectFromDependency(
-        ctx.getDependency(), kryoSerializer, PlanCreatorConstants.IS_INSIDE_PARALLEL_NODE, false);
     return value.isPresent() && (boolean) value.get();
   }
 
