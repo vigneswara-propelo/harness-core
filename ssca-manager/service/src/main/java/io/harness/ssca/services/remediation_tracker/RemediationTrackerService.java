@@ -13,7 +13,7 @@ public interface RemediationTrackerService {
   String createRemediationTracker(
       String accountId, String orgId, String projectId, RemediationTrackerCreateRequestBody body);
 
-  void updateArtifactsAndEnvironmentsInRemediationTracker(RemediationTrackerEntity remediationTracker);
+  void updateArtifactsAndEnvironments(RemediationTrackerEntity remediationTracker);
 
   RemediationTrackerEntity getRemediationTracker(String remediationTrackerId);
 }

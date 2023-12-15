@@ -4,16 +4,14 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
-package io.harness.repositories;
 
-import static io.harness.annotations.dev.HarnessTeam.SSCA;
+package io.harness.repositories.remediation_tracker;
 
-import io.harness.annotation.HarnessRepo;
-import io.harness.annotations.dev.OwnedBy;
 import io.harness.ssca.entities.remediation_tracker.RemediationTrackerEntity;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
-@HarnessRepo
-@OwnedBy(SSCA)
-public interface RemediationTrackerRepository extends CrudRepository<RemediationTrackerEntity, String> {}
+public interface RemediationTrackerRepositoryCustom {
+  RemediationTrackerEntity update(Query query, Update update);
+}

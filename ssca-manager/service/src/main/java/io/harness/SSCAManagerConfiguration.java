@@ -92,6 +92,7 @@ public class SSCAManagerConfiguration extends Configuration {
   @JsonProperty("featureFlagConfig") private FeatureFlagConfig featureFlagConfig;
   @JsonProperty("managerClientConfig") private ServiceHttpClientConfig managerClientConfig;
   @JsonProperty("accessControlClientConfig") private AccessControlClientConfiguration accessControlClientConfiguration;
+  @JsonProperty("iteratorsConfig") private SSCAIteratorsConfig iteratorsConfig;
 
   public SwaggerBundleConfiguration getSwaggerBundleConfiguration() {
     SwaggerBundleConfiguration defaultSwaggerBundleConfiguration = new SwaggerBundleConfiguration();

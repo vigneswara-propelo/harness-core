@@ -19,4 +19,9 @@ public class ArtifactInfo {
   List<EnvironmentInfo> environments;
   String ticketId;
   boolean isExcluded;
+  String latestTagWithFix;
+  String latestTagWithFixPipelineId;
+  String latestTagWithFixPipelineExecutionId;
+  long latestTagWithFixPipelineTriggeredAt;
+  DeploymentsCount deploymentsCount;
 }

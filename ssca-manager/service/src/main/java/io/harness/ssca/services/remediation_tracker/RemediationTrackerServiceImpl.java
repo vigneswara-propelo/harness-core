@@ -8,7 +8,7 @@ package io.harness.ssca.services.remediation_tracker;
 
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidArgumentsException;
-import io.harness.repositories.RemediationTrackerRepository;
+import io.harness.repositories.remediation_tracker.RemediationTrackerRepository;
 import io.harness.spec.server.ssca.v1.model.ComponentFilter;
 import io.harness.spec.server.ssca.v1.model.Operator;
 import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
@@ -17,11 +17,13 @@ import io.harness.ssca.enforcement.executors.mongo.filter.denylist.fields.Versio
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.remediation_tracker.ArtifactInfo;
+import io.harness.ssca.entities.remediation_tracker.DeploymentsCount;
 import io.harness.ssca.entities.remediation_tracker.EnvironmentInfo;
 import io.harness.ssca.entities.remediation_tracker.Pipeline;
 import io.harness.ssca.entities.remediation_tracker.RemediationCondition;
 import io.harness.ssca.entities.remediation_tracker.RemediationStatus;
 import io.harness.ssca.entities.remediation_tracker.RemediationTrackerEntity;
+import io.harness.ssca.entities.remediation_tracker.RemediationTrackerEntity.RemediationTrackerEntityKeys;
 import io.harness.ssca.mapper.RemediationTrackerMapper;
 import io.harness.ssca.services.ArtifactService;
 import io.harness.ssca.services.CdInstanceSummaryService;
@@ -40,6 +42,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 public class RemediationTrackerServiceImpl implements RemediationTrackerService {
   @Inject RemediationTrackerRepository repository;
@@ -67,47 +72,37 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
             .build();
     remediationTracker = repository.save(remediationTracker);
     // If this increases API latency, we can move this to a separate thread or a job.
-    updateArtifactsAndEnvironmentsInRemediationTracker(remediationTracker);
+    updateArtifactsAndEnvironments(remediationTracker);
     return remediationTracker.getUuid();
   }
 
   @Override
-  public void updateArtifactsAndEnvironmentsInRemediationTracker(RemediationTrackerEntity remediationTracker) {
-    List<PatchedPendingArtifactEntitiesResult> patchedPendingArtifactEntitiesResults =
-        getPatchedAndPendingArtifacts(remediationTracker);
+  public void updateArtifactsAndEnvironments(RemediationTrackerEntity remediationTracker) {
+    List<ComponentFilter> componentFilter = getComponentFilters(remediationTracker);
+    List<String> orchestrationIdsMatchingTrackerFilter = getOrchestrationIds(remediationTracker, componentFilter);
+
+    // Auto closing if no orchestrations matching the filter.
+    closeTrackerIfNoOrchestrations(remediationTracker, orchestrationIdsMatchingTrackerFilter);
+
     List<ArtifactEntity> patchedArtifactEntities = new ArrayList<>();
     List<ArtifactEntity> pendingArtifactEntities = new ArrayList<>();
-    if (EmptyPredicate.isNotEmpty(patchedPendingArtifactEntitiesResults)) {
-      // Our aggregation query ensures there is only one element returned in the list.
-      PatchedPendingArtifactEntitiesResult patchedPendingArtifactEntitiesResult =
-          patchedPendingArtifactEntitiesResults.get(0);
-      patchedArtifactEntities = patchedPendingArtifactEntitiesResult.getPatchedArtifacts();
-      pendingArtifactEntities = patchedPendingArtifactEntitiesResult.getPendingArtifacts();
-    }
-    List<String> artifactCorelationIds =
-        Stream
-            .concat(patchedArtifactEntities.stream().map(ArtifactEntity::getArtifactCorrelationId),
-                pendingArtifactEntities.stream().map(ArtifactEntity::getArtifactCorrelationId))
-            .collect(Collectors.toList());
+    processPatchedPendingArtifactEntities(
+        remediationTracker, orchestrationIdsMatchingTrackerFilter, patchedArtifactEntities, pendingArtifactEntities);
 
-    List<CdInstanceSummary> cdInstanceSummaries =
-        cdInstanceSummaryService.getCdInstanceSummaries(remediationTracker.getAccountId(),
-            remediationTracker.getOrgIdentifier(), remediationTracker.getProjectIdentifier(), artifactCorelationIds);
+    // Auto closing if no pending entities.
+    closeTrackerIfNoPendingEntities(pendingArtifactEntities, remediationTracker);
+
     List<ArtifactInfo> artifactInfos =
-        getArtifactInfo(patchedArtifactEntities, pendingArtifactEntities, cdInstanceSummaries);
-    Map<String, ArtifactInfo> artifactInfoMap =
-        artifactInfos.stream().collect(Collectors.toMap(ArtifactInfo::getArtifactId, artifactInfo -> {
-          if (remediationTracker.getArtifactInfos() != null
-              && remediationTracker.getArtifactInfos().containsKey(artifactInfo.getArtifactId())) {
-            artifactInfo.setTicketId(
-                remediationTracker.getArtifactInfos().get(artifactInfo.getArtifactId()).getTicketId());
-            artifactInfo.setExcluded(
-                remediationTracker.getArtifactInfos().get(artifactInfo.getArtifactId()).isExcluded());
-          }
-          return artifactInfo;
-        }));
-    remediationTracker.setArtifactInfos(artifactInfoMap);
-    repository.save(remediationTracker);
+        getArtifactInfo(remediationTracker, patchedArtifactEntities, pendingArtifactEntities);
+
+    updateRemediationTrackerWithDetails(remediationTracker, artifactInfos);
+    Criteria criteria = Criteria.where(RemediationTrackerEntityKeys.uuid).is(remediationTracker.getUuid());
+    Update update = new Update();
+    update.set(RemediationTrackerEntityKeys.artifactInfos, remediationTracker.getArtifactInfos());
+    update.set(RemediationTrackerEntityKeys.deploymentsCount, remediationTracker.getDeploymentsCount());
+    update.set(RemediationTrackerEntityKeys.status, remediationTracker.getStatus());
+    update.set(RemediationTrackerEntityKeys.endTimeMilli, remediationTracker.getEndTimeMilli());
+    repository.update(new Query(criteria), update);
   }
 
   @Override
@@ -117,10 +112,10 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
   }
 
   private void validateRemediationCreateRequest(RemediationTrackerCreateRequestBody body) {
-    if (body.getRemediationCondition().getOperator()
-            != io.harness.spec.server.ssca.v1.model.RemediationCondition.OperatorEnum.ALL
-        && body.getRemediationCondition().getOperator()
-            != io.harness.spec.server.ssca.v1.model.RemediationCondition.OperatorEnum.MATCHES) {
+    if ((body.getRemediationCondition().getOperator()
+            != io.harness.spec.server.ssca.v1.model.RemediationCondition.OperatorEnum.ALL)
+        && (body.getRemediationCondition().getOperator()
+            != io.harness.spec.server.ssca.v1.model.RemediationCondition.OperatorEnum.MATCHES)) {
       List<Integer> versions = VersionField.getVersion(body.getVulnerabilityInfo().getComponentVersion());
       if (versions.size() != 3 || versions.get(0) == -1) {
         throw new InvalidArgumentsException(
@@ -129,11 +124,48 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
     }
   }
 
+  private void closeTrackerIfNoOrchestrations(
+      RemediationTrackerEntity remediationTracker, List<String> orchestrationIdsMatchingTrackerFilter) {
+    if (orchestrationIdsMatchingTrackerFilter.isEmpty()) {
+      closeTracker(remediationTracker);
+    }
+  }
+
+  private void closeTrackerIfNoPendingEntities(
+      List<ArtifactEntity> pendingArtifactEntities, RemediationTrackerEntity remediationTracker) {
+    if (pendingArtifactEntities.isEmpty()) {
+      closeTracker(remediationTracker);
+    }
+  }
+
+  private void closeTracker(RemediationTrackerEntity remediationTracker) {
+    remediationTracker.setStatus(RemediationStatus.COMPLETED);
+    remediationTracker.setEndTimeMilli(System.currentTimeMillis());
+  }
+
+  private void updateRemediationTrackerWithDetails(
+      RemediationTrackerEntity remediationTracker, List<ArtifactInfo> artifactInfos) {
+    DeploymentsCount deploymentsCount = DeploymentsCount.builder().build();
+    Map<String, ArtifactInfo> artifactInfoMap =
+        artifactInfos.stream().collect(Collectors.toMap(ArtifactInfo::getArtifactId, artifactInfo -> {
+          if (remediationTracker.getArtifactInfos() != null
+              && remediationTracker.getArtifactInfos().containsKey(artifactInfo.getArtifactId())) {
+            artifactInfo.setTicketId(
+                remediationTracker.getArtifactInfos().get(artifactInfo.getArtifactId()).getTicketId());
+            artifactInfo.setExcluded(
+                remediationTracker.getArtifactInfos().get(artifactInfo.getArtifactId()).isExcluded());
+          }
+          if (!artifactInfo.isExcluded()) {
+            deploymentsCount.add(artifactInfo.getDeploymentsCount());
+          }
+          return artifactInfo;
+        }));
+    remediationTracker.setDeploymentsCount(deploymentsCount);
+    remediationTracker.setArtifactInfos(artifactInfoMap);
+  }
+
   private List<PatchedPendingArtifactEntitiesResult> getPatchedAndPendingArtifacts(
-      RemediationTrackerEntity remediationTracker) {
-    List<ComponentFilter> componentFilter = getComponentFilters(remediationTracker);
-    List<String> orchestrationIdsMatchingTrackerFilter = getOrchestrationIds(remediationTracker.getAccountId(),
-        remediationTracker.getOrgIdentifier(), remediationTracker.getProjectIdentifier(), componentFilter);
+      RemediationTrackerEntity remediationTracker, List<String> orchestrationIdsMatchingTrackerFilter) {
     Set<String> artifactIdsFromTrackerEntity = remediationTracker.getArtifactInfos() != null
         ? remediationTracker.getArtifactInfos().keySet()
         : new HashSet<>();
@@ -147,13 +179,24 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
         orchestrationIdsMatchingTrackerFilter);
   }
 
-  private List<String> getOrchestrationIds(
-      String accountId, String orgIdentifier, String projectIdentifier, List<ComponentFilter> componentFilter) {
-    if (CollectionUtils.isEmpty(componentFilter)) {
-      return Collections.emptyList();
+  private void processPatchedPendingArtifactEntities(RemediationTrackerEntity remediationTracker,
+      List<String> orchestrationIdsMatchingTrackerFilter, List<ArtifactEntity> patchedArtifactEntities,
+      List<ArtifactEntity> pendingArtifactEntities) {
+    List<PatchedPendingArtifactEntitiesResult> results =
+        getPatchedAndPendingArtifacts(remediationTracker, orchestrationIdsMatchingTrackerFilter);
+    if (EmptyPredicate.isNotEmpty(results)) {
+      PatchedPendingArtifactEntitiesResult result = results.get(0);
+      patchedArtifactEntities.addAll(result.getPatchedArtifacts());
+      pendingArtifactEntities.addAll(result.getPendingArtifacts());
     }
-    return normalisedSbomComponentService.getOrchestrationIds(
-        accountId, orgIdentifier, projectIdentifier, null, componentFilter);
+  }
+
+  private List<String> getOrchestrationIds(
+      RemediationTrackerEntity remediationTracker, List<ComponentFilter> componentFilter) {
+    return (CollectionUtils.isNotEmpty(componentFilter))
+        ? normalisedSbomComponentService.getOrchestrationIds(remediationTracker.getAccountId(),
+            remediationTracker.getOrgIdentifier(), remediationTracker.getProjectIdentifier(), null, componentFilter)
+        : Collections.emptyList();
   }
 
   private List<ComponentFilter> getComponentFilters(RemediationTrackerEntity entity) {
@@ -174,12 +217,19 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
     return componentFilter;
   }
 
-  private List<ArtifactInfo> getArtifactInfo(List<ArtifactEntity> patchedArtifactEntities,
-      List<ArtifactEntity> pendingArtifactEntities, List<CdInstanceSummary> cdInstanceSummaries) {
+  private List<ArtifactInfo> getArtifactInfo(RemediationTrackerEntity remediationTracker,
+      List<ArtifactEntity> patchedArtifactEntities, List<ArtifactEntity> pendingArtifactEntities) {
+    // Steps: 1. Get cd instance summaries for all the artifact correlation ids.
+    // 2. Build artifact details from the patched and pending artifact entities.
+    // 3. Build artifact info from the cd instance summaries. If the tag is patched, we update the
+    // latest tag with fix details build in the prev step.
+    // 4. If the artifact is not excluded, we update the deployments count.
+    List<CdInstanceSummary> cdInstanceSummaries =
+        getCdInstanceSummaries(remediationTracker, patchedArtifactEntities, pendingArtifactEntities);
     Map<String, ArtifactDetails> artifactCorelationIdToDetailMap =
         getArtifactCorelationIdToDetailMap(patchedArtifactEntities, pendingArtifactEntities);
     Map<String, ArtifactInfo> artifactIdtoInfoMap = new HashMap<>();
-
+    DeploymentsCount deploymentsCount = DeploymentsCount.builder().build();
     for (CdInstanceSummary summary : cdInstanceSummaries) {
       ArtifactDetails details = artifactCorelationIdToDetailMap.get(summary.getArtifactCorrelationId());
       ArtifactInfo info = artifactIdtoInfoMap.computeIfAbsent(details.getArtifactId(),
@@ -188,10 +238,25 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
                  .artifactId(details.getArtifactId())
                  .artifactName(details.getArtifactName())
                  .environments(new ArrayList<>())
+                 .deploymentsCount(DeploymentsCount.builder().build())
                  .build());
+      // Build details for the tag are fetched from the artifact entity.
+      // We generated those details from the artifact entity. So, we can use the same details.
+      if (details.isPatched() && info.getLatestTagWithFixPipelineTriggeredAt() < details.getCreatedOn()) {
+        info.setLatestTagWithFixPipelineTriggeredAt(details.getCreatedOn());
+        info.setLatestTagWithFix(details.getArtifactTag());
+        info.setLatestTagWithFixPipelineId(details.getBuildPipelineId());
+        info.setLatestTagWithFixPipelineExecutionId(details.getBuildPipelineExecutionId());
+      }
+
+      info.getDeploymentsCount().update(summary.getEnvType(), details.isPatched());
       EnvironmentInfo environmentInfo = buildEnvironmentInfo(summary, details);
       info.getEnvironments().add(environmentInfo);
       artifactIdtoInfoMap.put(details.getArtifactId(), info);
+      // if artifact is excluded, we don't count it in deployments count.
+      if (!info.isExcluded()) {
+        deploymentsCount.update(summary.getEnvType(), details.isPatched());
+      }
     }
 
     return new ArrayList<>(artifactIdtoInfoMap.values());
@@ -207,6 +272,9 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
               .artifactName(entity.getName())
               .artifactTag(entity.getTag())
               .patched(true)
+              .createdOn(entity.getCreatedOn().toEpochMilli())
+              .buildPipelineId(entity.getPipelineId())
+              .buildPipelineExecutionId(entity.getPipelineExecutionId())
               .build());
     }
     for (ArtifactEntity entity : pendingArtifactEntities) {
@@ -216,9 +284,23 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
               .artifactName(entity.getName())
               .artifactTag(entity.getTag())
               .patched(false)
+              .createdOn(entity.getCreatedOn().toEpochMilli())
+              .buildPipelineId(entity.getPipelineId())
+              .buildPipelineExecutionId(entity.getPipelineExecutionId())
               .build());
     }
     return artifactCorelationIdToDetailMap;
+  }
+
+  private List<CdInstanceSummary> getCdInstanceSummaries(RemediationTrackerEntity remediationTracker,
+      List<ArtifactEntity> patchedArtifactEntities, List<ArtifactEntity> pendingArtifactEntities) {
+    List<String> artifactCorelationIds =
+        Stream
+            .concat(patchedArtifactEntities.stream().map(ArtifactEntity::getArtifactCorrelationId),
+                pendingArtifactEntities.stream().map(ArtifactEntity::getArtifactCorrelationId))
+            .collect(Collectors.toList());
+    return cdInstanceSummaryService.getCdInstanceSummaries(remediationTracker.getAccountId(),
+        remediationTracker.getOrgIdentifier(), remediationTracker.getProjectIdentifier(), artifactCorelationIds);
   }
 
   private Operator mapOperator(RemediationCondition.Operator operator) {
@@ -249,7 +331,6 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
 
   private Pipeline buildDeploymentPipeline(CdInstanceSummary summary) {
     return Pipeline.builder()
-        .pipelineName(summary.getLastPipelineName())
         .pipelineId(summary.getLastPipelineExecutionName())
         .pipelineExecutionId(summary.getLastPipelineExecutionId())
         .triggeredById(summary.getLastDeployedById())
@@ -265,5 +346,8 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
     String artifactName;
     String artifactTag;
     boolean patched;
+    long createdOn;
+    String buildPipelineId;
+    String buildPipelineExecutionId;
   }
 }

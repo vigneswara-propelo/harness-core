@@ -8,6 +8,7 @@
 package io.harness.ssca.services.remediation_tracker;
 
 import static io.harness.rule.OwnerRule.VARSHA_LALWANI;
+import static io.harness.ssca.entities.remediation_tracker.RemediationStatus.COMPLETED;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -21,7 +22,10 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.rule.Owner;
 import io.harness.spec.server.ssca.v1.model.RemediationCondition;
 import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
+import io.harness.spec.server.ssca.v1.model.VulnerabilitySeverity;
+import io.harness.ssca.beans.EnvType;
 import io.harness.ssca.beans.remediation_tracker.PatchedPendingArtifactEntitiesResult;
+import io.harness.ssca.entities.remediation_tracker.CVEVulnerability;
 import io.harness.ssca.entities.remediation_tracker.RemediationTrackerEntity;
 import io.harness.ssca.services.ArtifactService;
 import io.harness.ssca.services.CdInstanceSummaryService;
@@ -50,10 +54,13 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
 
   private BuilderFactory builderFactory;
 
+  private RemediationTrackerCreateRequestBody remediationTrackerCreateRequestBody;
+
   @Before
   public void setup() throws IllegalAccessException {
     MockitoAnnotations.initMocks(this);
     builderFactory = BuilderFactory.getDefault();
+    remediationTrackerCreateRequestBody = builderFactory.getRemediationTrackerCreateRequestBody();
     when(normalisedSbomComponentService.getOrchestrationIds(any(), any(), any(), any(), any()))
         .thenReturn(new ArrayList<>());
     when(artifactService.getDistinctArtifactIds(any(), any(), any(), any()))
@@ -72,14 +79,9 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
   @Owner(developers = VARSHA_LALWANI)
   @Category(UnitTests.class)
   public void testCreateRemediationTracker() {
-    RemediationTrackerCreateRequestBody remediationTrackerCreateRequestBody =
-        builderFactory.getRemediationTrackerCreateRequestBody();
-    String remediationTrackerId = remediationTrackerService.createRemediationTracker(
-        builderFactory.getContext().getAccountId(), builderFactory.getContext().getOrgIdentifier(),
-        builderFactory.getContext().getProjectIdentifier(), remediationTrackerCreateRequestBody);
-    assertThat(remediationTrackerId).isNotNull();
     RemediationTrackerEntity remediationTrackerEntity =
-        remediationTrackerService.getRemediationTracker(remediationTrackerId);
+        getRemediationTrackerEntity(remediationTrackerCreateRequestBody);
+
     assertThat(remediationTrackerEntity).isNotNull();
     assertThat(remediationTrackerEntity.getAccountId()).isEqualTo(builderFactory.getContext().getAccountId());
     assertThat(remediationTrackerEntity.getOrgIdentifier()).isEqualTo(builderFactory.getContext().getOrgIdentifier());
@@ -106,14 +108,49 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
         .isEqualTo("envId");
     assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").getEnvironments().get(1).isPatched())
         .isFalse();
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPatchedProdCount())
+        .isEqualTo(1);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPendingProdCount())
+        .isEqualTo(1);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPatchedNonProdCount())
+        .isZero();
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPendingNonProdCount())
+        .isZero();
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPatchedProdCount()).isEqualTo(1);
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPatchedNonProdCount()).isZero();
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPendingProdCount()).isEqualTo(1);
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPendingNonProdCount()).isZero();
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testCreateRemediationTrackerWithCVE() {
+    io.harness.spec.server.ssca.v1.model.CVEVulnerability cveVulnerability =
+        new io.harness.spec.server.ssca.v1.model.CVEVulnerability();
+    cveVulnerability.setType("CVE");
+    cveVulnerability.setCve("CVE-2021-44228");
+    cveVulnerability.setComponentName("log4j");
+    cveVulnerability.setComponentVersion("1.2.3");
+    cveVulnerability.setSeverity(VulnerabilitySeverity.HIGH);
+    remediationTrackerCreateRequestBody.setVulnerabilityInfo(cveVulnerability);
+    RemediationTrackerEntity remediationTrackerEntity =
+        getRemediationTrackerEntity(remediationTrackerCreateRequestBody);
+    assertThat(remediationTrackerEntity).isNotNull();
+    assertThat(remediationTrackerEntity.getVulnerabilityInfo().getType())
+        .isEqualTo(io.harness.ssca.entities.remediation_tracker.VulnerabilityInfoType.CVE);
+    assertThat(((CVEVulnerability) remediationTrackerEntity.getVulnerabilityInfo()).getCve())
+        .isEqualTo("CVE-2021-44228");
   }
 
   @Test
   @Owner(developers = VARSHA_LALWANI)
   @Category(UnitTests.class)
   public void testCreateRemediationTracker_withFailedValidation_ForVersion() {
-    RemediationTrackerCreateRequestBody remediationTrackerCreateRequestBody =
-        builderFactory.getRemediationTrackerCreateRequestBody();
     remediationTrackerCreateRequestBody.setRemediationCondition(
         new RemediationCondition().operator(RemediationCondition.OperatorEnum.LESSTHAN).version("tag1"));
     assertThatExceptionOfType(InvalidArgumentsException.class)
@@ -129,15 +166,93 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
   @Owner(developers = VARSHA_LALWANI)
   @Category(UnitTests.class)
   public void testUpdateArtifactsAndEnvironmentsInRemediationTracker() throws IllegalAccessException {
-    RemediationTrackerCreateRequestBody remediationTrackerCreateRequestBody =
-        builderFactory.getRemediationTrackerCreateRequestBody();
+    RemediationTrackerEntity remediationTrackerEntity =
+        getRemediationTrackerEntity(remediationTrackerCreateRequestBody);
+
+    updatedArtifactsAndCdInstanceSummaries();
+
+    remediationTrackerService.updateArtifactsAndEnvironments(remediationTrackerEntity);
+    remediationTrackerEntity = remediationTrackerService.getRemediationTracker(remediationTrackerEntity.getUuid());
+    assertThat(remediationTrackerEntity.getArtifactInfos()).isNotNull();
+    assertThat(remediationTrackerEntity.getArtifactInfos().size()).isEqualTo(2);
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").getArtifactId()).isEqualTo("artifactId");
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").getArtifactName()).isEqualTo("test/image");
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").getEnvironments().size()).isEqualTo(6);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPatchedProdCount())
+        .isEqualTo(3);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPendingProdCount())
+        .isEqualTo(2);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPatchedNonProdCount())
+        .isEqualTo(1);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId").getDeploymentsCount().getPendingNonProdCount())
+        .isZero();
+
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId1").getArtifactId()).isEqualTo("artifactId1");
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId1").getArtifactName())
+        .isEqualTo("test/image");
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId1").getEnvironments().size()).isEqualTo(1);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId1").getDeploymentsCount().getPatchedProdCount())
+        .isZero();
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId1").getDeploymentsCount().getPendingProdCount())
+        .isEqualTo(1);
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId1").getDeploymentsCount().getPatchedNonProdCount())
+        .isZero();
+    assertThat(
+        remediationTrackerEntity.getArtifactInfos().get("artifactId1").getDeploymentsCount().getPendingNonProdCount())
+        .isZero();
+
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPatchedProdCount()).isEqualTo(3);
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPatchedNonProdCount()).isEqualTo(1);
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPendingProdCount()).isEqualTo(3);
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPendingNonProdCount()).isZero();
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testDeploymentCounts_WithExcludedArtifacts() throws IllegalAccessException {
+    RemediationTrackerEntity remediationTrackerEntity =
+        getRemediationTrackerEntity(remediationTrackerCreateRequestBody);
+    remediationTrackerEntity.getArtifactInfos().get("artifactId").setExcluded(true);
+
+    updatedArtifactsAndCdInstanceSummaries();
+
+    remediationTrackerService.updateArtifactsAndEnvironments(remediationTrackerEntity);
+    remediationTrackerEntity = remediationTrackerService.getRemediationTracker(remediationTrackerEntity.getUuid());
+    assertThat(remediationTrackerEntity.getArtifactInfos()).isNotNull();
+    assertThat(remediationTrackerEntity.getArtifactInfos().size()).isEqualTo(2);
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPatchedProdCount()).isZero();
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPatchedNonProdCount()).isZero();
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPendingProdCount()).isEqualTo(1);
+    assertThat(remediationTrackerEntity.getDeploymentsCount().getPendingNonProdCount()).isZero();
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testAutoCloseRemediationTracker() {
+    RemediationTrackerEntity remediationTrackerEntity =
+        getRemediationTrackerEntity(remediationTrackerCreateRequestBody);
+    assertThat(remediationTrackerEntity.getStatus()).isEqualTo(COMPLETED);
+    assertThat(remediationTrackerEntity.getEndTimeMilli()).isNotNull();
+  }
+
+  private RemediationTrackerEntity getRemediationTrackerEntity(RemediationTrackerCreateRequestBody requestBody) {
     String remediationTrackerId = remediationTrackerService.createRemediationTracker(
         builderFactory.getContext().getAccountId(), builderFactory.getContext().getOrgIdentifier(),
-        builderFactory.getContext().getProjectIdentifier(), remediationTrackerCreateRequestBody);
+        builderFactory.getContext().getProjectIdentifier(), requestBody);
     assertThat(remediationTrackerId).isNotNull();
-    RemediationTrackerEntity remediationTrackerEntity =
-        remediationTrackerService.getRemediationTracker(remediationTrackerId);
+    return remediationTrackerService.getRemediationTracker(remediationTrackerId);
+  }
 
+  private void updatedArtifactsAndCdInstanceSummaries() throws IllegalAccessException {
     when(artifactService.listDeployedArtifactsFromIdsWithCriteria(any(), any(), any(), any(), any()))
         .thenReturn(Collections.singletonList(
             PatchedPendingArtifactEntitiesResult.builder()
@@ -152,8 +267,11 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
                             .build()))
                 .build()));
     when(cdInstanceSummaryService.getCdInstanceSummaries(any(), any(), any(), any()))
-        .thenReturn(List.of(
-            builderFactory.getCdInstanceSummaryBuilder().artifactCorrelationId("patched").envIdentifier("env2").build(),
+        .thenReturn(List.of(builderFactory.getCdInstanceSummaryBuilder()
+                                .artifactCorrelationId("patched")
+                                .envIdentifier("env2")
+                                .envType(EnvType.PreProduction)
+                                .build(),
             builderFactory.getCdInstanceSummaryBuilder().artifactCorrelationId("patched").envIdentifier("env1").build(),
             builderFactory.getCdInstanceSummaryBuilder()
                 .artifactCorrelationId("patched1")
@@ -171,17 +289,5 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
             builderFactory.getCdInstanceSummaryBuilder().artifactCorrelationId("pending").build()));
     FieldUtils.writeField(remediationTrackerService, "artifactService", artifactService, true);
     FieldUtils.writeField(remediationTrackerService, "cdInstanceSummaryService", cdInstanceSummaryService, true);
-    remediationTrackerService.updateArtifactsAndEnvironmentsInRemediationTracker(remediationTrackerEntity);
-    remediationTrackerEntity = remediationTrackerService.getRemediationTracker(remediationTrackerEntity.getUuid());
-    assertThat(remediationTrackerEntity.getArtifactInfos()).isNotNull();
-    assertThat(remediationTrackerEntity.getArtifactInfos().size()).isEqualTo(2);
-    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").getArtifactId()).isEqualTo("artifactId");
-    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").getArtifactName()).isEqualTo("test/image");
-    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").getEnvironments().size()).isEqualTo(6);
-
-    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId1").getArtifactId()).isEqualTo("artifactId1");
-    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId1").getArtifactName())
-        .isEqualTo("test/image");
-    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId1").getEnvironments().size()).isEqualTo(1);
   }
 }

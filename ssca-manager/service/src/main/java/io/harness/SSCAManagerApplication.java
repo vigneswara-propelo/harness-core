@@ -191,7 +191,7 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
     registerCorrelationFilter(environment, injector);
     registerRequestContextFilter(environment);
     registerCorsFilter(sscaManagerConfiguration, environment);
-    registerIterators(injector);
+    registerIterators(injector, sscaManagerConfiguration.getIteratorsConfig());
     registerSscaEvents(sscaManagerConfiguration, injector);
     registerManagedBeans(environment, injector);
     registerJobs(sscaManagerConfiguration, environment, injector);
@@ -322,7 +322,8 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
             && resourceInfoAndRequest.getKey().getResourceClass().getAnnotation(annotation) != null);
   }
 
-  public static void registerIterators(Injector injector) {
-    injector.getInstance(RemediationTrackerUpdateArtifactsIteratorHandler.class).registerIterators(5);
+  public static void registerIterators(Injector injector, SSCAIteratorsConfig iteratorsConfig) {
+    injector.getInstance(RemediationTrackerUpdateArtifactsIteratorHandler.class)
+        .registerIterators(iteratorsConfig.getRemediationTrackerUpdateIteratorConfig());
   }
 }
