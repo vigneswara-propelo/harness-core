@@ -1010,7 +1010,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ECS Service Setup")
             .setType(StepSpecTypeConstants.ECS_SERVICE_SETUP)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
-            .setFeatureFlag(FeatureName.CDS_ECS_BASIC_DEPLOYMENT_STRATEGY.name())
             .build();
 
     StepInfo ecsUpgradeContainer =
@@ -1018,7 +1017,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ECS Upgrade Container")
             .setType(StepSpecTypeConstants.ECS_UPGRADE_CONTAINER)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
-            .setFeatureFlag(FeatureName.CDS_ECS_BASIC_DEPLOYMENT_STRATEGY.name())
             .build();
 
     StepInfo ecsBasicRollback =
@@ -1026,7 +1024,6 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setName("ECS Basic Rollback")
             .setType(StepSpecTypeConstants.ECS_BASIC_ROLLBACK)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("ECS").setFolderPath("ECS").build())
-            .setFeatureFlag(FeatureName.CDS_ECS_BASIC_DEPLOYMENT_STRATEGY.name())
             .build();
 
     StepInfo googleFunctionDeploy =
