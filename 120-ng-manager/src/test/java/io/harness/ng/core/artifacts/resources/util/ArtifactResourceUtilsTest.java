@@ -13,6 +13,7 @@ import static io.harness.rule.OwnerRule.INDER;
 import static io.harness.rule.OwnerRule.RAKSHIT_AGARWAL;
 import static io.harness.rule.OwnerRule.SARTHAK_KASAT;
 import static io.harness.rule.OwnerRule.SHIVAM;
+import static io.harness.rule.OwnerRule.SOURABH;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 import static io.harness.rule.OwnerRule.VINICIUS;
 import static io.harness.rule.OwnerRule.YOGESH;
@@ -93,6 +94,7 @@ import io.harness.cdng.manifest.yaml.S3StoreConfig;
 import io.harness.delegate.beans.azure.AcrBuildDetailsDTO;
 import io.harness.delegate.beans.azure.AcrResponseDTO;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
+import io.harness.encryption.Scope;
 import io.harness.evaluators.CDExpressionEvaluator;
 import io.harness.evaluators.CDYamlExpressionEvaluator;
 import io.harness.exception.InvalidRequestException;
@@ -107,13 +109,19 @@ import io.harness.ng.core.environment.beans.Environment;
 import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.services.ServiceEntityService;
+import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
+import io.harness.ng.core.serviceoverridev2.beans.ServiceOverridesSpec;
+import io.harness.ng.core.serviceoverridev2.beans.ServiceOverridesType;
+import io.harness.ng.core.serviceoverridev2.service.ServiceOverridesServiceV2;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ng.core.template.TemplateResponseDTO;
+import io.harness.ng.core.utils.ServiceOverrideV2ValidationHelper;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.inputset.MergeInputSetResponseDTOPMS;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlNodeUtils;
 import io.harness.rule.Owner;
@@ -139,6 +147,7 @@ import java.util.Objects;
 import java.util.Optional;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.apache.commons.collections.map.HashedMap;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -171,6 +180,8 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
   @Mock S3ResourceService s3ResourceService;
   @Mock ArtifactSourceInstrumentationHelper artifactSourceInstrumentationHelper;
   @Mock JenkinsResourceService jenkinsResourceService;
+  @Mock ServiceOverrideV2ValidationHelper serviceOverrideV2ValidationHelper;
+  @Mock ServiceOverridesServiceV2 serviceOverridesServiceV2;
   private static final String ACCOUNT_ID = "accountId";
   private static final String ORG_ID = "orgId";
   private static final boolean IS_SERVICE_V2 = false;
@@ -4595,6 +4606,125 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     assertThat(modifiedBuildDetails.getGarRepositoryDTOList()).hasSize(0);
   }
 
+  @Test
+  @Owner(developers = SOURABH)
+  @Category(UnitTests.class)
+  public void testGetAliasYamlFieldsProjectLevelVariables() {
+    when(environmentService.get(anyString(), anyString(), anyString(), any(), anyBoolean()))
+        .thenReturn(Optional.of(Environment.builder()
+                                    .name("env1")
+                                    .identifier("env1")
+                                    .yaml("environment:\n"
+                                        + "    name: env1\n"
+                                        + "    identifier: env1\n"
+                                        + "    orgIdentifier: org\n"
+                                        + "    tags: {}")
+                                    .build()));
+    Map<Scope, NGServiceOverridesEntity> overridesEntityMap = new HashedMap();
+    overridesEntityMap.put(Scope.PROJECT, createTestOverrideInProject());
+    overridesEntityMap.put(Scope.ORG, createTestOverrideInOrg());
+    overridesEntityMap.put(Scope.ACCOUNT, createTestOverrideInAccount());
+    when(serviceOverrideV2ValidationHelper.isOverridesV2Enabled(any(), any(), any())).thenReturn(true);
+    when(serviceOverridesServiceV2.getEnvOverride(any(), any(), any(), any(), any())).thenReturn(overridesEntityMap);
+    List<YamlField> yamlFields =
+        artifactResourceUtils.getAliasYamlFields(ACCOUNT_ID, ORG_ID, PROJECT_ID, null, "env1", new HashedMap());
+    assertThat(yamlFields.toString()).contains("\"name\":\"variable1\",\"value\":\"project\"");
+  }
+
+  @Test
+  @Owner(developers = SOURABH)
+  @Category(UnitTests.class)
+  public void testGetAliasYamlFieldsOrgLevelVariables() {
+    when(environmentService.get(anyString(), anyString(), anyString(), any(), anyBoolean()))
+        .thenReturn(Optional.of(Environment.builder()
+                                    .name("env1")
+                                    .identifier("env1")
+                                    .yaml("environment:\n"
+                                        + "    name: env1\n"
+                                        + "    identifier: env1\n"
+                                        + "    orgIdentifier: org\n"
+                                        + "    tags: {}")
+                                    .build()));
+    Map<Scope, NGServiceOverridesEntity> overridesEntityMap = new HashedMap();
+    overridesEntityMap.put(Scope.ORG, createTestOverrideInOrg());
+    overridesEntityMap.put(Scope.ACCOUNT, createTestOverrideInAccount());
+    when(serviceOverrideV2ValidationHelper.isOverridesV2Enabled(any(), any(), any())).thenReturn(true);
+    when(serviceOverridesServiceV2.getEnvOverride(any(), any(), any(), any(), any())).thenReturn(overridesEntityMap);
+    List<YamlField> yamlFields =
+        artifactResourceUtils.getAliasYamlFields(ACCOUNT_ID, ORG_ID, PROJECT_ID, null, "env1", new HashedMap());
+    assertThat(yamlFields.toString()).contains("\"name\":\"variable1\",\"value\":\"org\"");
+  }
+
+  @Test
+  @Owner(developers = SOURABH)
+  @Category(UnitTests.class)
+  public void testGetAliasYamlFieldsAccountLevelVariables() {
+    when(environmentService.get(anyString(), anyString(), anyString(), any(), anyBoolean()))
+        .thenReturn(Optional.of(Environment.builder()
+                                    .name("env1")
+                                    .identifier("env1")
+                                    .yaml("environment:\n"
+                                        + "    name: env1\n"
+                                        + "    identifier: env1\n"
+                                        + "    orgIdentifier: org\n"
+                                        + "    tags: {}")
+                                    .build()));
+    Map<Scope, NGServiceOverridesEntity> overridesEntityMap = new HashedMap();
+    overridesEntityMap.put(Scope.ACCOUNT, createTestOverrideInAccount());
+    when(serviceOverrideV2ValidationHelper.isOverridesV2Enabled(any(), any(), any())).thenReturn(true);
+    when(serviceOverridesServiceV2.getEnvOverride(any(), any(), any(), any(), any())).thenReturn(overridesEntityMap);
+    List<YamlField> yamlFields =
+        artifactResourceUtils.getAliasYamlFields(ACCOUNT_ID, ORG_ID, PROJECT_ID, null, "env1", new HashedMap());
+    assertThat(yamlFields.toString()).contains("\"name\":\"variable1\",\"value\":\"account\"");
+  }
+
+  @Test
+  @Owner(developers = SOURABH)
+  @Category(UnitTests.class)
+  public void testGetAliasYamlFieldsWithNoEnvGlobalOverrides() {
+    when(environmentService.get(anyString(), anyString(), anyString(), any(), anyBoolean()))
+        .thenReturn(Optional.of(Environment.builder()
+                                    .name("env1")
+                                    .identifier("env1")
+                                    .yaml("environment:\n"
+                                        + "    name: env1\n"
+                                        + "    identifier: env1\n"
+                                        + "    orgIdentifier: org\n"
+                                        + "    tags: {}")
+                                    .build()));
+    Map<Scope, NGServiceOverridesEntity> overridesEntityMap = new HashedMap();
+    when(serviceOverrideV2ValidationHelper.isOverridesV2Enabled(any(), any(), any())).thenReturn(true);
+    when(serviceOverridesServiceV2.getEnvOverride(any(), any(), any(), any(), any())).thenReturn(overridesEntityMap);
+    List<YamlField> yamlFields =
+        artifactResourceUtils.getAliasYamlFields(ACCOUNT_ID, ORG_ID, PROJECT_ID, null, "env1", new HashedMap());
+    assertThat(yamlFields.toString())
+        .contains("\"name\":\"env1\",\"identifier\":\"env1\",\"orgIdentifier\":\"org\",\"tags\":{},\"variables\":[]");
+  }
+
+  @Test
+  @Owner(developers = SOURABH)
+  @Category(UnitTests.class)
+  public void testGetAliasYamlFieldsWithFFDisabled() {
+    when(environmentService.get(anyString(), anyString(), anyString(), any(), anyBoolean()))
+        .thenReturn(Optional.of(Environment.builder()
+                                    .name("env1")
+                                    .identifier("env1")
+                                    .yaml("environment:\n"
+                                        + "    name: env1\n"
+                                        + "    identifier: env1\n"
+                                        + "    orgIdentifier: org\n"
+                                        + "    tags: {}")
+                                    .build()));
+    Map<Scope, NGServiceOverridesEntity> overridesEntityMap = new HashedMap();
+    overridesEntityMap.put(Scope.ACCOUNT, createTestOverrideInAccount());
+    when(serviceOverrideV2ValidationHelper.isOverridesV2Enabled(any(), any(), any())).thenReturn(false);
+    when(serviceOverridesServiceV2.getEnvOverride(any(), any(), any(), any(), any())).thenReturn(overridesEntityMap);
+    List<YamlField> yamlFields =
+        artifactResourceUtils.getAliasYamlFields(ACCOUNT_ID, ORG_ID, PROJECT_ID, null, "env1", new HashedMap());
+    assertThat(yamlFields.toString())
+        .contains("\"name\":\"env1\",\"identifier\":\"env1\",\"orgIdentifier\":\"org\",\"tags\":{}");
+  }
+
   private void mockEnvironmentGetCall() {
     when(environmentService.get(anyString(), anyString(), anyString(), eq("env1"), anyBoolean()))
         .thenReturn(Optional.of(Environment.builder()
@@ -4692,5 +4822,64 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     } catch (IOException e) {
       throw new InvalidRequestException("Could not read resource file: " + filename);
     }
+  }
+
+  private NGServiceOverridesEntity createTestOverrideInProject() {
+    return NGServiceOverridesEntity.builder()
+        .identifier("project_override")
+        .environmentRef("account.e1")
+        .isV2(true)
+        .type(ServiceOverridesType.ENV_GLOBAL_OVERRIDE)
+        .projectIdentifier(PROJECT)
+        .orgIdentifier(ORG_ID)
+        .accountId(ACCOUNT_ID)
+        .yaml(String.format(
+            "serviceOverrides:\n  environmentRef: %s\n   manifests:\n    - manifest:\n        identifier: manifestIdentifier\n        type: HelmRepoOverride\n        spec:\n          type: Http\n          connectorRef: account.puthrayahelm\n",
+            "account.e1"))
+        .spec(ServiceOverridesSpec.builder()
+                  .variables(List.of(StringNGVariable.builder()
+                                         .name("variable1")
+                                         .value(ParameterField.createValueField("project"))
+                                         .build()))
+                  .build())
+        .build();
+  }
+
+  private NGServiceOverridesEntity createTestOverrideInOrg() {
+    return NGServiceOverridesEntity.builder()
+        .identifier("org_override")
+        .environmentRef("account.e1")
+        .isV2(true)
+        .type(ServiceOverridesType.ENV_GLOBAL_OVERRIDE)
+        .orgIdentifier(ORG_ID)
+        .accountId(ACCOUNT_ID)
+        .yaml(String.format(
+            "serviceOverrides:\n  environmentRef: %s\n    manifests:\n    - manifest:\n        identifier: manifestIdentifier\n        type: HelmRepoOverride\n        spec:\n          type: Http\n          connectorRef: account.puthrayahelm\n",
+            "account.e1"))
+        .spec(
+            ServiceOverridesSpec.builder()
+                .variables(List.of(
+                    StringNGVariable.builder().name("variable1").value(ParameterField.createValueField("org")).build()))
+                .build())
+        .build();
+  }
+
+  private NGServiceOverridesEntity createTestOverrideInAccount() {
+    return NGServiceOverridesEntity.builder()
+        .identifier("account_override")
+        .environmentRef("account.e1")
+        .isV2(true)
+        .type(ServiceOverridesType.ENV_GLOBAL_OVERRIDE)
+        .accountId(ACCOUNT_ID)
+        .yaml(String.format(
+            "serviceOverrides:\n  environmentRef: %s\n   manifests:\n    - manifest:\n       identifier: manifestIdentifier\n        type: HelmRepoOverride\n        spec:\n          type: Http\n          connectorRef: account.puthrayahelm\n",
+            "account.e1"))
+        .spec(ServiceOverridesSpec.builder()
+                  .variables(List.of(StringNGVariable.builder()
+                                         .name("variable1")
+                                         .value(ParameterField.createValueField("account"))
+                                         .build()))
+                  .build())
+        .build();
   }
 }

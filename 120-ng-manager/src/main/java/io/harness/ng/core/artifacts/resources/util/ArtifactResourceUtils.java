@@ -13,6 +13,7 @@ import static io.harness.gitcaching.GitCachingConstants.BOOLEAN_TRUE_VALUE;
 
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.EXTERNAL_PROPERTY;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
+import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.accesscontrol.acl.api.Resource;
@@ -86,6 +87,7 @@ import io.harness.data.algorithm.HashGenerator;
 import io.harness.delegate.beans.azure.AcrBuildDetailsDTO;
 import io.harness.delegate.beans.azure.AcrResponseDTO;
 import io.harness.delegate.task.artifacts.ArtifactSourceType;
+import io.harness.encryption.Scope;
 import io.harness.evaluators.CDExpressionEvaluator;
 import io.harness.evaluators.CDYamlExpressionEvaluator;
 import io.harness.exception.InvalidRequestException;
@@ -103,10 +105,14 @@ import io.harness.ng.core.environment.services.EnvironmentService;
 import io.harness.ng.core.service.entity.ServiceEntity;
 import io.harness.ng.core.service.services.ServiceEntityService;
 import io.harness.ng.core.service.services.impl.InputSetMergeUtility;
+import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
+import io.harness.ng.core.serviceoverridev2.beans.ServiceOverridesSpec;
+import io.harness.ng.core.serviceoverridev2.service.ServiceOverridesServiceV2;
 import io.harness.ng.core.template.TemplateApplyRequestDTO;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.ng.core.template.TemplateResponseDTO;
+import io.harness.ng.core.utils.ServiceOverrideV2ValidationHelper;
 import io.harness.pipeline.remote.PipelineServiceClient;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.inputset.MergeInputSetResponseDTOPMS;
@@ -134,6 +140,10 @@ import software.wings.helpers.ext.nexus.NexusRepositories;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.Inject;
 import java.io.IOException;
@@ -176,12 +186,20 @@ public class ArtifactResourceUtils {
   @Inject BucketsResourceUtils bucketsResourceUtils;
   @Inject ArtifactSourceInstrumentationHelper artifactSourceInstrumentationHelper;
   @Inject JenkinsResourceService jenkinsResourceService;
+  @Inject ServiceOverridesServiceV2 serviceOverridesServiceV2;
+  @Inject ServiceOverrideV2ValidationHelper overrideV2ValidationHelper;
 
   public final String SERVICE_GIT_BRANCH = "serviceGitBranch";
   public final String ENV_GIT_BRANCH = "envGitBranch";
   public final String DOCKER = "DOCKER";
   public final String FETCH_PACKAGES = "fetch_packages";
   public final String FETCH_REPOSITORIES = "fetch_repositories";
+  public final String VARIABLES = "variables";
+  public final String VAR_NAME = "name";
+  public final String VAR_VALUE = "value";
+  public final String VAR_TYPE = "type";
+  public final String VAR_DESCRIPTION = "description";
+  private static ObjectMapper objectMapper = new ObjectMapper();
 
   // Checks whether field is fixed value or not, if empty then also we return false for fixed value.
   public static boolean isFieldFixedValue(String fieldValue) {
@@ -783,8 +801,8 @@ public class ArtifactResourceUtils {
     return null;
   }
 
-  private List<YamlField> getAliasYamlFields(String accountId, String orgIdentifier, String projectIdentifier,
-      String serviceId, String environmentId, Map<String, String> contextMap) {
+  List<YamlField> getAliasYamlFields(String accountId, String orgIdentifier, String projectIdentifier, String serviceId,
+      String environmentId, Map<String, String> contextMap) {
     List<YamlField> yamlFields = new ArrayList<>();
     String serviceGitBranch = contextMap.get(SERVICE_GIT_BRANCH);
     if (isNotEmpty(serviceId)) {
@@ -800,11 +818,58 @@ public class ArtifactResourceUtils {
       try (GitXTransientBranchGuard ignore = new GitXTransientBranchGuard(envGitBranch)) {
         Optional<Environment> optionalEnvironment =
             environmentService.get(accountId, orgIdentifier, projectIdentifier, environmentId, false);
-        optionalEnvironment.ifPresent(environment
-            -> yamlFields.add(getYamlField(environment.fetchNonEmptyYaml(), YAMLFieldNameConstants.ENVIRONMENT)));
+        if (optionalEnvironment.isPresent()) {
+          YamlField envYamlField =
+              getYamlField(optionalEnvironment.get().fetchNonEmptyYaml(), YAMLFieldNameConstants.ENVIRONMENT);
+          addGlobalEnvOverrideYamlField(envYamlField, accountId, orgIdentifier, projectIdentifier, environmentId);
+          yamlFields.add(envYamlField);
+        }
       }
     }
     return yamlFields;
+  }
+
+  private void addGlobalEnvOverrideYamlField(
+      YamlField envYamlField, String accountId, String orgIdentifier, String projectIdentifier, String environmentId) {
+    try {
+      if (!overrideV2ValidationHelper.isOverridesV2Enabled(accountId, orgIdentifier, projectIdentifier)) {
+        return;
+      }
+      String envRef =
+          IdentifierRefHelper.getRefFromIdentifierOrRef(accountId, orgIdentifier, projectIdentifier, environmentId);
+      Map<Scope, NGServiceOverridesEntity> envOverrideMap =
+          serviceOverridesServiceV2.getEnvOverride(accountId, orgIdentifier, projectIdentifier, envRef, null);
+      List<Scope> scopeList = Arrays.asList(Scope.ACCOUNT, Scope.ORG, Scope.PROJECT);
+      Map<String, NGVariable> finalVariableMap = new HashMap<>();
+
+      scopeList.forEach(scope -> {
+        if (envOverrideMap.containsKey(scope)) {
+          ServiceOverridesSpec serviceOverridesSpec = envOverrideMap.get(scope).getSpec();
+          if (isNull(serviceOverridesSpec) || isNull(serviceOverridesSpec.getVariables())) {
+            return;
+          }
+          serviceOverridesSpec.getVariables().forEach(variable -> finalVariableMap.put(variable.getName(), variable));
+        }
+      });
+
+      List<NGVariable> finalVariablesList = new ArrayList<>(finalVariableMap.values());
+      ArrayNode arrayNode = objectMapper.createArrayNode();
+      finalVariablesList.forEach(variable -> arrayNode.add(createNodeFromNGVariable(variable)));
+      JsonNode jsonNode = envYamlField.getNode().getCurrJsonNode();
+      ((ObjectNode) jsonNode).set(VARIABLES, arrayNode);
+
+    } catch (Exception e) {
+      log.error("Failed to add global environment overrides for expression resolution", e);
+    }
+  }
+
+  private JsonNode createNodeFromNGVariable(NGVariable variable) {
+    ObjectNode jsonNode = objectMapper.createObjectNode();
+    jsonNode.set(VAR_NAME, objectMapper.valueToTree(variable.getName()));
+    jsonNode.set(VAR_VALUE, objectMapper.valueToTree(variable.fetchValue().getValue()));
+    jsonNode.set(VAR_TYPE, objectMapper.valueToTree(variable.getType()));
+    jsonNode.set(VAR_DESCRIPTION, objectMapper.valueToTree(variable.getDescription()));
+    return jsonNode;
   }
 
   private YamlField getYamlField(String yaml, String fieldName) {
