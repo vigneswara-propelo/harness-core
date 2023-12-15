@@ -293,7 +293,7 @@ public class STOManagerApplication extends Application<CIManagerConfiguration> {
     modules.add(new CIManagerServiceModule(configuration,
         new CIManagerConfigurationOverride(STO_MANAGER, "sto", false, false, mongoUri, STO_ORCHESTRATION_NOTIFY_EVENT,
             STOLicenseNoopServiceImpl.class, STOAccountEntityListener.class)));
-    modules.add(new STOManagerServiceModule());
+    modules.add(new STOManagerServiceModule(configuration));
 
     modules.add(new AbstractModule() {
       @Override

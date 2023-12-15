@@ -33,6 +33,7 @@ import io.harness.remote.client.ServiceHttpClientConfig;
 import io.harness.secret.ConfigSecret;
 import io.harness.ssca.beans.entities.SSCAServiceConfig;
 import io.harness.sto.beans.entities.STOServiceConfig;
+import io.harness.sto.beans.entities.TicketServiceConfig;
 import io.harness.telemetry.segment.SegmentConfiguration;
 import io.harness.threading.ThreadPoolConfig;
 import io.harness.timescaledb.TimeScaleDBConfig;
@@ -116,6 +117,7 @@ public class CIManagerConfiguration extends Configuration implements AssetsBundl
   private LogServiceConfig logServiceConfig;
   private TIServiceConfig tiServiceConfig;
   private STOServiceConfig stoServiceConfig;
+  private TicketServiceConfig ticketServiceConfig;
   private SSCAServiceConfig sscaServiceConfig;
   private IACMServiceConfig iacmServiceConfig;
 

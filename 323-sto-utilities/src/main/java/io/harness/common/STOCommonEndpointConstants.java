@@ -15,6 +15,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 @OwnedBy(HarnessTeam.STO)
 public class STOCommonEndpointConstants {
+  public static final String TICKET_SERVICE_TOKEN_ENDPOINT = "api/token";
+
+  public static final String TICKET_SERVICE_DELETE_ACCOUNT_DATA_ENDPOINT = "api/accounts/{accountId}/data";
+
   public static final String STO_SERVICE_TOKEN_ENDPOINT = "api/v2/token";
 
   public static final String STO_SERVICE_DELETE_ACCOUNT_DATA_ENDPOINT = "api/v2/accounts/{accountId}/data";

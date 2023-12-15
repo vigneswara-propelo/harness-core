@@ -232,14 +232,6 @@ if [[ "" != "$OVERRIDE_EXEC_LIMIT_FOR_ACCOUNT" ]]; then
   export OVERRIDE_EXEC_LIMIT_FOR_ACCOUNT; yq -i '.ciExecutionServiceConfig.executionLimits.overrideConfig[0]=env(OVERRIDE_EXEC_LIMIT_FOR_ACCOUNT)' $CONFIG_FILE
 fi
 
-if [[ "" != "$STO_SERVICE_ENDPOINT" ]]; then
-  export STO_SERVICE_ENDPOINT; yq -i '.stoServiceConfig.baseUrl=env(STO_SERVICE_ENDPOINT)' $CONFIG_FILE
-fi
-
-if [[ "" != "$STO_SERVICE_INTERNAL_ENDPOINT" ]]; then
-  export STO_SERVICE_INTERNAL_ENDPOINT; yq -i '.stoServiceConfig.internalUrl=env(STO_SERVICE_INTERNAL_ENDPOINT)' $CONFIG_FILE
-fi
-
 if [[ "" != "$SSCA_SERVICE_ENDPOINT" ]]; then
   export SSCA_SERVICE_ENDPOINT; yq -i '.sscaServiceConfig.httpClientConfig.baseUrl=env(SSCA_SERVICE_ENDPOINT)' $CONFIG_FILE
 fi
@@ -266,10 +258,6 @@ fi
 
 if [[ "" != "$TI_SERVICE_GLOBAL_TOKEN" ]]; then
   export TI_SERVICE_GLOBAL_TOKEN; yq -i '.tiServiceConfig.globalToken=env(TI_SERVICE_GLOBAL_TOKEN)' $CONFIG_FILE
-fi
-
-if [[ "" != "$STO_SERVICE_GLOBAL_TOKEN" ]]; then
-  export STO_SERVICE_GLOBAL_TOKEN; yq -i '.stoServiceConfig.globalToken=env(STO_SERVICE_GLOBAL_TOKEN)' $CONFIG_FILE
 fi
 
 if [[ "" != "$SSCA_SERVICE_SECRET" ]]; then

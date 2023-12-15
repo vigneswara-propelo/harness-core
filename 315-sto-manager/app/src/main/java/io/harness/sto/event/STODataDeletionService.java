@@ -23,6 +23,7 @@ import io.harness.repositories.CITelemetryStatusRepositoryCustomImpl;
 import io.harness.repositories.ExecutionQueueLimitRepository;
 import io.harness.repositories.STOAccountDataStatusRepository;
 import io.harness.stoserviceclient.STOServiceUtils;
+import io.harness.ticketserviceclient.TicketServiceUtils;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -46,6 +47,7 @@ public class STODataDeletionService {
   @Inject private CIAccountExecutionMetadataRepository ciAccountExecutionMetadataRepository;
   @Inject private CIExecutionRepository ciExecutionRepository;
   @Inject private STOServiceUtils stoServiceUtils;
+  @Inject private TicketServiceUtils ticketServiceUtils;
   @Inject private STOAccountDataStatusRepository stoAccountDataStatusRepository;
   @Inject private PersistentLocker persistentLocker;
   @Inject @Named("stoDataDeletionExecutor") private ExecutorService executorService;
@@ -115,6 +117,7 @@ public class STODataDeletionService {
     deletedAll =
         deleteData(() -> ciExecutionRepository.deleteAllByAccountId(accountId), "CIExecution", accountId) && deletedAll;
     deletedAll = deleteSTOCoreData(accountId) && deletedAll;
+    deletedAll = deleteTicketServiceData(accountId) && deletedAll;
 
     return deletedAll;
   }
@@ -134,6 +137,16 @@ public class STODataDeletionService {
       stoServiceUtils.deleteAccountData(accountId);
     } catch (Exception e) {
       log.error(String.format("Exception occurred while deleting sto core data for accountId %s", accountId), e);
+      return false;
+    }
+    return true;
+  }
+
+  private boolean deleteTicketServiceData(String accountId) {
+    try {
+      ticketServiceUtils.deleteAccountData(accountId);
+    } catch (Exception e) {
+      log.error(String.format("Exception occurred while deleting ticket service data for accountId %s", accountId), e);
       return false;
     }
     return true;

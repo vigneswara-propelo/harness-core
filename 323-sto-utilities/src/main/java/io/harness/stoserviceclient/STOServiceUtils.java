@@ -34,7 +34,7 @@ import retrofit2.Response;
 @Setter
 @Slf4j
 @Singleton
-@OwnedBy(HarnessTeam.CI)
+@OwnedBy(HarnessTeam.STO)
 public class STOServiceUtils {
   private static final String DEFAULT_PAGE_SIZE = "100";
   private final STOServiceClient stoServiceClient;

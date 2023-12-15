@@ -17,6 +17,7 @@ import io.harness.cache.HarnessCacheManager;
 import io.harness.ci.enforcement.CIBuildEnforcer;
 import io.harness.sto.STOBuildEnforcerImpl;
 import io.harness.threading.ThreadPool;
+import io.harness.ticketserviceclient.TicketServiceClientModule;
 import io.harness.version.VersionInfoManager;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -30,15 +31,21 @@ import java.util.concurrent.TimeUnit;
 import javax.cache.Cache;
 import javax.cache.expiry.AccessedExpiryPolicy;
 import javax.cache.expiry.Duration;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@AllArgsConstructor
 @Slf4j
 @OwnedBy(HarnessTeam.STO)
 public class STOManagerServiceModule extends AbstractModule {
+  CIManagerConfiguration configuration;
+
   @Override
   protected void configure() {
     bind(STOYamlSchemaService.class).to(STOYamlSchemaServiceImpl.class).in(Singleton.class);
     bind(CIBuildEnforcer.class).to(STOBuildEnforcerImpl.class);
+
+    install(new TicketServiceClientModule(configuration.getTicketServiceConfig()));
 
     bind(ExecutorService.class)
         .annotatedWith(Names.named("stoDataDeletionExecutor"))
