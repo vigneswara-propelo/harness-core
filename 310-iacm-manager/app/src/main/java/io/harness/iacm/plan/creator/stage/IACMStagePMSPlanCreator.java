@@ -224,7 +224,7 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
     // match, or that we are going to clone the WS repos after a manual trigger.
     if (codebase == null) {
       BuildBuilder buildObject = builder();
-      if (!Objects.equals(workspace.getRepository_branch(), "")) {
+      if (workspace.getRepository_branch() != null && !Objects.equals(workspace.getRepository_branch(), "")) {
         buildObject.type(BuildType.BRANCH);
         buildObject.spec(BranchBuildSpec.builder()
                              .branch(ParameterField.<String>builder().value(workspace.getRepository_branch()).build())
@@ -278,26 +278,26 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
     }
     // Now do the same if we have terraform_variables_files
     if (workspace.getTerraform_variable_files() != null) {
-      boolean triggerWebhook = triggerWebhookFile(ctx, workspace);
       for (VariablesRepo variablesRepo : workspace.getTerraform_variable_files()) {
         ConnectorDTO variablesConnectorDTO = retrieveConnectorFromRef(
             variablesRepo.getRepository_connector(), workspace.getAccount(), workspace.getOrg(), workspace.getProject())
                                                  .orElse(null);
-        String variablesUrl = iacmStepsUtils.getCloneUrlFromRepo(variablesConnectorDTO, workspace);
+        String variablesUrl = iacmStepsUtils.getCloneUrlFromRepo(variablesConnectorDTO, variablesRepo.getRepository());
+        String[] varNs = iacmStepsUtils.parse(variablesUrl);
+
         String hashedGitRepoInfo = "";
 
-        // if we have a code base it means that the trigger was related with the workspace
+        // if we have a code base it means that the trigger was related with the workspace. If we have also a code base
+        // it means that the repo name is coming from the workspace.
         if (codebase != null) {
           // If the url of the connector that triggered the pipeline is the same as the url of the terraform file, we
           // don't want to clone again this repo
           ConnectorDTO codebaseDTO = retrieveConnectorFromRef(
               codebase.getConnectorRef().getValue(), workspace.getAccount(), workspace.getOrg(), workspace.getProject())
                                          .orElse(null);
-          String repoName = !ctx.getTriggerPayload().getParsedPayload().getPr().getRepo().getName().equals("")
-              ? ctx.getTriggerPayload().getParsedPayload().getPr().getRepo().getName()
-              : ctx.getTriggerPayload().getParsedPayload().getPush().getRepo().getName();
-          String codebaseURL = iacmStepsUtils.getCloneUrlFromRepo(codebaseDTO, repoName);
-          if (Objects.equals(codebaseURL, variablesUrl)) {
+          String codebaseURL = iacmStepsUtils.getCloneUrlFromRepo(codebaseDTO, workspace.getRepository());
+          String[] wsCodeBase = iacmStepsUtils.parse(codebaseURL);
+          if (wsCodeBase[0].equalsIgnoreCase(varNs[0]) && wsCodeBase[1].equalsIgnoreCase(varNs[1])) {
             hashedGitRepoInfo = iacmStepsUtils.generateHashedGitRepoInfo(variablesRepo.getRepository(),
                 variablesRepo.getRepository_connector(), variablesRepo.getRepository_branch(),
                 variablesRepo.getRepository_commit(), variablesRepo.getRepository_path());
@@ -312,7 +312,9 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
               workspace.getRepository_connector(), workspace.getAccount(), workspace.getOrg(), workspace.getProject())
                                           .orElse(null);
           String workspaceUrl = iacmStepsUtils.getCloneUrlFromRepo(workspaceDTO, workspace);
-          if (Objects.equals(workspaceUrl, variablesUrl)) {
+          String[] wsNS = iacmStepsUtils.parse(workspaceUrl);
+
+          if (wsNS[0].equalsIgnoreCase(varNs[0]) && wsNS[1].equalsIgnoreCase(varNs[1])) {
             hashedGitRepoInfo = iacmStepsUtils.generateHashedGitRepoInfo(variablesRepo.getRepository(),
                 variablesRepo.getRepository_connector(), variablesRepo.getRepository_branch(),
                 variablesRepo.getRepository_commit(), variablesRepo.getRepository_path());
@@ -323,76 +325,58 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
         }
 
         BuildBuilder buildObject = builder();
-        if (triggerWebhook) {
-          // If we are in this code path, it means that the trigger of the webhook is related with the terraform file
-          // repo and we want to use the trigger info to clone the proper branch
-          ConnectorDTO triggerConnector = retrieveConnectorFromRef(ctx.getTriggerPayload().getConnectorRef(),
-              workspace.getAccount(), workspace.getOrg(), workspace.getProject())
-                                              .orElse(null);
-          String triggerConnectorUrl = iacmStepsUtils.getCloneUrlFromRepo(triggerConnector, workspace);
 
-          if (Objects.equals(variablesUrl, triggerConnectorUrl)) {
-            if (ctx.getTriggerPayload().getParsedPayload().hasPr()) {
-              buildObject.type(BuildType.COMMIT_SHA);
-              buildObject.spec(
-                  CommitShaBuildSpec.builder()
-                      .commitSha(ParameterField.<String>builder()
-                                     .value(ctx.getTriggerPayload().getParsedPayload().getPr().getPr().getSha())
-                                     .build())
-                      .build());
+        String triggerNS = "";
+        String triggerRepo = "";
 
-              hashedGitRepoInfo = iacmStepsUtils.generateHashedGitRepoInfo(
-                  ctx.getTriggerPayload().getParsedPayload().getPr().getRepo().getName(),
-                  ctx.getTriggerPayload().getConnectorRef(),
-                  ctx.getTriggerPayload().getParsedPayload().getPr().getRepo().getBranch(),
-                  ctx.getTriggerPayload().getParsedPayload().getPr().getPr().getSha(),
-                  variablesRepo.getRepository_path());
-              terraformFilePaths.put(String.format("PLUGIN_VARIABLE_CONNECTOR_%s", hashedGitRepoInfo),
-                  iacmStepsUtils.generateVariableFileBasePath(hashedGitRepoInfo) + variablesRepo.getRepository_path());
-            } else if (ctx.getTriggerPayload().getParsedPayload().hasPush()) {
-              buildObject.type(BuildType.BRANCH);
-              buildObject.spec(BranchBuildSpec.builder()
-                                   .branch(ParameterField.<String>builder()
-                                               .value(ctx.getTriggerPayload().getParsedPayload().getPush().getAfter())
-                                               .build())
-                                   .build());
-              hashedGitRepoInfo = iacmStepsUtils.generateHashedGitRepoInfo(
-                  ctx.getTriggerPayload().getParsedPayload().getPush().getRepo().getName(),
-                  ctx.getTriggerPayload().getConnectorRef(),
-                  ctx.getTriggerPayload().getParsedPayload().getPush().getRepo().getBranch(),
-                  ctx.getTriggerPayload().getParsedPayload().getPush().getCommit().getSha(),
-                  variablesRepo.getRepository_path());
-              terraformFilePaths.put(String.format("PLUGIN_VARIABLE_CONNECTOR_%s", hashedGitRepoInfo),
-                  iacmStepsUtils.generateVariableFileBasePath(hashedGitRepoInfo) + variablesRepo.getRepository_path());
-            }
-          } else {
+        if (ctx.getTriggerPayload().getParsedPayload().hasPush()) {
+          triggerNS = ctx.getTriggerPayload().getParsedPayload().getPush().getRepo().getNamespace();
+          triggerRepo = ctx.getTriggerPayload().getParsedPayload().getPush().getRepo().getName();
+        } else if (ctx.getTriggerPayload().getParsedPayload().hasPr()) {
+          triggerNS = ctx.getTriggerPayload().getParsedPayload().getPr().getRepo().getNamespace();
+          triggerRepo = ctx.getTriggerPayload().getParsedPayload().getPr().getRepo().getName();
+        }
+
+        if (triggerNS.equalsIgnoreCase(varNs[0]) && triggerRepo.equalsIgnoreCase(varNs[1])) {
+          if (ctx.getTriggerPayload().getParsedPayload().hasPr()) {
+            buildObject.type(BuildType.COMMIT_SHA);
+            buildObject.spec(
+                CommitShaBuildSpec.builder()
+                    .commitSha(ParameterField.<String>builder()
+                                   .value(ctx.getTriggerPayload().getParsedPayload().getPr().getPr().getSha())
+                                   .build())
+                    .build());
+
             hashedGitRepoInfo = iacmStepsUtils.generateHashedGitRepoInfo(variablesRepo.getRepository(),
-                variablesRepo.getRepository_connector(), variablesRepo.getRepository_branch(),
-                variablesRepo.getRepository_commit(), variablesRepo.getRepository_path());
+                ctx.getTriggerPayload().getConnectorRef(),
+                ctx.getTriggerPayload().getParsedPayload().getPr().getRepo().getBranch(),
+                ctx.getTriggerPayload().getParsedPayload().getPr().getPr().getSha(),
+                variablesRepo.getRepository_path());
             terraformFilePaths.put(String.format("PLUGIN_VARIABLE_CONNECTOR_%s", hashedGitRepoInfo),
                 iacmStepsUtils.generateVariableFileBasePath(hashedGitRepoInfo) + variablesRepo.getRepository_path());
-            if (!Objects.equals(variablesRepo.getRepository_branch(), "")) {
-              buildObject.type(BuildType.BRANCH);
-              buildObject.spec(
-                  BranchBuildSpec.builder()
-                      .branch(ParameterField.<String>builder().value(variablesRepo.getRepository_branch()).build())
-                      .build());
-            } else {
-              buildObject.type(BuildType.TAG);
-              buildObject.spec(
-                  TagBuildSpec.builder()
-                      .tag(ParameterField.<String>builder().value(variablesRepo.getRepository_commit()).build())
-                      .build());
-            }
+          } else if (ctx.getTriggerPayload().getParsedPayload().hasPush()) {
+            buildObject.type(BuildType.BRANCH);
+            buildObject.spec(BranchBuildSpec.builder()
+                                 .branch(ParameterField.<String>builder()
+                                             .value(ctx.getTriggerPayload().getParsedPayload().getPush().getAfter())
+                                             .build())
+                                 .build());
+            hashedGitRepoInfo = iacmStepsUtils.generateHashedGitRepoInfo(variablesRepo.getRepository(),
+                ctx.getTriggerPayload().getConnectorRef(),
+                ctx.getTriggerPayload().getParsedPayload().getPush().getRepo().getBranch(),
+                ctx.getTriggerPayload().getParsedPayload().getPush().getCommit().getSha(),
+                variablesRepo.getRepository_path());
+            terraformFilePaths.put(String.format("PLUGIN_VARIABLE_CONNECTOR_%s", hashedGitRepoInfo),
+                iacmStepsUtils.generateVariableFileBasePath(hashedGitRepoInfo) + variablesRepo.getRepository_path());
           }
         } else {
-          // If we are here, then we just want to clone whatever is defined in the connector
           hashedGitRepoInfo = iacmStepsUtils.generateHashedGitRepoInfo(variablesRepo.getRepository(),
               variablesRepo.getRepository_connector(), variablesRepo.getRepository_branch(),
               variablesRepo.getRepository_commit(), variablesRepo.getRepository_path());
           terraformFilePaths.put(String.format("PLUGIN_VARIABLE_CONNECTOR_%s", hashedGitRepoInfo),
               iacmStepsUtils.generateVariableFileBasePath(hashedGitRepoInfo) + variablesRepo.getRepository_path());
-          if (!Objects.equals(variablesRepo.getRepository_branch(), "")) {
+          if (variablesRepo.getRepository_branch() != null
+              && !Objects.equals(variablesRepo.getRepository_branch(), "")) {
             buildObject.type(BuildType.BRANCH);
             buildObject.spec(
                 BranchBuildSpec.builder()
@@ -843,38 +827,15 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
       try {
         CodeBaseBuilder iacmCodeBase = CodeBase.builder();
         BuildBuilder buildObject = builder();
-
+        if (!Objects.equals(workspace.getRepository(), "") && workspace.getRepository() != null) {
+          iacmCodeBase.repoName(ParameterField.<String>builder().value(workspace.getRepository()).build());
+        } else {
+          iacmCodeBase.repoName(ParameterField.<String>builder().value(null).build());
+        }
+        iacmCodeBase.connectorRef(ParameterField.<String>builder().value(workspace.getRepository_connector()).build());
         // If the trigger type is WEBHOOK, we need to get the repository name from the webhook payload.
         // If the trigger is not a WEBHOOK, then we retrieve the repository from the Workspace
         if (ctx.getTriggerInfo().getTriggerType().name().equals("WEBHOOK")) {
-          // It looks like the connector type in the workspace has to match with the connector type in the webhook,.
-          // I could not find a way to get the connector type from the webhook, so I will use the connector type from
-          // the workspace and assume that both are the same. This is required because if the connector is an account
-          // connector, the repository name can only contain the name and not the full url.
-          if (ctx.getMetadata().getTriggerPayload().getParsedPayload().hasPr()) {
-            if (!Objects.equals(workspace.getRepository_connector(), "")
-                && workspace.getRepository_connector() != null) {
-              iacmCodeBase.repoName(
-                  ParameterField.<String>builder()
-                      .value(ctx.getMetadata().getTriggerPayload().getParsedPayload().getPr().getRepo().getName())
-                      .build());
-            } else {
-              iacmCodeBase.repoName(
-                  ParameterField.<String>builder()
-                      .value(ctx.getMetadata().getTriggerPayload().getParsedPayload().getPr().getRepo().getClone())
-                      .build());
-            }
-          } else if (ctx.getMetadata().getTriggerPayload().getParsedPayload().hasPush()) {
-            iacmCodeBase.repoName(
-                ParameterField.<String>builder()
-                    .value(ctx.getMetadata().getTriggerPayload().getParsedPayload().getPush().getRepo().getName())
-                    .build());
-          } else if (ctx.getMetadata().getTriggerPayload().getParsedPayload().hasRelease()) {
-            iacmCodeBase.repoName(
-                ParameterField.<String>builder()
-                    .value(ctx.getMetadata().getTriggerPayload().getParsedPayload().getRelease().getRepo().getName())
-                    .build());
-          }
           // If getPr is not null the trigger type is a PR trigger, and we want to use the PRBuildSpec.
           // If getPush is not null, the trigger type is then a Push trigger, and we want to use the BranchBuildSpec as
           // PR does not makes sense.
@@ -897,17 +858,10 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
                                  .tag(ParameterField.<String>builder().value("<+trigger.tag>").expression(true).build())
                                  .build());
           }
-          iacmCodeBase.connectorRef(
-              ParameterField.<String>builder().value(ctx.getMetadata().getTriggerPayload().getConnectorRef()).build());
 
         } else {
           // If the repository name is empty, it means that the connector is an account connector and the repo needs to
           // be defined
-          if (!Objects.equals(workspace.getRepository(), "") && workspace.getRepository() != null) {
-            iacmCodeBase.repoName(ParameterField.<String>builder().value(workspace.getRepository()).build());
-          } else {
-            iacmCodeBase.repoName(ParameterField.<String>builder().value(null).build());
-          }
           if (!Objects.equals(workspace.getRepository_branch(), "") && workspace.getRepository_branch() != null) {
             buildObject.type(BuildType.BRANCH);
             buildObject.spec(
@@ -925,8 +879,6 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
                 "Unexpected connector information while writing the CodeBase block. There was not repository branch nor commit id defined in the workspace "
                 + workspace);
           }
-          iacmCodeBase.connectorRef(
-              ParameterField.<String>builder().value(workspace.getRepository_connector()).build());
         }
 
         iacmCodeBase.depth(ParameterField.<Integer>builder().value(50).build());
@@ -999,67 +951,6 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
   }
 
   /*
-   * Checks if any of the workspace's terraform variable file repositories match the webhook trigger url.
-   *
-   * @param ctx The plan creation context.
-   * @param workspace The workspace.
-   * @return True if any terraform variable file repository matches the webhook trigger, false otherwise.
-   *
-   * If the trigger is a WEBHOOK:
-   * - For PR trigger, retrieves the variable file connector URLs and compares to the PR repo URL.
-   * - For push trigger, retrieves the variable file connector URLs and compares to the push repo URL.
-   *
-   * Returns true if any match either the HTTPS or SSH URL.
-   * Otherwise returns false.
-   */
-
-  private Boolean triggerWebhookFile(PlanCreationContext ctx, Workspace workspace) {
-    if (ctx.getTriggerInfo().getTriggerType().name().equals("WEBHOOK")) {
-      if (ctx.getMetadata().getTriggerPayload().getParsedPayload().hasPr()) {
-        for (VariablesRepo var : workspace.getTerraform_variable_files()) {
-          if (!Objects.equals(var.getRepository_connector(), "")) {
-            Optional<ConnectorDTO> varFileConnectorDTO = NGRestUtils.getResponse(connectorResourceClient.get(
-                var.getRepository_connector(), workspace.getAccount(), workspace.getOrg(), workspace.getProject()));
-            String varFileConnectorUrl =
-                iacmStepsUtils.getCloneUrlFromRepo(varFileConnectorDTO.orElse(null), workspace);
-            if (Objects.equals(varFileConnectorUrl,
-                    ctx.getMetadata().getTriggerPayload().getParsedPayload().getPr().getRepo().getLink())) {
-              return true; // https url matches with pr url
-            } else if (Objects.equals(varFileConnectorUrl,
-                           ctx.getMetadata().getTriggerPayload().getParsedPayload().getPr().getRepo().getCloneSsh())) {
-              return true; // it could be possible that is a ssh connector, so, we need to check also if it could be a
-                           // match using the ssh string
-            }
-          }
-        }
-      } else if (ctx.getMetadata().getTriggerPayload().getParsedPayload().hasPush()) {
-        for (VariablesRepo var : workspace.getTerraform_variable_files()) {
-          if (!Objects.equals(var.getRepository_connector(), "")) {
-            Optional<ConnectorDTO> varFileConnectorDTO = NGRestUtils.getResponse(connectorResourceClient.get(
-                var.getRepository_connector(), workspace.getAccount(), workspace.getOrg(), workspace.getProject()));
-            String varFileConnectorUrl =
-                iacmStepsUtils.getCloneUrlFromRepo(varFileConnectorDTO.orElse(null), workspace);
-            if (Objects.equals(varFileConnectorUrl,
-                    ctx.getMetadata().getTriggerPayload().getParsedPayload().getPush().getRepo().getLink())) {
-              return true; // https url matches with pr url
-            } else if (Objects.equals(varFileConnectorUrl,
-                           ctx.getMetadata()
-                               .getTriggerPayload()
-                               .getParsedPayload()
-                               .getPush()
-                               .getRepo()
-                               .getCloneSsh())) {
-              return true; // it could be possible that is a ssh connector, so, we need to check also if it could be a
-                           // match using the ssh string
-            }
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  /*
    * Checks if the code base should be cloned based on the trigger info and workspace. We will only clone it
    * for workspace triggers.
    *
@@ -1079,15 +970,24 @@ public class IACMStagePMSPlanCreator extends AbstractStagePlanCreator<IACMStageN
           workspace.getRepository_connector(), workspace.getAccount(), workspace.getOrg(), workspace.getProject());
 
       String workspaceConnectorUrl = iacmStepsUtils.getCloneUrlFromRepo(workspaceConnectorDTO.orElse(null), workspace);
+      String[] wsNS = iacmStepsUtils.parse(workspaceConnectorUrl);
+      if (wsNS == null) {
+        return false;
+      }
+      // Repo is gonna be the last element from the array. namespace
       if (ctx.getMetadata().getTriggerPayload().getParsedPayload().hasPr()) {
         if (!Objects.equals(workspace.getRepository_connector(), "")) {
-          return Objects.equals(workspaceConnectorUrl,
-              ctx.getMetadata().getTriggerPayload().getParsedPayload().getPr().getRepo().getLink());
+          return wsNS[0].equalsIgnoreCase(
+                     ctx.getMetadata().getTriggerPayload().getParsedPayload().getPr().getRepo().getNamespace())
+              && wsNS[1].equalsIgnoreCase(
+                  ctx.getMetadata().getTriggerPayload().getParsedPayload().getPr().getRepo().getName());
         }
       } else if (ctx.getMetadata().getTriggerPayload().getParsedPayload().hasPush()) {
         if (!Objects.equals(workspace.getRepository_connector(), "")) {
-          return Objects.equals(workspaceConnectorUrl,
-              ctx.getMetadata().getTriggerPayload().getParsedPayload().getPush().getRepo().getLink());
+          return wsNS[0].equalsIgnoreCase(
+                     ctx.getMetadata().getTriggerPayload().getParsedPayload().getPush().getRepo().getNamespace())
+              && wsNS[1].equalsIgnoreCase(
+                  ctx.getMetadata().getTriggerPayload().getParsedPayload().getPush().getRepo().getName());
         }
       }
     }

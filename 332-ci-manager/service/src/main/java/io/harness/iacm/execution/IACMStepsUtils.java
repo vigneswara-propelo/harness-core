@@ -63,9 +63,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class IACMStepsUtils {
@@ -435,6 +438,59 @@ public class IACMStepsUtils {
     return secrets;
   }
 
+  public String[] parse(String url) {
+    String[] result = new String[2];
+
+    // Check for SSH git@ url
+    if (url.startsWith("git@")) {
+      return parseSshUrl(url);
+    }
+
+    // Otherwise parse as HTTPS URL
+    URI uri = URI.create(url);
+    String path = uri.getPath();
+
+    // Handle GitHub/Enterprise format
+    Pattern p = Pattern.compile(".*/([^/]+)/([^/\\.]+).*");
+    Matcher m = p.matcher(path);
+    if (m.matches()) {
+      result[0] = m.group(1); // Namespace
+      result[1] = m.group(2); // Name
+      return result;
+    }
+
+    // Handle Bitbucket format
+    p = Pattern.compile(".*/([^/]+)/([^/]+).*");
+    m = p.matcher(path);
+    if (m.matches()) {
+      result[0] = m.group(1);
+      result[1] = m.group(2);
+      return result;
+    }
+
+    // Handle GitLab format
+    p = Pattern.compile(".*/([^/]+)/([^/\\.]+).*");
+    m = p.matcher(path);
+    if (m.matches()) {
+      result[0] = m.group(1);
+      result[1] = m.group(2);
+      return result;
+    }
+
+    // No match
+    return null;
+  }
+
+  private String[] parseSshUrl(String url) {
+    String[] result = new String[2];
+    String[] parts = url.split(":");
+    String lastPart = parts[parts.length - 1];
+    lastPart = lastPart.replace(".git", "");
+    parts = lastPart.split("/");
+    result[1] = parts[parts.length - 1];
+    result[0] = parts[parts.length - 2];
+    return result;
+  }
   public String getCloneUrlFromRepo(ConnectorDTO connectorDTO, Workspace workspace) {
     if (connectorDTO == null) {
       return "";
@@ -461,17 +517,18 @@ public class IACMStepsUtils {
         }
         return gitlabConnectorDTO.getUrl();
       case BITBUCKET:
+        // missing the SCM for bitbucket
         BitbucketConnectorDTO bitbucketConnectorDTO =
             (BitbucketConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
         if (bitbucketConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
           return String.format("%s/%s", bitbucketConnectorDTO.getUrl(), workspace.getRepository());
         }
-        return bitbucketConnectorDTO.getUrl();
+        return String.format("%s", bitbucketConnectorDTO.getUrl());
       default:
         return "";
     }
   }
-  public String getCloneUrlFromRepo(ConnectorDTO connectorDTO, String branch) {
+  public String getCloneUrlFromRepo(ConnectorDTO connectorDTO, String repoName) {
     if (connectorDTO == null) {
       return "";
     }
@@ -479,28 +536,28 @@ public class IACMStepsUtils {
       case GIT:
         GitConfigDTO gitConfigDTO = (GitConfigDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
         if (gitConfigDTO.getGitConnectionType() == GitConnectionType.ACCOUNT) {
-          return String.format("%s/%s", gitConfigDTO.getUrl(), branch);
+          return String.format("%s/%s", gitConfigDTO.getUrl(), repoName);
         }
         return gitConfigDTO.getUrl();
       case GITHUB:
         GithubConnectorDTO githubConnectorDTO =
             (GithubConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
         if (githubConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
-          return String.format("%s/%s", githubConnectorDTO.getUrl(), branch);
+          return String.format("%s/%s", githubConnectorDTO.getUrl(), repoName);
         }
         return githubConnectorDTO.getUrl();
       case GITLAB:
         GitlabConnectorDTO gitlabConnectorDTO =
             (GitlabConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
         if (gitlabConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
-          return String.format("%s/%s", gitlabConnectorDTO.getUrl(), branch);
+          return String.format("%s/%s", gitlabConnectorDTO.getUrl(), repoName);
         }
         return gitlabConnectorDTO.getUrl();
       case BITBUCKET:
         BitbucketConnectorDTO bitbucketConnectorDTO =
             (BitbucketConnectorDTO) connectorDTO.getConnectorInfo().getConnectorConfig();
         if (bitbucketConnectorDTO.getConnectionType() == GitConnectionType.ACCOUNT) {
-          return String.format("%s/%s", bitbucketConnectorDTO.getUrl(), branch);
+          return String.format("%s/%s", bitbucketConnectorDTO.getUrl(), repoName);
         }
         return bitbucketConnectorDTO.getUrl();
       default:
