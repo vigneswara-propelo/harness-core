@@ -80,11 +80,11 @@ public class SbomDriftApiImplTest extends SSCAManagerTestBase {
   @Category(UnitTests.class)
   public void testGetComponentDrift() {
     when(sbomDriftService.getComponentDrifts(
-             ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, ComponentDriftStatus.ADDED, PageRequest.of(0, 10)))
+             ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, ComponentDriftStatus.ADDED, PageRequest.of(0, 10), null))
         .thenReturn(
             ComponentDriftResults.builder().totalComponentDrifts(1).componentDrifts(getComponentDrifts()).build());
 
-    Response response = sbomDriftApi.getComponentDrift(ORG_ID, PROJECT_ID, DRIFT_ID, ACCOUNT_ID, "added", 0, 10);
+    Response response = sbomDriftApi.getComponentDrift(ORG_ID, PROJECT_ID, DRIFT_ID, ACCOUNT_ID, "added", 0, 10, null);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getHeaderString("X-Total-Elements")).isEqualTo("1");
     assertThat(response.getHeaderString("X-Page-Number")).isEqualTo("0");
@@ -99,10 +99,10 @@ public class SbomDriftApiImplTest extends SSCAManagerTestBase {
   @Category(UnitTests.class)
   public void testGetLicenseDrift() {
     when(sbomDriftService.getLicenseDrifts(
-             ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, LicenseDriftStatus.ADDED, PageRequest.of(0, 10)))
+             ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, LicenseDriftStatus.ADDED, PageRequest.of(0, 10), null))
         .thenReturn(LicenseDriftResults.builder().totalLicenseDrifts(1).licenseDrifts(getLicenseDrifts()).build());
 
-    Response response = sbomDriftApi.getLicenseDrift(ORG_ID, PROJECT_ID, DRIFT_ID, ACCOUNT_ID, "added", 0, 10);
+    Response response = sbomDriftApi.getLicenseDrift(ORG_ID, PROJECT_ID, DRIFT_ID, ACCOUNT_ID, "added", 0, 10, null);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getHeaderString("X-Total-Elements")).isEqualTo("1");
     assertThat(response.getHeaderString("X-Page-Number")).isEqualTo("0");

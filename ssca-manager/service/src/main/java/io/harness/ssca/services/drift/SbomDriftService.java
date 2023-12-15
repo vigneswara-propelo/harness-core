@@ -28,11 +28,11 @@ public interface SbomDriftService {
   ArtifactSbomDriftResponse calculateSbomDriftForOrchestration(
       String accountId, String orgId, String projectId, String orchestrationId, DriftBase driftBase);
 
-  ComponentDriftResults getComponentDrifts(
-      String accountId, String orgId, String projectId, String driftId, ComponentDriftStatus status, Pageable pageable);
+  ComponentDriftResults getComponentDrifts(String accountId, String orgId, String projectId, String driftId,
+      ComponentDriftStatus status, Pageable pageable, String searchTerm);
 
-  LicenseDriftResults getLicenseDrifts(
-      String accountId, String orgId, String projectId, String driftId, LicenseDriftStatus status, Pageable pageable);
+  LicenseDriftResults getLicenseDrifts(String accountId, String orgId, String projectId, String driftId,
+      LicenseDriftStatus status, Pageable pageable, String searchTerm);
 
   OrchestrationDriftSummary getSbomDriftSummary(
       String accountId, String orgId, String projectId, String orchestrationId);

@@ -781,6 +781,11 @@ paths:
           description: Provide status of components drift to be returned
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Limit'
+        - schema:
+            type: string
+          in: query
+          name: search_term
+          description: Search for components by name.
   '/v1/orgs/{org}/projects/{project}/sbom-drift/{drift}/licenses':
     parameters:
       - $ref: '#/components/parameters/OrgParam'
@@ -821,6 +826,11 @@ paths:
           description: Provide status of components drift to be returned
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Limit'
+        - schema:
+            type: string
+          in: query
+          name: search_term
+          description: Search for licenses by name.
   '/v1/orgs/{org}/projects/{project}/remediation':
     parameters:
       - $ref: '#/components/parameters/OrgParam'

@@ -174,7 +174,7 @@ public class SbomDriftServiceImpl implements SbomDriftService {
 
   @Override
   public ComponentDriftResults getComponentDrifts(String accountId, String orgId, String projectId, String driftId,
-      ComponentDriftStatus status, Pageable pageable) {
+      ComponentDriftStatus status, Pageable pageable, String searchTerm) {
     Criteria criteria = Criteria.where("_id").is(driftId);
     if (!sbomDriftRepository.exists(criteria)) {
       throw new InvalidRequestException("Couldn't find the drift with drift ID " + driftId);
@@ -184,7 +184,7 @@ public class SbomDriftServiceImpl implements SbomDriftService {
     int pageSize = pageable.getPageSize();
     Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(criteria),
         Aggregation.project(DriftEntityKeys.componentDrifts, "_id"), Aggregation.unwind("$componentDrifts"),
-        Aggregation.match(getComponentStatusMatchCriteria(status)),
+        Aggregation.match(getComponentNameAndStatusMatchCriteria(status, searchTerm)),
         Aggregation.group("$_id").count().as("totalComponentDrifts").push("componentDrifts").as("componentDrifts"),
         Aggregation.project("totalComponentDrifts")
             .and("componentDrifts")
@@ -210,8 +210,8 @@ public class SbomDriftServiceImpl implements SbomDriftService {
   }
 
   @Override
-  public LicenseDriftResults getLicenseDrifts(
-      String accountId, String orgId, String projectId, String driftId, LicenseDriftStatus status, Pageable pageable) {
+  public LicenseDriftResults getLicenseDrifts(String accountId, String orgId, String projectId, String driftId,
+      LicenseDriftStatus status, Pageable pageable, String searchTerm) {
     Criteria criteria = Criteria.where("_id").is(driftId);
     DriftEntity driftEntity = sbomDriftRepository.find(criteria);
     if (driftEntity == null) {
@@ -222,7 +222,7 @@ public class SbomDriftServiceImpl implements SbomDriftService {
     int pageSize = pageable.getPageSize();
     Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(criteria),
         Aggregation.project(DriftEntityKeys.licenseDrifts, "_id"), Aggregation.unwind("$licenseDrifts"),
-        Aggregation.match(getLicenseStatusMatchCriteria(status)),
+        Aggregation.match(getLicenseNameAndStatusMatchCriteria(status, searchTerm)),
         Aggregation.group("$_id").count().as("totalLicenseDrifts").push("licenseDrifts").as("licenseDrifts"),
         Aggregation.project("totalLicenseDrifts")
             .and("licenseDrifts")
@@ -271,18 +271,27 @@ public class SbomDriftServiceImpl implements SbomDriftService {
     return buildDriftSummaryFromEntity(driftEntity);
   }
 
-  private Criteria getComponentStatusMatchCriteria(ComponentDriftStatus status) {
-    if (status == null) {
-      return new Criteria();
+  private Criteria getComponentNameAndStatusMatchCriteria(ComponentDriftStatus status, String searchTerm) {
+    Criteria criteria = new Criteria();
+    if (status != null) {
+      criteria.and(DriftEntityKeys.COMPONENT_DRIFT_STATUS).is(status.name());
     }
-    return Criteria.where(DriftEntityKeys.COMPONENT_DRIFT_STATUS).is(status.name());
+    if (EmptyPredicate.isNotEmpty(searchTerm)) {
+      criteria.orOperator(Criteria.where(DriftEntityKeys.OLD_COMPONENT_DRIFT_NAME).regex(searchTerm),
+          Criteria.where(DriftEntityKeys.NEW_COMPONENT_DRIFT_NAME).regex(searchTerm));
+    }
+    return criteria;
   }
 
-  private Criteria getLicenseStatusMatchCriteria(LicenseDriftStatus status) {
-    if (status == null) {
-      return new Criteria();
+  private Criteria getLicenseNameAndStatusMatchCriteria(LicenseDriftStatus status, String searchTerm) {
+    Criteria criteria = new Criteria();
+    if (status != null) {
+      criteria.and(DriftEntityKeys.LICENSE_DRIFT_STATUS).is(status.name());
     }
-    return Criteria.where(DriftEntityKeys.LICENSE_DRIFT_STATUS).is(status.name());
+    if (EmptyPredicate.isNotEmpty(searchTerm)) {
+      criteria.and(DriftEntityKeys.LICENSE_DRIFT_NAME).regex(searchTerm);
+    }
+    return criteria;
   }
 
   private void populateComponentsForLicenseDrifts(

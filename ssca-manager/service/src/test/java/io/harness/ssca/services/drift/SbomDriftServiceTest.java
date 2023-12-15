@@ -266,12 +266,12 @@ public class SbomDriftServiceTest extends SSCAManagerTestBase {
             ComponentDriftResults.builder().totalComponentDrifts(1).componentDrifts(getComponentDrifts()).build()));
 
     ComponentDriftResults componentDriftResults = sbomDriftService.getComponentDrifts(
-        ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, ComponentDriftStatus.ADDED, PageRequest.of(0, 10));
+        ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, ComponentDriftStatus.ADDED, PageRequest.of(0, 10), "comp");
     verify(sbomDriftRepository, times(1)).aggregate(argumentCaptor.capture(), eq(ComponentDriftResults.class));
     Aggregation aggregation = argumentCaptor.getValue();
     assertThat(aggregation.toString())
         .isEqualTo(
-            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$match\" : { \"_id\" : \"uuid\"}}, { \"$project\" : { \"componentDrifts\" : 1, \"_id\" : 1}}, { \"$unwind\" : \"$componentDrifts\"}, { \"$match\" : { \"componentDrifts.status\" : \"ADDED\"}}, { \"$group\" : { \"_id\" : \"$_id\", \"totalComponentDrifts\" : { \"$sum\" : 1}, \"componentDrifts\" : { \"$push\" : \"$componentDrifts\"}}}, { \"$project\" : { \"totalComponentDrifts\" : 1, \"componentDrifts\" : { \"$slice\" : [\"$componentDrifts\", 0, 10]}, \"_id\" : 0}}]}");
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$match\" : { \"_id\" : \"uuid\"}}, { \"$project\" : { \"componentDrifts\" : 1, \"_id\" : 1}}, { \"$unwind\" : \"$componentDrifts\"}, { \"$match\" : { \"componentDrifts.status\" : \"ADDED\", \"$or\" : [{ \"componentDrifts.oldComponent.packagename\" : { \"$regularExpression\" : { \"pattern\" : \"comp\", \"options\" : \"\"}}}, { \"componentDrifts.newComponent.packagename\" : { \"$regularExpression\" : { \"pattern\" : \"comp\", \"options\" : \"\"}}}]}}, { \"$group\" : { \"_id\" : \"$_id\", \"totalComponentDrifts\" : { \"$sum\" : 1}, \"componentDrifts\" : { \"$push\" : \"$componentDrifts\"}}}, { \"$project\" : { \"totalComponentDrifts\" : 1, \"componentDrifts\" : { \"$slice\" : [\"$componentDrifts\", 0, 10]}, \"_id\" : 0}}]}");
     assertThat(componentDriftResults.getTotalComponentDrifts()).isEqualTo(1);
     assertThat(componentDriftResults.getComponentDrifts()).isEqualTo(getComponentDrifts());
   }
@@ -289,12 +289,12 @@ public class SbomDriftServiceTest extends SSCAManagerTestBase {
         .thenReturn(List.of(builderFactory.getNormalizedSBOMComponentBuilder().build()));
 
     LicenseDriftResults licenseDriftResults = sbomDriftService.getLicenseDrifts(
-        ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, LicenseDriftStatus.ADDED, PageRequest.of(0, 10));
+        ACCOUNT_ID, ORG_ID, PROJECT_ID, DRIFT_ID, LicenseDriftStatus.ADDED, PageRequest.of(0, 10), "MIT");
     verify(sbomDriftRepository, times(1)).aggregate(argumentCaptor.capture(), eq(LicenseDriftResults.class));
     Aggregation aggregation = argumentCaptor.getValue();
     assertThat(aggregation.toString())
         .isEqualTo(
-            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$match\" : { \"_id\" : \"uuid\"}}, { \"$project\" : { \"licenseDrifts\" : 1, \"_id\" : 1}}, { \"$unwind\" : \"$licenseDrifts\"}, { \"$match\" : { \"licenseDrifts.status\" : \"ADDED\"}}, { \"$group\" : { \"_id\" : \"$_id\", \"totalLicenseDrifts\" : { \"$sum\" : 1}, \"licenseDrifts\" : { \"$push\" : \"$licenseDrifts\"}}}, { \"$project\" : { \"totalLicenseDrifts\" : 1, \"licenseDrifts\" : { \"$slice\" : [\"$licenseDrifts\", 0, 10]}, \"_id\" : 0}}]}");
+            "{ \"aggregate\" : \"__collection__\", \"pipeline\" : [{ \"$match\" : { \"_id\" : \"uuid\"}}, { \"$project\" : { \"licenseDrifts\" : 1, \"_id\" : 1}}, { \"$unwind\" : \"$licenseDrifts\"}, { \"$match\" : { \"licenseDrifts.status\" : \"ADDED\", \"licenseDrifts.name\" : { \"$regularExpression\" : { \"pattern\" : \"MIT\", \"options\" : \"\"}}}}, { \"$group\" : { \"_id\" : \"$_id\", \"totalLicenseDrifts\" : { \"$sum\" : 1}, \"licenseDrifts\" : { \"$push\" : \"$licenseDrifts\"}}}, { \"$project\" : { \"totalLicenseDrifts\" : 1, \"licenseDrifts\" : { \"$slice\" : [\"$licenseDrifts\", 0, 10]}, \"_id\" : 0}}]}");
     assertThat(licenseDriftResults.getTotalLicenseDrifts()).isEqualTo(1);
     assertThat(licenseDriftResults.getLicenseDrifts())
         .isEqualTo(List.of(LicenseDrift.builder()
