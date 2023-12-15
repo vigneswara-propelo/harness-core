@@ -605,6 +605,7 @@ public class GovernanceRuleResource {
     if (connectorType == null) {
       connectorTypes.add(ConnectorType.CE_AWS);
       connectorTypes.add(ConnectorType.CE_AZURE);
+      connectorTypes.add(ConnectorType.GCP_CLOUD_COST);
     } else {
       connectorTypes.add(connectorType);
     }
