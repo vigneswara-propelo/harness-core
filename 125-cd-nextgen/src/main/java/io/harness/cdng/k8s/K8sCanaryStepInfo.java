@@ -10,8 +10,11 @@ package io.harness.cdng.k8s;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotation.RecasterAlias;
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.k8s.trafficrouting.K8sTrafficRouting;
+import io.harness.annotations.dev.ProductModule;
+import io.harness.cdng.k8s.trafficrouting.DefaultK8sTrafficRouting;
 import io.harness.cdng.manifest.yaml.K8sStepCommandFlag;
 import io.harness.cdng.pipeline.steps.CDAbstractStepInfo;
 import io.harness.cdng.visitor.helpers.cdstepinfo.K8sCanaryStepInfoVisitorHelper;
@@ -45,6 +48,7 @@ import org.springframework.data.annotation.TypeAlias;
 @SimpleVisitorHelper(helperClass = K8sCanaryStepInfoVisitorHelper.class)
 @TypeAlias("k8sCanaryStepInfo")
 @RecasterAlias("io.harness.cdng.k8s.K8sCanaryStepInfo")
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
 public class K8sCanaryStepInfo extends K8sCanaryBaseStepInfo implements CDAbstractStepInfo, Visitable {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
@@ -60,7 +64,7 @@ public class K8sCanaryStepInfo extends K8sCanaryBaseStepInfo implements CDAbstra
   @Builder(builderMethodName = "infoBuilder")
   public K8sCanaryStepInfo(InstanceSelectionWrapper instanceSelection, ParameterField<Boolean> skipDryRun,
       ParameterField<List<TaskSelectorYaml>> delegateSelectors, String name, String identifier,
-      List<K8sStepCommandFlag> commandFlags, K8sTrafficRouting trafficRouting) {
+      List<K8sStepCommandFlag> commandFlags, DefaultK8sTrafficRouting trafficRouting) {
     super(instanceSelection, skipDryRun, delegateSelectors, commandFlags, trafficRouting);
     this.name = name;
     this.identifier = identifier;

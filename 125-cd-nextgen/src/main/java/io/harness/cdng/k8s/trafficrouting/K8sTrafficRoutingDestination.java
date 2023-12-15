@@ -15,6 +15,7 @@ import io.harness.pms.yaml.ParameterField;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Value;
@@ -33,7 +34,7 @@ public class K8sTrafficRoutingDestination {
   @FieldDefaults(level = AccessLevel.PRIVATE)
   @JsonIgnoreProperties(ignoreUnknown = true)
   static class DestinationSpec {
-    @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> host;
+    @NotEmpty @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> host;
     @ApiModelProperty(dataType = SwaggerConstants.INTEGER_CLASSPATH) ParameterField<Integer> weight;
   }
 }

@@ -17,7 +17,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.SwaggerConstants;
-import io.harness.cdng.k8s.trafficrouting.K8sTrafficRouting;
+import io.harness.cdng.k8s.trafficrouting.DefaultK8sTrafficRouting;
 import io.harness.cdng.manifest.yaml.K8sStepCommandFlag;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.yaml.ParameterField;
@@ -48,5 +48,5 @@ public class K8sBlueGreenBaseStepInfo {
   @ApiModelProperty(dataType = BOOLEAN_CLASSPATH)
   @YamlSchemaTypes({expression})
   ParameterField<Boolean> skipUnchangedManifest;
-  K8sTrafficRouting trafficRouting;
+  DefaultK8sTrafficRouting trafficRouting;
 }

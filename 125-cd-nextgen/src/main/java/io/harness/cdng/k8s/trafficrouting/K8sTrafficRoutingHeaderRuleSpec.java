@@ -40,7 +40,7 @@ public class K8sTrafficRoutingHeaderRuleSpec extends K8sTrafficRoutingRuleSpec {
   @AllArgsConstructor
   static class HeaderSpec {
     @NotEmpty String key;
-    @NotEmpty String value;
+    String value;
     MatchType matchType;
   }
 }

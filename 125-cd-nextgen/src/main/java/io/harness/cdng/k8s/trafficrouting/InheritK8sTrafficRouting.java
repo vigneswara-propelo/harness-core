@@ -10,41 +10,29 @@ package io.harness.cdng.k8s.trafficrouting;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConst;
+import io.harness.pms.yaml.YamlNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
-import lombok.Value;
 import lombok.experimental.FieldDefaults;
 
-@Value
+@Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
-public class K8sTrafficRoutingRoute {
-  @NotNull RouteSpec route;
+public class InheritK8sTrafficRouting implements AbstractK8sTrafficRouting {
+  @JsonProperty(YamlNode.UUID_FIELD_NAME)
+  @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
+  @ApiModelProperty(hidden = true)
+  private String uuid;
 
-  @Value
-  @Builder
-  @FieldDefaults(level = AccessLevel.PRIVATE)
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  static class RouteSpec {
-    @NotNull RouteType type;
-    List<K8sTrafficRoutingRule> rules;
-
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    enum RouteType {
-      HTTP(K8sTrafficRoutingConst.HTTP);
-      @JsonValue @Getter final String displayName;
-    }
-  }
+  @NotEmpty List<K8sTrafficRoutingDestination> destinations;
 }

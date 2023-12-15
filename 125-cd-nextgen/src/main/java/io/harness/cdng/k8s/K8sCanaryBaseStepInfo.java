@@ -13,9 +13,12 @@ import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.expressio
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
+import io.harness.annotations.dev.CodePulse;
+import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.SwaggerConstants;
-import io.harness.cdng.k8s.trafficrouting.K8sTrafficRouting;
+import io.harness.cdng.k8s.trafficrouting.DefaultK8sTrafficRouting;
 import io.harness.cdng.manifest.yaml.K8sStepCommandFlag;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.pms.yaml.ParameterField;
@@ -36,6 +39,7 @@ import org.springframework.data.annotation.TypeAlias;
 @AllArgsConstructor
 @TypeAlias("K8sCanaryBaseStepInfo")
 @FieldNameConstants(innerTypeName = "K8sCanaryBaseStepInfoKeys")
+@CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
 public class K8sCanaryBaseStepInfo {
   @NotNull InstanceSelectionWrapper instanceSelection;
   @ApiModelProperty(dataType = BOOLEAN_CLASSPATH) @YamlSchemaTypes({string}) ParameterField<Boolean> skipDryRun;
@@ -43,5 +47,5 @@ public class K8sCanaryBaseStepInfo {
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
   ParameterField<List<TaskSelectorYaml>> delegateSelectors;
   @YamlSchemaTypes({runtime}) List<K8sStepCommandFlag> commandFlags;
-  K8sTrafficRouting trafficRouting;
+  DefaultK8sTrafficRouting trafficRouting;
 }
