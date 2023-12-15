@@ -236,7 +236,7 @@ public class PipelineEntity implements GitAware, GitSyncableEntity, PersistentEn
   }
 
   public String getHarnessVersion() {
-    if (harnessVersion == null) {
+    if (harnessVersion == null || harnessVersion.equals("V0")) {
       return HarnessYamlVersion.V0;
     }
     return harnessVersion;

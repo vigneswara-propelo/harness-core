@@ -9,6 +9,7 @@ package io.harness.pms.yaml;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.data.structure.EmptyPredicate;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_PIPELINE})
 public interface HarnessYamlVersion {
@@ -16,6 +17,6 @@ public interface HarnessYamlVersion {
   String V1 = "1";
 
   static boolean isV1(String version) {
-    return V1.equals(version);
+    return EmptyPredicate.isNotEmpty(version) && V1.equals(version);
   }
 }

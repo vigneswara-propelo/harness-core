@@ -183,10 +183,10 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
   }
 
   private String getSchemaVersionFromHarnessYamlVersion(String harnessYamlVersion) {
-    if (harnessYamlVersion.equals(HarnessYamlVersion.V0)) {
-      return TEMPLATE_VO;
+    if (HarnessYamlVersion.isV1(harnessYamlVersion)) {
+      return TEMPLATE_V1;
     }
-    return TEMPLATE_V1;
+    return TEMPLATE_VO;
   }
 
   @Override

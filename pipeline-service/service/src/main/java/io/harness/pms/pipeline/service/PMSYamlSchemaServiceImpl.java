@@ -126,10 +126,10 @@ public class PMSYamlSchemaServiceImpl implements PMSYamlSchemaService {
     long start = System.currentTimeMillis();
     try {
       String schamaPath = null;
-      if (HarnessYamlVersion.V0.equals(harnessVersion)) {
-        schamaPath = PIPELINE_VERSION_V0;
-      } else {
+      if (HarnessYamlVersion.isV1(harnessVersion)) {
         schamaPath = PIPELINE_VERSION_V1;
+      } else {
+        schamaPath = PIPELINE_VERSION_V0;
       }
       JsonNode schema = schemaFetcher.fetchPipelineStaticYamlSchema(schamaPath);
 
