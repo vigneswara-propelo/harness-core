@@ -30,6 +30,8 @@ import io.harness.filters.PipelineFilterJsonCreator;
 import io.harness.plancreator.EmptyVariableCreatorV1;
 import io.harness.plancreator.approval.ApprovalStageFilterJsonCreator;
 import io.harness.plancreator.approval.ApprovalStagePlanCreatorV2;
+import io.harness.plancreator.approval.v1.ApprovalStageFilterCreator;
+import io.harness.plancreator.approval.v1.ApprovalStagePlanCreator;
 import io.harness.plancreator.group.GroupPlanCreatorV1;
 import io.harness.plancreator.pipeline.NGPipelinePlanCreator;
 import io.harness.plancreator.pipeline.PipelinePlanCreatorV1;
@@ -68,6 +70,7 @@ import io.harness.pms.sdk.core.variables.EmptyAnyVariableCreator;
 import io.harness.pms.sdk.core.variables.EmptyVariableCreator;
 import io.harness.pms.sdk.core.variables.VariableCreator;
 import io.harness.pms.utils.InjectorUtils;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.ssca.cd.execution.filtercreator.CdSscaStepFilterJsonCreator;
 import io.harness.ssca.cd.execution.variablecreator.CdSscaStepVariableCreator;
 import io.harness.ssca.plancreator.CdSscaEnforcementStepPlanCreator;
@@ -158,6 +161,7 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     planCreators.add(new CdSscaOrchestrationStepPlanCreator());
     planCreators.add(new StepGroupPMSPlanCreatorV2());
     planCreators.add(new CdSscaEnforcementStepPlanCreator());
+    planCreators.add(new ApprovalStagePlanCreator());
 
     if (!disableCustomStageInPipelineService) {
       planCreators.add(new CustomStagePlanCreator());
@@ -184,6 +188,7 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     filterJsonCreators.add(new EmptyFilterJsonCreator(STAGE, ImmutableSet.of(PIPELINE_ROLLBACK_STAGE)));
     filterJsonCreators.add(new HarnessApprovalStepFilterJsonCreatorV2());
     filterJsonCreators.add(new CdSscaStepFilterJsonCreator());
+    filterJsonCreators.add(new ApprovalStageFilterCreator());
 
     if (!disableCustomStageInPipelineService) {
       filterJsonCreators.add(new CustomStageFilterCreator());
@@ -217,8 +222,8 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     variableCreators.add(new PipelineStageVariableCreator());
     variableCreators.add(new PipelineStageOutputsVariableCreator());
     variableCreators.add(new WaitStepVariableCreator());
-    variableCreators.add(
-        new EmptyVariableCreator(STAGE, ImmutableSet.of(FEATURE_FLAG_SUPPORTED_TYPE, PIPELINE_ROLLBACK_STAGE)));
+    variableCreators.add(new EmptyVariableCreator(STAGE,
+        ImmutableSet.of(FEATURE_FLAG_SUPPORTED_TYPE, PIPELINE_ROLLBACK_STAGE, YAMLFieldNameConstants.APPROVAL_V1)));
     variableCreators.add(new EmptyVariableCreator(STEP, ImmutableSet.of(FLAG_CONFIGURATION, RESOURCE_CONSTRAINT)));
     variableCreators.add(new EmptyAnyVariableCreator(ImmutableSet.of(GROUP)));
     variableCreators.add(new ContainerStepVariableCreator());

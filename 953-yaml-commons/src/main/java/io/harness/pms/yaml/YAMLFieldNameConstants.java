@@ -128,6 +128,7 @@ public class YAMLFieldNameConstants {
   public final String RETRY_STEP_GROUP = "retryStepGroup";
   public final String CUSTOM = "Custom";
   public final String CUSTOM_V1 = "custom";
+  public final String APPROVAL_V1 = "approval";
   public final String REF = "ref";
   public final String DOLLAR_REF = "$ref";
   public final String VERSION = "version";
