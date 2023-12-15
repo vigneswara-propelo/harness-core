@@ -1,0 +1,10 @@
+policies:
+  - name: delete-redshift-old-manual-snapshots
+    resource: redshift-snapshot
+    filters:
+      - "ManualSnapshotRetentionPeriod": -1
+      - type: age
+        days: 35
+        op: gt
+    actions:
+      - delete

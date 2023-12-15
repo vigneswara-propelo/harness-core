@@ -1,0 +1,8 @@
+isOOTB: true
+forRecommendation: false
+deleted: false
+name: delete-underutilized-redshift-cluster
+cloudProvider: AWS
+resourceType: redshift
+description: Delete redshift cluster where CPU Utilization is less than 5% for last 7 days
+rulesYamlPath: ../delete-underutilized-redshift-cluster.yml

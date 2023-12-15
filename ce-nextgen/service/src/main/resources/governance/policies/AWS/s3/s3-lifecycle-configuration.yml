@@ -1,0 +1,21 @@
+policies:
+  - name: s3-lifecycle-configuration
+    resource: aws.s3
+    filters:
+      - type : value
+        key : Lifecycle
+        value : absent
+    actions:
+      - type: configure-lifecycle
+        rules:
+          - ID: harness-default-lifecycle
+            Status: Enabled
+            Filter:
+              Prefix: ''
+            Expiration:
+              ExpiredObjectDeleteMarker: True
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+              NewerNoncurrentVersions: 6

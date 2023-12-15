@@ -1,0 +1,8 @@
+isOOTB: true
+forRecommendation: false
+deleted: false
+name: s3-intelligent-tiering-configuration
+cloudProvider: AWS
+resourceType: s3
+description: Configure intelligent tiering for s3 buckets wherever it is disabled
+rulesYamlPath: ../s3-intelligent-tiering-configuration.yml

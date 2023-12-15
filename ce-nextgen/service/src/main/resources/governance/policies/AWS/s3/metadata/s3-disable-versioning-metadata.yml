@@ -1,4 +1,4 @@
-isOOTB: false
+isOOTB: true
 forRecommendation: false
 deleted: false
 name: s3-disable-versioning

@@ -1,0 +1,8 @@
+isOOTB: true
+forRecommendation: false
+deleted: false
+name: under-utilized-elasticcache-cluster
+cloudProvider: AWS
+resourceType: cache-cluster
+description: Identify underutilized cache clusters based on low memory usage and low CPU utilization.
+rulesYamlPath: ../under-utilized-elasticcache-cluster.yml

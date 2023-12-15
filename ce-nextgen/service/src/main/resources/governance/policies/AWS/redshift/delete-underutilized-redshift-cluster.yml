@@ -1,0 +1,12 @@
+policies:
+  - name: delete-underutilized-redshift-cluster
+    resource: redshift
+    filters:
+      - type: metrics
+        name: CPUUtilization
+        days: 7
+        period: 86400
+        value: 5
+        op: less-than
+    actions:
+      - delete

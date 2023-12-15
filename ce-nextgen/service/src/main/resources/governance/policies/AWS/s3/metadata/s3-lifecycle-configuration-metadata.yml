@@ -1,0 +1,8 @@
+isOOTB: true
+forRecommendation: false
+deleted: false
+name: s3-lifecycle-configuration
+cloudProvider: AWS
+resourceType: s3
+description: Configure lifecycle for s3 buckets wherever it is absent
+rulesYamlPath: ../s3-lifecycle-configuration.yml

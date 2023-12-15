@@ -1,0 +1,8 @@
+isOOTB: true
+forRecommendation: false
+deleted: false
+name: delete-redshift-old-manual-snapshots
+cloudProvider: AWS
+resourceType: redshift-snapshot
+description: Delete all stale(older than 35 days) redshift snapshot where there is lifetime retention period
+rulesYamlPath: ../delete-redshift-old-manual-snapshots.yml

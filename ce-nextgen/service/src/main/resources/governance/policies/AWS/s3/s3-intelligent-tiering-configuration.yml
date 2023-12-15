@@ -1,0 +1,19 @@
+policies:
+  - name: s3-intelligent-tiering-configuration
+    resource: aws.s3
+    filters:
+      - not:
+          - type: intelligent-tiering
+            attrs:
+              - Status: Enabled
+    actions:
+      - type: set-intelligent-tiering
+        Id: harness-default
+        IntelligentTieringConfiguration:
+          Id: harness-default
+          Status: Enabled
+          Tierings:
+            - Days: 135
+              AccessTier: ARCHIVE_ACCESS
+            - Days: 270
+              AccessTier: DEEP_ARCHIVE_ACCESS

@@ -1,0 +1,8 @@
+isOOTB: true
+forRecommendation: false
+deleted: false
+name: high-evictions-elasticcache-cluster
+cloudProvider: AWS
+resourceType: cache-cluster
+description: Identify cache clusters with high evictions for potential performance issues.
+rulesYamlPath: ../high-evictions-elasticcache-cluster.yml
