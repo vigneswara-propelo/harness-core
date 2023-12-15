@@ -106,8 +106,6 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_ENABLE_TRIGGER_YAML_VALIDATION("Enables trigger yaml validation", HarnessTeam.SPG),
   CDS_DISABLE_CG_ITERATORS("Disables CG iterators", HarnessTeam.SPG),
-  CDS_ENCRYPT_TERRAFORM_APPLY_JSON_OUTPUT(
-      "FF for providing the terraform apply json output as a secret", HarnessTeam.CDP),
   CDS_ENABLE_NEW_PARAMETER_FIELD_PROCESSOR(
       "FF for turning on new parameterField processor which handles all expression resolution for ParameterField",
       HarnessTeam.CDC),
