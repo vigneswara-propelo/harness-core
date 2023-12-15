@@ -15,9 +15,15 @@ import static software.wings.utils.WingsTestConstants.ACCOUNT_NAME;
 import static software.wings.utils.WingsTestConstants.COMPANY_NAME;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.harness.category.element.UnitTests;
 import io.harness.data.structure.UUIDGenerator;
+import io.harness.licensing.beans.response.CheckExpiryResultDTO;
+import io.harness.licensing.remote.NgLicenseHttpClient;
+import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.rule.Owner;
 
 import software.wings.WingsBaseTest;
@@ -30,11 +36,15 @@ import software.wings.scheduler.account.LicenseCheckHandler;
 import software.wings.service.intfc.AccountService;
 
 import com.google.inject.Inject;
+import java.io.IOException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * @author rktummala on 11/06/2019
@@ -43,11 +53,19 @@ public class LicenseCheckHandlerTest extends WingsBaseTest {
   @InjectMocks @Inject private AccountService accountService;
   @InjectMocks @Inject private LicenseService licenseService;
   @InjectMocks @Inject private LicenseCheckHandler licenseCheckHandler;
+  @Mock private NgLicenseHttpClient ngLicenseHttpClient;
 
   @Before
-  public void setup() throws IllegalAccessException {
+  public void setup() throws IllegalAccessException, IOException {
     FieldUtils.writeField(licenseService, "accountService", accountService, true);
     FieldUtils.writeField(accountService, "licenseService", licenseService, true);
+    FieldUtils.writeField(licenseService, "ngLicenseHttpClient", ngLicenseHttpClient, true);
+
+    Call<ResponseDTO<CheckExpiryResultDTO>> ngLicenseDecision = mock(Call.class);
+    when(ngLicenseDecision.execute())
+        .thenReturn(
+            Response.success(ResponseDTO.newResponse(CheckExpiryResultDTO.builder().shouldDelete(true).build())));
+    when(ngLicenseHttpClient.checkExpiry(any())).thenReturn(ngLicenseDecision);
   }
 
   @Test

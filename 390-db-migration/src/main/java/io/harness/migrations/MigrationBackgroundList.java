@@ -6,6 +6,7 @@
  */
 
 package io.harness.migrations;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -154,6 +155,7 @@ import io.harness.migrations.all.TimeSeriesMLScoresTTLMigration;
 import io.harness.migrations.all.TimeSeriesRiskSummaryTTLMigration;
 import io.harness.migrations.all.TimeSeriesThresholdsMigration;
 import io.harness.migrations.all.UpdateAccountEncryptionClassNames;
+import io.harness.migrations.all.UpdateAccountStatusForAllExpiredAccountsMigration;
 import io.harness.migrations.all.UpdateCorruptedEmptyClusterNameInstanceStatsMigration;
 import io.harness.migrations.all.UpdateCorruptedInstanceStatsMigration;
 import io.harness.migrations.all.UpdateEncryptedTokenToDelegateToken;
@@ -443,6 +445,7 @@ public class MigrationBackgroundList {
         .add(Pair.of(255, EncryptDelegateTokenAndStoreAsNewFieldAndDeleteExistingRecordsMigration.class))
         .add(Pair.of(256, EncryptDelegateTokenViaPagination.class))
         .add(Pair.of(257, UpdateOverrideTypeToCustomDelegateImage.class))
+        .add(Pair.of(258, UpdateAccountStatusForAllExpiredAccountsMigration.class))
         .build();
   }
 }

@@ -181,14 +181,7 @@ public class LicenseServiceImpl implements LicenseService {
       account = accountService.get(account.getUuid());
 
       // Check if all ng licenses inactive before decides expire account
-      CheckExpiryResultDTO ngLicenseDecision = CheckExpiryResultDTO.builder().shouldDelete(false).build();
-      try {
-        ngLicenseDecision = licenseExpiryCache.get(
-            account.getUuid(), accountId -> getResponse(ngLicenseHttpClient.checkExpiry(accountId)));
-      } catch (Exception e) {
-        log.warn("Error occurred during check NG license allInactive flag for account {}, due to {}", account.getUuid(),
-            e.getMessage());
-      }
+      CheckExpiryResultDTO ngLicenseDecision = getNgLicenseDecision(account);
 
       LicenseInfo licenseInfo = account.getLicenseInfo();
 
@@ -224,7 +217,7 @@ public class LicenseServiceImpl implements LicenseService {
           }
         }
       } else {
-        if (AccountStatus.ACTIVE.equals(accountStatus)) {
+        if (AccountStatus.ACTIVE.equals(accountStatus) && !ngLicenseDecision.isNgAccountActive()) {
           expireLicense(account.getUuid(), licenseInfo);
           sendEmailToSales(account, expiryTime, accountType, EMAIL_SUBJECT_ACCOUNT_EXPIRED, EMAIL_BODY_ACCOUNT_EXPIRED,
               accountType.equals(AccountType.PAID) ? paidDefaultContacts : trialDefaultContacts);
@@ -593,6 +586,10 @@ public class LicenseServiceImpl implements LicenseService {
       return true;
     }
 
+    if (getNgLicenseDecision(account).isNgAccountActive()) {
+      return false;
+    }
+
     if (System.currentTimeMillis() > licenseInfo.getExpiryTime()) {
       executorService.submit(() -> expireLicense(accountId, licenseInfo));
       return true;
@@ -753,5 +750,19 @@ public class LicenseServiceImpl implements LicenseService {
     } else {
       accountService.updateAccountActivelyUsed(account.getUuid(), false);
     }
+  }
+
+  private CheckExpiryResultDTO getNgLicenseDecision(Account account) {
+    CheckExpiryResultDTO ngLicenseDecision = CheckExpiryResultDTO.builder().shouldDelete(false).build();
+
+    try {
+      ngLicenseDecision = licenseExpiryCache.get(
+          account.getUuid(), accountId -> getResponse(ngLicenseHttpClient.checkExpiry(accountId)));
+    } catch (Exception e) {
+      log.warn("Error occurred during check NG license allInactive flag for account {}, due to {}", account.getUuid(),
+          e.getMessage());
+    }
+
+    return ngLicenseDecision;
   }
 }

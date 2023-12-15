@@ -92,6 +92,13 @@ public class LicenseServiceTest extends WingsBaseTest {
     Call<ResponseDTO<Boolean>> booleanResult = mock(Call.class);
     when(booleanResult.execute()).thenReturn(Response.success(ResponseDTO.newResponse(true)));
     when(ngLicenseHttpClient.softDelete(any())).thenReturn(booleanResult);
+
+    Call<ResponseDTO<CheckExpiryResultDTO>> ngLicenseDecision = mock(Call.class);
+    when(ngLicenseDecision.execute())
+        .thenReturn(
+            Response.success(ResponseDTO.newResponse(CheckExpiryResultDTO.builder().shouldDelete(true).build())));
+    when(ngLicenseHttpClient.checkExpiry(any())).thenReturn(ngLicenseDecision);
+
     when(mainConfiguration.getDeployMode()).thenReturn(DeployMode.KUBERNETES);
   }
 
