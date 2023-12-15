@@ -11,6 +11,7 @@ import static io.harness.beans.EnvironmentType.PROD;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.ng.core.environment.beans.EnvironmentType.PreProduction;
 import static io.harness.ng.core.environment.beans.EnvironmentType.Production;
+import static io.harness.ngmigration.utils.MigratorUtility.isEnabled;
 
 import static software.wings.beans.ServiceVariableType.ENCRYPTED_TEXT;
 import static software.wings.ngmigration.NGMigrationEntityType.CONFIG_FILE;
@@ -44,6 +45,7 @@ import io.harness.ngmigration.beans.YamlGenerationDetails;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.client.TemplateClient;
+import io.harness.ngmigration.dto.Flag;
 import io.harness.ngmigration.dto.ImportError;
 import io.harness.ngmigration.dto.MigrationImportSummaryDTO;
 import io.harness.ngmigration.expressions.MigratorExpressionUtils;
@@ -106,6 +108,13 @@ public class EnvironmentMigrationService extends NgMigrationService {
   public MigratedEntityMapping generateMappingEntity(NGYamlFile yamlFile) {
     CgBasicInfo basicInfo = yamlFile.getCgBasicInfo();
     NGEnvironmentConfig environmentYaml = (NGEnvironmentConfig) yamlFile.getYaml();
+    String orgIdentifier = yamlFile.getNgEntityDetail().getOrgIdentifier();
+    String projectIdentifier = yamlFile.getNgEntityDetail().getProjectIdentifier();
+    Scope scope = Scope.PROJECT;
+    if (isEnabled(Flag.ENV_AT_DIFFERENT_LEVEL)) {
+      scope = MigratorMappingService.getScope(orgIdentifier, projectIdentifier);
+    }
+
     return MigratedEntityMapping.builder()
         .appId(basicInfo.getAppId())
         .accountId(basicInfo.getAccountId())
@@ -115,7 +124,7 @@ public class EnvironmentMigrationService extends NgMigrationService {
         .orgIdentifier(environmentYaml.getNgEnvironmentInfoConfig().getOrgIdentifier())
         .projectIdentifier(environmentYaml.getNgEnvironmentInfoConfig().getProjectIdentifier())
         .identifier(environmentYaml.getNgEnvironmentInfoConfig().getIdentifier())
-        .scope(Scope.PROJECT)
+        .scope(scope)
         .fullyQualifiedIdentifier(MigratorMappingService.getFullyQualifiedIdentifier(basicInfo.getAccountId(),
             environmentYaml.getNgEnvironmentInfoConfig().getOrgIdentifier(),
             environmentYaml.getNgEnvironmentInfoConfig().getProjectIdentifier(),
@@ -244,8 +253,12 @@ public class EnvironmentMigrationService extends NgMigrationService {
     String name = MigratorUtility.generateName(inputDTO.getOverrides(), entityId, environment.getName());
     String identifier = MigratorUtility.generateIdentifierDefaultName(
         inputDTO.getOverrides(), entityId, name, inputDTO.getIdentifierCaseFormat());
-    String projectIdentifier = MigratorUtility.getProjectIdentifier(Scope.PROJECT, inputDTO);
-    String orgIdentifier = MigratorUtility.getOrgIdentifier(Scope.PROJECT, inputDTO);
+    Scope scope = Scope.PROJECT;
+    if (isEnabled(Flag.ENV_AT_DIFFERENT_LEVEL)) {
+      scope = MigratorUtility.getDefaultScope(inputDTO, entityId, Scope.PROJECT);
+    }
+    String projectIdentifier = MigratorUtility.getProjectIdentifier(scope, inputDTO);
+    String orgIdentifier = MigratorUtility.getOrgIdentifier(scope, inputDTO);
     List<ServiceVariable> serviceVariablesForAllServices = serviceVariableService.getServiceVariablesForEntity(
         environment.getAppId(), environment.getUuid(), OBTAIN_VALUE);
     Set<CgEntityId> manifestIds =
