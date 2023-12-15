@@ -71,12 +71,12 @@ public class SbomDriftServiceImpl implements SbomDriftService {
       throw new InvalidRequestException("Could not find artifact with tag: " + tag);
     }
 
-    // TODO: calculate drift only when sbom tool and format matches.
     return calculateAndStoreSbomDrift(driftArtifact, baseArtifact, DriftBase.MANUAL);
   }
 
   private ArtifactSbomDriftResponse calculateAndStoreSbomDrift(
       ArtifactEntity driftArtifact, ArtifactEntity baseArtifact, DriftBase base) {
+    validateSbomToolAndFormat(driftArtifact, baseArtifact);
     String accountId = driftArtifact.getAccountId();
     String orgId = driftArtifact.getOrgId();
     String projectId = driftArtifact.getProjectId();
@@ -122,6 +122,26 @@ public class SbomDriftServiceImpl implements SbomDriftService {
         .tag(driftArtifact.getTag())
         .baseTag(baseArtifact.getTag())
         .artifactName(driftArtifact.getName());
+  }
+
+  void validateSbomToolAndFormat(ArtifactEntity driftArtifact, ArtifactEntity baseArtifact) {
+    if (driftArtifact.getSbom() != null && baseArtifact.getSbom() != null) {
+      if (EmptyPredicate.isNotEmpty(driftArtifact.getSbom().getTool())
+          && !driftArtifact.getSbom().getTool().equals(baseArtifact.getSbom().getTool())) {
+        throw new InvalidRequestException(String.format(
+            "Not proceeding with drift because sbom tool %s for base tag %s does not match with sbom tool %s of tag %s",
+            baseArtifact.getSbom().getTool(), baseArtifact.getTag(), driftArtifact.getSbom().getTool(),
+            driftArtifact.getTag()));
+      }
+
+      if (EmptyPredicate.isNotEmpty(driftArtifact.getSbom().getSbomFormat())
+          && !driftArtifact.getSbom().getSbomFormat().equals(baseArtifact.getSbom().getSbomFormat())) {
+        throw new InvalidRequestException(String.format(
+            "Not proceeding with drift because sbom format %s for base tag %s does not match with sbom format %s of tag %s",
+            baseArtifact.getSbom().getSbomFormat(), baseArtifact.getTag(), driftArtifact.getSbom().getSbomFormat(),
+            driftArtifact.getTag()));
+      }
+    }
   }
 
   @Override

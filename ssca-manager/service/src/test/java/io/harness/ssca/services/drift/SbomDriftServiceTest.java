@@ -39,6 +39,7 @@ import io.harness.ssca.beans.drift.DriftBase;
 import io.harness.ssca.beans.drift.LicenseDrift;
 import io.harness.ssca.beans.drift.LicenseDriftResults;
 import io.harness.ssca.beans.drift.LicenseDriftStatus;
+import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.drift.DriftEntity;
 import io.harness.ssca.entities.drift.DriftEntity.DriftEntityBuilder;
 import io.harness.ssca.helpers.SbomDriftCalculator;
@@ -308,6 +309,39 @@ public class SbomDriftServiceTest extends SSCAManagerTestBase {
                                                        .packageLicense(List.of("license1", "license2"))
                                                        .build()))
                                .build()));
+  }
+
+  @Test
+  @Owner(developers = INDER)
+  @Category(UnitTests.class)
+  public void testValidateSbomToolAndFormat() {
+    ArtifactEntity baseArtifact = builderFactory.getArtifactEntityBuilder().tag(BASE_TAG).build();
+    ArtifactEntity driftArtifact = builderFactory.getArtifactEntityBuilder()
+                                       .tag(TAG)
+                                       .sbom(ArtifactEntity.Sbom.builder()
+                                                 .sbomVersion("3.0")
+                                                 .sbomFormat("cyclonedx-json")
+                                                 .toolVersion("2.0")
+                                                 .tool("syft")
+                                                 .build())
+                                       .build();
+    assertThatThrownBy(() -> sbomDriftService.validateSbomToolAndFormat(driftArtifact, baseArtifact))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(
+            "Not proceeding with drift because sbom format spdx-json for base tag baseTag does not match with sbom format cyclonedx-json of tag tag");
+    ArtifactEntity driftArtifactWithDiffTool = builderFactory.getArtifactEntityBuilder()
+                                                   .tag(TAG)
+                                                   .sbom(ArtifactEntity.Sbom.builder()
+                                                             .sbomVersion("3.0")
+                                                             .sbomFormat("spdx-json")
+                                                             .toolVersion("2.0")
+                                                             .tool("sbom-tool")
+                                                             .build())
+                                                   .build();
+    assertThatThrownBy(() -> sbomDriftService.validateSbomToolAndFormat(driftArtifactWithDiffTool, baseArtifact))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(
+            "Not proceeding with drift because sbom tool syft for base tag baseTag does not match with sbom tool sbom-tool of tag tag");
   }
 
   @Test
