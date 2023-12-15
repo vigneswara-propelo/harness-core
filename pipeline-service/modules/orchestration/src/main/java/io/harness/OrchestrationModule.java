@@ -93,8 +93,9 @@ import io.harness.waiter.WaiterConfiguration;
 import io.harness.waiter.WaiterConfiguration.PersistenceLayer;
 
 import com.codahale.metrics.MetricRegistry;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -300,7 +301,12 @@ public class OrchestrationModule extends AbstractModule implements ServersModule
   @Singleton
   @Named("pmsMetricsLoadingCache")
   public LoadingCache<String, Set<String>> metricsLoadingCache() {
-    return Caffeine.newBuilder().build(s -> new HashSet<>());
+    return CacheBuilder.newBuilder().build(new CacheLoader<String, Set<String>>() {
+      @Override
+      public Set<String> load(String key) throws Exception {
+        return new HashSet<>();
+      }
+    });
   }
 
   @Provides

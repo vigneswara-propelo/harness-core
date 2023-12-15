@@ -1331,12 +1331,10 @@ public class NodeExecutionServiceImplTest extends OrchestrationTestBase {
 
     ExecutionStatistics executionStatistics = nodeExecutionService.aggregateRunningNodeExecutionsCount();
     assertThat(executionStatistics.getAccountStats().size()).isEqualTo(2);
-    assertThat(executionStatistics.getModuleStats().size()).isEqualTo(1);
-    assertThat(executionStatistics.getStepTypeStats().size()).isEqualTo(1);
+    assertThat(executionStatistics.getModuleAndStepTypeStats().size()).isEqualTo(1);
     assertThat(executionStatistics.getAccountStats().get(0).getCount()).isEqualTo(1);
     assertThat(executionStatistics.getAccountStats().get(1).getCount()).isEqualTo(1);
-    assertThat(executionStatistics.getModuleStats().get(0).getCount()).isEqualTo(2);
-    assertThat(executionStatistics.getStepTypeStats().get(0).getCount()).isEqualTo(2);
+    assertThat(executionStatistics.getModuleAndStepTypeStats().get(0).getCount()).isEqualTo(2);
   }
 
   @Test

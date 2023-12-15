@@ -20,8 +20,8 @@ import io.harness.execution.NodeExecution.NodeExecutionKeys;
 import io.harness.mongo.helper.AnalyticsMongoTemplateHolder;
 import io.harness.mongo.helper.SecondaryMongoTemplateHolder;
 import io.harness.monitoring.ExecutionCountWithAccountResult.ExecutionCountWithAccountResultKeys;
-import io.harness.monitoring.ExecutionCountWithModuleResult.ExecutionCountWithModuleResultKeys;
-import io.harness.monitoring.ExecutionCountWithStepTypeResult.ExecutionCountWithStepTypeResultKeys;
+import io.harness.monitoring.ExecutionCountWithModuleAndStepTypeResult;
+import io.harness.monitoring.ExecutionCountWithModuleAndStepTypeResult.ExecutionCountWithModuleAndStepTypeResultKeys;
 import io.harness.monitoring.ExecutionStatistics;
 import io.harness.monitoring.ExecutionStatistics.ExecutionStatisticsKeys;
 import io.harness.pms.execution.utils.StatusUtils;
@@ -139,24 +139,14 @@ public class NodeExecutionReadHelper {
                                              .and(MONGODB_ID)
                                              .as(ExecutionCountWithAccountResultKeys.accountId)
                                              .andInclude(ExecutionCountWithAccountResultKeys.count);
-    GroupOperation groupByModule =
-        Aggregation.group(NodeExecutionKeys.module).count().as(ExecutionCountWithModuleResultKeys.count);
-    ProjectionOperation projectModule = Aggregation.project()
-                                            .and(MONGODB_ID)
-                                            .as(ExecutionCountWithModuleResultKeys.module)
-                                            .andInclude(ExecutionCountWithModuleResultKeys.count);
-    GroupOperation groupByStepType =
-        Aggregation.group(NodeExecutionKeys.type).count().as(ExecutionCountWithStepTypeResultKeys.count);
-    ProjectionOperation projectStepType = Aggregation.project()
-                                              .and(MONGODB_ID)
-                                              .as(ExecutionCountWithStepTypeResultKeys.stepType)
-                                              .andInclude(ExecutionCountWithStepTypeResultKeys.count);
+    GroupOperation groupByModule = Aggregation.group(NodeExecutionKeys.module, NodeExecutionKeys.type)
+                                       .count()
+                                       .as(ExecutionCountWithModuleAndStepTypeResultKeys.count);
+
     FacetOperation facetOperation = Aggregation.facet(groupByAccount, projectAccount)
                                         .as(ExecutionStatisticsKeys.accountStats)
-                                        .and(groupByModule, projectModule)
-                                        .as(ExecutionStatisticsKeys.moduleStats)
-                                        .and(groupByStepType, projectStepType)
-                                        .as(ExecutionStatisticsKeys.stepTypeStats);
+                                        .and(groupByModule, ExecutionCountWithModuleAndStepTypeResult.getProjection())
+                                        .as(ExecutionStatisticsKeys.moduleAndStepTypeStats);
     Aggregation aggregation = Aggregation.newAggregation(matchStage, facetOperation);
     List<ExecutionStatistics> executionStatisticsList =
         analyticsMongoTemplate.aggregate(aggregation, NodeExecution.class, ExecutionStatistics.class)

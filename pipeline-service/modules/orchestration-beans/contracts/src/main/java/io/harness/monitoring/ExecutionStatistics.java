@@ -26,6 +26,5 @@ import lombok.experimental.FieldNameConstants;
 @AllArgsConstructor
 public class ExecutionStatistics {
   List<ExecutionCountWithAccountResult> accountStats;
-  List<ExecutionCountWithModuleResult> moduleStats;
-  List<ExecutionCountWithStepTypeResult> stepTypeStats;
+  List<ExecutionCountWithModuleAndStepTypeResult> moduleAndStepTypeStats;
 }

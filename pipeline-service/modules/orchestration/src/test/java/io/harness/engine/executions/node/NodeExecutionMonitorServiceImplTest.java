@@ -7,6 +7,7 @@
 
 package io.harness.engine.executions.node;
 
+import static io.harness.engine.executions.node.NodeExecutionMonitorServiceImpl.NODE_EXECUTION;
 import static io.harness.rule.OwnerRule.SRIDHAR;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -22,17 +23,17 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.metrics.service.api.MetricService;
 import io.harness.monitoring.ExecutionCountWithAccountResult;
-import io.harness.monitoring.ExecutionCountWithModuleResult;
-import io.harness.monitoring.ExecutionCountWithStepTypeResult;
+import io.harness.monitoring.ExecutionCountWithModuleAndStepTypeResult;
 import io.harness.monitoring.ExecutionStatistics;
 import io.harness.pms.events.PmsEventMonitoringConstants;
 import io.harness.rule.Owner;
 
-import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.cache.LoadingCache;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import javax.cache.Cache;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,32 +59,25 @@ public class NodeExecutionMonitorServiceImplTest extends CategoryTest {
   @Test
   @Owner(developers = SRIDHAR)
   @Category(UnitTests.class)
-  public void testRegisterActiveExecutionMetrics() {
+  public void testRegisterActiveExecutionMetrics() throws ExecutionException {
     doReturn(true).when(metricsCache).putIfAbsent(any(), any());
-    doReturn(new HashSet<>()).when(metricsLoadingCache).get(PmsEventMonitoringConstants.ACCOUNT_ID);
-    doReturn(new HashSet<>()).when(metricsLoadingCache).get(PmsEventMonitoringConstants.MODULE);
-    doReturn(new HashSet<>()).when(metricsLoadingCache).get(PmsEventMonitoringConstants.STEP_TYPE);
+    doReturn(new HashSet<>()).when(metricsLoadingCache).get(PmsEventMonitoringConstants.ACCOUNT_ID + NODE_EXECUTION);
+    doReturn(new HashSet<>())
+        .when(metricsLoadingCache)
+        .get(PmsEventMonitoringConstants.MODULE + "_" + PmsEventMonitoringConstants.STEP_TYPE + NODE_EXECUTION);
 
     List<ExecutionCountWithAccountResult> accountResults = new LinkedList<>();
     accountResults.add(ExecutionCountWithAccountResult.builder().accountId("ABC").count(1).build());
     accountResults.add(ExecutionCountWithAccountResult.builder().accountId("DEF").count(5).build());
 
-    List<ExecutionCountWithModuleResult> moduleResults = new LinkedList<>();
-    moduleResults.add(ExecutionCountWithModuleResult.builder().module("pms").count(30).build());
+    List<ExecutionCountWithModuleAndStepTypeResult> moduleResults = new LinkedList<>();
+    moduleResults.add(ExecutionCountWithModuleAndStepTypeResult.builder().module("pms").type("Wait").count(30).build());
 
-    List<ExecutionCountWithStepTypeResult> stepTypeResults = new LinkedList<>();
-    stepTypeResults.add(ExecutionCountWithStepTypeResult.builder().stepType("type1").count(1).build());
-    stepTypeResults.add(ExecutionCountWithStepTypeResult.builder().stepType("type2").count(5).build());
-    stepTypeResults.add(ExecutionCountWithStepTypeResult.builder().stepType("type3").count(5).build());
-
-    ExecutionStatistics result = ExecutionStatistics.builder()
-                                     .accountStats(accountResults)
-                                     .moduleStats(moduleResults)
-                                     .stepTypeStats(stepTypeResults)
-                                     .build();
+    ExecutionStatistics result =
+        ExecutionStatistics.builder().accountStats(accountResults).moduleAndStepTypeStats(moduleResults).build();
 
     doReturn(result).when(nodeExecutionService).aggregateRunningNodeExecutionsCount();
     nodeExecutionMonitorService.registerActiveExecutionMetrics();
-    verify(metricService, times(6)).recordMetric(anyString(), anyDouble());
+    verify(metricService, times(3)).recordMetric(anyString(), anyDouble());
   }
 }
