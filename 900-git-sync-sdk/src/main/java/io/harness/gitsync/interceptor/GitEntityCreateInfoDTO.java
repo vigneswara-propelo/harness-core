@@ -67,4 +67,7 @@ public class GitEntityCreateInfoDTO {
   @Parameter(description = GitSyncApiConstants.REPO_NAME_PARAM_MESSAGE)
   @QueryParam(GitSyncApiConstants.REPO_NAME)
   String repoName;
+  @Parameter(description = GitSyncApiConstants.HARNESS_CODE_PARAM_MESSAGE)
+  @QueryParam(GitSyncApiConstants.HARNESS_CODE_REPO)
+  Boolean isHarnessCodeRepo;
 }

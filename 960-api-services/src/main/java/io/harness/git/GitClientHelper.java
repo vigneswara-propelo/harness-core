@@ -674,6 +674,10 @@ public class GitClientHelper {
         PATH_SEPARATOR, gitRepo);
   }
 
+  public static String getCompleteHTTPUrlForHarness(String url) {
+    return url;
+  }
+
   public static String getCompleteHTTPRepoUrlForAzureRepoSaas(String anyRepoUrl) {
     final String AZURE_REPO_URL = "https://dev.azure.com";
     String gitOwner = getGitOwner(anyRepoUrl, true);

@@ -35,4 +35,5 @@ public class GitSyncConstants {
   public static final String ENABLE_BI_DIRECTIONAL_SYNC = "enable_bi_directional_sync";
   public static final String ALLOW_DIFFERENT_REPO_FOR_PIPELINE_AND_INPUTSETS_SETTING =
       "Allow different repo for Pipeline and InputSets";
+  public static final String EMPTY = "";
 }

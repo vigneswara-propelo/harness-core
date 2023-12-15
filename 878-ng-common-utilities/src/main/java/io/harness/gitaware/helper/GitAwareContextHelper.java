@@ -10,6 +10,8 @@ import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_NESTS;
 
+import static java.lang.Boolean.TRUE;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
@@ -20,6 +22,7 @@ import io.harness.gitsync.beans.StoreType;
 import io.harness.gitsync.helpers.GitContextHelper;
 import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.gitsync.interceptor.GitSyncBranchContext;
+import io.harness.gitsync.interceptor.GitSyncConstants;
 import io.harness.gitsync.scm.beans.ScmGitMetaData;
 import io.harness.gitsync.scm.beans.ScmGitMetaDataContext;
 import io.harness.gitsync.sdk.CacheResponse;
@@ -289,5 +292,13 @@ public class GitAwareContextHelper {
       return false;
     }
     return Boolean.TRUE.equals(scmGitMetaData.getIsGitDefaultBranch());
+  }
+
+  public void setHarnessCodeConnectorRef() {
+    GitEntityInfo gitEntityInfo = getGitRequestParamsInfo();
+    if (TRUE.equals(gitEntityInfo.getIsHarnessCodeRepo())) {
+      gitEntityInfo.setConnectorRef(GitSyncConstants.EMPTY);
+      GitAwareContextHelper.updateGitEntityContext(gitEntityInfo);
+    }
   }
 }

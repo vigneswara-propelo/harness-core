@@ -77,6 +77,8 @@ public class GitSyncThreadDecorator implements ContainerRequestFilter, Container
         getRequestParamFromContext(GitSyncApiConstants.PARENT_ENTITY_ORG_IDENTIFIER, pathParameters, queryParameters);
     final String parentEntityProjectIdentifier = getRequestParamFromContext(
         GitSyncApiConstants.PARENT_ENTITY_PROJECT_IDENTIFIER, pathParameters, queryParameters);
+    final String isHarnessCodeRepo =
+        getRequestParamFromContext(GitSyncApiConstants.HARNESS_CODE_REPO, pathParameters, queryParameters);
     final GitEntityInfo branchInfo = GitEntityInfo.builder()
                                          .branch(branchName)
                                          .filePath(filePath)
@@ -97,6 +99,7 @@ public class GitSyncThreadDecorator implements ContainerRequestFilter, Container
                                          .parentEntityAccountIdentifier(parentEntityAccountIdentifier)
                                          .parentEntityOrgIdentifier(parentEntityOrgIdentifier)
                                          .parentEntityProjectIdentifier(parentEntityProjectIdentifier)
+                                         .isHarnessCodeRepo(Boolean.parseBoolean(isHarnessCodeRepo))
                                          .build();
     if (!GlobalContextManager.isAvailable()) {
       GlobalContextManager.set(new GlobalContext());

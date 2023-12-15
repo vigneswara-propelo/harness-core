@@ -127,7 +127,8 @@ public class HarnessConnectorDTO extends ConnectorConfigDTO implements ScmConnec
 
   @Override
   public String getFileUrl(String branchName, String filePath, String commitId, GitRepositoryDTO gitRepositoryDTO) {
-    return null;
+    // TODO: fix with correct file path
+    return getApiUrl() + getSlug() + "/files/" + commitId + "/~/" + filePath;
   }
 
   @Override

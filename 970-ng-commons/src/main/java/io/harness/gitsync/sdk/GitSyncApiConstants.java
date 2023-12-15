@@ -45,6 +45,7 @@ public class GitSyncApiConstants {
   public static final String CONNECTOR_REF = "connectorRef";
   public static final String STORE_TYPE = "storeType";
   public static final String REPO_NAME = "repoName";
+  public static final String HARNESS_CODE_REPO = "isHarnessCodeRepo";
   public static final String LAST_COMMIT_ID = "lastCommitId";
 
   public static final String BRANCH_PARAM_MESSAGE = "Name of the branch.";
@@ -52,6 +53,7 @@ public class GitSyncApiConstants {
   public static final String REPOID_PARAM_MESSAGE = "Git Sync Config Id.";
   public static final String REPO_URL_PARAM_MESSAGE = "URL of the repository.";
   public static final String REPO_NAME_PARAM_MESSAGE = "Name of the repository.";
+  public static final String HARNESS_CODE_PARAM_MESSAGE = "Is Harness code repo enabled";
   public static final String FOLDER_PATH_PARAM_MESSAGE = "Path to the root folder of the Entity.";
   public static final String COMMIT_MESSAGE_PARAM_MESSAGE = "Commit Message to use for the merge commit.";
   public static final String DEFAULT_BRANCH_PARAM_MESSAGE = "Name of the default branch.";

@@ -83,4 +83,7 @@ public class GitEntityUpdateInfoDTO {
   @DefaultValue("false")
   @QueryParam(GitSyncApiConstants.NEW_BRANCH)
   Boolean isNewBranch;
+  @Parameter(description = GitSyncApiConstants.HARNESS_CODE_PARAM_MESSAGE)
+  @QueryParam(GitSyncApiConstants.HARNESS_CODE_REPO)
+  Boolean isHarnessCodeRepo;
 }

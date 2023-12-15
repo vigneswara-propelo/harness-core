@@ -68,11 +68,11 @@ public class GitXSettingsHelper {
     if (GitAwareContextHelper.isRemoteEntity(gitEntityInfo)
         && GitAwareContextHelper.isNullOrDefault(gitEntityInfo.getConnectorRef())) {
       String defaultConnectorForGitX = getDefaultConnectorForGitX(accountIdentifier, orgIdentifier, projectIdentifier);
-
       if (!isEmpty(defaultConnectorForGitX)) {
         gitEntityInfo.setConnectorRef(defaultConnectorForGitX);
         GitAwareContextHelper.updateGitEntityContext(gitEntityInfo);
       }
+      GitAwareContextHelper.setHarnessCodeConnectorRef();
     }
   }
 

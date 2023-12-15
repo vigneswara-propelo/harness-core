@@ -36,4 +36,5 @@ public class EntityGitDetails {
   @Schema(description = "Repo url of the entity") String repoUrl;
   @Schema(description = "Connector Reference of parent entity") String parentEntityConnectorRef;
   @Schema(description = "Repo name of parent entity") String parentEntityRepoName;
+  @Schema(description = "Is harness code repo enabled") Boolean isHarnessCodeRepo;
 }

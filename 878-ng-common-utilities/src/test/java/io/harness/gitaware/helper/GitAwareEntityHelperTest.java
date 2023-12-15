@@ -227,11 +227,6 @@ public class GitAwareEntityHelperTest extends CategoryTest {
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
   public void testCreateEntityOnGitWithMissingFields() {
-    DummyGitAware noConnectorRef =
-        DummyGitAware.builder().connectorRef("__default__").repo(repoName).filePath(filePath).build();
-    assertThatThrownBy(() -> gitAwareEntityHelper.createEntityOnGit(noConnectorRef, data, scope))
-        .hasMessage("No Connector reference provided.");
-
     DummyGitAware noFilePath =
         DummyGitAware.builder().connectorRef("__default__").repo(repoName).filePath("__default__").build();
     assertThatThrownBy(() -> gitAwareEntityHelper.createEntityOnGit(noFilePath, data, scope))
@@ -268,11 +263,6 @@ public class GitAwareEntityHelperTest extends CategoryTest {
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
   public void testUpdateEntityOnGitWithMissingFields() {
-    DummyGitAware noConnectorRef =
-        DummyGitAware.builder().connectorRef("__default__").repo(repoName).filePath(filePath).build();
-    assertThatThrownBy(() -> gitAwareEntityHelper.updateEntityOnGit(noConnectorRef, data, scope))
-        .hasMessage("No Connector reference provided.");
-
     DummyGitAware noFilePath =
         DummyGitAware.builder().connectorRef("__default__").repo(repoName).filePath("__default__").build();
     assertThatThrownBy(() -> gitAwareEntityHelper.updateEntityOnGit(noFilePath, data, scope))

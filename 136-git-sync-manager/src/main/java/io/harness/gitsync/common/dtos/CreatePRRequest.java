@@ -26,6 +26,6 @@ public class CreatePRRequest {
   @NotBlank String repoName;
   @NotBlank String sourceBranchName;
   @NotBlank String targetBranchName;
-  @NotBlank String connectorRef;
+  String connectorRef;
   String title;
 }

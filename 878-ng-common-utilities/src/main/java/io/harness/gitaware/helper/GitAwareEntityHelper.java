@@ -125,9 +125,6 @@ public class GitAwareEntityHelper {
       throw new InvalidRequestException("No file path provided.");
     }
     String connectorRef = gitContextRequestParams.getConnectorRef();
-    if (isNullOrDefault(connectorRef)) {
-      throw new InvalidRequestException("No Connector reference provided.");
-    }
     boolean loadFromCache = gitContextRequestParams.isLoadFromCache();
     EntityType entityType = gitContextRequestParams.getEntityType();
     ScmGetFileResponse scmGetFileResponse =
@@ -153,9 +150,6 @@ public class GitAwareEntityHelper {
       throw new InvalidRequestException("No file path provided.");
     }
     String connectorRef = gitAwareEntity.getConnectorRef();
-    if (isNullOrDefault(connectorRef)) {
-      throw new InvalidRequestException("No Connector reference provided.");
-    }
     String baseBranch = gitEntityInfo.getBaseBranch();
     if (gitEntityInfo.isNewBranch() && isNullOrDefault(baseBranch)) {
       throw new InvalidRequestException("No base branch provided for committing to new branch");
@@ -205,9 +199,6 @@ public class GitAwareEntityHelper {
       throw new InvalidRequestException("No file path provided.");
     }
     String connectorRef = gitAwareEntity.getConnectorRef();
-    if (isNullOrDefault(connectorRef)) {
-      throw new InvalidRequestException("No Connector reference provided.");
-    }
     String baseBranch = gitEntityInfo.getBaseBranch();
     if (gitEntityInfo.isNewBranch() && isNullOrDefault(baseBranch)) {
       throw new InvalidRequestException("No base branch provided for committing to new branch");

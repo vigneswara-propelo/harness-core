@@ -17,6 +17,7 @@ import io.harness.annotations.dev.ProductModule;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketConnectorDTO;
+import io.harness.delegate.beans.connector.scm.harness.HarnessConnectorDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.git.GitClientHelper;
 import io.harness.gitsync.beans.GitRepositoryDTO;
@@ -25,6 +26,7 @@ import io.harness.product.ci.scm.proto.Repository;
 import com.google.inject.Singleton;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true,
     components = {HarnessModuleComponent.CDS_GITX, HarnessModuleComponent.CDS_PIPELINE})
@@ -51,6 +53,11 @@ public class GitRepoHelper {
         return GitClientHelper.getCompleteHTTPRepoUrlForAzureRepoSaas(gitConnectionUrl);
       case GITLAB:
         return GitClientHelper.getCompleteHTTPUrlForGitLab(gitConnectionUrl);
+      case HARNESS:
+        // TODO: Move this logic to HarnessConnectorDTO
+        HarnessConnectorDTO harnessConnectorDTO = (HarnessConnectorDTO) scmConnector;
+        return GitClientHelper.getCompleteHTTPUrlForHarness(
+            StringUtils.join(harnessConnectorDTO.getApiUrl(), harnessConnectorDTO.getSlug()));
       default:
         throw new InvalidRequestException(
             format("Connector of given type : %s isn't supported", scmConnector.getConnectorType()));

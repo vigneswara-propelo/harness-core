@@ -56,7 +56,7 @@ public class GitEntityInfo {
   @Setter String parentEntityProjectIdentifier;
   @Wither @Setter Boolean isDefaultBranch;
   @Setter String transientBranch; // branch used when referring to static linking in yamls
-
+  @Wither @Setter Boolean isHarnessCodeRepo;
   public boolean isNull() {
     // todo @Abhinav Maybe we should use null in place of default
     final String DEFAULT = "__default__";
@@ -75,6 +75,7 @@ public class GitEntityInfo {
         .rootFolder(folderPath)
         .filePath(filePath)
         .repoName(repoName)
+        .isHarnessCodeRepo(isHarnessCodeRepo)
         .parentEntityConnectorRef(parentEntityConnectorRef)
         .parentEntityRepoName(parentEntityRepoName)
         .build();
