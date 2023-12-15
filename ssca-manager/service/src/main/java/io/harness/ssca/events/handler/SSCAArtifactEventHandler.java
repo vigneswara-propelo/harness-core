@@ -15,23 +15,42 @@ import static io.serializer.HObjectMapper.NG_DEFAULT_OBJECT_MAPPER;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.outbox.OutboxEvent;
 import io.harness.outbox.api.OutboxEventHandler;
+import io.harness.repositories.SBOMComponentRepo;
+import io.harness.ssca.entities.ArtifactEntity.ArtifactEntityKeys;
+import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.events.SSCAArtifactCreatedEvent;
 import io.harness.ssca.events.SSCAArtifactUpdatedEvent;
+import io.harness.ssca.helpers.BatchProcessor;
+import io.harness.ssca.search.SearchService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import java.io.IOException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 @OwnedBy(SSCA)
 @Slf4j
 public class SSCAArtifactEventHandler implements OutboxEventHandler {
   private final ObjectMapper objectMapper;
+  SearchService searchService;
+  private final MongoTemplate mongoTemplate;
+  @Inject @Named("isElasticSearchEnabled") boolean isElasticSearchEnabled;
 
+  SBOMComponentRepo sbomComponentRepo;
   @Inject
-  public SSCAArtifactEventHandler() {
+  public SSCAArtifactEventHandler(
+      SearchService searchService, MongoTemplate mongoTemplate, SBOMComponentRepo sbomComponentRepo) {
+    this.searchService = searchService;
+    this.mongoTemplate = mongoTemplate;
+    this.sbomComponentRepo = sbomComponentRepo;
     this.objectMapper = NG_DEFAULT_OBJECT_MAPPER;
   }
 
@@ -52,19 +71,49 @@ public class SSCAArtifactEventHandler implements OutboxEventHandler {
     }
   }
 
+  private void processComponents(String accountId, List<NormalizedSBOMComponentEntity> components) {
+    if (!searchService.bulkSaveComponents(accountId, components)) {
+      throw new InvalidRequestException("Unable to save bulk components for accountId: " + accountId);
+    }
+  }
+
   private boolean handleSSCAArtifactCreatedEvent(OutboxEvent outboxEvent) throws IOException {
     SSCAArtifactCreatedEvent sscaArtifactCreatedEvent =
         objectMapper.readValue(outboxEvent.getEventData(), SSCAArtifactCreatedEvent.class);
-
-    // Publish to ELK
+    if (isElasticSearchEnabled) {
+      BatchProcessor<NormalizedSBOMComponentEntity> componentEntityBatchProcessor =
+          new BatchProcessor<>(mongoTemplate, NormalizedSBOMComponentEntity.class);
+      try {
+        searchService.saveArtifact(sscaArtifactCreatedEvent.getArtifact());
+        componentEntityBatchProcessor.processBatch(
+            new Query(Criteria.where(ArtifactEntityKeys.accountId)
+                          .is(sscaArtifactCreatedEvent.getAccountIdentifier())
+                          .and(ArtifactEntityKeys.orgId)
+                          .is(sscaArtifactCreatedEvent.getOrgIdentifier())
+                          .and(ArtifactEntityKeys.projectId)
+                          .is(sscaArtifactCreatedEvent.getProjectIdentifier())
+                          .and(ArtifactEntityKeys.orchestrationId)
+                          .is(sscaArtifactCreatedEvent.getArtifact().getOrchestrationId())),
+            null, this::processComponents);
+      } catch (Exception e) {
+        log.error("Couldn't save ssca artifact in ELK", e);
+        return false;
+      }
+    }
     return true;
   }
 
   private boolean handleSSCAArtifactUpdatedEvent(OutboxEvent outboxEvent) throws IOException {
     SSCAArtifactUpdatedEvent sscaArtifactUpdatedEvent =
         objectMapper.readValue(outboxEvent.getEventData(), SSCAArtifactUpdatedEvent.class);
-
-    // Publish to ELK
+    if (isElasticSearchEnabled) {
+      try {
+        searchService.updateArtifact(sscaArtifactUpdatedEvent.getArtifact());
+      } catch (Exception e) {
+        log.error("Couldn't update ssca artifact in ELK", e);
+        return false;
+      }
+    }
     return true;
   }
 }

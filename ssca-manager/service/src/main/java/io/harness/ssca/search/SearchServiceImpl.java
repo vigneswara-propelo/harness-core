@@ -30,6 +30,7 @@ import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.UpdateResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.google.inject.Inject;
 import java.io.IOException;
@@ -62,6 +63,23 @@ public class SearchServiceImpl implements SearchService {
       return response.result();
     } catch (IOException ex) {
       throw new GeneralException("Could not save artifact", ex);
+    }
+  }
+
+  @Override
+  public Result updateArtifact(ArtifactEntity artifactEntity) {
+    String index = elasticSearchIndexManager.getIndex(artifactEntity.getAccountId());
+    try {
+      UpdateResponse updateResponse = elasticsearchClient.update(u
+          -> u.index(index)
+                 .id(artifactEntity.getOrchestrationId())
+                 .routing(artifactEntity.getAccountId())
+                 .upsert(SSCAArtifactMapper.toSSCAArtifact(artifactEntity)),
+          SSCAArtifact.class);
+
+      return updateResponse.result();
+    } catch (IOException ex) {
+      throw new GeneralException("Could not update artifact", ex);
     }
   }
 

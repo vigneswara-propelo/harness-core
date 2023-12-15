@@ -48,6 +48,7 @@ import io.harness.security.InternalApiAuthFilter;
 import io.harness.security.NextGenAuthenticationFilter;
 import io.harness.security.annotations.InternalApi;
 import io.harness.security.annotations.NextGenManagerAuth;
+import io.harness.ssca.jobs.ElkMigrationJob;
 import io.harness.ssca.jobs.RemediationTrackerUpdateArtifactsIteratorHandler;
 import io.harness.ssca.migration.SSCAMigrationProvider;
 import io.harness.threading.ExecutorModule;
@@ -193,6 +194,7 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
     registerIterators(injector);
     registerSscaEvents(sscaManagerConfiguration, injector);
     registerManagedBeans(environment, injector);
+    registerJobs(sscaManagerConfiguration, environment, injector);
     registerMigrations(injector);
     MaintenanceController.forceMaintenance(false);
     injector.getInstance(PrimaryVersionChangeScheduler.class).registerExecutors();
@@ -243,7 +245,6 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
     environment.jersey().register(NotAllowedExceptionMapper.class);
     environment.jersey().register(MultiPartFeature.class);
   }
-
   private void registerAuthFilters(SSCAManagerConfiguration config, Environment environment, Injector injector) {
     if (config.isAuthEnabled()) {
       Predicate<Pair<ResourceInfo, ContainerRequestContext>> predicate = resourceInfoAndRequest
@@ -286,6 +287,12 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
   private void registerManagedBeans(Environment environment, Injector injector) {
     createConsumerThreadsToListenToEvents(environment, injector);
     environment.lifecycle().manage(injector.getInstance(OutboxEventPollService.class));
+  }
+
+  private void registerJobs(SSCAManagerConfiguration appConfig, Environment environment, Injector injector) {
+    if (appConfig.isEnableElasticsearch()) {
+      environment.lifecycle().manage(injector.getInstance(ElkMigrationJob.class));
+    }
   }
 
   private void registerMigrations(Injector injector) {

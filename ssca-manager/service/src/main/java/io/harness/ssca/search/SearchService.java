@@ -23,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 public interface SearchService {
   Result saveArtifact(ArtifactEntity artifactEntity);
 
+  Result updateArtifact(ArtifactEntity artifactEntity);
+
   Result saveComponent(NormalizedSBOMComponentEntity component);
 
   boolean bulkSaveComponents(String accountId, List<NormalizedSBOMComponentEntity> components);
